@@ -1,0 +1,792 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// Enums
+// ============================================
+
+enum Role {
+  USER
+  VERIFIED
+  ADMIN
+}
+
+enum Visibility {
+  PRIVATE
+  ANONYMOUS
+  VERIFIED_ONLY
+}
+
+enum BudgetTier {
+  LOW
+  MEDIUM
+  HIGH
+  UNLIMITED
+}
+
+enum TestType {
+  SAT
+  ACT
+  TOEFL
+  IELTS
+  AP
+  IB
+}
+
+enum ActivityCategory {
+  ACADEMIC
+  ARTS
+  ATHLETICS
+  COMMUNITY_SERVICE
+  LEADERSHIP
+  WORK
+  RESEARCH
+  OTHER
+}
+
+enum AwardLevel {
+  SCHOOL
+  REGIONAL
+  STATE
+  NATIONAL
+  INTERNATIONAL
+}
+
+enum ReportTargetType {
+  USER
+  MESSAGE
+  CASE
+  REVIEW
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+}
+
+enum AdmissionResult {
+  ADMITTED
+  REJECTED
+  WAITLISTED
+  DEFERRED
+}
+
+// ============================================
+// User & Auth
+// ============================================
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  passwordHash      String
+  role              Role      @default(USER)
+  emailVerified     Boolean   @default(false)
+  emailVerifyToken  String?
+  passwordResetToken String?
+  passwordResetExpires DateTime?
+  locale            String    @default("zh")
+  
+  // Points system
+  points            Int       @default(0)
+  
+  // Relations
+  profile           Profile?
+  followers         Follow[]  @relation("Following")
+  following         Follow[]  @relation("Followers")
+  blockedUsers      Block[]   @relation("Blocker")
+  blockedBy         Block[]   @relation("Blocked")
+  sentMessages      Message[]
+  conversations     ConversationParticipant[]
+  customRankings    CustomRanking[]
+  reviewsGiven      Review[]  @relation("Reviewer")
+  reviewsReceived   Review[]  @relation("ReviewedProfile")
+  reports           Report[]
+  admissionCases    AdmissionCase[]
+  userLists         UserList[]
+  userListVotes     UserListVote[]
+  pointHistory      PointHistory[]
+  caseViews         CaseView[]
+  
+  // AI Memory System
+  agentConversations AgentConversation[]
+  memories           Memory[]
+  entities           Entity[]
+  aiPreferences      UserAIPreference?
+  
+  // Timestamps
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
+
+  @@index([email])
+  @@index([deletedAt])
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// ============================================
+// Profile & Related
+// ============================================
+
+model Profile {
+  id              String     @id @default(cuid())
+  userId          String     @unique
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Strong Sensitive - Never public
+  realName        String?
+  
+  // Sensitive - Optional anonymized
+  gpa             Decimal?   @db.Decimal(3, 2)
+  gpaScale        Decimal    @default(4.0) @db.Decimal(3, 2)
+  currentSchool   String?
+  currentSchoolType String?  // PUBLIC_US / PRIVATE_US / INTERNATIONAL / etc.
+  grade           String?    // FRESHMAN / SOPHOMORE / JUNIOR / SENIOR / GAP_YEAR
+  
+  // Non-sensitive
+  targetMajor     String?
+  regionPref      String[]
+  budgetTier      BudgetTier?
+  applicationRound String?   // ED / EA / RD
+  
+  // Visibility
+  visibility      Visibility @default(PRIVATE)
+  
+  // Relations
+  testScores      TestScore[]
+  activities      Activity[]
+  awards          Award[]
+  education       Education[]
+  essays          Essay[]
+  predictions     PredictionResult[]
+  
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@index([userId])
+  @@index([visibility])
+}
+
+model TestScore {
+  id        String    @id @default(cuid())
+  profileId String
+  profile   Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  type      TestType
+  score     Int
+  subScores Json?     // { reading: 800, math: 800 } or { listening: 30, reading: 29 }
+  testDate  DateTime?
+  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([profileId])
+}
+
+model Activity {
+  id           String           @id @default(cuid())
+  profileId    String
+  profile      Profile          @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  name         String
+  category     ActivityCategory
+  role         String
+  organization String?
+  description  String?          @db.Text
+  startDate    DateTime?
+  endDate      DateTime?
+  hoursPerWeek Int?
+  weeksPerYear Int?
+  isOngoing    Boolean          @default(false)
+  order        Int              @default(0)
+  
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([profileId])
+}
+
+model Award {
+  id          String     @id @default(cuid())
+  profileId   String
+  profile     Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  name        String
+  level       AwardLevel
+  year        Int?
+  description String?
+  order       Int        @default(0)
+  
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([profileId])
+}
+
+model Education {
+  id           String   @id @default(cuid())
+  profileId    String
+  profile      Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  schoolName   String
+  schoolType   String?  // HIGH_SCHOOL / COLLEGE / etc.
+  degree       String?
+  major        String?
+  startDate    DateTime?
+  endDate      DateTime?
+  gpa          Decimal? @db.Decimal(3, 2)
+  gpaScale     Decimal? @db.Decimal(3, 2)
+  description  String?
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([profileId])
+}
+
+model Essay {
+  id        String   @id @default(cuid())
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  title     String
+  prompt    String?  @db.Text
+  content   String   @db.Text
+  wordCount Int?
+  schoolId  String?  // Optional: linked to specific school
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([profileId])
+}
+
+// ============================================
+// School Data
+// ============================================
+
+model School {
+  id              String   @id @default(cuid())
+  name            String
+  nameZh          String?
+  country         String   @default("US")
+  state           String?
+  city            String?
+  
+  // Rankings & Metrics
+  usNewsRank      Int?
+  qsRank          Int?
+  acceptanceRate  Decimal? @db.Decimal(5, 2)
+  tuition         Int?     // Annual tuition in USD
+  avgSalary       Int?     // Average salary after graduation
+  totalEnrollment Int?
+  
+  // College Scorecard data
+  satAvg          Int?     // Average SAT score
+  actAvg          Int?     // Average ACT score  
+  studentCount    Int?     // Total student population
+  graduationRate  Decimal? @db.Decimal(5, 2) // 4-year graduation rate
+  
+  // Additional Info
+  website         String?
+  logoUrl         String?
+  description     String?  @db.Text
+  descriptionZh   String?  @db.Text
+  metadata        Json?    // { scorecardId: "xxx", lastSync: "2024-01-01" }
+  
+  // Relations
+  metrics         SchoolMetric[]
+  cases           AdmissionCase[]
+  targetedBy      ProfileTargetSchool[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([name])
+  @@index([usNewsRank])
+}
+
+model SchoolMetric {
+  id        String   @id @default(cuid())
+  schoolId  String
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  
+  year      Int
+  metricKey String   // acceptance_rate, avg_sat, avg_gpa, etc.
+  value     Decimal  @db.Decimal(10, 2)
+  
+  createdAt DateTime @default(now())
+
+  @@unique([schoolId, year, metricKey])
+  @@index([schoolId])
+}
+
+model ProfileTargetSchool {
+  id        String  @id @default(cuid())
+  profileId String
+  schoolId  String
+  school    School  @relation(fields: [schoolId], references: [id])
+  
+  priority  Int     @default(0) // 1: Reach, 2: Match, 3: Safety
+  round     String? // ED, EA, RD, etc.
+  
+  createdAt DateTime @default(now())
+
+  @@unique([profileId, schoolId])
+  @@index([profileId])
+}
+
+// ============================================
+// Custom Rankings
+// ============================================
+
+model CustomRanking {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name      String
+  weights   Json     // { usNewsRank: 30, acceptanceRate: 20, tuition: 25, avgSalary: 25 }
+  isPublic  Boolean  @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([isPublic])
+}
+
+// ============================================
+// Predictions
+// ============================================
+
+model PredictionResult {
+  id         String   @id @default(cuid())
+  profileId  String
+  profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  schoolId   String
+  probability Decimal @db.Decimal(5, 4) // 0.0000 - 1.0000
+  factors    Json     // [{ name: "GPA", impact: "positive", detail: "..." }]
+  modelVersion String @default("v1")
+  
+  createdAt  DateTime @default(now())
+
+  @@index([profileId])
+  @@index([schoolId])
+}
+
+// ============================================
+// Admission Cases
+// ============================================
+
+model AdmissionCase {
+  id          String          @id @default(cuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  schoolId    String
+  school      School          @relation(fields: [schoolId], references: [id])
+  
+  year        Int             // Application year
+  round       String?         // ED, EA, RD
+  result      AdmissionResult
+  major       String?
+  
+  // Anonymized profile snapshot at time of application
+  gpaRange    String?         // "3.7-3.9"
+  satRange    String?         // "1500-1550"
+  actRange    String?
+  toeflRange  String?
+  tags        String[]        // ["strong_research", "legacy", "athlete"]
+  
+  // Visibility
+  visibility  Visibility      @default(PRIVATE)
+  
+  // Verification
+  isVerified  Boolean         @default(false)
+  verifiedAt  DateTime?
+  
+  // Relations
+  caseViews   CaseView[]
+  
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([userId])
+  @@index([schoolId])
+  @@index([visibility])
+  @@index([year])
+}
+
+// ============================================
+// Social Features
+// ============================================
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  follower    User     @relation("Followers", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+model Block {
+  id        String   @id @default(cuid())
+  blockerId String
+  blockedId String
+  blocker   User     @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked   User     @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+
+  @@unique([blockerId, blockedId])
+  @@index([blockerId])
+  @@index([blockedId])
+}
+
+// ============================================
+// Chat / Messaging
+// ============================================
+
+model Conversation {
+  id           String                    @id @default(cuid())
+  participants ConversationParticipant[]
+  messages     Message[]
+  
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+
+  @@index([updatedAt])
+}
+
+model ConversationParticipant {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  lastReadAt     DateTime?
+  
+  createdAt      DateTime     @default(now())
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  
+  content        String       @db.Text
+  isDeleted      Boolean      @default(false)
+  
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt])
+}
+
+// ============================================
+// Feature Hall
+// ============================================
+
+model Review {
+  id             String   @id @default(cuid())
+  reviewerId     String
+  reviewer       User     @relation("Reviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
+  profileUserId  String
+  profileUser    User     @relation("ReviewedProfile", fields: [profileUserId], references: [id], onDelete: Cascade)
+  
+  academicScore  Int      // 1-10
+  activityScore  Int      // 1-10
+  essayScore     Int      // 1-10
+  overallScore   Int      // 1-10
+  comment        String?  @db.Text
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([reviewerId, profileUserId])
+  @@index([reviewerId])
+  @@index([profileUserId])
+}
+
+model UserList {
+  id          String         @id @default(cuid())
+  userId      String
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  title       String
+  description String?        @db.Text
+  category    String?        // school_ranking, major_ranking, etc.
+  items       Json           // Array of list items
+  isPublic    Boolean        @default(true)
+  
+  votes       UserListVote[]
+  
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([isPublic])
+}
+
+model UserListVote {
+  id        String   @id @default(cuid())
+  listId    String
+  list      UserList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  value     Int      // 1 for upvote, -1 for downvote
+  
+  createdAt DateTime @default(now())
+
+  @@unique([listId, userId])
+  @@index([listId])
+}
+
+// ============================================
+// Reports & Moderation
+// ============================================
+
+model Report {
+  id         String           @id @default(cuid())
+  reporterId String
+  reporter   User             @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  
+  targetType ReportTargetType
+  targetId   String
+  reason     String
+  detail     String?          @db.Text
+  context    Json?            // Auto-attached context (e.g., chat messages)
+  status     ReportStatus     @default(PENDING)
+  
+  reviewedAt DateTime?
+  reviewedBy String?
+  resolution String?
+  
+  createdAt  DateTime         @default(now())
+
+  @@index([reporterId])
+  @@index([status])
+  @@index([targetType, targetId])
+}
+
+// ============================================
+// Audit Logs
+// ============================================
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String   // VIEW_VERIFIED_CONTENT, DOWNLOAD_FILE, EXPORT_DATA, etc.
+  resource  String   // profile, case, file
+  resourceId String?
+  metadata  Json?
+  ipAddress String?
+  userAgent String?
+  
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+// ============================================
+// Points & Incentive System
+// ============================================
+
+model PointHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String   // SUBMIT_CASE, CASE_VERIFIED, VIEW_CASE_DETAIL, etc.
+  points    Int      // positive for earning, negative for spending
+  metadata  Json?    // { caseId: "xxx", etc. }
+  
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+model CaseView {
+  id        String   @id @default(cuid())
+  userId    String
+  caseId    String
+  
+  user      User          @relation(fields: [userId], references: [id])
+  case      AdmissionCase @relation(fields: [caseId], references: [id])
+  createdAt DateTime      @default(now())
+
+  @@unique([userId, caseId])
+  @@index([userId])
+  @@index([caseId])
+}
+
+// ============================================
+// AI Agent Memory System
+// ============================================
+
+enum MemoryType {
+  FACT           // 用户陈述的事实
+  PREFERENCE     // 用户偏好
+  DECISION       // 做出的决定（如选校）
+  SUMMARY        // 对话摘要
+  FEEDBACK       // 用户反馈
+}
+
+enum EntityType {
+  SCHOOL         // 学校
+  PERSON         // 人物
+  EVENT          // 事件
+  TOPIC          // 话题/主题
+}
+
+// AI Agent 对话会话
+model AgentConversation {
+  id          String    @id @default(cuid())
+  userId      String
+  title       String?
+  summary     String?   @db.Text
+  agentType   String?   // 主要处理的 Agent
+  metadata    Json?     // 额外元数据
+  isArchived  Boolean   @default(false)
+  
+  user        User      @relation(fields: [userId], references: [id])
+  messages    AgentMessage[]
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  archivedAt  DateTime?
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([isArchived])
+}
+
+// Agent 消息记录
+model AgentMessage {
+  id             String            @id @default(cuid())
+  conversationId String
+  role           String            // user, assistant, tool, system
+  content        String            @db.Text
+  agentType      String?           // 处理消息的 Agent
+  toolCalls      Json?             // 工具调用记录
+  tokensUsed     Int?              // Token 使用量
+  latencyMs      Int?              // 响应延迟
+  
+  conversation   AgentConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  createdAt      DateTime          @default(now())
+
+  @@index([conversationId])
+  @@index([createdAt])
+}
+
+// 记忆条目
+model Memory {
+  id            String     @id @default(cuid())
+  userId        String
+  type          MemoryType
+  category      String?    // school, essay, profile, timeline
+  content       String     @db.Text
+  importance    Float      @default(0.5) // 0-1 重要性评分
+  accessCount   Int        @default(0)
+  lastAccessedAt DateTime?
+  expiresAt     DateTime?  // 可选过期时间
+  
+  // 向量嵌入 (pgvector)
+  // Prisma 不原生支持 vector 类型，使用 Unsupported
+  embedding     Unsupported("vector(1536)")?
+  
+  metadata      Json?      // 额外元数据
+  
+  user          User       @relation(fields: [userId], references: [id])
+  
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([userId, type])
+  @@index([userId, category])
+  @@index([importance])
+  @@index([createdAt])
+}
+
+// 实体记录
+model Entity {
+  id          String     @id @default(cuid())
+  userId      String
+  type        EntityType
+  name        String
+  description String?    @db.Text
+  attributes  Json?      // 实体属性
+  relations   Json?      // 关系 [{type, targetId, targetName}]
+  
+  // 向量嵌入 (pgvector)
+  embedding   Unsupported("vector(1536)")?
+  
+  user        User       @relation(fields: [userId], references: [id])
+  
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@unique([userId, type, name])
+  @@index([userId, type])
+}
+
+// 用户 AI 偏好
+model UserAIPreference {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  
+  // 沟通偏好
+  communicationStyle   String   @default("friendly") // friendly, professional, casual
+  responseLength       String   @default("moderate") // brief, moderate, detailed
+  language             String   @default("zh-CN")
+  
+  // 学校偏好
+  schoolPreferences    Json?    // { regions: [], size: [], type: [] }
+  
+  // 文书偏好
+  essayPreferences     Json?    // { style: "vivid", tone: "personal" }
+  
+  // 其他设置
+  enableMemory         Boolean  @default(true)
+  enableSuggestions    Boolean  @default(true)
+  
+  user                 User     @relation(fields: [userId], references: [id])
+  
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}

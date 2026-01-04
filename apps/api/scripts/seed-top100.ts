@@ -1,0 +1,205 @@
+/**
+ * US News 2025 Top 100 大学完整数据
+ * 
+ * 包含：排名、截止日期、申请类型、文书数量
+ */
+
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+// 2025 US News Top 100 完整数据
+const TOP_100_SCHOOLS = [
+  // Top 10
+  { rank: 1, name: 'Princeton University', nameZh: '普林斯顿大学', state: 'NJ', type: 'rea', deadlines: { rea: 'Nov 1', rd: 'Jan 1' }, essays: 4 },
+  { rank: 2, name: 'Massachusetts Institute of Technology', nameZh: '麻省理工学院', state: 'MA', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Jan 4' }, essays: 5 },
+  { rank: 3, name: 'Harvard University', nameZh: '哈佛大学', state: 'MA', type: 'rea', deadlines: { rea: 'Nov 1', rd: 'Jan 1' }, essays: 5 },
+  { rank: 3, name: 'Stanford University', nameZh: '斯坦福大学', state: 'CA', type: 'rea', deadlines: { rea: 'Nov 1', rd: 'Jan 2' }, essays: 3 },
+  { rank: 5, name: 'Yale University', nameZh: '耶鲁大学', state: 'CT', type: 'rea', deadlines: { rea: 'Nov 1', rd: 'Jan 2' }, essays: 3 },
+  { rank: 6, name: 'University of Pennsylvania', nameZh: '宾夕法尼亚大学', state: 'PA', type: 'ed', deadlines: { ed: 'Nov 1', rd: 'Jan 5' }, essays: 2 },
+  { rank: 7, name: 'California Institute of Technology', nameZh: '加州理工学院', state: 'CA', type: 'rea', deadlines: { rea: 'Nov 1', rd: 'Jan 3' }, essays: 4 },
+  { rank: 7, name: 'Duke University', nameZh: '杜克大学', state: 'NC', type: 'ed', deadlines: { ed: 'Nov 1', rd: 'Jan 4' }, essays: 2 },
+  { rank: 9, name: 'Brown University', nameZh: '布朗大学', state: 'RI', type: 'ed', deadlines: { ed: 'Nov 1', rd: 'Jan 1' }, essays: 5 },
+  { rank: 9, name: 'Johns Hopkins University', nameZh: '约翰霍普金斯大学', state: 'MD', type: 'ed', deadlines: { ed: 'Nov 1', ed2: 'Jan 2', rd: 'Jan 2' }, essays: 1 },
+  { rank: 9, name: 'Northwestern University', nameZh: '西北大学', state: 'IL', type: 'ed', deadlines: { ed: 'Nov 1', rd: 'Jan 3' }, essays: 2 },
+  
+  // 12-20
+  { rank: 12, name: 'Columbia University', nameZh: '哥伦比亚大学', state: 'NY', type: 'ed', deadlines: { ed: 'Nov 1', rd: 'Jan 1' }, essays: 4 },
+  { rank: 12, name: 'Cornell University', nameZh: '康奈尔大学', state: 'NY', type: 'ed', deadlines: { ed: 'Nov 1', rd: 'Jan 2' }, essays: 1 },
+  { rank: 12, name: 'University of Chicago', nameZh: '芝加哥大学', state: 'IL', type: 'ed', deadlines: { ed: 'Nov 1', ed2: 'Jan 4', rd: 'Jan 4' }, essays: 2 },
+  { rank: 15, name: 'University of California, Berkeley', nameZh: '加州大学伯克利分校', state: 'CA', type: 'none', deadlines: { rd: 'Nov 30' }, essays: 4 },
+  { rank: 15, name: 'University of California, Los Angeles', nameZh: '加州大学洛杉矶分校', state: 'CA', type: 'none', deadlines: { rd: 'Nov 30' }, essays: 4 },
+  { rank: 17, name: 'Rice University', nameZh: '莱斯大学', state: 'TX', type: 'ed', deadlines: { ed: 'Nov 1', rd: 'Jan 4' }, essays: 3 },
+  { rank: 18, name: 'Dartmouth College', nameZh: '达特茅斯学院', state: 'NH', type: 'ed', deadlines: { ed: 'Nov 1', rd: 'Jan 2' }, essays: 3 },
+  { rank: 18, name: 'Vanderbilt University', nameZh: '范德堡大学', state: 'TN', type: 'ed', deadlines: { ed: 'Nov 1', ed2: 'Jan 1', rd: 'Jan 1' }, essays: 1 },
+  { rank: 20, name: 'University of Notre Dame', nameZh: '圣母大学', state: 'IN', type: 'rea', deadlines: { rea: 'Nov 1', rd: 'Jan 1' }, essays: 1 },
+  
+  // 21-30
+  { rank: 21, name: 'University of Michigan, Ann Arbor', nameZh: '密歇根大学安娜堡分校', state: 'MI', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Feb 1' }, essays: 2 },
+  { rank: 22, name: 'Georgetown University', nameZh: '乔治城大学', state: 'DC', type: 'rea', deadlines: { rea: 'Nov 1', rd: 'Jan 10' }, essays: 4 },
+  { rank: 22, name: 'University of North Carolina at Chapel Hill', nameZh: '北卡罗来纳大学教堂山分校', state: 'NC', type: 'ea', deadlines: { ea: 'Oct 15', rd: 'Jan 15' }, essays: 2 },
+  { rank: 24, name: 'Carnegie Mellon University', nameZh: '卡内基梅隆大学', state: 'PA', type: 'ed', deadlines: { ed: 'Nov 1', ed2: 'Jan 3', rd: 'Jan 3' }, essays: 3 },
+  { rank: 24, name: 'Emory University', nameZh: '埃默里大学', state: 'GA', type: 'ed', deadlines: { ed: 'Nov 1', ed2: 'Jan 1', rd: 'Jan 1' }, essays: 2 },
+  { rank: 24, name: 'University of Virginia', nameZh: '弗吉尼亚大学', state: 'VA', type: 'ed', deadlines: { ed: 'Nov 1', rd: 'Jan 5' }, essays: 2 },
+  { rank: 24, name: 'Washington University in St. Louis', nameZh: '圣路易斯华盛顿大学', state: 'MO', type: 'ed', deadlines: { ed: 'Nov 1', ed2: 'Jan 2', rd: 'Jan 2' }, essays: 1 },
+  { rank: 28, name: 'University of California, Davis', nameZh: '加州大学戴维斯分校', state: 'CA', type: 'none', deadlines: { rd: 'Nov 30' }, essays: 4 },
+  { rank: 28, name: 'University of California, San Diego', nameZh: '加州大学圣地亚哥分校', state: 'CA', type: 'none', deadlines: { rd: 'Nov 30' }, essays: 4 },
+  { rank: 28, name: 'University of Florida', nameZh: '佛罗里达大学', state: 'FL', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Mar 1' }, essays: 0 },
+  
+  // 31-40
+  { rank: 28, name: 'University of Southern California', nameZh: '南加州大学', state: 'CA', type: 'none', deadlines: { rd: 'Jan 15' }, essays: 3 },
+  { rank: 32, name: 'University of Texas at Austin', nameZh: '德克萨斯大学奥斯汀分校', state: 'TX', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Dec 1' }, essays: 3 },
+  { rank: 33, name: 'Georgia Institute of Technology', nameZh: '佐治亚理工学院', state: 'GA', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Jan 4' }, essays: 2 },
+  { rank: 33, name: 'University of California, Irvine', nameZh: '加州大学尔湾分校', state: 'CA', type: 'none', deadlines: { rd: 'Nov 30' }, essays: 4 },
+  { rank: 35, name: 'New York University', nameZh: '纽约大学', state: 'NY', type: 'ed', deadlines: { ed: 'Nov 1', ed2: 'Jan 1', rd: 'Jan 5' }, essays: 1 },
+  { rank: 35, name: 'University of California, Santa Barbara', nameZh: '加州大学圣塔芭芭拉分校', state: 'CA', type: 'none', deadlines: { rd: 'Nov 30' }, essays: 4 },
+  { rank: 35, name: 'University of Illinois Urbana-Champaign', nameZh: '伊利诺伊大学厄巴纳-香槟分校', state: 'IL', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Jan 5' }, essays: 1 },
+  { rank: 35, name: 'University of Wisconsin-Madison', nameZh: '威斯康星大学麦迪逊分校', state: 'WI', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Feb 1' }, essays: 2 },
+  { rank: 39, name: 'Boston College', nameZh: '波士顿学院', state: 'MA', type: 'ed', deadlines: { ed: 'Nov 1', ed2: 'Jan 2', rd: 'Jan 2' }, essays: 1 },
+  { rank: 40, name: 'Rutgers University-New Brunswick', nameZh: '罗格斯大学新布朗斯维克分校', state: 'NJ', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Feb 1' }, essays: 1 },
+  
+  // 41-50
+  { rank: 40, name: 'Tufts University', nameZh: '塔夫茨大学', state: 'MA', type: 'ed', deadlines: { ed: 'Nov 1', ed2: 'Jan 4', rd: 'Jan 4' }, essays: 2 },
+  { rank: 40, name: 'University of Washington', nameZh: '华盛顿大学', state: 'WA', type: 'none', deadlines: { rd: 'Nov 15' }, essays: 2 },
+  { rank: 43, name: 'Boston University', nameZh: '波士顿大学', state: 'MA', type: 'ed', deadlines: { ed: 'Nov 1', ed2: 'Jan 4', rd: 'Jan 4' }, essays: 1 },
+  { rank: 43, name: 'Ohio State University', nameZh: '俄亥俄州立大学', state: 'OH', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Feb 1' }, essays: 1 },
+  { rank: 43, name: 'Purdue University', nameZh: '普渡大学', state: 'IN', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Jan 15' }, essays: 2 },
+  { rank: 46, name: 'University of Maryland, College Park', nameZh: '马里兰大学帕克分校', state: 'MD', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Jan 20' }, essays: 2 },
+  { rank: 47, name: 'Lehigh University', nameZh: '里海大学', state: 'PA', type: 'ed', deadlines: { ed: 'Nov 1', ed2: 'Jan 1', rd: 'Jan 1' }, essays: 2 },
+  { rank: 47, name: 'Texas A&M University', nameZh: '德州农工大学', state: 'TX', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Dec 1' }, essays: 2 },
+  { rank: 47, name: 'University of Georgia', nameZh: '佐治亚大学', state: 'GA', type: 'ea', deadlines: { ea: 'Oct 15', rd: 'Jan 1' }, essays: 1 },
+  { rank: 47, name: 'Wake Forest University', nameZh: '维克森林大学', state: 'NC', type: 'ed', deadlines: { ed: 'Nov 15', ed2: 'Jan 1', rd: 'Jan 1' }, essays: 2 },
+  
+  // 51-60
+  { rank: 51, name: 'Case Western Reserve University', nameZh: '凯斯西储大学', state: 'OH', type: 'ed', deadlines: { ea: 'Nov 1', ed: 'Nov 1', ed2: 'Jan 15', rd: 'Jan 15' }, essays: 1 },
+  { rank: 51, name: 'Florida State University', nameZh: '佛罗里达州立大学', state: 'FL', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Feb 7' }, essays: 0 },
+  { rank: 51, name: 'University of Rochester', nameZh: '罗切斯特大学', state: 'NY', type: 'ed', deadlines: { ed: 'Nov 1', rd: 'Jan 5' }, essays: 1 },
+  { rank: 51, name: 'Northeastern University', nameZh: '东北大学', state: 'MA', type: 'ed', deadlines: { ea: 'Nov 1', ed: 'Nov 1', ed2: 'Jan 1', rd: 'Jan 1' }, essays: 1 },
+  { rank: 51, name: 'University of Minnesota Twin Cities', nameZh: '明尼苏达大学双城分校', state: 'MN', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Jan 1' }, essays: 2 },
+  { rank: 56, name: 'University of Connecticut', nameZh: '康涅狄格大学', state: 'CT', type: 'ea', deadlines: { ea: 'Dec 1', rd: 'Jan 15' }, essays: 0 },
+  { rank: 56, name: 'Virginia Tech', nameZh: '弗吉尼亚理工大学', state: 'VA', type: 'ed', deadlines: { ed: 'Nov 1', rd: 'Jan 15' }, essays: 1 },
+  { rank: 58, name: 'University of California, Santa Cruz', nameZh: '加州大学圣克鲁兹分校', state: 'CA', type: 'none', deadlines: { rd: 'Nov 30' }, essays: 4 },
+  { rank: 58, name: 'University of California, Riverside', nameZh: '加州大学河滨分校', state: 'CA', type: 'none', deadlines: { rd: 'Nov 30' }, essays: 4 },
+  { rank: 58, name: 'William & Mary', nameZh: '威廉与玛丽学院', state: 'VA', type: 'ed', deadlines: { ed: 'Nov 1', rd: 'Jan 1' }, essays: 2 },
+  
+  // 61-70
+  { rank: 61, name: 'Pennsylvania State University', nameZh: '宾夕法尼亚州立大学', state: 'PA', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Feb 1' }, essays: 1 },
+  { rank: 61, name: 'University of Massachusetts Amherst', nameZh: '马萨诸塞大学阿默斯特分校', state: 'MA', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Jan 15' }, essays: 1 },
+  { rank: 61, name: 'Pepperdine University', nameZh: '佩珀代因大学', state: 'CA', type: 'ed', deadlines: { ea: 'Nov 1', ed: 'Nov 1', rd: 'Jan 15' }, essays: 2 },
+  { rank: 61, name: 'Santa Clara University', nameZh: '圣塔克拉拉大学', state: 'CA', type: 'ed', deadlines: { ea: 'Nov 1', ed: 'Nov 1', rd: 'Jan 7' }, essays: 3 },
+  { rank: 61, name: 'University of Pittsburgh', nameZh: '匹兹堡大学', state: 'PA', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Rolling' }, essays: 1 },
+  { rank: 66, name: 'George Washington University', nameZh: '乔治华盛顿大学', state: 'DC', type: 'ed', deadlines: { ed: 'Nov 1', ed2: 'Jan 5', rd: 'Jan 5' }, essays: 1 },
+  { rank: 66, name: 'Rensselaer Polytechnic Institute', nameZh: '伦斯勒理工学院', state: 'NY', type: 'ed', deadlines: { ed: 'Nov 1', rd: 'Jan 15' }, essays: 1 },
+  { rank: 66, name: 'Syracuse University', nameZh: '雪城大学', state: 'NY', type: 'ed', deadlines: { ed: 'Nov 15', ed2: 'Jan 1', rd: 'Jan 1' }, essays: 2 },
+  { rank: 66, name: 'University of California, Merced', nameZh: '加州大学默塞德分校', state: 'CA', type: 'none', deadlines: { rd: 'Nov 30' }, essays: 4 },
+  { rank: 66, name: 'University of Miami', nameZh: '迈阿密大学', state: 'FL', type: 'ed', deadlines: { ea: 'Nov 1', ed: 'Nov 1', ed2: 'Jan 1', rd: 'Jan 1' }, essays: 1 },
+  
+  // 71-80
+  { rank: 71, name: 'Brandeis University', nameZh: '布兰迪斯大学', state: 'MA', type: 'ed', deadlines: { ed: 'Nov 1', ed2: 'Jan 1', rd: 'Jan 1' }, essays: 1 },
+  { rank: 71, name: 'Indiana University Bloomington', nameZh: '印第安纳大学伯明顿分校', state: 'IN', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Feb 1' }, essays: 1 },
+  { rank: 71, name: 'Michigan State University', nameZh: '密歇根州立大学', state: 'MI', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Rolling' }, essays: 0 },
+  { rank: 71, name: 'North Carolina State University', nameZh: '北卡罗来纳州立大学', state: 'NC', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Jan 15' }, essays: 1 },
+  { rank: 71, name: 'Stony Brook University', nameZh: '石溪大学', state: 'NY', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Jan 15' }, essays: 1 },
+  { rank: 71, name: 'Tulane University', nameZh: '杜兰大学', state: 'LA', type: 'ed', deadlines: { ea: 'Nov 15', ed: 'Nov 1', ed2: 'Jan 8', rd: 'Jan 8' }, essays: 1 },
+  { rank: 77, name: 'Binghamton University', nameZh: '宾汉姆顿大学', state: 'NY', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Jan 15' }, essays: 2 },
+  { rank: 77, name: 'Colorado School of Mines', nameZh: '科罗拉多矿业大学', state: 'CO', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Jan 15' }, essays: 1 },
+  { rank: 77, name: 'University at Buffalo', nameZh: '布法罗大学', state: 'NY', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Feb 1' }, essays: 1 },
+  { rank: 77, name: 'University of Colorado Boulder', nameZh: '科罗拉多大学博尔德分校', state: 'CO', type: 'ea', deadlines: { ea: 'Nov 15', rd: 'Jan 15' }, essays: 1 },
+  
+  // 81-90
+  { rank: 77, name: 'University of Iowa', nameZh: '爱荷华大学', state: 'IA', type: 'none', deadlines: { rd: 'May 1' }, essays: 0 },
+  { rank: 82, name: 'Illinois Institute of Technology', nameZh: '伊利诺伊理工学院', state: 'IL', type: 'ea', deadlines: { ea: 'Dec 1', rd: 'Rolling' }, essays: 1 },
+  { rank: 82, name: 'Marquette University', nameZh: '马凯特大学', state: 'WI', type: 'ea', deadlines: { ea: 'Dec 1', rd: 'Feb 1' }, essays: 1 },
+  { rank: 82, name: 'Stevens Institute of Technology', nameZh: '史蒂文斯理工学院', state: 'NJ', type: 'ed', deadlines: { ed: 'Nov 15', ed2: 'Jan 15', rd: 'Feb 1' }, essays: 1 },
+  { rank: 82, name: 'University of Delaware', nameZh: '特拉华大学', state: 'DE', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Jan 15' }, essays: 1 },
+  { rank: 86, name: 'Auburn University', nameZh: '奥本大学', state: 'AL', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Feb 1' }, essays: 0 },
+  { rank: 86, name: 'Drexel University', nameZh: '德雷塞尔大学', state: 'PA', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Jan 15' }, essays: 1 },
+  { rank: 86, name: 'Loyola Marymount University', nameZh: '洛约拉马利蒙特大学', state: 'CA', type: 'ed', deadlines: { ea: 'Nov 1', ed: 'Nov 1', rd: 'Jan 15' }, essays: 1 },
+  { rank: 86, name: 'University of Arizona', nameZh: '亚利桑那大学', state: 'AZ', type: 'none', deadlines: { rd: 'May 1' }, essays: 0 },
+  { rank: 86, name: 'University of South Florida', nameZh: '南佛罗里达大学', state: 'FL', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Mar 1' }, essays: 0 },
+  
+  // 91-100
+  { rank: 91, name: 'Clemson University', nameZh: '克莱姆森大学', state: 'SC', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Jan 2' }, essays: 1 },
+  { rank: 91, name: 'Fordham University', nameZh: '福特汉姆大学', state: 'NY', type: 'ed', deadlines: { ea: 'Nov 1', ed: 'Nov 1', ed2: 'Jan 1', rd: 'Jan 1' }, essays: 1 },
+  { rank: 91, name: 'Southern Methodist University', nameZh: '南卫理公会大学', state: 'TX', type: 'ed', deadlines: { ea: 'Nov 1', ed: 'Nov 1', ed2: 'Jan 15', rd: 'Jan 15' }, essays: 1 },
+  { rank: 91, name: 'Temple University', nameZh: '天普大学', state: 'PA', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Feb 1' }, essays: 1 },
+  { rank: 91, name: 'University of Oregon', nameZh: '俄勒冈大学', state: 'OR', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Jan 15' }, essays: 1 },
+  { rank: 91, name: 'University of South Carolina', nameZh: '南卡罗来纳大学', state: 'SC', type: 'ea', deadlines: { ea: 'Oct 15', rd: 'Dec 1' }, essays: 0 },
+  { rank: 97, name: 'Arizona State University', nameZh: '亚利桑那州立大学', state: 'AZ', type: 'none', deadlines: { rd: 'Rolling' }, essays: 0 },
+  { rank: 97, name: 'Rutgers University-Newark', nameZh: '罗格斯大学纽瓦克分校', state: 'NJ', type: 'ea', deadlines: { ea: 'Nov 1', rd: 'Feb 1' }, essays: 1 },
+  { rank: 97, name: 'University of Kansas', nameZh: '堪萨斯大学', state: 'KS', type: 'none', deadlines: { rd: 'Rolling' }, essays: 0 },
+  { rank: 97, name: 'University of Utah', nameZh: '犹他大学', state: 'UT', type: 'ea', deadlines: { ea: 'Dec 1', rd: 'Apr 1' }, essays: 1 },
+];
+
+async function main() {
+  console.log('🏫 导入 US News 2025 Top 100 大学数据\n');
+  console.log('='.repeat(60));
+
+  let created = 0;
+  let updated = 0;
+  let errors = 0;
+
+  for (const school of TOP_100_SCHOOLS) {
+    try {
+      const existing = await prisma.school.findFirst({
+        where: { name: school.name },
+      });
+
+      const schoolData = {
+        name: school.name,
+        nameZh: school.nameZh,
+        country: 'US',
+        state: school.state,
+        usNewsRank: school.rank,
+        metadata: {
+          deadlines: school.deadlines,
+          applicationType: school.type,
+          essayCount: school.essays,
+          applicationCycle: '2025-2026',
+          dataUpdated: new Date().toISOString().split('T')[0],
+        },
+      };
+
+      if (existing) {
+        // 更新现有学校
+        const existingMeta = (existing.metadata as Record<string, unknown>) || {};
+        await prisma.school.update({
+          where: { id: existing.id },
+          data: {
+            nameZh: school.nameZh,
+            usNewsRank: school.rank,
+            metadata: {
+              ...existingMeta,
+              ...schoolData.metadata,
+            },
+          },
+        });
+        updated++;
+      } else {
+        // 创建新学校
+        await prisma.school.create({ data: schoolData });
+        created++;
+      }
+
+      console.log(`✅ #${school.rank} ${school.nameZh} (${school.name})`);
+    } catch (err: any) {
+      console.log(`❌ ${school.name}: ${err.message}`);
+      errors++;
+    }
+  }
+
+  console.log('\n' + '='.repeat(60));
+  console.log(`📊 统计:`);
+  console.log(`   新建: ${created}`);
+  console.log(`   更新: ${updated}`);
+  console.log(`   失败: ${errors}`);
+  console.log(`   总计: ${TOP_100_SCHOOLS.length}`);
+}
+
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect());
+
+
+
+

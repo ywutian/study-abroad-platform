@@ -1,0 +1,16 @@
+node_modules
+dist
+.env
+.env.local
+*.log
+.git
+.gitignore
+README.md
+Dockerfile
+.dockerignore
+coverage
+.turbo
+
+
+
+
