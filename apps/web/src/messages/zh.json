@@ -1,0 +1,288 @@
+{
+  "meta": {
+    "home": {
+      "title": "留学申请平台 - AI智能选校与录取预测",
+      "description": "智能选校、录取预测、案例分享 —— 您的一站式AI留学申请平台，助你圆梦理想院校"
+    },
+    "profile": {
+      "title": "我的档案 - 留学申请平台",
+      "description": "创建和管理您的申请档案，一键导出专业简历"
+    },
+    "ranking": {
+      "title": "学校榜单 - 留学申请平台",
+      "description": "根据个人偏好自定义学校排名榜单，找到最适合你的院校"
+    },
+    "prediction": {
+      "title": "录取预测 - 留学申请平台",
+      "description": "AI智能分析您的背景，精准预测各院校录取概率"
+    },
+    "cases": {
+      "title": "案例库 - 留学申请平台",
+      "description": "浏览真实申请案例，参考成功经验，了解录取趋势"
+    },
+    "chat": {
+      "title": "消息 - 留学申请平台",
+      "description": "与认证用户交流，获取第一手申请信息"
+    },
+    "hall": {
+      "title": "功能大厅 - 留学申请平台",
+      "description": "招生官打分、排名对比、创建榜单等多种功能"
+    },
+    "login": {
+      "title": "登录 - 留学申请平台",
+      "description": "登录您的账号，开始留学申请之旅"
+    },
+    "register": {
+      "title": "注册 - 留学申请平台",
+      "description": "免费注册，立即体验全部功能"
+    },
+    "notFound": {
+      "title": "页面未找到 - 留学申请平台",
+      "description": "抱歉，您访问的页面不存在"
+    }
+  },
+  "common": {
+    "appName": "留学申请平台",
+    "save": "保存",
+    "cancel": "取消",
+    "submit": "提交",
+    "edit": "编辑",
+    "delete": "删除",
+    "confirm": "确认",
+    "back": "返回",
+    "next": "下一步",
+    "previous": "上一步",
+    "loading": "加载中...",
+    "error": "出错了",
+    "success": "成功",
+    "search": "搜索",
+    "filter": "筛选",
+    "sort": "排序",
+    "more": "更多",
+    "close": "关闭",
+    "login": "登录",
+    "logout": "退出登录",
+    "register": "注册",
+    "settings": "设置"
+  },
+  "home": {
+    "badge": "AI 驱动的智能留学平台",
+    "heroTitle": "让留学申请更简单",
+    "heroSubtitle": "智能选校、录取预测、案例分享 —— 您的一站式留学申请平台",
+    "coreFeatures": "核心功能",
+    "coreFeaturesSubtitle": "全方位的留学申请辅助工具，助你圆梦理想院校",
+    "ctaTitle": "准备开始您的申请之旅？",
+    "ctaSubtitle": "免费注册，立即体验全部功能",
+    "ctaButton": "立即开始",
+    "copyright": "© 2026 留学申请平台 保留所有权利",
+    "aboutUs": "关于我们",
+    "privacy": "隐私政策",
+    "terms": "服务条款",
+    "stats": {
+      "cases": "录取案例",
+      "schools": "覆盖院校",
+      "accuracy": "预测准确率",
+      "aiAssistant": "AI 助手"
+    },
+    "whyChooseUs": {
+      "title": "为什么选择我们？",
+      "subtitle": "我们利用先进的 AI 技术和海量真实数据，为你提供最精准的留学申请建议。",
+      "realData": "真实案例数据",
+      "realDataDesc": "基于万余份真实录取案例，提供可靠的参考依据",
+      "smartAlgorithm": "智能预测算法",
+      "smartAlgorithmDesc": "AI 分析你的背景，精准预测各校录取概率",
+      "globalCoverage": "全球院校覆盖",
+      "globalCoverageDesc": "涵盖美国、英国、加拿大等主流留学目的地",
+      "admissionRate": "录取率"
+    },
+    "features": {
+      "profile": "创建和管理您的申请档案，一键导出专业简历",
+      "ranking": "根据个人偏好自定义学校排名榜单",
+      "prediction": "基于您的背景预测各院校录取概率",
+      "cases": "浏览真实申请案例，参考成功经验",
+      "chat": "与认证用户交流，获取第一手信息",
+      "hall": "招生官打分、排名对比、创建榜单"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "登录",
+      "subtitle": "欢迎回来",
+      "email": "邮箱",
+      "password": "密码",
+      "rememberMe": "记住我",
+      "forgotPassword": "忘记密码？",
+      "noAccount": "没有账号？",
+      "signUp": "立即注册"
+    },
+    "register": {
+      "title": "注册",
+      "subtitle": "创建您的账号",
+      "email": "邮箱",
+      "password": "密码",
+      "confirmPassword": "确认密码",
+      "hasAccount": "已有账号？",
+      "signIn": "立即登录",
+      "agreeTerms": "我同意服务条款和隐私政策"
+    },
+    "verifyEmail": {
+      "title": "验证邮箱",
+      "subtitle": "请查收验证邮件",
+      "sentTo": "验证邮件已发送至",
+      "description": "我们已向 {email} 发送了验证邮件",
+      "resend": "重新发送",
+      "checkSpam": "如果没有收到，请检查垃圾邮件文件夹",
+      "backToLogin": "返回登录"
+    },
+    "resetPassword": {
+      "title": "重置密码",
+      "description": "输入您的邮箱，我们将发送重置链接",
+      "sent": "重置链接已发送",
+      "newPassword": "新密码"
+    }
+  },
+  "nav": {
+    "profile": "我的档案",
+    "essays": "我的文书",
+    "ai": "AI 助手",
+    "ranking": "学校榜单",
+    "prediction": "录取预测",
+    "cases": "案例库",
+    "chat": "消息",
+    "hall": "功能大厅",
+    "followers": "关注管理",
+    "admin": "管理后台"
+  },
+  "profile": {
+    "title": "我的档案",
+    "basicInfo": "基本信息",
+    "testScores": "标化成绩",
+    "gpa": "GPA",
+    "activities": "活动经历",
+    "awards": "荣誉奖项",
+    "targetSchools": "目标院校",
+    "visibility": "隐私设置",
+    "exportResume": "导出简历",
+    "exportData": "导出数据",
+    "steps": {
+      "basic": "基本信息",
+      "scores": "标化成绩",
+      "gpa": "GPA",
+      "activities": "活动",
+      "awards": "奖项",
+      "targets": "目标院校",
+      "privacy": "隐私设置"
+    },
+    "fields": {
+      "grade": "年级",
+      "schoolType": "学校类型",
+      "currentSchool": "在读学校",
+      "targetMajor": "目标专业",
+      "regionPref": "地区偏好",
+      "budget": "预算"
+    },
+    "visibilityOptions": {
+      "private": "仅自己可见",
+      "anonymous": "匿名公开",
+      "verifiedOnly": "认证用户可见"
+    }
+  },
+  "ranking": {
+    "title": "自定义榜单",
+    "weights": "权重设置",
+    "usNewsRank": "US News 排名",
+    "acceptanceRate": "录取率",
+    "tuition": "学费",
+    "avgSalary": "毕业薪资",
+    "preview": "预览排名",
+    "saveRanking": "保存榜单",
+    "shareRanking": "分享榜单",
+    "myRankings": "我的榜单"
+  },
+  "prediction": {
+    "title": "录取预测",
+    "selectSchools": "选择目标院校",
+    "runPrediction": "开始预测",
+    "probability": "录取概率",
+    "factors": "影响因素",
+    "positive": "有利因素",
+    "negative": "不利因素",
+    "suggestion": "建议"
+  },
+  "cases": {
+    "title": "案例库",
+    "filters": {
+      "school": "目标院校",
+      "major": "专业",
+      "year": "申请年份",
+      "result": "申请结果"
+    },
+    "result": {
+      "admitted": "录取",
+      "rejected": "拒绝",
+      "waitlisted": "候补"
+    },
+    "viewDetail": "查看详情",
+    "similarCases": "相似案例"
+  },
+  "chat": {
+    "title": "消息",
+    "conversations": "对话列表",
+    "noMessages": "暂无消息",
+    "typeMessage": "输入消息...",
+    "send": "发送",
+    "online": "在线",
+    "offline": "离线",
+    "mutualFollowRequired": "需要互相关注才能发起私聊",
+    "blocked": "已拉黑",
+    "report": "举报",
+    "block": "拉黑"
+  },
+  "hall": {
+    "title": "功能大厅",
+    "tabs": {
+      "review": "招生官打分",
+      "ranking": "排名对比",
+      "lists": "用户榜单"
+    },
+    "review": {
+      "title": "扮演招生官",
+      "academic": "学术能力",
+      "activity": "活动质量",
+      "essay": "文书水平",
+      "overall": "综合评分",
+      "comment": "点评",
+      "submitReview": "提交评分"
+    },
+    "ranking": {
+      "title": "排名对比",
+      "myRank": "我的排名",
+      "selectSchool": "选择目标院校"
+    },
+    "lists": {
+      "title": "用户榜单",
+      "createList": "创建榜单",
+      "vote": "投票"
+    }
+  },
+  "settings": {
+    "title": "设置",
+    "account": "账号设置",
+    "notification": "通知设置",
+    "privacy": "隐私设置",
+    "language": "语言",
+    "theme": "主题",
+    "deleteAccount": "注销账号",
+    "exportAllData": "导出所有数据"
+  },
+  "errors": {
+    "required": "此字段必填",
+    "invalidEmail": "邮箱格式不正确",
+    "passwordTooShort": "密码至少 8 位",
+    "passwordMismatch": "两次密码不一致",
+    "networkError": "网络错误，请重试",
+    "unauthorized": "请先登录",
+    "forbidden": "无权访问"
+  }
+}
+

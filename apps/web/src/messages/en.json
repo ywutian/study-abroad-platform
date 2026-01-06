@@ -1,0 +1,288 @@
+{
+  "meta": {
+    "home": {
+      "title": "Study Abroad Platform - AI-Powered School Selection & Admission Prediction",
+      "description": "Smart school selection, admission prediction, case sharing — your one-stop AI study abroad platform"
+    },
+    "profile": {
+      "title": "My Profile - Study Abroad Platform",
+      "description": "Create and manage your application profile, export professional resume with one click"
+    },
+    "ranking": {
+      "title": "School Rankings - Study Abroad Platform",
+      "description": "Customize school rankings based on your preferences, find the best schools for you"
+    },
+    "prediction": {
+      "title": "Admission Prediction - Study Abroad Platform",
+      "description": "AI analyzes your background to predict admission probability for each school"
+    },
+    "cases": {
+      "title": "Case Library - Study Abroad Platform",
+      "description": "Browse real application cases, learn from success stories, understand admission trends"
+    },
+    "chat": {
+      "title": "Messages - Study Abroad Platform",
+      "description": "Connect with verified users for first-hand application information"
+    },
+    "hall": {
+      "title": "Feature Hall - Study Abroad Platform",
+      "description": "Admissions officer scoring, rank comparison, create lists and more"
+    },
+    "login": {
+      "title": "Login - Study Abroad Platform",
+      "description": "Login to your account and start your study abroad journey"
+    },
+    "register": {
+      "title": "Register - Study Abroad Platform",
+      "description": "Register for free and experience all features"
+    },
+    "notFound": {
+      "title": "Page Not Found - Study Abroad Platform",
+      "description": "Sorry, the page you are looking for does not exist"
+    }
+  },
+  "common": {
+    "appName": "Study Abroad Platform",
+    "save": "Save",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "more": "More",
+    "close": "Close",
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register",
+    "settings": "Settings"
+  },
+  "home": {
+    "badge": "AI-Powered Smart Study Abroad Platform",
+    "heroTitle": "Make Studying Abroad Easier",
+    "heroSubtitle": "Smart school selection, admission prediction, case sharing — your one-stop study abroad platform",
+    "coreFeatures": "Core Features",
+    "coreFeaturesSubtitle": "Comprehensive tools for study abroad applications, helping you achieve your dream school",
+    "ctaTitle": "Ready to start your application journey?",
+    "ctaSubtitle": "Register for free and experience all features",
+    "ctaButton": "Get Started",
+    "copyright": "© 2026 Study Abroad Platform. All rights reserved.",
+    "aboutUs": "About Us",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "stats": {
+      "cases": "Admission Cases",
+      "schools": "Schools Covered",
+      "accuracy": "Prediction Accuracy",
+      "aiAssistant": "AI Assistant"
+    },
+    "whyChooseUs": {
+      "title": "Why Choose Us?",
+      "subtitle": "We leverage advanced AI technology and massive real data to provide you with the most accurate study abroad advice.",
+      "realData": "Real Case Data",
+      "realDataDesc": "Based on thousands of real admission cases, providing reliable references",
+      "smartAlgorithm": "Smart Prediction Algorithm",
+      "smartAlgorithmDesc": "AI analyzes your background to accurately predict admission probability",
+      "globalCoverage": "Global School Coverage",
+      "globalCoverageDesc": "Covering mainstream destinations including the US, UK, Canada and more",
+      "admissionRate": "Admission Rate"
+    },
+    "features": {
+      "profile": "Create and manage your application profile, export professional resume with one click",
+      "ranking": "Customize school rankings based on your preferences",
+      "prediction": "Predict admission probability based on your background",
+      "cases": "Browse real application cases and learn from success stories",
+      "chat": "Connect with verified users for first-hand information",
+      "hall": "Admissions officer scoring, rank comparison, create lists"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Login",
+      "subtitle": "Welcome back",
+      "email": "Email",
+      "password": "Password",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forgot password?",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up"
+    },
+    "register": {
+      "title": "Register",
+      "subtitle": "Create your account",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "hasAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "agreeTerms": "I agree to the Terms of Service and Privacy Policy"
+    },
+    "verifyEmail": {
+      "title": "Verify Email",
+      "subtitle": "Please check your inbox",
+      "sentTo": "Verification email sent to",
+      "description": "We've sent a verification email to {email}",
+      "resend": "Resend",
+      "checkSpam": "Check your spam folder if you didn't receive it",
+      "backToLogin": "Back to Login"
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "description": "Enter your email and we'll send you a reset link",
+      "sent": "Reset link sent",
+      "newPassword": "New Password"
+    }
+  },
+  "nav": {
+    "profile": "My Profile",
+    "essays": "My Essays",
+    "ai": "AI Assistant",
+    "ranking": "School Rankings",
+    "prediction": "Admission Prediction",
+    "cases": "Case Library",
+    "chat": "Messages",
+    "hall": "Feature Hall",
+    "followers": "Followers",
+    "admin": "Admin"
+  },
+  "profile": {
+    "title": "My Profile",
+    "basicInfo": "Basic Info",
+    "testScores": "Test Scores",
+    "gpa": "GPA",
+    "activities": "Activities",
+    "awards": "Awards",
+    "targetSchools": "Target Schools",
+    "visibility": "Privacy Settings",
+    "exportResume": "Export Resume",
+    "exportData": "Export Data",
+    "steps": {
+      "basic": "Basic Info",
+      "scores": "Test Scores",
+      "gpa": "GPA",
+      "activities": "Activities",
+      "awards": "Awards",
+      "targets": "Target Schools",
+      "privacy": "Privacy"
+    },
+    "fields": {
+      "grade": "Grade",
+      "schoolType": "School Type",
+      "currentSchool": "Current School",
+      "targetMajor": "Target Major",
+      "regionPref": "Region Preference",
+      "budget": "Budget"
+    },
+    "visibilityOptions": {
+      "private": "Private",
+      "anonymous": "Anonymous",
+      "verifiedOnly": "Verified Users Only"
+    }
+  },
+  "ranking": {
+    "title": "Custom Rankings",
+    "weights": "Weight Settings",
+    "usNewsRank": "US News Rank",
+    "acceptanceRate": "Acceptance Rate",
+    "tuition": "Tuition",
+    "avgSalary": "Average Salary",
+    "preview": "Preview Rankings",
+    "saveRanking": "Save Ranking",
+    "shareRanking": "Share Ranking",
+    "myRankings": "My Rankings"
+  },
+  "prediction": {
+    "title": "Admission Prediction",
+    "selectSchools": "Select Target Schools",
+    "runPrediction": "Run Prediction",
+    "probability": "Admission Probability",
+    "factors": "Impact Factors",
+    "positive": "Positive Factors",
+    "negative": "Negative Factors",
+    "suggestion": "Suggestion"
+  },
+  "cases": {
+    "title": "Case Library",
+    "filters": {
+      "school": "Target School",
+      "major": "Major",
+      "year": "Application Year",
+      "result": "Result"
+    },
+    "result": {
+      "admitted": "Admitted",
+      "rejected": "Rejected",
+      "waitlisted": "Waitlisted"
+    },
+    "viewDetail": "View Detail",
+    "similarCases": "Similar Cases"
+  },
+  "chat": {
+    "title": "Messages",
+    "conversations": "Conversations",
+    "noMessages": "No messages yet",
+    "typeMessage": "Type a message...",
+    "send": "Send",
+    "online": "Online",
+    "offline": "Offline",
+    "mutualFollowRequired": "Mutual follow required to start a conversation",
+    "blocked": "Blocked",
+    "report": "Report",
+    "block": "Block"
+  },
+  "hall": {
+    "title": "Feature Hall",
+    "tabs": {
+      "review": "Admissions Review",
+      "ranking": "Rank Comparison",
+      "lists": "User Lists"
+    },
+    "review": {
+      "title": "Play Admissions Officer",
+      "academic": "Academic",
+      "activity": "Activities",
+      "essay": "Essay",
+      "overall": "Overall",
+      "comment": "Comment",
+      "submitReview": "Submit Review"
+    },
+    "ranking": {
+      "title": "Rank Comparison",
+      "myRank": "My Rank",
+      "selectSchool": "Select Target School"
+    },
+    "lists": {
+      "title": "User Lists",
+      "createList": "Create List",
+      "vote": "Vote"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "account": "Account",
+    "notification": "Notifications",
+    "privacy": "Privacy",
+    "language": "Language",
+    "theme": "Theme",
+    "deleteAccount": "Delete Account",
+    "exportAllData": "Export All Data"
+  },
+  "errors": {
+    "required": "This field is required",
+    "invalidEmail": "Invalid email format",
+    "passwordTooShort": "Password must be at least 8 characters",
+    "passwordMismatch": "Passwords do not match",
+    "networkError": "Network error, please try again",
+    "unauthorized": "Please login first",
+    "forbidden": "Access denied"
+  }
+}
+
