@@ -1,0 +1,470 @@
+{
+  "common": {
+    "appName": "Study Abroad Platform",
+    "save": "Save",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "more": "More",
+    "close": "Close",
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register",
+    "settings": "Settings",
+    "refresh": "Refresh",
+    "retry": "Retry",
+    "noData": "No data",
+    "loadMore": "Load More",
+    "pullToRefresh": "Pull to refresh",
+    "releaseToRefresh": "Release to refresh"
+  },
+  "tabs": {
+    "home": "Home",
+    "schools": "Schools",
+    "cases": "Cases",
+    "ai": "AI",
+    "profile": "Profile"
+  },
+  "home": {
+    "title": "Study Abroad Platform",
+    "subtitle": "Smart School Selection, Admission Prediction, Case Sharing",
+    "quickActions": "Quick Actions",
+    "recentCases": "Recent Cases",
+    "topSchools": "Top Schools",
+    "viewAll": "View All",
+    "welcomeBack": "Welcome back",
+    "guestWelcome": "Welcome to Study Abroad Platform",
+    "loginPrompt": "Login to enjoy more features",
+    "stats": {
+      "cases": "Admission Cases",
+      "schools": "Schools Covered",
+      "accuracy": "Prediction Accuracy"
+    },
+    "features": {
+      "profile": "My Profile",
+      "profileDesc": "Manage your profile",
+      "prediction": "Admission Prediction",
+      "predictionDesc": "AI prediction",
+      "ranking": "School Rankings",
+      "rankingDesc": "Custom rankings",
+      "essay": "Essay Assistant",
+      "essayDesc": "AI essay help"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Login",
+      "subtitle": "Welcome back",
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forgot password?",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up",
+      "loginButton": "Login",
+      "loginSuccess": "Login successful",
+      "loginFailed": "Login failed"
+    },
+    "register": {
+      "title": "Register",
+      "subtitle": "Create your account",
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "password": "Password",
+      "passwordPlaceholder": "Enter password (min 8 characters)",
+      "confirmPassword": "Confirm Password",
+      "confirmPlaceholder": "Re-enter your password",
+      "hasAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "registerButton": "Register",
+      "registerSuccess": "Registration successful, please check your email",
+      "registerFailed": "Registration failed",
+      "agreeTerms": "I agree to the Terms of Service and Privacy Policy"
+    },
+    "verifyEmail": {
+      "title": "Verify Email",
+      "subtitle": "Please check your inbox",
+      "description": "We've sent a verification email to {{email}}",
+      "resend": "Resend",
+      "checkSpam": "Check your spam folder if you didn't receive it",
+      "backToLogin": "Back to Login"
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "description": "Enter your email and we'll send you a reset link",
+      "sent": "Reset link sent",
+      "newPassword": "New Password",
+      "sendLink": "Send Reset Link"
+    },
+    "errors": {
+      "invalidEmail": "Invalid email format",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "passwordMismatch": "Passwords do not match",
+      "emailRequired": "Email is required",
+      "passwordRequired": "Password is required"
+    }
+  },
+  "profile": {
+    "title": "My Profile",
+    "basicInfo": "Basic Info",
+    "testScores": "Test Scores",
+    "gpa": "GPA",
+    "activities": "Activities",
+    "awards": "Awards",
+    "education": "Education",
+    "essays": "My Essays",
+    "visibility": "Privacy Settings",
+    "exportResume": "Export Resume",
+    "exportData": "Export Data",
+    "editProfile": "Edit Profile",
+    "completeProfile": "Complete Profile",
+    "profileComplete": "Profile Completion",
+    "fields": {
+      "grade": "Grade",
+      "schoolType": "School Type",
+      "currentSchool": "Current School",
+      "targetMajor": "Target Major",
+      "regionPref": "Region Preference",
+      "budget": "Budget",
+      "gpaValue": "GPA",
+      "gpaScale": "Scale"
+    },
+    "schoolTypes": {
+      "publicSchool": "Public School",
+      "privateSchool": "Private School",
+      "international": "International School"
+    },
+    "budgetTiers": {
+      "under30k": "Under $30K",
+      "under50k": "$30K-$50K",
+      "under70k": "$50K-$70K",
+      "above70k": "Above $70K"
+    },
+    "visibilityOptions": {
+      "private": "Private",
+      "anonymous": "Anonymous",
+      "public": "Public",
+      "verifiedOnly": "Verified Users Only"
+    },
+    "testTypes": {
+      "sat": "SAT",
+      "act": "ACT",
+      "toefl": "TOEFL",
+      "ielts": "IELTS",
+      "gre": "GRE",
+      "gmat": "GMAT",
+      "ap": "AP",
+      "ib": "IB"
+    },
+    "addScore": "Add Score",
+    "addActivity": "Add Activity",
+    "addAward": "Add Award",
+    "addEducation": "Add Education",
+    "noScores": "No test scores",
+    "noActivities": "No activities",
+    "noAwards": "No awards",
+    "noEducation": "No education records"
+  },
+  "schools": {
+    "title": "Schools",
+    "search": "Search Schools",
+    "searchPlaceholder": "Enter school name to search",
+    "filters": {
+      "country": "Country",
+      "ranking": "Ranking",
+      "acceptanceRate": "Acceptance Rate",
+      "tuition": "Tuition"
+    },
+    "sort": {
+      "ranking": "By Ranking",
+      "acceptanceRate": "By Acceptance Rate",
+      "tuition": "By Tuition",
+      "name": "By Name"
+    },
+    "detail": {
+      "overview": "Overview",
+      "rankings": "Rankings",
+      "admissions": "Admissions",
+      "requirements": "Requirements",
+      "deadlines": "Deadlines",
+      "essayPrompts": "Essay Prompts",
+      "relatedCases": "Related Cases",
+      "website": "Website",
+      "location": "Location",
+      "type": "Type",
+      "students": "Total Students",
+      "acceptanceRate": "Acceptance Rate",
+      "tuition": "Tuition/Year",
+      "avgSalary": "Avg Graduate Salary",
+      "usnewsRank": "US News Rank",
+      "qsRank": "QS Rank"
+    },
+    "noResults": "No schools found"
+  },
+  "cases": {
+    "title": "Case Library",
+    "submitCase": "Submit Case",
+    "filters": {
+      "school": "Target School",
+      "major": "Major",
+      "year": "Application Year",
+      "result": "Result"
+    },
+    "result": {
+      "admitted": "Admitted",
+      "rejected": "Rejected",
+      "waitlisted": "Waitlisted",
+      "deferred": "Deferred"
+    },
+    "viewDetail": "View Detail",
+    "similarCases": "Similar Cases",
+    "verified": "Verified",
+    "anonymous": "Anonymous",
+    "detail": {
+      "background": "Background",
+      "scores": "Test Scores",
+      "activities": "Activities",
+      "awards": "Awards",
+      "essays": "Essay Overview",
+      "tips": "Application Tips"
+    },
+    "submit": {
+      "title": "Submit Admission Case",
+      "selectSchool": "Select School",
+      "selectMajor": "Major Applied",
+      "selectYear": "Application Year",
+      "selectResult": "Result",
+      "selectRound": "Application Round",
+      "enterGpa": "GPA",
+      "enterScores": "Test Scores",
+      "enterActivities": "Activities (optional)",
+      "enterAwards": "Awards (optional)",
+      "enterTips": "Application Tips (optional)",
+      "privacySetting": "Privacy Setting",
+      "submitSuccess": "Case submitted, you'll earn points once approved",
+      "submitFailed": "Submission failed"
+    },
+    "noCases": "No cases yet"
+  },
+  "ai": {
+    "title": "AI Assistant",
+    "chat": {
+      "title": "Smart Chat",
+      "placeholder": "How can I help you?",
+      "send": "Send",
+      "thinking": "Thinking...",
+      "toolCalling": "Calling tools...",
+      "quickQuestions": "Quick Questions",
+      "suggestions": {
+        "analyzeProfile": "Analyze my profile",
+        "recommendSchools": "Recommend schools",
+        "reviewEssay": "Review my essay",
+        "checkTimeline": "Check application timeline"
+      },
+      "agentModes": {
+        "auto": "Auto Mode",
+        "essay": "Essay Assistant",
+        "school": "School Advisor",
+        "profile": "Profile Analysis",
+        "timeline": "Timeline Planner"
+      }
+    },
+    "essay": {
+      "title": "Essay Assistance",
+      "polish": "Polish Essay",
+      "rewrite": "Rewrite Paragraph",
+      "continue": "Continue Writing",
+      "generateOpening": "Generate Opening",
+      "generateEnding": "Generate Ending",
+      "review": "Essay Review",
+      "brainstorm": "Brainstorm",
+      "inputPlaceholder": "Paste your essay content...",
+      "styleOptions": {
+        "formal": "Formal Style",
+        "creative": "Creative Style",
+        "concise": "Concise Style"
+      }
+    },
+    "prediction": {
+      "title": "Admission Prediction",
+      "selectSchools": "Select Target Schools",
+      "runPrediction": "Run Prediction",
+      "probability": "Admission Probability",
+      "factors": "Impact Factors",
+      "positive": "Positive Factors",
+      "negative": "Negative Factors",
+      "suggestion": "Suggestion"
+    },
+    "schoolMatch": {
+      "title": "Smart School Match",
+      "description": "AI-powered school recommendations based on your profile",
+      "startMatch": "Start Matching",
+      "matchResults": "Match Results"
+    }
+  },
+  "chat": {
+    "title": "Messages",
+    "conversations": "Conversations",
+    "noMessages": "No messages yet",
+    "typeMessage": "Type a message...",
+    "send": "Send",
+    "online": "Online",
+    "offline": "Offline",
+    "mutualFollowRequired": "Mutual follow required to start a conversation",
+    "blocked": "Blocked",
+    "report": "Report",
+    "block": "Block",
+    "unblock": "Unblock",
+    "startChat": "Start Chat"
+  },
+  "hall": {
+    "title": "Feature Hall",
+    "tabs": {
+      "review": "Admissions Review",
+      "ranking": "Rank Comparison",
+      "lists": "User Lists"
+    },
+    "review": {
+      "title": "Play Admissions Officer",
+      "academic": "Academic",
+      "activity": "Activities",
+      "essay": "Essay",
+      "overall": "Overall",
+      "comment": "Comment",
+      "submitReview": "Submit Review",
+      "selectProfile": "Select a profile to review"
+    },
+    "ranking": {
+      "title": "Rank Comparison",
+      "myRank": "My Rank",
+      "selectSchool": "Select Target School",
+      "viewRanking": "View Ranking"
+    },
+    "lists": {
+      "title": "User Lists",
+      "createList": "Create List",
+      "vote": "Vote",
+      "myLists": "My Lists",
+      "popularLists": "Popular Lists"
+    }
+  },
+  "followers": {
+    "title": "Follow Management",
+    "tabs": {
+      "following": "Following",
+      "followers": "Followers"
+    },
+    "follow": "Follow",
+    "unfollow": "Unfollow",
+    "followBack": "Follow Back",
+    "mutualFollow": "Mutual Follow",
+    "noFollowing": "Not following anyone yet",
+    "noFollowers": "No followers yet"
+  },
+  "ranking": {
+    "title": "Custom Rankings",
+    "weights": "Weight Settings",
+    "usnewsRank": "US News Rank",
+    "acceptanceRate": "Acceptance Rate",
+    "tuition": "Tuition",
+    "avgSalary": "Avg Salary",
+    "preview": "Preview Rankings",
+    "saveRanking": "Save Ranking",
+    "shareRanking": "Share Ranking",
+    "myRankings": "My Rankings"
+  },
+  "prediction": {
+    "title": "Admission Prediction",
+    "selectSchools": "Select Target Schools",
+    "runPrediction": "Run Prediction",
+    "probability": "Admission Probability",
+    "factors": "Impact Factors",
+    "positive": "Positive Factors",
+    "negative": "Negative Factors",
+    "suggestion": "Suggestion",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low"
+  },
+  "settings": {
+    "title": "Settings",
+    "account": "Account Settings",
+    "notification": "Notifications",
+    "privacy": "Privacy Settings",
+    "language": "Language",
+    "theme": "Theme",
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode",
+    "systemMode": "System Default",
+    "changePassword": "Change Password",
+    "deleteAccount": "Delete Account",
+    "exportAllData": "Export All Data",
+    "about": "About",
+    "version": "Version",
+    "feedback": "Feedback",
+    "rateApp": "Rate App",
+    "clearCache": "Clear Cache"
+  },
+  "admin": {
+    "title": "Admin Panel",
+    "tabs": {
+      "overview": "Overview",
+      "users": "Users",
+      "reports": "Reports",
+      "schools": "Schools"
+    },
+    "stats": {
+      "totalUsers": "Total Users",
+      "newUsersToday": "New Today",
+      "totalCases": "Total Cases",
+      "pendingReports": "Pending Reports"
+    },
+    "users": {
+      "search": "Search Users",
+      "role": "Role",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "reports": {
+      "pending": "Pending",
+      "resolved": "Resolved",
+      "dismiss": "Dismiss",
+      "resolve": "Resolve"
+    },
+    "schools": {
+      "sync": "Sync Data",
+      "scrape": "Scrape Info",
+      "lastSync": "Last Sync"
+    }
+  },
+  "errors": {
+    "required": "This field is required",
+    "invalidEmail": "Invalid email format",
+    "passwordTooShort": "Password must be at least 8 characters",
+    "passwordMismatch": "Passwords do not match",
+    "networkError": "Network error, please try again",
+    "unauthorized": "Please login first",
+    "forbidden": "Access denied",
+    "notFound": "Resource not found",
+    "serverError": "Server error",
+    "timeout": "Request timeout",
+    "unknown": "Unknown error"
+  }
+}
+
+
+
+
