@@ -1,0 +1,132 @@
+version: '3.8'
+
+# 生产环境 Docker Compose 配置
+# 前端部署在 Cloudflare Pages，此配置仅包含后端服务
+
+services:
+  # PostgreSQL + pgvector (AI 向量存储)
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: studyabroad-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-studyabroad}
+      POSTGRES_USER: ${POSTGRES_USER:?请设置 POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?请设置 POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./apps/api/scripts/setup-pgvector.sql:/docker-entrypoint-initdb.d/setup-pgvector.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - studyabroad-network
+
+  # Redis (缓存 + 会话 + 限流)
+  redis:
+    image: redis:7-alpine
+    container_name: studyabroad-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:?请设置 REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - studyabroad-network
+
+  # NestJS API
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: studyabroad-api
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-3001}:3001"
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      # 数据库
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-studyabroad}?schema=public
+      # Redis
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      # JWT 认证
+      JWT_SECRET: ${JWT_SECRET:?请设置 JWT_SECRET (至少32字符)}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?请设置 JWT_REFRESH_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
+      # CORS (Cloudflare Pages 域名)
+      CORS_ORIGIN: ${CORS_ORIGIN:?请设置 CORS_ORIGIN (如 https://your-app.pages.dev)}
+      # 限流
+      THROTTLE_TTL: ${THROTTLE_TTL:-60}
+      THROTTLE_LIMIT: ${THROTTLE_LIMIT:-100}
+      # OpenAI
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      # 邮件
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      # 学校数据 API
+      COLLEGE_SCORECARD_API_KEY: ${COLLEGE_SCORECARD_API_KEY:-}
+      # Sentry 监控
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      # 前端地址（用于邮件链接等）
+      FRONTEND_URL: ${FRONTEND_URL:?请设置 FRONTEND_URL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - studyabroad-network
+
+  # Nginx 反向代理 (仅 API)
+  nginx:
+    image: nginx:alpine
+    container_name: studyabroad-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
+    depends_on:
+      - api
+    networks:
+      - studyabroad-network
+
+  # Certbot (SSL 证书自动续期)
+  certbot:
+    image: certbot/certbot
+    container_name: studyabroad-certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      - studyabroad-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  studyabroad-network:
+    driver: bridge

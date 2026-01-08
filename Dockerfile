@@ -13,11 +13,12 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json ./apps/api/
 COPY packages/ ./packages/
 
-# Install all dependencies
+# Install dependencies
 RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY apps/api/ ./apps/api/
+COPY tsconfig.json ./
 
 # Generate Prisma client
 RUN cd apps/api && pnpm prisma generate
@@ -26,34 +27,29 @@ RUN cd apps/api && pnpm prisma generate
 RUN pnpm --filter api build
 
 # ============================================
-# Stage 2: Production Runner
+# Stage 2: Production
 # ============================================
 FROM node:20-alpine AS runner
 
+RUN apk add --no-cache curl
+
 WORKDIR /app
 
-# Copy node_modules from builder (includes all runtime deps)
-COPY --from=builder /app/node_modules ./node_modules
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nestjs
 
-# Copy Prisma generated client
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-
-# Copy prisma schema (needed for migrate)
-COPY --from=builder /app/apps/api/prisma ./prisma
-
-# Copy shared package
-COPY --from=builder /app/packages/shared ./node_modules/@study-abroad/shared
-
-# Copy built application
 COPY --from=builder /app/apps/api/dist ./dist
+COPY --from=builder /app/apps/api/node_modules ./node_modules
+COPY --from=builder /app/apps/api/prisma ./prisma
+COPY --from=builder /app/apps/api/package.json ./
 
-# Expose port
-ENV PORT=3001
+RUN chown -R nestjs:nodejs /app
+USER nestjs
+
 EXPOSE 3001
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3001/health || exit 1
+  CMD curl -f http://localhost:3001/health || exit 1
 
-# Run migrations and start
 CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main.js"]
+
