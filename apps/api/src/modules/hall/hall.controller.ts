@@ -4,7 +4,7 @@ import { HallService } from './hall.service';
 import { CurrentUser, Public } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { PaginationDto } from '../../common/dto/pagination.dto';
-import { CreateReviewDto, CreateUserListDto, UpdateUserListDto, VoteListDto, BatchRankingDto } from './dto';
+import { CreateReviewDto, CreateUserListDto, UpdateUserListDto, VoteListDto, BatchRankingDto, VerifiedRankingQueryDto, VerifiedRankingResponseDto } from './dto';
 
 @ApiTags('hall')
 @Controller('hall')
@@ -151,6 +151,24 @@ export class HallController {
   async removeVote(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
     await this.hallService.removeVote(id, user.id);
     return { success: true };
+  }
+
+  // ============================================
+  // Verified User Ranking
+  // ============================================
+
+  @Get('verified-ranking')
+  @Public()
+  @ApiOperation({ summary: 'Get verified user ranking' })
+  async getVerifiedRanking(@Query() query: VerifiedRankingQueryDto): Promise<VerifiedRankingResponseDto> {
+    return this.hallService.getVerifiedRanking(query);
+  }
+
+  @Get('verified-ranking/years')
+  @Public()
+  @ApiOperation({ summary: 'Get available years for filtering' })
+  async getAvailableYears(): Promise<number[]> {
+    return this.hallService.getAvailableYears();
   }
 }
 

@@ -93,10 +93,14 @@ describe('CaseService', () => {
       expect(prismaService.admissionCase.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            OR: [
-              { visibility: Visibility.ANONYMOUS },
-              { userId: 'user-id' },
-            ],
+            AND: expect.arrayContaining([
+              expect.objectContaining({
+                OR: [
+                  { visibility: Visibility.ANONYMOUS },
+                  { userId: 'user-id' },
+                ],
+              }),
+            ]),
           }),
         }),
       );
@@ -111,11 +115,15 @@ describe('CaseService', () => {
       expect(prismaService.admissionCase.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            OR: [
-              { visibility: Visibility.ANONYMOUS },
-              { visibility: Visibility.VERIFIED_ONLY },
-              { userId: 'verified-id' },
-            ],
+            AND: expect.arrayContaining([
+              expect.objectContaining({
+                OR: [
+                  { visibility: Visibility.ANONYMOUS },
+                  { visibility: Visibility.VERIFIED_ONLY },
+                  { userId: 'verified-id' },
+                ],
+              }),
+            ]),
           }),
         }),
       );
@@ -170,15 +178,18 @@ describe('CaseService', () => {
   describe('create', () => {
     it('should create a new case', async () => {
       const createData = {
-        school: { connect: { id: 'school-123' } },
+        schoolId: 'school-123',
         year: 2024,
-        result: 'ADMITTED' as const,
-        visibility: Visibility.ANONYMOUS,
+        result: 'ADMITTED',
+        visibility: 'ANONYMOUS' as const,
       };
       (prismaService.admissionCase.create as jest.Mock).mockResolvedValue({
         id: 'new-case',
         userId: 'user-123',
-        ...createData,
+        schoolId: 'school-123',
+        year: 2024,
+        result: 'ADMITTED',
+        visibility: 'ANONYMOUS',
       });
 
       const result = await service.create('user-123', createData);
@@ -186,8 +197,11 @@ describe('CaseService', () => {
       expect(result.id).toBe('new-case');
       expect(prismaService.admissionCase.create).toHaveBeenCalledWith({
         data: {
-          ...createData,
+          year: 2024,
+          result: 'ADMITTED',
+          visibility: 'ANONYMOUS',
           user: { connect: { id: 'user-123' } },
+          school: { connect: { id: 'school-123' } },
         },
       });
     });
@@ -198,19 +212,19 @@ describe('CaseService', () => {
       (prismaService.admissionCase.findUnique as jest.Mock).mockResolvedValue(mockCase);
       (prismaService.admissionCase.update as jest.Mock).mockResolvedValue({
         ...mockCase,
-        gpa: 4.0,
+        gpaRange: '3.9-4.0',
       });
 
-      const result = await service.update('case-123', 'user-123', { gpa: 4.0 });
+      const result = await service.update('case-123', 'user-123', { gpaRange: '3.9-4.0' });
 
-      expect(result.gpa).toBe(4.0);
+      expect(result.gpaRange).toBe('3.9-4.0');
     });
 
     it('should throw NotFoundException when updating non-owned case', async () => {
       (prismaService.admissionCase.findUnique as jest.Mock).mockResolvedValue(mockCase);
 
       await expect(
-        service.update('case-123', 'other-user', { gpa: 4.0 }),
+        service.update('case-123', 'other-user', { gpaRange: '3.9-4.0' }),
       ).rejects.toThrow(NotFoundException);
     });
   });

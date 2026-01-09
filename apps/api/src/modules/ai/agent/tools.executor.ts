@@ -64,7 +64,7 @@ export class ToolExecutor {
           break;
 
         case AgentTool.GENERATE_OUTLINE:
-          result = await this.generateOutline(args);
+          result = await this.generateOutline(args as { prompt: string; background?: string; wordLimit?: number });
           break;
 
         case AgentTool.BRAINSTORM_IDEAS:
@@ -383,10 +383,10 @@ export class ToolExecutor {
     }
 
     return this.aiService.schoolMatch({
-      gpa: profile.gpa,
+      gpa: profile.gpa ?? undefined,
       gpaScale: profile.gpaScale,
       testScores: profile.testScores,
-      targetMajor: profile.targetMajor,
+      targetMajor: profile.targetMajor ?? undefined,
     });
   }
 
@@ -552,6 +552,9 @@ export class ToolExecutor {
     return { timeline: result };
   }
 }
+
+
+
 
 
 

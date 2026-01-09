@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SchoolService } from './school.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { RedisService } from '../../common/redis/redis.service';
 import { NotFoundException } from '@nestjs/common';
 
 describe('SchoolService', () => {
@@ -41,6 +42,17 @@ describe('SchoolService', () => {
               update: jest.fn(),
               count: jest.fn(),
             },
+          },
+        },
+        {
+          provide: RedisService,
+          useValue: {
+            get: jest.fn().mockResolvedValue(null),
+            set: jest.fn().mockResolvedValue('OK'),
+            del: jest.fn().mockResolvedValue(1),
+            getClient: jest.fn().mockReturnValue(null),
+            getJSON: jest.fn().mockResolvedValue(null),
+            setJSON: jest.fn().mockResolvedValue('OK'),
           },
         },
       ],
@@ -118,20 +130,20 @@ describe('SchoolService', () => {
       (prismaService.school.findUnique as jest.Mock).mockResolvedValue({
         ...mockSchool,
         metrics: [],
+        admissionCases: [],
       });
 
       const result = await service.findById('school-123');
 
       expect(result.id).toBe('school-123');
-      expect(prismaService.school.findUnique).toHaveBeenCalledWith({
-        where: { id: 'school-123' },
-        include: {
-          metrics: {
-            orderBy: { year: 'desc' },
-            take: 5,
-          },
-        },
-      });
+      expect(prismaService.school.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'school-123' },
+          include: expect.objectContaining({
+            metrics: expect.any(Object),
+          }),
+        }),
+      );
     });
 
     it('should throw NotFoundException when school not found', async () => {

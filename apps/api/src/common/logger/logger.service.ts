@@ -1,6 +1,6 @@
 import { Injectable, LoggerService as NestLoggerService, Scope, Inject } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
-import { Request } from 'express';
+import type { Request } from 'express';
 
 interface LogContext {
   correlationId?: string;

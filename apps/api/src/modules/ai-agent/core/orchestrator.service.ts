@@ -5,6 +5,7 @@
  */
 
 import { Injectable, Logger, Optional } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { AgentRunnerService } from './agent-runner.service';
 import { MemoryService } from './memory.service';
 import { LLMService, StreamChunk } from './llm.service';
@@ -29,16 +30,20 @@ export interface StreamEvent {
 @Injectable()
 export class OrchestratorService {
   private readonly logger = new Logger(OrchestratorService.name);
+  private readonly maxDelegationDepth: number;
 
   constructor(
     private agentRunner: AgentRunnerService,
     private memory: MemoryService,
     private llm: LLMService,
     private toolExecutor: ToolExecutorService,
+    private configService: ConfigService,
     @Optional() private memoryManager?: MemoryManagerService,
     @Optional() private fastRouter?: FastRouterService,
     @Optional() private fallback?: FallbackService,
-  ) {}
+  ) {
+    this.maxDelegationDepth = this.configService.get<number>('AGENT_MAX_DELEGATION_DEPTH', 3);
+  }
 
   /**
    * 处理用户消息
@@ -86,9 +91,8 @@ export class OrchestratorService {
 
       // 3. 处理委派
       let delegationDepth = 0;
-      const maxDelegations = 3;
 
-      while (response.delegatedTo && delegationDepth < maxDelegations) {
+      while (response.delegatedTo && delegationDepth < this.maxDelegationDepth) {
         delegationDepth++;
         this.logger.debug(`Delegating to ${response.delegatedTo}`);
 
@@ -229,7 +233,7 @@ export class OrchestratorService {
     conversation: ConversationState,
     depth: number = 0,
   ): AsyncGenerator<StreamEvent> {
-    if (depth > 3) {
+    if (depth > this.maxDelegationDepth) {
       yield { type: 'error', error: '委派层级过深' };
       return;
     }

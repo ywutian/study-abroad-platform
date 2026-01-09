@@ -6,7 +6,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UserService } from '../user/user.service';
 import { EmailService } from '../../common/email/email.service';
 import { User } from '@prisma/client';
-import { randomBytes } from 'crypto';
+import { randomBytes, createHash } from 'crypto';
 
 export interface AuthTokens {
   accessToken: string;
@@ -84,10 +84,19 @@ export class AuthService {
     return { user: result, tokens };
   }
 
+  /**
+   * 刷新访问令牌
+   * 
+   * 安全设计：
+   * - 对用户提供的 RefreshToken 进行哈希后与数据库中的哈希值比较
+   * - Token 轮换：每次刷新都生成新的 RefreshToken
+   */
   async refreshToken(refreshToken: string): Promise<AuthTokens> {
-    // Verify refresh token
+    // 对用户提供的 token 进行哈希
+    const tokenHash = this.hashRefreshToken(refreshToken);
+    
     const storedToken = await this.prisma.refreshToken.findUnique({
-      where: { token: refreshToken },
+      where: { token: tokenHash },
     });
 
     if (!storedToken || storedToken.expiresAt < new Date()) {
@@ -110,8 +119,10 @@ export class AuthService {
 
   async logout(userId: string, refreshToken?: string): Promise<void> {
     if (refreshToken) {
+      // 对用户提供的 token 进行哈希后删除
+      const tokenHash = this.hashRefreshToken(refreshToken);
       await this.prisma.refreshToken.deleteMany({
-        where: { token: refreshToken },
+        where: { token: tokenHash },
       });
     } else {
       // Delete all refresh tokens for user
@@ -119,6 +130,14 @@ export class AuthService {
         where: { userId },
       });
     }
+  }
+
+  /**
+   * 哈希 RefreshToken
+   * 使用 SHA-256 确保数据库泄露时 token 无法被直接使用
+   */
+  private hashRefreshToken(token: string): string {
+    return createHash('sha256').update(token).digest('hex');
   }
 
   async verifyEmail(token: string): Promise<{ message: string }> {
@@ -141,6 +160,14 @@ export class AuthService {
     return { message: 'Email verified successfully' };
   }
 
+  /**
+   * 请求密码重置
+   * 
+   * 安全设计：
+   * - 生成随机 Token 发送给用户
+   * - 数据库中只存储 Token 的 SHA-256 哈希值
+   * - 即使数据库泄露，攻击者也无法直接使用 Token
+   */
   async requestPasswordReset(email: string): Promise<{ message: string }> {
     const user = await this.userService.findByEmail(email);
 
@@ -149,27 +176,46 @@ export class AuthService {
       return { message: 'If the email exists, a reset link has been sent' };
     }
 
+    // 生成原始 Token
     const resetToken = randomBytes(32).toString('hex');
+    
+    // 存储哈希值而非原始 Token（安全增强）
+    const resetTokenHash = createHash('sha256')
+      .update(resetToken)
+      .digest('hex');
+    
     const resetExpires = new Date(Date.now() + 3600000); // 1 hour
 
     await this.prisma.user.update({
       where: { id: user.id },
       data: {
-        passwordResetToken: resetToken,
+        passwordResetToken: resetTokenHash, // 存储哈希值
         passwordResetExpires: resetExpires,
       },
     });
 
-    // Send password reset email
+    // 发送原始 Token 给用户
     await this.emailService.sendPasswordResetEmail(user.email, resetToken);
 
     return { message: 'If the email exists, a reset link has been sent' };
   }
 
+  /**
+   * 重置密码
+   * 
+   * 安全设计：
+   * - 对用户提供的 Token 进行哈希后与数据库中的哈希值比较
+   * - 重置成功后清除所有 refresh tokens，强制重新登录
+   */
   async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+    // 对用户提供的 Token 进行哈希，与数据库中的哈希值比较
+    const tokenHash = createHash('sha256')
+      .update(token)
+      .digest('hex');
+
     const user = await this.prisma.user.findFirst({
       where: {
-        passwordResetToken: token,
+        passwordResetToken: tokenHash, // 比较哈希值
         passwordResetExpires: { gt: new Date() },
       },
     });
@@ -215,18 +261,46 @@ export class AuthService {
     return { message: 'Password changed successfully' };
   }
 
+  /**
+   * 生成访问令牌和刷新令牌
+   * 
+   * 安全设计：
+   * - RefreshToken 生成后进行哈希，数据库只存储哈希值
+   * - 返回原始 token 给客户端，客户端无需知道哈希逻辑
+   */
   private async generateTokens(user: User): Promise<AuthTokens> {
     const payload = { sub: user.id, email: user.email, role: user.role };
 
     const accessToken = this.jwtService.sign(payload);
 
-    // Generate refresh token
+    // Generate refresh token (原始值)
     const refreshToken = randomBytes(64).toString('hex');
+    // 存储哈希值
+    const tokenHash = this.hashRefreshToken(refreshToken);
+    
     const refreshExpiresIn = this.configService.get('JWT_REFRESH_EXPIRES_IN') || '7d';
-    const expiresAt = new Date();
+    const expiresAt = this.parseExpiration(refreshExpiresIn);
 
-    // Parse expiration
-    const match = refreshExpiresIn.match(/^(\d+)([dhms])$/);
+    // Store hashed refresh token
+    await this.prisma.refreshToken.create({
+      data: {
+        token: tokenHash,  // 存储哈希值，非原始 token
+        userId: user.id,
+        expiresAt,
+      },
+    });
+
+    // 返回原始 token 给客户端
+    return { accessToken, refreshToken };
+  }
+
+  /**
+   * 解析过期时间字符串
+   */
+  private parseExpiration(expiresIn: string): Date {
+    const expiresAt = new Date();
+    const match = expiresIn.match(/^(\d+)([dhms])$/);
+    
     if (match) {
       const value = parseInt(match[1]);
       const unit = match[2];
@@ -247,17 +321,8 @@ export class AuthService {
     } else {
       expiresAt.setDate(expiresAt.getDate() + 7); // Default 7 days
     }
-
-    // Store refresh token
-    await this.prisma.refreshToken.create({
-      data: {
-        token: refreshToken,
-        userId: user.id,
-        expiresAt,
-      },
-    });
-
-    return { accessToken, refreshToken };
+    
+    return expiresAt;
   }
 }
 

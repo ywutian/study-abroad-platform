@@ -31,6 +31,67 @@ describe('UserService', () => {
               create: jest.fn(),
               update: jest.fn(),
             },
+            profile: {
+              update: jest.fn(),
+            },
+            refreshToken: {
+              deleteMany: jest.fn(),
+            },
+            $transaction: jest.fn().mockImplementation(async (callback) => {
+              const deletedUser = { ...mockUser, deletedAt: new Date() };
+              // Helper to create a chainable mock that returns a Promise with .catch()
+              const createChainableMock = () => 
+                jest.fn().mockReturnValue(Promise.resolve({}));
+              
+              const tx = {
+                user: {
+                  update: jest.fn().mockResolvedValue(deletedUser),
+                  delete: jest.fn().mockResolvedValue(deletedUser),
+                },
+                profile: {
+                  update: createChainableMock(),
+                  deleteMany: createChainableMock(),
+                },
+                refreshToken: {
+                  deleteMany: createChainableMock(),
+                },
+                message: {
+                  updateMany: createChainableMock(),
+                  deleteMany: createChainableMock(),
+                },
+                forumPost: {
+                  updateMany: createChainableMock(),
+                  deleteMany: createChainableMock(),
+                },
+                forumComment: {
+                  updateMany: createChainableMock(),
+                  deleteMany: createChainableMock(),
+                },
+                admissionCase: {
+                  updateMany: createChainableMock(),
+                  deleteMany: createChainableMock(),
+                },
+                vaultItem: {
+                  deleteMany: createChainableMock(),
+                },
+                agentConversation: {
+                  deleteMany: createChainableMock(),
+                },
+                applicationTimeline: {
+                  deleteMany: createChainableMock(),
+                },
+                follow: {
+                  deleteMany: createChainableMock(),
+                },
+                block: {
+                  deleteMany: createChainableMock(),
+                },
+                conversationParticipant: {
+                  deleteMany: createChainableMock(),
+                },
+              };
+              return callback(tx);
+            }),
           },
         },
       ],
@@ -142,19 +203,17 @@ describe('UserService', () => {
 
   describe('softDelete', () => {
     it('should soft delete user by setting deletedAt', async () => {
-      const deletedUser = { ...mockUser, deletedAt: new Date() };
-      (prismaService.user.update as jest.Mock).mockResolvedValue(deletedUser);
-
       const result = await service.softDelete('user-123');
 
       expect(result.deletedAt).toBeDefined();
-      expect(prismaService.user.update).toHaveBeenCalledWith({
-        where: { id: 'user-123' },
-        data: { deletedAt: expect.any(Date) },
-      });
+      expect(prismaService.$transaction).toHaveBeenCalled();
     });
   });
 });
+
+
+
+
 
 
 

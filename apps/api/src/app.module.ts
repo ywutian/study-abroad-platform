@@ -6,6 +6,7 @@ import { CorrelationIdMiddleware } from './common/middleware/correlation-id.midd
 import { PrismaModule } from './prisma/prisma.module';
 import { LoggerModule } from './common/logger/logger.module';
 import { EmailModule } from './common/email/email.module';
+import { RedisModule } from './common/redis/redis.module';
 import { SentryModule } from './common/sentry/sentry.module';
 import { HealthModule } from './modules/health/health.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -20,15 +21,28 @@ import { HallModule } from './modules/hall/hall.module';
 import { AiModule } from './modules/ai/ai.module';
 import { AiAgentModule } from './modules/ai-agent/ai-agent.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { SubscriptionModule } from './modules/subscription/subscription.module';
+import { VerificationModule } from './modules/verification/verification.module';
+import { EssayAiModule } from './modules/essay-ai/essay-ai.module';
+import { RecommendationModule } from './modules/recommendation/recommendation.module';
+import { TimelineModule } from './modules/timeline/timeline.module';
+import { SwipeModule } from './modules/swipe/swipe.module';
+import { AssessmentModule } from './modules/assessment/assessment.module';
+import { ForumModule } from './modules/forum/forum.module';
+import { VaultModule } from './modules/vault/vault.module';
+import { SettingsModule } from './modules/settings/settings.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { SentryInterceptor } from './common/sentry/sentry.interceptor';
+import { StorageModule } from './common/storage/storage.module';
+import { AuthorizationModule } from './common/services/authorization.module';
 
 @Module({
   imports: [
+    AuthorizationModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
@@ -49,7 +63,9 @@ import { SentryInterceptor } from './common/sentry/sentry.interceptor';
     PrismaModule,
     LoggerModule,
     EmailModule,
+    RedisModule,
     SentryModule,
+    StorageModule,
     HealthModule,
     AuthModule,
     UserModule,
@@ -63,6 +79,16 @@ import { SentryInterceptor } from './common/sentry/sentry.interceptor';
     AiModule,
     AiAgentModule,
     AdminModule,
+    SubscriptionModule,
+    VerificationModule,
+    EssayAiModule,
+    RecommendationModule,
+    TimelineModule,
+    SwipeModule,
+    AssessmentModule,
+    ForumModule,
+    VaultModule,
+    SettingsModule,
   ],
   providers: [
     {

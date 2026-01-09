@@ -245,11 +245,12 @@ describe('AuthService', () => {
   });
 
   describe('logout', () => {
-    it('should delete specific refresh token', async () => {
+    it('should delete specific refresh token (hashed)', async () => {
       await service.logout('user-123', 'refresh_token');
 
+      // Token is now hashed before querying
       expect(prismaService.refreshToken.deleteMany).toHaveBeenCalledWith({
-        where: { token: 'refresh_token' },
+        where: { token: expect.any(String) },
       });
     });
 

@@ -1,8 +1,10 @@
 import { Controller, Get, Put, Delete, Body, Param, Query } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
-import { Roles } from '../../common/decorators/roles.decorator';
-import { Role, ReportStatus } from '@prisma/client';
+import { Roles, CurrentUser } from '../../common/decorators';
+import type { CurrentUserPayload } from '../../common/decorators';
+import { Role } from '@prisma/client';
+import { UpdateReportDto, UpdateUserRoleDto, ReportQueryDto, UserQueryDto } from './dto';
 
 @ApiTags('admin')
 @ApiBearerAuth()
@@ -21,65 +23,73 @@ export class AdminController {
   // Reports
   @Get('reports')
   @ApiOperation({ summary: '获取举报列表' })
-  @ApiQuery({ name: 'status', required: false, enum: ReportStatus })
-  @ApiQuery({ name: 'targetType', required: false })
-  @ApiQuery({ name: 'page', required: false })
-  @ApiQuery({ name: 'pageSize', required: false })
-  async getReports(
-    @Query('status') status?: ReportStatus,
-    @Query('targetType') targetType?: string,
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number
-  ) {
-    return this.adminService.getReports(status, targetType, page || 1, pageSize || 20);
+  async getReports(@Query() query: ReportQueryDto) {
+    const { status, targetType, page = 1, pageSize = 20 } = query;
+    return this.adminService.getReports(status, targetType, page, pageSize);
   }
 
   @Put('reports/:id')
   @ApiOperation({ summary: '更新举报状态' })
   async updateReport(
-    @Param('id') id: string,
-    @Body() data: { status: ReportStatus; resolution?: string }
+    @CurrentUser() admin: CurrentUserPayload,
+    @Param('id') id: string, 
+    @Body() data: UpdateReportDto,
   ) {
-    return this.adminService.updateReportStatus(id, data.status, data.resolution);
+    return this.adminService.updateReportStatus(admin.id, id, data.status, data.resolution);
   }
 
   @Delete('reports/:id')
   @ApiOperation({ summary: '删除举报' })
-  async deleteReport(@Param('id') id: string) {
-    await this.adminService.deleteReport(id);
+  async deleteReport(
+    @CurrentUser() admin: CurrentUserPayload,
+    @Param('id') id: string,
+  ) {
+    await this.adminService.deleteReport(admin.id, id);
     return { message: 'Report deleted' };
   }
 
   // Users
   @Get('users')
   @ApiOperation({ summary: '获取用户列表' })
-  @ApiQuery({ name: 'search', required: false })
-  @ApiQuery({ name: 'role', required: false, enum: Role })
-  @ApiQuery({ name: 'page', required: false })
-  @ApiQuery({ name: 'pageSize', required: false })
-  async getUsers(
-    @Query('search') search?: string,
-    @Query('role') role?: Role,
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number
-  ) {
-    return this.adminService.getUsers(search, role, page || 1, pageSize || 20);
+  async getUsers(@Query() query: UserQueryDto) {
+    const { search, role, page = 1, pageSize = 20 } = query;
+    return this.adminService.getUsers(search, role, page, pageSize);
   }
 
   @Put('users/:id/role')
   @ApiOperation({ summary: '更新用户角色' })
-  async updateUserRole(@Param('id') id: string, @Body() data: { role: Role }) {
-    return this.adminService.updateUserRole(id, data.role);
+  async updateUserRole(
+    @CurrentUser() admin: CurrentUserPayload,
+    @Param('id') id: string, 
+    @Body() data: UpdateUserRoleDto,
+  ) {
+    return this.adminService.updateUserRole(admin.id, id, data.role);
   }
 
   @Delete('users/:id')
   @ApiOperation({ summary: '删除用户' })
-  async deleteUser(@Param('id') id: string) {
-    await this.adminService.deleteUser(id);
+  async deleteUser(
+    @CurrentUser() admin: CurrentUserPayload,
+    @Param('id') id: string,
+  ) {
+    await this.adminService.deleteUser(admin.id, id);
     return { message: 'User deleted' };
   }
+
+  // Audit Logs
+  @Get('audit-logs')
+  @ApiOperation({ summary: '获取审计日志' })
+  async getAuditLogs(
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number,
+    @Query('adminId') adminId?: string,
+    @Query('action') action?: string,
+    @Query('resource') resource?: string,
+  ) {
+    return this.adminService.getAuditLogs(
+      page || 1, 
+      pageSize || 50, 
+      { adminId, action, resource }
+    );
+  }
 }
-
-
-
-

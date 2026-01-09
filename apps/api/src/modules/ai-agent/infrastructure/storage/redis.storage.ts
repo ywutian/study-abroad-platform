@@ -32,7 +32,8 @@ export class RedisStorage implements IStorage, OnModuleDestroy {
 
     try {
       // 动态导入 ioredis
-      const Redis = (await import('ioredis')).default;
+      const ioredis = await import('ioredis');
+      const Redis = ioredis.default as any;
       
       this.client = new Redis({
         host: this.configService.get('REDIS_HOST', 'localhost'),
@@ -303,5 +304,8 @@ export class RedisStorage implements IStorage, OnModuleDestroy {
     return client.zremrangebyscore(key, min, max);
   }
 }
+
+
+
 
 

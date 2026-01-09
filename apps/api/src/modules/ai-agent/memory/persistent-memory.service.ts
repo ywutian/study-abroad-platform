@@ -380,7 +380,7 @@ export class PersistentMemoryService {
         role: input.role,
         content: input.content,
         agentType: input.agentType,
-        toolCalls: input.toolCalls,
+        toolCalls: input.toolCalls as any,
         tokensUsed: input.tokensUsed,
         latencyMs: input.latencyMs,
       },
@@ -451,7 +451,7 @@ export class PersistentMemoryService {
           data: {
             description: input.description,
             attributes: input.attributes,
-            relations: input.relations,
+            relations: input.relations as any,
           },
         });
         return this.toEntityRecord(updated);
@@ -487,7 +487,7 @@ export class PersistentMemoryService {
         name: input.name,
         description: input.description,
         attributes: input.attributes,
-        relations: input.relations,
+        relations: input.relations as any,
       },
     });
 
@@ -662,7 +662,7 @@ export class PersistentMemoryService {
       recentMessages,
     ] = await Promise.all([
       this.prisma.memory.count({ where: { userId } }),
-      this.prisma.conversation.count({ where: { userId } }),
+      this.prisma.agentConversation.count({ where: { userId } }),
       this.prisma.agentMessage.count({
         where: { conversation: { userId } },
       }),
@@ -672,7 +672,7 @@ export class PersistentMemoryService {
         where: { userId },
         _count: true,
       }),
-      this.prisma.conversation.count({
+      this.prisma.agentConversation.count({
         where: { userId, createdAt: { gte: sevenDaysAgo } },
       }),
       this.prisma.agentMessage.count({

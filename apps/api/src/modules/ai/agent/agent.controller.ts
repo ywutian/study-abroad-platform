@@ -34,7 +34,7 @@ export class AgentController {
     @Body() data: AgentChatDto,
   ) {
     return this.agentService.chat(
-      user.userId,
+      user.id,
       data.message,
       data.conversationId,
     );
@@ -49,7 +49,7 @@ export class AgentController {
     @CurrentUser() user: CurrentUserPayload,
     @Query('conversationId') conversationId?: string,
   ) {
-    const messages = this.agentService.getSessionHistory(user.userId, conversationId);
+    const messages = this.agentService.getSessionHistory(user.id, conversationId);
     return {
       messages: messages.filter(m => m.role === 'user' || m.role === 'assistant').map(m => ({
         role: m.role,
@@ -67,10 +67,13 @@ export class AgentController {
     @CurrentUser() user: CurrentUserPayload,
     @Query('conversationId') conversationId?: string,
   ) {
-    this.agentService.clearSession(user.userId, conversationId);
+    this.agentService.clearSession(user.id, conversationId);
     return { success: true };
   }
 }
+
+
+
 
 
 

@@ -1,10 +1,56 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Role, ReportStatus, Prisma } from '@prisma/client';
 
+/**
+ * 审计日志操作类型
+ */
+type AuditAction = 
+  | 'UPDATE_USER_ROLE'
+  | 'DELETE_USER'
+  | 'UPDATE_REPORT_STATUS'
+  | 'DELETE_REPORT'
+  | 'VERIFY_USER'
+  | 'BAN_USER';
+
 @Injectable()
 export class AdminService {
+  private readonly logger = new Logger(AdminService.name);
+
   constructor(private prisma: PrismaService) {}
+
+  /**
+   * 记录审计日志
+   * 
+   * 所有敏感管理员操作都会被记录，包括：
+   * - 操作者 ID
+   * - 操作类型
+   * - 目标资源
+   * - 变更前后的值
+   * - 时间戳
+   */
+  private async logAudit(
+    adminId: string,
+    action: AuditAction,
+    resource: string,
+    resourceId: string,
+    metadata?: Record<string, unknown>,
+  ): Promise<void> {
+    try {
+      await this.prisma.auditLog.create({
+        data: {
+          userId: adminId,
+          action,
+          resource,
+          resourceId,
+          metadata: metadata as any,
+        },
+      });
+      this.logger.log(`Audit: ${action} on ${resource}/${resourceId} by admin ${adminId}`);
+    } catch (error) {
+      this.logger.error(`Failed to create audit log: ${action}`, error);
+    }
+  }
 
   // ============================================
   // Reports Management
@@ -44,24 +90,56 @@ export class AdminService {
     };
   }
 
-  async updateReportStatus(reportId: string, status: ReportStatus, resolution?: string) {
+  async updateReportStatus(
+    adminId: string,
+    reportId: string, 
+    status: ReportStatus, 
+    resolution?: string,
+  ) {
     const report = await this.prisma.report.findUnique({ where: { id: reportId } });
     if (!report) {
       throw new NotFoundException('Report not found');
     }
 
-    return this.prisma.report.update({
+    const oldStatus = report.status;
+
+    const updated = await this.prisma.report.update({
       where: { id: reportId },
       data: {
         status,
         resolution,
+        reviewedBy: adminId,
+        reviewedAt: new Date(),
         ...(status === ReportStatus.RESOLVED && { resolvedAt: new Date() }),
       },
     });
+
+    // 记录审计日志
+    await this.logAudit(adminId, 'UPDATE_REPORT_STATUS', 'report', reportId, {
+      oldStatus,
+      newStatus: status,
+      resolution,
+      targetType: report.targetType,
+      targetId: report.targetId,
+    });
+
+    return updated;
   }
 
-  async deleteReport(reportId: string) {
+  async deleteReport(adminId: string, reportId: string) {
+    const report = await this.prisma.report.findUnique({ where: { id: reportId } });
+    if (!report) {
+      throw new NotFoundException('Report not found');
+    }
+
     await this.prisma.report.delete({ where: { id: reportId } });
+
+    // 记录审计日志
+    await this.logAudit(adminId, 'DELETE_REPORT', 'report', reportId, {
+      targetType: report.targetType,
+      targetId: report.targetId,
+      reason: report.reason,
+    });
   }
 
   // ============================================
@@ -119,13 +197,19 @@ export class AdminService {
     };
   }
 
-  async updateUserRole(userId: string, role: Role) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+  async updateUserRole(adminId: string, userId: string, role: Role) {
+    const user = await this.prisma.user.findUnique({ 
+      where: { id: userId },
+      select: { id: true, email: true, role: true },
+    });
+    
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    return this.prisma.user.update({
+    const oldRole = user.role;
+
+    const updated = await this.prisma.user.update({
       where: { id: userId },
       data: { role },
       select: {
@@ -135,13 +219,37 @@ export class AdminService {
         emailVerified: true,
       },
     });
+
+    // 记录审计日志
+    await this.logAudit(adminId, 'UPDATE_USER_ROLE', 'user', userId, {
+      userEmail: user.email,
+      oldRole,
+      newRole: role,
+    });
+
+    return updated;
   }
 
-  async deleteUser(userId: string) {
+  async deleteUser(adminId: string, userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, role: true },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
     // Soft delete
     await this.prisma.user.update({
       where: { id: userId },
       data: { deletedAt: new Date() },
+    });
+
+    // 记录审计日志
+    await this.logAudit(adminId, 'DELETE_USER', 'user', userId, {
+      userEmail: user.email,
+      userRole: user.role,
     });
   }
 
@@ -168,5 +276,48 @@ export class AdminService {
       totalReviews,
     };
   }
-}
 
+  /**
+   * 获取审计日志
+   */
+  async getAuditLogs(
+    page = 1,
+    pageSize = 50,
+    filters?: {
+      adminId?: string;
+      action?: string;
+      resource?: string;
+      startDate?: Date;
+      endDate?: Date;
+    }
+  ) {
+    const where: Prisma.AuditLogWhereInput = {};
+    
+    if (filters?.adminId) where.userId = filters.adminId;
+    if (filters?.action) where.action = filters.action;
+    if (filters?.resource) where.resource = filters.resource;
+    if (filters?.startDate || filters?.endDate) {
+      where.createdAt = {};
+      if (filters?.startDate) where.createdAt.gte = filters.startDate;
+      if (filters?.endDate) where.createdAt.lte = filters.endDate;
+    }
+
+    const [logs, total] = await Promise.all([
+      this.prisma.auditLog.findMany({
+        where,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.auditLog.count({ where }),
+    ]);
+
+    return {
+      data: logs,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    };
+  }
+}

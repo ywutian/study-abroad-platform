@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProfileService } from './profile.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuthorizationService } from '../../common/services/authorization.service';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
 import { Visibility, Role, Prisma } from '@prisma/client';
 
@@ -107,6 +108,39 @@ describe('ProfileService', () => {
               updateMany: jest.fn(),
             },
             $transaction: jest.fn((ops) => Promise.all(ops)),
+          },
+        },
+        {
+          provide: AuthorizationService,
+          useValue: {
+            verifyOwnership: jest.fn().mockImplementation((entity, userId, options) => {
+              if (!entity) {
+                throw new NotFoundException(`${options?.entityName || 'Resource'} not found`);
+              }
+              const ownerField = options?.ownerField || 'userId';
+              let actualOwnerId = entity;
+              if (ownerField.includes('.')) {
+                for (const part of ownerField.split('.')) {
+                  actualOwnerId = actualOwnerId?.[part];
+                }
+              } else {
+                actualOwnerId = entity[ownerField];
+              }
+              if (actualOwnerId !== userId) {
+                throw new ForbiddenException(`You don't have access to this ${options?.entityName || 'Resource'}`);
+              }
+              return entity;
+            }),
+            verifyNestedOwnership: jest.fn().mockImplementation((entity, userId, getOwnerId, options) => {
+              if (!entity) {
+                throw new NotFoundException(`${options?.entityName || 'Resource'} not found`);
+              }
+              const ownerId = getOwnerId(entity);
+              if (ownerId !== userId) {
+                throw new ForbiddenException(`You don't have access to this ${options?.entityName || 'Resource'}`);
+              }
+              return entity;
+            }),
           },
         },
       ],
@@ -282,7 +316,7 @@ describe('ProfileService', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw NotFoundException if score belongs to another user', async () => {
+    it('should throw ForbiddenException if score belongs to another user', async () => {
       (prismaService.testScore.findUnique as jest.Mock).mockResolvedValue({
         ...mockTestScore,
         profile: { userId: 'other-user' },
@@ -290,7 +324,7 @@ describe('ProfileService', () => {
 
       await expect(
         service.updateTestScore(mockUserId, 'score-123', { score: 1600 }),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -419,6 +453,10 @@ describe('ProfileService', () => {
     });
   });
 });
+
+
+
+
 
 
 

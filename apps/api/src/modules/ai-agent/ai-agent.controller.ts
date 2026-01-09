@@ -9,7 +9,7 @@
 
 import { Controller, Post, Get, Delete, Body, Query, Res, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { Response } from 'express';
+import type { Response } from 'express';
 import { OrchestratorService, StreamEvent } from './core/orchestrator.service';
 import { TokenTrackerService } from './core/token-tracker.service';
 import { RateLimiterService } from './core/rate-limiter.service';
@@ -76,7 +76,7 @@ export class AiAgentController {
 
       try {
         for await (const event of this.orchestrator.handleMessageStream(
-          user.userId,
+          user.id,
           data.message,
           data.conversationId,
         )) {
@@ -93,7 +93,7 @@ export class AiAgentController {
 
     // 普通请求
     const result = await this.orchestrator.handleMessage(
-      user.userId,
+      user.id,
       data.message,
       data.conversationId,
     );
@@ -110,7 +110,7 @@ export class AiAgentController {
     @Body() data: DirectAgentDto,
   ) {
     return this.orchestrator.callAgent(
-      user.userId,
+      user.id,
       data.agent,
       data.message,
       data.conversationId,
@@ -127,7 +127,7 @@ export class AiAgentController {
     @Query('conversationId') conversationId?: string,
   ) {
     return {
-      messages: await this.orchestrator.getHistory(user.userId, conversationId),
+      messages: await this.orchestrator.getHistory(user.id, conversationId),
     };
   }
 
@@ -140,7 +140,7 @@ export class AiAgentController {
     @CurrentUser() user: CurrentUserPayload,
     @Query('conversationId') conversationId?: string,
   ) {
-    this.orchestrator.clearConversation(user.userId, conversationId);
+    this.orchestrator.clearConversation(user.id, conversationId);
     return { success: true };
   }
 
@@ -150,7 +150,7 @@ export class AiAgentController {
   @Post('refresh-context')
   @ApiOperation({ summary: '刷新用户上下文' })
   async refreshContext(@CurrentUser() user: CurrentUserPayload) {
-    await this.orchestrator.refreshContext(user.userId);
+    await this.orchestrator.refreshContext(user.id);
     return { success: true };
   }
 
@@ -166,7 +166,7 @@ export class AiAgentController {
   @ApiOperation({ summary: '获取 Token 使用统计' })
   @ApiResponse({ status: 200, description: '返回用户的 Token 使用统计' })
   async getUsage(@CurrentUser() user: CurrentUserPayload) {
-    return this.tokenTracker.getUsageStats(user.userId);
+    return this.tokenTracker.getUsageStats(user.id);
   }
 
   /**
@@ -177,8 +177,8 @@ export class AiAgentController {
   @ApiOperation({ summary: '获取当前限流状态' })
   async getRateLimit(@CurrentUser() user: CurrentUserPayload) {
     return {
-      user: this.rateLimiter.getStatus(user.userId, 'user'),
-      conversation: this.rateLimiter.getStatus(user.userId, 'conversation'),
+      user: this.rateLimiter.getStatus(user.id, 'user'),
+      conversation: this.rateLimiter.getStatus(user.id, 'conversation'),
     };
   }
 
@@ -189,7 +189,7 @@ export class AiAgentController {
   @SkipAgentThrottle()
   @ApiOperation({ summary: '检查使用配额' })
   async checkQuota(@CurrentUser() user: CurrentUserPayload) {
-    return this.tokenTracker.checkQuota(user.userId);
+    return this.tokenTracker.checkQuota(user.id);
   }
 
   /**

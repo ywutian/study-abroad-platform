@@ -99,7 +99,16 @@ export class ToolExecutorService {
     }
   }
 
-  private async getProfile(userId: string) {
+  private async getProfile(userId: string): Promise<{ message: string; empty: true } | {
+    gpa: number | null;
+    gpaScale: number;
+    targetMajor: string | null;
+    grade: string | null;
+    testScores: Array<{ type: string; score: number }> | undefined;
+    activities: Array<{ name: string; category: string; role: string | null }> | undefined;
+    awards: Array<{ name: string; level: string }> | undefined;
+    empty?: false;
+  }> {
     const profile = await this.prisma.profile.findUnique({
       where: { userId },
       include: {
@@ -129,6 +138,7 @@ export class ToolExecutorService {
         name: a.name,
         level: a.level,
       })),
+      empty: false,
     };
   }
 
@@ -272,13 +282,13 @@ export class ToolExecutorService {
 
   private async recommendSchools(userId: string, context: UserContext, args: any) {
     const profile = context.profile || await this.getProfile(userId);
-    if (profile.empty) return profile;
+    if ('empty' in profile && profile.empty === true) return profile;
 
     return this.aiService.schoolMatch({
-      gpa: profile.gpa,
+      gpa: profile.gpa ?? undefined,
       gpaScale: profile.gpaScale,
       testScores: profile.testScores,
-      targetMajor: profile.targetMajor,
+      targetMajor: profile.targetMajor ?? undefined,
     });
   }
 
@@ -411,15 +421,19 @@ export class ToolExecutorService {
 
   private async analyzeProfile(userId: string, context: UserContext) {
     const profile = context.profile || await this.getProfile(userId);
-    if (profile.empty) return profile;
+    if ('empty' in profile && profile.empty === true) return profile;
 
     return this.aiService.analyzeProfile({
-      gpa: profile.gpa,
+      gpa: profile.gpa ?? undefined,
       gpaScale: profile.gpaScale,
       testScores: profile.testScores,
-      activities: profile.activities,
+      activities: profile.activities?.map(a => ({
+        name: a.name,
+        category: a.category,
+        role: a.role ?? '',
+      })),
       awards: profile.awards,
-      targetMajor: profile.targetMajor,
+      targetMajor: profile.targetMajor ?? undefined,
     });
   }
 
@@ -528,6 +542,9 @@ export class ToolExecutorService {
     };
   }
 }
+
+
+
 
 
 

@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuthorizationService } from '../../common/services/authorization.service';
 import { Profile, TestScore, Activity, Award, Essay, Education, Prisma, Visibility, Role } from '@prisma/client';
 import {
   UpdateProfileDto,
@@ -15,9 +16,33 @@ import {
   UpdateEducationDto,
 } from './dto';
 
+// 嵌套实体类型（通过 profile 关联到 user）
+interface ProfileOwnable {
+  profile: { userId: string };
+}
+
 @Injectable()
 export class ProfileService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private auth: AuthorizationService,
+  ) {}
+
+  /**
+   * 验证嵌套实体所有权（通过 profile.userId）
+   */
+  private verifyProfileOwnership<T extends ProfileOwnable>(
+    entity: T | null,
+    userId: string,
+    entityName: string,
+  ): T {
+    return this.auth.verifyNestedOwnership(
+      entity,
+      userId,
+      (e) => e.profile?.userId,
+      { entityName }
+    );
+  }
 
   // ============================================
   // Profile CRUD
@@ -176,14 +201,14 @@ export class ProfileService {
   }
 
   async updateTestScore(userId: string, scoreId: string, data: UpdateTestScoreDto): Promise<TestScore> {
-    const score = await this.prisma.testScore.findUnique({
-      where: { id: scoreId },
-      include: { profile: { select: { userId: true } } },
-    });
-
-    if (!score || score.profile.userId !== userId) {
-      throw new NotFoundException('Test score not found');
-    }
+    const score = this.verifyProfileOwnership(
+      await this.prisma.testScore.findUnique({
+        where: { id: scoreId },
+        include: { profile: { select: { userId: true } } },
+      }),
+      userId,
+      'Test score'
+    );
 
     return this.prisma.testScore.update({
       where: { id: scoreId },
@@ -197,14 +222,14 @@ export class ProfileService {
   }
 
   async deleteTestScore(userId: string, scoreId: string): Promise<void> {
-    const score = await this.prisma.testScore.findUnique({
-      where: { id: scoreId },
-      include: { profile: { select: { userId: true } } },
-    });
-
-    if (!score || score.profile.userId !== userId) {
-      throw new NotFoundException('Test score not found');
-    }
+    this.verifyProfileOwnership(
+      await this.prisma.testScore.findUnique({
+        where: { id: scoreId },
+        include: { profile: { select: { userId: true } } },
+      }),
+      userId,
+      'Test score'
+    );
 
     await this.prisma.testScore.delete({ where: { id: scoreId } });
   }
@@ -244,14 +269,14 @@ export class ProfileService {
   }
 
   async updateActivity(userId: string, activityId: string, data: UpdateActivityDto): Promise<Activity> {
-    const activity = await this.prisma.activity.findUnique({
-      where: { id: activityId },
-      include: { profile: { select: { userId: true } } },
-    });
-
-    if (!activity || activity.profile.userId !== userId) {
-      throw new NotFoundException('Activity not found');
-    }
+    const activity = this.verifyProfileOwnership(
+      await this.prisma.activity.findUnique({
+        where: { id: activityId },
+        include: { profile: { select: { userId: true } } },
+      }),
+      userId,
+      'Activity'
+    );
 
     return this.prisma.activity.update({
       where: { id: activityId },
@@ -272,14 +297,14 @@ export class ProfileService {
   }
 
   async deleteActivity(userId: string, activityId: string): Promise<void> {
-    const activity = await this.prisma.activity.findUnique({
-      where: { id: activityId },
-      include: { profile: { select: { userId: true } } },
-    });
-
-    if (!activity || activity.profile.userId !== userId) {
-      throw new NotFoundException('Activity not found');
-    }
+    this.verifyProfileOwnership(
+      await this.prisma.activity.findUnique({
+        where: { id: activityId },
+        include: { profile: { select: { userId: true } } },
+      }),
+      userId,
+      'Activity'
+    );
 
     await this.prisma.activity.delete({ where: { id: activityId } });
   }
@@ -293,13 +318,33 @@ export class ProfileService {
     return profile?.activities || [];
   }
 
+  /**
+   * 重新排序活动
+   * 
+   * 安全设计：
+   * - 先验证所有传入的 ID 都属于当前用户
+   * - 如果有任何 ID 不属于当前用户，直接拒绝整个请求
+   */
   async reorderActivities(userId: string, activityIds: string[]): Promise<void> {
     const profileId = await this.getProfileId(userId);
 
+    // 安全验证：确保所有 ID 都属于当前用户的 profile
+    const ownedActivities = await this.prisma.activity.findMany({
+      where: { id: { in: activityIds }, profileId },
+      select: { id: true },
+    });
+
+    const ownedIds = new Set(ownedActivities.map(a => a.id));
+    const invalidIds = activityIds.filter(id => !ownedIds.has(id));
+
+    if (invalidIds.length > 0) {
+      throw new ForbiddenException('Cannot reorder activities that do not belong to you');
+    }
+
     await this.prisma.$transaction(
       activityIds.map((id, index) =>
-        this.prisma.activity.updateMany({
-          where: { id, profileId },
+        this.prisma.activity.update({
+          where: { id },
           data: { order: index },
         })
       )
@@ -326,14 +371,14 @@ export class ProfileService {
   }
 
   async updateAward(userId: string, awardId: string, data: UpdateAwardDto): Promise<Award> {
-    const award = await this.prisma.award.findUnique({
-      where: { id: awardId },
-      include: { profile: { select: { userId: true } } },
-    });
-
-    if (!award || award.profile.userId !== userId) {
-      throw new NotFoundException('Award not found');
-    }
+    const award = this.verifyProfileOwnership(
+      await this.prisma.award.findUnique({
+        where: { id: awardId },
+        include: { profile: { select: { userId: true } } },
+      }),
+      userId,
+      'Award'
+    );
 
     return this.prisma.award.update({
       where: { id: awardId },
@@ -348,14 +393,14 @@ export class ProfileService {
   }
 
   async deleteAward(userId: string, awardId: string): Promise<void> {
-    const award = await this.prisma.award.findUnique({
-      where: { id: awardId },
-      include: { profile: { select: { userId: true } } },
-    });
-
-    if (!award || award.profile.userId !== userId) {
-      throw new NotFoundException('Award not found');
-    }
+    this.verifyProfileOwnership(
+      await this.prisma.award.findUnique({
+        where: { id: awardId },
+        include: { profile: { select: { userId: true } } },
+      }),
+      userId,
+      'Award'
+    );
 
     await this.prisma.award.delete({ where: { id: awardId } });
   }
@@ -369,13 +414,31 @@ export class ProfileService {
     return profile?.awards || [];
   }
 
+  /**
+   * 重新排序奖项
+   * 
+   * 安全设计：同 reorderActivities
+   */
   async reorderAwards(userId: string, awardIds: string[]): Promise<void> {
     const profileId = await this.getProfileId(userId);
 
+    // 安全验证：确保所有 ID 都属于当前用户的 profile
+    const ownedAwards = await this.prisma.award.findMany({
+      where: { id: { in: awardIds }, profileId },
+      select: { id: true },
+    });
+
+    const ownedIds = new Set(ownedAwards.map(a => a.id));
+    const invalidIds = awardIds.filter(id => !ownedIds.has(id));
+
+    if (invalidIds.length > 0) {
+      throw new ForbiddenException('Cannot reorder awards that do not belong to you');
+    }
+
     await this.prisma.$transaction(
       awardIds.map((id, index) =>
-        this.prisma.award.updateMany({
-          where: { id, profileId },
+        this.prisma.award.update({
+          where: { id },
           data: { order: index },
         })
       )
@@ -403,14 +466,14 @@ export class ProfileService {
   }
 
   async updateEssay(userId: string, essayId: string, data: UpdateEssayDto): Promise<Essay> {
-    const essay = await this.prisma.essay.findUnique({
-      where: { id: essayId },
-      include: { profile: { select: { userId: true } } },
-    });
-
-    if (!essay || essay.profile.userId !== userId) {
-      throw new NotFoundException('Essay not found');
-    }
+    this.verifyProfileOwnership(
+      await this.prisma.essay.findUnique({
+        where: { id: essayId },
+        include: { profile: { select: { userId: true } } },
+      }),
+      userId,
+      'Essay'
+    );
 
     const wordCount = data.content ? data.content.split(/\s+/).filter(Boolean).length : undefined;
 
@@ -427,14 +490,14 @@ export class ProfileService {
   }
 
   async deleteEssay(userId: string, essayId: string): Promise<void> {
-    const essay = await this.prisma.essay.findUnique({
-      where: { id: essayId },
-      include: { profile: { select: { userId: true } } },
-    });
-
-    if (!essay || essay.profile.userId !== userId) {
-      throw new NotFoundException('Essay not found');
-    }
+    this.verifyProfileOwnership(
+      await this.prisma.essay.findUnique({
+        where: { id: essayId },
+        include: { profile: { select: { userId: true } } },
+      }),
+      userId,
+      'Essay'
+    );
 
     await this.prisma.essay.delete({ where: { id: essayId } });
   }
@@ -449,14 +512,14 @@ export class ProfileService {
   }
 
   async getEssayById(userId: string, essayId: string): Promise<Essay> {
-    const essay = await this.prisma.essay.findUnique({
-      where: { id: essayId },
-      include: { profile: { select: { userId: true } } },
-    });
-
-    if (!essay || essay.profile.userId !== userId) {
-      throw new NotFoundException('Essay not found');
-    }
+    const essay = this.verifyProfileOwnership(
+      await this.prisma.essay.findUnique({
+        where: { id: essayId },
+        include: { profile: { select: { userId: true } } },
+      }),
+      userId,
+      'Essay'
+    );
 
     return essay;
   }
@@ -485,14 +548,14 @@ export class ProfileService {
   }
 
   async updateEducation(userId: string, educationId: string, data: UpdateEducationDto): Promise<Education> {
-    const education = await this.prisma.education.findUnique({
-      where: { id: educationId },
-      include: { profile: { select: { userId: true } } },
-    });
-
-    if (!education || education.profile.userId !== userId) {
-      throw new NotFoundException('Education not found');
-    }
+    const education = this.verifyProfileOwnership(
+      await this.prisma.education.findUnique({
+        where: { id: educationId },
+        include: { profile: { select: { userId: true } } },
+      }),
+      userId,
+      'Education'
+    );
 
     return this.prisma.education.update({
       where: { id: educationId },
@@ -511,14 +574,14 @@ export class ProfileService {
   }
 
   async deleteEducation(userId: string, educationId: string): Promise<void> {
-    const education = await this.prisma.education.findUnique({
-      where: { id: educationId },
-      include: { profile: { select: { userId: true } } },
-    });
-
-    if (!education || education.profile.userId !== userId) {
-      throw new NotFoundException('Education not found');
-    }
+    this.verifyProfileOwnership(
+      await this.prisma.education.findUnique({
+        where: { id: educationId },
+        include: { profile: { select: { userId: true } } },
+      }),
+      userId,
+      'Education'
+    );
 
     await this.prisma.education.delete({ where: { id: educationId } });
   }

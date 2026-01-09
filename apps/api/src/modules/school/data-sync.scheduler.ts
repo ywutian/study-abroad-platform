@@ -273,10 +273,13 @@ export class ManualSyncService {
 
     await this.prisma.school.update({
       where: { id: schoolId },
-      data: { metadata },
+      data: { metadata: metadata as any },
     });
   }
 }
+
+
+
 
 
 

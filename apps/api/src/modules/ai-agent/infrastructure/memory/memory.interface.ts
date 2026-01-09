@@ -217,3 +217,8 @@ export interface IMemorySystem extends IConversationMemory, ILongTermMemory {
 export const MEMORY_SYSTEM_TOKEN = Symbol('MEMORY_SYSTEM');
 
 
+
+
+
+
+

@@ -83,7 +83,7 @@ export class CaseIncentiveService {
         userId,
         action,
         points: pointValue,
-        metadata: metadata || {},
+        metadata: (metadata || {}) as any,
       },
     });
 
@@ -157,6 +157,9 @@ export class CaseIncentiveService {
     return result.success;
   }
 }
+
+
+
 
 
 

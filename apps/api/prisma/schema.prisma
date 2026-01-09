@@ -120,6 +120,32 @@ model User {
   entities           Entity[]
   aiPreferences      UserAIPreference?
   
+  // Verification
+  verificationRequests VerificationRequest[]
+  
+  // AI Recommendations
+  schoolRecommendations SchoolRecommendation[]
+  
+  // Application Timelines
+  applicationTimelines ApplicationTimeline[]
+  
+  // Swipe Game
+  caseSwipes    CaseSwipe[]
+  swipeStats    SwipeStats?
+  
+  // Assessments
+  assessmentResults AssessmentResult[]
+  
+  // Forum
+  forumPosts        ForumPost[]
+  forumComments     ForumComment[]
+  forumLikes        ForumLike[]
+  teamApplications  TeamApplication[]
+  teamMemberships   TeamMember[]
+  
+  // Vault
+  vaultItems        VaultItem[]
+  
   // Timestamps
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
@@ -271,10 +297,435 @@ model Essay {
   wordCount Int?
   schoolId  String?  // Optional: linked to specific school
   
+  // AI Results
+  aiResults EssayAIResult[]
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([profileId])
+}
+
+// AI 文书处理结果
+model EssayAIResult {
+  id          String   @id @default(cuid())
+  essayId     String
+  essay       Essay    @relation(fields: [essayId], references: [id], onDelete: Cascade)
+  
+  type        String   // "polish" | "review" | "brainstorm" | "rewrite"
+  input       String   @db.Text
+  output      String   @db.Text
+  
+  // Review specific fields
+  scores      Json?    // { clarity: 8, uniqueness: 7, storytelling: 8, fit: 7, language: 8 }
+  suggestions Json?    // ["建议1", "建议2"]
+  
+  // Polish specific fields
+  changes     Json?    // [{ original, revised, reason }]
+  
+  tokenUsed   Int      @default(0)
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([essayId])
+  @@index([type])
+}
+
+// AI 选校建议
+model SchoolRecommendation {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // 用户输入快照
+  profileSnapshot Json     // 用户档案快照
+  preferences     Json?    // { regions: [], majors: [], budget: "" }
+  
+  // AI 推荐结果
+  recommendations Json     // [{ schoolId, schoolName, tier, probability, fitScore, reasons, concerns }]
+  analysis        Json?    // { strengths: [], weaknesses: [], tips: [] }
+  summary         String?  @db.Text
+  
+  tokenUsed       Int      @default(0)
+  
+  createdAt       DateTime @default(now())
+  
+  @@index([userId])
+}
+
+// 申请时间线状态
+enum ApplicationStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  SUBMITTED
+  ACCEPTED
+  REJECTED
+  WAITLISTED
+  WITHDRAWN
+}
+
+// 申请时间线
+model ApplicationTimeline {
+  id          String            @id @default(cuid())
+  userId      String
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  schoolId    String
+  school      School            @relation(fields: [schoolId], references: [id])
+  schoolName  String            // 冗余存储，避免每次 join
+  
+  round       String            // ED, ED2, EA, REA, RD, Rolling
+  deadline    DateTime?
+  status      ApplicationStatus @default(NOT_STARTED)
+  
+  // 进度追踪
+  progress    Int               @default(0) // 0-100
+  priority    Int               @default(0) // 排序用
+  notes       String?           @db.Text
+  
+  // 任务
+  tasks       ApplicationTask[]
+  
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  
+  @@unique([userId, schoolId, round])
+  @@index([userId])
+  @@index([deadline])
+  @@index([status])
+}
+
+// 申请任务类型
+enum TaskType {
+  ESSAY
+  DOCUMENT
+  TEST
+  INTERVIEW
+  RECOMMENDATION
+  OTHER
+}
+
+// 申请任务
+model ApplicationTask {
+  id          String              @id @default(cuid())
+  timelineId  String
+  timeline    ApplicationTimeline @relation(fields: [timelineId], references: [id], onDelete: Cascade)
+  
+  title       String
+  type        TaskType            @default(OTHER)
+  description String?             @db.Text
+  dueDate     DateTime?
+  
+  // 状态
+  completed   Boolean             @default(false)
+  completedAt DateTime?
+  
+  // 文书关联
+  essayId     String?
+  essayPrompt String?             @db.Text
+  wordLimit   Int?
+  
+  // 排序
+  sortOrder   Int                 @default(0)
+  
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  
+  @@index([timelineId])
+  @@index([dueDate])
+}
+
+// ============================================
+// Tinder式案例滑动
+// ============================================
+
+// 用户滑动预测记录
+model CaseSwipe {
+  id          String        @id @default(cuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  caseId      String
+  case        AdmissionCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  
+  prediction  String        // "admit" | "reject" | "waitlist"
+  actualResult String       // 真实结果
+  isCorrect   Boolean       // 预测是否正确
+  
+  swipedAt    DateTime      @default(now())
+  
+  @@unique([userId, caseId])
+  @@index([userId])
+  @@index([isCorrect])
+}
+
+// 用户滑动统计
+model SwipeStats {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  totalSwipes Int      @default(0)
+  correctCount Int     @default(0)
+  streak      Int      @default(0)      // 连续正确数
+  bestStreak  Int      @default(0)      // 最高连续正确
+  
+  // 徽章等级: bronze, silver, gold, platinum, diamond
+  badge       String   @default("bronze")
+  
+  // 每日挑战
+  dailyChallengeDate DateTime?
+  dailyChallengeCount Int      @default(0)
+  
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================
+// 专业测评系统
+// ============================================
+
+// 测评类型
+enum AssessmentType {
+  MBTI
+  HOLLAND
+  MAJOR_MATCH
+}
+
+// 测评题目
+model Assessment {
+  id          String         @id @default(cuid())
+  type        AssessmentType
+  title       String
+  titleZh     String
+  description String?        @db.Text
+  descriptionZh String?      @db.Text
+  
+  // 题目 JSON 数组
+  questions   Json           // [{ id, text, textZh, options: [{ value, text, textZh }], dimension? }]
+  
+  // 结果解释
+  resultInterpretations Json? // { "INTJ": { title, description }, ... }
+  
+  isActive    Boolean        @default(true)
+  sortOrder   Int            @default(0)
+  
+  results     AssessmentResult[]
+  
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+// 测评结果
+model AssessmentResult {
+  id           String     @id @default(cuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assessmentId String
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  
+  // 用户答案
+  answers      Json       // [{ questionId, answer }]
+  
+  // 计算结果
+  result       Json       // MBTI: { type: "INTJ", scores: { E: 30, I: 70, ... } }
+                          // Holland: { codes: "RIA", scores: { R: 80, I: 75, ... } }
+  
+  // 专业推荐（如果是专业匹配测试）
+  majorRecommendations Json? // [{ major, score, reasons }]
+  
+  completedAt  DateTime   @default(now())
+  
+  @@index([userId])
+  @@index([assessmentId])
+}
+
+// ============================================
+// Forum System
+// ============================================
+
+// 论坛分类
+model ForumCategory {
+  id          String   @id @default(cuid())
+  name        String
+  nameZh      String
+  description String?
+  descriptionZh String?
+  icon        String?  // lucide icon name
+  color       String?  // 主题色
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  
+  posts       ForumPost[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// 论坛帖子
+model ForumPost {
+  id          String   @id @default(cuid())
+  categoryId  String
+  category    ForumCategory @relation(fields: [categoryId], references: [id])
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  title       String
+  content     String   @db.Text
+  tags        String[]
+  
+  // 组队帖子特有字段
+  isTeamPost  Boolean  @default(false)
+  teamSize    Int?
+  currentSize Int?     @default(1)  // 当前人数
+  requirements String?  @db.Text
+  teamDeadline DateTime?
+  teamStatus  TeamStatus @default(RECRUITING)
+  
+  // 统计
+  viewCount   Int      @default(0)
+  likeCount   Int      @default(0)
+  commentCount Int     @default(0)
+  
+  // 状态
+  isPinned    Boolean  @default(false)
+  isLocked    Boolean  @default(false)
+  
+  // 关系
+  comments    ForumComment[]
+  likes       ForumLike[]
+  teamApplications TeamApplication[]
+  teamMembers TeamMember[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([categoryId])
+  @@index([authorId])
+  @@index([isTeamPost])
+  @@index([createdAt])
+}
+
+enum TeamStatus {
+  RECRUITING  // 招募中
+  FULL        // 已满员
+  CLOSED      // 已关闭
+  COMPLETED   // 已完成
+}
+
+// 论坛评论
+model ForumComment {
+  id        String   @id @default(cuid())
+  postId    String
+  post      ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  content   String   @db.Text
+  
+  // 回复嵌套
+  parentId  String?
+  parent    ForumComment? @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   ForumComment[] @relation("CommentReplies")
+  
+  likeCount Int      @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([postId])
+  @@index([authorId])
+  @@index([parentId])
+}
+
+// 论坛点赞
+model ForumLike {
+  id        String   @id @default(cuid())
+  postId    String
+  post      ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([postId, userId])
+}
+
+// 组队申请
+model TeamApplication {
+  id          String   @id @default(cuid())
+  postId      String
+  post        ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  applicantId String
+  applicant   User     @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  
+  message     String?  @db.Text
+  status      TeamAppStatus @default(PENDING)
+  
+  reviewedAt  DateTime?
+  reviewNote  String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([postId, applicantId])
+  @@index([postId])
+  @@index([applicantId])
+}
+
+enum TeamAppStatus {
+  PENDING   // 待审核
+  ACCEPTED  // 已接受
+  REJECTED  // 已拒绝
+  CANCELLED // 已取消
+}
+
+// 团队成员
+model TeamMember {
+  id        String   @id @default(cuid())
+  postId    String
+  post      ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  role      String   @default("member")  // owner, admin, member
+  joinedAt  DateTime @default(now())
+  
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
+}
+
+// ============================================
+// Vault (保险箱)
+// ============================================
+
+model VaultItem {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type        VaultItemType
+  title       String
+  
+  // 加密存储的数据
+  encryptedData String @db.Text
+  iv          String   // 初始化向量
+  
+  // 元数据（不加密）
+  category    String?
+  tags        String[]
+  icon        String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([type])
+}
+
+enum VaultItemType {
+  CREDENTIAL  // 账号密码
+  DOCUMENT    // 文档
+  NOTE        // 笔记
+  CERTIFICATE // 证书
 }
 
 // ============================================
@@ -311,9 +762,10 @@ model School {
   metadata        Json?    // { scorecardId: "xxx", lastSync: "2024-01-01" }
   
   // Relations
-  metrics         SchoolMetric[]
-  cases           AdmissionCase[]
-  targetedBy      ProfileTargetSchool[]
+  metrics              SchoolMetric[]
+  cases                AdmissionCase[]
+  targetedBy           ProfileTargetSchool[]
+  applicationTimelines ApplicationTimeline[]
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -387,7 +839,9 @@ model PredictionResult {
   modelVersion String @default("v1")
   
   createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
+  @@unique([profileId, schoolId])
   @@index([profileId])
   @@index([schoolId])
 }
@@ -421,9 +875,11 @@ model AdmissionCase {
   // Verification
   isVerified  Boolean         @default(false)
   verifiedAt  DateTime?
+  verificationRequests VerificationRequest[]
   
   // Relations
   caseViews   CaseView[]
+  caseSwipes  CaseSwipe[]
   
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
@@ -655,6 +1111,41 @@ model CaseView {
 }
 
 // ============================================
+// Verification System
+// ============================================
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model VerificationRequest {
+  id          String             @id @default(cuid())
+  userId      String
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  caseId      String
+  case        AdmissionCase      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  
+  // 上传的证明文件 (Base64 或 URL)
+  proofType   String             // "offer_letter" | "enrollment_proof" | "student_id"
+  proofUrl    String?            // 文件URL（如果使用云存储）
+  proofData   String?            // Base64数据（如果直接存储）
+  
+  status      VerificationStatus @default(PENDING)
+  reviewerId  String?            // 审核管理员ID
+  reviewNote  String?            // 审核备注
+  reviewedAt  DateTime?
+  
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@index([userId])
+  @@index([caseId])
+  @@index([status])
+}
+
+// ============================================
 // AI Agent Memory System
 // ============================================
 
@@ -789,4 +1280,22 @@ model UserAIPreference {
   
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
+}
+
+// ============================================
+// 系统设置
+// ============================================
+
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique  // e.g. "admin_email", "site_name"
+  value       String   // JSON string for complex values
+  description String?  // 设置说明
+  category    String   @default("general") // general, notification, security, etc.
+  isPublic    Boolean  @default(false) // 是否可被前端读取
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
 }

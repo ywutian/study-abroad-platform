@@ -205,10 +205,12 @@ export class AgentService {
 
         this.logger.debug(`Executing tool: ${toolName}`);
 
-        let args: Record<string, any> = {};
+        let args: Record<string, unknown> = {};
         try {
           args = JSON.parse(toolCall.function.arguments);
-        } catch {}
+        } catch (e) {
+          this.logger.warn(`Failed to parse tool arguments for ${toolName}: ${e instanceof Error ? e.message : 'Unknown error'}`);
+        }
 
         const result = await this.toolExecutor.execute(
           toolName,
@@ -422,6 +424,10 @@ export class AgentService {
     return state?.messages || [];
   }
 }
+
+
+
+
 
 
 

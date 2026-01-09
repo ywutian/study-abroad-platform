@@ -111,13 +111,13 @@ export class AgentRunnerService {
           };
 
           const result = this.resilience
-            ? await this.resilience.withTimeout(executeWithTimeout(), TOOL_TIMEOUT_MS, `tool:${toolCall.name}`)
+            ? await this.resilience.withTimeout(executeWithTimeout, TOOL_TIMEOUT_MS, `tool:${toolCall.name}`) as Awaited<ReturnType<typeof executeWithTimeout>>
             : await executeWithTimeout();
 
           // 校验结果
-          const resultContent = result.success 
-            ? JSON.stringify(result.result)
-            : JSON.stringify({ error: result.error || 'Tool execution failed' });
+          const resultContent = !result?.error 
+            ? JSON.stringify(result?.result)
+            : JSON.stringify({ error: result.error });
 
           // 记录工具结果
           this.memory.addMessage(conversation, {

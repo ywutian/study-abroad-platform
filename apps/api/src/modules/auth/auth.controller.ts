@@ -1,6 +1,6 @@
-import { Controller, Post, Body, Get, Query, HttpCode, HttpStatus, Res, Req } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query, HttpCode, HttpStatus, Res, Req, UnauthorizedException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiBody } from '@nestjs/swagger';
-import { Response, Request } from 'express';
+import type { Response, Request } from 'express';
 import { IsString } from 'class-validator';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
@@ -16,17 +16,30 @@ import {
 } from './dto';
 
 const REFRESH_TOKEN_COOKIE = 'refresh_token';
+
+/**
+ * Cookie 安全配置
+ * 
+ * 安全特性：
+ * - httpOnly: true - JavaScript 无法访问，防止 XSS 窃取
+ * - secure: true (生产环境) - 仅 HTTPS 传输
+ * - sameSite: 'strict' - 防止 CSRF 攻击
+ * - path: '/api/v1/auth' - 仅 auth 相关请求携带 cookie
+ */
 const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
-  path: '/auth',
+  sameSite: 'strict' as const, // 增强：从 'lax' 改为 'strict'
+  path: '/api/v1/auth', // 修正：匹配实际 API 路径
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
 
+import { IsOptional } from 'class-validator';
+
 class RefreshTokenDto {
+  @IsOptional()
   @IsString()
-  refreshToken: string;
+  refreshToken?: string; // 可选：Web 使用 cookie，Mobile 使用 body
 }
 
 @ApiTags('auth')
@@ -59,13 +72,14 @@ export class AuthController {
   async login(@Body() data: LoginDto, @Res({ passthrough: true }) res: Response) {
     const result = await this.authService.login(data);
     
-    // Set refresh token as httpOnly cookie
+    // Set refresh token as httpOnly cookie (Web 客户端使用)
     res.cookie(REFRESH_TOKEN_COOKIE, result.tokens.refreshToken, COOKIE_OPTIONS);
     
     return {
       user: result.user,
       accessToken: result.tokens.accessToken,
-      // Also return refreshToken for backward compatibility with mobile apps
+      // 保留 refreshToken 返回以兼容 Mobile 应用
+      // Mobile 应用使用 SecureStore 存储，同样安全
       refreshToken: result.tokens.refreshToken,
     };
   }
@@ -81,19 +95,24 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    // Try to get refresh token from cookie first, then from body
-    const refreshToken = req.cookies?.[REFRESH_TOKEN_COOKIE] || data.refreshToken;
+    // 优先从 httpOnly cookie 获取（Web 客户端）
+    // 其次从 body 获取（Mobile 客户端）
+    const refreshToken = req.cookies?.[REFRESH_TOKEN_COOKIE] || data?.refreshToken;
     
     if (!refreshToken) {
-      throw new Error('Refresh token is required');
+      throw new UnauthorizedException('Refresh token is required');
     }
     
     const tokens = await this.authService.refreshToken(refreshToken);
     
-    // Update cookie with new refresh token
+    // 更新 cookie（用于 Web 客户端的 token 轮换）
     res.cookie(REFRESH_TOKEN_COOKIE, tokens.refreshToken, COOKIE_OPTIONS);
     
-    return tokens;
+    return {
+      accessToken: tokens.accessToken,
+      // 保留 refreshToken 返回以兼容 Mobile 应用
+      refreshToken: tokens.refreshToken,
+    };
   }
 
   @Post('logout')
@@ -110,8 +129,8 @@ export class AuthController {
     const refreshToken = req.cookies?.[REFRESH_TOKEN_COOKIE] || data?.refreshToken;
     await this.authService.logout(user.id, refreshToken);
     
-    // Clear the refresh token cookie
-    res.clearCookie(REFRESH_TOKEN_COOKIE, { path: '/auth' });
+    // Clear the refresh token cookie（需要匹配设置时的 path）
+    res.clearCookie(REFRESH_TOKEN_COOKIE, { path: '/api/v1/auth' });
     
     return { message: 'Logged out successfully' };
   }

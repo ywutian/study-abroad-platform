@@ -22,11 +22,10 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
   private sortedSets: Map<string, Map<string, number>> = new Map();
   
   private cleanupInterval: NodeJS.Timeout | null = null;
-  private readonly maxSize: number;
+  private readonly maxSize: number = 100000;
 
-  constructor(maxSize: number = 100000, cleanupIntervalMs: number = 60000) {
-    this.maxSize = maxSize;
-    this.startCleanup(cleanupIntervalMs);
+  constructor() {
+    this.startCleanup(60000);
   }
 
   onModuleDestroy() {
@@ -329,5 +328,8 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
     };
   }
 }
+
+
+
 
 

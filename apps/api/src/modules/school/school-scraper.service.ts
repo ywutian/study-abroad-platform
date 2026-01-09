@@ -357,7 +357,7 @@ export class SchoolScraperService {
           essayPrompts: data.essays,
           requirements: data.requirements,
           lastScraped: new Date().toISOString(),
-        },
+        } as any,
       },
     });
   }
@@ -420,11 +420,14 @@ interface ScrapedSchoolData {
   requirements: RequirementInfo;
 }
 
-interface ScrapeResult {
+export interface ScrapeResult {
   success: string[];
   failed: Array<{ school: string; error: string }>;
   total: number;
 }
+
+
+
 
 
 

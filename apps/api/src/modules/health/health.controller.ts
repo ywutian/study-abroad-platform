@@ -1,9 +1,11 @@
-import { Controller, Get, HttpStatus, Res } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Res, Optional } from '@nestjs/common';
+import * as os from 'os';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { Response } from 'express';
+import type { Response } from 'express';
 import { Public } from '../../common/decorators/public.decorator';
 import { SkipThrottle } from '../../common/decorators/throttle.decorator';
 import { PrismaService } from '../../prisma/prisma.service';
+import { RedisService } from '../../common/redis/redis.service';
 
 type CheckStatus = 'ok' | 'degraded' | 'error';
 
@@ -40,7 +42,10 @@ interface DetailedHealthStatus extends HealthStatus {
 export class HealthController {
   private readonly startTime = Date.now();
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Optional() private redisService?: RedisService,
+  ) {}
 
   @Get()
   @Public()
@@ -125,8 +130,8 @@ export class HealthController {
       database: await this.checkDatabase(),
     };
 
-    // Add Redis check if configured
-    if (process.env.REDIS_URL) {
+    // Add Redis check if service is available
+    if (this.redisService) {
       checks.redis = await this.checkRedis();
     }
 
@@ -153,18 +158,28 @@ export class HealthController {
   }
 
   private async checkRedis(): Promise<ComponentCheck> {
-    // TODO: Implement actual Redis check when Redis service is injected
-    // For now, return a placeholder
+    if (!this.redisService) {
+      return { status: 'error', message: 'Redis service not configured' };
+    }
+
     try {
-      return { status: 'ok', latencyMs: 0 };
-    } catch {
-      return { status: 'error', message: 'Redis connection failed' };
+      const result = await this.redisService.healthCheck();
+      return {
+        status: result.status,
+        latencyMs: result.latencyMs,
+        message: result.message,
+      };
+    } catch (error) {
+      return { 
+        status: 'error', 
+        message: error instanceof Error ? error.message : 'Redis check failed' 
+      };
     }
   }
 
   private getMemoryUsage(): HealthStatus['memory'] {
     const used = process.memoryUsage();
-    const total = require('os').totalmem();
+    const total = os.totalmem();
     const usedMB = Math.round(used.heapUsed / 1024 / 1024);
     const totalMB = Math.round(total / 1024 / 1024);
 

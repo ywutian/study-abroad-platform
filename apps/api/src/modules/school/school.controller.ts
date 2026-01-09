@@ -1,9 +1,11 @@
 import { Controller, Get, Post, Put, Body, Param, Query, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { SchoolService } from './school.service';
 import { SchoolDataService } from './school-data.service';
 import { SchoolScraperService } from './school-scraper.service';
-import { PaginationDto } from '../../common/dto/pagination.dto';
+import { SchoolQueryDto } from './dto/school-query.dto';
+import { CreateSchoolDto } from './dto/create-school.dto';
+import { UpdateSchoolDto } from './dto/update-school.dto';
 import { Public, Roles } from '../../common/decorators';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Role } from '@prisma/client';
@@ -20,14 +22,9 @@ export class SchoolController {
   @Get()
   @Public()
   @ApiOperation({ summary: 'Get all schools' })
-  @ApiQuery({ name: 'country', required: false })
-  @ApiQuery({ name: 'search', required: false })
-  async findAll(
-    @Query() pagination: PaginationDto,
-    @Query('country') country?: string,
-    @Query('search') search?: string
-  ) {
-    return this.schoolService.findAll(pagination, { country, search });
+  async findAll(@Query() query: SchoolQueryDto) {
+    const { page, pageSize, country, search } = query;
+    return this.schoolService.findAll({ page, pageSize }, { country, search });
   }
 
   @Get(':id')
@@ -39,15 +36,19 @@ export class SchoolController {
 
   @Post()
   @ApiBearerAuth()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Create school (admin only)' })
-  async create(@Body() data: Record<string, unknown>) {
-    return this.schoolService.create(data as any);
+  async create(@Body() data: CreateSchoolDto) {
+    return this.schoolService.create(data);
   }
 
   @Put(':id')
   @ApiBearerAuth()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Update school (admin only)' })
-  async update(@Param('id') id: string, @Body() data: Record<string, unknown>) {
+  async update(@Param('id') id: string, @Body() data: UpdateSchoolDto) {
     return this.schoolService.update(id, data);
   }
 

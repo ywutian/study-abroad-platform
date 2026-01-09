@@ -15,6 +15,7 @@ import { Module, OnModuleInit, Logger, MiddlewareConsumer, NestModule } from '@n
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { PrismaModule } from '../../prisma/prisma.module';
+import { RedisModule } from '../../common/redis/redis.module';
 import { AiModule } from '../ai/ai.module';
 
 // Core services
@@ -58,6 +59,7 @@ import { AgentConfigService } from './infrastructure/config/config.service';
   imports: [
     ConfigModule,
     PrismaModule,
+    RedisModule,
     AiModule,
     EventEmitterModule.forRoot(),
   ],

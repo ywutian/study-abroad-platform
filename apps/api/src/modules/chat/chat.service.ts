@@ -1,6 +1,6 @@
 import { Injectable, ForbiddenException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { Conversation, Message } from '@prisma/client';
+import { Conversation, Message, Prisma } from '@prisma/client';
 
 @Injectable()
 export class ChatService {
@@ -145,22 +145,39 @@ export class ChatService {
       orderBy: { conversation: { updatedAt: 'desc' } },
     });
 
-    // Calculate unread counts for all conversations
-    const unreadCounts = await Promise.all(
-      participations.map(async (p) => {
-        const lastReadAt = p.lastReadAt || new Date(0);
-        const count = await this.prisma.message.count({
-          where: {
-            conversationId: p.conversationId,
-            senderId: { not: userId },
-            createdAt: { gt: lastReadAt },
-          },
-        });
-        return { conversationId: p.conversationId, count };
-      })
+    if (participations.length === 0) {
+      return [];
+    }
+
+    // Batch query: Get unread counts for all conversations in a single query
+    const conversationIds = participations.map((p) => p.conversationId);
+    const lastReadMap = new Map(
+      participations.map((p) => [p.conversationId, p.lastReadAt || new Date(0)])
     );
 
-    const unreadMap = new Map(unreadCounts.map((u) => [u.conversationId, u.count]));
+    // Use raw query for efficient batch unread count
+    const unreadCounts = await this.prisma.$queryRaw<
+      { conversationId: string; count: bigint }[]
+    >`
+      SELECT 
+        "conversationId",
+        COUNT(*) as count
+      FROM "Message"
+      WHERE 
+        "conversationId" IN (${Prisma.join(conversationIds)})
+        AND "senderId" != ${userId}
+        AND "createdAt" > (
+          SELECT COALESCE("lastReadAt", '1970-01-01'::timestamp)
+          FROM "ConversationParticipant"
+          WHERE "conversationId" = "Message"."conversationId"
+            AND "userId" = ${userId}
+        )
+      GROUP BY "conversationId"
+    `;
+
+    const unreadMap = new Map(
+      unreadCounts.map((u) => [u.conversationId, Number(u.count)])
+    );
 
     return participations.map((p) => {
       const otherParticipant = p.conversation.participants.find((part) => part.userId !== userId);

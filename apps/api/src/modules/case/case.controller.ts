@@ -1,10 +1,12 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { CaseService } from './case.service';
-import { CurrentUser } from '../../common/decorators';
+import { CurrentUser, Public } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
-import { PaginationDto } from '../../common/dto/pagination.dto';
-import { Role, Visibility } from '@prisma/client';
+import { CaseQueryDto } from './dto/case-query.dto';
+import { CreateCaseDto } from './dto/create-case.dto';
+import { UpdateCaseDto } from './dto/update-case.dto';
+import { Role } from '@prisma/client';
 
 @ApiTags('cases')
 @ApiBearerAuth()
@@ -13,18 +15,19 @@ export class CaseController {
   constructor(private readonly caseService: CaseService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get admission cases' })
-  @ApiQuery({ name: 'schoolId', required: false })
-  @ApiQuery({ name: 'year', required: false })
-  @ApiQuery({ name: 'result', required: false })
+  @Public()
+  @ApiOperation({ summary: 'Get public admission cases' })
   async findAll(
-    @CurrentUser() user: CurrentUserPayload,
-    @Query() pagination: PaginationDto,
-    @Query('schoolId') schoolId?: string,
-    @Query('year') year?: number,
-    @Query('result') result?: string
+    @CurrentUser() user: CurrentUserPayload | null,
+    @Query() query: CaseQueryDto
   ) {
-    return this.caseService.findAll(pagination, { schoolId, year, result }, user.id, user.role as Role);
+    const { page, pageSize, schoolId, year, result, search } = query;
+    return this.caseService.findAll(
+      { page, pageSize }, 
+      { schoolId, year, result, search }, 
+      user?.id, 
+      (user?.role as Role) || null
+    );
   }
 
   @Get('me')
@@ -41,13 +44,13 @@ export class CaseController {
 
   @Post()
   @ApiOperation({ summary: 'Create admission case' })
-  async create(@CurrentUser() user: CurrentUserPayload, @Body() data: Record<string, unknown>) {
-    return this.caseService.create(user.id, data as any);
+  async create(@CurrentUser() user: CurrentUserPayload, @Body() data: CreateCaseDto) {
+    return this.caseService.create(user.id, data);
   }
 
   @Put(':id')
   @ApiOperation({ summary: 'Update my case' })
-  async update(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string, @Body() data: Record<string, unknown>) {
+  async update(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string, @Body() data: UpdateCaseDto) {
     return this.caseService.update(id, user.id, data);
   }
 

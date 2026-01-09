@@ -104,6 +104,11 @@ export class BatchRankingDto {
   schoolIds: string[];
 }
 
+export * from './verified-ranking.dto';
+
+
+
+
 
 
 

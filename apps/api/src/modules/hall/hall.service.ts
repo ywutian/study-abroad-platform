@@ -1,7 +1,13 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { Review, UserList, Prisma, Profile } from '@prisma/client';
+import { Review, UserList, Prisma, Profile, AdmissionResult } from '@prisma/client';
 import { PaginationDto, createPaginatedResponse, PaginatedResponseDto } from '../../common/dto/pagination.dto';
+import {
+  VerifiedRankingQueryDto,
+  VerifiedRankingResponseDto,
+  VerifiedUserDto,
+  RankingFilter,
+} from './dto';
 
 interface CreateReviewDto {
   profileUserId: string;
@@ -502,6 +508,164 @@ export class HallService {
       _sum: { value: true },
     });
     return result._sum.value || 0;
+  }
+
+  // ============================================
+  // Verified User Ranking (认证用户排行榜)
+  // ============================================
+
+  // 藤校列表
+  private readonly IVY_PLUS_SCHOOLS = [
+    'Harvard University',
+    'Yale University',
+    'Princeton University',
+    'Columbia University',
+    'University of Pennsylvania',
+    'Brown University',
+    'Dartmouth College',
+    'Cornell University',
+    'Stanford University',
+    'MIT',
+    'Massachusetts Institute of Technology',
+    'Duke University',
+    'University of Chicago',
+  ];
+
+  async getVerifiedRanking(query: VerifiedRankingQueryDto): Promise<VerifiedRankingResponseDto> {
+    const { filter = RankingFilter.ALL, year, schoolId, limit = 50, offset = 0 } = query;
+
+    // 构建查询条件
+    const where: Prisma.AdmissionCaseWhereInput = {
+      isVerified: true,
+    };
+
+    // 按年份筛选
+    if (year) {
+      where.year = year;
+    }
+
+    // 按学校筛选
+    if (schoolId) {
+      where.schoolId = schoolId;
+    }
+
+    // 按结果筛选
+    if (filter === RankingFilter.ADMITTED) {
+      where.result = AdmissionResult.ADMITTED;
+    }
+
+    // 按学校排名筛选
+    if (filter === RankingFilter.TOP20) {
+      where.school = {
+        usNewsRank: { lte: 20 },
+      };
+    }
+
+    // 按藤校筛选
+    if (filter === RankingFilter.IVY) {
+      where.school = {
+        name: { in: this.IVY_PLUS_SCHOOLS },
+      };
+    }
+
+    // 获取案例
+    const [cases, total] = await Promise.all([
+      this.prisma.admissionCase.findMany({
+        where,
+        include: {
+          school: true,
+          user: {
+            select: {
+              id: true,
+              profile: {
+                select: {
+                  realName: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: [
+          { school: { usNewsRank: 'asc' } },
+          { verifiedAt: 'desc' },
+        ],
+        skip: offset,
+        take: limit,
+      }),
+      this.prisma.admissionCase.count({ where }),
+    ]);
+
+    // 计算统计数据
+    const stats = await this.getVerifiedStats();
+
+    // 格式化返回数据
+    const users: VerifiedUserDto[] = cases.map((c, index) => ({
+      rank: offset + index + 1,
+      caseId: c.id,
+      userId: c.userId,
+      userName: c.user.profile?.realName || `用户${c.userId.slice(-4)}`,
+      gpaRange: c.gpaRange || undefined,
+      satRange: c.satRange || undefined,
+      actRange: c.actRange || undefined,
+      toeflRange: c.toeflRange || undefined,
+      schoolName: c.school.name,
+      schoolNameZh: c.school.nameZh || undefined,
+      schoolRank: c.school.usNewsRank || undefined,
+      result: c.result,
+      year: c.year,
+      round: c.round || undefined,
+      major: c.major || undefined,
+      isVerified: c.isVerified,
+      verifiedAt: c.verifiedAt || undefined,
+    }));
+
+    return {
+      users,
+      stats,
+      total,
+      hasMore: offset + limit < total,
+    };
+  }
+
+  private async getVerifiedStats() {
+    const [totalVerified, totalAdmitted, topSchoolsCount, ivyCount] = await Promise.all([
+      this.prisma.admissionCase.count({ where: { isVerified: true } }),
+      this.prisma.admissionCase.count({
+        where: { isVerified: true, result: AdmissionResult.ADMITTED },
+      }),
+      this.prisma.admissionCase.count({
+        where: {
+          isVerified: true,
+          result: AdmissionResult.ADMITTED,
+          school: { usNewsRank: { lte: 20 } },
+        },
+      }),
+      this.prisma.admissionCase.count({
+        where: {
+          isVerified: true,
+          result: AdmissionResult.ADMITTED,
+          school: { name: { in: this.IVY_PLUS_SCHOOLS } },
+        },
+      }),
+    ]);
+
+    return {
+      totalVerified,
+      totalAdmitted,
+      topSchoolsCount,
+      ivyCount,
+    };
+  }
+
+  async getAvailableYears(): Promise<number[]> {
+    const cases = await this.prisma.admissionCase.findMany({
+      where: { isVerified: true },
+      select: { year: true },
+      distinct: ['year'],
+      orderBy: { year: 'desc' },
+    });
+
+    return cases.map((c) => c.year);
   }
 }
 
