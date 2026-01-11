@@ -1,0 +1,337 @@
+/**
+ * Content Script 样式 - 注入到 CommonApp 页面
+ */
+
+/* 浮动按钮容器 */
+#studyabroad-floating-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999999;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+/* 浮动按钮 */
+.studyabroad-fab {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+  transition: all 0.3s ease;
+}
+
+.studyabroad-fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 24px rgba(99, 102, 241, 0.5);
+}
+
+.studyabroad-fab svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* 菜单 */
+.studyabroad-menu {
+  position: absolute;
+  bottom: 70px;
+  right: 0;
+  width: 280px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  animation: slideUp 0.3s ease;
+}
+
+.studyabroad-menu.hidden {
+  display: none;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 菜单头部 */
+.studyabroad-menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+}
+
+.studyabroad-logo {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.studyabroad-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.studyabroad-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* 菜单主体 */
+.studyabroad-menu-body {
+  padding: 16px;
+}
+
+.studyabroad-menu-body.hidden {
+  display: none;
+}
+
+/* 按钮 */
+.studyabroad-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  background: #f3f4f6;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 8px;
+}
+
+.studyabroad-btn:last-child {
+  margin-bottom: 0;
+}
+
+.studyabroad-btn:hover {
+  background: #e5e7eb;
+}
+
+.studyabroad-btn svg {
+  flex-shrink: 0;
+}
+
+.studyabroad-btn-primary {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+}
+
+.studyabroad-btn-primary:hover {
+  opacity: 0.9;
+  background: linear-gradient(135deg, #5855e8 0%, #7c4dff 100%);
+}
+
+/* 状态显示 */
+.studyabroad-status {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  text-align: center;
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.studyabroad-status-success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.studyabroad-status-error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.studyabroad-status-warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.studyabroad-status-info {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+/* 字段选择器 */
+.studyabroad-field-selector {
+  padding: 16px;
+}
+
+.studyabroad-field-selector.hidden {
+  display: none;
+}
+
+.studyabroad-fields-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.studyabroad-back {
+  background: none;
+  border: none;
+  color: #6366f1;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.studyabroad-back:hover {
+  background: #f3f4f6;
+}
+
+.studyabroad-fields-list {
+  max-height: 240px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+
+.studyabroad-field-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #f3f4f6;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.studyabroad-field-item:last-child {
+  border-bottom: none;
+}
+
+.studyabroad-field-item:hover {
+  background: #f9fafb;
+}
+
+.studyabroad-field-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.studyabroad-field-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #6366f1;
+}
+
+.studyabroad-field-name {
+  flex: 1;
+  font-size: 13px;
+  color: #374151;
+}
+
+.studyabroad-field-value {
+  font-size: 12px;
+  color: #9ca3af;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.studyabroad-no-fields {
+  padding: 20px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+/* 滚动条样式 */
+.studyabroad-fields-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.studyabroad-fields-list::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 3px;
+}
+
+.studyabroad-fields-list::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.studyabroad-fields-list::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .studyabroad-menu {
+    background: #1f2937;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  }
+
+  .studyabroad-btn {
+    background: #374151;
+    color: #f3f4f6;
+  }
+
+  .studyabroad-btn:hover {
+    background: #4b5563;
+  }
+
+  .studyabroad-status {
+    background: #374151;
+    color: #9ca3af;
+  }
+
+  .studyabroad-fields-list {
+    border-color: #374151;
+  }
+
+  .studyabroad-field-item {
+    border-color: #374151;
+  }
+
+  .studyabroad-field-item:hover {
+    background: #374151;
+  }
+
+  .studyabroad-field-name {
+    color: #f3f4f6;
+  }
+
+  .studyabroad-fields-header {
+    color: #f3f4f6;
+  }
+}
+
+
+

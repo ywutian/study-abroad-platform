@@ -13,6 +13,7 @@
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
+    "@study-abroad/shared": "workspace:*",
     "@babel/runtime": "^7.28.6",
     "@expo/metro-runtime": "~3.2.3",
     "@expo/vector-icons": "^14.0.0",
@@ -75,4 +76,8 @@
   },
   "private": true
 }
+
+
+
+
 

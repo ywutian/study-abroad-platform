@@ -1,0 +1,61 @@
+{
+  "manifest_version": 3,
+  "name": "StudyAbroad - CommonApp Auto-Fill",
+  "name_locales": {
+    "zh_CN": "留学助手 - CommonApp 自动填充"
+  },
+  "version": "1.0.0",
+  "description": "Automatically fill CommonApp forms with your profile data from StudyAbroad platform",
+  "description_locales": {
+    "zh_CN": "从留学助手平台自动填充 CommonApp 表单"
+  },
+  "permissions": [
+    "storage",
+    "activeTab",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://apply.commonapp.org/*",
+    "https://www.commonapp.org/*"
+  ],
+  "background": {
+    "service_worker": "dist/background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://apply.commonapp.org/*",
+        "https://www.commonapp.org/*"
+      ],
+      "js": ["dist/content.js"],
+      "css": ["dist/content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "StudyAbroad Auto-Fill"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
+
+
+

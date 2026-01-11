@@ -6,6 +6,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import { AnimatedButton } from './AnimatedButton';
 
@@ -28,13 +29,16 @@ export function ConfirmDialog({
   onConfirm,
   title,
   message,
-  confirmText = '确定',
-  cancelText = '取消',
+  confirmText,
+  cancelText,
   variant = 'default',
   loading = false,
   icon,
 }: ConfirmDialogProps) {
+  const { t } = useTranslation();
   const colors = useColors();
+  const finalConfirmText = confirmText ?? t('ui.dialog.confirm');
+  const finalCancelText = cancelText ?? t('ui.dialog.cancel');
   const isDestructive = variant === 'destructive';
 
   const defaultIcon = isDestructive ? 'warning' : 'help-circle';
@@ -78,7 +82,7 @@ export function ConfirmDialog({
                   style={styles.button}
                   disabled={loading}
                 >
-                  {cancelText}
+                  {finalCancelText}
                 </AnimatedButton>
                 <AnimatedButton
                   variant={isDestructive ? 'destructive' : 'default'}
@@ -86,7 +90,7 @@ export function ConfirmDialog({
                   style={styles.button}
                   loading={loading}
                 >
-                  {confirmText}
+                  {finalConfirmText}
                 </AnimatedButton>
               </View>
             </Animated.View>

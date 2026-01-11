@@ -8,6 +8,7 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Updates from 'expo-updates';
+import i18n from '@/lib/i18n';
 
 import { colors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 
@@ -69,9 +70,9 @@ export class ErrorBoundary extends Component<Props, State> {
               <Ionicons name="bug-outline" size={64} color={colors.light.error} />
             </View>
             
-            <Text style={styles.title}>出错了</Text>
+            <Text style={styles.title}>{i18n.t('ui.error.title')}</Text>
             <Text style={styles.message}>
-              应用遇到了一些问题，请尝试重试或重新加载应用。
+              {i18n.t('ui.error.message')}
             </Text>
 
             {__DEV__ && this.state.error && (
@@ -85,12 +86,12 @@ export class ErrorBoundary extends Component<Props, State> {
             <View style={styles.actions}>
               <TouchableOpacity style={styles.retryButton} onPress={this.handleRetry}>
                 <Ionicons name="refresh-outline" size={20} color="#fff" />
-                <Text style={styles.retryButtonText}>重试</Text>
+                <Text style={styles.retryButtonText}>{i18n.t('common.retry')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.reloadButton} onPress={this.handleReload}>
                 <Ionicons name="reload-outline" size={20} color={colors.light.foreground} />
-                <Text style={styles.reloadButtonText}>重新加载应用</Text>
+                <Text style={styles.reloadButtonText}>{i18n.t('common.reload')}</Text>
               </TouchableOpacity>
             </View>
           </View>

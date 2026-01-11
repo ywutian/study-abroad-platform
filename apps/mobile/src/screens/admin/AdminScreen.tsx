@@ -121,7 +121,7 @@ export default function AdminScreen() {
 
   const updateReportMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
-      apiClient.put(`/admin/reports/${id}`, { status, resolution: '管理员已处理' }),
+      apiClient.put(`/admin/reports/${id}`, { status, resolution: t('admin.dialogs.defaultResolution') }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminReports'] });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
@@ -129,7 +129,7 @@ export default function AdminScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     },
     onError: (error: Error) => {
-      Alert.alert('错误', error.message);
+      Alert.alert(t('admin.errors.generic'), error.message);
     },
   });
 
@@ -142,7 +142,7 @@ export default function AdminScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     },
     onError: (error: Error) => {
-      Alert.alert('错误', error.message);
+      Alert.alert(t('admin.errors.generic'), error.message);
     },
   });
 
@@ -155,7 +155,7 @@ export default function AdminScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     },
     onError: (error: Error) => {
-      Alert.alert('错误', error.message);
+      Alert.alert(t('admin.errors.generic'), error.message);
     },
   });
 
@@ -169,12 +169,12 @@ export default function AdminScreen() {
 
   const handleDeleteUser = (userId: string) => {
     Alert.alert(
-      '确认删除',
-      '此操作将软删除该用户，用户数据将被保留但无法登录。',
+      t('admin.dialogs.deleteConfirmTitle'),
+      t('admin.dialogs.deleteConfirmDesc'),
       [
-        { text: '取消', style: 'cancel' },
+        { text: t('admin.dialogs.cancel'), style: 'cancel' },
         {
-          text: '删除',
+          text: t('admin.dialogs.delete'),
           style: 'destructive',
           onPress: () => deleteUserMutation.mutate(userId),
         },
@@ -214,12 +214,7 @@ export default function AdminScreen() {
       REVIEWED: 'secondary',
       RESOLVED: 'success',
     };
-    const labels: Record<string, string> = {
-      PENDING: '待处理',
-      REVIEWED: '已审核',
-      RESOLVED: '已解决',
-    };
-    return <Badge variant={variants[status] || 'default'}>{labels[status] || status}</Badge>;
+    return <Badge variant={variants[status] || 'default'}>{t(`admin.reports.${status.toLowerCase()}`)}</Badge>;
   };
 
   const renderRoleBadge = (role: string) => {
@@ -228,12 +223,7 @@ export default function AdminScreen() {
       VERIFIED: 'default',
       USER: 'secondary',
     };
-    const labels: Record<string, string> = {
-      ADMIN: '管理员',
-      VERIFIED: '已认证',
-      USER: '普通用户',
-    };
-    return <Badge variant={variants[role] || 'secondary'}>{labels[role] || role}</Badge>;
+    return <Badge variant={variants[role] || 'secondary'}>{t(`admin.roles.${role}`)}</Badge>;
   };
 
   // ==================== Tab Content ====================
@@ -250,10 +240,10 @@ export default function AdminScreen() {
         </>
       ) : stats ? (
         <>
-          {renderStatCard('总用户', stats.totalUsers, 'people-outline', colors.primary, 0)}
-          {renderStatCard('录取案例', stats.totalCases, 'document-text-outline', colors.info, 1)}
-          {renderStatCard('待处理举报', stats.pendingReports, 'warning-outline', colors.warning, 2)}
-          {renderStatCard('评价数量', stats.totalReviews, 'star-outline', colors.success, 3)}
+          {renderStatCard(t('admin.stats.totalUsers'), stats.totalUsers, 'people-outline', colors.primary, 0)}
+          {renderStatCard(t('admin.stats.totalCases'), stats.totalCases, 'document-text-outline', colors.info, 1)}
+          {renderStatCard(t('admin.stats.pendingReports'), stats.pendingReports, 'warning-outline', colors.warning, 2)}
+          {renderStatCard(t('admin.stats.totalReviews'), stats.totalReviews, 'star-outline', colors.success, 3)}
         </>
       ) : null}
     </View>
@@ -288,7 +278,7 @@ export default function AdminScreen() {
                   </Text>
                 )}
                 <Text style={[styles.reportMeta, { color: colors.foregroundMuted }]}>
-                  举报人: {report.reporter.email}
+                  {t('admin.reports.reporter')}: {report.reporter.email}
                 </Text>
               </CardContent>
             </AnimatedCard>
@@ -297,8 +287,8 @@ export default function AdminScreen() {
       ) : (
         <EmptyState
           icon="checkmark-circle-outline"
-          title="暂无待处理举报"
-          description="所有举报已处理完毕"
+          title={t('admin.reports.noReports')}
+          description={t('admin.reports.noReportsDesc')}
         />
       )}
     </View>
@@ -311,7 +301,7 @@ export default function AdminScreen() {
         <Ionicons name="search-outline" size={20} color={colors.placeholder} />
         <TextInput
           style={[styles.searchInput, { color: colors.foreground }]}
-          placeholder="搜索用户邮箱..."
+          placeholder={t('admin.users.search')}
           placeholderTextColor={colors.placeholder}
           value={userSearch}
           onChangeText={setUserSearch}
@@ -362,8 +352,8 @@ export default function AdminScreen() {
       ) : (
         <EmptyState
           icon="people-outline"
-          title="未找到用户"
-          description="尝试其他搜索条件"
+          title={t('admin.users.notFound')}
+          description={t('admin.users.notFoundDesc')}
         />
       )}
     </View>
@@ -378,7 +368,7 @@ export default function AdminScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={colors.foreground} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.foreground }]}>管理后台</Text>
+        <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('admin.title')}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -389,14 +379,14 @@ export default function AdminScreen() {
             value={activeTab}
             onValueChange={(v) => setActiveTab(v as typeof activeTab)}
             items={[
-              { value: 'overview', label: '概览', icon: 'stats-chart-outline' },
+              { value: 'overview', label: t('admin.tabs.overview'), icon: 'stats-chart-outline' },
               {
                 value: 'reports',
-                label: '举报',
+                label: t('admin.tabs.reports'),
                 icon: 'warning-outline',
                 badge: stats?.pendingReports,
               },
-              { value: 'users', label: '用户', icon: 'people-outline' },
+              { value: 'users', label: t('admin.tabs.users'), icon: 'people-outline' },
             ]}
           />
         </ScrollView>
@@ -420,27 +410,27 @@ export default function AdminScreen() {
       <Modal
         visible={!!selectedReport}
         onClose={() => setSelectedReport(null)}
-        title="处理举报"
+        title={t('admin.reports.handleReport')}
       >
         {selectedReport && (
           <View style={styles.modalContent}>
             <View style={styles.modalRow}>
-              <Text style={[styles.modalLabel, { color: colors.foregroundMuted }]}>状态</Text>
+              <Text style={[styles.modalLabel, { color: colors.foregroundMuted }]}>{t('admin.reports.statusLabel')}</Text>
               {renderStatusBadge(selectedReport.status)}
             </View>
             <View style={styles.modalRow}>
-              <Text style={[styles.modalLabel, { color: colors.foregroundMuted }]}>类型</Text>
+              <Text style={[styles.modalLabel, { color: colors.foregroundMuted }]}>{t('admin.reports.type')}</Text>
               <Badge variant="secondary">{selectedReport.targetType}</Badge>
             </View>
             <View style={styles.modalRow}>
-              <Text style={[styles.modalLabel, { color: colors.foregroundMuted }]}>原因</Text>
+              <Text style={[styles.modalLabel, { color: colors.foregroundMuted }]}>{t('admin.reports.reason')}</Text>
               <Text style={[styles.modalValue, { color: colors.foreground }]}>
                 {selectedReport.reason}
               </Text>
             </View>
             {selectedReport.detail && (
               <View style={styles.modalRow}>
-                <Text style={[styles.modalLabel, { color: colors.foregroundMuted }]}>详情</Text>
+                <Text style={[styles.modalLabel, { color: colors.foregroundMuted }]}>{t('admin.reports.details')}</Text>
                 <Text style={[styles.modalValue, { color: colors.foreground }]}>
                   {selectedReport.detail}
                 </Text>
@@ -455,14 +445,14 @@ export default function AdminScreen() {
                   loading={updateReportMutation.isPending}
                   style={styles.modalButton}
                 >
-                  标记已审核
+                  {t('admin.reports.markReviewed')}
                 </Button>
                 <Button
                   onPress={() => updateReportMutation.mutate({ id: selectedReport.id, status: 'RESOLVED' })}
                   loading={updateReportMutation.isPending}
                   style={styles.modalButton}
                 >
-                  标记已解决
+                  {t('admin.reports.markResolved')}
                 </Button>
               </View>
             )}
@@ -474,7 +464,7 @@ export default function AdminScreen() {
       <Modal
         visible={!!selectedUser}
         onClose={() => setSelectedUser(null)}
-        title="用户详情"
+        title={t('admin.userDetail.title')}
       >
         {selectedUser && (
           <View style={styles.modalContent}>
@@ -486,9 +476,9 @@ export default function AdminScreen() {
               <View style={styles.userModalBadges}>
                 {renderRoleBadge(selectedUser.role)}
                 {selectedUser.emailVerified ? (
-                  <Badge variant="success">已验证</Badge>
+                  <Badge variant="success">{t('admin.users.verified')}</Badge>
                 ) : (
-                  <Badge variant="warning">未验证</Badge>
+                  <Badge variant="warning">{t('admin.users.notVerified')}</Badge>
                 )}
               </View>
             </View>
@@ -499,7 +489,7 @@ export default function AdminScreen() {
                   {selectedUser._count.admissionCases}
                 </Text>
                 <Text style={[styles.userModalStatLabel, { color: colors.foregroundMuted }]}>
-                  案例
+                  {t('admin.users.cases')}
                 </Text>
               </View>
               <View style={[styles.userModalStatDivider, { backgroundColor: colors.border }]} />
@@ -508,7 +498,7 @@ export default function AdminScreen() {
                   {selectedUser._count.reviewsGiven}
                 </Text>
                 <Text style={[styles.userModalStatLabel, { color: colors.foregroundMuted }]}>
-                  评价
+                  {t('admin.users.reviews')}
                 </Text>
               </View>
             </View>
@@ -523,7 +513,7 @@ export default function AdminScreen() {
                     style={styles.modalButton}
                     leftIcon={<Ionicons name="checkmark-circle-outline" size={18} color={colors.foreground} />}
                   >
-                    设为已认证
+                    {t('admin.users.setVerified')}
                   </Button>
                 )}
                 {selectedUser.role === 'VERIFIED' && (
@@ -534,7 +524,7 @@ export default function AdminScreen() {
                     style={styles.modalButton}
                     leftIcon={<Ionicons name="person-outline" size={18} color={colors.foreground} />}
                   >
-                    设为普通用户
+                    {t('admin.users.setUser')}
                   </Button>
                 )}
                 <Button
@@ -544,7 +534,7 @@ export default function AdminScreen() {
                   style={styles.modalButton}
                   leftIcon={<Ionicons name="trash-outline" size={18} color="#fff" />}
                 >
-                  删除用户
+                  {t('admin.users.delete')}
                 </Button>
               </View>
             )}

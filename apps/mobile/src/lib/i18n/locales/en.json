@@ -27,7 +27,34 @@
     "noData": "No data",
     "loadMore": "Load More",
     "pullToRefresh": "Pull to refresh",
-    "releaseToRefresh": "Release to refresh"
+    "releaseToRefresh": "Release to refresh",
+    "reload": "Reload App"
+  },
+  "ui": {
+    "dialog": {
+      "confirm": "OK",
+      "cancel": "Cancel"
+    },
+    "error": {
+      "title": "Something went wrong",
+      "message": "The app encountered an issue. Please try again or reload the app."
+    },
+    "network": {
+      "offline": "Network disconnected, some features unavailable",
+      "restored": "Network restored"
+    },
+    "status": {
+      "draft": "Draft",
+      "pending": "Pending",
+      "inProgress": "In Progress",
+      "reviewing": "Reviewing",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "active": "Active",
+      "inactive": "Inactive"
+    }
   },
   "tabs": {
     "home": "Home",
@@ -330,6 +357,71 @@
     "unblock": "Unblock",
     "startChat": "Start Chat"
   },
+  "hallOfFame": {
+    "title": "Hall of Fame",
+    "subtitle": "Recording every effort and success",
+    "stats": {
+      "totalAdmissions": "Admissions",
+      "topSchools": "Top Schools",
+      "avgGpa": "Avg GPA",
+      "successRate": "Success Rate"
+    },
+    "tabs": {
+      "all": "All",
+      "ivy": "Ivy",
+      "top10": "Top 10",
+      "top30": "Top 30"
+    },
+    "empty": {
+      "title": "No data yet",
+      "description": "Be the first to join the Hall of Fame!"
+    },
+    "card": {
+      "scores": "Scores",
+      "undergrad": "Undergrad"
+    }
+  },
+  "essays": {
+    "title": "My Essays",
+    "types": {
+      "personal_statement": "Personal Statement",
+      "supplemental": "Supplemental",
+      "why_school": "Why School",
+      "activity": "Activity",
+      "other": "Other"
+    },
+    "status": {
+      "draft": "Draft",
+      "in_progress": "In Progress",
+      "review": "Under Review",
+      "completed": "Completed"
+    },
+    "stats": {
+      "all": "All",
+      "draft": "Draft",
+      "inProgress": "In Progress",
+      "completed": "Completed"
+    },
+    "toast": {
+      "deleted": "Essay deleted",
+      "deleteFailed": "Delete failed"
+    },
+    "empty": {
+      "title": "No essays yet",
+      "description": "Click the button below to create your first essay",
+      "loginRequired": "Please login first",
+      "loginRequiredDesc": "Login to manage your essays"
+    },
+    "newEssay": "New Essay",
+    "aiReview": "AI Review",
+    "aiReviewPrompt": "Please help me review this essay: ",
+    "wordCount": "{current} / {limit} words",
+    "deleteDialog": {
+      "title": "Delete Essay",
+      "message": "Are you sure you want to delete this essay? This action cannot be undone.",
+      "confirm": "Delete"
+    }
+  },
   "hall": {
     "title": "Feature Hall",
     "tabs": {
@@ -376,18 +468,33 @@
   },
   "ranking": {
     "title": "Custom Rankings",
+    "subtitle": "Adjust weight parameters to generate personalized school rankings",
     "weights": "Weight Settings",
+    "totalWeight": "Total: {total}%",
     "usnewsRank": "US News Rank",
+    "usnewsHint": "Higher rank = Higher score",
     "acceptanceRate": "Acceptance Rate",
+    "acceptanceHint": "Lower acceptance rate = Higher score",
     "tuition": "Tuition",
+    "tuitionHint": "Lower tuition = Higher score",
     "avgSalary": "Avg Salary",
+    "salaryHint": "Higher salary = Higher score",
     "preview": "Preview Rankings",
     "saveRanking": "Save Ranking",
     "shareRanking": "Share Ranking",
-    "myRankings": "My Rankings"
+    "myRankings": "My Rankings",
+    "toast": {
+      "saved": "Ranking saved",
+      "saveFailed": "Save failed",
+      "enterName": "Please enter a ranking name"
+    },
+    "emptyTitle": "Click Preview to see results",
+    "emptyDesc": "Adjust weight parameters and click preview",
+    "score": "pts"
   },
   "prediction": {
     "title": "Admission Prediction",
+    "subtitle": "AI-powered prediction of your admission probability",
     "selectSchools": "Select Target Schools",
     "runPrediction": "Run Prediction",
     "probability": "Admission Probability",
@@ -397,7 +504,36 @@
     "suggestion": "Suggestion",
     "high": "High",
     "medium": "Medium",
-    "low": "Low"
+    "low": "Low",
+    "profileCompleteness": "Profile Completeness",
+    "completeProfileHint": "Complete your profile for better prediction accuracy",
+    "stats": {
+      "predicted": "Schools Predicted",
+      "safety": "Safety Schools",
+      "reach": "Reach Schools"
+    },
+    "results": "Prediction Results",
+    "recommendation": {
+      "reach": "Reach",
+      "match": "Match",
+      "safety": "Safety"
+    },
+    "factorLabels": {
+      "gpa": "GPA",
+      "testScore": "Test Scores",
+      "activities": "Activities",
+      "essays": "Essays"
+    },
+    "confidence": "Confidence: {value}%",
+    "empty": {
+      "loginRequired": "Please login first",
+      "loginRequiredDesc": "Login to use admission prediction",
+      "goLogin": "Login",
+      "title": "No predictions yet",
+      "description": "Add schools to start prediction",
+      "addSchool": "Add School"
+    },
+    "addPrediction": "Add School Prediction"
   },
   "settings": {
     "title": "Settings",
@@ -416,10 +552,32 @@
     "version": "Version",
     "feedback": "Feedback",
     "rateApp": "Rate App",
-    "clearCache": "Clear Cache"
+    "clearCache": "Clear Cache",
+    "sections": {
+      "account": "Account",
+      "preferences": "Preferences",
+      "support": "Support",
+      "about": "About",
+      "accountActions": "Account Actions"
+    },
+    "personalInfo": "Personal Info",
+    "accountSecurity": "Account Security",
+    "subscription": "Subscription",
+    "freeVersion": "Free",
+    "pushNotification": "Push Notifications",
+    "biometrics": "Biometrics",
+    "helpCenter": "Help Center",
+    "contactSupport": "Contact Support",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "logoutConfirm": "Are you sure you want to logout?",
+    "deleteAccountConfirm": "This action is irreversible. Are you sure you want to delete your account? All data will be permanently deleted.",
+    "featureInDev": "Feature in Development",
+    "thankYou": "Thank You",
+    "thankYouReview": "Thank you for your review!"
   },
   "admin": {
-    "title": "Admin Panel",
+    "title": "Admin Dashboard",
     "tabs": {
       "overview": "Overview",
       "users": "Users",
@@ -428,26 +586,57 @@
     },
     "stats": {
       "totalUsers": "Total Users",
-      "newUsersToday": "New Today",
       "totalCases": "Total Cases",
-      "pendingReports": "Pending Reports"
+      "pendingReports": "Pending Reports",
+      "totalReviews": "Total Reviews"
     },
     "users": {
-      "search": "Search Users",
+      "search": "Search by email...",
       "role": "Role",
       "status": "Status",
-      "actions": "Actions"
+      "actions": "Actions",
+      "cases": "Cases",
+      "reviews": "Reviews",
+      "setVerified": "Set Verified",
+      "setUser": "Set as User",
+      "delete": "Delete User",
+      "notFound": "No users found",
+      "notFoundDesc": "Try other search criteria",
+      "verified": "Verified",
+      "notVerified": "Not Verified"
     },
     "reports": {
       "pending": "Pending",
+      "reviewed": "Reviewed",
       "resolved": "Resolved",
-      "dismiss": "Dismiss",
-      "resolve": "Resolve"
+      "reporter": "Reporter",
+      "type": "Type",
+      "reason": "Reason",
+      "details": "Details",
+      "markReviewed": "Mark Reviewed",
+      "markResolved": "Mark Resolved",
+      "noReports": "No pending reports",
+      "noReportsDesc": "All reports have been processed",
+      "handleReport": "Handle Report",
+      "statusLabel": "Status"
     },
-    "schools": {
-      "sync": "Sync Data",
-      "scrape": "Scrape Info",
-      "lastSync": "Last Sync"
+    "roles": {
+      "ADMIN": "Admin",
+      "VERIFIED": "Verified",
+      "USER": "User"
+    },
+    "dialogs": {
+      "deleteConfirmTitle": "Confirm Delete",
+      "deleteConfirmDesc": "This will soft delete the user. Data will be retained but user cannot login.",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "defaultResolution": "Resolved by admin"
+    },
+    "userDetail": {
+      "title": "User Details"
+    },
+    "errors": {
+      "generic": "Error"
     }
   },
   "errors": {

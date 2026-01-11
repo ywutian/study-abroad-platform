@@ -60,12 +60,12 @@ export default function SettingsScreen() {
 
   const handleLogout = () => {
     Alert.alert(
-      '退出登录',
-      '确定要退出登录吗？',
+      t('common.logout'),
+      t('settings.logoutConfirm'),
       [
-        { text: '取消', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: '退出',
+          text: t('common.logout'),
           style: 'destructive',
           onPress: () => {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -79,16 +79,16 @@ export default function SettingsScreen() {
 
   const handleDeleteAccount = () => {
     Alert.alert(
-      '删除账号',
-      '此操作不可逆，确定要删除账号吗？所有数据将被永久删除。',
+      t('settings.deleteAccount'),
+      t('settings.deleteAccountConfirm'),
       [
-        { text: '取消', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: '删除',
+          text: t('common.delete'),
           style: 'destructive',
           onPress: () => {
             // TODO: Call delete account API
-            Alert.alert('功能开发中', '请联系客服删除账号');
+            Alert.alert(t('settings.featureInDev'), t('settings.contactSupport'));
           },
         },
       ]
@@ -103,35 +103,35 @@ export default function SettingsScreen() {
 
   const sections: SettingSection[] = [
     {
-      title: '账户',
+      title: t('settings.sections.account'),
       items: [
         {
           icon: 'person-outline',
-          label: '个人信息',
+          label: t('settings.personalInfo'),
           type: 'navigate',
           onPress: () => router.push('/profile/edit'),
         },
         {
           icon: 'shield-checkmark-outline',
-          label: '账号安全',
+          label: t('settings.accountSecurity'),
           type: 'navigate',
           onPress: () => router.push('/settings/security'),
         },
         {
           icon: 'card-outline',
-          label: '会员订阅',
-          value: user?.role === 'VIP' ? 'VIP' : '免费版',
+          label: t('settings.subscription'),
+          value: user?.role === 'VIP' ? 'VIP' : t('settings.freeVersion'),
           type: 'navigate',
           onPress: () => router.push('/settings/subscription'),
         },
       ],
     },
     {
-      title: '偏好设置',
+      title: t('settings.sections.preferences'),
       items: [
         {
           icon: 'moon-outline',
-          label: '深色模式',
+          label: t('settings.darkMode'),
           type: 'toggle',
           toggleValue: colorScheme === 'dark',
           onToggle: (value) => {
@@ -141,14 +141,14 @@ export default function SettingsScreen() {
         },
         {
           icon: 'language-outline',
-          label: '语言',
+          label: t('settings.language'),
           value: i18n.language === 'zh' ? '简体中文' : 'English',
           type: 'navigate',
           onPress: handleLanguageChange,
         },
         {
           icon: 'notifications-outline',
-          label: '推送通知',
+          label: t('settings.pushNotification'),
           type: 'toggle',
           toggleValue: notifications,
           onToggle: (value) => {
@@ -158,7 +158,7 @@ export default function SettingsScreen() {
         },
         {
           icon: 'finger-print-outline',
-          label: '生物识别',
+          label: t('settings.biometrics'),
           type: 'toggle',
           toggleValue: biometrics,
           onToggle: (value) => {
@@ -169,49 +169,49 @@ export default function SettingsScreen() {
       ],
     },
     {
-      title: '支持',
+      title: t('settings.sections.support'),
       items: [
         {
           icon: 'help-circle-outline',
-          label: '帮助中心',
+          label: t('settings.helpCenter'),
           type: 'navigate',
           onPress: () => Linking.openURL('https://help.example.com'),
         },
         {
           icon: 'chatbubble-outline',
-          label: '联系客服',
+          label: t('settings.contactSupport'),
           type: 'navigate',
           onPress: () => Linking.openURL('mailto:support@example.com'),
         },
         {
           icon: 'star-outline',
-          label: '给我们评分',
+          label: t('settings.rateApp'),
           type: 'navigate',
           onPress: () => {
             // TODO: Open app store review
-            Alert.alert('感谢支持', '感谢您的好评！');
+            Alert.alert(t('settings.thankYou'), t('settings.thankYouReview'));
           },
         },
       ],
     },
     {
-      title: '关于',
+      title: t('settings.sections.about'),
       items: [
         {
           icon: 'information-circle-outline',
-          label: '版本',
+          label: t('settings.version'),
           value: Constants.expoConfig?.version || '1.0.0',
           type: 'info',
         },
         {
           icon: 'document-text-outline',
-          label: '用户协议',
+          label: t('settings.termsOfService'),
           type: 'navigate',
           onPress: () => Linking.openURL('https://example.com/terms'),
         },
         {
           icon: 'shield-outline',
-          label: '隐私政策',
+          label: t('settings.privacyPolicy'),
           type: 'navigate',
           onPress: () => Linking.openURL('https://example.com/privacy'),
         },
@@ -222,17 +222,17 @@ export default function SettingsScreen() {
   // 添加登出和删除账号
   if (isAuthenticated) {
     sections.push({
-      title: '账号操作',
+      title: t('settings.sections.accountActions'),
       items: [
         {
           icon: 'log-out-outline',
-          label: '退出登录',
+          label: t('common.logout'),
           type: 'action',
           onPress: handleLogout,
         },
         {
           icon: 'trash-outline',
-          label: '删除账号',
+          label: t('settings.deleteAccount'),
           type: 'action',
           danger: true,
           onPress: handleDeleteAccount,

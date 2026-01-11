@@ -129,9 +129,9 @@ export default function HallOfFameScreen() {
             <View style={styles.trophyContainer}>
               <Ionicons name="trophy" size={48} color="#fff" />
             </View>
-            <Text style={styles.headerTitle}>荣誉殿堂</Text>
+            <Text style={styles.headerTitle}>{t('hallOfFame.title')}</Text>
             <Text style={styles.headerSubtitle}>
-              记录每一份努力与成功
+              {t('hallOfFame.subtitle')}
             </Text>
           </View>
 
@@ -139,26 +139,26 @@ export default function HallOfFameScreen() {
           <View style={styles.statsRow}>
             <StatItem
               value={stats.totalAdmissions}
-              label="总录取"
+              label={t('hallOfFame.stats.totalAdmissions')}
               icon="checkmark-done"
             />
             <View style={styles.statDivider} />
             <StatItem
               value={stats.topSchools}
-              label="Top 学校"
+              label={t('hallOfFame.stats.topSchools')}
               icon="school"
             />
             <View style={styles.statDivider} />
             <StatItem
               value={stats.avgGpa}
-              label="平均 GPA"
+              label={t('hallOfFame.stats.avgGpa')}
               decimals={2}
               icon="stats-chart"
             />
             <View style={styles.statDivider} />
             <StatItem
               value={stats.successRate}
-              label="成功率"
+              label={t('hallOfFame.stats.successRate')}
               suffix="%"
               icon="trending-up"
             />
@@ -174,10 +174,10 @@ export default function HallOfFameScreen() {
           contentContainerStyle={styles.tabs}
         >
           {[
-            { key: 'all', label: '全部' },
-            { key: 'ivy', label: '藤校' },
-            { key: 'top10', label: 'Top 10' },
-            { key: 'top30', label: 'Top 30' },
+            { key: 'all', label: t('hallOfFame.tabs.all') },
+            { key: 'ivy', label: t('hallOfFame.tabs.ivy') },
+            { key: 'top10', label: t('hallOfFame.tabs.top10') },
+            { key: 'top30', label: t('hallOfFame.tabs.top30') },
           ].map((tab) => (
             <TouchableOpacity
               key={tab.key}
@@ -232,8 +232,8 @@ export default function HallOfFameScreen() {
           ) : (
             <EmptyState
               icon="trophy-outline"
-              title="暂无数据"
-              description="成为第一个加入荣誉殿堂的人吧！"
+              title={t('hallOfFame.empty.title')}
+              description={t('hallOfFame.empty.description')}
             />
           )}
         </View>
@@ -341,7 +341,7 @@ function MemberCard({
             {member.testScores && (
               <View style={[styles.memberStat, { backgroundColor: colors.muted }]}>
                 <Text style={[styles.memberStatLabel, { color: colors.foregroundMuted }]}>
-                  标化
+                  {t('hallOfFame.card.scores')}
                 </Text>
                 <Text style={[styles.memberStatValue, { color: colors.foreground }]}>
                   {member.testScores}
@@ -351,7 +351,7 @@ function MemberCard({
             {member.previousSchool && (
               <View style={[styles.memberStat, { backgroundColor: colors.muted }]}>
                 <Text style={[styles.memberStatLabel, { color: colors.foregroundMuted }]}>
-                  本科
+                  {t('hallOfFame.card.undergrad')}
                 </Text>
                 <Text
                   style={[styles.memberStatValue, { color: colors.foreground }]}

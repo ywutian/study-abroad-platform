@@ -10,6 +10,7 @@ import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
+import { useTranslation } from 'react-i18next';
 
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 
@@ -34,6 +35,7 @@ interface NetworkProviderProps {
 }
 
 export function NetworkProvider({ children }: NetworkProviderProps) {
+  const { t } = useTranslation();
   const colors = useColors();
   const insets = useSafeAreaInsets();
   
@@ -121,7 +123,7 @@ export function NetworkProvider({ children }: NetworkProviderProps) {
               color="#fff"
             />
             <Text style={styles.bannerText}>
-              {isOffline ? '网络已断开，部分功能不可用' : '网络已恢复连接'}
+              {isOffline ? t('ui.network.offline') : t('ui.network.restored')}
             </Text>
           </View>
         </Animated.View>

@@ -51,20 +51,20 @@ interface Essay {
   createdAt: string;
 }
 
-const essayTypes: { value: EssayType; label: string; icon: string }[] = [
-  { value: 'personal_statement', label: '个人陈述', icon: 'person' },
-  { value: 'supplemental', label: '补充文书', icon: 'add-circle' },
-  { value: 'why_school', label: 'Why School', icon: 'school' },
-  { value: 'activity', label: '活动描述', icon: 'trophy' },
-  { value: 'other', label: '其他', icon: 'document-text' },
+const getEssayTypes = (t: any): { value: EssayType; label: string; icon: string }[] => [
+  { value: 'personal_statement', label: t('essays.types.personal_statement'), icon: 'person' },
+  { value: 'supplemental', label: t('essays.types.supplemental'), icon: 'add-circle' },
+  { value: 'why_school', label: t('essays.types.why_school'), icon: 'school' },
+  { value: 'activity', label: t('essays.types.activity'), icon: 'trophy' },
+  { value: 'other', label: t('essays.types.other'), icon: 'document-text' },
 ];
 
-const statusConfig: Record<EssayStatus, { label: string; variant: 'warning' | 'info' | 'primary' | 'success' }> = {
-  draft: { label: '草稿', variant: 'warning' },
-  in_progress: { label: '写作中', variant: 'info' },
-  review: { label: '待审核', variant: 'primary' },
-  completed: { label: '已完成', variant: 'success' },
-};
+const getStatusConfig = (t: any): Record<EssayStatus, { label: string; variant: 'warning' | 'info' | 'primary' | 'success' }> => ({
+  draft: { label: t('essays.status.draft'), variant: 'warning' },
+  in_progress: { label: t('essays.status.in_progress'), variant: 'info' },
+  review: { label: t('essays.status.review'), variant: 'primary' },
+  completed: { label: t('essays.status.completed'), variant: 'success' },
+});
 
 export default function EssaysScreen() {
   const { t } = useTranslation();
@@ -90,10 +90,10 @@ export default function EssaysScreen() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['essays'] });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      showToast({ type: 'success', message: '文书已删除' });
+      showToast({ type: 'success', message: t('essays.toast.deleted') });
     },
     onError: () => {
-      showToast({ type: 'error', message: '删除失败' });
+      showToast({ type: 'error', message: t('essays.toast.deleteFailed') });
     },
   });
 
@@ -133,8 +133,8 @@ export default function EssaysScreen() {
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <EmptyState
           icon="lock-closed-outline"
-          title="请先登录"
-          description="登录后即可管理您的文书"
+          title={t('essays.empty.title')}
+          description={t('essays.empty.loginRequiredDesc')}
         />
       </View>
     );
@@ -153,7 +153,7 @@ export default function EssaysScreen() {
         <Animated.View entering={FadeInDown.duration(400)}>
           <View style={styles.statsContainer}>
             <StatCard
-              label="全部"
+              label={t('essays.stats.all')}
               value={stats.total}
               icon="document-text"
               color={colors.primary}
@@ -161,7 +161,7 @@ export default function EssaysScreen() {
               onPress={() => setActiveTab('all')}
             />
             <StatCard
-              label="草稿"
+              label={t('essays.stats.draft')}
               value={stats.draft}
               icon="create"
               color={colors.warning}
@@ -169,7 +169,7 @@ export default function EssaysScreen() {
               onPress={() => setActiveTab('draft')}
             />
             <StatCard
-              label="写作中"
+              label={t('essays.stats.inProgress')}
               value={stats.inProgress}
               icon="pencil"
               color={colors.info}
@@ -177,7 +177,7 @@ export default function EssaysScreen() {
               onPress={() => setActiveTab('in_progress')}
             />
             <StatCard
-              label="已完成"
+              label={t('essays.stats.completed')}
               value={stats.completed}
               icon="checkmark-circle"
               color={colors.success}
@@ -190,7 +190,7 @@ export default function EssaysScreen() {
         {/* Essay List */}
         <View style={styles.listSection}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-            我的文书
+            {t('essays.title')}
           </Text>
 
           {isLoading ? (
@@ -210,7 +210,7 @@ export default function EssaysScreen() {
                   onAIReview={() => {
                     router.push({
                       pathname: '/(tabs)/ai',
-                      params: { prompt: `请帮我审阅这篇文书：${essay.title}` },
+                      params: { prompt: `${t('essays.aiReviewPrompt')}${essay.title}` },
                     });
                   }}
                 />
@@ -219,8 +219,8 @@ export default function EssaysScreen() {
           ) : (
             <EmptyState
               icon="document-text-outline"
-              title="暂无文书"
-              description="点击下方按钮创建第一篇文书"
+              title={t('essays.empty.title')}
+              description={t('essays.empty.description')}
             />
           )}
         </View>
@@ -236,7 +236,7 @@ export default function EssaysScreen() {
           style={styles.fabButton}
           leftIcon={<Ionicons name="add" size={24} color="#fff" />}
         >
-          新建文书
+          {t('essays.newEssay')}
         </AnimatedButton>
       </Animated.View>
 
@@ -245,9 +245,9 @@ export default function EssaysScreen() {
         visible={!!deleteId}
         onClose={() => setDeleteId(null)}
         onConfirm={confirmDelete}
-        title="删除文书"
-        message="确定要删除这篇文书吗？此操作不可撤销。"
-        confirmText="删除"
+        title={t('essays.deleteDialog.title')}
+        message={t('essays.deleteDialog.message')}
+        confirmText={t('essays.deleteDialog.confirm')}
         variant="destructive"
         loading={deleteMutation.isPending}
       />
@@ -308,7 +308,8 @@ function EssayCard({
   onDelete: () => void;
   onAIReview: () => void;
 }) {
-  const typeInfo = essayTypes.find(t => t.value === essay.type);
+  const { t } = useTranslation();
+  const typeInfo = essayTypes.find(type => type.value === essay.type);
   const statusInfo = statusConfig[essay.status];
   const progress = essay.wordLimit ? Math.min((essay.wordCount / essay.wordLimit) * 100, 100) : 0;
 
@@ -346,7 +347,7 @@ function EssayCard({
                 />
               </View>
               <Text style={[styles.wordCount, { color: colors.foregroundMuted }]}>
-                {essay.wordCount} / {essay.wordLimit} 词
+                {essay.wordCount} / {essay.wordLimit}
               </Text>
             </View>
           )}
@@ -358,7 +359,7 @@ function EssayCard({
               style={[styles.actionButton, { backgroundColor: colors.primary + '15' }]}
             >
               <Ionicons name="sparkles" size={16} color={colors.primary} />
-              <Text style={[styles.actionText, { color: colors.primary }]}>AI 审阅</Text>
+              <Text style={[styles.actionText, { color: colors.primary }]}>{t('essays.aiReview')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={onDelete}

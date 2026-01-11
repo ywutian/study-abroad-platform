@@ -103,9 +103,9 @@ export default function PredictionScreen() {
 
   const getRecommendationLabel = (rec: string) => {
     switch (rec) {
-      case 'reach': return '冲刺';
-      case 'match': return '匹配';
-      case 'safety': return '保底';
+      case 'reach': return t('prediction.recommendation.reach');
+      case 'match': return t('prediction.recommendation.match');
+      case 'safety': return t('prediction.recommendation.safety');
       default: return rec;
     }
   };
@@ -115,10 +115,10 @@ export default function PredictionScreen() {
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <EmptyState
           icon="lock-closed-outline"
-          title="请先登录"
-          description="登录后即可使用录取预测功能"
+          title={t('prediction.empty.loginRequired')}
+          description={t('prediction.empty.loginRequiredDesc')}
           action={{
-            label: '去登录',
+            label: t('prediction.empty.goLogin'),
             onPress: () => {},
           }}
         />
@@ -148,9 +148,9 @@ export default function PredictionScreen() {
               <Ionicons name="analytics" size={32} color="#fff" />
             </View>
             <View style={styles.headerText}>
-              <Text style={styles.headerTitle}>录取预测</Text>
+              <Text style={styles.headerTitle}>{t('prediction.title')}</Text>
               <Text style={styles.headerSubtitle}>
-                基于 AI 算法，预测你的录取概率
+                {t('prediction.subtitle')}
               </Text>
             </View>
           </View>
@@ -158,7 +158,7 @@ export default function PredictionScreen() {
           {/* Profile Completeness */}
           <View style={styles.progressSection}>
             <View style={styles.progressHeader}>
-              <Text style={styles.progressLabel}>档案完整度</Text>
+              <Text style={styles.progressLabel}>{t('prediction.profileCompleteness')}</Text>
               <Text style={styles.progressValue}>
                 {profile?.completeness || 0}%
               </Text>
@@ -172,7 +172,7 @@ export default function PredictionScreen() {
             />
             {(profile?.completeness || 0) < 80 && (
               <Text style={styles.progressHint}>
-                完善档案可提高预测准确度
+                {t('prediction.completeProfileHint')}
               </Text>
             )}
           </View>
@@ -191,7 +191,7 @@ export default function PredictionScreen() {
             style={[styles.statValue, { color: colors.foreground }]}
           />
           <Text style={[styles.statLabel, { color: colors.foregroundMuted }]}>
-            已预测学校
+            {t('prediction.stats.predicted')}
           </Text>
         </View>
         <View style={[styles.statCard, { backgroundColor: colors.card }]}>
@@ -201,7 +201,7 @@ export default function PredictionScreen() {
             style={[styles.statValue, { color: colors.foreground }]}
           />
           <Text style={[styles.statLabel, { color: colors.foregroundMuted }]}>
-            保底学校
+            {t('prediction.stats.safety')}
           </Text>
         </View>
         <View style={[styles.statCard, { backgroundColor: colors.card }]}>
@@ -211,7 +211,7 @@ export default function PredictionScreen() {
             style={[styles.statValue, { color: colors.foreground }]}
           />
           <Text style={[styles.statLabel, { color: colors.foregroundMuted }]}>
-            冲刺学校
+            {t('prediction.stats.reach')}
           </Text>
         </View>
       </Animated.View>
@@ -219,7 +219,7 @@ export default function PredictionScreen() {
       {/* Predictions List */}
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-          预测结果
+          {t('prediction.results')}
         </Text>
 
         {predictionsLoading ? (
@@ -251,7 +251,7 @@ export default function PredictionScreen() {
                         style={[styles.rate, { color: getRecommendationColor(prediction.recommendation) }]}
                       />
                       <Text style={[styles.rateLabel, { color: colors.foregroundMuted }]}>
-                        录取概率
+                        {t('prediction.probability')}
                       </Text>
                     </View>
                   </View>
@@ -259,29 +259,29 @@ export default function PredictionScreen() {
                   {/* Factor Breakdown */}
                   <View style={styles.factors}>
                     <FactorBar
-                      label="GPA"
+                      label={t('prediction.factorLabels.gpa')}
                       value={prediction.factors.gpa}
                       color={colors.primary}
                     />
                     <FactorBar
-                      label="标化"
+                      label={t('prediction.factorLabels.testScore')}
                       value={prediction.factors.testScore}
                       color={colors.success}
                     />
                     <FactorBar
-                      label="活动"
+                      label={t('prediction.factorLabels.activities')}
                       value={prediction.factors.activities}
                       color={colors.warning}
                     />
                     <FactorBar
-                      label="文书"
+                      label={t('prediction.factorLabels.essays')}
                       value={prediction.factors.essays}
                       color={colors.info}
                     />
                   </View>
 
                   <Text style={[styles.confidence, { color: colors.foregroundMuted }]}>
-                    置信度: {prediction.confidence}%
+                    {t('prediction.confidence', { value: prediction.confidence })}
                   </Text>
                 </CardContent>
               </AnimatedCard>
@@ -290,10 +290,10 @@ export default function PredictionScreen() {
         ) : (
           <EmptyState
             icon="analytics-outline"
-            title="暂无预测结果"
-            description="添加学校开始预测"
+            title={t('prediction.empty.title')}
+            description={t('prediction.empty.description')}
             action={{
-              label: '添加学校',
+              label: t('prediction.empty.addSchool'),
               onPress: () => {},
             }}
           />
@@ -307,7 +307,7 @@ export default function PredictionScreen() {
           style={styles.addButton}
           leftIcon={<Ionicons name="add-circle-outline" size={20} color="#fff" />}
         >
-          添加学校预测
+          {t('prediction.addPrediction')}
         </AnimatedButton>
       </View>
     </ScrollView>

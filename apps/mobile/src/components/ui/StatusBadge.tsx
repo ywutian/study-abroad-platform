@@ -5,6 +5,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 
 type StatusType = 
@@ -39,65 +40,66 @@ export function StatusBadge({
   showIcon = false,
   style,
 }: StatusBadgeProps) {
+  const { t } = useTranslation();
   const colors = useColors();
 
   const statusConfigs: Record<StatusType, StatusConfig> = {
     draft: {
-      label: '草稿',
+      label: t('ui.status.draft'),
       color: colors.warning,
       bgColor: colors.warning + '20',
       icon: 'create-outline',
     },
     pending: {
-      label: '待处理',
+      label: t('ui.status.pending'),
       color: colors.warning,
       bgColor: colors.warning + '20',
       icon: 'time-outline',
     },
     in_progress: {
-      label: '进行中',
+      label: t('ui.status.inProgress'),
       color: colors.info,
       bgColor: colors.info + '20',
       icon: 'reload-outline',
     },
     review: {
-      label: '审核中',
+      label: t('ui.status.reviewing'),
       color: colors.primary,
       bgColor: colors.primary + '20',
       icon: 'eye-outline',
     },
     approved: {
-      label: '已通过',
+      label: t('ui.status.approved'),
       color: colors.success,
       bgColor: colors.success + '20',
       icon: 'checkmark-circle-outline',
     },
     rejected: {
-      label: '已拒绝',
+      label: t('ui.status.rejected'),
       color: colors.error,
       bgColor: colors.error + '20',
       icon: 'close-circle-outline',
     },
     completed: {
-      label: '已完成',
+      label: t('ui.status.completed'),
       color: colors.success,
       bgColor: colors.success + '20',
       icon: 'checkmark-done-outline',
     },
     cancelled: {
-      label: '已取消',
+      label: t('ui.status.cancelled'),
       color: colors.foregroundMuted,
       bgColor: colors.muted,
       icon: 'ban-outline',
     },
     active: {
-      label: '活跃',
+      label: t('ui.status.active'),
       color: colors.success,
       bgColor: colors.success + '20',
       icon: 'pulse-outline',
     },
     inactive: {
-      label: '未活跃',
+      label: t('ui.status.inactive'),
       color: colors.foregroundMuted,
       bgColor: colors.muted,
       icon: 'moon-outline',

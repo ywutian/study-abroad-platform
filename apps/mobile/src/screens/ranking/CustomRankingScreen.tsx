@@ -83,11 +83,11 @@ export default function CustomRankingScreen() {
       apiClient.post('/rankings', data),
     onSuccess: () => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      showToast({ type: 'success', message: '排名已保存' });
+      showToast({ type: 'success', message: t('ranking.toast.saved') });
       setRankingName('');
     },
     onError: () => {
-      showToast({ type: 'error', message: '保存失败' });
+      showToast({ type: 'error', message: t('ranking.toast.saveFailed') });
     },
   });
 
@@ -99,7 +99,7 @@ export default function CustomRankingScreen() {
 
   const handleSave = () => {
     if (!rankingName.trim()) {
-      showToast({ type: 'error', message: '请输入排名名称' });
+      showToast({ type: 'error', message: t('ranking.toast.enterName') });
       return;
     }
     saveMutation.mutate({
@@ -135,10 +135,10 @@ export default function CustomRankingScreen() {
             <Ionicons name="options-outline" size={28} color={colors.primary} />
           </View>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>
-            自定义排名
+            {t('ranking.title')}
           </Text>
           <Text style={[styles.headerDesc, { color: colors.foregroundMuted }]}>
-            调整权重参数，生成个性化院校排名
+            {t('ranking.subtitle')}
           </Text>
         </View>
       </Animated.View>
@@ -149,46 +149,46 @@ export default function CustomRankingScreen() {
           <CardContent>
             <View style={styles.weightHeader}>
               <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-                权重配置
+                {t('ranking.weights')}
               </Text>
               <Badge variant={totalWeight === 100 ? 'success' : 'warning'}>
-                总计: {totalWeight}%
+                {t('ranking.totalWeight', { total: totalWeight })}
               </Badge>
             </View>
 
             {/* US News Rank */}
             <WeightSlider
-              label="US News 排名"
+              label={t('ranking.usnewsRank')}
               value={weights.usNewsRank}
               onChange={(v) => updateWeight('usNewsRank', v)}
-              hint="排名越高权重越大"
+              hint={t('ranking.usnewsHint')}
               colors={colors}
             />
 
             {/* Acceptance Rate */}
             <WeightSlider
-              label="录取率"
+              label={t('ranking.acceptanceRate')}
               value={weights.acceptanceRate}
               onChange={(v) => updateWeight('acceptanceRate', v)}
-              hint="录取率越低 = 分数越高"
+              hint={t('ranking.acceptanceHint')}
               colors={colors}
             />
 
             {/* Tuition */}
             <WeightSlider
-              label="学费"
+              label={t('ranking.tuition')}
               value={weights.tuition}
               onChange={(v) => updateWeight('tuition', v)}
-              hint="学费越低 = 分数越高"
+              hint={t('ranking.tuitionHint')}
               colors={colors}
             />
 
             {/* Avg Salary */}
             <WeightSlider
-              label="毕业薪资"
+              label={t('ranking.avgSalary')}
               value={weights.avgSalary}
               onChange={(v) => updateWeight('avgSalary', v)}
-              hint="薪资越高 = 分数越高"
+              hint={t('ranking.salaryHint')}
               colors={colors}
             />
 
@@ -198,7 +198,7 @@ export default function CustomRankingScreen() {
               style={styles.calculateButton}
               leftIcon={<Ionicons name="play" size={18} color="#fff" />}
             >
-              预览排名
+              {t('ranking.preview')}
             </AnimatedButton>
           </CardContent>
         </AnimatedCard>
@@ -210,10 +210,10 @@ export default function CustomRankingScreen() {
           <AnimatedCard style={styles.saveCard}>
             <CardContent>
               <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-                保存排名
+                {t('ranking.saveRanking')}
               </Text>
               <Input
-                placeholder="我的自定义排名"
+                placeholder={t('ranking.myRankings')}
                 value={rankingName}
                 onChangeText={setRankingName}
                 style={styles.input}
@@ -225,7 +225,7 @@ export default function CustomRankingScreen() {
                 disabled={!ranking?.length}
                 leftIcon={<Ionicons name="bookmark-outline" size={18} color={colors.primary} />}
               >
-                保存排名
+                {t('ranking.saveRanking')}
               </AnimatedButton>
             </CardContent>
           </AnimatedCard>
@@ -237,7 +237,7 @@ export default function CustomRankingScreen() {
         <Animated.View entering={FadeInUp.delay(300).duration(400)}>
           <View style={styles.resultsSection}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-              排名结果
+              {t('ranking.preview')}
             </Text>
 
             {isLoading ? (
@@ -302,7 +302,7 @@ export default function CustomRankingScreen() {
                               {school.score.toFixed(1)}
                             </Text>
                             <Text style={[styles.scoreLabel, { color: colors.foregroundMuted }]}>
-                              分
+                              {t('ranking.score')}
                             </Text>
                           </View>
 
@@ -320,8 +320,8 @@ export default function CustomRankingScreen() {
             ) : (
               <EmptyState
                 icon="bar-chart-outline"
-                title="点击预览排名查看结果"
-                description="调整权重参数后点击预览"
+                title={t('ranking.emptyTitle', { defaultValue: 'Click Preview to see results' })}
+                description={t('ranking.emptyDesc', { defaultValue: 'Adjust weight parameters and click preview' })}
               />
             )}
           </View>
