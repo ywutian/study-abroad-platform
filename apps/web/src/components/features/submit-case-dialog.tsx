@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,19 +21,19 @@ import { toast } from 'sonner';
 import { Loader2, Send, GraduationCap } from 'lucide-react';
 import { SchoolSelector } from './school-selector';
 
-const RESULTS = [
-  { value: 'ADMITTED', label: '录取' },
-  { value: 'REJECTED', label: '拒绝' },
-  { value: 'WAITLISTED', label: '候补' },
-  { value: 'DEFERRED', label: '延期' },
+const RESULT_KEYS = [
+  { value: 'ADMITTED', labelKey: 'admitted' },
+  { value: 'REJECTED', labelKey: 'rejected' },
+  { value: 'WAITLISTED', labelKey: 'waitlisted' },
+  { value: 'DEFERRED', labelKey: 'deferred' },
 ];
 
-const ROUNDS = [
-  { value: 'ED', label: 'ED (Early Decision)' },
-  { value: 'ED2', label: 'ED2' },
-  { value: 'EA', label: 'EA (Early Action)' },
-  { value: 'REA', label: 'REA (Restrictive EA)' },
-  { value: 'RD', label: 'RD (Regular Decision)' },
+const ROUND_KEYS = [
+  { value: 'ED', labelKey: 'ED' },
+  { value: 'ED2', labelKey: 'ED2' },
+  { value: 'EA', labelKey: 'EA' },
+  { value: 'REA', labelKey: 'REA' },
+  { value: 'RD', labelKey: 'RD' },
 ];
 
 interface School {
@@ -52,6 +53,8 @@ interface SubmitCaseDialogProps {
 }
 
 export function SubmitCaseDialog({ open, onOpenChange, onSuccess }: SubmitCaseDialogProps) {
+  const t = useTranslations('submitCase');
+  const tCommon = useTranslations('common');
   const queryClient = useQueryClient();
   const [schoolSelectorOpen, setSchoolSelectorOpen] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
@@ -74,7 +77,7 @@ export function SubmitCaseDialog({ open, onOpenChange, onSuccess }: SubmitCaseDi
       queryClient.invalidateQueries({ queryKey: ['cases'] });
       onOpenChange(false);
       resetForm();
-      toast.success('案例提交成功，感谢分享！');
+      toast.success(t('toast.success'));
       onSuccess?.();
     },
     onError: (error: Error) => {
@@ -99,7 +102,7 @@ export function SubmitCaseDialog({ open, onOpenChange, onSuccess }: SubmitCaseDi
 
   const handleSubmit = () => {
     if (!selectedSchool || !formData.result) {
-      toast.error('请填写必填项');
+      toast.error(t('toast.requiredFields'));
       return;
     }
 
@@ -126,17 +129,17 @@ export function SubmitCaseDialog({ open, onOpenChange, onSuccess }: SubmitCaseDi
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <GraduationCap className="h-5 w-5" />
-              提交录取案例
+              {t('title')}
             </DialogTitle>
             <DialogDescription>
-              分享您的申请结果，帮助后来者参考
+              {t('description')}
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 max-h-[60vh] overflow-y-auto pr-2">
             {/* School Selection */}
             <div className="space-y-2">
-              <Label>学校 *</Label>
+              <Label>{tCommon('search')} *</Label>
               <Button
                 variant="outline"
                 className="w-full justify-start"
@@ -145,14 +148,14 @@ export function SubmitCaseDialog({ open, onOpenChange, onSuccess }: SubmitCaseDi
                 {selectedSchool ? (
                   <span>{selectedSchool.nameZh || selectedSchool.name}</span>
                 ) : (
-                  <span className="text-muted-foreground">选择学校</span>
+                  <span className="text-muted-foreground">{t('selectSchool')}</span>
                 )}
               </Button>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>申请年份 *</Label>
+                <Label>{t('yearLabel')} *</Label>
                 <Select
                   value={formData.year}
                   onValueChange={(value) => setFormData({ ...formData, year: value })}
@@ -171,18 +174,18 @@ export function SubmitCaseDialog({ open, onOpenChange, onSuccess }: SubmitCaseDi
               </div>
 
               <div className="space-y-2">
-                <Label>申请轮次</Label>
+                <Label>{t('roundLabel')}</Label>
                 <Select
                   value={formData.round}
                   onValueChange={(value) => setFormData({ ...formData, round: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="选择轮次" />
+                    <SelectValue placeholder={t('roundPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
-                    {ROUNDS.map((round) => (
+                    {ROUND_KEYS.map((round) => (
                       <SelectItem key={round.value} value={round.value}>
-                        {round.label}
+                        {t(`rounds.${round.labelKey}`)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -192,18 +195,18 @@ export function SubmitCaseDialog({ open, onOpenChange, onSuccess }: SubmitCaseDi
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>申请结果 *</Label>
+                <Label>{t('resultLabel')} *</Label>
                 <Select
                   value={formData.result}
                   onValueChange={(value) => setFormData({ ...formData, result: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="选择结果" />
+                    <SelectValue placeholder={t('resultPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
-                    {RESULTS.map((r) => (
+                    {RESULT_KEYS.map((r) => (
                       <SelectItem key={r.value} value={r.value}>
-                        {r.label}
+                        {t(`results.${r.labelKey}`)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -211,9 +214,9 @@ export function SubmitCaseDialog({ open, onOpenChange, onSuccess }: SubmitCaseDi
               </div>
 
               <div className="space-y-2">
-                <Label>专业</Label>
+                <Label>{t('majorLabel')}</Label>
                 <Input
-                  placeholder="例如：Computer Science"
+                  placeholder={t('majorPlaceholder')}
                   value={formData.major}
                   onChange={(e) => setFormData({ ...formData, major: e.target.value })}
                 />
@@ -222,25 +225,25 @@ export function SubmitCaseDialog({ open, onOpenChange, onSuccess }: SubmitCaseDi
 
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-2">
-                <Label>GPA 范围</Label>
+                <Label>{t('gpaLabel')}</Label>
                 <Input
-                  placeholder="例如：3.8-4.0"
+                  placeholder={t('gpaPlaceholder')}
                   value={formData.gpaRange}
                   onChange={(e) => setFormData({ ...formData, gpaRange: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
-                <Label>SAT 范围</Label>
+                <Label>{t('satLabel')}</Label>
                 <Input
-                  placeholder="例如：1500-1550"
+                  placeholder={t('satPlaceholder')}
                   value={formData.satRange}
                   onChange={(e) => setFormData({ ...formData, satRange: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
-                <Label>TOEFL 范围</Label>
+                <Label>{t('toeflLabel')}</Label>
                 <Input
-                  placeholder="例如：110-115"
+                  placeholder={t('toeflPlaceholder')}
                   value={formData.toeflRange}
                   onChange={(e) => setFormData({ ...formData, toeflRange: e.target.value })}
                 />
@@ -248,18 +251,18 @@ export function SubmitCaseDialog({ open, onOpenChange, onSuccess }: SubmitCaseDi
             </div>
 
             <div className="space-y-2">
-              <Label>标签</Label>
+              <Label>{t('tagsLabel')}</Label>
               <Input
-                placeholder="用逗号分隔，例如：科研强, 竞赛获奖"
+                placeholder={t('tagsPlaceholder')}
                 value={formData.tags}
                 onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>申请感悟</Label>
+              <Label>{t('reflectionLabel')}</Label>
               <Textarea
-                placeholder="分享您的申请经验和建议..."
+                placeholder={t('reflectionPlaceholder')}
                 value={formData.reflection}
                 onChange={(e) => setFormData({ ...formData, reflection: e.target.value })}
                 rows={4}
@@ -269,7 +272,7 @@ export function SubmitCaseDialog({ open, onOpenChange, onSuccess }: SubmitCaseDi
 
           <DialogFooter>
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              取消
+              {tCommon('cancel')}
             </Button>
             <Button
               onClick={handleSubmit}
@@ -277,7 +280,7 @@ export function SubmitCaseDialog({ open, onOpenChange, onSuccess }: SubmitCaseDi
             >
               {submitMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               <Send className="mr-2 h-4 w-4" />
-              提交案例
+              {t('submitButton')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -289,7 +292,7 @@ export function SubmitCaseDialog({ open, onOpenChange, onSuccess }: SubmitCaseDi
         selectedSchools={selectedSchool ? [selectedSchool] : []}
         onSelect={(schools) => setSelectedSchool(schools[0] || null)}
         maxSelection={1}
-        title="选择申请学校"
+        title={t('selectSchoolTitle')}
       />
     </>
   );

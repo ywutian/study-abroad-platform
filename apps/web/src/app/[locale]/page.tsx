@@ -4,10 +4,11 @@
  * 首页 - 带全面动画升级
  */
 
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { motion, useScroll, useTransform, useReducedMotion, useInView } from 'framer-motion';
-import { Link } from '@/lib/i18n/navigation';
+import { motion, useScroll, useTransform, useReducedMotion, useInView, AnimatePresence } from 'framer-motion';
+import { Link, useRouter } from '@/lib/i18n/navigation';
+import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { FeatureCard, StatCard } from '@/components/features';
 import {
@@ -26,13 +27,44 @@ import {
   Zap,
   Shield,
   Clock,
+  Globe,
 } from 'lucide-react';
 import { Logo } from '@/components/ui/logo';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { transitions } from '@/lib/motion';
+import { localeNames, type Locale } from '@/lib/i18n/config';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 
 export default function HomePage() {
   const t = useTranslations();
   const prefersReducedMotion = useReducedMotion();
+  const [hasScrolled, setHasScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as Locale;
+
+  // 监听滚动，滚动后隐藏滚动指示器
+  useEffect(() => {
+    setMounted(true);
+    const handleScroll = () => {
+      if (window.scrollY > 100) {
+        setHasScrolled(true);
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleLocaleChange = (newLocale: Locale) => {
+    router.replace('/', { locale: newLocale });
+  };
 
   // Parallax refs
   const heroRef = useRef<HTMLDivElement>(null);
@@ -116,6 +148,63 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen overflow-hidden">
+      {/* Top Navigation - 语言切换和主题切换 */}
+      <motion.header
+        className="fixed top-0 left-0 right-0 z-50 px-4 py-4"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
+        <div className="container mx-auto flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <Logo size="md" />
+          </Link>
+          <div className="flex items-center gap-2">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+            
+            {/* Language Switcher */}
+            {mounted ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="gap-2 text-dropdown-muted hover:text-dropdown hover:bg-accent"
+                  >
+                    <Globe className="h-4 w-4" />
+                    <span>{localeNames[locale]}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-dropdown border-dropdown">
+                  {(Object.entries(localeNames) as [Locale, string][]).map(([loc, name]) => (
+                    <DropdownMenuItem
+                      key={loc}
+                      onClick={() => handleLocaleChange(loc)}
+                      className={cn(
+                        'text-dropdown-muted hover:text-dropdown hover:bg-accent cursor-pointer',
+                        locale === loc && 'bg-accent text-dropdown'
+                      )}
+                    >
+                      {name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="gap-2 text-dropdown-muted hover:text-dropdown hover:bg-accent"
+              >
+                <Globe className="h-4 w-4" />
+                <span>{localeNames[locale]}</span>
+              </Button>
+            )}
+          </div>
+        </div>
+      </motion.header>
+
       {/* Hero Section */}
       <section
         ref={heroRef}
@@ -129,121 +218,201 @@ export default function HomePage() {
           className="container relative mx-auto px-4 z-10"
           style={prefersReducedMotion ? {} : { y: heroY, opacity: heroOpacity }}
         >
-          <div className="mx-auto max-w-4xl text-center">
-            {/* Badge */}
-            <motion.div
-              className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm text-primary-foreground backdrop-blur-sm"
-              initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
+          {/* Main Grid Layout - 左右两侧有装饰 */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            {/* Left Decorative Column */}
+            <motion.div 
+              className="hidden lg:flex lg:col-span-2 flex-col gap-6 items-end"
+              initial={prefersReducedMotion ? {} : { opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.8 }}
             >
-              <motion.span
-                animate={prefersReducedMotion ? {} : { rotate: [0, 15, -15, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                <Sparkles className="h-4 w-4" />
-              </motion.span>
-              <span>{t('home.badge')}</span>
+              <div className="flex flex-col gap-3 items-end">
+                <div className="flex items-center gap-2 text-hero-feature text-sm">
+                  <CheckCircle className="h-4 w-4 text-emerald-400" />
+                  <span>{t('home.heroLeft.top100')}</span>
+                </div>
+                <div className="flex items-center gap-2 text-hero-feature text-sm">
+                  <CheckCircle className="h-4 w-4 text-emerald-400" />
+                  <span>{t('home.heroLeft.aiAnalysis')}</span>
+                </div>
+                <div className="flex items-center gap-2 text-hero-feature text-sm">
+                  <CheckCircle className="h-4 w-4 text-emerald-400" />
+                  <span>{t('home.heroLeft.realTimeData')}</span>
+                </div>
+              </div>
             </motion.div>
 
-            {/* Title */}
-            <motion.h1
-              className="mb-6 text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl"
-              initial={prefersReducedMotion ? {} : { opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, ...transitions.springGentle }}
-            >
-              <span className="block">{t('common.appName')}</span>
-              <motion.span
-                className="mt-2 block bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-400 bg-clip-text text-transparent"
-                initial={prefersReducedMotion ? {} : { opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.4 }}
+            {/* Center Content */}
+            <div className="lg:col-span-8 text-center">
+              {/* Badge - 更醒目 */}
+              <motion.div
+                className="mb-6 inline-flex items-center gap-3 rounded-full border border-cyan-400/30 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 px-5 py-2.5 text-sm backdrop-blur-md shadow-lg shadow-cyan-500/10"
+                initial={prefersReducedMotion ? {} : { opacity: 0, y: 20, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
               >
-                {t('home.heroTitle')}
-              </motion.span>
-            </motion.h1>
-
-            {/* Subtitle */}
-            <motion.p
-              className="mx-auto mb-8 max-w-2xl text-lg text-slate-300 sm:text-xl"
-              initial={prefersReducedMotion ? {} : { opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-            >
-              {t('home.heroSubtitle')}
-            </motion.p>
-
-            {/* CTA Buttons */}
-            <motion.div
-              className="flex flex-col justify-center gap-4 sm:flex-row"
-              initial={prefersReducedMotion ? {} : { opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-            >
-              <Link href="/register">
                 <motion.div
-                  whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
-                  whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
+                  className="flex items-center justify-center h-7 w-7 rounded-full bg-gradient-to-r from-cyan-400 to-blue-400"
+                  animate={prefersReducedMotion ? {} : { rotate: [0, 360] }}
+                  transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
                 >
-                  <Button
-                    size="lg"
-                    className="w-full bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg shadow-primary/25 sm:w-auto"
-                  >
-                    {t('common.register')}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
+                  <Sparkles className="h-4 w-4 text-white" />
                 </motion.div>
-              </Link>
-              <Link href="/login">
+                <span className="font-medium text-hero-badge">{t('home.badge')}</span>
                 <motion.div
-                  whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
-                  whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
+                  className="h-2 w-2 rounded-full bg-emerald-400"
+                  animate={{ scale: [1, 1.3, 1], opacity: [1, 0.7, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+              </motion.div>
+
+              {/* 差异化卖点标签 */}
+              <motion.div
+                className="mb-6 flex flex-wrap justify-center gap-3"
+                initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+              >
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-violet-500/10 border border-violet-500/20 text-sm">
+                  <Zap className="h-4 w-4 text-violet-400" />
+                  <span className="text-violet-300 font-medium">{t('home.usp.gpt4')}</span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-sm">
+                  <TrendingUp className="h-4 w-4 text-emerald-400" />
+                  <span className="text-emerald-300 font-medium">{t('home.usp.accuracy')}</span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-sm">
+                  <GraduationCap className="h-4 w-4 text-amber-400" />
+                  <span className="text-amber-300 font-medium">{t('home.usp.cases')}</span>
+                </div>
+              </motion.div>
+
+              {/* Title */}
+              <motion.h1
+                className="mb-6 text-4xl font-bold tracking-tight text-hero sm:text-5xl lg:text-6xl"
+                initial={prefersReducedMotion ? {} : { opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, ...transitions.springGentle }}
+              >
+                <span className="block">{t('common.appName')}</span>
+                <motion.span
+                  className="mt-2 block bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-400 bg-clip-text text-transparent"
+                  initial={prefersReducedMotion ? {} : { opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.4 }}
                 >
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="w-full border-slate-600 text-white hover:bg-slate-800 sm:w-auto"
+                  {t('home.heroTitle')}
+                </motion.span>
+              </motion.h1>
+
+              {/* Subtitle */}
+              <motion.p
+                className="mx-auto mb-10 max-w-2xl text-lg text-hero-subtitle sm:text-xl"
+                initial={prefersReducedMotion ? {} : { opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                {t('home.heroSubtitle')}
+              </motion.p>
+
+              {/* CTA Buttons */}
+              <motion.div
+                className="flex flex-col justify-center gap-4 sm:flex-row"
+                initial={prefersReducedMotion ? {} : { opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+              >
+                <Link href="/register">
+                  <motion.div
+                    whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
+                    whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
                   >
-                    {t('common.login')}
-                  </Button>
-                </motion.div>
-              </Link>
+                    <Button
+                      size="lg"
+                      className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-lg shadow-blue-500/25 sm:w-auto h-12 px-8 text-base"
+                    >
+                      {t('common.register')}
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </motion.div>
+                </Link>
+                <Link href="/login">
+                  <motion.div
+                    whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
+                    whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
+                  >
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="w-full border-btn-outline text-btn-outline hover:bg-accent sm:w-auto h-12 px-8 text-base"
+                    >
+                      {t('common.login')}
+                    </Button>
+                  </motion.div>
+                </Link>
+              </motion.div>
+            </div>
+
+            {/* Right Decorative Column */}
+            <motion.div 
+              className="hidden lg:flex lg:col-span-2 flex-col gap-6 items-start"
+              initial={prefersReducedMotion ? {} : { opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.8 }}
+            >
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-2 text-hero-feature text-sm">
+                  <Shield className="h-4 w-4 text-blue-400" />
+                  <span>{t('home.heroRight.dataSecurity')}</span>
+                </div>
+                <div className="flex items-center gap-2 text-hero-feature text-sm">
+                  <Zap className="h-4 w-4 text-amber-400" />
+                  <span>{t('home.heroRight.fastPrediction')}</span>
+                </div>
+                <div className="flex items-center gap-2 text-hero-feature text-sm">
+                  <Clock className="h-4 w-4 text-violet-400" />
+                  <span>{t('home.heroRight.onlineSupport')}</span>
+                </div>
+              </div>
             </motion.div>
           </div>
 
           {/* Stats */}
-          <div className="mx-auto mt-16 grid max-w-3xl grid-cols-2 gap-4 sm:mt-20 sm:grid-cols-4 sm:gap-8">
+          <div className="mx-auto mt-16 grid max-w-4xl grid-cols-2 gap-4 sm:mt-20 sm:grid-cols-4 sm:gap-6">
             {stats.map((stat, index) => (
               <StatCard key={stat.label} value={stat.value} label={stat.label} index={index} />
             ))}
           </div>
         </motion.div>
 
-        {/* Scroll Indicator */}
-        {!prefersReducedMotion && (
-          <motion.div
-            className="absolute bottom-8 left-1/2 -translate-x-1/2"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.5 }}
-          >
+        {/* Scroll Indicator - 滚动后自动隐藏 */}
+        <AnimatePresence>
+          {!prefersReducedMotion && !hasScrolled && (
             <motion.div
-              className="flex flex-col items-center gap-2 text-slate-400"
-              animate={{ y: [0, 8, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
+              className="absolute bottom-8 left-1/2 -translate-x-1/2"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ delay: 1.5, duration: 0.3 }}
             >
-              <span className="text-xs">向下滚动</span>
-              <div className="h-6 w-4 rounded-full border-2 border-slate-500 p-1">
-                <motion.div
-                  className="h-1.5 w-1.5 rounded-full bg-slate-400"
-                  animate={{ y: [0, 8, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                />
-              </div>
+              <motion.div
+                className="flex flex-col items-center gap-2 text-hero-scroll"
+                animate={{ y: [0, 8, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                <span className="text-xs">{t('home.scrollDown')}</span>
+                <div className="h-6 w-4 rounded-full border-2 border-hero-scroll p-1">
+                  <motion.div
+                    className="h-1.5 w-1.5 rounded-full bg-hero-scroll-dot"
+                    animate={{ y: [0, 8, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  />
+                </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
+          )}
+        </AnimatePresence>
       </section>
 
       {/* Features Section */}
@@ -251,6 +420,9 @@ export default function HomePage() {
 
       {/* Why Choose Us Section */}
       <WhyChooseUsSection items={whyChooseUs} t={t} prefersReducedMotion={prefersReducedMotion} />
+
+      {/* Success Stories Section */}
+      <SuccessStoriesSection t={t} prefersReducedMotion={prefersReducedMotion} />
 
       {/* CTA Section */}
       <CTASection t={t} prefersReducedMotion={prefersReducedMotion} />
@@ -484,45 +656,245 @@ function CTASection({ t, prefersReducedMotion }: { t: any; prefersReducedMotion:
   const isInView = useInView(ref, { once: true });
 
   return (
-    <section ref={ref} className="relative overflow-hidden bg-gradient-hero py-16 sm:py-20">
-      {/* Animated Background */}
+    <section ref={ref} className="relative overflow-hidden bg-gradient-hero py-20 sm:py-28">
+      {/* 背景装饰 */}
+      <div className="absolute inset-0 bg-grid opacity-5" />
+      
+      {/* 动态光晕 */}
       {!prefersReducedMotion && (
         <>
           <motion.div
-            className="absolute -left-20 -top-20 h-40 w-40 rounded-full bg-white/5 blur-2xl"
-            animate={{ scale: [1, 1.2, 1] }}
-            transition={{ duration: 4, repeat: Infinity }}
+            className="absolute left-1/4 top-0 h-64 w-64 rounded-full bg-blue-500/20 blur-[100px]"
+            animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+            transition={{ duration: 6, repeat: Infinity }}
           />
           <motion.div
-            className="absolute -right-20 -bottom-20 h-40 w-40 rounded-full bg-white/5 blur-2xl"
-            animate={{ scale: [1, 1.3, 1] }}
-            transition={{ duration: 5, repeat: Infinity }}
+            className="absolute right-1/4 bottom-0 h-64 w-64 rounded-full bg-cyan-500/20 blur-[100px]"
+            animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.5, 0.3] }}
+            transition={{ duration: 8, repeat: Infinity }}
           />
         </>
       )}
 
       <motion.div
         className="container relative mx-auto px-4 text-center"
-        initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
+        initial={prefersReducedMotion ? {} : { opacity: 0, y: 30 }}
         animate={isInView ? { opacity: 1, y: 0 } : {}}
         transition={transitions.springGentle}
       >
-        <h2 className="mb-4 text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
-          {t('home.ctaTitle')}
+        {/* 装饰徽章 */}
+        <motion.div
+          className="mb-6 inline-flex items-center gap-2 rounded-full border border-cta-badge bg-cta-badge px-4 py-2 backdrop-blur-sm"
+          initial={prefersReducedMotion ? {} : { opacity: 0, scale: 0.9 }}
+          animate={isInView ? { opacity: 1, scale: 1 } : {}}
+          transition={{ delay: 0.1 }}
+        >
+          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-sm text-cta-badge">{t('home.ctaBadge')}</span>
+        </motion.div>
+
+        {/* 主标题 */}
+        <h2 className="mb-6 text-3xl font-bold tracking-tight text-cta-title sm:text-4xl lg:text-5xl">
+          <span className="block">{t('home.ctaTitle').split('?')[0]}</span>
+          <span className="block mt-2 bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-400 bg-clip-text text-transparent">
+            {t('home.ctaTitle').includes('?') ? '?' : ''}
+          </span>
         </h2>
-        <p className="mx-auto mb-8 max-w-xl text-slate-300">{t('home.ctaSubtitle')}</p>
-        <Link href="/register">
-          <motion.div
-            whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
-            whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
-          >
-            <Button size="lg" className="bg-white text-slate-900 hover:bg-slate-100 shadow-xl">
-              {t('home.ctaButton')}
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </motion.div>
-        </Link>
+        
+        {/* 副标题 */}
+        <p className="mx-auto mb-10 max-w-2xl text-lg text-cta-subtitle sm:text-xl">
+          {t('home.ctaSubtitle')}
+        </p>
+
+        {/* CTA 按钮组 */}
+        <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+          <Link href="/register">
+            <motion.div
+              whileHover={prefersReducedMotion ? {} : { scale: 1.02, y: -2 }}
+              whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+            >
+              <Button 
+                size="lg" 
+                className="h-14 px-8 text-base font-semibold bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 text-white border-0 shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:opacity-90 transition-all duration-300 rounded-xl"
+              >
+                {t('home.ctaButton')}
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </motion.div>
+          </Link>
+          
+          <Link href="/cases">
+            <motion.div
+              whileHover={prefersReducedMotion ? {} : { scale: 1.02 }}
+              whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+            >
+              <Button 
+                variant="outline" 
+                size="lg"
+                className="h-14 px-8 text-base font-medium border-btn-outline bg-cta-badge text-btn-outline hover:bg-accent backdrop-blur-sm transition-all duration-300 rounded-xl"
+              >
+                {t('home.viewCases')}
+              </Button>
+            </motion.div>
+          </Link>
+        </div>
+
+        {/* 底部信息 */}
+        <motion.div
+          className="mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-cta-feature"
+          initial={prefersReducedMotion ? {} : { opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ delay: 0.3 }}
+        >
+          <span className="flex items-center gap-2">
+            <svg className="h-4 w-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+            {t('home.ctaFeature1')}
+          </span>
+          <span className="flex items-center gap-2">
+            <svg className="h-4 w-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+            {t('home.ctaFeature2')}
+          </span>
+          <span className="flex items-center gap-2">
+            <svg className="h-4 w-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+            {t('home.ctaFeature3')}
+          </span>
+        </motion.div>
       </motion.div>
+    </section>
+  );
+}
+
+// ============================================
+// Success Stories Section
+// ============================================
+
+function SuccessStoriesSection({ t, prefersReducedMotion }: { t: any; prefersReducedMotion: boolean | null }) {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, amount: 0.2 });
+
+  const stories = [
+    {
+      name: t('home.stories.story1.name'),
+      avatar: '李',
+      background: t('home.stories.story1.background'),
+      result: t('home.stories.story1.result'),
+      school: 'MIT',
+      program: 'Computer Science',
+      quote: t('home.stories.story1.quote'),
+      gradient: 'from-blue-500 to-cyan-500',
+    },
+    {
+      name: t('home.stories.story2.name'),
+      avatar: '王',
+      background: t('home.stories.story2.background'),
+      result: t('home.stories.story2.result'),
+      school: 'Stanford',
+      program: 'MBA',
+      quote: t('home.stories.story2.quote'),
+      gradient: 'from-violet-500 to-purple-500',
+    },
+    {
+      name: t('home.stories.story3.name'),
+      avatar: '张',
+      background: t('home.stories.story3.background'),
+      result: t('home.stories.story3.result'),
+      school: 'CMU',
+      program: 'Data Science',
+      quote: t('home.stories.story3.quote'),
+      gradient: 'from-emerald-500 to-teal-500',
+    },
+  ];
+
+  return (
+    <section ref={ref} className="bg-background py-16 sm:py-20 lg:py-24 overflow-hidden">
+      <div className="container mx-auto px-4">
+        <motion.div
+          className="mx-auto max-w-2xl text-center mb-12"
+          initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={transitions.springGentle}
+        >
+          <h2 className="text-3xl font-bold sm:text-4xl">{t('home.stories.title')}</h2>
+          <p className="mt-4 text-muted-foreground">{t('home.stories.subtitle')}</p>
+        </motion.div>
+
+        <div className="mx-auto max-w-6xl grid gap-6 md:grid-cols-3">
+          {stories.map((story, index) => (
+            <motion.div
+              key={story.name}
+              className="relative group"
+              initial={prefersReducedMotion ? {} : { opacity: 0, y: 30 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ delay: 0.1 + index * 0.1 }}
+            >
+              <div className="relative h-full rounded-2xl border bg-card p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-primary/30">
+                {/* 顶部渐变装饰 */}
+                <div className={cn(
+                  "absolute top-0 left-0 right-0 h-1 rounded-t-2xl bg-gradient-to-r",
+                  story.gradient
+                )} />
+                
+                {/* 头像和学校 */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "w-12 h-12 rounded-full flex items-center justify-center text-white font-bold bg-gradient-to-br",
+                      story.gradient
+                    )}>
+                      {story.avatar}
+                    </div>
+                    <div>
+                      <p className="font-semibold">{story.name}</p>
+                      <p className="text-xs text-muted-foreground">{story.background}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-primary">{story.school}</p>
+                    <p className="text-xs text-muted-foreground">{story.program}</p>
+                  </div>
+                </div>
+
+                {/* 结果标签 */}
+                <div className="mb-4">
+                  <span className={cn(
+                    "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-white bg-gradient-to-r",
+                    story.gradient
+                  )}>
+                    <CheckCircle className="h-3 w-3" />
+                    {story.result}
+                  </span>
+                </div>
+
+                {/* 评价 */}
+                <blockquote className="text-sm text-muted-foreground italic border-l-2 border-primary/30 pl-4">
+                  "{story.quote}"
+                </blockquote>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* 更多案例入口 */}
+        <motion.div
+          className="text-center mt-10"
+          initial={prefersReducedMotion ? {} : { opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ delay: 0.5 }}
+        >
+          <Link href="/cases">
+            <Button variant="outline" size="lg" className="group">
+              {t('home.stories.viewMore')}
+              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Button>
+          </Link>
+        </motion.div>
+      </div>
     </section>
   );
 }

@@ -3,11 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/lib/i18n/navigation';
 import { apiClient } from '@/lib/api';
-import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, ArrowRight, RefreshCw } from 'lucide-react';
 
 type VerifyState = 'loading' | 'success' | 'error';
 
@@ -22,7 +21,7 @@ export default function VerifyEmailCallbackPage() {
   useEffect(() => {
     if (!token) {
       setState('error');
-      setErrorMessage('无效的验证链接');
+      setErrorMessage(t('auth.verifyEmail.invalidLink'));
       return;
     }
 
@@ -32,75 +31,106 @@ export default function VerifyEmailCallbackPage() {
         setState('success');
       } catch (error: any) {
         setState('error');
-        setErrorMessage(error.message || '验证失败，请重试');
+        setErrorMessage(error.message || t('auth.verifyEmail.failed'));
       }
     };
 
     verifyEmail();
-  }, [token]);
+  }, [token, t]);
 
   if (state === 'loading') {
     return (
-      <Card className="text-center">
-        <CardHeader>
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      <div className="space-y-6">
+        <div className="text-center">
+          <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-[var(--auth-icon-bg)] ring-1 ring-[var(--auth-icon-ring)]">
+            <Loader2 className="h-10 w-10 animate-spin text-[var(--auth-accent)]" />
           </div>
-          <CardTitle className="text-2xl">验证中...</CardTitle>
-          <CardDescription>正在验证您的邮箱地址</CardDescription>
-        </CardHeader>
-      </Card>
+          <h1 className="text-2xl font-bold text-auth tracking-tight">
+            {t('auth.verifyEmail.verifying')}
+          </h1>
+          <p className="mt-2 text-sm text-auth-muted">
+            {t('auth.verifyEmail.verifyingDesc')}
+          </p>
+        </div>
+
+        <div className="flex justify-center">
+          <div className="flex items-center gap-2 text-auth-muted text-sm">
+            <div className="h-1.5 w-1.5 rounded-full bg-[var(--auth-pulse-dot)] animate-pulse" />
+            <span>正在验证您的邮箱...</span>
+          </div>
+        </div>
+      </div>
     );
   }
 
   if (state === 'error') {
     return (
-      <Card className="text-center">
-        <CardHeader>
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
-            <XCircle className="h-8 w-8 text-red-600" />
+      <div className="space-y-6">
+        <div className="text-center">
+          <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-[var(--auth-error-bg)] ring-1 ring-[var(--auth-error-ring)]">
+            <XCircle className="h-10 w-10 text-[var(--auth-error)]" />
           </div>
-          <CardTitle className="text-2xl">验证失败</CardTitle>
-          <CardDescription>{errorMessage}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            验证链接可能已过期或无效
+          <h1 className="text-2xl font-bold text-auth tracking-tight">
+            {t('auth.verifyEmail.failed')}
+          </h1>
+          <p className="mt-2 text-sm text-auth-muted">
+            {errorMessage}
           </p>
-          <div className="flex flex-col gap-2">
-            <Link href="/login">
-              <Button className="w-full">前往登录</Button>
-            </Link>
-            <Link href="/register">
-              <Button variant="outline" className="w-full">重新注册</Button>
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/10">
+          <p className="text-sm text-auth-subtle text-center">
+            {t('auth.verifyEmail.linkExpired')}
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          <Link href="/login" className="block">
+            <Button className="w-full h-12 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25">
+              {t('auth.verifyEmail.goToLogin')}
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
+          <Link href="/register" className="block">
+            <Button 
+              variant="outline" 
+              className="w-full h-11 bg-auth-input-bg border-auth-input-border text-auth hover:bg-accent hover:text-auth rounded-xl"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              {t('auth.verifyEmail.reRegister')}
+            </Button>
+          </Link>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="text-center">
-      <CardHeader>
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-          <CheckCircle className="h-8 w-8 text-green-600" />
+    <div className="space-y-6">
+      <div className="text-center">
+        <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-emerald-500/10 ring-1 ring-emerald-500/20">
+          <CheckCircle className="h-10 w-10 text-emerald-400" />
         </div>
-        <CardTitle className="text-2xl">验证成功！</CardTitle>
-        <CardDescription>您的邮箱已成功验证</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <p className="text-sm text-muted-foreground">
-          现在您可以登录并开始使用留学申请平台的所有功能
+        <h1 className="text-2xl font-bold text-auth tracking-tight">
+          {t('auth.verifyEmail.success')}
+        </h1>
+        <p className="mt-2 text-sm text-auth-muted">
+          {t('auth.verifyEmail.successDesc')}
         </p>
-        <Link href="/login">
-          <Button className="w-full">前往登录</Button>
-        </Link>
-      </CardContent>
-    </Card>
+      </div>
+
+      <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
+        <p className="text-sm text-auth-subtle text-center">
+          {t('auth.verifyEmail.successHint')}
+        </p>
+      </div>
+
+      <Link href="/login" className="block">
+        <Button className="w-full h-12 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-medium rounded-xl shadow-lg shadow-emerald-500/25">
+          {t('auth.verifyEmail.goToLogin')}
+          <ArrowRight className="ml-2 h-4 w-4" />
+        </Button>
+      </Link>
+    </div>
   );
 }
-
-
-
-

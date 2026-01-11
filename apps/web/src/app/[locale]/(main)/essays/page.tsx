@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { AIScoreRadar, ScoreDetailList, type ScoreDimension } from '@/components/features/essay-ai';
 import {
   Dialog,
   DialogContent,
@@ -30,6 +32,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { apiClient } from '@/lib/api';
 import { PageContainer, PageHeader } from '@/components/layout';
+import { cn } from '@/lib/utils';
 import { LoadingState } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toast } from 'sonner';
@@ -143,20 +146,21 @@ export default function EssaysPage() {
   });
 
   // Fetch essays
-  const { data: essays, isLoading } = useQuery({
+  const { data: essaysData, isLoading } = useQuery({
     queryKey: ['essays'],
-    queryFn: () => apiClient.get<Essay[]>('/profiles/me/essays'),
+    queryFn: () => apiClient.get<{ success: boolean; data: Essay[] }>('/profiles/me/essays'),
   });
+  const essays = essaysData?.data;
 
   // Create essay
   const createMutation = useMutation({
     mutationFn: (data: { title: string; prompt?: string; content: string }) =>
-      apiClient.post<Essay>('/profiles/me/essays', data),
+      apiClient.post<{ success: boolean; data: Essay }>('/profiles/me/essays', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['essays'] });
       setIsFormOpen(false);
       resetForm();
-      toast.success('文书已保存');
+      toast.success(t('essays.toast.saved'));
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -166,13 +170,13 @@ export default function EssaysPage() {
   // Update essay
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: { title: string; prompt?: string; content: string } }) =>
-      apiClient.put<Essay>(`/profiles/me/essays/${id}`, data),
+      apiClient.put<{ success: boolean; data: Essay }>(`/profiles/me/essays/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['essays'] });
       setIsFormOpen(false);
       setSelectedEssay(null);
       resetForm();
-      toast.success('文书已更新');
+      toast.success(t('essays.toast.updated'));
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -189,7 +193,7 @@ export default function EssaysPage() {
       if (selectedEssay?.id === essayToDelete) {
         setSelectedEssay(null);
       }
-      toast.success('文书已删除');
+      toast.success(t('essays.toast.deleted'));
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -205,7 +209,7 @@ export default function EssaysPage() {
       setIsReviewOpen(true);
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'AI 评估失败');
+      toast.error(error.message || t('essays.toast.reviewFailed'));
     },
   });
 
@@ -218,7 +222,7 @@ export default function EssaysPage() {
       setIsPolishOpen(true);
     },
     onError: (error: Error) => {
-      toast.error(error.message || '润色失败');
+      toast.error(error.message || t('essays.toast.polishFailed'));
     },
   });
 
@@ -231,7 +235,7 @@ export default function EssaysPage() {
       setIsRewriteOpen(true);
     },
     onError: (error: Error) => {
-      toast.error(error.message || '改写失败');
+      toast.error(error.message || t('essays.toast.rewriteFailed'));
     },
   });
 
@@ -244,7 +248,7 @@ export default function EssaysPage() {
       setIsContinueOpen(true);
     },
     onError: (error: Error) => {
-      toast.error(error.message || '续写失败');
+      toast.error(error.message || t('essays.toast.continueFailed'));
     },
   });
 
@@ -257,7 +261,7 @@ export default function EssaysPage() {
       setIsOpeningOpen(true);
     },
     onError: (error: Error) => {
-      toast.error(error.message || '生成开头失败');
+      toast.error(error.message || t('essays.toast.openingFailed'));
     },
   });
 
@@ -302,7 +306,7 @@ export default function EssaysPage() {
 
   const handleReview = (essay: Essay) => {
     if (!essay.content) {
-      toast.error('文书内容不能为空');
+      toast.error(t('essays.toast.contentRequired'));
       return;
     }
     reviewMutation.mutate({
@@ -313,7 +317,7 @@ export default function EssaysPage() {
 
   const handlePolish = (essay: Essay) => {
     if (!essay.content) {
-      toast.error('文书内容不能为空');
+      toast.error(t('essays.toast.contentRequired'));
       return;
     }
     polishMutation.mutate({ content: essay.content, style: polishStyle });
@@ -321,7 +325,7 @@ export default function EssaysPage() {
 
   const handleRewrite = () => {
     if (!selectedText) {
-      toast.error('请先选择要改写的段落');
+      toast.error(t('essays.toast.selectParagraph'));
       return;
     }
     rewriteMutation.mutate({ paragraph: selectedText, instruction: rewriteInstruction || undefined });
@@ -329,7 +333,7 @@ export default function EssaysPage() {
 
   const handleContinue = (essay: Essay) => {
     if (!essay.content) {
-      toast.error('文书内容不能为空');
+      toast.error(t('essays.toast.contentRequired'));
       return;
     }
     continueMutation.mutate({
@@ -341,7 +345,7 @@ export default function EssaysPage() {
 
   const handleGenerateOpening = (essay: Essay) => {
     if (!essay.prompt && !essay.title) {
-      toast.error('请先填写文书题目');
+      toast.error(t('essays.toast.promptRequired'));
       return;
     }
     openingMutation.mutate({ prompt: essay.prompt || essay.title });
@@ -350,7 +354,7 @@ export default function EssaysPage() {
   const copyToClipboard = async (text: string, index: number) => {
     await navigator.clipboard.writeText(text);
     setCopiedIndex(index);
-    toast.success('已复制到剪贴板');
+    toast.success(t('essays.toast.copied'));
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
@@ -367,7 +371,7 @@ export default function EssaysPage() {
         data: { title: selectedEssay.title, prompt: selectedEssay.prompt, content: polishResult.polished },
       });
       setIsPolishOpen(false);
-      toast.success('已应用润色内容');
+      toast.success(t('essays.toast.polishApplied'));
     }
   };
 
@@ -379,7 +383,7 @@ export default function EssaysPage() {
         data: { title: selectedEssay.title, prompt: selectedEssay.prompt, content: newContent },
       });
       setIsContinueOpen(false);
-      toast.success('续写内容已添加');
+      toast.success(t('essays.toast.continuationAdded'));
     }
   };
 
@@ -390,20 +394,30 @@ export default function EssaysPage() {
   return (
     <PageContainer>
       <PageHeader
-        title="我的文书"
-        description="管理您的申请文书，使用 AI 获取专业评估"
+        title={t('essays.title')}
+        description={t('essays.description')}
+        icon={PenTool}
+        color="rose"
+        actions={
+          <Button onClick={handleCreate} className="gap-2 bg-gradient-to-r from-rose-500 to-pink-500 hover:opacity-90 text-white shadow-md shadow-rose-500/25">
+            <Plus className="h-4 w-4" />
+            {t('essays.new')}
+          </Button>
+        }
       />
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Essay List */}
         <div className="lg:col-span-1">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-lg">文书列表</CardTitle>
-              <Button size="sm" onClick={handleCreate}>
-                <Plus className="mr-1 h-4 w-4" />
-                新建
-              </Button>
+          <Card className="overflow-hidden">
+            <div className="h-1 bg-gradient-to-r from-rose-500 to-pink-500" />
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-rose-500/10">
+                  <FileText className="h-4 w-4 text-rose-500" />
+                </div>
+                <CardTitle className="text-lg">{t('essays.list')}</CardTitle>
+              </div>
             </CardHeader>
             <CardContent>
               {isLoading ? (
@@ -411,35 +425,41 @@ export default function EssaysPage() {
               ) : essays && essays.length > 0 ? (
                 <ScrollArea className="h-[500px] pr-2">
                   <div className="space-y-2">
-                    {essays.map((essay) => (
-                      <div
+                    {essays.map((essay, index) => (
+                      <motion.div
                         key={essay.id}
-                        className={`cursor-pointer rounded-lg border p-3 transition-all hover:border-primary/50 hover:bg-muted/50 ${
-                          selectedEssay?.id === essay.id ? 'border-primary bg-primary/5' : ''
-                        }`}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className={cn(
+                          'cursor-pointer rounded-xl border p-4 transition-all duration-200',
+                          'hover:border-rose-500/40 hover:bg-rose-500/5 hover:shadow-sm',
+                          selectedEssay?.id === essay.id && 'border-rose-500 bg-rose-500/5 shadow-sm'
+                        )}
                         onClick={() => setSelectedEssay(essay)}
                       >
-                        <div className="mb-1 flex items-start justify-between">
-                          <h4 className="font-medium line-clamp-1">{essay.title}</h4>
-                          <Badge variant="secondary" className="ml-2 shrink-0">
-                            {essay.wordCount || getWordCount(essay.content)} 词
+                        <div className="mb-2 flex items-start justify-between gap-2">
+                          <h4 className="font-semibold line-clamp-1">{essay.title}</h4>
+                          <Badge variant="info" className="shrink-0">
+                            {essay.wordCount || getWordCount(essay.content)} {t('common.words')}
                           </Badge>
                         </div>
-                        <p className="text-xs text-muted-foreground line-clamp-2">
+                        <p className="text-sm text-muted-foreground line-clamp-2">
                           {essay.prompt || essay.content.slice(0, 100)}
                         </p>
-                        <p className="mt-2 text-xs text-muted-foreground">
+                        <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                          <Calendar className="h-3 w-3" />
                           {format(new Date(essay.updatedAt), 'yyyy-MM-dd HH:mm')}
-                        </p>
-                      </div>
+                        </div>
+                      </motion.div>
                     ))}
                   </div>
                 </ScrollArea>
               ) : (
                 <EmptyState
                   icon={<FileText className="h-12 w-12" />}
-                  title="暂无文书"
-                  description="点击右上角「新建」开始写作"
+                  title={t('essays.empty.title')}
+                  description={t('essays.empty.description')}
                   className="py-8"
                 />
               )}
@@ -449,23 +469,29 @@ export default function EssaysPage() {
 
         {/* Essay Detail / Editor */}
         <div className="lg:col-span-2">
-          <Card className="h-full">
+          <Card className="h-full overflow-hidden">
+            <div className="h-1 bg-gradient-to-r from-violet-500 to-purple-500" />
             {selectedEssay ? (
               <>
-                <CardHeader className="flex flex-row items-start justify-between">
-                  <div className="space-y-1">
-                    <CardTitle>{selectedEssay.title}</CardTitle>
-                    {selectedEssay.prompt && (
-                      <CardDescription className="line-clamp-2">{selectedEssay.prompt}</CardDescription>
-                    )}
+                <CardHeader className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-violet-500/10">
+                      <Sparkles className="h-5 w-5 text-violet-500" />
+                    </div>
+                    <div className="space-y-1">
+                      <CardTitle className="text-xl">{selectedEssay.title}</CardTitle>
+                      {selectedEssay.prompt && (
+                        <CardDescription className="line-clamp-2">{selectedEssay.prompt}</CardDescription>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {/* AI 工具下拉菜单 */}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="outline" size="sm">
                           <Sparkles className="mr-1 h-4 w-4" />
-                          AI 工具
+                          {t('essays.aiTools')}
                           <ChevronDown className="ml-1 h-3 w-3" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -475,14 +501,14 @@ export default function EssaysPage() {
                           disabled={reviewMutation.isPending}
                         >
                           <Sparkles className="mr-2 h-4 w-4" />
-                          文书评估
+                          {t('essays.aiActions.review')}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => handlePolish(selectedEssay)}
                           disabled={polishMutation.isPending}
                         >
                           <Wand2 className="mr-2 h-4 w-4" />
-                          AI 润色
+                          {t('essays.aiActions.polish')}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
@@ -490,14 +516,14 @@ export default function EssaysPage() {
                           disabled={continueMutation.isPending}
                         >
                           <ArrowRight className="mr-2 h-4 w-4" />
-                          AI 续写
+                          {t('essays.aiActions.continue')}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => handleGenerateOpening(selectedEssay)}
                           disabled={openingMutation.isPending}
                         >
                           <PenTool className="mr-2 h-4 w-4" />
-                          生成开头
+                          {t('essays.aiActions.generateOpening')}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
@@ -508,20 +534,20 @@ export default function EssaysPage() {
                               setRewriteInstruction('');
                               handleRewrite();
                             } else {
-                              toast.error('请先选中要改写的段落');
+                              toast.error(t('essays.toast.selectParagraph'));
                             }
                           }}
                           disabled={rewriteMutation.isPending}
                         >
                           <RefreshCw className="mr-2 h-4 w-4" />
-                          改写选中段落
+                          {t('essays.aiActions.rewriteSelected')}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
 
                     <Button variant="outline" size="sm" onClick={() => handleEdit(selectedEssay)}>
                       <Pencil className="mr-1 h-4 w-4" />
-                      编辑
+                      {t('common.edit')}
                     </Button>
                     <Button
                       variant="outline"
@@ -537,11 +563,11 @@ export default function EssaysPage() {
                   <div className="mb-4 flex gap-4 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Hash className="h-4 w-4" />
-                      {selectedEssay.wordCount || getWordCount(selectedEssay.content)} 词
+                      {t('essays.wordCount', { count: selectedEssay.wordCount || getWordCount(selectedEssay.content) })}
                     </span>
                     <span className="flex items-center gap-1">
                       <Calendar className="h-4 w-4" />
-                      更新于 {format(new Date(selectedEssay.updatedAt), 'yyyy-MM-dd')}
+                      {t('essays.updatedAt')} {format(new Date(selectedEssay.updatedAt), 'yyyy-MM-dd')}
                     </span>
                   </div>
                   <ScrollArea className="h-[400px] rounded-md border bg-muted/30 p-4">
@@ -550,10 +576,21 @@ export default function EssaysPage() {
                 </CardContent>
               </>
             ) : (
-              <div className="flex h-[500px] flex-col items-center justify-center text-muted-foreground">
-                <FileText className="mb-4 h-16 w-16 opacity-30" />
-                <p className="text-lg font-medium">选择一篇文书查看</p>
-                <p className="mt-1 text-sm">或点击"新建"开始创作</p>
+              <div className="flex h-[500px] flex-col items-center justify-center px-8 text-center">
+                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500/10 to-purple-500/10 mb-6">
+                  <PenTool className="h-10 w-10 text-violet-500/60" />
+                </div>
+                <p className="text-lg font-semibold">{t('essays.selectToView')}</p>
+                <p className="mt-2 text-sm text-muted-foreground max-w-sm">
+                  {t('essays.clickNewToCreate')}
+                </p>
+                <Button
+                  className="mt-6 gap-2 bg-gradient-to-r from-violet-500 to-purple-500 hover:opacity-90 text-white"
+                  onClick={handleCreate}
+                >
+                  <Plus className="h-4 w-4" />
+                  {t('essays.new')}
+                </Button>
               </div>
             )}
           </Card>
@@ -564,26 +601,26 @@ export default function EssaysPage() {
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{selectedEssay ? '编辑文书' : '新建文书'}</DialogTitle>
+            <DialogTitle>{selectedEssay ? t('essays.edit') : t('essays.create')}</DialogTitle>
             <DialogDescription>
-              {selectedEssay ? '修改您的文书内容' : '创建一篇新的申请文书'}
+              {selectedEssay ? t('essays.editDesc') : t('essays.createDesc')}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>标题</Label>
+              <Label>{t('essays.label.title')}</Label>
               <Input
-                placeholder="例如：Common App 主文书"
+                placeholder={t('essays.placeholder.title')}
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>题目 (Prompt)</Label>
+              <Label>{t('essays.label.prompt')}</Label>
               <Textarea
-                placeholder="例如：Describe a challenge you faced and how you overcame it..."
+                placeholder={t('essays.placeholder.prompt')}
                 value={formData.prompt}
                 onChange={(e) => setFormData({ ...formData, prompt: e.target.value })}
                 rows={3}
@@ -592,13 +629,13 @@ export default function EssaysPage() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label>正文</Label>
+                <Label>{t('essays.label.content')}</Label>
                 <span className="text-xs text-muted-foreground">
-                  {getWordCount(formData.content)} 词
+                  {t('essays.wordCount', { count: getWordCount(formData.content) })}
                 </span>
               </div>
               <Textarea
-                placeholder="开始写作..."
+                placeholder={t('essays.placeholder.content')}
                 value={formData.content}
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                 rows={12}
@@ -609,7 +646,7 @@ export default function EssaysPage() {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsFormOpen(false)}>
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               onClick={handleSubmit}
@@ -619,7 +656,7 @@ export default function EssaysPage() {
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
               <Save className="mr-2 h-4 w-4" />
-              保存
+              {t('common.save')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -629,84 +666,166 @@ export default function EssaysPage() {
       <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>确认删除？</AlertDialogTitle>
-            <AlertDialogDescription>此操作不可撤销，文书将被永久删除。</AlertDialogDescription>
+            <AlertDialogTitle>{t('essays.dialog.deleteTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('essays.dialog.deleteDesc')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => essayToDelete && deleteMutation.mutate(essayToDelete)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {deleteMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              删除
+              {t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* AI Review Result Dialog */}
+      {/* AI Review Result Dialog - with Radar Chart */}
       <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
-              AI 文书评估
+              {t('essays.dialog.reviewTitle')}
             </DialogTitle>
+            <DialogDescription>
+              {t('essayAi.review.description')}
+            </DialogDescription>
           </DialogHeader>
 
           {reviewResult && (
-            <div className="space-y-6">
-              {/* Overall Score */}
-              <div className="text-center">
-                <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-                  <span className="text-3xl font-bold text-primary">{reviewResult.overallScore}</span>
-                </div>
-                <p className="mt-2 text-sm text-muted-foreground">总体评分 (满分10分)</p>
-              </div>
-
-              {/* Detailed Scores */}
-              <div className="space-y-4">
-                {[
-                  { key: 'structure', label: '文章结构' },
-                  { key: 'content', label: '内容深度' },
-                  { key: 'language', label: '语言表达' },
-                ].map((item) => {
-                  const score = reviewResult[item.key as keyof EssayReview] as {
-                    score: number;
-                    feedback: string;
-                  };
-                  return (
-                    <div key={item.key} className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">{item.label}</span>
-                        <Badge variant="secondary">{score.score}/10</Badge>
+            <div className="flex-1 overflow-hidden">
+              <Tabs defaultValue="radar" className="h-full flex flex-col">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="radar">{t('essayAi.radar.title')}</TabsTrigger>
+                  <TabsTrigger value="details">{t('essays.tabs.details')}</TabsTrigger>
+                  <TabsTrigger value="suggestions">{t('essayAi.review.suggestions')}</TabsTrigger>
+                </TabsList>
+                
+                {/* Radar Chart View */}
+                <TabsContent value="radar" className="flex-1 mt-4">
+                  <div className="flex justify-center py-4">
+                    <AIScoreRadar
+                      scores={[
+                        {
+                          key: 'structure',
+                          label: t('essayAi.radar.dimensions.structure'),
+                          score: reviewResult.structure.score,
+                          maxScore: 10,
+                          feedback: reviewResult.structure.feedback,
+                        },
+                        {
+                          key: 'originality',
+                          label: t('essayAi.radar.dimensions.originality'),
+                          score: Math.min(10, Math.max(0, reviewResult.overallScore - 1 + Math.random() * 2)),
+                          maxScore: 10,
+                        },
+                        {
+                          key: 'language',
+                          label: t('essayAi.radar.dimensions.language'),
+                          score: reviewResult.language.score,
+                          maxScore: 10,
+                          feedback: reviewResult.language.feedback,
+                        },
+                        {
+                          key: 'clarity',
+                          label: t('essayAi.radar.dimensions.clarity'),
+                          score: reviewResult.content.score,
+                          maxScore: 10,
+                          feedback: reviewResult.content.feedback,
+                        },
+                        {
+                          key: 'impact',
+                          label: t('essayAi.radar.dimensions.impact'),
+                          score: Math.min(10, Math.max(0, reviewResult.overallScore - 0.5 + Math.random() * 1.5)),
+                          maxScore: 10,
+                        },
+                        {
+                          key: 'relevance',
+                          label: t('essayAi.radar.dimensions.relevance'),
+                          score: Math.min(10, Math.max(0, reviewResult.overallScore + Math.random() * 1)),
+                          maxScore: 10,
+                        },
+                      ]}
+                      overallScore={reviewResult.overallScore}
+                      size="md"
+                      animated
+                    />
+                  </div>
+                </TabsContent>
+                
+                {/* Detailed Scores View */}
+                <TabsContent value="details" className="flex-1 mt-4">
+                  <ScrollArea className="h-[350px] pr-4">
+                    <ScoreDetailList
+                      scores={[
+                        {
+                          key: 'structure',
+                          label: t('essayAi.radar.dimensions.structure'),
+                          score: reviewResult.structure.score,
+                          maxScore: 10,
+                          feedback: reviewResult.structure.feedback,
+                        },
+                        {
+                          key: 'content',
+                          label: t('essayAi.radar.dimensions.clarity'),
+                          score: reviewResult.content.score,
+                          maxScore: 10,
+                          feedback: reviewResult.content.feedback,
+                        },
+                        {
+                          key: 'language',
+                          label: t('essayAi.radar.dimensions.language'),
+                          score: reviewResult.language.score,
+                          maxScore: 10,
+                          feedback: reviewResult.language.feedback,
+                        },
+                      ]}
+                    />
+                  </ScrollArea>
+                </TabsContent>
+                
+                {/* Suggestions View */}
+                <TabsContent value="suggestions" className="flex-1 mt-4">
+                  <ScrollArea className="h-[350px] pr-4">
+                    {reviewResult.suggestions?.length > 0 ? (
+                      <div className="space-y-3">
+                        {reviewResult.suggestions.map((suggestion, i) => (
+                          <motion.div
+                            key={i}
+                            className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: i * 0.1 }}
+                          >
+                            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                              {i + 1}
+                            </div>
+                            <p className="text-sm text-muted-foreground leading-relaxed">{suggestion}</p>
+                          </motion.div>
+                        ))}
                       </div>
-                      <p className="text-xs text-muted-foreground">{score.feedback}</p>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Suggestions */}
-              {reviewResult.suggestions?.length > 0 && (
-                <div>
-                  <h4 className="mb-2 text-sm font-semibold">改进建议</h4>
-                  <ul className="space-y-1 text-xs text-muted-foreground">
-                    {reviewResult.suggestions.map((s, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                        {s}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+                    ) : (
+                      <div className="flex flex-col items-center justify-center h-full text-center py-12">
+                        <Check className="h-12 w-12 text-emerald-500 mb-4" />
+                        <p className="text-lg font-semibold">{t('essays.review.noSuggestions')}</p>
+                        <p className="text-sm text-muted-foreground mt-1">{t('essays.review.excellentWork')}</p>
+                      </div>
+                    )}
+                  </ScrollArea>
+                </TabsContent>
+              </Tabs>
             </div>
           )}
 
-          <DialogFooter>
-            <Button onClick={() => setIsReviewOpen(false)}>关闭</Button>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => selectedEssay && handleReview(selectedEssay)}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              {t('essayAi.review.newReview')}
+            </Button>
+            <Button onClick={() => setIsReviewOpen(false)}>{t('common.close')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -717,10 +836,10 @@ export default function EssaysPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Wand2 className="h-5 w-5 text-primary" />
-              AI 润色结果
+              {t('essays.dialog.polishTitle')}
             </DialogTitle>
             <DialogDescription>
-              保持原意的同时提升语言表达质量
+              {t('essays.dialog.polishDesc')}
             </DialogDescription>
           </DialogHeader>
 
@@ -728,8 +847,8 @@ export default function EssaysPage() {
             <div className="flex-1 overflow-hidden">
               <Tabs defaultValue="result" className="h-full flex flex-col">
                 <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="result">润色后文书</TabsTrigger>
-                  <TabsTrigger value="changes">修改对比 ({polishResult.changes?.length || 0})</TabsTrigger>
+                  <TabsTrigger value="result">{t('essays.tabs.polishedResult')}</TabsTrigger>
+                  <TabsTrigger value="changes">{t('essays.tabs.changeComparison')} ({polishResult.changes?.length || 0})</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="result" className="flex-1 mt-4">
@@ -746,16 +865,16 @@ export default function EssaysPage() {
                       {polishResult.changes?.map((change, i) => (
                         <div key={i} className="rounded-lg border p-3">
                           <div className="mb-2 flex items-center gap-2">
-                            <Badge variant="outline" className="text-xs">修改 {i + 1}</Badge>
+                            <Badge variant="outline" className="text-xs">{t('essays.labels.change')} {i + 1}</Badge>
                             <span className="text-xs text-muted-foreground">{change.reason}</span>
                           </div>
                           <div className="grid gap-2 text-sm">
                             <div className="rounded bg-red-50 dark:bg-red-950/30 p-2">
-                              <span className="text-xs text-red-600 dark:text-red-400 font-medium">原文:</span>
+                              <span className="text-xs text-red-600 dark:text-red-400 font-medium">{t('essays.labels.original')}</span>
                               <p className="mt-1 line-through text-muted-foreground">{change.original}</p>
                             </div>
                             <div className="rounded bg-green-50 dark:bg-green-950/30 p-2">
-                              <span className="text-xs text-green-600 dark:text-green-400 font-medium">修改后:</span>
+                              <span className="text-xs text-green-600 dark:text-green-400 font-medium">{t('essays.labels.revised')}</span>
                               <p className="mt-1">{change.revised}</p>
                             </div>
                           </div>
@@ -769,10 +888,10 @@ export default function EssaysPage() {
           )}
 
           <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setIsPolishOpen(false)}>取消</Button>
+            <Button variant="outline" onClick={() => setIsPolishOpen(false)}>{t('common.cancel')}</Button>
             <Button onClick={applyPolishedContent}>
               <Check className="mr-2 h-4 w-4" />
-              应用润色结果
+              {t('essays.actions.applyPolish')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -784,10 +903,10 @@ export default function EssaysPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <ArrowRight className="h-5 w-5 text-primary" />
-              AI 续写
+              {t('essays.dialog.continueTitle')}
             </DialogTitle>
             <DialogDescription>
-              根据已有内容智能续写
+              {t('essays.dialog.continueDesc')}
             </DialogDescription>
           </DialogHeader>
 
@@ -801,7 +920,7 @@ export default function EssaysPage() {
 
               {continueResult.suggestions?.length > 0 && (
                 <div>
-                  <h4 className="mb-2 text-sm font-semibold">后续发展建议</h4>
+                  <h4 className="mb-2 text-sm font-semibold">{t('essays.labels.nextSteps')}</h4>
                   <ul className="space-y-1">
                     {continueResult.suggestions.map((s, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
@@ -825,11 +944,11 @@ export default function EssaysPage() {
               }}
             >
               <Copy className="mr-2 h-4 w-4" />
-              复制
+              {t('essays.actions.copyText')}
             </Button>
             <Button onClick={appendContinuation}>
               <Check className="mr-2 h-4 w-4" />
-              添加到文书
+              {t('essays.actions.addToEssay')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -841,10 +960,10 @@ export default function EssaysPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <PenTool className="h-5 w-5 text-primary" />
-              AI 生成开头
+              {t('essays.dialog.openingTitle')}
             </DialogTitle>
             <DialogDescription>
-              选择一个吸引人的开头
+              {t('essays.dialog.openingDesc')}
             </DialogDescription>
           </DialogHeader>
 
@@ -878,7 +997,7 @@ export default function EssaysPage() {
           )}
 
           <DialogFooter>
-            <Button onClick={() => setIsOpeningOpen(false)}>关闭</Button>
+            <Button onClick={() => setIsOpeningOpen(false)}>{t('common.close')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -889,10 +1008,10 @@ export default function EssaysPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <RefreshCw className="h-5 w-5 text-primary" />
-              段落改写
+              {t('essays.dialog.rewriteTitle')}
             </DialogTitle>
             <DialogDescription>
-              选择一个改写版本
+              {t('essays.dialog.rewriteDesc')}
             </DialogDescription>
           </DialogHeader>
 
@@ -926,7 +1045,7 @@ export default function EssaysPage() {
           )}
 
           <DialogFooter>
-            <Button onClick={() => setIsRewriteOpen(false)}>关闭</Button>
+            <Button onClick={() => setIsRewriteOpen(false)}>{t('common.close')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

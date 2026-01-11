@@ -21,7 +21,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
   const [activeTools, setActiveTools] = useState<string[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006';
 
   /**
    * 发送消息
@@ -58,7 +58,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
     abortControllerRef.current = new AbortController();
 
     try {
-      const response = await fetch(`${apiUrl}/ai-agent/chat`, {
+      const response = await fetch(`${apiUrl}/api/v1/ai-agent/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -220,7 +220,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
     
     if (token) {
       try {
-        await fetch(`${apiUrl}/ai-agent/conversation`, {
+        await fetch(`${apiUrl}/api/v1/ai-agent/conversation`, {
           method: 'DELETE',
           headers: {
             Authorization: `Bearer ${token}`,

@@ -5,6 +5,7 @@
  */
 
 import { useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -33,6 +34,7 @@ export function AgentChat({
   showQuickActions = true,
   compact = false,
 }: AgentChatProps) {
+  const t = useTranslations('agentChat');
   const {
     messages,
     isLoading,
@@ -107,7 +109,7 @@ export function AgentChat({
             </motion.div>
 
             <div>
-              <h3 className="font-semibold text-sm">AI 留学顾问</h3>
+              <h3 className="font-semibold text-sm">{t('title')}</h3>
               <div className="flex items-center gap-1.5">
                 <motion.span
                   key={currentAgent}
@@ -131,7 +133,7 @@ export function AgentChat({
                         >
                           <RefreshCw className="h-2.5 w-2.5" />
                         </motion.span>
-                        处理中
+                        {t('processing')}
                       </Badge>
                     </motion.div>
                   )}
@@ -149,7 +151,7 @@ export function AgentChat({
               className="gap-1.5 text-muted-foreground hover:text-destructive"
             >
               <Trash2 className="h-4 w-4" />
-              <span className="hidden sm:inline text-xs">清空</span>
+              <span className="hidden sm:inline text-xs">{t('clear')}</span>
             </Button>
           </motion.div>
         </motion.div>
@@ -215,13 +217,13 @@ export function AgentChat({
                 </motion.div>
 
                 <motion.h3 variants={itemVariants} className="text-lg font-semibold mb-2">
-                  你好！我是留学申请助手
+                  {t('welcome')}
                 </motion.h3>
                 <motion.p
                   variants={itemVariants}
                   className="text-muted-foreground text-sm mb-8 max-w-sm leading-relaxed"
                 >
-                  我可以帮你分析档案竞争力、推荐适合的学校、指导文书写作、规划申请时间线
+                  {t('welcomeDesc')}
                 </motion.p>
 
                 {/* Quick Actions */}
@@ -312,7 +314,7 @@ export function AgentChat({
         onSend={sendMessage}
         onStop={stopGeneration}
         isLoading={isLoading}
-        placeholder="输入你的问题..."
+        placeholder={t('placeholder')}
       />
     </div>
   );

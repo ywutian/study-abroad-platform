@@ -1,35 +1,26 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { AlertTriangle, RefreshCw, WifiOff, ServerCrash, ShieldX } from 'lucide-react';
 import { Button } from './button';
 
 type ErrorVariant = 'default' | 'network' | 'server' | 'permission' | 'notFound';
 
-const variantConfig = {
-  default: {
-    icon: AlertTriangle,
-    title: '出错了',
-    description: '发生了一些错误，请稍后重试',
-  },
-  network: {
-    icon: WifiOff,
-    title: '网络连接失败',
-    description: '请检查您的网络连接后重试',
-  },
-  server: {
-    icon: ServerCrash,
-    title: '服务器错误',
-    description: '服务器暂时无法处理您的请求',
-  },
-  permission: {
-    icon: ShieldX,
-    title: '没有权限',
-    description: '您没有权限访问此内容',
-  },
-  notFound: {
-    icon: AlertTriangle,
-    title: '未找到',
-    description: '请求的资源不存在',
-  },
+const variantIcons = {
+  default: AlertTriangle,
+  network: WifiOff,
+  server: ServerCrash,
+  permission: ShieldX,
+  notFound: AlertTriangle,
+};
+
+const variantTextKeys: Record<ErrorVariant, { title: string; description: string }> = {
+  default: { title: 'default', description: 'defaultDesc' },
+  network: { title: 'network', description: 'networkDesc' },
+  server: { title: 'server', description: 'serverDesc' },
+  permission: { title: 'permission', description: 'permissionDesc' },
+  notFound: { title: 'notFound', description: 'notFoundDesc' },
 };
 
 interface ErrorStateProps {
@@ -47,8 +38,10 @@ export function ErrorState({
   onRetry,
   className,
 }: ErrorStateProps) {
-  const config = variantConfig[variant];
-  const Icon = config.icon;
+  const t = useTranslations('ui.errorState');
+  const tCommon = useTranslations('common');
+  const Icon = variantIcons[variant];
+  const textKeys = variantTextKeys[variant];
 
   return (
     <div
@@ -60,14 +53,14 @@ export function ErrorState({
       <div className="mb-4 rounded-full bg-destructive/10 p-4">
         <Icon className="h-8 w-8 text-destructive" />
       </div>
-      <h3 className="mb-1 text-lg font-semibold">{title || config.title}</h3>
+      <h3 className="mb-1 text-lg font-semibold">{title || t(textKeys.title)}</h3>
       <p className="mb-4 max-w-sm text-sm text-muted-foreground">
-        {description || config.description}
+        {description || t(textKeys.description)}
       </p>
       {onRetry && (
         <Button onClick={onRetry} variant="outline" size="sm">
           <RefreshCw className="mr-2 h-4 w-4" />
-          重试
+          {tCommon('retry')}
         </Button>
       )}
     </div>

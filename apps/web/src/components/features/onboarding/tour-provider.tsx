@@ -98,9 +98,9 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
       stageRadius: 8,
       popoverClass: 'tour-popover',
       progressText: '{{current}} / {{total}}',
-      nextBtnText: '下一步',
-      prevBtnText: '上一步',
-      doneBtnText: '完成',
+      nextBtnText: 'Next',
+      prevBtnText: 'Previous',
+      doneBtnText: 'Done',
       steps: tour.steps,
       onDestroyed: () => {
         setCurrentTourId(null);
@@ -264,14 +264,14 @@ export const TOURS = {
   SCHOOLS: 'schools',
 } as const;
 
-// 欢迎 tour 步骤
+// 欢迎 tour 步骤 - 使用英文作为默认值，运行时会通过翻译函数获取本地化文本
 export const welcomeTourSteps: TourStep[] = [
   {
     id: 'nav-home',
     element: '[data-tour="nav-home"]',
     popover: {
-      title: '欢迎使用留学平台',
-      description: '这是您的主页入口，可以快速了解平台功能和最新动态。',
+      title: 'Welcome to Study Abroad Platform',
+      description: 'This is your homepage where you can quickly access platform features and latest updates.',
       side: 'bottom',
       align: 'start',
     },
@@ -280,8 +280,8 @@ export const welcomeTourSteps: TourStep[] = [
     id: 'nav-schools',
     element: '[data-tour="nav-schools"]',
     popover: {
-      title: '院校库',
-      description: '浏览全球顶尖院校信息，了解录取要求和申请截止日期。',
+      title: 'Schools',
+      description: 'Browse information about top universities worldwide, learn about admission requirements and deadlines.',
       side: 'bottom',
       align: 'center',
     },
@@ -290,8 +290,8 @@ export const welcomeTourSteps: TourStep[] = [
     id: 'nav-cases',
     element: '[data-tour="nav-cases"]',
     popover: {
-      title: '案例库',
-      description: '查看真实的申请案例，了解成功申请者的背景和经验。',
+      title: 'Case Library',
+      description: 'View real application cases to learn from successful applicants\' backgrounds and experiences.',
       side: 'bottom',
       align: 'center',
     },
@@ -300,8 +300,8 @@ export const welcomeTourSteps: TourStep[] = [
     id: 'nav-ai',
     element: '[data-tour="nav-ai"]',
     popover: {
-      title: 'AI 智能助手',
-      description: '与 AI 助手对话，获取个性化的留学规划建议。',
+      title: 'AI Assistant',
+      description: 'Chat with the AI assistant to get personalized study abroad planning advice.',
       side: 'bottom',
       align: 'center',
     },
@@ -310,8 +310,8 @@ export const welcomeTourSteps: TourStep[] = [
     id: 'user-menu',
     element: '[data-tour="user-menu"]',
     popover: {
-      title: '个人中心',
-      description: '管理您的个人资料、申请进度和偏好设置。',
+      title: 'Profile',
+      description: 'Manage your personal profile, application progress, and preference settings.',
       side: 'bottom',
       align: 'end',
     },

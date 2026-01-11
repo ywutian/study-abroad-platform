@@ -38,7 +38,15 @@
     },
     "notFound": {
       "title": "Page Not Found - Study Abroad Platform",
-      "description": "Sorry, the page you are looking for does not exist"
+        "description": "Sorry, the page you are looking for does not exist",
+        "heading": "Page Not Found",
+        "message": "Sorry, the page you are looking for does not exist or has been moved. Please check the link or return to the homepage.",
+        "goHome": "Back to Home",
+        "orVisit": "Or visit the following pages:",
+        "casesLib": "Case Library",
+        "ranking": "School Rankings",
+        "prediction": "Admission Prediction",
+        "copyright": "© 2026 Study Abroad Platform"
     }
   },
   "common": {
@@ -63,7 +71,193 @@
     "login": "Login",
     "logout": "Logout",
     "register": "Register",
-    "settings": "Settings"
+    "settings": "Settings",
+    "loggedInAs": "Logged in as",
+    "add": "Add",
+    "clear": "Clear",
+    "clearAll": "Clear All",
+    "copy": "Copy",
+    "copied": "Copied",
+    "noData": "No data",
+    "notFilled": "Not filled",
+    "anonymous": "Anonymous",
+    "status": "Status",
+    "items": "items",
+    "year": "year",
+    "perWeek": "hrs/week",
+    "weeksPerYear": "weeks/year",
+    "ongoing": "Ongoing",
+    "all": "All",
+    "processing": "Processing",
+    "pleaseCompleteProfile": "Please complete your profile first",
+    "changes": "Changes",
+    "administrator": "Administrator",
+    "verified": "Verified",
+    "featureInDev": "Feature in development, please contact support",
+    "retry": "Retry",
+    "goHome": "Go Home"
+  },
+  "ui": {
+    "dialog": {
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "deleteTitle": "Confirm Delete?",
+      "deleteWithName": "Delete \"{name}\"?",
+      "deleteDesc": "This action cannot be undone. The data will be permanently deleted."
+    },
+    "error": {
+      "pageError": "Page Error",
+      "error": "Error",
+      "defaultMessage": "Something went wrong. Please try refreshing or go back to the homepage.",
+      "retryCount": "Retried {count}/{max} times",
+      "details": "Error Details",
+      "errorMessage": "Error Message:",
+      "stack": "Stack:",
+      "componentStack": "Component Stack:",
+      "retryRemaining": "Retry ({remaining})",
+      "feedback": "Report Issue",
+      "errorId": "Error ID: {id}",
+      "pageLoadFailed": "Page failed to load. Please try again or go home."
+    },
+    "empty": {
+      "noContent": "No Content",
+      "noContentDesc": "There is nothing here yet",
+      "noResults": "No Results Found",
+      "noResultsDesc": "Try adjusting your filters or use different keywords",
+      "noData": "No Data",
+      "noDataDesc": "Data will be displayed here",
+      "loadFailed": "Failed to Load",
+      "loadFailedDesc": "Something went wrong. Please try again later",
+      "offline": "You're Offline",
+      "offlineDesc": "Please check your network connection and try again",
+      "noResultsQuery": "No results found for \"{query}\"",
+      "clearFilter": "Clear Filters",
+      "firstTime": "Welcome!",
+      "firstTimeDesc": "Ready to start your study abroad journey?",
+      "noSchools": "No Schools Found",
+      "noSchoolsDesc": "Try adjusting your filters or browse our recommended schools",
+      "noCases": "No Cases Yet",
+      "noCasesDesc": "Be the first to share your case and help others!",
+      "loading": "Loading",
+      "loadingDesc": "Just a moment...",
+      "browseAll": "Browse All",
+      "shareMine": "Share My Case",
+      "retryLoad": "Try Again"
+    },
+    "command": {
+      "home": "Home",
+      "schools": "Schools",
+      "cases": "Case Library",
+      "aiAssistant": "AI Assistant",
+      "profile": "Profile",
+      "switchToDark": "Switch to Dark Mode",
+      "switchToLight": "Switch to Light Mode",
+      "helpDocs": "Help Docs",
+      "nav": "Navigation",
+      "settings": "Settings",
+      "other": "Other",
+      "searchPlaceholder": "Search commands...",
+      "noResults": "No matching commands found",
+      "navigate": "Navigate",
+      "select": "Select",
+      "close": "Close"
+    },
+    "errorState": {
+      "default": "Something went wrong",
+      "defaultDesc": "An error occurred, please try again later",
+      "network": "Network Connection Failed",
+      "networkDesc": "Please check your network connection and try again",
+      "server": "Server Error",
+      "serverDesc": "The server is temporarily unable to process your request",
+      "permission": "No Permission",
+      "permissionDesc": "You do not have permission to access this content",
+      "notFound": "Not Found",
+      "notFoundDesc": "The requested resource does not exist"
+    },
+    "milestone": {
+      "profileCompleteTitle": "Profile Complete!",
+      "profileCompleteDesc": "Great job! You've completed your profile, and AI can now better recommend schools for you.",
+      "firstPredictionTitle": "First Prediction!",
+      "firstPredictionDesc": "Congratulations on completing your first admission prediction! Keep exploring more target schools.",
+      "firstEssayTitle": "Essay Started!",
+      "firstEssayDesc": "Your first essay has been created! Keep polishing it to show admissions officers your brilliance.",
+      "schoolAddedTitle": "Target Set!",
+      "schoolAddedDesc": "You've added a new target school! One step closer to your dream.",
+      "continueButton": "Keep Going ✨"
+    },
+    "status": {
+      "pending": "Pending",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "failed": "Failed",
+      "cancelled": "Cancelled",
+      "paused": "Paused",
+      "active": "Active",
+      "inactive": "Inactive",
+      "draft": "Draft",
+      "published": "Published",
+      "archived": "Archived",
+      "featured": "Featured",
+      "preparing": "Preparing",
+      "submitted": "Submitted",
+      "interview": "Interviewing",
+      "admitted": "Admitted",
+      "rejected": "Rejected",
+      "waitlisted": "Waitlisted",
+      "withdrawn": "Withdrawn"
+    },
+    "sortable": {
+      "dragToSort": "Drag to sort"
+    },
+    "password": {
+      "strength": "Password strength",
+      "length": "At least 8 characters",
+      "lowercase": "Contains lowercase letter",
+      "uppercase": "Contains uppercase letter",
+      "number": "Contains number",
+      "special": "Contains special character",
+      "veryWeak": "Very weak",
+      "weak": "Weak",
+      "fair": "Fair",
+      "strong": "Strong",
+      "veryStrong": "Very strong"
+    },
+    "offline": {
+      "currentlyOffline": "Currently Offline",
+      "connectionRestored": "Connection Restored",
+      "close": "Close",
+      "youAreOffline": "You are offline",
+      "checkConnection": "Please check your network connection. Some features may be temporarily unavailable."
+    },
+    "stepper": {
+      "step": "Step {current} / {total}",
+      "complete": "Complete",
+      "next": "Next",
+      "previous": "Previous",
+      "processing": "Processing...",
+      "submitSuccess": "Submitted Successfully!"
+    },
+    "theme": {
+      "switchToLight": "Switch to light mode",
+      "switchToDark": "Switch to dark mode",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "unsavedChanges": {
+      "title": "Unsaved Changes",
+      "description": "You have unsaved changes. If you leave this page, all changes will be lost.",
+      "continueEditing": "Continue Editing",
+      "discardAndLeave": "Discard and Leave"
+    },
+    "a11y": {
+      "openMenu": "Open menu",
+      "skipToMain": "Skip to main content",
+      "skipToNav": "Skip to navigation",
+      "mainContent": "Main content",
+      "currentAccount": "Current account"
+    }
   },
   "home": {
     "badge": "AI-Powered Smart Study Abroad Platform",
@@ -72,8 +266,14 @@
     "coreFeatures": "Core Features",
     "coreFeaturesSubtitle": "Comprehensive tools for study abroad applications, helping you achieve your dream school",
     "ctaTitle": "Ready to start your application journey?",
-    "ctaSubtitle": "Register for free and experience all features",
-    "ctaButton": "Get Started",
+    "ctaSubtitle": "Sign up for free and get AI-powered school selection, admission prediction, essay guidance, and more",
+    "ctaButton": "Get Started Free",
+    "ctaBadge": "Join 10,000+ students who chose us",
+    "viewCases": "Browse Success Stories",
+    "ctaFeature1": "Free to sign up",
+    "ctaFeature2": "No credit card required",
+    "ctaFeature3": "Cancel anytime",
+    "scrollDown": "Scroll Down",
     "copyright": "© 2026 Study Abroad Platform. All rights reserved.",
     "aboutUs": "About Us",
     "privacy": "Privacy Policy",
@@ -102,6 +302,44 @@
       "cases": "Browse real application cases and learn from success stories",
       "chat": "Connect with verified users for first-hand information",
       "hall": "Admissions officer scoring, rank comparison, create lists"
+    },
+    "heroLeft": {
+      "top100": "Top 100 Schools",
+      "aiAnalysis": "AI-Powered Analysis",
+      "realTimeData": "Real-time Updates"
+    },
+    "heroRight": {
+      "dataSecurity": "Data Security",
+      "fastPrediction": "Fast Predictions",
+      "onlineSupport": "24/7 Online"
+    },
+    "usp": {
+      "gpt4": "GPT-4 Powered",
+      "accuracy": "95%+ Accuracy",
+      "cases": "10,000+ Real Cases"
+    },
+    "stories": {
+      "title": "Real Success Stories",
+      "subtitle": "See how they achieved their study abroad dreams with our platform",
+      "viewMore": "View More Cases",
+      "story1": {
+        "name": "Alex L.",
+        "background": "GPA 3.8 / TOEFL 112",
+        "result": "Admitted to MIT CS",
+        "quote": "AI prediction helped me target schools precisely, saving lots of time. The admission probability analysis gave me confidence to aim for my dream school!"
+      },
+      "story2": {
+        "name": "Sarah W.",
+        "background": "GPA 3.5 / GMAT 720",
+        "result": "Admitted to Stanford MBA",
+        "quote": "The case library showed me many success stories from similar backgrounds. The essay guidance was also very professional. Highly recommended!"
+      },
+      "story3": {
+        "name": "Mike Z.",
+        "background": "GPA 3.6 / GRE 325",
+        "result": "Admitted to CMU DS",
+        "quote": "From school selection to essays, the all-in-one service helped me streamline the entire application process. Efficiency improved so much!"
+      }
     }
   },
   "auth": {
@@ -113,7 +351,8 @@
       "rememberMe": "Remember me",
       "forgotPassword": "Forgot password?",
       "noAccount": "Don't have an account?",
-      "signUp": "Sign up"
+      "signUp": "Sign up",
+      "or": "or"
     },
     "register": {
       "title": "Register",
@@ -123,7 +362,12 @@
       "confirmPassword": "Confirm Password",
       "hasAccount": "Already have an account?",
       "signIn": "Sign in",
-      "agreeTerms": "I agree to the Terms of Service and Privacy Policy"
+      "agreeTerms": "I agree to the Terms of Service and Privacy Policy",
+      "agreeText": "I have read and agree to the",
+      "terms": "Terms of Service",
+      "and": "and",
+      "privacy": "Privacy Policy",
+      "or": "or"
     },
     "verifyEmail": {
       "title": "Verify Email",
@@ -132,16 +376,62 @@
       "description": "We've sent a verification email to {email}",
       "resend": "Resend",
       "checkSpam": "Check your spam folder if you didn't receive it",
+      "backToLogin": "Back to Login",
+      "verifying": "Verifying...",
+      "verifyingDesc": "Verifying your email address",
+      "failed": "Verification Failed",
+      "invalidLink": "Invalid verification link",
+      "linkExpired": "The verification link may have expired or is invalid",
+      "goToLogin": "Go to Login",
+      "reRegister": "Register Again",
+      "success": "Verification Successful!",
+      "successDesc": "Your email has been verified",
+      "successHint": "You can now log in and start using all features"
+    },
+    "forgotPassword": {
+      "title": "Forgot Password",
+      "description": "Enter your email and we'll send you a reset link",
+      "emailLabel": "Email Address",
+      "emailRequired": "Please enter your email",
+      "sending": "Sending...",
+      "sendLink": "Send Reset Link",
+      "emailSent": "Email Sent",
+      "emailSentDesc": "If this email is registered, you will receive a reset link",
+      "checkInbox": "Please check your inbox",
+      "checkSpam": "Didn't receive it? Check your spam folder",
+      "resend": "Resend",
       "backToLogin": "Back to Login"
     },
     "resetPassword": {
-      "title": "Reset Password",
-      "description": "Enter your email and we'll send you a reset link",
+      "title": "Set New Password",
+      "description": "Enter your new password",
       "sent": "Reset link sent",
-      "newPassword": "New Password"
+      "newPassword": "New Password",
+      "newPasswordPlaceholder": "At least 8 characters with letters and numbers",
+      "confirmPassword": "Confirm Password",
+      "confirmPlaceholder": "Enter password again",
+      "invalidLink": "Invalid Link",
+      "linkExpiredDesc": "The reset link is invalid or has expired",
+      "getNewLink": "Get New Link",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "passwordMismatch": "Passwords do not match",
+      "passwordNeedLetter": "Password must contain letters and numbers",
+      "resetting": "Resetting...",
+      "resetButton": "Reset Password",
+      "success": "Password Reset Successful",
+      "successDesc": "Your password has been updated, please login with your new password",
+      "goToLogin": "Go to Login",
+      "backToLogin": "Back to Login",
+      "requirements": {
+        "title": "Password Requirements",
+        "minLength": "At least 8 characters",
+        "hasLetter": "Contains letters",
+        "hasNumber": "Contains numbers"
+      }
     }
   },
   "nav": {
+    "dashboard": "Dashboard",
     "profile": "My Profile",
     "essays": "My Essays",
     "ai": "AI Assistant",
@@ -151,17 +441,304 @@
     "chat": "Messages",
     "hall": "Feature Hall",
     "followers": "Followers",
-    "admin": "Admin"
+    "admin": "Admin",
+    "schools": "Schools",
+    "more": "More",
+    "timeline": "Timeline",
+    "timelineDesc": "Track deadlines and progress",
+    "recommendation": "AI Advisor",
+    "recommendationDesc": "Get personalized school recommendations",
+    "forum": "Forum",
+    "forumDesc": "Share experiences, find teammates",
+    "swipe": "Predict Game",
+    "swipeDesc": "Swipe to predict admission results",
+    "assessment": "Assessment",
+    "assessmentDesc": "MBTI & Holland tests",
+    "verifiedRanking": "Verified Ranking",
+    "verifiedRankingDesc": "Real admission data rankings",
+    "vault": "Vault",
+    "vaultDesc": "Encrypted credential storage",
+    "mobile": {
+      "home": "Home",
+      "cases": "Cases",
+      "prediction": "Predict",
+      "profile": "Me"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "greetingMorning": "Good morning",
+    "greetingAfternoon": "Good afternoon",
+    "greetingEvening": "Good evening",
+    "statsOverview": "Statistics Overview",
+    "coreFeatures": "Core Features",
+    "aiTools": "AI & Tools",
+    "community": "Community",
+    "otherFeatures": "More Features",
+    "stats": {
+      "profileComplete": "Profile Complete",
+      "essaysWritten": "Essays Written",
+      "schoolsAdded": "Target Schools",
+      "predictionsMade": "Predictions Made",
+      "essays": "essays",
+      "todos": "todos"
+    },
+    "progress": "Progress",
+    "enter": "Enter",
+    "features": {
+      "profileDesc": "Manage your background and application materials",
+      "essaysDesc": "Write and manage application essays",
+      "timelineDesc": "Track deadlines and progress",
+      "recommendationDesc": "Get AI school recommendations",
+      "predictionDesc": "Predict admission probability",
+      "schoolsDesc": "Browse top universities worldwide",
+      "rankingDesc": "Custom weighted rankings",
+      "assessmentDesc": "MBTI/Holland career tests",
+      "casesDesc": "Browse real admission cases",
+      "forumDesc": "Share experiences, find teammates",
+      "swipeDesc": "Swipe prediction game",
+      "verifiedRankingDesc": "Verified data rankings",
+      "chatDesc": "Private messages & chat",
+      "hallDesc": "Admissions reviews & rankings",
+      "vaultDesc": "Encrypted credential storage"
+    },
+    "quickActions": {
+      "startPrediction": "Start Prediction",
+      "startPredictionDesc": "Enter target schools, get admission rates",
+      "aiEssay": "AI Essay Assistant",
+      "aiEssayDesc": "Let AI polish and review your essays",
+      "playGame": "Prediction Challenge",
+      "playGameDesc": "Test your admissions officer instincts"
+    },
+    "onboarding": {
+      "title": "Quick Start Guide",
+      "subtitle": "Completed {completed}/{total} steps",
+      "step1Title": "Complete Your Profile",
+      "step1Desc": "Fill in your info, scores, and activities",
+      "step2Title": "Add Target Schools",
+      "step2Desc": "Browse schools and add ones you're interested in",
+      "step3Title": "Get Predictions",
+      "step3Desc": "AI analyzes your profile and predicts admission chances",
+      "completed": "Done",
+      "hint": "Complete these steps to start your smart application journey ✨"
+    }
+  },
+  "schools": {
+    "title": "School Directory",
+    "description": "Browse top universities worldwide, learn about admission requirements and application info",
+    "searchPlaceholder": "Search school name...",
+    "country": "Country/Region",
+    "sortBy": "Sort by",
+    "sort": {
+      "rank": "By Ranking",
+      "name": "By Name",
+      "acceptance": "By Acceptance Rate"
+    },
+    "countries": {
+      "all": "All Countries",
+      "us": "United States",
+      "uk": "United Kingdom",
+      "canada": "Canada",
+      "australia": "Australia",
+      "germany": "Germany",
+      "japan": "Japan"
+    },
+    "resultsCount": "{count} schools found",
+    "acceptanceRate": "Acceptance",
+    "students": "students",
+    "viewDetails": "View Details",
+    "noResults": "No schools found",
+    "tryDifferentSearch": "Try a different search term or adjust your filters"
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "description": "Manage users, handle reports, view system data",
+    "tabs": {
+      "overview": "Overview",
+      "reports": "Reports",
+      "users": "Users",
+      "data": "Data"
+    },
+    "status": {
+      "pending": "Pending",
+      "reviewed": "Reviewed",
+      "resolved": "Resolved"
+    },
+    "roles": {
+      "admin": "Admin",
+      "verified": "Verified",
+      "user": "User"
+    },
+    "targetTypes": {
+      "user": "User",
+      "message": "Message",
+      "case": "Case",
+      "review": "Review"
+    },
+    "toast": {
+      "reportResolved": "Report resolved",
+      "roleUpdated": "User role updated",
+      "userDeleted": "User deleted",
+      "syncComplete": "Sync complete: {count} schools",
+      "syncFailed": "Sync failed",
+      "scrapeComplete": "Scrape complete: {count} schools",
+      "scrapeFailed": "Scrape failed"
+    },
+    "stats": {
+      "totalUsers": "Total Users",
+      "verifiedUsers": "Verified Users",
+      "totalCases": "Total Cases",
+      "pendingReports": "Pending Reports",
+      "totalReviews": "Total Reviews"
+    },
+    "reports": {
+      "title": "Report Management",
+      "description": "View and handle user reports",
+      "empty": "No reports",
+      "emptyDesc": "No pending reports at the moment",
+      "reporter": "Reporter",
+      "target": "Target",
+      "reason": "Reason",
+      "time": "Time",
+      "action": "Action",
+      "markReviewed": "Mark Reviewed",
+      "resolve": "Resolve",
+      "resolveTitle": "Resolve Report",
+      "resolveDesc": "Enter resolution description",
+      "resolution": "Resolution"
+    },
+    "users": {
+      "title": "User Management",
+      "description": "Manage platform users",
+      "searchPlaceholder": "Search by email...",
+      "email": "Email",
+      "role": "Role",
+      "cases": "Cases",
+      "reviews": "Reviews",
+      "joinDate": "Join Date",
+      "action": "Action",
+      "setAdmin": "Set as Admin",
+      "setVerified": "Set as Verified",
+      "setUser": "Set as User",
+      "delete": "Delete User",
+      "deleteTitle": "Delete this user?",
+      "deleteDesc": "This will soft delete the user. Data will be retained but user cannot login."
+    },
+    "dialogs": {
+      "resolveReport": "Resolve Report",
+      "resolveReportDesc": "Confirm marking this report as resolved?",
+      "resolveConfirm": "Confirm Resolve",
+      "defaultResolution": "Resolved by admin",
+      "deleteUserTitle": "Delete this user?",
+      "deleteUserDesc": "This will soft delete the user. Data will be retained but user cannot login.",
+      "delete": "Delete",
+      "cancel": "Cancel"
+    },
+    "schools": {
+      "notFound": "No schools found",
+      "tryOther": "Try other search criteria"
+    },
+    "data": {
+      "title": "Data Management",
+      "description": "Sync and manage school data",
+      "syncScorecard": "College Scorecard Sync",
+      "syncScorecardDesc": "Sync school data from US DOE API",
+      "schoolsToSync": "Schools to sync",
+      "startSync": "Sync",
+      "scrapeSchools": "School Website Scrape",
+      "scrapeSchoolsDesc": "Scrape deadlines, essays, etc.",
+      "startScrape": "Scrape Top 10",
+      "lastUpdate": "Last Update",
+      "status": "Data Status",
+      "statusDesc": "Current database school count",
+      "cycle": "Data Cycle",
+      "rank": "Rank",
+      "schoolName": "School Name",
+      "state": "State",
+      "applicationType": "Type",
+      "deadline": "Deadline",
+      "acceptanceRate": "Acceptance"
+    },
+    "users": {
+      "title": "User Management",
+      "description": "Manage platform users",
+      "searchPlaceholder": "Search by email...",
+      "email": "Email",
+      "role": "Role",
+      "cases": "Cases",
+      "reviews": "Reviews",
+      "joinDate": "Join Date",
+      "action": "Action",
+      "setAdmin": "Set as Admin",
+      "setVerified": "Set as Verified",
+      "setUser": "Set as User",
+      "delete": "Delete User",
+      "deleteTitle": "Delete this user?",
+      "deleteDesc": "This action is irreversible. All user data will be permanently deleted.",
+      "noResults": "No users found",
+      "noResultsDesc": "Try different search criteria",
+      "notVerified": "Not verified"
+    }
+  },
+  "followers": {
+    "title": "Follow Management",
+    "description": "Manage your followers, following, and blocked users",
+    "tabs": {
+      "followers": "Followers",
+      "following": "Following",
+      "blocked": "Blocked"
+    },
+    "search": "Search users...",
+    "mutualFollow": "Mutual Follow",
+    "blocked": "Blocked",
+    "unblock": "Unblock",
+    "empty": {
+      "followers": "No followers yet",
+      "followersDesc": "Share your profile to attract more followers",
+      "following": "Not following anyone",
+      "followingDesc": "Discover great applicants in Feature Hall",
+      "blocked": "Block list is empty",
+      "blockedDesc": "You haven't blocked any users"
+    },
+    "dialogs": {
+      "unfollowTitle": "Unfollow this user?",
+      "unfollowDesc": "If they also unfollow you, you won't be able to chat.",
+      "unblockTitle": "Unblock this user?",
+      "unblockDesc": "They will be able to follow you and send messages again.",
+      "confirm": "Confirm",
+      "unfollow": "Unfollow"
+    },
+    "toast": {
+      "followSuccess": "Followed successfully",
+      "unfollowSuccess": "Unfollowed successfully",
+      "blockSuccess": "Blocked successfully",
+      "unblockSuccess": "Unblocked successfully"
+    }
   },
   "profile": {
     "title": "My Profile",
+    "description": "Manage your study abroad application profile",
+    "quickStart": {
+      "title": "Quick Start Prediction",
+      "description": "Just fill in your GPA and test scores to get admission predictions quickly",
+      "fillGpa": "Fill GPA",
+      "fillScore": "Add Score"
+    },
     "basicInfo": "Basic Info",
+    "basicInfoDesc": "Fill in your basic information",
     "testScores": "Test Scores",
+    "testScoresDesc": "Add your standardized test scores",
     "gpa": "GPA",
+    "gpaDesc": "Enter your GPA information",
+    "gpaScale": "GPA Scale",
     "activities": "Activities",
+    "activitiesDesc": "Add your extracurricular activities",
     "awards": "Awards",
+    "awardsDesc": "Add your honors and awards",
     "targetSchools": "Target Schools",
+    "targetSchoolsDesc": "Select your target schools (reach/match/safety)",
     "visibility": "Privacy Settings",
+    "visibilityDesc": "Control who can view your profile",
     "exportResume": "Export Resume",
     "exportData": "Export Data",
     "steps": {
@@ -177,57 +754,480 @@
       "grade": "Grade",
       "schoolType": "School Type",
       "currentSchool": "Current School",
+      "currentSchoolPlaceholder": "Your current school",
       "targetMajor": "Target Major",
+      "targetMajorPlaceholder": "e.g., Computer Science, Economics",
       "regionPref": "Region Preference",
       "budget": "Budget"
+    },
+    "grades": {
+      "freshman": "Freshman (9th)",
+      "sophomore": "Sophomore (10th)",
+      "junior": "Junior (11th)",
+      "senior": "Senior (12th)",
+      "gapYear": "Gap Year"
+    },
+    "budgetTiers": {
+      "low": "< $30,000/year",
+      "medium": "$30,000 - $50,000/year",
+      "high": "$50,000 - $70,000/year",
+      "unlimited": "> $70,000/year"
     },
     "visibilityOptions": {
       "private": "Private",
       "anonymous": "Anonymous",
       "verifiedOnly": "Verified Users Only"
+    },
+    "visibilityDesc": {
+      "private": "Your profile is completely private, other users cannot see any information",
+      "anonymous": "Other users can view your profile but cannot see your real identity",
+      "verifiedOnly": "Only verified users can view your complete profile"
+    },
+    "completeness": "Profile Completeness",
+    "completenessHint": "Complete more information for better recommendations",
+    "completenessComplete": "Awesome! Your profile is very complete",
+    "yourGpa": "Your GPA",
+    "gpaScales": {
+      "scale4": "4.0 Scale",
+      "scale5": "5.0 Scale (Weighted)",
+      "scale100": "100 Point Scale"
+    },
+    "activityCategories": {
+      "academic": "Academic Research",
+      "arts": "Arts",
+      "athletics": "Athletics",
+      "communityService": "Community Service",
+      "leadership": "Leadership",
+      "work": "Work/Internship",
+      "research": "Research",
+      "other": "Other"
+    },
+    "awardLevels": {
+      "school": "School Level",
+      "regional": "Regional Level",
+      "state": "State Level",
+      "national": "National Level",
+      "international": "International Level"
+    },
+    "actions": {
+      "addScore": "Add Score",
+      "addActivity": "Add Activity",
+      "addAward": "Add Award",
+      "addSchool": "Add School",
+      "selectSchools": "Select Target Schools"
+    },
+    "placeholders": {
+      "selectGrade": "Select grade",
+      "selectBudget": "Select budget range",
+      "gpaExample": "e.g., 3.85"
+    },
+    "empty": {
+      "noScores": "No test scores yet",
+      "noScoresHint": "Click \"Add Score\" to start",
+      "noActivities": "No activities yet",
+      "noActivitiesHint": "Click \"Add Activity\" to start",
+      "noAwards": "No awards yet",
+      "noAwardsHint": "Click \"Add Award\" to start",
+      "noTargets": "No target schools yet",
+      "noTargetsHint": "Click \"Add School\" to start"
+    },
+    "toast": {
+      "scoreDeleted": "Score deleted",
+      "activityDeleted": "Activity deleted",
+      "awardDeleted": "Award deleted",
+      "activityAdded": "Activity added successfully",
+      "activityUpdated": "Activity updated successfully",
+      "awardAdded": "Award added successfully",
+      "awardUpdated": "Award updated successfully",
+      "educationAdded": "Education added successfully",
+      "educationUpdated": "Education updated successfully",
+      "scoreAdded": "Score added successfully",
+      "scoreUpdated": "Score updated successfully"
+    },
+    "form": {
+      "editActivity": "Edit Activity",
+      "addActivity": "Add Activity",
+      "editAward": "Edit Award",
+      "addAward": "Add Award",
+      "editEducation": "Edit Education",
+      "addEducation": "Add Education",
+      "editEducationDesc": "Edit your education information",
+      "addEducationDesc": "Add an education entry",
+      "editScore": "Edit Test Score",
+      "addScore": "Add Test Score",
+      "activityName": "Activity Name",
+      "activityNamePlaceholder": "e.g., Robotics Club",
+      "activityCategory": "Category",
+      "selectCategory": "Select category",
+      "role": "Role",
+      "rolePlaceholder": "e.g., President",
+      "organization": "Organization",
+      "organizationPlaceholder": "e.g., School Innovation Center",
+      "activityDescription": "Activity Description",
+      "activityDescPlaceholder": "Briefly describe your responsibilities and achievements...",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "ongoing": "Activity ongoing",
+      "hoursPerWeek": "Hours per week",
+      "weeksPerYear": "Weeks per year",
+      "awardName": "Award Name",
+      "awardNamePlaceholder": "e.g., AMC 12 Perfect Score",
+      "level": "Level",
+      "selectLevel": "Select level",
+      "awardYear": "Award Year",
+      "awardDescription": "Award Description",
+      "awardDescPlaceholder": "Briefly describe the significance of this award...",
+      "schoolName": "School Name",
+      "schoolNamePlaceholder": "e.g., Harvard University",
+      "schoolType": "School Type",
+      "selectType": "Select type",
+      "degree": "Degree",
+      "degreePlaceholder": "e.g., Bachelor's",
+      "major": "Major",
+      "majorPlaceholder": "e.g., Computer Science",
+      "gpaMax": "GPA Max Scale",
+      "description": "Description",
+      "descriptionPlaceholder": "Add courses, honors, etc.",
+      "testType": "Test Type",
+      "selectTestType": "Select test type",
+      "score": "Score",
+      "scorePlaceholder": "Enter score",
+      "reading": "Reading",
+      "readingEBRW": "Reading (EBRW)",
+      "math": "Math",
+      "listening": "Listening",
+      "speaking": "Speaking",
+      "writing": "Writing",
+      "testDate": "Test Date",
+      "educationTypes": {
+        "highSchool": "High School",
+        "college": "College",
+        "graduate": "Graduate",
+        "other": "Other"
+      }
+    },
+    "validation": {
+      "activityRequired": "Please fill in activity name, category, and role",
+      "awardRequired": "Please fill in award name and level",
+      "scoreRequired": "Please fill in test type and score"
+    },
+    "selector": {
+      "searchPlaceholder": "Search target major...",
+      "noProfiles": "No public profiles yet",
+      "noProfilesHint": "Waiting for more users to share profiles",
+      "activities": "activities",
+      "awards": "awards"
     }
+  },
+  "stats": {
+    "vsLastMonth": "vs last month"
+  },
+  "agentChat": {
+    "title": "AI Study Abroad Advisor",
+    "processing": "Processing",
+    "clear": "Clear",
+    "welcome": "Hello! I'm your study abroad assistant",
+    "welcomeDesc": "I can help you analyze your profile competitiveness, recommend suitable schools, guide essay writing, and plan application timeline",
+    "placeholder": "Enter your question...",
+    "characters": "characters",
+    "thinking": "Thinking...",
+    "usingTools": "Using {count} tools",
+    "sendHint": "Press Enter to send, Shift + Enter for new line",
+    "assistant": "AI Assistant",
+    "tools": {
+      "searchSchools": "Search Schools",
+      "getUserProfile": "Get Profile",
+      "analyzeProfile": "Analyze Profile",
+      "searchCases": "Search Cases",
+      "getDeadlines": "Get Deadlines",
+      "reviewEssay": "Review Essay",
+      "queryDatabase": "Query Database"
+    }
+  },
+  "globalSearch": {
+    "placeholder": "Search schools, cases, or ask AI...",
+    "searchButton": "Search...",
+    "searchButtonShort": "Search",
+    "quickActions": "Quick Actions",
+    "recentSearches": "Recent Searches",
+    "hotSearches": "Hot Searches",
+    "noResults": "No results found for \"{query}\"",
+    "navigate": "Navigate",
+    "select": "Select",
+    "close": "Close",
+    "openSearch": "Open Search",
+    "types": {
+      "school": "School",
+      "case": "Case",
+      "article": "Article",
+      "ai": "AI Suggestion",
+      "page": "Page"
+    },
+    "actions": {
+      "aiChat": "Chat with AI",
+      "browseSchools": "Browse Schools",
+      "viewCases": "View Cases",
+      "profile": "Profile"
+    },
+    "mockResults": {
+      "universityDesc": "World-class research university",
+      "caseTitle": "{query} Application Cases",
+      "askAi": "Ask AI about {query}",
+      "askAiDesc": "Get personalized advice"
+    }
+  },
+  "createList": {
+    "title": "Create School List",
+    "description": "Share your school selection strategy to help other applicants",
+    "titleLabel": "List Title",
+    "titlePlaceholder": "e.g., CS Major Top 20 School List",
+    "categoryLabel": "Category",
+    "visibilityLabel": "Public Visibility",
+    "public": "Public",
+    "private": "Private",
+    "descriptionLabel": "List Description",
+    "descriptionPlaceholder": "Describe your school selection strategy...",
+    "schoolsLabel": "Schools",
+    "addSchool": "Add School",
+    "noSchools": "Click \"Add School\" to select schools",
+    "selectSchools": "Select Schools",
+    "createButton": "Create List",
+    "categories": {
+      "schoolRanking": "School List",
+      "majorRanking": "Major Recommendations",
+      "tips": "Application Tips",
+      "other": "Other"
+    },
+    "toast": {
+      "success": "List created successfully",
+      "titleRequired": "Please enter a list title",
+      "schoolsRequired": "Please select at least one school"
+    }
+  },
+  "dataExport": {
+    "trigger": "Export",
+    "title": "Export My Data",
+    "description": "Choose the data types and format to export, and we'll generate a download file for you.",
+    "formatLabel": "Export Format",
+    "selectDataLabel": "Select Data",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
+    "securityNote": "Your data is securely encrypted during transfer. The export file only contains the data types you selected, excluding sensitive information like passwords.",
+    "startExport": "Start Export",
+    "exportingTitle": "Exporting data...",
+    "exportingDescription": "Please wait while we process your data",
+    "exportCompleteTitle": "Export Complete!",
+    "exportCompleteDescription": "Your data is ready for download",
+    "downloadFile": "Download File",
+    "formats": {
+      "json": {
+        "label": "JSON (Complete Data)",
+        "description": "Complete data, suitable for backup"
+      },
+      "csv": {
+        "label": "CSV (Spreadsheet)",
+        "description": "Spreadsheet format, can be opened with Excel"
+      },
+      "pdf": {
+        "label": "PDF (Report)",
+        "description": "Print-friendly report format"
+      }
+    },
+    "dataTypes": {
+      "profile": {
+        "label": "Profile",
+        "description": "Basic info, academic background, test scores"
+      },
+      "applications": {
+        "label": "Applications",
+        "description": "Applied schools, status, timeline"
+      },
+      "favorites": {
+        "label": "Favorites",
+        "description": "Saved schools, cases, articles"
+      },
+      "aiChats": {
+        "label": "AI Conversations",
+        "description": "Chat history with AI assistant"
+      },
+      "preferences": {
+        "label": "Preferences",
+        "description": "Notification and display settings"
+      }
+    },
+    "toast": {
+      "selectDataType": "Please select at least one data type",
+      "success": "Export successful!",
+      "failed": "Export failed"
+    }
+  },
+  "submitCase": {
+    "title": "Submit Admission Case",
+    "description": "Share your application results to help future applicants",
+    "selectSchool": "Select School",
+    "roundLabel": "Application Round",
+    "roundPlaceholder": "Select round",
+    "yearLabel": "Application Year",
+    "resultLabel": "Application Result",
+    "resultPlaceholder": "Select result",
+    "majorLabel": "Major",
+    "majorPlaceholder": "e.g., Computer Science",
+    "gpaLabel": "GPA Range",
+    "gpaPlaceholder": "e.g., 3.8-4.0",
+    "satLabel": "SAT Range",
+    "satPlaceholder": "e.g., 1500-1550",
+    "toeflLabel": "TOEFL Range",
+    "toeflPlaceholder": "e.g., 110-115",
+    "tagsLabel": "Tags",
+    "tagsPlaceholder": "Comma separated, e.g., Strong research, Competition awards",
+    "reflectionLabel": "Reflection",
+    "reflectionPlaceholder": "Share your application experience and advice...",
+    "submitButton": "Submit Case",
+    "selectSchoolTitle": "Select Application School",
+    "rounds": {
+      "ED": "ED (Early Decision)",
+      "ED2": "ED2",
+      "EA": "EA (Early Action)",
+      "REA": "REA (Restrictive EA)",
+      "RD": "RD (Regular Decision)"
+    },
+    "results": {
+      "admitted": "Admitted",
+      "rejected": "Rejected",
+      "waitlisted": "Waitlisted",
+      "deferred": "Deferred"
+    },
+    "toast": {
+      "success": "Case submitted successfully, thank you for sharing!",
+      "requiredFields": "Please fill in required fields"
+    }
+  },
+  "schoolSelector": {
+    "title": "Select Schools",
+    "searchPlaceholder": "Search school name...",
+    "noResults": "No schools found",
+    "noResultsHint": "Try different search terms",
+    "acceptanceRate": "Acceptance Rate",
+    "selectedCount": "Selected {count}/{max} schools",
+    "confirmSelection": "Confirm Selection"
   },
   "ranking": {
     "title": "Custom Rankings",
+    "description": "Customize weights to generate your personalized school rankings",
     "weights": "Weight Settings",
+    "weightsDesc": "Adjust weight for each metric to customize your ranking",
+    "totalWeight": "Total Weight",
+    "schoolsCount": "Schools Count",
     "usNewsRank": "US News Rank",
     "acceptanceRate": "Acceptance Rate",
+    "acceptanceRateHint": "Lower acceptance rate = Higher score",
     "tuition": "Tuition",
+    "tuitionHint": "Lower tuition = Higher score",
     "avgSalary": "Average Salary",
     "preview": "Preview Rankings",
     "saveRanking": "Save Ranking",
     "shareRanking": "Share Ranking",
-    "myRankings": "My Rankings"
+    "myRankings": "My Rankings",
+    "rankingResults": "Ranking Results",
+    "rankingResultsDesc": "School rankings based on your weights",
+    "namePlaceholder": "My Custom Ranking",
+    "tableHeaders": {
+      "rank": "Rank",
+      "school": "School",
+      "usNews": "US News",
+      "acceptance": "Acceptance",
+      "tuition": "Tuition",
+      "salary": "Salary",
+      "score": "Score"
+    },
+    "empty": {
+      "title": "Click \"Preview Rankings\" to see results",
+      "description": "Adjust the weight parameters to generate your personalized rankings"
+    },
+    "toast": {
+      "saved": "Ranking saved!",
+      "enterName": "Please enter a ranking name"
+    }
   },
   "prediction": {
     "title": "Admission Prediction",
+    "description": "AI analyzes your background to predict admission probability",
     "selectSchools": "Select Target Schools",
+    "selectSchoolsDesc": "Select target schools for personalized admission prediction",
+    "selectedCount": "Selected {count} schools",
     "runPrediction": "Run Prediction",
     "probability": "Admission Probability",
     "factors": "Impact Factors",
     "positive": "Positive Factors",
     "negative": "Negative Factors",
-    "suggestion": "Suggestion"
+    "suggestion": "Suggestion",
+    "results": "Prediction Results",
+    "selectSchoolsButton": "Select Schools",
+    "selectSchoolsTitle": "Select Target Schools",
+    "schoolsAnalyzed": "schools analyzed",
+    "highChance": "High chance of admission",
+    "mediumChance": "Medium chance of admission",
+    "lowChance": "Low chance of admission",
+    "tier": {
+      "reach": "Reach",
+      "match": "Match",
+      "safety": "Safety"
+    },
+    "confidence": {
+      "high": "High Confidence",
+      "medium": "Medium Confidence",
+      "low": "Low Confidence"
+    },
+    "comparison": {
+      "testScore": "Test",
+      "activity": "Activity"
+    },
+    "empty": {
+      "noSchools": "No schools selected",
+      "noSchoolsHint": "Click the button below to add target schools",
+      "startTitle": "Start Your Prediction Journey",
+      "startDesc": "Select target schools and run prediction to see your admission analysis"
+    },
+    "toast": {
+      "selectFirst": "Please select target schools first"
+    }
   },
   "cases": {
     "title": "Case Library",
+    "description": "Browse real study abroad application cases and understand admission trends",
+    "shareCase": "Share My Case",
+    "searchPlaceholder": "Search schools, majors...",
+    "activeFilters": "Active Filters",
+    "stats": {
+      "total": "Total Cases",
+      "admissionRate": "Admission Rate"
+    },
     "filters": {
       "school": "Target School",
       "major": "Major",
       "year": "Application Year",
-      "result": "Result"
+      "result": "Result",
+      "allYears": "All Years",
+      "allResults": "All Results"
     },
     "result": {
       "admitted": "Admitted",
       "rejected": "Rejected",
-      "waitlisted": "Waitlisted"
+      "waitlisted": "Waitlisted",
+      "deferred": "Deferred"
     },
     "viewDetail": "View Detail",
-    "similarCases": "Similar Cases"
+    "similarCases": "Similar Cases",
+    "empty": {
+      "title": "No cases yet",
+      "description": "Cases will appear here once users start sharing their application results"
+    }
   },
   "chat": {
     "title": "Messages",
+    "description": "Chat with other applicants and share experiences",
     "conversations": "Conversations",
+    "searchConversations": "Search conversations...",
     "noMessages": "No messages yet",
     "typeMessage": "Type a message...",
     "send": "Send",
@@ -236,10 +1236,14 @@
     "mutualFollowRequired": "Mutual follow required to start a conversation",
     "blocked": "Blocked",
     "report": "Report",
-    "block": "Block"
+    "block": "Block",
+    "startConversation": "Start a conversation!",
+    "selectConversation": "Select a conversation",
+    "selectConversationHint": "Select a conversation from the list to start chatting"
   },
   "hall": {
     "title": "Feature Hall",
+    "description": "Peer review profiles, view rankings, share school lists",
     "tabs": {
       "review": "Admissions Review",
       "ranking": "Rank Comparison",
@@ -247,33 +1251,417 @@
     },
     "review": {
       "title": "Play Admissions Officer",
+      "selectProfile": "Select Profile",
+      "selectProfileDesc": "Browse and select public profiles for evaluation",
+      "evaluating": "Evaluating {major} applicant",
+      "evaluateHint": "Review profiles from an admissions perspective",
+      "unknownMajor": "Unknown Major",
+      "noMajor": "No major specified",
+      "selectFirst": "Select a profile first",
+      "selectFirstDesc": "Select a public profile from the list to evaluate",
+      "activities": "Activities",
+      "awards": "Awards",
+      "commentPlaceholder": "Share your feedback and suggestions for this applicant...",
       "academic": "Academic",
+      "academicDesc": "Course rigor, GPA, class rank",
       "activity": "Activities",
+      "activityDesc": "Leadership, depth, consistency",
       "essay": "Essay",
+      "essayDesc": "Personal voice, narrative ability",
       "overall": "Overall",
+      "overallDesc": "Overall competitiveness assessment",
       "comment": "Comment",
-      "submitReview": "Submit Review"
+      "submitReview": "Submit Review",
+      "toastSuccess": "Review submitted, thanks for your contribution!",
+      "toastError": "Please select a profile first"
     },
     "ranking": {
       "title": "Rank Comparison",
+      "selectSchools": "Select Target Schools",
+      "selectSchoolsDesc": "Select schools to view rankings",
+      "selectSchoolsButton": "Select Schools",
+      "selectedCount": "Selected {count} schools",
+      "moreSchools": "{count} more schools...",
+      "viewRanking": "View Ranking",
+      "resultsDesc": "View your rank among applicants for target schools",
+      "emptyTitle": "Select schools to view ranking",
+      "emptyDesc": "Rankings are calculated based on anonymous profile data",
+      "totalApplicants": "{count} total applicants",
+      "factorActivities": "Activities",
+      "factorAwards": "Awards",
+      "factorScores": "Scores",
       "myRank": "My Rank",
-      "selectSchool": "Select Target School"
+      "selectSchool": "Select Target School",
+      "toastError": "Please select at least one school"
     },
     "lists": {
       "title": "User Lists",
       "createList": "Create List",
-      "vote": "Vote"
+      "vote": "Vote",
+      "emptyTitle": "No public lists yet",
+      "emptyDesc": "Be the first to share your school list!"
     }
   },
   "settings": {
     "title": "Settings",
+    "description": "Manage your account and preferences",
     "account": "Account",
     "notification": "Notifications",
     "privacy": "Privacy",
     "language": "Language",
     "theme": "Theme",
     "deleteAccount": "Delete Account",
-    "exportAllData": "Export All Data"
+    "exportAllData": "Export All Data",
+    "sections": {
+      "profile": "Profile",
+      "preferences": "Preferences",
+      "notifications": "Notifications",
+      "subscription": "Subscription & Payment",
+      "help": "Help & Support",
+      "accountActions": "Account Actions"
+    },
+    "items": {
+      "editProfile": "Edit Profile",
+      "editProfileDesc": "Change avatar, nickname, etc.",
+      "security": "Account Security",
+      "securityDesc": "Change password, link phone",
+      "darkMode": "Dark Mode",
+      "darkModeDesc": "Toggle light/dark theme",
+      "language": "Language",
+      "languageDesc": "Select interface language",
+      "pushNotification": "Push Notifications",
+      "pushNotificationDesc": "Receive application progress, AI replies, etc.",
+      "emailNotification": "Email Notifications",
+      "emailNotificationDesc": "Receive important updates and weekly digest",
+      "subscription": "Membership",
+      "subscriptionDesc": "Upgrade to unlock more features",
+      "helpCenter": "Help Center",
+      "helpCenterDesc": "FAQs and user guides",
+      "termsOfService": "Terms of Service",
+      "privacyPolicy": "Privacy Policy",
+      "logout": "Logout",
+      "deleteAccount": "Delete Account",
+      "deleteAccountDesc": "Permanently delete your account and all data"
+    },
+    "dialogs": {
+      "logoutTitle": "Logout",
+      "logoutDesc": "Are you sure you want to logout?",
+      "deleteTitle": "Delete Account",
+      "deleteDesc": "This action is irreversible. All your data will be permanently deleted. Are you sure you want to continue?"
+    },
+    "toast": {
+      "logoutSuccess": "Logged out successfully"
+    }
+  },
+  "ai": {
+    "title": "AI Assistant",
+    "description": "Use AI to analyze profiles, review essays, and get school recommendations",
+    "tabs": {
+      "chat": "Smart Chat",
+      "analysis": "Profile Analysis",
+      "essay": "Essay Review",
+      "ideas": "Creative Ideas",
+      "schoolMatch": "School Match",
+      "polish": "Essay Polish",
+      "freeChat": "Free Chat"
+    },
+    "analysis": {
+      "title": "Current Profile",
+      "description": "Analyze competitiveness based on your profile",
+      "targetMajor": "Target Major",
+      "testScores": "Test Scores",
+      "activitiesAwards": "Activities/Awards",
+      "startAnalysis": "Start AI Analysis",
+      "resultTitle": "Analysis Results",
+      "resultDesc": "AI Competitiveness Report",
+      "overallEvaluation": "Overall Evaluation",
+      "strengths": "Strengths",
+      "improvements": "Areas for Improvement",
+      "suggestions": "Suggestions",
+      "empty": "Click \"Start AI Analysis\" to get your report"
+    },
+    "essay": {
+      "title": "Essay Content",
+      "description": "Paste your essay for AI review",
+      "prompt": "Prompt",
+      "promptPlaceholder": "e.g., Describe a challenge you faced...",
+      "wordLimit": "Word Limit",
+      "content": "Essay Content",
+      "contentPlaceholder": "Paste your essay content...",
+      "currentWords": "Current word count: {count} words",
+      "evaluate": "AI Review Essay",
+      "resultTitle": "Review Results",
+      "resultDesc": "AI Essay Scoring and Suggestions",
+      "overallScore": "Overall Score (out of 10)",
+      "dimensions": {
+        "structure": "Structure",
+        "content": "Content Depth",
+        "language": "Language"
+      },
+      "improvementSuggestions": "Improvement Suggestions",
+      "empty": "Enter essay content and click review"
+    },
+    "ideas": {
+      "title": "Generate Writing Ideas",
+      "description": "Enter a prompt, let AI help you brainstorm",
+      "topic": "Essay Prompt",
+      "topicPlaceholder": "e.g., Some students have a background, identity, interest, or talent that is so meaningful they believe their application would be incomplete without it.",
+      "background": "Personal Background (Optional)",
+      "backgroundPlaceholder": "Briefly describe your experiences, interests, etc. to help AI generate more relevant ideas",
+      "generate": "Generate Ideas",
+      "resultTitle": "Writing Ideas",
+      "resultDesc": "AI-generated creative ideas",
+      "ideaNumber": "Idea #{number}",
+      "empty": "Enter a topic to generate ideas"
+    },
+    "schoolMatch": {
+      "title": "AI School Recommendations",
+      "description": "Smart matching based on your profile",
+      "getRecommendations": "Get Recommendations",
+      "matchTypes": {
+        "reach": "Reach",
+        "match": "Match",
+        "safety": "Safety"
+      },
+      "empty": "Click \"Get Recommendations\" to start",
+      "fillGpaFirst": "Please fill in your GPA first"
+    },
+    "polish": {
+      "title": "Essay Content",
+      "description": "Paste your essay for AI polishing",
+      "style": "Polish Style",
+      "styles": {
+        "formal": "Formal Academic - For serious topics",
+        "vivid": "Vivid & Powerful - More specific details",
+        "concise": "Concise & Refined - Remove redundancy"
+      },
+      "content": "Essay Content",
+      "contentPlaceholder": "Paste your essay to polish...",
+      "polish": "AI Polish",
+      "resultTitle": "Polish Results",
+      "resultDesc": "AI-optimized essay",
+      "copyToClipboard": "Copy to Clipboard",
+      "empty": "Enter essay and click polish"
+    },
+    "freeChat": {
+      "title": "Free Chat",
+      "description": "Chat directly with AI about any study abroad questions",
+      "placeholder": "Enter your question...",
+      "send": "Send",
+      "empty": "Start chatting with AI"
+    },
+    "chatbot": {
+      "title": "AI Study Abroad Advisor",
+      "greeting": "Hi! I'm your study abroad assistant",
+      "greetingDesc": "I can help you analyze your profile competitiveness, recommend suitable schools, guide essay writing, and plan your application timeline",
+      "placeholder": "Enter your question...",
+      "usingTools": "Using {count} tools",
+      "thinking": "Thinking...",
+      "charCount": "{count} characters",
+      "sendHint": "Press Enter to send, Shift + Enter for new line",
+      "tools": {
+        "searchSchools": "Search Schools",
+        "getUserProfile": "Get Profile",
+        "analyzeProfile": "Analyze Profile",
+        "searchCases": "Search Cases",
+        "getDeadlines": "Get Deadlines",
+        "reviewEssay": "Review Essay",
+        "queryDatabase": "Query Database"
+      },
+      "agents": {
+        "orchestrator": "Smart Assistant",
+        "essay": "Essay Expert",
+        "school": "School Advisor",
+        "profile": "Profile Analyst",
+        "timeline": "Timeline Planner"
+      },
+      "quickActions": {
+        "analyzeProfile": "Analyze my profile",
+        "recommendSchools": "Recommend schools",
+        "reviewEssay": "Review essay",
+        "checkDeadlines": "Check deadlines"
+      },
+      "quickMessages": {
+        "analyzeProfile": "Please analyze my profile competitiveness",
+        "recommendSchools": "Recommend suitable schools based on my background",
+        "reviewEssay": "Help me review my essay",
+        "checkDeadlines": "Help me organize the application deadlines for my target schools"
+      }
+    },
+    "toast": {
+      "analysisComplete": "Analysis complete",
+      "analysisFailed": "Analysis failed",
+      "evaluationComplete": "Evaluation complete",
+      "evaluationFailed": "Evaluation failed",
+      "generationComplete": "Generation complete",
+      "generationFailed": "Generation failed",
+      "recommendationComplete": "Recommendation complete",
+      "recommendationFailed": "Recommendation failed",
+      "sendFailed": "Send failed",
+      "polishComplete": "Polish complete",
+      "polishFailed": "Polish failed",
+      "copiedToClipboard": "Copied to clipboard"
+    },
+    "errors": {
+      "requestError": "Sorry, an error occurred while processing your request. Please try again later.",
+      "genericError": "An error occurred"
+    }
+  },
+  "essays": {
+    "title": "My Essays",
+    "description": "Manage your application essays and get AI-powered reviews",
+    "list": "Essay List",
+    "new": "New",
+    "edit": "Edit Essay",
+    "create": "New Essay",
+    "editDesc": "Modify your essay content",
+    "createDesc": "Create a new application essay",
+    "label": {
+      "title": "Title",
+      "prompt": "Prompt",
+      "content": "Content"
+    },
+    "placeholder": {
+      "title": "e.g., Common App Main Essay",
+      "prompt": "e.g., Describe a challenge you faced and how you overcame it...",
+      "content": "Start writing..."
+    },
+    "wordCount": "{count} words",
+    "updatedAt": "Updated",
+    "selectToView": "Select an essay to view",
+    "clickNewToCreate": "Or click \"New\" to start writing",
+    "empty": {
+      "title": "No essays yet",
+      "description": "Click \"New\" to start writing"
+    },
+    "aiTools": "AI Tools",
+    "aiActions": {
+      "review": "Essay Review",
+      "polish": "AI Polish",
+      "continue": "AI Continue",
+      "generateOpening": "Generate Opening",
+      "rewriteSelected": "Rewrite Selected"
+    },
+    "dialog": {
+      "reviewTitle": "AI Essay Review",
+      "polishTitle": "AI Polish Results",
+      "polishDesc": "Improve language while preserving meaning",
+      "continueTitle": "AI Continue Writing",
+      "continueDesc": "Smart continuation based on existing content",
+      "openingTitle": "AI Generate Opening",
+      "openingDesc": "Choose an engaging opening",
+      "rewriteTitle": "Paragraph Rewrite",
+      "rewriteDesc": "Choose a rewritten version",
+      "deleteTitle": "Confirm Delete?",
+      "deleteDesc": "This action cannot be undone. The essay will be permanently deleted."
+    },
+    "tabs": {
+      "polishedResult": "Polished Essay",
+      "changeComparison": "Change Comparison",
+      "details": "Detailed Scores"
+    },
+    "review": {
+      "noSuggestions": "No suggestions needed",
+      "excellentWork": "Your essay is excellent!"
+    },
+    "labels": {
+      "change": "Change",
+      "original": "Original:",
+      "revised": "Revised:",
+      "nextSteps": "Next Steps Suggestions"
+    },
+    "actions": {
+      "applyPolish": "Apply Polished Content",
+      "copyText": "Copy",
+      "addToEssay": "Add to Essay"
+    },
+    "toast": {
+      "saved": "Essay saved",
+      "updated": "Essay updated",
+      "deleted": "Essay deleted",
+      "reviewFailed": "AI review failed",
+      "polishFailed": "Polish failed",
+      "rewriteFailed": "Rewrite failed",
+      "continueFailed": "Continue writing failed",
+      "openingFailed": "Generate opening failed",
+      "contentRequired": "Essay content cannot be empty",
+      "selectParagraph": "Please select a paragraph to rewrite first",
+      "promptRequired": "Please fill in the essay prompt first",
+      "copied": "Copied to clipboard",
+      "polishApplied": "Polished content applied",
+      "continuationAdded": "Continuation added"
+    }
+  },
+  "school": {
+    "notFound": "School Not Found",
+    "notFoundDesc": "This school does not exist or has been removed",
+    "backToRanking": "Back to Rankings",
+    "website": "Website",
+    "bookmark": "Bookmark",
+    "share": "Share",
+    "stats": {
+      "acceptanceRate": "Acceptance Rate",
+      "tuition": "Tuition/Year",
+      "avgSalary": "Avg Salary",
+      "studentCount": "Students"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "admission": "Admission",
+      "essays": "Essays",
+      "cases": "Cases"
+    },
+    "academicStats": "Academic Stats",
+    "usNewsRank": "US News Rank",
+    "satAvg": "SAT Average",
+    "actAvg": "ACT Average",
+    "graduationRate": "Graduation Rate",
+    "deadlines": {
+      "title": "Application Deadlines",
+      "cycle": "Application Cycle",
+      "rea": "Restrictive Early Action",
+      "ea": "Early Action",
+      "ed": "Early Decision",
+      "ed2": "Early Decision II",
+      "rd": "Regular Decision",
+      "noData": "No deadline data available"
+    },
+    "about": "About",
+    "requirements": {
+      "title": "Requirements",
+      "applicationType": "Application Type",
+      "essayCount": "Essay Count",
+      "applicationFee": "Application Fee",
+      "toeflMin": "TOEFL Minimum",
+      "ieltsMin": "IELTS Minimum"
+    },
+    "difficultyAnalysis": "Difficulty Analysis",
+    "competitionLevel": "Competition Level",
+    "difficulty": {
+      "veryHigh": "Very High",
+      "high": "High",
+      "moderatelyHigh": "Moderately High",
+      "medium": "Medium"
+    },
+    "aiSuggestion": {
+      "title": "AI Suggestion",
+      "veryLow": "This school has an extremely low acceptance rate. Consider it as a reach school and ensure you have enough match and safety schools.",
+      "low": "This school is highly competitive. You need to stand out in test scores, activities, and essays.",
+      "moderate": "This school has a moderate acceptance rate. If your profile matches well, consider it as a match school.",
+      "default": "Please consider based on your overall background."
+    },
+    "essays": {
+      "title": "Supplemental Essays",
+      "noData": "No essay prompts available",
+      "updateHint": "Essay prompts are usually updated when Common App opens on August 1st"
+    },
+    "cases": {
+      "title": "Admission Cases",
+      "description": "Real admission cases submitted by platform users",
+      "noData": "No admission cases yet",
+      "beFirst": "Be the first to share your admission experience",
+      "submitCase": "Submit My Case"
+    }
   },
   "errors": {
     "required": "This field is required",
@@ -283,6 +1671,814 @@
     "networkError": "Network error, please try again",
     "unauthorized": "Please login first",
     "forbidden": "Access denied"
+  },
+  "feedback": {
+    "button": "Feedback",
+    "selectType": "Select Feedback Type",
+    "types": {
+      "bug": "Bug Report",
+      "feature": "Feature Request",
+      "question": "Question",
+      "other": "Other"
+    },
+    "placeholders": {
+      "bug": "Please describe the issue you encountered, including steps and expected behavior...",
+      "feature": "Please describe the feature you would like to add...",
+      "question": "Please describe your question, we will reply as soon as possible...",
+      "other": "Please enter your feedback..."
+    },
+    "detailDescription": "Detailed Description",
+    "emailLabel": "Contact Email (Optional)",
+    "emailPlaceholder": "So we can reply to you",
+    "addScreenshot": "Add Screenshot",
+    "submitting": "Submitting...",
+    "submit": "Submit Feedback",
+    "successTitle": "Thank you for your feedback!",
+    "successDesc": "We have received your feedback and will process it soon.",
+    "screenshotInDev": "Screenshot feature in development...",
+    "contentRequired": "Please enter feedback content",
+    "submitFailed": "Submit failed, please try again later",
+    "thumbsUpThanks": "Thank you for your support!",
+    "thumbsDownThanks": "Thank you for your feedback, we will improve!",
+    "quickLabel": "Was this page helpful?"
+  },
+  "helpCenter": {
+    "title": "Help Center",
+    "description": "Got questions? Find answers here",
+    "searchTitle": "How can we help you?",
+    "faqDescription": "Browse FAQs to find your answer",
+    "searchPlaceholder": "Search help content...",
+    "resources": {
+      "docs": {
+        "title": "Documentation",
+        "description": "Detailed feature descriptions and guides"
+      },
+      "video": {
+        "title": "Video Tutorials",
+        "description": "Watch videos to get started quickly"
+      },
+      "blog": {
+        "title": "Study Abroad Guide",
+        "description": "Application tips and experience sharing"
+      }
+    },
+    "all": "All",
+    "faqTitle": "FAQ",
+    "noResults": "No related questions found",
+    "otherQuestions": "Still have questions?",
+    "contactSupport": "If you didn't find an answer, contact our support team.",
+    "sendEmail": "Send Email",
+    "onlineService": "Live Chat",
+    "categories": {
+      "gettingStarted": "Getting Started",
+      "aiFeatures": "AI Features",
+      "usage": "Usage",
+      "featureUsage": "Feature Usage",
+      "privacySecurity": "Privacy & Security"
+    },
+    "faqItems": {
+      "howToStart": {
+        "question": "How do I get started with the platform?",
+        "answer": "After registering, you can first complete your profile including academic background, test scores, etc. Then browse the school database or chat with the AI assistant for personalized advice."
+      },
+      "whatCanAIDo": {
+        "question": "What can the AI assistant help me with?",
+        "answer": "The AI assistant can provide school recommendations based on your background, analyze admission probability, answer study abroad questions, help plan your application timeline, and offer essay writing advice."
+      },
+      "predictionAccuracy": {
+        "question": "How accurate is the admission prediction?",
+        "answer": "Our prediction model is trained on extensive historical application data with approximately 85% accuracy. However, please note that predictions are for reference only, as actual admission depends on many factors."
+      },
+      "viewCases": {
+        "question": "How do I view application cases?",
+        "answer": "In the Case Library page, you can filter cases by school, major, admission result, etc. Each case includes the applicant's background and experience sharing."
+      },
+      "dataSecure": {
+        "question": "Is my personal information secure?",
+        "answer": "We strictly comply with data protection regulations and use encrypted transmission and storage. Your personal information is only used to provide services and will not be shared with third parties. You can delete your account and data at any time."
+      },
+      "exportData": {
+        "question": "How do I export my application data?",
+        "answer": "In the Settings page of your profile, click Export Data to download a JSON or CSV file containing all your application information."
+      }
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark All Read",
+    "view": "View",
+    "empty": "No notifications",
+    "emptyHint": "New messages will appear here",
+    "tabs": {
+      "all": "All",
+      "unread": "Unread"
+    },
+    "allRead": "All read",
+    "clearRead": "Clear read notifications"
+  },
+  "tour": {
+    "nextBtn": "Next",
+    "prevBtn": "Previous",
+    "doneBtn": "Done",
+    "welcome": {
+      "title": "Welcome to Study Abroad Platform",
+      "desc": "This is your homepage where you can quickly access platform features and latest updates."
+    },
+    "schools": {
+      "title": "Schools",
+      "desc": "Browse information about top universities worldwide, learn about admission requirements and deadlines."
+    },
+    "cases": {
+      "title": "Case Library",
+      "desc": "View real application cases to learn from successful applicants' backgrounds and experiences."
+    },
+    "ai": {
+      "title": "AI Assistant",
+      "desc": "Chat with the AI assistant to get personalized study abroad planning advice."
+    },
+    "userMenu": {
+      "title": "Profile",
+      "desc": "Manage your personal profile, application progress, and preference settings."
+    }
+  },
+  "welcome": {
+    "steps": {
+      "welcome": {
+        "title": "Welcome to Study Abroad Platform",
+        "desc": "One-stop study abroad application service to help you achieve your study abroad dreams. Let's quickly explore the core features."
+      },
+      "schools": {
+        "title": "Explore Global Schools",
+        "desc": "Browse detailed information about world-class universities, learn about admission requirements, programs, and application deadlines."
+      },
+      "ai": {
+        "title": "AI Assistant",
+        "desc": "Chat with the AI assistant for personalized school recommendations, essay guidance, and application strategies."
+      },
+      "prediction": {
+        "title": "Admission Prediction",
+        "desc": "Based on your background, intelligently predict admission probability for each school to help you choose wisely."
+      }
+    },
+    "prevBtn": "Previous",
+    "nextBtn": "Next",
+    "skipTour": "Skip Tour",
+    "startExperience": "Start Experience",
+    "resetButton": "View Welcome Guide Again"
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "lastUpdated": "Last Updated: {date}",
+    "introduction": "Welcome to the Study Abroad Application Platform. By using this service, you agree to the following terms and conditions. Please read carefully.",
+    "acceptance": {
+      "title": "Acceptance of Terms",
+      "content": "By accessing or using this platform, you agree to be bound by these Terms of Service. If you do not agree to any terms, please do not use this service."
+    },
+    "services": {
+      "title": "Service Description",
+      "content": "This platform provides study abroad application related information services, including but not limited to school information query, admission prediction, AI consultation, etc. We strive to provide accurate information but do not guarantee the completeness and timeliness of all information."
+    },
+    "userConduct": {
+      "title": "User Conduct",
+      "content": "You agree to:\n• Provide true and accurate personal information\n• Not post false or misleading content\n• Not infringe on others' intellectual property or privacy rights\n• Not engage in any illegal or inappropriate behavior\n• Not interfere with or disrupt the normal operation of this service"
+    },
+    "intellectualProperty": {
+      "title": "Intellectual Property",
+      "content": "All content on this platform, including but not limited to text, graphics, logos, icons, images, audio, video, and software, is protected by intellectual property laws. Unauthorized copying, modification, distribution, or other use is prohibited."
+    },
+    "disclaimer": {
+      "title": "Disclaimer",
+      "content": "The admission predictions and school recommendations provided by this platform are for reference only and do not constitute any form of guarantee or promise. Actual admission results are determined by each institution, and we are not responsible for the accuracy of prediction results."
+    },
+    "termination": {
+      "title": "Service Termination",
+      "content": "We reserve the right to suspend or terminate your access to this service at any time for any reason, including but not limited to violations of terms of service."
+    },
+    "contact": {
+      "title": "Contact Us",
+      "content": "If you have any questions about these Terms of Service, please contact:"
+    }
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "lastUpdated": "Last Updated: {date}",
+    "commitment": {
+      "title": "Our Commitment",
+      "content": "Protecting your privacy is our top priority. This privacy policy explains how we collect, use, and protect your personal information."
+    },
+    "collection": {
+      "title": "Information Collection",
+      "content": "The types of information we collect include:",
+      "items": {
+        "personal": "Personal identification information (name, email, phone)",
+        "academic": "Academic background information (school, grades, test scores)",
+        "usage": "Service usage data (browsing history, feature usage)",
+        "device": "Device information (IP address, browser type, operating system)"
+      }
+    },
+    "usage": {
+      "title": "Information Usage",
+      "content": "We use collected information for:",
+      "items": {
+        "service": "Providing and improving our services",
+        "personalization": "Personalizing your experience and recommendations",
+        "communication": "Communicating service-related information",
+        "analytics": "Analysis and research to improve products"
+      }
+    },
+    "sharing": {
+      "title": "Information Sharing",
+      "content": "We do not sell your personal information. We only share information in the following cases:",
+      "items": {
+        "consent": "With your explicit consent",
+        "legal": "Legal requirements or law enforcement cooperation",
+        "partners": "Cooperation with trusted service providers (bound by confidentiality agreements)"
+      }
+    },
+    "security": {
+      "title": "Data Security",
+      "content": "We use industry-standard security measures to protect your data, including encrypted transmission, secure storage, and access control. However, please note that no internet transmission method is 100% secure."
+    },
+    "rights": {
+      "title": "Your Rights",
+      "content": "You have the following rights over your data:",
+      "items": {
+        "access": "Access your personal data",
+        "correction": "Correct inaccurate data",
+        "deletion": "Request deletion of your data",
+        "portability": "Obtain a copy of your data"
+      }
+    },
+    "cookies": {
+      "title": "Cookie Usage",
+      "content": "We use cookies and similar technologies to improve your experience, analyze site traffic, and personalize content. You can manage cookie preferences through browser settings."
+    },
+    "changes": {
+      "title": "Policy Changes",
+      "content": "We may update this privacy policy from time to time. Significant changes will be notified via email or website notification. Continued use of the service indicates acceptance of the updated policy."
+    },
+    "contact": {
+      "title": "Contact Us",
+      "content": "For privacy-related questions, please contact our data protection team:"
+    }
+  },
+  "security": {
+    "title": "Account Security",
+    "description": "Manage your password, two-factor authentication, and login sessions",
+    "changePassword": "Change Password",
+    "changePasswordDesc": "Regularly change your password to keep your account secure",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm New Password",
+    "passwordRequirements": "Password must be at least 8 characters with letters and numbers",
+    "updatePassword": "Update Password",
+    "passwordMismatch": "Passwords do not match",
+    "passwordTooShort": "Password must be at least 8 characters",
+    "passwordChanged": "Password updated",
+    "twoFactor": "Two-Factor Authentication",
+    "twoFactorDesc": "Enable two-factor authentication for extra account protection",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "twoFactorOn": "Two-factor authentication is enabled",
+    "twoFactorOff": "Recommended for improved security",
+    "twoFactorEnabled": "Two-factor authentication enabled",
+    "twoFactorDisabled": "Two-factor authentication disabled",
+    "activeSessions": "Active Sessions",
+    "activeSessionsDesc": "Manage your login sessions across devices",
+    "currentSession": "Current",
+    "logoutAll": "Log out all devices",
+    "revoke": "Revoke",
+    "sessionRevoked": "Session revoked",
+    "logoutAllTitle": "Log out all devices",
+    "logoutAllDesc": "This will terminate all login sessions except the current device. Continue?",
+    "loggedOutAll": "Logged out from all other devices",
+    "dangerZone": "Danger Zone",
+    "dangerZoneDesc": "After deleting your account, all data will be permanently erased and cannot be recovered.",
+    "deleteAccount": "Delete Account"
+  },
+  "subscription": {
+    "title": "Subscription",
+    "description": "View and manage your subscription plan",
+    "currentPlan": "Current Plan",
+    "validForever": "Valid Forever",
+    "mostPopular": "Most Popular",
+    "currentPlanLabel": "Current Plan",
+    "getStarted": "Get Started",
+    "upgrade": "Upgrade Now",
+    "upgradeSuccess": "Upgrade successful!",
+    "paymentHistory": "Payment History",
+    "paymentHistoryDesc": "View your order history and invoices",
+    "paid": "Paid",
+    "pending": "Pending",
+    "noInvoices": "No payment records"
+  },
+  "resume": {
+    "title": "Export Resume",
+    "description": "Select template and content to generate a professional PDF resume",
+    "selectTemplate": "Select Template",
+    "selectModules": "Select Content",
+    "language": "Language",
+    "anonymize": "Anonymous Mode",
+    "anonymizeOn": "Hide name and school",
+    "anonymizeOff": "Show full information",
+    "export": "Download PDF",
+    "exporting": "Generating...",
+    "noDataWarning": "Please complete your profile before exporting",
+    "templates": {
+      "basic": "Basic Template",
+      "basicDesc": "Clean and clear, suitable for most scenarios",
+      "professional": "Professional Template",
+      "professionalDesc": "Elegant design with more visual impact"
+    },
+    "modules": {
+      "basic": "Basic Info",
+      "academics": "Academic Profile",
+      "activities": "Activities",
+      "awards": "Awards",
+      "targetSchools": "Target Schools"
+    },
+    "toast": {
+      "success": "Resume downloaded",
+      "failed": "Export failed, please try again",
+      "noData": "Please complete your profile first"
+    }
+  },
+  "verification": {
+    "title": "Request Verification",
+    "description": "Upload proof to verify your admission to {school}",
+    "selectProofType": "Select Proof Type",
+    "uploadProof": "Upload Proof Document",
+    "dropOrClick": "Drop file here, or click to select",
+    "fileRequirements": "Supports JPG, PNG, PDF, max 5MB",
+    "fileTooLarge": "File too large, please select a file under 5MB",
+    "invalidFileType": "Unsupported file type",
+    "noFile": "Please select a proof document",
+    "privacyNote": "Your proof documents are used only for verification and will be deleted after approval. They will not be shared or used for any other purpose.",
+    "submit": "Submit Verification",
+    "submitSuccess": "Verification request submitted. We will review within 1-3 business days.",
+    "submitError": "Submission failed, please try again",
+    "proofTypes": {
+      "offerLetter": "Offer Letter",
+      "offerLetterDesc": "Official offer letter from the school",
+      "enrollmentProof": "Enrollment Proof",
+      "enrollmentProofDesc": "Enrollment confirmation or payment receipt",
+      "studentId": "Student ID",
+      "studentIdDesc": "Photo of your student ID from the target school"
+    },
+    "status": {
+      "pending": "Under Review",
+      "approved": "Verified",
+      "rejected": "Rejected"
+    },
+    "badge": {
+      "verified": "Verified",
+      "unverified": "Unverified"
+    }
+  },
+  "timeline": {
+    "title": "Application Timeline",
+    "description": "Track application progress for each school, manage tasks and deadlines",
+    "totalSchools": "Target Schools",
+    "submitted": "Submitted",
+    "inProgress": "In Progress",
+    "notStarted": "Not Started",
+    "progress": "Progress",
+    "tasks": "tasks",
+    "addSchool": "Add School",
+    "addFirstSchool": "Add First School",
+    "noTimelines": "No Applications Yet",
+    "noTimelinesDesc": "Add target schools to start tracking your applications",
+    "upcomingDeadlines": "Upcoming Deadlines",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleted": "Deleted",
+    "close": "Close",
+    "loadingTasks": "Loading tasks..."
+  },
+  "recommendation": {
+    "title": "AI School Recommendations",
+    "description": "Get personalized school recommendations based on your profile and preferences",
+    "generate": "Generate",
+    "history": "History",
+    "preferences": "Preferences",
+    "preferencesDesc": "Set your preferences for more accurate recommendations",
+    "regions": "Preferred Regions",
+    "regionsPlaceholder": "e.g., California, New York (comma separated)",
+    "majors": "Intended Majors",
+    "majorsPlaceholder": "e.g., Computer Science, Data Science",
+    "budget": "Annual Budget",
+    "budgetPlaceholder": "Select budget range",
+    "additional": "Additional Preferences",
+    "additionalPlaceholder": "e.g., prefer big cities, internship opportunities, campus safety",
+    "generateBtn": "Generate Recommendations",
+    "cost": "Cost: {points} points",
+    "success": "Recommendations generated!",
+    "failed": "Generation failed, please try again",
+    "result": "Results",
+    "newRecommendation": "Generate Again",
+    "reach": "Reach",
+    "match": "Match",
+    "safety": "Safety",
+    "probability": "Probability",
+    "fitScore": "Fit Score",
+    "reasons": "Reasons",
+    "concerns": "Concerns",
+    "strengths": "Your Strengths",
+    "weaknesses": "Areas to Improve",
+    "tips": "Improvement Tips",
+    "noHistory": "No history yet",
+    "howItWorks": "How It Works",
+    "step1Title": "Profile Analysis",
+    "step1Desc": "AI analyzes your GPA, test scores, activities, and awards",
+    "step2Title": "Smart Matching",
+    "step2Desc": "Matches your profile with thousands of schools based on preferences",
+    "step3Title": "Generate Results",
+    "step3Desc": "Outputs Reach, Match, and Safety schools with detailed analysis"
+  },
+  "essayAi": {
+    "cancel": "Cancel",
+    "copy": "Copy",
+    "copied": "Copied",
+    "characters": "characters",
+    "tokenUsed": "Used {tokens} tokens",
+    "polish": {
+      "title": "AI Essay Polish",
+      "description": "AI will improve language expression and fix grammar errors while preserving your original meaning",
+      "style": "Polish Style",
+      "styles": {
+        "formal": "Formal Academic",
+        "vivid": "Vivid & Engaging",
+        "concise": "Concise & Clear"
+      },
+      "styleDesc": {
+        "formal": "Use more formal, academic language suitable for serious topics",
+        "vivid": "Use more vivid language with concrete details and sensory descriptions",
+        "concise": "Eliminate redundancy, make every word count"
+      },
+      "preview": "Content to Polish",
+      "cost": "Cost: {points} points",
+      "start": "Start Polish",
+      "success": "Polish completed!",
+      "failed": "Polish failed, please try again",
+      "changes": "Key Changes",
+      "original": "Original",
+      "revised": "Revised",
+      "result": "Polished Result",
+      "retry": "Polish Again",
+      "apply": "Apply Changes",
+      "applied": "Polish applied successfully"
+    },
+    "review": {
+      "title": "Admissions Officer Review",
+      "description": "AI will evaluate your essay from an admissions officer's perspective with scores and detailed feedback",
+      "schoolName": "Target School",
+      "schoolNamePlaceholder": "e.g., Harvard University",
+      "major": "Target Major",
+      "majorPlaceholder": "e.g., Computer Science",
+      "cost": "Cost: {points} points",
+      "start": "Start Review",
+      "success": "Review completed!",
+      "failed": "Review failed, please try again",
+      "result": "Review Result",
+      "newReview": "New Review",
+      "strengths": "Strengths",
+      "weaknesses": "Weaknesses",
+      "suggestions": "Suggestions"
+    },
+    "brainstorm": {
+      "title": "AI Essay Brainstorm",
+      "description": "AI generates unique writing angles and ideas based on your prompt and background",
+      "prompt": "Essay Prompt",
+      "promptPlaceholder": "Enter essay prompt, e.g., Describe a challenge you faced and how you overcame it",
+      "background": "Your Background",
+      "backgroundPlaceholder": "Brief description of your experiences, strengths, interests (optional)",
+      "school": "Target School",
+      "schoolPlaceholder": "Optional",
+      "major": "Target Major",
+      "majorPlaceholder": "Optional",
+      "cost": "Cost: {points} points",
+      "start": "Generate Ideas",
+      "success": "Ideas generated!",
+      "failed": "Generation failed, please try again",
+      "overallAdvice": "Overall Writing Advice",
+      "suitableFor": "Suitable for",
+      "newBrainstorm": "Generate Again",
+      "ideaSelected": "Idea selected"
+    },
+    "scoreExcellent": "Excellent",
+    "scoreGood": "Good",
+    "scoreAverage": "Average",
+    "scoreNeedsWork": "Needs Work",
+    "radar": {
+      "title": "AI Score Radar",
+      "overallScore": "Overall Score",
+      "dimensions": {
+        "clarity": "Clarity",
+        "originality": "Originality",
+        "structure": "Structure",
+        "language": "Language",
+        "impact": "Impact",
+        "relevance": "Relevance"
+      },
+      "feedback": {
+        "clarity": "How clear and logical your expression is",
+        "originality": "Uniqueness and creativity of content",
+        "structure": "Organization and paragraph arrangement",
+        "language": "Vocabulary choice and grammar accuracy",
+        "impact": "Appeal and emotional resonance with readers",
+        "relevance": "Alignment with prompt and target school"
+      }
+    }
+  },
+  "about": {
+    "badge": "Study Abroad Platform",
+    "title": "About Us",
+    "subtitle": "Using technology and data to make every study abroad dream a reality",
+    "stats": {
+      "users": "Registered Users",
+      "schools": "Partner Schools",
+      "cases": "Application Cases",
+      "accuracy": "Prediction Accuracy"
+    },
+    "story": {
+      "title": "Our Story",
+      "content": "The Study Abroad Platform was born from the personal experiences of a group of international students. We understand the confusion and anxiety during the application process, and have witnessed countless students miss opportunities due to information asymmetry. In 2023, we decided to change this with technology, making professional, transparent, and personalized study abroad guidance accessible to everyone."
+    },
+    "vision": {
+      "title": "Our Vision",
+      "content": "To become the world's most trusted study abroad application platform, providing accurate school recommendations and admission predictions through AI technology and big data analysis, transforming the application process from an information war into a hopeful journey."
+    },
+    "values": {
+      "title": "Core Values",
+      "mission": {
+        "title": "Mission Driven",
+        "desc": "Help every student achieve their study abroad dreams"
+      },
+      "innovation": {
+        "title": "Continuous Innovation",
+        "desc": "Enhance experience with cutting-edge AI technology"
+      },
+      "trust": {
+        "title": "Trust & Transparency",
+        "desc": "Provide real data, be a trustworthy partner"
+      },
+      "care": {
+        "title": "User First",
+        "desc": "Listen to users, continuously improve products"
+      }
+    },
+    "timeline": {
+      "title": "Our Journey",
+      "founded": {
+        "title": "Platform Founded",
+        "desc": "Team assembled, prototype developed"
+      },
+      "growth": {
+        "title": "Rapid Growth",
+        "desc": "Users exceeded 10,000, partnered with 500+ schools"
+      },
+      "ai": {
+        "title": "AI Upgrade",
+        "desc": "Launched AI school matching and admission prediction"
+      },
+      "expansion": {
+        "title": "Global Expansion",
+        "desc": "Covering US, UK, Canada, Australia and more"
+      }
+    },
+    "team": {
+      "title": "Core Team"
+    },
+    "contact": {
+      "title": "Contact Us",
+      "desc": "If you have any questions or suggestions, feel free to reach out"
+    }
+  },
+  "swipe": {
+    "title": "Admission Prediction Challenge",
+    "description": "Swipe cards, predict admission results, challenge your admissions officer instincts",
+    "play": "Start Challenge",
+    "leaderboard": "Leaderboard",
+    "accuracy": "Accuracy",
+    "totalSwipes": "Total Predictions",
+    "correct": "Correct",
+    "incorrect": "Incorrect",
+    "bestStreak": "Best Streak",
+    "current": "Current",
+    "badge": "Badge",
+    "toNextBadge": "To Next Badge",
+    "points": "Points",
+    "streak": "Streak",
+    "admit": "Admit",
+    "reject": "Reject",
+    "waitlist": "Waitlist",
+    "verified": "Verified",
+    "undeclared": "Undeclared",
+    "acceptanceRate": "Acceptance Rate",
+    "youreRight": "You're Right!",
+    "notQuite": "Not Quite",
+    "actualResult": "Actual Result",
+    "nextCase": "Next Case",
+    "swipeHint": "← Swipe left to reject | Tap middle for waitlist | Swipe right to admit →",
+    "noCases": "No More Cases",
+    "noCasesDesc": "You've predicted all available cases, come back later",
+    "refresh": "Refresh",
+    "swipes": "predictions",
+    "you": "You",
+    "badgeUpgraded": "Badge Upgraded!",
+    "newBadge": "New Badge",
+    "failed": "Submission failed, please retry"
+  },
+  "assessment": {
+    "title": "Career Assessment Center",
+    "description": "Discover your ideal major through scientific assessments",
+    "mbti": {
+      "title": "MBTI Personality Test",
+      "description": "Discover your personality type, understand your learning style and career direction",
+      "start": "Start Test",
+      "result": "Your Personality Type",
+      "strengths": "Strengths",
+      "careers": "Suitable Careers",
+      "majors": "Recommended Majors"
+    },
+    "holland": {
+      "title": "Holland Career Test",
+      "description": "Understand your career interests, find the best matching fields",
+      "start": "Start Test",
+      "result": "Your Career Code",
+      "types": "Interest Types",
+      "fields": "Suitable Fields",
+      "majors": "Recommended Majors"
+    },
+    "progress": "Question {current} of {total}",
+    "next": "Next",
+    "prev": "Previous",
+    "submit": "Submit",
+    "viewResult": "View Result",
+    "retake": "Retake Test",
+    "history": "Test History",
+    "noHistory": "No test history",
+    "completedAt": "Completed at"
+  },
+  "forum": {
+    "title": "Forum & Teams",
+    "description": "Create posts, build teams, share experiences",
+    "createPost": "New Post",
+    "createTeam": "Create Team",
+    "categories": "Categories",
+    "allPosts": "All Posts",
+    "teamPosts": "Team Recruiting",
+    "myTeams": "My Teams",
+    "latest": "Latest",
+    "popular": "Popular",
+    "mostComments": "Most Comments",
+    "search": "Search posts...",
+    "title_label": "Title",
+    "content_label": "Content",
+    "category_label": "Category",
+    "tags_label": "Tags",
+    "tagsPlaceholder": "Enter tags, press Enter to add",
+    "teamSize": "Team Size",
+    "requirements": "Requirements",
+    "deadline": "Deadline",
+    "submit": "Post",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "like": "Like",
+    "comment": "Comment",
+    "reply": "Reply",
+    "share": "Share",
+    "views": "Views",
+    "likes": "Likes",
+    "comments": "Comments",
+    "members": "Members",
+    "recruiting": "Recruiting",
+    "full": "Full",
+    "closed": "Closed",
+    "apply": "Apply",
+    "applied": "Applied",
+    "joined": "Joined",
+    "leaveTeam": "Leave Team",
+    "applicationMessage": "Application Message",
+    "applicationPlaceholder": "Tell us about yourself, why do you want to join...",
+    "pending": "Pending",
+    "accept": "Accept",
+    "reject": "Reject",
+    "reviewApplications": "Review Applications",
+    "noApplications": "No Applications",
+    "noPosts": "No Posts",
+    "noPostsDesc": "Be the first to post!",
+    "loadMore": "Load More",
+    "writeComment": "Write a comment...",
+    "postComment": "Post",
+    "deleteConfirm": "Are you sure to delete?",
+    "postSuccess": "Posted successfully",
+    "postFailed": "Failed to post",
+    "applySuccess": "Application submitted",
+    "applyFailed": "Failed to apply",
+    "categoryTeam": "Competition Teams",
+    "categoryActivity": "Activities",
+    "categoryExperience": "Experiences",
+    "categoryQuestion": "Q&A",
+    "categoryResource": "Resources"
+  },
+  "vault": {
+    "title": "Vault",
+    "description": "Securely store your accounts, passwords, certificates and more",
+    "subtitle": "End-to-end encryption protects your sensitive data",
+    "addItem": "Add Item",
+    "credential": "Credential",
+    "credentialDesc": "Store website login credentials",
+    "document": "Document",
+    "documentDesc": "Save important document content",
+    "note": "Note",
+    "noteDesc": "Encrypted private notes",
+    "certificate": "Certificate",
+    "certificateDesc": "Store certificates and awards",
+    "allItems": "All Items",
+    "categories": "Categories",
+    "search": "Search vault...",
+    "noItems": "Vault is empty",
+    "noItemsDesc": "Click the button above to add your first item",
+    "createTitle": "Add New Item",
+    "editTitle": "Edit Item",
+    "viewTitle": "View Details",
+    "itemType": "Type",
+    "itemTitle": "Title",
+    "itemTitlePlaceholder": "Enter title...",
+    "itemCategory": "Category",
+    "itemCategoryPlaceholder": "Select or enter category",
+    "itemTags": "Tags",
+    "itemTagsPlaceholder": "Enter tag and press Enter",
+    "itemData": "Content",
+    "itemDataPlaceholder": "Enter content to encrypt...",
+    "username": "Username",
+    "usernamePlaceholder": "Enter username",
+    "password": "Password",
+    "passwordPlaceholder": "Enter password",
+    "website": "Website",
+    "websitePlaceholder": "https://example.com",
+    "notes": "Notes",
+    "notesPlaceholder": "Optional notes",
+    "generatePassword": "Generate Password",
+    "showPassword": "Show Password",
+    "hidePassword": "Hide Password",
+    "copyPassword": "Copy Password",
+    "passwordCopied": "Password copied",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleteConfirm": "Are you sure you want to delete this item? This action cannot be undone.",
+    "saveSuccess": "Saved successfully",
+    "saveFailed": "Failed to save",
+    "deleteSuccess": "Deleted successfully",
+    "deleteFailed": "Failed to delete",
+    "decryptFailed": "Decryption failed",
+    "exportAll": "Export All",
+    "importItems": "Import",
+    "stats": {
+      "total": "Total Items",
+      "credentials": "Credentials",
+      "documents": "Documents",
+      "notes": "Notes",
+      "certificates": "Certificates"
+    },
+    "security": {
+      "title": "Security Info",
+      "encryption": "AES-256-GCM Encryption",
+      "zeroKnowledge": "End-to-End Encrypted",
+      "localDecrypt": "Local Decryption"
+    },
+    "categories_default": {
+      "social": "Social Media",
+      "email": "Email",
+      "school": "School Related",
+      "application": "Application",
+      "financial": "Financial",
+      "other": "Other"
+    }
+  },
+  "verifiedRanking": {
+    "title": "Verified User Rankings",
+    "description": "View real admission data rankings from verified users",
+    "filters": "Filters",
+    "year": "Application Year",
+    "result": "Admission Result",
+    "school": "School",
+    "all": "All",
+    "admitted": "Admitted",
+    "topSchools": "Top 20 Schools",
+    "ivyPlus": "Ivy+",
+    "rank": "Rank",
+    "user": "User",
+    "gpa": "GPA",
+    "sat": "SAT",
+    "toefl": "TOEFL",
+    "target": "Target School",
+    "resultLabel": "Result",
+    "viewProfile": "View Profile",
+    "totalVerified": "Verified Users",
+    "totalAdmitted": "Admitted Cases"
   }
 }
-

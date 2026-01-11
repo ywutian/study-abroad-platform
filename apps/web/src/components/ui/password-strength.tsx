@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -10,22 +11,22 @@ interface PasswordStrengthProps {
   className?: string;
 }
 
-// 密码要求
-const requirements = [
-  { id: 'length', label: '至少8个字符', test: (p: string) => p.length >= 8 },
-  { id: 'lowercase', label: '包含小写字母', test: (p: string) => /[a-z]/.test(p) },
-  { id: 'uppercase', label: '包含大写字母', test: (p: string) => /[A-Z]/.test(p) },
-  { id: 'number', label: '包含数字', test: (p: string) => /\d/.test(p) },
-  { id: 'special', label: '包含特殊字符', test: (p: string) => /[!@#$%^&*(),.?":{}|<>]/.test(p) },
+// 密码要求 - only test functions, labels will be translated
+const requirementTests = [
+  { id: 'length', labelKey: 'length', test: (p: string) => p.length >= 8 },
+  { id: 'lowercase', labelKey: 'lowercase', test: (p: string) => /[a-z]/.test(p) },
+  { id: 'uppercase', labelKey: 'uppercase', test: (p: string) => /[A-Z]/.test(p) },
+  { id: 'number', labelKey: 'number', test: (p: string) => /\d/.test(p) },
+  { id: 'special', labelKey: 'special', test: (p: string) => /[!@#$%^&*(),.?":{}|<>]/.test(p) },
 ];
 
-// 强度级别
-const strengthLevels = [
-  { label: '非常弱', color: 'bg-red-500', textColor: 'text-red-500', min: 0 },
-  { label: '弱', color: 'bg-orange-500', textColor: 'text-orange-500', min: 1 },
-  { label: '一般', color: 'bg-yellow-500', textColor: 'text-yellow-500', min: 2 },
-  { label: '强', color: 'bg-green-500', textColor: 'text-green-500', min: 3 },
-  { label: '非常强', color: 'bg-emerald-500', textColor: 'text-emerald-500', min: 4 },
+// 强度级别 - only styles, labels will be translated
+const strengthLevelConfigs = [
+  { labelKey: 'veryWeak', color: 'bg-red-500', textColor: 'text-red-500', min: 0 },
+  { labelKey: 'weak', color: 'bg-orange-500', textColor: 'text-orange-500', min: 1 },
+  { labelKey: 'fair', color: 'bg-yellow-500', textColor: 'text-yellow-500', min: 2 },
+  { labelKey: 'strong', color: 'bg-green-500', textColor: 'text-green-500', min: 3 },
+  { labelKey: 'veryStrong', color: 'bg-emerald-500', textColor: 'text-emerald-500', min: 4 },
 ];
 
 export function PasswordStrength({ 
@@ -33,9 +34,11 @@ export function PasswordStrength({
   showRequirements = true,
   className,
 }: PasswordStrengthProps) {
+  const t = useTranslations('ui.password');
+
   // 计算满足的要求数量
   const { passedCount, passed } = useMemo(() => {
-    const results = requirements.map(req => ({
+    const results = requirementTests.map(req => ({
       ...req,
       passed: req.test(password),
     }));
@@ -47,8 +50,8 @@ export function PasswordStrength({
 
   // 获取强度级别
   const strength = useMemo(() => {
-    const levelIndex = strengthLevels.findLastIndex(level => passedCount >= level.min);
-    return strengthLevels[levelIndex] || strengthLevels[0];
+    const levelIndex = strengthLevelConfigs.findLastIndex(level => passedCount >= level.min);
+    return strengthLevelConfigs[levelIndex] || strengthLevelConfigs[0];
   }, [passedCount]);
 
   if (!password) return null;
@@ -58,15 +61,15 @@ export function PasswordStrength({
       {/* 强度指示条 */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">密码强度</span>
+          <span className="text-xs text-muted-foreground">{t('strength')}</span>
           <span className={cn('text-xs font-medium', strength.textColor)}>
-            {strength.label}
+            {t(strength.labelKey)}
           </span>
         </div>
         <div className="flex gap-1">
-          {strengthLevels.map((level, index) => (
+          {strengthLevelConfigs.map((level, index) => (
             <div
-              key={level.label}
+              key={level.labelKey}
               className={cn(
                 'h-1.5 flex-1 rounded-full transition-colors duration-200',
                 index < passedCount ? strength.color : 'bg-muted'
@@ -92,7 +95,7 @@ export function PasswordStrength({
               ) : (
                 <X className="w-3.5 h-3.5" />
               )}
-              {req.label}
+              {t(req.labelKey)}
             </li>
           ))}
         </ul>
@@ -113,7 +116,7 @@ export function isPasswordValid(password: string): boolean {
 
 // 辅助函数：获取密码强度分数 (0-5)
 export function getPasswordScore(password: string): number {
-  return requirements.filter(req => req.test(password)).length;
+  return requirementTests.filter(req => req.test(password)).length;
 }
 
 

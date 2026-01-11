@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -17,6 +18,7 @@ interface FloatingChatProps {
 }
 
 export function FloatingChat({ defaultOpen = false }: FloatingChatProps) {
+  const t = useTranslations('agentChat');
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const [isMinimized, setIsMinimized] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -76,7 +78,7 @@ export function FloatingChat({ defaultOpen = false }: FloatingChatProps) {
           <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/30">
             <div className="flex items-center gap-2">
               <span className="text-lg">🤖</span>
-              <span className="font-medium text-sm">AI 助手</span>
+              <span className="font-medium text-sm">{t('assistant')}</span>
               <kbd className="hidden sm:inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
                 ⌘K
               </kbd>
@@ -169,7 +171,7 @@ export function FloatingChat({ defaultOpen = false }: FloatingChatProps) {
           {/* Tooltip */}
           <div className="absolute bottom-16 right-0 opacity-0 group-hover:opacity-100 transition-opacity">
             <div className="bg-popover text-popover-foreground rounded-lg px-3 py-1.5 text-sm shadow-md whitespace-nowrap">
-              AI 留学顾问 <kbd className="ml-1 text-xs text-muted-foreground">⌘K</kbd>
+              {t('title')} <kbd className="ml-1 text-xs text-muted-foreground">⌘K</kbd>
             </div>
           </div>
         </motion.div>

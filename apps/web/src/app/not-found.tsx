@@ -1,10 +1,57 @@
+'use client';
+
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+
+// Translations for 404 page
+const translations = {
+  zh: {
+    title: '页面未找到 - 留学申请平台',
+    heading: '页面未找到',
+    message: '抱歉，您访问的页面不存在或已被移动。请检查链接是否正确，或返回首页。',
+    goHome: '返回首页',
+    orVisit: '或者访问以下页面：',
+    casesLib: '案例库',
+    ranking: '学校榜单',
+    prediction: '录取预测',
+    copyright: '© 2026 留学申请平台',
+  },
+  en: {
+    title: 'Page Not Found - Study Abroad Platform',
+    heading: 'Page Not Found',
+    message: 'Sorry, the page you are looking for does not exist or has been moved. Please check the link or return to the homepage.',
+    goHome: 'Back to Home',
+    orVisit: 'Or visit the following pages:',
+    casesLib: 'Case Library',
+    ranking: 'School Rankings',
+    prediction: 'Admission Prediction',
+    copyright: '© 2026 Study Abroad Platform',
+  },
+};
 
 export default function NotFound() {
+  const [locale, setLocale] = useState<'zh' | 'en'>('en');
+
+  useEffect(() => {
+    // Check URL path for locale
+    const path = window.location.pathname;
+    if (path.startsWith('/zh')) {
+      setLocale('zh');
+    } else if (path.startsWith('/en')) {
+      setLocale('en');
+    } else {
+      // Fallback to browser language
+      const browserLang = navigator.language.toLowerCase();
+      setLocale(browserLang.startsWith('zh') ? 'zh' : 'en');
+    }
+  }, []);
+
+  const t = translations[locale];
+
   return (
-    <html lang="zh">
+    <html lang={locale}>
       <head>
-        <title>页面未找到 - 留学申请平台</title>
+        <title>{t.title}</title>
       </head>
       <body style={{
         minHeight: '100vh',
@@ -46,7 +93,7 @@ export default function NotFound() {
               color: 'white',
               marginBottom: '1rem',
             }}>
-              页面未找到
+              {t.heading}
             </h2>
             <p style={{
               color: '#94a3b8',
@@ -54,14 +101,12 @@ export default function NotFound() {
               fontSize: '1.125rem',
               lineHeight: 1.6,
             }}>
-              抱歉，您访问的页面不存在或已被移动。
-              <br />
-              请检查链接是否正确，或返回首页。
+              {t.message}
             </p>
 
             {/* Action Button */}
             <Link 
-              href="/zh"
+              href={`/${locale}`}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -75,7 +120,7 @@ export default function NotFound() {
                 transition: 'opacity 0.2s',
               }}
             >
-              返回首页
+              {t.goHome}
             </Link>
 
             {/* Quick Links */}
@@ -89,7 +134,7 @@ export default function NotFound() {
                 color: '#64748b',
                 marginBottom: '1rem',
               }}>
-                或者访问以下页面：
+                {t.orVisit}
               </p>
               <div style={{
                 display: 'flex',
@@ -97,14 +142,14 @@ export default function NotFound() {
                 gap: '1rem',
                 justifyContent: 'center',
               }}>
-                <Link href="/zh/cases" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}>
-                  案例库
+                <Link href={`/${locale}/cases`} style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}>
+                  {t.casesLib}
                 </Link>
-                <Link href="/zh/ranking" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}>
-                  学校榜单
+                <Link href={`/${locale}/ranking`} style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}>
+                  {t.ranking}
                 </Link>
-                <Link href="/zh/prediction" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}>
-                  录取预测
+                <Link href={`/${locale}/prediction`} style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}>
+                  {t.prediction}
                 </Link>
               </div>
             </div>
@@ -121,7 +166,7 @@ export default function NotFound() {
             color: '#64748b',
             margin: 0,
           }}>
-            © 2026 留学申请平台
+            {t.copyright}
           </p>
         </footer>
       </body>

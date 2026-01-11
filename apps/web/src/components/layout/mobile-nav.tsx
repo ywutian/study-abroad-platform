@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Menu, X, ChevronRight } from 'lucide-react';
 import { Link, usePathname } from '@/lib/i18n/navigation';
@@ -25,13 +25,27 @@ export function MobileNav({ items, user, onLogout }: MobileNavProps) {
   const t = useTranslations();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // 仅在客户端渲染后显示，避免 hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <Button variant="ghost" size="icon" className="md:hidden">
+        <Menu className="h-5 w-5" />
+      </Button>
+    );
+  }
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="md:hidden">
           <Menu className="h-5 w-5" />
-          <span className="sr-only">打开菜单</span>
+          <span className="sr-only">{t('ui.a11y.openMenu')}</span>
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-[280px] p-0">
@@ -72,7 +86,7 @@ export function MobileNav({ items, user, onLogout }: MobileNavProps) {
           {user ? (
             <div className="space-y-3">
               <div className="rounded-lg bg-muted/50 px-3 py-2">
-                <p className="text-xs text-muted-foreground">当前账号</p>
+                <p className="text-xs text-muted-foreground">{t('ui.a11y.currentAccount')}</p>
                 <p className="truncate text-sm font-medium">{user.email}</p>
               </div>
               <div className="flex flex-col gap-2">

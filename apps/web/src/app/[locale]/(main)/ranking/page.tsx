@@ -3,21 +3,33 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
-import { PageContainer, PageHeader } from '@/components/layout';
+import { PageContainer } from '@/components/layout';
 import { LoadingState } from '@/components/ui/loading-state';
-import { EmptyState } from '@/components/ui/empty-state';
-import { BarChart3, Save, Play, Medal, ExternalLink } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import {
+  BarChart3,
+  Save,
+  Play,
+  Medal,
+  ExternalLink,
+  TrendingUp,
+  DollarSign,
+  GraduationCap,
+  Percent,
+  Sparkles,
+  Trophy,
+  ChevronRight,
+} from 'lucide-react';
 import { useRouter } from '@/lib/i18n/navigation';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 interface RankingWeights {
   usNewsRank: number;
@@ -38,6 +50,13 @@ interface RankedSchool {
   rank: number;
 }
 
+const WEIGHT_CONFIG = [
+  { key: 'usNewsRank', icon: Trophy, color: 'from-amber-500 to-yellow-500', bgColor: 'bg-amber-500/10', textColor: 'text-amber-500' },
+  { key: 'acceptanceRate', icon: Percent, color: 'from-blue-500 to-cyan-500', bgColor: 'bg-blue-500/10', textColor: 'text-blue-500' },
+  { key: 'tuition', icon: DollarSign, color: 'from-emerald-500 to-teal-500', bgColor: 'bg-emerald-500/10', textColor: 'text-emerald-500' },
+  { key: 'avgSalary', icon: TrendingUp, color: 'from-violet-500 to-purple-500', bgColor: 'bg-violet-500/10', textColor: 'text-violet-500' },
+] as const;
+
 export default function RankingPage() {
   const t = useTranslations();
   const router = useRouter();
@@ -53,7 +72,10 @@ export default function RankingPage() {
 
   const { data: ranking, isLoading, refetch } = useQuery({
     queryKey: ['ranking', weights],
-    queryFn: () => apiClient.post<RankedSchool[]>('/rankings/calculate', weights),
+    queryFn: async () => {
+      const response = await apiClient.post<RankedSchool[]>('/rankings/calculate', { weights });
+      return response;
+    },
     enabled: false,
   });
 
@@ -61,7 +83,7 @@ export default function RankingPage() {
     mutationFn: (data: { name: string; isPublic: boolean } & RankingWeights) =>
       apiClient.post('/rankings', data),
     onSuccess: () => {
-      toast.success('排名已保存！');
+      toast.success(t('ranking.toast.saved'));
       setRankingName('');
     },
     onError: (error: Error) => {
@@ -75,7 +97,7 @@ export default function RankingPage() {
 
   const handleSave = () => {
     if (!rankingName.trim()) {
-      toast.error('请输入排名名称');
+      toast.error(t('ranking.toast.enterName'));
       return;
     }
     saveMutation.mutate({
@@ -91,197 +113,257 @@ export default function RankingPage() {
 
   const totalWeight = Object.values(weights).reduce((sum, w) => sum + w, 0);
 
-  const getRankBadge = (rank: number) => {
-    if (rank === 1) return <Badge className="bg-yellow-500">🥇</Badge>;
-    if (rank === 2) return <Badge className="bg-gray-400">🥈</Badge>;
-    if (rank === 3) return <Badge className="bg-amber-600">🥉</Badge>;
-    return <span className="text-muted-foreground">#{rank}</span>;
-  };
-
   return (
-    <PageContainer>
-      <PageHeader
-        title={t('ranking.title')}
-        description="自定义权重，生成你的个性化院校排名"
-      />
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Weights Configuration */}
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <div className="rounded-lg bg-primary/10 p-2 text-primary">
-                <BarChart3 className="h-5 w-5" />
-              </div>
-              <div>
-                <CardTitle>{t('ranking.weights')}</CardTitle>
-                <CardDescription>
-                  总权重: <span className={totalWeight === 100 ? 'text-success' : 'text-warning'}>{totalWeight}%</span>
-                </CardDescription>
+    <PageContainer maxWidth="fluid">
+      {/* 页面头部 */}
+      <div className="relative mb-6 lg:mb-8 overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500/10 via-background to-yellow-500/10 p-4 sm:p-6 lg:p-8">
+        {/* 装饰元素 */}
+        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gradient-to-br from-amber-500/20 to-yellow-500/20 blur-3xl" />
+        <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-gradient-to-br from-orange-500/20 to-amber-500/20 blur-3xl" />
+        
+        <div className="relative z-10">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-yellow-500 shadow-lg shadow-amber-500/25">
+                  <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">{t('ranking.title')}</h1>
+                  <p className="text-sm sm:text-base text-muted-foreground">{t('ranking.description')}</p>
+                </div>
               </div>
             </div>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <Label>{t('ranking.usNewsRank')}</Label>
-                <span className="text-sm font-medium text-primary">{weights.usNewsRank}%</span>
+            
+            {/* 统计卡片 */}
+            <div className="flex gap-3 sm:gap-4">
+              <div className="rounded-xl border bg-card/50 backdrop-blur-sm px-3 sm:px-4 py-2 sm:py-3">
+                <p className="text-xs text-muted-foreground">{t('ranking.totalWeight')}</p>
+                <p className={cn(
+                  'text-xl sm:text-2xl font-bold',
+                  totalWeight === 100 ? 'text-emerald-500' : 'text-amber-500'
+                )}>{totalWeight}%</p>
               </div>
-              <Slider
-                value={[weights.usNewsRank]}
-                onValueChange={([v]) => updateWeight('usNewsRank', v)}
-                max={100}
-                step={5}
-                className="[&_[role=slider]]:bg-primary"
-              />
+              {ranking && ranking.length > 0 && (
+                <div className="rounded-xl border bg-card/50 backdrop-blur-sm px-3 sm:px-4 py-2 sm:py-3">
+                  <p className="text-xs text-muted-foreground">{t('ranking.schoolsCount')}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-blue-500">{ranking.length}</p>
+                </div>
+              )}
             </div>
+          </div>
+        </div>
+      </div>
 
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <Label>{t('ranking.acceptanceRate')}</Label>
-                <span className="text-sm font-medium text-primary">{weights.acceptanceRate}%</span>
+      {/* 响应式网格：移动端堆叠，大屏幕两列固定比例 */}
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-[380px_1fr] xl:grid-cols-[420px_1fr] 2xl:grid-cols-[480px_1fr]">
+        {/* 权重配置 */}
+        <div className="space-y-4 sm:space-y-6">
+          <Card className="overflow-hidden">
+            <div className="h-1.5 bg-gradient-to-r from-amber-500 to-yellow-500" />
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
+                  <Sparkles className="h-5 w-5" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">{t('ranking.weights')}</CardTitle>
+                  <CardDescription>{t('ranking.weightsDesc')}</CardDescription>
+                </div>
               </div>
-              <Slider
-                value={[weights.acceptanceRate]}
-                onValueChange={([v]) => updateWeight('acceptanceRate', v)}
-                max={100}
-                step={5}
-              />
-              <p className="text-xs text-muted-foreground">录取率越低 = 分数越高</p>
-            </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {WEIGHT_CONFIG.map((config, index) => {
+                const key = config.key as keyof RankingWeights;
+                return (
+                  <motion.div
+                    key={key}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="space-y-3"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className={cn('flex h-8 w-8 items-center justify-center rounded-lg', config.bgColor)}>
+                          <config.icon className={cn('h-4 w-4', config.textColor)} />
+                        </div>
+                        <Label className="font-medium">{t(`ranking.${key}`)}</Label>
+                      </div>
+                      <Badge variant="secondary" className="font-mono tabular-nums">
+                        {weights[key]}%
+                      </Badge>
+                    </div>
+                    <div className="relative">
+                      <Slider
+                        value={[weights[key]]}
+                        onValueChange={([v]) => updateWeight(key, v)}
+                        max={100}
+                        step={5}
+                        className={cn('[&_[role=slider]]:border-2 [&_[role=slider]]:border-white [&_[role=slider]]:shadow-md')}
+                      />
+                      <div 
+                        className={cn('absolute -bottom-1 left-0 h-1 rounded-full bg-gradient-to-r opacity-50', config.color)}
+                        style={{ width: `${weights[key]}%` }}
+                      />
+                    </div>
+                    {(key === 'acceptanceRate' || key === 'tuition') && (
+                      <p className="text-xs text-muted-foreground pl-10">{t(`ranking.${key}Hint`)}</p>
+                    )}
+                  </motion.div>
+                );
+              })}
 
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <Label>{t('ranking.tuition')}</Label>
-                <span className="text-sm font-medium text-primary">{weights.tuition}%</span>
-              </div>
-              <Slider
-                value={[weights.tuition]}
-                onValueChange={([v]) => updateWeight('tuition', v)}
-                max={100}
-                step={5}
-              />
-              <p className="text-xs text-muted-foreground">学费越低 = 分数越高</p>
-            </div>
+              <Button 
+                onClick={handleCalculate} 
+                className="w-full gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-white" 
+                disabled={isLoading}
+              >
+                <Play className="h-4 w-4" />
+                {isLoading ? t('common.loading') : t('ranking.preview')}
+              </Button>
+            </CardContent>
+          </Card>
 
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <Label>{t('ranking.avgSalary')}</Label>
-                <span className="text-sm font-medium text-primary">{weights.avgSalary}%</span>
-              </div>
-              <Slider
-                value={[weights.avgSalary]}
-                onValueChange={([v]) => updateWeight('avgSalary', v)}
-                max={100}
-                step={5}
-              />
-            </div>
-
-            <Button onClick={handleCalculate} className="w-full" disabled={isLoading}>
-              <Play className="mr-2 h-4 w-4" />
-              {isLoading ? t('common.loading') : t('ranking.preview')}
-            </Button>
-
-            <div className="border-t pt-4 space-y-3">
-              <Label>{t('ranking.saveRanking')}</Label>
+          {/* 保存配置 */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Save className="h-4 w-4 text-muted-foreground" />
+                {t('ranking.saveRanking')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
               <Input
-                placeholder="我的自定义排名"
+                placeholder={t('ranking.namePlaceholder')}
                 value={rankingName}
                 onChange={(e) => setRankingName(e.target.value)}
+                className="h-11"
               />
               <Button
                 variant="outline"
-                className="w-full"
+                className="w-full gap-2"
                 onClick={handleSave}
                 disabled={saveMutation.isPending || !ranking?.length}
               >
-                <Save className="mr-2 h-4 w-4" />
+                <Save className="h-4 w-4" />
                 {saveMutation.isPending ? t('common.loading') : t('common.save')}
               </Button>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
-        {/* Ranking Results */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <div className="rounded-lg bg-primary/10 p-2 text-primary">
-                <Medal className="h-5 w-5" />
+        {/* 排名结果 */}
+        <div className="min-w-0">
+          <Card className="overflow-hidden">
+            <div className="h-1.5 bg-gradient-to-r from-blue-500 to-cyan-500" />
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500">
+                  <Medal className="h-5 w-5" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">{t('ranking.rankingResults')}</CardTitle>
+                  <CardDescription>{t('ranking.rankingResultsDesc')}</CardDescription>
+                </div>
               </div>
-              <div>
-                <CardTitle>排名结果</CardTitle>
-                <CardDescription>根据你的权重计算的院校排名</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <LoadingState variant="table" />
-            ) : ranking?.length ? (
-              <ScrollArea className="w-full">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-16">排名</TableHead>
-                      <TableHead>学校</TableHead>
-                      <TableHead className="text-right">US News</TableHead>
-                      <TableHead className="text-right hidden sm:table-cell">录取率</TableHead>
-                      <TableHead className="text-right hidden md:table-cell">学费</TableHead>
-                      <TableHead className="text-right hidden lg:table-cell">薪资</TableHead>
-                      <TableHead className="text-right">得分</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {ranking.slice(0, 50).map((school: RankedSchool, index: number) => (
-                      <TableRow
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <LoadingState variant="table" />
+              ) : ranking?.length ? (
+                <div className="space-y-2">
+                  <AnimatePresence>
+                    {ranking.slice(0, 30).map((school: RankedSchool, index: number) => (
+                      <motion.div
                         key={school.id}
-                        className="animate-initial animate-fade-in"
-                        style={{ animationDelay: `${index * 30}ms` }}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.03 }}
+                        className={cn(
+                          'group relative rounded-xl border p-4 transition-all hover:shadow-md cursor-pointer',
+                          school.rank <= 3 && 'bg-gradient-to-r from-amber-500/5 to-transparent'
+                        )}
+                        onClick={() => router.push(`/schools/${school.id}`)}
                       >
-                        <TableCell className="font-medium">{getRankBadge(school.rank)}</TableCell>
-                        <TableCell>
-                          <button
-                            onClick={() => router.push(`/schools/${school.id}`)}
-                            className="text-left hover:underline group"
-                          >
-                            <div className="font-medium group-hover:text-primary flex items-center gap-1">
-                              {school.name}
-                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="flex items-center gap-4">
+                          {/* 排名 */}
+                          <div className={cn(
+                            'flex h-12 w-12 shrink-0 items-center justify-center rounded-xl font-bold',
+                            school.rank === 1 && 'bg-gradient-to-br from-amber-400 to-yellow-500 text-white shadow-lg shadow-amber-500/30',
+                            school.rank === 2 && 'bg-gradient-to-br from-slate-300 to-slate-400 text-white shadow-lg shadow-slate-400/30',
+                            school.rank === 3 && 'bg-gradient-to-br from-amber-600 to-orange-600 text-white shadow-lg shadow-amber-600/30',
+                            school.rank > 3 && 'bg-muted text-muted-foreground'
+                          )}>
+                            {school.rank <= 3 ? (
+                              <span className="text-lg">{school.rank === 1 ? '🥇' : school.rank === 2 ? '🥈' : '🥉'}</span>
+                            ) : (
+                              <span>#{school.rank}</span>
+                            )}
+                          </div>
+
+                          {/* 学校信息 */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold truncate group-hover:text-primary transition-colors">
+                                {school.name}
+                              </p>
+                              <ExternalLink className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground" />
                             </div>
-                            {school.nameZh && <div className="text-xs text-muted-foreground">{school.nameZh}</div>}
-                          </button>
-                        </TableCell>
-                        <TableCell className="text-right">{school.usNewsRank || '-'}</TableCell>
-                        <TableCell className="text-right hidden sm:table-cell">
-                          {school.acceptanceRate ? `${school.acceptanceRate}%` : '-'}
-                        </TableCell>
-                        <TableCell className="text-right hidden md:table-cell">
-                          {school.tuition ? `$${school.tuition.toLocaleString()}` : '-'}
-                        </TableCell>
-                        <TableCell className="text-right hidden lg:table-cell">
-                          {school.avgSalary ? `$${school.avgSalary.toLocaleString()}` : '-'}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Badge variant="secondary" className="font-mono">
-                            {school.score.toFixed(1)}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
+                            {school.nameZh && (
+                              <p className="text-sm text-muted-foreground truncate">{school.nameZh}</p>
+                            )}
+                          </div>
+
+                          {/* 数据指标 */}
+                          <div className="hidden sm:flex items-center gap-3">
+                            <div className="text-center px-3">
+                              <p className="text-xs text-muted-foreground">US News</p>
+                              <p className="font-semibold">#{school.usNewsRank || '-'}</p>
+                            </div>
+                            <div className="text-center px-3 hidden md:block">
+                              <p className="text-xs text-muted-foreground">{t('ranking.tableHeaders.acceptance')}</p>
+                              <p className="font-semibold">{school.acceptanceRate ? `${school.acceptanceRate}%` : '-'}</p>
+                            </div>
+                            <div className="text-center px-3 hidden lg:block">
+                              <p className="text-xs text-muted-foreground">{t('ranking.tableHeaders.tuition')}</p>
+                              <p className="font-semibold">{school.tuition ? `$${(school.tuition / 1000).toFixed(0)}k` : '-'}</p>
+                            </div>
+                          </div>
+
+                          {/* 综合评分 */}
+                          <div className="flex items-center gap-2">
+                            <div className="text-right">
+                              <p className="text-xs text-muted-foreground">{t('ranking.tableHeaders.score')}</p>
+                              <p className="text-xl font-bold text-primary">{school.score?.toFixed(1) ?? '-'}</p>
+                            </div>
+                            <ChevronRight className="h-5 w-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </div>
+                        </div>
+                      </motion.div>
                     ))}
-                  </TableBody>
-                </Table>
-                <ScrollBar orientation="horizontal" />
-              </ScrollArea>
-            ) : (
-              <EmptyState
-                icon={<BarChart3 className="h-12 w-12" />}
-                title="点击「预览排名」查看结果"
-                description="调整左侧权重参数，生成你的个性化院校排名"
-              />
-            )}
-          </CardContent>
-        </Card>
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <div className="py-16 text-center">
+                  <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500/10 to-yellow-500/10">
+                    <BarChart3 className="h-10 w-10 text-amber-500/50" />
+                  </div>
+                  <h3 className="text-lg font-semibold">{t('ranking.empty.title')}</h3>
+                  <p className="mt-1 text-muted-foreground max-w-sm mx-auto">{t('ranking.empty.description')}</p>
+                  <Button 
+                    onClick={handleCalculate} 
+                    className="mt-6 gap-2"
+                    variant="outline"
+                  >
+                    <Play className="h-4 w-4" />
+                    {t('ranking.preview')}
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </PageContainer>
   );

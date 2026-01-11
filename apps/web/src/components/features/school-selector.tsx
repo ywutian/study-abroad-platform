@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,22 +43,25 @@ export function SchoolSelector({
   selectedSchools,
   onSelect,
   maxSelection = 20,
-  title = '选择学校',
+  title,
 }: SchoolSelectorProps) {
+  const t = useTranslations('schoolSelector');
+  const tCommon = useTranslations('common');
   const [search, setSearch] = useState('');
+  const finalTitle = title ?? t('title');
   const [tempSelected, setTempSelected] = useState<School[]>(selectedSchools);
 
   // Fetch schools
-  const { data: schoolsData, isLoading } = useQuery({
+  const { data: schoolsResponse, isLoading } = useQuery({
     queryKey: ['schools', search],
     queryFn: () =>
-      apiClient.get<{ data: School[]; total: number }>('/schools', {
+      apiClient.get<{ success: boolean; data: { items: School[]; total: number } }>('/schools', {
         params: { search, pageSize: '100' },
       }),
     enabled: open,
   });
 
-  const schools = schoolsData?.data || [];
+  const schools = schoolsResponse?.data?.items || [];
 
   // Filter and sort schools
   const filteredSchools = useMemo(() => {
@@ -107,7 +111,7 @@ export function SchoolSelector({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <GraduationCap className="h-5 w-5" />
-            {title}
+            {finalTitle}
           </DialogTitle>
         </DialogHeader>
 
@@ -115,7 +119,7 @@ export function SchoolSelector({
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="搜索学校名称..."
+            placeholder={t('searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -148,8 +152,8 @@ export function SchoolSelector({
           ) : filteredSchools.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
               <GraduationCap className="mb-2 h-12 w-12 opacity-50" />
-              <p>未找到学校</p>
-              <p className="text-sm">请尝试其他搜索词</p>
+              <p>{t('noResults')}</p>
+              <p className="text-sm">{t('noResultsHint')}</p>
             </div>
           ) : (
             <div className="p-2">
@@ -181,7 +185,7 @@ export function SchoolSelector({
                   </div>
                   {school.acceptanceRate && (
                     <div className="text-right text-sm text-muted-foreground shrink-0">
-                      <p>录取率</p>
+                      <p>{t('acceptanceRate')}</p>
                       <p className="font-medium">{school.acceptanceRate}%</p>
                     </div>
                   )}
@@ -193,13 +197,13 @@ export function SchoolSelector({
 
         <DialogFooter className="flex-col gap-2 sm:flex-row">
           <p className="text-sm text-muted-foreground">
-            已选 {tempSelected.length}/{maxSelection} 所学校
+            {t('selectedCount', { count: tempSelected.length, max: maxSelection })}
           </p>
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleCancel}>
-              取消
+              {tCommon('cancel')}
             </Button>
-            <Button onClick={handleConfirm}>确认选择</Button>
+            <Button onClick={handleConfirm}>{t('confirmSelection')}</Button>
           </div>
         </DialogFooter>
       </DialogContent>

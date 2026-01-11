@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { AlertTriangle } from 'lucide-react';
 import {
   AlertDialog,
@@ -26,9 +27,13 @@ export function UnsavedChangesDialog({
   onOpenChange,
   onConfirm,
   onCancel,
-  title = '未保存的更改',
-  description = '您有未保存的更改。如果离开此页面，所有更改将会丢失。',
+  title,
+  description,
 }: UnsavedChangesDialogProps) {
+  const t = useTranslations('ui.unsavedChanges');
+  const finalTitle = title ?? t('title');
+  const finalDescription = description ?? t('description');
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent className="sm:max-w-[400px]">
@@ -37,10 +42,10 @@ export function UnsavedChangesDialog({
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-warning/10">
               <AlertTriangle className="h-5 w-5 text-warning" />
             </div>
-            <AlertDialogTitle>{title}</AlertDialogTitle>
+            <AlertDialogTitle>{finalTitle}</AlertDialogTitle>
           </div>
           <AlertDialogDescription className="pt-2">
-            {description}
+            {finalDescription}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-col gap-2 sm:flex-row">
@@ -48,13 +53,13 @@ export function UnsavedChangesDialog({
             onClick={onCancel}
             className="w-full sm:w-auto"
           >
-            继续编辑
+            {t('continueEditing')}
           </AlertDialogCancel>
           <AlertDialogAction 
             onClick={onConfirm}
             className="w-full bg-destructive text-destructive-foreground hover:bg-destructive/90 sm:w-auto"
           >
-            不保存并离开
+            {t('discardAndLeave')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

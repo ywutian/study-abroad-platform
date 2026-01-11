@@ -46,148 +46,327 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+  
+  /* Auth 主题变量映射 */
+  --color-auth-bg: var(--auth-bg);
+  --color-auth-card-bg: var(--auth-card-bg);
+  --color-auth-card-border: var(--auth-card-border);
+  --color-auth-text: var(--auth-text);
+  --color-auth-text-muted: var(--auth-text-muted);
+  --color-auth-text-subtle: var(--auth-text-subtle);
+  --color-auth-input-bg: var(--auth-input-bg);
+  --color-auth-input-border: var(--auth-input-border);
+  --color-auth-input-text: var(--auth-input-text);
+  --color-auth-input-placeholder: var(--auth-input-placeholder);
+  --color-auth-glow-1: var(--auth-glow-1);
+  --color-auth-glow-2: var(--auth-glow-2);
+  --color-auth-glow-3: var(--auth-glow-3);
+  --color-auth-grid: var(--auth-grid);
+  --color-auth-divider: var(--auth-divider);
+  --color-auth-icon: var(--auth-icon);
+  --color-auth-icon-focus: var(--auth-icon-focus);
+  --color-auth-star: var(--auth-star);
 }
 
+/* ========================================
+   🎨 设计系统 - 亮色主题
+   ======================================== */
 :root {
-  --radius: 0.625rem;
+  --radius: 0.75rem;
   
-  /* 品牌色 - 靛蓝 */
-  --primary: oklch(0.55 0.22 265);
-  --primary-foreground: oklch(0.98 0 0);
+  /* 🔵 品牌色 - 现代蓝 */
+  --primary: oklch(0.58 0.22 255);
+  --primary-foreground: oklch(0.99 0 0);
   
-  /* 次要色 */
-  --secondary: oklch(0.96 0.01 265);
-  --secondary-foreground: oklch(0.25 0.05 265);
+  /* ⚪ 次要色 - 柔和灰蓝 */
+  --secondary: oklch(0.965 0.008 260);
+  --secondary-foreground: oklch(0.30 0.04 260);
   
-  /* 成功色 - 翠绿 */
-  --success: oklch(0.65 0.19 160);
-  --success-foreground: oklch(0.98 0 0);
+  /* ✅ 成功色 - 翠绿 */
+  --success: oklch(0.68 0.18 155);
+  --success-foreground: oklch(0.99 0 0);
   
-  /* 警示色 - 琥珀 */
-  --warning: oklch(0.75 0.16 85);
-  --warning-foreground: oklch(0.25 0 0);
+  /* ⚠️ 警示色 - 琥珀 */
+  --warning: oklch(0.78 0.15 75);
+  --warning-foreground: oklch(0.20 0 0);
   
-  /* 背景 - 带微妙蓝调 */
-  --background: oklch(0.985 0.003 265);
-  --foreground: oklch(0.15 0.02 265);
+  /* 🔴 危险色 */
+  --destructive: oklch(0.60 0.20 25);
   
-  /* 卡片 */
+  /* 📄 背景 */
+  --background: oklch(0.988 0.002 260);
+  --foreground: oklch(0.12 0.02 260);
+  
+  /* 🎴 卡片 - 纯白带微光 */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.15 0.02 265);
+  --card-foreground: oklch(0.12 0.02 260);
   
-  /* 弹出层 */
+  /* 💬 弹出层 */
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.15 0.02 265);
+  --popover-foreground: oklch(0.12 0.02 260);
   
-  /* 静音色 */
-  --muted: oklch(0.96 0.005 265);
-  --muted-foreground: oklch(0.5 0.02 265);
+  /* 🔇 静音色 */
+  --muted: oklch(0.965 0.005 260);
+  --muted-foreground: oklch(0.48 0.02 260);
   
-  /* 强调色 */
-  --accent: oklch(0.95 0.02 265);
-  --accent-foreground: oklch(0.25 0.1 265);
+  /* ✨ 强调色 */
+  --accent: oklch(0.96 0.015 260);
+  --accent-foreground: oklch(0.20 0.08 260);
   
-  /* 危险色 */
-  --destructive: oklch(0.58 0.22 27);
+  /* 🔲 边框和输入 */
+  --border: oklch(0.92 0.008 260);
+  --input: oklch(0.92 0.008 260);
+  --ring: oklch(0.58 0.22 255);
   
-  /* 边框和输入 */
-  --border: oklch(0.91 0.01 265);
-  --input: oklch(0.91 0.01 265);
-  --ring: oklch(0.55 0.22 265);
+  /* 📊 图表色 - 现代渐变系 */
+  --chart-1: oklch(0.58 0.22 255);
+  --chart-2: oklch(0.68 0.18 155);
+  --chart-3: oklch(0.62 0.16 200);
+  --chart-4: oklch(0.78 0.15 75);
+  --chart-5: oklch(0.68 0.18 320);
   
-  /* 图表色 - 更鲜艳的配色 */
-  --chart-1: oklch(0.55 0.22 265);
-  --chart-2: oklch(0.65 0.19 160);
-  --chart-3: oklch(0.60 0.18 200);
-  --chart-4: oklch(0.75 0.16 85);
-  --chart-5: oklch(0.65 0.20 330);
+  /* 📱 侧边栏 */
+  --sidebar: oklch(0.985 0.004 260);
+  --sidebar-foreground: oklch(0.12 0.02 260);
+  --sidebar-primary: oklch(0.58 0.22 255);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.96 0.015 260);
+  --sidebar-accent-foreground: oklch(0.20 0.08 260);
+  --sidebar-border: oklch(0.92 0.008 260);
+  --sidebar-ring: oklch(0.58 0.22 255);
   
-  /* 侧边栏 */
-  --sidebar: oklch(0.98 0.005 265);
-  --sidebar-foreground: oklch(0.15 0.02 265);
-  --sidebar-primary: oklch(0.55 0.22 265);
-  --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.95 0.02 265);
-  --sidebar-accent-foreground: oklch(0.25 0.1 265);
-  --sidebar-border: oklch(0.91 0.01 265);
-  --sidebar-ring: oklch(0.55 0.22 265);
+  /* 🔐 Auth 页面专用 - 亮色 */
+  --auth-bg: oklch(0.97 0.008 260);
+  --auth-card-bg: oklch(1 0 0);
+  --auth-card-border: oklch(0.90 0.01 260);
+  --auth-text: oklch(0.15 0.02 260);
+  --auth-text-muted: oklch(0.45 0.02 260);
+  --auth-text-subtle: oklch(0.60 0.015 260);
+  --auth-input-bg: oklch(0.98 0.005 260);
+  --auth-input-border: oklch(0.88 0.01 260);
+  --auth-input-text: oklch(0.15 0.02 260);
+  --auth-input-placeholder: oklch(0.60 0.015 260);
+  --auth-glow-1: oklch(0.58 0.22 255 / 15%);
+  --auth-glow-2: oklch(0.55 0.20 200 / 10%);
+  --auth-glow-3: oklch(0.60 0.18 290 / 8%);
+  --auth-grid: oklch(0.58 0.22 255 / 5%);
+  --auth-divider: oklch(0.90 0.008 260);
+  --auth-icon: oklch(0.55 0.02 260);
+  --auth-icon-focus: oklch(0.58 0.22 255);
+  --auth-star: oklch(0.65 0.015 260);
+  --auth-focus-border: oklch(0.58 0.22 255 / 50%);
+  --auth-focus-ring: oklch(0.58 0.22 255 / 20%);
+  --auth-icon-bg: oklch(0.58 0.22 255 / 10%);
+  --auth-icon-ring: oklch(0.58 0.22 255 / 20%);
+  --auth-accent: oklch(0.60 0.20 255);
+  --auth-checkbox-checked: oklch(0.58 0.22 255);
+  --auth-link: oklch(0.60 0.20 255);
+  --auth-link-hover: oklch(0.70 0.18 255);
+  --auth-pulse-dot: oklch(0.60 0.20 255);
+  --auth-error: oklch(0.65 0.20 25);
+  --auth-error-bg: oklch(0.65 0.20 25 / 10%);
+  --auth-error-ring: oklch(0.65 0.20 25 / 20%);
+  
+  /* 🌈 Hero 区域 - 亮色 */
+  --hero-bg: linear-gradient(135deg, oklch(0.97 0.01 260) 0%, oklch(0.94 0.02 255) 100%);
+  --hero-text: oklch(0.15 0.02 260);
+  --hero-text-muted: oklch(0.45 0.02 260);
+  
+  /* 📊 Stats 卡片 - 亮色 */
+  --stat-card-bg: oklch(1 0 0);
+  --stat-card-border: oklch(0.90 0.01 260);
+  --stat-card-text: oklch(0.15 0.02 260);
+  --stat-card-text-muted: oklch(0.50 0.02 260);
+  
+  /* 🔘 按钮 - 亮色 outline */
+  --btn-outline-border: oklch(0.75 0.02 260);
+  --btn-outline-text: oklch(0.25 0.02 260);
+  --btn-outline-hover-bg: oklch(0.95 0.005 260);
+  
+  /* 🏠 Hero 区域详细变量 - 亮色 */
+  --hero-badge-text: oklch(0.35 0.15 200);
+  --hero-subtitle: oklch(0.40 0.02 260);
+  --hero-feature-text: oklch(0.50 0.02 260);
+  --hero-scroll-text: oklch(0.50 0.02 260);
+  --hero-scroll-border: oklch(0.70 0.02 260);
+  --hero-scroll-dot: oklch(0.55 0.02 260);
+  
+  /* 🎯 CTA 区域 - 亮色 */
+  --cta-badge-border: oklch(0.85 0.01 260);
+  --cta-badge-bg: oklch(0.96 0.005 260);
+  --cta-badge-text: oklch(0.40 0.02 260);
+  --cta-title: oklch(0.15 0.02 260);
+  --cta-subtitle: oklch(0.45 0.02 260);
+  --cta-feature-text: oklch(0.55 0.02 260);
+  
+  /* 📦 下拉菜单 - 亮色 */
+  --dropdown-bg: oklch(1 0 0 / 95%);
+  --dropdown-border: oklch(0.90 0.01 260);
+  --dropdown-text: oklch(0.25 0.02 260);
+  --dropdown-text-muted: oklch(0.50 0.02 260);
+  --dropdown-hover-bg: oklch(0.96 0.005 260);
 }
 
+/* ========================================
+   🌙 设计系统 - 暗色主题
+   ======================================== */
 .dark {
-  /* 背景 - 深蓝灰 */
-  --background: oklch(0.13 0.02 265);
-  --foreground: oklch(0.95 0.01 265);
+  /* 📄 背景 - 深邃夜空 */
+  --background: oklch(0.11 0.015 260);
+  --foreground: oklch(0.96 0.008 260);
   
-  /* 卡片 */
-  --card: oklch(0.18 0.02 265);
-  --card-foreground: oklch(0.95 0.01 265);
+  /* 🎴 卡片 - 深色玻璃 */
+  --card: oklch(0.16 0.018 260);
+  --card-foreground: oklch(0.96 0.008 260);
   
-  /* 弹出层 */
-  --popover: oklch(0.18 0.02 265);
-  --popover-foreground: oklch(0.95 0.01 265);
+  /* 💬 弹出层 */
+  --popover: oklch(0.16 0.018 260);
+  --popover-foreground: oklch(0.96 0.008 260);
   
-  /* 品牌色 - 亮靛蓝 */
-  --primary: oklch(0.65 0.22 265);
-  --primary-foreground: oklch(0.13 0.02 265);
+  /* 🔵 品牌色 - 明亮蓝 */
+  --primary: oklch(0.68 0.20 255);
+  --primary-foreground: oklch(0.10 0.015 260);
   
-  /* 次要色 */
-  --secondary: oklch(0.22 0.02 265);
-  --secondary-foreground: oklch(0.95 0.01 265);
+  /* ⚪ 次要色 */
+  --secondary: oklch(0.20 0.015 260);
+  --secondary-foreground: oklch(0.96 0.008 260);
   
-  /* 成功色 */
-  --success: oklch(0.70 0.18 160);
-  --success-foreground: oklch(0.13 0.02 265);
+  /* ✅ 成功色 */
+  --success: oklch(0.72 0.16 155);
+  --success-foreground: oklch(0.10 0.015 260);
   
-  /* 警示色 */
-  --warning: oklch(0.78 0.15 85);
-  --warning-foreground: oklch(0.13 0.02 265);
+  /* ⚠️ 警示色 */
+  --warning: oklch(0.80 0.14 75);
+  --warning-foreground: oklch(0.10 0.015 260);
   
-  /* 静音色 */
-  --muted: oklch(0.22 0.02 265);
-  --muted-foreground: oklch(0.65 0.02 265);
+  /* 🔇 静音色 - 优化对比度 */
+  --muted: oklch(0.20 0.015 260);
+  --muted-foreground: oklch(0.68 0.015 260);
   
-  /* 强调色 */
-  --accent: oklch(0.25 0.03 265);
-  --accent-foreground: oklch(0.95 0.01 265);
+  /* ✨ 强调色 */
+  --accent: oklch(0.24 0.02 260);
+  --accent-foreground: oklch(0.96 0.008 260);
   
-  /* 危险色 */
-  --destructive: oklch(0.65 0.20 25);
+  /* 🔴 危险色 */
+  --destructive: oklch(0.65 0.18 25);
   
-  /* 边框和输入 */
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.65 0.22 265);
+  /* 🔲 边框和输入 */
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.68 0.20 255);
   
-  /* 图表色 */
-  --chart-1: oklch(0.65 0.22 265);
-  --chart-2: oklch(0.70 0.18 160);
-  --chart-3: oklch(0.65 0.17 200);
-  --chart-4: oklch(0.78 0.15 85);
-  --chart-5: oklch(0.70 0.18 330);
+  /* 📊 图表色 */
+  --chart-1: oklch(0.68 0.20 255);
+  --chart-2: oklch(0.72 0.16 155);
+  --chart-3: oklch(0.68 0.15 200);
+  --chart-4: oklch(0.80 0.14 75);
+  --chart-5: oklch(0.72 0.16 320);
   
-  /* 侧边栏 */
-  --sidebar: oklch(0.16 0.02 265);
-  --sidebar-foreground: oklch(0.95 0.01 265);
-  --sidebar-primary: oklch(0.65 0.22 265);
-  --sidebar-primary-foreground: oklch(0.13 0.02 265);
-  --sidebar-accent: oklch(0.25 0.03 265);
-  --sidebar-accent-foreground: oklch(0.95 0.01 265);
-  --sidebar-border: oklch(1 0 0 / 12%);
-  --sidebar-ring: oklch(0.65 0.22 265);
+  /* 📱 侧边栏 */
+  --sidebar: oklch(0.14 0.015 260);
+  --sidebar-foreground: oklch(0.96 0.008 260);
+  --sidebar-primary: oklch(0.68 0.20 255);
+  --sidebar-primary-foreground: oklch(0.10 0.015 260);
+  --sidebar-accent: oklch(0.24 0.02 260);
+  --sidebar-accent-foreground: oklch(0.96 0.008 260);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.68 0.20 255);
+  
+  /* 🔐 Auth 页面专用 - 暗色 */
+  --auth-bg: oklch(0.10 0.015 260);
+  --auth-card-bg: oklch(0.13 0.018 260 / 90%);
+  --auth-card-border: oklch(1 0 0 / 8%);
+  --auth-text: oklch(0.98 0.005 260);
+  --auth-text-muted: oklch(0.70 0.01 260);
+  --auth-text-subtle: oklch(0.58 0.01 260);
+  --auth-input-bg: oklch(1 0 0 / 4%);
+  --auth-input-border: oklch(1 0 0 / 10%);
+  --auth-input-text: oklch(0.98 0.005 260);
+  --auth-input-placeholder: oklch(0.55 0.01 260);
+  --auth-glow-1: oklch(0.58 0.22 255 / 20%);
+  --auth-glow-2: oklch(0.55 0.20 200 / 15%);
+  --auth-glow-3: oklch(0.60 0.18 290 / 10%);
+  --auth-grid: oklch(0.58 0.22 255 / 3%);
+  --auth-divider: oklch(1 0 0 / 6%);
+  --auth-icon: oklch(0.50 0.01 260);
+  --auth-icon-focus: oklch(0.65 0.20 255);
+  --auth-star: oklch(0.40 0.01 260);
+  --auth-focus-border: oklch(0.65 0.20 255 / 50%);
+  --auth-focus-ring: oklch(0.65 0.20 255 / 20%);
+  --auth-icon-bg: oklch(0.65 0.20 255 / 10%);
+  --auth-icon-ring: oklch(0.65 0.20 255 / 20%);
+  --auth-accent: oklch(0.65 0.20 255);
+  --auth-checkbox-checked: oklch(0.65 0.20 255);
+  --auth-link: oklch(0.65 0.18 255);
+  --auth-link-hover: oklch(0.75 0.16 255);
+  --auth-pulse-dot: oklch(0.65 0.18 255);
+  --auth-error: oklch(0.70 0.18 25);
+  --auth-error-bg: oklch(0.65 0.18 25 / 10%);
+  --auth-error-ring: oklch(0.65 0.18 25 / 20%);
+  
+  /* 🌈 Hero 区域 - 暗色 */
+  --hero-bg: linear-gradient(135deg, oklch(0.12 0.02 260) 0%, oklch(0.10 0.025 255) 100%);
+  --hero-text: oklch(0.98 0.005 260);
+  --hero-text-muted: oklch(0.70 0.01 260);
+  
+  /* 📊 Stats 卡片 - 暗色 */
+  --stat-card-bg: oklch(0.18 0.02 260 / 50%);
+  --stat-card-border: oklch(0.35 0.02 260);
+  --stat-card-text: oklch(0.98 0.005 260);
+  --stat-card-text-muted: oklch(0.60 0.015 260);
+  
+  /* 🔘 按钮 - 暗色 outline */
+  --btn-outline-border: oklch(0.45 0.02 260);
+  --btn-outline-text: oklch(0.98 0.005 260);
+  --btn-outline-hover-bg: oklch(1 0 0 / 10%);
+  
+  /* 🏠 Hero 区域详细变量 - 暗色 */
+  --hero-badge-text: oklch(0.85 0.08 200);
+  --hero-subtitle: oklch(0.75 0.01 260);
+  --hero-feature-text: oklch(0.60 0.015 260);
+  --hero-scroll-text: oklch(0.60 0.015 260);
+  --hero-scroll-border: oklch(0.45 0.02 260);
+  --hero-scroll-dot: oklch(0.60 0.015 260);
+  
+  /* 🎯 CTA 区域 - 暗色 */
+  --cta-badge-border: oklch(1 0 0 / 10%);
+  --cta-badge-bg: oklch(1 0 0 / 5%);
+  --cta-badge-text: oklch(0.70 0.01 260);
+  --cta-title: oklch(0.98 0.005 260);
+  --cta-subtitle: oklch(0.60 0.01 260);
+  --cta-feature-text: oklch(0.50 0.01 260);
+  
+  /* 📦 下拉菜单 - 暗色 */
+  --dropdown-bg: oklch(0.14 0.02 260 / 95%);
+  --dropdown-border: oklch(0.30 0.02 260);
+  --dropdown-text: oklch(0.90 0.005 260);
+  --dropdown-text-muted: oklch(0.70 0.01 260);
+  --dropdown-hover-bg: oklch(1 0 0 / 10%);
 }
 
+/* ========================================
+   🏗️ 基础层
+   ======================================== */
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
+  
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   
-  /* 暗色模式平滑过渡 */
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  /* 主题切换过渡 */
   :root {
     --theme-transition: 
-      background-color 0.3s ease,
+      background-color 0.25s ease,
       color 0.2s ease,
       border-color 0.2s ease,
       box-shadow 0.2s ease,
@@ -201,247 +380,467 @@
   html.theme-transition *::after {
     transition: var(--theme-transition) !important;
   }
+  
+  /* 选中文本样式 */
+  ::selection {
+    background: oklch(0.58 0.22 255 / 25%);
+  }
+  
+  .dark ::selection {
+    background: oklch(0.68 0.20 255 / 30%);
+  }
+  
+  /* 聚焦可见环 */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
 }
 
-/* 动画系统 */
+/* ========================================
+   🎬 动画系统
+   ======================================== */
 @keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fade-in-down {
-  from {
-    opacity: 0;
-    transform: translateY(-16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes scale-in {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 @keyframes slide-in-right {
-  from {
-    opacity: 0;
-    transform: translateX(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
-@keyframes pulse-soft {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.58 0.22 255 / 40%); }
+  50% { box-shadow: 0 0 20px 4px oklch(0.58 0.22 255 / 20%); }
 }
 
 @keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
 }
 
-/* 动画工具类 */
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ========================================
+   🛠️ 工具类
+   ======================================== */
 @layer utilities {
-  .animate-fade-in {
-    animation: fade-in 0.4s ease-out forwards;
-  }
-  
-  .animate-fade-in-up {
-    animation: fade-in-up 0.5s ease-out forwards;
-  }
-  
-  .animate-fade-in-down {
-    animation: fade-in-down 0.5s ease-out forwards;
-  }
-  
-  .animate-scale-in {
-    animation: scale-in 0.3s ease-out forwards;
-  }
-  
-  .animate-slide-in-right {
-    animation: slide-in-right 0.4s ease-out forwards;
-  }
+  /* 动画类 */
+  .animate-fade-in { animation: fade-in 0.35s ease-out forwards; }
+  .animate-fade-in-up { animation: fade-in-up 0.4s ease-out forwards; }
+  .animate-fade-in-down { animation: fade-in-down 0.4s ease-out forwards; }
+  .animate-scale-in { animation: scale-in 0.25s ease-out forwards; }
+  .animate-slide-in-right { animation: slide-in-right 0.35s ease-out forwards; }
+  .animate-slide-in-left { animation: slide-in-left 0.35s ease-out forwards; }
+  .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+  .animate-float { animation: float 3s ease-in-out infinite; }
+  .animate-gradient { animation: gradient-x 3s ease infinite; background-size: 200% 200%; }
+  .animate-spin-slow { animation: spin-slow 8s linear infinite; }
   
   .animate-shimmer {
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      oklch(0.95 0.01 265 / 50%) 50%,
-      transparent 100%
-    );
+    background: linear-gradient(90deg, transparent 0%, oklch(0.95 0.01 260 / 60%) 50%, transparent 100%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
   }
   
-  .animate-pulse-soft {
-    animation: pulse-soft 2s ease-in-out infinite;
-  }
+  /* 延迟 */
+  .animation-delay-75 { animation-delay: 75ms; }
+  .animation-delay-100 { animation-delay: 100ms; }
+  .animation-delay-150 { animation-delay: 150ms; }
+  .animation-delay-200 { animation-delay: 200ms; }
+  .animation-delay-300 { animation-delay: 300ms; }
+  .animation-delay-400 { animation-delay: 400ms; }
+  .animation-delay-500 { animation-delay: 500ms; }
   
-  .animate-float {
-    animation: float 3s ease-in-out infinite;
-  }
+  .animate-initial { opacity: 0; }
   
-  /* 延迟类 */
-  .animation-delay-100 {
-    animation-delay: 100ms;
-  }
-  .animation-delay-200 {
-    animation-delay: 200ms;
-  }
-  .animation-delay-300 {
-    animation-delay: 300ms;
-  }
-  .animation-delay-400 {
-    animation-delay: 400ms;
-  }
-  .animation-delay-500 {
-    animation-delay: 500ms;
-  }
-  .animation-delay-600 {
-    animation-delay: 600ms;
-  }
+  /* ========================================
+     🌈 渐变系统
+     ======================================== */
   
-  /* 初始隐藏（用于动画前） */
-  .animate-initial {
-    opacity: 0;
-  }
-  
-  /* 渐变文字 */
-  .text-gradient {
-    background: linear-gradient(135deg, oklch(0.55 0.22 265), oklch(0.60 0.18 220));
+  /* 文字渐变 */
+  .text-gradient-primary {
+    background: linear-gradient(135deg, oklch(0.58 0.22 255), oklch(0.55 0.20 220));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
   
   .text-gradient-success {
-    background: linear-gradient(135deg, oklch(0.65 0.19 160), oklch(0.60 0.18 180));
+    background: linear-gradient(135deg, oklch(0.68 0.18 155), oklch(0.60 0.16 175));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
   
-  /* 渐变背景 */
+  .text-gradient-warm {
+    background: linear-gradient(135deg, oklch(0.70 0.18 40), oklch(0.78 0.15 75));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .text-gradient-purple {
+    background: linear-gradient(135deg, oklch(0.60 0.20 290), oklch(0.55 0.22 320));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  /* 背景渐变 */
   .bg-gradient-primary {
-    background: linear-gradient(135deg, oklch(0.55 0.22 265), oklch(0.50 0.20 240));
+    background: linear-gradient(135deg, oklch(0.58 0.22 255), oklch(0.52 0.20 235));
   }
   
+  .bg-gradient-subtle {
+    background: linear-gradient(180deg, var(--background), oklch(0.97 0.006 260));
+  }
+  
+  .dark .bg-gradient-subtle {
+    background: linear-gradient(180deg, var(--background), oklch(0.13 0.018 260));
+  }
+  
+  .bg-gradient-radial-primary {
+    background: radial-gradient(ellipse 80% 60% at 50% -10%, oklch(0.58 0.22 255 / 8%), transparent);
+  }
+  
+  .dark .bg-gradient-radial-primary {
+    background: radial-gradient(ellipse 80% 60% at 50% -10%, oklch(0.58 0.22 255 / 12%), transparent);
+  }
+  
+  .bg-gradient-mesh {
+    background: 
+      radial-gradient(at 20% 30%, oklch(0.58 0.22 255 / 6%) 0%, transparent 50%),
+      radial-gradient(at 80% 70%, oklch(0.68 0.18 155 / 4%) 0%, transparent 50%),
+      radial-gradient(at 50% 100%, oklch(0.60 0.20 290 / 4%) 0%, transparent 50%);
+  }
+  
+  .dark .bg-gradient-mesh {
+    background: 
+      radial-gradient(at 20% 30%, oklch(0.58 0.22 255 / 10%) 0%, transparent 50%),
+      radial-gradient(at 80% 70%, oklch(0.68 0.18 155 / 6%) 0%, transparent 50%),
+      radial-gradient(at 50% 100%, oklch(0.60 0.20 290 / 6%) 0%, transparent 50%);
+  }
+  
+  /* Auth 页面渐变背景 */
   .bg-gradient-hero {
-    background: linear-gradient(135deg, oklch(0.15 0.03 265), oklch(0.12 0.02 240));
+    background: linear-gradient(135deg, oklch(0.97 0.01 260) 0%, oklch(0.94 0.015 255) 50%, oklch(0.96 0.02 200) 100%);
   }
   
-  /* 玻璃效果 */
+  .dark .bg-gradient-hero {
+    background: linear-gradient(135deg, oklch(0.10 0.02 260) 0%, oklch(0.08 0.025 255) 50%, oklch(0.11 0.02 220) 100%);
+  }
+  
+  .bg-auth-page {
+    background-color: var(--auth-bg);
+  }
+  
+  .bg-auth-card {
+    background-color: var(--auth-card-bg);
+    border-color: var(--auth-card-border);
+  }
+  
+  .text-auth {
+    color: var(--auth-text);
+  }
+  
+  .text-auth-muted {
+    color: var(--auth-text-muted);
+  }
+  
+  .text-auth-subtle {
+    color: var(--auth-text-subtle);
+  }
+  
+  .bg-auth-input-bg {
+    background-color: var(--auth-input-bg);
+  }
+  
+  .border-auth-input-border {
+    border-color: var(--auth-input-border);
+  }
+  
+  .text-auth-input-text {
+    color: var(--auth-input-text);
+  }
+  
+  .text-auth-input-placeholder {
+    color: var(--auth-input-placeholder);
+  }
+  
+  .text-auth-icon {
+    color: var(--auth-icon);
+  }
+  
+  .text-auth-icon-focus {
+    color: var(--auth-icon-focus);
+  }
+  
+  .text-auth-star {
+    color: var(--auth-star);
+  }
+  
+  .border-auth-divider {
+    border-color: var(--auth-divider);
+  }
+  
+  .bg-auth-card-bg {
+    background-color: var(--auth-card-bg);
+  }
+  
+  /* Stats 卡片主题工具类 */
+  .bg-stat-card {
+    background-color: var(--stat-card-bg);
+  }
+  
+  .border-stat-card {
+    border-color: var(--stat-card-border);
+  }
+  
+  .text-stat-card {
+    color: var(--stat-card-text);
+  }
+  
+  .text-stat-card-muted {
+    color: var(--stat-card-text-muted);
+  }
+  
+  /* Hero 区域主题工具类 */
+  .text-hero {
+    color: var(--hero-text);
+  }
+  
+  .text-hero-muted {
+    color: var(--hero-text-muted);
+  }
+  
+  /* Outline 按钮主题工具类 */
+  .border-btn-outline {
+    border-color: var(--btn-outline-border);
+  }
+  
+  .text-btn-outline {
+    color: var(--btn-outline-text);
+  }
+  
+  /* Hero 区域详细主题工具类 */
+  .text-hero-badge {
+    color: var(--hero-badge-text);
+  }
+  
+  .text-hero-subtitle {
+    color: var(--hero-subtitle);
+  }
+  
+  .text-hero-feature {
+    color: var(--hero-feature-text);
+  }
+  
+  .text-hero-scroll {
+    color: var(--hero-scroll-text);
+  }
+  
+  .border-hero-scroll {
+    border-color: var(--hero-scroll-border);
+  }
+  
+  .bg-hero-scroll-dot {
+    background-color: var(--hero-scroll-dot);
+  }
+  
+  /* CTA 区域主题工具类 */
+  .border-cta-badge {
+    border-color: var(--cta-badge-border);
+  }
+  
+  .bg-cta-badge {
+    background-color: var(--cta-badge-bg);
+  }
+  
+  .text-cta-badge {
+    color: var(--cta-badge-text);
+  }
+  
+  .text-cta-title {
+    color: var(--cta-title);
+  }
+  
+  .text-cta-subtitle {
+    color: var(--cta-subtitle);
+  }
+  
+  .text-cta-feature {
+    color: var(--cta-feature-text);
+  }
+  
+  /* 下拉菜单主题工具类 */
+  .bg-dropdown {
+    background-color: var(--dropdown-bg);
+  }
+  
+  .border-dropdown {
+    border-color: var(--dropdown-border);
+  }
+  
+  .text-dropdown {
+    color: var(--dropdown-text);
+  }
+  
+  .text-dropdown-muted {
+    color: var(--dropdown-text-muted);
+  }
+  
+  
+  /* ========================================
+     🪟 玻璃效果
+     ======================================== */
   .glass {
-    background: oklch(1 0 0 / 70%);
-    backdrop-filter: blur(12px);
-    border: 1px solid oklch(1 0 0 / 20%);
+    background: oklch(1 0 0 / 75%);
+    backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid oklch(1 0 0 / 15%);
   }
   
   .dark .glass {
-    background: oklch(0.18 0.02 265 / 70%);
+    background: oklch(0.16 0.018 260 / 75%);
+    border: 1px solid oklch(1 0 0 / 8%);
+  }
+  
+  .glass-heavy {
+    background: oklch(1 0 0 / 90%);
+    backdrop-filter: blur(24px) saturate(200%);
+    border: 1px solid oklch(1 0 0 / 20%);
+  }
+  
+  .dark .glass-heavy {
+    background: oklch(0.16 0.018 260 / 90%);
     border: 1px solid oklch(1 0 0 / 10%);
   }
   
-  /* 网格背景 */
+  /* ========================================
+     📐 背景图案
+     ======================================== */
   .bg-grid {
     background-image: 
-      linear-gradient(oklch(0.5 0.1 265 / 5%) 1px, transparent 1px),
-      linear-gradient(90deg, oklch(0.5 0.1 265 / 5%) 1px, transparent 1px);
-    background-size: 40px 40px;
+      linear-gradient(oklch(0.5 0.08 260 / 4%) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(0.5 0.08 260 / 4%) 1px, transparent 1px);
+    background-size: 32px 32px;
   }
   
   .dark .bg-grid {
     background-image: 
-      linear-gradient(oklch(0.8 0.1 265 / 5%) 1px, transparent 1px),
-      linear-gradient(90deg, oklch(0.8 0.1 265 / 5%) 1px, transparent 1px);
+      linear-gradient(oklch(0.8 0.08 260 / 4%) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(0.8 0.08 260 / 4%) 1px, transparent 1px);
   }
   
-  /* 点阵背景 */
+  .bg-grid-dense {
+    background-image: 
+      linear-gradient(oklch(0.5 0.08 260 / 3%) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(0.5 0.08 260 / 3%) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+  
   .bg-dots {
-    background-image: radial-gradient(oklch(0.5 0.1 265 / 15%) 1px, transparent 1px);
-    background-size: 20px 20px;
+    background-image: radial-gradient(oklch(0.5 0.08 260 / 12%) 1.5px, transparent 1.5px);
+    background-size: 24px 24px;
   }
   
   .dark .bg-dots {
-    background-image: radial-gradient(oklch(0.8 0.1 265 / 10%) 1px, transparent 1px);
+    background-image: radial-gradient(oklch(0.8 0.08 260 / 8%) 1.5px, transparent 1.5px);
   }
   
-  /* 内页渐变背景 */
-  .bg-page-gradient {
-    background: 
-      radial-gradient(ellipse 80% 50% at 50% -20%, oklch(0.55 0.22 265 / 5%), transparent),
-      linear-gradient(to bottom, oklch(0.985 0.003 265), oklch(0.98 0.002 265));
+  .bg-noise {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
   }
   
-  .dark .bg-page-gradient {
-    background: 
-      radial-gradient(ellipse 80% 50% at 50% -20%, oklch(0.55 0.22 265 / 8%), transparent),
-      linear-gradient(to bottom, oklch(0.13 0.02 265), oklch(0.12 0.015 265));
-  }
-  
-  /* 卡片悬浮效果 */
-  .card-hover {
+  /* ========================================
+     🎴 卡片效果
+     ======================================== */
+  .card-elevated {
+    box-shadow: 
+      0 1px 3px oklch(0 0 0 / 4%),
+      0 4px 12px oklch(0 0 0 / 3%);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
-  .card-hover:hover {
-    transform: translateY(-4px);
+  .card-elevated:hover {
+    transform: translateY(-2px);
     box-shadow: 
-      0 12px 40px -12px oklch(0.55 0.22 265 / 15%),
-      0 4px 16px -4px oklch(0 0 0 / 8%);
+      0 4px 12px oklch(0 0 0 / 6%),
+      0 12px 32px oklch(0 0 0 / 8%);
   }
   
-  .dark .card-hover:hover {
+  .dark .card-elevated {
     box-shadow: 
-      0 12px 40px -12px oklch(0.55 0.22 265 / 25%),
-      0 4px 16px -4px oklch(0 0 0 / 30%);
+      0 1px 3px oklch(0 0 0 / 20%),
+      0 4px 12px oklch(0 0 0 / 15%);
   }
   
-  /* 按钮发光效果 */
+  .dark .card-elevated:hover {
+    box-shadow: 
+      0 4px 12px oklch(0 0 0 / 25%),
+      0 12px 32px oklch(0 0 0 / 30%);
+  }
+  
+  .card-glow {
+    position: relative;
+    transition: all 0.3s ease;
+  }
+  
+  .card-glow::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, oklch(0.58 0.22 255 / 20%), transparent, oklch(0.68 0.18 155 / 20%));
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+  
+  .card-glow:hover::before {
+    opacity: 1;
+  }
+  
+  /* ========================================
+     🔘 按钮效果
+     ======================================== */
   .btn-glow {
     position: relative;
     overflow: hidden;
@@ -454,32 +853,47 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      oklch(1 0 0 / 20%),
-      transparent
-    );
-    transition: left 0.5s;
+    background: linear-gradient(90deg, transparent, oklch(1 0 0 / 15%), transparent);
+    transition: left 0.5s ease;
   }
   
   .btn-glow:hover::before {
     left: 100%;
   }
   
-  /* 输入框聚焦效果 */
-  .input-focus-ring {
-    transition: box-shadow 0.2s ease;
+  .btn-gradient-primary {
+    background: linear-gradient(135deg, oklch(0.58 0.22 255), oklch(0.52 0.20 240));
+    color: white;
+    box-shadow: 0 4px 16px oklch(0.58 0.22 255 / 30%);
+    transition: all 0.25s ease;
   }
   
-  .input-focus-ring:focus {
-    box-shadow: 0 0 0 3px oklch(0.55 0.22 265 / 20%);
+  .btn-gradient-primary:hover {
+    box-shadow: 0 6px 24px oklch(0.58 0.22 255 / 40%);
+    transform: translateY(-1px);
   }
   
-  /* 滚动条美化 */
+  .dark .btn-gradient-primary {
+    box-shadow: 0 4px 20px oklch(0.58 0.22 255 / 35%);
+  }
+  
+  /* ========================================
+     📝 输入框效果
+     ======================================== */
+  .input-glow:focus {
+    box-shadow: 0 0 0 3px oklch(0.58 0.22 255 / 15%);
+  }
+  
+  .dark .input-glow:focus {
+    box-shadow: 0 0 0 3px oklch(0.68 0.20 255 / 20%);
+  }
+  
+  /* ========================================
+     📜 滚动条
+     ======================================== */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
   }
   
   ::-webkit-scrollbar-track {
@@ -487,43 +901,39 @@
   }
   
   ::-webkit-scrollbar-thumb {
-    background: oklch(0.7 0.02 265);
-    border-radius: 4px;
+    background: oklch(0.75 0.015 260);
+    border-radius: 5px;
+    border: 2px solid transparent;
+    background-clip: content-box;
   }
   
   ::-webkit-scrollbar-thumb:hover {
-    background: oklch(0.6 0.02 265);
+    background: oklch(0.65 0.015 260);
+    background-clip: content-box;
   }
   
   .dark ::-webkit-scrollbar-thumb {
-    background: oklch(0.35 0.02 265);
+    background: oklch(0.32 0.015 260);
+    background-clip: content-box;
   }
   
   .dark ::-webkit-scrollbar-thumb:hover {
-    background: oklch(0.45 0.02 265);
+    background: oklch(0.42 0.015 260);
+    background-clip: content-box;
   }
   
-  /* 页面入场动画 */
-  .page-enter {
-    animation: page-fade-in 0.4s ease-out;
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
   
-  @keyframes page-fade-in {
-    from {
-      opacity: 0;
-      transform: translateY(8px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
   }
-
+  
   /* ========================================
-     响应式工具类
+     📱 响应式工具
      ======================================== */
-  
-  /* 触控友好 - 增大点击区域 */
   .touch-target {
     min-height: 44px;
     min-width: 44px;
@@ -536,148 +946,37 @@
     }
   }
   
-  /* 移动端隐藏滚动条 */
-  .hide-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  
-  /* 安全区域填充 */
-  .safe-area-inset-top {
-    padding-top: env(safe-area-inset-top);
-  }
-  
-  .safe-area-inset-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  
+  .safe-area-inset-top { padding-top: env(safe-area-inset-top); }
+  .safe-area-inset-bottom { padding-bottom: env(safe-area-inset-bottom); }
   .safe-area-inset-x {
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
   }
   
-  /* 移动端优化的间距 */
-  @media (max-width: 640px) {
-    .mobile-compact {
-      padding-left: 1rem;
-      padding-right: 1rem;
-    }
-    
-    .mobile-stack {
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-    
-    .mobile-full-width {
-      width: 100%;
-    }
-    
-    .mobile-text-center {
-      text-align: center;
-    }
+  .h-dvh { height: 100dvh; }
+  .min-h-dvh { min-height: 100dvh; }
+  
+  /* ========================================
+     🎭 悬停和交互
+     ======================================== */
+  @media (hover: hover) {
+    .hover-lift:hover { transform: translateY(-2px); }
+    .hover-scale:hover { transform: scale(1.02); }
+    .hover-brightness:hover { filter: brightness(1.05); }
   }
   
-  /* 平板优化 */
-  @media (min-width: 641px) and (max-width: 1024px) {
-    .tablet-grid-2 {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+  @media (hover: none) and (pointer: coarse) {
+    .active-scale:active { transform: scale(0.98); }
+    .active-dim:active { opacity: 0.85; }
   }
   
-  /* 桌面优化 */
-  @media (min-width: 1025px) {
-    .desktop-grid-3 {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-    
-    .desktop-grid-4 {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-  }
+  .tap-highlight { -webkit-tap-highlight-color: oklch(0.58 0.22 255 / 10%); }
+  .tap-highlight-none { -webkit-tap-highlight-color: transparent; }
+  .no-select { -webkit-user-select: none; user-select: none; }
   
-  /* 触控反馈 */
-  .tap-highlight {
-    -webkit-tap-highlight-color: oklch(0.55 0.22 265 / 10%);
-  }
-  
-  .tap-highlight-none {
-    -webkit-tap-highlight-color: transparent;
-  }
-  
-  /* 防止文本选择（用于按钮等交互元素） */
-  .no-select {
-    -webkit-user-select: none;
-    user-select: none;
-  }
-  
-  /* 平滑滚动 */
-  .scroll-smooth {
-    scroll-behavior: smooth;
-  }
-  
-  /* 滚动贴合 */
-  .scroll-snap-x {
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-  }
-  
-  .scroll-snap-item {
-    scroll-snap-align: start;
-  }
-  
-  /* 动态视口高度 */
-  .h-dvh {
-    height: 100dvh;
-  }
-  
-  .min-h-dvh {
-    min-height: 100dvh;
-  }
-  
-  /* 骨架屏闪烁动画 */
-  @keyframes skeleton-pulse {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.4;
-    }
-  }
-  
-  .skeleton {
-    animation: skeleton-pulse 1.5s ease-in-out infinite;
-    background: linear-gradient(
-      90deg,
-      var(--muted) 0%,
-      oklch(0.9 0.01 265) 50%,
-      var(--muted) 100%
-    );
-    background-size: 200% 100%;
-    animation: shimmer 1.5s ease-in-out infinite;
-  }
-  
-  .dark .skeleton {
-    background: linear-gradient(
-      90deg,
-      var(--muted) 0%,
-      oklch(0.25 0.02 265) 50%,
-      var(--muted) 100%
-    );
-    background-size: 200% 100%;
-  }
-  
-  /* 容器查询支持 */
-  @supports (container-type: inline-size) {
-    .container-query {
-      container-type: inline-size;
-    }
-  }
-  
-  /* 减少动画偏好 */
+  /* ========================================
+     ♿ 可访问性
+     ======================================== */
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -688,46 +987,49 @@
     }
   }
   
-  /* 悬停媒体查询 - 仅在非触控设备上启用悬停效果 */
-  @media (hover: hover) {
-    .hover-lift:hover {
-      transform: translateY(-2px);
-    }
-    
-    .hover-scale:hover {
-      transform: scale(1.02);
-    }
-    
-    .hover-brightness:hover {
-      filter: brightness(1.1);
-    }
+  @media (prefers-contrast: high) {
+    .card { border-width: 2px; }
+    .btn { border-width: 2px; }
   }
   
-  /* 触控设备的 active 状态 */
-  @media (hover: none) and (pointer: coarse) {
-    .active-scale:active {
-      transform: scale(0.98);
-    }
-    
-    .active-dim:active {
-      opacity: 0.8;
-    }
-  }
-  
-  /* 焦点可见样式（仅键盘导航） */
   .focus-visible-ring:focus-visible {
-    outline: 2px solid oklch(0.55 0.22 265);
+    outline: 2px solid oklch(0.58 0.22 255);
     outline-offset: 2px;
   }
   
-  /* 高对比度模式支持 */
-  @media (prefers-contrast: high) {
-    .card {
-      border-width: 2px;
-    }
-    
-    .btn {
-      border-width: 2px;
-    }
+  /* ========================================
+     🦴 骨架屏
+     ======================================== */
+  .skeleton {
+    background: linear-gradient(90deg, var(--muted) 0%, oklch(0.92 0.008 260) 50%, var(--muted) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+  
+  .dark .skeleton {
+    background: linear-gradient(90deg, var(--muted) 0%, oklch(0.24 0.015 260) 50%, var(--muted) 100%);
+    background-size: 200% 100%;
+  }
+  
+  /* ========================================
+     🏷️ 徽章发光
+     ======================================== */
+  .badge-glow {
+    box-shadow: 0 0 12px oklch(0.58 0.22 255 / 40%);
+  }
+  
+  .badge-glow-success {
+    box-shadow: 0 0 12px oklch(0.68 0.18 155 / 40%);
+  }
+  
+  .badge-glow-warning {
+    box-shadow: 0 0 12px oklch(0.78 0.15 75 / 40%);
+  }
+  
+  /* ========================================
+     📦 容器查询
+     ======================================== */
+  @supports (container-type: inline-size) {
+    .container-query { container-type: inline-size; }
   }
 }

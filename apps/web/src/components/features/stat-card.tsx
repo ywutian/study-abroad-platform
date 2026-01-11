@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { LucideIcon } from 'lucide-react';
 
@@ -16,6 +17,7 @@ interface StatCardProps {
 }
 
 export function StatCard({ label, value, icon: Icon, trend, className, index = 0 }: StatCardProps) {
+  const t = useTranslations('stats');
   return (
     <div
       className={cn(
@@ -44,7 +46,7 @@ export function StatCard({ label, value, icon: Icon, trend, className, index = 0
           >
             {trend.isPositive ? '+' : ''}{trend.value}%
           </span>
-          <span className="text-xs text-muted-foreground">vs 上月</span>
+          <span className="text-xs text-muted-foreground">{t('vsLastMonth')}</span>
         </div>
       )}
     </div>

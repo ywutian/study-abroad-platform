@@ -144,37 +144,37 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           </motion.div>
           
           <h2 className="mb-2 text-2xl font-bold">
-            {level === 'page' ? '页面出错了' : '出错了'}
+            {level === 'page' ? 'Page Error' : 'Something went wrong'}
           </h2>
           <p className="mb-6 text-muted-foreground">
-            {message || '遇到了一些问题，请尝试刷新或返回首页。'}
+            {message || 'Something went wrong. Please try refreshing or go back to the homepage.'}
           </p>
 
-          {/* 重试计数提示 */}
+          {/* Retry count hint */}
           {retryCount > 0 && (
             <p className="mb-4 text-sm text-warning">
-              已重试 {retryCount}/{maxRetries} 次
+              Retried {retryCount}/{maxRetries} times
             </p>
           )}
 
-          {/* 错误详情（开发模式或显式启用） */}
+          {/* Error details (dev mode or explicitly enabled) */}
           {showDetails && error && (
             <details className="mb-6 rounded-lg border bg-muted/50 p-4 text-left group">
               <summary className="cursor-pointer text-sm font-medium flex items-center gap-2">
                 <Bug className="h-4 w-4" />
-                错误详情
+                Error Details
                 <ChevronDown className="h-4 w-4 ml-auto transition-transform group-open:rotate-180" />
               </summary>
               <div className="mt-4 space-y-2">
                 <div>
-                  <span className="text-xs font-medium text-muted-foreground">错误消息:</span>
+                  <span className="text-xs font-medium text-muted-foreground">Error Message:</span>
                   <pre className="mt-1 overflow-auto rounded bg-background p-2 text-xs">
                     {error.message}
                   </pre>
                 </div>
                 {error.stack && (
                   <div>
-                    <span className="text-xs font-medium text-muted-foreground">堆栈:</span>
+                    <span className="text-xs font-medium text-muted-foreground">Stack:</span>
                     <pre className="mt-1 max-h-40 overflow-auto rounded bg-background p-2 text-xs">
                       {error.stack}
                     </pre>
@@ -182,7 +182,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 )}
                 {errorInfo?.componentStack && (
                   <div>
-                    <span className="text-xs font-medium text-muted-foreground">组件堆栈:</span>
+                    <span className="text-xs font-medium text-muted-foreground">Component Stack:</span>
                     <pre className="mt-1 max-h-40 overflow-auto rounded bg-background p-2 text-xs">
                       {errorInfo.componentStack}
                     </pre>
@@ -192,30 +192,30 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             </details>
           )}
 
-          {/* 操作按钮 */}
+          {/* Action buttons */}
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
             {canRetry && (
               <Button onClick={this.handleRetry} variant="default">
                 <RefreshCw className="mr-2 h-4 w-4" />
-                重试 {retryCount > 0 && `(${maxRetries - retryCount})`}
+                Retry {retryCount > 0 && `(${maxRetries - retryCount})`}
               </Button>
             )}
             <Button onClick={this.handleGoHome} variant="outline">
               <Home className="mr-2 h-4 w-4" />
-              返回首页
+              Go Home
             </Button>
             {eventId && process.env.NODE_ENV === 'production' && (
               <Button onClick={this.handleReportFeedback} variant="ghost" size="sm">
                 <Send className="mr-2 h-4 w-4" />
-                反馈问题
+                Report Issue
               </Button>
             )}
           </div>
 
-          {/* 错误 ID（生产环境） */}
+          {/* Error ID (production) */}
           {eventId && (
             <p className="mt-4 text-xs text-muted-foreground">
-              错误 ID: {eventId.slice(0, 8)}
+              Error ID: {eventId.slice(0, 8)}
             </p>
           )}
         </div>
@@ -232,7 +232,7 @@ export function PageErrorBoundary({ children }: { children: ReactNode }) {
   return (
     <ErrorBoundary
       level="page"
-      message="页面加载失败，请稍后重试或返回首页。"
+      message="Page failed to load. Please try again or go back to the homepage."
     >
       {children}
     </ErrorBoundary>

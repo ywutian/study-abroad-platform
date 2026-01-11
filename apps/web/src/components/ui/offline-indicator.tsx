@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WifiOff, Wifi } from 'lucide-react';
 import { useOfflineNotification } from '@/hooks/use-network-status';
@@ -17,6 +18,7 @@ export function OfflineIndicator({
   className,
   position = 'bottom',
 }: OfflineIndicatorProps) {
+  const t = useTranslations('ui.offline');
   const { isOffline, showNotification, dismiss } = useOfflineNotification();
 
   return (
@@ -44,18 +46,18 @@ export function OfflineIndicator({
             {isOffline ? (
               <>
                 <WifiOff className="w-4 h-4" />
-                <span className="text-sm font-medium">当前离线</span>
+                <span className="text-sm font-medium">{t('currentlyOffline')}</span>
               </>
             ) : (
               <>
                 <Wifi className="w-4 h-4" />
-                <span className="text-sm font-medium">已恢复连接</span>
+                <span className="text-sm font-medium">{t('connectionRestored')}</span>
               </>
             )}
             <button
               onClick={dismiss}
               className="ml-2 p-1 hover:bg-white/20 rounded-full transition-colors"
-              aria-label="关闭"
+              aria-label={t('close')}
             >
               ×
             </button>
@@ -70,6 +72,8 @@ export function OfflineIndicator({
  * 全屏离线页面
  */
 export function OfflinePage() {
+  const t = useTranslations('ui.offline');
+  const tCommon = useTranslations('common');
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <motion.div
@@ -80,15 +84,15 @@ export function OfflinePage() {
         <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-muted flex items-center justify-center">
           <WifiOff className="w-10 h-10 text-muted-foreground" />
         </div>
-        <h1 className="text-2xl font-bold mb-2">您当前离线</h1>
+        <h1 className="text-2xl font-bold mb-2">{t('youAreOffline')}</h1>
         <p className="text-muted-foreground mb-6 max-w-sm">
-          请检查您的网络连接，部分功能可能暂时不可用
+          {t('checkConnection')}
         </p>
         <button
           onClick={() => window.location.reload()}
           className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
         >
-          重试
+          {tCommon('retry')}
         </button>
       </motion.div>
     </div>

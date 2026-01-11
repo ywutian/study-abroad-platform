@@ -5,6 +5,7 @@
  */
 
 import { ReactNode, createContext, useContext, useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { transitions } from '@/lib/motion';
@@ -155,10 +156,11 @@ export function StepperHeader({ className, variant = 'default' }: StepperHeaderP
   }
 
   if (variant === 'compact') {
+    const t = useTranslations('ui.stepper');
     return (
       <div className={cn('flex items-center justify-between', className)}>
         <span className="text-sm text-muted-foreground">
-          步骤 {currentStep + 1} / {steps.length}
+          {t('step', { current: currentStep + 1, total: steps.length })}
         </span>
         <div className="flex-1 mx-4">
           <div className="h-1.5 bg-muted rounded-full overflow-hidden">
@@ -311,13 +313,17 @@ interface StepperNavigationProps {
 export function StepperNavigation({
   className,
   onComplete,
-  completeLabel = '完成',
-  nextLabel = '下一步',
-  prevLabel = '上一步',
+  completeLabel,
+  nextLabel,
+  prevLabel,
   isLoading = false,
   canProceed = true,
 }: StepperNavigationProps) {
+  const t = useTranslations('ui.stepper');
   const { steps, currentStep, nextStep, prevStep, markComplete } = useStepperContext();
+  const finalCompleteLabel = completeLabel ?? t('complete');
+  const finalNextLabel = nextLabel ?? t('next');
+  const finalPrevLabel = prevLabel ?? t('previous');
 
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === steps.length - 1;
@@ -341,7 +347,7 @@ export function StepperNavigation({
         className="gap-1"
       >
         <ChevronRight className="h-4 w-4 rotate-180" />
-        {prevLabel}
+        {finalPrevLabel}
       </Button>
 
       <Button
@@ -353,11 +359,11 @@ export function StepperNavigation({
         {isLoading ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            处理中...
+            {t('processing')}
           </>
         ) : (
           <>
-            {isLastStep ? completeLabel : nextLabel}
+            {isLastStep ? finalCompleteLabel : finalNextLabel}
             {!isLastStep && <ChevronRight className="h-4 w-4" />}
           </>
         )}
@@ -379,11 +385,13 @@ interface SuccessAnimationProps {
 
 export function SuccessAnimation({
   show,
-  title = '提交成功！',
+  title,
   description,
   onComplete,
 }: SuccessAnimationProps) {
+  const t = useTranslations('ui.stepper');
   const prefersReducedMotion = useReducedMotion();
+  const finalTitle = title ?? t('submitSuccess');
 
   return (
     <AnimatePresence>
@@ -457,7 +465,7 @@ export function SuccessAnimation({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
             >
-              {title}
+              {finalTitle}
             </motion.h2>
             {description && (
               <motion.p

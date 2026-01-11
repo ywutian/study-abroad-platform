@@ -14,6 +14,7 @@ interface SkipLinkProps {
 }
 
 export function SkipLinks({ mainId = 'main-content', navId = 'main-nav' }: SkipLinkProps) {
+  const t = useTranslations('ui.a11y');
   return (
     <div className="sr-only focus-within:not-sr-only">
       <a
@@ -22,7 +23,7 @@ export function SkipLinks({ mainId = 'main-content', navId = 'main-nav' }: SkipL
                    focus:not-sr-only focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
                    transition-transform duration-200 -translate-y-full focus:translate-y-0"
       >
-        跳转到主要内容
+        {t('skipToMain')}
       </a>
       <a
         href={`#${navId}`}
@@ -30,7 +31,7 @@ export function SkipLinks({ mainId = 'main-content', navId = 'main-nav' }: SkipL
                    focus:not-sr-only focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
                    transition-transform duration-200 -translate-y-full focus:translate-y-0"
       >
-        跳转到导航
+        {t('skipToNav')}
       </a>
     </div>
   );
@@ -48,13 +49,14 @@ interface MainContentProps {
 }
 
 export function MainContent({ children, id = 'main-content', className }: MainContentProps) {
+  const t = useTranslations('ui.a11y');
   return (
     <main
       id={id}
       role="main"
       tabIndex={-1}
       className={`outline-none ${className || ''}`}
-      aria-label="主要内容"
+      aria-label={t('mainContent')}
     >
       {children}
     </main>

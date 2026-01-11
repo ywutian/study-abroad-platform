@@ -5,6 +5,7 @@
  */
 
 import { useState, useRef, useCallback, KeyboardEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -25,10 +26,12 @@ export function ChatInput({
   onSend,
   onStop,
   isLoading,
-  placeholder = '输入你的问题...',
+  placeholder,
   disabled,
   showExtras = false,
 }: ChatInputProps) {
+  const t = useTranslations('agentChat');
+  const finalPlaceholder = placeholder ?? t('placeholder');
   const [value, setValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -129,7 +132,7 @@ export function ChatInput({
             onKeyDown={handleKeyDown}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            placeholder={placeholder}
+            placeholder={finalPlaceholder}
             disabled={disabled}
             className={cn(
               'min-h-[44px] max-h-[160px] resize-none pr-12 rounded-2xl',
@@ -152,7 +155,7 @@ export function ChatInput({
                 exit={{ opacity: 0 }}
                 className="absolute left-3 -top-5 text-[10px] text-muted-foreground"
               >
-                {value.length} 字符
+                {value.length} {t('characters')}
               </motion.span>
             )}
           </AnimatePresence>
@@ -231,8 +234,7 @@ export function ChatInput({
             exit={{ opacity: 0, y: -4 }}
             className="text-[11px] text-muted-foreground text-center pb-2 -mt-1"
           >
-            按 <kbd className="px-1 py-0.5 rounded bg-muted text-[10px]">Enter</kbd> 发送，
-            <kbd className="px-1 py-0.5 rounded bg-muted text-[10px]">Shift + Enter</kbd> 换行
+            {t('sendHint')}
           </motion.p>
         )}
       </AnimatePresence>

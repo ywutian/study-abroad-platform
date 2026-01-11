@@ -212,7 +212,7 @@ export function StatCard({ value, label, index = 0, icon: Icon }: StatCardProps)
 
   return (
     <motion.div
-      className="rounded-xl border border-slate-700 bg-slate-800/50 p-4 text-center backdrop-blur"
+      className="rounded-xl border border-stat-card bg-stat-card p-4 text-center backdrop-blur"
       initial={prefersReducedMotion ? {} : { opacity: 0, y: 16, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ ...transitions.springGentle, delay: 0.3 + index * 0.1 }}
@@ -224,14 +224,14 @@ export function StatCard({ value, label, index = 0, icon: Icon }: StatCardProps)
         </div>
       )}
       <motion.div
-        className="text-2xl font-bold text-white sm:text-3xl"
+        className="text-2xl font-bold text-stat-card sm:text-3xl"
         initial={prefersReducedMotion ? {} : { opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 + index * 0.1 }}
       >
         {value}
       </motion.div>
-      <div className="mt-1 text-sm text-slate-400">{label}</div>
+      <div className="mt-1 text-sm text-stat-card-muted">{label}</div>
     </motion.div>
   );
 }

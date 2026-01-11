@@ -3,6 +3,8 @@
 // 新手引导
 export { TourProvider, useTour, TOURS, welcomeTourSteps } from './onboarding/tour-provider';
 export { WelcomeDialog, ResetWelcomeButton } from './onboarding/welcome-dialog';
+export { OnboardingGuide } from './onboarding-guide';
+export { MilestoneCelebration, useMilestoneCelebration } from './milestone-celebration';
 
 // 通知系统
 export { NotificationCenter } from './notifications/notification-center';
@@ -41,3 +43,13 @@ export { ProbabilityRing } from './probability-ring';
 
 // AI 聊天
 export * from './agent-chat';
+
+// 简历导出
+export { ResumeExportDialog } from './resume';
+export type { ResumeData, ResumeExportOptions } from './resume';
+
+// 认证
+export { VerificationDialog } from './verification';
+
+// AI 文书服务
+export { EssayPolishDialog, EssayReviewPanel, EssayBrainstormDialog } from './essay-ai';

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MessageSquarePlus,
@@ -31,44 +32,46 @@ type FeedbackType = 'bug' | 'feature' | 'question' | 'other';
 
 interface FeedbackTypeOption {
   id: FeedbackType;
-  label: string;
+  labelKey: string;
   icon: React.ElementType;
   color: string;
-  placeholder: string;
+  placeholderKey: string;
 }
 
 const feedbackTypes: FeedbackTypeOption[] = [
   {
     id: 'bug',
-    label: '问题反馈',
+    labelKey: 'bug',
     icon: Bug,
     color: 'text-red-500 bg-red-500/10',
-    placeholder: '请描述您遇到的问题，包括操作步骤和预期行为...',
+    placeholderKey: 'bug',
   },
   {
     id: 'feature',
-    label: '功能建议',
+    labelKey: 'feature',
     icon: Lightbulb,
     color: 'text-yellow-500 bg-yellow-500/10',
-    placeholder: '请描述您希望添加的功能或改进建议...',
+    placeholderKey: 'feature',
   },
   {
     id: 'question',
-    label: '使用疑问',
+    labelKey: 'question',
     icon: HelpCircle,
     color: 'text-blue-500 bg-blue-500/10',
-    placeholder: '请描述您的疑问，我们会尽快回复...',
+    placeholderKey: 'question',
   },
   {
     id: 'other',
-    label: '其他',
+    labelKey: 'other',
     icon: MessageSquarePlus,
     color: 'text-purple-500 bg-purple-500/10',
-    placeholder: '请输入您想反馈的内容...',
+    placeholderKey: 'other',
   },
 ];
 
 export function FeedbackWidget() {
+  const t = useTranslations('feedback');
+  const tCommon = useTranslations('common');
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<'type' | 'form' | 'success'>('type');
   const [selectedType, setSelectedType] = useState<FeedbackType | null>(null);
@@ -95,13 +98,13 @@ export function FeedbackWidget() {
   // 截图功能（模拟）
   const handleScreenshot = async () => {
     // 实际应该使用 html2canvas 或类似库
-    toast.info('截图功能开发中...');
+    toast.info(t('screenshotInDev'));
   };
 
   // 提交反馈
   const handleSubmit = async () => {
     if (!content.trim()) {
-      toast.error('请输入反馈内容');
+      toast.error(t('contentRequired'));
       return;
     }
 
@@ -122,9 +125,9 @@ export function FeedbackWidget() {
       // });
 
       setStep('success');
-      toast.success('感谢您的反馈！');
+      toast.success(t('successTitle'));
     } catch (error) {
-      toast.error('提交失败，请稍后重试');
+      toast.error(t('submitFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -146,15 +149,15 @@ export function FeedbackWidget() {
         <Button
           variant="outline"
           size="sm"
-          className="fixed bottom-6 right-6 z-50 h-12 px-4 shadow-lg border-2 hover:scale-105 transition-transform"
+          className="fixed bottom-6 left-6 z-50 h-12 px-4 shadow-lg border-2 hover:scale-105 transition-transform"
         >
           <MessageSquarePlus className="w-5 h-5 mr-2" />
-          反馈
+          {t('button')}
         </Button>
       </PopoverTrigger>
       <PopoverContent 
         className="w-[360px] p-0" 
-        align="end"
+        align="start"
         side="top"
         sideOffset={16}
       >
@@ -168,7 +171,7 @@ export function FeedbackWidget() {
               exit={{ opacity: 0, y: -10 }}
               className="p-4"
             >
-              <h4 className="font-semibold mb-3">选择反馈类型</h4>
+              <h4 className="font-semibold mb-3">{t('selectType')}</h4>
               <div className="grid grid-cols-2 gap-2">
                 {feedbackTypes.map((type) => {
                   const Icon = type.icon;
@@ -184,7 +187,7 @@ export function FeedbackWidget() {
                       <div className={cn('w-10 h-10 rounded-full flex items-center justify-center', type.color)}>
                         <Icon className="w-5 h-5" />
                       </div>
-                      <span className="text-sm font-medium">{type.label}</span>
+                      <span className="text-sm font-medium">{t(`types.${type.labelKey}`)}</span>
                     </button>
                   );
                 })}
@@ -213,19 +216,19 @@ export function FeedbackWidget() {
                 <div className={cn('w-8 h-8 rounded-full flex items-center justify-center', currentType.color)}>
                   <currentType.icon className="w-4 h-4" />
                 </div>
-                <span className="font-semibold">{currentType.label}</span>
+                <span className="font-semibold">{t(`types.${currentType.labelKey}`)}</span>
               </div>
 
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="feedback-content" className="text-xs text-muted-foreground">
-                    详细描述
+                    {t('detailDescription')}
                   </Label>
                   <Textarea
                     id="feedback-content"
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
-                    placeholder={currentType.placeholder}
+                    placeholder={t(`placeholders.${currentType.placeholderKey}`)}
                     rows={4}
                     className="mt-1.5 resize-none"
                   />
@@ -233,14 +236,14 @@ export function FeedbackWidget() {
 
                 <div>
                   <Label htmlFor="feedback-email" className="text-xs text-muted-foreground">
-                    联系邮箱（选填）
+                    {t('emailLabel')}
                   </Label>
                   <Input
                     id="feedback-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="方便我们回复您"
+                    placeholder={t('emailPlaceholder')}
                     className="mt-1.5"
                   />
                 </div>
@@ -254,7 +257,7 @@ export function FeedbackWidget() {
                     onClick={handleScreenshot}
                   >
                     <Camera className="w-4 h-4 mr-2" />
-                    添加截图
+                    {t('addScreenshot')}
                   </Button>
                 )}
 
@@ -266,12 +269,12 @@ export function FeedbackWidget() {
                   {submitting ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      提交中...
+                      {t('submitting')}
                     </>
                   ) : (
                     <>
                       <Send className="w-4 h-4 mr-2" />
-                      提交反馈
+                      {t('submit')}
                     </>
                   )}
                 </Button>
@@ -296,12 +299,12 @@ export function FeedbackWidget() {
               >
                 <Check className="w-8 h-8 text-success" />
               </motion.div>
-              <h4 className="font-semibold mb-2">感谢您的反馈！</h4>
+              <h4 className="font-semibold mb-2">{t('successTitle')}</h4>
               <p className="text-sm text-muted-foreground mb-4">
-                我们已收到您的反馈，会尽快处理。
+                {t('successDesc')}
               </p>
               <Button variant="outline" onClick={() => handleOpenChange(false)}>
-                关闭
+                {tCommon('close')}
               </Button>
             </motion.div>
           )}
@@ -313,23 +316,25 @@ export function FeedbackWidget() {
 
 // 简化版反馈按钮（用于特定页面）
 export function QuickFeedbackButton({ 
-  label = '这个页面有帮助吗？',
+  label,
   pageId,
 }: { 
   label?: string;
   pageId: string;
 }) {
+  const t = useTranslations('feedback');
+  const displayLabel = label || t('quickLabel');
   const [feedback, setFeedback] = useState<'up' | 'down' | null>(null);
 
   const handleFeedback = async (type: 'up' | 'down') => {
     setFeedback(type);
     // 实际应该调用 API
-    toast.success(type === 'up' ? '感谢您的认可！' : '感谢您的反馈，我们会改进！');
+    toast.success(type === 'up' ? t('thumbsUpThanks') : t('thumbsDownThanks'));
   };
 
   return (
     <div className="flex items-center gap-3 text-sm text-muted-foreground">
-      <span>{label}</span>
+      <span>{displayLabel}</span>
       <div className="flex items-center gap-1">
         <Button
           variant={feedback === 'up' ? 'default' : 'ghost'}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,27 +31,29 @@ interface ProfileSelectorProps {
   selectedProfileId?: string;
 }
 
-const GRADE_LABELS: Record<string, string> = {
-  FRESHMAN: '高一',
-  SOPHOMORE: '高二',
-  JUNIOR: '高三',
-  SENIOR: '高四',
-  GAP_YEAR: 'Gap Year',
+const GRADE_KEYS: Record<string, string> = {
+  FRESHMAN: 'freshman',
+  SOPHOMORE: 'sophomore',
+  JUNIOR: 'junior',
+  SENIOR: 'senior',
+  GAP_YEAR: 'gapYear',
 };
 
 export function ProfileSelector({ onSelect, selectedProfileId }: ProfileSelectorProps) {
+  const t = useTranslations('profile');
   const [search, setSearch] = useState('');
 
   // Fetch public profiles
-  const { data: profiles, isLoading } = useQuery({
+  const { data: profilesResponse, isLoading } = useQuery({
     queryKey: ['publicProfiles', search],
     queryFn: () =>
-      apiClient.get<{ data: PublicProfile[] }>('/hall/public-profiles', {
+      apiClient.get<{ data: { data: PublicProfile[] } }>('/hall/public-profiles', {
         params: search ? { search } : undefined,
       }),
   });
 
-  const profileList = profiles?.data || [];
+  // API response: { success: true, data: { data: [...] } }
+  const profileList = profilesResponse?.data?.data || [];
 
   return (
     <div className="space-y-4">
@@ -58,7 +61,7 @@ export function ProfileSelector({ onSelect, selectedProfileId }: ProfileSelector
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="搜索目标专业..."
+          placeholder={t('selector.searchPlaceholder')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-9"
@@ -74,8 +77,8 @@ export function ProfileSelector({ onSelect, selectedProfileId }: ProfileSelector
         ) : profileList.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
             <User className="mb-2 h-12 w-12 opacity-50" />
-            <p>暂无公开档案</p>
-            <p className="text-sm">等待更多用户分享档案</p>
+            <p>{t('selector.noProfiles')}</p>
+            <p className="text-sm">{t('selector.noProfilesHint')}</p>
           </div>
         ) : (
           <div className="space-y-2 pr-4">
@@ -100,7 +103,7 @@ export function ProfileSelector({ onSelect, selectedProfileId }: ProfileSelector
                     <div className="flex items-center gap-2 mb-1">
                       {profile.grade && (
                         <Badge variant="secondary" className="text-xs">
-                          {GRADE_LABELS[profile.grade] || profile.grade}
+                          {GRADE_KEYS[profile.grade] ? t(`grades.${GRADE_KEYS[profile.grade]}`) : profile.grade}
                         </Badge>
                       )}
                       {profile.targetMajor && (
@@ -120,13 +123,13 @@ export function ProfileSelector({ onSelect, selectedProfileId }: ProfileSelector
                       {profile._count?.activities && profile._count.activities > 0 && (
                         <span className="flex items-center gap-1">
                           <BookOpen className="h-3 w-3" />
-                          {profile._count.activities} 活动
+                          {profile._count.activities} {t('selector.activities')}
                         </span>
                       )}
                       {profile._count?.awards && profile._count.awards > 0 && (
                         <span className="flex items-center gap-1">
                           <Award className="h-3 w-3" />
-                          {profile._count.awards} 奖项
+                          {profile._count.awards} {t('selector.awards')}
                         </span>
                       )}
                     </div>

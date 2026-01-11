@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 
 interface User {
   id: string;
@@ -12,106 +11,155 @@ interface User {
 interface AuthState {
   user: User | null;
   accessToken: string | null;
-  refreshToken: string | null;
   isLoading: boolean;
   isRefreshing: boolean;
+  isInitialized: boolean;
   setUser: (user: User | null) => void;
-  setTokens: (accessToken: string | null, refreshToken: string | null) => void;
   setAccessToken: (token: string | null) => void;
   setLoading: (loading: boolean) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   refreshAccessToken: () => Promise<boolean>;
+  initialize: () => Promise<void>;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006';
 
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set, get) => ({
-      user: null,
-      accessToken: null,
-      refreshToken: null,
-      isLoading: true,
-      isRefreshing: false,
+/**
+ * 安全认证 Store
+ * 
+ * 安全设计：
+ * - AccessToken 仅存储在内存中，不持久化到 localStorage
+ * - RefreshToken 通过 httpOnly cookie 管理，JavaScript 无法访问
+ * - 页面刷新后通过 Cookie 自动恢复会话
+ * 
+ * 这样即使存在 XSS 漏洞，攻击者也无法窃取 Token
+ */
+export const useAuthStore = create<AuthState>((set, get) => ({
+  user: null,
+  accessToken: null, // 仅存内存，不持久化
+  isLoading: true,
+  isRefreshing: false,
+  isInitialized: false,
 
-      setUser: (user) => set({ user }),
+  setUser: (user) => set({ user }),
 
-      setTokens: (accessToken, refreshToken) => set({ accessToken, refreshToken }),
+  setAccessToken: (accessToken) => set({ accessToken }),
 
-      setAccessToken: (accessToken) => set({ accessToken }),
+  setLoading: (isLoading) => set({ isLoading }),
 
-      setLoading: (isLoading) => set({ isLoading }),
-
-      logout: () => {
-        const { refreshToken } = get();
-        // Call logout API if we have a refresh token
-        if (refreshToken) {
-          fetch(`${API_BASE_URL}/auth/logout`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ refreshToken }),
-          }).catch(() => {
-            // Ignore logout API errors
-          });
-        }
-        set({ user: null, accessToken: null, refreshToken: null });
-      },
-
-      refreshAccessToken: async () => {
-        const { refreshToken, isRefreshing } = get();
-
-        // Prevent concurrent refresh calls
-        if (isRefreshing || !refreshToken) {
-          return false;
-        }
-
-        set({ isRefreshing: true });
-
-        try {
-          const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ refreshToken }),
-          });
-
-          if (!response.ok) {
-            // Refresh token expired or invalid
-            get().logout();
-            return false;
-          }
-
-          const data = await response.json();
-          set({
-            accessToken: data.accessToken,
-            refreshToken: data.refreshToken,
-            isRefreshing: false,
-          });
-          return true;
-        } catch (error) {
-          console.error('Token refresh failed:', error);
-          get().logout();
-          return false;
-        } finally {
-          set({ isRefreshing: false });
-        }
-      },
-    }),
-    {
-      name: 'auth-storage',
-      partialize: (state) => ({
-        accessToken: state.accessToken,
-        refreshToken: state.refreshToken,
-        user: state.user,
-      }),
+  /**
+   * 初始化认证状态
+   * 页面加载时调用，尝试使用 httpOnly cookie 中的 refreshToken 恢复会话
+   */
+  initialize: async () => {
+    const { isInitialized, refreshAccessToken } = get();
+    
+    if (isInitialized) {
+      return;
     }
-  )
-);
 
-// Auto refresh token before expiry
+    set({ isLoading: true });
+
+    try {
+      // 尝试使用 cookie 中的 refreshToken 获取新的 accessToken
+      const success = await refreshAccessToken();
+      
+      if (success) {
+        // 获取用户信息
+        const userResponse = await fetch(`${API_BASE_URL}/api/v1/users/me`, {
+          headers: {
+            'Authorization': `Bearer ${get().accessToken}`,
+          },
+          credentials: 'include',
+        });
+
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          set({ user: userData.data || userData });
+        }
+      }
+    } catch (error) {
+      console.error('Auth initialization failed:', error);
+      set({ user: null, accessToken: null });
+    } finally {
+      set({ isLoading: false, isInitialized: true });
+    }
+  },
+
+  /**
+   * 登出
+   * 调用后端 API 使 refreshToken 失效，清除 cookie
+   */
+  logout: async () => {
+    const { accessToken } = get();
+
+    try {
+      await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {}),
+        },
+        credentials: 'include', // 发送 httpOnly cookie
+      });
+    } catch (error) {
+      // 即使 API 调用失败，也要清除本地状态
+      console.error('Logout API call failed:', error);
+    }
+
+    set({ user: null, accessToken: null });
+  },
+
+  /**
+   * 刷新 AccessToken
+   * 使用 httpOnly cookie 中的 refreshToken（由浏览器自动发送）
+   */
+  refreshAccessToken: async () => {
+    const { isRefreshing } = get();
+
+    // 防止并发刷新
+    if (isRefreshing) {
+      return false;
+    }
+
+    set({ isRefreshing: true });
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}), // 空 body，refreshToken 通过 cookie 发送
+        credentials: 'include', // 关键：发送 httpOnly cookie
+      });
+
+      if (!response.ok) {
+        // RefreshToken 无效或过期
+        set({ user: null, accessToken: null, isRefreshing: false });
+        return false;
+      }
+
+      const data = await response.json();
+      const newAccessToken = data.data?.accessToken || data.accessToken;
+
+      set({
+        accessToken: newAccessToken,
+        isRefreshing: false,
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Token refresh failed:', error);
+      set({ user: null, accessToken: null, isRefreshing: false });
+      return false;
+    }
+  },
+}));
+
+// 自动刷新 Token（在过期前刷新）
 let refreshInterval: NodeJS.Timeout | null = null;
 
 export function startTokenRefreshInterval() {
-  // Refresh every 14 minutes (assuming 15min access token expiry)
+  // 每 14 分钟刷新一次（假设 accessToken 15 分钟过期）
   if (refreshInterval) {
     clearInterval(refreshInterval);
   }
@@ -129,4 +177,17 @@ export function stopTokenRefreshInterval() {
     clearInterval(refreshInterval);
     refreshInterval = null;
   }
+}
+
+/**
+ * 用于登录成功后设置状态的辅助函数
+ */
+export function setAuthFromLogin(user: User, accessToken: string) {
+  useAuthStore.setState({ 
+    user, 
+    accessToken, 
+    isLoading: false,
+    isInitialized: true,
+  });
+  startTokenRefreshInterval();
 }

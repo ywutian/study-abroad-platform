@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,15 +26,15 @@ import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
 import { Save, Loader2 } from 'lucide-react';
 
-const ACTIVITY_CATEGORIES = [
-  { value: 'ACADEMIC', label: '学术研究' },
-  { value: 'ARTS', label: '艺术' },
-  { value: 'ATHLETICS', label: '体育' },
-  { value: 'COMMUNITY_SERVICE', label: '社区服务' },
-  { value: 'LEADERSHIP', label: '领导力' },
-  { value: 'WORK', label: '工作/实习' },
-  { value: 'RESEARCH', label: '科研' },
-  { value: 'OTHER', label: '其他' },
+const ACTIVITY_CATEGORY_KEYS = [
+  { value: 'ACADEMIC', labelKey: 'academic' },
+  { value: 'ARTS', labelKey: 'arts' },
+  { value: 'ATHLETICS', labelKey: 'athletics' },
+  { value: 'COMMUNITY_SERVICE', labelKey: 'communityService' },
+  { value: 'LEADERSHIP', labelKey: 'leadership' },
+  { value: 'WORK', labelKey: 'work' },
+  { value: 'RESEARCH', labelKey: 'research' },
+  { value: 'OTHER', labelKey: 'other' },
 ];
 
 interface Activity {
@@ -57,6 +58,8 @@ interface ActivityFormProps {
 }
 
 export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFormProps) {
+  const t = useTranslations('profile');
+  const tCommon = useTranslations('common');
   const queryClient = useQueryClient();
   const isEditing = !!editingActivity;
 
@@ -77,7 +80,7 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
     mutationFn: (data: unknown) => apiClient.post('/profiles/me/activities', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
-      toast.success('活动添加成功');
+      toast.success(t('toast.activityAdded'));
       onOpenChange(false);
       resetForm();
     },
@@ -91,7 +94,7 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
       apiClient.put(`/profiles/me/activities/${editingActivity?.id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
-      toast.success('活动更新成功');
+      toast.success(t('toast.activityUpdated'));
       onOpenChange(false);
     },
     onError: (error: Error) => {
@@ -116,7 +119,7 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
 
   const handleSubmit = () => {
     if (!formData.name || !formData.category || !formData.role) {
-      toast.error('请填写活动名称、类别和角色');
+      toast.error(t('validation.activityRequired'));
       return;
     }
 
@@ -146,34 +149,34 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{isEditing ? '编辑活动' : '添加活动'}</DialogTitle>
+          <DialogTitle>{isEditing ? t('form.editActivity') : t('form.addActivity')}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label>活动名称 *</Label>
+            <Label>{t('form.activityName')} *</Label>
             <Input
               value={formData.name}
               onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
-              placeholder="例如：机器人社"
+              placeholder={t('form.activityNamePlaceholder')}
               maxLength={100}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>活动类别 *</Label>
+              <Label>{t('form.activityCategory')} *</Label>
               <Select
                 value={formData.category}
                 onValueChange={(v) => setFormData((p) => ({ ...p, category: v }))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="选择类别" />
+                  <SelectValue placeholder={t('form.selectCategory')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {ACTIVITY_CATEGORIES.map((c) => (
+                  {ACTIVITY_CATEGORY_KEYS.map((c) => (
                     <SelectItem key={c.value} value={c.value}>
-                      {c.label}
+                      {t(`activityCategories.${c.labelKey}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -181,32 +184,32 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
             </div>
 
             <div className="space-y-2">
-              <Label>角色/职位 *</Label>
+              <Label>{t('form.role')} *</Label>
               <Input
                 value={formData.role}
                 onChange={(e) => setFormData((p) => ({ ...p, role: e.target.value }))}
-                placeholder="例如：社长"
+                placeholder={t('form.rolePlaceholder')}
                 maxLength={100}
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>组织名称</Label>
+            <Label>{t('form.organization')}</Label>
             <Input
               value={formData.organization}
               onChange={(e) => setFormData((p) => ({ ...p, organization: e.target.value }))}
-              placeholder="例如：学校科技创新中心"
+              placeholder={t('form.organizationPlaceholder')}
               maxLength={100}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>活动描述</Label>
+            <Label>{t('form.activityDescription')}</Label>
             <Textarea
               value={formData.description}
               onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
-              placeholder="简要描述你的职责和成就..."
+              placeholder={t('form.activityDescPlaceholder')}
               rows={3}
               maxLength={500}
             />
@@ -215,7 +218,7 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>开始日期</Label>
+              <Label>{t('form.startDate')}</Label>
               <Input
                 type="date"
                 value={formData.startDate}
@@ -224,7 +227,7 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
             </div>
 
             <div className="space-y-2">
-              <Label>结束日期</Label>
+              <Label>{t('form.endDate')}</Label>
               <Input
                 type="date"
                 value={formData.endDate}
@@ -243,13 +246,13 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
               }
             />
             <Label htmlFor="isOngoing" className="cursor-pointer">
-              活动进行中
+              {t('form.ongoing')}
             </Label>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>每周小时数</Label>
+              <Label>{t('form.hoursPerWeek')}</Label>
               <Input
                 type="number"
                 value={formData.hoursPerWeek}
@@ -261,7 +264,7 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
             </div>
 
             <div className="space-y-2">
-              <Label>每年周数</Label>
+              <Label>{t('form.weeksPerYear')}</Label>
               <Input
                 type="number"
                 value={formData.weeksPerYear}
@@ -276,7 +279,7 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            取消
+            {tCommon('cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={isPending}>
             {isPending ? (
@@ -284,7 +287,7 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
             ) : (
               <Save className="mr-2 h-4 w-4" />
             )}
-            保存
+            {tCommon('save')}
           </Button>
         </DialogFooter>
       </DialogContent>

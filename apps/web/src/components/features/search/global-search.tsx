@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -49,15 +50,6 @@ const typeIcons: Record<SearchResultType, React.ElementType> = {
   page: ArrowRight,
 };
 
-// 类型标签
-const typeLabels: Record<SearchResultType, string> = {
-  school: '院校',
-  case: '案例',
-  article: '文章',
-  ai: 'AI 建议',
-  page: '页面',
-};
-
 // 类型颜色
 const typeColors: Record<SearchResultType, string> = {
   school: 'bg-blue-500/10 text-blue-500',
@@ -67,21 +59,21 @@ const typeColors: Record<SearchResultType, string> = {
   page: 'bg-muted text-muted-foreground',
 };
 
-// 快速操作
-const quickActions = [
-  { id: 'ai-chat', label: '与 AI 对话', type: 'ai' as const, url: '/ai' },
-  { id: 'schools', label: '浏览院校', type: 'page' as const, url: '/schools' },
-  { id: 'cases', label: '查看案例', type: 'page' as const, url: '/cases' },
-  { id: 'profile', label: '个人资料', type: 'page' as const, url: '/profile' },
+// Quick action keys for translation
+const quickActionKeys = [
+  { id: 'ai-chat', labelKey: 'aiChat', type: 'ai' as const, url: '/ai' },
+  { id: 'schools', labelKey: 'browseSchools', type: 'page' as const, url: '/schools' },
+  { id: 'cases', labelKey: 'viewCases', type: 'page' as const, url: '/cases' },
+  { id: 'profile', labelKey: 'profile', type: 'page' as const, url: '/profile' },
 ];
 
-// 热门搜索
-const hotSearches = [
-  '哈佛大学',
+// Hot searches - English terms that are commonly used
+const hotSearchTerms = [
+  'Harvard',
   'MIT',
-  'CS专业',
-  '奖学金申请',
-  'GPA要求',
+  'Stanford',
+  'Computer Science',
+  'Scholarship',
 ];
 
 interface GlobalSearchProps {
@@ -90,6 +82,7 @@ interface GlobalSearchProps {
 }
 
 export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
+  const t = useTranslations('globalSearch');
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState('');
@@ -99,6 +92,15 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
   const debouncedQuery = useDebounce(query, 300);
+
+  // Get translated quick actions
+  const quickActions = quickActionKeys.map(action => ({
+    ...action,
+    label: t(`actions.${action.labelKey}`),
+  }));
+
+  // Get type label
+  const getTypeLabel = (type: SearchResultType) => t(`types.${type}`);
 
   // 加载最近搜索
   useEffect(() => {
@@ -129,23 +131,23 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
         {
           id: '1',
           type: 'school',
-          title: `${debouncedQuery}大学`,
-          description: '世界顶尖研究型大学',
+          title: `${debouncedQuery} University`,
+          description: t('mockResults.universityDesc'),
           url: '/schools/1',
           metadata: { rank: '#1' },
         },
         {
           id: '2',
           type: 'case',
-          title: `${debouncedQuery}申请案例`,
+          title: t('mockResults.caseTitle', { query: debouncedQuery }),
           description: 'GPA 3.8 | TOEFL 110 | GRE 325',
           url: '/cases/1',
         },
         {
           id: '3',
           type: 'ai',
-          title: `询问 AI 关于 ${debouncedQuery}`,
-          description: '获取个性化建议',
+          title: t('mockResults.askAi', { query: debouncedQuery }),
+          description: t('mockResults.askAiDesc'),
           url: `/ai?q=${encodeURIComponent(debouncedQuery)}`,
         },
       ];
@@ -155,7 +157,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [debouncedQuery]);
+  }, [debouncedQuery, t]);
 
   // 键盘导航
   const allItems = useMemo(() => {
@@ -221,7 +223,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="搜索院校、案例、或询问 AI..."
+            placeholder={t('placeholder')}
             className="border-0 shadow-none focus-visible:ring-0 h-14 text-base"
           />
           {query && (
@@ -243,7 +245,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
             <div className="p-4 space-y-4">
               {/* 快速操作 */}
               <div>
-                <p className="text-xs font-medium text-muted-foreground mb-2">快速操作</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2">{t('quickActions')}</p>
                 <div className="space-y-1">
                   {quickActions.map((action, index) => {
                     const Icon = typeIcons[action.type];
@@ -272,7 +274,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
               {/* 最近搜索 */}
               {recentSearches.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-2">最近搜索</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-2">{t('recentSearches')}</p>
                   <div className="flex flex-wrap gap-2">
                     {recentSearches.map((term) => (
                       <Badge
@@ -291,9 +293,9 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
 
               {/* 热门搜索 */}
               <div>
-                <p className="text-xs font-medium text-muted-foreground mb-2">热门搜索</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2">{t('hotSearches')}</p>
                 <div className="flex flex-wrap gap-2">
-                  {hotSearches.map((term) => (
+                  {hotSearchTerms.map((term) => (
                     <Badge
                       key={term}
                       variant="outline"
@@ -315,7 +317,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
                 <div className="py-12 text-center">
                   <Search className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
                   <p className="text-sm text-muted-foreground">
-                    未找到 &quot;{query}&quot; 相关结果
+                    {t('noResults', { query })}
                   </p>
                 </div>
               ) : (
@@ -358,7 +360,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
                           )}
                         </div>
                         <Badge variant="outline" className="text-xs flex-shrink-0">
-                          {typeLabels[result.type]}
+                          {getTypeLabel(result.type)}
                         </Badge>
                       </motion.button>
                     );
@@ -374,19 +376,19 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
               <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px]">↑↓</kbd>
-              导航
+              {t('navigate')}
             </span>
             <span className="flex items-center gap-1">
               <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px]">Enter</kbd>
-              选择
+              {t('select')}
             </span>
             <span className="flex items-center gap-1">
               <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px]">Esc</kbd>
-              关闭
+              {t('close')}
             </span>
           </div>
           <span className="text-xs text-muted-foreground flex items-center gap-1">
-            <Command className="w-3 h-3" />K 打开搜索
+            <Command className="w-3 h-3" />K {t('openSearch')}
           </span>
         </div>
       </DialogContent>
@@ -396,6 +398,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
 
 // 搜索触发按钮
 export function SearchTrigger({ onClick }: { onClick: () => void }) {
+  const t = useTranslations('globalSearch');
   return (
     <Button
       variant="outline"
@@ -403,8 +406,8 @@ export function SearchTrigger({ onClick }: { onClick: () => void }) {
       onClick={onClick}
     >
       <Search className="mr-2 h-4 w-4" />
-      <span className="hidden sm:inline-flex">搜索...</span>
-      <span className="inline-flex sm:hidden">搜索</span>
+      <span className="hidden sm:inline-flex">{t('searchButton')}</span>
+      <span className="inline-flex sm:hidden">{t('searchButtonShort')}</span>
       <kbd className="pointer-events-none absolute right-1.5 top-1.5 hidden h-6 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
         <span className="text-xs">⌘</span>K
       </kbd>

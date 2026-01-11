@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -29,82 +30,82 @@ type StatusType =
   | 'featured';
 
 interface StatusConfig {
-  label: string;
   icon: React.ElementType;
   className: string;
   dotClassName: string;
+  labelKey: string;
 }
 
 // 状态配置
 const statusConfig: Record<StatusType, StatusConfig> = {
   pending: {
-    label: '待处理',
+    labelKey: 'pending',
     icon: Clock,
     className: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20',
     dotClassName: 'bg-yellow-500',
   },
   in_progress: {
-    label: '进行中',
+    labelKey: 'inProgress',
     icon: Loader2,
     className: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
     dotClassName: 'bg-blue-500',
   },
   completed: {
-    label: '已完成',
+    labelKey: 'completed',
     icon: CheckCircle,
     className: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
     dotClassName: 'bg-green-500',
   },
   failed: {
-    label: '失败',
+    labelKey: 'failed',
     icon: XCircle,
     className: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
     dotClassName: 'bg-red-500',
   },
   cancelled: {
-    label: '已取消',
+    labelKey: 'cancelled',
     icon: XCircle,
-    className: 'bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/20',
-    dotClassName: 'bg-gray-500',
+    className: 'bg-muted text-muted-foreground border-border',
+    dotClassName: 'bg-muted-foreground',
   },
   paused: {
-    label: '已暂停',
+    labelKey: 'paused',
     icon: PauseCircle,
     className: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20',
     dotClassName: 'bg-orange-500',
   },
   active: {
-    label: '活跃',
+    labelKey: 'active',
     icon: PlayCircle,
     className: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
     dotClassName: 'bg-green-500',
   },
   inactive: {
-    label: '未激活',
+    labelKey: 'inactive',
     icon: PauseCircle,
-    className: 'bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/20',
-    dotClassName: 'bg-gray-500',
+    className: 'bg-muted text-muted-foreground border-border',
+    dotClassName: 'bg-muted-foreground',
   },
   draft: {
-    label: '草稿',
+    labelKey: 'draft',
     icon: Clock,
-    className: 'bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/20',
-    dotClassName: 'bg-gray-500',
+    className: 'bg-muted text-muted-foreground border-border',
+    dotClassName: 'bg-muted-foreground',
   },
   published: {
-    label: '已发布',
+    labelKey: 'published',
     icon: CheckCircle,
     className: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
     dotClassName: 'bg-green-500',
   },
   archived: {
-    label: '已归档',
+    labelKey: 'archived',
     icon: AlertCircle,
     className: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
     dotClassName: 'bg-purple-500',
   },
   featured: {
-    label: '精选',
+    labelKey: 'featured',
     icon: Star,
     className: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
     dotClassName: 'bg-amber-500',
@@ -149,6 +150,7 @@ export function StatusBadge({
   animated = true,
   className,
 }: StatusBadgeProps) {
+  const t = useTranslations('ui.status');
   const config = statusConfig[status];
   const Icon = config.icon;
   const isAnimated = animated && status === 'in_progress';
@@ -181,7 +183,7 @@ export function StatusBadge({
           )}
         />
       )}
-      {label || config.label}
+      {label || t(config.labelKey)}
     </Badge>
   );
 }
@@ -198,46 +200,46 @@ type ApplicationStatus =
 
 const applicationStatusConfig: Record<ApplicationStatus, StatusConfig> = {
   preparing: {
-    label: '准备中',
+    labelKey: 'preparing',
     icon: Clock,
-    className: 'bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/20',
-    dotClassName: 'bg-gray-500',
+    className: 'bg-muted text-muted-foreground border-border',
+    dotClassName: 'bg-muted-foreground',
   },
   submitted: {
-    label: '已提交',
+    labelKey: 'submitted',
     icon: CheckCircle,
     className: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
     dotClassName: 'bg-blue-500',
   },
   interview: {
-    label: '面试中',
+    labelKey: 'interview',
     icon: Loader2,
     className: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
     dotClassName: 'bg-purple-500',
   },
   admitted: {
-    label: '已录取',
+    labelKey: 'admitted',
     icon: CheckCircle,
     className: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
     dotClassName: 'bg-green-500',
   },
   rejected: {
-    label: '已拒绝',
+    labelKey: 'rejected',
     icon: XCircle,
     className: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
     dotClassName: 'bg-red-500',
   },
   waitlisted: {
-    label: '候补',
+    labelKey: 'waitlisted',
     icon: Clock,
     className: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20',
     dotClassName: 'bg-yellow-500',
   },
   withdrawn: {
-    label: '已撤回',
+    labelKey: 'withdrawn',
     icon: XCircle,
-    className: 'bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/20',
-    dotClassName: 'bg-gray-500',
+    className: 'bg-muted text-muted-foreground border-border',
+    dotClassName: 'bg-muted-foreground',
   },
 };
 
@@ -254,6 +256,7 @@ export function ApplicationStatusBadge({
   showIcon = false,
   className,
 }: ApplicationStatusBadgeProps) {
+  const t = useTranslations('ui.status');
   const config = applicationStatusConfig[status];
   const Icon = config.icon;
   const isAnimated = status === 'interview';
@@ -286,7 +289,7 @@ export function ApplicationStatusBadge({
           )}
         />
       )}
-      {config.label}
+      {t(config.labelKey)}
     </Badge>
   );
 }

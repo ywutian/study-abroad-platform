@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,11 +20,11 @@ import { apiClient } from '@/lib/api';
 import { toast } from 'sonner';
 import { Loader2, Save } from 'lucide-react';
 
-const SCHOOL_TYPES = [
-  { value: 'HIGH_SCHOOL', label: '高中' },
-  { value: 'COLLEGE', label: '大学本科' },
-  { value: 'GRADUATE', label: '研究生' },
-  { value: 'OTHER', label: '其他' },
+const SCHOOL_TYPE_KEYS = [
+  { value: 'HIGH_SCHOOL', labelKey: 'highSchool' },
+  { value: 'COLLEGE', labelKey: 'college' },
+  { value: 'GRADUATE', labelKey: 'graduate' },
+  { value: 'OTHER', labelKey: 'other' },
 ];
 
 interface Education {
@@ -47,6 +48,8 @@ interface EducationFormProps {
 }
 
 export function EducationForm({ open, onOpenChange, education, onSuccess }: EducationFormProps) {
+  const t = useTranslations('profile');
+  const tCommon = useTranslations('common');
   const queryClient = useQueryClient();
   const isEditing = !!education;
 
@@ -95,7 +98,7 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       onOpenChange(false);
-      toast.success('教育经历已添加');
+      toast.success(t('toast.educationAdded'));
       onSuccess?.();
     },
     onError: (error: Error) => {
@@ -108,7 +111,7 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       onOpenChange(false);
-      toast.success('教育经历已更新');
+      toast.success(t('toast.educationUpdated'));
       onSuccess?.();
     },
     onError: (error: Error) => {
@@ -142,17 +145,17 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>{isEditing ? '编辑教育经历' : '添加教育经历'}</DialogTitle>
+          <DialogTitle>{isEditing ? t('form.editEducation') : t('form.addEducation')}</DialogTitle>
           <DialogDescription>
-            {isEditing ? '修改您的教育经历信息' : '添加一段教育经历'}
+            {isEditing ? t('form.editEducationDesc') : t('form.addEducationDesc')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4">
           <div className="space-y-2">
-            <Label>学校名称 *</Label>
+            <Label>{t('form.schoolName')} *</Label>
             <Input
-              placeholder="例如：北京大学"
+              placeholder={t('form.schoolNamePlaceholder')}
               value={formData.schoolName}
               onChange={(e) => setFormData({ ...formData, schoolName: e.target.value })}
             />
@@ -160,18 +163,18 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>学校类型</Label>
+              <Label>{t('form.schoolType')}</Label>
               <Select
                 value={formData.schoolType}
                 onValueChange={(value) => setFormData({ ...formData, schoolType: value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="选择类型" />
+                  <SelectValue placeholder={t('form.selectType')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {SCHOOL_TYPES.map((type) => (
+                  {SCHOOL_TYPE_KEYS.map((type) => (
                     <SelectItem key={type.value} value={type.value}>
-                      {type.label}
+                      {t(`form.educationTypes.${type.labelKey}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -179,9 +182,9 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
             </div>
 
             <div className="space-y-2">
-              <Label>学位</Label>
+              <Label>{t('form.degree')}</Label>
               <Input
-                placeholder="例如：学士"
+                placeholder={t('form.degreePlaceholder')}
                 value={formData.degree}
                 onChange={(e) => setFormData({ ...formData, degree: e.target.value })}
               />
@@ -189,9 +192,9 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
           </div>
 
           <div className="space-y-2">
-            <Label>专业</Label>
+            <Label>{t('form.major')}</Label>
             <Input
-              placeholder="例如：计算机科学"
+              placeholder={t('form.majorPlaceholder')}
               value={formData.major}
               onChange={(e) => setFormData({ ...formData, major: e.target.value })}
             />
@@ -199,7 +202,7 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>开始日期</Label>
+              <Label>{t('form.startDate')}</Label>
               <Input
                 type="date"
                 value={formData.startDate}
@@ -207,7 +210,7 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
               />
             </div>
             <div className="space-y-2">
-              <Label>结束日期</Label>
+              <Label>{t('form.endDate')}</Label>
               <Input
                 type="date"
                 value={formData.endDate}
@@ -228,7 +231,7 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
               />
             </div>
             <div className="space-y-2">
-              <Label>GPA 满分</Label>
+              <Label>{t('form.gpaMax')}</Label>
               <Input
                 type="number"
                 step="0.1"
@@ -240,9 +243,9 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
           </div>
 
           <div className="space-y-2">
-            <Label>描述</Label>
+            <Label>{t('form.description')}</Label>
             <Textarea
-              placeholder="可以添加课程、荣誉等信息"
+              placeholder={t('form.descriptionPlaceholder')}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows={3}
@@ -252,19 +255,15 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            取消
+            {tCommon('cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={!formData.schoolName || isPending}>
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             <Save className="mr-2 h-4 w-4" />
-            保存
+            {tCommon('save')}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
-
-
-
-

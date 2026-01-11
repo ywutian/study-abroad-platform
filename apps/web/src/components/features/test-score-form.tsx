@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,6 +48,8 @@ interface TestScoreFormProps {
 }
 
 export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFormProps) {
+  const t = useTranslations('profile');
+  const tCommon = useTranslations('common');
   const queryClient = useQueryClient();
   const isEditing = !!editingScore;
 
@@ -68,7 +71,7 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
     mutationFn: (data: unknown) => apiClient.post('/profiles/me/test-scores', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
-      toast.success('成绩添加成功');
+      toast.success(t('toast.scoreAdded'));
       onOpenChange(false);
       resetForm();
     },
@@ -82,7 +85,7 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
       apiClient.put(`/profiles/me/test-scores/${editingScore?.id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
-      toast.success('成绩更新成功');
+      toast.success(t('toast.scoreUpdated'));
       onOpenChange(false);
     },
     onError: (error: Error) => {
@@ -106,7 +109,7 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
 
   const handleSubmit = () => {
     if (!formData.type || !formData.score) {
-      toast.error('请填写考试类型和分数');
+      toast.error(t('validation.scoreRequired'));
       return;
     }
 
@@ -139,29 +142,29 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
   };
 
   const isPending = createMutation.isPending || updateMutation.isPending;
-  const selectedType = TEST_TYPES.find((t) => t.value === formData.type);
+  const selectedType = TEST_TYPES.find((tt) => tt.value === formData.type);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{isEditing ? '编辑标化成绩' : '添加标化成绩'}</DialogTitle>
+          <DialogTitle>{isEditing ? t('form.editScore') : t('form.addScore')}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label>考试类型 *</Label>
+            <Label>{t('form.testType')} *</Label>
             <Select
               value={formData.type}
               onValueChange={(v) => setFormData((p) => ({ ...p, type: v }))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="选择考试类型" />
+                <SelectValue placeholder={t('form.selectTestType')} />
               </SelectTrigger>
               <SelectContent>
-                {TEST_TYPES.map((t) => (
-                  <SelectItem key={t.value} value={t.value}>
-                    {t.label}
+                {TEST_TYPES.map((tt) => (
+                  <SelectItem key={tt.value} value={tt.value}>
+                    {tt.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -169,12 +172,12 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
           </div>
 
           <div className="space-y-2">
-            <Label>总分 * {selectedType && `(满分 ${selectedType.maxScore})`}</Label>
+            <Label>{t('form.score')} * {selectedType && `(Max ${selectedType.maxScore})`}</Label>
             <Input
               type="number"
               value={formData.score}
               onChange={(e) => setFormData((p) => ({ ...p, score: e.target.value }))}
-              placeholder={selectedType ? `0 - ${selectedType.maxScore}` : '请输入分数'}
+              placeholder={selectedType ? `0 - ${selectedType.maxScore}` : t('form.scorePlaceholder')}
               max={selectedType?.maxScore}
               min={0}
             />
@@ -183,7 +186,7 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
           {formData.type === 'SAT' && (
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>阅读 (EBRW)</Label>
+                <Label>{t('form.readingEBRW')}</Label>
                 <Input
                   type="number"
                   value={formData.satReading}
@@ -194,7 +197,7 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
                 />
               </div>
               <div className="space-y-2">
-                <Label>数学</Label>
+                <Label>{t('form.math')}</Label>
                 <Input
                   type="number"
                   value={formData.satMath}
@@ -210,7 +213,7 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
           {formData.type === 'TOEFL' && (
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>阅读</Label>
+                <Label>{t('form.reading')}</Label>
                 <Input
                   type="number"
                   value={formData.toeflReading}
@@ -221,7 +224,7 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
                 />
               </div>
               <div className="space-y-2">
-                <Label>听力</Label>
+                <Label>{t('form.listening')}</Label>
                 <Input
                   type="number"
                   value={formData.toeflListening}
@@ -232,7 +235,7 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
                 />
               </div>
               <div className="space-y-2">
-                <Label>口语</Label>
+                <Label>{t('form.speaking')}</Label>
                 <Input
                   type="number"
                   value={formData.toeflSpeaking}
@@ -243,7 +246,7 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
                 />
               </div>
               <div className="space-y-2">
-                <Label>写作</Label>
+                <Label>{t('form.writing')}</Label>
                 <Input
                   type="number"
                   value={formData.toeflWriting}
@@ -257,7 +260,7 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
           )}
 
           <div className="space-y-2">
-            <Label>考试日期</Label>
+            <Label>{t('form.testDate')}</Label>
             <Input
               type="date"
               value={formData.testDate}
@@ -268,7 +271,7 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            取消
+            {tCommon('cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={isPending}>
             {isPending ? (
@@ -276,14 +279,10 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
             ) : (
               <Save className="mr-2 h-4 w-4" />
             )}
-            保存
+            {tCommon('save')}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
-
-
-
-

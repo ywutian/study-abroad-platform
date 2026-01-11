@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useCallback, ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   Search,
   Home,
@@ -61,69 +62,70 @@ export function CommandPalette({ customCommands = [] }: CommandPaletteProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const router = useRouter();
   const { theme, setTheme } = useTheme();
+  const t = useTranslations('ui.command');
 
   // 默认命令
   const defaultCommands: CommandItem[] = useMemo(
     () => [
       {
         id: 'home',
-        title: '首页',
+        title: t('home'),
         icon: <Home className="w-4 h-4" />,
         action: () => router.push('/'),
         keywords: ['home', 'index', '主页'],
-        section: '导航',
+        section: t('nav'),
       },
       {
         id: 'schools',
-        title: '院校库',
+        title: t('schools'),
         icon: <School className="w-4 h-4" />,
         action: () => router.push('/schools'),
         keywords: ['school', 'university', '学校', '院校'],
-        section: '导航',
+        section: t('nav'),
       },
       {
         id: 'cases',
-        title: '案例库',
+        title: t('cases'),
         icon: <FileText className="w-4 h-4" />,
         action: () => router.push('/cases'),
         keywords: ['case', 'example', '案例', '成功案例'],
-        section: '导航',
+        section: t('nav'),
       },
       {
         id: 'chat',
-        title: 'AI 助手',
+        title: t('aiAssistant'),
         icon: <MessageSquare className="w-4 h-4" />,
         action: () => router.push('/chat'),
         keywords: ['chat', 'ai', 'assistant', '聊天', '智能'],
-        section: '导航',
+        section: t('nav'),
       },
       {
         id: 'profile',
-        title: '个人中心',
+        title: t('profile'),
         icon: <User className="w-4 h-4" />,
         action: () => router.push('/profile'),
         keywords: ['profile', 'account', '个人', '账户'],
-        section: '导航',
+        section: t('nav'),
       },
       {
         id: 'toggle-theme',
-        title: theme === 'dark' ? '切换到亮色模式' : '切换到暗色模式',
+        title: theme === 'dark' ? t('switchToLight') : t('switchToDark'),
         icon: theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />,
         action: () => setTheme(theme === 'dark' ? 'light' : 'dark'),
         keywords: ['theme', 'dark', 'light', '主题', '暗色', '亮色'],
-        section: '设置',
+        section: t('settings'),
       },
       {
         id: 'help',
-        title: '帮助文档',
+        title: t('helpDocs'),
         icon: <HelpCircle className="w-4 h-4" />,
         shortcut: ['?'],
         action: () => window.open('/help', '_blank'),
         keywords: ['help', 'docs', '帮助', '文档'],
-        section: '其他',
+        section: t('other'),
       },
     ],
-    [router, theme, setTheme]
+    [router, theme, setTheme, t]
   );
 
   const allCommands = useMemo(
@@ -150,7 +152,7 @@ export function CommandPalette({ customCommands = [] }: CommandPaletteProps) {
   const groupedCommands = useMemo(() => {
     const groups: Record<string, CommandItem[]> = {};
     filteredCommands.forEach((cmd) => {
-      const section = cmd.section || '其他';
+      const section = cmd.section || t('other');
       if (!groups[section]) groups[section] = [];
       groups[section].push(cmd);
     });
@@ -231,7 +233,7 @@ export function CommandPalette({ customCommands = [] }: CommandPaletteProps) {
               <Search className="w-5 h-5 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="搜索命令..."
+                placeholder={t('searchPlaceholder')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="flex-1 py-4 bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
@@ -298,7 +300,7 @@ export function CommandPalette({ customCommands = [] }: CommandPaletteProps) {
 
               {filteredCommands.length === 0 && (
                 <div className="px-4 py-8 text-center text-muted-foreground">
-                  没有找到匹配的命令
+                  {t('noResults')}
                 </div>
               )}
             </div>
@@ -307,15 +309,15 @@ export function CommandPalette({ customCommands = [] }: CommandPaletteProps) {
             <div className="flex items-center gap-4 px-4 py-2 border-t border-border text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
                 <kbd className="px-1.5 py-0.5 bg-muted rounded">↑↓</kbd>
-                <span>导航</span>
+                <span>{t('navigate')}</span>
               </span>
               <span className="flex items-center gap-1">
                 <kbd className="px-1.5 py-0.5 bg-muted rounded">↵</kbd>
-                <span>选择</span>
+                <span>{t('select')}</span>
               </span>
               <span className="flex items-center gap-1">
                 <kbd className="px-1.5 py-0.5 bg-muted rounded">esc</kbd>
-                <span>关闭</span>
+                <span>{t('close')}</span>
               </span>
             </div>
           </motion.div>
@@ -327,6 +329,7 @@ export function CommandPalette({ customCommands = [] }: CommandPaletteProps) {
 
 // 导出用于触发命令面板的按钮
 export function CommandPaletteTrigger() {
+  const t = useTranslations('common');
   return (
     <button
       className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground bg-muted/50 border border-border rounded-lg hover:bg-muted transition-colors"
@@ -341,7 +344,7 @@ export function CommandPaletteTrigger() {
       }}
     >
       <Search className="w-4 h-4" />
-      <span className="hidden sm:inline">搜索</span>
+      <span className="hidden sm:inline">{t('search')}</span>
       <kbd className="hidden sm:inline px-1.5 py-0.5 text-xs bg-background rounded">
         {getShortcutDisplay('K', ['meta'])}
       </kbd>

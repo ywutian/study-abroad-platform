@@ -14,7 +14,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { apiClient } from '@/lib/api';
 import { PageContainer, PageHeader } from '@/components/layout';
-import { LoadingState } from '@/components/ui/loading-state';
 import { toast } from 'sonner';
 import { AgentChat } from '@/components/features/agent-chat';
 import {
@@ -124,10 +123,10 @@ export default function AiPage() {
       }),
     onSuccess: (data) => {
       setAnalysisResult(data);
-      toast.success('分析完成');
+      toast.success(t('ai.toast.analysisComplete'));
     },
     onError: (error: Error) => {
-      toast.error(error.message || '分析失败');
+      toast.error(error.message || t('ai.toast.analysisFailed'));
     },
   });
 
@@ -141,10 +140,10 @@ export default function AiPage() {
       }),
     onSuccess: (data) => {
       setEssayReview(data);
-      toast.success('评估完成');
+      toast.success(t('ai.toast.evaluationComplete'));
     },
     onError: (error: Error) => {
-      toast.error(error.message || '评估失败');
+      toast.error(error.message || t('ai.toast.evaluationFailed'));
     },
   });
 
@@ -157,10 +156,10 @@ export default function AiPage() {
       }),
     onSuccess: (data) => {
       setIdeas(data.ideas || []);
-      toast.success('生成完成');
+      toast.success(t('ai.toast.generationComplete'));
     },
     onError: (error: Error) => {
-      toast.error(error.message || '生成失败');
+      toast.error(error.message || t('ai.toast.generationFailed'));
     },
   });
 
@@ -175,10 +174,10 @@ export default function AiPage() {
       }),
     onSuccess: (data) => {
       setSchoolMatches(data.schools || []);
-      toast.success('推荐完成');
+      toast.success(t('ai.toast.recommendationComplete'));
     },
     onError: (error: Error) => {
-      toast.error(error.message || '推荐失败');
+      toast.error(error.message || t('ai.toast.recommendationFailed'));
     },
   });
 
@@ -190,7 +189,7 @@ export default function AiPage() {
       setChatMessages((prev) => [...prev, { role: 'assistant', content: data.response }]);
     },
     onError: (error: Error) => {
-      toast.error(error.message || '发送失败');
+      toast.error(error.message || t('ai.toast.sendFailed'));
     },
   });
 
@@ -200,10 +199,10 @@ export default function AiPage() {
       apiClient.post<PolishResult>('/ai/polish-essay', data),
     onSuccess: (data) => {
       setPolishResult(data);
-      toast.success('润色完成');
+      toast.success(t('ai.toast.polishComplete'));
     },
     onError: (error: Error) => {
-      toast.error(error.message || '润色失败');
+      toast.error(error.message || t('ai.toast.polishFailed'));
     },
   });
 
@@ -231,18 +230,18 @@ export default function AiPage() {
       case 'safety':
         return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
       default:
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-muted text-muted-foreground';
     }
   };
 
   const getFitLabel = (fit: string) => {
     switch (fit) {
       case 'reach':
-        return '冲刺校';
+        return t('ai.schoolMatch.matchTypes.reach');
       case 'match':
-        return '匹配校';
+        return t('ai.schoolMatch.matchTypes.match');
       case 'safety':
-        return '保底校';
+        return t('ai.schoolMatch.matchTypes.safety');
       default:
         return fit;
     }
@@ -252,7 +251,7 @@ export default function AiPage() {
     if (polishResult) {
       await navigator.clipboard.writeText(polishResult.polished);
       setCopiedPolish(true);
-      toast.success('已复制到剪贴板');
+      toast.success(t('ai.toast.copiedToClipboard'));
       setTimeout(() => setCopiedPolish(false), 2000);
     }
   };
@@ -260,8 +259,8 @@ export default function AiPage() {
   return (
     <PageContainer>
       <PageHeader
-        title="AI 助手"
-        description="利用 AI 技术分析档案、评估文书、智能选校"
+        title={t('ai.title')}
+        description={t('ai.description')}
       />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -272,49 +271,49 @@ export default function AiPage() {
             className="gap-2 rounded-lg border bg-card px-4 py-2 data-[state=active]:border-primary data-[state=active]:bg-primary/5"
           >
             <Bot className="h-4 w-4" />
-            智能对话
+            {t('ai.tabs.chat')}
           </TabsTrigger>
           <TabsTrigger
             value="analyze"
             className="gap-2 rounded-lg border bg-card px-4 py-2 data-[state=active]:border-primary data-[state=active]:bg-primary/5"
           >
             <BarChart3 className="h-4 w-4" />
-            档案分析
+            {t('ai.tabs.analysis')}
           </TabsTrigger>
           <TabsTrigger
             value="essay"
             className="gap-2 rounded-lg border bg-card px-4 py-2 data-[state=active]:border-primary data-[state=active]:bg-primary/5"
           >
             <FileText className="h-4 w-4" />
-            文书评估
+            {t('ai.tabs.essay')}
           </TabsTrigger>
           <TabsTrigger
             value="ideas"
             className="gap-2 rounded-lg border bg-card px-4 py-2 data-[state=active]:border-primary data-[state=active]:bg-primary/5"
           >
             <Lightbulb className="h-4 w-4" />
-            创意灵感
+            {t('ai.tabs.ideas')}
           </TabsTrigger>
           <TabsTrigger
             value="school"
             className="gap-2 rounded-lg border bg-card px-4 py-2 data-[state=active]:border-primary data-[state=active]:bg-primary/5"
           >
             <GraduationCap className="h-4 w-4" />
-            选校推荐
+            {t('ai.tabs.schoolMatch')}
           </TabsTrigger>
           <TabsTrigger
             value="polish"
             className="gap-2 rounded-lg border bg-card px-4 py-2 data-[state=active]:border-primary data-[state=active]:bg-primary/5"
           >
             <Wand2 className="h-4 w-4" />
-            文书润色
+            {t('ai.tabs.polish')}
           </TabsTrigger>
           <TabsTrigger
             value="chat"
             className="gap-2 rounded-lg border bg-card px-4 py-2 data-[state=active]:border-primary data-[state=active]:bg-primary/5"
           >
             <MessageSquare className="h-4 w-4" />
-            自由问答
+            {t('ai.tabs.freeChat')}
           </TabsTrigger>
         </TabsList>
 
@@ -328,43 +327,43 @@ export default function AiPage() {
               <SelectItem value="agent">
                 <span className="flex items-center gap-2">
                   <Bot className="h-4 w-4" />
-                  智能对话
+                  {t('ai.tabs.chat')}
                 </span>
               </SelectItem>
               <SelectItem value="analyze">
                 <span className="flex items-center gap-2">
                   <BarChart3 className="h-4 w-4" />
-                  档案分析
+                  {t('ai.tabs.analysis')}
                 </span>
               </SelectItem>
               <SelectItem value="essay">
                 <span className="flex items-center gap-2">
                   <FileText className="h-4 w-4" />
-                  文书评估
+                  {t('ai.tabs.essay')}
                 </span>
               </SelectItem>
               <SelectItem value="ideas">
                 <span className="flex items-center gap-2">
                   <Lightbulb className="h-4 w-4" />
-                  创意灵感
+                  {t('ai.tabs.ideas')}
                 </span>
               </SelectItem>
               <SelectItem value="school">
                 <span className="flex items-center gap-2">
                   <GraduationCap className="h-4 w-4" />
-                  选校推荐
+                  {t('ai.tabs.schoolMatch')}
                 </span>
               </SelectItem>
               <SelectItem value="polish">
                 <span className="flex items-center gap-2">
                   <Wand2 className="h-4 w-4" />
-                  文书润色
+                  {t('ai.tabs.polish')}
                 </span>
               </SelectItem>
               <SelectItem value="chat">
                 <span className="flex items-center gap-2">
                   <MessageSquare className="h-4 w-4" />
-                  自由问答
+                  {t('ai.tabs.freeChat')}
                 </span>
               </SelectItem>
             </SelectContent>
@@ -388,8 +387,8 @@ export default function AiPage() {
                     <User className="h-5 w-5" />
                   </div>
                   <div>
-                    <CardTitle>当前档案</CardTitle>
-                    <CardDescription>基于您的档案进行竞争力分析</CardDescription>
+                    <CardTitle>{t('ai.analysis.title')}</CardTitle>
+                    <CardDescription>{t('ai.analysis.description')}</CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -400,21 +399,21 @@ export default function AiPage() {
                       <div>
                         <p className="text-muted-foreground">GPA</p>
                         <p className="font-medium">
-                          {profile.gpa ? `${profile.gpa}/${profile.gpaScale || 4.0}` : '未填写'}
+                          {profile.gpa ? `${profile.gpa}/${profile.gpaScale || 4.0}` : t('common.notFilled')}
                         </p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">目标专业</p>
-                        <p className="font-medium">{profile.targetMajor || '未填写'}</p>
+                        <p className="text-muted-foreground">{t('ai.analysis.targetMajor')}</p>
+                        <p className="font-medium">{profile.targetMajor || t('common.notFilled')}</p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">标化成绩</p>
-                        <p className="font-medium">{profile.testScores?.length || 0} 项</p>
+                        <p className="text-muted-foreground">{t('ai.analysis.testScores')}</p>
+                        <p className="font-medium">{profile.testScores?.length || 0} {t('common.items')}</p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">活动/奖项</p>
+                        <p className="text-muted-foreground">{t('ai.analysis.activitiesAwards')}</p>
                         <p className="font-medium">
-                          {(profile.activities?.length || 0) + (profile.awards?.length || 0)} 项
+                          {(profile.activities?.length || 0) + (profile.awards?.length || 0)} {t('common.items')}
                         </p>
                       </div>
                     </div>
@@ -428,11 +427,11 @@ export default function AiPage() {
                       ) : (
                         <Sparkles className="mr-2 h-4 w-4" />
                       )}
-                      开始 AI 分析
+                      {t('ai.analysis.startAnalysis')}
                     </Button>
                   </>
                 ) : (
-                  <p className="text-muted-foreground">请先完善您的档案</p>
+                  <p className="text-muted-foreground">{t('common.pleaseCompleteProfile')}</p>
                 )}
               </CardContent>
             </Card>
@@ -444,8 +443,8 @@ export default function AiPage() {
                     <Brain className="h-5 w-5" />
                   </div>
                   <div>
-                    <CardTitle>分析结果</CardTitle>
-                    <CardDescription>AI 竞争力评估报告</CardDescription>
+                    <CardTitle>{t('ai.analysis.resultTitle')}</CardTitle>
+                    <CardDescription>{t('ai.analysis.resultDesc')}</CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -454,7 +453,7 @@ export default function AiPage() {
                   <ScrollArea className="h-[400px] pr-4">
                     <div className="space-y-6">
                       <div>
-                        <h4 className="mb-2 font-semibold">综合评价</h4>
+                        <h4 className="mb-2 font-semibold">{t('ai.analysis.overallEvaluation')}</h4>
                         <p className="text-sm text-muted-foreground">{analysisResult.overall}</p>
                       </div>
 
@@ -462,7 +461,7 @@ export default function AiPage() {
                         <div>
                           <h4 className="mb-2 flex items-center gap-2 font-semibold text-green-600">
                             <TrendingUp className="h-4 w-4" />
-                            优势亮点
+                            {t('ai.analysis.strengths')}
                           </h4>
                           <ul className="space-y-2">
                             {analysisResult.strengths.map((s, i) => (
@@ -479,7 +478,7 @@ export default function AiPage() {
                         <div>
                           <h4 className="mb-2 flex items-center gap-2 font-semibold text-amber-600">
                             <TrendingDown className="h-4 w-4" />
-                            需要改进
+                            {t('ai.analysis.improvements')}
                           </h4>
                           <ul className="space-y-2">
                             {analysisResult.weaknesses.map((w, i) => (
@@ -496,7 +495,7 @@ export default function AiPage() {
                         <div>
                           <h4 className="mb-2 flex items-center gap-2 font-semibold text-blue-600">
                             <Target className="h-4 w-4" />
-                            建议
+                            {t('ai.analysis.suggestions')}
                           </h4>
                           <ul className="space-y-2">
                             {analysisResult.suggestions.map((s, i) => (
@@ -515,7 +514,7 @@ export default function AiPage() {
                 ) : (
                   <div className="flex h-[300px] flex-col items-center justify-center text-muted-foreground">
                     <Brain className="mb-4 h-12 w-12 opacity-30" />
-                    <p>点击"开始 AI 分析"获取评估报告</p>
+                    <p>{t('ai.analysis.empty')}</p>
                   </div>
                 )}
               </CardContent>
@@ -528,20 +527,20 @@ export default function AiPage() {
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>文书内容</CardTitle>
-                <CardDescription>粘贴您的文书进行 AI 评估</CardDescription>
+                <CardTitle>{t('ai.essay.title')}</CardTitle>
+                <CardDescription>{t('ai.essay.description')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label>题目 (Prompt)</Label>
+                  <Label>{t('ai.essay.prompt')}</Label>
                   <Input
-                    placeholder="例如: Describe a challenge you faced..."
+                    placeholder={t('ai.essay.promptPlaceholder')}
                     value={essayPrompt}
                     onChange={(e) => setEssayPrompt(e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>字数限制</Label>
+                  <Label>{t('ai.essay.wordLimit')}</Label>
                   <Input
                     type="number"
                     placeholder="650"
@@ -550,15 +549,15 @@ export default function AiPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>文书正文</Label>
+                  <Label>{t('ai.essay.content')}</Label>
                   <Textarea
-                    placeholder="粘贴您的文书内容..."
+                    placeholder={t('ai.essay.contentPlaceholder')}
                     value={essayContent}
                     onChange={(e) => setEssayContent(e.target.value)}
                     rows={12}
                   />
                   <p className="text-xs text-muted-foreground">
-                    当前字数: {essayContent.split(/\s+/).filter(Boolean).length} 词
+                    {t('ai.essay.currentWords', { count: essayContent.split(/\s+/).filter(Boolean).length })}
                   </p>
                 </div>
                 <Button
@@ -571,36 +570,34 @@ export default function AiPage() {
                   ) : (
                     <FileText className="mr-2 h-4 w-4" />
                   )}
-                  AI 评估文书
+                  {t('ai.essay.evaluate')}
                 </Button>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>评估结果</CardTitle>
-                <CardDescription>AI 文书评分与建议</CardDescription>
+                <CardTitle>{t('ai.essay.resultTitle')}</CardTitle>
+                <CardDescription>{t('ai.essay.resultDesc')}</CardDescription>
               </CardHeader>
               <CardContent>
                 {essayReview ? (
                   <ScrollArea className="h-[450px] pr-4">
                     <div className="space-y-6">
-                      {/* Overall Score */}
                       <div className="text-center">
                         <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
                           <span className="text-3xl font-bold text-primary">
                             {essayReview.overallScore}
                           </span>
                         </div>
-                        <p className="mt-2 text-sm text-muted-foreground">总体评分 (满分10分)</p>
+                        <p className="mt-2 text-sm text-muted-foreground">{t('ai.essay.overallScore')}</p>
                       </div>
 
-                      {/* Detailed Scores */}
                       <div className="space-y-4">
                         {[
-                          { key: 'structure', label: '文章结构' },
-                          { key: 'content', label: '内容深度' },
-                          { key: 'language', label: '语言表达' },
+                          { key: 'structure', label: t('ai.essay.dimensions.structure') },
+                          { key: 'content', label: t('ai.essay.dimensions.content') },
+                          { key: 'language', label: t('ai.essay.dimensions.language') },
                         ].map((item) => {
                           const score = essayReview[item.key as keyof EssayReview] as {
                             score: number;
@@ -618,10 +615,9 @@ export default function AiPage() {
                         })}
                       </div>
 
-                      {/* Suggestions */}
                       {essayReview.suggestions?.length > 0 && (
                         <div>
-                          <h4 className="mb-2 font-semibold">改进建议</h4>
+                          <h4 className="mb-2 font-semibold">{t('ai.essay.improvementSuggestions')}</h4>
                           <ul className="space-y-2">
                             {essayReview.suggestions.map((s, i) => (
                               <li key={i} className="flex items-start gap-2 text-sm">
@@ -637,7 +633,7 @@ export default function AiPage() {
                 ) : (
                   <div className="flex h-[300px] flex-col items-center justify-center text-muted-foreground">
                     <FileText className="mb-4 h-12 w-12 opacity-30" />
-                    <p>输入文书内容后点击评估</p>
+                    <p>{t('ai.essay.empty')}</p>
                   </div>
                 )}
               </CardContent>
@@ -650,23 +646,23 @@ export default function AiPage() {
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>生成写作灵感</CardTitle>
-                <CardDescription>输入题目，AI 帮你 brainstorm</CardDescription>
+                <CardTitle>{t('ai.ideas.title')}</CardTitle>
+                <CardDescription>{t('ai.ideas.description')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label>文书题目</Label>
+                  <Label>{t('ai.ideas.topic')}</Label>
                   <Textarea
-                    placeholder="例如: Some students have a background, identity, interest, or talent that is so meaningful they believe their application would be incomplete without it."
+                    placeholder={t('ai.ideas.topicPlaceholder')}
                     value={ideaTopic}
                     onChange={(e) => setIdeaTopic(e.target.value)}
                     rows={4}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>个人背景 (可选)</Label>
+                  <Label>{t('ai.ideas.background')}</Label>
                   <Textarea
-                    placeholder="简要描述您的经历、兴趣爱好等，帮助 AI 生成更贴切的想法"
+                    placeholder={t('ai.ideas.backgroundPlaceholder')}
                     value={ideaBackground}
                     onChange={(e) => setIdeaBackground(e.target.value)}
                     rows={3}
@@ -682,15 +678,15 @@ export default function AiPage() {
                   ) : (
                     <Lightbulb className="mr-2 h-4 w-4" />
                   )}
-                  生成创意
+                  {t('ai.ideas.generate')}
                 </Button>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>写作思路</CardTitle>
-                <CardDescription>AI 生成的创意点子</CardDescription>
+                <CardTitle>{t('ai.ideas.resultTitle')}</CardTitle>
+                <CardDescription>{t('ai.ideas.resultDesc')}</CardDescription>
               </CardHeader>
               <CardContent>
                 {ideas.length > 0 ? (
@@ -705,7 +701,7 @@ export default function AiPage() {
                             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
                               {i + 1}
                             </span>
-                            <span className="text-xs text-muted-foreground">创意 #{i + 1}</span>
+                            <span className="text-xs text-muted-foreground">{t('ai.ideas.ideaNumber', { number: i + 1 })}</span>
                           </div>
                           <p className="text-sm">{idea}</p>
                         </li>
@@ -715,7 +711,7 @@ export default function AiPage() {
                 ) : (
                   <div className="flex h-[300px] flex-col items-center justify-center text-muted-foreground">
                     <Lightbulb className="mb-4 h-12 w-12 opacity-30" />
-                    <p>输入题目后生成创意</p>
+                    <p>{t('ai.ideas.empty')}</p>
                   </div>
                 )}
               </CardContent>
@@ -729,8 +725,8 @@ export default function AiPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>AI 选校推荐</CardTitle>
-                  <CardDescription>基于您的档案智能匹配适合的学校</CardDescription>
+                  <CardTitle>{t('ai.schoolMatch.title')}</CardTitle>
+                  <CardDescription>{t('ai.schoolMatch.description')}</CardDescription>
                 </div>
                 <Button
                   onClick={() => schoolMatchMutation.mutate()}
@@ -741,7 +737,7 @@ export default function AiPage() {
                   ) : (
                     <GraduationCap className="mr-2 h-4 w-4" />
                   )}
-                  获取推荐
+                  {t('ai.schoolMatch.getRecommendations')}
                 </Button>
               </div>
             </CardHeader>
@@ -765,8 +761,8 @@ export default function AiPage() {
               ) : (
                 <div className="flex h-[300px] flex-col items-center justify-center text-muted-foreground">
                   <GraduationCap className="mb-4 h-12 w-12 opacity-30" />
-                  <p>点击"获取推荐"开始智能选校</p>
-                  {!profile?.gpa && <p className="mt-2 text-sm">请先填写 GPA 信息</p>}
+                  <p>{t('ai.schoolMatch.empty')}</p>
+                  {!profile?.gpa && <p className="mt-2 text-sm">{t('ai.schoolMatch.fillGpaFirst')}</p>}
                 </div>
               )}
             </CardContent>
@@ -778,33 +774,33 @@ export default function AiPage() {
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>文书内容</CardTitle>
-                <CardDescription>粘贴您的文书进行 AI 润色</CardDescription>
+                <CardTitle>{t('ai.polish.title')}</CardTitle>
+                <CardDescription>{t('ai.polish.description')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label>润色风格</Label>
+                  <Label>{t('ai.polish.style')}</Label>
                   <Select value={polishStyle} onValueChange={(v: 'formal' | 'vivid' | 'concise') => setPolishStyle(v)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="formal">正式学术 - 适合严肃主题</SelectItem>
-                      <SelectItem value="vivid">生动有力 - 多用具体细节</SelectItem>
-                      <SelectItem value="concise">简洁精炼 - 精简冗余表达</SelectItem>
+                      <SelectItem value="formal">{t('ai.polish.styles.formal')}</SelectItem>
+                      <SelectItem value="vivid">{t('ai.polish.styles.vivid')}</SelectItem>
+                      <SelectItem value="concise">{t('ai.polish.styles.concise')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>文书正文</Label>
+                  <Label>{t('ai.polish.content')}</Label>
                   <Textarea
-                    placeholder="粘贴您的文书内容..."
+                    placeholder={t('ai.polish.contentPlaceholder')}
                     value={polishContent}
                     onChange={(e) => setPolishContent(e.target.value)}
                     rows={14}
                   />
                   <p className="text-xs text-muted-foreground">
-                    当前字数: {polishContent.split(/\s+/).filter(Boolean).length} 词
+                    {t('ai.essay.currentWords', { count: polishContent.split(/\s+/).filter(Boolean).length })}
                   </p>
                 </div>
                 <Button
@@ -817,7 +813,7 @@ export default function AiPage() {
                   ) : (
                     <Wand2 className="mr-2 h-4 w-4" />
                   )}
-                  AI 润色
+                  {t('ai.polish.polish')}
                 </Button>
               </CardContent>
             </Card>
@@ -826,8 +822,8 @@ export default function AiPage() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle>润色结果</CardTitle>
-                    <CardDescription>保持原意，提升表达</CardDescription>
+                    <CardTitle>{t('ai.polish.resultTitle')}</CardTitle>
+                    <CardDescription>{t('ai.polish.resultDesc')}</CardDescription>
                   </div>
                   {polishResult && (
                     <Button size="sm" variant="outline" onClick={copyPolishedContent}>
@@ -840,17 +836,15 @@ export default function AiPage() {
                 {polishResult ? (
                   <ScrollArea className="h-[450px] pr-4">
                     <div className="space-y-6">
-                      {/* Polished Text */}
                       <div className="rounded-lg border bg-muted/30 p-4">
                         <p className="whitespace-pre-wrap text-sm leading-relaxed">
                           {polishResult.polished}
                         </p>
                       </div>
 
-                      {/* Changes */}
                       {polishResult.changes?.length > 0 && (
                         <div>
-                          <h4 className="mb-3 font-semibold">主要修改 ({polishResult.changes.length}处)</h4>
+                          <h4 className="mb-3 font-semibold">{t('common.changes')} ({polishResult.changes.length})</h4>
                           <div className="space-y-3">
                             {polishResult.changes.map((change, i) => (
                               <div key={i} className="rounded-lg border p-3 text-sm">
@@ -871,7 +865,7 @@ export default function AiPage() {
                 ) : (
                   <div className="flex h-[400px] flex-col items-center justify-center text-muted-foreground">
                     <Wand2 className="mb-4 h-12 w-12 opacity-30" />
-                    <p>输入文书内容后点击润色</p>
+                    <p>{t('ai.polish.empty')}</p>
                   </div>
                 )}
               </CardContent>
@@ -883,8 +877,8 @@ export default function AiPage() {
         <TabsContent value="chat" className="animate-fade-in">
           <Card className="flex h-[600px] flex-col">
             <CardHeader>
-              <CardTitle>AI 留学顾问</CardTitle>
-              <CardDescription>有任何留学问题都可以问我</CardDescription>
+              <CardTitle>{t('ai.chatbot.title')}</CardTitle>
+              <CardDescription>{t('ai.freeChat.description')}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-1 flex-col">
               <ScrollArea className="flex-1 rounded-md border p-4">
@@ -917,15 +911,14 @@ export default function AiPage() {
                 ) : (
                   <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
                     <MessageSquare className="mb-4 h-12 w-12 opacity-30" />
-                    <p>开始对话吧！</p>
-                    <p className="mt-2 text-xs">例如：申请美国前30大学需要什么条件？</p>
+                    <p>{t('ai.freeChat.empty')}</p>
                   </div>
                 )}
               </ScrollArea>
 
               <div className="mt-4 flex gap-2">
                 <Input
-                  placeholder="输入您的问题..."
+                  placeholder={t('ai.freeChat.placeholder')}
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendChat()}
@@ -941,4 +934,3 @@ export default function AiPage() {
     </PageContainer>
   );
 }
-

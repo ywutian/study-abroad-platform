@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode, useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   DndContext,
   closestCenter,
@@ -109,6 +110,7 @@ export function DragHandle({
   isDragging,
   className,
 }: DragHandleButtonProps) {
+  const t = useTranslations('ui.sortable');
   return (
     <button
       type="button"
@@ -121,7 +123,7 @@ export function DragHandle({
         isDragging && 'cursor-grabbing',
         className
       )}
-      aria-label="拖拽排序"
+      aria-label={t('dragToSort')}
     >
       <GripVertical className="w-4 h-4" />
     </button>

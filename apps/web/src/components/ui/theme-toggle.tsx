@@ -1,5 +1,7 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { Moon, Sun, Monitor } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useThemeTransition } from '@/hooks/use-theme-transition';
@@ -14,7 +16,14 @@ interface ThemeToggleProps {
  * 带动画的主题切换按钮
  */
 export function ThemeToggle({ className, showLabel = false }: ThemeToggleProps) {
+  const t = useTranslations('ui.theme');
   const { toggleTheme, isDark } = useThemeTransition();
+  const [mounted, setMounted] = useState(false);
+
+  // 避免 hydration 不匹配
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <button
@@ -24,38 +33,45 @@ export function ThemeToggle({ className, showLabel = false }: ThemeToggleProps) 
         'hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         className
       )}
-      aria-label={isDark ? '切换到亮色模式' : '切换到暗色模式'}
+      aria-label={mounted ? (isDark ? t('switchToLight') : t('switchToDark')) : t('switchToDark')}
     >
       <div className="relative w-5 h-5">
-        <AnimatePresence mode="wait">
-          {isDark ? (
-            <motion.div
-              key="moon"
-              initial={{ scale: 0, rotate: -90, opacity: 0 }}
-              animate={{ scale: 1, rotate: 0, opacity: 1 }}
-              exit={{ scale: 0, rotate: 90, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="absolute inset-0"
-            >
-              <Moon className="w-5 h-5" />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="sun"
-              initial={{ scale: 0, rotate: 90, opacity: 0 }}
-              animate={{ scale: 1, rotate: 0, opacity: 1 }}
-              exit={{ scale: 0, rotate: -90, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="absolute inset-0"
-            >
-              <Sun className="w-5 h-5" />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* 在 mounted 之前显示一个占位符，避免 hydration 不匹配 */}
+        {!mounted ? (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Sun className="w-5 h-5" />
+          </div>
+        ) : (
+          <AnimatePresence mode="wait" initial={false}>
+            {isDark ? (
+              <motion.div
+                key="moon"
+                initial={{ scale: 0, rotate: -90, opacity: 0 }}
+                animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                exit={{ scale: 0, rotate: 90, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="absolute inset-0"
+              >
+                <Moon className="w-5 h-5" />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="sun"
+                initial={{ scale: 0, rotate: 90, opacity: 0 }}
+                animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                exit={{ scale: 0, rotate: -90, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="absolute inset-0"
+              >
+                <Sun className="w-5 h-5" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
       </div>
-      {showLabel && (
+      {showLabel && mounted && (
         <span className="ml-2 text-sm">
-          {isDark ? '暗色' : '亮色'}
+          {isDark ? t('dark') : t('light')}
         </span>
       )}
     </button>
@@ -66,12 +82,13 @@ export function ThemeToggle({ className, showLabel = false }: ThemeToggleProps) 
  * 带三种模式的主题选择器
  */
 export function ThemeSelector({ className }: { className?: string }) {
+  const t = useTranslations('ui.theme');
   const { resolvedTheme, setTheme, theme } = useThemeTransition();
 
   const options = [
-    { value: 'light', icon: Sun, label: '亮色' },
-    { value: 'dark', icon: Moon, label: '暗色' },
-    { value: 'system', icon: Monitor, label: '系统' },
+    { value: 'light', icon: Sun, label: t('light') },
+    { value: 'dark', icon: Moon, label: t('dark') },
+    { value: 'system', icon: Monitor, label: t('system') },
   ] as const;
 
   return (

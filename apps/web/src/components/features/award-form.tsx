@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,12 +25,12 @@ import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
 import { Save, Loader2 } from 'lucide-react';
 
-const AWARD_LEVELS = [
-  { value: 'SCHOOL', label: '校级' },
-  { value: 'REGIONAL', label: '区域级' },
-  { value: 'STATE', label: '省/州级' },
-  { value: 'NATIONAL', label: '国家级' },
-  { value: 'INTERNATIONAL', label: '国际级' },
+const AWARD_LEVEL_KEYS = [
+  { value: 'SCHOOL', labelKey: 'school' },
+  { value: 'REGIONAL', labelKey: 'regional' },
+  { value: 'STATE', labelKey: 'state' },
+  { value: 'NATIONAL', labelKey: 'national' },
+  { value: 'INTERNATIONAL', labelKey: 'international' },
 ];
 
 interface Award {
@@ -47,6 +48,8 @@ interface AwardFormProps {
 }
 
 export function AwardForm({ open, onOpenChange, editingAward }: AwardFormProps) {
+  const t = useTranslations('profile');
+  const tCommon = useTranslations('common');
   const queryClient = useQueryClient();
   const isEditing = !!editingAward;
 
@@ -61,7 +64,7 @@ export function AwardForm({ open, onOpenChange, editingAward }: AwardFormProps) 
     mutationFn: (data: unknown) => apiClient.post('/profiles/me/awards', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
-      toast.success('奖项添加成功');
+      toast.success(t('toast.awardAdded'));
       onOpenChange(false);
       resetForm();
     },
@@ -74,7 +77,7 @@ export function AwardForm({ open, onOpenChange, editingAward }: AwardFormProps) 
     mutationFn: (data: unknown) => apiClient.put(`/profiles/me/awards/${editingAward?.id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
-      toast.success('奖项更新成功');
+      toast.success(t('toast.awardUpdated'));
       onOpenChange(false);
     },
     onError: (error: Error) => {
@@ -93,7 +96,7 @@ export function AwardForm({ open, onOpenChange, editingAward }: AwardFormProps) 
 
   const handleSubmit = () => {
     if (!formData.name || !formData.level) {
-      toast.error('请填写奖项名称和级别');
+      toast.error(t('validation.awardRequired'));
       return;
     }
 
@@ -117,34 +120,34 @@ export function AwardForm({ open, onOpenChange, editingAward }: AwardFormProps) 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{isEditing ? '编辑奖项' : '添加奖项'}</DialogTitle>
+          <DialogTitle>{isEditing ? t('form.editAward') : t('form.addAward')}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label>奖项名称 *</Label>
+            <Label>{t('form.awardName')} *</Label>
             <Input
               value={formData.name}
               onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
-              placeholder="例如：AMC 12 满分"
+              placeholder={t('form.awardNamePlaceholder')}
               maxLength={200}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>奖项级别 *</Label>
+              <Label>{t('form.level')} *</Label>
               <Select
                 value={formData.level}
                 onValueChange={(v) => setFormData((p) => ({ ...p, level: v }))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="选择级别" />
+                  <SelectValue placeholder={t('form.selectLevel')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {AWARD_LEVELS.map((l) => (
+                  {AWARD_LEVEL_KEYS.map((l) => (
                     <SelectItem key={l.value} value={l.value}>
-                      {l.label}
+                      {t(`awardLevels.${l.labelKey}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -152,7 +155,7 @@ export function AwardForm({ open, onOpenChange, editingAward }: AwardFormProps) 
             </div>
 
             <div className="space-y-2">
-              <Label>获奖年份</Label>
+              <Label>{t('form.awardYear')}</Label>
               <Input
                 type="number"
                 value={formData.year}
@@ -165,11 +168,11 @@ export function AwardForm({ open, onOpenChange, editingAward }: AwardFormProps) 
           </div>
 
           <div className="space-y-2">
-            <Label>奖项描述</Label>
+            <Label>{t('form.awardDescription')}</Label>
             <Textarea
               value={formData.description}
               onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
-              placeholder="简要描述这个奖项的含金量或你的成就..."
+              placeholder={t('form.awardDescPlaceholder')}
               rows={3}
               maxLength={500}
             />
@@ -179,7 +182,7 @@ export function AwardForm({ open, onOpenChange, editingAward }: AwardFormProps) 
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            取消
+            {tCommon('cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={isPending}>
             {isPending ? (
@@ -187,14 +190,10 @@ export function AwardForm({ open, onOpenChange, editingAward }: AwardFormProps) 
             ) : (
               <Save className="mr-2 h-4 w-4" />
             )}
-            保存
+            {tCommon('save')}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
-
-
-
-

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 import {
   Download,
@@ -34,71 +35,29 @@ type ExportFormat = 'json' | 'csv' | 'pdf';
 
 interface ExportFormatOption {
   id: ExportFormat;
-  label: string;
-  description: string;
+  labelKey: string;
   icon: React.ElementType;
 }
 
 const exportFormats: ExportFormatOption[] = [
-  {
-    id: 'json',
-    label: 'JSON',
-    description: '完整数据，适合备份',
-    icon: FileJson,
-  },
-  {
-    id: 'csv',
-    label: 'CSV',
-    description: '表格格式，可用 Excel 打开',
-    icon: FileSpreadsheet,
-  },
-  {
-    id: 'pdf',
-    label: 'PDF',
-    description: '打印友好的报告格式',
-    icon: FileText,
-  },
+  { id: 'json', labelKey: 'json', icon: FileJson },
+  { id: 'csv', labelKey: 'csv', icon: FileSpreadsheet },
+  { id: 'pdf', labelKey: 'pdf', icon: FileText },
 ];
 
 // 数据类型
 interface DataTypeOption {
   id: string;
-  label: string;
-  description: string;
+  labelKey: string;
   size?: string;
 }
 
 const dataTypes: DataTypeOption[] = [
-  {
-    id: 'profile',
-    label: '个人资料',
-    description: '基本信息、学术背景、语言成绩',
-    size: '~5KB',
-  },
-  {
-    id: 'applications',
-    label: '申请记录',
-    description: '申请的学校、状态、时间线',
-    size: '~10KB',
-  },
-  {
-    id: 'favorites',
-    label: '收藏内容',
-    description: '收藏的学校、案例、文章',
-    size: '~2KB',
-  },
-  {
-    id: 'chat_history',
-    label: 'AI 对话记录',
-    description: '与 AI 助手的历史对话',
-    size: '~50KB',
-  },
-  {
-    id: 'settings',
-    label: '偏好设置',
-    description: '通知设置、显示偏好',
-    size: '~1KB',
-  },
+  { id: 'profile', labelKey: 'profile', size: '~5KB' },
+  { id: 'applications', labelKey: 'applications', size: '~10KB' },
+  { id: 'favorites', labelKey: 'favorites', size: '~2KB' },
+  { id: 'chat_history', labelKey: 'aiChats', size: '~50KB' },
+  { id: 'settings', labelKey: 'preferences', size: '~1KB' },
 ];
 
 interface DataExportDialogProps {
@@ -106,6 +65,8 @@ interface DataExportDialogProps {
 }
 
 export function DataExportDialog({ trigger }: DataExportDialogProps) {
+  const t = useTranslations('dataExport');
+  const tCommon = useTranslations('common');
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<'select' | 'exporting' | 'done'>('select');
   const [format, setFormat] = useState<ExportFormat>('json');
@@ -134,7 +95,7 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
   // 开始导出
   const handleExport = async () => {
     if (selectedTypes.length === 0) {
-      toast.error('请至少选择一种数据类型');
+      toast.error(t('toast.selectDataType'));
       return;
     }
 
@@ -171,9 +132,9 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setStep('done');
-      toast.success('数据导出完成！');
+      toast.success(t('toast.success'));
     } catch (error) {
-      toast.error('导出失败，请稍后重试');
+      toast.error(t('toast.failed'));
       setStep('select');
     }
   };
@@ -217,7 +178,7 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
         {trigger || (
           <Button variant="outline">
             <Download className="w-4 h-4 mr-2" />
-            导出数据
+            {t('trigger')}
           </Button>
         )}
       </DialogTrigger>
@@ -225,16 +186,16 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
         {step === 'select' && (
           <>
             <DialogHeader>
-              <DialogTitle>导出我的数据</DialogTitle>
+              <DialogTitle>{t('title')}</DialogTitle>
               <DialogDescription>
-                选择要导出的数据类型和格式，我们会为您生成下载文件。
+                {t('description')}
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-6 py-4">
               {/* 格式选择 */}
               <div>
-                <Label className="text-sm font-medium mb-3 block">导出格式</Label>
+                <Label className="text-sm font-medium mb-3 block">{t('formatLabel')}</Label>
                 <RadioGroup
                   value={format}
                   onValueChange={(v) => setFormat(v as ExportFormat)}
@@ -258,9 +219,9 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
                           )}
                         >
                           <Icon className="w-6 h-6" />
-                          <span className="text-sm font-medium">{fmt.label}</span>
+                          <span className="text-sm font-medium">{t(`formats.${fmt.labelKey}.label`)}</span>
                           <span className="text-xs text-muted-foreground text-center">
-                            {fmt.description}
+                            {t(`formats.${fmt.labelKey}.description`)}
                           </span>
                         </Label>
                       </div>
@@ -272,14 +233,14 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
               {/* 数据类型选择 */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <Label className="text-sm font-medium">选择数据</Label>
+                  <Label className="text-sm font-medium">{t('selectDataLabel')}</Label>
                   <Button 
                     variant="ghost" 
                     size="sm" 
                     className="h-auto p-0 text-xs"
                     onClick={toggleAll}
                   >
-                    {selectedTypes.length === dataTypes.length ? '取消全选' : '全选'}
+                    {selectedTypes.length === dataTypes.length ? t('deselectAll') : t('selectAll')}
                   </Button>
                 </div>
                 <div className="space-y-2">
@@ -299,9 +260,9 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
                         onCheckedChange={() => toggleType(type.id)}
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium">{type.label}</p>
+                        <p className="text-sm font-medium">{t(`dataTypes.${type.labelKey}.label`)}</p>
                         <p className="text-xs text-muted-foreground">
-                          {type.description}
+                          {t(`dataTypes.${type.labelKey}.description`)}
                         </p>
                       </div>
                       {type.size && (
@@ -318,18 +279,18 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
               <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50">
                 <Shield className="w-4 h-4 text-success mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-muted-foreground">
-                  您的数据安全加密传输。导出文件仅包含您选择的数据类型，不包含密码等敏感信息。
+                  {t('securityNote')}
                 </p>
               </div>
             </div>
 
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>
-                取消
+                {tCommon('cancel')}
               </Button>
               <Button onClick={handleExport} disabled={selectedTypes.length === 0}>
                 <Download className="w-4 h-4 mr-2" />
-                开始导出
+                {t('startExport')}
               </Button>
             </DialogFooter>
           </>
@@ -338,9 +299,9 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
         {step === 'exporting' && (
           <div className="py-8 text-center">
             <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
-            <h4 className="font-semibold mb-2">正在导出数据...</h4>
+            <h4 className="font-semibold mb-2">{t('exportingTitle')}</h4>
             <p className="text-sm text-muted-foreground mb-6">
-              请稍候，正在处理您的数据
+              {t('exportingDescription')}
             </p>
             <div className="max-w-xs mx-auto">
               <Progress value={progress} className="h-2" />
@@ -359,17 +320,17 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
             >
               <Check className="w-8 h-8 text-success" />
             </motion.div>
-            <h4 className="font-semibold mb-2">导出完成！</h4>
+            <h4 className="font-semibold mb-2">{t('exportCompleteTitle')}</h4>
             <p className="text-sm text-muted-foreground mb-6">
-              您的数据已准备好下载
+              {t('exportCompleteDescription')}
             </p>
             <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
               <Button onClick={handleDownload}>
                 <Download className="w-4 h-4 mr-2" />
-                下载文件
+                {t('downloadFile')}
               </Button>
               <Button variant="outline" onClick={() => setOpen(false)}>
-                关闭
+                {tCommon('close')}
               </Button>
             </div>
           </div>
@@ -383,7 +344,7 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
 export function QuickExportButton({
   dataType,
   format = 'csv',
-  label = '导出',
+  label,
   className,
 }: {
   dataType: string;
@@ -391,16 +352,18 @@ export function QuickExportButton({
   label?: string;
   className?: string;
 }) {
+  const t = useTranslations('dataExport');
   const [loading, setLoading] = useState(false);
+  const displayLabel = label || t('trigger');
 
   const handleExport = async () => {
     setLoading(true);
     try {
       // 模拟导出
       await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success('导出成功！');
+      toast.success(t('toast.success'));
     } catch {
-      toast.error('导出失败');
+      toast.error(t('toast.failed'));
     } finally {
       setLoading(false);
     }
@@ -419,7 +382,7 @@ export function QuickExportButton({
       ) : (
         <Download className="w-4 h-4 mr-2" />
       )}
-      {label}
+      {displayLabel}
     </Button>
   );
 }

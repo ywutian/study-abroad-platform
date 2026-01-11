@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { AlertTriangle, Trash2, Info, HelpCircle, Loader2 } from 'lucide-react';
 import {
   AlertDialog,
@@ -45,7 +46,7 @@ const typeConfig: Record<ConfirmType, { icon: React.ElementType; iconClass: stri
   },
   info: {
     icon: Info,
-    iconClass: 'text-blue-500 bg-blue-500/10',
+    iconClass: 'text-primary bg-primary/10',
     buttonClass: '',
   },
   question: {
@@ -61,13 +62,16 @@ export function ConfirmDialog({
   title,
   description,
   type = 'question',
-  confirmLabel = '确认',
-  cancelLabel = '取消',
+  confirmLabel,
+  cancelLabel,
   onConfirm,
   onCancel,
   loading = false,
 }: ConfirmDialogProps) {
+  const t = useTranslations('ui.dialog');
   const [isLoading, setIsLoading] = useState(false);
+  const finalConfirmLabel = confirmLabel ?? t('confirm');
+  const finalCancelLabel = cancelLabel ?? t('cancel');
   const config = typeConfig[type];
   const Icon = config.icon;
 
@@ -112,7 +116,7 @@ export function ConfirmDialog({
             disabled={showLoading}
             className="w-full sm:w-auto"
           >
-            {cancelLabel}
+            {finalCancelLabel}
           </AlertDialogCancel>
           <AlertDialogAction 
             onClick={handleConfirm}
@@ -120,7 +124,7 @@ export function ConfirmDialog({
             className={cn('w-full sm:w-auto', config.buttonClass)}
           >
             {showLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {confirmLabel}
+            {finalConfirmLabel}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -205,14 +209,15 @@ export function DeleteConfirmDialog({
   itemName,
   onConfirm,
 }: DeleteConfirmDialogProps) {
+  const t = useTranslations('ui.dialog');
   return (
     <ConfirmDialog
       open={open}
       onOpenChange={onOpenChange}
       type="danger"
-      title={itemName ? `删除 "${itemName}"？` : '确认删除？'}
-      description="此操作无法撤销，删除后数据将永久丢失。"
-      confirmLabel="删除"
+      title={itemName ? t('deleteWithName', { name: itemName }) : t('deleteTitle')}
+      description={t('deleteDesc')}
+      confirmLabel={t('delete')}
       onConfirm={onConfirm}
     />
   );

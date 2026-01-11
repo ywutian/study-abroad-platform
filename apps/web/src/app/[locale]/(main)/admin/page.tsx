@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -38,6 +38,8 @@ import {
 import { apiClient } from '@/lib/api';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { LoadingState, CardSkeleton, ListSkeleton } from '@/components/ui/loading-state';
+import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -129,56 +131,56 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [reportFilter, setReportFilter] = useState('PENDING');
   const [userSearch, setUserSearch] = useState('');
-  const [userRoleFilter, setUserRoleFilter] = useState('');
+  const [userRoleFilter, setUserRoleFilter] = useState('ALL');
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
   const [reportToResolve, setReportToResolve] = useState<Report | null>(null);
   const [schoolSearch, setSchoolSearch] = useState('');
   const [syncLimit, setSyncLimit] = useState('100');
 
-  // Redirect if not admin
-  if (user && user.role !== 'ADMIN') {
-    router.push('/profile');
-    return null;
-  }
+  const isAdmin = user?.role === 'ADMIN';
 
   // Fetch stats
-  const { data: stats, isLoading: statsLoading } = useQuery({
+  const { data: statsData, isLoading: statsLoading } = useQuery({
     queryKey: ['adminStats'],
-    queryFn: () => apiClient.get<AdminStats>('/admin/stats'),
-    enabled: user?.role === 'ADMIN',
+    queryFn: () => apiClient.get<{ success: boolean; data: AdminStats }>('/admin/stats'),
+    enabled: isAdmin,
   });
+  const stats = statsData?.data;
 
   // Fetch reports
-  const { data: reportsData, isLoading: reportsLoading } = useQuery({
+  const { data: reportsResponse, isLoading: reportsLoading } = useQuery({
     queryKey: ['adminReports', reportFilter],
     queryFn: () =>
-      apiClient.get<{ data: Report[]; total: number }>('/admin/reports', {
+      apiClient.get<{ success: boolean; data: { data: Report[]; total: number } }>('/admin/reports', {
         params: reportFilter ? { status: reportFilter } : {},
       }),
-    enabled: user?.role === 'ADMIN',
+    enabled: isAdmin,
   });
+  const reportsData = reportsResponse?.data;
 
   // Fetch users
-  const { data: usersData, isLoading: usersLoading } = useQuery({
+  const { data: usersResponse, isLoading: usersLoading } = useQuery({
     queryKey: ['adminUsers', userSearch, userRoleFilter],
     queryFn: () => {
       const params: Record<string, string> = {};
       if (userSearch) params.search = userSearch;
-      if (userRoleFilter) params.role = userRoleFilter;
-      return apiClient.get<{ data: User[]; total: number }>('/admin/users', { params });
+      if (userRoleFilter && userRoleFilter !== 'ALL') params.role = userRoleFilter;
+      return apiClient.get<{ success: boolean; data: { data: User[]; total: number } }>('/admin/users', { params });
     },
-    enabled: user?.role === 'ADMIN',
+    enabled: isAdmin,
   });
+  const usersData = usersResponse?.data;
 
   // Fetch schools
-  const { data: schoolsData, isLoading: schoolsLoading, refetch: refetchSchools } = useQuery({
+  const { data: schoolsResponse, isLoading: schoolsLoading, refetch: refetchSchools } = useQuery({
     queryKey: ['adminSchools', schoolSearch],
     queryFn: () =>
-      apiClient.get<{ items: School[]; total: number }>('/schools', {
+      apiClient.get<{ success: boolean; data: { items: School[]; total: number } }>('/schools', {
         params: { search: schoolSearch ?? '', pageSize: '50' },
       }),
-    enabled: user?.role === 'ADMIN',
+    enabled: isAdmin,
   });
+  const schoolsData = schoolsResponse?.data;
 
   // Update report mutation
   const updateReportMutation = useMutation({
@@ -188,7 +190,7 @@ export default function AdminPage() {
       queryClient.invalidateQueries({ queryKey: ['adminReports'] });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
       setReportToResolve(null);
-      toast.success('举报已处理');
+      toast.success(t('admin.toast.reportResolved'));
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -201,7 +203,7 @@ export default function AdminPage() {
       apiClient.put(`/admin/users/${userId}/role`, { role }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
-      toast.success('用户角色已更新');
+      toast.success(t('admin.toast.roleUpdated'));
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -215,7 +217,7 @@ export default function AdminPage() {
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
       setUserToDelete(null);
-      toast.success('用户已删除');
+      toast.success(t('admin.toast.userDeleted'));
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -228,10 +230,10 @@ export default function AdminPage() {
       apiClient.post<{ synced: number; errors: number }>(`/schools/sync/scorecard?limit=${limit}`),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['adminSchools'] });
-      toast.success(`同步完成: ${data.synced} 所学校`);
+      toast.success(t('admin.toast.syncComplete', { count: data.synced }));
     },
     onError: (error: Error) => {
-      toast.error(error.message || '同步失败');
+      toast.error(error.message || t('admin.toast.syncFailed'));
     },
   });
 
@@ -241,21 +243,21 @@ export default function AdminPage() {
       apiClient.post<{ success: string[]; failed: { school: string; error: string }[] }>('/schools/scrape/all'),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['adminSchools'] });
-      toast.success(`爬取完成: ${data.success.length} 所学校`);
+      toast.success(t('admin.toast.scrapeComplete', { count: data.success.length }));
     },
     onError: (error: Error) => {
-      toast.error(error.message || '爬取失败');
+      toast.error(error.message || t('admin.toast.scrapeFailed'));
     },
   });
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'PENDING':
-        return <Badge variant="outline" className="gap-1"><Clock className="h-3 w-3" />待处理</Badge>;
+        return <Badge variant="warning" className="gap-1"><Clock className="h-3 w-3" />{t('admin.status.pending')}</Badge>;
       case 'REVIEWED':
-        return <Badge variant="secondary" className="gap-1"><CheckCircle className="h-3 w-3" />已审核</Badge>;
+        return <Badge variant="info" className="gap-1"><CheckCircle className="h-3 w-3" />{t('admin.status.reviewed')}</Badge>;
       case 'RESOLVED':
-        return <Badge variant="default" className="gap-1"><CheckCircle className="h-3 w-3" />已解决</Badge>;
+        return <Badge variant="success" className="gap-1"><CheckCircle className="h-3 w-3" />{t('admin.status.resolved')}</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -264,51 +266,71 @@ export default function AdminPage() {
   const getRoleBadge = (role: string) => {
     switch (role) {
       case 'ADMIN':
-        return <Badge variant="destructive">管理员</Badge>;
+        return <Badge variant="gradient-purple">{t('admin.roles.admin')}</Badge>;
       case 'VERIFIED':
-        return <Badge variant="default">已认证</Badge>;
+        return <Badge variant="gradient-success">{t('admin.roles.verified')}</Badge>;
       default:
-        return <Badge variant="secondary">普通用户</Badge>;
+        return <Badge variant="secondary">{t('admin.roles.user')}</Badge>;
     }
   };
 
   const getTargetTypeName = (type: string) => {
     switch (type) {
-      case 'USER': return '用户';
-      case 'MESSAGE': return '消息';
-      case 'CASE': return '案例';
-      case 'REVIEW': return '评价';
+      case 'USER': return t('admin.targetTypes.user');
+      case 'MESSAGE': return t('admin.targetTypes.message');
+      case 'CASE': return t('admin.targetTypes.case');
+      case 'REVIEW': return t('admin.targetTypes.review');
       default: return type;
     }
   };
 
+  // Redirect if not admin (must be after all hooks)
+  useEffect(() => {
+    if (user && user.role !== 'ADMIN') {
+      router.push('/profile');
+    }
+  }, [user, router]);
+
+  // Don't render if not admin
+  if (!isAdmin) {
+    return null;
+  }
+
   return (
-    <PageContainer>
+    <PageContainer maxWidth="7xl">
       <PageHeader
-        title="管理后台"
-        description="管理用户、处理举报、查看系统数据"
+        title={t('admin.title')}
+        description={t('admin.description')}
+        icon={Shield}
+        color="violet"
+        stats={stats ? [
+          { label: t('admin.stats.totalUsers'), value: stats.totalUsers, icon: Users, color: 'text-blue-500' },
+          { label: t('admin.stats.totalCases'), value: stats.totalCases, icon: FileText, color: 'text-emerald-500' },
+          { label: t('admin.stats.pendingReports'), value: stats.pendingReports, icon: AlertTriangle, color: 'text-amber-500' },
+          { label: t('admin.stats.totalReviews'), value: stats.totalReviews, icon: UserCheck, color: 'text-violet-500' },
+        ] : undefined}
       />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-6">
-          <TabsTrigger value="overview" className="gap-2">
+        <TabsList className="mb-6 bg-muted/50">
+          <TabsTrigger value="overview" className="gap-2 data-[state=active]:bg-violet-500/10 data-[state=active]:text-violet-600">
             <BarChart3 className="h-4 w-4" />
-            概览
+            <span className="hidden sm:inline">{t('admin.tabs.overview')}</span>
           </TabsTrigger>
-          <TabsTrigger value="reports" className="gap-2">
+          <TabsTrigger value="reports" className="gap-2 data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600">
             <AlertTriangle className="h-4 w-4" />
-            举报
+            <span className="hidden sm:inline">{t('admin.tabs.reports')}</span>
             {stats?.pendingReports ? (
-              <Badge variant="destructive">{stats.pendingReports}</Badge>
+              <Badge variant="warning">{stats.pendingReports}</Badge>
             ) : null}
           </TabsTrigger>
-          <TabsTrigger value="users" className="gap-2">
+          <TabsTrigger value="users" className="gap-2 data-[state=active]:bg-blue-500/10 data-[state=active]:text-blue-600">
             <Users className="h-4 w-4" />
-            用户
+            <span className="hidden sm:inline">{t('admin.tabs.users')}</span>
           </TabsTrigger>
-          <TabsTrigger value="schools" className="gap-2">
+          <TabsTrigger value="schools" className="gap-2 data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-600">
             <GraduationCap className="h-4 w-4" />
-            学校数据
+            <span className="hidden sm:inline">{t('admin.tabs.data')}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -320,48 +342,53 @@ export default function AdminPage() {
             </div>
           ) : stats ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium">总用户数</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalUsers}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {stats.verifiedUsers} 已验证
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium">录取案例</CardTitle>
-                  <FileText className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalCases}</div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium">待处理举报</CardTitle>
-                  <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-amber-600">{stats.pendingReports}</div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium">评价数量</CardTitle>
-                  <UserCheck className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalReviews}</div>
-                </CardContent>
-              </Card>
+              {[
+                { title: t('admin.stats.totalUsers'), value: stats.totalUsers, sub: `${stats.verifiedUsers} ${t('admin.roles.verified')}`, icon: Users, color: 'blue' },
+                { title: t('admin.stats.totalCases'), value: stats.totalCases, icon: FileText, color: 'emerald' },
+                { title: t('admin.stats.pendingReports'), value: stats.pendingReports, icon: AlertTriangle, color: 'amber' },
+                { title: t('admin.stats.totalReviews'), value: stats.totalReviews, icon: UserCheck, color: 'violet' },
+              ].map((stat, index) => {
+                const StatIcon = stat.icon;
+                return (
+                  <motion.div
+                    key={stat.title}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Card className="overflow-hidden">
+                      <div className={cn('h-1 bg-gradient-to-r', {
+                        'from-blue-500 to-cyan-500': stat.color === 'blue',
+                        'from-emerald-500 to-teal-500': stat.color === 'emerald',
+                        'from-amber-500 to-yellow-500': stat.color === 'amber',
+                        'from-violet-500 to-purple-500': stat.color === 'violet',
+                      })} />
+                      <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                        <div className={cn('flex h-8 w-8 items-center justify-center rounded-lg', {
+                          'bg-blue-500/10 text-blue-500': stat.color === 'blue',
+                          'bg-emerald-500/10 text-emerald-500': stat.color === 'emerald',
+                          'bg-amber-500/10 text-amber-500': stat.color === 'amber',
+                          'bg-violet-500/10 text-violet-500': stat.color === 'violet',
+                        })}>
+                          <StatIcon className="h-4 w-4" />
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className={cn('text-3xl font-bold', {
+                          'text-blue-600': stat.color === 'blue',
+                          'text-emerald-600': stat.color === 'emerald',
+                          'text-amber-600': stat.color === 'amber',
+                          'text-violet-600': stat.color === 'violet',
+                        })}>{stat.value}</div>
+                        {stat.sub && (
+                          <p className="text-xs text-muted-foreground mt-1">{stat.sub}</p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              })}
             </div>
           ) : null}
         </TabsContent>
@@ -371,12 +398,12 @@ export default function AdminPage() {
           <div className="mb-4">
             <Select value={reportFilter} onValueChange={setReportFilter}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="筛选状态" />
+                <SelectValue placeholder={t('common.filter')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="PENDING">待处理</SelectItem>
-                <SelectItem value="REVIEWED">已审核</SelectItem>
-                <SelectItem value="RESOLVED">已解决</SelectItem>
+                <SelectItem value="PENDING">{t('admin.status.pending')}</SelectItem>
+                <SelectItem value="REVIEWED">{t('admin.status.reviewed')}</SelectItem>
+                <SelectItem value="RESOLVED">{t('admin.status.resolved')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -401,7 +428,7 @@ export default function AdminPage() {
                           <p className="text-sm text-muted-foreground">{report.detail}</p>
                         )}
                         <p className="text-xs text-muted-foreground">
-                          举报人: {report.reporter.email} · {format(new Date(report.createdAt), 'yyyy-MM-dd HH:mm')}
+                          {t('admin.reports.reporter')}: {report.reporter.email} · {format(new Date(report.createdAt), 'yyyy-MM-dd HH:mm')}
                         </p>
                       </div>
                       {report.status === 'PENDING' && (
@@ -411,13 +438,13 @@ export default function AdminPage() {
                             variant="outline"
                             onClick={() => updateReportMutation.mutate({ id: report.id, status: 'REVIEWED' })}
                           >
-                            标记已审核
+                            {t('admin.reports.markReviewed')}
                           </Button>
                           <Button
                             size="sm"
                             onClick={() => setReportToResolve(report)}
                           >
-                            处理
+                            {t('admin.reports.resolve')}
                           </Button>
                         </div>
                       )}
@@ -429,8 +456,8 @@ export default function AdminPage() {
           ) : (
             <EmptyState
               icon={<AlertTriangle className="h-12 w-12" />}
-              title="暂无举报"
-              description="当前筛选条件下没有举报记录"
+              title={t('admin.reports.empty')}
+              description={t('admin.reports.emptyDesc')}
             />
           )}
         </TabsContent>
@@ -441,7 +468,7 @@ export default function AdminPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="搜索用户邮箱..."
+                placeholder={t('admin.users.searchPlaceholder')}
                 value={userSearch}
                 onChange={(e) => setUserSearch(e.target.value)}
                 className="pl-9"
@@ -449,13 +476,13 @@ export default function AdminPage() {
             </div>
             <Select value={userRoleFilter} onValueChange={setUserRoleFilter}>
               <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="全部角色" />
+                <SelectValue placeholder={t('common.all')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">全部角色</SelectItem>
-                <SelectItem value="USER">普通用户</SelectItem>
-                <SelectItem value="VERIFIED">已认证</SelectItem>
-                <SelectItem value="ADMIN">管理员</SelectItem>
+                <SelectItem value="ALL">{t('common.all')}</SelectItem>
+                <SelectItem value="USER">{t('admin.roles.user')}</SelectItem>
+                <SelectItem value="VERIFIED">{t('admin.roles.verified')}</SelectItem>
+                <SelectItem value="ADMIN">{t('admin.roles.admin')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -468,11 +495,11 @@ export default function AdminPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>用户</TableHead>
-                      <TableHead>角色</TableHead>
-                      <TableHead>状态</TableHead>
-                      <TableHead>案例/评价</TableHead>
-                      <TableHead>注册时间</TableHead>
+                      <TableHead>{t('admin.users.email')}</TableHead>
+                      <TableHead>{t('admin.users.role')}</TableHead>
+                      <TableHead>{t('common.status')}</TableHead>
+                      <TableHead>{t('admin.users.cases')}/{t('admin.users.reviews')}</TableHead>
+                      <TableHead>{t('admin.users.joinDate')}</TableHead>
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -492,12 +519,12 @@ export default function AdminPage() {
                           {u.emailVerified ? (
                             <Badge variant="outline" className="gap-1">
                               <CheckCircle className="h-3 w-3 text-green-500" />
-                              已验证
+                              {t('admin.roles.verified')}
                             </Badge>
                           ) : (
                             <Badge variant="outline" className="gap-1">
                               <XCircle className="h-3 w-3 text-amber-500" />
-                              未验证
+                              {t('admin.users.notVerified')}
                             </Badge>
                           )}
                         </TableCell>
@@ -520,14 +547,14 @@ export default function AdminPage() {
                                 disabled={u.role === 'VERIFIED' || u.role === 'ADMIN'}
                               >
                                 <UserCheck className="mr-2 h-4 w-4" />
-                                设为已认证
+                                {t('admin.users.setVerified')}
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => updateUserRoleMutation.mutate({ userId: u.id, role: 'USER' })}
                                 disabled={u.role === 'USER' || u.role === 'ADMIN'}
                               >
                                 <Users className="mr-2 h-4 w-4" />
-                                设为普通用户
+                                {t('admin.users.setUser')}
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => setUserToDelete(u.id)}
@@ -535,7 +562,7 @@ export default function AdminPage() {
                                 disabled={u.role === 'ADMIN'}
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
-                                删除用户
+                                {t('admin.users.delete')}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -549,8 +576,8 @@ export default function AdminPage() {
           ) : (
             <EmptyState
               icon={<Users className="h-12 w-12" />}
-              title="未找到用户"
-              description="尝试其他搜索条件"
+              title={t('admin.users.noResults')}
+              description={t('admin.users.noResultsDesc')}
             />
           )}
         </TabsContent>
@@ -563,10 +590,10 @@ export default function AdminPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <Database className="h-4 w-4" />
-                  College Scorecard 同步
+                  {t('admin.data.syncScorecard')}
                 </CardTitle>
                 <CardDescription>
-                  从美国教育部官方 API 同步学校数据
+                  {t('admin.data.syncScorecardDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -576,9 +603,9 @@ export default function AdminPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="100">100 所</SelectItem>
-                      <SelectItem value="500">500 所</SelectItem>
-                      <SelectItem value="1000">1000 所</SelectItem>
+                      <SelectItem value="100">100</SelectItem>
+                      <SelectItem value="500">500</SelectItem>
+                      <SelectItem value="1000">1000</SelectItem>
                     </SelectContent>
                   </Select>
                   <Button
@@ -590,7 +617,7 @@ export default function AdminPage() {
                     ) : (
                       <RefreshCw className="mr-2 h-4 w-4" />
                     )}
-                    同步
+                    {t('admin.data.startSync')}
                   </Button>
                 </div>
               </CardContent>
@@ -600,10 +627,10 @@ export default function AdminPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <Globe className="h-4 w-4" />
-                  学校官网爬取
+                  {t('admin.data.scrapeSchools')}
                 </CardTitle>
                 <CardDescription>
-                  爬取截止日期、文书题目等信息
+                  {t('admin.data.scrapeSchoolsDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -617,7 +644,7 @@ export default function AdminPage() {
                   ) : (
                     <RefreshCw className="mr-2 h-4 w-4" />
                   )}
-                  爬取 Top 10
+                  {t('admin.data.startScrape')}
                 </Button>
               </CardContent>
             </Card>
@@ -626,18 +653,18 @@ export default function AdminPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
-                  数据状态
+                  {t('admin.data.status')}
                 </CardTitle>
                 <CardDescription>
-                  当前数据库学校数量
+                  {t('admin.data.statusDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {schoolsData?.total || 0} 所
+                  {schoolsData?.total || 0}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  数据周期: 2025-2026 申请季
+                  {t('admin.data.cycle')}: 2025-2026
                 </p>
               </CardContent>
             </Card>
@@ -648,7 +675,7 @@ export default function AdminPage() {
             <div className="relative max-w-md">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="搜索学校..."
+                placeholder={t('common.search')}
                 value={schoolSearch}
                 onChange={(e) => setSchoolSearch(e.target.value)}
                 className="pl-9"
@@ -665,12 +692,12 @@ export default function AdminPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[60px]">排名</TableHead>
-                      <TableHead>学校名称</TableHead>
-                      <TableHead>州</TableHead>
-                      <TableHead>申请类型</TableHead>
-                      <TableHead>截止日期</TableHead>
-                      <TableHead>录取率</TableHead>
+                      <TableHead className="w-[60px]">{t('admin.data.rank')}</TableHead>
+                      <TableHead>{t('admin.data.schoolName')}</TableHead>
+                      <TableHead>{t('admin.data.state')}</TableHead>
+                      <TableHead>{t('admin.data.applicationType')}</TableHead>
+                      <TableHead>{t('admin.data.deadline')}</TableHead>
+                      <TableHead>{t('admin.data.acceptanceRate')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -735,8 +762,8 @@ export default function AdminPage() {
           ) : (
             <EmptyState
               icon={<GraduationCap className="h-12 w-12" />}
-              title="未找到学校"
-              description="尝试其他搜索条件"
+              title={t('admin.schools.notFound')}
+              description={t('admin.schools.tryOther')}
             />
           )}
         </TabsContent>
@@ -746,25 +773,25 @@ export default function AdminPage() {
       <AlertDialog open={!!reportToResolve} onOpenChange={() => setReportToResolve(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>处理举报</AlertDialogTitle>
+            <AlertDialogTitle>{t('admin.dialogs.resolveReport')}</AlertDialogTitle>
             <AlertDialogDescription>
-              确认将此举报标记为已解决？
+              {t('admin.dialogs.resolveReportDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogCancel>{t('admin.dialogs.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() =>
                 reportToResolve &&
                 updateReportMutation.mutate({
                   id: reportToResolve.id,
                   status: 'RESOLVED',
-                  resolution: '管理员已处理',
+                  resolution: t('admin.dialogs.defaultResolution'),
                 })
               }
             >
               {updateReportMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              确认解决
+              {t('admin.dialogs.resolveConfirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -774,19 +801,19 @@ export default function AdminPage() {
       <AlertDialog open={!!userToDelete} onOpenChange={() => setUserToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>确认删除用户？</AlertDialogTitle>
+            <AlertDialogTitle>{t('admin.dialogs.deleteUserTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              此操作将软删除该用户，用户数据将被保留但无法登录。
+              {t('admin.dialogs.deleteUserDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogCancel>{t('admin.dialogs.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => userToDelete && deleteUserMutation.mutate(userToDelete)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {deleteUserMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              删除
+              {t('admin.dialogs.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

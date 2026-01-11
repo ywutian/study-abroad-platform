@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   HelpCircle,
@@ -36,103 +37,82 @@ import { cn } from '@/lib/utils';
 // FAQ 数据
 interface FAQItem {
   id: string;
-  question: string;
-  answer: string;
-  category: string;
-  tags?: string[];
+  questionKey: string;
+  answerKey: string;
+  categoryKey: string;
 }
 
-const faqData: FAQItem[] = [
-  {
-    id: '1',
-    question: '如何开始使用平台？',
-    answer: '注册账号后，您可以先完善个人资料，包括学术背景、语言成绩等信息。然后浏览院校库了解目标学校，或直接与 AI 助手对话获取个性化建议。',
-    category: '入门指南',
-    tags: ['新手', '注册'],
-  },
-  {
-    id: '2',
-    question: 'AI 助手可以帮我做什么？',
-    answer: 'AI 助手可以根据您的背景提供选校建议、分析录取概率、回答留学相关问题、帮助规划申请时间线，以及提供文书写作建议。',
-    category: 'AI 功能',
-    tags: ['AI', '选校', '文书'],
-  },
-  {
-    id: '3',
-    question: '录取预测的准确性如何？',
-    answer: '我们的预测模型基于大量历史申请数据训练，准确率约为 85%。但请注意，预测仅供参考，实际录取还会受到多种因素影响。',
-    category: 'AI 功能',
-    tags: ['预测', '录取'],
-  },
-  {
-    id: '4',
-    question: '如何查看申请案例？',
-    answer: '在"案例库"页面，您可以按学校、专业、录取结果等条件筛选案例。每个案例都包含申请者的背景信息和经验分享。',
-    category: '功能使用',
-    tags: ['案例', '筛选'],
-  },
-  {
-    id: '5',
-    question: '我的个人信息安全吗？',
-    answer: '我们严格遵守数据保护法规，采用加密传输和存储。您的个人信息仅用于提供服务，不会分享给第三方。您也可以随时删除账号和数据。',
-    category: '隐私安全',
-    tags: ['隐私', '安全', '数据'],
-  },
-  {
-    id: '6',
-    question: '如何导出我的申请数据？',
-    answer: '在个人中心的"设置"页面，点击"导出数据"按钮，可以下载包含您所有申请信息的 JSON 或 CSV 文件。',
-    category: '功能使用',
-    tags: ['导出', '数据'],
-  },
+// FAQ data keys for translation
+const faqDataKeys: FAQItem[] = [
+  { id: '1', questionKey: 'howToStart', answerKey: 'howToStart', categoryKey: 'gettingStarted' },
+  { id: '2', questionKey: 'whatCanAIDo', answerKey: 'whatCanAIDo', categoryKey: 'aiFeatures' },
+  { id: '3', questionKey: 'predictionAccuracy', answerKey: 'predictionAccuracy', categoryKey: 'aiFeatures' },
+  { id: '4', questionKey: 'viewCases', answerKey: 'viewCases', categoryKey: 'usage' },
+  { id: '5', questionKey: 'dataSecure', answerKey: 'dataSecure', categoryKey: 'privacySecurity' },
+  { id: '6', questionKey: 'exportData', answerKey: 'exportData', categoryKey: 'usage' },
 ];
 
-// 帮助资源
-const helpResources = [
-  {
-    id: 'docs',
-    title: '使用文档',
-    description: '详细的功能说明和操作指南',
-    icon: BookOpen,
-    url: '/docs',
-    external: false,
-  },
-  {
-    id: 'video',
-    title: '视频教程',
-    description: '观看视频快速上手',
-    icon: Video,
-    url: 'https://youtube.com',
-    external: true,
-  },
-  {
-    id: 'blog',
-    title: '留学攻略',
-    description: '申请技巧和经验分享',
-    icon: FileText,
-    url: '/blog',
-    external: false,
-  },
+// Help resources config
+const helpResourcesConfig = [
+  { id: 'docs', icon: BookOpen, url: '/docs', external: false },
+  { id: 'video', icon: Video, url: 'https://youtube.com', external: true },
+  { id: 'blog', icon: FileText, url: '/blog', external: false },
 ];
 
-// 获取分类列表
-const categories = [...new Set(faqData.map(faq => faq.category))];
+// Category keys
+const categoryKeys = ['gettingStarted', 'aiFeatures', 'featureUsage', 'privacySecurity'];
 
 export function HelpCenter() {
+  const t = useTranslations('helpCenter');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  // 仅在客户端渲染后显示，避免 hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Get translated FAQ data
+  const faqData = useMemo(() => faqDataKeys.map(faq => ({
+    id: faq.id,
+    question: t(`faqItems.${faq.questionKey}.question`),
+    answer: t(`faqItems.${faq.answerKey}.answer`),
+    category: t(`categories.${faq.categoryKey}`),
+    categoryKey: faq.categoryKey,
+  })), [t]);
+
+  // Get translated categories
+  const categories = useMemo(() => categoryKeys.map(key => ({
+    key,
+    label: t(`categories.${key}`),
+  })), [t]);
+
+  // Get translated help resources
+  const helpResources = useMemo(() => helpResourcesConfig.map(res => ({
+    ...res,
+    title: t(`resources.${res.id}.title`),
+    description: t(`resources.${res.id}.description`),
+  })), [t]);
 
   // 过滤 FAQ
   const filteredFAQs = faqData.filter(faq => {
     const matchesSearch = searchQuery.trim() === '' || 
       faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      faq.answer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      faq.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+      faq.answer.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesCategory = !selectedCategory || faq.category === selectedCategory;
+    const matchesCategory = !selectedCategory || faq.categoryKey === selectedCategory;
     
     return matchesSearch && matchesCategory;
   });
+
+  if (!mounted) {
+    return (
+      <Button variant="ghost" size="icon" className="relative" data-tour="help">
+        <HelpCircle className="h-5 w-5" />
+      </Button>
+    );
+  }
 
   return (
     <Sheet>
@@ -148,7 +128,7 @@ export function HelpCenter() {
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-[480px] p-0">
         <SheetHeader className="px-6 py-4 border-b">
-          <SheetTitle className="text-left">帮助中心</SheetTitle>
+          <SheetTitle className="text-left">{t('title')}</SheetTitle>
         </SheetHeader>
 
         <ScrollArea className="h-[calc(100vh-80px)]">
@@ -159,7 +139,7 @@ export function HelpCenter() {
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="搜索帮助内容..."
+                placeholder={t('searchPlaceholder')}
                 className="pl-10"
               />
             </div>
@@ -200,28 +180,28 @@ export function HelpCenter() {
                 className="cursor-pointer"
                 onClick={() => setSelectedCategory(null)}
               >
-                全部
+                {t('all')}
               </Badge>
               {categories.map((category) => (
                 <Badge
-                  key={category}
-                  variant={selectedCategory === category ? 'default' : 'outline'}
+                  key={category.key}
+                  variant={selectedCategory === category.key ? 'default' : 'outline'}
                   className="cursor-pointer"
-                  onClick={() => setSelectedCategory(category)}
+                  onClick={() => setSelectedCategory(category.key)}
                 >
-                  {category}
+                  {category.label}
                 </Badge>
               ))}
             </div>
 
             {/* FAQ 列表 */}
             <div>
-              <h3 className="text-sm font-semibold mb-3">常见问题</h3>
+              <h3 className="text-sm font-semibold mb-3">{t('faqTitle')}</h3>
               {filteredFAQs.length === 0 ? (
                 <div className="text-center py-8">
                   <HelpCircle className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
                   <p className="text-sm text-muted-foreground">
-                    未找到相关问题
+                    {t('noResults')}
                   </p>
                 </div>
               ) : (
@@ -237,15 +217,6 @@ export function HelpCenter() {
                       </AccordionTrigger>
                       <AccordionContent className="text-sm text-muted-foreground pb-4">
                         <p>{faq.answer}</p>
-                        {faq.tags && (
-                          <div className="flex flex-wrap gap-1 mt-3">
-                            {faq.tags.map((tag) => (
-                              <Badge key={tag} variant="secondary" className="text-xs">
-                                {tag}
-                              </Badge>
-                            ))}
-                          </div>
-                        )}
                       </AccordionContent>
                     </AccordionItem>
                   ))}
@@ -255,20 +226,20 @@ export function HelpCenter() {
 
             {/* 联系支持 */}
             <div className="rounded-xl border bg-muted/30 p-4">
-              <h3 className="text-sm font-semibold mb-2">还有其他问题？</h3>
+              <h3 className="text-sm font-semibold mb-2">{t('otherQuestions')}</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                如果您没有找到答案，可以联系我们的客服团队。
+                {t('contactSupport')}
               </p>
               <div className="flex flex-col gap-2 sm:flex-row">
                 <Button variant="outline" className="flex-1" asChild>
                   <a href="mailto:support@studyabroad.com">
                     <Mail className="w-4 h-4 mr-2" />
-                    发送邮件
+                    {t('sendEmail')}
                   </a>
                 </Button>
                 <Button className="flex-1">
                   <MessageCircle className="w-4 h-4 mr-2" />
-                  在线客服
+                  {t('onlineService')}
                 </Button>
               </div>
             </div>

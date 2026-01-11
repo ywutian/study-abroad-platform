@@ -85,7 +85,7 @@ const FloatingInput = forwardRef<HTMLInputElement, FloatingInputProps>(
               : error
                 ? 'border-destructive/50'
                 : 'border-input hover:border-input/80',
-            success && !error && 'border-green-500/50',
+            success && !error && 'border-success/50',
             disabled && 'opacity-50 cursor-not-allowed',
             className
           )}
@@ -169,7 +169,7 @@ const FloatingInput = forwardRef<HTMLInputElement, FloatingInputProps>(
                   exit={{ opacity: 0, scale: 0 }}
                   transition={transitions.springSnappy}
                 >
-                  <Check className="h-4 w-4 text-green-500" />
+                  <Check className="h-4 w-4 text-success" />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -347,6 +347,9 @@ const FloatingTextarea = forwardRef<HTMLTextAreaElement, FloatingTextareaProps>(
 FloatingTextarea.displayName = 'FloatingTextarea';
 
 export { FloatingInput, FloatingTextarea };
+
+
+
 
 
 

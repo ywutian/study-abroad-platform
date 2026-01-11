@@ -1,10 +1,12 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { BadgeCheck } from 'lucide-react';
 
-type CaseResult = 'ADMITTED' | 'REJECTED' | 'WAITLISTED';
+type CaseResult = 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED';
 
 interface CaseCardProps {
   schoolName: string;
@@ -16,23 +18,23 @@ interface CaseCardProps {
   sat?: string;
   toefl?: string;
   tags?: string[];
+  isVerified?: boolean;
   className?: string;
   onClick?: () => void;
 }
 
-const resultConfig: Record<CaseResult, { label: string; className: string }> = {
-  ADMITTED: {
-    label: '录取',
-    className: 'bg-success/10 text-success border-success/20',
-  },
-  REJECTED: {
-    label: '拒绝',
-    className: 'bg-destructive/10 text-destructive border-destructive/20',
-  },
-  WAITLISTED: {
-    label: '候补',
-    className: 'bg-warning/10 text-warning border-warning/20',
-  },
+const resultStyleConfig: Record<CaseResult, string> = {
+  ADMITTED: 'bg-success/10 text-success border-success/20',
+  REJECTED: 'bg-destructive/10 text-destructive border-destructive/20',
+  WAITLISTED: 'bg-warning/10 text-warning border-warning/20',
+  DEFERRED: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+};
+
+const resultKeyMap: Record<CaseResult, string> = {
+  ADMITTED: 'admitted',
+  REJECTED: 'rejected',
+  WAITLISTED: 'waitlisted',
+  DEFERRED: 'deferred',
 };
 
 export function CaseCard({
@@ -45,10 +47,14 @@ export function CaseCard({
   sat,
   toefl,
   tags,
+  isVerified = false,
   className,
   onClick,
 }: CaseCardProps) {
-  const resultInfo = resultConfig[result];
+  const t = useTranslations('cases');
+  const tv = useTranslations('verification');
+  const resultStyle = resultStyleConfig[result];
+  const resultLabel = t(`result.${resultKeyMap[result]}`);
 
   return (
     <Card
@@ -61,13 +67,24 @@ export function CaseCard({
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <h3 className="truncate font-semibold">{schoolName}</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="truncate font-semibold">{schoolName}</h3>
+              {isVerified && (
+                <Badge
+                  variant="outline"
+                  className="shrink-0 gap-1 bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                >
+                  <BadgeCheck className="h-3 w-3" />
+                  {tv('badge.verified')}
+                </Badge>
+              )}
+            </div>
             <p className="text-sm text-muted-foreground">
               {year} · {round} · {major}
             </p>
           </div>
-          <Badge variant="outline" className={cn('shrink-0', resultInfo.className)}>
-            {resultInfo.label}
+          <Badge variant="outline" className={cn('shrink-0', resultStyle)}>
+            {resultLabel}
           </Badge>
         </div>
       </CardHeader>

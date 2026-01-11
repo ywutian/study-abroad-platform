@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Rocket,
@@ -21,38 +22,30 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useTour, TOURS, welcomeTourSteps } from './tour-provider';
 
-// 欢迎步骤数据
-const welcomeSteps = [
+// 欢迎步骤数据 - 静态配置，文本通过翻译函数获取
+const welcomeStepConfigs = [
   {
     id: 'welcome',
     icon: Rocket,
-    title: '欢迎使用留学平台',
-    description: '一站式留学申请服务，帮助你实现留学梦想。让我们快速了解平台的核心功能。',
-    image: null,
+    titleKey: 'welcome',
     color: 'from-primary/20 to-primary/5',
   },
   {
     id: 'schools',
     icon: GraduationCap,
-    title: '探索全球院校',
-    description: '浏览世界顶尖大学的详细信息，了解录取要求、专业设置和申请截止日期。',
-    image: null,
+    titleKey: 'schools',
     color: 'from-blue-500/20 to-blue-500/5',
   },
   {
     id: 'ai',
     icon: Brain,
-    title: 'AI 智能助手',
-    description: '与 AI 助手对话，获取个性化的选校建议、文书指导和申请策略。',
-    image: null,
+    titleKey: 'ai',
     color: 'from-purple-500/20 to-purple-500/5',
   },
   {
     id: 'prediction',
     icon: Target,
-    title: '录取预测',
-    description: '基于你的背景，智能预测各院校的录取概率，帮助你科学选校。',
-    image: null,
+    titleKey: 'prediction',
     color: 'from-green-500/20 to-green-500/5',
   },
 ];
@@ -67,6 +60,7 @@ interface WelcomeDialogProps {
 }
 
 export function WelcomeDialog({ forceShow = false, onClose }: WelcomeDialogProps) {
+  const t = useTranslations('welcome');
   const [open, setOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const { registerTour, startTour, hasCompletedTour } = useTour();
@@ -110,7 +104,7 @@ export function WelcomeDialog({ forceShow = false, onClose }: WelcomeDialogProps
   };
 
   const handleNext = () => {
-    if (currentStep < welcomeSteps.length - 1) {
+    if (currentStep < welcomeStepConfigs.length - 1) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -121,9 +115,9 @@ export function WelcomeDialog({ forceShow = false, onClose }: WelcomeDialogProps
     }
   };
 
-  const isLastStep = currentStep === welcomeSteps.length - 1;
-  const step = welcomeSteps[currentStep];
-  const Icon = step.icon;
+  const isLastStep = currentStep === welcomeStepConfigs.length - 1;
+  const stepConfig = welcomeStepConfigs[currentStep];
+  const Icon = stepConfig.icon;
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
@@ -143,13 +137,13 @@ export function WelcomeDialog({ forceShow = false, onClose }: WelcomeDialogProps
           {/* 背景渐变 */}
           <div className={cn(
             'absolute inset-0 bg-gradient-to-br transition-colors duration-500',
-            step.color
+            stepConfig.color
           )} />
 
           {/* 步骤内容 */}
           <AnimatePresence mode="wait">
             <motion.div
-              key={step.id}
+              key={stepConfig.id}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
@@ -167,11 +161,11 @@ export function WelcomeDialog({ forceShow = false, onClose }: WelcomeDialogProps
               </motion.div>
 
               {/* 标题 */}
-              <h2 className="text-2xl font-bold mb-3">{step.title}</h2>
+              <h2 className="text-2xl font-bold mb-3">{t(`steps.${stepConfig.titleKey}.title`)}</h2>
 
               {/* 描述 */}
               <p className="text-muted-foreground leading-relaxed">
-                {step.description}
+                {t(`steps.${stepConfig.titleKey}.desc`)}
               </p>
             </motion.div>
           </AnimatePresence>
@@ -181,7 +175,7 @@ export function WelcomeDialog({ forceShow = false, onClose }: WelcomeDialogProps
         <div className="px-8 pb-8 space-y-4">
           {/* 步骤指示器 */}
           <div className="flex justify-center gap-1.5">
-            {welcomeSteps.map((_, index) => (
+            {welcomeStepConfigs.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentStep(index)}
@@ -204,22 +198,22 @@ export function WelcomeDialog({ forceShow = false, onClose }: WelcomeDialogProps
               className={cn(currentStep === 0 && 'invisible')}
             >
               <ChevronLeft className="w-4 h-4 mr-1" />
-              上一步
+              {t('prevBtn')}
             </Button>
 
             {isLastStep ? (
               <div className="flex gap-2">
                 <Button variant="outline" onClick={handleClose}>
-                  跳过引导
+                  {t('skipTour')}
                 </Button>
                 <Button onClick={handleStartTour}>
-                  开始体验
+                  {t('startExperience')}
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </div>
             ) : (
               <Button onClick={handleNext}>
-                下一步
+                {t('nextBtn')}
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             )}
@@ -232,6 +226,7 @@ export function WelcomeDialog({ forceShow = false, onClose }: WelcomeDialogProps
 
 // 用于在设置中重新查看欢迎引导
 export function ResetWelcomeButton() {
+  const t = useTranslations('welcome');
   const [showWelcome, setShowWelcome] = useState(false);
 
   const handleReset = () => {
@@ -242,7 +237,7 @@ export function ResetWelcomeButton() {
   return (
     <>
       <Button variant="outline" onClick={handleReset}>
-        重新查看欢迎引导
+        {t('resetButton')}
       </Button>
       {showWelcome && (
         <WelcomeDialog forceShow onClose={() => setShowWelcome(false)} />

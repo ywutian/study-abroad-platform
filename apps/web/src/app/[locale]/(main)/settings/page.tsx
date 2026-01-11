@@ -1,9 +1,5 @@
 'use client';
 
-/**
- * 设置页面
- */
-
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
@@ -13,7 +9,6 @@ import {
   User,
   Shield,
   Bell,
-  Globe,
   Moon,
   Sun,
   CreditCard,
@@ -24,14 +19,16 @@ import {
   LogOut,
   ChevronRight,
   Languages,
-  Fingerprint,
+  Settings,
+  Palette,
+  Volume2,
+  Sparkles,
 } from 'lucide-react';
 
 import { PageContainer, PageHeader } from '@/components/layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -40,10 +37,14 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { useAuthStore } from '@/stores/auth';
 import { useRouter, usePathname } from '@/lib/i18n/navigation';
 import { Link } from '@/lib/i18n/navigation';
+import { cn } from '@/lib/utils';
 
 interface SettingSection {
+  id: string;
   title: string;
   description?: string;
+  icon: React.ComponentType<{ className?: string }>;
+  color: string;
   items: SettingItem[];
 }
 
@@ -77,11 +78,11 @@ export default function SettingsPage() {
   const handleLogout = () => {
     logout();
     router.push('/login');
-    toast.success('已退出登录');
+    toast.success(t('settings.toast.logoutSuccess'));
   };
 
   const handleDeleteAccount = () => {
-    toast.info('功能开发中，请联系客服');
+    toast.info(t('common.featureInDev'));
     setDeleteDialogOpen(false);
   };
 
@@ -92,34 +93,40 @@ export default function SettingsPage() {
 
   const sections: SettingSection[] = [
     {
-      title: '个人资料',
+      id: 'profile',
+      title: t('settings.sections.profile'),
+      icon: User,
+      color: 'blue',
       items: [
         {
           id: 'profile',
           icon: User,
-          label: '编辑资料',
-          description: '修改头像、昵称等信息',
+          label: t('settings.items.editProfile'),
+          description: t('settings.items.editProfileDesc'),
           type: 'link',
           href: '/profile',
         },
         {
           id: 'security',
           icon: Shield,
-          label: '账号安全',
-          description: '修改密码、绑定手机',
+          label: t('settings.items.security'),
+          description: t('settings.items.securityDesc'),
           type: 'link',
           href: '/settings/security',
         },
       ],
     },
     {
-      title: '偏好设置',
+      id: 'preferences',
+      title: t('settings.sections.preferences'),
+      icon: Palette,
+      color: 'violet',
       items: [
         {
           id: 'theme',
           icon: theme === 'dark' ? Moon : Sun,
-          label: '深色模式',
-          description: '切换明暗主题',
+          label: t('settings.items.darkMode'),
+          description: t('settings.items.darkModeDesc'),
           type: 'toggle',
           value: theme === 'dark',
           onToggle: (value) => setTheme(value ? 'dark' : 'light'),
@@ -127,8 +134,8 @@ export default function SettingsPage() {
         {
           id: 'language',
           icon: Languages,
-          label: '语言',
-          description: '选择界面语言',
+          label: t('settings.items.language'),
+          description: t('settings.items.languageDesc'),
           type: 'select',
           value: pathname.startsWith('/en') ? 'en' : 'zh',
           options: [
@@ -140,13 +147,16 @@ export default function SettingsPage() {
       ],
     },
     {
-      title: '通知',
+      id: 'notifications',
+      title: t('settings.sections.notifications'),
+      icon: Bell,
+      color: 'amber',
       items: [
         {
           id: 'push',
           icon: Bell,
-          label: '推送通知',
-          description: '接收申请进度、AI回复等通知',
+          label: t('settings.items.pushNotification'),
+          description: t('settings.items.pushNotificationDesc'),
           type: 'toggle',
           value: notifications,
           onToggle: setNotifications,
@@ -154,8 +164,8 @@ export default function SettingsPage() {
         {
           id: 'email',
           icon: FileText,
-          label: '邮件通知',
-          description: '接收重要更新和周报',
+          label: t('settings.items.emailNotification'),
+          description: t('settings.items.emailNotificationDesc'),
           type: 'toggle',
           value: emailNotifications,
           onToggle: setEmailNotifications,
@@ -163,60 +173,69 @@ export default function SettingsPage() {
       ],
     },
     {
-      title: '订阅与支付',
+      id: 'subscription',
+      title: t('settings.sections.subscription'),
+      icon: CreditCard,
+      color: 'emerald',
       items: [
         {
           id: 'subscription',
           icon: CreditCard,
-          label: '会员订阅',
-          description: user?.role === 'VERIFIED' ? '已验证用户' : '升级解锁更多功能',
+          label: t('settings.items.subscription'),
+          description: user?.role === 'VERIFIED' ? t('common.verified') : t('settings.items.subscriptionDesc'),
           type: 'link',
           href: '/settings/subscription',
         },
       ],
     },
     {
-      title: '帮助与支持',
+      id: 'help',
+      title: t('settings.sections.help'),
+      icon: HelpCircle,
+      color: 'slate',
       items: [
         {
           id: 'help',
           icon: HelpCircle,
-          label: '帮助中心',
-          description: '常见问题与使用指南',
+          label: t('settings.items.helpCenter'),
+          description: t('settings.items.helpCenterDesc'),
           type: 'link',
           href: '/help',
         },
         {
           id: 'terms',
           icon: FileText,
-          label: '用户协议',
+          label: t('settings.items.termsOfService'),
           type: 'link',
           href: '/terms',
         },
         {
           id: 'privacy',
           icon: Lock,
-          label: '隐私政策',
+          label: t('settings.items.privacyPolicy'),
           type: 'link',
           href: '/privacy',
         },
       ],
     },
     {
-      title: '账号操作',
+      id: 'account',
+      title: t('settings.sections.accountActions'),
+      icon: Shield,
+      color: 'rose',
       items: [
         {
           id: 'logout',
           icon: LogOut,
-          label: '退出登录',
+          label: t('settings.items.logout'),
           type: 'action',
           onClick: () => setLogoutDialogOpen(true),
         },
         {
           id: 'delete',
           icon: Trash2,
-          label: '删除账号',
-          description: '永久删除您的账号和所有数据',
+          label: t('settings.items.deleteAccount'),
+          description: t('settings.items.deleteAccountDesc'),
           type: 'action',
           danger: true,
           onClick: () => setDeleteDialogOpen(true),
@@ -225,88 +244,114 @@ export default function SettingsPage() {
     },
   ];
 
+  const colorMap: Record<string, { bg: string; icon: string; border: string }> = {
+    blue: { bg: 'bg-blue-500/10', icon: 'text-blue-500', border: 'from-blue-500 to-cyan-500' },
+    violet: { bg: 'bg-violet-500/10', icon: 'text-violet-500', border: 'from-violet-500 to-purple-500' },
+    amber: { bg: 'bg-amber-500/10', icon: 'text-amber-500', border: 'from-amber-500 to-yellow-500' },
+    emerald: { bg: 'bg-emerald-500/10', icon: 'text-emerald-500', border: 'from-emerald-500 to-teal-500' },
+    slate: { bg: 'bg-muted', icon: 'text-muted-foreground', border: 'from-slate-500 to-gray-500' },
+    rose: { bg: 'bg-rose-500/10', icon: 'text-rose-500', border: 'from-rose-500 to-pink-500' },
+  };
+
   return (
-    <PageContainer>
-      <PageHeader title="设置" description="管理您的账号和偏好设置" />
+    <PageContainer maxWidth="5xl">
+      <PageHeader
+        title={t('settings.title')}
+        description={t('settings.description')}
+        icon={Settings}
+        color="slate"
+      />
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* User Card */}
-        {user && (
-          <Card className="lg:col-span-3">
-            <CardContent className="flex items-center gap-4 p-6">
-              <Avatar className="h-16 w-16">
-                <AvatarImage src={undefined} />
-                <AvatarFallback className="text-lg">
-                  {user.email?.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-semibold">{user.email?.split('@')[0]}</h3>
-                  {user.role === 'ADMIN' && (
-                    <Badge variant="secondary" className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white">
-                      管理员
-                    </Badge>
-                  )}
-                  {user.role === 'VERIFIED' && (
-                    <Badge variant="secondary" className="bg-gradient-to-r from-green-500 to-emerald-500 text-white">
-                      已验证
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-sm text-muted-foreground">{user.email}</p>
-              </div>
-              <Button variant="outline" asChild>
-                <Link href="/profile">编辑资料</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Settings Sections */}
-        {sections.map((section, sectionIndex) => (
-          <motion.div
-            key={section.title}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: sectionIndex * 0.1 }}
-            className="lg:col-span-1"
-          >
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">{section.title}</CardTitle>
-                {section.description && (
-                  <CardDescription>{section.description}</CardDescription>
+      {/* 用户卡片 */}
+      {user && (
+        <Card className="mb-8 overflow-hidden">
+          <div className="h-1.5 bg-gradient-to-r from-blue-500 to-cyan-500" />
+          <CardContent className="flex flex-col sm:flex-row items-center gap-4 p-6">
+            <Avatar className="h-20 w-20 border-4 border-background shadow-lg">
+              <AvatarImage src={undefined} />
+              <AvatarFallback className="text-2xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white">
+                {user.email?.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 text-center sm:text-left">
+              <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+                <h3 className="text-xl font-bold">{user.email?.split('@')[0]}</h3>
+                {user.role === 'ADMIN' && (
+                  <Badge variant="gradient-purple">
+                    <Sparkles className="h-3 w-3 mr-1" />
+                    {t('common.administrator')}
+                  </Badge>
                 )}
-              </CardHeader>
-              <CardContent className="space-y-1">
-                {section.items.map((item, itemIndex) => (
-                  <div key={item.id}>
-                    {itemIndex > 0 && <Separator className="my-2" />}
-                    <SettingItemRow item={item} />
+                {user.role === 'VERIFIED' && (
+                  <Badge variant="gradient-success">
+                    {t('common.verified')}
+                  </Badge>
+                )}
+              </div>
+              <p className="text-muted-foreground">{user.email}</p>
+            </div>
+            <Button variant="outline" className="gap-2" asChild>
+              <Link href="/profile">
+                <User className="h-4 w-4" />
+                {t('settings.items.editProfile')}
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* 设置区块 */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {sections.map((section, sectionIndex) => {
+          const colors = colorMap[section.color];
+          const SectionIcon = section.icon;
+          
+          return (
+            <motion.div
+              key={section.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: sectionIndex * 0.08 }}
+            >
+              <Card className="h-full overflow-hidden">
+                <div className={cn('h-1 bg-gradient-to-r', colors.border)} />
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-3">
+                    <div className={cn('flex h-9 w-9 items-center justify-center rounded-lg', colors.bg)}>
+                      <SectionIcon className={cn('h-4 w-4', colors.icon)} />
+                    </div>
+                    <CardTitle className="text-base">{section.title}</CardTitle>
                   </div>
-                ))}
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
+                </CardHeader>
+                <CardContent className="space-y-1 pt-0">
+                  {section.items.map((item, itemIndex) => (
+                    <div key={item.id}>
+                      {itemIndex > 0 && <Separator className="my-2" />}
+                      <SettingItemRow item={item} />
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </motion.div>
+          );
+        })}
       </div>
 
-      {/* Logout Dialog */}
+      {/* 退出登录对话框 */}
       <ConfirmDialog
         open={logoutDialogOpen}
         onOpenChange={setLogoutDialogOpen}
-        title="退出登录"
-        description="确定要退出登录吗？"
+        title={t('settings.dialogs.logoutTitle')}
+        description={t('settings.dialogs.logoutDesc')}
         onConfirm={handleLogout}
       />
 
-      {/* Delete Account Dialog */}
+      {/* 删除账户对话框 */}
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        title="删除账号"
-        description="此操作不可逆，您的所有数据将被永久删除。确定要继续吗？"
+        title={t('settings.dialogs.deleteTitle')}
+        description={t('settings.dialogs.deleteDesc')}
         type="danger"
         onConfirm={handleDeleteAccount}
       />
@@ -318,14 +363,15 @@ function SettingItemRow({ item }: { item: SettingItem }) {
   const Icon = item.icon;
 
   const content = (
-    <div className={`flex items-center gap-3 rounded-lg p-3 transition-colors ${
-      item.type === 'link' || item.type === 'action' 
-        ? 'hover:bg-muted cursor-pointer' 
-        : ''
-    } ${item.danger ? 'text-destructive' : ''}`}>
-      <div className={`rounded-lg p-2 ${
+    <div className={cn(
+      'flex items-center gap-3 rounded-xl p-3 transition-all duration-200',
+      (item.type === 'link' || item.type === 'action') && 'hover:bg-muted cursor-pointer',
+      item.danger && 'text-destructive hover:bg-destructive/5'
+    )}>
+      <div className={cn(
+        'flex h-9 w-9 items-center justify-center rounded-lg shrink-0',
         item.danger ? 'bg-destructive/10' : 'bg-muted'
-      }`}>
+      )}>
         <Icon className="h-4 w-4" />
       </div>
       <div className="flex-1 min-w-0">
@@ -344,7 +390,7 @@ function SettingItemRow({ item }: { item: SettingItem }) {
 
       {item.type === 'select' && (
         <Select value={item.value as string} onValueChange={item.onSelect}>
-          <SelectTrigger className="w-32">
+          <SelectTrigger className="w-28 h-9">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -358,7 +404,7 @@ function SettingItemRow({ item }: { item: SettingItem }) {
       )}
 
       {(item.type === 'link' || item.type === 'action') && (
-        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
       )}
     </div>
   );
@@ -373,5 +419,3 @@ function SettingItemRow({ item }: { item: SettingItem }) {
 
   return content;
 }
-
-

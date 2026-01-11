@@ -5,6 +5,7 @@
  */
 
 import { memo, useMemo, useState, useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -52,7 +53,26 @@ const TOOL_ICONS: Record<string, React.ReactNode> = {
   query_database: <Database className="h-3 w-3" />,
 };
 
+// 工具名称格式化（移到顶层以便 ToolCallCard 访问）
+const TOOL_NAME_LABELS: Record<string, string> = {
+  search_schools: '搜索学校',
+  get_user_profile: '获取档案',
+  analyze_profile: '分析档案',
+  search_cases: '搜索案例',
+  get_deadlines: '获取截止日期',
+  review_essay: '评估文书',
+  query_database: '查询数据库',
+  generate_essay_outline: '生成文书大纲',
+  recommend_schools: '推荐学校',
+  analyze_admission_chance: '分析录取概率',
+};
+
+function formatToolName(name: string): string {
+  return TOOL_NAME_LABELS[name] || name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
 export const ChatMessage = memo(function ChatMessage({ message, isLast }: ChatMessageProps) {
+  const t = useTranslations('agentChat');
   const isUser = message.role === 'user';
   const agentInfo = message.agent ? AGENT_INFO[message.agent] : null;
   const prefersReducedMotion = useReducedMotion();
@@ -187,7 +207,7 @@ export const ChatMessage = memo(function ChatMessage({ message, isLast }: ChatMe
                   )}
                 >
                   <Wrench className="h-3 w-3" />
-                  <span>正在使用 {message.toolCalls.length} 个工具</span>
+                  <span>{t('usingTools', { count: message.toolCalls.length })}</span>
                   {toolsExpanded ? (
                     <ChevronUp className="h-3 w-3 ml-auto" />
                   ) : (
@@ -232,7 +252,7 @@ export const ChatMessage = memo(function ChatMessage({ message, isLast }: ChatMe
               )}
             </div>
           ) : message.isStreaming ? (
-            <ThinkingIndicator />
+            <ThinkingIndicator thinkingText={t('thinking')} />
           ) : null}
 
           {/* Streaming Cursor */}
@@ -261,7 +281,7 @@ export const ChatMessage = memo(function ChatMessage({ message, isLast }: ChatMe
                 onClick={handleCopy}
               >
                 {copied ? (
-                  <Check className="h-3 w-3 text-green-500" />
+                  <Check className="h-3 w-3 text-success" />
                 ) : (
                   <Copy className="h-3 w-3" />
                 )}
@@ -321,7 +341,7 @@ function ToolCallCard({ tool, isUser, index }: { tool: ToolCallInfo; isUser: boo
           animate={{ scale: 1 }}
           transition={transitions.springSnappy}
         >
-          <CheckCircle2 className="h-3 w-3 text-green-500" />
+          <CheckCircle2 className="h-3 w-3 text-success" />
         </motion.div>
       )}
 
@@ -354,7 +374,7 @@ function ToolCallCard({ tool, isUser, index }: { tool: ToolCallInfo; isUser: boo
 }
 
 // 思考指示器
-function ThinkingIndicator() {
+function ThinkingIndicator({ thinkingText }: { thinkingText: string }) {
   return (
     <div className="flex items-center gap-2 py-1">
       <motion.div
@@ -384,7 +404,7 @@ function ThinkingIndicator() {
         animate={{ opacity: [0.5, 1, 0.5] }}
         transition={{ duration: 1.5, repeat: Infinity }}
       >
-        思考中...
+        {thinkingText}
       </motion.span>
     </div>
   );
@@ -511,18 +531,7 @@ function StaticChatMessage({
   );
 }
 
-function formatToolName(name: string): string {
-  const names: Record<string, string> = {
-    search_schools: '搜索学校',
-    get_user_profile: '获取档案',
-    analyze_profile: '分析档案',
-    search_cases: '搜索案例',
-    get_deadlines: '获取截止日期',
-    review_essay: '评估文书',
-    query_database: '查询数据库',
-  };
-  return names[name] || name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-}
+// Tool name formatting is now handled via translations in component
 
 function formatTime(date: Date): string {
   return new Intl.DateTimeFormat('zh-CN', {

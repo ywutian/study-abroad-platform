@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { 
@@ -11,6 +12,12 @@ import {
   AlertCircle,
   Plus,
   RefreshCw,
+  Sparkles,
+  GraduationCap,
+  BookOpen,
+  Users,
+  Target,
+  Rocket,
 } from 'lucide-react';
 
 type EmptyStateType = 
@@ -19,6 +26,10 @@ type EmptyStateType =
   | 'no-data' 
   | 'error' 
   | 'offline' 
+  | 'first-time'
+  | 'schools'
+  | 'cases'
+  | 'loading'
   | 'custom';
 
 interface EmptyStateProps {
@@ -35,6 +46,7 @@ interface EmptyStateProps {
     label: string;
     onClick: () => void;
     variant?: 'default' | 'outline' | 'ghost';
+    icon?: React.ReactNode;
   };
   /** 次操作 */
   secondaryAction?: {
@@ -47,40 +59,94 @@ interface EmptyStateProps {
   size?: 'sm' | 'md' | 'lg';
   /** 是否紧凑 */
   compact?: boolean;
+  /** 是否显示装饰 */
+  showDecoration?: boolean;
 }
 
 // 预设配置
-const presets: Record<EmptyStateType, { icon: React.ReactNode; title: string; description: string }> = {
-  empty: {
-    icon: <Inbox className="h-12 w-12 text-muted-foreground/50" />,
-    title: '暂无内容',
-    description: '这里还没有任何内容',
+const presetConfig: Record<EmptyStateType, { 
+  icon: React.ReactNode; 
+  iconBg: string;
+  iconColor: string;
+  buttonGradient?: string;
+  decorationColor?: string;
+}> = {
+  empty: { 
+    icon: <Inbox className="h-8 w-8" />, 
+    iconBg: 'bg-muted',
+    iconColor: 'text-muted-foreground',
   },
-  'no-results': {
-    icon: <Search className="h-12 w-12 text-muted-foreground/50" />,
-    title: '未找到结果',
-    description: '尝试使用不同的搜索条件',
+  'no-results': { 
+    icon: <Search className="h-8 w-8" />, 
+    iconBg: 'bg-blue-500/10',
+    iconColor: 'text-blue-500',
+    buttonGradient: 'from-blue-500 to-cyan-500',
+    decorationColor: 'from-blue-500/20 to-cyan-500/20',
   },
-  'no-data': {
-    icon: <FolderOpen className="h-12 w-12 text-muted-foreground/50" />,
-    title: '暂无数据',
-    description: '数据将在这里显示',
+  'no-data': { 
+    icon: <FolderOpen className="h-8 w-8" />, 
+    iconBg: 'bg-violet-500/10',
+    iconColor: 'text-violet-500',
+    buttonGradient: 'from-violet-500 to-purple-500',
+    decorationColor: 'from-violet-500/20 to-purple-500/20',
   },
-  error: {
-    icon: <AlertCircle className="h-12 w-12 text-destructive/50" />,
-    title: '加载失败',
-    description: '请稍后重试或刷新页面',
+  error: { 
+    icon: <AlertCircle className="h-8 w-8" />, 
+    iconBg: 'bg-destructive/10',
+    iconColor: 'text-destructive',
+    buttonGradient: 'from-destructive to-destructive/80',
   },
-  offline: {
-    icon: <Wifi className="h-12 w-12 text-muted-foreground/50" />,
-    title: '网络连接断开',
-    description: '请检查您的网络连接',
+  offline: { 
+    icon: <Wifi className="h-8 w-8" />, 
+    iconBg: 'bg-amber-500/10',
+    iconColor: 'text-amber-500',
+    buttonGradient: 'from-amber-500 to-orange-500',
   },
-  custom: {
-    icon: <FileQuestion className="h-12 w-12 text-muted-foreground/50" />,
-    title: '',
-    description: '',
+  'first-time': {
+    icon: <Rocket className="h-8 w-8" />,
+    iconBg: 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20',
+    iconColor: 'text-blue-500',
+    buttonGradient: 'from-blue-500 to-cyan-500',
+    decorationColor: 'from-blue-500/10 to-cyan-500/10',
   },
+  schools: {
+    icon: <GraduationCap className="h-8 w-8" />,
+    iconBg: 'bg-gradient-to-br from-violet-500/20 to-purple-500/20',
+    iconColor: 'text-violet-500',
+    buttonGradient: 'from-violet-500 to-purple-500',
+    decorationColor: 'from-violet-500/10 to-purple-500/10',
+  },
+  cases: {
+    icon: <BookOpen className="h-8 w-8" />,
+    iconBg: 'bg-gradient-to-br from-emerald-500/20 to-teal-500/20',
+    iconColor: 'text-emerald-500',
+    buttonGradient: 'from-emerald-500 to-teal-500',
+    decorationColor: 'from-emerald-500/10 to-teal-500/10',
+  },
+  loading: {
+    icon: <Sparkles className="h-8 w-8 animate-pulse" />,
+    iconBg: 'bg-primary/10',
+    iconColor: 'text-primary',
+  },
+  custom: { 
+    icon: <FileQuestion className="h-8 w-8" />, 
+    iconBg: 'bg-muted',
+    iconColor: 'text-muted-foreground',
+  },
+};
+
+// Preset text keys mapping
+const presetTextKeys: Record<EmptyStateType, { title: string; description: string }> = {
+  empty: { title: 'noContent', description: 'noContentDesc' },
+  'no-results': { title: 'noResults', description: 'noResultsDesc' },
+  'no-data': { title: 'noData', description: 'noDataDesc' },
+  error: { title: 'loadFailed', description: 'loadFailedDesc' },
+  offline: { title: 'offline', description: 'offlineDesc' },
+  'first-time': { title: 'firstTime', description: 'firstTimeDesc' },
+  schools: { title: 'noSchools', description: 'noSchoolsDesc' },
+  cases: { title: 'noCases', description: 'noCasesDesc' },
+  loading: { title: 'loading', description: 'loadingDesc' },
+  custom: { title: '', description: '' },
 };
 
 const sizeClasses = {
@@ -89,10 +155,16 @@ const sizeClasses = {
   lg: 'py-20',
 };
 
+const iconContainerClasses = {
+  sm: 'h-12 w-12 rounded-xl',
+  md: 'h-16 w-16 rounded-2xl',
+  lg: 'h-20 w-20 rounded-2xl',
+};
+
 const iconSizeClasses = {
-  sm: '[&>svg]:h-8 [&>svg]:w-8',
-  md: '[&>svg]:h-12 [&>svg]:w-12',
-  lg: '[&>svg]:h-16 [&>svg]:w-16',
+  sm: '[&>svg]:h-6 [&>svg]:w-6',
+  md: '[&>svg]:h-8 [&>svg]:w-8',
+  lg: '[&>svg]:h-10 [&>svg]:w-10',
 };
 
 export function EmptyState({
@@ -105,59 +177,91 @@ export function EmptyState({
   className,
   size = 'md',
   compact = false,
+  showDecoration = true,
 }: EmptyStateProps) {
-  const preset = presets[type];
+  const t = useTranslations('ui.empty');
+  const config = presetConfig[type];
+  const textKeys = presetTextKeys[type];
+  const presetTitle = textKeys.title ? t(textKeys.title) : '';
+  const presetDescription = textKeys.description ? t(textKeys.description) : '';
 
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center text-center',
+        'relative flex flex-col items-center justify-center text-center overflow-hidden',
         compact ? 'py-6' : sizeClasses[size],
         className
       )}
     >
-      {/* 图标 */}
-      <div className={cn('mb-4', iconSizeClasses[size])}>
-        {icon || preset.icon}
+      {/* 装饰背景 */}
+      {showDecoration && config.decorationColor && (
+        <>
+          <div className={cn(
+            'absolute -right-12 -top-12 h-32 w-32 rounded-full blur-3xl opacity-50',
+            `bg-gradient-to-br ${config.decorationColor}`
+          )} />
+          <div className={cn(
+            'absolute -left-12 -bottom-12 h-32 w-32 rounded-full blur-3xl opacity-50',
+            `bg-gradient-to-br ${config.decorationColor}`
+          )} />
+        </>
+      )}
+
+      {/* 图标容器 */}
+      <div 
+        className={cn(
+          'relative flex items-center justify-center mb-4 transition-transform hover:scale-105',
+          iconContainerClasses[size],
+          iconSizeClasses[size],
+          config.iconBg,
+          config.iconColor,
+        )}
+      >
+        {icon || config.icon}
       </div>
 
       {/* 标题 */}
-      {(title || preset.title) && (
+      {(title || presetTitle) && (
         <h3
           className={cn(
-            'font-semibold text-foreground',
+            'relative font-semibold text-foreground',
             size === 'sm' ? 'text-sm' : size === 'lg' ? 'text-xl' : 'text-base'
           )}
         >
-          {title || preset.title}
+          {title || presetTitle}
         </h3>
       )}
 
       {/* 描述 */}
-      {(description || preset.description) && (
+      {(description || presetDescription) && (
         <p
           className={cn(
-            'mt-1 max-w-md text-muted-foreground',
+            'relative mt-2 max-w-md text-muted-foreground leading-relaxed',
             size === 'sm' ? 'text-xs' : 'text-sm'
           )}
         >
-          {description || preset.description}
+          {description || presetDescription}
         </p>
       )}
 
       {/* 操作按钮 */}
       {(action || secondaryAction) && (
-        <div className="mt-6 flex flex-col gap-2 sm:flex-row">
+        <div className="relative mt-6 flex flex-col gap-3 sm:flex-row">
           {action && (
             <Button
               variant={action.variant || 'default'}
               onClick={action.onClick}
               size={size === 'sm' ? 'sm' : 'default'}
+              className={cn(
+                'gap-2 shadow-lg',
+                action.variant !== 'outline' && action.variant !== 'ghost' && config.buttonGradient && 
+                `bg-gradient-to-r ${config.buttonGradient} hover:opacity-90 text-white shadow-${config.buttonGradient?.split(' ')[0]?.replace('from-', '')}/25`
+              )}
             >
-              {type === 'error' ? (
-                <RefreshCw className="mr-2 h-4 w-4" />
+              {action.icon ? action.icon : type === 'error' ? (
+                <RefreshCw className="h-4 w-4" />
               ) : (
-                <Plus className="mr-2 h-4 w-4" />
+                <Plus className="h-4 w-4" />
               )}
               {action.label}
             </Button>
@@ -167,6 +271,7 @@ export function EmptyState({
               variant="outline"
               onClick={secondaryAction.onClick}
               size={size === 'sm' ? 'sm' : 'default'}
+              className="gap-2"
             >
               {secondaryAction.label}
             </Button>
@@ -188,12 +293,13 @@ export function NoResults({
   onClear?: () => void;
   className?: string;
 }) {
+  const t = useTranslations('ui.empty');
   return (
     <EmptyState
       type="no-results"
-      title="未找到结果"
-      description={query ? `未找到与 "${query}" 相关的结果` : '尝试使用不同的搜索条件'}
-      action={onClear ? { label: '清除筛选', onClick: onClear, variant: 'outline' } : undefined}
+      title={t('noResults')}
+      description={query ? t('noResultsQuery', { query }) : t('noResultsDesc')}
+      action={onClear ? { label: t('clearFilter'), onClick: onClear, variant: 'outline' } : undefined}
       className={className}
     />
   );
@@ -208,12 +314,14 @@ export function LoadError({
   error?: string;
   className?: string;
 }) {
+  const t = useTranslations('ui.empty');
+  const tCommon = useTranslations('common');
   return (
     <EmptyState
       type="error"
-      title="加载失败"
-      description={error || '请稍后重试或刷新页面'}
-      action={onRetry ? { label: '重试', onClick: onRetry } : undefined}
+      title={t('loadFailed')}
+      description={error || t('loadFailedDesc')}
+      action={onRetry ? { label: tCommon('retry'), onClick: onRetry } : undefined}
       className={className}
     />
   );

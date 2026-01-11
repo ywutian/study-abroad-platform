@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Bell, 
@@ -59,10 +60,12 @@ function NotificationItem({
   notification, 
   onRead,
   onRemove,
+  viewLabel,
 }: { 
   notification: Notification;
   onRead: () => void;
   onRemove: () => void;
+  viewLabel: string;
 }) {
   const Icon = notificationIcons[notification.type];
   const colorClass = notificationColors[notification.type];
@@ -112,7 +115,7 @@ function NotificationItem({
               className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
               onClick={(e) => e.stopPropagation()}
             >
-              {notification.actionLabel || '查看'}
+              {notification.actionLabel || viewLabel}
               <ExternalLink className="w-3 h-3" />
             </Link>
           )}
@@ -136,21 +139,22 @@ function NotificationItem({
 }
 
 // 空状态
-function EmptyState() {
+function EmptyState({ emptyText, emptyHint }: { emptyText: string; emptyHint: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
         <Bell className="w-6 h-6 text-muted-foreground" />
       </div>
-      <p className="text-sm font-medium text-foreground">暂无通知</p>
+      <p className="text-sm font-medium text-foreground">{emptyText}</p>
       <p className="text-xs text-muted-foreground mt-1">
-        新消息将会显示在这里
+        {emptyHint}
       </p>
     </div>
   );
 }
 
 export function NotificationCenter() {
+  const t = useTranslations('notifications');
   const [open, setOpen] = useState(false);
   const {
     notifications,
@@ -191,7 +195,7 @@ export function NotificationCenter() {
       >
         {/* 头部 */}
         <div className="flex items-center justify-between px-4 py-3 border-b">
-          <h4 className="font-semibold">通知</h4>
+          <h4 className="font-semibold">{t('title')}</h4>
           <div className="flex items-center gap-1">
             {unreadCount > 0 && (
               <Button 
@@ -201,7 +205,7 @@ export function NotificationCenter() {
                 onClick={markAllAsRead}
               >
                 <CheckCheck className="w-3.5 h-3.5 mr-1" />
-                全部已读
+                {t('markAllRead')}
               </Button>
             )}
             <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -214,7 +218,7 @@ export function NotificationCenter() {
         <Tabs defaultValue="all" className="w-full">
           <TabsList className="w-full justify-start px-4 pt-2 bg-transparent border-b rounded-none">
             <TabsTrigger value="all" className="relative">
-              全部
+              {t('tabs.all')}
               {notifications.length > 0 && (
                 <Badge variant="secondary" className="ml-1.5 h-5 px-1.5">
                   {notifications.length}
@@ -222,7 +226,7 @@ export function NotificationCenter() {
               )}
             </TabsTrigger>
             <TabsTrigger value="unread" className="relative">
-              未读
+              {t('tabs.unread')}
               {unreadCount > 0 && (
                 <Badge variant="default" className="ml-1.5 h-5 px-1.5">
                   {unreadCount}
@@ -234,7 +238,7 @@ export function NotificationCenter() {
           <TabsContent value="all" className="mt-0">
             <ScrollArea className="h-[400px]">
               {notifications.length === 0 ? (
-                <EmptyState />
+                <EmptyState emptyText={t('empty')} emptyHint={t('emptyHint')} />
               ) : (
                 <div className="p-2 space-y-1">
                   <AnimatePresence mode="popLayout">
@@ -244,6 +248,7 @@ export function NotificationCenter() {
                         notification={notification}
                         onRead={() => markAsRead(notification.id)}
                         onRemove={() => removeNotification(notification.id)}
+                        viewLabel={t('view')}
                       />
                     ))}
                   </AnimatePresence>
@@ -257,7 +262,7 @@ export function NotificationCenter() {
               {unreadNotifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <CheckCircle className="w-8 h-8 text-success mb-2" />
-                  <p className="text-sm text-muted-foreground">已全部读取</p>
+                  <p className="text-sm text-muted-foreground">{t('allRead')}</p>
                 </div>
               ) : (
                 <div className="p-2 space-y-1">
@@ -268,6 +273,7 @@ export function NotificationCenter() {
                         notification={notification}
                         onRead={() => markAsRead(notification.id)}
                         onRemove={() => removeNotification(notification.id)}
+                        viewLabel={t('view')}
                       />
                     ))}
                   </AnimatePresence>
@@ -287,7 +293,7 @@ export function NotificationCenter() {
               onClick={clearRead}
             >
               <Trash2 className="w-3.5 h-3.5 mr-1" />
-              清除已读通知
+              {t('clearRead')}
             </Button>
           </div>
         )}

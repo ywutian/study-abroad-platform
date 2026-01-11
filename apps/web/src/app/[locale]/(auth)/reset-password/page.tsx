@@ -4,14 +4,13 @@ import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useMutation } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Link } from '@/lib/i18n/navigation';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
-import { KeyRound, ArrowLeft, Loader2, CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { KeyRound, ArrowLeft, Loader2, CheckCircle, AlertCircle, Eye, EyeOff, Lock, ShieldCheck } from 'lucide-react';
 
 export default function ResetPasswordPage() {
   const t = useTranslations();
@@ -21,6 +20,7 @@ export default function ResetPasswordPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [success, setSuccess] = useState(false);
 
   const mutation = useMutation({
@@ -38,22 +38,22 @@ export default function ResetPasswordPage() {
     e.preventDefault();
 
     if (!token) {
-      toast.error('无效的重置链接');
+      toast.error(t('auth.resetPassword.invalidLink'));
       return;
     }
 
     if (password.length < 8) {
-      toast.error('密码至少8位');
+      toast.error(t('auth.resetPassword.passwordTooShort'));
       return;
     }
 
     if (password !== confirmPassword) {
-      toast.error('两次输入的密码不一致');
+      toast.error(t('auth.resetPassword.passwordMismatch'));
       return;
     }
 
     if (!/^(?=.*[A-Za-z])(?=.*\d)/.test(password)) {
-      toast.error('密码必须包含字母和数字');
+      toast.error(t('auth.resetPassword.passwordNeedLetter'));
       return;
     }
 
@@ -63,127 +63,175 @@ export default function ResetPasswordPage() {
   // No token - invalid link
   if (!token) {
     return (
-      <Card className="text-center">
-        <CardHeader>
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
-            <AlertCircle className="h-8 w-8 text-red-600" />
+      <div className="space-y-6">
+        <div className="text-center">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--auth-error-bg)] ring-1 ring-[var(--auth-error-ring)]">
+            <AlertCircle className="h-8 w-8 text-[var(--auth-error)]" />
           </div>
-          <CardTitle className="text-2xl">无效的链接</CardTitle>
-          <CardDescription>重置密码链接无效或已过期</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Link href="/forgot-password">
-            <Button>重新获取链接</Button>
-          </Link>
-        </CardContent>
-      </Card>
+          <h1 className="text-2xl font-bold text-auth tracking-tight">
+            {t('auth.resetPassword.invalidLink')}
+          </h1>
+          <p className="mt-2 text-sm text-auth-muted">
+            {t('auth.resetPassword.linkExpiredDesc')}
+          </p>
+        </div>
+        <Link href="/forgot-password" className="block">
+          <Button className="w-full h-12 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25">
+            {t('auth.resetPassword.getNewLink')}
+          </Button>
+        </Link>
+      </div>
     );
   }
 
   // Success state
   if (success) {
     return (
-      <Card className="text-center">
-        <CardHeader>
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-            <CheckCircle className="h-8 w-8 text-green-600" />
+      <div className="space-y-6">
+        <div className="text-center">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/10 ring-1 ring-emerald-500/20">
+            <CheckCircle className="h-8 w-8 text-emerald-400" />
           </div>
-          <CardTitle className="text-2xl">密码重置成功</CardTitle>
-          <CardDescription>您的密码已更新，请使用新密码登录</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Link href="/login">
-            <Button className="w-full">前往登录</Button>
-          </Link>
-        </CardContent>
-      </Card>
+          <h1 className="text-2xl font-bold text-auth tracking-tight">
+            {t('auth.resetPassword.success')}
+          </h1>
+          <p className="mt-2 text-sm text-auth-muted">
+            {t('auth.resetPassword.successDesc')}
+          </p>
+        </div>
+        <Link href="/login" className="block">
+          <Button className="w-full h-12 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25">
+            {t('auth.resetPassword.goToLogin')}
+          </Button>
+        </Link>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader className="text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
-          <KeyRound className="h-8 w-8 text-blue-600" />
+    <div className="space-y-6">
+      {/* 标题区 */}
+      <div className="text-center">
+        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--auth-icon-bg)] ring-1 ring-[var(--auth-icon-ring)]">
+          <KeyRound className="h-8 w-8 text-[var(--auth-accent)]" />
         </div>
-        <CardTitle className="text-2xl">设置新密码</CardTitle>
-        <CardDescription>请输入您的新密码</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="password">新密码</Label>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="至少8位，包含字母和数字"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={mutation.isPending}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="absolute right-0 top-0 h-full px-3"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </Button>
-            </div>
-          </div>
+        <h1 className="text-2xl font-bold text-auth tracking-tight">
+          {t('auth.resetPassword.title')}
+        </h1>
+        <p className="mt-2 text-sm text-auth-muted">
+          {t('auth.resetPassword.description')}
+        </p>
+      </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">确认密码</Label>
+      {/* 表单 */}
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="space-y-2">
+          <Label htmlFor="password" className="text-sm font-medium text-auth-subtle">
+            {t('auth.resetPassword.newPassword')}
+          </Label>
+          <div className="relative group">
+            <div className="absolute left-0 top-0 bottom-0 w-11 flex items-center justify-center pointer-events-none">
+              <Lock className="h-4 w-4 text-auth-icon group-focus-within:text-auth-icon-focus transition-colors" />
+            </div>
+            <Input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              placeholder={t('auth.resetPassword.newPasswordPlaceholder')}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={mutation.isPending}
+              className="h-12 pl-11 pr-11 bg-auth-input-bg border-auth-input-border text-auth-input-text placeholder:text-auth-input-placeholder rounded-xl focus:bg-auth-input-bg focus:border-[var(--auth-focus-border)] focus:ring-2 focus:ring-[var(--auth-focus-ring)] transition-all"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-0 top-0 bottom-0 w-11 flex items-center justify-center text-auth-icon hover:text-auth transition-colors"
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="confirmPassword" className="text-sm font-medium text-auth-subtle">
+            {t('auth.resetPassword.confirmPassword')}
+          </Label>
+          <div className="relative group">
+            <div className="absolute left-0 top-0 bottom-0 w-11 flex items-center justify-center pointer-events-none">
+              <ShieldCheck className="h-4 w-4 text-auth-icon group-focus-within:text-auth-icon-focus transition-colors" />
+            </div>
             <Input
               id="confirmPassword"
-              type="password"
-              placeholder="再次输入密码"
+              type={showConfirmPassword ? 'text' : 'password'}
+              placeholder={t('auth.resetPassword.confirmPlaceholder')}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               disabled={mutation.isPending}
+              className="h-12 pl-11 pr-11 bg-auth-input-bg border-auth-input-border text-auth-input-text placeholder:text-auth-input-placeholder rounded-xl focus:bg-auth-input-bg focus:border-[var(--auth-focus-border)] focus:ring-2 focus:ring-[var(--auth-focus-ring)] transition-all"
             />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-0 top-0 bottom-0 w-11 flex items-center justify-center text-auth-icon hover:text-auth transition-colors"
+            >
+              {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
           </div>
+        </div>
 
-          {/* Password requirements */}
-          <div className="space-y-1 text-xs text-muted-foreground">
-            <p className={password.length >= 8 ? 'text-green-600' : ''}>
-              {password.length >= 8 ? '✓' : '○'} 至少 8 位字符
+        {/* 密码要求 */}
+        <div className="space-y-2 p-3 rounded-xl bg-auth-input-bg border border-auth-input-border">
+          <p className="text-xs text-auth-muted mb-2">{t('auth.resetPassword.requirements.title') || '密码要求'}</p>
+          <div className="space-y-1.5 text-xs">
+            <p className={`flex items-center gap-2 ${password.length >= 8 ? 'text-emerald-400' : 'text-auth-muted'}`}>
+              <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${password.length >= 8 ? 'bg-emerald-500/20' : 'bg-auth-input-bg'}`}>
+                {password.length >= 8 ? '✓' : '○'}
+              </span>
+              {t('auth.resetPassword.requirements.minLength')}
             </p>
-            <p className={/[A-Za-z]/.test(password) ? 'text-green-600' : ''}>
-              {/[A-Za-z]/.test(password) ? '✓' : '○'} 包含字母
+            <p className={`flex items-center gap-2 ${/[A-Za-z]/.test(password) ? 'text-emerald-400' : 'text-auth-muted'}`}>
+              <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${/[A-Za-z]/.test(password) ? 'bg-emerald-500/20' : 'bg-auth-input-bg'}`}>
+                {/[A-Za-z]/.test(password) ? '✓' : '○'}
+              </span>
+              {t('auth.resetPassword.requirements.hasLetter')}
             </p>
-            <p className={/\d/.test(password) ? 'text-green-600' : ''}>
-              {/\d/.test(password) ? '✓' : '○'} 包含数字
+            <p className={`flex items-center gap-2 ${/\d/.test(password) ? 'text-emerald-400' : 'text-auth-muted'}`}>
+              <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${/\d/.test(password) ? 'bg-emerald-500/20' : 'bg-auth-input-bg'}`}>
+                {/\d/.test(password) ? '✓' : '○'}
+              </span>
+              {t('auth.resetPassword.requirements.hasNumber')}
             </p>
           </div>
+        </div>
 
-          <Button type="submit" className="w-full" disabled={mutation.isPending}>
-            {mutation.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                重置中...
-              </>
-            ) : (
-              '重置密码'
-            )}
-          </Button>
+        <Button 
+          type="submit" 
+          className="w-full h-12 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300 disabled:opacity-50"
+          disabled={mutation.isPending}
+        >
+          {mutation.isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {t('auth.resetPassword.resetting')}
+            </>
+          ) : (
+            t('auth.resetPassword.resetButton')
+          )}
+        </Button>
 
-          <div className="text-center">
-            <Link href="/login">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                返回登录
-              </Button>
-            </Link>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+        <div className="text-center pt-2">
+          <Link href="/login">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="text-auth-muted hover:text-auth hover:bg-transparent"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              {t('auth.resetPassword.backToLogin')}
+            </Button>
+          </Link>
+        </div>
+      </form>
+    </div>
   );
 }
-
-
-
-
