@@ -1,20 +1,23 @@
--- Create HNSW indexes for vector similarity search
--- HNSW (Hierarchical Navigable Small World) provides fast approximate nearest neighbor search
+-- Create HNSW indexes for vector similarity search (optional - requires pgvector)
+DO $$
+BEGIN
+    -- Check if pgvector is available
+    IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'vector') THEN
+        -- Index for Memory embeddings
+        CREATE INDEX IF NOT EXISTS idx_memory_embedding_hnsw 
+        ON "Memory" USING hnsw (embedding vector_cosine_ops)
+        WITH (m = 16, ef_construction = 64);
 
--- Index for Memory embeddings
-CREATE INDEX IF NOT EXISTS idx_memory_embedding_hnsw 
-ON "Memory" USING hnsw (embedding vector_cosine_ops)
-WITH (m = 16, ef_construction = 64);
-
--- Index for Entity embeddings  
-CREATE INDEX IF NOT EXISTS idx_entity_embedding_hnsw
-ON "Entity" USING hnsw (embedding vector_cosine_ops)
-WITH (m = 16, ef_construction = 64);
-
--- Note: 
--- m = 16: Max connections per node (higher = more accurate, more memory)
--- ef_construction = 64: Size of dynamic candidate list during index construction
--- vector_cosine_ops: Use cosine similarity (most common for text embeddings)
+        -- Index for Entity embeddings  
+        CREATE INDEX IF NOT EXISTS idx_entity_embedding_hnsw
+        ON "Entity" USING hnsw (embedding vector_cosine_ops)
+        WITH (m = 16, ef_construction = 64);
+        
+        RAISE NOTICE 'Vector indexes created successfully';
+    ELSE
+        RAISE NOTICE 'pgvector not available, skipping vector indexes';
+    END IF;
+END $$;
 
 
 

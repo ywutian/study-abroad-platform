@@ -1,10 +1,12 @@
--- Enable pgvector extension
-CREATE EXTENSION IF NOT EXISTS vector;
-
--- Note: Run this migration first before other migrations
--- If Memory/Entity tables already exist, you'll need to:
--- 1. ALTER TABLE memories ALTER COLUMN embedding TYPE vector(1536) USING embedding::vector(1536);
--- 2. ALTER TABLE entities ALTER COLUMN embedding TYPE vector(1536) USING embedding::vector(1536);
+-- Enable pgvector extension (optional - skip if not available)
+-- Railway default PostgreSQL doesn't support pgvector
+-- Use Supabase/Neon for vector support
+DO $$
+BEGIN
+    CREATE EXTENSION IF NOT EXISTS vector;
+EXCEPTION WHEN OTHERS THEN
+    RAISE NOTICE 'pgvector extension not available, skipping...';
+END $$;
 
 
 

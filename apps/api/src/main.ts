@@ -8,47 +8,21 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
   
-  // CORS must be enabled at app creation time to handle preflight requests
-  const allowedOrigins = process.env.CORS_ORIGIN?.split(',') || [
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'http://localhost:3002',
-    'http://localhost:3003',
-    'http://localhost:3004',
-  ];
-
   const app = await NestFactory.create(AppModule, {
     logger: process.env.NODE_ENV === 'production' 
       ? ['error', 'warn', 'log'] 
       : ['error', 'warn', 'log', 'debug', 'verbose'],
   });
 
-  // Configure CORS - must be done after app creation but before routes
+  // Simple CORS configuration - allow all origins for now
   app.enableCors({
-    origin: (requestOrigin: string | undefined, callback: (err: Error | null, origin?: string | boolean) => void) => {
-      // Allow requests with no origin (like mobile apps or curl)
-      if (!requestOrigin) {
-        callback(null, true);
-        return;
-      }
-      // Check if the origin is in our allowed list
-      if (allowedOrigins.indexOf(requestOrigin) !== -1) {
-        callback(null, requestOrigin);
-      } else {
-        // In development, allow all origins for debugging
-        if (process.env.NODE_ENV !== 'production') {
-          callback(null, requestOrigin);
-        } else {
-          callback(null, false);
-        }
-      }
-    },
+    origin: true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
   });
+  
+  logger.log('CORS enabled for all origins');
 
   // API versioning
   app.setGlobalPrefix('api/v1', {
@@ -93,8 +67,8 @@ async function bootstrap() {
   app.enableShutdownHooks();
 
   const port = process.env.PORT || 3001;
-  await app.listen(port);
-  logger.log(`🚀 Application is running on: http://localhost:${port}`);
+  await app.listen(port, '0.0.0.0');
+  logger.log(`🚀 Application is running on: http://0.0.0.0:${port}`);
   if (process.env.NODE_ENV !== 'production') {
     logger.log(`📚 Swagger docs: http://localhost:${port}/api/docs`);
   }
