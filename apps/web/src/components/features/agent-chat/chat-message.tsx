@@ -414,7 +414,6 @@ function ThinkingIndicator({ thinkingText }: { thinkingText: string }) {
 function TypewriterContent({ content }: { content: string }) {
   const [displayedContent, setDisplayedContent] = useState('');
   const contentRef = useRef(content);
-  const indexRef = useRef(0);
 
   useEffect(() => {
     // 如果内容变长，继续打字
@@ -426,7 +425,10 @@ function TypewriterContent({ content }: { content: string }) {
       let i = 0;
       const interval = setInterval(() => {
         if (i < newChars.length) {
-          setDisplayedContent(prev => prev + newChars[i]);
+          const char = newChars.charAt(i); // 使用 charAt 而不是索引访问
+          if (char) {
+            setDisplayedContent(prev => prev + char);
+          }
           i++;
         } else {
           clearInterval(interval);
@@ -435,7 +437,7 @@ function TypewriterContent({ content }: { content: string }) {
 
       return () => clearInterval(interval);
     } else {
-      // 初始化
+      // 初始化或内容变短
       contentRef.current = content;
       setDisplayedContent(content);
     }

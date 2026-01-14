@@ -133,11 +133,14 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         break;
 
       case 'content':
-        setMessages(prev => prev.map(msg =>
-          msg.id === messageId
-            ? { ...msg, content: msg.content + (event.content || ''), agent: event.agent || msg.agent }
-            : msg
-        ));
+        // 只有当 content 确实存在时才更新
+        if (event.content) {
+          setMessages(prev => prev.map(msg =>
+            msg.id === messageId
+              ? { ...msg, content: msg.content + event.content, agent: event.agent || msg.agent }
+              : msg
+          ));
+        }
         break;
 
       case 'tool_start':

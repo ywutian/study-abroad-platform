@@ -1,21 +1,20 @@
 'use client';
 
 /**
- * Agent 聊天核心组件 - 带动画效果
+ * Agent 聊天核心组件 - 企业级滚动实现
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Sparkles, Bot, RefreshCw } from 'lucide-react';
+import { Trash2, Sparkles, RefreshCw, ChevronDown } from 'lucide-react';
 import { useAgentChat } from './use-agent-chat';
 import { ChatMessage } from './chat-message';
 import { ChatInput } from './chat-input';
-import { AGENT_INFO, QUICK_ACTIONS, AgentType } from './types';
+import { AGENT_INFO, QUICK_ACTIONS } from './types';
 import { toast } from 'sonner';
 import { transitions } from '@/lib/motion';
 
@@ -25,6 +24,91 @@ interface AgentChatProps {
   showHeader?: boolean;
   showQuickActions?: boolean;
   compact?: boolean;
+}
+
+/**
+ * 企业级滚动 Hook
+ * - 智能检测用户是否在阅读历史消息
+ * - 新消息时自动滚动（除非用户在阅读）
+ * - 流式输出时渐进式滚动
+ */
+function useSmartScroll(deps: unknown[]) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isAtBottom, setIsAtBottom] = useState(true);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const isScrollingRef = useRef(false);
+  const lastScrollHeightRef = useRef(0);
+
+  // 检查是否在底部（允许 50px 误差）
+  const checkIsAtBottom = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return true;
+    const threshold = 50;
+    return container.scrollHeight - container.scrollTop - container.clientHeight < threshold;
+  }, []);
+
+  // 滚动到底部
+  const scrollToBottom = useCallback((smooth = true) => {
+    const container = containerRef.current;
+    if (!container) return;
+    
+    isScrollingRef.current = true;
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior: smooth ? 'smooth' : 'auto',
+    });
+    
+    // 滚动完成后重置标记
+    setTimeout(() => {
+      isScrollingRef.current = false;
+      setIsAtBottom(true);
+      setShowScrollButton(false);
+    }, smooth ? 300 : 0);
+  }, []);
+
+  // 监听滚动事件
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      // 忽略程序触发的滚动
+      if (isScrollingRef.current) return;
+      
+      const atBottom = checkIsAtBottom();
+      setIsAtBottom(atBottom);
+      setShowScrollButton(!atBottom && container.scrollHeight > container.clientHeight);
+    };
+
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [checkIsAtBottom]);
+
+  // 内容变化时自动滚动
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const currentScrollHeight = container.scrollHeight;
+    const heightChanged = currentScrollHeight !== lastScrollHeightRef.current;
+    lastScrollHeightRef.current = currentScrollHeight;
+
+    // 如果用户在底部，自动滚动到新内容
+    if (heightChanged && isAtBottom) {
+      // 使用 requestAnimationFrame 确保 DOM 更新后再滚动
+      requestAnimationFrame(() => {
+        scrollToBottom(false); // 流式输出时不使用 smooth，避免卡顿
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
+
+  return {
+    containerRef,
+    isAtBottom,
+    showScrollButton,
+    scrollToBottom,
+  };
 }
 
 export function AgentChat({
@@ -48,19 +132,15 @@ export function AgentChat({
     onError: (error) => toast.error(error),
   });
 
-  const scrollRef = useRef<HTMLDivElement>(null);
   const agentInfo = AGENT_INFO[currentAgent];
   const prefersReducedMotion = useReducedMotion();
-
-  // 自动滚动到底部
-  useEffect(() => {
-    if (scrollRef.current) {
-      const scrollElement = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (scrollElement) {
-        scrollElement.scrollTop = scrollElement.scrollHeight;
-      }
-    }
-  }, [messages]);
+  
+  // 企业级智能滚动
+  const { containerRef, showScrollButton, scrollToBottom } = useSmartScroll([
+    messages,
+    messages[messages.length - 1]?.content, // 监听最后一条消息的内容变化（流式）
+    isLoading,
+  ]);
 
   // 空状态动画变体
   const emptyStateVariants = {
@@ -157,122 +237,151 @@ export function AgentChat({
         </motion.div>
       )}
 
-      {/* Messages */}
-      <ScrollArea ref={scrollRef} className="flex-1">
-        <div className="p-4">
-          <AnimatePresence mode="popLayout">
-            {messages.length === 0 ? (
-              <motion.div
-                key="empty"
-                variants={emptyStateVariants}
-                initial="hidden"
-                animate="visible"
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="flex flex-col items-center justify-center h-full min-h-[400px] text-center"
-              >
-                {/* Animated Logo */}
+      {/* Messages Container with Smart Scroll */}
+      <div className="relative flex-1 overflow-hidden">
+        <div 
+          ref={containerRef}
+          className="h-full overflow-y-auto scroll-smooth scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent"
+        >
+          <div className="p-4 min-h-full">
+            <AnimatePresence mode="popLayout">
+              {messages.length === 0 ? (
                 <motion.div
-                  variants={itemVariants}
-                  className="relative mb-6"
+                  key="empty"
+                  variants={emptyStateVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="flex flex-col items-center justify-center h-full min-h-[400px] text-center"
                 >
-                  <motion.div
-                    className="text-7xl"
-                    animate={prefersReducedMotion ? {} : {
-                      y: [0, -8, 0],
-                      rotate: [0, -5, 5, 0],
-                    }}
-                    transition={{
-                      duration: 4,
-                      repeat: Infinity,
-                      ease: 'easeInOut',
-                    }}
-                  >
-                    🎓
-                  </motion.div>
-                  {/* Sparkle effects */}
-                  {!prefersReducedMotion && (
-                    <>
-                      <motion.span
-                        className="absolute -top-2 -right-2 text-lg"
-                        animate={{
-                          scale: [0, 1, 0],
-                          rotate: [0, 180],
-                        }}
-                        transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                      >
-                        ✨
-                      </motion.span>
-                      <motion.span
-                        className="absolute -bottom-1 -left-3 text-sm"
-                        animate={{
-                          scale: [0, 1, 0],
-                          rotate: [0, -180],
-                        }}
-                        transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-                      >
-                        ⭐
-                      </motion.span>
-                    </>
-                  )}
-                </motion.div>
-
-                <motion.h3 variants={itemVariants} className="text-lg font-semibold mb-2">
-                  {t('welcome')}
-                </motion.h3>
-                <motion.p
-                  variants={itemVariants}
-                  className="text-muted-foreground text-sm mb-8 max-w-sm leading-relaxed"
-                >
-                  {t('welcomeDesc')}
-                </motion.p>
-
-                {/* Quick Actions */}
-                {showQuickActions && (
+                  {/* Animated Logo */}
                   <motion.div
                     variants={itemVariants}
-                    className="flex flex-wrap justify-center gap-2 max-w-md"
+                    className="relative mb-6"
                   >
-                    {QUICK_ACTIONS.map((action, idx) => (
-                      <motion.div
-                        key={idx}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.4 + idx * 0.1 }}
-                        whileHover={{ scale: 1.05, y: -2 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => sendMessage(action.message)}
-                          className="text-xs rounded-full px-4 hover:bg-primary/5 hover:border-primary/50 hover:text-primary transition-all"
+                    <motion.div
+                      className="text-7xl"
+                      animate={prefersReducedMotion ? {} : {
+                        y: [0, -8, 0],
+                        rotate: [0, -5, 5, 0],
+                      }}
+                      transition={{
+                        duration: 4,
+                        repeat: Infinity,
+                        ease: 'easeInOut',
+                      }}
+                    >
+                      🎓
+                    </motion.div>
+                    {/* Sparkle effects */}
+                    {!prefersReducedMotion && (
+                      <>
+                        <motion.span
+                          className="absolute -top-2 -right-2 text-lg"
+                          animate={{
+                            scale: [0, 1, 0],
+                            rotate: [0, 180],
+                          }}
+                          transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
                         >
-                          {action.label}
-                        </Button>
-                      </motion.div>
-                    ))}
+                          ✨
+                        </motion.span>
+                        <motion.span
+                          className="absolute -bottom-1 -left-3 text-sm"
+                          animate={{
+                            scale: [0, 1, 0],
+                            rotate: [0, -180],
+                          }}
+                          transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                        >
+                          ⭐
+                        </motion.span>
+                      </>
+                    )}
                   </motion.div>
-                )}
-              </motion.div>
-            ) : (
-              <motion.div
-                key="messages"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="space-y-4"
-              >
-                {messages.map((message, index) => (
-                  <ChatMessage
-                    key={message.id}
-                    message={message}
-                    isLast={index === messages.length - 1}
-                  />
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
+
+                  <motion.h3 variants={itemVariants} className="text-lg font-semibold mb-2">
+                    {t('welcome')}
+                  </motion.h3>
+                  <motion.p
+                    variants={itemVariants}
+                    className="text-muted-foreground text-sm mb-8 max-w-sm leading-relaxed"
+                  >
+                    {t('welcomeDesc')}
+                  </motion.p>
+
+                  {/* Quick Actions */}
+                  {showQuickActions && (
+                    <motion.div
+                      variants={itemVariants}
+                      className="flex flex-wrap justify-center gap-2 max-w-md"
+                    >
+                      {QUICK_ACTIONS.map((action, idx) => (
+                        <motion.div
+                          key={idx}
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 0.4 + idx * 0.1 }}
+                          whileHover={{ scale: 1.05, y: -2 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => sendMessage(action.message)}
+                            className="text-xs rounded-full px-4 hover:bg-primary/5 hover:border-primary/50 hover:text-primary transition-all"
+                          >
+                            {action.label}
+                          </Button>
+                        </motion.div>
+                      ))}
+                    </motion.div>
+                  )}
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="messages"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="space-y-4"
+                >
+                  {messages.map((message, index) => (
+                    <ChatMessage
+                      key={message.id}
+                      message={message}
+                      isLast={index === messages.length - 1}
+                    />
+                  ))}
+                  {/* 底部占位，确保最后一条消息可见 */}
+                  <div className="h-4" aria-hidden="true" />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
-      </ScrollArea>
+
+        {/* Scroll to Bottom Button */}
+        <AnimatePresence>
+          {showScrollButton && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: 10 }}
+              className="absolute bottom-4 right-4"
+            >
+              <Button
+                size="icon"
+                variant="secondary"
+                onClick={() => scrollToBottom(true)}
+                className="h-10 w-10 rounded-full shadow-lg border bg-background/95 backdrop-blur hover:bg-background"
+              >
+                <ChevronDown className="h-5 w-5" />
+                <span className="sr-only">{t('scrollToBottom') || '滚动到底部'}</span>
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* Quick Actions (when has messages) */}
       <AnimatePresence>

@@ -192,19 +192,25 @@ export class MemoryService {
     return {
       gpa: profile.gpa ? Number(profile.gpa) : undefined,
       gpaScale: profile.gpaScale ? Number(profile.gpaScale) : 4.0,
-      testScores: profile.testScores?.map((s: any) => ({
-        type: s.type,
-        score: s.score,
-      })),
-      activities: profile.activities?.map((a: any) => ({
-        name: a.name,
-        role: a.role,
-        category: a.category,
-      })),
-      awards: profile.awards?.map((a: any) => ({
-        name: a.name,
-        level: a.level,
-      })),
+      testScores: profile.testScores?.length 
+        ? profile.testScores.map((s: any) => ({
+            type: s.type,
+            score: s.score,
+          }))
+        : [],
+      activities: profile.activities?.length
+        ? profile.activities.map((a: any) => ({
+            name: a.name,
+            role: a.role || '参与者',
+            category: a.category,
+          }))
+        : [],
+      awards: profile.awards?.length
+        ? profile.awards.map((a: any) => ({
+            name: a.name,
+            level: a.level,
+          }))
+        : [],
       targetMajor: profile.targetMajor || undefined,
       budgetTier: profile.budgetTier || undefined,
       grade: profile.grade || undefined,

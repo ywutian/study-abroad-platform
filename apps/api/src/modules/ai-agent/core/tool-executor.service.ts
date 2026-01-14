@@ -126,18 +126,24 @@ export class ToolExecutorService {
     return {
       gpa: profile.gpa ? Number(profile.gpa) : null,
       gpaScale: profile.gpaScale ? Number(profile.gpaScale) : 4.0,
-      targetMajor: profile.targetMajor,
-      grade: profile.grade,
-      testScores: profile.testScores?.map(s => ({ type: s.type, score: s.score })),
-      activities: profile.activities?.slice(0, 10).map(a => ({
-        name: a.name,
-        category: a.category,
-        role: a.role,
-      })),
-      awards: profile.awards?.slice(0, 10).map(a => ({
-        name: a.name,
-        level: a.level,
-      })),
+      targetMajor: profile.targetMajor || '未设置',
+      grade: profile.grade || '未设置',
+      testScores: profile.testScores?.length 
+        ? profile.testScores.map(s => ({ type: s.type, score: s.score }))
+        : [],
+      activities: profile.activities?.length
+        ? profile.activities.slice(0, 10).map(a => ({
+            name: a.name,
+            category: a.category,
+            role: a.role || '参与者',
+          }))
+        : [],
+      awards: profile.awards?.length
+        ? profile.awards.slice(0, 10).map(a => ({
+            name: a.name,
+            level: a.level,
+          }))
+        : [],
       empty: false,
     };
   }
