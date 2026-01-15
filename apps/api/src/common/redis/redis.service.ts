@@ -1,4 +1,9 @@
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 
@@ -22,7 +27,8 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
   private async connect() {
     const redisUrl = this.configService.get<string>('REDIS_URL');
-    const redisHost = this.configService.get<string>('REDIS_HOST') || 'localhost';
+    const redisHost =
+      this.configService.get<string>('REDIS_HOST') || 'localhost';
     const redisPort = this.configService.get<number>('REDIS_PORT') || 6379;
     const redisPassword = this.configService.get<string>('REDIS_PASSWORD');
 
@@ -78,7 +84,11 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   }
 
   // 健康检查
-  async healthCheck(): Promise<{ status: 'ok' | 'error'; latencyMs?: number; message?: string }> {
+  async healthCheck(): Promise<{
+    status: 'ok' | 'error';
+    latencyMs?: number;
+    message?: string;
+  }> {
     if (!this.client || !this.isConnected) {
       return { status: 'error', message: 'Redis not connected' };
     }
@@ -89,9 +99,9 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       const latencyMs = Date.now() - start;
       return { status: 'ok', latencyMs };
     } catch (error) {
-      return { 
-        status: 'error', 
-        message: error instanceof Error ? error.message : 'Ping failed' 
+      return {
+        status: 'error',
+        message: error instanceof Error ? error.message : 'Ping failed',
       };
     }
   }
@@ -145,5 +155,45 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   getClient(): RedisClient | null {
     return this.client;
   }
-}
 
+  // List 操作（用于通知等）
+  async lpush(key: string, value: string): Promise<number> {
+    if (!this.client) return 0;
+    return this.client.lpush(key, value);
+  }
+
+  async lrange(key: string, start: number, stop: number): Promise<string[]> {
+    if (!this.client) return [];
+    return this.client.lrange(key, start, stop);
+  }
+
+  async ltrim(key: string, start: number, stop: number): Promise<void> {
+    if (!this.client) return;
+    await this.client.ltrim(key, start, stop);
+  }
+
+  async lset(key: string, index: number, value: string): Promise<void> {
+    if (!this.client) return;
+    await this.client.lset(key, index, value);
+  }
+
+  async lrem(key: string, count: number, value: string): Promise<number> {
+    if (!this.client) return 0;
+    return this.client.lrem(key, count, value);
+  }
+
+  async incr(key: string): Promise<number> {
+    if (!this.client) return 0;
+    return this.client.incr(key);
+  }
+
+  async decr(key: string): Promise<number> {
+    if (!this.client) return 0;
+    return this.client.decr(key);
+  }
+
+  async expire(key: string, seconds: number): Promise<void> {
+    if (!this.client) return;
+    await this.client.expire(key, seconds);
+  }
+}

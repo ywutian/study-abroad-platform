@@ -15,38 +15,29 @@ export class SentryInterceptor implements NestInterceptor {
       catchError((error) => {
         // Only capture server errors (5xx)
         const statusCode = error.status || error.statusCode || 500;
-        
+
         if (statusCode >= 500) {
           const request = context.switchToHttp().getRequest();
-          
+
           Sentry.withScope((scope) => {
             scope.setTag('type', 'api_error');
             scope.setExtra('path', request.url);
             scope.setExtra('method', request.method);
             scope.setExtra('statusCode', statusCode);
-            
+
             if (request.user) {
               scope.setUser({
                 id: request.user.id,
                 email: request.user.email,
               });
             }
-            
+
             Sentry.captureException(error);
           });
         }
-        
+
         return throwError(() => error);
       }),
     );
   }
 }
-
-
-
-
-
-
-
-
-

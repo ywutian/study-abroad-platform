@@ -1,5 +1,20 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { VaultService } from './vault.service';
 import {
   CreateVaultItemDto,
@@ -48,16 +63,25 @@ export class VaultController {
   @Get('stats')
   @ApiOperation({ summary: 'Get vault statistics' })
   @ApiResponse({ status: 200, type: VaultStatsDto })
-  async getStats(@CurrentUser() user: CurrentUserPayload): Promise<VaultStatsDto> {
+  async getStats(
+    @CurrentUser() user: CurrentUserPayload,
+  ): Promise<VaultStatsDto> {
     return this.vaultService.getStats(user.id);
   }
 
   @Get('generate-password')
   @ApiOperation({ summary: 'Generate a secure password' })
-  @ApiResponse({ status: 200, schema: { properties: { password: { type: 'string' } } } })
+  @ApiResponse({
+    status: 200,
+    schema: { properties: { password: { type: 'string' } } },
+  })
   generatePassword(@Query('length') length?: string): { password: string } {
     const len = length ? parseInt(length, 10) : 16;
-    return { password: this.vaultService.generatePassword(Math.min(Math.max(len, 8), 64)) };
+    return {
+      password: this.vaultService.generatePassword(
+        Math.min(Math.max(len, 8), 64),
+      ),
+    };
   }
 
   @Get(':id')
@@ -83,7 +107,10 @@ export class VaultController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a vault item' })
-  @ApiResponse({ status: 200, schema: { properties: { success: { type: 'boolean' } } } })
+  @ApiResponse({
+    status: 200,
+    schema: { properties: { success: { type: 'boolean' } } },
+  })
   async delete(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
@@ -98,21 +125,31 @@ export class VaultController {
 
   @Delete()
   @ApiOperation({ summary: 'Delete all vault items' })
-  @ApiResponse({ status: 200, schema: { properties: { count: { type: 'number' } } } })
-  async deleteAll(@CurrentUser() user: CurrentUserPayload): Promise<{ count: number }> {
+  @ApiResponse({
+    status: 200,
+    schema: { properties: { count: { type: 'number' } } },
+  })
+  async deleteAll(
+    @CurrentUser() user: CurrentUserPayload,
+  ): Promise<{ count: number }> {
     return this.vaultService.deleteAll(user.id);
   }
 
   @Get('export/all')
   @ApiOperation({ summary: 'Export all vault items with decrypted data' })
   @ApiResponse({ status: 200, type: [VaultItemDetailDto] })
-  async exportAll(@CurrentUser() user: CurrentUserPayload): Promise<VaultItemDetailDto[]> {
+  async exportAll(
+    @CurrentUser() user: CurrentUserPayload,
+  ): Promise<VaultItemDetailDto[]> {
     return this.vaultService.exportAll(user.id);
   }
 
   @Post('import')
   @ApiOperation({ summary: 'Import vault items' })
-  @ApiResponse({ status: 201, schema: { properties: { imported: { type: 'number' } } } })
+  @ApiResponse({
+    status: 201,
+    schema: { properties: { imported: { type: 'number' } } },
+  })
   async importItems(
     @CurrentUser() user: CurrentUserPayload,
     @Body() items: ImportVaultItemDto[],
@@ -120,5 +157,3 @@ export class VaultController {
     return this.vaultService.importItems(user.id, items);
   }
 }
-
-

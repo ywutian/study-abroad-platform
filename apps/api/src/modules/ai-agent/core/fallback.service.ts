@@ -26,11 +26,10 @@ const FALLBACK_RESPONSES: Record<string, AgentResponse> = {
 
   // 配额超限
   quota: {
-    message: '您今日的对话次数已达上限。升级会员可获得更多对话额度，或明天再来。',
+    message:
+      '您今日的对话次数已达上限。升级会员可获得更多对话额度，或明天再来。',
     agentType: AgentType.ORCHESTRATOR,
-    actions: [
-      { label: '升级会员', action: 'navigate:/pricing' },
-    ],
+    actions: [{ label: '升级会员', action: 'navigate:/pricing' }],
   },
 
   // 网络问题
@@ -65,25 +64,21 @@ const AGENT_FALLBACKS: Partial<Record<AgentType, AgentResponse>> = {
   [AgentType.PROFILE]: {
     message: '档案分析服务暂时不可用。建议先完善您的档案信息。',
     agentType: AgentType.PROFILE,
-    actions: [
-      { label: '完善档案', action: 'navigate:/profile' },
-    ],
+    actions: [{ label: '完善档案', action: 'navigate:/profile' }],
   },
   [AgentType.TIMELINE]: {
     message: '时间规划服务暂时不可用。您可以先查看目标学校的截止日期。',
     agentType: AgentType.TIMELINE,
-    actions: [
-      { label: '查看截止日期', action: 'navigate:/schools' },
-    ],
+    actions: [{ label: '查看截止日期', action: 'navigate:/schools' }],
   },
 };
 
 // 错误分类
-export type ErrorCategory = 
-  | 'timeout' 
-  | 'rate_limit' 
-  | 'quota' 
-  | 'network' 
+export type ErrorCategory =
+  | 'timeout'
+  | 'rate_limit'
+  | 'quota'
+  | 'network'
   | 'circuit_open'
   | 'moderation'
   | 'unknown';
@@ -105,20 +100,21 @@ export class FallbackService {
     },
   ): AgentResponse {
     const category = this.categorizeError(error);
-    
+
     this.logger.warn(
       `Fallback triggered: category=${category}, agent=${agentType}, error=${error.message}`,
     );
 
     // 先尝试 Agent 专属降级
     if (agentType && AGENT_FALLBACKS[agentType]) {
-      const agentFallback = AGENT_FALLBACKS[agentType]!;
+      const agentFallback = AGENT_FALLBACKS[agentType];
       return {
         ...agentFallback,
         data: {
           fallback: true,
           category,
-          originalError: process.env.NODE_ENV === 'development' ? error.message : undefined,
+          originalError:
+            process.env.NODE_ENV === 'development' ? error.message : undefined,
         },
       };
     }
@@ -142,14 +138,16 @@ export class FallbackService {
         break;
     }
 
-    const response = FALLBACK_RESPONSES[fallbackKey] || FALLBACK_RESPONSES.default;
-    
+    const response =
+      FALLBACK_RESPONSES[fallbackKey] || FALLBACK_RESPONSES.default;
+
     return {
       ...response,
       data: {
         fallback: true,
         category,
-        originalError: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        originalError:
+          process.env.NODE_ENV === 'development' ? error.message : undefined,
       },
     };
   }
@@ -167,7 +165,11 @@ export class FallbackService {
     }
 
     // 限流
-    if (name === 'RateLimitExceededError' || message.includes('rate limit') || message.includes('429')) {
+    if (
+      name === 'RateLimitExceededError' ||
+      message.includes('rate limit') ||
+      message.includes('429')
+    ) {
       return 'rate_limit';
     }
 
@@ -222,7 +224,7 @@ export class FallbackService {
    */
   getUserFriendlyMessage(error: Error): string {
     const category = this.categorizeError(error);
-    
+
     const messages: Record<ErrorCategory, string> = {
       timeout: '请求处理时间较长，请稍后重试',
       rate_limit: '请求过于频繁，请稍后再试',
@@ -236,10 +238,3 @@ export class FallbackService {
     return messages[category];
   }
 }
-
-
-
-
-
-
-

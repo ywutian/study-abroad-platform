@@ -44,6 +44,3 @@ export class EssayBrainstormResponseDto {
   @ApiProperty()
   tokenUsed: number;
 }
-
-
-

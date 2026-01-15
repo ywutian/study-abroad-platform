@@ -1,10 +1,14 @@
 /**
  * 通用权限验证服务
- * 
+ *
  * 统一处理实体所有权验证，减少重复代码
  */
 
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 
 /**
  * 可拥有实体接口
@@ -31,7 +35,7 @@ export interface VerifyOptions {
 export class AuthorizationService {
   /**
    * 验证实体所有权
-   * 
+   *
    * @example
    * // 验证帖子所有权
    * const post = this.auth.verifyOwnership(
@@ -39,7 +43,7 @@ export class AuthorizationService {
    *   userId,
    *   { entityName: 'Post', ownerField: 'authorId' }
    * );
-   * 
+   *
    * @example
    * // 验证用户资源
    * const vault = this.auth.verifyOwnership(
@@ -69,7 +73,7 @@ export class AuthorizationService {
     const ownerId = entity[ownerField] as string | undefined;
     if (ownerId !== userId) {
       throw new ForbiddenException(
-        `You don't have permission to access this ${entityName.toLowerCase()}`
+        `You don't have permission to access this ${entityName.toLowerCase()}`,
       );
     }
 
@@ -78,7 +82,7 @@ export class AuthorizationService {
 
   /**
    * 验证实体存在
-   * 
+   *
    * @example
    * const school = this.auth.verifyExists(
    *   await this.prisma.school.findUnique({ where: { id } }),
@@ -94,7 +98,7 @@ export class AuthorizationService {
 
   /**
    * 验证用户角色
-   * 
+   *
    * @example
    * this.auth.verifyRole(user.role, ['ADMIN', 'VERIFIED']);
    */
@@ -105,14 +109,14 @@ export class AuthorizationService {
   ): void {
     if (!requiredRoles.includes(userRole)) {
       throw new ForbiddenException(
-        message || "You don't have permission to perform this action"
+        message || "You don't have permission to perform this action",
       );
     }
   }
 
   /**
    * 验证用户是管理员或所有者
-   * 
+   *
    * @example
    * const case = this.auth.verifyAdminOrOwner(
    *   await this.prisma.admissionCase.findUnique({ where: { id } }),
@@ -139,7 +143,7 @@ export class AuthorizationService {
 
     if (!isAdmin && !isOwner) {
       throw new ForbiddenException(
-        `You don't have permission to access this ${entityName.toLowerCase()}`
+        `You don't have permission to access this ${entityName.toLowerCase()}`,
       );
     }
 
@@ -148,7 +152,7 @@ export class AuthorizationService {
 
   /**
    * 验证嵌套所有权（通过关联实体）
-   * 
+   *
    * @example
    * // Activity -> Profile -> User
    * const activity = this.auth.verifyNestedOwnership(
@@ -179,12 +183,10 @@ export class AuthorizationService {
     const ownerId = getOwnerId(entity);
     if (ownerId !== userId) {
       throw new ForbiddenException(
-        `You don't have permission to access this ${entityName.toLowerCase()}`
+        `You don't have permission to access this ${entityName.toLowerCase()}`,
       );
     }
 
     return entity;
   }
 }
-
-

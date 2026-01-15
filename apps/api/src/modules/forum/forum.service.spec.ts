@@ -2,8 +2,27 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ForumService } from './forum.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthorizationService } from '../../common/services/authorization.service';
-import { NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
-import { Role, TeamStatus, TeamAppStatus } from '@prisma/client';
+import { ForumModerationService } from './moderation.service';
+import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
+import {
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
+import { Role } from '@prisma/client';
+
+// 本地定义团队状态（Prisma schema 中未定义）
+enum TeamStatus {
+  RECRUITING = 'RECRUITING',
+  FULL = 'FULL',
+  CLOSED = 'CLOSED',
+}
+
+enum TeamAppStatus {
+  PENDING = 'PENDING',
+  ACCEPTED = 'ACCEPTED',
+  REJECTED = 'REJECTED',
+}
 
 describe('ForumService', () => {
   let service: ForumService;
@@ -76,6 +95,9 @@ describe('ForumService', () => {
         {
           provide: PrismaService,
           useValue: {
+            user: {
+              findUnique: jest.fn().mockResolvedValue({ role: 'USER' }),
+            },
             forumCategory: {
               findMany: jest.fn(),
               findUnique: jest.fn(),
@@ -119,17 +141,39 @@ describe('ForumService', () => {
         {
           provide: AuthorizationService,
           useValue: {
-            verifyOwnership: jest.fn().mockImplementation((entity, userId, options) => {
-              if (!entity) {
-                throw new NotFoundException(`${options?.entityName || 'Resource'} not found`);
-              }
-              const ownerField = options?.ownerField || 'userId';
-              const actualOwnerId = entity[ownerField];
-              if (actualOwnerId !== userId) {
-                throw new ForbiddenException(`You don't have access to this ${options?.entityName || 'Resource'}`);
-              }
-              return entity;
-            }),
+            verifyOwnership: jest
+              .fn()
+              .mockImplementation((entity, userId, options) => {
+                if (!entity) {
+                  throw new NotFoundException(
+                    `${options?.entityName || 'Resource'} not found`,
+                  );
+                }
+                const ownerField = options?.ownerField || 'userId';
+                const actualOwnerId = entity[ownerField];
+                if (actualOwnerId !== userId) {
+                  throw new ForbiddenException(
+                    `You don't have access to this ${options?.entityName || 'Resource'}`,
+                  );
+                }
+                return entity;
+              }),
+          },
+        },
+        {
+          provide: ForumModerationService,
+          useValue: {
+            moderateContent: jest.fn().mockResolvedValue({ approved: true }),
+            validateContent: jest.fn().mockResolvedValue(undefined),
+            validateMultiple: jest.fn().mockResolvedValue(undefined),
+            checkSpam: jest.fn().mockResolvedValue(false),
+          },
+        },
+        {
+          provide: MemoryManagerService,
+          useValue: {
+            remember: jest.fn().mockResolvedValue(undefined),
+            recall: jest.fn().mockResolvedValue([]),
           },
         },
       ],
@@ -150,10 +194,10 @@ describe('ForumService', () => {
 
   describe('getCategories', () => {
     it('should return all active categories', async () => {
-      const mockCategories = [
-        { ...mockCategory, _count: { posts: 10 } },
-      ];
-      (prismaService.forumCategory.findMany as jest.Mock).mockResolvedValue(mockCategories);
+      const mockCategories = [{ ...mockCategory, _count: { posts: 10 } }];
+      (prismaService.forumCategory.findMany as jest.Mock).mockResolvedValue(
+        mockCategories,
+      );
 
       const result = await service.getCategories();
 
@@ -165,7 +209,9 @@ describe('ForumService', () => {
 
   describe('createCategory', () => {
     it('should create a new category', async () => {
-      (prismaService.forumCategory.create as jest.Mock).mockResolvedValue(mockCategory);
+      (prismaService.forumCategory.create as jest.Mock).mockResolvedValue(
+        mockCategory,
+      );
 
       const result = await service.createCategory({
         name: 'General',
@@ -184,10 +230,15 @@ describe('ForumService', () => {
   describe('getPosts', () => {
     it('should return paginated posts', async () => {
       const mockPosts = [{ ...mockPost, _count: { comments: 5 }, likes: [] }];
-      (prismaService.forumPost.findMany as jest.Mock).mockResolvedValue(mockPosts);
+      (prismaService.forumPost.findMany as jest.Mock).mockResolvedValue(
+        mockPosts,
+      );
       (prismaService.forumPost.count as jest.Mock).mockResolvedValue(1);
 
-      const result = await service.getPosts(mockUserId, { limit: 20, offset: 0 });
+      const result = await service.getPosts(mockUserId, {
+        limit: 20,
+        offset: 0,
+      });
 
       expect(result.posts).toHaveLength(1);
       expect(result.total).toBe(1);
@@ -198,7 +249,11 @@ describe('ForumService', () => {
       (prismaService.forumPost.findMany as jest.Mock).mockResolvedValue([]);
       (prismaService.forumPost.count as jest.Mock).mockResolvedValue(0);
 
-      await service.getPosts(null, { categoryId: 'category-1', limit: 20, offset: 0 });
+      await service.getPosts(null, {
+        categoryId: 'category-1',
+        limit: 20,
+        offset: 0,
+      });
 
       expect(prismaService.forumPost.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -230,7 +285,9 @@ describe('ForumService', () => {
         teamMembers: [],
         teamApplications: [],
       };
-      (prismaService.forumPost.findUnique as jest.Mock).mockResolvedValue(fullPost);
+      (prismaService.forumPost.findUnique as jest.Mock).mockResolvedValue(
+        fullPost,
+      );
       (prismaService.forumPost.update as jest.Mock).mockResolvedValue(fullPost);
 
       const result = await service.getPostById(mockPostId, mockUserId);
@@ -246,15 +303,17 @@ describe('ForumService', () => {
     it('should throw NotFoundException if post not found', async () => {
       (prismaService.forumPost.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await expect(service.getPostById('nonexistent', mockUserId)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.getPostById('nonexistent', mockUserId),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('createPost', () => {
     it('should create a regular post', async () => {
-      (prismaService.forumCategory.findUnique as jest.Mock).mockResolvedValue(mockCategory);
+      (prismaService.forumCategory.findUnique as jest.Mock).mockResolvedValue(
+        mockCategory,
+      );
       (prismaService.forumPost.create as jest.Mock).mockResolvedValue({
         ...mockPost,
         author: mockAuthor,
@@ -272,7 +331,13 @@ describe('ForumService', () => {
     });
 
     it('should create team post and add owner as member', async () => {
-      (prismaService.forumCategory.findUnique as jest.Mock).mockResolvedValue(mockCategory);
+      // Team posts require verified user
+      (prismaService.user.findUnique as jest.Mock).mockResolvedValueOnce({
+        role: Role.VERIFIED,
+      });
+      (prismaService.forumCategory.findUnique as jest.Mock).mockResolvedValue(
+        mockCategory,
+      );
       (prismaService.forumPost.create as jest.Mock).mockResolvedValue({
         ...mockPost,
         isTeamPost: true,
@@ -301,7 +366,9 @@ describe('ForumService', () => {
     });
 
     it('should throw BadRequestException for invalid category', async () => {
-      (prismaService.forumCategory.findUnique as jest.Mock).mockResolvedValue(null);
+      (prismaService.forumCategory.findUnique as jest.Mock).mockResolvedValue(
+        null,
+      );
 
       await expect(
         service.createPost(mockUserId, {
@@ -315,7 +382,9 @@ describe('ForumService', () => {
 
   describe('updatePost', () => {
     it('should update post if owner', async () => {
-      (prismaService.forumPost.findUnique as jest.Mock).mockResolvedValue(mockPost);
+      (prismaService.forumPost.findUnique as jest.Mock).mockResolvedValue(
+        mockPost,
+      );
       (authService.verifyOwnership as jest.Mock).mockReturnValue(mockPost);
       (prismaService.forumPost.update as jest.Mock).mockResolvedValue({
         ...mockPost,
@@ -332,7 +401,9 @@ describe('ForumService', () => {
 
     it('should throw ForbiddenException if post is locked', async () => {
       const lockedPost = { ...mockPost, isLocked: true };
-      (prismaService.forumPost.findUnique as jest.Mock).mockResolvedValue(lockedPost);
+      (prismaService.forumPost.findUnique as jest.Mock).mockResolvedValue(
+        lockedPost,
+      );
       (authService.verifyOwnership as jest.Mock).mockReturnValue(lockedPost);
 
       await expect(
@@ -343,7 +414,9 @@ describe('ForumService', () => {
 
   describe('deletePost', () => {
     it('should delete post if owner', async () => {
-      (prismaService.forumPost.findUnique as jest.Mock).mockResolvedValue(mockPost);
+      (prismaService.forumPost.findUnique as jest.Mock).mockResolvedValue(
+        mockPost,
+      );
       (authService.verifyOwnership as jest.Mock).mockReturnValue(mockPost);
       (prismaService.forumPost.delete as jest.Mock).mockResolvedValue(mockPost);
 
@@ -383,8 +456,12 @@ describe('ForumService', () => {
 
   describe('createComment', () => {
     it('should create a comment', async () => {
-      (prismaService.forumPost.findUnique as jest.Mock).mockResolvedValue(mockPost);
-      (prismaService.forumComment.create as jest.Mock).mockResolvedValue(mockComment);
+      (prismaService.forumPost.findUnique as jest.Mock).mockResolvedValue(
+        mockPost,
+      );
+      (prismaService.forumComment.create as jest.Mock).mockResolvedValue(
+        mockComment,
+      );
       (prismaService.forumPost.update as jest.Mock).mockResolvedValue(mockPost);
 
       const result = await service.createComment(mockPostId, mockUserId, {
@@ -414,8 +491,12 @@ describe('ForumService', () => {
     });
 
     it('should validate parent comment exists for replies', async () => {
-      (prismaService.forumPost.findUnique as jest.Mock).mockResolvedValue(mockPost);
-      (prismaService.forumComment.findUnique as jest.Mock).mockResolvedValue(null);
+      (prismaService.forumPost.findUnique as jest.Mock).mockResolvedValue(
+        mockPost,
+      );
+      (prismaService.forumComment.findUnique as jest.Mock).mockResolvedValue(
+        null,
+      );
 
       await expect(
         service.createComment(mockPostId, mockUserId, {
@@ -428,7 +509,9 @@ describe('ForumService', () => {
 
   describe('deleteComment', () => {
     it('should delete comment and update post count', async () => {
-      (prismaService.forumComment.findUnique as jest.Mock).mockResolvedValue(mockComment);
+      (prismaService.forumComment.findUnique as jest.Mock).mockResolvedValue(
+        mockComment,
+      );
       (authService.verifyOwnership as jest.Mock).mockReturnValue(mockComment);
       (prismaService.forumComment.findMany as jest.Mock).mockResolvedValue([]);
 
@@ -452,8 +535,12 @@ describe('ForumService', () => {
     };
 
     it('should create team application', async () => {
-      (prismaService.forumPost.findUnique as jest.Mock).mockResolvedValue(teamPost);
-      (prismaService.teamApplication.findUnique as jest.Mock).mockResolvedValue(null);
+      (prismaService.forumPost.findUnique as jest.Mock).mockResolvedValue(
+        teamPost,
+      );
+      (prismaService.teamApplication.findUnique as jest.Mock).mockResolvedValue(
+        null,
+      );
       (prismaService.teamApplication.create as jest.Mock).mockResolvedValue({});
 
       const result = await service.applyToTeam(mockPostId, 'other-user', {
@@ -464,7 +551,9 @@ describe('ForumService', () => {
     });
 
     it('should throw if not a team post', async () => {
-      (prismaService.forumPost.findUnique as jest.Mock).mockResolvedValue(mockPost);
+      (prismaService.forumPost.findUnique as jest.Mock).mockResolvedValue(
+        mockPost,
+      );
 
       await expect(
         service.applyToTeam(mockPostId, 'other-user', {}),
@@ -472,7 +561,9 @@ describe('ForumService', () => {
     });
 
     it('should throw if applying to own team', async () => {
-      (prismaService.forumPost.findUnique as jest.Mock).mockResolvedValue(teamPost);
+      (prismaService.forumPost.findUnique as jest.Mock).mockResolvedValue(
+        teamPost,
+      );
 
       await expect(
         service.applyToTeam(mockPostId, mockUserId, {}),
@@ -512,32 +603,42 @@ describe('ForumService', () => {
     };
 
     it('should accept application and add member', async () => {
-      (prismaService.teamApplication.findUnique as jest.Mock).mockResolvedValue(mockApplication);
+      (prismaService.teamApplication.findUnique as jest.Mock).mockResolvedValue(
+        mockApplication,
+      );
       (prismaService.teamApplication.update as jest.Mock).mockResolvedValue({});
       (prismaService.teamMember.create as jest.Mock).mockResolvedValue({});
       (prismaService.teamMember.count as jest.Mock).mockResolvedValue(2);
       (prismaService.forumPost.update as jest.Mock).mockResolvedValue({});
 
-      await service.reviewApplication('app-1', mockUserId, { status: 'ACCEPTED' });
+      await service.reviewApplication('app-1', mockUserId, {
+        status: 'ACCEPTED',
+      });
 
       expect(prismaService.teamMember.create).toHaveBeenCalled();
       expect(prismaService.forumPost.update).toHaveBeenCalled();
     });
 
     it('should reject application', async () => {
-      (prismaService.teamApplication.findUnique as jest.Mock).mockResolvedValue(mockApplication);
+      (prismaService.teamApplication.findUnique as jest.Mock).mockResolvedValue(
+        mockApplication,
+      );
       (prismaService.teamApplication.update as jest.Mock).mockResolvedValue({});
 
-      await service.reviewApplication('app-1', mockUserId, { status: 'REJECTED' });
+      await service.reviewApplication('app-1', mockUserId, {
+        status: 'REJECTED',
+      });
 
       expect(prismaService.teamMember.create).not.toHaveBeenCalled();
     });
 
     it('should throw if not team owner', async () => {
-      (prismaService.teamApplication.findUnique as jest.Mock).mockResolvedValue({
-        ...mockApplication,
-        post: { authorId: 'other-user' },
-      });
+      (prismaService.teamApplication.findUnique as jest.Mock).mockResolvedValue(
+        {
+          ...mockApplication,
+          post: { authorId: 'other-user' },
+        },
+      );
 
       await expect(
         service.reviewApplication('app-1', mockUserId, { status: 'ACCEPTED' }),
@@ -562,7 +663,9 @@ describe('ForumService', () => {
     });
 
     it('should throw if not a member', async () => {
-      (prismaService.teamMember.findUnique as jest.Mock).mockResolvedValue(null);
+      (prismaService.teamMember.findUnique as jest.Mock).mockResolvedValue(
+        null,
+      );
 
       await expect(service.leaveTeam(mockPostId, mockUserId)).rejects.toThrow(
         NotFoundException,
@@ -582,4 +685,3 @@ describe('ForumService', () => {
     });
   });
 });
-

@@ -1,6 +1,6 @@
 /**
  * 请求上下文
- * 
+ *
  * 使用 AsyncLocalStorage 实现请求范围的上下文传递
  * 无需显式传参即可在任意层级获取请求信息
  */
@@ -15,28 +15,28 @@ import { randomUUID } from 'crypto';
  */
 export interface RequestContextData {
   // 请求追踪
-  requestId: string;          // 唯一请求 ID
-  correlationId?: string;     // 关联 ID (来自上游)
-  spanId?: string;            // 分布式追踪 Span ID
-  
+  requestId: string; // 唯一请求 ID
+  correlationId?: string; // 关联 ID (来自上游)
+  spanId?: string; // 分布式追踪 Span ID
+
   // 用户信息
   userId?: string;
   userRole?: string;
   isVip?: boolean;
-  
+
   // 请求信息
   path: string;
   method: string;
   ip?: string;
   userAgent?: string;
-  
+
   // 时间
   startTime: number;
-  
+
   // Agent 相关
   conversationId?: string;
   agentType?: string;
-  
+
   // 自定义数据
   metadata: Record<string, any>;
 }
@@ -89,7 +89,11 @@ export function getRequestId(): string {
 }
 
 export function getCorrelationId(): string {
-  return requestContext.get()?.correlationId || requestContext.get()?.requestId || 'unknown';
+  return (
+    requestContext.get()?.correlationId ||
+    requestContext.get()?.requestId ||
+    'unknown'
+  );
 }
 
 export function getCurrentUserId(): string | undefined {
@@ -194,10 +198,3 @@ export function createContextLogger(name: string) {
     },
   };
 }
-
-
-
-
-
-
-

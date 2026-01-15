@@ -1,4 +1,12 @@
-import { IsString, IsOptional, IsNumber, IsDateString, Min, Max, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsDateString,
+  Min,
+  Max,
+  MaxLength,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateEducationDto {
@@ -7,7 +15,9 @@ export class CreateEducationDto {
   @MaxLength(200)
   schoolName: string;
 
-  @ApiPropertyOptional({ description: '学校类型 (HIGH_SCHOOL / COLLEGE / etc.)' })
+  @ApiPropertyOptional({
+    description: '学校类型 (HIGH_SCHOOL / COLLEGE / etc.)',
+  })
   @IsOptional()
   @IsString()
   schoolType?: string;
@@ -103,12 +113,3 @@ export class UpdateEducationDto {
   @IsString()
   description?: string;
 }
-
-
-
-
-
-
-
-
-

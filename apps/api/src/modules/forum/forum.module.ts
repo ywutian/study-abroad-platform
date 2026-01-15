@@ -1,15 +1,14 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ForumService } from './forum.service';
 import { ForumController } from './forum.controller';
+import { ForumModerationService } from './moderation.service';
 import { PrismaModule } from '../../prisma/prisma.module';
+import { AiAgentModule } from '../ai-agent/ai-agent.module';
 
 @Module({
-  imports: [PrismaModule],
-  providers: [ForumService],
+  imports: [PrismaModule, forwardRef(() => AiAgentModule)],
+  providers: [ForumService, ForumModerationService],
   controllers: [ForumController],
-  exports: [ForumService],
+  exports: [ForumService, ForumModerationService],
 })
 export class ForumModule {}
-
-
-

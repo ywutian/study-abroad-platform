@@ -31,7 +31,7 @@ export class VerificationController {
   @ApiResponse({ status: 201, description: '认证申请已提交' })
   async submitVerification(
     @CurrentUser() user: CurrentUserPayload,
-    @Body() dto: CreateVerificationDto
+    @Body() dto: CreateVerificationDto,
   ) {
     return this.verificationService.submitVerification(user.id, dto);
   }
@@ -48,11 +48,11 @@ export class VerificationController {
   @ApiOperation({ summary: '获取待审核的认证申请（管理员）' })
   async getPendingVerifications(
     @Query('page') page?: string,
-    @Query('pageSize') pageSize?: string
+    @Query('pageSize') pageSize?: string,
   ) {
     return this.verificationService.getPendingVerifications(
       page ? parseInt(page, 10) : 1,
-      pageSize ? parseInt(pageSize, 10) : 20
+      pageSize ? parseInt(pageSize, 10) : 20,
     );
   }
 
@@ -80,11 +80,8 @@ export class VerificationController {
   async reviewVerification(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
-    @Body() dto: ReviewVerificationDto
+    @Body() dto: ReviewVerificationDto,
   ) {
     return this.verificationService.reviewVerification(id, user.id, dto);
   }
 }
-
-
-

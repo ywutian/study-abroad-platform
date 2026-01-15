@@ -11,4 +11,3 @@ import { SettingsController } from './settings.controller';
 export class SettingsModule {}
 
 export { SettingsService, SETTING_KEYS };
-

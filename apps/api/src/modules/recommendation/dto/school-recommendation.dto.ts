@@ -1,15 +1,24 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsArray, IsString, IsNumber, IsEnum } from 'class-validator';
+import {
+  IsOptional,
+  IsArray,
+  IsString,
+  IsNumber,
+  IsEnum,
+} from 'class-validator';
 
 export enum BudgetRange {
-  LOW = 'low',         // < $30k/年
-  MEDIUM = 'medium',   // $30k - $60k/年
-  HIGH = 'high',       // $60k - $80k/年
+  LOW = 'low', // < $30k/年
+  MEDIUM = 'medium', // $30k - $60k/年
+  HIGH = 'high', // $60k - $80k/年
   UNLIMITED = 'unlimited', // 不限
 }
 
 export class SchoolRecommendationRequestDto {
-  @ApiPropertyOptional({ type: [String], description: '偏好地区（如：California, New York）' })
+  @ApiPropertyOptional({
+    type: [String],
+    description: '偏好地区（如：California, New York）',
+  })
   @IsArray()
   @IsOptional()
   @IsString({ each: true })
@@ -90,6 +99,3 @@ export class SchoolRecommendationResponseDto {
   @ApiProperty()
   createdAt: Date;
 }
-
-
-

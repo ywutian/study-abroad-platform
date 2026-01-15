@@ -299,12 +299,12 @@ export const AGENT_TOOLS: ToolDefinition[] = [
 
 // 获取工具定义（用于 OpenAI function calling）
 export function getToolDefinitions(tools: AgentTool[]): ToolDefinition[] {
-  return AGENT_TOOLS.filter(t => tools.includes(t.name));
+  return AGENT_TOOLS.filter((t) => tools.includes(t.name));
 }
 
 // 转换为 OpenAI tools 格式
 export function toOpenAITools(tools: ToolDefinition[]) {
-  return tools.map(tool => ({
+  return tools.map((tool) => ({
     type: 'function' as const,
     function: {
       name: tool.name,
@@ -313,12 +313,3 @@ export function toOpenAITools(tools: ToolDefinition[]) {
     },
   }));
 }
-
-
-
-
-
-
-
-
-

@@ -1,4 +1,10 @@
-import { IsEmail, IsString, MinLength, MaxLength, Matches } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  MinLength,
+  MaxLength,
+  Matches,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class RequestPasswordResetDto {
@@ -37,12 +43,3 @@ export class ChangePasswordDto {
   })
   newPassword: string;
 }
-
-
-
-
-
-
-
-
-

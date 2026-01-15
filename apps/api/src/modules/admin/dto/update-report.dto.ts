@@ -13,5 +13,3 @@ export class UpdateReportDto {
   @MaxLength(1000)
   resolution?: string;
 }
-
-

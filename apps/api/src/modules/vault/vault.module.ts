@@ -12,6 +12,3 @@ import { PrismaModule } from '../../prisma/prisma.module';
   exports: [VaultService, EncryptionService],
 })
 export class VaultModule {}
-
-
-

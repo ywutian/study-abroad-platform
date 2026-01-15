@@ -5,7 +5,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MemoryType, EntityType } from '@prisma/client';
-import { MessageRecord, ConversationSummary, MemoryInput, EntityInput } from './types';
+import {
+  MessageRecord,
+  ConversationSummary,
+  MemoryInput,
+  EntityInput,
+  LLMParsedMemory,
+  LLMParsedEntity,
+} from './types';
 
 @Injectable()
 export class SummarizerService {
@@ -16,14 +23,19 @@ export class SummarizerService {
 
   constructor(private config: ConfigService) {
     this.apiKey = this.config.get('OPENAI_API_KEY', '');
-    this.baseUrl = this.config.get('OPENAI_BASE_URL', 'https://api.openai.com/v1');
+    this.baseUrl = this.config.get(
+      'OPENAI_BASE_URL',
+      'https://api.openai.com/v1',
+    );
     this.model = this.config.get('OPENAI_MODEL', 'gpt-4o-mini');
   }
 
   /**
    * 生成对话摘要
    */
-  async summarizeConversation(messages: MessageRecord[]): Promise<ConversationSummary> {
+  async summarizeConversation(
+    messages: MessageRecord[],
+  ): Promise<ConversationSummary> {
     if (messages.length === 0) {
       return this.getEmptySummary();
     }
@@ -51,15 +63,16 @@ export class SummarizerService {
 {
   "summary": "对话的简短摘要（2-3句话）",
   "keyTopics": ["讨论的主要话题"],
-  "decisions": ["做出的决定，如选校、文书主题等"],
+  "decisions": ["做出的决定，如选校、文书主题、竞赛计划等"],
   "nextSteps": ["建议的下一步行动"],
   "facts": [
-    {"type": "FACT|PREFERENCE|DECISION", "category": "school|essay|profile", "content": "具体内容", "importance": 0.8}
+    {"type": "FACT|PREFERENCE|DECISION", "category": "school|essay|profile|competition|summer_program|internship|material|timeline", "content": "具体内容", "importance": 0.8}
   ],
   "entities": [
     {"type": "SCHOOL|PERSON|EVENT|TOPIC", "name": "名称", "description": "描述"}
   ]
-}`,
+}
+category 说明: competition=竞赛, summer_program=夏校/暑期项目, internship=实习, material=材料准备, timeline=时间规划`,
             },
             { role: 'user', content: prompt },
           ],
@@ -115,12 +128,13 @@ export class SummarizerService {
 输出 JSON：
 {
   "memories": [
-    {"type": "FACT|PREFERENCE", "category": "school|essay|profile", "content": "内容", "importance": 0.5-1.0}
+    {"type": "FACT|PREFERENCE|DECISION", "category": "school|essay|profile|competition|summer_program|internship|material|timeline", "content": "内容", "importance": 0.5-1.0}
   ],
   "entities": [
     {"type": "SCHOOL|PERSON|EVENT|TOPIC", "name": "名称", "description": "描述"}
   ]
 }
+category 说明: competition=竞赛, summer_program=夏校/暑期项目, internship=实习, material=材料准备, timeline=时间规划
 如果没有值得记录的信息，返回空数组。`,
             },
             { role: 'user', content: message.content },
@@ -140,13 +154,13 @@ export class SummarizerService {
       const parsed = JSON.parse(content);
 
       return {
-        memories: (parsed.memories || []).map((m: any) => ({
+        memories: (parsed.memories || []).map((m: LLMParsedMemory) => ({
           type: this.mapMemoryType(m.type),
           category: m.category,
           content: m.content,
           importance: m.importance || 0.5,
         })),
-        entities: (parsed.entities || []).map((e: any) => ({
+        entities: (parsed.entities || []).map((e: LLMParsedEntity) => ({
           type: this.mapEntityType(e.type),
           name: e.name,
           description: e.description,
@@ -184,7 +198,7 @@ export class SummarizerService {
 
   private buildSummaryPrompt(messages: MessageRecord[]): string {
     const formatted = messages
-      .map(m => {
+      .map((m) => {
         const role = m.role === 'user' ? '用户' : m.agentType || 'AI';
         return `[${role}]: ${m.content.slice(0, 500)}${m.content.length > 500 ? '...' : ''}`;
       })
@@ -202,17 +216,19 @@ export class SummarizerService {
         keyTopics: parsed.keyTopics || [],
         decisions: parsed.decisions || [],
         nextSteps: parsed.nextSteps || [],
-        extractedFacts: (parsed.facts || []).map((f: any) => ({
+        extractedFacts: (parsed.facts || []).map((f: LLMParsedMemory) => ({
           type: this.mapMemoryType(f.type),
           category: f.category,
           content: f.content,
           importance: f.importance || 0.5,
         })),
-        extractedEntities: (parsed.entities || []).map((e: any) => ({
-          type: this.mapEntityType(e.type),
-          name: e.name,
-          description: e.description,
-        })),
+        extractedEntities: (parsed.entities || []).map(
+          (e: LLMParsedEntity) => ({
+            type: this.mapEntityType(e.type),
+            name: e.name,
+            description: e.description,
+          }),
+        ),
       };
     } catch {
       return this.getEmptySummary();
@@ -220,11 +236,25 @@ export class SummarizerService {
   }
 
   private fallbackSummary(messages: MessageRecord[]): ConversationSummary {
-    const userMessages = messages.filter(m => m.role === 'user');
+    const userMessages = messages.filter((m) => m.role === 'user');
     const topics = new Set<string>();
 
     // 简单的关键词提取
-    const keywords = ['学校', '文书', 'GPA', '活动', '推荐', '截止', '申请'];
+    const keywords = [
+      '学校',
+      '文书',
+      'GPA',
+      '活动',
+      '推荐',
+      '截止',
+      '申请',
+      '竞赛',
+      '夏校',
+      '实习',
+      '考试',
+      '材料',
+      '时间线',
+    ];
     for (const msg of userMessages) {
       for (const kw of keywords) {
         if (msg.content.includes(kw)) {
@@ -275,12 +305,3 @@ export class SummarizerService {
     return map[type?.toUpperCase()] || EntityType.TOPIC;
   }
 }
-
-
-
-
-
-
-
-
-

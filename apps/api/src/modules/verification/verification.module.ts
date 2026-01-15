@@ -8,6 +8,3 @@ import { VerificationController } from './verification.controller';
   exports: [VerificationService],
 })
 export class VerificationModule {}
-
-
-

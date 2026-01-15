@@ -1,4 +1,13 @@
-import { IsString, IsOptional, IsInt, IsNumber, IsUrl, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsInt,
+  IsNumber,
+  IsUrl,
+  IsBoolean,
+  Min,
+  Max,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
@@ -78,6 +87,54 @@ export class CreateSchoolDto {
   @Max(1600)
   satAvg?: number;
 
+  @ApiPropertyOptional({ description: 'SAT 25th percentile (combined)' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(400)
+  @Max(1600)
+  sat25?: number;
+
+  @ApiPropertyOptional({ description: 'SAT 75th percentile (combined)' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(400)
+  @Max(1600)
+  sat75?: number;
+
+  @ApiPropertyOptional({ description: 'SAT Math 25th percentile' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(200)
+  @Max(800)
+  satMath25?: number;
+
+  @ApiPropertyOptional({ description: 'SAT Math 75th percentile' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(200)
+  @Max(800)
+  satMath75?: number;
+
+  @ApiPropertyOptional({ description: 'SAT ERW 25th percentile' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(200)
+  @Max(800)
+  satReading25?: number;
+
+  @ApiPropertyOptional({ description: 'SAT ERW 75th percentile' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(200)
+  @Max(800)
+  satReading75?: number;
+
   @ApiPropertyOptional({ description: 'Average ACT score' })
   @IsOptional()
   @Type(() => Number)
@@ -85,6 +142,22 @@ export class CreateSchoolDto {
   @Min(1)
   @Max(36)
   actAvg?: number;
+
+  @ApiPropertyOptional({ description: 'ACT 25th percentile' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(36)
+  act25?: number;
+
+  @ApiPropertyOptional({ description: 'ACT 75th percentile' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(36)
+  act75?: number;
 
   @ApiPropertyOptional({ description: 'Total student population' })
   @IsOptional()
@@ -100,6 +173,32 @@ export class CreateSchoolDto {
   @Min(0)
   @Max(100)
   graduationRate?: number;
+
+  @ApiPropertyOptional({ description: 'Is private institution' })
+  @IsOptional()
+  @IsBoolean()
+  @Type(() => Boolean)
+  isPrivate?: boolean;
+
+  @ApiPropertyOptional({ description: 'Niche safety grade (e.g., A+, A, B+)' })
+  @IsOptional()
+  @IsString()
+  nicheSafetyGrade?: string;
+
+  @ApiPropertyOptional({ description: 'Niche campus life grade' })
+  @IsOptional()
+  @IsString()
+  nicheLifeGrade?: string;
+
+  @ApiPropertyOptional({ description: 'Niche food grade' })
+  @IsOptional()
+  @IsString()
+  nicheFoodGrade?: string;
+
+  @ApiPropertyOptional({ description: 'Niche overall grade' })
+  @IsOptional()
+  @IsString()
+  nicheOverallGrade?: string;
 
   @ApiPropertyOptional({ description: 'School website URL' })
   @IsOptional()
@@ -121,5 +220,3 @@ export class CreateSchoolDto {
   @IsString()
   descriptionZh?: string;
 }
-
-

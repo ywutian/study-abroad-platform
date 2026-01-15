@@ -1,16 +1,26 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+  Inject,
+  Optional,
+  forwardRef,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { Visibility, AdmissionResult } from '@prisma/client';
+import { Prisma, Visibility, MemoryType } from '@prisma/client';
 import {
   SwipeActionDto,
   SwipeCaseDto,
   SwipeResultDto,
   SwipeStatsDto,
+  SwipeBatchResultDto,
   LeaderboardDto,
   LeaderboardEntryDto,
   SwipePrediction,
   SwipeBadge,
 } from './dto';
+import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
 
 // 徽章升级阈值
 const BADGE_THRESHOLDS = {
@@ -27,115 +37,108 @@ const DAILY_CHALLENGE_TARGET = 10;
 // 积分奖励
 const POINTS_CORRECT = 5;
 const POINTS_STREAK_BONUS = 2; // 每连胜额外奖励
+const MAX_POINTS_PER_SWIPE = 20;
+
+// Prisma include 类型定义 — 含学校 + 用户档案 (活动、奖项、成绩)
+const SWIPE_CASE_INCLUDE = {
+  school: true,
+  user: {
+    select: {
+      profile: {
+        select: {
+          grade: true,
+          currentSchoolType: true,
+          activities: {
+            select: { category: true },
+          },
+          awards: {
+            select: { level: true },
+          },
+          testScores: {
+            select: { type: true, score: true },
+          },
+        },
+      },
+    },
+  },
+} as const;
+
+type AdmissionCaseWithDetails = Prisma.AdmissionCaseGetPayload<{
+  include: typeof SWIPE_CASE_INCLUDE;
+}>;
 
 @Injectable()
 export class SwipeService {
   private readonly logger = new Logger(SwipeService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Optional()
+    @Inject(forwardRef(() => MemoryManagerService))
+    private memoryManager?: MemoryManagerService,
+  ) {}
 
-  /**
-   * 获取下一个待滑动的案例
-   */
-  async getNextCase(userId: string): Promise<SwipeCaseDto | null> {
-    // 获取用户已滑动过的案例ID
-    const swipedCaseIds = await this.prisma.caseSwipe.findMany({
-      where: { userId },
-      select: { caseId: true },
-    });
-
-    const swipedIds = swipedCaseIds.map((s) => s.caseId);
-
-    // 随机获取一个未滑动的公开案例
-    const cases = await this.prisma.admissionCase.findMany({
-      where: {
-        id: { notIn: swipedIds },
-        visibility: { in: [Visibility.ANONYMOUS, Visibility.VERIFIED_ONLY] },
-        userId: { not: userId }, // 不显示自己的案例
-      },
-      include: {
-        school: true,
-      },
-      take: 10, // 取多个然后随机选一个
-    });
-
-    if (cases.length === 0) {
-      return null;
-    }
-
-    // 随机选择一个
-    const randomCase = cases[Math.floor(Math.random() * cases.length)];
-
-    return {
-      id: randomCase.id,
-      schoolName: randomCase.school.name,
-      schoolNameZh: randomCase.school.nameZh || undefined,
-      year: randomCase.year,
-      round: randomCase.round || undefined,
-      major: randomCase.major || undefined,
-      gpaRange: randomCase.gpaRange || undefined,
-      satRange: randomCase.satRange || undefined,
-      actRange: randomCase.actRange || undefined,
-      toeflRange: randomCase.toeflRange || undefined,
-      tags: randomCase.tags,
-      isVerified: randomCase.isVerified,
-      usNewsRank: randomCase.school.usNewsRank || undefined,
-      acceptanceRate: randomCase.school.acceptanceRate
-        ? Number(randomCase.school.acceptanceRate)
-        : undefined,
-    };
-  }
+  // ============ 案例获取 ============
 
   /**
    * 批量获取案例（用于预加载）
+   *
+   * 使用 Prisma 关联过滤 `swipes: { none: { userId } }` 替代 notIn 数组，
+   * 避免大数据量下 SQL IN 子句膨胀（P0 性能优化）
    */
-  async getNextCases(userId: string, count: number = 5): Promise<SwipeCaseDto[]> {
-    const swipedCaseIds = await this.prisma.caseSwipe.findMany({
-      where: { userId },
-      select: { caseId: true },
-    });
-
-    const swipedIds = swipedCaseIds.map((s) => s.caseId);
-
+  async getNextCases(
+    userId: string,
+    count: number = 5,
+  ): Promise<SwipeBatchResultDto> {
+    // 利用 CaseSwipe 关联做 NOT EXISTS 子查询，O(log N) 复杂度
     const cases = await this.prisma.admissionCase.findMany({
       where: {
-        id: { notIn: swipedIds },
         visibility: { in: [Visibility.ANONYMOUS, Visibility.VERIFIED_ONLY] },
-        userId: { not: userId },
+        userId: { not: userId }, // 不显示自己的案例
+        swipes: { none: { userId } }, // 未被该用户滑动过
       },
-      include: {
-        school: true,
-      },
-      take: count * 2,
+      include: SWIPE_CASE_INCLUDE,
+      take: count * 2, // 多取一些用于随机打乱
     });
 
-    // 随机打乱并取指定数量
-    const shuffled = cases.sort(() => Math.random() - 0.5).slice(0, count);
+    // Fisher-Yates 均匀洗牌
+    const shuffled = this.shuffleArray(cases).slice(0, count);
 
-    return shuffled.map((c) => ({
-      id: c.id,
-      schoolName: c.school.name,
-      schoolNameZh: c.school.nameZh || undefined,
-      year: c.year,
-      round: c.round || undefined,
-      major: c.major || undefined,
-      gpaRange: c.gpaRange || undefined,
-      satRange: c.satRange || undefined,
-      actRange: c.actRange || undefined,
-      toeflRange: c.toeflRange || undefined,
-      tags: c.tags,
-      isVerified: c.isVerified,
-      usNewsRank: c.school.usNewsRank || undefined,
-      acceptanceRate: c.school.acceptanceRate
-        ? Number(c.school.acceptanceRate)
-        : undefined,
-    }));
+    // 查询 meta 信息用于前端区分空状态
+    const [totalAvailable, totalSwiped] = await Promise.all([
+      this.prisma.admissionCase.count({
+        where: {
+          visibility: { in: [Visibility.ANONYMOUS, Visibility.VERIFIED_ONLY] },
+          userId: { not: userId },
+        },
+      }),
+      this.prisma.caseSwipe.count({
+        where: { userId },
+      }),
+    ]);
+
+    return {
+      cases: shuffled.map((c) => this.mapCaseToDto(c)),
+      meta: {
+        totalAvailable,
+        totalSwiped,
+        hasMore: cases.length > 0,
+      },
+    };
   }
+
+  // ============ 预测提交 ============
 
   /**
    * 提交滑动结果
+   *
+   * 使用 try-catch P2002 替代 find-then-create，消除竞态条件（P0 修复）
+   * 遵循 ADR-0006: P2002 -> 409 DUPLICATE_ENTRY
    */
-  async submitSwipe(userId: string, dto: SwipeActionDto): Promise<SwipeResultDto> {
+  async submitSwipe(
+    userId: string,
+    dto: SwipeActionDto,
+  ): Promise<SwipeResultDto> {
     // 检查案例是否存在
     const admissionCase = await this.prisma.admissionCase.findUnique({
       where: { id: dto.caseId },
@@ -145,38 +148,22 @@ export class SwipeService {
       throw new NotFoundException('案例不存在');
     }
 
-    // 检查是否已经滑动过
-    const existing = await this.prisma.caseSwipe.findUnique({
-      where: {
-        userId_caseId: {
-          userId,
-          caseId: dto.caseId,
-        },
-      },
-    });
-
-    if (existing) {
-      throw new BadRequestException('已经对此案例进行过预测');
-    }
-
     // 判断是否正确
     const actualResult = admissionCase.result.toLowerCase();
     const isCorrect = this.checkPrediction(dto.prediction, actualResult);
 
-    // 获取或创建统计
-    let stats = await this.prisma.swipeStats.findUnique({
+    // 获取或创建统计（upsert 消除竞态条件）
+    const stats = await this.prisma.swipeStats.upsert({
       where: { userId },
+      create: { userId },
+      update: {},
     });
 
-    if (!stats) {
-      stats = await this.prisma.swipeStats.create({
-        data: { userId },
-      });
-    }
-
-    // 更新统计
-    const today = new Date().toDateString();
-    const statsToday = stats.dailyChallengeDate?.toDateString();
+    // 计算更新值
+    const today = this.getUtcDateString();
+    const statsToday = stats.dailyChallengeDate
+      ? this.getUtcDateString(stats.dailyChallengeDate)
+      : null;
     const isNewDay = statsToday !== today;
 
     const newStreak = isCorrect ? stats.streak + 1 : 0;
@@ -188,55 +175,68 @@ export class SwipeService {
     // 计算积分
     let pointsEarned = 0;
     if (isCorrect) {
-      pointsEarned = POINTS_CORRECT + (newStreak > 1 ? POINTS_STREAK_BONUS * (newStreak - 1) : 0);
-      pointsEarned = Math.min(pointsEarned, 20); // 最多20分
+      pointsEarned =
+        POINTS_CORRECT +
+        (newStreak > 1 ? POINTS_STREAK_BONUS * (newStreak - 1) : 0);
+      pointsEarned = Math.min(pointsEarned, MAX_POINTS_PER_SWIPE);
     }
 
-    // 事务更新
-    await this.prisma.$transaction([
-      // 创建滑动记录
-      this.prisma.caseSwipe.create({
-        data: {
-          userId,
-          caseId: dto.caseId,
-          prediction: dto.prediction,
-          actualResult,
-          isCorrect,
-        },
-      }),
-      // 更新统计
-      this.prisma.swipeStats.update({
-        where: { userId },
-        data: {
-          totalSwipes: { increment: 1 },
-          correctCount: newCorrectCount,
-          streak: newStreak,
-          bestStreak: newBestStreak,
-          badge: newBadge,
-          dailyChallengeDate: new Date(),
-          dailyChallengeCount: isNewDay ? 1 : { increment: 1 },
-        },
-      }),
-      // 更新用户积分
-      ...(pointsEarned > 0
-        ? [
-            this.prisma.user.update({
-              where: { id: userId },
-              data: { points: { increment: pointsEarned } },
-            }),
-            this.prisma.pointHistory.create({
-              data: {
-                userId,
-                action: 'SWIPE_CORRECT',
-                points: pointsEarned,
-                metadata: { caseId: dto.caseId, streak: newStreak },
-              },
-            }),
-          ]
-        : []),
-    ]);
+    // 事务更新（直接 create，用 P2002 catch 处理重复提交）
+    try {
+      await this.prisma.$transaction([
+        // 创建滑动记录
+        this.prisma.caseSwipe.create({
+          data: {
+            userId,
+            caseId: dto.caseId,
+            prediction: dto.prediction,
+            actualResult,
+            isCorrect,
+          },
+        }),
+        // 更新统计
+        this.prisma.swipeStats.update({
+          where: { userId },
+          data: {
+            totalSwipes: { increment: 1 },
+            correctCount: newCorrectCount,
+            streak: newStreak,
+            bestStreak: newBestStreak,
+            badge: newBadge,
+            dailyChallengeDate: new Date(),
+            dailyChallengeCount: isNewDay ? 1 : { increment: 1 },
+          },
+        }),
+        // 更新用户积分
+        ...(pointsEarned > 0
+          ? [
+              this.prisma.user.update({
+                where: { id: userId },
+                data: { points: { increment: pointsEarned } },
+              }),
+              this.prisma.pointHistory.create({
+                data: {
+                  userId,
+                  action: 'SWIPE_CORRECT',
+                  points: pointsEarned,
+                  metadata: { caseId: dto.caseId, streak: newStreak },
+                },
+              }),
+            ]
+          : []),
+      ]);
+    } catch (error) {
+      // P2002: 唯一约束冲突 — 用户已对此案例提交过预测
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new BadRequestException('已经对此案例进行过预测');
+      }
+      throw error;
+    }
 
-    return {
+    const result: SwipeResultDto = {
       caseId: dto.caseId,
       prediction: dto.prediction,
       actualResult,
@@ -246,33 +246,50 @@ export class SwipeService {
       badgeUpgraded,
       currentBadge: newBadge as SwipeBadge,
     };
+
+    // 记录到记忆系统（异步，不阻塞响应）
+    this.saveSwipeToMemory(
+      userId,
+      admissionCase,
+      dto.prediction,
+      actualResult,
+      isCorrect,
+      newStreak,
+    ).catch((err) => {
+      this.logger.warn('Failed to save swipe to memory', err);
+    });
+
+    return result;
   }
+
+  // ============ 统计 ============
 
   /**
    * 获取用户统计
+   *
+   * 使用 upsert 替代 find-then-create，消除竞态条件
    */
   async getStats(userId: string): Promise<SwipeStatsDto> {
-    let stats = await this.prisma.swipeStats.findUnique({
+    const stats = await this.prisma.swipeStats.upsert({
       where: { userId },
+      create: { userId },
+      update: {},
     });
 
-    if (!stats) {
-      stats = await this.prisma.swipeStats.create({
-        data: { userId },
-      });
-    }
-
-    const accuracy = stats.totalSwipes > 0
-      ? Math.round((stats.correctCount / stats.totalSwipes) * 100)
-      : 0;
+    const accuracy =
+      stats.totalSwipes > 0
+        ? Math.round((stats.correctCount / stats.totalSwipes) * 100)
+        : 0;
 
     const toNextBadge = this.getToNextBadge(stats.correctCount, stats.badge);
 
-    // 检查今日挑战
-    const today = new Date().toDateString();
-    const dailyCount = stats.dailyChallengeDate?.toDateString() === today
-      ? stats.dailyChallengeCount
-      : 0;
+    // 检查今日挑战（使用 UTC 日期，避免时区问题）
+    const today = this.getUtcDateString();
+    const dailyCount =
+      stats.dailyChallengeDate &&
+      this.getUtcDateString(stats.dailyChallengeDate) === today
+        ? stats.dailyChallengeCount
+        : 0;
 
     return {
       totalSwipes: stats.totalSwipes,
@@ -287,12 +304,19 @@ export class SwipeService {
     };
   }
 
+  // ============ 排行榜 ============
+
   /**
    * 获取排行榜
+   *
+   * 隐私保护: userId 脱敏，userName 仅显示首字符 + **
    */
-  async getLeaderboard(userId: string, limit: number = 20): Promise<LeaderboardDto> {
+  async getLeaderboard(
+    userId: string,
+    limit: number = 20,
+  ): Promise<LeaderboardDto> {
     const topUsers = await this.prisma.swipeStats.findMany({
-      where: { totalSwipes: { gte: 10 } }, // 至少10次滑动才能上榜
+      where: { totalSwipes: { gte: 10 } }, // 至少 10 次滑动才能上榜
       orderBy: [
         { correctCount: 'desc' },
         { totalSwipes: 'asc' }, // 同正确数时，滑动次数少的优先
@@ -310,18 +334,24 @@ export class SwipeService {
       },
     });
 
-    const entries: LeaderboardEntryDto[] = topUsers.map((stats, index) => ({
-      rank: index + 1,
-      userId: stats.userId,
-      userName: stats.user.profile?.realName || `用户${stats.userId.slice(-4)}`,
-      accuracy: stats.totalSwipes > 0
-        ? Math.round((stats.correctCount / stats.totalSwipes) * 100)
-        : 0,
-      totalSwipes: stats.totalSwipes,
-      correctCount: stats.correctCount,
-      badge: stats.badge as SwipeBadge,
-      isCurrentUser: stats.userId === userId,
-    }));
+    const entries: LeaderboardEntryDto[] = topUsers.map((stats, index) => {
+      const isCurrentUser = stats.userId === userId;
+      return {
+        rank: index + 1,
+        userId: isCurrentUser ? stats.userId : this.maskUserId(stats.userId),
+        userName: isCurrentUser
+          ? stats.user.profile?.realName || `用户${stats.userId.slice(-4)}`
+          : this.maskUserName(stats.user.profile?.realName, stats.userId),
+        accuracy:
+          stats.totalSwipes > 0
+            ? Math.round((stats.correctCount / stats.totalSwipes) * 100)
+            : 0,
+        totalSwipes: stats.totalSwipes,
+        correctCount: stats.correctCount,
+        badge: stats.badge as SwipeBadge,
+        isCurrentUser,
+      };
+    });
 
     // 获取当前用户排名
     let currentUserEntry: LeaderboardEntryDto | undefined;
@@ -357,10 +387,14 @@ export class SwipeService {
         currentUserEntry = {
           rank: rankAbove + 1,
           userId,
-          userName: userStats.user.profile?.realName || `用户${userId.slice(-4)}`,
-          accuracy: userStats.totalSwipes > 0
-            ? Math.round((userStats.correctCount / userStats.totalSwipes) * 100)
-            : 0,
+          userName:
+            userStats.user.profile?.realName || `用户${userId.slice(-4)}`,
+          accuracy:
+            userStats.totalSwipes > 0
+              ? Math.round(
+                  (userStats.correctCount / userStats.totalSwipes) * 100,
+                )
+              : 0,
           totalSwipes: userStats.totalSwipes,
           correctCount: userStats.correctCount,
           badge: userStats.badge as SwipeBadge,
@@ -375,9 +409,175 @@ export class SwipeService {
     };
   }
 
+  // ============ 记忆系统集成 ============
+
+  /**
+   * 保存滑动预测到记忆系统
+   */
+  private async saveSwipeToMemory(
+    userId: string,
+    admissionCase: { id: string; result: string; major?: string | null },
+    prediction: SwipePrediction,
+    actualResult: string,
+    isCorrect: boolean,
+    streak: number,
+  ): Promise<void> {
+    if (!this.memoryManager) return;
+
+    // 记录用户的判断决策（仅在连胜达到一定程度或判断错误时记录）
+    if (!isCorrect || streak >= 5) {
+      const predictionText =
+        prediction === 'admit'
+          ? '录取'
+          : prediction === 'reject'
+            ? '拒绝'
+            : '候补';
+      const actualText =
+        actualResult === 'admitted'
+          ? '录取'
+          : actualResult === 'rejected'
+            ? '拒绝'
+            : '候补';
+
+      await this.memoryManager.remember(userId, {
+        type: MemoryType.DECISION,
+        category: 'swipe_prediction',
+        content: isCorrect
+          ? `案例预测游戏：连续正确 ${streak} 次！用户对录取判断能力较强`
+          : `案例预测游戏：预测为${predictionText}，实际${actualText}。${admissionCase.major ? `专业：${admissionCase.major}` : ''}`,
+        importance: isCorrect ? 0.5 : 0.6,
+        metadata: {
+          caseId: admissionCase.id,
+          prediction,
+          actualResult,
+          isCorrect,
+          streak,
+          source: 'swipe_service',
+        },
+      });
+    }
+
+    // 徽章升级时记录
+    if (streak > 0 && streak % 10 === 0) {
+      await this.memoryManager.remember(userId, {
+        type: MemoryType.FACT,
+        category: 'achievement',
+        content: `案例预测游戏达成 ${streak} 连胜成就`,
+        importance: 0.4,
+        metadata: { streak, source: 'swipe_service' },
+      });
+    }
+  }
+
   // ============ Helper Methods ============
 
-  private checkPrediction(prediction: SwipePrediction, actualResult: string): boolean {
+  /** 将 AdmissionCase (含 school + user profile) 映射为 SwipeCaseDto */
+  private mapCaseToDto(c: AdmissionCaseWithDetails): SwipeCaseDto {
+    const profile = c.user?.profile;
+
+    // 从用户档案聚合匿名化信息
+    const activityCount = profile?.activities?.length ?? 0;
+    const awardCount = profile?.awards?.length ?? 0;
+
+    // 活动类别去重取前 3
+    const activityHighlights = profile?.activities
+      ? [...new Set(profile.activities.map((a) => a.category))].slice(0, 3)
+      : [];
+
+    // 奖项最高等级
+    const AWARD_LEVEL_ORDER = [
+      'INTERNATIONAL',
+      'NATIONAL',
+      'STATE',
+      'REGIONAL',
+      'SCHOOL',
+    ];
+    const highestAwardLevel = profile?.awards?.length
+      ? AWARD_LEVEL_ORDER.find((lvl) =>
+          profile.awards.some((a) => a.level === lvl),
+        ) || undefined
+      : undefined;
+
+    // AP/IB 门数
+    const apScores =
+      profile?.testScores?.filter(
+        (ts) => ts.type === 'AP' || ts.type === 'IB',
+      ) ?? [];
+
+    return {
+      id: c.id,
+      schoolName: c.school.name,
+      schoolNameZh: c.school.nameZh || undefined,
+      year: c.year,
+      round: c.round || undefined,
+      major: c.major || undefined,
+      gpaRange: c.gpaRange || undefined,
+      satRange: c.satRange || undefined,
+      actRange: c.actRange || undefined,
+      toeflRange: c.toeflRange || undefined,
+      tags: c.tags,
+      isVerified: c.isVerified,
+      usNewsRank: c.school.usNewsRank || undefined,
+      acceptanceRate: c.school.acceptanceRate
+        ? Number(c.school.acceptanceRate)
+        : undefined,
+      // 扩展学校信息
+      schoolState: c.school.state || undefined,
+      schoolCity: c.school.city || undefined,
+      graduationRate: c.school.graduationRate
+        ? Number(c.school.graduationRate)
+        : undefined,
+      totalEnrollment: c.school.totalEnrollment || undefined,
+      tuition: c.school.tuition || undefined,
+      essayType: c.essayType || undefined,
+      isPrivateSchool: c.school.isPrivate ?? undefined,
+      // 申请者档案聚合信息 (匿名化)
+      applicantGrade: profile?.grade || undefined,
+      applicantSchoolType: profile?.currentSchoolType || undefined,
+      activityCount,
+      activityHighlights,
+      awardCount,
+      highestAwardLevel,
+      apCount: apScores.length || undefined,
+    };
+  }
+
+  /** Fisher-Yates 均匀洗牌算法 */
+  private shuffleArray<T>(array: T[]): T[] {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  /** 获取 UTC 日期字符串 (YYYY-MM-DD)，避免时区问题 */
+  private getUtcDateString(date?: Date): string {
+    const d = date ?? new Date();
+    return d.toISOString().split('T')[0];
+  }
+
+  /** 脱敏用户 ID: 仅保留最后 4 位 */
+  private maskUserId(userId: string): string {
+    return `****${userId.slice(-4)}`;
+  }
+
+  /** 脱敏用户名: 首字符 + ** */
+  private maskUserName(
+    realName: string | null | undefined,
+    userId: string,
+  ): string {
+    if (realName && realName.length > 0) {
+      return `${realName.charAt(0)}**`;
+    }
+    return `用户${userId.slice(-4)}`;
+  }
+
+  private checkPrediction(
+    prediction: SwipePrediction,
+    actualResult: string,
+  ): boolean {
     const resultMap: Record<string, SwipePrediction> = {
       admitted: SwipePrediction.ADMIT,
       rejected: SwipePrediction.REJECT,
@@ -403,9 +603,9 @@ export class SwipeService {
     if (currentIndex === badgeOrder.length - 1) return 0;
 
     const nextBadge = badgeOrder[currentIndex + 1];
-    return BADGE_THRESHOLDS[nextBadge as keyof typeof BADGE_THRESHOLDS] - correctCount;
+    return (
+      BADGE_THRESHOLDS[nextBadge as keyof typeof BADGE_THRESHOLDS] -
+      correctCount
+    );
   }
 }
-
-
-

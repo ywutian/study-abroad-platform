@@ -1,9 +1,13 @@
 /**
  * Embedding 服务 - 语义向量生成
+ *
+ * Redis 缓存 + 内存LRU降级
  */
 
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { createHash } from 'crypto';
+import { RedisService } from '../../../common/redis/redis.service';
 
 @Injectable()
 export class EmbeddingService {
@@ -11,14 +15,23 @@ export class EmbeddingService {
   private readonly apiKey: string;
   private readonly baseUrl: string;
   private readonly model: string;
-  
-  // 简单的 LRU 缓存
-  private readonly cache = new Map<string, number[]>();
-  private readonly maxCacheSize = 1000;
 
-  constructor(private config: ConfigService) {
+  // 内存 LRU 缓存（Redis降级用）
+  private readonly fallbackCache = new Map<string, number[]>();
+  private readonly maxCacheSize = 500;
+
+  // Redis缓存TTL：24小时
+  private readonly CACHE_TTL = 86400;
+
+  constructor(
+    private redis: RedisService,
+    private config: ConfigService,
+  ) {
     this.apiKey = this.config.get('OPENAI_API_KEY', '');
-    this.baseUrl = this.config.get('OPENAI_BASE_URL', 'https://api.openai.com/v1');
+    this.baseUrl = this.config.get(
+      'OPENAI_BASE_URL',
+      'https://api.openai.com/v1',
+    );
     this.model = this.config.get('EMBEDDING_MODEL', 'text-embedding-3-small');
   }
 
@@ -27,13 +40,16 @@ export class EmbeddingService {
    */
   async embed(text: string): Promise<number[]> {
     if (!this.apiKey) {
-      this.logger.warn('OpenAI API key not configured, returning empty embedding');
+      this.logger.warn(
+        'OpenAI API key not configured, returning empty embedding',
+      );
       return [];
     }
 
-    // 检查缓存
     const cacheKey = this.hashText(text);
-    const cached = this.cache.get(cacheKey);
+
+    // 尝试从 Redis 获取
+    const cached = await this.getCachedEmbedding(cacheKey);
     if (cached) {
       return cached;
     }
@@ -59,7 +75,7 @@ export class EmbeddingService {
       const embedding = data.data?.[0]?.embedding || [];
 
       // 缓存结果
-      this.addToCache(cacheKey, embedding);
+      await this.cacheEmbedding(cacheKey, embedding);
 
       return embedding;
     } catch (error) {
@@ -77,10 +93,12 @@ export class EmbeddingService {
     }
 
     // 检查缓存命中
-    const results: (number[] | null)[] = texts.map(text => {
-      const cacheKey = this.hashText(text);
-      return this.cache.get(cacheKey) || null;
-    });
+    const cacheKeys = texts.map((t) => this.hashText(t));
+    const cachedResults = await Promise.all(
+      cacheKeys.map((key) => this.getCachedEmbedding(key)),
+    );
+
+    const results: (number[] | null)[] = cachedResults;
 
     // 找出需要请求的
     const toFetch: { index: number; text: string }[] = [];
@@ -103,7 +121,7 @@ export class EmbeddingService {
         },
         body: JSON.stringify({
           model: this.model,
-          input: toFetch.map(t => t.text.slice(0, 8000)),
+          input: toFetch.map((t) => t.text.slice(0, 8000)),
         }),
       });
 
@@ -111,15 +129,19 @@ export class EmbeddingService {
         throw new Error(`Embedding API error: ${response.status}`);
       }
 
-      const data = await response.json();
-      const embeddings = data.data?.map((d: any) => d.embedding) || [];
+      const data = (await response.json()) as {
+        data?: Array<{ embedding: number[] }>;
+      };
+      const embeddings = data.data?.map((d) => d.embedding) || [];
 
       // 填充结果并缓存
-      embeddings.forEach((emb: number[], i: number) => {
-        const { index, text } = toFetch[i];
-        results[index] = emb;
-        this.addToCache(this.hashText(text), emb);
-      });
+      await Promise.all(
+        embeddings.map(async (emb: number[], i: number) => {
+          const { index, text } = toFetch[i];
+          results[index] = emb;
+          await this.cacheEmbedding(this.hashText(text), emb);
+        }),
+      );
 
       return results as number[][];
     } catch (error) {
@@ -159,57 +181,105 @@ export class EmbeddingService {
     topK: number = 5,
   ): Array<T & { similarity: number }> {
     if (queryEmbedding.length === 0) {
-      return items.slice(0, topK).map(item => ({ ...item, similarity: 0 }));
+      return items.slice(0, topK).map((item) => ({ ...item, similarity: 0 }));
     }
 
     const scored = items
-      .filter(item => item.embedding && Array.isArray(item.embedding))
-      .map(item => ({
+      .filter((item) => item.embedding && Array.isArray(item.embedding))
+      .map((item) => ({
         ...item,
-        similarity: this.cosineSimilarity(queryEmbedding, item.embedding as number[]),
+        similarity: this.cosineSimilarity(
+          queryEmbedding,
+          item.embedding as number[],
+        ),
       }))
       .sort((a, b) => b.similarity - a.similarity);
 
     return scored.slice(0, topK);
   }
 
+  // ==================== 缓存方法 ====================
+
+  private async getCachedEmbedding(key: string): Promise<number[] | null> {
+    const redisKey = `emb:${key}`;
+    const client = this.redis.getClient();
+
+    if (client && this.redis.connected) {
+      try {
+        const raw = await client.get(redisKey);
+        if (raw) {
+          return JSON.parse(raw);
+        }
+      } catch (err) {
+        this.logger.debug(`Redis getCachedEmbedding failed: ${err}`);
+      }
+    }
+
+    // 降级到内存
+    return this.fallbackCache.get(key) || null;
+  }
+
+  private async cacheEmbedding(
+    key: string,
+    embedding: number[],
+  ): Promise<void> {
+    const redisKey = `emb:${key}`;
+    const client = this.redis.getClient();
+
+    if (client && this.redis.connected) {
+      try {
+        await client.set(
+          redisKey,
+          JSON.stringify(embedding),
+          'EX',
+          this.CACHE_TTL,
+        );
+        return;
+      } catch (err) {
+        this.logger.debug(`Redis cacheEmbedding failed: ${err}`);
+      }
+    }
+
+    // 降级到内存
+    if (this.fallbackCache.size >= this.maxCacheSize) {
+      const firstKey = this.fallbackCache.keys().next().value;
+      if (firstKey) {
+        this.fallbackCache.delete(firstKey);
+      }
+    }
+    this.fallbackCache.set(key, embedding);
+  }
+
   // ==================== 私有方法 ====================
 
   private hashText(text: string): string {
-    // 简单的字符串哈希
-    let hash = 0;
-    for (let i = 0; i < text.length; i++) {
-      const char = text.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash = hash & hash;
-    }
-    return hash.toString(36);
+    // 使用 SHA256 前16字节，比简单哈希更可靠
+    return createHash('sha256').update(text).digest('hex').slice(0, 16);
   }
 
-  private addToCache(key: string, value: number[]): void {
-    // LRU 逻辑：超过大小时删除最早的
-    if (this.cache.size >= this.maxCacheSize) {
-      const firstKey = this.cache.keys().next().value;
-      if (firstKey) {
-        this.cache.delete(firstKey);
+  async getCacheStats(): Promise<{
+    mode: 'redis' | 'memory';
+    fallbackSize: number;
+    redisKeyCount?: number;
+  }> {
+    const client = this.redis.getClient();
+
+    if (client && this.redis.connected) {
+      try {
+        const keys = await client.keys('emb:*');
+        return {
+          mode: 'redis',
+          fallbackSize: this.fallbackCache.size,
+          redisKeyCount: keys.length,
+        };
+      } catch {
+        // fall through
       }
     }
-    this.cache.set(key, value);
-  }
 
-  getCacheStats(): { size: number; maxSize: number } {
     return {
-      size: this.cache.size,
-      maxSize: this.maxCacheSize,
+      mode: 'memory',
+      fallbackSize: this.fallbackCache.size,
     };
   }
 }
-
-
-
-
-
-
-
-
-

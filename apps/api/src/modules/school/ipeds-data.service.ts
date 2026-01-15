@@ -3,10 +3,10 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 /**
  * IPEDS 数据服务
- * 
+ *
  * 数据源: NCES (National Center for Education Statistics)
  * 下载地址: https://nces.ed.gov/ipeds/datacenter/DataFiles.aspx
- * 
+ *
  * IPEDS 比 College Scorecard 更详细，包含:
  * - 国际生比例
  * - 各专业招生人数
@@ -22,7 +22,7 @@ export class IpedsDataService {
   /**
    * IPEDS 数据需要下载 CSV 后导入
    * 下载链接: https://nces.ed.gov/ipeds/datacenter/DataFiles.aspx
-   * 
+   *
    * 常用数据文件:
    * - HD (Directory Information) - 学校基本信息
    * - IC (Institutional Characteristics) - 申请截止日期、录取要求
@@ -40,11 +40,11 @@ export class IpedsDataService {
 
     for (const item of data) {
       const school = await this.prisma.school.findFirst({
-        where: { 
+        where: {
           OR: [
             { name: item.schoolName },
-            { metadata: { path: ['ipedsId'], equals: item.unitId } }
-          ]
+            { metadata: { path: ['ipedsId'], equals: item.unitId } },
+          ],
         },
       });
 
@@ -80,11 +80,11 @@ export class IpedsDataService {
 
     for (const item of data) {
       const school = await this.prisma.school.findFirst({
-        where: { 
+        where: {
           OR: [
             { name: item.schoolName },
-            { metadata: { path: ['ipedsId'], equals: item.unitId } }
-          ]
+            { metadata: { path: ['ipedsId'], equals: item.unitId } },
+          ],
         },
       });
 
@@ -93,7 +93,7 @@ export class IpedsDataService {
           where: { id: school.id },
           data: {
             metadata: {
-              ...(school.metadata as object || {}),
+              ...((school.metadata as object) || {}),
               ipedsId: item.unitId,
               rdDeadline: item.regularDeadline,
               edDeadline: item.earlyDeadline,
@@ -109,24 +109,27 @@ export class IpedsDataService {
 
   /**
    * 从 IPEDS CSV 文件解析数据
-   * 
+   *
    * 下载步骤:
    * 1. 访问 https://nces.ed.gov/ipeds/datacenter/DataFiles.aspx
    * 2. 选择年份和数据表 (如 ADM, EF, IC)
    * 3. 下载 CSV 文件
    * 4. 调用此方法导入
    */
-  async parseIpedsCsv(csvContent: string, type: 'ADM' | 'EF' | 'IC'): Promise<any[]> {
+  async parseIpedsCsv(
+    csvContent: string,
+    type: 'ADM' | 'EF' | 'IC',
+  ): Promise<any[]> {
     const lines = csvContent.split('\n');
-    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+    const headers = lines[0].split(',').map((h) => h.trim().replace(/"/g, ''));
     const data: any[] = [];
 
     for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+      const values = lines[i].split(',').map((v) => v.trim().replace(/"/g, ''));
       if (values.length !== headers.length) continue;
 
       const row: Record<string, string> = {};
-      headers.forEach((h, idx) => row[h] = values[idx]);
+      headers.forEach((h, idx) => (row[h] = values[idx]));
       data.push(row);
     }
 
@@ -148,12 +151,3 @@ interface AdmissionDeadlineData {
   earlyDeadline: string | null;
   applicationFee: number | null;
 }
-
-
-
-
-
-
-
-
-

@@ -21,6 +21,3 @@ export class PredictionRequestDto {
   @IsOptional()
   forceRefresh?: boolean;
 }
-
-
-

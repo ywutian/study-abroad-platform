@@ -10,12 +10,3 @@ import { PrismaModule } from '../../prisma/prisma.module';
   exports: [AdminService],
 })
 export class AdminModule {}
-
-
-
-
-
-
-
-
-

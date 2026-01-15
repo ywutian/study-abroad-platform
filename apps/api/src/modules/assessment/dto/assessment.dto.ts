@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsArray, IsEnum, IsOptional, ValidateNested } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsArray,
+  IsEnum,
+  IsOptional,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export enum AssessmentTypeEnum {
@@ -90,7 +97,9 @@ export class MbtiResultDto {
   @ApiProperty({ description: '如 INTJ, ENFP' })
   type: string;
 
-  @ApiProperty({ description: '各维度得分 { E: 30, I: 70, S: 40, N: 60, ... }' })
+  @ApiProperty({
+    description: '各维度得分 { E: 30, I: 70, S: 40, N: 60, ... }',
+  })
   scores: Record<string, number>;
 
   @ApiProperty()
@@ -161,5 +170,3 @@ export class AssessmentHistoryDto {
   @ApiProperty({ type: [AssessmentResultDto] })
   results: AssessmentResultDto[];
 }
-
-

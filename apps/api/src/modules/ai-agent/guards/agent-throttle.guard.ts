@@ -1,6 +1,6 @@
 /**
  * AI Agent 限流 Guard
- * 
+ *
  * 功能:
  * - 请求频率限流
  * - 配额检查
@@ -24,25 +24,34 @@ export const SKIP_AGENT_THROTTLE = 'skipAgentThrottle';
 export const AGENT_THROTTLE_TYPE = 'agentThrottleType';
 
 // 跳过限流装饰器
-export const SkipAgentThrottle = () => 
-  (target: any, key?: string, descriptor?: PropertyDescriptor) => {
-    Reflect.defineMetadata(SKIP_AGENT_THROTTLE, true, descriptor?.value || target);
+export const SkipAgentThrottle =
+  () => (target: any, key?: string, descriptor?: PropertyDescriptor) => {
+    Reflect.defineMetadata(
+      SKIP_AGENT_THROTTLE,
+      true,
+      descriptor?.value || target,
+    );
   };
 
 // 自定义限流类型装饰器
-export const AgentThrottleType = (type: 'user' | 'conversation' | 'agent') =>
+export const AgentThrottleType =
+  (type: 'user' | 'conversation' | 'agent') =>
   (target: any, key?: string, descriptor?: PropertyDescriptor) => {
-    Reflect.defineMetadata(AGENT_THROTTLE_TYPE, type, descriptor?.value || target);
+    Reflect.defineMetadata(
+      AGENT_THROTTLE_TYPE,
+      type,
+      descriptor?.value || target,
+    );
   };
 
 // 并发限制配置
-const MAX_CONCURRENT_REQUESTS = 2;  // 每用户最大并发请求数
-const VIP_MAX_CONCURRENT = 5;        // VIP 用户
+const MAX_CONCURRENT_REQUESTS = 2; // 每用户最大并发请求数
+const VIP_MAX_CONCURRENT = 5; // VIP 用户
 
 @Injectable()
 export class AgentThrottleGuard implements CanActivate {
   private readonly logger = new Logger(AgentThrottleGuard.name);
-  
+
   // 追踪每个用户的当前请求数
   private activeRequests: Map<string, number> = new Map();
 
@@ -75,10 +84,11 @@ export class AgentThrottleGuard implements CanActivate {
     const maxConcurrent = isVip ? VIP_MAX_CONCURRENT : MAX_CONCURRENT_REQUESTS;
 
     // 获取限流类型
-    const throttleType = this.reflector.get<'user' | 'conversation' | 'agent'>(
-      AGENT_THROTTLE_TYPE,
-      context.getHandler(),
-    ) || 'user';
+    const throttleType =
+      this.reflector.get<'user' | 'conversation' | 'agent'>(
+        AGENT_THROTTLE_TYPE,
+        context.getHandler(),
+      ) || 'user';
 
     // 1. 并发请求检查
     const currentRequests = this.activeRequests.get(userId) || 0;
@@ -96,7 +106,11 @@ export class AgentThrottleGuard implements CanActivate {
     }
 
     // 2. 频率限流检查
-    const limitResult = await this.rateLimiter.checkLimit(userId, throttleType, isVip);
+    const limitResult = await this.rateLimiter.checkLimit(
+      userId,
+      throttleType,
+      isVip,
+    );
     if (!limitResult.allowed) {
       throw new HttpException(
         {
@@ -154,7 +168,7 @@ export class AgentThrottleGuard implements CanActivate {
   getConcurrentStats(): { total: number; byUser: Record<string, number> } {
     const byUser: Record<string, number> = {};
     let total = 0;
-    
+
     this.activeRequests.forEach((count, userId) => {
       byUser[userId] = count;
       total += count;
@@ -163,4 +177,3 @@ export class AgentThrottleGuard implements CanActivate {
     return { total, byUser };
   }
 }
-

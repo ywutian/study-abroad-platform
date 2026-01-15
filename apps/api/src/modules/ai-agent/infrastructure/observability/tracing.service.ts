@@ -1,6 +1,6 @@
 /**
  * 分布式追踪服务
- * 
+ *
  * 记录请求链路，便于排障和性能分析
  */
 
@@ -43,7 +43,7 @@ interface SpanContext {
 @Injectable()
 export class TracingService {
   private readonly logger = new Logger(TracingService.name);
-  
+
   // 存储活跃 Span (生产环境应发送到 Jaeger/Zipkin)
   private activeSpans: Map<string, Span> = new Map();
   private completedSpans: Span[] = [];
@@ -61,7 +61,7 @@ export class TracingService {
   ): Span {
     const ctx = requestContext.get();
     const traceId = ctx?.requestId || getCorrelationId() || randomUUID();
-    
+
     const span: Span = {
       traceId,
       spanId: randomUUID().slice(0, 16),
@@ -103,10 +103,10 @@ export class TracingService {
 
     // 记录慢请求
     if (span.duration > 5000) {
-      this.logger.warn(
-        `Slow span: ${span.name} took ${span.duration}ms`,
-        { traceId: span.traceId, spanId: span.spanId },
-      );
+      this.logger.warn(`Slow span: ${span.name} took ${span.duration}ms`, {
+        traceId: span.traceId,
+        spanId: span.spanId,
+      });
     }
   }
 
@@ -120,7 +120,12 @@ export class TracingService {
   /**
    * 添加日志
    */
-  addLog(span: Span, level: 'info' | 'warn' | 'error', message: string, data?: Record<string, any>) {
+  addLog(
+    span: Span,
+    level: 'info' | 'warn' | 'error',
+    message: string,
+    data?: Record<string, any>,
+  ) {
     span.logs.push({
       timestamp: Date.now(),
       level,
@@ -137,7 +142,7 @@ export class TracingService {
     span.tags['error'] = true;
     span.tags['error.message'] = error.message;
     span.tags['error.type'] = error.name;
-    
+
     this.addLog(span, 'error', error.message, { stack: error.stack });
   }
 
@@ -153,13 +158,16 @@ export class TracingService {
     },
   ): Promise<T> {
     const span = this.startSpan(name, options);
-    
+
     try {
       const result = await fn(span);
       this.endSpan(span, 'ok');
       return result;
     } catch (error) {
-      this.setError(span, error instanceof Error ? error : new Error(String(error)));
+      this.setError(
+        span,
+        error instanceof Error ? error : new Error(String(error)),
+      );
       this.endSpan(span, 'error');
       throw error;
     }
@@ -169,7 +177,7 @@ export class TracingService {
    * 获取 Trace 信息
    */
   getTrace(traceId: string): Span[] {
-    return this.completedSpans.filter(s => s.traceId === traceId);
+    return this.completedSpans.filter((s) => s.traceId === traceId);
   }
 
   /**
@@ -184,7 +192,7 @@ export class TracingService {
    */
   getSlowSpans(thresholdMs: number = 5000, limit: number = 50): Span[] {
     return this.completedSpans
-      .filter(s => s.duration && s.duration > thresholdMs)
+      .filter((s) => s.duration && s.duration > thresholdMs)
       .slice(-limit);
   }
 
@@ -193,7 +201,7 @@ export class TracingService {
    */
   getErrorSpans(limit: number = 50): Span[] {
     return this.completedSpans
-      .filter(s => s.status === 'error')
+      .filter((s) => s.status === 'error')
       .slice(-limit);
   }
 
@@ -204,7 +212,7 @@ export class TracingService {
     const spans = this.getTrace(traceId);
     return {
       traceID: traceId,
-      spans: spans.map(s => ({
+      spans: spans.map((s) => ({
         traceID: s.traceId,
         spanID: s.spanId,
         parentSpanID: s.parentSpanId,
@@ -216,7 +224,7 @@ export class TracingService {
           type: typeof value,
           value,
         })),
-        logs: s.logs.map(l => ({
+        logs: s.logs.map((l) => ({
           timestamp: l.timestamp * 1000,
           fields: [
             { key: 'level', value: l.level },
@@ -227,10 +235,3 @@ export class TracingService {
     };
   }
 }
-
-
-
-
-
-
-

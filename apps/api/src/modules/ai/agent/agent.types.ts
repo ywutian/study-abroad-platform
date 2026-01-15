@@ -7,29 +7,55 @@ export enum AgentTool {
   // 档案相关
   GET_PROFILE = 'get_profile',
   UPDATE_PROFILE = 'update_profile',
-  
+
   // 学校相关
   SEARCH_SCHOOLS = 'search_schools',
   GET_SCHOOL_DETAILS = 'get_school_details',
   COMPARE_SCHOOLS = 'compare_schools',
-  
+
   // 文书相关
   GET_ESSAYS = 'get_essays',
   REVIEW_ESSAY = 'review_essay',
   POLISH_ESSAY = 'polish_essay',
   GENERATE_OUTLINE = 'generate_outline',
   BRAINSTORM_IDEAS = 'brainstorm_ideas',
-  
+
   // 选校相关
   RECOMMEND_SCHOOLS = 'recommend_schools',
   ANALYZE_ADMISSION_CHANCE = 'analyze_admission_chance',
-  
+
   // 案例相关
   SEARCH_CASES = 'search_cases',
-  
+
   // 时间线相关
   GET_DEADLINES = 'get_deadlines',
   CREATE_TIMELINE = 'create_timeline',
+  GET_PERSONAL_EVENTS = 'get_personal_events',
+  CREATE_PERSONAL_EVENT = 'create_personal_event',
+
+  // 测评相关
+  GET_ASSESSMENT_RESULTS = 'get_assessment_results',
+  INTERPRET_ASSESSMENT = 'interpret_assessment',
+  SUGGEST_ACTIVITIES_FROM_ASSESSMENT = 'suggest_activities_from_assessment',
+
+  // 论坛相关
+  SEARCH_FORUM_POSTS = 'search_forum_posts',
+  GET_POPULAR_DISCUSSIONS = 'get_popular_discussions',
+  ANSWER_FORUM_QUESTION = 'answer_forum_question',
+
+  // 案例预测游戏相关
+  EXPLAIN_CASE_RESULT = 'explain_case_result',
+  ANALYZE_PREDICTION_ACCURACY = 'analyze_prediction_accuracy',
+  COMPARE_CASE_WITH_PROFILE = 'compare_case_with_profile',
+
+  // 档案排名相关
+  ANALYZE_PROFILE_RANKING = 'analyze_profile_ranking',
+  SUGGEST_PROFILE_IMPROVEMENTS = 'suggest_profile_improvements',
+  COMPARE_WITH_ADMITTED_PROFILES = 'compare_with_admitted_profiles',
+
+  // 外部搜索相关
+  WEB_SEARCH = 'web_search',
+  SEARCH_SCHOOL_WEBSITE = 'search_school_website',
 }
 
 // 工具定义
@@ -38,11 +64,14 @@ export interface ToolDefinition {
   description: string;
   parameters: {
     type: 'object';
-    properties: Record<string, {
-      type: string;
-      description: string;
-      enum?: string[];
-    }>;
+    properties: Record<
+      string,
+      {
+        type: string;
+        description: string;
+        enum?: string[];
+      }
+    >;
     required: string[];
   };
 }
@@ -140,12 +169,3 @@ export interface AgentConfig {
   maxIterations: number;
   tools: AgentTool[];
 }
-
-
-
-
-
-
-
-
-

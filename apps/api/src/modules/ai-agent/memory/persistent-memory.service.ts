@@ -1,10 +1,11 @@
 /**
  * 持久化记忆服务 - 长期记忆存储（PostgreSQL + pgvector）
- * 
+ *
  * 使用 pgvector 进行高效向量相似度搜索
  */
 
 import { Injectable, Logger } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { MemoryType, EntityType, Prisma } from '@prisma/client';
 import {
@@ -18,8 +19,27 @@ import {
   MessageRecord,
   UserPreferences,
   MemoryStats,
+  MemoryMetadata,
+  EntityAttributes,
+  EntityRelation,
 } from './types';
+import {
+  RawMemoryRow,
+  RawEntityRow,
+  RawMessageRow,
+  MemoryWhereInput,
+} from './prisma-types';
 import { EmbeddingService } from './embedding.service';
+
+// pgvector 列无法被 Prisma $queryRaw 反序列化，因此在 RETURNING / SELECT 中排除 embedding 列
+const MEMORY_COLUMNS = `
+  id, "userId", type, category, content, importance,
+  "accessCount", "lastAccessedAt", metadata, "expiresAt", "createdAt", "updatedAt"
+`;
+
+const ENTITY_COLUMNS = `
+  id, "userId", type, name, description, attributes, relations, "createdAt", "updatedAt"
+`;
 
 @Injectable()
 export class PersistentMemoryService {
@@ -35,13 +55,17 @@ export class PersistentMemoryService {
   /**
    * 创建记忆（使用 pgvector）
    */
-  async createMemory(userId: string, input: MemoryInput): Promise<MemoryRecord> {
+  async createMemory(
+    userId: string,
+    input: MemoryInput,
+  ): Promise<MemoryRecord> {
     // 生成向量嵌入
     const embeddingVector = await this.embedding.embed(input.content);
 
-    // 使用原生 SQL 插入向量
+    // 使用原生 SQL 插入向量（RETURNING 中排除 embedding 避免 vector 反序列化错误）
     if (embeddingVector.length > 0) {
-      const result = await this.prisma.$queryRaw<any[]>`
+      const result = await this.prisma.$queryRaw<RawMemoryRow[]>(
+        Prisma.sql`
         INSERT INTO "Memory" (
           id, "userId", type, category, content, importance, 
           embedding, metadata, "expiresAt", "createdAt", "updatedAt"
@@ -58,8 +82,9 @@ export class PersistentMemoryService {
           NOW(),
           NOW()
         )
-        RETURNING *
-      `;
+        RETURNING ${Prisma.raw(MEMORY_COLUMNS)}
+      `,
+      );
       return this.toMemoryRecord(result[0]);
     }
 
@@ -80,17 +105,22 @@ export class PersistentMemoryService {
   }
 
   private generateId(): string {
-    return `mem_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+    return `mem_${randomUUID()}`;
   }
 
   /**
    * 批量创建记忆（使用 pgvector）
    */
-  async createMemories(userId: string, inputs: MemoryInput[]): Promise<MemoryRecord[]> {
+  async createMemories(
+    userId: string,
+    inputs: MemoryInput[],
+  ): Promise<MemoryRecord[]> {
     if (inputs.length === 0) return [];
 
     // 批量生成向量
-    const embeddings = await this.embedding.embedBatch(inputs.map(i => i.content));
+    const embeddings = await this.embedding.embedBatch(
+      inputs.map((i) => i.content),
+    );
 
     const results: MemoryRecord[] = [];
 
@@ -100,7 +130,8 @@ export class PersistentMemoryService {
       const embedding = embeddings[i];
 
       if (embedding && embedding.length > 0) {
-        const result = await this.prisma.$queryRaw<any[]>`
+        const result = await this.prisma.$queryRaw<RawMemoryRow[]>(
+          Prisma.sql`
           INSERT INTO "Memory" (
             id, "userId", type, category, content, importance,
             embedding, metadata, "expiresAt", "createdAt", "updatedAt"
@@ -117,8 +148,9 @@ export class PersistentMemoryService {
             NOW(),
             NOW()
           )
-          RETURNING *
-        `;
+          RETURNING ${Prisma.raw(MEMORY_COLUMNS)}
+        `,
+        );
         results.push(this.toMemoryRecord(result[0]));
       } else {
         const memory = await this.prisma.memory.create({
@@ -142,8 +174,11 @@ export class PersistentMemoryService {
   /**
    * 检索记忆
    */
-  async queryMemories(userId: string, query: MemoryQuery): Promise<MemoryRecord[]> {
-    const where: any = {
+  async queryMemories(
+    userId: string,
+    query: MemoryQuery,
+  ): Promise<MemoryRecord[]> {
+    const where: Prisma.MemoryWhereInput = {
       userId,
       OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
     };
@@ -174,12 +209,12 @@ export class PersistentMemoryService {
       take: query.limit ?? 20,
     });
 
-    return memories.map(m => this.toMemoryRecord(m));
+    return memories.map((m) => this.toMemoryRecord(m));
   }
 
   /**
    * 语义检索记忆（使用 pgvector 原生向量搜索）
-   * 
+   *
    * 性能：O(log n) vs 之前的 O(n)
    */
   async searchMemories(
@@ -191,7 +226,7 @@ export class PersistentMemoryService {
 
     // 生成查询向量
     const queryEmbedding = await this.embedding.embed(queryText);
-    
+
     if (queryEmbedding.length === 0) {
       // 回退到关键词搜索
       const memories = await this.prisma.memory.findMany({
@@ -203,14 +238,20 @@ export class PersistentMemoryService {
         orderBy: { importance: 'desc' },
         take: limit,
       });
-      return memories.map(m => ({ ...this.toMemoryRecord(m), similarity: 0.5 }));
+      return memories.map((m) => ({
+        ...this.toMemoryRecord(m),
+        similarity: 0.5,
+      }));
     }
 
-    // 使用 pgvector 原生向量搜索
+    // 使用 pgvector 原生向量搜索（排除 embedding 列避免反序列化错误）
     // 1 - (a <=> b) 将距离转换为相似度（余弦距离 → 余弦相似度）
-    const results = await this.prisma.$queryRaw<any[]>`
+    const results = await this.prisma.$queryRaw<RawMemoryRow[]>(
+      Prisma.sql`
       SELECT 
-        m.*,
+        m.id, m."userId", m.type, m.category, m.content, m.importance,
+        m."accessCount", m."lastAccessedAt", m.metadata, m."expiresAt",
+        m."createdAt", m."updatedAt",
         1 - (m.embedding <=> ${queryEmbedding}::vector) AS similarity
       FROM "Memory" m
       WHERE 
@@ -220,12 +261,62 @@ export class PersistentMemoryService {
         AND 1 - (m.embedding <=> ${queryEmbedding}::vector) >= ${minSimilarity}
       ORDER BY m.embedding <=> ${queryEmbedding}::vector
       LIMIT ${limit}
-    `;
+    `,
+    );
 
-    return results.map(r => ({
+    return results.map((r) => ({
       ...this.toMemoryRecord(r),
       similarity: Number(r.similarity),
     }));
+  }
+
+  /**
+   * 更新记忆
+   */
+  async updateMemory(
+    memoryId: string,
+    data: {
+      content?: string;
+      importance?: number;
+      metadata?: Record<string, any>;
+      category?: string;
+    },
+  ): Promise<MemoryRecord> {
+    // 如果内容更新，需要重新生成向量
+    if (data.content) {
+      const embeddingVector = await this.embedding.embed(data.content);
+
+      if (embeddingVector.length > 0) {
+        const result = await this.prisma.$queryRaw<RawMemoryRow[]>(
+          Prisma.sql`
+          UPDATE "Memory" SET
+            content = ${data.content},
+            importance = COALESCE(${data.importance}, importance),
+            metadata = COALESCE(${data.metadata ? JSON.stringify(data.metadata) : null}::jsonb, metadata),
+            category = COALESCE(${data.category}, category),
+            embedding = ${embeddingVector}::vector,
+            "updatedAt" = NOW()
+          WHERE id = ${memoryId}
+          RETURNING ${Prisma.raw(MEMORY_COLUMNS)}
+        `,
+        );
+        return this.toMemoryRecord(result[0]);
+      }
+    }
+
+    const updated = await this.prisma.memory.update({
+      where: { id: memoryId },
+      data: {
+        ...(data.content && { content: data.content }),
+        ...(data.importance !== undefined && {
+          importance: Math.max(0, Math.min(1, data.importance)),
+        }),
+        ...(data.metadata && { metadata: data.metadata }),
+        ...(data.category && { category: data.category }),
+      },
+    });
+
+    return this.toMemoryRecord(updated);
   }
 
   /**
@@ -299,7 +390,9 @@ export class PersistentMemoryService {
   /**
    * 获取对话
    */
-  async getConversation(conversationId: string): Promise<ConversationRecord | null> {
+  async getConversation(
+    conversationId: string,
+  ): Promise<ConversationRecord | null> {
     const conversation = await this.prisma.agentConversation.findUnique({
       where: { id: conversationId },
       include: { _count: { select: { messages: true } } },
@@ -333,7 +426,7 @@ export class PersistentMemoryService {
       include: { _count: { select: { messages: true } } },
     });
 
-    return conversations.map(c => ({
+    return conversations.map((c) => ({
       id: c.id,
       userId: c.userId,
       title: c.title || undefined,
@@ -373,7 +466,10 @@ export class PersistentMemoryService {
   /**
    * 添加消息
    */
-  async addMessage(conversationId: string, input: MessageInput): Promise<MessageRecord> {
+  async addMessage(
+    conversationId: string,
+    input: MessageInput,
+  ): Promise<MessageRecord> {
     const message = await this.prisma.agentMessage.create({
       data: {
         conversationId,
@@ -407,21 +503,24 @@ export class PersistentMemoryService {
       take: limit,
     });
 
-    return messages.map(m => this.toMessageRecord(m));
+    return messages.map((m) => this.toMessageRecord(m));
   }
 
   // ==================== 实体管理 ====================
 
   /**
-   * 创建或更新实体（使用 pgvector）
+   * 创建或更新实体
+   *
+   * 注意: Entity 表没有 embedding 列（与 Memory 不同），
+   * 因此始终使用 Prisma ORM 而非 raw SQL。
+   * 向量嵌入仅生成但不存储，未来可扩展 Entity 表添加 embedding 列。
    */
-  async upsertEntity(userId: string, input: EntityInput): Promise<EntityRecord> {
-    const embeddingVector = await this.embedding.embed(
-      `${input.name} ${input.description || ''}`,
-    );
-
-    // 检查是否存在
-    const existing = await this.prisma.entity.findUnique({
+  async upsertEntity(
+    userId: string,
+    input: EntityInput,
+  ): Promise<EntityRecord> {
+    // 使用 Prisma ORM upsert（Entity 表无 embedding 列）
+    const entity = await this.prisma.entity.upsert({
       where: {
         userId_type_name: {
           userId,
@@ -429,59 +528,12 @@ export class PersistentMemoryService {
           name: input.name,
         },
       },
-    });
-
-    if (existing) {
-      // 更新
-      if (embeddingVector.length > 0) {
-        const result = await this.prisma.$queryRaw<any[]>`
-          UPDATE "Entity" SET
-            description = ${input.description},
-            attributes = ${input.attributes ? JSON.stringify(input.attributes) : null}::jsonb,
-            relations = ${input.relations ? JSON.stringify(input.relations) : null}::jsonb,
-            embedding = ${embeddingVector}::vector,
-            "updatedAt" = NOW()
-          WHERE id = ${existing.id}
-          RETURNING *
-        `;
-        return this.toEntityRecord(result[0]);
-      } else {
-        const updated = await this.prisma.entity.update({
-          where: { id: existing.id },
-          data: {
-            description: input.description,
-            attributes: input.attributes,
-            relations: input.relations as any,
-          },
-        });
-        return this.toEntityRecord(updated);
-      }
-    }
-
-    // 创建
-    if (embeddingVector.length > 0) {
-      const result = await this.prisma.$queryRaw<any[]>`
-        INSERT INTO "Entity" (
-          id, "userId", type, name, description, attributes, relations, embedding, "createdAt", "updatedAt"
-        ) VALUES (
-          ${this.generateId().replace('mem_', 'ent_')},
-          ${userId},
-          ${input.type}::"EntityType",
-          ${input.name},
-          ${input.description},
-          ${input.attributes ? JSON.stringify(input.attributes) : null}::jsonb,
-          ${input.relations ? JSON.stringify(input.relations) : null}::jsonb,
-          ${embeddingVector}::vector,
-          NOW(),
-          NOW()
-        )
-        RETURNING *
-      `;
-      return this.toEntityRecord(result[0]);
-    }
-
-    const entity = await this.prisma.entity.create({
-      data: {
+      update: {
+        description: input.description,
+        attributes: input.attributes,
+        relations: input.relations as any,
+      },
+      create: {
         userId,
         type: input.type,
         name: input.name,
@@ -512,11 +564,13 @@ export class PersistentMemoryService {
       take: limit,
     });
 
-    return entities.map(e => this.toEntityRecord(e));
+    return entities.map((e) => this.toEntityRecord(e));
   }
 
   /**
-   * 搜索实体（使用 pgvector）
+   * 搜索实体
+   *
+   * 注意: Entity 表没有 embedding 列，使用关键词匹配（name + description）
    */
   async searchEntities(
     userId: string,
@@ -525,45 +579,23 @@ export class PersistentMemoryService {
   ): Promise<Array<EntityRecord & { similarity: number }>> {
     const { types, limit = 10 } = options;
 
-    const queryEmbedding = await this.embedding.embed(query);
+    // Entity 表无 embedding 列，使用名称和描述关键词匹配
+    const entities = await this.prisma.entity.findMany({
+      where: {
+        userId,
+        ...(types?.length ? { type: { in: types } } : {}),
+        OR: [
+          { name: { contains: query, mode: 'insensitive' } },
+          { description: { contains: query, mode: 'insensitive' } },
+        ],
+      },
+      orderBy: { updatedAt: 'desc' },
+      take: limit,
+    });
 
-    if (queryEmbedding.length === 0) {
-      // 回退到名称匹配
-      const entities = await this.prisma.entity.findMany({
-        where: {
-          userId,
-          ...(types?.length ? { type: { in: types } } : {}),
-          name: { contains: query, mode: 'insensitive' },
-        },
-        take: limit,
-      });
-      return entities.map(e => ({
-        ...this.toEntityRecord(e),
-        similarity: 0.5,
-      }));
-    }
-
-    // 使用 pgvector 原生向量搜索
-    const typeFilter = types?.length
-      ? Prisma.sql`AND e.type IN (${Prisma.join(types.map(t => Prisma.sql`${t}::"EntityType"`))})`
-      : Prisma.empty;
-
-    const results = await this.prisma.$queryRaw<any[]>`
-      SELECT 
-        e.*,
-        1 - (e.embedding <=> ${queryEmbedding}::vector) AS similarity
-      FROM "Entity" e
-      WHERE 
-        e."userId" = ${userId}
-        AND e.embedding IS NOT NULL
-        ${typeFilter}
-      ORDER BY e.embedding <=> ${queryEmbedding}::vector
-      LIMIT ${limit}
-    `;
-
-    return results.map(r => ({
-      ...this.toEntityRecord(r),
-      similarity: Number(r.similarity),
+    return entities.map((e) => ({
+      ...this.toEntityRecord(e),
+      similarity: 0.5, // 关键词匹配固定相似度
     }));
   }
 
@@ -612,13 +644,25 @@ export class PersistentMemoryService {
         enableSuggestions: updates.enableSuggestions ?? true,
       },
       update: {
-        ...(updates.communicationStyle && { communicationStyle: updates.communicationStyle }),
-        ...(updates.responseLength && { responseLength: updates.responseLength }),
+        ...(updates.communicationStyle && {
+          communicationStyle: updates.communicationStyle,
+        }),
+        ...(updates.responseLength && {
+          responseLength: updates.responseLength,
+        }),
         ...(updates.language && { language: updates.language }),
-        ...(updates.schoolPreferences && { schoolPreferences: updates.schoolPreferences }),
-        ...(updates.essayPreferences && { essayPreferences: updates.essayPreferences }),
-        ...(updates.enableMemory !== undefined && { enableMemory: updates.enableMemory }),
-        ...(updates.enableSuggestions !== undefined && { enableSuggestions: updates.enableSuggestions }),
+        ...(updates.schoolPreferences && {
+          schoolPreferences: updates.schoolPreferences,
+        }),
+        ...(updates.essayPreferences && {
+          essayPreferences: updates.essayPreferences,
+        }),
+        ...(updates.enableMemory !== undefined && {
+          enableMemory: updates.enableMemory,
+        }),
+        ...(updates.enableSuggestions !== undefined && {
+          enableSuggestions: updates.enableSuggestions,
+        }),
       },
     });
 
@@ -689,7 +733,7 @@ export class PersistentMemoryService {
       totalMessages,
       totalEntities,
       memoryByType: Object.fromEntries(
-        memoryByType.map(m => [m.type, m._count]),
+        memoryByType.map((m) => [m.type, m._count]),
       ),
       recentActivity: {
         conversationsLast7Days: recentConversations,
@@ -700,7 +744,7 @@ export class PersistentMemoryService {
 
   // ==================== 辅助方法 ====================
 
-  private toMemoryRecord(m: any): MemoryRecord {
+  private toMemoryRecord(m: RawMemoryRow): MemoryRecord {
     return {
       id: m.id,
       userId: m.userId,
@@ -710,27 +754,27 @@ export class PersistentMemoryService {
       importance: m.importance,
       accessCount: m.accessCount,
       lastAccessedAt: m.lastAccessedAt || undefined,
-      embedding: m.embedding as number[] | undefined,
+      embedding: m.embedding || undefined,
       metadata: m.metadata || undefined,
       createdAt: m.createdAt,
     };
   }
 
-  private toMessageRecord(m: any): MessageRecord {
+  private toMessageRecord(m: RawMessageRow): MessageRecord {
     return {
       id: m.id,
       conversationId: m.conversationId,
       role: m.role,
       content: m.content,
       agentType: m.agentType || undefined,
-      toolCalls: m.toolCalls || undefined,
+      toolCalls: m.toolCalls as MessageRecord['toolCalls'],
       tokensUsed: m.tokensUsed || undefined,
       latencyMs: m.latencyMs || undefined,
       createdAt: m.createdAt,
     };
   }
 
-  private toEntityRecord(e: any): EntityRecord {
+  private toEntityRecord(e: RawEntityRow): EntityRecord {
     return {
       id: e.id,
       userId: e.userId,
@@ -743,4 +787,3 @@ export class PersistentMemoryService {
     };
   }
 }
-

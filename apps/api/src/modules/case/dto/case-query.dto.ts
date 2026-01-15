@@ -26,6 +26,3 @@ export class CaseQueryDto extends PaginationDto {
   @IsString()
   search?: string;
 }
-
-
-

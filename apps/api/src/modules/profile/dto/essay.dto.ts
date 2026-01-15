@@ -1,4 +1,10 @@
-import { IsString, IsOptional, IsNumber, Min, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  Min,
+  MaxLength,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateEssayDto {
@@ -46,12 +52,3 @@ export class UpdateEssayDto {
   @IsString()
   schoolId?: string;
 }
-
-
-
-
-
-
-
-
-

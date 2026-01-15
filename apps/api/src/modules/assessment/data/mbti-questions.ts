@@ -410,7 +410,12 @@ export const MBTI_INTERPRETATIONS: Record<
     description:
       'Imaginative and strategic thinkers with a plan for everything.',
     descriptionZh: '富有想象力和战略思维，对一切都有计划。',
-    strengths: ['Strategic thinking', 'Independent', 'Decisive', 'Hard-working'],
+    strengths: [
+      'Strategic thinking',
+      'Independent',
+      'Decisive',
+      'Hard-working',
+    ],
     strengthsZh: ['战略思维', '独立', '果断', '勤奋'],
     careers: ['Scientist', 'Engineer', 'Investment Banker', 'Systems Analyst'],
     majors: [
@@ -447,7 +452,12 @@ export const MBTI_INTERPRETATIONS: Record<
     strengths: ['Leadership', 'Strategic', 'Efficient', 'Energetic'],
     strengthsZh: ['领导力', '战略性', '高效', '精力充沛'],
     careers: ['CEO', 'Entrepreneur', 'Lawyer', 'Management Consultant'],
-    majors: ['Business Administration', 'Law', 'Political Science', 'Economics'],
+    majors: [
+      'Business Administration',
+      'Law',
+      'Political Science',
+      'Economics',
+    ],
   },
   ENTP: {
     title: 'The Debater',
@@ -469,7 +479,13 @@ export const MBTI_INTERPRETATIONS: Record<
     strengths: ['Insightful', 'Principled', 'Passionate', 'Altruistic'],
     strengthsZh: ['有洞察力', '有原则', '热情', '利他'],
     careers: ['Counselor', 'Writer', 'Social Worker', 'Psychologist'],
-    majors: ['Psychology', 'Social Work', 'Literature', 'Philosophy', 'Education'],
+    majors: [
+      'Psychology',
+      'Social Work',
+      'Literature',
+      'Philosophy',
+      'Education',
+    ],
   },
   INFP: {
     title: 'The Mediator',
@@ -540,7 +556,12 @@ export const MBTI_INTERPRETATIONS: Record<
     strengths: ['Supportive', 'Reliable', 'Patient', 'Observant'],
     strengthsZh: ['支持性强', '可靠', '耐心', '善于观察'],
     careers: ['Nurse', 'Teacher', 'Social Worker', 'Administrator'],
-    majors: ['Nursing', 'Education', 'Social Work', 'Healthcare Administration'],
+    majors: [
+      'Nursing',
+      'Education',
+      'Social Work',
+      'Healthcare Administration',
+    ],
   },
   ESTJ: {
     title: 'The Executive',
@@ -551,7 +572,12 @@ export const MBTI_INTERPRETATIONS: Record<
     strengths: ['Organized', 'Honest', 'Dedicated', 'Strong-willed'],
     strengthsZh: ['有组织力', '诚实', '专注', '意志坚强'],
     careers: ['Manager', 'Judge', 'Military Officer', 'Financial Officer'],
-    majors: ['Business Administration', 'Law', 'Finance', 'Public Administration'],
+    majors: [
+      'Business Administration',
+      'Law',
+      'Finance',
+      'Public Administration',
+    ],
   },
   ESFJ: {
     title: 'The Consul',
@@ -561,7 +587,12 @@ export const MBTI_INTERPRETATIONS: Record<
     descriptionZh: '非常关心人、善于社交、受欢迎，总是渴望帮助他人。',
     strengths: ['Caring', 'Sociable', 'Loyal', 'Sensitive'],
     strengthsZh: ['关心他人', '善于社交', '忠诚', '敏感'],
-    careers: ['Healthcare Worker', 'Event Coordinator', 'HR Specialist', 'Teacher'],
+    careers: [
+      'Healthcare Worker',
+      'Event Coordinator',
+      'HR Specialist',
+      'Teacher',
+    ],
     majors: ['Nursing', 'Education', 'Hospitality', 'Human Resources'],
   },
   ISTP: {
@@ -589,7 +620,13 @@ export const MBTI_INTERPRETATIONS: Record<
     strengths: ['Charming', 'Sensitive', 'Imaginative', 'Curious'],
     strengthsZh: ['迷人', '敏感', '有想象力', '好奇'],
     careers: ['Artist', 'Designer', 'Veterinarian', 'Nurse'],
-    majors: ['Fine Arts', 'Design', 'Veterinary Medicine', 'Music', 'Photography'],
+    majors: [
+      'Fine Arts',
+      'Design',
+      'Veterinary Medicine',
+      'Music',
+      'Photography',
+    ],
   },
   ESTP: {
     title: 'The Entrepreneur',
@@ -599,8 +636,18 @@ export const MBTI_INTERPRETATIONS: Record<
     descriptionZh: '聪明、精力充沛、非常敏锐，真正享受冒险生活。',
     strengths: ['Bold', 'Direct', 'Sociable', 'Perceptive'],
     strengthsZh: ['大胆', '直接', '善于社交', '敏锐'],
-    careers: ['Entrepreneur', 'Sales Manager', 'Paramedic', 'Marketing Executive'],
-    majors: ['Business', 'Marketing', 'Emergency Management', 'Sports Management'],
+    careers: [
+      'Entrepreneur',
+      'Sales Manager',
+      'Paramedic',
+      'Marketing Executive',
+    ],
+    majors: [
+      'Business',
+      'Marketing',
+      'Emergency Management',
+      'Sports Management',
+    ],
   },
   ESFP: {
     title: 'The Entertainer',

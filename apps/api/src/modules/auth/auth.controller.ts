@@ -1,168 +1,238 @@
-import { Controller, Post, Body, Get, Query, HttpCode, HttpStatus, Res, Req, UnauthorizedException } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiBody } from '@nestjs/swagger';
-import type { Response, Request } from 'express';
-import { IsString } from 'class-validator';
-import { ConfigService } from '@nestjs/config';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Query,
+  HttpCode,
+  HttpStatus,
+  Res,
+  Req,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
+import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { Public, CurrentUser } from '../../common/decorators';
-import { ThrottleSensitive, ThrottleStrict } from '../../common/decorators/throttle.decorator';
 import type { CurrentUserPayload } from '../../common/decorators';
 import {
   RegisterDto,
-  LoginDto,
-  ResetPasswordDto,
-  ChangePasswordDto,
-  RequestPasswordResetDto,
-} from './dto';
-
-const REFRESH_TOKEN_COOKIE = 'refresh_token';
+  RefreshTokenDto,
+  ResendVerificationDto,
+  ForgotPasswordDto,
+} from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
+import { ResetPasswordDto, ChangePasswordDto } from './dto/reset-password.dto';
 
 /**
- * Cookie 安全配置
- * 
- * 安全特性：
- * - httpOnly: true - JavaScript 无法访问，防止 XSS 窃取
- * - secure: true (生产环境) - 仅 HTTPS 传输
- * - sameSite: 'strict' - 防止 CSRF 攻击
- * - path: '/api/v1/auth' - 仅 auth 相关请求携带 cookie
+ * 企业级 Cookie 安全配置
+ *
+ * Security considerations:
+ * - httpOnly: 防止 XSS 攻击窃取 cookie
+ * - secure: 生产环境仅通过 HTTPS 传输
+ * - sameSite: 防止 CSRF 攻击
+ * - path: 限制 cookie 作用域
+ * - maxAge: Token 有效期
  */
-const COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'strict' as const, // 增强：从 'lax' 改为 'strict'
-  path: '/api/v1/auth', // 修正：匹配实际 API 路径
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+const REFRESH_TOKEN_COOKIE_NAME = 'refreshToken';
+const REFRESH_TOKEN_COOKIE_OPTIONS = {
+  httpOnly: true, // 防止 XSS
+  secure: process.env.NODE_ENV === 'production', // 生产环境强制 HTTPS
+  sameSite: (process.env.NODE_ENV === 'production' ? 'strict' : 'lax') as const, // CSRF 防护
+  path: '/api/v1/auth', // 限制到认证路径
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天
 };
 
-import { IsOptional } from 'class-validator';
+// 清除 cookie 时使用的配置（必须与设置时相同的 path）
+const CLEAR_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: (process.env.NODE_ENV === 'production' ? 'strict' : 'lax') as const,
+  path: '/api/v1/auth',
+};
 
-class RefreshTokenDto {
-  @IsOptional()
-  @IsString()
-  refreshToken?: string; // 可选：Web 使用 cookie，Mobile 使用 body
-}
+/**
+ * Access Token Cookie 配置
+ *
+ * 用途：供前端 Next.js 中间件检测用户认证状态（路由保护）
+ * - httpOnly: 防止 XSS 窃取
+ * - path: '/' 让中间件在所有路由可读取
+ * - maxAge: 与 JWT 过期时间一致（15 分钟）
+ */
+const ACCESS_TOKEN_COOKIE_NAME = 'access_token';
+const ACCESS_TOKEN_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: (process.env.NODE_ENV === 'production' ? 'strict' : 'lax') as const,
+  path: '/',
+  maxAge: 15 * 60 * 1000, // 15 分钟，与 JWT 过期时间一致
+};
+
+const CLEAR_ACCESS_TOKEN_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: (process.env.NODE_ENV === 'production' ? 'strict' : 'lax') as const,
+  path: '/',
+};
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly configService: ConfigService,
-  ) {}
+  private readonly logger = new Logger(AuthController.name);
+
+  constructor(private readonly authService: AuthService) {}
 
   @Post('register')
   @Public()
-  @ThrottleSensitive()
-  @ApiOperation({ summary: '用户注册', description: '创建新用户账号，发送验证邮件' })
-  @ApiResponse({ status: 201, description: '注册成功，验证邮件已发送' })
-  @ApiResponse({ status: 409, description: '邮箱已被注册' })
-  @ApiResponse({ status: 429, description: '请求过于频繁，请稍后再试' })
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @ApiOperation({ summary: 'Register new user' })
   async register(@Body() data: RegisterDto) {
     return this.authService.register(data);
   }
 
   @Post('login')
   @Public()
-  @ThrottleSensitive()
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '用户登录', description: '使用邮箱密码登录，返回访问令牌' })
-  @ApiResponse({ status: 200, description: '登录成功' })
-  @ApiResponse({ status: 401, description: '邮箱或密码错误' })
-  @ApiResponse({ status: 429, description: '请求过于频繁，请稍后再试' })
-  async login(@Body() data: LoginDto, @Res({ passthrough: true }) res: Response) {
+  @ApiOperation({ summary: 'Login' })
+  async login(
+    @Body() data: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    this.logger.debug(`Login attempt for: ${data.email}`);
+
     const result = await this.authService.login(data);
-    
-    // Set refresh token as httpOnly cookie (Web 客户端使用)
-    res.cookie(REFRESH_TOKEN_COOKIE, result.tokens.refreshToken, COOKIE_OPTIONS);
-    
+
+    // 企业级：设置 httpOnly cookie 存储 refreshToken
+    res.cookie(
+      REFRESH_TOKEN_COOKIE_NAME,
+      result.tokens.refreshToken,
+      REFRESH_TOKEN_COOKIE_OPTIONS,
+    );
+
+    // 设置 access_token cookie 供前端中间件检测认证状态
+    res.cookie(
+      ACCESS_TOKEN_COOKIE_NAME,
+      result.tokens.accessToken,
+      ACCESS_TOKEN_COOKIE_OPTIONS,
+    );
+
+    this.logger.log(`User logged in: ${data.email}`);
+
     return {
       user: result.user,
       accessToken: result.tokens.accessToken,
-      // 保留 refreshToken 返回以兼容 Mobile 应用
-      // Mobile 应用使用 SecureStore 存储，同样安全
-      refreshToken: result.tokens.refreshToken,
+      // 安全：不在响应体中返回 refreshToken
     };
   }
 
   @Post('refresh')
   @Public()
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '刷新 Access Token', description: '使用 Refresh Token 获取新的 Access Token' })
-  @ApiResponse({ status: 200, description: '刷新成功' })
-  @ApiResponse({ status: 401, description: 'Refresh Token 无效或已过期' })
+  @ApiOperation({ summary: 'Refresh access token' })
   async refreshToken(
-    @Body() data: RefreshTokenDto,
     @Req() req: Request,
+    @Body() data: RefreshTokenDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    // 优先从 httpOnly cookie 获取（Web 客户端）
-    // 其次从 body 获取（Mobile 客户端）
-    const refreshToken = req.cookies?.[REFRESH_TOKEN_COOKIE] || data?.refreshToken;
-    
+    // 企业级：优先从 httpOnly cookie 获取，其次从 body 获取（向后兼容）
+    const refreshToken =
+      req.cookies?.[REFRESH_TOKEN_COOKIE_NAME] || data?.refreshToken;
+
     if (!refreshToken) {
-      throw new UnauthorizedException('Refresh token is required');
+      this.logger.warn('Token refresh attempted without refresh token');
+      throw new UnauthorizedException('No refresh token provided');
     }
-    
-    const tokens = await this.authService.refreshToken(refreshToken);
-    
-    // 更新 cookie（用于 Web 客户端的 token 轮换）
-    res.cookie(REFRESH_TOKEN_COOKIE, tokens.refreshToken, COOKIE_OPTIONS);
-    
-    return {
-      accessToken: tokens.accessToken,
-      // 保留 refreshToken 返回以兼容 Mobile 应用
-      refreshToken: tokens.refreshToken,
-    };
+
+    try {
+      // Token 轮换：刷新时生成新的 refreshToken
+      const tokens = await this.authService.refreshToken(refreshToken);
+
+      // 更新 cookie（Token 轮换）
+      res.cookie(
+        REFRESH_TOKEN_COOKIE_NAME,
+        tokens.refreshToken,
+        REFRESH_TOKEN_COOKIE_OPTIONS,
+      );
+
+      // 同步更新 access_token cookie
+      res.cookie(
+        ACCESS_TOKEN_COOKIE_NAME,
+        tokens.accessToken,
+        ACCESS_TOKEN_COOKIE_OPTIONS,
+      );
+
+      this.logger.debug('Token refreshed successfully');
+
+      return {
+        accessToken: tokens.accessToken,
+      };
+    } catch (error) {
+      // 刷新失败时清除可能无效的 cookie
+      res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, CLEAR_COOKIE_OPTIONS);
+      this.logger.warn(
+        `Token refresh failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      throw error;
+    }
   }
 
   @Post('logout')
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '退出登录', description: '使当前会话的 Refresh Token 失效' })
-  @ApiResponse({ status: 200, description: '退出成功' })
+  @ApiOperation({ summary: 'Logout' })
   async logout(
     @CurrentUser() user: CurrentUserPayload,
     @Req() req: Request,
+    @Body() data: { refreshToken?: string },
     @Res({ passthrough: true }) res: Response,
-    @Body() data?: { refreshToken?: string },
   ) {
-    const refreshToken = req.cookies?.[REFRESH_TOKEN_COOKIE] || data?.refreshToken;
+    // 企业级：从 httpOnly cookie 获取 refreshToken
+    const refreshToken =
+      req.cookies?.[REFRESH_TOKEN_COOKIE_NAME] || data?.refreshToken;
+
+    // 即使没有 refreshToken 也要清除 cookie（防止残留）
     await this.authService.logout(user.id, refreshToken);
-    
-    // Clear the refresh token cookie（需要匹配设置时的 path）
-    res.clearCookie(REFRESH_TOKEN_COOKIE, { path: '/api/v1/auth' });
-    
+
+    // 清除 cookies
+    res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, CLEAR_COOKIE_OPTIONS);
+    res.clearCookie(ACCESS_TOKEN_COOKIE_NAME, CLEAR_ACCESS_TOKEN_OPTIONS);
+
+    this.logger.log(`User logged out: ${user.id}`);
+
     return { message: 'Logged out successfully' };
   }
 
   @Get('verify-email')
   @Public()
-  @ApiOperation({ summary: '验证邮箱', description: '通过邮件中的链接验证邮箱地址' })
-  @ApiResponse({ status: 200, description: '验证成功' })
-  @ApiResponse({ status: 400, description: '验证令牌无效' })
+  @ApiOperation({ summary: 'Verify email' })
   async verifyEmail(@Query('token') token: string) {
     return this.authService.verifyEmail(token);
   }
 
+  @Post('resend-verification')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Resend verification email' })
+  async resendVerification(@Body() data: ResendVerificationDto) {
+    return this.authService.resendVerificationEmail(data.email);
+  }
+
   @Post('forgot-password')
   @Public()
-  @ThrottleStrict()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '忘记密码', description: '发送密码重置邮件' })
-  @ApiResponse({ status: 200, description: '如果邮箱存在，重置邮件已发送' })
-  @ApiResponse({ status: 429, description: '请求过于频繁，请稍后再试' })
-  async forgotPassword(@Body() data: RequestPasswordResetDto) {
+  @ApiOperation({ summary: 'Request password reset' })
+  async forgotPassword(@Body() data: ForgotPasswordDto) {
     return this.authService.requestPasswordReset(data.email);
   }
 
   @Post('reset-password')
   @Public()
-  @ThrottleSensitive()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '重置密码', description: '使用重置令牌设置新密码' })
-  @ApiResponse({ status: 200, description: '密码重置成功' })
-  @ApiResponse({ status: 400, description: '重置令牌无效或已过期' })
-  @ApiResponse({ status: 429, description: '请求过于频繁，请稍后再试' })
+  @ApiOperation({ summary: 'Reset password' })
   async resetPassword(@Body() data: ResetPasswordDto) {
     return this.authService.resetPassword(data.token, data.newPassword);
   }
@@ -170,10 +240,15 @@ export class AuthController {
   @Post('change-password')
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '修改密码', description: '已登录用户修改密码' })
-  @ApiResponse({ status: 200, description: '密码修改成功' })
-  @ApiResponse({ status: 401, description: '当前密码错误' })
-  async changePassword(@CurrentUser() user: CurrentUserPayload, @Body() data: ChangePasswordDto) {
-    return this.authService.changePassword(user.id, data.currentPassword, data.newPassword);
+  @ApiOperation({ summary: 'Change password' })
+  async changePassword(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() data: ChangePasswordDto,
+  ) {
+    return this.authService.changePassword(
+      user.id,
+      data.currentPassword,
+      data.newPassword,
+    );
   }
 }

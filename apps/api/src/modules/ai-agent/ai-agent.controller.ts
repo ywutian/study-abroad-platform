@@ -1,14 +1,31 @@
 /**
  * AI Agent API 控制器（支持 SSE 流式输出）
- * 
+ *
  * 功能特性:
  * - 流式/非流式对话
  * - 限流与配额保护 (Guard 层)
  * - 使用量监控
  */
 
-import { Controller, Post, Get, Delete, Body, Query, Res, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  Controller,
+  Post,
+  Get,
+  Delete,
+  Body,
+  Query,
+  Res,
+  HttpCode,
+  HttpStatus,
+  UseGuards,
+  Logger,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import type { Response } from 'express';
 import { OrchestratorService, StreamEvent } from './core/orchestrator.service';
 import { TokenTrackerService } from './core/token-tracker.service';
@@ -48,8 +65,10 @@ class DirectAgentDto {
 @ApiTags('ai-agent')
 @ApiBearerAuth()
 @Controller('ai-agent')
-@UseGuards(AgentThrottleGuard)  // 统一在 Guard 层做限流和配额检查
+@UseGuards(AgentThrottleGuard) // 统一在 Guard 层做限流和配额检查
 export class AiAgentController {
+  private readonly logger = new Logger(AiAgentController.name);
+
   constructor(
     private orchestrator: OrchestratorService,
     private tokenTracker: TokenTrackerService,
@@ -83,7 +102,9 @@ export class AiAgentController {
           res.write(`data: ${JSON.stringify(event)}\n\n`);
         }
       } catch (error) {
-        res.write(`data: ${JSON.stringify({ type: 'error', error: 'Stream failed' })}\n\n`);
+        res.write(
+          `data: ${JSON.stringify({ type: 'error', error: 'Stream failed' })}\n\n`,
+        );
       }
 
       res.write('data: [DONE]\n\n');
@@ -109,6 +130,15 @@ export class AiAgentController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: DirectAgentDto,
   ) {
+    this.logger.log(
+      `POST /agent received: userId=${user?.id}, agent=${data.agent}`,
+    );
+
+    if (!user?.id) {
+      this.logger.error('No user ID in request - authentication issue');
+      throw new Error('Authentication required');
+    }
+
     return this.orchestrator.callAgent(
       user.id,
       data.agent,
@@ -200,7 +230,7 @@ export class AiAgentController {
   @ApiOperation({ summary: '获取 AI Agent 服务健康状态' })
   @HttpCode(HttpStatus.OK)
   async health() {
-    const llmStatus = this.llm.getServiceStatus();
+    const llmStatus = await this.llm.getServiceStatus();
     return {
       status: llmStatus.isHealthy ? 'healthy' : 'degraded',
       llm: llmStatus,
@@ -208,4 +238,3 @@ export class AiAgentController {
     };
   }
 }
-

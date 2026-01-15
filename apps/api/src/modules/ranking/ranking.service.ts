@@ -19,20 +19,41 @@ export interface RankedSchool extends School {
 export class RankingService {
   constructor(
     private prisma: PrismaService,
-    private schoolService: SchoolService
+    private schoolService: SchoolService,
   ) {}
 
   // Calculate custom ranking based on weights
   async calculateRanking(weights: RankingWeights): Promise<RankedSchool[]> {
     const schools = await this.schoolService.findAllWithMetrics();
 
+    // Validate weights - ensure they are numbers
+    const validWeights: RankingWeights = {
+      usNewsRank: Number(weights.usNewsRank) || 0,
+      acceptanceRate: Number(weights.acceptanceRate) || 0,
+      tuition: Number(weights.tuition) || 0,
+      avgSalary: Number(weights.avgSalary) || 0,
+    };
+
     // Normalize weights to sum to 100
-    const totalWeight = Object.values(weights).reduce((sum, w) => sum + w, 0);
+    const totalWeight = Object.values(validWeights).reduce(
+      (sum, w) => sum + w,
+      0,
+    );
+
+    // If no weights, return schools with zero scores
+    if (totalWeight === 0) {
+      return schools.map((school, index) => ({
+        ...school,
+        score: 0,
+        rank: index + 1,
+      }));
+    }
+
     const normalizedWeights: RankingWeights = {
-      usNewsRank: (weights.usNewsRank / totalWeight) * 100,
-      acceptanceRate: (weights.acceptanceRate / totalWeight) * 100,
-      tuition: (weights.tuition / totalWeight) * 100,
-      avgSalary: (weights.avgSalary / totalWeight) * 100,
+      usNewsRank: (validWeights.usNewsRank / totalWeight) * 100,
+      acceptanceRate: (validWeights.acceptanceRate / totalWeight) * 100,
+      tuition: (validWeights.tuition / totalWeight) * 100,
+      avgSalary: (validWeights.avgSalary / totalWeight) * 100,
     };
 
     // Get min/max for normalization
@@ -57,48 +78,74 @@ export class RankingService {
   }
 
   private calculateStats(schools: School[]) {
-    const usNewsRanks = schools.map((s) => s.usNewsRank).filter((r): r is number => r !== null);
-    const acceptanceRates = schools.map((s) => s.acceptanceRate).filter((r): r is Prisma.Decimal => r !== null).map(r => Number(r));
-    const tuitions = schools.map((s) => s.tuition).filter((t): t is number => t !== null);
-    const salaries = schools.map((s) => s.avgSalary).filter((s): s is number => s !== null);
+    const usNewsRanks = schools
+      .map((s) => s.usNewsRank)
+      .filter((r): r is number => r !== null);
+    const acceptanceRates = schools
+      .map((s) => s.acceptanceRate)
+      .filter((r): r is Prisma.Decimal => r !== null)
+      .map((r) => Number(r));
+    const tuitions = schools
+      .map((s) => s.tuition)
+      .filter((t): t is number => t !== null);
+    const salaries = schools
+      .map((s) => s.avgSalary)
+      .filter((s): s is number => s !== null);
+
+    // Helper function to safely get min/max, defaulting to 0 for empty arrays
+    const safeMinMax = (arr: number[]) => ({
+      min: arr.length > 0 ? Math.min(...arr) : 0,
+      max: arr.length > 0 ? Math.max(...arr) : 0,
+    });
 
     return {
-      usNewsRank: { min: Math.min(...usNewsRanks), max: Math.max(...usNewsRanks) },
-      acceptanceRate: { min: Math.min(...acceptanceRates), max: Math.max(...acceptanceRates) },
-      tuition: { min: Math.min(...tuitions), max: Math.max(...tuitions) },
-      avgSalary: { min: Math.min(...salaries), max: Math.max(...salaries) },
+      usNewsRank: safeMinMax(usNewsRanks),
+      acceptanceRate: safeMinMax(acceptanceRates),
+      tuition: safeMinMax(tuitions),
+      avgSalary: safeMinMax(salaries),
     };
   }
 
   private calculateScore(
     school: School,
     weights: RankingWeights,
-    stats: ReturnType<typeof this.calculateStats>
+    stats: ReturnType<typeof this.calculateStats>,
   ): number {
     let score = 0;
 
     // US News Rank (lower is better, so invert)
     if (school.usNewsRank !== null) {
-      const normalized = 1 - (school.usNewsRank - stats.usNewsRank.min) / (stats.usNewsRank.max - stats.usNewsRank.min || 1);
+      const normalized =
+        1 -
+        (school.usNewsRank - stats.usNewsRank.min) /
+          (stats.usNewsRank.max - stats.usNewsRank.min || 1);
       score += normalized * weights.usNewsRank;
     }
 
     // Acceptance Rate (lower is better in this context - more selective)
     if (school.acceptanceRate !== null) {
       const rate = Number(school.acceptanceRate);
-      const normalized = 1 - (rate - stats.acceptanceRate.min) / (stats.acceptanceRate.max - stats.acceptanceRate.min || 1);
+      const normalized =
+        1 -
+        (rate - stats.acceptanceRate.min) /
+          (stats.acceptanceRate.max - stats.acceptanceRate.min || 1);
       score += normalized * weights.acceptanceRate;
     }
 
     // Tuition (lower is better)
     if (school.tuition !== null) {
-      const normalized = 1 - (school.tuition - stats.tuition.min) / (stats.tuition.max - stats.tuition.min || 1);
+      const normalized =
+        1 -
+        (school.tuition - stats.tuition.min) /
+          (stats.tuition.max - stats.tuition.min || 1);
       score += normalized * weights.tuition;
     }
 
     // Salary (higher is better)
     if (school.avgSalary !== null) {
-      const normalized = (school.avgSalary - stats.avgSalary.min) / (stats.avgSalary.max - stats.avgSalary.min || 1);
+      const normalized =
+        (school.avgSalary - stats.avgSalary.min) /
+        (stats.avgSalary.max - stats.avgSalary.min || 1);
       score += normalized * weights.avgSalary;
     }
 
@@ -106,7 +153,12 @@ export class RankingService {
   }
 
   // Save custom ranking
-  async saveRanking(userId: string, name: string, weights: RankingWeights, isPublic: boolean): Promise<CustomRanking> {
+  async saveRanking(
+    userId: string,
+    name: string,
+    weights: RankingWeights,
+    isPublic: boolean,
+  ): Promise<CustomRanking> {
     return this.prisma.customRanking.create({
       data: {
         userId,
@@ -161,4 +213,3 @@ export class RankingService {
 
 // Import Prisma namespace for Decimal type
 import { Prisma } from '@prisma/client';
-

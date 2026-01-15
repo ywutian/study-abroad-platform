@@ -1,6 +1,6 @@
 /**
  * Agent 请求限流服务
- * 
+ *
  * 使用 Redis ZSET 实现分布式滑动窗口限流
  * Redis 不可用时自动降级为内存限流
  */
@@ -9,8 +9,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { RedisService } from '../../../common/redis/redis.service';
 
 interface RateLimitConfig {
-  windowMs: number;      // 时间窗口 (毫秒)
-  maxRequests: number;   // 窗口内最大请求数
+  windowMs: number; // 时间窗口 (毫秒)
+  maxRequests: number; // 窗口内最大请求数
 }
 
 interface WindowEntry {
@@ -44,17 +44,17 @@ const VIP_LIMITS: Record<string, RateLimitConfig> = {
 export interface RateLimitResult {
   allowed: boolean;
   remaining: number;
-  resetIn: number;  // 重置时间 (毫秒)
+  resetIn: number; // 重置时间 (毫秒)
   limit: number;
 }
 
 @Injectable()
 export class RateLimiterService {
   private readonly logger = new Logger(RateLimiterService.name);
-  
+
   // 内存降级存储 (Redis 不可用时使用)
   private fallbackWindows: Map<string, WindowEntry[]> = new Map();
-  
+
   // 自定义限流配置
   private customLimits: Map<string, RateLimitConfig> = new Map();
 
@@ -79,7 +79,9 @@ export class RateLimiterService {
     }
 
     // 降级为内存限流
-    this.logger.debug('Redis unavailable, using memory fallback for rate limiting');
+    this.logger.debug(
+      'Redis unavailable, using memory fallback for rate limiting',
+    );
     return this.checkLimitMemory(fullKey, config);
   }
 
@@ -127,7 +129,7 @@ export class RateLimiterService {
         return {1, remaining, windowMs, maxRequests}
       `;
 
-      const result = await client.eval(
+      const result = (await client.eval(
         luaScript,
         1,
         fullKey,
@@ -135,7 +137,7 @@ export class RateLimiterService {
         windowStart.toString(),
         config.maxRequests.toString(),
         config.windowMs.toString(),
-      ) as number[];
+      )) as number[];
 
       return {
         allowed: result[0] === 1,
@@ -144,7 +146,9 @@ export class RateLimiterService {
         limit: result[3],
       };
     } catch (error) {
-      this.logger.warn(`Redis rate limit error: ${error}, falling back to memory`);
+      this.logger.warn(
+        `Redis rate limit error: ${error}, falling back to memory`,
+      );
       return this.checkLimitMemory(fullKey, config);
     }
   }
@@ -160,9 +164,9 @@ export class RateLimiterService {
 
     // 获取或创建窗口
     let window = this.fallbackWindows.get(fullKey) || [];
-    
+
     // 清理过期条目
-    window = window.filter(entry => now - entry.timestamp < config.windowMs);
+    window = window.filter((entry) => now - entry.timestamp < config.windowMs);
 
     // 计算当前窗口内的请求数
     const currentCount = window.reduce((sum, entry) => sum + entry.count, 0);
@@ -170,7 +174,7 @@ export class RateLimiterService {
     // 检查是否超限
     if (currentCount >= config.maxRequests) {
       const oldestEntry = window[0];
-      const resetIn = oldestEntry 
+      const resetIn = oldestEntry
         ? config.windowMs - (now - oldestEntry.timestamp)
         : config.windowMs;
 
@@ -206,11 +210,11 @@ export class RateLimiterService {
     results: Map<string, RateLimitResult>;
   }> {
     const results = new Map<string, RateLimitResult>();
-    
+
     for (const check of checks) {
       const result = await this.checkLimit(check.key, check.type, isVip);
       results.set(`${check.type}:${check.key}`, result);
-      
+
       if (!result.allowed) {
         return {
           allowed: false,
@@ -242,10 +246,11 @@ export class RateLimiterService {
         await client.zremrangebyscore(fullKey, '-inf', windowStart);
         const currentCount = await client.zcard(fullKey);
         const oldest = await client.zrange(fullKey, 0, 0, 'WITHSCORES');
-        
-        const resetIn = oldest.length > 1 
-          ? config.windowMs - (now - parseInt(oldest[1]))
-          : config.windowMs;
+
+        const resetIn =
+          oldest.length > 1
+            ? config.windowMs - (now - parseInt(oldest[1]))
+            : config.windowMs;
 
         return {
           allowed: currentCount < config.maxRequests,
@@ -260,11 +265,11 @@ export class RateLimiterService {
 
     // 内存实现
     let window = this.fallbackWindows.get(fullKey) || [];
-    window = window.filter(entry => now - entry.timestamp < config.windowMs);
+    window = window.filter((entry) => now - entry.timestamp < config.windowMs);
 
     const currentCount = window.reduce((sum, entry) => sum + entry.count, 0);
     const oldestEntry = window[0];
-    const resetIn = oldestEntry 
+    const resetIn = oldestEntry
       ? config.windowMs - (now - oldestEntry.timestamp)
       : config.windowMs;
 
@@ -279,9 +284,12 @@ export class RateLimiterService {
   /**
    * 重置指定 key 的限流
    */
-  async reset(key: string, type: keyof typeof DEFAULT_LIMITS = 'user'): Promise<void> {
+  async reset(
+    key: string,
+    type: keyof typeof DEFAULT_LIMITS = 'user',
+  ): Promise<void> {
     const fullKey = `ratelimit:${type}:${key}`;
-    
+
     // 清理 Redis
     const client = this.redis.getClient();
     if (client && this.redis.connected) {
@@ -291,7 +299,7 @@ export class RateLimiterService {
         this.logger.warn(`Failed to reset Redis rate limit: ${error}`);
       }
     }
-    
+
     // 清理内存
     this.fallbackWindows.delete(fullKey);
     this.logger.debug(`Rate limit reset: ${fullKey}`);
@@ -312,7 +320,7 @@ export class RateLimiterService {
     let cleaned = 0;
 
     for (const [key, window] of this.fallbackWindows.entries()) {
-      const filtered = window.filter(entry => {
+      const filtered = window.filter((entry) => {
         const config = this.getConfigForKey(key);
         return now - entry.timestamp < config.windowMs;
       });
@@ -346,7 +354,7 @@ export class RateLimiterService {
     if (this.customLimits.has(fullKey)) {
       return this.customLimits.get(fullKey)!;
     }
-    return DEFAULT_LIMITS[type as keyof typeof DEFAULT_LIMITS] || DEFAULT_LIMITS.user;
+    return DEFAULT_LIMITS[type] || DEFAULT_LIMITS.user;
   }
 }
 
@@ -355,14 +363,10 @@ export class RateLimitExceededError extends Error {
   public readonly retryAfter: number;
 
   constructor(type: string, retryAfter: number) {
-    super(`Rate limit exceeded for ${type}. Retry after ${Math.ceil(retryAfter / 1000)}s`);
+    super(
+      `Rate limit exceeded for ${type}. Retry after ${Math.ceil(retryAfter / 1000)}s`,
+    );
     this.name = 'RateLimitExceededError';
     this.retryAfter = retryAfter;
   }
 }
-
-
-
-
-
-

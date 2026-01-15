@@ -10,7 +10,7 @@ interface RoutingRule {
   patterns: RegExp[];
   keywords: string[];
   agent: AgentType;
-  confidence: number;  // 0-1, 高于阈值直接路由
+  confidence: number; // 0-1, 高于阈值直接路由
 }
 
 // 路由结果
@@ -28,10 +28,26 @@ const ROUTING_RULES: RoutingRule[] = [
     agent: AgentType.ESSAY,
     confidence: 0.9,
     keywords: [
-      '文书', 'essay', 'ps', '个人陈述', 'personal statement',
-      '润色', '修改', '评估', '写作', '大纲', 'outline',
-      'brainstorm', '头脑风暴', '续写', '补充', 'supplement',
-      '为什么选择', 'why', '活动描述', 'activity',
+      '文书',
+      'essay',
+      'ps',
+      '个人陈述',
+      'personal statement',
+      '润色',
+      '修改',
+      '评估',
+      '写作',
+      '大纲',
+      'outline',
+      'brainstorm',
+      '头脑风暴',
+      '续写',
+      '补充',
+      'supplement',
+      '为什么选择',
+      'why',
+      '活动描述',
+      'activity',
     ],
     patterns: [
       /帮我(写|修改|润色|评估|分析)(一下)?.*文书/i,
@@ -46,10 +62,27 @@ const ROUTING_RULES: RoutingRule[] = [
     agent: AgentType.SCHOOL,
     confidence: 0.9,
     keywords: [
-      '选校', '学校推荐', '推荐学校', '录取率', '录取概率',
-      '排名', 'ranking', '对比', '比较', '哪个学校',
-      '申请难度', '竞争', '匹配度', '保底', '冲刺',
-      'top', '藤校', 'ivy', '常春藤', '公立', '私立',
+      '选校',
+      '学校推荐',
+      '推荐学校',
+      '录取率',
+      '录取概率',
+      '排名',
+      'ranking',
+      '对比',
+      '比较',
+      '哪个学校',
+      '申请难度',
+      '竞争',
+      '匹配度',
+      '保底',
+      '冲刺',
+      'top',
+      '藤校',
+      'ivy',
+      '常春藤',
+      '公立',
+      '私立',
     ],
     patterns: [
       /推荐.*学校/i,
@@ -66,9 +99,23 @@ const ROUTING_RULES: RoutingRule[] = [
     agent: AgentType.PROFILE,
     confidence: 0.9,
     keywords: [
-      '档案', '背景', '竞争力', 'gpa', '成绩', '活动',
-      '提升', '软实力', '硬实力', '短板', '优势',
-      '分析', '评估', '定位', '亮点', '科研', '实习',
+      '档案',
+      '背景',
+      '竞争力',
+      'gpa',
+      '成绩',
+      '活动',
+      '提升',
+      '软实力',
+      '硬实力',
+      '短板',
+      '优势',
+      '分析',
+      '评估',
+      '定位',
+      '亮点',
+      '科研',
+      '实习',
     ],
     patterns: [
       /(我的|分析.*)(档案|背景|竞争力)/i,
@@ -83,9 +130,22 @@ const ROUTING_RULES: RoutingRule[] = [
     agent: AgentType.TIMELINE,
     confidence: 0.9,
     keywords: [
-      '时间', '规划', '计划', '截止', 'deadline', '日期',
-      'ed', 'ea', 'rd', '提前', '常规', '什么时候',
-      '还来得及', '进度', '时间线', 'timeline',
+      '时间',
+      '规划',
+      '计划',
+      '截止',
+      'deadline',
+      '日期',
+      'ed',
+      'ea',
+      'rd',
+      '提前',
+      '常规',
+      '什么时候',
+      '还来得及',
+      '进度',
+      '时间线',
+      'timeline',
     ],
     patterns: [
       /(申请)?时间(线|表|规划)/i,
@@ -99,8 +159,14 @@ const ROUTING_RULES: RoutingRule[] = [
 
 // 直接回答的简单问题（不需要 Agent）
 const SIMPLE_QA_PATTERNS = [
-  { pattern: /你好|hello|hi|嗨/i, response: '你好！我是留学申请助手，有什么可以帮你的吗？' },
-  { pattern: /你是谁|你叫什么/i, response: '我是留学申请助手，可以帮你选校、写文书、规划时间线。' },
+  {
+    pattern: /你好|hello|hi|嗨/i,
+    response: '你好！我是留学申请助手，有什么可以帮你的吗？',
+  },
+  {
+    pattern: /你是谁|你叫什么/i,
+    response: '我是留学申请助手，可以帮你选校、写文书、规划时间线。',
+  },
   { pattern: /谢谢|感谢|thanks/i, response: '不客气！还有其他问题吗？' },
   { pattern: /再见|拜拜|bye/i, response: '再见！祝申请顺利！' },
 ];
@@ -138,10 +204,10 @@ export class FastRouterService {
 
     for (const rule of ROUTING_RULES) {
       const matchResult = this.matchRule(normalizedMessage, rule);
-      
+
       if (matchResult.score > 0) {
         const confidence = Math.min(matchResult.score * rule.confidence, 1.0);
-        
+
         if (!bestMatch || confidence > bestMatch.confidence) {
           bestMatch = {
             agent: rule.agent,
@@ -219,7 +285,7 @@ export class FastRouterService {
       /对比|比较|哪个更/,
     ];
 
-    return indicators.some(pattern => pattern.test(message));
+    return indicators.some((pattern) => pattern.test(message));
   }
 
   // ==================== 私有方法 ====================
@@ -264,10 +330,3 @@ export class FastRouterService {
     return { score: Math.min(score, 1.0), matchedKeywords };
   }
 }
-
-
-
-
-
-
-

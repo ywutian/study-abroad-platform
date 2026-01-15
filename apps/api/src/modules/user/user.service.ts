@@ -50,36 +50,46 @@ export class UserService {
     return this.prisma.$transaction(async (tx) => {
       // 1. 匿名化用户敏感数据
       const anonymizedEmail = `deleted_${id}@deleted.local`;
-      
+
       // 2. 清理用户 refresh tokens
-      await tx.refreshToken.deleteMany({
-        where: { userId: id },
-      }).catch(() => {
-        // 可能不存在
-      });
+      await tx.refreshToken
+        .deleteMany({
+          where: { userId: id },
+        })
+        .catch(() => {
+          // 可能不存在
+        });
 
       // 3. 清理用户的聊天消息（保留结构但删除内容）
-      await tx.message.updateMany({
-        where: { senderId: id },
-        data: { content: '[已删除]' },
-      }).catch(() => {});
+      await tx.message
+        .updateMany({
+          where: { senderId: id },
+          data: { content: '[已删除]' },
+        })
+        .catch(() => {});
 
       // 4. 匿名化用户的案例分享（设置 visibility 为 PRIVATE）
-      await tx.admissionCase.updateMany({
-        where: { userId: id },
-        data: { 
-          visibility: 'PRIVATE',
-        },
-      }).catch(() => {});
+      await tx.admissionCase
+        .updateMany({
+          where: { userId: id },
+          data: {
+            visibility: 'PRIVATE',
+          },
+        })
+        .catch(() => {});
 
       // 5. 删除用户的收藏和关注关系
-      await tx.follow.deleteMany({
-        where: { OR: [{ followerId: id }, { followingId: id }] },
-      }).catch(() => {});
+      await tx.follow
+        .deleteMany({
+          where: { OR: [{ followerId: id }, { followingId: id }] },
+        })
+        .catch(() => {});
 
-      await tx.block.deleteMany({
-        where: { OR: [{ blockerId: id }, { blockedId: id }] },
-      }).catch(() => {});
+      await tx.block
+        .deleteMany({
+          where: { OR: [{ blockerId: id }, { blockedId: id }] },
+        })
+        .catch(() => {});
 
       // 6. 更新用户记录
       const deletedUser = await tx.user.update({
@@ -107,21 +117,31 @@ export class UserService {
 
     await this.prisma.$transaction(async (tx) => {
       // 删除所有关联数据
-      await tx.refreshToken.deleteMany({ where: { userId: id } }).catch(() => {});
+      await tx.refreshToken
+        .deleteMany({ where: { userId: id } })
+        .catch(() => {});
       await tx.message.deleteMany({ where: { senderId: id } }).catch(() => {});
       // 删除用户参与的会话
-      await tx.conversationParticipant.deleteMany({ 
-        where: { userId: id } 
-      }).catch(() => {});
-      await tx.follow.deleteMany({ 
-        where: { OR: [{ followerId: id }, { followingId: id }] } 
-      }).catch(() => {});
-      await tx.block.deleteMany({ 
-        where: { OR: [{ blockerId: id }, { blockedId: id }] } 
-      }).catch(() => {});
-      await tx.admissionCase.deleteMany({ where: { userId: id } }).catch(() => {});
+      await tx.conversationParticipant
+        .deleteMany({
+          where: { userId: id },
+        })
+        .catch(() => {});
+      await tx.follow
+        .deleteMany({
+          where: { OR: [{ followerId: id }, { followingId: id }] },
+        })
+        .catch(() => {});
+      await tx.block
+        .deleteMany({
+          where: { OR: [{ blockerId: id }, { blockedId: id }] },
+        })
+        .catch(() => {});
+      await tx.admissionCase
+        .deleteMany({ where: { userId: id } })
+        .catch(() => {});
       await tx.profile.deleteMany({ where: { userId: id } }).catch(() => {});
-      
+
       // 最后删除用户
       await tx.user.delete({ where: { id } });
     });
@@ -160,4 +180,3 @@ export class UserService {
     };
   }
 }
-

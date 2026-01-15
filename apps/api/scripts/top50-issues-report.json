@@ -1,0 +1,2595 @@
+{
+  "summary": {
+    "totalCases": 933,
+    "totalIssues": 315,
+    "issueRate": "33.8%",
+    "byField": {
+      "round": 274,
+      "major": 7,
+      "gpa": 10,
+      "sat": 5,
+      "act": 2,
+      "year": 17
+    },
+    "bySchool": {
+      "University of Pennsylvania": 10,
+      "University of Michigan, Ann Arbor": 5,
+      "University of California, Berkeley": 18,
+      "University of Illinois Urbana-Champaign": 6,
+      "Massachusetts Institute of Technology": 48,
+      "University of Wisconsin-Madison": 1,
+      "University of Washington": 5,
+      "Georgia Institute of Technology": 40,
+      "Yale University": 14,
+      "Princeton University": 10,
+      "University of Southern California": 7,
+      "Rice University": 4,
+      "Duke University": 5,
+      "Carnegie Mellon University": 1,
+      "University of California, Davis": 5,
+      "Harvard University": 11,
+      "Tufts University": 3,
+      "University of Florida": 2,
+      "Stanford University": 7,
+      "University of California, San Diego": 7,
+      "University of Virginia": 2,
+      "University of California, Santa Barbara": 3,
+      "Georgetown University": 5,
+      "University of Notre Dame": 2,
+      "Northwestern University": 3,
+      "University of California, Los Angeles": 5,
+      "Washington University in St. Louis": 2,
+      "Boston University": 12,
+      "Cornell University": 10,
+      "University of Texas at Austin": 2,
+      "Columbia University": 7,
+      "University of North Carolina at Chapel Hill": 5,
+      "Brown University": 3,
+      "Johns Hopkins University": 5,
+      "Boston College": 2,
+      "University of Maryland, College Park": 5,
+      "Purdue University": 1,
+      "Swarthmore College": 2,
+      "Vanderbilt University": 3,
+      "The Juilliard School": 1,
+      "New York University": 2,
+      "University of California, Irvine": 3,
+      "Dartmouth College": 4,
+      "Colby College": 1,
+      "Williams College": 3,
+      "Harvey Mudd College": 1,
+      "Vassar College": 1,
+      "Barnard College": 1,
+      "Savannah College of Art and Design": 1,
+      "Colgate University": 1,
+      "Hamilton College": 1,
+      "New England Conservatory": 1,
+      "Emory University": 2,
+      "Pomona College": 2,
+      "Amherst College": 1,
+      "University of Chicago": 1
+    }
+  },
+  "issues": [
+    {
+      "id": "cmkqydke400l0wax941g4tx4d",
+      "school": "University of Pennsylvania",
+      "field": "round",
+      "value": "EA",
+      "reason": "University of Pennsylvania 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkqyajg9005ywax9z31oil10",
+      "school": "University of Michigan, Ann Arbor",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of Michigan, Ann Arbor 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkrkv9od002z10juyhpk74q5",
+      "school": "University of California, Berkeley",
+      "field": "round",
+      "value": "EA",
+      "reason": "University of California, Berkeley 不提供 EA 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkqyajqe0060wax9hml289ab",
+      "school": "University of Illinois Urbana-Champaign",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of Illinois Urbana-Champaign 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqyak0j0062wax9h5sth8et",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Massachusetts Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqyak0j0062wax9h5sth8et",
+      "school": "Massachusetts Institute of Technology",
+      "field": "major",
+      "value": "Finance",
+      "reason": "MIT 本科不提供 Finance 专业",
+      "suggestion": "改为 EECS, Computer Science, Physics, Mathematics 等"
+    },
+    {
+      "id": "cmkrkrylo000d10ju4b6ll7gm",
+      "school": "University of Wisconsin-Madison",
+      "field": "round",
+      "value": "REA",
+      "reason": "University of Wisconsin-Madison 不提供 REA 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkrm7bu600c92txqb1n41lxx",
+      "school": "University of Washington",
+      "field": "round",
+      "value": "EA",
+      "reason": "University of Washington 不提供 EA 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrm7cbj00cd2txqnu4yupnn",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkqy97sz001qwax9pcamabdt",
+      "school": "Yale University",
+      "field": "round",
+      "value": "ED",
+      "reason": "Yale University 不提供 ED 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqy9xrj0048wax9jc9el47z",
+      "school": "Princeton University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Princeton University 不提供 EA 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqy8vzx000kwax94dzmxlu8",
+      "school": "University of Southern California",
+      "field": "round",
+      "value": "ED2",
+      "reason": "University of Southern California 不提供 ED2 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqy9b51002cwax9aeciikiw",
+      "school": "Massachusetts Institute of Technology",
+      "field": "gpa",
+      "value": "3.4",
+      "reason": "录取 Massachusetts Institute of Technology 但 GPA=3.4 低于典型录取下限 3.8",
+      "suggestion": "调高 GPA 或改为 REJECTED/WAITLISTED"
+    },
+    {
+      "id": "cmkqy9czh002qwax9xfrbw0g9",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Massachusetts Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqy9qnr003ywax9fidt8fj1",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Massachusetts Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqy9qnr003ywax9fidt8fj1",
+      "school": "Massachusetts Institute of Technology",
+      "field": "major",
+      "value": "Business Administration",
+      "reason": "MIT 本科不提供 Business Administration 专业",
+      "suggestion": "改为 EECS, Computer Science, Physics, Mathematics 等"
+    },
+    {
+      "id": "cmkqy9qnr003ywax9fidt8fj1",
+      "school": "Massachusetts Institute of Technology",
+      "field": "gpa",
+      "value": "3.72",
+      "reason": "录取 Massachusetts Institute of Technology 但 GPA=3.72 低于典型录取下限 3.8",
+      "suggestion": "调高 GPA 或改为 REJECTED/WAITLISTED"
+    },
+    {
+      "id": "cmkqy9nnc003mwax9v9w9lxm4",
+      "school": "Rice University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Rice University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkqya7o5004mwax9cn3ow9tf",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Massachusetts Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqya7o5004mwax9cn3ow9tf",
+      "school": "Massachusetts Institute of Technology",
+      "field": "gpa",
+      "value": "3.74",
+      "reason": "录取 Massachusetts Institute of Technology 但 GPA=3.74 低于典型录取下限 3.8",
+      "suggestion": "调高 GPA 或改为 REJECTED/WAITLISTED"
+    },
+    {
+      "id": "cmkqya8gu004swax9dc285alf",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkqyadcy004wwax9s8tcxlcf",
+      "school": "Rice University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Rice University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkqyagi2005gwax96s6wk444",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "REA",
+      "reason": "Georgia Institute of Technology 不提供 REA 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkqyafoq005awax9h7e1a0qc",
+      "school": "Duke University",
+      "field": "round",
+      "value": "REA",
+      "reason": "Duke University 不提供 REA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkqyafyx005cwax93yb0ibva",
+      "school": "Carnegie Mellon University",
+      "field": "round",
+      "value": "ED2",
+      "reason": "Carnegie Mellon University 不提供 ED2 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkqyb5410082wax96tkloalo",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED2",
+      "reason": "Georgia Institute of Technology 不提供 ED2 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkqyatzd0072wax9a8krxh8j",
+      "school": "Duke University",
+      "field": "round",
+      "value": "REA",
+      "reason": "Duke University 不提供 REA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkqyb3v9007swax9kdqwptxy",
+      "school": "Yale University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Yale University 不提供 EA 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqyb4mx007ywax9c8slkje2",
+      "school": "University of California, Davis",
+      "field": "round",
+      "value": "EA",
+      "reason": "University of California, Davis 不提供 EA 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkqyavp50078wax9z0fpp5iw",
+      "school": "Harvard University",
+      "field": "round",
+      "value": "ED",
+      "reason": "Harvard University 不提供 ED 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqyb6dc0086wax9tgcneqn2",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED2",
+      "reason": "Georgia Institute of Technology 不提供 ED2 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkqyb27w007qwax9je16xxbi",
+      "school": "Tufts University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Tufts University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkqyb7bf008ewax9j2y1y36f",
+      "school": "University of Florida",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of Florida 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqyb6ua008awax92t2mf3t3",
+      "school": "Massachusetts Institute of Technology",
+      "field": "gpa",
+      "value": "3.75",
+      "reason": "录取 Massachusetts Institute of Technology 但 GPA=3.75 低于典型录取下限 3.8",
+      "suggestion": "调高 GPA 或改为 REJECTED/WAITLISTED"
+    },
+    {
+      "id": "cmkqyb9np008uwax9vpqfkt1g",
+      "school": "Stanford University",
+      "field": "round",
+      "value": "ED2",
+      "reason": "Stanford University 不提供 ED2 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqyb9f3008swax9nowjybyr",
+      "school": "Princeton University",
+      "field": "round",
+      "value": "ED",
+      "reason": "Princeton University 不提供 ED 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqyba5l008ywax9z7eemqvh",
+      "school": "Stanford University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Stanford University 不提供 EA 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqyb9wn008wwax9vgomm3n5",
+      "school": "University of California, Berkeley",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of California, Berkeley 不提供 ED 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkqybav80094wax90s4sk4rq",
+      "school": "Princeton University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Princeton University 不提供 EA 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqyb8au008mwax90nink1np",
+      "school": "University of California, San Diego",
+      "field": "round",
+      "value": "REA",
+      "reason": "University of California, San Diego 不提供 REA 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkqybexk00a0wax9hdwcp9km",
+      "school": "University of Southern California",
+      "field": "round",
+      "value": "ED2",
+      "reason": "University of Southern California 不提供 ED2 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqybf6c00a2wax9bzjeq64m",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkqybfen00a4wax9awr4ragw",
+      "school": "Harvard University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Harvard University 不提供 EA 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqybci7009gwax9ijvjy7oe",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED2",
+      "reason": "Georgia Institute of Technology 不提供 ED2 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkqybpnn00bmwax98pufpitg",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Massachusetts Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqybgtq00acwax95rua1do4",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkqybhh100agwax9y2s69ljy",
+      "school": "Harvard University",
+      "field": "round",
+      "value": "ED",
+      "reason": "Harvard University 不提供 ED 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqybjow00awwax9ngazvq9k",
+      "school": "University of Virginia",
+      "field": "round",
+      "value": "REA",
+      "reason": "University of Virginia 不提供 REA 轮次",
+      "suggestion": "改为 ED 或 EA 或 RD"
+    },
+    {
+      "id": "cmkqybker00b2wax9kpq5u29c",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkqybpw500bowax99ksbbtkw",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkqybsn300bywax9e930ud0l",
+      "school": "Massachusetts Institute of Technology",
+      "field": "major",
+      "value": "Finance",
+      "reason": "MIT 本科不提供 Finance 专业",
+      "suggestion": "改为 EECS, Computer Science, Physics, Mathematics 等"
+    },
+    {
+      "id": "cmkqybsn300bywax9e930ud0l",
+      "school": "Massachusetts Institute of Technology",
+      "field": "gpa",
+      "value": "3.67",
+      "reason": "录取 Massachusetts Institute of Technology 但 GPA=3.67 低于典型录取下限 3.8",
+      "suggestion": "调高 GPA 或改为 REJECTED/WAITLISTED"
+    },
+    {
+      "id": "cmkqybonp00bewax9jd6lg4p2",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkqybtut00c6wax9pfuptifq",
+      "school": "University of California, Santa Barbara",
+      "field": "round",
+      "value": "EA",
+      "reason": "University of California, Santa Barbara 不提供 EA 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkqyc1ia00cuwax9i99us23x",
+      "school": "Georgetown University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Georgetown University 不提供 EA 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqyc4y600diwax9w9n743i5",
+      "school": "University of Virginia",
+      "field": "round",
+      "value": "ED2",
+      "reason": "University of Virginia 不提供 ED2 轮次",
+      "suggestion": "改为 ED 或 EA 或 RD"
+    },
+    {
+      "id": "cmkqyc25k00cywax96tk4nun5",
+      "school": "University of California, San Diego",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of California, San Diego 不提供 ED 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkqyc58q00dkwax9nuuzlpa4",
+      "school": "University of Notre Dame",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of Notre Dame 不提供 ED 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqyc1qq00cwwax9y79t505i",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkqyc68000dswax9podyu2pz",
+      "school": "Northwestern University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Northwestern University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkqybw1200ciwax9go0cswd0",
+      "school": "University of California, Los Angeles",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of California, Los Angeles 不提供 ED 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkqybvcv00cewax9hysncq1d",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED2",
+      "reason": "Georgia Institute of Technology 不提供 ED2 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkqyc5hd00dmwax9vq908p4r",
+      "school": "Washington University in St. Louis",
+      "field": "round",
+      "value": "EA",
+      "reason": "Washington University in St. Louis 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkqyc7f000e2wax9rx834f21",
+      "school": "Boston University",
+      "field": "round",
+      "value": "REA",
+      "reason": "Boston University 不提供 REA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkqyc94800egwax9ph0e4it8",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkqyc8vp00eewax991r5877w",
+      "school": "University of Illinois Urbana-Champaign",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of Illinois Urbana-Champaign 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqycbu900f2wax9czzobfy7",
+      "school": "Cornell University",
+      "field": "round",
+      "value": "REA",
+      "reason": "Cornell University 不提供 REA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkqyc9u100emwax9se21yok6",
+      "school": "University of Texas at Austin",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of Texas at Austin 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqycabr00eqwax9dz5u8bca",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkqycc3000f4wax9ra008jpc",
+      "school": "University of Pennsylvania",
+      "field": "round",
+      "value": "REA",
+      "reason": "University of Pennsylvania 不提供 REA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkqycee900fewax9byv6b7hw",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Massachusetts Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqyce5l00fcwax9j1c3qe0u",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Massachusetts Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqyce5l00fcwax9j1c3qe0u",
+      "school": "Massachusetts Institute of Technology",
+      "field": "sat",
+      "value": "1370",
+      "reason": "录取 Massachusetts Institute of Technology 但 SAT=1370 低于典型录取下限 1480",
+      "suggestion": "调高 SAT 或改为 REJECTED/WAITLISTED"
+    },
+    {
+      "id": "cmkqycevg00fiwax92h79bfaf",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Massachusetts Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqycfp100fmwax925y2rary",
+      "school": "Columbia University",
+      "field": "round",
+      "value": "REA",
+      "reason": "Columbia University 不提供 REA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkqycamh00eswax9ks4srjsp",
+      "school": "University of Southern California",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of Southern California 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqyck1100g6wax9rzs1rv4m",
+      "school": "Princeton University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Princeton University 不提供 EA 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqycl1900gewax9o1d6kmhv",
+      "school": "Washington University in St. Louis",
+      "field": "round",
+      "value": "EA",
+      "reason": "Washington University in St. Louis 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkqycmph00gswax9jifbwb99",
+      "school": "Boston University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Boston University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkqycpb100h8wax9eys6wnkb",
+      "school": "University of California, San Diego",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of California, San Diego 不提供 ED 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkqycps400hcwax9vhb680py",
+      "school": "University of Texas at Austin",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of Texas at Austin 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqycnct00guwax9q9ew9tqv",
+      "school": "University of North Carolina at Chapel Hill",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of North Carolina at Chapel Hill 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqycrux00hmwax9eo05sivj",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "REA",
+      "reason": "Georgia Institute of Technology 不提供 REA 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkqyciao00fuwax97urk3pqx",
+      "school": "Brown University",
+      "field": "round",
+      "value": "REA",
+      "reason": "Brown University 不提供 REA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkqycit400fywax9m3lsmq73",
+      "school": "Columbia University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Columbia University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkqycqld00hgwax9h3syyhpe",
+      "school": "University of Illinois Urbana-Champaign",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of Illinois Urbana-Champaign 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqycvl600i6wax9aj3rr7ys",
+      "school": "University of Southern California",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of Southern California 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqycxvp00imwax9yv78xtv9",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Massachusetts Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqycxdq00iiwax95jruxobg",
+      "school": "Tufts University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Tufts University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkqyczkh00j0wax9jiae464k",
+      "school": "University of California, Berkeley",
+      "field": "round",
+      "value": "EA",
+      "reason": "University of California, Berkeley 不提供 EA 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkqycy4k00iowax9stz9p2pp",
+      "school": "Georgetown University",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgetown University 不提供 ED 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqycyd000iqwax9zhste9jb",
+      "school": "University of California, Los Angeles",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of California, Los Angeles 不提供 ED 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkqyd1vt00jawax9a4ddwvxe",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Massachusetts Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqyd0ac00j6wax9qtzy8mdm",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "ED2",
+      "reason": "Massachusetts Institute of Technology 不提供 ED2 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqyd5et00jmwax9c6s6wf67",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "ED2",
+      "reason": "Massachusetts Institute of Technology 不提供 ED2 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqyd5x600jqwax934md5jc2",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkqyd6kp00juwax91wm0hc9e",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Massachusetts Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqydaz100k0wax9hr8bgxyn",
+      "school": "Massachusetts Institute of Technology",
+      "field": "gpa",
+      "value": "2.91",
+      "reason": "录取 Massachusetts Institute of Technology 但 GPA=2.91 低于典型录取下限 3.8",
+      "suggestion": "调高 GPA 或改为 REJECTED/WAITLISTED"
+    },
+    {
+      "id": "cmkqydb7d00k2wax9mxl7wfqm",
+      "school": "University of Illinois Urbana-Champaign",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of Illinois Urbana-Champaign 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqydc5f00kawax9j80oiixn",
+      "school": "Yale University",
+      "field": "round",
+      "value": "ED2",
+      "reason": "Yale University 不提供 ED2 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqydj7b00kswax9mlgll9t9",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "ED2",
+      "reason": "Massachusetts Institute of Technology 不提供 ED2 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqydbfw00k4wax93jf19fbk",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkqydji600kuwax99sqnpyzd",
+      "school": "University of California, Los Angeles",
+      "field": "round",
+      "value": "REA",
+      "reason": "University of California, Los Angeles 不提供 REA 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkqydjqs00kwwax9rbyxmqp5",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkqydm6g00lcwax94zk2ncap",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Massachusetts Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqydcdy00kcwax97fycmklb",
+      "school": "Johns Hopkins University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Johns Hopkins University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkqydhlv00kkwax9ocsa0xqq",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkqye1xh00nswax96ry4tvpa",
+      "school": "University of Illinois Urbana-Champaign",
+      "field": "round",
+      "value": "REA",
+      "reason": "University of Illinois Urbana-Champaign 不提供 REA 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqydusa00mwwax9bjr50tec",
+      "school": "Harvard University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Harvard University 不提供 EA 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqydu2k00mqwax9wdosbk3s",
+      "school": "University of California, Berkeley",
+      "field": "round",
+      "value": "ED2",
+      "reason": "University of California, Berkeley 不提供 ED2 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkqyduju00muwax9k0gsdg2v",
+      "school": "University of California, Santa Barbara",
+      "field": "round",
+      "value": "ED2",
+      "reason": "University of California, Santa Barbara 不提供 ED2 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkqydxri00niwax9o6kwx4c7",
+      "school": "Massachusetts Institute of Technology",
+      "field": "sat",
+      "value": "1400",
+      "reason": "录取 Massachusetts Institute of Technology 但 SAT=1400 低于典型录取下限 1480",
+      "suggestion": "调高 SAT 或改为 REJECTED/WAITLISTED"
+    },
+    {
+      "id": "cmkqydvyq00n6wax9bzxg7ts4",
+      "school": "Princeton University",
+      "field": "round",
+      "value": "ED2",
+      "reason": "Princeton University 不提供 ED2 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqydy0700nkwax9qfoddykj",
+      "school": "Princeton University",
+      "field": "round",
+      "value": "ED",
+      "reason": "Princeton University 不提供 ED 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqydxim00ngwax9tzflhle3",
+      "school": "Boston College",
+      "field": "round",
+      "value": "ED2",
+      "reason": "Boston College 不提供 ED2 轮次",
+      "suggestion": "改为 EA 或 ED 或 RD"
+    },
+    {
+      "id": "cmkqye1gn00nowax9s5zgmbkl",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkqydsue00mgwax9xmq889m7",
+      "school": "Stanford University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Stanford University 不提供 EA 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqydtbs00mkwax9gybn91uf",
+      "school": "Cornell University",
+      "field": "round",
+      "value": "REA",
+      "reason": "Cornell University 不提供 REA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkqye87x00oqwax96nmhd1ud",
+      "school": "Boston University",
+      "field": "round",
+      "value": "REA",
+      "reason": "Boston University 不提供 REA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkqye99s00ouwax9mjy9ad8a",
+      "school": "Cornell University",
+      "field": "round",
+      "value": "REA",
+      "reason": "Cornell University 不提供 REA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkqye66t00ocwax9nmrqy0rl",
+      "school": "University of North Carolina at Chapel Hill",
+      "field": "round",
+      "value": "ED2",
+      "reason": "University of North Carolina at Chapel Hill 不提供 ED2 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqye6wq00oiwax9b604tc6c",
+      "school": "University of North Carolina at Chapel Hill",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of North Carolina at Chapel Hill 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqyeg9r00pcwax9ee99c803",
+      "school": "Harvard University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Harvard University 不提供 EA 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqyebta00p2wax9pzvwojp2",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "ED2",
+      "reason": "Massachusetts Institute of Technology 不提供 ED2 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqyeilq00pmwax9i4mh5oyw",
+      "school": "Yale University",
+      "field": "sat",
+      "value": "1380",
+      "reason": "录取 Yale University 但 SAT=1380 低于典型录取下限 1450",
+      "suggestion": "调高 SAT 或改为 REJECTED/WAITLISTED"
+    },
+    {
+      "id": "cmkqyeilq00pmwax9i4mh5oyw",
+      "school": "Yale University",
+      "field": "act",
+      "value": "31",
+      "reason": "录取 Yale University 但 ACT=31 低于典型录取下限 32",
+      "suggestion": "调高 ACT 或改为 REJECTED/WAITLISTED"
+    },
+    {
+      "id": "cmkqyeium00powax9zgbntrio",
+      "school": "Johns Hopkins University",
+      "field": "sat",
+      "value": "1380",
+      "reason": "录取 Johns Hopkins University 但 SAT=1380 低于典型录取下限 1420",
+      "suggestion": "调高 SAT 或改为 REJECTED/WAITLISTED"
+    },
+    {
+      "id": "cmkqyeium00powax9zgbntrio",
+      "school": "Johns Hopkins University",
+      "field": "act",
+      "value": "31",
+      "reason": "录取 Johns Hopkins University 但 ACT=31 低于典型录取下限 32",
+      "suggestion": "调高 ACT 或改为 REJECTED/WAITLISTED"
+    },
+    {
+      "id": "cmkqyegr400pgwax9uzpabnhk",
+      "school": "Boston University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Boston University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkqyehmn00pkwax9inkdn3uq",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkqye5a800o6wax93nm7thaa",
+      "school": "University of California, Berkeley",
+      "field": "round",
+      "value": "EA",
+      "reason": "University of California, Berkeley 不提供 EA 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkqyej3d00pqwax9egn3ozj2",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkqyejih00pswax9nvu6hmjj",
+      "school": "Yale University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Yale University 不提供 EA 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqye51r00o4wax98j36xcrq",
+      "school": "Massachusetts Institute of Technology",
+      "field": "gpa",
+      "value": "3.1",
+      "reason": "录取 Massachusetts Institute of Technology 但 GPA=3.1 低于典型录取下限 3.8",
+      "suggestion": "调高 GPA 或改为 REJECTED/WAITLISTED"
+    },
+    {
+      "id": "cmkqyem5q00q2wax92k8p7zh5",
+      "school": "University of Notre Dame",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of Notre Dame 不提供 ED 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqyenyo00qewax9zhn4vs6t",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkqyeoqa00qgwax9wttxmqlg",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "REA",
+      "reason": "Massachusetts Institute of Technology 不提供 REA 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqyeoqa00qgwax9wttxmqlg",
+      "school": "Massachusetts Institute of Technology",
+      "field": "gpa",
+      "value": "3.6",
+      "reason": "录取 Massachusetts Institute of Technology 但 GPA=3.6 低于典型录取下限 3.8",
+      "suggestion": "调高 GPA 或改为 REJECTED/WAITLISTED"
+    },
+    {
+      "id": "cmkqz3fjv0005yid1ga5t57a2",
+      "school": "University of California, Davis",
+      "field": "round",
+      "value": "EA",
+      "reason": "University of California, Davis 不提供 EA 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkqz3fvu0007yid1o72kkq0f",
+      "school": "University of Maryland, College Park",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of Maryland, College Park 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqz44ac0019yid1vx247oz4",
+      "school": "University of California, Berkeley",
+      "field": "round",
+      "value": "ED2",
+      "reason": "University of California, Berkeley 不提供 ED2 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrkslaa000l10juii26jkg9",
+      "school": "University of Maryland, College Park",
+      "field": "round",
+      "value": "REA",
+      "reason": "University of Maryland, College Park 不提供 REA 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkrktnnj001t10juygdh2md2",
+      "school": "University of Maryland, College Park",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of Maryland, College Park 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkrku7k9002510judx2rduuc",
+      "school": "University of California, Berkeley",
+      "field": "round",
+      "value": "EA",
+      "reason": "University of California, Berkeley 不提供 EA 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrkvea6003110juvuzdlp11",
+      "school": "University of California, Davis",
+      "field": "round",
+      "value": "ED2",
+      "reason": "University of California, Davis 不提供 ED2 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkqy8u4f000awax9ow2tus21",
+      "school": "University of Michigan, Ann Arbor",
+      "field": "round",
+      "value": "ED2",
+      "reason": "University of Michigan, Ann Arbor 不提供 ED2 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqy8vb6000gwax9zswvskzp",
+      "school": "University of Pennsylvania",
+      "field": "round",
+      "value": "ED2",
+      "reason": "University of Pennsylvania 不提供 ED2 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkqy8vb6000gwax9zswvskzp",
+      "school": "University of Pennsylvania",
+      "field": "sat",
+      "value": "1330",
+      "reason": "录取 University of Pennsylvania 但 SAT=1330 低于典型录取下限 1450",
+      "suggestion": "调高 SAT 或改为 REJECTED/WAITLISTED"
+    },
+    {
+      "id": "cmkqy8us0000ewax9vay3v999",
+      "school": "Purdue University",
+      "field": "round",
+      "value": "ED",
+      "reason": "Purdue University 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqy8zqu0018wax9rsn1eo2m",
+      "school": "Yale University",
+      "field": "round",
+      "value": "ED",
+      "reason": "Yale University 不提供 ED 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqy8wyc000qwax9d5929ere",
+      "school": "University of Pennsylvania",
+      "field": "round",
+      "value": "EA",
+      "reason": "University of Pennsylvania 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkqy8xws000ywax9u7s1gwg3",
+      "school": "University of Illinois Urbana-Champaign",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of Illinois Urbana-Champaign 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqy92dp001kwax9mret6x6h",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkrm6vjj00ap2txq1b06avln",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Massachusetts Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkrm87tc00fv2txqgx51f0na",
+      "school": "University of Pennsylvania",
+      "field": "round",
+      "value": "EA",
+      "reason": "University of Pennsylvania 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkrm97l200ih2txqrz5q0dsw",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkrmajii00nb2txq5j3qkd45",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "REA",
+      "reason": "Georgia Institute of Technology 不提供 REA 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkro4gyf001jcorhoamqln5o",
+      "school": "Swarthmore College",
+      "field": "round",
+      "value": "EA",
+      "reason": "Swarthmore College 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkqyahay005mwax919rra0m7",
+      "school": "Yale University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Yale University 不提供 EA 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqycrlx00hkwax9aqxww105",
+      "school": "University of Pennsylvania",
+      "field": "round",
+      "value": "EA",
+      "reason": "University of Pennsylvania 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkqycw0a00i8wax9vn28s8x3",
+      "school": "University of Michigan, Ann Arbor",
+      "field": "round",
+      "value": "ED2",
+      "reason": "University of Michigan, Ann Arbor 不提供 ED2 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqy9qy40040wax942btr5m9",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Massachusetts Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqydaqg00jywax91cjrbtgz",
+      "school": "University of Michigan, Ann Arbor",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of Michigan, Ann Arbor 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqye7t800oowax9mp068b0p",
+      "school": "Rice University",
+      "field": "round",
+      "value": "ED2",
+      "reason": "Rice University 不提供 ED2 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkqyenqa00qcwax9p35ps3h9",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED2",
+      "reason": "Georgia Institute of Technology 不提供 ED2 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkrm7hac00d32txqqnuvjogv",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "REA",
+      "reason": "Massachusetts Institute of Technology 不提供 REA 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkrm7z7a00ex2txqv8c8zpn7",
+      "school": "Stanford University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Stanford University 不提供 EA 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkrmabvf00mz2txqn9shy91d",
+      "school": "Harvard University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Harvard University 不提供 EA 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkrkv5dt002p10ju9osfrxjw",
+      "school": "University of Maryland, College Park",
+      "field": "round",
+      "value": "REA",
+      "reason": "University of Maryland, College Park 不提供 REA 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkrkvsrd003r10julro42tjo",
+      "school": "University of Maryland, College Park",
+      "field": "round",
+      "value": "REA",
+      "reason": "University of Maryland, College Park 不提供 REA 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkrm4jb600052txq818162bk",
+      "school": "Columbia University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Columbia University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkrkwdw9004b10ju43mfj7gh",
+      "school": "University of California, Berkeley",
+      "field": "round",
+      "value": "EA",
+      "reason": "University of California, Berkeley 不提供 EA 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrm4cmw00032txqmqdv0g74",
+      "school": "University of Washington",
+      "field": "round",
+      "value": "EA",
+      "reason": "University of Washington 不提供 EA 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrm4kbn000d2txqbjpb5c63",
+      "school": "Princeton University",
+      "field": "round",
+      "value": "ED",
+      "reason": "Princeton University 不提供 ED 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkrkvrrt003p10ju7x1q31lq",
+      "school": "University of California, Berkeley",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of California, Berkeley 不提供 ED 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrm4s2y001b2txqp88rtyia",
+      "school": "University of California, Berkeley",
+      "field": "round",
+      "value": "ED2",
+      "reason": "University of California, Berkeley 不提供 ED2 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrm4wfu00212txq53rftfx2",
+      "school": "Georgetown University",
+      "field": "round",
+      "value": "ED2",
+      "reason": "Georgetown University 不提供 ED2 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkrm4wou00232txqviskrybb",
+      "school": "Harvard University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Harvard University 不提供 EA 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkrm4xu2002b2txqpd65hy28",
+      "school": "Yale University",
+      "field": "round",
+      "value": "ED",
+      "reason": "Yale University 不提供 ED 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkrm4zb7002l2txqjpytcv6h",
+      "school": "Columbia University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Columbia University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkrm4yzs002j2txq1vb4rvkh",
+      "school": "Vanderbilt University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Vanderbilt University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkrm5i0u00512txq4uqnd3uj",
+      "school": "University of Florida",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of Florida 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkrm584v003t2txq591kb56u",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Massachusetts Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkrofhoh003dcorhewc227pf",
+      "school": "The Juilliard School",
+      "field": "round",
+      "value": "ED",
+      "reason": "The Juilliard School 不提供 ED 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrm5d7h00492txqf2vinlt4",
+      "school": "University of California, San Diego",
+      "field": "round",
+      "value": "EA",
+      "reason": "University of California, San Diego 不提供 EA 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrm5hjm004x2txq5bapgdoz",
+      "school": "Massachusetts Institute of Technology",
+      "field": "major",
+      "value": "Finance",
+      "reason": "MIT 本科不提供 Finance 专业",
+      "suggestion": "改为 EECS, Computer Science, Physics, Mathematics 等"
+    },
+    {
+      "id": "cmkrm5ii300552txqk29r2rdr",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkrm5jj100592txq576lr194",
+      "school": "University of California, Berkeley",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of California, Berkeley 不提供 ED 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrm5kwk005d2txqa0ox3nel",
+      "school": "Cornell University",
+      "field": "round",
+      "value": "ED2",
+      "reason": "Cornell University 不提供 ED2 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkrm5mcb005j2txqgs6p7kxh",
+      "school": "Columbia University",
+      "field": "round",
+      "value": "ED2",
+      "reason": "Columbia University 不提供 ED2 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkrm5sgb006b2txqkmx5vs4z",
+      "school": "Cornell University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Cornell University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkrm5r0r005z2txqfp7qrp1b",
+      "school": "Vanderbilt University",
+      "field": "round",
+      "value": "REA",
+      "reason": "Vanderbilt University 不提供 REA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkrm5ri300632txq5ry8c1a1",
+      "school": "Tufts University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Tufts University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkrm5lka005h2txq7bld45m3",
+      "school": "University of Pennsylvania",
+      "field": "round",
+      "value": "REA",
+      "reason": "University of Pennsylvania 不提供 REA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkrm5kb9005b2txqmibu082w",
+      "school": "Brown University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Brown University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkrm65xw00772txqq3hy3cnp",
+      "school": "University of California, Davis",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of California, Davis 不提供 ED 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrm67wi007h2txq56c9qc2s",
+      "school": "University of California, San Diego",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of California, San Diego 不提供 ED 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrm685b007j2txqoju43jto",
+      "school": "Harvard University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Harvard University 不提供 EA 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkrm6alt007t2txq1uyqp962",
+      "school": "Stanford University",
+      "field": "round",
+      "value": "ED",
+      "reason": "Stanford University 不提供 ED 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkrm6bdm007z2txqwrmywofo",
+      "school": "Massachusetts Institute of Technology",
+      "field": "major",
+      "value": "Business Administration",
+      "reason": "MIT 本科不提供 Business Administration 专业",
+      "suggestion": "改为 EECS, Computer Science, Physics, Mathematics 等"
+    },
+    {
+      "id": "cmkrm6cgo00832txqdor6hu1d",
+      "school": "Rice University",
+      "field": "round",
+      "value": "ED2",
+      "reason": "Rice University 不提供 ED2 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkrm6ink008x2txqn7jsbo1q",
+      "school": "University of North Carolina at Chapel Hill",
+      "field": "round",
+      "value": "REA",
+      "reason": "University of North Carolina at Chapel Hill 不提供 REA 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkrm6obj009d2txqwczedn6l",
+      "school": "New York University",
+      "field": "round",
+      "value": "REA",
+      "reason": "New York University 不提供 REA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkrm6ok0009f2txqwm3zi6ih",
+      "school": "Princeton University",
+      "field": "round",
+      "value": "ED",
+      "reason": "Princeton University 不提供 ED 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkrm6qgy009v2txqf8350p2y",
+      "school": "University of Southern California",
+      "field": "round",
+      "value": "REA",
+      "reason": "University of Southern California 不提供 REA 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkrm6qyc009z2txqqicvnrwa",
+      "school": "Duke University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Duke University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkrm6s5k00a92txq75j2zg16",
+      "school": "New York University",
+      "field": "round",
+      "value": "REA",
+      "reason": "New York University 不提供 REA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkrm6snx00ad2txqe7lr0jnt",
+      "school": "Princeton University",
+      "field": "round",
+      "value": "ED",
+      "reason": "Princeton University 不提供 ED 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkrm6vyb00ar2txq6861tq35",
+      "school": "University of California, Irvine",
+      "field": "round",
+      "value": "REA",
+      "reason": "University of California, Irvine 不提供 REA 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrm6uw100al2txqkyi6hnxi",
+      "school": "Columbia University",
+      "field": "round",
+      "value": "REA",
+      "reason": "Columbia University 不提供 REA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkrm6zow00b92txq1g38dlot",
+      "school": "University of California, Berkeley",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of California, Berkeley 不提供 ED 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrm78hc00bp2txqd72ci7lq",
+      "school": "Boston University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Boston University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkrm6wfl00av2txq13f2iskc",
+      "school": "University of California, Santa Barbara",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of California, Santa Barbara 不提供 ED 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrm7bd500c52txq57xcwhun",
+      "school": "Yale University",
+      "field": "round",
+      "value": "ED",
+      "reason": "Yale University 不提供 ED 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkrm7fsf00cr2txq1x42rhu6",
+      "school": "University of Pennsylvania",
+      "field": "round",
+      "value": "REA",
+      "reason": "University of Pennsylvania 不提供 REA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkrm7jzu00d92txqx1nn8ixh",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkrm7q4z00dt2txq1hdnhpio",
+      "school": "University of Washington",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of Washington 不提供 ED 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrm7mzm00dj2txqdmxzvdys",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkrm7t5j00e12txqth06stlq",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "ED2",
+      "reason": "Massachusetts Institute of Technology 不提供 ED2 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkrm7t5j00e12txqth06stlq",
+      "school": "Massachusetts Institute of Technology",
+      "field": "major",
+      "value": "Finance",
+      "reason": "MIT 本科不提供 Finance 专业",
+      "suggestion": "改为 EECS, Computer Science, Physics, Mathematics 等"
+    },
+    {
+      "id": "cmkrm7vs200ef2txq2fhgghd7",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkrm7wqo00eh2txq387u1emf",
+      "school": "University of Washington",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of Washington 不提供 ED 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrm7kh300dd2txq9co2pao2",
+      "school": "Boston College",
+      "field": "round",
+      "value": "REA",
+      "reason": "Boston College 不提供 REA 轮次",
+      "suggestion": "改为 EA 或 ED 或 RD"
+    },
+    {
+      "id": "cmkrm80wd00ez2txqt513ousr",
+      "school": "Dartmouth College",
+      "field": "round",
+      "value": "ED2",
+      "reason": "Dartmouth College 不提供 ED2 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkrm81dl00f32txqywlherjf",
+      "school": "University of California, Berkeley",
+      "field": "round",
+      "value": "EA",
+      "reason": "University of California, Berkeley 不提供 EA 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrm814x00f12txqy9btawey",
+      "school": "Georgetown University",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgetown University 不提供 ED 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkrm8hzh00gh2txq3sgyvtaz",
+      "school": "University of California, Berkeley",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of California, Berkeley 不提供 ED 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrm83sd00fn2txqog5jb9q0",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkrm82u200ff2txqja4fx44j",
+      "school": "Massachusetts Institute of Technology",
+      "field": "gpa",
+      "value": "3.58",
+      "reason": "录取 Massachusetts Institute of Technology 但 GPA=3.58 低于典型录取下限 3.8",
+      "suggestion": "调高 GPA 或改为 REJECTED/WAITLISTED"
+    },
+    {
+      "id": "cmkrm8evs00g72txq90iqraxw",
+      "school": "Massachusetts Institute of Technology",
+      "field": "gpa",
+      "value": "3.74",
+      "reason": "录取 Massachusetts Institute of Technology 但 GPA=3.74 低于典型录取下限 3.8",
+      "suggestion": "调高 GPA 或改为 REJECTED/WAITLISTED"
+    },
+    {
+      "id": "cmkrm7y2g00ep2txqjnibod3b",
+      "school": "Cornell University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Cornell University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkrm8hqx00gf2txqdpw1l9j7",
+      "school": "University of California, San Diego",
+      "field": "round",
+      "value": "REA",
+      "reason": "University of California, San Diego 不提供 REA 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrm8jnv00gp2txqv32hn79o",
+      "school": "University of Southern California",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of Southern California 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkrm8kc100gt2txqhgwsd61k",
+      "school": "University of California, Berkeley",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of California, Berkeley 不提供 ED 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrm8njg00hb2txqxh1o34wn",
+      "school": "Boston University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Boston University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkrm8q6d00hl2txq7n9k4lx7",
+      "school": "Boston University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Boston University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkrm8qeu00hn2txq9t1xzxh3",
+      "school": "Harvard University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Harvard University 不提供 EA 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkrm99on00ir2txq9j5c2375",
+      "school": "Yale University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Yale University 不提供 EA 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkrm9lft00jh2txqnp93boxu",
+      "school": "University of California, Irvine",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of California, Irvine 不提供 ED 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrm9dn300j72txqbq2uciu4",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkrm9lws00jl2txq5vkahrz7",
+      "school": "University of California, Davis",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of California, Davis 不提供 ED 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrm9me200jp2txq2ukjhebk",
+      "school": "University of California, Los Angeles",
+      "field": "round",
+      "value": "EA",
+      "reason": "University of California, Los Angeles 不提供 EA 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrm9mms00jr2txqb64wap67",
+      "school": "University of California, Berkeley",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of California, Berkeley 不提供 ED 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrm9mvd00jt2txq5nmkv9m8",
+      "school": "Boston University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Boston University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkrog0sb003ncorhxvovef79",
+      "school": "Colby College",
+      "field": "round",
+      "value": "EA",
+      "reason": "Colby College 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkrog17e003pcorh1dss9h0e",
+      "school": "Williams College",
+      "field": "round",
+      "value": "ED2",
+      "reason": "Williams College 不提供 ED2 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkrog932003vcorhpdx1qzoh",
+      "school": "Harvey Mudd College",
+      "field": "round",
+      "value": "REA",
+      "reason": "Harvey Mudd College 不提供 REA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkrm9x2c00m12txqrlh4h15f",
+      "school": "Harvard University",
+      "field": "round",
+      "value": "ED2",
+      "reason": "Harvard University 不提供 ED2 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkrm9w4700lt2txq3nay92p5",
+      "school": "Dartmouth College",
+      "field": "round",
+      "value": "EA",
+      "reason": "Dartmouth College 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkrmaj1a00n72txqkyblpalw",
+      "school": "University of California, Los Angeles",
+      "field": "round",
+      "value": "REA",
+      "reason": "University of California, Los Angeles 不提供 REA 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrma88g00mr2txq1w0kyxvi",
+      "school": "University of California, Irvine",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of California, Irvine 不提供 ED 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrma7zy00mp2txqgpbw7egt",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "REA",
+      "reason": "Georgia Institute of Technology 不提供 REA 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkro1oza000lcorh2fjo3twm",
+      "school": "Vassar College",
+      "field": "round",
+      "value": "EA",
+      "reason": "Vassar College 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkro2oyz000tcorhkitpe6p0",
+      "school": "Williams College",
+      "field": "round",
+      "value": "EA",
+      "reason": "Williams College 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkrnzl0m0005corhikies0jz",
+      "school": "Barnard College",
+      "field": "round",
+      "value": "REA",
+      "reason": "Barnard College 不提供 REA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkro4chl001hcorhaj495mma",
+      "school": "Savannah College of Art and Design",
+      "field": "round",
+      "value": "ED",
+      "reason": "Savannah College of Art and Design 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkrocofu001xcorhtt79navo",
+      "school": "Swarthmore College",
+      "field": "round",
+      "value": "EA",
+      "reason": "Swarthmore College 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkrodeq5002jcorhaksatuic",
+      "school": "Colgate University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Colgate University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkrodk65002pcorh1modlxfd",
+      "school": "Hamilton College",
+      "field": "round",
+      "value": "EA",
+      "reason": "Hamilton College 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkroe7id002xcorh30i1yjnv",
+      "school": "New England Conservatory",
+      "field": "round",
+      "value": "ED2",
+      "reason": "New England Conservatory 不提供 ED2 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkqyal2e006awax95y4e2tp5",
+      "school": "Emory University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Emory University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkqy9e95002wwax9wzf0weuv",
+      "school": "Boston University",
+      "field": "round",
+      "value": "REA",
+      "reason": "Boston University 不提供 REA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkroek4x0039corhmblfksiv",
+      "school": "Pomona College",
+      "field": "round",
+      "value": "EA",
+      "reason": "Pomona College 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkqy9z80004awax9zsk3bl86",
+      "school": "Stanford University",
+      "field": "round",
+      "value": "ED",
+      "reason": "Stanford University 不提供 ED 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqya5z2004gwax9iak9180h",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Massachusetts Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkrm8in800gl2txqns764flz",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Massachusetts Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqy9bn3002gwax9r7vtvqo8",
+      "school": "Boston University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Boston University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkqyc33v00d6wax9gydb0s4g",
+      "school": "University of California, San Diego",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of California, San Diego 不提供 ED 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkqyc76800e0wax92wvpsdmy",
+      "school": "Emory University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Emory University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkqy9nax003kwax9qz5x8o7t",
+      "school": "University of Michigan, Ann Arbor",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of Michigan, Ann Arbor 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqyd24g00jcwax9ot70ojwq",
+      "school": "University of North Carolina at Chapel Hill",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of North Carolina at Chapel Hill 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqyd70800jwwax95rbsb75l",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkqydmex00lewax9azp11g75",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Massachusetts Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqyctb100hqwax98y7cichy",
+      "school": "Georgetown University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Georgetown University 不提供 EA 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqycwf700iawax9bopk0vsj",
+      "school": "University of Washington",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of Washington 不提供 ED 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkqyejr300puwax9mz6s8g0k",
+      "school": "Johns Hopkins University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Johns Hopkins University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkqye26400nuwax92kz6362f",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkrm71sq00bh2txqqavpkdbi",
+      "school": "Yale University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Yale University 不提供 EA 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkqybbc50098wax9grvwlpv4",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Massachusetts Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkrm7tvl00e72txq7oydzaxb",
+      "school": "Cornell University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Cornell University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkrm7urs00eb2txq2sqv6d4m",
+      "school": "Cornell University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Cornell University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkrm52qe00332txqai9i7s63",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkrm5293002z2txq8gxwwekk",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkrm52hv00312txq16a7a875",
+      "school": "Georgia Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Georgia Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 EA2 或 RD"
+    },
+    {
+      "id": "cmkrm51j4002t2txqymfj6uh0",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Massachusetts Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkqydne200lmwax9540psv20",
+      "school": "Duke University",
+      "field": "round",
+      "value": "ED2",
+      "reason": "Duke University 不提供 ED2 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkro497d0013corh6cccf091",
+      "school": "Amherst College",
+      "field": "round",
+      "value": "EA",
+      "reason": "Amherst College 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkro49fp0015corhcubs0ysq",
+      "school": "Williams College",
+      "field": "round",
+      "value": "EA",
+      "reason": "Williams College 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkqydp9s00m0wax9qbxk5qs8",
+      "school": "Cornell University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Cornell University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkqydolt00lwwax9r63tv4zc",
+      "school": "Boston University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Boston University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkro4ai1001bcorhbh0wdp2c",
+      "school": "Pomona College",
+      "field": "round",
+      "value": "EA",
+      "reason": "Pomona College 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkroi0p2005ncorh48yanc9y",
+      "school": "Boston University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Boston University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 ED2 或 RD"
+    },
+    {
+      "id": "cmkrod5f30029corhald2gz9o",
+      "school": "Massachusetts Institute of Technology",
+      "field": "major",
+      "value": "Business Administration",
+      "reason": "MIT 本科不提供 Business Administration 专业",
+      "suggestion": "改为 EECS, Computer Science, Physics, Mathematics 等"
+    },
+    {
+      "id": "cmkroho4o004dcorhl6w04rg0",
+      "school": "Yale University",
+      "field": "round",
+      "value": "ED",
+      "reason": "Yale University 不提供 ED 轮次",
+      "suggestion": "改为 REA 或 RD"
+    },
+    {
+      "id": "cmkroho4o004dcorhl6w04rg0",
+      "school": "Yale University",
+      "field": "year",
+      "value": "2018",
+      "reason": "年份 2018 超出合理范围 [2020-2030]",
+      "suggestion": "修正为合理范围内的年份"
+    },
+    {
+      "id": "cmkrohnci0047corhklzdfhzy",
+      "school": "Stanford University",
+      "field": "year",
+      "value": "2018",
+      "reason": "年份 2018 超出合理范围 [2020-2030]",
+      "suggestion": "修正为合理范围内的年份"
+    },
+    {
+      "id": "cmkrohod5004fcorhdm7dh4m7",
+      "school": "University of Chicago",
+      "field": "year",
+      "value": "2018",
+      "reason": "年份 2018 超出合理范围 [2020-2030]",
+      "suggestion": "修正为合理范围内的年份"
+    },
+    {
+      "id": "cmkroholm004hcorh9zkjde23",
+      "school": "Columbia University",
+      "field": "year",
+      "value": "2018",
+      "reason": "年份 2018 超出合理范围 [2020-2030]",
+      "suggestion": "修正为合理范围内的年份"
+    },
+    {
+      "id": "cmkrohowb004jcorhfbvd5sk3",
+      "school": "University of Pennsylvania",
+      "field": "year",
+      "value": "2018",
+      "reason": "年份 2018 超出合理范围 [2020-2030]",
+      "suggestion": "修正为合理范围内的年份"
+    },
+    {
+      "id": "cmkrohpdy004ncorhc8emd7qy",
+      "school": "Cornell University",
+      "field": "year",
+      "value": "2018",
+      "reason": "年份 2018 超出合理范围 [2020-2030]",
+      "suggestion": "修正为合理范围内的年份"
+    },
+    {
+      "id": "cmkrohnw1004bcorh0osfpga6",
+      "school": "University of Southern California",
+      "field": "year",
+      "value": "2018",
+      "reason": "年份 2018 超出合理范围 [2020-2030]",
+      "suggestion": "修正为合理范围内的年份"
+    },
+    {
+      "id": "cmkrohqkt004xcorh9z6zlqfz",
+      "school": "University of California, Berkeley",
+      "field": "round",
+      "value": "ED",
+      "reason": "University of California, Berkeley 不提供 ED 轮次",
+      "suggestion": "改为 RD"
+    },
+    {
+      "id": "cmkrohqkt004xcorh9z6zlqfz",
+      "school": "University of California, Berkeley",
+      "field": "year",
+      "value": "2018",
+      "reason": "年份 2018 超出合理范围 [2020-2030]",
+      "suggestion": "修正为合理范围内的年份"
+    },
+    {
+      "id": "cmkrohrjj0055corhcfizyofi",
+      "school": "Duke University",
+      "field": "year",
+      "value": "2018",
+      "reason": "年份 2018 超出合理范围 [2020-2030]",
+      "suggestion": "修正为合理范围内的年份"
+    },
+    {
+      "id": "cmkrohqtb004zcorhigny0dud",
+      "school": "Vanderbilt University",
+      "field": "year",
+      "value": "2018",
+      "reason": "年份 2018 超出合理范围 [2020-2030]",
+      "suggestion": "修正为合理范围内的年份"
+    },
+    {
+      "id": "cmkrohrap0053corha161t18q",
+      "school": "Massachusetts Institute of Technology",
+      "field": "round",
+      "value": "ED",
+      "reason": "Massachusetts Institute of Technology 不提供 ED 轮次",
+      "suggestion": "改为 EA 或 RD"
+    },
+    {
+      "id": "cmkrohrap0053corha161t18q",
+      "school": "Massachusetts Institute of Technology",
+      "field": "year",
+      "value": "2018",
+      "reason": "年份 2018 超出合理范围 [2020-2030]",
+      "suggestion": "修正为合理范围内的年份"
+    },
+    {
+      "id": "cmkrohr210051corhbi2xvaz7",
+      "school": "Princeton University",
+      "field": "year",
+      "value": "2018",
+      "reason": "年份 2018 超出合理范围 [2020-2030]",
+      "suggestion": "修正为合理范围内的年份"
+    },
+    {
+      "id": "cmkrohqcb004vcorhn1ffwpce",
+      "school": "Brown University",
+      "field": "year",
+      "value": "2018",
+      "reason": "年份 2018 超出合理范围 [2020-2030]",
+      "suggestion": "修正为合理范围内的年份"
+    },
+    {
+      "id": "cmkrohq3i004tcorhjs60bszr",
+      "school": "Johns Hopkins University",
+      "field": "year",
+      "value": "2018",
+      "reason": "年份 2018 超出合理范围 [2020-2030]",
+      "suggestion": "修正为合理范围内的年份"
+    },
+    {
+      "id": "cmkrohp56004lcorh1hd933m5",
+      "school": "Dartmouth College",
+      "field": "round",
+      "value": "EA",
+      "reason": "Dartmouth College 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkrohp56004lcorh1hd933m5",
+      "school": "Dartmouth College",
+      "field": "year",
+      "value": "2018",
+      "reason": "年份 2018 超出合理范围 [2020-2030]",
+      "suggestion": "修正为合理范围内的年份"
+    },
+    {
+      "id": "cmkrohnnm0049corh233zj0uc",
+      "school": "Harvard University",
+      "field": "year",
+      "value": "2018",
+      "reason": "年份 2018 超出合理范围 [2020-2030]",
+      "suggestion": "修正为合理范围内的年份"
+    },
+    {
+      "id": "cmkrohpmh004pcorhhxngng5y",
+      "school": "Northwestern University",
+      "field": "round",
+      "value": "EA",
+      "reason": "Northwestern University 不提供 EA 轮次",
+      "suggestion": "改为 ED 或 RD"
+    },
+    {
+      "id": "cmkrohpmh004pcorhhxngng5y",
+      "school": "Northwestern University",
+      "field": "year",
+      "value": "2018",
+      "reason": "年份 2018 超出合理范围 [2020-2030]",
+      "suggestion": "修正为合理范围内的年份"
+    }
+  ]
+}

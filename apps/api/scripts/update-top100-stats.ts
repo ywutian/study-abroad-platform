@@ -6,7 +6,9 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-const API_KEY = process.env.COLLEGE_SCORECARD_API_KEY || 'f9BpBv55kCaOiEPPJgmBMdOeC5UlmDItnEnSEP7B';
+const API_KEY =
+  process.env.COLLEGE_SCORECARD_API_KEY ||
+  'f9BpBv55kCaOiEPPJgmBMdOeC5UlmDItnEnSEP7B';
 const BASE_URL = 'https://api.data.gov/ed/collegescorecard/v1/schools';
 
 async function fetchSchoolStats(schoolName: string) {
@@ -14,8 +16,17 @@ async function fetchSchoolStats(schoolName: string) {
     'id',
     'school.name',
     'latest.admissions.admission_rate.overall',
+    // SAT scores
     'latest.admissions.sat_scores.average.overall',
+    'latest.admissions.sat_scores.25th_percentile.critical_reading',
+    'latest.admissions.sat_scores.75th_percentile.critical_reading',
+    'latest.admissions.sat_scores.25th_percentile.math',
+    'latest.admissions.sat_scores.75th_percentile.math',
+    // ACT scores
     'latest.admissions.act_scores.midpoint.cumulative',
+    'latest.admissions.act_scores.25th_percentile.cumulative',
+    'latest.admissions.act_scores.75th_percentile.cumulative',
+    // Cost, enrollment, outcomes
     'latest.cost.tuition.out_of_state',
     'latest.student.size',
     'latest.completion.completion_rate_4yr_150nt',
@@ -29,7 +40,7 @@ async function fetchSchoolStats(schoolName: string) {
     .trim();
 
   const url = `${BASE_URL}?api_key=${API_KEY}&school.name=${encodeURIComponent(searchName)}&fields=${fields}&per_page=5`;
-  
+
   const response = await fetch(url);
   if (!response.ok) return null;
 
@@ -37,17 +48,20 @@ async function fetchSchoolStats(schoolName: string) {
   const results = data.results || [];
 
   // 找到最匹配的结果
-  const exactMatch = results.find((r: any) => 
-    r['school.name']?.toLowerCase() === schoolName.toLowerCase()
+  const exactMatch = results.find(
+    (r: any) => r['school.name']?.toLowerCase() === schoolName.toLowerCase(),
   );
-  
+
   if (exactMatch) return exactMatch;
 
   // 尝试部分匹配
   const partialMatch = results.find((r: any) => {
     const apiName = r['school.name']?.toLowerCase() || '';
     const dbName = schoolName.toLowerCase();
-    return apiName.includes(dbName.split(',')[0]) || dbName.includes(apiName.split(',')[0]);
+    return (
+      apiName.includes(dbName.split(',')[0]) ||
+      dbName.includes(apiName.split(',')[0])
+    );
   });
 
   return partialMatch || results[0] || null;
@@ -70,30 +84,77 @@ async function main() {
   for (const school of schools) {
     try {
       const stats = await fetchSchoolStats(school.name);
-      
+
       if (stats) {
         const updateData: any = {};
-        
+
         if (stats['latest.student.size']) {
           updateData.studentCount = stats['latest.student.size'];
         }
+        // SAT average
         if (stats['latest.admissions.sat_scores.average.overall']) {
-          updateData.satAvg = stats['latest.admissions.sat_scores.average.overall'];
+          updateData.satAvg =
+            stats['latest.admissions.sat_scores.average.overall'];
         }
+        // SAT percentiles (sub-scores)
+        const satReading25 =
+          stats[
+            'latest.admissions.sat_scores.25th_percentile.critical_reading'
+          ];
+        const satReading75 =
+          stats[
+            'latest.admissions.sat_scores.75th_percentile.critical_reading'
+          ];
+        const satMath25 =
+          stats['latest.admissions.sat_scores.25th_percentile.math'];
+        const satMath75 =
+          stats['latest.admissions.sat_scores.75th_percentile.math'];
+
+        if (satReading25) updateData.satReading25 = satReading25;
+        if (satReading75) updateData.satReading75 = satReading75;
+        if (satMath25) updateData.satMath25 = satMath25;
+        if (satMath75) updateData.satMath75 = satMath75;
+        if (satReading25 && satMath25)
+          updateData.sat25 = satReading25 + satMath25;
+        if (satReading75 && satMath75)
+          updateData.sat75 = satReading75 + satMath75;
+        // ACT scores
         if (stats['latest.admissions.act_scores.midpoint.cumulative']) {
-          updateData.actAvg = stats['latest.admissions.act_scores.midpoint.cumulative'];
+          updateData.actAvg =
+            stats['latest.admissions.act_scores.midpoint.cumulative'];
         }
+        if (stats['latest.admissions.act_scores.25th_percentile.cumulative']) {
+          updateData.act25 =
+            stats['latest.admissions.act_scores.25th_percentile.cumulative'];
+        }
+        if (stats['latest.admissions.act_scores.75th_percentile.cumulative']) {
+          updateData.act75 =
+            stats['latest.admissions.act_scores.75th_percentile.cumulative'];
+        }
+        // Cost, outcomes
         if (stats['latest.cost.tuition.out_of_state']) {
           updateData.tuition = stats['latest.cost.tuition.out_of_state'];
         }
         if (stats['latest.completion.completion_rate_4yr_150nt']) {
-          updateData.graduationRate = Number((stats['latest.completion.completion_rate_4yr_150nt'] * 100).toFixed(2));
+          updateData.graduationRate = Number(
+            (
+              stats['latest.completion.completion_rate_4yr_150nt'] * 100
+            ).toFixed(2),
+          );
         }
         if (stats['latest.earnings.10_yrs_after_entry.median']) {
-          updateData.avgSalary = stats['latest.earnings.10_yrs_after_entry.median'];
+          updateData.avgSalary =
+            stats['latest.earnings.10_yrs_after_entry.median'];
         }
-        if (stats['latest.admissions.admission_rate.overall'] && !school.acceptanceRate) {
-          updateData.acceptanceRate = Number((stats['latest.admissions.admission_rate.overall'] * 100).toFixed(2));
+        if (
+          stats['latest.admissions.admission_rate.overall'] &&
+          !school.acceptanceRate
+        ) {
+          updateData.acceptanceRate = Number(
+            (stats['latest.admissions.admission_rate.overall'] * 100).toFixed(
+              2,
+            ),
+          );
         }
 
         if (Object.keys(updateData).length > 0) {
@@ -102,17 +163,23 @@ async function main() {
             data: updateData,
           });
           updated++;
-          console.log(`✅ #${school.usNewsRank} ${school.nameZh || school.name}: 学生${updateData.studentCount || '-'}, SAT${updateData.satAvg || '-'}`);
+          console.log(
+            `✅ #${school.usNewsRank} ${school.nameZh || school.name}: 学生${updateData.studentCount || '-'}, SAT${updateData.satAvg || '-'}`,
+          );
         } else {
-          console.log(`⏭️  #${school.usNewsRank} ${school.nameZh || school.name}: 无新数据`);
+          console.log(
+            `⏭️  #${school.usNewsRank} ${school.nameZh || school.name}: 无新数据`,
+          );
         }
       } else {
-        console.log(`⚠️  #${school.usNewsRank} ${school.nameZh || school.name}: API 未找到`);
+        console.log(
+          `⚠️  #${school.usNewsRank} ${school.nameZh || school.name}: API 未找到`,
+        );
         failed++;
       }
 
       // Rate limiting
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise((resolve) => setTimeout(resolve, 300));
     } catch (err: any) {
       console.log(`❌ #${school.usNewsRank} ${school.name}: ${err.message}`);
       failed++;
@@ -126,6 +193,3 @@ async function main() {
 main()
   .catch(console.error)
   .finally(() => prisma.$disconnect());
-
-
-

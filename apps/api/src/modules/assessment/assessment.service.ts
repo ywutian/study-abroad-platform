@@ -1,6 +1,15 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+  Inject,
+  Optional,
+  forwardRef,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { AssessmentType } from '@prisma/client';
+import { AssessmentType } from '../../common/types/enums';
+import { MemoryType } from '@prisma/client';
 import {
   AssessmentTypeEnum,
   AssessmentDto,
@@ -9,14 +18,26 @@ import {
   MbtiResultDto,
   HollandResultDto,
 } from './dto';
-import { MBTI_QUESTIONS, MBTI_INTERPRETATIONS, LIKERT_OPTIONS, MBTI_DISCLAIMER, MbtiQuestion } from './data/mbti-questions';
+import {
+  MBTI_QUESTIONS,
+  MBTI_INTERPRETATIONS,
+  LIKERT_OPTIONS,
+  MBTI_DISCLAIMER,
+  MbtiQuestion,
+} from './data/mbti-questions';
 import { HOLLAND_QUESTIONS, HOLLAND_TYPE_INFO } from './data/holland-questions';
+import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
 
 @Injectable()
 export class AssessmentService {
   private readonly logger = new Logger(AssessmentService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Optional()
+    @Inject(forwardRef(() => MemoryManagerService))
+    private memoryManager?: MemoryManagerService,
+  ) {}
 
   /**
    * 获取测评题目
@@ -36,7 +57,9 @@ export class AssessmentService {
         }));
         title = 'Jungian Type Personality Test';
         titleZh = '荣格类型性格测试';
-        description = 'Discover your personality type based on Jungian psychology. ' + MBTI_DISCLAIMER.en;
+        description =
+          'Discover your personality type based on Jungian psychology. ' +
+          MBTI_DISCLAIMER.en;
         descriptionZh = '基于荣格心理学发现你的性格类型。' + MBTI_DISCLAIMER.zh;
         break;
       case AssessmentTypeEnum.HOLLAND:
@@ -77,7 +100,10 @@ export class AssessmentService {
   /**
    * 提交测评答案并计算结果
    */
-  async submitAssessment(userId: string, dto: SubmitAssessmentDto): Promise<AssessmentResultDto> {
+  async submitAssessment(
+    userId: string,
+    dto: SubmitAssessmentDto,
+  ): Promise<AssessmentResultDto> {
     let result: any;
 
     switch (dto.type) {
@@ -98,15 +124,22 @@ export class AssessmentService {
 
     if (!assessment) {
       // 创建 Assessment 记录
-      const questionsJson = dto.type === AssessmentTypeEnum.MBTI 
-        ? JSON.parse(JSON.stringify(MBTI_QUESTIONS)) 
-        : JSON.parse(JSON.stringify(HOLLAND_QUESTIONS));
-      
+      const questionsJson =
+        dto.type === AssessmentTypeEnum.MBTI
+          ? JSON.parse(JSON.stringify(MBTI_QUESTIONS))
+          : JSON.parse(JSON.stringify(HOLLAND_QUESTIONS));
+
       assessment = await this.prisma.assessment.create({
         data: {
           type: dto.type as AssessmentType,
-          title: dto.type === AssessmentTypeEnum.MBTI ? 'Jungian Type Personality Test' : 'Holland Career Test',
-          titleZh: dto.type === AssessmentTypeEnum.MBTI ? '荣格类型性格测试' : '霍兰德职业兴趣测试',
+          title:
+            dto.type === AssessmentTypeEnum.MBTI
+              ? 'Jungian Type Personality Test'
+              : 'Holland Career Test',
+          titleZh:
+            dto.type === AssessmentTypeEnum.MBTI
+              ? '荣格类型性格测试'
+              : '霍兰德职业兴趣测试',
           questions: questionsJson,
         },
       });
@@ -120,12 +153,160 @@ export class AssessmentService {
         answers: dto.answers as object[],
         result: result as object,
         majorRecommendations: result.majors
-          ? result.majors.map((m: string) => ({ major: m, score: 0, reasons: [] }))
+          ? result.majors.map((m: string) => ({
+              major: m,
+              score: 0,
+              reasons: [],
+            }))
           : null,
       },
     });
 
+    // 记录到记忆系统
+    await this.saveAssessmentToMemory(userId, dto.type, result);
+
     return this.formatResult(dto.type, savedResult);
+  }
+
+  /**
+   * 保存测评结果到记忆系统
+   */
+  private async saveAssessmentToMemory(
+    userId: string,
+    type: AssessmentTypeEnum,
+    result: MbtiResultDto | HollandResultDto,
+  ): Promise<void> {
+    if (!this.memoryManager) return;
+
+    try {
+      if (type === AssessmentTypeEnum.MBTI) {
+        const mbti = result as MbtiResultDto;
+        await this.memoryManager.remember(userId, {
+          type: MemoryType.FACT,
+          category: 'assessment',
+          content: `用户完成 MBTI 测评，结果为 ${mbti.type} (${mbti.titleZh})。特点：${mbti.descriptionZh?.slice(0, 100) || mbti.description?.slice(0, 100)}`,
+          importance: 0.8,
+          metadata: {
+            assessmentType: 'mbti',
+            mbtiType: mbti.type,
+            scores: mbti.scores,
+            source: 'assessment_service',
+          },
+        });
+
+        // 记录推荐的专业偏好
+        if (mbti.majors && mbti.majors.length > 0) {
+          await this.memoryManager.remember(userId, {
+            type: MemoryType.PREFERENCE,
+            category: 'major_preference',
+            content: `基于 MBTI ${mbti.type} 类型，推荐专业：${mbti.majors.slice(0, 5).join('、')}`,
+            importance: 0.7,
+            metadata: {
+              source: 'mbti_assessment',
+              majors: mbti.majors,
+            },
+          });
+        }
+      } else if (type === AssessmentTypeEnum.HOLLAND) {
+        const holland = result as HollandResultDto;
+        await this.memoryManager.remember(userId, {
+          type: MemoryType.FACT,
+          category: 'assessment',
+          content: `用户完成霍兰德职业测评，职业代码为 ${holland.codes}，主要类型：${holland.typesZh?.join('、') || holland.types?.join('、')}`,
+          importance: 0.8,
+          metadata: {
+            assessmentType: 'holland',
+            hollandCodes: holland.codes,
+            scores: holland.scores,
+            source: 'assessment_service',
+          },
+        });
+
+        // 记录推荐的专业和领域偏好
+        if (holland.majors && holland.majors.length > 0) {
+          await this.memoryManager.remember(userId, {
+            type: MemoryType.PREFERENCE,
+            category: 'career_interest',
+            content: `基于霍兰德 ${holland.codes} 代码，感兴趣领域：${holland.fieldsZh?.slice(0, 3).join('、') || holland.fields?.slice(0, 3).join('、')}；推荐专业：${holland.majors.slice(0, 5).join('、')}`,
+            importance: 0.7,
+            metadata: {
+              source: 'holland_assessment',
+              fields: holland.fields,
+              majors: holland.majors,
+            },
+          });
+        }
+      }
+    } catch (error) {
+      this.logger.warn('Failed to save assessment to memory', error);
+      // 不影响主流程
+    }
+  }
+
+  /**
+   * 记录查看测评历史的行为
+   */
+  private async recordViewHistoryToMemory(
+    userId: string,
+    results: any[],
+  ): Promise<void> {
+    if (!this.memoryManager || results.length === 0) return;
+
+    try {
+      const types = [...new Set(results.map((r) => r.assessment.type))];
+      await this.memoryManager.remember(userId, {
+        type: MemoryType.FACT,
+        category: 'view_history',
+        content: `用户查看了测评历史，共有${results.length}条记录，包含${types.join('、')}类型测评`,
+        importance: 0.2,
+        metadata: {
+          resultCount: results.length,
+          types,
+          viewedAt: new Date().toISOString(),
+        },
+      });
+    } catch (error) {
+      this.logger.warn('Failed to record view history to memory', error);
+    }
+  }
+
+  /**
+   * 记录查看单个测评结果的行为
+   */
+  private async recordViewResultToMemory(
+    userId: string,
+    type: AssessmentTypeEnum,
+    result: any,
+  ): Promise<void> {
+    if (!this.memoryManager) return;
+
+    try {
+      const parsedResult =
+        typeof result.result === 'string'
+          ? JSON.parse(result.result)
+          : result.result;
+
+      let content: string;
+      if (type === AssessmentTypeEnum.MBTI) {
+        content = `用户查看了 MBTI 测评结果 ${parsedResult.type}`;
+      } else {
+        content = `用户查看了霍兰德测评结果 ${parsedResult.codes}`;
+      }
+
+      await this.memoryManager.remember(userId, {
+        type: MemoryType.FACT,
+        category: 'view_history',
+        content,
+        importance: 0.2,
+        metadata: {
+          assessmentType: type,
+          resultId: result.id,
+          viewedAt: new Date().toISOString(),
+        },
+      });
+    } catch (error) {
+      this.logger.warn('Failed to record view result to memory', error);
+    }
   }
 
   /**
@@ -138,13 +319,25 @@ export class AssessmentService {
       orderBy: { completedAt: 'desc' },
     });
 
-    return results.map((r) => this.formatResult(r.assessment.type as AssessmentTypeEnum, r));
+    // 记录查看历史行为
+    if (results.length > 0) {
+      this.recordViewHistoryToMemory(userId, results).catch((err) => {
+        this.logger.warn('Failed to record view history to memory', err);
+      });
+    }
+
+    return results.map((r) =>
+      this.formatResult(r.assessment.type as AssessmentTypeEnum, r),
+    );
   }
 
   /**
    * 获取单个测评结果
    */
-  async getResult(userId: string, resultId: string): Promise<AssessmentResultDto> {
+  async getResult(
+    userId: string,
+    resultId: string,
+  ): Promise<AssessmentResultDto> {
     const result = await this.prisma.assessmentResult.findFirst({
       where: { id: resultId, userId },
       include: { assessment: true },
@@ -154,7 +347,19 @@ export class AssessmentService {
       throw new NotFoundException('Result not found');
     }
 
-    return this.formatResult(result.assessment.type as AssessmentTypeEnum, result);
+    // 记录查看详情行为
+    this.recordViewResultToMemory(
+      userId,
+      result.assessment.type as AssessmentTypeEnum,
+      result,
+    ).catch((err) => {
+      this.logger.warn('Failed to record view result to memory', err);
+    });
+
+    return this.formatResult(
+      result.assessment.type as AssessmentTypeEnum,
+      result,
+    );
   }
 
   // ============ Private Methods ============
@@ -168,7 +373,9 @@ export class AssessmentService {
    * - 反向题：分数反转后计入第一个字母，或直接计入第二个字母 (I/N/F/P)
    * - 最终百分比 = (该维度第一个字母得分 / 该维度总分) * 100
    */
-  private calculateMbtiResult(answers: { questionId: string; answer: string }[]): MbtiResultDto {
+  private calculateMbtiResult(
+    answers: { questionId: string; answer: string }[],
+  ): MbtiResultDto {
     // 初始化各维度得分 (每个维度最高 60 分 = 12题 * 5分)
     const dimensionScores: Record<string, { first: number; second: number }> = {
       EI: { first: 0, second: 0 }, // E vs I
@@ -179,7 +386,7 @@ export class AssessmentService {
 
     // 计算各答案
     for (const answer of answers) {
-      const question = MBTI_QUESTIONS.find((q) => q.id === answer.questionId) as MbtiQuestion | undefined;
+      const question = MBTI_QUESTIONS.find((q) => q.id === answer.questionId);
       if (!question) continue;
 
       const score = parseInt(answer.answer, 10);
@@ -209,8 +416,11 @@ export class AssessmentService {
 
     for (const dim of ['EI', 'SN', 'TF', 'JP']) {
       const [first, second] = dimensionMap[dim];
-      const total = dimensionScores[dim].first + dimensionScores[dim].second || 1;
-      percentages[first] = Math.round((dimensionScores[dim].first / total) * 100);
+      const total =
+        dimensionScores[dim].first + dimensionScores[dim].second || 1;
+      percentages[first] = Math.round(
+        (dimensionScores[dim].first / total) * 100,
+      );
       percentages[second] = 100 - percentages[first];
     }
 
@@ -236,13 +446,24 @@ export class AssessmentService {
     };
   }
 
-  private calculateHollandResult(answers: { questionId: string; answer: string }[]): HollandResultDto {
+  private calculateHollandResult(
+    answers: { questionId: string; answer: string }[],
+  ): HollandResultDto {
     // 初始化各类型得分
-    const scores: Record<string, number> = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
+    const scores: Record<string, number> = {
+      R: 0,
+      I: 0,
+      A: 0,
+      S: 0,
+      E: 0,
+      C: 0,
+    };
 
     // 计算各答案
     for (const answer of answers) {
-      const question = HOLLAND_QUESTIONS.find((q) => q.id === answer.questionId);
+      const question = HOLLAND_QUESTIONS.find(
+        (q) => q.id === answer.questionId,
+      );
       if (!question) continue;
 
       scores[question.type] += parseInt(answer.answer, 10);
@@ -259,11 +480,17 @@ export class AssessmentService {
     // 获取类型信息
     const types = sortedTypes.map((t) => HOLLAND_TYPE_INFO[t].name);
     const typesZh = sortedTypes.map((t) => HOLLAND_TYPE_INFO[t].nameZh);
-    
+
     // 合并字段和专业
-    const fields = [...new Set(sortedTypes.flatMap((t) => HOLLAND_TYPE_INFO[t].fields))];
-    const fieldsZh = [...new Set(sortedTypes.flatMap((t) => HOLLAND_TYPE_INFO[t].fieldsZh))];
-    const majors = [...new Set(sortedTypes.flatMap((t) => HOLLAND_TYPE_INFO[t].majors))];
+    const fields = [
+      ...new Set(sortedTypes.flatMap((t) => HOLLAND_TYPE_INFO[t].fields)),
+    ];
+    const fieldsZh = [
+      ...new Set(sortedTypes.flatMap((t) => HOLLAND_TYPE_INFO[t].fieldsZh)),
+    ];
+    const majors = [
+      ...new Set(sortedTypes.flatMap((t) => HOLLAND_TYPE_INFO[t].majors)),
+    ];
 
     return {
       codes,
@@ -276,16 +503,20 @@ export class AssessmentService {
     };
   }
 
-  private formatResult(type: AssessmentTypeEnum, result: any): AssessmentResultDto {
+  private formatResult(
+    type: AssessmentTypeEnum,
+    result: any,
+  ): AssessmentResultDto {
     const baseResult: AssessmentResultDto = {
       id: result.id,
       type,
       completedAt: result.completedAt,
     };
 
-    const parsedResult = typeof result.result === 'string' 
-      ? JSON.parse(result.result) 
-      : result.result;
+    const parsedResult =
+      typeof result.result === 'string'
+        ? JSON.parse(result.result)
+        : result.result;
 
     if (type === AssessmentTypeEnum.MBTI) {
       baseResult.mbtiResult = parsedResult as MbtiResultDto;
@@ -296,4 +527,3 @@ export class AssessmentService {
     return baseResult;
   }
 }
-

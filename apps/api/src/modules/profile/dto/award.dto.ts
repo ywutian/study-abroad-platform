@@ -10,7 +10,13 @@ import {
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
-const AWARD_LEVELS = ['SCHOOL', 'REGIONAL', 'STATE', 'NATIONAL', 'INTERNATIONAL'] as const;
+const AWARD_LEVELS = [
+  'SCHOOL',
+  'REGIONAL',
+  'STATE',
+  'NATIONAL',
+  'INTERNATIONAL',
+] as const;
 
 export class CreateAwardDto {
   @ApiProperty({ description: '奖项名称', example: 'AMC 12 满分' })
@@ -35,6 +41,11 @@ export class CreateAwardDto {
   @IsString()
   @MaxLength(500)
   description?: string;
+
+  @ApiPropertyOptional({ description: '关联竞赛 ID (Competition.id)' })
+  @IsOptional()
+  @IsString()
+  competitionId?: string;
 
   @ApiPropertyOptional({ description: '排序顺序' })
   @IsOptional()
@@ -70,6 +81,11 @@ export class UpdateAwardDto {
   @MaxLength(500)
   description?: string;
 
+  @ApiPropertyOptional({ description: '关联竞赛 ID (Competition.id)' })
+  @IsOptional()
+  @IsString()
+  competitionId?: string;
+
   @ApiPropertyOptional({ description: '排序顺序' })
   @IsOptional()
   @IsInt()
@@ -77,12 +93,3 @@ export class UpdateAwardDto {
   @Min(0)
   order?: number;
 }
-
-
-
-
-
-
-
-
-

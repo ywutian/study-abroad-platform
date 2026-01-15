@@ -1,6 +1,6 @@
 /**
  * Redis 存储实现
- * 
+ *
  * 用于生产环境和多实例部署
  */
 
@@ -34,7 +34,7 @@ export class RedisStorage implements IStorage, OnModuleDestroy {
       // 动态导入 ioredis
       const ioredis = await import('ioredis');
       const Redis = ioredis.default as any;
-      
+
       this.client = new Redis({
         host: this.configService.get('REDIS_HOST', 'localhost'),
         port: this.configService.get('REDIS_PORT', 6379),
@@ -105,7 +105,8 @@ export class RedisStorage implements IStorage, OnModuleDestroy {
 
   async set<T>(key: string, value: T, ttlMs?: number): Promise<void> {
     const client = this.ensureConnected();
-    const serialized = typeof value === 'string' ? value : JSON.stringify(value);
+    const serialized =
+      typeof value === 'string' ? value : JSON.stringify(value);
     if (ttlMs) {
       await client.set(key, serialized, 'PX', ttlMs);
     } else {
@@ -136,19 +137,22 @@ export class RedisStorage implements IStorage, OnModuleDestroy {
     });
   }
 
-  async mset<T>(entries: Array<{ key: string; value: T; ttlMs?: number }>): Promise<void> {
+  async mset<T>(
+    entries: Array<{ key: string; value: T; ttlMs?: number }>,
+  ): Promise<void> {
     const client = this.ensureConnected();
     const pipeline = client.pipeline();
-    
+
     for (const { key, value, ttlMs } of entries) {
-      const serialized = typeof value === 'string' ? value : JSON.stringify(value);
+      const serialized =
+        typeof value === 'string' ? value : JSON.stringify(value);
       if (ttlMs) {
         pipeline.set(key, serialized, 'PX', ttlMs);
       } else {
         pipeline.set(key, serialized);
       }
     }
-    
+
     await pipeline.exec();
   }
 
@@ -278,7 +282,11 @@ export class RedisStorage implements IStorage, OnModuleDestroy {
     return client.zrange(key, start, stop);
   }
 
-  async zrangebyscore(key: string, min: number, max: number): Promise<string[]> {
+  async zrangebyscore(
+    key: string,
+    min: number,
+    max: number,
+  ): Promise<string[]> {
     const client = this.ensureConnected();
     return client.zrangebyscore(key, min, max);
   }
@@ -299,13 +307,12 @@ export class RedisStorage implements IStorage, OnModuleDestroy {
     return client.zcard(key);
   }
 
-  async zremrangebyscore(key: string, min: number, max: number): Promise<number> {
+  async zremrangebyscore(
+    key: string,
+    min: number,
+    max: number,
+  ): Promise<number> {
     const client = this.ensureConnected();
     return client.zremrangebyscore(key, min, max);
   }
 }
-
-
-
-
-

@@ -1,15 +1,19 @@
 /**
  * Agent 配置服务
- * 
+ *
  * 支持:
  * - 配置热更新
  * - 多环境配置
  * - A/B 测试
+ * - 配置持久化（数据库）
+ * - 版本历史和回滚
  */
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, Optional } from '@nestjs/common';
 import { ConfigService as NestConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { PrismaService } from '../../../../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 import { AgentType } from '../../types';
 
 // ==================== Agent 配置类型 ====================
@@ -46,26 +50,26 @@ export interface SystemConfig {
     maxRetries: number;
     timeoutMs: number;
   };
-  
+
   // 限流配置
   rateLimit: {
     user: { windowMs: number; maxRequests: number };
     vip: { windowMs: number; maxRequests: number };
   };
-  
+
   // 配额配置
   quota: {
     daily: { tokens: number; cost: number };
     monthly: { tokens: number; cost: number };
   };
-  
+
   // 记忆配置
   memory: {
     maxConversationLength: number;
-    maxMemoryAge: number;  // days
+    maxMemoryAge: number; // days
     embeddingEnabled: boolean;
   };
-  
+
   // 功能开关
   features: {
     fastRouting: boolean;
@@ -94,22 +98,261 @@ export const TOOL_CONFIG_UPDATED_EVENT = 'agent.config.tool.updated';
 @Injectable()
 export class AgentConfigService implements OnModuleInit {
   private readonly logger = new Logger(AgentConfigService.name);
-  
+
   private config: FullConfig;
   private configVersion = 0;
-  
+
   // A/B 测试配置
   private abTestGroups: Map<string, Map<string, any>> = new Map();
 
   constructor(
     private nestConfig: NestConfigService,
     private eventEmitter: EventEmitter2,
+    @Optional() private prisma?: PrismaService,
   ) {
     this.config = this.loadDefaultConfig();
   }
 
-  onModuleInit() {
-    this.logger.log(`Agent config initialized, version: ${this.config.version}`);
+  async onModuleInit() {
+    // 从数据库加载持久化配置
+    await this.loadFromDatabase();
+    this.logger.log(
+      `Agent config initialized, version: ${this.config.version}`,
+    );
+  }
+
+  // ==================== 持久化方法 ====================
+
+  /**
+   * 从数据库加载配置
+   */
+  private async loadFromDatabase(): Promise<void> {
+    if (!this.prisma) {
+      this.logger.debug('Prisma not available, using default config');
+      return;
+    }
+
+    try {
+      // 加载活跃的 Agent 配置
+      const agentConfigs = await this.prisma.agentConfigVersion.findMany({
+        where: { configType: 'agent', isActive: true },
+      });
+
+      for (const cfg of agentConfigs) {
+        const agentType = cfg.configKey as AgentType;
+        if (this.config.agents[agentType]) {
+          const value = cfg.value as Prisma.JsonObject;
+          this.config.agents[agentType] = {
+            ...this.config.agents[agentType],
+            ...(value as unknown as Partial<AgentConfig>),
+            version: cfg.version.toString(),
+          };
+          this.logger.debug(
+            `Loaded agent config: ${agentType} v${cfg.version}`,
+          );
+        }
+      }
+
+      // 加载活跃的工具配置
+      const toolConfigs = await this.prisma.agentConfigVersion.findMany({
+        where: { configType: 'tool', isActive: true },
+      });
+
+      for (const cfg of toolConfigs) {
+        if (this.config.tools[cfg.configKey]) {
+          const value = cfg.value as Prisma.JsonObject;
+          this.config.tools[cfg.configKey] = {
+            ...this.config.tools[cfg.configKey],
+            ...(value as unknown as Partial<ToolConfig>),
+          };
+          this.logger.debug(
+            `Loaded tool config: ${cfg.configKey} v${cfg.version}`,
+          );
+        }
+      }
+
+      // 加载系统配置
+      const systemConfig = await this.prisma.agentConfigVersion.findFirst({
+        where: { configType: 'system', configKey: 'main', isActive: true },
+      });
+
+      if (systemConfig) {
+        const value = systemConfig.value as Prisma.JsonObject;
+        this.config.system = this.deepMerge(
+          this.config.system,
+          value as unknown as Partial<SystemConfig>,
+        );
+        this.logger.debug(`Loaded system config v${systemConfig.version}`);
+      }
+
+      this.logger.log('Loaded config from database');
+    } catch (error) {
+      this.logger.warn(`Failed to load config from database: ${error}`);
+    }
+  }
+
+  /**
+   * 持久化 Agent 配置到数据库
+   */
+  private async persistAgentConfig(
+    agentType: AgentType,
+    config: AgentConfig,
+    options?: { createdBy?: string; comment?: string },
+  ): Promise<void> {
+    if (!this.prisma) return;
+
+    try {
+      const newVersion = parseInt(config.version);
+
+      await this.prisma.$transaction(async (tx) => {
+        // 将旧版本设为非活跃
+        await tx.agentConfigVersion.updateMany({
+          where: { configType: 'agent', configKey: agentType, isActive: true },
+          data: { isActive: false },
+        });
+
+        // 创建新版本
+        await tx.agentConfigVersion.create({
+          data: {
+            configType: 'agent',
+            configKey: agentType,
+            version: newVersion,
+            value: config as unknown as Prisma.JsonObject,
+            isActive: true,
+            createdBy: options?.createdBy,
+            comment: options?.comment,
+          },
+        });
+      });
+
+      this.logger.log(`Persisted agent config: ${agentType} v${newVersion}`);
+    } catch (error) {
+      this.logger.error(`Failed to persist agent config: ${error}`);
+    }
+  }
+
+  /**
+   * 持久化系统配置到数据库
+   */
+  private async persistSystemConfig(
+    config: SystemConfig,
+    options?: { createdBy?: string; comment?: string },
+  ): Promise<void> {
+    if (!this.prisma) return;
+
+    try {
+      const newVersion = this.configVersion;
+
+      await this.prisma.$transaction(async (tx) => {
+        // 将旧版本设为非活跃
+        await tx.agentConfigVersion.updateMany({
+          where: { configType: 'system', configKey: 'main', isActive: true },
+          data: { isActive: false },
+        });
+
+        // 创建新版本
+        await tx.agentConfigVersion.create({
+          data: {
+            configType: 'system',
+            configKey: 'main',
+            version: newVersion,
+            value: config as unknown as Prisma.JsonObject,
+            isActive: true,
+            createdBy: options?.createdBy,
+            comment: options?.comment,
+          },
+        });
+      });
+
+      this.logger.log(`Persisted system config v${newVersion}`);
+    } catch (error) {
+      this.logger.error(`Failed to persist system config: ${error}`);
+    }
+  }
+
+  /**
+   * 回滚 Agent 配置到指定版本
+   */
+  async rollbackAgentConfig(
+    agentType: AgentType,
+    toVersion: number,
+    options?: { createdBy?: string },
+  ): Promise<AgentConfig> {
+    if (!this.prisma) {
+      throw new Error('Database not available for rollback');
+    }
+
+    const targetConfig = await this.prisma.agentConfigVersion.findFirst({
+      where: { configType: 'agent', configKey: agentType, version: toVersion },
+    });
+
+    if (!targetConfig) {
+      throw new Error(`Version ${toVersion} not found for agent ${agentType}`);
+    }
+
+    const value = targetConfig.value as Prisma.JsonObject;
+    return this.updateAgentConfigWithPersistence(
+      agentType,
+      value as unknown as Partial<AgentConfig>,
+      {
+        createdBy: options?.createdBy,
+        comment: `Rollback to version ${toVersion}`,
+      },
+    );
+  }
+
+  /**
+   * 获取配置历史
+   */
+  async getConfigHistory(
+    configType: 'agent' | 'tool' | 'system',
+    configKey: string,
+    limit = 10,
+  ): Promise<
+    Array<{
+      version: number;
+      createdAt: Date;
+      comment: string | null;
+      createdBy: string | null;
+    }>
+  > {
+    if (!this.prisma) {
+      return [];
+    }
+
+    const versions = await this.prisma.agentConfigVersion.findMany({
+      where: { configType, configKey },
+      orderBy: { version: 'desc' },
+      take: limit,
+      select: {
+        version: true,
+        createdAt: true,
+        comment: true,
+        createdBy: true,
+      },
+    });
+
+    return versions;
+  }
+
+  /**
+   * 获取指定版本的配置
+   */
+  async getConfigVersion<T>(
+    configType: 'agent' | 'tool' | 'system',
+    configKey: string,
+    version: number,
+  ): Promise<T | null> {
+    if (!this.prisma) {
+      return null;
+    }
+
+    const config = await this.prisma.agentConfigVersion.findFirst({
+      where: { configType, configKey, version },
+    });
+
+    if (!config) return null;
+    return config.value as unknown as T;
   }
 
   // ==================== 配置获取 ====================
@@ -140,7 +383,13 @@ export class AgentConfigService implements OnModuleInit {
 
   // ==================== 配置更新 ====================
 
-  updateAgentConfig(agentType: AgentType, updates: Partial<AgentConfig>): AgentConfig {
+  /**
+   * 更新 Agent 配置（不持久化）
+   */
+  updateAgentConfig(
+    agentType: AgentType,
+    updates: Partial<AgentConfig>,
+  ): AgentConfig {
     const current = this.config.agents[agentType];
     if (!current) {
       throw new Error(`Agent ${agentType} not found`);
@@ -156,9 +405,27 @@ export class AgentConfigService implements OnModuleInit {
     this.config.updatedAt = new Date();
     this.configVersion++;
 
-    this.logger.log(`Agent ${agentType} config updated to version ${updated.version}`);
-    this.eventEmitter.emit(AGENT_CONFIG_UPDATED_EVENT, { agentType, config: updated });
+    this.logger.log(
+      `Agent ${agentType} config updated to version ${updated.version}`,
+    );
+    this.eventEmitter.emit(AGENT_CONFIG_UPDATED_EVENT, {
+      agentType,
+      config: updated,
+    });
 
+    return updated;
+  }
+
+  /**
+   * 更新 Agent 配置并持久化到数据库
+   */
+  async updateAgentConfigWithPersistence(
+    agentType: AgentType,
+    updates: Partial<AgentConfig>,
+    options?: { createdBy?: string; comment?: string },
+  ): Promise<AgentConfig> {
+    const updated = this.updateAgentConfig(agentType, updates);
+    await this.persistAgentConfig(agentType, updated, options);
     return updated;
   }
 
@@ -174,7 +441,10 @@ export class AgentConfigService implements OnModuleInit {
     this.configVersion++;
 
     this.logger.log(`Tool ${toolName} config updated`);
-    this.eventEmitter.emit(TOOL_CONFIG_UPDATED_EVENT, { toolName, config: updated });
+    this.eventEmitter.emit(TOOL_CONFIG_UPDATED_EVENT, {
+      toolName,
+      config: updated,
+    });
 
     return updated;
   }
@@ -185,9 +455,23 @@ export class AgentConfigService implements OnModuleInit {
     this.configVersion++;
 
     this.logger.log('System config updated');
-    this.eventEmitter.emit(CONFIG_UPDATED_EVENT, { system: this.config.system });
+    this.eventEmitter.emit(CONFIG_UPDATED_EVENT, {
+      system: this.config.system,
+    });
 
     return this.config.system;
+  }
+
+  /**
+   * 更新系统配置并持久化到数据库
+   */
+  async updateSystemConfigWithPersistence(
+    updates: Partial<SystemConfig>,
+    options?: { createdBy?: string; comment?: string },
+  ): Promise<SystemConfig> {
+    const updated = this.updateSystemConfig(updates);
+    await this.persistSystemConfig(updated, options);
+    return updated;
   }
 
   // ==================== A/B 测试 ====================
@@ -205,7 +489,11 @@ export class AgentConfigService implements OnModuleInit {
     return testGroup.get(userId) ?? defaultValue;
   }
 
-  assignAbTestGroup(testName: string, userId: string, groups: string[]): string {
+  assignAbTestGroup(
+    testName: string,
+    userId: string,
+    groups: string[],
+  ): string {
     // 简单哈希分组
     const hash = this.simpleHash(userId);
     const groupIndex = hash % groups.length;
@@ -218,11 +506,14 @@ export class AgentConfigService implements OnModuleInit {
     return this.config.system.features[feature] ?? false;
   }
 
-  toggleFeature(feature: keyof SystemConfig['features'], enabled: boolean): void {
+  toggleFeature(
+    feature: keyof SystemConfig['features'],
+    enabled: boolean,
+  ): void {
     this.config.system.features[feature] = enabled;
     this.config.updatedAt = new Date();
     this.configVersion++;
-    
+
     this.logger.log(`Feature ${feature} ${enabled ? 'enabled' : 'disabled'}`);
     this.eventEmitter.emit(CONFIG_UPDATED_EVENT, { feature, enabled });
   }
@@ -247,7 +538,12 @@ export class AgentConfigService implements OnModuleInit {
         description: '主协调者，理解用户意图并分配给专业 Agent',
         systemPrompt: this.getOrchestratorPrompt(),
         tools: ['delegate_to_agent', 'get_user_context', 'search_knowledge'],
-        canDelegate: [AgentType.ESSAY, AgentType.SCHOOL, AgentType.PROFILE, AgentType.TIMELINE],
+        canDelegate: [
+          AgentType.ESSAY,
+          AgentType.SCHOOL,
+          AgentType.PROFILE,
+          AgentType.TIMELINE,
+        ],
         model: this.nestConfig.get('OPENAI_MODEL', 'gpt-4o-mini'),
         temperature: 0.7,
         maxTokens: 2000,
@@ -259,8 +555,16 @@ export class AgentConfigService implements OnModuleInit {
         name: '文书专家',
         description: '专注于文书写作、评估、润色的专家',
         systemPrompt: this.getEssayAgentPrompt(),
-        tools: ['get_profile', 'get_essays', 'get_school_essays', 'review_essay', 
-                'polish_essay', 'generate_outline', 'brainstorm_ideas', 'continue_writing'],
+        tools: [
+          'get_profile',
+          'get_essays',
+          'get_school_essays',
+          'review_essay',
+          'polish_essay',
+          'generate_outline',
+          'brainstorm_ideas',
+          'continue_writing',
+        ],
         canDelegate: [],
         temperature: 0.8,
         maxTokens: 4000,
@@ -272,8 +576,16 @@ export class AgentConfigService implements OnModuleInit {
         name: '选校专家',
         description: '专注于学校推荐和匹配分析',
         systemPrompt: this.getSchoolAgentPrompt(),
-        tools: ['get_profile', 'search_schools', 'get_school_details', 'compare_schools',
-                'get_school_essays', 'get_deadlines', 'recommend_schools', 'analyze_admission'],
+        tools: [
+          'get_profile',
+          'search_schools',
+          'get_school_details',
+          'compare_schools',
+          'get_school_essays',
+          'get_deadlines',
+          'recommend_schools',
+          'analyze_admission',
+        ],
         canDelegate: [],
         temperature: 0.6,
         maxTokens: 3000,
@@ -285,7 +597,12 @@ export class AgentConfigService implements OnModuleInit {
         name: '档案分析专家',
         description: '分析用户背景和竞争力',
         systemPrompt: this.getProfileAgentPrompt(),
-        tools: ['get_profile', 'analyze_profile', 'suggest_improvements', 'get_admission_cases'],
+        tools: [
+          'get_profile',
+          'analyze_profile',
+          'suggest_improvements',
+          'get_admission_cases',
+        ],
         canDelegate: [],
         temperature: 0.5,
         maxTokens: 2500,
@@ -297,7 +614,12 @@ export class AgentConfigService implements OnModuleInit {
         name: '规划专家',
         description: '制定申请时间规划',
         systemPrompt: this.getTimelineAgentPrompt(),
-        tools: ['get_profile', 'get_deadlines', 'create_timeline', 'get_school_details'],
+        tools: [
+          'get_profile',
+          'get_deadlines',
+          'create_timeline',
+          'get_school_details',
+        ],
         canDelegate: [],
         temperature: 0.4,
         maxTokens: 2000,
@@ -315,7 +637,10 @@ export class AgentConfigService implements OnModuleInit {
         parameters: {
           type: 'object',
           properties: {
-            agent: { type: 'string', enum: ['essay', 'school', 'profile', 'timeline'] },
+            agent: {
+              type: 'string',
+              enum: ['essay', 'school', 'profile', 'timeline'],
+            },
             task: { type: 'string' },
             context: { type: 'string' },
           },
@@ -372,7 +697,11 @@ export class AgentConfigService implements OnModuleInit {
   private deepMerge(target: any, source: any): any {
     const result = { ...target };
     for (const key of Object.keys(source)) {
-      if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+      if (
+        source[key] &&
+        typeof source[key] === 'object' &&
+        !Array.isArray(source[key])
+      ) {
         result[key] = this.deepMerge(target[key] || {}, source[key]);
       } else {
         result[key] = source[key];
@@ -384,7 +713,7 @@ export class AgentConfigService implements OnModuleInit {
   private simpleHash(str: string): number {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
-      hash = ((hash << 5) - hash) + str.charCodeAt(i);
+      hash = (hash << 5) - hash + str.charCodeAt(i);
       hash = hash & hash;
     }
     return Math.abs(hash);
@@ -491,10 +820,3 @@ export class AgentConfigService implements OnModuleInit {
 始终使用中文回复。`;
   }
 }
-
-
-
-
-
-
-

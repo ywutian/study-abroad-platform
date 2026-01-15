@@ -1,12 +1,51 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+  Logger,
+} from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Request } from 'express';
 
-// Sensitive fields that should be masked in logs
+// Sensitive fields that should be masked in logs (PII + credentials)
 const SENSITIVE_FIELDS = [
-  'password', 'passwordHash', 'token', 'refreshToken', 'accessToken',
-  'secret', 'apiKey', 'authorization', 'creditCard', 'ssn', 'cvv',
+  // Credentials
+  'password',
+  'passwordHash',
+  'token',
+  'refreshToken',
+  'accessToken',
+  'secret',
+  'apiKey',
+  'authorization',
+  // Financial
+  'creditCard',
+  'cardNumber',
+  'cvv',
+  'accountNumber',
+  // PII — Personally Identifiable Information
+  'ssn',
+  'email',
+  'phone',
+  'mobile',
+  'telephone',
+  'address',
+  'street',
+  'zipCode',
+  'postalCode',
+  'dateOfBirth',
+  'dob',
+  'nationalId',
+  'passport',
+  'idNumber',
+  // Application-specific PII
+  'realName',
+  'parentEmail',
+  'parentPhone',
+  'guardianName',
+  'emergencyContact',
 ];
 
 /**
@@ -14,18 +53,20 @@ const SENSITIVE_FIELDS = [
  */
 function maskSensitiveData(obj: unknown, depth = 0): unknown {
   if (depth > 5 || obj === null || obj === undefined) return obj;
-  
+
   if (typeof obj === 'string') return obj;
-  
+
   if (Array.isArray(obj)) {
-    return obj.map(item => maskSensitiveData(item, depth + 1));
+    return obj.map((item) => maskSensitiveData(item, depth + 1));
   }
-  
+
   if (typeof obj === 'object') {
     const masked: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(obj)) {
       const lowerKey = key.toLowerCase();
-      if (SENSITIVE_FIELDS.some(field => lowerKey.includes(field.toLowerCase()))) {
+      if (
+        SENSITIVE_FIELDS.some((field) => lowerKey.includes(field.toLowerCase()))
+      ) {
         masked[key] = '[REDACTED]';
       } else {
         masked[key] = maskSensitiveData(value, depth + 1);
@@ -33,7 +74,7 @@ function maskSensitiveData(obj: unknown, depth = 0): unknown {
     }
     return masked;
   }
-  
+
   return obj;
 }
 
@@ -46,7 +87,7 @@ export class LoggingInterceptor implements NestInterceptor {
     const { method, url } = request;
     const userId = (request as unknown as { user?: { id?: string } }).user?.id;
     const startTime = Date.now();
-    
+
     // Log request body (masked) for non-GET requests in debug mode
     if (process.env.LOG_LEVEL === 'debug' && method !== 'GET' && request.body) {
       const maskedBody = maskSensitiveData(request.body);
@@ -58,22 +99,19 @@ export class LoggingInterceptor implements NestInterceptor {
         next: () => {
           const response = context.switchToHttp().getResponse();
           const duration = Date.now() - startTime;
-          this.logger.log(`${method} ${url} ${response.statusCode} ${duration}ms ${userId ? `[${userId}]` : ''}`);
+          this.logger.log(
+            `${method} ${url} ${response.statusCode} ${duration}ms ${userId ? `[${userId}]` : ''}`,
+          );
         },
         error: (error) => {
           const duration = Date.now() - startTime;
-          this.logger.error(`${method} ${url} ${error.status || 500} ${duration}ms ${userId ? `[${userId}]` : ''}`);
+          this.logger.error(
+            `${method} ${url} ${error.status || 500} ${duration}ms ${userId ? `[${userId}]` : ''}`,
+          );
         },
-      })
+      }),
     );
   }
 }
 
 export { maskSensitiveData };
-
-
-
-
-
-
-

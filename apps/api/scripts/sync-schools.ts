@@ -1,6 +1,6 @@
 /**
  * 从 College Scorecard API 同步学校数据
- * 
+ *
  * 用法: npx ts-node scripts/sync-schools.ts [limit]
  */
 
@@ -8,7 +8,9 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-const API_KEY = process.env.COLLEGE_SCORECARD_API_KEY || 'f9BpBv55kCaOiEPPJgmBMdOeC5UlmDItnEnSEP7B';
+const API_KEY =
+  process.env.COLLEGE_SCORECARD_API_KEY ||
+  'f9BpBv55kCaOiEPPJgmBMdOeC5UlmDItnEnSEP7B';
 const BASE_URL = 'https://api.data.gov/ed/collegescorecard/v1/schools';
 
 interface ScorecardSchool {
@@ -51,9 +53,9 @@ async function syncSchools(limit = 500): Promise<void> {
 
   while (synced < limit) {
     const url = `${BASE_URL}?api_key=${API_KEY}&school.operating=1&school.degrees_awarded.predominant=3&fields=${fields}&per_page=${perPage}&page=${page}`;
-    
+
     console.log(`📥 获取第 ${page + 1} 页...`);
-    
+
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`);
@@ -80,24 +82,40 @@ async function syncSchools(limit = 500): Promise<void> {
           state: school['school.state'] || null,
           city: school['school.city'] || null,
           website: school['school.school_url'] || null,
-          acceptanceRate: school['latest.admissions.admission_rate.overall'] 
-            ? Number((school['latest.admissions.admission_rate.overall'] * 100).toFixed(2))
+          acceptanceRate: school['latest.admissions.admission_rate.overall']
+            ? Number(
+                (
+                  school['latest.admissions.admission_rate.overall'] * 100
+                ).toFixed(2),
+              )
             : null,
-          satAvg: school['latest.admissions.sat_scores.average.overall'] || null,
-          actAvg: school['latest.admissions.act_scores.midpoint.cumulative'] || null,
+          satAvg:
+            school['latest.admissions.sat_scores.average.overall'] || null,
+          actAvg:
+            school['latest.admissions.act_scores.midpoint.cumulative'] || null,
           tuition: school['latest.cost.tuition.out_of_state'] || null,
           studentCount: school['latest.student.size'] || null,
           graduationRate: school['latest.completion.completion_rate_4yr_150nt']
-            ? Number((school['latest.completion.completion_rate_4yr_150nt'] * 100).toFixed(2))
+            ? Number(
+                (
+                  school['latest.completion.completion_rate_4yr_150nt'] * 100
+                ).toFixed(2),
+              )
             : null,
-          avgSalary: school['latest.earnings.10_yrs_after_entry.median'] || null,
-          metadata: { scorecardId: String(school.id), lastSync: new Date().toISOString() },
+          avgSalary:
+            school['latest.earnings.10_yrs_after_entry.median'] || null,
+          metadata: {
+            scorecardId: String(school.id),
+            lastSync: new Date().toISOString(),
+          },
         };
 
         // Upsert by name
         await prisma.school.upsert({
-          where: { 
-            id: (await prisma.school.findFirst({ where: { name } }))?.id || 'new-' + school.id,
+          where: {
+            id:
+              (await prisma.school.findFirst({ where: { name } }))?.id ||
+              'new-' + school.id,
           },
           update: schoolData,
           create: schoolData,
@@ -114,9 +132,9 @@ async function syncSchools(limit = 500): Promise<void> {
     }
 
     page++;
-    
+
     // Rate limiting
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
   }
 
   console.log(`\n🎉 同步完成!`);
@@ -129,12 +147,3 @@ const limit = parseInt(process.argv[2] || '200', 10);
 syncSchools(limit)
   .catch(console.error)
   .finally(() => prisma.$disconnect());
-
-
-
-
-
-
-
-
-

@@ -24,6 +24,3 @@ export class ReviewVerificationDto {
   @MaxLength(500)
   note?: string;
 }
-
-
-

@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ResilienceService, CircuitOpenError, TimeoutError } from './resilience.service';
+import {
+  ResilienceService,
+  CircuitOpenError,
+  TimeoutError,
+} from './resilience.service';
 
 describe('ResilienceService', () => {
   let service: ResilienceService;
@@ -92,23 +96,29 @@ describe('ResilienceService', () => {
     });
 
     it('should throw TimeoutError if exceeds timeout', async () => {
-      const fn = jest.fn().mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve('slow'), 500)),
-      );
+      const fn = jest
+        .fn()
+        .mockImplementation(
+          () =>
+            new Promise((resolve) => setTimeout(() => resolve('slow'), 500)),
+        );
 
-      await expect(
-        service.withTimeout(fn, 50, 'slow-op'),
-      ).rejects.toThrow(TimeoutError);
+      await expect(service.withTimeout(fn, 50, 'slow-op')).rejects.toThrow(
+        TimeoutError,
+      );
     });
 
     it('should include operation name in error', async () => {
-      const fn = jest.fn().mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve('slow'), 500)),
-      );
+      const fn = jest
+        .fn()
+        .mockImplementation(
+          () =>
+            new Promise((resolve) => setTimeout(() => resolve('slow'), 500)),
+        );
 
-      await expect(
-        service.withTimeout(fn, 10, 'my-operation'),
-      ).rejects.toThrow('my-operation');
+      await expect(service.withTimeout(fn, 10, 'my-operation')).rejects.toThrow(
+        'my-operation',
+      );
     });
   });
 
@@ -127,7 +137,9 @@ describe('ResilienceService', () => {
       // Trigger failures to open circuit
       for (let i = 0; i < 5; i++) {
         await expect(
-          service.withCircuitBreaker('test-service', fn, { failureThreshold: 5 }),
+          service.withCircuitBreaker('test-service', fn, {
+            failureThreshold: 5,
+          }),
         ).rejects.toThrow('fail');
       }
 
@@ -184,14 +196,14 @@ describe('ResilienceService', () => {
       await service.withCircuitBreaker('test-service', fn);
 
       // Circuit should be closed now
-      const status = service.getCircuitStatus('test-service');
+      const status = await service.getCircuitStatus('test-service');
       expect(status.state).toBe('CLOSED');
     });
   });
 
   describe('getCircuitStatus', () => {
-    it('should return CLOSED for new circuit', () => {
-      const status = service.getCircuitStatus('new-service');
+    it('should return CLOSED for new circuit', async () => {
+      const status = await service.getCircuitStatus('new-service');
 
       expect(status.state).toBe('CLOSED');
       expect(status.failures).toBe(0);
@@ -203,11 +215,13 @@ describe('ResilienceService', () => {
 
       for (let i = 0; i < 3; i++) {
         await expect(
-          service.withCircuitBreaker('test-service', fn, { failureThreshold: 10 }),
+          service.withCircuitBreaker('test-service', fn, {
+            failureThreshold: 10,
+          }),
         ).rejects.toThrow();
       }
 
-      const status = service.getCircuitStatus('test-service');
+      const status = await service.getCircuitStatus('test-service');
       expect(status.failures).toBe(3);
     });
   });
@@ -219,13 +233,15 @@ describe('ResilienceService', () => {
       // Create some failures
       for (let i = 0; i < 3; i++) {
         await expect(
-          service.withCircuitBreaker('test-service', fn, { failureThreshold: 10 }),
+          service.withCircuitBreaker('test-service', fn, {
+            failureThreshold: 10,
+          }),
         ).rejects.toThrow();
       }
 
-      service.resetCircuit('test-service');
+      await service.resetCircuit('test-service');
 
-      const status = service.getCircuitStatus('test-service');
+      const status = await service.getCircuitStatus('test-service');
       expect(status.failures).toBe(0);
       expect(status.state).toBe('CLOSED');
     });
@@ -261,11 +277,9 @@ describe('ResilienceService', () => {
       }
 
       // Circuit should be open now
-      await expect(
-        service.execute('test-service', fn),
-      ).rejects.toThrow(CircuitOpenError);
+      await expect(service.execute('test-service', fn)).rejects.toThrow(
+        CircuitOpenError,
+      );
     });
   });
 });
-
-

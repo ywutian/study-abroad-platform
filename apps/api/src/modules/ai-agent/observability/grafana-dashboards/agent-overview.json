@@ -1,0 +1,304 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "title": "AI Agent - 企业级监控面板",
+  "uid": "ai-agent-overview",
+  "version": 1,
+  "panels": [
+    {
+      "title": "请求总览",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(agent_requests_total[5m]))",
+          "legendFormat": "QPS"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 100 },
+              { "color": "red", "value": 500 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "错误率",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(agent_requests_total{status=\"error\"}[5m])) / sum(rate(agent_requests_total[5m])) * 100",
+          "legendFormat": "Error Rate"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "平均延迟",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(agent_request_duration_seconds_bucket[5m]))",
+          "legendFormat": "P95 Latency"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 2 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "活跃对话数",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "targets": [
+        {
+          "expr": "agent_active_conversations",
+          "legendFormat": "Active"
+        }
+      ]
+    },
+    {
+      "title": "请求趋势",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "targets": [
+        {
+          "expr": "sum(rate(agent_requests_total[5m])) by (agent_type)",
+          "legendFormat": "{{agent_type}}"
+        }
+      ]
+    },
+    {
+      "title": "延迟分布",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(agent_request_duration_seconds_bucket[5m]))",
+          "legendFormat": "P50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(agent_request_duration_seconds_bucket[5m]))",
+          "legendFormat": "P95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(agent_request_duration_seconds_bucket[5m]))",
+          "legendFormat": "P99"
+        }
+      ]
+    },
+    {
+      "title": "LLM 调用",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 12 },
+      "targets": [
+        {
+          "expr": "sum(rate(llm_calls_total[5m])) by (model)",
+          "legendFormat": "{{model}}"
+        }
+      ]
+    },
+    {
+      "title": "Token 使用量",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 12 },
+      "targets": [
+        {
+          "expr": "sum(rate(llm_tokens_total[5m])) by (type)",
+          "legendFormat": "{{type}}"
+        }
+      ]
+    },
+    {
+      "title": "成本估算 (USD/小时)",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 12 },
+      "targets": [
+        {
+          "expr": "sum(rate(llm_cost_total[1h])) * 3600",
+          "legendFormat": "Cost"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD"
+        }
+      }
+    },
+    {
+      "title": "工具调用",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
+      "targets": [
+        {
+          "expr": "sum(rate(tool_calls_total[5m])) by (tool_name)",
+          "legendFormat": "{{tool_name}}"
+        }
+      ]
+    },
+    {
+      "title": "工具延迟",
+      "type": "heatmap",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 20 },
+      "targets": [
+        {
+          "expr": "sum(rate(tool_duration_seconds_bucket[5m])) by (le)",
+          "legendFormat": "{{le}}"
+        }
+      ]
+    },
+    {
+      "title": "记忆系统",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 28 }
+    },
+    {
+      "title": "记忆操作",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 29 },
+      "targets": [
+        {
+          "expr": "sum(rate(memory_operations_total[5m])) by (operation)",
+          "legendFormat": "{{operation}}"
+        }
+      ]
+    },
+    {
+      "title": "缓存命中率",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 29 },
+      "targets": [
+        {
+          "expr": "sum(rate(memory_cache_hits_total[5m])) / (sum(rate(memory_cache_hits_total[5m])) + sum(rate(memory_cache_misses_total[5m]))) * 100",
+          "legendFormat": "Hit Rate"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 70 },
+              { "color": "green", "value": 90 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "向量搜索延迟",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 29 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(memory_vector_search_duration_seconds_bucket[5m]))",
+          "legendFormat": "P95"
+        }
+      ]
+    },
+    {
+      "title": "安全事件",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 37 }
+    },
+    {
+      "title": "安全事件趋势",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 38 },
+      "targets": [
+        {
+          "expr": "sum(rate(security_events_total[5m])) by (event_type)",
+          "legendFormat": "{{event_type}}"
+        }
+      ]
+    },
+    {
+      "title": "安全事件严重程度",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 38 },
+      "targets": [
+        {
+          "expr": "sum(security_events_total) by (severity)",
+          "legendFormat": "{{severity}}"
+        }
+      ]
+    },
+    {
+      "title": "限流事件",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 38 },
+      "targets": [
+        {
+          "expr": "sum(rate(rate_limit_hits_total[5m]))",
+          "legendFormat": "Rate Limited"
+        }
+      ]
+    },
+    {
+      "title": "熔断器状态",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 46 }
+    },
+    {
+      "title": "熔断器状态",
+      "type": "table",
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 47 },
+      "targets": [
+        {
+          "expr": "circuit_breaker_state",
+          "legendFormat": "{{service}}"
+        }
+      ]
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "agent_type",
+        "type": "query",
+        "query": "label_values(agent_requests_total, agent_type)"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "refresh": "30s"
+}

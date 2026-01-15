@@ -4,12 +4,12 @@ import * as cheerio from 'cheerio';
 
 /**
  * 学校官网数据爬虫服务
- * 
+ *
  * 功能:
  * - 文书题目
  * - 申请截止日期
  * - 录取要求 (GPA, SAT/ACT, TOEFL 等)
- * 
+ *
  * 法律说明:
  * - 仅爬取学校官网公开发布的招生信息
  * - 遵守 robots.txt
@@ -18,7 +18,7 @@ import * as cheerio from 'cheerio';
 @Injectable()
 export class SchoolScraperService {
   private readonly logger = new Logger(SchoolScraperService.name);
-  
+
   // 请求间隔 (毫秒)
   private readonly REQUEST_DELAY = 2000;
 
@@ -26,7 +26,7 @@ export class SchoolScraperService {
 
   /**
    * 学校招生页面 URL 配置
-   * 
+   *
    * 维护说明: 如果学校改版，只需更新这里的 URL
    */
   private readonly SCHOOL_URLS: Record<string, SchoolUrls> = {
@@ -37,8 +37,10 @@ export class SchoolScraperService {
     },
     'Harvard University': {
       admissions: 'https://college.harvard.edu/admissions/apply',
-      deadlines: 'https://college.harvard.edu/admissions/apply/application-requirements',
-      essays: 'https://college.harvard.edu/admissions/apply/application-requirements',
+      deadlines:
+        'https://college.harvard.edu/admissions/apply/application-requirements',
+      essays:
+        'https://college.harvard.edu/admissions/apply/application-requirements',
     },
     'Stanford University': {
       admissions: 'https://admission.stanford.edu/apply/',
@@ -47,8 +49,10 @@ export class SchoolScraperService {
     },
     'Massachusetts Institute of Technology': {
       admissions: 'https://mitadmissions.org/apply/',
-      deadlines: 'https://mitadmissions.org/apply/firstyear/deadlines-requirements/',
-      essays: 'https://mitadmissions.org/apply/firstyear/essays-activities-academics/',
+      deadlines:
+        'https://mitadmissions.org/apply/firstyear/deadlines-requirements/',
+      essays:
+        'https://mitadmissions.org/apply/firstyear/essays-activities-academics/',
     },
     'Yale University': {
       admissions: 'https://admissions.yale.edu/apply',
@@ -58,17 +62,23 @@ export class SchoolScraperService {
     'Columbia University': {
       admissions: 'https://undergrad.admissions.columbia.edu/apply',
       deadlines: 'https://undergrad.admissions.columbia.edu/apply/first-year',
-      essays: 'https://undergrad.admissions.columbia.edu/apply/first-year/essays',
+      essays:
+        'https://undergrad.admissions.columbia.edu/apply/first-year/essays',
     },
     'University of Pennsylvania': {
-      admissions: 'https://admissions.upenn.edu/admissions-and-financial-aid/what-penn-looks-for',
-      deadlines: 'https://admissions.upenn.edu/admissions-and-financial-aid/preparing-for-admission/deadlines',
-      essays: 'https://admissions.upenn.edu/admissions-and-financial-aid/preparing-for-admission/essay',
+      admissions:
+        'https://admissions.upenn.edu/admissions-and-financial-aid/what-penn-looks-for',
+      deadlines:
+        'https://admissions.upenn.edu/admissions-and-financial-aid/preparing-for-admission/deadlines',
+      essays:
+        'https://admissions.upenn.edu/admissions-and-financial-aid/preparing-for-admission/essay',
     },
     'California Institute of Technology': {
       admissions: 'https://www.admissions.caltech.edu/apply',
-      deadlines: 'https://www.admissions.caltech.edu/apply/first-year-freshman-applicants',
-      essays: 'https://www.admissions.caltech.edu/apply/first-year-freshman-applicants/essays',
+      deadlines:
+        'https://www.admissions.caltech.edu/apply/first-year-freshman-applicants',
+      essays:
+        'https://www.admissions.caltech.edu/apply/first-year-freshman-applicants/essays',
     },
     'Duke University': {
       admissions: 'https://admissions.duke.edu/apply/',
@@ -77,8 +87,10 @@ export class SchoolScraperService {
     },
     'Northwestern University': {
       admissions: 'https://admissions.northwestern.edu/apply/',
-      deadlines: 'https://admissions.northwestern.edu/apply/application-process.html',
-      essays: 'https://admissions.northwestern.edu/apply/application-process.html',
+      deadlines:
+        'https://admissions.northwestern.edu/apply/application-process.html',
+      essays:
+        'https://admissions.northwestern.edu/apply/application-process.html',
     },
   };
 
@@ -97,13 +109,13 @@ export class SchoolScraperService {
     for (const [schoolName, urls] of Object.entries(this.SCHOOL_URLS)) {
       try {
         this.logger.log(`📥 爬取: ${schoolName}`);
-        
+
         const data = await this.scrapeSchool(schoolName, urls);
         await this.saveSchoolData(schoolName, data);
-        
+
         results.success.push(schoolName);
         this.logger.log(`✅ ${schoolName} 完成`);
-        
+
         // 控制请求频率
         await this.delay(this.REQUEST_DELAY);
       } catch (error) {
@@ -112,14 +124,19 @@ export class SchoolScraperService {
       }
     }
 
-    this.logger.log(`\n🎉 爬取完成: ${results.success.length} 成功, ${results.failed.length} 失败`);
+    this.logger.log(
+      `\n🎉 爬取完成: ${results.success.length} 成功, ${results.failed.length} 失败`,
+    );
     return results;
   }
 
   /**
    * 爬取单个学校
    */
-  async scrapeSchool(schoolName: string, urls: SchoolUrls): Promise<ScrapedSchoolData> {
+  async scrapeSchool(
+    schoolName: string,
+    urls: SchoolUrls,
+  ): Promise<ScrapedSchoolData> {
     const data: ScrapedSchoolData = {
       deadlines: {},
       essays: [],
@@ -167,8 +184,9 @@ export class SchoolScraperService {
   private async fetchPage(url: string): Promise<string> {
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; StudyAbroadBot/1.0; +https://example.com/bot)',
-        'Accept': 'text/html,application/xhtml+xml',
+        'User-Agent':
+          'Mozilla/5.0 (compatible; StudyAbroadBot/1.0; +https://example.com/bot)',
+        Accept: 'text/html,application/xhtml+xml',
         'Accept-Language': 'en-US,en;q=0.9',
       },
     });
@@ -253,7 +271,7 @@ export class SchoolScraperService {
     for (const selector of selectors) {
       $(selector).each((_, elem) => {
         const text = $(elem).text().trim();
-        
+
         // 检查是否像文书题目 (长度适中且包含问句特征)
         if (text.length > 50 && text.length < 500) {
           for (const pattern of essayPatterns) {
@@ -271,8 +289,8 @@ export class SchoolScraperService {
     }
 
     // 去重
-    const unique = essays.filter((v, i, a) => 
-      a.findIndex(t => t.prompt === v.prompt) === i
+    const unique = essays.filter(
+      (v, i, a) => a.findIndex((t) => t.prompt === v.prompt) === i,
     );
 
     return unique.slice(0, 5); // 最多返回 5 个
@@ -335,8 +353,13 @@ export class SchoolScraperService {
 
   /**
    * 保存数据到数据库
+   * 1. 写入 School.metadata（兼容旧逻辑）
+   * 2. 同步写入 SchoolDeadline 表（结构化数据，供时间线使用）
    */
-  private async saveSchoolData(schoolName: string, data: ScrapedSchoolData): Promise<void> {
+  private async saveSchoolData(
+    schoolName: string,
+    data: ScrapedSchoolData,
+  ): Promise<void> {
     const school = await this.prisma.school.findFirst({
       where: { name: schoolName },
     });
@@ -348,6 +371,7 @@ export class SchoolScraperService {
 
     const currentMetadata = (school.metadata as Record<string, unknown>) || {};
 
+    // 1. 写入 metadata JSON（兼容）
     await this.prisma.school.update({
       where: { id: school.id },
       data: {
@@ -360,13 +384,140 @@ export class SchoolScraperService {
         } as any,
       },
     });
+
+    // 2. 同步写入 SchoolDeadline 结构化表
+    await this.syncDeadlinesToTable(school.id, data);
+  }
+
+  /**
+   * 将爬取的截止日期同步到 SchoolDeadline 表
+   */
+  private async syncDeadlinesToTable(
+    schoolId: string,
+    data: ScrapedSchoolData,
+  ): Promise<void> {
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    // 如果 8-12 月，申请季为下一年；否则为当年
+    const applicationYear =
+      currentMonth >= 8 ? now.getFullYear() + 1 : now.getFullYear();
+
+    const roundMapping: Record<
+      string,
+      { round: string; defaultMonth: number; defaultDay: number }
+    > = {
+      ed: { round: 'ED', defaultMonth: 11, defaultDay: 1 },
+      ed2: { round: 'ED2', defaultMonth: 1, defaultDay: 1 },
+      ea: { round: 'EA', defaultMonth: 11, defaultDay: 1 },
+      rea: { round: 'REA', defaultMonth: 11, defaultDay: 1 },
+      rd: { round: 'RD', defaultMonth: 1, defaultDay: 1 },
+    };
+
+    for (const [key, config] of Object.entries(roundMapping)) {
+      const dateStr = data.deadlines[key as keyof DeadlineInfo];
+      if (!dateStr) continue;
+
+      const parsedDate = this.parseDateString(
+        dateStr,
+        applicationYear,
+        config.defaultMonth,
+        config.defaultDay,
+      );
+      if (!parsedDate) continue;
+
+      try {
+        await this.prisma.schoolDeadline.upsert({
+          where: {
+            schoolId_year_round: {
+              schoolId,
+              year: applicationYear,
+              round: config.round,
+            },
+          },
+          update: {
+            applicationDeadline: parsedDate,
+            essayPrompts:
+              data.essays.length > 0 ? (data.essays as any) : undefined,
+            essayCount: data.essays.length > 0 ? data.essays.length : undefined,
+            applicationFee: data.requirements.applicationFee,
+            source: 'SCRAPED',
+          },
+          create: {
+            schoolId,
+            year: applicationYear,
+            round: config.round,
+            applicationDeadline: parsedDate,
+            essayPrompts:
+              data.essays.length > 0 ? (data.essays as any) : undefined,
+            essayCount: data.essays.length > 0 ? data.essays.length : undefined,
+            applicationFee: data.requirements.applicationFee,
+            source: 'SCRAPED',
+          },
+        });
+      } catch (error) {
+        this.logger.warn(
+          `Failed to upsert deadline for school ${schoolId}, round ${config.round}: ${error.message}`,
+        );
+      }
+    }
+  }
+
+  /**
+   * 解析 "November 1" / "Jan 15" 等日期字符串为 Date
+   */
+  private parseDateString(
+    dateStr: string,
+    year: number,
+    defaultMonth: number,
+    defaultDay: number,
+  ): Date | null {
+    const months: Record<string, number> = {
+      january: 0,
+      february: 1,
+      march: 2,
+      april: 3,
+      may: 4,
+      june: 5,
+      july: 6,
+      august: 7,
+      september: 8,
+      october: 9,
+      november: 10,
+      december: 11,
+      jan: 0,
+      feb: 1,
+      mar: 2,
+      apr: 3,
+      jun: 5,
+      jul: 6,
+      aug: 7,
+      sep: 8,
+      oct: 9,
+      nov: 10,
+      dec: 11,
+    };
+
+    const match = dateStr.trim().match(/^([A-Za-z]+)\s+(\d{1,2})$/);
+    if (match) {
+      const monthNum = months[match[1].toLowerCase()];
+      if (monthNum !== undefined) {
+        const day = parseInt(match[2]);
+        // ED/EA 的截止日期通常在申请季年份前一年的 11 月
+        const dateYear = monthNum >= 8 ? year - 1 : year;
+        return new Date(dateYear, monthNum, day);
+      }
+    }
+
+    // 无法解析时使用默认值
+    const dateYear = defaultMonth >= 8 ? year - 1 : year;
+    return new Date(dateYear, defaultMonth - 1, defaultDay);
   }
 
   /**
    * 延迟函数
    */
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
@@ -392,11 +543,11 @@ interface SchoolUrls {
 }
 
 interface DeadlineInfo {
-  ed?: string;    // Early Decision
-  ed2?: string;   // Early Decision II
-  ea?: string;    // Early Action
-  rea?: string;   // Restrictive Early Action
-  rd?: string;    // Regular Decision
+  ed?: string; // Early Decision
+  ed2?: string; // Early Decision II
+  ea?: string; // Early Action
+  rea?: string; // Restrictive Early Action
+  rd?: string; // Regular Decision
 }
 
 interface EssayPrompt {
@@ -425,10 +576,3 @@ export interface ScrapeResult {
   failed: Array<{ school: string; error: string }>;
   total: number;
 }
-
-
-
-
-
-
-

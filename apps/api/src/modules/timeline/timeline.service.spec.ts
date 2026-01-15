@@ -3,6 +3,11 @@ import { TimelineService } from './timeline.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotFoundException, ConflictException } from '@nestjs/common';
 import { ApplicationStatus, TaskType } from '@prisma/client';
+import {
+  ApplicationRound,
+  TimelineStatus,
+  TaskType as DtoTaskType,
+} from './dto/timeline.dto';
 
 describe('TimelineService', () => {
   let service: TimelineService;
@@ -75,6 +80,13 @@ describe('TimelineService', () => {
               update: jest.fn(),
               delete: jest.fn(),
             },
+            personalEvent: {
+              findMany: jest.fn().mockResolvedValue([]),
+              findFirst: jest.fn(),
+              create: jest.fn(),
+              update: jest.fn(),
+              delete: jest.fn(),
+            },
           },
         },
       ],
@@ -94,16 +106,22 @@ describe('TimelineService', () => {
 
   describe('createTimeline', () => {
     it('should create timeline with default tasks', async () => {
-      (prismaService.school.findUnique as jest.Mock).mockResolvedValue(mockSchool);
-      (prismaService.applicationTimeline.findUnique as jest.Mock).mockResolvedValue(null);
-      (prismaService.applicationTimeline.create as jest.Mock).mockResolvedValue({
-        ...mockTimeline,
-        tasks: [mockTask],
-      });
+      (prismaService.school.findUnique as jest.Mock).mockResolvedValue(
+        mockSchool,
+      );
+      (
+        prismaService.applicationTimeline.findUnique as jest.Mock
+      ).mockResolvedValue(null);
+      (prismaService.applicationTimeline.create as jest.Mock).mockResolvedValue(
+        {
+          ...mockTimeline,
+          tasks: [mockTask],
+        },
+      );
 
       const result = await service.createTimeline(mockUserId, {
         schoolId: mockSchoolId,
-        round: 'ED',
+        round: ApplicationRound.ED,
         deadline: '2026-11-01',
       });
 
@@ -124,25 +142,61 @@ describe('TimelineService', () => {
       (prismaService.school.findUnique as jest.Mock).mockResolvedValue(null);
 
       await expect(
-        service.createTimeline(mockUserId, { schoolId: 'invalid', round: 'ED' }),
+        service.createTimeline(mockUserId, {
+          schoolId: 'invalid',
+          round: ApplicationRound.ED,
+        }),
       ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw ConflictException if timeline already exists', async () => {
-      (prismaService.school.findUnique as jest.Mock).mockResolvedValue(mockSchool);
-      (prismaService.applicationTimeline.findUnique as jest.Mock).mockResolvedValue(mockTimeline);
+      (prismaService.school.findUnique as jest.Mock).mockResolvedValue(
+        mockSchool,
+      );
+      (
+        prismaService.applicationTimeline.findUnique as jest.Mock
+      ).mockResolvedValue(mockTimeline);
 
       await expect(
-        service.createTimeline(mockUserId, { schoolId: mockSchoolId, round: 'ED' }),
+        service.createTimeline(mockUserId, {
+          schoolId: mockSchoolId,
+          round: ApplicationRound.ED,
+        }),
       ).rejects.toThrow(ConflictException);
     });
   });
 
   describe('generateTimelines', () => {
     it('should generate timelines for multiple schools', async () => {
-      (prismaService.school.findUnique as jest.Mock).mockResolvedValue(mockSchool);
-      (prismaService.applicationTimeline.findFirst as jest.Mock).mockResolvedValue(null);
-      (prismaService.applicationTimeline.create as jest.Mock).mockResolvedValue(mockTimeline);
+      const mockSchoolWithDeadlines = {
+        ...mockSchool,
+        deadlines: [
+          {
+            id: 'dl-1',
+            schoolId: mockSchoolId,
+            round: 'RD',
+            applicationDeadline: new Date('2027-01-01'),
+            financialAidDeadline: null,
+            year:
+              new Date().getMonth() + 1 >= 8
+                ? new Date().getFullYear() + 1
+                : new Date().getFullYear(),
+            essayPrompts: null,
+            essayCount: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ],
+      };
+      (prismaService.school.findUnique as jest.Mock).mockResolvedValue(
+        mockSchoolWithDeadlines,
+      );
+      (
+        prismaService.applicationTimeline.findMany as jest.Mock
+      ).mockResolvedValue([]);
+      (prismaService.applicationTimeline.create as jest.Mock).mockResolvedValue(
+        mockTimeline,
+      );
 
       const result = await service.generateTimelines(mockUserId, {
         schoolIds: ['school-1', 'school-2'],
@@ -152,8 +206,12 @@ describe('TimelineService', () => {
     });
 
     it('should skip existing timelines', async () => {
-      (prismaService.school.findUnique as jest.Mock).mockResolvedValue(mockSchool);
-      (prismaService.applicationTimeline.findFirst as jest.Mock).mockResolvedValue(mockTimeline);
+      (prismaService.school.findUnique as jest.Mock).mockResolvedValue(
+        mockSchool,
+      );
+      (
+        prismaService.applicationTimeline.findFirst as jest.Mock
+      ).mockResolvedValue(mockTimeline);
 
       const result = await service.generateTimelines(mockUserId, {
         schoolIds: [mockSchoolId],
@@ -165,7 +223,9 @@ describe('TimelineService', () => {
 
   describe('getTimelines', () => {
     it('should return all timelines for user', async () => {
-      (prismaService.applicationTimeline.findMany as jest.Mock).mockResolvedValue([mockTimeline]);
+      (
+        prismaService.applicationTimeline.findMany as jest.Mock
+      ).mockResolvedValue([mockTimeline]);
 
       const result = await service.getTimelines(mockUserId);
 
@@ -176,7 +236,9 @@ describe('TimelineService', () => {
 
   describe('getTimelineById', () => {
     it('should return timeline with tasks', async () => {
-      (prismaService.applicationTimeline.findFirst as jest.Mock).mockResolvedValue({
+      (
+        prismaService.applicationTimeline.findFirst as jest.Mock
+      ).mockResolvedValue({
         ...mockTimeline,
         tasks: [mockTask],
       });
@@ -188,7 +250,9 @@ describe('TimelineService', () => {
     });
 
     it('should throw NotFoundException if timeline not found', async () => {
-      (prismaService.applicationTimeline.findFirst as jest.Mock).mockResolvedValue(null);
+      (
+        prismaService.applicationTimeline.findFirst as jest.Mock
+      ).mockResolvedValue(null);
 
       await expect(
         service.getTimelineById(mockUserId, 'invalid'),
@@ -198,16 +262,20 @@ describe('TimelineService', () => {
 
   describe('updateTimeline', () => {
     it('should update timeline status and progress', async () => {
-      (prismaService.applicationTimeline.findFirst as jest.Mock).mockResolvedValue(mockTimeline);
-      (prismaService.applicationTimeline.update as jest.Mock).mockResolvedValue({
-        ...mockTimeline,
-        status: ApplicationStatus.IN_PROGRESS,
-        progress: 50,
-        tasks: [],
-      });
+      (
+        prismaService.applicationTimeline.findFirst as jest.Mock
+      ).mockResolvedValue(mockTimeline);
+      (prismaService.applicationTimeline.update as jest.Mock).mockResolvedValue(
+        {
+          ...mockTimeline,
+          status: ApplicationStatus.IN_PROGRESS,
+          progress: 50,
+          tasks: [],
+        },
+      );
 
       const result = await service.updateTimeline(mockUserId, mockTimelineId, {
-        status: ApplicationStatus.IN_PROGRESS,
+        status: TimelineStatus.IN_PROGRESS,
         progress: 50,
       });
 
@@ -215,7 +283,9 @@ describe('TimelineService', () => {
     });
 
     it('should throw NotFoundException if timeline not found', async () => {
-      (prismaService.applicationTimeline.findFirst as jest.Mock).mockResolvedValue(null);
+      (
+        prismaService.applicationTimeline.findFirst as jest.Mock
+      ).mockResolvedValue(null);
 
       await expect(
         service.updateTimeline(mockUserId, 'invalid', { progress: 50 }),
@@ -225,8 +295,12 @@ describe('TimelineService', () => {
 
   describe('deleteTimeline', () => {
     it('should delete timeline', async () => {
-      (prismaService.applicationTimeline.findFirst as jest.Mock).mockResolvedValue(mockTimeline);
-      (prismaService.applicationTimeline.delete as jest.Mock).mockResolvedValue(mockTimeline);
+      (
+        prismaService.applicationTimeline.findFirst as jest.Mock
+      ).mockResolvedValue(mockTimeline);
+      (prismaService.applicationTimeline.delete as jest.Mock).mockResolvedValue(
+        mockTimeline,
+      );
 
       await service.deleteTimeline(mockUserId, mockTimelineId);
 
@@ -236,7 +310,9 @@ describe('TimelineService', () => {
     });
 
     it('should throw NotFoundException if timeline not found', async () => {
-      (prismaService.applicationTimeline.findFirst as jest.Mock).mockResolvedValue(null);
+      (
+        prismaService.applicationTimeline.findFirst as jest.Mock
+      ).mockResolvedValue(null);
 
       await expect(
         service.deleteTimeline(mockUserId, 'invalid'),
@@ -252,11 +328,25 @@ describe('TimelineService', () => {
     it('should return timeline statistics', async () => {
       const timelines = [
         { ...mockTimeline, status: ApplicationStatus.SUBMITTED, tasks: [] },
-        { ...mockTimeline, id: 'tl-2', status: ApplicationStatus.IN_PROGRESS, tasks: [] },
-        { ...mockTimeline, id: 'tl-3', status: ApplicationStatus.NOT_STARTED, tasks: [] },
+        {
+          ...mockTimeline,
+          id: 'tl-2',
+          status: ApplicationStatus.IN_PROGRESS,
+          tasks: [],
+        },
+        {
+          ...mockTimeline,
+          id: 'tl-3',
+          status: ApplicationStatus.NOT_STARTED,
+          tasks: [],
+        },
       ];
-      (prismaService.applicationTimeline.findMany as jest.Mock).mockResolvedValue(timelines);
-      (prismaService.applicationTask.findMany as jest.Mock).mockResolvedValue([]);
+      (
+        prismaService.applicationTimeline.findMany as jest.Mock
+      ).mockResolvedValue(timelines);
+      (prismaService.applicationTask.findMany as jest.Mock).mockResolvedValue(
+        [],
+      );
 
       const result = await service.getOverview(mockUserId);
 
@@ -273,23 +363,35 @@ describe('TimelineService', () => {
 
   describe('createTask', () => {
     it('should create task and update timeline progress', async () => {
-      (prismaService.applicationTimeline.findFirst as jest.Mock).mockResolvedValue(mockTimeline);
-      (prismaService.applicationTask.findFirst as jest.Mock).mockResolvedValue({ sortOrder: 5 });
-      (prismaService.applicationTask.create as jest.Mock).mockResolvedValue(mockTask);
-      (prismaService.applicationTask.findMany as jest.Mock).mockResolvedValue([mockTask]);
-      (prismaService.applicationTimeline.update as jest.Mock).mockResolvedValue(mockTimeline);
+      (
+        prismaService.applicationTimeline.findFirst as jest.Mock
+      ).mockResolvedValue(mockTimeline);
+      (prismaService.applicationTask.findFirst as jest.Mock).mockResolvedValue({
+        sortOrder: 5,
+      });
+      (prismaService.applicationTask.create as jest.Mock).mockResolvedValue(
+        mockTask,
+      );
+      (prismaService.applicationTask.findMany as jest.Mock).mockResolvedValue([
+        mockTask,
+      ]);
+      (prismaService.applicationTimeline.update as jest.Mock).mockResolvedValue(
+        mockTimeline,
+      );
 
       const result = await service.createTask(mockUserId, {
         timelineId: mockTimelineId,
         title: 'Complete Essay',
-        type: 'ESSAY',
+        type: DtoTaskType.ESSAY,
       });
 
       expect(result.title).toBe('Complete Essay');
     });
 
     it('should throw NotFoundException if timeline not found', async () => {
-      (prismaService.applicationTimeline.findFirst as jest.Mock).mockResolvedValue(null);
+      (
+        prismaService.applicationTimeline.findFirst as jest.Mock
+      ).mockResolvedValue(null);
 
       await expect(
         service.createTask(mockUserId, {
@@ -302,13 +404,19 @@ describe('TimelineService', () => {
 
   describe('updateTask', () => {
     it('should update task', async () => {
-      (prismaService.applicationTask.findFirst as jest.Mock).mockResolvedValue(mockTask);
+      (prismaService.applicationTask.findFirst as jest.Mock).mockResolvedValue(
+        mockTask,
+      );
       (prismaService.applicationTask.update as jest.Mock).mockResolvedValue({
         ...mockTask,
         title: 'Updated Task',
       });
-      (prismaService.applicationTask.findMany as jest.Mock).mockResolvedValue([mockTask]);
-      (prismaService.applicationTimeline.update as jest.Mock).mockResolvedValue(mockTimeline);
+      (prismaService.applicationTask.findMany as jest.Mock).mockResolvedValue([
+        mockTask,
+      ]);
+      (prismaService.applicationTimeline.update as jest.Mock).mockResolvedValue(
+        mockTimeline,
+      );
 
       const result = await service.updateTask(mockUserId, mockTaskId, {
         title: 'Updated Task',
@@ -318,7 +426,9 @@ describe('TimelineService', () => {
     });
 
     it('should throw NotFoundException if task not found', async () => {
-      (prismaService.applicationTask.findFirst as jest.Mock).mockResolvedValue(null);
+      (prismaService.applicationTask.findFirst as jest.Mock).mockResolvedValue(
+        null,
+      );
 
       await expect(
         service.updateTask(mockUserId, 'invalid', { title: 'Test' }),
@@ -339,10 +449,18 @@ describe('TimelineService', () => {
 
   describe('deleteTask', () => {
     it('should delete task and update timeline progress', async () => {
-      (prismaService.applicationTask.findFirst as jest.Mock).mockResolvedValue(mockTask);
-      (prismaService.applicationTask.delete as jest.Mock).mockResolvedValue(mockTask);
-      (prismaService.applicationTask.findMany as jest.Mock).mockResolvedValue([]);
-      (prismaService.applicationTimeline.update as jest.Mock).mockResolvedValue(mockTimeline);
+      (prismaService.applicationTask.findFirst as jest.Mock).mockResolvedValue(
+        mockTask,
+      );
+      (prismaService.applicationTask.delete as jest.Mock).mockResolvedValue(
+        mockTask,
+      );
+      (prismaService.applicationTask.findMany as jest.Mock).mockResolvedValue(
+        [],
+      );
+      (prismaService.applicationTimeline.update as jest.Mock).mockResolvedValue(
+        mockTimeline,
+      );
 
       await service.deleteTask(mockUserId, mockTaskId);
 
@@ -354,7 +472,9 @@ describe('TimelineService', () => {
 
   describe('toggleTaskComplete', () => {
     it('should toggle task from incomplete to complete', async () => {
-      (prismaService.applicationTask.findFirst as jest.Mock).mockResolvedValue(mockTask);
+      (prismaService.applicationTask.findFirst as jest.Mock).mockResolvedValue(
+        mockTask,
+      );
       (prismaService.applicationTask.update as jest.Mock).mockResolvedValue({
         ...mockTask,
         completed: true,
@@ -363,7 +483,9 @@ describe('TimelineService', () => {
       (prismaService.applicationTask.findMany as jest.Mock).mockResolvedValue([
         { ...mockTask, completed: true },
       ]);
-      (prismaService.applicationTimeline.update as jest.Mock).mockResolvedValue(mockTimeline);
+      (prismaService.applicationTimeline.update as jest.Mock).mockResolvedValue(
+        mockTimeline,
+      );
 
       const result = await service.toggleTaskComplete(mockUserId, mockTaskId);
 
@@ -382,8 +504,12 @@ describe('TimelineService', () => {
         completed: false,
         completedAt: null,
       });
-      (prismaService.applicationTask.findMany as jest.Mock).mockResolvedValue([mockTask]);
-      (prismaService.applicationTimeline.update as jest.Mock).mockResolvedValue(mockTimeline);
+      (prismaService.applicationTask.findMany as jest.Mock).mockResolvedValue([
+        mockTask,
+      ]);
+      (prismaService.applicationTimeline.update as jest.Mock).mockResolvedValue(
+        mockTimeline,
+      );
 
       const result = await service.toggleTaskComplete(mockUserId, mockTaskId);
 
@@ -392,5 +518,3 @@ describe('TimelineService', () => {
     });
   });
 });
-
-

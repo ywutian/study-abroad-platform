@@ -31,7 +31,10 @@ export class VaultService {
    */
   async create(userId: string, dto: CreateVaultItemDto): Promise<VaultItemDto> {
     // Encrypt the data
-    const { encryptedData, iv } = this.encryptionService.encrypt(dto.data, userId);
+    const { encryptedData, iv } = this.encryptionService.encrypt(
+      dto.data,
+      userId,
+    );
 
     const item = await this.prisma.vaultItem.create({
       data: {
@@ -85,7 +88,7 @@ export class VaultService {
     const item = this.auth.verifyOwnership(
       await this.prisma.vaultItem.findUnique({ where: { id: itemId } }),
       userId,
-      { entityName: 'Vault item' }
+      { entityName: 'Vault item' },
     );
 
     // Decrypt the data
@@ -104,11 +107,15 @@ export class VaultService {
   /**
    * Update a vault item
    */
-  async update(userId: string, itemId: string, dto: UpdateVaultItemDto): Promise<VaultItemDto> {
+  async update(
+    userId: string,
+    itemId: string,
+    dto: UpdateVaultItemDto,
+  ): Promise<VaultItemDto> {
     this.auth.verifyOwnership(
       await this.prisma.vaultItem.findUnique({ where: { id: itemId } }),
       userId,
-      { entityName: 'Vault item' }
+      { entityName: 'Vault item' },
     );
 
     const updateData: Prisma.VaultItemUpdateInput = {};
@@ -120,7 +127,10 @@ export class VaultService {
 
     // If data is being updated, re-encrypt it
     if (dto.data) {
-      const { encryptedData, iv } = this.encryptionService.encrypt(dto.data, userId);
+      const { encryptedData, iv } = this.encryptionService.encrypt(
+        dto.data,
+        userId,
+      );
       updateData.encryptedData = encryptedData;
       updateData.iv = iv;
     }
@@ -140,7 +150,7 @@ export class VaultService {
     this.auth.verifyOwnership(
       await this.prisma.vaultItem.findUnique({ where: { id: itemId } }),
       userId,
-      { entityName: 'Vault item' }
+      { entityName: 'Vault item' },
     );
 
     await this.prisma.vaultItem.delete({ where: { id: itemId } });
@@ -233,7 +243,13 @@ export class VaultService {
    */
   async importItems(
     userId: string,
-    items: Array<{ type: string; title: string; data: string; category?: string; tags?: string[] }>,
+    items: Array<{
+      type: string;
+      title: string;
+      data: string;
+      category?: string;
+      tags?: string[];
+    }>,
   ): Promise<{ imported: number }> {
     let imported = 0;
 
@@ -245,7 +261,10 @@ export class VaultService {
         continue;
       }
 
-      const { encryptedData, iv } = this.encryptionService.encrypt(item.data, userId);
+      const { encryptedData, iv } = this.encryptionService.encrypt(
+        item.data,
+        userId,
+      );
 
       await this.prisma.vaultItem.create({
         data: {
@@ -269,7 +288,12 @@ export class VaultService {
    * Parse string to VaultItemType enum
    */
   private parseVaultItemType(type: string): VaultItemType | null {
-    const validTypes: VaultItemType[] = ['CREDENTIAL', 'DOCUMENT', 'NOTE', 'CERTIFICATE'];
+    const validTypes: VaultItemType[] = [
+      'CREDENTIAL',
+      'DOCUMENT',
+      'NOTE',
+      'CERTIFICATE',
+    ];
     const upperType = type.toUpperCase() as VaultItemType;
     return validTypes.includes(upperType) ? upperType : null;
   }
@@ -311,5 +335,3 @@ export class VaultService {
     };
   }
 }
-
-

@@ -14,8 +14,23 @@ export { OrchestratorService } from './core/orchestrator.service';
 export type { StreamEvent } from './core/orchestrator.service';
 
 // Enterprise Memory System
-export { RedisCacheService, EmbeddingService, PersistentMemoryService, SummarizerService, MemoryManagerService } from './memory';
-export type { ConversationSummary, EntityRecord, EntityRelation, ToolCallRecord, MessageInput, EntityInput, MemoryStats, RetrievalContext } from './memory/types';
+export {
+  RedisCacheService,
+  EmbeddingService,
+  PersistentMemoryService,
+  SummarizerService,
+  MemoryManagerService,
+} from './memory';
+export type {
+  ConversationSummary,
+  EntityRecord,
+  EntityRelation,
+  ToolCallRecord,
+  MessageInput,
+  EntityInput,
+  MemoryStats,
+  RetrievalContext,
+} from './memory/types';
 
 // Re-export UserContext from types if needed
 export type { UserContext } from './types';
@@ -23,4 +38,3 @@ export type { UserContext } from './types';
 // Module & Controller
 export * from './ai-agent.module';
 export * from './ai-agent.controller';
-

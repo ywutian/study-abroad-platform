@@ -1,26 +1,58 @@
-import { Injectable, ForbiddenException, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { Conversation, Message, Prisma } from '@prisma/client';
+import { MessageFilterService } from './message-filter.service';
+import { Prisma } from '@prisma/client';
+
+/** 用户信息的标准 select（复用） */
+const USER_SELECT = {
+  id: true,
+  email: true,
+  role: true,
+  profile: {
+    select: { nickname: true, avatarUrl: true, realName: true },
+  },
+} as const;
+
+/** 消息中发送者的标准 select */
+const SENDER_SELECT = {
+  id: true,
+  email: true,
+  profile: {
+    select: { nickname: true, avatarUrl: true, realName: true },
+  },
+} as const;
 
 @Injectable()
 export class ChatService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private messageFilter: MessageFilterService,
+  ) {}
 
-  // Check if users mutually follow each other
+  // ============================================
+  // 互关 / 屏蔽检查
+  // ============================================
+
   async checkMutualFollow(userId1: string, userId2: string): Promise<boolean> {
     const [follow1, follow2] = await Promise.all([
       this.prisma.follow.findUnique({
-        where: { followerId_followingId: { followerId: userId1, followingId: userId2 } },
+        where: {
+          followerId_followingId: { followerId: userId1, followingId: userId2 },
+        },
       }),
       this.prisma.follow.findUnique({
-        where: { followerId_followingId: { followerId: userId2, followingId: userId1 } },
+        where: {
+          followerId_followingId: { followerId: userId2, followingId: userId1 },
+        },
       }),
     ]);
-
     return !!follow1 && !!follow2;
   }
 
-  // Check if user is blocked
   async checkBlocked(blockerId: string, blockedId: string): Promise<boolean> {
     const block = await this.prisma.block.findUnique({
       where: { blockerId_blockedId: { blockerId, blockedId } },
@@ -28,91 +60,127 @@ export class ChatService {
     return !!block;
   }
 
-  // Get or create conversation between two users
-  async getOrCreateConversation(userId1: string, userId2: string): Promise<Conversation> {
-    // Check mutual follow
-    const isMutual = await this.checkMutualFollow(userId1, userId2);
-    if (!isMutual) {
-      throw new ForbiddenException('Mutual follow required to start a conversation');
+  // ============================================
+  // 会话管理
+  // ============================================
+
+  /**
+   * 获取或创建会话
+   * 权限：VERIFIED / ADMIN 可发起，USER 只能回复已有会话
+   */
+  async getOrCreateConversation(initiatorId: string, targetId: string) {
+    if (initiatorId === targetId) {
+      throw new BadRequestException('Cannot start conversation with yourself');
     }
 
-    // Check if blocked
-    const [blocked1, blocked2] = await Promise.all([
-      this.checkBlocked(userId1, userId2),
-      this.checkBlocked(userId2, userId1),
-    ]);
+    // 权限检查：仅 VERIFIED / ADMIN 可发起
+    const initiator = await this.prisma.user.findUnique({
+      where: { id: initiatorId },
+      select: { role: true },
+    });
+    if (initiator?.role === 'USER') {
+      throw new ForbiddenException(
+        'Only verified users can initiate conversations',
+      );
+    }
 
+    // 互关检查
+    const isMutual = await this.checkMutualFollow(initiatorId, targetId);
+    if (!isMutual) {
+      throw new ForbiddenException(
+        'Mutual follow required to start a conversation',
+      );
+    }
+
+    // 双向屏蔽检查
+    const [blocked1, blocked2] = await Promise.all([
+      this.checkBlocked(initiatorId, targetId),
+      this.checkBlocked(targetId, initiatorId),
+    ]);
     if (blocked1 || blocked2) {
       throw new ForbiddenException('Cannot message this user');
     }
 
-    // Find existing conversation
-    const existingConversation = await this.prisma.conversation.findFirst({
+    // 查找已有会话（精确匹配：恰好包含这两个参与者）
+    const existing = await this.prisma.conversation.findFirst({
       where: {
-        participants: {
-          every: {
-            userId: { in: [userId1, userId2] },
-          },
-        },
+        AND: [
+          { participants: { some: { userId: initiatorId } } },
+          { participants: { some: { userId: targetId } } },
+        ],
       },
       include: {
-        participants: true,
+        participants: { include: { user: { select: USER_SELECT } } },
       },
     });
 
-    if (existingConversation && existingConversation.participants.length === 2) {
-      return existingConversation;
+    if (existing && existing.participants.length === 2) {
+      return existing;
     }
 
-    // Create new conversation
+    // 创建新会话
     return this.prisma.conversation.create({
       data: {
         participants: {
-          create: [{ userId: userId1 }, { userId: userId2 }],
+          create: [{ userId: initiatorId }, { userId: targetId }],
         },
       },
       include: {
-        participants: true,
+        participants: { include: { user: { select: USER_SELECT } } },
       },
     });
   }
 
-  // Send message
-  async sendMessage(conversationId: string, senderId: string, content: string): Promise<Message> {
-    // Verify sender is participant
+  // ============================================
+  // 消息
+  // ============================================
+
+  /**
+   * 发送消息（含内容过滤）
+   */
+  async sendMessage(conversationId: string, senderId: string, content: string) {
+    // 验证参与者
     const participant = await this.prisma.conversationParticipant.findUnique({
       where: { conversationId_userId: { conversationId, userId: senderId } },
     });
-
     if (!participant) {
       throw new ForbiddenException('Not a participant of this conversation');
     }
 
-    // Get other participant
-    const otherParticipant = await this.prisma.conversationParticipant.findFirst({
-      where: {
-        conversationId,
-        userId: { not: senderId },
-      },
-    });
-
+    // 屏蔽检查
+    const otherParticipant =
+      await this.prisma.conversationParticipant.findFirst({
+        where: { conversationId, userId: { not: senderId } },
+      });
     if (otherParticipant) {
-      // Check if blocked
-      const blocked = await this.checkBlocked(otherParticipant.userId, senderId);
+      const blocked = await this.checkBlocked(
+        otherParticipant.userId,
+        senderId,
+      );
       if (blocked) {
         throw new ForbiddenException('Cannot message this user');
       }
     }
 
+    // 内容过滤（频率 + 重复 + 敏感词）
+    const filterResult = await this.messageFilter.validate(senderId, content);
+    if (!filterResult.allowed) {
+      throw new BadRequestException(filterResult.reason);
+    }
+
+    // 创建消息
     const message = await this.prisma.message.create({
       data: {
         conversationId,
         senderId,
-        content,
+        content: filterResult.filtered,
+      },
+      include: {
+        sender: { select: SENDER_SELECT },
       },
     });
 
-    // Update conversation timestamp
+    // 更新会话时间戳
     await this.prisma.conversation.update({
       where: { id: conversationId },
       data: { updatedAt: new Date() },
@@ -121,7 +189,9 @@ export class ChatService {
     return message;
   }
 
-  // Get user's conversations
+  /**
+   * 获取用户的会话列表（含未读数）
+   */
   async getConversations(userId: string) {
     const participations = await this.prisma.conversationParticipant.findMany({
       where: { userId },
@@ -129,15 +199,12 @@ export class ChatService {
         conversation: {
           include: {
             participants: {
-              include: {
-                user: {
-                  select: { id: true, email: true, role: true },
-                },
-              },
+              include: { user: { select: USER_SELECT } },
             },
             messages: {
               orderBy: { createdAt: 'desc' },
               take: 1,
+              include: { sender: { select: SENDER_SELECT } },
             },
           },
         },
@@ -145,25 +212,19 @@ export class ChatService {
       orderBy: { conversation: { updatedAt: 'desc' } },
     });
 
-    if (participations.length === 0) {
-      return [];
-    }
+    if (participations.length === 0) return [];
 
-    // Batch query: Get unread counts for all conversations in a single query
+    // 批量查询未读数
     const conversationIds = participations.map((p) => p.conversationId);
-    const lastReadMap = new Map(
-      participations.map((p) => [p.conversationId, p.lastReadAt || new Date(0)])
-    );
 
-    // Use raw query for efficient batch unread count
     const unreadCounts = await this.prisma.$queryRaw<
       { conversationId: string; count: bigint }[]
     >`
-      SELECT 
+      SELECT
         "conversationId",
         COUNT(*) as count
       FROM "Message"
-      WHERE 
+      WHERE
         "conversationId" IN (${Prisma.join(conversationIds)})
         AND "senderId" != ${userId}
         AND "createdAt" > (
@@ -176,35 +237,41 @@ export class ChatService {
     `;
 
     const unreadMap = new Map(
-      unreadCounts.map((u) => [u.conversationId, Number(u.count)])
+      unreadCounts.map((u) => [u.conversationId, Number(u.count)]),
     );
 
     return participations.map((p) => {
-      const otherParticipant = p.conversation.participants.find((part) => part.userId !== userId);
-      const unreadCount = unreadMap.get(p.conversationId) || 0;
+      const otherParticipant = p.conversation.participants.find(
+        (part) => part.userId !== userId,
+      );
 
       return {
         id: p.conversation.id,
-        otherUser: otherParticipant?.user,
+        otherUser: otherParticipant?.user || null,
         lastMessage: p.conversation.messages[0] || null,
-        unreadCount,
+        unreadCount: unreadMap.get(p.conversationId) || 0,
         updatedAt: p.conversation.updatedAt,
       };
     });
   }
 
-  // Get messages in conversation
-  async getMessages(conversationId: string, userId: string, limit = 50, before?: string) {
-    // Verify participant
+  /**
+   * 获取会话消息（分页）
+   */
+  async getMessages(
+    conversationId: string,
+    userId: string,
+    limit = 50,
+    before?: string,
+  ) {
     const participant = await this.prisma.conversationParticipant.findUnique({
       where: { conversationId_userId: { conversationId, userId } },
     });
-
     if (!participant) {
       throw new ForbiddenException('Not a participant of this conversation');
     }
 
-    const where: any = { conversationId };
+    const where: Prisma.MessageWhereInput = { conversationId };
 
     if (before) {
       const beforeMessage = await this.prisma.message.findUnique({
@@ -220,14 +287,14 @@ export class ChatService {
       orderBy: { createdAt: 'desc' },
       take: limit,
       include: {
-        sender: {
-          select: { id: true, email: true },
-        },
+        sender: { select: SENDER_SELECT },
       },
     });
   }
 
-  // Mark messages as read
+  /**
+   * 标记已读
+   */
   async markAsRead(conversationId: string, userId: string) {
     await this.prisma.conversationParticipant.update({
       where: { conversationId_userId: { conversationId, userId } },
@@ -235,18 +302,18 @@ export class ChatService {
     });
   }
 
-  // Follow user
+  // ============================================
+  // 关注 / 屏蔽
+  // ============================================
+
   async followUser(followerId: string, followingId: string) {
     if (followerId === followingId) {
       throw new BadRequestException('Cannot follow yourself');
     }
-
-    // Check if blocked
     const blocked = await this.checkBlocked(followingId, followerId);
     if (blocked) {
       throw new ForbiddenException('Cannot follow this user');
     }
-
     return this.prisma.follow.upsert({
       where: { followerId_followingId: { followerId, followingId } },
       update: {},
@@ -254,20 +321,16 @@ export class ChatService {
     });
   }
 
-  // Unfollow user
   async unfollowUser(followerId: string, followingId: string) {
     await this.prisma.follow.deleteMany({
       where: { followerId, followingId },
     });
   }
 
-  // Block user
   async blockUser(blockerId: string, blockedId: string) {
     if (blockerId === blockedId) {
       throw new BadRequestException('Cannot block yourself');
     }
-
-    // Remove any follows
     await this.prisma.follow.deleteMany({
       where: {
         OR: [
@@ -276,7 +339,6 @@ export class ChatService {
         ],
       },
     });
-
     return this.prisma.block.upsert({
       where: { blockerId_blockedId: { blockerId, blockedId } },
       update: {},
@@ -284,90 +346,208 @@ export class ChatService {
     });
   }
 
-  // Unblock user
   async unblockUser(blockerId: string, blockedId: string) {
     await this.prisma.block.deleteMany({
       where: { blockerId, blockedId },
     });
   }
 
-  // Report user/message
+  // ============================================
+  // 社交查询
+  // ============================================
+
+  private readonly SOCIAL_PROFILE_SELECT = {
+    nickname: true,
+    avatarUrl: true,
+    realName: true,
+    bio: true,
+    targetMajor: true,
+  } as const;
+
+  async getFollowers(userId: string) {
+    return this.prisma.follow.findMany({
+      where: { followingId: userId },
+      include: {
+        follower: {
+          select: {
+            id: true,
+            email: true,
+            role: true,
+            profile: { select: this.SOCIAL_PROFILE_SELECT },
+          },
+        },
+      },
+    });
+  }
+
+  async getFollowing(userId: string) {
+    return this.prisma.follow.findMany({
+      where: { followerId: userId },
+      include: {
+        following: {
+          select: {
+            id: true,
+            email: true,
+            role: true,
+            profile: { select: this.SOCIAL_PROFILE_SELECT },
+          },
+        },
+      },
+    });
+  }
+
+  async getBlocked(userId: string) {
+    return this.prisma.block.findMany({
+      where: { blockerId: userId },
+      include: {
+        blocked: {
+          select: {
+            id: true,
+            email: true,
+            role: true,
+            profile: {
+              select: { nickname: true, avatarUrl: true, realName: true },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  // ============================================
+  // 举报
+  // ============================================
+
   async report(
     reporterId: string,
     targetType: 'USER' | 'MESSAGE' | 'CASE' | 'REVIEW',
     targetId: string,
     reason: string,
-    detail?: string
+    detail?: string,
   ) {
-    let context: object | undefined = undefined;
+    let context: object | undefined;
 
-    // If reporting a message, attach recent messages as context
     if (targetType === 'MESSAGE') {
       const message = await this.prisma.message.findUnique({
         where: { id: targetId },
         include: {
           conversation: {
             include: {
-              messages: {
-                orderBy: { createdAt: 'desc' },
-                take: 10,
-              },
+              messages: { orderBy: { createdAt: 'desc' }, take: 10 },
             },
           },
         },
       });
-
       if (message) {
         context = message.conversation.messages as unknown as object;
       }
     }
 
     return this.prisma.report.create({
-      data: {
-        reporterId,
-        targetType,
-        targetId,
-        reason,
-        detail,
-        context,
-      },
+      data: { reporterId, targetType, targetId, reason, detail, context },
     });
   }
 
-  // Get followers
-  async getFollowers(userId: string) {
-    return this.prisma.follow.findMany({
-      where: { followingId: userId },
-      include: {
-        follower: {
-          select: { id: true, email: true, role: true },
-        },
-      },
-    });
-  }
+  // ============================================
+  // 推荐关注
+  // ============================================
 
-  // Get following
-  async getFollowing(userId: string) {
-    return this.prisma.follow.findMany({
-      where: { followerId: userId },
-      include: {
-        following: {
-          select: { id: true, email: true, role: true },
-        },
-      },
-    });
-  }
+  async getRecommendedUsers(userId: string, limit = 10) {
+    const [following, blocked] = await Promise.all([
+      this.prisma.follow.findMany({
+        where: { followerId: userId },
+        select: { followingId: true },
+      }),
+      this.prisma.block.findMany({
+        where: { blockerId: userId },
+        select: { blockedId: true },
+      }),
+    ]);
 
-  // Get blocked users
-  async getBlocked(userId: string) {
-    return this.prisma.block.findMany({
-      where: { blockerId: userId },
-      include: {
-        blocked: {
-          select: { id: true, email: true, role: true },
-        },
-      },
+    const excludeIds = [
+      userId,
+      ...following.map((f) => f.followingId),
+      ...blocked.map((b) => b.blockedId),
+    ];
+
+    const currentUserProfile = await this.prisma.profile.findUnique({
+      where: { userId },
+      select: { targetMajor: true },
     });
+
+    const recommendedUsers = await this.prisma.user.findMany({
+      where: {
+        id: { notIn: excludeIds },
+        deletedAt: null,
+        profile: { isNot: null },
+      },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        profile: {
+          select: {
+            targetMajor: true,
+            grade: true,
+            gpa: true,
+            visibility: true,
+            _count: {
+              select: { testScores: true, activities: true, awards: true },
+            },
+          },
+        },
+        _count: { select: { followers: true, admissionCases: true } },
+      },
+      orderBy: [{ role: 'desc' }, { followers: { _count: 'desc' } }],
+      take: limit * 2,
+    });
+
+    const scoredUsers = recommendedUsers.map((user) => {
+      let score = 0;
+      if (user.role === 'VERIFIED') score += 50;
+      if (user.role === 'ADMIN') score += 30;
+      if (user._count.admissionCases > 0) score += 30;
+
+      if (user.profile) {
+        score +=
+          (user.profile._count.testScores > 0 ? 10 : 0) +
+          (user.profile._count.activities > 0 ? 10 : 0) +
+          (user.profile._count.awards > 0 ? 10 : 0) +
+          (user.profile.gpa ? 10 : 0);
+      }
+
+      if (
+        currentUserProfile?.targetMajor &&
+        user.profile?.targetMajor === currentUserProfile.targetMajor
+      ) {
+        score += 40;
+      }
+
+      score += Math.min(user._count.followers * 2, 20);
+
+      return {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        profile: user.profile
+          ? {
+              targetMajor: user.profile.targetMajor,
+              grade: user.profile.grade,
+              visibility: user.profile.visibility,
+              completeness: user.profile._count,
+            }
+          : null,
+        stats: {
+          followers: user._count.followers,
+          cases: user._count.admissionCases,
+        },
+        score,
+      };
+    });
+
+    return scoredUsers
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit)
+      .map(({ score, ...user }) => user);
   }
 }
-

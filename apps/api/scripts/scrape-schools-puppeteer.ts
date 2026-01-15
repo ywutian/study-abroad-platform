@@ -1,6 +1,6 @@
 /**
  * 增强版学校爬虫 - 使用 Puppeteer 处理 JavaScript 渲染
- * 
+ *
  * 用法: npx ts-node scripts/scrape-schools-puppeteer.ts
  */
 
@@ -27,7 +27,8 @@ const SCHOOLS_CONFIG: SchoolConfig[] = [
   {
     name: 'Harvard University',
     urls: {
-      deadlines: 'https://college.harvard.edu/admissions/apply/application-requirements',
+      deadlines:
+        'https://college.harvard.edu/admissions/apply/application-requirements',
     },
     fallback: {
       deadlines: { rea: 'November 1', rd: 'January 1' },
@@ -37,8 +38,10 @@ const SCHOOLS_CONFIG: SchoolConfig[] = [
   {
     name: 'Massachusetts Institute of Technology',
     urls: {
-      deadlines: 'https://mitadmissions.org/apply/firstyear/deadlines-requirements/',
-      essays: 'https://mitadmissions.org/apply/firstyear/essays-activities-academics/',
+      deadlines:
+        'https://mitadmissions.org/apply/firstyear/deadlines-requirements/',
+      essays:
+        'https://mitadmissions.org/apply/firstyear/essays-activities-academics/',
     },
     fallback: {
       deadlines: { ea: 'November 1', rd: 'January 4' },
@@ -79,7 +82,8 @@ const SCHOOLS_CONFIG: SchoolConfig[] = [
   {
     name: 'University of Pennsylvania',
     urls: {
-      deadlines: 'https://admissions.upenn.edu/admissions-and-financial-aid/preparing-for-admission/deadlines',
+      deadlines:
+        'https://admissions.upenn.edu/admissions-and-financial-aid/preparing-for-admission/deadlines',
     },
     fallback: {
       deadlines: { ed: 'November 1', rd: 'January 5' },
@@ -99,7 +103,8 @@ const SCHOOLS_CONFIG: SchoolConfig[] = [
   {
     name: 'California Institute of Technology',
     urls: {
-      deadlines: 'https://www.admissions.caltech.edu/apply/first-year-freshman-applicants',
+      deadlines:
+        'https://www.admissions.caltech.edu/apply/first-year-freshman-applicants',
     },
     fallback: {
       deadlines: { rea: 'November 1', rd: 'January 3' },
@@ -109,7 +114,8 @@ const SCHOOLS_CONFIG: SchoolConfig[] = [
   {
     name: 'Northwestern University',
     urls: {
-      deadlines: 'https://admissions.northwestern.edu/apply/application-process.html',
+      deadlines:
+        'https://admissions.northwestern.edu/apply/application-process.html',
     },
     fallback: {
       deadlines: { ed: 'November 1', rd: 'January 3' },
@@ -140,25 +146,25 @@ async function scrapeWithPuppeteer(url: string): Promise<string> {
 
   try {
     const page = await browser.newPage();
-    
+
     await page.setUserAgent(
-      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
     );
 
-    await page.goto(url, { 
+    await page.goto(url, {
       waitUntil: 'networkidle2',
       timeout: 30000,
     });
 
     // 等待页面完全加载
     await page.waitForSelector('body', { timeout: 10000 });
-    
+
     // 滚动页面触发懒加载
     await page.evaluate(() => {
       window.scrollTo(0, document.body.scrollHeight);
     });
-    
-    await new Promise(r => setTimeout(r, 2000));
+
+    await new Promise((r) => setTimeout(r, 2000));
 
     const html = await page.content();
     return html;
@@ -174,27 +180,42 @@ function parseDeadlines(html: string): Record<string, string> {
 
   // 更全面的日期模式
   const patterns = [
-    { key: 'rea', patterns: [
-      /restrictive\s*early\s*action[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i,
-      /REA[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i,
-    ]},
-    { key: 'ea', patterns: [
-      /early\s*action[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i,
-      /EA[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i,
-    ]},
-    { key: 'ed', patterns: [
-      /early\s*decision\s*(?:I\s*)?[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i,
-      /ED\s*(?:I\s*)?[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i,
-    ]},
-    { key: 'ed2', patterns: [
-      /early\s*decision\s*II[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i,
-      /ED\s*II[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i,
-    ]},
-    { key: 'rd', patterns: [
-      /regular\s*decision[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i,
-      /RD[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i,
-      /regular\s*deadline[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i,
-    ]},
+    {
+      key: 'rea',
+      patterns: [
+        /restrictive\s*early\s*action[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i,
+        /REA[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i,
+      ],
+    },
+    {
+      key: 'ea',
+      patterns: [
+        /early\s*action[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i,
+        /EA[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i,
+      ],
+    },
+    {
+      key: 'ed',
+      patterns: [
+        /early\s*decision\s*(?:I\s*)?[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i,
+        /ED\s*(?:I\s*)?[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i,
+      ],
+    },
+    {
+      key: 'ed2',
+      patterns: [
+        /early\s*decision\s*II[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i,
+        /ED\s*II[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i,
+      ],
+    },
+    {
+      key: 'rd',
+      patterns: [
+        /regular\s*decision[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i,
+        /RD[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i,
+        /regular\s*deadline[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i,
+      ],
+    },
   ];
 
   for (const { key, patterns: patternList } of patterns) {
@@ -210,9 +231,11 @@ function parseDeadlines(html: string): Record<string, string> {
   // 尝试从表格/列表中提取
   $('table tr, li, dt, dd').each((_, elem) => {
     const elemText = $(elem).text().toLowerCase();
-    
+
     // 查找包含日期的行
-    const dateMatch = elemText.match(/(november|january|february|december)\s*\d{1,2}/i);
+    const dateMatch = elemText.match(
+      /(november|january|february|december)\s*\d{1,2}/i,
+    );
     if (!dateMatch) return;
 
     const date = dateMatch[0];
@@ -251,18 +274,18 @@ function parseEssays(html: string): string[] {
   for (const selector of selectors) {
     $(selector).each((_, elem) => {
       let text = $(elem).text().trim();
-      
+
       // 清理文本
       text = text.replace(/\s+/g, ' ').trim();
-      
+
       // 判断是否是文书题目
-      const isPrompt = 
-        text.length > 40 && 
+      const isPrompt =
+        text.length > 40 &&
         text.length < 600 &&
-        (
-          text.includes('?') ||
-          /^(tell|describe|reflect|share|explain|discuss|what|why|how|we)/i.test(text)
-        ) &&
+        (text.includes('?') ||
+          /^(tell|describe|reflect|share|explain|discuss|what|why|how|we)/i.test(
+            text,
+          )) &&
         !/click|visit|learn more|read more|download/i.test(text) &&
         !seen.has(text);
 
@@ -288,7 +311,7 @@ async function scrapeSchool(config: SchoolConfig): Promise<ScrapedData> {
       console.log(`  📥 截止日期: ${config.urls.deadlines}`);
       const html = await scrapeWithPuppeteer(config.urls.deadlines);
       data.deadlines = parseDeadlines(html);
-      
+
       if (Object.keys(data.deadlines).length === 0) {
         console.log(`  ⚠️ 使用备用截止日期`);
         data.deadlines = config.fallback.deadlines;
@@ -307,7 +330,7 @@ async function scrapeSchool(config: SchoolConfig): Promise<ScrapedData> {
   if (config.urls.essays) {
     try {
       console.log(`  📥 文书题目: ${config.urls.essays}`);
-      await new Promise(r => setTimeout(r, 2000));
+      await new Promise((r) => setTimeout(r, 2000));
       const html = await scrapeWithPuppeteer(config.urls.essays);
       data.essays = parseEssays(html);
     } catch (e: any) {
@@ -360,7 +383,7 @@ async function main() {
 
   for (const config of SCHOOLS_CONFIG) {
     console.log(`\n📚 ${config.name}`);
-    
+
     try {
       const data = await scrapeSchool(config);
       await saveToDatabase(config.name, data);
@@ -368,7 +391,7 @@ async function main() {
     } catch (e: any) {
       console.log(`  ❌ 失败: ${e.message}`);
       failed++;
-      
+
       // 即使失败也保存备用数据
       try {
         await saveToDatabase(config.name, {
@@ -380,7 +403,7 @@ async function main() {
     }
 
     // 学校之间等待
-    await new Promise(r => setTimeout(r, 3000));
+    await new Promise((r) => setTimeout(r, 3000));
   }
 
   console.log('\n' + '='.repeat(60));
@@ -390,12 +413,3 @@ async function main() {
 main()
   .catch(console.error)
   .finally(() => prisma.$disconnect());
-
-
-
-
-
-
-
-
-

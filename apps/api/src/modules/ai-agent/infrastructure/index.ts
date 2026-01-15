@@ -1,6 +1,6 @@
 /**
  * AI Agent 基础设施层
- * 
+ *
  * 提供跨切面的基础能力:
  * - 存储抽象 (Memory/Redis)
  * - 请求上下文 (AsyncLocalStorage)
@@ -24,9 +24,5 @@ export * from './observability';
 // 配置
 export * from './config';
 
-
-
-
-
-
-
+// 告警
+export * from './alerting';

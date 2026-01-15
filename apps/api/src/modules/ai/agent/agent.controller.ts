@@ -2,7 +2,15 @@
  * Agent API 控制器
  */
 
-import { Controller, Post, Delete, Get, Body, Query, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Delete,
+  Get,
+  Body,
+  Query,
+  Param,
+} from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { AgentService } from './agent.service';
 import { CurrentUser } from '../../../common/decorators';
@@ -33,11 +41,7 @@ export class AgentController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: AgentChatDto,
   ) {
-    return this.agentService.chat(
-      user.id,
-      data.message,
-      data.conversationId,
-    );
+    return this.agentService.chat(user.id, data.message, data.conversationId);
   }
 
   /**
@@ -49,12 +53,17 @@ export class AgentController {
     @CurrentUser() user: CurrentUserPayload,
     @Query('conversationId') conversationId?: string,
   ) {
-    const messages = this.agentService.getSessionHistory(user.id, conversationId);
+    const messages = this.agentService.getSessionHistory(
+      user.id,
+      conversationId,
+    );
     return {
-      messages: messages.filter(m => m.role === 'user' || m.role === 'assistant').map(m => ({
-        role: m.role,
-        content: m.content,
-      })),
+      messages: messages
+        .filter((m) => m.role === 'user' || m.role === 'assistant')
+        .map((m) => ({
+          role: m.role,
+          content: m.content,
+        })),
     };
   }
 
@@ -71,10 +80,3 @@ export class AgentController {
     return { success: true };
   }
 }
-
-
-
-
-
-
-

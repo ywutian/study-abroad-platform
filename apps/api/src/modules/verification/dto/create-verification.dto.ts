@@ -37,6 +37,3 @@ export class CreateVerificationDto {
   @IsString()
   proofUrl?: string;
 }
-
-
-

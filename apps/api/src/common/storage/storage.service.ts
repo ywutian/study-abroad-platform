@@ -18,46 +18,46 @@ export interface StorageFile {
 
 /**
  * 存储后端类型
- * 
+ *
  * - local: 本地文件系统（默认，适合开发/小规模部署）
  * - s3: AWS S3 或兼容存储（MinIO、阿里云 OSS S3 兼容模式等）
  * - oss: 阿里云 OSS（需安装 ali-oss）
  * - cos: 腾讯云 COS（需安装 cos-nodejs-sdk-v5）
- * 
+ *
  * 配置方式：设置 STORAGE_TYPE 环境变量
  */
 type StorageProvider = 'local' | 's3' | 'oss' | 'cos';
 
 /**
  * 通用存储服务
- * 
+ *
  * 当前实现：本地存储（开发环境友好）
- * 
+ *
  * 扩展云存储时，根据选择的云服务商：
  * 1. 安装对应 SDK
  * 2. 配置相应环境变量
  * 3. 设置 STORAGE_TYPE
- * 
+ *
  * 示例环境变量：
  * ```
  * # 本地存储（默认）
  * STORAGE_TYPE=local
  * STORAGE_LOCAL_PATH=./uploads
- * 
+ *
  * # 阿里云 OSS
  * STORAGE_TYPE=oss
  * OSS_REGION=oss-cn-hangzhou
  * OSS_ACCESS_KEY_ID=xxx
  * OSS_ACCESS_KEY_SECRET=xxx
  * OSS_BUCKET=your-bucket
- * 
+ *
  * # 腾讯云 COS
  * STORAGE_TYPE=cos
  * COS_SECRET_ID=xxx
  * COS_SECRET_KEY=xxx
  * COS_BUCKET=your-bucket
  * COS_REGION=ap-guangzhou
- * 
+ *
  * # AWS S3 / MinIO
  * STORAGE_TYPE=s3
  * AWS_REGION=us-east-1
@@ -75,8 +75,10 @@ export class StorageService implements OnModuleInit {
   private readonly baseUrl: string;
 
   constructor(private configService: ConfigService) {
-    this.storageType = (this.configService.get('STORAGE_TYPE') || 'local') as StorageProvider;
-    this.localBasePath = this.configService.get('STORAGE_LOCAL_PATH') || './uploads';
+    this.storageType = (this.configService.get('STORAGE_TYPE') ||
+      'local') as StorageProvider;
+    this.localBasePath =
+      this.configService.get('STORAGE_LOCAL_PATH') || './uploads';
     this.baseUrl = this.configService.get('APP_URL') || 'http://localhost:3001';
   }
 
@@ -85,7 +87,9 @@ export class StorageService implements OnModuleInit {
       // 确保本地存储目录存在
       try {
         await fs.mkdir(this.localBasePath, { recursive: true });
-        await fs.mkdir(path.join(this.localBasePath, 'verification'), { recursive: true });
+        await fs.mkdir(path.join(this.localBasePath, 'verification'), {
+          recursive: true,
+        });
         this.logger.log(`本地存储已初始化: ${this.localBasePath}`);
       } catch (error) {
         this.logger.error('创建本地存储目录失败', error);
@@ -140,10 +144,14 @@ export class StorageService implements OnModuleInit {
    * S3 兼容存储上传
    * 支持：AWS S3、MinIO、阿里云 OSS S3 兼容模式等
    */
-  private async uploadS3(key: string, data: Buffer, contentType: string): Promise<UploadResult> {
+  private async uploadS3(
+    key: string,
+    data: Buffer,
+    contentType: string,
+  ): Promise<UploadResult> {
     try {
       const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3');
-      
+
       const bucket = this.configService.get('AWS_S3_BUCKET');
       const region = this.configService.get('AWS_REGION') || 'us-east-1';
       const endpoint = this.configService.get('AWS_S3_ENDPOINT');
@@ -152,17 +160,20 @@ export class StorageService implements OnModuleInit {
         region,
         credentials: {
           accessKeyId: this.configService.get('AWS_ACCESS_KEY_ID') || '',
-          secretAccessKey: this.configService.get('AWS_SECRET_ACCESS_KEY') || '',
+          secretAccessKey:
+            this.configService.get('AWS_SECRET_ACCESS_KEY') || '',
         },
         ...(endpoint && { endpoint, forcePathStyle: true }),
       });
 
-      await client.send(new PutObjectCommand({
-        Bucket: bucket,
-        Key: key,
-        Body: data,
-        ContentType: contentType,
-      }));
+      await client.send(
+        new PutObjectCommand({
+          Bucket: bucket,
+          Key: key,
+          Body: data,
+          ContentType: contentType,
+        }),
+      );
 
       const url = endpoint
         ? `${endpoint}/${bucket}/${key}`
@@ -182,7 +193,7 @@ export class StorageService implements OnModuleInit {
   private async uploadOSS(key: string, data: Buffer): Promise<UploadResult> {
     try {
       const OSS = (await import('ali-oss')).default;
-      
+
       const client = new OSS({
         region: this.configService.get('OSS_REGION')!,
         accessKeyId: this.configService.get('OSS_ACCESS_KEY_ID')!,
@@ -191,7 +202,7 @@ export class StorageService implements OnModuleInit {
       });
 
       const result = await client.put(key, data);
-      
+
       return { key, url: result.url, provider: 'oss' };
     } catch (error) {
       this.logger.error('OSS 上传失败，降级到本地存储', error);
@@ -206,7 +217,7 @@ export class StorageService implements OnModuleInit {
   private async uploadCOS(key: string, data: Buffer): Promise<UploadResult> {
     try {
       const COS = (await import('cos-nodejs-sdk-v5')).default;
-      
+
       const client = new COS({
         SecretId: this.configService.get('COS_SECRET_ID'),
         SecretKey: this.configService.get('COS_SECRET_KEY'),
@@ -216,19 +227,22 @@ export class StorageService implements OnModuleInit {
       const region = this.configService.get('COS_REGION');
 
       await new Promise<void>((resolve, reject) => {
-        client.putObject({
-          Bucket: bucket,
-          Region: region,
-          Key: key,
-          Body: data,
-        }, (err) => {
-          if (err) reject(err);
-          else resolve();
-        });
+        client.putObject(
+          {
+            Bucket: bucket,
+            Region: region,
+            Key: key,
+            Body: data,
+          },
+          (err) => {
+            if (err) reject(err);
+            else resolve();
+          },
+        );
       });
 
       const url = `https://${bucket}.cos.${region}.myqcloud.com/${key}`;
-      
+
       return { key, url, provider: 'cos' };
     } catch (error) {
       this.logger.error('COS 上传失败，降级到本地存储', error);
@@ -275,11 +289,20 @@ export class StorageService implements OnModuleInit {
   isCloudStorageConfigured(): boolean {
     switch (this.storageType) {
       case 's3':
-        return !!(this.configService.get('AWS_S3_BUCKET') && this.configService.get('AWS_ACCESS_KEY_ID'));
+        return !!(
+          this.configService.get('AWS_S3_BUCKET') &&
+          this.configService.get('AWS_ACCESS_KEY_ID')
+        );
       case 'oss':
-        return !!(this.configService.get('OSS_BUCKET') && this.configService.get('OSS_ACCESS_KEY_ID'));
+        return !!(
+          this.configService.get('OSS_BUCKET') &&
+          this.configService.get('OSS_ACCESS_KEY_ID')
+        );
       case 'cos':
-        return !!(this.configService.get('COS_BUCKET') && this.configService.get('COS_SECRET_ID'));
+        return !!(
+          this.configService.get('COS_BUCKET') &&
+          this.configService.get('COS_SECRET_ID')
+        );
       default:
         return true; // local 始终可用
     }

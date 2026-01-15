@@ -1,5 +1,20 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { AssessmentService } from './assessment.service';
 import {
   AssessmentTypeEnum,
@@ -21,7 +36,9 @@ export class AssessmentController {
   @ApiOperation({ summary: '获取测评题目' })
   @ApiParam({ name: 'type', enum: AssessmentTypeEnum })
   @ApiResponse({ status: 200, type: AssessmentDto })
-  async getAssessment(@Param('type') type: AssessmentTypeEnum): Promise<AssessmentDto> {
+  async getAssessment(
+    @Param('type') type: AssessmentTypeEnum,
+  ): Promise<AssessmentDto> {
     return this.assessmentService.getAssessment(type);
   }
 
@@ -42,7 +59,9 @@ export class AssessmentController {
   @ApiBearerAuth()
   @ApiOperation({ summary: '获取测评历史' })
   @ApiResponse({ status: 200, type: [AssessmentResultDto] })
-  async getHistory(@CurrentUser() user: CurrentUserPayload): Promise<AssessmentResultDto[]> {
+  async getHistory(
+    @CurrentUser() user: CurrentUserPayload,
+  ): Promise<AssessmentResultDto[]> {
     return this.assessmentService.getHistory(user.id);
   }
 
@@ -59,5 +78,3 @@ export class AssessmentController {
     return this.assessmentService.getResult(user.id, id);
   }
 }
-
-

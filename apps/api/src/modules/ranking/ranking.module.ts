@@ -10,4 +10,3 @@ import { SchoolModule } from '../school/school.module';
   exports: [RankingService],
 })
 export class RankingModule {}
-

@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Delete, Body, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Body,
+  Param,
+  Query,
+} from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { RankingService } from './ranking.service';
 import { CurrentUser, Public } from '../../common/decorators';
@@ -31,7 +39,10 @@ export class RankingController {
   @Post()
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Save custom ranking' })
-  async saveRanking(@CurrentUser() user: CurrentUserPayload, @Body() data: SaveRankingDto) {
+  async saveRanking(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() data: SaveRankingDto,
+  ) {
     const { name, isPublic = false, ...weights } = data;
     return this.rankingService.saveRanking(user.id, name, weights, isPublic);
   }
@@ -60,9 +71,11 @@ export class RankingController {
   @Delete(':id')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete my ranking' })
-  async deleteRanking(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+  async deleteRanking(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+  ) {
     await this.rankingService.deleteRanking(id, user.id);
     return { message: 'Ranking deleted successfully' };
   }
 }
-

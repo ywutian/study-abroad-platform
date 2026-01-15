@@ -13,7 +13,10 @@ export class EssayPolishRequestDto {
   @IsNotEmpty()
   essayId: string;
 
-  @ApiProperty({ description: '要润色的内容（可选，默认使用文书全文）', required: false })
+  @ApiProperty({
+    description: '要润色的内容（可选，默认使用文书全文）',
+    required: false,
+  })
   @IsString()
   @IsOptional()
   content?: string;
@@ -48,6 +51,3 @@ export class EssayPolishResponseDto {
   @ApiProperty()
   tokenUsed: number;
 }
-
-
-

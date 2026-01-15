@@ -1,8 +1,1 @@
 export * from './memory.interface';
-
-
-
-
-
-
-

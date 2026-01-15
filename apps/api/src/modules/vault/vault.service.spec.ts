@@ -3,7 +3,7 @@ import { VaultService } from './vault.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthorizationService } from '../../common/services/authorization.service';
 import { EncryptionService } from './encryption.service';
-import { VaultItemType } from '@prisma/client';
+import { VaultItemType } from '../../common/types/enums';
 
 describe('VaultService', () => {
   let service: VaultService;
@@ -55,7 +55,9 @@ describe('VaultService', () => {
         {
           provide: EncryptionService,
           useValue: {
-            encrypt: jest.fn().mockReturnValue({ encryptedData: 'encrypted', iv: 'iv-123' }),
+            encrypt: jest
+              .fn()
+              .mockReturnValue({ encryptedData: 'encrypted', iv: 'iv-123' }),
             decrypt: jest.fn().mockReturnValue('decrypted-data'),
             generatePassword: jest.fn().mockReturnValue('generated-password'),
           },
@@ -79,7 +81,9 @@ describe('VaultService', () => {
 
   describe('create', () => {
     it('should create and encrypt vault item', async () => {
-      (prismaService.vaultItem.create as jest.Mock).mockResolvedValue(mockVaultItem);
+      (prismaService.vaultItem.create as jest.Mock).mockResolvedValue(
+        mockVaultItem,
+      );
 
       const result = await service.create(mockUserId, {
         type: VaultItemType.CREDENTIAL,
@@ -89,7 +93,10 @@ describe('VaultService', () => {
         tags: ['important'],
       });
 
-      expect(encryptionService.encrypt).toHaveBeenCalledWith('sensitive-data', mockUserId);
+      expect(encryptionService.encrypt).toHaveBeenCalledWith(
+        'sensitive-data',
+        mockUserId,
+      );
       expect(result.id).toBe(mockItemId);
       expect(result.title).toBe('Test Credential');
     });
@@ -97,7 +104,9 @@ describe('VaultService', () => {
 
   describe('findAll', () => {
     it('should return all vault items for user', async () => {
-      (prismaService.vaultItem.findMany as jest.Mock).mockResolvedValue([mockVaultItem]);
+      (prismaService.vaultItem.findMany as jest.Mock).mockResolvedValue([
+        mockVaultItem,
+      ]);
 
       const result = await service.findAll(mockUserId, {});
 
@@ -152,7 +161,9 @@ describe('VaultService', () => {
 
   describe('findOne', () => {
     it('should return decrypted vault item', async () => {
-      (prismaService.vaultItem.findUnique as jest.Mock).mockResolvedValue(mockVaultItem);
+      (prismaService.vaultItem.findUnique as jest.Mock).mockResolvedValue(
+        mockVaultItem,
+      );
       (authService.verifyOwnership as jest.Mock).mockReturnValue(mockVaultItem);
 
       const result = await service.findOne(mockUserId, mockItemId);
@@ -169,7 +180,9 @@ describe('VaultService', () => {
 
   describe('update', () => {
     it('should update vault item', async () => {
-      (prismaService.vaultItem.findUnique as jest.Mock).mockResolvedValue(mockVaultItem);
+      (prismaService.vaultItem.findUnique as jest.Mock).mockResolvedValue(
+        mockVaultItem,
+      );
       (authService.verifyOwnership as jest.Mock).mockReturnValue(mockVaultItem);
       (prismaService.vaultItem.update as jest.Mock).mockResolvedValue({
         ...mockVaultItem,
@@ -185,23 +198,34 @@ describe('VaultService', () => {
     });
 
     it('should re-encrypt when data is updated', async () => {
-      (prismaService.vaultItem.findUnique as jest.Mock).mockResolvedValue(mockVaultItem);
+      (prismaService.vaultItem.findUnique as jest.Mock).mockResolvedValue(
+        mockVaultItem,
+      );
       (authService.verifyOwnership as jest.Mock).mockReturnValue(mockVaultItem);
-      (prismaService.vaultItem.update as jest.Mock).mockResolvedValue(mockVaultItem);
+      (prismaService.vaultItem.update as jest.Mock).mockResolvedValue(
+        mockVaultItem,
+      );
 
       await service.update(mockUserId, mockItemId, {
         data: 'new-sensitive-data',
       });
 
-      expect(encryptionService.encrypt).toHaveBeenCalledWith('new-sensitive-data', mockUserId);
+      expect(encryptionService.encrypt).toHaveBeenCalledWith(
+        'new-sensitive-data',
+        mockUserId,
+      );
     });
   });
 
   describe('delete', () => {
     it('should delete vault item', async () => {
-      (prismaService.vaultItem.findUnique as jest.Mock).mockResolvedValue(mockVaultItem);
+      (prismaService.vaultItem.findUnique as jest.Mock).mockResolvedValue(
+        mockVaultItem,
+      );
       (authService.verifyOwnership as jest.Mock).mockReturnValue(mockVaultItem);
-      (prismaService.vaultItem.delete as jest.Mock).mockResolvedValue(mockVaultItem);
+      (prismaService.vaultItem.delete as jest.Mock).mockResolvedValue(
+        mockVaultItem,
+      );
 
       await service.delete(mockUserId, mockItemId);
 
@@ -242,7 +266,9 @@ describe('VaultService', () => {
 
   describe('deleteAll', () => {
     it('should delete all vault items for user', async () => {
-      (prismaService.vaultItem.deleteMany as jest.Mock).mockResolvedValue({ count: 10 });
+      (prismaService.vaultItem.deleteMany as jest.Mock).mockResolvedValue({
+        count: 10,
+      });
 
       const result = await service.deleteAll(mockUserId);
 
@@ -255,7 +281,9 @@ describe('VaultService', () => {
 
   describe('exportAll', () => {
     it('should export all items with decrypted data', async () => {
-      (prismaService.vaultItem.findMany as jest.Mock).mockResolvedValue([mockVaultItem]);
+      (prismaService.vaultItem.findMany as jest.Mock).mockResolvedValue([
+        mockVaultItem,
+      ]);
 
       const result = await service.exportAll(mockUserId);
 
@@ -266,7 +294,9 @@ describe('VaultService', () => {
 
   describe('importItems', () => {
     it('should import and encrypt items', async () => {
-      (prismaService.vaultItem.create as jest.Mock).mockResolvedValue(mockVaultItem);
+      (prismaService.vaultItem.create as jest.Mock).mockResolvedValue(
+        mockVaultItem,
+      );
 
       const result = await service.importItems(mockUserId, [
         { type: 'CREDENTIAL', title: 'Item 1', data: 'data1' },
@@ -278,7 +308,9 @@ describe('VaultService', () => {
     });
 
     it('should skip items with invalid type', async () => {
-      (prismaService.vaultItem.create as jest.Mock).mockResolvedValue(mockVaultItem);
+      (prismaService.vaultItem.create as jest.Mock).mockResolvedValue(
+        mockVaultItem,
+      );
 
       const result = await service.importItems(mockUserId, [
         { type: 'INVALID_TYPE', title: 'Item 1', data: 'data1' },
@@ -308,4 +340,3 @@ describe('VaultService', () => {
     });
   });
 });
-

@@ -12,7 +12,13 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { BudgetTier, Visibility } from '@prisma/client';
 
-const GRADES = ['FRESHMAN', 'SOPHOMORE', 'JUNIOR', 'SENIOR', 'GAP_YEAR'] as const;
+const GRADES = [
+  'FRESHMAN',
+  'SOPHOMORE',
+  'JUNIOR',
+  'SENIOR',
+  'GAP_YEAR',
+] as const;
 const APP_ROUNDS = ['ED', 'ED2', 'EA', 'REA', 'RD'] as const;
 
 export class UpdateProfileDto {
@@ -77,4 +83,3 @@ export class UpdateProfileDto {
   @IsEnum(Visibility)
   visibility?: Visibility;
 }
-

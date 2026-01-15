@@ -14,7 +14,7 @@ export class TokenCleanupScheduler {
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async cleanupExpiredTokens() {
     this.logger.log('Starting expired refresh token cleanup...');
-    
+
     try {
       const result = await this.prisma.refreshToken.deleteMany({
         where: {
@@ -23,7 +23,7 @@ export class TokenCleanupScheduler {
           },
         },
       });
-      
+
       this.logger.log(`Cleaned up ${result.count} expired refresh tokens`);
     } catch (error) {
       this.logger.error('Failed to cleanup expired refresh tokens', error);
@@ -36,32 +36,31 @@ export class TokenCleanupScheduler {
   @Cron(CronExpression.EVERY_WEEK)
   async cleanupOrphanedTokens() {
     this.logger.log('Starting orphaned refresh token cleanup...');
-    
+
     try {
       // Find userIds of soft-deleted users
       const deletedUsers = await this.prisma.user.findMany({
         where: { deletedAt: { not: null } },
         select: { id: true },
       });
-      
+
       if (deletedUsers.length === 0) {
         this.logger.log('No orphaned refresh tokens to cleanup');
         return;
       }
 
-      const deletedUserIds = deletedUsers.map(u => u.id);
-      
+      const deletedUserIds = deletedUsers.map((u) => u.id);
+
       // Delete tokens for soft-deleted users
       const result = await this.prisma.refreshToken.deleteMany({
         where: {
           userId: { in: deletedUserIds },
         },
       });
-      
+
       this.logger.log(`Cleaned up ${result.count} orphaned refresh tokens`);
     } catch (error) {
       this.logger.error('Failed to cleanup orphaned refresh tokens', error);
     }
   }
 }
-

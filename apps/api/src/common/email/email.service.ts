@@ -17,8 +17,10 @@ export class EmailService {
   private readonly fromName: string;
 
   constructor(private configService: ConfigService) {
-    this.fromEmail = this.configService.get<string>('EMAIL_FROM') || 'noreply@example.com';
-    this.fromName = this.configService.get<string>('EMAIL_FROM_NAME') || '留学申请平台';
+    this.fromEmail =
+      this.configService.get<string>('EMAIL_FROM') || 'noreply@example.com';
+    this.fromName =
+      this.configService.get<string>('EMAIL_FROM_NAME') || '留学申请平台';
 
     this.initializeTransporter();
   }
@@ -42,7 +44,9 @@ export class EmailService {
 
       this.logger.log('Email transporter initialized');
     } else {
-      this.logger.warn('Email service not configured - emails will be logged only');
+      this.logger.warn(
+        'Email service not configured - emails will be logged only',
+      );
     }
   }
 
@@ -52,7 +56,9 @@ export class EmailService {
     // If no transporter, log the email instead
     if (!this.transporter) {
       this.logger.log(`[EMAIL MOCK] To: ${to}, Subject: ${subject}`);
-      this.logger.debug(`[EMAIL MOCK] Content: ${text || html.substring(0, 200)}...`);
+      this.logger.debug(
+        `[EMAIL MOCK] Content: ${text || html.substring(0, 200)}...`,
+      );
       return true;
     }
 
@@ -82,7 +88,7 @@ export class EmailService {
 
   // Pre-built email templates
   async sendVerificationEmail(to: string, token: string): Promise<boolean> {
-    const verifyUrl = `${this.configService.get('FRONTEND_URL')}/verify-email?token=${token}`;
+    const verifyUrl = `${this.configService.get('FRONTEND_URL')}/verify-email/callback?token=${token}`;
 
     return this.sendEmail({
       to,
@@ -352,7 +358,8 @@ export class EmailService {
     message: string,
     category: string,
   ): Promise<boolean> {
-    const supportEmail = this.configService.get('SUPPORT_EMAIL') || 'support@studyabroad.com';
+    const supportEmail =
+      this.configService.get('SUPPORT_EMAIL') || 'support@studyabroad.com';
 
     return this.sendEmail({
       to: supportEmail,
@@ -390,10 +397,3 @@ export class EmailService {
     });
   }
 }
-
-
-
-
-
-
-

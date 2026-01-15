@@ -1,4 +1,9 @@
-import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 
@@ -117,9 +122,12 @@ export class SubscriptionService {
 
     // 从用户 metadata 或单独表获取订阅信息
     // 这里简化处理，根据 role 判断
-    const currentPlan = user.role === 'ADMIN' ? SubscriptionPlan.PREMIUM :
-                        user.role === 'VERIFIED' ? SubscriptionPlan.PRO :
-                        SubscriptionPlan.FREE;
+    const currentPlan =
+      user.role === 'ADMIN'
+        ? SubscriptionPlan.PREMIUM
+        : user.role === 'VERIFIED'
+          ? SubscriptionPlan.PRO
+          : SubscriptionPlan.FREE;
 
     return {
       userId: user.id,
@@ -133,9 +141,12 @@ export class SubscriptionService {
   }
 
   // 创建订阅（升级）
-  async createSubscription(userId: string, dto: CreateSubscriptionDto): Promise<PaymentResult> {
+  async createSubscription(
+    userId: string,
+    dto: CreateSubscriptionDto,
+  ): Promise<PaymentResult> {
     const plan = this.getPlan(dto.plan);
-    
+
     if (plan.id === SubscriptionPlan.FREE) {
       throw new BadRequestException('Cannot subscribe to free plan');
     }
@@ -143,14 +154,21 @@ export class SubscriptionService {
     // 计算价格
     const price = dto.period === 'yearly' ? plan.price * 10 : plan.price; // 年付优惠
 
-    this.logger.log(`Creating subscription for user ${userId}: ${plan.name} (${dto.period})`);
+    this.logger.log(
+      `Creating subscription for user ${userId}: ${plan.name} (${dto.period})`,
+    );
 
     // 模拟支付处理
-    const paymentResult = await this.processPayment(userId, price, plan.currency);
+    const paymentResult = await this.processPayment(
+      userId,
+      price,
+      plan.currency,
+    );
 
     if (paymentResult.success) {
       // 更新用户角色
-      const newRole = dto.plan === SubscriptionPlan.PREMIUM ? 'VERIFIED' : 'VERIFIED';
+      const newRole =
+        dto.plan === SubscriptionPlan.PREMIUM ? 'VERIFIED' : 'VERIFIED';
       await this.prisma.user.update({
         where: { id: userId },
         data: { role: newRole },
@@ -164,7 +182,9 @@ export class SubscriptionService {
   }
 
   // 取消订阅
-  async cancelSubscription(userId: string): Promise<{ success: boolean; message: string }> {
+  async cancelSubscription(
+    userId: string,
+  ): Promise<{ success: boolean; message: string }> {
     const subscription = await this.getUserSubscription(userId);
 
     if (subscription.plan === SubscriptionPlan.FREE) {
@@ -222,10 +242,12 @@ export class SubscriptionService {
     // const stripe = new Stripe(this.configService.get('STRIPE_SECRET_KEY'));
     // const paymentIntent = await stripe.paymentIntents.create({...});
 
-    this.logger.log(`Processing payment: ${amount} ${currency} for user ${userId}`);
+    this.logger.log(
+      `Processing payment: ${amount} ${currency} for user ${userId}`,
+    );
 
     // 模拟支付延迟
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     // 模拟成功支付
     const transactionId = `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -241,12 +263,12 @@ export class SubscriptionService {
   async handlePaymentWebhook(payload: any, signature: string): Promise<void> {
     // 验证 webhook 签名
     // const isValid = this.verifyWebhookSignature(payload, signature);
-    
+
     this.logger.log('Received payment webhook');
-    
+
     // 根据事件类型处理
     const eventType = payload.type;
-    
+
     switch (eventType) {
       case 'payment.success':
         // 处理支付成功
@@ -262,6 +284,3 @@ export class SubscriptionService {
     }
   }
 }
-
-
-

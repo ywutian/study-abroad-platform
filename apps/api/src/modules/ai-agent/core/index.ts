@@ -6,6 +6,7 @@
 export * from './llm.service';
 export * from './memory.service';
 export * from './tool-executor.service';
+export * from './workflow-engine.service';
 export * from './agent-runner.service';
 export * from './orchestrator.service';
 
@@ -16,9 +17,5 @@ export * from './token-tracker.service';
 export * from './fallback.service';
 export * from './fast-router.service';
 
-
-
-
-
-
-
+// 安全管道
+export * from './security-pipeline.service';

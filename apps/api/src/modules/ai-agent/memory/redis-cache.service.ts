@@ -1,39 +1,44 @@
 /**
  * Redis 缓存服务 - 短期记忆存储
+ *
+ * 使用项目现有的 RedisService，Redis 不可用时降级为内存缓存
  */
 
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { RedisService } from '../../../common/redis/redis.service';
 import { MessageRecord, ConversationRecord } from './types';
 
-// 简化实现，不依赖 ioredis（可选安装）
+// 内存降级缓存
 interface CacheEntry<T> {
   data: T;
   expiresAt: number;
 }
 
 @Injectable()
-export class RedisCacheService implements OnModuleDestroy {
+export class RedisCacheService {
   private readonly logger = new Logger(RedisCacheService.name);
-  private readonly cache = new Map<string, CacheEntry<any>>();
-  private cleanupInterval: NodeJS.Timeout;
-  
+
+  // 内存降级缓存（Redis 不可用时使用）
+  private readonly fallbackCache = new Map<string, CacheEntry<any>>();
+
   // 配置
   private readonly defaultTTL: number; // 秒
   private readonly maxConversationMessages: number;
 
-  constructor(private config: ConfigService) {
+  constructor(
+    private readonly redis: RedisService,
+    private config: ConfigService,
+  ) {
     this.defaultTTL = this.config.get('MEMORY_CACHE_TTL', 86400); // 24小时
-    this.maxConversationMessages = this.config.get('MAX_CONVERSATION_MESSAGES', 50);
-    
-    // 定期清理过期缓存
-    this.cleanupInterval = setInterval(() => this.cleanup(), 60000);
-    
-    this.logger.log('Memory cache service initialized (in-memory mode)');
-  }
+    this.maxConversationMessages = this.config.get(
+      'MAX_CONVERSATION_MESSAGES',
+      50,
+    );
 
-  onModuleDestroy() {
-    clearInterval(this.cleanupInterval);
+    this.logger.log(
+      `RedisCacheService initialized (Redis ${this.redis.connected ? 'connected' : 'fallback to memory'})`,
+    );
   }
 
   // ==================== 对话缓存 ====================
@@ -46,23 +51,46 @@ export class RedisCacheService implements OnModuleDestroy {
     message: MessageRecord,
     ttl?: number,
   ): Promise<void> {
-    const key = this.getConversationKey(conversationId);
-    const messages = await this.getConversationMessages(conversationId);
-    
+    const key = `conv:msgs:${conversationId}`;
+    const client = this.redis.getClient();
+
+    if (client && this.redis.connected) {
+      try {
+        await client.rpush(key, JSON.stringify(message));
+        await client.ltrim(key, -this.maxConversationMessages, -1);
+        await client.expire(key, ttl || this.defaultTTL);
+        return;
+      } catch (err) {
+        this.logger.debug(`Redis cacheMessage failed, using fallback: ${err}`);
+      }
+    }
+
+    // 降级到内存
+    const messages = this.getFallback<MessageRecord[]>(key) || [];
     messages.push(message);
-    
-    // 保持最大消息数
     const trimmed = messages.slice(-this.maxConversationMessages);
-    
-    this.set(key, trimmed, ttl || this.defaultTTL);
+    this.setFallback(key, trimmed, ttl || this.defaultTTL);
   }
 
   /**
    * 获取对话消息
    */
-  async getConversationMessages(conversationId: string): Promise<MessageRecord[]> {
-    const key = this.getConversationKey(conversationId);
-    return this.get<MessageRecord[]>(key) || [];
+  async getConversationMessages(
+    conversationId: string,
+  ): Promise<MessageRecord[]> {
+    const key = `conv:msgs:${conversationId}`;
+    const client = this.redis.getClient();
+
+    if (client && this.redis.connected) {
+      try {
+        const raw = await client.lrange(key, 0, -1);
+        return raw.map((r) => JSON.parse(r));
+      } catch (err) {
+        this.logger.debug(`Redis getConversationMessages failed: ${err}`);
+      }
+    }
+
+    return this.getFallback<MessageRecord[]>(key) || [];
   }
 
   /**
@@ -73,26 +101,67 @@ export class RedisCacheService implements OnModuleDestroy {
     data: Partial<ConversationRecord>,
     ttl?: number,
   ): Promise<void> {
-    const key = this.getConversationMetaKey(conversationId);
-    const existing = await this.getConversationMeta(conversationId);
-    
-    this.set(key, { ...existing, ...data }, ttl || this.defaultTTL);
+    const key = `conv:meta:${conversationId}`;
+    const client = this.redis.getClient();
+
+    if (client && this.redis.connected) {
+      try {
+        const existing = await this.getConversationMeta(conversationId);
+        await client.set(
+          key,
+          JSON.stringify({ ...existing, ...data }),
+          'EX',
+          ttl || this.defaultTTL,
+        );
+        return;
+      } catch (err) {
+        this.logger.debug(`Redis cacheConversation failed: ${err}`);
+      }
+    }
+
+    const existing = this.getFallback<Partial<ConversationRecord>>(key);
+    this.setFallback(key, { ...existing, ...data }, ttl || this.defaultTTL);
   }
 
   /**
    * 获取对话元数据
    */
-  async getConversationMeta(conversationId: string): Promise<Partial<ConversationRecord> | null> {
-    const key = this.getConversationMetaKey(conversationId);
-    return this.get<Partial<ConversationRecord>>(key);
+  async getConversationMeta(
+    conversationId: string,
+  ): Promise<Partial<ConversationRecord> | null> {
+    const key = `conv:meta:${conversationId}`;
+    const client = this.redis.getClient();
+
+    if (client && this.redis.connected) {
+      try {
+        const raw = await client.get(key);
+        return raw ? JSON.parse(raw) : null;
+      } catch (err) {
+        this.logger.debug(`Redis getConversationMeta failed: ${err}`);
+      }
+    }
+
+    return this.getFallback<Partial<ConversationRecord>>(key);
   }
 
   /**
    * 删除对话缓存
    */
   async deleteConversation(conversationId: string): Promise<void> {
-    this.cache.delete(this.getConversationKey(conversationId));
-    this.cache.delete(this.getConversationMetaKey(conversationId));
+    const msgKey = `conv:msgs:${conversationId}`;
+    const metaKey = `conv:meta:${conversationId}`;
+    const client = this.redis.getClient();
+
+    if (client && this.redis.connected) {
+      try {
+        await client.del(msgKey, metaKey);
+      } catch (err) {
+        this.logger.debug(`Redis deleteConversation failed: ${err}`);
+      }
+    }
+
+    this.fallbackCache.delete(msgKey);
+    this.fallbackCache.delete(metaKey);
   }
 
   // ==================== 用户上下文缓存 ====================
@@ -105,16 +174,43 @@ export class RedisCacheService implements OnModuleDestroy {
     context: Record<string, any>,
     ttl?: number,
   ): Promise<void> {
-    const key = this.getUserContextKey(userId);
-    this.set(key, context, ttl || this.defaultTTL);
+    const key = `user:ctx:${userId}`;
+    const client = this.redis.getClient();
+
+    if (client && this.redis.connected) {
+      try {
+        await client.set(
+          key,
+          JSON.stringify(context),
+          'EX',
+          ttl || this.defaultTTL,
+        );
+        return;
+      } catch (err) {
+        this.logger.debug(`Redis cacheUserContext failed: ${err}`);
+      }
+    }
+
+    this.setFallback(key, context, ttl || this.defaultTTL);
   }
 
   /**
    * 获取用户上下文
    */
   async getUserContext(userId: string): Promise<Record<string, any> | null> {
-    const key = this.getUserContextKey(userId);
-    return this.get<Record<string, any>>(key);
+    const key = `user:ctx:${userId}`;
+    const client = this.redis.getClient();
+
+    if (client && this.redis.connected) {
+      try {
+        const raw = await client.get(key);
+        return raw ? JSON.parse(raw) : null;
+      } catch (err) {
+        this.logger.debug(`Redis getUserContext failed: ${err}`);
+      }
+    }
+
+    return this.getFallback<Record<string, any>>(key);
   }
 
   /**
@@ -124,7 +220,7 @@ export class RedisCacheService implements OnModuleDestroy {
     userId: string,
     updates: Record<string, any>,
   ): Promise<void> {
-    const existing = await this.getUserContext(userId) || {};
+    const existing = (await this.getUserContext(userId)) || {};
     await this.cacheUserContext(userId, { ...existing, ...updates });
   }
 
@@ -132,7 +228,18 @@ export class RedisCacheService implements OnModuleDestroy {
    * 删除用户上下文
    */
   async deleteUserContext(userId: string): Promise<void> {
-    this.cache.delete(this.getUserContextKey(userId));
+    const key = `user:ctx:${userId}`;
+    const client = this.redis.getClient();
+
+    if (client && this.redis.connected) {
+      try {
+        await client.del(key);
+      } catch (err) {
+        this.logger.debug(`Redis deleteUserContext failed: ${err}`);
+      }
+    }
+
+    this.fallbackCache.delete(key);
   }
 
   // ==================== 活跃会话追踪 ====================
@@ -140,89 +247,93 @@ export class RedisCacheService implements OnModuleDestroy {
   /**
    * 记录用户活跃会话
    */
-  async setActiveConversation(userId: string, conversationId: string): Promise<void> {
-    const key = this.getActiveConversationKey(userId);
-    this.set(key, conversationId, this.defaultTTL);
+  async setActiveConversation(
+    userId: string,
+    conversationId: string,
+  ): Promise<void> {
+    const key = `user:active:${userId}`;
+    const client = this.redis.getClient();
+
+    if (client && this.redis.connected) {
+      try {
+        await client.set(key, conversationId, 'EX', this.defaultTTL);
+        return;
+      } catch (err) {
+        this.logger.debug(`Redis setActiveConversation failed: ${err}`);
+      }
+    }
+
+    this.setFallback(key, conversationId, this.defaultTTL);
   }
 
   /**
    * 获取用户活跃会话
    */
   async getActiveConversation(userId: string): Promise<string | null> {
-    const key = this.getActiveConversationKey(userId);
-    return this.get<string>(key);
+    const key = `user:active:${userId}`;
+    const client = this.redis.getClient();
+
+    if (client && this.redis.connected) {
+      try {
+        return await client.get(key);
+      } catch (err) {
+        this.logger.debug(`Redis getActiveConversation failed: ${err}`);
+      }
+    }
+
+    return this.getFallback<string>(key);
   }
 
-  // ==================== 通用方法 ====================
+  // ==================== 内存降级方法 ====================
 
-  private set<T>(key: string, data: T, ttlSeconds: number): void {
-    this.cache.set(key, {
+  private setFallback<T>(key: string, data: T, ttlSeconds: number): void {
+    this.fallbackCache.set(key, {
       data,
       expiresAt: Date.now() + ttlSeconds * 1000,
     });
   }
 
-  private get<T>(key: string): T | null {
-    const entry = this.cache.get(key);
+  private getFallback<T>(key: string): T | null {
+    const entry = this.fallbackCache.get(key);
     if (!entry) return null;
-    
+
     if (Date.now() > entry.expiresAt) {
-      this.cache.delete(key);
+      this.fallbackCache.delete(key);
       return null;
     }
-    
+
     return entry.data as T;
-  }
-
-  private cleanup(): void {
-    const now = Date.now();
-    let cleaned = 0;
-    
-    for (const [key, entry] of this.cache.entries()) {
-      if (now > entry.expiresAt) {
-        this.cache.delete(key);
-        cleaned++;
-      }
-    }
-    
-    if (cleaned > 0) {
-      this.logger.debug(`Cleaned ${cleaned} expired cache entries`);
-    }
-  }
-
-  // ==================== Key 生成 ====================
-
-  private getConversationKey(conversationId: string): string {
-    return `conv:msgs:${conversationId}`;
-  }
-
-  private getConversationMetaKey(conversationId: string): string {
-    return `conv:meta:${conversationId}`;
-  }
-
-  private getUserContextKey(userId: string): string {
-    return `user:ctx:${userId}`;
-  }
-
-  private getActiveConversationKey(userId: string): string {
-    return `user:active:${userId}`;
   }
 
   // ==================== 统计 ====================
 
-  getStats(): { size: number; keys: string[] } {
+  async getStats(): Promise<{
+    connected: boolean;
+    mode: 'redis' | 'memory';
+    keyCount?: number;
+    fallbackSize: number;
+  }> {
+    const client = this.redis.getClient();
+    const connected = !!(client && this.redis.connected);
+
+    if (connected) {
+      try {
+        const keys = await client.keys('conv:*');
+        return {
+          connected: true,
+          mode: 'redis',
+          keyCount: keys.length,
+          fallbackSize: this.fallbackCache.size,
+        };
+      } catch {
+        // fall through
+      }
+    }
+
     return {
-      size: this.cache.size,
-      keys: Array.from(this.cache.keys()),
+      connected: false,
+      mode: 'memory',
+      fallbackSize: this.fallbackCache.size,
     };
   }
 }
-
-
-
-
-
-
-
-
-

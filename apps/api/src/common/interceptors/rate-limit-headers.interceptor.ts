@@ -1,8 +1,8 @@
 /**
  * Rate Limit Headers Interceptor
- * 
+ *
  * 在响应中添加标准的限流 Headers
- * 
+ *
  * Headers:
  * - X-RateLimit-Limit: 每个时间窗口的请求上限
  * - X-RateLimit-Remaining: 剩余可用请求数
@@ -45,14 +45,17 @@ export class RateLimitHeadersInterceptor implements NestInterceptor {
     return next.handle().pipe(
       tap(() => {
         const rateLimit = request.rateLimit;
-        
+
         if (rateLimit) {
           // 标准限流 Headers (RFC 6585)
           response.setHeader('X-RateLimit-Limit', rateLimit.limit);
-          response.setHeader('X-RateLimit-Remaining', Math.max(0, rateLimit.remaining));
+          response.setHeader(
+            'X-RateLimit-Remaining',
+            Math.max(0, rateLimit.remaining),
+          );
           response.setHeader(
             'X-RateLimit-Reset',
-            Math.ceil((Date.now() + rateLimit.resetIn) / 1000)
+            Math.ceil((Date.now() + rateLimit.resetIn) / 1000),
           );
 
           // 并发限制 Headers
@@ -60,17 +63,13 @@ export class RateLimitHeadersInterceptor implements NestInterceptor {
             response.setHeader('X-RateLimit-Concurrent', rateLimit.concurrent);
           }
           if (rateLimit.maxConcurrent !== undefined) {
-            response.setHeader('X-RateLimit-Concurrent-Max', rateLimit.maxConcurrent);
+            response.setHeader(
+              'X-RateLimit-Concurrent-Max',
+              rateLimit.maxConcurrent,
+            );
           }
         }
       }),
     );
   }
 }
-
-
-
-
-
-
-

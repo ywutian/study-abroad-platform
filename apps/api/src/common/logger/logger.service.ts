@@ -1,4 +1,9 @@
-import { Injectable, LoggerService as NestLoggerService, Scope, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  LoggerService as NestLoggerService,
+  Scope,
+  Inject,
+} from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import type { Request } from 'express';
 
@@ -27,10 +32,14 @@ export class LoggerService implements NestLoggerService {
     return this.request?.correlationId;
   }
 
-  private formatMessage(level: string, message: string, context?: LogContext): string {
+  private formatMessage(
+    level: string,
+    message: string,
+    context?: LogContext,
+  ): string {
     const timestamp = new Date().toISOString();
     const correlationId = context?.correlationId || this.getCorrelationId();
-    
+
     const logObject = {
       timestamp,
       level,
@@ -77,7 +86,13 @@ export class LoggerService implements NestLoggerService {
   }
 
   // HTTP Request logging
-  logRequest(method: string, path: string, statusCode: number, duration: number, userId?: string) {
+  logRequest(
+    method: string,
+    path: string,
+    statusCode: number,
+    duration: number,
+    userId?: string,
+  ) {
     this.log(`${method} ${path} ${statusCode} ${duration}ms`, {
       method,
       path,
@@ -93,7 +108,13 @@ export class LoggerService implements NestLoggerService {
   }
 
   // Audit logging
-  logAudit(action: string, userId: string, resource: string, resourceId?: string, metadata?: Record<string, unknown>) {
+  logAudit(
+    action: string,
+    userId: string,
+    resource: string,
+    resourceId?: string,
+    metadata?: Record<string, unknown>,
+  ) {
     this.log(`Audit: ${action}`, {
       action,
       userId,
@@ -103,5 +124,3 @@ export class LoggerService implements NestLoggerService {
     });
   }
 }
-
-

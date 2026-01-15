@@ -40,9 +40,9 @@ describe('UserService', () => {
             $transaction: jest.fn().mockImplementation(async (callback) => {
               const deletedUser = { ...mockUser, deletedAt: new Date() };
               // Helper to create a chainable mock that returns a Promise with .catch()
-              const createChainableMock = () => 
+              const createChainableMock = () =>
                 jest.fn().mockReturnValue(Promise.resolve({}));
-              
+
               const tx = {
                 user: {
                   update: jest.fn().mockResolvedValue(deletedUser),
@@ -179,7 +179,9 @@ describe('UserService', () => {
       const result = await service.create(createData);
 
       expect(result.email).toBe('new@example.com');
-      expect(prismaService.user.create).toHaveBeenCalledWith({ data: createData });
+      expect(prismaService.user.create).toHaveBeenCalledWith({
+        data: createData,
+      });
     });
   });
 
@@ -210,11 +212,3 @@ describe('UserService', () => {
     });
   });
 });
-
-
-
-
-
-
-
-

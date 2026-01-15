@@ -1,6 +1,6 @@
 /**
  * 内存存储实现
- * 
+ *
  * 用于开发环境和单实例部署
  */
 
@@ -15,12 +15,12 @@ interface CacheEntry<T = any> {
 @Injectable()
 export class MemoryStorage implements IStorage, OnModuleDestroy {
   private readonly logger = new Logger(MemoryStorage.name);
-  
+
   private store: Map<string, CacheEntry> = new Map();
   private lists: Map<string, string[]> = new Map();
   private hashes: Map<string, Map<string, string>> = new Map();
   private sortedSets: Map<string, Map<string, number>> = new Map();
-  
+
   private cleanupInterval: NodeJS.Timeout | null = null;
   private readonly maxSize: number = 100000;
 
@@ -72,17 +72,19 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
   }
 
   async mget<T>(keys: string[]): Promise<(T | null)[]> {
-    return Promise.all(keys.map(k => this.get<T>(k)));
+    return Promise.all(keys.map((k) => this.get<T>(k)));
   }
 
-  async mset<T>(entries: Array<{ key: string; value: T; ttlMs?: number }>): Promise<void> {
+  async mset<T>(
+    entries: Array<{ key: string; value: T; ttlMs?: number }>,
+  ): Promise<void> {
     for (const { key, value, ttlMs } of entries) {
       await this.set(key, value, ttlMs);
     }
   }
 
   async incr(key: string, delta: number = 1): Promise<number> {
-    const current = await this.get<number>(key) || 0;
+    const current = (await this.get<number>(key)) || 0;
     const newValue = current + delta;
     await this.set(key, newValue);
     return newValue;
@@ -109,12 +111,12 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
 
   async keys(pattern: string): Promise<string[]> {
     const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
-    return Array.from(this.store.keys()).filter(k => regex.test(k));
+    return Array.from(this.store.keys()).filter((k) => regex.test(k));
   }
 
   async deleteByPattern(pattern: string): Promise<number> {
     const keysToDelete = await this.keys(pattern);
-    keysToDelete.forEach(k => this.store.delete(k));
+    keysToDelete.forEach((k) => this.store.delete(k));
     return keysToDelete.length;
   }
 
@@ -177,7 +179,7 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
 
   async hmget(key: string, ...fields: string[]): Promise<(string | null)[]> {
     const hash = this.hashes.get(key);
-    return fields.map(f => hash?.get(f) || null);
+    return fields.map((f) => hash?.get(f) || null);
   }
 
   async hmset(key: string, data: Record<string, string>): Promise<void> {
@@ -192,7 +194,7 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
     const hash = this.hashes.get(key);
     if (!hash) return 0;
     let count = 0;
-    fields.forEach(f => {
+    fields.forEach((f) => {
       if (hash.delete(f)) count++;
     });
     return count;
@@ -205,7 +207,7 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
   }
 
   async hincrby(key: string, field: string, delta: number): Promise<number> {
-    const current = parseInt(await this.hget(key, field) || '0', 10);
+    const current = parseInt((await this.hget(key, field)) || '0', 10);
     const newValue = current + delta;
     await this.hset(key, field, String(newValue));
     return newValue;
@@ -232,7 +234,11 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
     return sorted.slice(start, end);
   }
 
-  async zrangebyscore(key: string, min: number, max: number): Promise<string[]> {
+  async zrangebyscore(
+    key: string,
+    min: number,
+    max: number,
+  ): Promise<string[]> {
     const set = this.sortedSets.get(key);
     if (!set) return [];
     return Array.from(set.entries())
@@ -245,7 +251,7 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
     const set = this.sortedSets.get(key);
     if (!set) return 0;
     let count = 0;
-    members.forEach(m => {
+    members.forEach((m) => {
       if (set.delete(m)) count++;
     });
     return count;
@@ -259,13 +265,17 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
     return this.sortedSets.get(key)?.size || 0;
   }
 
-  async zremrangebyscore(key: string, min: number, max: number): Promise<number> {
+  async zremrangebyscore(
+    key: string,
+    min: number,
+    max: number,
+  ): Promise<number> {
     const set = this.sortedSets.get(key);
     if (!set) return 0;
     const toRemove = Array.from(set.entries())
       .filter(([, score]) => score >= min && score <= max)
       .map(([member]) => member);
-    toRemove.forEach(m => set.delete(m));
+    toRemove.forEach((m) => set.delete(m));
     return toRemove.length;
   }
 
@@ -293,14 +303,14 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
     this.cleanupInterval = setInterval(() => {
       const now = Date.now();
       let cleaned = 0;
-      
+
       for (const [key, entry] of this.store.entries()) {
         if (entry.expiresAt && now > entry.expiresAt) {
           this.store.delete(key);
           cleaned++;
         }
       }
-      
+
       if (cleaned > 0) {
         this.logger.debug(`Cleaned ${cleaned} expired entries`);
       }
@@ -312,7 +322,7 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
       // LRU-like: 删除最早的 10%
       const toDelete = Math.ceil(this.maxSize * 0.1);
       const keys = Array.from(this.store.keys()).slice(0, toDelete);
-      keys.forEach(k => this.store.delete(k));
+      keys.forEach((k) => this.store.delete(k));
       this.logger.warn(`Evicted ${toDelete} entries due to size limit`);
     }
   }
@@ -328,8 +338,3 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
     };
   }
 }
-
-
-
-
-

@@ -1,6 +1,6 @@
 /**
  * 统一记忆系统接口
- * 
+ *
  * 定义 Agent 记忆系统的标准接口
  * 支持多种实现: 内存、Redis、PostgreSQL
  */
@@ -66,18 +66,18 @@ export interface UserPreferences {
 // ==================== 记忆类型 ====================
 
 export enum MemoryType {
-  FACT = 'FACT',           // 事实信息
+  FACT = 'FACT', // 事实信息
   PREFERENCE = 'PREFERENCE', // 用户偏好
-  DECISION = 'DECISION',   // 决策记录
-  SUMMARY = 'SUMMARY',     // 对话摘要
-  FEEDBACK = 'FEEDBACK',   // 用户反馈
+  DECISION = 'DECISION', // 决策记录
+  SUMMARY = 'SUMMARY', // 对话摘要
+  FEEDBACK = 'FEEDBACK', // 用户反馈
 }
 
 export enum EntityType {
-  SCHOOL = 'SCHOOL',       // 学校
-  PERSON = 'PERSON',       // 人物
-  EVENT = 'EVENT',         // 事件
-  TOPIC = 'TOPIC',         // 话题
+  SCHOOL = 'SCHOOL', // 学校
+  PERSON = 'PERSON', // 人物
+  EVENT = 'EVENT', // 事件
+  TOPIC = 'TOPIC', // 话题
 }
 
 export interface MemoryRecord {
@@ -85,8 +85,8 @@ export interface MemoryRecord {
   userId: string;
   type: MemoryType;
   content: string;
-  importance: number;      // 0-1
-  embedding?: number[];    // 向量
+  importance: number; // 0-1
+  embedding?: number[]; // 向量
   expiresAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -129,7 +129,7 @@ export interface MemoryQueryOptions {
   minImportance?: number;
   limit?: number;
   includeExpired?: boolean;
-  semanticQuery?: string;  // 语义搜索
+  semanticQuery?: string; // 语义搜索
   timeRange?: {
     from?: Date;
     to?: Date;
@@ -151,20 +151,29 @@ export interface ConversationQueryOptions {
  */
 export interface IConversationMemory {
   // 对话管理
-  getOrCreateConversation(userId: string, conversationId?: string): Promise<Conversation>;
+  getOrCreateConversation(
+    userId: string,
+    conversationId?: string,
+  ): Promise<Conversation>;
   getConversation(conversationId: string): Promise<Conversation | null>;
-  listConversations(userId: string, options?: ConversationQueryOptions): Promise<Conversation[]>;
+  listConversations(
+    userId: string,
+    options?: ConversationQueryOptions,
+  ): Promise<Conversation[]>;
   deleteConversation(conversationId: string): Promise<void>;
-  
+
   // 消息管理
-  addMessage(conversationId: string, message: Omit<Message, 'id' | 'timestamp'>): Promise<Message>;
+  addMessage(
+    conversationId: string,
+    message: Omit<Message, 'id' | 'timestamp'>,
+  ): Promise<Message>;
   getMessages(conversationId: string, limit?: number): Promise<Message[]>;
   getRecentMessages(conversation: Conversation, limit?: number): Message[];
-  
+
   // 上下文
   getContextSummary(context: UserContext): string;
   refreshUserContext(userId: string): Promise<UserContext>;
-  
+
   // 清理
   clearConversation(userId: string, conversationId?: string): void;
 }
@@ -174,18 +183,31 @@ export interface IConversationMemory {
  */
 export interface ILongTermMemory {
   // 记忆管理
-  remember(userId: string, memory: Omit<MemoryRecord, 'id' | 'createdAt' | 'updatedAt'>): Promise<MemoryRecord>;
+  remember(
+    userId: string,
+    memory: Omit<MemoryRecord, 'id' | 'createdAt' | 'updatedAt'>,
+  ): Promise<MemoryRecord>;
   recall(userId: string, options?: MemoryQueryOptions): Promise<MemoryRecord[]>;
   forget(memoryId: string): Promise<void>;
   updateImportance(memoryId: string, importance: number): Promise<void>;
-  
+
   // 实体管理
-  recordEntity(userId: string, entity: Omit<EntityRecord, 'id' | 'createdAt' | 'updatedAt'>): Promise<EntityRecord>;
-  getEntities(userId: string, options?: { types?: EntityType[]; limit?: number }): Promise<EntityRecord[]>;
-  
+  recordEntity(
+    userId: string,
+    entity: Omit<EntityRecord, 'id' | 'createdAt' | 'updatedAt'>,
+  ): Promise<EntityRecord>;
+  getEntities(
+    userId: string,
+    options?: { types?: EntityType[]; limit?: number },
+  ): Promise<EntityRecord[]>;
+
   // 语义搜索
-  semanticSearch(userId: string, query: string, limit?: number): Promise<MemoryRecord[]>;
-  
+  semanticSearch(
+    userId: string,
+    query: string,
+    limit?: number,
+  ): Promise<MemoryRecord[]>;
+
   // 清理
   cleanup(): Promise<{ expiredMemories: number }>;
 }
@@ -195,13 +217,20 @@ export interface ILongTermMemory {
  */
 export interface IMemorySystem extends IConversationMemory, ILongTermMemory {
   // 检索增强
-  getRetrievalContext(userId: string, query: string, conversationId?: string): Promise<RetrievalContext>;
+  getRetrievalContext(
+    userId: string,
+    query: string,
+    conversationId?: string,
+  ): Promise<RetrievalContext>;
   buildContextSummary(context: RetrievalContext): string;
-  
+
   // 偏好
   getPreferences(userId: string): Promise<UserPreferences>;
-  updatePreferences(userId: string, updates: Partial<UserPreferences>): Promise<UserPreferences>;
-  
+  updatePreferences(
+    userId: string,
+    updates: Partial<UserPreferences>,
+  ): Promise<UserPreferences>;
+
   // 统计
   getStats(userId: string): Promise<{
     conversationCount: number;
@@ -215,10 +244,3 @@ export interface IMemorySystem extends IConversationMemory, ILongTermMemory {
  * 记忆系统提供者 Token
  */
 export const MEMORY_SYSTEM_TOKEN = Symbol('MEMORY_SYSTEM');
-
-
-
-
-
-
-

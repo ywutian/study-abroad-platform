@@ -1,6 +1,14 @@
-import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  NotFoundException,
+  Optional,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AiService } from '../ai/ai.service';
+import { MemoryManagerService } from '../ai-agent/memory';
+import { MemoryType, EntityType } from '@prisma/client';
 import {
   SchoolRecommendationRequestDto,
   SchoolRecommendationResponseDto,
@@ -17,6 +25,7 @@ export class RecommendationService {
   constructor(
     private prisma: PrismaService,
     private aiService: AiService,
+    @Optional() private memoryManager?: MemoryManagerService,
   ) {}
 
   /**
@@ -35,7 +44,7 @@ export class RecommendationService {
       include: {
         testScores: true,
         activities: true,
-        awards: true,
+        awards: { include: { competition: true } },
         education: true,
       },
     });
@@ -87,7 +96,7 @@ export class RecommendationService {
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
-        { temperature: 0.6, maxTokens: 4000 }
+        { temperature: 0.6, maxTokens: 4000 },
       );
 
       const jsonMatch = result.match(/\{[\s\S]*\}/);
@@ -102,24 +111,26 @@ export class RecommendationService {
       const recommendations = await this.matchSchoolIds(parsed.recommendations);
 
       // 保存结果
-      const savedRecommendation = await this.prisma.schoolRecommendation.create({
-        data: {
-          userId,
-          profileSnapshot: this.createProfileSnapshot(profile),
-          preferences: {
-            regions: dto.preferredRegions,
-            majors: dto.preferredMajors,
-            budget: dto.budget,
-            additional: dto.additionalPreferences,
+      const savedRecommendation = await this.prisma.schoolRecommendation.create(
+        {
+          data: {
+            userId,
+            profileSnapshot: this.createProfileSnapshot(profile),
+            preferences: {
+              regions: dto.preferredRegions,
+              majors: dto.preferredMajors,
+              budget: dto.budget,
+              additional: dto.additionalPreferences,
+            },
+            recommendations: recommendations as any,
+            analysis: parsed.analysis,
+            summary: parsed.summary,
+            tokenUsed,
           },
-          recommendations: recommendations as any,
-          analysis: parsed.analysis,
-          summary: parsed.summary,
-          tokenUsed,
         },
-      });
+      );
 
-      return {
+      const response = {
         id: savedRecommendation.id,
         recommendations,
         analysis: parsed.analysis,
@@ -127,6 +138,13 @@ export class RecommendationService {
         tokenUsed,
         createdAt: savedRecommendation.createdAt,
       };
+
+      // 写入记忆系统
+      this.recordRecommendationToMemory(userId, response).catch((err) => {
+        this.logger.warn('Failed to record recommendation to memory', err);
+      });
+
+      return response;
     } catch (error) {
       await this.refundPoints(userId, POINTS_COST);
       this.logger.error('School recommendation failed', error);
@@ -137,7 +155,9 @@ export class RecommendationService {
   /**
    * 获取用户的选校建议历史
    */
-  async getRecommendationHistory(userId: string): Promise<SchoolRecommendationResponseDto[]> {
+  async getRecommendationHistory(
+    userId: string,
+  ): Promise<SchoolRecommendationResponseDto[]> {
     const recommendations = await this.prisma.schoolRecommendation.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
@@ -157,7 +177,10 @@ export class RecommendationService {
   /**
    * 获取单个推荐详情
    */
-  async getRecommendationById(userId: string, id: string): Promise<SchoolRecommendationResponseDto> {
+  async getRecommendationById(
+    userId: string,
+    id: string,
+  ): Promise<SchoolRecommendationResponseDto> {
     const recommendation = await this.prisma.schoolRecommendation.findFirst({
       where: { id, userId },
     });
@@ -166,9 +189,15 @@ export class RecommendationService {
       throw new NotFoundException('推荐记录不存在');
     }
 
+    // 记录浏览行为
+    this.recordViewToMemory(userId, recommendation).catch((err) => {
+      this.logger.warn('Failed to record view to memory', err);
+    });
+
     return {
       id: recommendation.id,
-      recommendations: recommendation.recommendations as unknown as RecommendedSchoolDto[],
+      recommendations:
+        recommendation.recommendations as unknown as RecommendedSchoolDto[],
       analysis: recommendation.analysis as unknown as RecommendationAnalysisDto,
       summary: recommendation.summary || '',
       tokenUsed: recommendation.tokenUsed,
@@ -178,7 +207,10 @@ export class RecommendationService {
 
   // ============ Helper Methods ============
 
-  private buildUserPrompt(profile: any, dto: SchoolRecommendationRequestDto): string {
+  private buildUserPrompt(
+    profile: any,
+    dto: SchoolRecommendationRequestDto,
+  ): string {
     const parts: string[] = ['请根据以下学生档案推荐选校清单：\n'];
 
     // GPA
@@ -188,7 +220,9 @@ export class RecommendationService {
 
     // 标化成绩
     if (profile.testScores?.length) {
-      const scores = profile.testScores.map((s: any) => `${s.type}: ${s.score}`).join(', ');
+      const scores = profile.testScores
+        .map((s: any) => `${s.type}: ${s.score}`)
+        .join(', ');
       parts.push(`标化成绩: ${scores}`);
     }
 
@@ -252,15 +286,14 @@ export class RecommendationService {
     };
   }
 
-  private async matchSchoolIds(recommendations: any[]): Promise<RecommendedSchoolDto[]> {
+  private async matchSchoolIds(
+    recommendations: any[],
+  ): Promise<RecommendedSchoolDto[]> {
     // 尝试从数据库中匹配学校
     const schoolNames = recommendations.map((r) => r.schoolName);
     const schools = await this.prisma.school.findMany({
       where: {
-        OR: [
-          { name: { in: schoolNames } },
-          { nameZh: { in: schoolNames } },
-        ],
+        OR: [{ name: { in: schoolNames } }, { nameZh: { in: schoolNames } }],
       },
     });
 
@@ -276,7 +309,10 @@ export class RecommendationService {
     }));
   }
 
-  private async checkAndDeductPoints(userId: string, points: number): Promise<void> {
+  private async checkAndDeductPoints(
+    userId: string,
+    points: number,
+  ): Promise<void> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { points: true },
@@ -320,5 +356,100 @@ export class RecommendationService {
   private estimateTokens(text: string): number {
     return Math.ceil(text.length / 3);
   }
-}
 
+  // ============ Memory Integration ============
+
+  /**
+   * 将选校建议记录到记忆系统
+   */
+  private async recordRecommendationToMemory(
+    userId: string,
+    response: SchoolRecommendationResponseDto,
+  ): Promise<void> {
+    if (!this.memoryManager) return;
+
+    // 按 tier 分组
+    const reach = response.recommendations.filter((r) => r.tier === 'reach');
+    const match = response.recommendations.filter((r) => r.tier === 'match');
+    const safety = response.recommendations.filter((r) => r.tier === 'safety');
+
+    // 记录决策记忆
+    await this.memoryManager.remember(userId, {
+      type: MemoryType.DECISION,
+      category: 'school_recommendation',
+      content: `用户获取了AI选校建议，包含${reach.length}所冲刺校、${match.length}所匹配校、${safety.length}所保底校。${response.summary}`,
+      importance: 0.8,
+      metadata: {
+        recommendationId: response.id,
+        schoolCount: response.recommendations.length,
+        tierDistribution: {
+          reach: reach.length,
+          match: match.length,
+          safety: safety.length,
+        },
+        topReachSchools: reach.slice(0, 3).map((r) => r.schoolName),
+        timestamp: new Date().toISOString(),
+      },
+    });
+
+    // 记录学校实体
+    for (const rec of response.recommendations.slice(0, 5)) {
+      await this.memoryManager.recordEntity(userId, {
+        type: EntityType.SCHOOL,
+        name: rec.schoolName,
+        description: `AI推荐的${rec.tier === 'reach' ? '冲刺校' : rec.tier === 'match' ? '匹配校' : '保底校'}，契合度${rec.fitScore}%`,
+        attributes: {
+          schoolId: rec.schoolId,
+          tier: rec.tier,
+          probability: rec.estimatedProbability,
+          fitScore: rec.fitScore,
+          reasons: rec.reasons,
+        },
+      });
+    }
+
+    // 记录分析结果作为偏好
+    if (response.analysis?.strengths?.length > 0) {
+      await this.memoryManager.remember(userId, {
+        type: MemoryType.FACT,
+        category: 'profile_analysis',
+        content: `申请优势：${response.analysis.strengths.join('、')}`,
+        importance: 0.6,
+      });
+    }
+
+    if (response.analysis?.weaknesses?.length > 0) {
+      await this.memoryManager.remember(userId, {
+        type: MemoryType.FEEDBACK,
+        category: 'improvement',
+        content: `需要改进：${response.analysis.weaknesses.join('、')}。建议：${response.analysis.improvementTips?.join('、') || ''}`,
+        importance: 0.7,
+      });
+    }
+  }
+
+  /**
+   * 记录浏览行为
+   */
+  private async recordViewToMemory(
+    userId: string,
+    recommendation: any,
+  ): Promise<void> {
+    if (!this.memoryManager) return;
+
+    const schools = (recommendation.recommendations as RecommendedSchoolDto[])
+      .slice(0, 3)
+      .map((r) => r.schoolName);
+
+    await this.memoryManager.remember(userId, {
+      type: MemoryType.FACT,
+      category: 'view_history',
+      content: `用户查看了之前的选校建议，包含学校：${schools.join('、')}`,
+      importance: 0.3,
+      metadata: {
+        recommendationId: recommendation.id,
+        viewedAt: new Date().toISOString(),
+      },
+    });
+  }
+}

@@ -11,8 +11,37 @@ export interface MemoryInput {
   category?: string;
   content: string;
   importance?: number;
-  metadata?: Record<string, any>;
+  metadata?: MemoryMetadata;
   expiresAt?: Date;
+}
+
+/**
+ * 记忆元数据类型（替代 Record<string, any>）
+ */
+export interface MemoryMetadata {
+  confidence?: number;
+  source?: string;
+  conversationId?: string;
+  messageId?: string;
+  dedupeKey?: string;
+  pendingConflict?: boolean;
+  conflictWith?: string;
+  scoreTier?: string;
+  scoreDetails?: {
+    importanceScore: number;
+    freshnessScore: number;
+    confidenceScore: number;
+    accessBonus: number;
+  };
+  previousContent?: string;
+  previousValue?: number;
+  updatedAt?: string;
+  mergedAt?: string;
+  mergeCount?: number;
+  archived?: boolean;
+  archivedAt?: string;
+  accessCount?: number;
+  [key: string]: unknown; // 允许扩展但需要类型检查
 }
 
 export interface MemoryRecord {
@@ -25,7 +54,7 @@ export interface MemoryRecord {
   accessCount: number;
   lastAccessedAt?: Date;
   embedding?: number[];
-  metadata?: Record<string, any>;
+  metadata?: MemoryMetadata;
   createdAt: Date;
 }
 
@@ -74,20 +103,40 @@ export interface MessageRecord {
   createdAt: Date;
 }
 
+/**
+ * 工具调用结果类型
+ */
+export interface ToolCallResult {
+  success: boolean;
+  data?: unknown;
+  error?: string;
+}
+
 export interface ToolCallRecord {
   id: string;
   name: string;
-  arguments: Record<string, any>;
-  result?: any;
+  arguments: Record<string, unknown>;
+  result?: ToolCallResult;
 }
 
 // ==================== 实体相关 ====================
+
+/**
+ * 实体属性类型
+ */
+export interface EntityAttributes {
+  interestLevel?: 'low' | 'medium' | 'high';
+  addedAt?: string;
+  priority?: number;
+  notes?: string;
+  [key: string]: unknown;
+}
 
 export interface EntityInput {
   type: EntityType;
   name: string;
   description?: string;
-  attributes?: Record<string, any>;
+  attributes?: EntityAttributes;
   relations?: EntityRelation[];
 }
 
@@ -97,7 +146,7 @@ export interface EntityRecord {
   type: EntityType;
   name: string;
   description?: string;
-  attributes?: Record<string, any>;
+  attributes?: EntityAttributes;
   relations?: EntityRelation[];
   createdAt: Date;
 }
@@ -113,16 +162,16 @@ export interface EntityRelation {
 export interface RetrievalContext {
   // 最近对话
   recentMessages: MessageRecord[];
-  
+
   // 相关记忆
   relevantMemories: MemoryRecord[];
-  
+
   // 用户偏好
   preferences: UserPreferences;
-  
+
   // 相关实体
   entities: EntityRecord[];
-  
+
   // 元数据
   meta: {
     conversationId?: string;
@@ -185,11 +234,109 @@ export interface MemoryStats {
   };
 }
 
+// ==================== LLM 解析类型 ====================
 
+/**
+ * LLM 提取的记忆结构
+ */
+export interface LLMParsedMemory {
+  type: string;
+  category?: string;
+  content: string;
+  importance?: number;
+}
 
+/**
+ * LLM 提取的实体结构
+ */
+export interface LLMParsedEntity {
+  type: string;
+  name: string;
+  description?: string;
+}
 
+/**
+ * LLM 提取结果
+ */
+export interface LLMExtractionResult {
+  memories: LLMParsedMemory[];
+  entities: LLMParsedEntity[];
+}
 
+/**
+ * LLM 摘要结果
+ */
+export interface LLMSummaryResult {
+  summary: string;
+  keyTopics: string[];
+  decisions: string[];
+  nextSteps: string[];
+  facts: LLMParsedMemory[];
+  entities: LLMParsedEntity[];
+}
 
+// ==================== 增强统计类型 ====================
 
+/**
+ * 记忆层级
+ */
+export enum MemoryTier {
+  WORKING = 'WORKING',
+  SHORT = 'SHORT',
+  LONG = 'LONG',
+  ARCHIVE = 'ARCHIVE',
+}
 
+/**
+ * 衰减统计
+ */
+export interface DecayStats {
+  totalMemories: number;
+  byTier: Record<MemoryTier, number>;
+  averageImportance: number;
+  averageFreshness: number;
+  scheduledForArchive: number;
+  scheduledForDelete: number;
+}
 
+/**
+ * 评分统计
+ */
+export interface ScoringStats {
+  averageScore: number;
+  tierDistribution: Record<MemoryTier, number>;
+}
+
+/**
+ * 增强记忆统计（含衰减和评分）
+ */
+export interface EnhancedMemoryStats extends MemoryStats {
+  decay?: DecayStats;
+  scoring?: ScoringStats;
+}
+
+/**
+ * 衰减结果
+ */
+export interface DecayResult {
+  processed: number;
+  decayed: number;
+  archived: number;
+  deleted: number;
+  boosted: number;
+  errors: number;
+  durationMs: number;
+}
+
+// ==================== Embedding API 类型 ====================
+
+/**
+ * Embedding API 响应
+ */
+export interface EmbeddingAPIResponse {
+  data: Array<{ embedding: number[] }>;
+  usage?: {
+    prompt_tokens: number;
+    total_tokens: number;
+  };
+}

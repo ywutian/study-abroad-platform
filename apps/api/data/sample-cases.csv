@@ -1,0 +1,11 @@
+school,major,year,round,result,gpa,sat,act,toefl,ielts,tags
+MIT,Computer Science,2024,RD,ADMITTED,3.95,1560,,118,,international;research;CS
+Stanford,Economics,2024,ED,REJECTED,3.85,1520,,,7.5,international;first-gen
+Harvard,Biology,2024,REA,WAITLISTED,3.9,1550,,115,,international;research;pre-med
+Yale,History,2024,EA,ADMITTED,3.88,,35,112,,international
+Princeton,Mathematics,2024,RD,ADMITTED,4.0,1580,,120,,international;research;olympiad
+Columbia,Political Science,2024,ED,ADMITTED,3.82,1490,,108,,international
+UPenn,Business,2024,ED,REJECTED,3.75,1480,,105,,international;business
+Duke,CS,2024,RD,WAITLISTED,3.9,1540,,115,,international;research
+Northwestern,Journalism,2024,ED,ADMITTED,3.78,1460,,110,,international
+CalTech,Physics,2024,RD,REJECTED,3.95,1570,,118,,international;research;olympiad

@@ -223,7 +223,7 @@ export const HOLLAND_QUESTIONS = [
   },
   {
     id: 's2',
-    text: 'I am good at understanding others\' feelings',
+    text: "I am good at understanding others' feelings",
     textZh: '我善于理解他人的感受',
     type: 'S',
     options: [
@@ -262,7 +262,7 @@ export const HOLLAND_QUESTIONS = [
   },
   {
     id: 's5',
-    text: 'I find satisfaction in making a positive impact on others\' lives',
+    text: "I find satisfaction in making a positive impact on others' lives",
     textZh: '我从对他人生活产生积极影响中获得满足',
     type: 'S',
     options: [
@@ -407,41 +407,64 @@ export const HOLLAND_QUESTIONS = [
   },
 ];
 
-export const HOLLAND_TYPE_INFO: Record<string, {
-  name: string;
-  nameZh: string;
-  description: string;
-  descriptionZh: string;
-  fields: string[];
-  fieldsZh: string[];
-  majors: string[];
-}> = {
+export const HOLLAND_TYPE_INFO: Record<
+  string,
+  {
+    name: string;
+    nameZh: string;
+    description: string;
+    descriptionZh: string;
+    fields: string[];
+    fieldsZh: string[];
+    majors: string[];
+  }
+> = {
   R: {
     name: 'Realistic',
     nameZh: '实际型',
-    description: 'Practical, hands-on problem solvers who enjoy physical activities.',
+    description:
+      'Practical, hands-on problem solvers who enjoy physical activities.',
     descriptionZh: '务实的、动手解决问题的人，喜欢体力活动。',
     fields: ['Engineering', 'Construction', 'Agriculture', 'Athletics'],
     fieldsZh: ['工程', '建筑', '农业', '体育'],
-    majors: ['Mechanical Engineering', 'Civil Engineering', 'Agriculture', 'Kinesiology'],
+    majors: [
+      'Mechanical Engineering',
+      'Civil Engineering',
+      'Agriculture',
+      'Kinesiology',
+    ],
   },
   I: {
     name: 'Investigative',
     nameZh: '研究型',
-    description: 'Analytical and intellectual, prefer working with ideas and theories.',
+    description:
+      'Analytical and intellectual, prefer working with ideas and theories.',
     descriptionZh: '善于分析和思考，喜欢研究想法和理论。',
     fields: ['Science', 'Research', 'Medicine', 'Technology'],
     fieldsZh: ['科学', '研究', '医学', '技术'],
-    majors: ['Physics', 'Chemistry', 'Biology', 'Computer Science', 'Mathematics'],
+    majors: [
+      'Physics',
+      'Chemistry',
+      'Biology',
+      'Computer Science',
+      'Mathematics',
+    ],
   },
   A: {
     name: 'Artistic',
     nameZh: '艺术型',
-    description: 'Creative and original, prefer unstructured activities involving self-expression.',
+    description:
+      'Creative and original, prefer unstructured activities involving self-expression.',
     descriptionZh: '有创造力和独创性，喜欢非结构化的自我表达活动。',
     fields: ['Art', 'Music', 'Writing', 'Design'],
     fieldsZh: ['艺术', '音乐', '写作', '设计'],
-    majors: ['Fine Arts', 'Music', 'Creative Writing', 'Graphic Design', 'Architecture'],
+    majors: [
+      'Fine Arts',
+      'Music',
+      'Creative Writing',
+      'Graphic Design',
+      'Architecture',
+    ],
   },
   S: {
     name: 'Social',
@@ -450,27 +473,43 @@ export const HOLLAND_TYPE_INFO: Record<string, {
     descriptionZh: '乐于助人和友善，喜欢与他人合作和帮助他人。',
     fields: ['Education', 'Healthcare', 'Counseling', 'Social Work'],
     fieldsZh: ['教育', '医疗', '咨询', '社会工作'],
-    majors: ['Education', 'Psychology', 'Nursing', 'Social Work', 'Communications'],
+    majors: [
+      'Education',
+      'Psychology',
+      'Nursing',
+      'Social Work',
+      'Communications',
+    ],
   },
   E: {
     name: 'Enterprising',
     nameZh: '企业型',
-    description: 'Energetic and ambitious, enjoy leading and persuading others.',
+    description:
+      'Energetic and ambitious, enjoy leading and persuading others.',
     descriptionZh: '精力充沛有抱负，喜欢领导和说服他人。',
     fields: ['Business', 'Management', 'Sales', 'Law'],
     fieldsZh: ['商业', '管理', '销售', '法律'],
-    majors: ['Business Administration', 'Marketing', 'Law', 'Political Science', 'Economics'],
+    majors: [
+      'Business Administration',
+      'Marketing',
+      'Law',
+      'Political Science',
+      'Economics',
+    ],
   },
   C: {
     name: 'Conventional',
     nameZh: '常规型',
-    description: 'Organized and detail-oriented, prefer structured tasks and rules.',
+    description:
+      'Organized and detail-oriented, prefer structured tasks and rules.',
     descriptionZh: '有组织和注重细节，喜欢结构化的任务和规则。',
     fields: ['Finance', 'Accounting', 'Administration', 'Data Management'],
     fieldsZh: ['金融', '会计', '行政', '数据管理'],
-    majors: ['Accounting', 'Finance', 'Business Analytics', 'Information Systems'],
+    majors: [
+      'Accounting',
+      'Finance',
+      'Business Analytics',
+      'Information Systems',
+    ],
   },
 };
-
-
-

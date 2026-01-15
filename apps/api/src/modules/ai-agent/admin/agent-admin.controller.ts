@@ -1,6 +1,6 @@
 /**
  * AI Agent 管理控制器
- * 
+ *
  * 提供配置查看、调整、监控的管理接口
  * 仅限 ADMIN 角色访问
  */
@@ -17,8 +17,14 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { Roles } from '../../../common/decorators/roles.decorator';
+import { Role } from '@prisma/client';
 import { AgentConfigService } from '../infrastructure/config/config.service';
 import { MetricsService } from '../infrastructure/observability/metrics.service';
 import { TracingService } from '../infrastructure/observability/tracing.service';
@@ -27,7 +33,15 @@ import { RateLimiterService } from '../core/rate-limiter.service';
 import { ResilienceService } from '../core/resilience.service';
 import { LLMService } from '../core/llm.service';
 import { AgentType } from '../types';
-import { IsString, IsNumber, IsBoolean, IsOptional, IsObject, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsBoolean,
+  IsOptional,
+  IsObject,
+  Min,
+  Max,
+} from 'class-validator';
 
 // ==================== DTOs ====================
 
@@ -109,7 +123,7 @@ class SetUserQuotaDto {
 @ApiTags('ai-agent-admin')
 @ApiBearerAuth()
 @Controller('admin/ai-agent')
-@Roles('ADMIN')
+@Roles(Role.ADMIN)
 export class AgentAdminController {
   constructor(
     private configService: AgentConfigService,
@@ -151,7 +165,7 @@ export class AgentAdminController {
   @ApiOperation({ summary: '更新 Token 配额配置' })
   updateQuotaConfig(@Body() dto: UpdateQuotaDto) {
     const current = this.configService.getSystemConfig();
-    
+
     return this.configService.updateSystemConfig({
       quota: {
         daily: {
@@ -226,10 +240,7 @@ export class AgentAdminController {
    */
   @Put('agents/:type/toggle')
   @ApiOperation({ summary: '启用/禁用 Agent' })
-  toggleAgent(
-    @Param('type') type: AgentType,
-    @Body() dto: UpdateFeatureDto,
-  ) {
+  toggleAgent(@Param('type') type: AgentType, @Body() dto: UpdateFeatureDto) {
     return this.configService.updateAgentConfig(type, { enabled: dto.enabled });
   }
 
@@ -251,7 +262,12 @@ export class AgentAdminController {
   @Put('features/:feature')
   @ApiOperation({ summary: '切换功能开关' })
   toggleFeature(
-    @Param('feature') feature: 'fastRouting' | 'memoryEnhancement' | 'streamingEnabled' | 'abTestEnabled',
+    @Param('feature')
+    feature:
+      | 'fastRouting'
+      | 'memoryEnhancement'
+      | 'streamingEnabled'
+      | 'abTestEnabled',
     @Body() dto: UpdateFeatureDto,
   ) {
     this.configService.toggleFeature(feature, dto.enabled);
@@ -372,9 +388,9 @@ export class AgentAdminController {
    */
   @Get('circuit-breakers')
   @ApiOperation({ summary: '获取熔断器状态' })
-  getCircuitBreakers() {
+  async getCircuitBreakers() {
     return {
-      llm: this.resilience.getCircuitStatus('llm'),
+      llm: await this.resilience.getCircuitStatus('llm'),
       // 可扩展其他服务
     };
   }
@@ -385,8 +401,8 @@ export class AgentAdminController {
   @Delete('circuit-breakers/:service')
   @ApiOperation({ summary: '重置熔断器' })
   @HttpCode(HttpStatus.NO_CONTENT)
-  resetCircuitBreaker(@Param('service') service: string) {
-    this.resilience.resetCircuit(service);
+  async resetCircuitBreaker(@Param('service') service: string) {
+    await this.resilience.resetCircuit(service);
   }
 
   // ==================== 健康检查 ====================
@@ -397,8 +413,10 @@ export class AgentAdminController {
   @Get('health')
   @ApiOperation({ summary: '获取系统健康状态' })
   async getHealth() {
-    const llmStatus = this.llm.getServiceStatus();
-    const circuitStatus = this.resilience.getCircuitStatus('llm');
+    const [llmStatus, circuitStatus] = await Promise.all([
+      this.llm.getServiceStatus(),
+      this.resilience.getCircuitStatus('llm'),
+    ]);
 
     return {
       status: llmStatus.isHealthy ? 'healthy' : 'degraded',
@@ -415,17 +433,11 @@ export class AgentAdminController {
 
   // ==================== 私有方法 ====================
 
-  private getSystemStatus() {
-    return {
-      llm: this.llm.getServiceStatus(),
-      circuitBreaker: this.resilience.getCircuitStatus('llm'),
-    };
+  private async getSystemStatus() {
+    const [llm, circuitBreaker] = await Promise.all([
+      this.llm.getServiceStatus(),
+      this.resilience.getCircuitStatus('llm'),
+    ]);
+    return { llm, circuitBreaker };
   }
 }
-
-
-
-
-
-
-

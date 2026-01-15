@@ -7,7 +7,8 @@ describe('EncryptionService', () => {
 
   const mockConfigService = {
     get: jest.fn((key: string) => {
-      if (key === 'VAULT_ENCRYPTION_KEY') return 'test-encryption-key-for-unit-tests';
+      if (key === 'VAULT_ENCRYPTION_KEY')
+        return 'test-encryption-key-for-unit-tests';
       if (key === 'VAULT_KEY_SALT') return 'test-salt';
       if (key === 'NODE_ENV') return 'test';
       return undefined;
@@ -36,7 +37,11 @@ describe('EncryptionService', () => {
       expect(encrypted).toHaveProperty('iv');
       expect(encrypted.encryptedData).not.toBe(plainText);
 
-      const decrypted = service.decrypt(encrypted.encryptedData, encrypted.iv, userId);
+      const decrypted = service.decrypt(
+        encrypted.encryptedData,
+        encrypted.iv,
+        userId,
+      );
       expect(decrypted).toBe(plainText);
     });
 
@@ -87,7 +92,11 @@ describe('EncryptionService', () => {
       const plainText = '';
 
       const encrypted = service.encrypt(plainText, userId);
-      const decrypted = service.decrypt(encrypted.encryptedData, encrypted.iv, userId);
+      const decrypted = service.decrypt(
+        encrypted.encryptedData,
+        encrypted.iv,
+        userId,
+      );
 
       expect(decrypted).toBe('');
     });
@@ -97,7 +106,11 @@ describe('EncryptionService', () => {
       const plainText = '中文测试 🔐 émojis & spëcial chârs';
 
       const encrypted = service.encrypt(plainText, userId);
-      const decrypted = service.decrypt(encrypted.encryptedData, encrypted.iv, userId);
+      const decrypted = service.decrypt(
+        encrypted.encryptedData,
+        encrypted.iv,
+        userId,
+      );
 
       expect(decrypted).toBe(plainText);
     });
@@ -107,7 +120,11 @@ describe('EncryptionService', () => {
       const plainText = 'x'.repeat(100000); // 100KB
 
       const encrypted = service.encrypt(plainText, userId);
-      const decrypted = service.decrypt(encrypted.encryptedData, encrypted.iv, userId);
+      const decrypted = service.decrypt(
+        encrypted.encryptedData,
+        encrypted.iv,
+        userId,
+      );
 
       expect(decrypted).toBe(plainText);
     });
@@ -166,5 +183,3 @@ describe('EncryptionService', () => {
     });
   });
 });
-
-

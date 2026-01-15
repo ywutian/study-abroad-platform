@@ -1,31 +1,48 @@
-import { IsEmail, IsString, IsOptional, IsIn } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  MinLength,
+  MaxLength,
+  Matches,
+  IsOptional,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsStrongPassword } from '../../../common/validators/password.validator';
 
 export class RegisterDto {
-  @ApiProperty({ example: 'user@example.com', description: '邮箱地址' })
+  @ApiProperty({ example: 'user@example.com' })
   @IsEmail({}, { message: '请输入有效的邮箱地址' })
   email: string;
 
-  @ApiProperty({
-    example: 'Password123',
-    description: '密码 (8-128位，包含大小写字母和数字)',
-  })
+  @ApiProperty({ example: 'Password123!' })
   @IsString()
-  @IsStrongPassword({
-    minLength: 8,
-    maxLength: 128,
-    requireUppercase: true,
-    requireLowercase: true,
-    requireNumbers: true,
-    requireSpecialChars: false,
+  @MinLength(8, { message: '密码至少8位' })
+  @MaxLength(32, { message: '密码最多32位' })
+  @Matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/, {
+    message: '密码必须包含字母和数字',
   })
   password: string;
 
-  @ApiPropertyOptional({ example: 'zh', description: '语言偏好' })
+  @ApiPropertyOptional({ example: 'zh', description: '用户语言偏好' })
   @IsOptional()
-  @IsIn(['zh', 'en'], { message: '语言只支持 zh 或 en' })
+  @IsString()
   locale?: string;
 }
 
+export class RefreshTokenDto {
+  @ApiPropertyOptional({ description: '可选：优先从 httpOnly cookie 获取' })
+  @IsOptional()
+  @IsString()
+  refreshToken?: string;
+}
 
+export class ResendVerificationDto {
+  @ApiProperty({ example: 'user@example.com' })
+  @IsEmail({}, { message: '请输入有效的邮箱地址' })
+  email: string;
+}
+
+export class ForgotPasswordDto {
+  @ApiProperty({ example: 'user@example.com' })
+  @IsEmail({}, { message: '请输入有效的邮箱地址' })
+  email: string;
+}

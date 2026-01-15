@@ -31,7 +31,11 @@ export interface SchoolInput {
   nameZh?: string;
   acceptanceRate?: number;
   satAvg?: number;
+  sat25?: number;
+  sat75?: number;
   actAvg?: number;
+  act25?: number;
+  act75?: number;
   usNewsRank?: number;
 }
 
@@ -40,15 +44,19 @@ export interface SchoolInput {
  */
 function formatTestScores(scores: ProfileInput['testScores']): string {
   if (!scores || scores.length === 0) return '未提供';
-  
-  return scores.map(s => {
-    let result = `${s.type}: ${s.score}`;
-    if (s.subScores && Object.keys(s.subScores).length > 0) {
-      const subs = Object.entries(s.subScores).map(([k, v]) => `${k}: ${v}`).join(', ');
-      result += ` (${subs})`;
-    }
-    return result;
-  }).join('; ');
+
+  return scores
+    .map((s) => {
+      let result = `${s.type}: ${s.score}`;
+      if (s.subScores && Object.keys(s.subScores).length > 0) {
+        const subs = Object.entries(s.subScores)
+          .map(([k, v]) => `${k}: ${v}`)
+          .join(', ');
+        result += ` (${subs})`;
+      }
+      return result;
+    })
+    .join('; ');
 }
 
 /**
@@ -56,12 +64,12 @@ function formatTestScores(scores: ProfileInput['testScores']): string {
  */
 function formatAwards(awards: ProfileInput['awards']): string {
   if (!awards || awards.length === 0) return '无';
-  
+
   const levelCounts: Record<string, number> = {};
-  awards.forEach(a => {
+  awards.forEach((a) => {
     levelCounts[a.level] = (levelCounts[a.level] || 0) + 1;
   });
-  
+
   return Object.entries(levelCounts)
     .map(([level, count]) => `${level}: ${count}项`)
     .join(', ');
@@ -72,30 +80,33 @@ function formatAwards(awards: ProfileInput['awards']): string {
  */
 function formatActivities(activities: ProfileInput['activities']): string {
   if (!activities || activities.length === 0) return '无';
-  
+
   const categoryCounts: Record<string, number> = {};
   let totalHours = 0;
-  
-  activities.forEach(a => {
+
+  activities.forEach((a) => {
     categoryCounts[a.category] = (categoryCounts[a.category] || 0) + 1;
     if (a.hoursPerWeek && a.weeksPerYear) {
       totalHours += a.hoursPerWeek * a.weeksPerYear;
     }
   });
-  
+
   const categories = Object.entries(categoryCounts)
     .map(([cat, count]) => `${cat}: ${count}项`)
     .join(', ');
-    
+
   return `共${activities.length}项活动 (${categories})${totalHours > 0 ? `，约${totalHours}小时` : ''}`;
 }
 
 /**
  * 构建预测 Prompt
  */
-export function buildPredictionPrompt(profile: ProfileInput, school: SchoolInput): string {
-  const gpaText = profile.gpa 
-    ? `${profile.gpa}/${profile.gpaScale || 4.0}` 
+export function buildPredictionPrompt(
+  profile: ProfileInput,
+  school: SchoolInput,
+): string {
+  const gpaText = profile.gpa
+    ? `${profile.gpa}/${profile.gpaScale || 4.0}`
     : '未提供';
 
   return `你是一位资深的美国大学招生顾问，拥有20年经验，对各大学录取标准有深入了解。请根据以下学生档案和目标学校数据，进行专业的录取概率预测。
@@ -111,33 +122,32 @@ export function buildPredictionPrompt(profile: ProfileInput, school: SchoolInput
 ## 目标学校: ${school.nameZh || school.name}
 - US News 排名: ${school.usNewsRank ? `#${school.usNewsRank}` : '未知'}
 - 录取率: ${school.acceptanceRate ? `${school.acceptanceRate}%` : '未知'}
-- 平均 SAT: ${school.satAvg || '未知'}
-- 平均 ACT: ${school.actAvg || '未知'}
+- 平均 SAT: ${school.satAvg || '未知'}${school.sat25 && school.sat75 ? ` (25th-75th: ${school.sat25}-${school.sat75})` : ''}
+- 平均 ACT: ${school.actAvg || '未知'}${school.act25 && school.act75 ? ` (25th-75th: ${school.act25}-${school.act75})` : ''}
 
 ## 分析要求
 1. 综合评估学生竞争力与学校录取标准的匹配度
 2. 考虑标化成绩、GPA、活动、奖项等多维度因素
 3. 给出具体、可操作的改进建议
+4. **关键**: probability 必须基于该校的录取率和学生竞争力综合计算，不同学校应有明显差异
+   - 录取率 < 10% 的顶尖学校（如 MIT、Stanford），即使学生优秀，probability 通常在 0.05-0.25 之间
+   - 录取率 10%-30% 的选择性学校，probability 通常在 0.15-0.50 之间
+   - 录取率 > 30% 的学校，probability 通常在 0.30-0.80 之间
+   - 缺少标化成绩会显著降低竞争力（降低 10-20 个百分点）
+   - 缺少课外活动和奖项也会降低竞争力
 
 ## 返回格式（严格 JSON）
 {
-  "probability": 0.35,
-  "confidence": "medium",
-  "tier": "reach",
+  "probability": <0到1之间的小数，根据学校录取率和学生实力计算>,
+  "confidence": "<low|medium|high>",
+  "tier": "<reach|match|safety>",
   "factors": [
     {
-      "name": "GPA",
-      "impact": "positive",
-      "weight": 0.3,
-      "detail": "具体分析...",
-      "improvement": null
-    },
-    {
-      "name": "标化成绩",
-      "impact": "negative",
-      "weight": 0.25,
-      "detail": "具体分析...",
-      "improvement": "具体建议..."
+      "name": "因素名称",
+      "impact": "<positive|neutral|negative>",
+      "weight": <0到1之间>,
+      "detail": "具体分析说明",
+      "improvement": "改进建议或null"
     }
   ],
   "suggestions": [
@@ -145,31 +155,37 @@ export function buildPredictionPrompt(profile: ProfileInput, school: SchoolInput
     "建议2"
   ],
   "comparison": {
-    "gpaPercentile": 75,
-    "testScorePercentile": 50,
-    "activityStrength": "average"
+    "gpaPercentile": <0-100的整数>,
+    "testScorePercentile": <0-100的整数>,
+    "activityStrength": "<strong|average|weak>"
   }
 }
 
 注意事项：
-- probability: 0-1 之间的小数，表示录取概率
-- confidence: low/medium/high，根据数据完整度判断
+- probability: 0-1 之间的小数，表示录取概率。必须根据该校录取率合理推算，不同学校差异应明显
+- confidence: low/medium/high，根据数据完整度判断（缺少标化/活动数据时应为 low）
 - tier: reach(冲刺)/match(匹配)/safety(保底)
-- factors: 3-5个关键因素，weight 之和应接近1
+- factors: 3-5个关键因素，weight 之和应接近1。对缺失的数据（如未提供标化成绩）也要作为 negative 因素分析
 - 只返回 JSON，不要其他内容`;
 }
 
 /**
  * 构建批量预测的简化 Prompt（用于降低 token 消耗）
  */
-export function buildBatchPredictionPrompt(profile: ProfileInput, schools: SchoolInput[]): string {
-  const gpaText = profile.gpa 
-    ? `${profile.gpa}/${profile.gpaScale || 4.0}` 
+export function buildBatchPredictionPrompt(
+  profile: ProfileInput,
+  schools: SchoolInput[],
+): string {
+  const gpaText = profile.gpa
+    ? `${profile.gpa}/${profile.gpaScale || 4.0}`
     : '未提供';
 
-  const schoolsList = schools.map(s => 
-    `- ${s.nameZh || s.name} (排名: ${s.usNewsRank || '未知'}, 录取率: ${s.acceptanceRate || '未知'}%)`
-  ).join('\n');
+  const schoolsList = schools
+    .map(
+      (s) =>
+        `- ${s.nameZh || s.name} (排名: ${s.usNewsRank || '未知'}, 录取率: ${s.acceptanceRate || '未知'}%)`,
+    )
+    .join('\n');
 
   return `你是资深美国大学招生顾问。根据学生档案，快速评估多所学校的录取概率。
 
@@ -195,6 +211,3 @@ ${schoolsList}
 
 只返回JSON数组。`;
 }
-
-
-

@@ -5,15 +5,16 @@ import { SettingsService, SETTING_KEYS } from '../settings/settings.module';
 
 /**
  * IPEDS 更新监控服务
- * 
+ *
  * 定期检查 IPEDS 是否有新数据发布
  * 有更新时发送通知
  */
 @Injectable()
 export class IpedsMonitorService {
   private readonly logger = new Logger(IpedsMonitorService.name);
-  private readonly IPEDS_DATA_PAGE = 'https://nces.ed.gov/ipeds/datacenter/DataFiles.aspx';
-  
+  private readonly IPEDS_DATA_PAGE =
+    'https://nces.ed.gov/ipeds/datacenter/DataFiles.aspx';
+
   // 记录上次检查的数据版本
   private lastKnownVersion: string | null = null;
 
@@ -32,13 +33,13 @@ export class IpedsMonitorService {
     try {
       // 简单方案: 检查页面是否有变化
       // 生产环境可以解析页面内容，提取最新数据文件列表
-      
+
       const response = await fetch(this.IPEDS_DATA_PAGE);
       const html = await response.text();
-      
+
       // 提取关键信息 (简化版)
       const hasNewData = this.detectNewData(html);
-      
+
       if (hasNewData) {
         this.logger.warn('📢 检测到 IPEDS 新数据发布！');
         await this.sendNotification();
@@ -53,7 +54,7 @@ export class IpedsMonitorService {
   private detectNewData(html: string): boolean {
     // 简单检测: 查找页面中的年份标识
     // 实际生产中应该解析具体的文件列表
-    
+
     const currentYear = new Date().getFullYear();
     const patterns = [
       `${currentYear}`,
@@ -63,8 +64,10 @@ export class IpedsMonitorService {
     ];
 
     // 生成简单的页面指纹
-    const fingerprint = html.length.toString() + '_' + 
-      patterns.filter(p => html.includes(p)).join(',');
+    const fingerprint =
+      html.length.toString() +
+      '_' +
+      patterns.filter((p) => html.includes(p)).join(',');
 
     if (this.lastKnownVersion && fingerprint !== this.lastKnownVersion) {
       this.lastKnownVersion = fingerprint;
@@ -170,11 +173,3 @@ export class IpedsMonitorService {
     };
   }
 }
-
-
-
-
-
-
-
-

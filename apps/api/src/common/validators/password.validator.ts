@@ -63,7 +63,10 @@ export function IsStrongPassword(
             errors.push('包含数字');
           }
 
-          if (opts.requireSpecialChars && !/[!@#$%^&*(),.?":{}|<>]/.test(value)) {
+          if (
+            opts.requireSpecialChars &&
+            !/[!@#$%^&*(),.?":{}|<>]/.test(value)
+          ) {
             errors.push('包含特殊字符');
           }
 
@@ -101,7 +104,10 @@ export function IsStrongPassword(
             errors.push('包含数字');
           }
 
-          if (opts.requireSpecialChars && !/[!@#$%^&*(),.?":{}|<>]/.test(value || '')) {
+          if (
+            opts.requireSpecialChars &&
+            !/[!@#$%^&*(),.?":{}|<>]/.test(value || '')
+          ) {
             errors.push('包含特殊字符');
           }
 
@@ -188,11 +194,3 @@ export function calculatePasswordStrength(password: string): {
 
   return { score, level, feedback };
 }
-
-
-
-
-
-
-
-

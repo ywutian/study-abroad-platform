@@ -151,9 +151,10 @@ describe('ChatService', () => {
       (prismaService.follow.findUnique as jest.Mock)
         .mockResolvedValueOnce({ followerId: 'user-1', followingId: 'user-2' })
         .mockResolvedValueOnce({ followerId: 'user-2', followingId: 'user-1' });
-      (prismaService.block.findUnique as jest.Mock)
-        .mockResolvedValue(null);
-      (prismaService.conversation.findFirst as jest.Mock).mockResolvedValue(mockConversation);
+      (prismaService.block.findUnique as jest.Mock).mockResolvedValue(null);
+      (prismaService.conversation.findFirst as jest.Mock).mockResolvedValue(
+        mockConversation,
+      );
 
       const result = await service.getOrCreateConversation('user-1', 'user-2');
 
@@ -166,8 +167,12 @@ describe('ChatService', () => {
         .mockResolvedValueOnce({ followerId: 'user-1', followingId: 'user-2' })
         .mockResolvedValueOnce({ followerId: 'user-2', followingId: 'user-1' });
       (prismaService.block.findUnique as jest.Mock).mockResolvedValue(null);
-      (prismaService.conversation.findFirst as jest.Mock).mockResolvedValue(null);
-      (prismaService.conversation.create as jest.Mock).mockResolvedValue(mockConversation);
+      (prismaService.conversation.findFirst as jest.Mock).mockResolvedValue(
+        null,
+      );
+      (prismaService.conversation.create as jest.Mock).mockResolvedValue(
+        mockConversation,
+      );
 
       const result = await service.getOrCreateConversation('user-1', 'user-2');
 
@@ -178,7 +183,9 @@ describe('ChatService', () => {
 
   describe('sendMessage', () => {
     it('should throw ForbiddenException when not a participant', async () => {
-      (prismaService.conversationParticipant.findUnique as jest.Mock).mockResolvedValue(null);
+      (
+        prismaService.conversationParticipant.findUnique as jest.Mock
+      ).mockResolvedValue(null);
 
       await expect(
         service.sendMessage('conv-123', 'user-3', 'Hello'),
@@ -186,11 +193,15 @@ describe('ChatService', () => {
     });
 
     it('should throw ForbiddenException when blocked by recipient', async () => {
-      (prismaService.conversationParticipant.findUnique as jest.Mock).mockResolvedValue({
+      (
+        prismaService.conversationParticipant.findUnique as jest.Mock
+      ).mockResolvedValue({
         conversationId: 'conv-123',
         userId: 'user-1',
       });
-      (prismaService.conversationParticipant.findFirst as jest.Mock).mockResolvedValue({
+      (
+        prismaService.conversationParticipant.findFirst as jest.Mock
+      ).mockResolvedValue({
         userId: 'user-2',
       });
       (prismaService.block.findUnique as jest.Mock).mockResolvedValue({
@@ -204,15 +215,21 @@ describe('ChatService', () => {
     });
 
     it('should create message and update conversation', async () => {
-      (prismaService.conversationParticipant.findUnique as jest.Mock).mockResolvedValue({
+      (
+        prismaService.conversationParticipant.findUnique as jest.Mock
+      ).mockResolvedValue({
         conversationId: 'conv-123',
         userId: 'user-1',
       });
-      (prismaService.conversationParticipant.findFirst as jest.Mock).mockResolvedValue({
+      (
+        prismaService.conversationParticipant.findFirst as jest.Mock
+      ).mockResolvedValue({
         userId: 'user-2',
       });
       (prismaService.block.findUnique as jest.Mock).mockResolvedValue(null);
-      (prismaService.message.create as jest.Mock).mockResolvedValue(mockMessage);
+      (prismaService.message.create as jest.Mock).mockResolvedValue(
+        mockMessage,
+      );
       (prismaService.conversation.update as jest.Mock).mockResolvedValue({});
 
       const result = await service.sendMessage('conv-123', 'user-1', 'Hello!');
@@ -262,7 +279,9 @@ describe('ChatService', () => {
     });
 
     it('should remove existing follows and create block', async () => {
-      (prismaService.follow.deleteMany as jest.Mock).mockResolvedValue({ count: 2 });
+      (prismaService.follow.deleteMany as jest.Mock).mockResolvedValue({
+        count: 2,
+      });
       (prismaService.block.upsert as jest.Mock).mockResolvedValue({
         blockerId: 'user-1',
         blockedId: 'user-2',
@@ -277,19 +296,25 @@ describe('ChatService', () => {
 
   describe('getMessages', () => {
     it('should throw ForbiddenException when not a participant', async () => {
-      (prismaService.conversationParticipant.findUnique as jest.Mock).mockResolvedValue(null);
+      (
+        prismaService.conversationParticipant.findUnique as jest.Mock
+      ).mockResolvedValue(null);
 
-      await expect(
-        service.getMessages('conv-123', 'user-3'),
-      ).rejects.toThrow(ForbiddenException);
+      await expect(service.getMessages('conv-123', 'user-3')).rejects.toThrow(
+        ForbiddenException,
+      );
     });
 
     it('should return messages', async () => {
-      (prismaService.conversationParticipant.findUnique as jest.Mock).mockResolvedValue({
+      (
+        prismaService.conversationParticipant.findUnique as jest.Mock
+      ).mockResolvedValue({
         conversationId: 'conv-123',
         userId: 'user-1',
       });
-      (prismaService.message.findMany as jest.Mock).mockResolvedValue([mockMessage]);
+      (prismaService.message.findMany as jest.Mock).mockResolvedValue([
+        mockMessage,
+      ]);
 
       const result = await service.getMessages('conv-123', 'user-1');
 
@@ -299,23 +324,23 @@ describe('ChatService', () => {
 
   describe('markAsRead', () => {
     it('should update lastReadAt', async () => {
-      (prismaService.conversationParticipant.update as jest.Mock).mockResolvedValue({});
+      (
+        prismaService.conversationParticipant.update as jest.Mock
+      ).mockResolvedValue({});
 
       await service.markAsRead('conv-123', 'user-1');
 
-      expect(prismaService.conversationParticipant.update).toHaveBeenCalledWith({
-        where: { conversationId_userId: { conversationId: 'conv-123', userId: 'user-1' } },
-        data: { lastReadAt: expect.any(Date) },
-      });
+      expect(prismaService.conversationParticipant.update).toHaveBeenCalledWith(
+        {
+          where: {
+            conversationId_userId: {
+              conversationId: 'conv-123',
+              userId: 'user-1',
+            },
+          },
+          data: { lastReadAt: expect.any(Date) },
+        },
+      );
     });
   });
 });
-
-
-
-
-
-
-
-
-

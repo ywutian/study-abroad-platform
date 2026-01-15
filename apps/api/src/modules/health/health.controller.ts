@@ -31,9 +31,16 @@ interface HealthStatus {
   };
 }
 
+interface BuildInfo {
+  commitSha: string;
+  buildTime: string;
+  nodeVersion: string;
+}
+
 interface DetailedHealthStatus extends HealthStatus {
   env: string;
   nodeVersion: string;
+  build: BuildInfo;
 }
 
 @ApiTags('Health')
@@ -52,12 +59,14 @@ export class HealthController {
   @ApiOperation({ summary: 'Health check endpoint' })
   @ApiResponse({ status: 200, description: 'Service is healthy' })
   @ApiResponse({ status: 503, description: 'Service is unhealthy' })
-  async check(@Res({ passthrough: true }) res: Response): Promise<HealthStatus> {
+  async check(
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<HealthStatus> {
     const checks = await this.runChecks();
     const memory = this.getMemoryUsage();
-    
+
     const overallStatus = this.calculateOverallStatus(checks);
-    
+
     // Set appropriate status code
     if (overallStatus === 'error') {
       res.status(HttpStatus.SERVICE_UNAVAILABLE);
@@ -76,13 +85,23 @@ export class HealthController {
   @Get('detailed')
   @Public()
   @ApiOperation({ summary: 'Detailed health check (internal use)' })
-  async detailedCheck(@Res({ passthrough: true }) res: Response): Promise<DetailedHealthStatus> {
+  async detailedCheck(
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<DetailedHealthStatus> {
     const basicHealth = await this.check(res);
-    
+
     return {
       ...basicHealth,
       env: process.env.NODE_ENV || 'development',
       nodeVersion: process.version,
+      build: {
+        commitSha:
+          process.env.GIT_COMMIT_SHA ||
+          process.env.RAILWAY_GIT_COMMIT_SHA ||
+          'unknown',
+        buildTime: process.env.BUILD_TIME || 'unknown',
+        nodeVersion: process.version,
+      },
     };
   }
 
@@ -96,18 +115,23 @@ export class HealthController {
   @Get('ready')
   @Public()
   @ApiOperation({ summary: 'Readiness probe for Kubernetes' })
-  async readiness(@Res({ passthrough: true }) res: Response): Promise<{ status: CheckStatus; message?: string }> {
+  async readiness(
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<{ status: CheckStatus; message?: string }> {
     try {
       const start = Date.now();
       await this.prisma.$queryRaw`SELECT 1`;
       const latency = Date.now() - start;
-      
+
       // Consider slow response as degraded
       if (latency > 1000) {
         res.status(HttpStatus.SERVICE_UNAVAILABLE);
-        return { status: 'degraded', message: `Database response slow: ${latency}ms` };
+        return {
+          status: 'degraded',
+          message: `Database response slow: ${latency}ms`,
+        };
       }
-      
+
       return { status: 'ok' };
     } catch (error) {
       res.status(HttpStatus.SERVICE_UNAVAILABLE);
@@ -170,9 +194,9 @@ export class HealthController {
         message: result.message,
       };
     } catch (error) {
-      return { 
-        status: 'error', 
-        message: error instanceof Error ? error.message : 'Redis check failed' 
+      return {
+        status: 'error',
+        message: error instanceof Error ? error.message : 'Redis check failed',
       };
     }
   }
@@ -192,11 +216,9 @@ export class HealthController {
 
   private calculateOverallStatus(checks: HealthStatus['checks']): CheckStatus {
     const statuses = Object.values(checks).map((c) => c.status);
-    
+
     if (statuses.includes('error')) return 'error';
     if (statuses.includes('degraded')) return 'degraded';
     return 'ok';
   }
 }
-
-

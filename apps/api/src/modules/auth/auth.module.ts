@@ -36,4 +36,3 @@ import { UserModule } from '../user/user.module';
   exports: [AuthService, JwtModule],
 })
 export class AuthModule {}
-

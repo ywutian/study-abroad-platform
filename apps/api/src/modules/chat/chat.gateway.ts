@@ -8,9 +8,14 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { Logger, Inject, forwardRef } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import {
+  NotificationService,
+  NotificationType,
+} from '../notification/notification.service';
 
 interface AuthenticatedSocket extends Socket {
   userId?: string;
@@ -27,6 +32,8 @@ interface AuthenticatedSocket extends Socket {
   namespace: '/chat',
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+  private readonly logger = new Logger(ChatGateway.name);
+
   @WebSocketServer()
   server: Server;
 
@@ -35,12 +42,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private chatService: ChatService,
     private jwtService: JwtService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    @Inject(forwardRef(() => NotificationService))
+    private notificationService: NotificationService,
   ) {}
 
   async handleConnection(client: AuthenticatedSocket) {
     try {
-      const token = client.handshake.auth.token || client.handshake.headers.authorization?.split(' ')[1];
+      const token =
+        client.handshake.auth.token ||
+        client.handshake.headers.authorization?.split(' ')[1];
 
       if (!token) {
         client.disconnect();
@@ -59,35 +70,51 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return;
       }
 
-      // Track user socket
+      // 是否为该用户第一个连接（用于广播上线）
+      const isFirstConnection = !this.userSockets.has(userId);
+
+      // 记录 socket
       if (!this.userSockets.has(userId)) {
         this.userSockets.set(userId, new Set());
       }
       this.userSockets.get(userId)?.add(client.id);
 
-      // Join user's room
+      // 加入用户专属房间
       client.join(`user:${userId}`);
 
-      // Get conversations and join their rooms
+      // 加入所有会话房间
       const conversations = await this.chatService.getConversations(userId);
       conversations.forEach((conv) => {
         client.join(`conversation:${conv.id}`);
       });
 
-      client.emit('connected', { userId: client.userId });
-    } catch (error) {
+      // 通知客户端已连接
+      client.emit('connected', { userId });
+
+      // 广播上线状态
+      if (isFirstConnection) {
+        this.server.emit('userOnline', userId);
+      }
+
+      this.logger.debug(`User ${userId} connected (socket: ${client.id})`);
+    } catch {
       client.disconnect();
     }
   }
 
   handleDisconnect(client: AuthenticatedSocket) {
-    if (client.userId) {
-      const sockets = this.userSockets.get(client.userId);
-      if (sockets) {
-        sockets.delete(client.id);
-        if (sockets.size === 0) {
-          this.userSockets.delete(client.userId);
-        }
+    if (!client.userId) return;
+
+    const userId = client.userId;
+    const sockets = this.userSockets.get(userId);
+
+    if (sockets) {
+      sockets.delete(client.id);
+      if (sockets.size === 0) {
+        this.userSockets.delete(userId);
+        // 广播下线状态
+        this.server.emit('userOffline', userId);
+        this.logger.debug(`User ${userId} went offline`);
       }
     }
   }
@@ -95,29 +122,42 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('sendMessage')
   async handleMessage(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() data: { conversationId: string; content: string }
+    @MessageBody() data: { conversationId: string; content: string },
   ) {
-    if (!client.userId) return;
+    if (!client.userId) return { success: false, error: 'Not authenticated' };
 
     try {
-      const message = await this.chatService.sendMessage(data.conversationId, client.userId, data.content);
+      const message = await this.chatService.sendMessage(
+        data.conversationId,
+        client.userId,
+        data.content,
+      );
 
-      // Emit to all participants in the conversation
+      // 广播给会话内所有参与者
       this.server.to(`conversation:${data.conversationId}`).emit('newMessage', {
         conversationId: data.conversationId,
         message,
       });
 
+      // 给不在线的对方发通知（异步，不阻塞发送）
+      this.sendMessageNotification(data.conversationId, client.userId).catch(
+        (err) => this.logger.warn(`Notification failed: ${err.message}`),
+      );
+
       return { success: true, message };
     } catch (error) {
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to send message' };
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : 'Failed to send message',
+      };
     }
   }
 
   @SubscribeMessage('joinConversation')
   async handleJoinConversation(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() data: { conversationId: string }
+    @MessageBody() data: { conversationId: string },
   ) {
     if (!client.userId) return;
 
@@ -130,7 +170,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('typing')
   handleTyping(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() data: { conversationId: string; isTyping: boolean }
+    @MessageBody() data: { conversationId: string; isTyping: boolean },
   ) {
     if (!client.userId) return;
 
@@ -141,14 +181,52 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
   }
 
-  // Check if user is online
+  // ============================================
+  // 公共方法（供 NotificationService 等使用）
+  // ============================================
+
   isUserOnline(userId: string): boolean {
-    return this.userSockets.has(userId) && (this.userSockets.get(userId)?.size ?? 0) > 0;
+    return (
+      this.userSockets.has(userId) &&
+      (this.userSockets.get(userId)?.size ?? 0) > 0
+    );
   }
 
-  // Send notification to user
   sendToUser(userId: string, event: string, data: unknown) {
     this.server.to(`user:${userId}`).emit(event, data);
   }
-}
 
+  // ============================================
+  // 私有方法
+  // ============================================
+
+  /**
+   * 给会话中不在线的对方发送消息通知
+   */
+  private async sendMessageNotification(
+    conversationId: string,
+    senderId: string,
+  ) {
+    // 找到对方参与者
+    const participants = await this.chatService[
+      'prisma'
+    ].conversationParticipant.findMany({
+      where: { conversationId },
+      select: { userId: true },
+    });
+
+    for (const p of participants) {
+      if (p.userId !== senderId && !this.isUserOnline(p.userId)) {
+        await this.notificationService.createNotification(
+          p.userId,
+          NotificationType.NEW_MESSAGE,
+          {
+            actorId: senderId,
+            relatedId: conversationId,
+            relatedType: 'conversation',
+          },
+        );
+      }
+    }
+  }
+}

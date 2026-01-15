@@ -1,5 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsOptional, IsEnum, IsInt, IsBoolean, IsDateString, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsEnum,
+  IsInt,
+  IsBoolean,
+  IsDateString,
+  Min,
+  Max,
+} from 'class-validator';
 
 export enum ApplicationRound {
   ED = 'ED',
@@ -245,6 +255,7 @@ export class GenerateTimelineDto {
 }
 
 export class TimelineOverviewDto {
+  // 学校申请统计
   @ApiProperty()
   totalSchools: number;
 
@@ -262,7 +273,17 @@ export class TimelineOverviewDto {
 
   @ApiProperty()
   overdueTasks: TaskResponseDto[];
+
+  // 个人事件统计
+  @ApiProperty({ description: '个人事件总数' })
+  totalPersonalEvents: number;
+
+  @ApiProperty({ description: '进行中的个人事件' })
+  personalInProgress: number;
+
+  @ApiProperty({ description: '已完成的个人事件' })
+  personalCompleted: number;
+
+  @ApiProperty({ description: '即将到来的个人事件' })
+  upcomingPersonalEvents: any[];
 }
-
-
-

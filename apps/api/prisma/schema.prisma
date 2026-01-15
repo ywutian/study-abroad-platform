@@ -19,6 +19,7 @@ enum Role {
 
 enum Visibility {
   PRIVATE
+  PUBLIC
   ANONYMOUS
   VERIFIED_ONLY
 }
@@ -58,17 +59,40 @@ enum AwardLevel {
   INTERNATIONAL
 }
 
+enum CompetitionCategory {
+  MATH
+  BIOLOGY
+  PHYSICS
+  CHEMISTRY
+  COMPUTER_SCIENCE
+  ENGINEERING_RESEARCH
+  ECONOMICS_BUSINESS
+  DEBATE_SPEECH
+  WRITING_ESSAY
+  GENERAL_ACADEMIC
+  ARTS_MUSIC
+  OTHER
+}
+
 enum ReportTargetType {
   USER
   MESSAGE
   CASE
   REVIEW
+  POST // 帖子举报
+  COMMENT // 评论举报
 }
 
 enum ReportStatus {
   PENDING
   REVIEWED
   RESOLVED
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 enum AdmissionResult {
@@ -78,78 +102,132 @@ enum AdmissionResult {
   DEFERRED
 }
 
+enum TaskType {
+  ESSAY
+  DOCUMENT
+  TEST
+  INTERVIEW
+  RECOMMENDATION
+  OTHER
+}
+
+enum ApplicationStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  SUBMITTED
+  ACCEPTED
+  REJECTED
+  WAITLISTED
+  WITHDRAWN
+}
+
+enum GlobalEventCategory {
+  TEST // 标化考试（SAT, ACT, TOEFL, IELTS）
+  COMPETITION // 竞赛（AMC, USABO, Intel ISEF 等）
+  SUMMER_PROGRAM // 夏校/暑期项目
+  FINANCIAL_AID // 助学金（FAFSA, CSS Profile）
+  APPLICATION // 申请平台（Common App 开放日等）
+  OTHER
+}
+
+enum PersonalEventCategory {
+  COMPETITION // 竞赛（AMC, USABO, ISEF...）
+  TEST // 标化考试（SAT, ACT, TOEFL...）
+  SUMMER_PROGRAM // 夏校/暑期项目
+  INTERNSHIP // 实习
+  ACTIVITY // 课外活动（社团、志愿者...）
+  MATERIAL // 材料准备（推荐信、成绩单、作品集）
+  OTHER
+}
+
+enum PersonalEventStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum VaultItemType {
+  PASSWORD
+  CREDENTIAL
+  DOCUMENT
+  NOTE
+  API_KEY
+  OTHER
+}
+
 // ============================================
 // User & Auth
 // ============================================
 
 model User {
-  id                String    @id @default(cuid())
-  email             String    @unique
-  passwordHash      String
-  role              Role      @default(USER)
-  emailVerified     Boolean   @default(false)
-  emailVerifyToken  String?
-  passwordResetToken String?
+  id                   String    @id @default(cuid())
+  email                String    @unique
+  passwordHash         String
+  role                 Role      @default(USER)
+  emailVerified        Boolean   @default(false)
+  emailVerifyToken     String?
+  passwordResetToken   String?
   passwordResetExpires DateTime?
-  locale            String    @default("zh")
-  
-  // Points system
-  points            Int       @default(0)
-  
+  locale               String    @default("zh")
+
   // Relations
-  profile           Profile?
-  followers         Follow[]  @relation("Following")
-  following         Follow[]  @relation("Followers")
-  blockedUsers      Block[]   @relation("Blocker")
-  blockedBy         Block[]   @relation("Blocked")
-  sentMessages      Message[]
-  conversations     ConversationParticipant[]
-  customRankings    CustomRanking[]
-  reviewsGiven      Review[]  @relation("Reviewer")
-  reviewsReceived   Review[]  @relation("ReviewedProfile")
+  profile         Profile?
+  followers       Follow[]                  @relation("Following")
+  following       Follow[]                  @relation("Followers")
+  blockedUsers    Block[]                   @relation("Blocker")
+  blockedBy       Block[]                   @relation("Blocked")
+  sentMessages    Message[]
+  conversations   ConversationParticipant[]
+  customRankings  CustomRanking[]
+  reviewsGiven      Review[]                  @relation("Reviewer")
+  reviewsReceived   Review[]                  @relation("ReviewedProfile")
+  reviewReactions   ReviewReaction[]
   reports           Report[]
-  admissionCases    AdmissionCase[]
-  userLists         UserList[]
-  userListVotes     UserListVote[]
-  pointHistory      PointHistory[]
-  caseViews         CaseView[]
-  
-  // AI Memory System
-  agentConversations AgentConversation[]
-  memories           Memory[]
-  entities           Entity[]
-  aiPreferences      UserAIPreference?
-  
+  admissionCases  AdmissionCase[]
+  userLists       UserList[]
+  userListVotes   UserListVote[]
+  schoolListItems SchoolListItem[]
+
+  // Forum relations
+  forumPosts      ForumPost[]
+  forumComments   ForumComment[]
+  teamMemberships TeamMember[]
+
+  // Swipe game
+  points       Int            @default(0)
+  swipeStats   SwipeStats?
+  pointHistory PointHistory[]
+
+  // Peer review system (互评)
+  peerReviewsGiven    PeerReview[] @relation("ReviewsGiven")
+  peerReviewsReceived PeerReview[] @relation("ReviewsReceived")
+  avgRating           Float? // 平均评分 (缓存)
+  reviewCount         Int          @default(0) // 评价数
+
+  // Assessment (测评)
+  assessmentResults AssessmentResult[]
+
+  // Vault (密码保险库)
+  vaultItems VaultItem[]
+
+  // Recommendations (选校推荐)
+  schoolRecommendations SchoolRecommendation[]
+
+  // Case views (案例查看记录)
+  caseViews CaseView[]
+
+  // Application timeline
+  applicationTimelines ApplicationTimeline[]
+  personalEvents       PersonalEvent[]
+
   // Verification
   verificationRequests VerificationRequest[]
-  
-  // AI Recommendations
-  schoolRecommendations SchoolRecommendation[]
-  
-  // Application Timelines
-  applicationTimelines ApplicationTimeline[]
-  
-  // Swipe Game
-  caseSwipes    CaseSwipe[]
-  swipeStats    SwipeStats?
-  
-  // Assessments
-  assessmentResults AssessmentResult[]
-  
-  // Forum
-  forumPosts        ForumPost[]
-  forumComments     ForumComment[]
-  forumLikes        ForumLike[]
-  teamApplications  TeamApplication[]
-  teamMemberships   TeamMember[]
-  
-  // Vault
-  vaultItems        VaultItem[]
-  
+
   // Timestamps
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  deletedAt         DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   @@index([email])
   @@index([deletedAt])
@@ -171,65 +249,76 @@ model RefreshToken {
 // ============================================
 
 model Profile {
-  id              String     @id @default(cuid())
-  userId          String     @unique
-  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Public profile
+  nickname  String? // 显示昵称
+  avatarUrl String? // 头像 URL
+  bio       String? @db.Text // 个人简介
+
   // Strong Sensitive - Never public
-  realName        String?
-  
+  realName String?
+
+  // Onboarding fields
+  birthday            DateTime?
+  graduationDate      DateTime?
+  onboardingCompleted Boolean   @default(false)
+
   // Sensitive - Optional anonymized
-  gpa             Decimal?   @db.Decimal(3, 2)
-  gpaScale        Decimal    @default(4.0) @db.Decimal(3, 2)
-  currentSchool   String?
-  currentSchoolType String?  // PUBLIC_US / PRIVATE_US / INTERNATIONAL / etc.
-  grade           String?    // FRESHMAN / SOPHOMORE / JUNIOR / SENIOR / GAP_YEAR
-  
+  gpa               Decimal? @db.Decimal(3, 2)
+  gpaScale          Decimal  @default(4.0) @db.Decimal(3, 2)
+  currentSchool     String?
+  currentSchoolType String? // PUBLIC_US / PRIVATE_US / INTERNATIONAL / etc.
+  grade             String? // FRESHMAN / SOPHOMORE / JUNIOR / SENIOR / GAP_YEAR
+
   // Non-sensitive
-  targetMajor     String?
-  regionPref      String[]
-  budgetTier      BudgetTier?
-  applicationRound String?   // ED / EA / RD
-  
+  targetMajor      String?
+  regionPref       String[]
+  budgetTier       BudgetTier?
+  applicationRound String? // ED / EA / RD
+
   // Visibility
-  visibility      Visibility @default(PRIVATE)
-  
+  visibility Visibility @default(PRIVATE)
+
   // Relations
-  testScores      TestScore[]
-  activities      Activity[]
-  awards          Award[]
-  education       Education[]
-  essays          Essay[]
-  predictions     PredictionResult[]
-  
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+  testScores  TestScore[]
+  activities  Activity[]
+  awards      Award[]
+  education   Education[]
+  essays      Essay[]
+  predictions PredictionResult[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([visibility])
+  @@index([onboardingCompleted])
 }
 
 model TestScore {
-  id        String    @id @default(cuid())
+  id        String  @id @default(cuid())
   profileId String
-  profile   Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
   type      TestType
   score     Int
-  subScores Json?     // { reading: 800, math: 800 } or { listening: 30, reading: 29 }
+  subScores Json? // { reading: 800, math: 800 } or { listening: 30, reading: 29 }
   testDate  DateTime?
-  
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([profileId])
 }
 
 model Activity {
-  id           String           @id @default(cuid())
-  profileId    String
-  profile      Profile          @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  
+  id        String  @id @default(cuid())
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
   name         String
   category     ActivityCategory
   role         String
@@ -241,491 +330,98 @@ model Activity {
   weeksPerYear Int?
   isOngoing    Boolean          @default(false)
   order        Int              @default(0)
-  
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([profileId])
 }
 
 model Award {
-  id          String     @id @default(cuid())
-  profileId   String
-  profile     Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  
+  id        String  @id @default(cuid())
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
   name        String
   level       AwardLevel
   year        Int?
   description String?
   order       Int        @default(0)
-  
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+
+  competitionId String?
+  competition   Competition? @relation(fields: [competitionId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([profileId])
+  @@index([competitionId])
+}
+
+// ============================================
+// Competition Reference Data
+// ============================================
+
+model Competition {
+  id            String              @id @default(cuid())
+  name          String // Full English name
+  abbreviation  String              @unique // e.g., "AMC 10", "USABO"
+  nameZh        String? // Chinese name
+  category      CompetitionCategory
+  level         AwardLevel // SCHOOL / REGIONAL / STATE / NATIONAL / INTERNATIONAL
+  tier          Int // 1-5 prestige (5 = highest, e.g. IMO Gold)
+  description   String?             @db.Text
+  descriptionZh String?             @db.Text
+  website       String?
+  isActive      Boolean             @default(true)
+
+  awards    Award[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([tier])
 }
 
 model Education {
-  id           String   @id @default(cuid())
-  profileId    String
-  profile      Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  
-  schoolName   String
-  schoolType   String?  // HIGH_SCHOOL / COLLEGE / etc.
-  degree       String?
-  major        String?
-  startDate    DateTime?
-  endDate      DateTime?
-  gpa          Decimal? @db.Decimal(3, 2)
-  gpaScale     Decimal? @db.Decimal(3, 2)
-  description  String?
-  
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id        String  @id @default(cuid())
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  schoolName  String
+  schoolType  String? // HIGH_SCHOOL / COLLEGE / etc.
+  degree      String?
+  major       String?
+  startDate   DateTime?
+  endDate     DateTime?
+  gpa         Decimal?  @db.Decimal(3, 2)
+  gpaScale    Decimal?  @db.Decimal(3, 2)
+  description String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([profileId])
 }
 
 model Essay {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   profileId String
-  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
   title     String
-  prompt    String?  @db.Text
-  content   String   @db.Text
+  prompt    String? @db.Text
+  content   String  @db.Text
   wordCount Int?
-  schoolId  String?  // Optional: linked to specific school
-  
-  // AI Results
+  schoolId  String? // Optional: linked to specific school
+
+  // AI results
   aiResults EssayAIResult[]
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([profileId])
-}
-
-// AI 文书处理结果
-model EssayAIResult {
-  id          String   @id @default(cuid())
-  essayId     String
-  essay       Essay    @relation(fields: [essayId], references: [id], onDelete: Cascade)
-  
-  type        String   // "polish" | "review" | "brainstorm" | "rewrite"
-  input       String   @db.Text
-  output      String   @db.Text
-  
-  // Review specific fields
-  scores      Json?    // { clarity: 8, uniqueness: 7, storytelling: 8, fit: 7, language: 8 }
-  suggestions Json?    // ["建议1", "建议2"]
-  
-  // Polish specific fields
-  changes     Json?    // [{ original, revised, reason }]
-  
-  tokenUsed   Int      @default(0)
-  
-  createdAt   DateTime @default(now())
-  
-  @@index([essayId])
-  @@index([type])
-}
-
-// AI 选校建议
-model SchoolRecommendation {
-  id              String   @id @default(cuid())
-  userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  // 用户输入快照
-  profileSnapshot Json     // 用户档案快照
-  preferences     Json?    // { regions: [], majors: [], budget: "" }
-  
-  // AI 推荐结果
-  recommendations Json     // [{ schoolId, schoolName, tier, probability, fitScore, reasons, concerns }]
-  analysis        Json?    // { strengths: [], weaknesses: [], tips: [] }
-  summary         String?  @db.Text
-  
-  tokenUsed       Int      @default(0)
-  
-  createdAt       DateTime @default(now())
-  
-  @@index([userId])
-}
-
-// 申请时间线状态
-enum ApplicationStatus {
-  NOT_STARTED
-  IN_PROGRESS
-  SUBMITTED
-  ACCEPTED
-  REJECTED
-  WAITLISTED
-  WITHDRAWN
-}
-
-// 申请时间线
-model ApplicationTimeline {
-  id          String            @id @default(cuid())
-  userId      String
-  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  schoolId    String
-  school      School            @relation(fields: [schoolId], references: [id])
-  schoolName  String            // 冗余存储，避免每次 join
-  
-  round       String            // ED, ED2, EA, REA, RD, Rolling
-  deadline    DateTime?
-  status      ApplicationStatus @default(NOT_STARTED)
-  
-  // 进度追踪
-  progress    Int               @default(0) // 0-100
-  priority    Int               @default(0) // 排序用
-  notes       String?           @db.Text
-  
-  // 任务
-  tasks       ApplicationTask[]
-  
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  
-  @@unique([userId, schoolId, round])
-  @@index([userId])
-  @@index([deadline])
-  @@index([status])
-}
-
-// 申请任务类型
-enum TaskType {
-  ESSAY
-  DOCUMENT
-  TEST
-  INTERVIEW
-  RECOMMENDATION
-  OTHER
-}
-
-// 申请任务
-model ApplicationTask {
-  id          String              @id @default(cuid())
-  timelineId  String
-  timeline    ApplicationTimeline @relation(fields: [timelineId], references: [id], onDelete: Cascade)
-  
-  title       String
-  type        TaskType            @default(OTHER)
-  description String?             @db.Text
-  dueDate     DateTime?
-  
-  // 状态
-  completed   Boolean             @default(false)
-  completedAt DateTime?
-  
-  // 文书关联
-  essayId     String?
-  essayPrompt String?             @db.Text
-  wordLimit   Int?
-  
-  // 排序
-  sortOrder   Int                 @default(0)
-  
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
-  
-  @@index([timelineId])
-  @@index([dueDate])
-}
-
-// ============================================
-// Tinder式案例滑动
-// ============================================
-
-// 用户滑动预测记录
-model CaseSwipe {
-  id          String        @id @default(cuid())
-  userId      String
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  caseId      String
-  case        AdmissionCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  
-  prediction  String        // "admit" | "reject" | "waitlist"
-  actualResult String       // 真实结果
-  isCorrect   Boolean       // 预测是否正确
-  
-  swipedAt    DateTime      @default(now())
-  
-  @@unique([userId, caseId])
-  @@index([userId])
-  @@index([isCorrect])
-}
-
-// 用户滑动统计
-model SwipeStats {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  totalSwipes Int      @default(0)
-  correctCount Int     @default(0)
-  streak      Int      @default(0)      // 连续正确数
-  bestStreak  Int      @default(0)      // 最高连续正确
-  
-  // 徽章等级: bronze, silver, gold, platinum, diamond
-  badge       String   @default("bronze")
-  
-  // 每日挑战
-  dailyChallengeDate DateTime?
-  dailyChallengeCount Int      @default(0)
-  
-  updatedAt   DateTime @updatedAt
-}
-
-// ============================================
-// 专业测评系统
-// ============================================
-
-// 测评类型
-enum AssessmentType {
-  MBTI
-  HOLLAND
-  MAJOR_MATCH
-}
-
-// 测评题目
-model Assessment {
-  id          String         @id @default(cuid())
-  type        AssessmentType
-  title       String
-  titleZh     String
-  description String?        @db.Text
-  descriptionZh String?      @db.Text
-  
-  // 题目 JSON 数组
-  questions   Json           // [{ id, text, textZh, options: [{ value, text, textZh }], dimension? }]
-  
-  // 结果解释
-  resultInterpretations Json? // { "INTJ": { title, description }, ... }
-  
-  isActive    Boolean        @default(true)
-  sortOrder   Int            @default(0)
-  
-  results     AssessmentResult[]
-  
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-}
-
-// 测评结果
-model AssessmentResult {
-  id           String     @id @default(cuid())
-  userId       String
-  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  assessmentId String
-  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  
-  // 用户答案
-  answers      Json       // [{ questionId, answer }]
-  
-  // 计算结果
-  result       Json       // MBTI: { type: "INTJ", scores: { E: 30, I: 70, ... } }
-                          // Holland: { codes: "RIA", scores: { R: 80, I: 75, ... } }
-  
-  // 专业推荐（如果是专业匹配测试）
-  majorRecommendations Json? // [{ major, score, reasons }]
-  
-  completedAt  DateTime   @default(now())
-  
-  @@index([userId])
-  @@index([assessmentId])
-}
-
-// ============================================
-// Forum System
-// ============================================
-
-// 论坛分类
-model ForumCategory {
-  id          String   @id @default(cuid())
-  name        String
-  nameZh      String
-  description String?
-  descriptionZh String?
-  icon        String?  // lucide icon name
-  color       String?  // 主题色
-  sortOrder   Int      @default(0)
-  isActive    Boolean  @default(true)
-  
-  posts       ForumPost[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-// 论坛帖子
-model ForumPost {
-  id          String   @id @default(cuid())
-  categoryId  String
-  category    ForumCategory @relation(fields: [categoryId], references: [id])
-  authorId    String
-  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  
-  title       String
-  content     String   @db.Text
-  tags        String[]
-  
-  // 组队帖子特有字段
-  isTeamPost  Boolean  @default(false)
-  teamSize    Int?
-  currentSize Int?     @default(1)  // 当前人数
-  requirements String?  @db.Text
-  teamDeadline DateTime?
-  teamStatus  TeamStatus @default(RECRUITING)
-  
-  // 统计
-  viewCount   Int      @default(0)
-  likeCount   Int      @default(0)
-  commentCount Int     @default(0)
-  
-  // 状态
-  isPinned    Boolean  @default(false)
-  isLocked    Boolean  @default(false)
-  
-  // 关系
-  comments    ForumComment[]
-  likes       ForumLike[]
-  teamApplications TeamApplication[]
-  teamMembers TeamMember[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@index([categoryId])
-  @@index([authorId])
-  @@index([isTeamPost])
-  @@index([createdAt])
-}
-
-enum TeamStatus {
-  RECRUITING  // 招募中
-  FULL        // 已满员
-  CLOSED      // 已关闭
-  COMPLETED   // 已完成
-}
-
-// 论坛评论
-model ForumComment {
-  id        String   @id @default(cuid())
-  postId    String
-  post      ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  authorId  String
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  content   String   @db.Text
-  
-  // 回复嵌套
-  parentId  String?
-  parent    ForumComment? @relation("CommentReplies", fields: [parentId], references: [id])
-  replies   ForumComment[] @relation("CommentReplies")
-  
-  likeCount Int      @default(0)
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  @@index([postId])
-  @@index([authorId])
-  @@index([parentId])
-}
-
-// 论坛点赞
-model ForumLike {
-  id        String   @id @default(cuid())
-  postId    String
-  post      ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  createdAt DateTime @default(now())
-  
-  @@unique([postId, userId])
-}
-
-// 组队申请
-model TeamApplication {
-  id          String   @id @default(cuid())
-  postId      String
-  post        ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  applicantId String
-  applicant   User     @relation(fields: [applicantId], references: [id], onDelete: Cascade)
-  
-  message     String?  @db.Text
-  status      TeamAppStatus @default(PENDING)
-  
-  reviewedAt  DateTime?
-  reviewNote  String?
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@unique([postId, applicantId])
-  @@index([postId])
-  @@index([applicantId])
-}
-
-enum TeamAppStatus {
-  PENDING   // 待审核
-  ACCEPTED  // 已接受
-  REJECTED  // 已拒绝
-  CANCELLED // 已取消
-}
-
-// 团队成员
-model TeamMember {
-  id        String   @id @default(cuid())
-  postId    String
-  post      ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  role      String   @default("member")  // owner, admin, member
-  joinedAt  DateTime @default(now())
-  
-  @@unique([postId, userId])
-  @@index([postId])
-  @@index([userId])
-}
-
-// ============================================
-// Vault (保险箱)
-// ============================================
-
-model VaultItem {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  type        VaultItemType
-  title       String
-  
-  // 加密存储的数据
-  encryptedData String @db.Text
-  iv          String   // 初始化向量
-  
-  // 元数据（不加密）
-  category    String?
-  tags        String[]
-  icon        String?
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@index([userId])
-  @@index([type])
-}
-
-enum VaultItemType {
-  CREDENTIAL  // 账号密码
-  DOCUMENT    // 文档
-  NOTE        // 笔记
-  CERTIFICATE // 证书
 }
 
 // ============================================
@@ -733,56 +429,82 @@ enum VaultItemType {
 // ============================================
 
 model School {
-  id              String   @id @default(cuid())
-  name            String
-  nameZh          String?
-  country         String   @default("US")
-  state           String?
-  city            String?
-  
+  id      String  @id @default(cuid())
+  name    String
+  nameZh  String?
+  country String  @default("US")
+  state   String?
+  city    String?
+
   // Rankings & Metrics
   usNewsRank      Int?
   qsRank          Int?
   acceptanceRate  Decimal? @db.Decimal(5, 2)
-  tuition         Int?     // Annual tuition in USD
-  avgSalary       Int?     // Average salary after graduation
+  tuition         Int? // Annual tuition in USD
+  avgSalary       Int? // Average salary after graduation
   totalEnrollment Int?
-  
-  // College Scorecard data
-  satAvg          Int?     // Average SAT score
-  actAvg          Int?     // Average ACT score  
-  studentCount    Int?     // Total student population
-  graduationRate  Decimal? @db.Decimal(5, 2) // 4-year graduation rate
-  
+
+  // Test Score Statistics (from College Scorecard)
+  satAvg         Int? // SAT total average
+  sat25          Int? // SAT 25th percentile (math + reading combined)
+  sat75          Int? // SAT 75th percentile (math + reading combined)
+  satMath25      Int? // SAT Math 25th percentile
+  satMath75      Int? // SAT Math 75th percentile
+  satReading25   Int? // SAT ERW 25th percentile
+  satReading75   Int? // SAT ERW 75th percentile
+  actAvg         Int? // ACT composite average/midpoint
+  act25          Int? // ACT composite 25th percentile
+  act75          Int? // ACT composite 75th percentile
+  studentCount   Int? // Total student enrollment (from College Scorecard)
+  graduationRate Decimal? @db.Decimal(5, 2) // 4-year graduation rate %
+
+  // School Type
+  isPrivate Boolean @default(false)
+
+  // Niche Grades (A+, A, A-, B+, B, B-, C+, C, C-, D+, D, D-, F)
+  nicheSafetyGrade  String? // Safety/Crime index
+  nicheLifeGrade    String? // Student Life/Happiness index
+  nicheFoodGrade    String? // Campus Food index
+  nicheOverallGrade String? // Overall Niche grade
+
+  // Search aliases (abbreviations, short names, nicknames)
+  aliases String[] @default([]) // e.g. ["MIT", "麻省理工", "Mass Tech"]
+
   // Additional Info
-  website         String?
-  logoUrl         String?
-  description     String?  @db.Text
-  descriptionZh   String?  @db.Text
-  metadata        Json?    // { scorecardId: "xxx", lastSync: "2024-01-01" }
-  
+  website       String?
+  logoUrl       String?
+  description   String? @db.Text
+  descriptionZh String? @db.Text
+  metadata      Json? // { deadlines, essayPrompts, requirements, lastScraped }
+
   // Relations
-  metrics              SchoolMetric[]
-  cases                AdmissionCase[]
-  targetedBy           ProfileTargetSchool[]
-  applicationTimelines ApplicationTimeline[]
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  metrics       SchoolMetric[]
+  cases         AdmissionCase[]
+  targetedBy    ProfileTargetSchool[]
+  schoolLists   SchoolListItem[]
+  essayExamples EssayExample[]
+  essayPrompts  EssayPrompt[]
+  deadlines     SchoolDeadline[]
+  timelines     ApplicationTimeline[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([name])
+  @@index([nameZh])
   @@index([usNewsRank])
+  @@index([isPrivate])
 }
 
 model SchoolMetric {
-  id        String   @id @default(cuid())
-  schoolId  String
-  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  
+  id       String @id @default(cuid())
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
   year      Int
-  metricKey String   // acceptance_rate, avg_sat, avg_gpa, etc.
-  value     Decimal  @db.Decimal(10, 2)
-  
+  metricKey String // acceptance_rate, avg_sat, avg_gpa, etc.
+  value     Decimal @db.Decimal(10, 2)
+
   createdAt DateTime @default(now())
 
   @@unique([schoolId, year, metricKey])
@@ -790,14 +512,14 @@ model SchoolMetric {
 }
 
 model ProfileTargetSchool {
-  id        String  @id @default(cuid())
+  id        String @id @default(cuid())
   profileId String
   schoolId  String
-  school    School  @relation(fields: [schoolId], references: [id])
-  
-  priority  Int     @default(0) // 1: Reach, 2: Match, 3: Safety
-  round     String? // ED, EA, RD, etc.
-  
+  school    School @relation(fields: [schoolId], references: [id])
+
+  priority Int     @default(0) // 1: Reach, 2: Match, 3: Safety
+  round    String? // ED, EA, RD, etc.
+
   createdAt DateTime @default(now())
 
   @@unique([profileId, schoolId])
@@ -805,18 +527,48 @@ model ProfileTargetSchool {
 }
 
 // ============================================
+// User School Lists (选校清单)
+// ============================================
+
+enum SchoolTier {
+  SAFETY // 保底校
+  TARGET // 匹配校
+  REACH // 冲刺校
+}
+
+model SchoolListItem {
+  id       String @id @default(cuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  tier            SchoolTier @default(TARGET)
+  notes           String?    @db.Text
+  round           String? // ED, EA, RD, etc.
+  isAIRecommended Boolean    @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, schoolId])
+  @@index([userId])
+  @@index([tier])
+}
+
+// ============================================
 // Custom Rankings
 // ============================================
 
 model CustomRanking {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  name      String
-  weights   Json     // { usNewsRank: 30, acceptanceRate: 20, tuition: 25, avgSalary: 25 }
-  isPublic  Boolean  @default(false)
-  
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name     String
+  weights  Json // { usNewsRank: 30, acceptanceRate: 20, tuition: 25, avgSalary: 25 }
+  isPublic Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -829,21 +581,36 @@ model CustomRanking {
 // ============================================
 
 model PredictionResult {
-  id         String   @id @default(cuid())
-  profileId  String
-  profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  
-  schoolId   String
-  probability Decimal @db.Decimal(5, 4) // 0.0000 - 1.0000
-  factors    Json     // [{ name: "GPA", impact: "positive", detail: "..." }]
-  modelVersion String @default("v1")
-  
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        String  @id @default(cuid())
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
-  @@unique([profileId, schoolId])
+  schoolId       String
+  probability    Decimal @db.Decimal(5, 4) // 0.0000 - 1.0000
+  probabilityLow Decimal? @db.Decimal(5, 4) // 置信区间下界
+  probabilityHigh Decimal? @db.Decimal(5, 4) // 置信区间上界
+  factors        Json // [{ name: "GPA", impact: "positive", detail: "..." }]
+  modelVersion   String  @default("v2")
+  tier           String? // reach / match / safety
+  confidence     String? // low / medium / high
+
+  // 多引擎分数明细 (用于透明性和调试)
+  engineScores   Json?   // { stats: 0.35, ai: 0.28, historical: 0.32, weights: {...} }
+  suggestions    Json?   // 改进建议列表
+  comparison     Json?   // 对比数据
+
+  // 准确率追踪
+  actualResult   String? // ADMITTED / REJECTED / WAITLISTED / UNKNOWN
+  reportedAt     DateTime? // 用户报告实际结果的时间
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([profileId, schoolId]) // 每个 profile+school 只保存最新预测
   @@index([profileId])
   @@index([schoolId])
+  @@index([modelVersion])
+  @@index([actualResult])
 }
 
 // ============================================
@@ -851,43 +618,77 @@ model PredictionResult {
 // ============================================
 
 model AdmissionCase {
-  id          String          @id @default(cuid())
-  userId      String
-  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  schoolId    String
-  school      School          @relation(fields: [schoolId], references: [id])
-  
-  year        Int             // Application year
-  round       String?         // ED, EA, RD
-  result      AdmissionResult
-  major       String?
-  
+  id       String @id @default(cuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id])
+
+  year   Int // Application year
+  round  String? // ED, EA, RD
+  result AdmissionResult
+  major  String?
+
   // Anonymized profile snapshot at time of application
-  gpaRange    String?         // "3.7-3.9"
-  satRange    String?         // "1500-1550"
-  actRange    String?
-  toeflRange  String?
-  tags        String[]        // ["strong_research", "legacy", "athlete"]
-  
+  gpaRange   String? // "3.7-3.9"
+  satRange   String? // "1500-1550"
+  actRange   String?
+  toeflRange String?
+  tags       String[] // ["strong_research", "legacy", "athlete"]
+
+  // Essay content (for essay gallery)
+  essayType    EssayType? // COMMON_APP, UC, SUPPLEMENTAL, WHY_SCHOOL, OTHER
+  essayPrompt  String?    @db.Text // Essay prompt/question
+  essayContent String?    @db.Text // Essay content
+  promptNumber Int? // Common App: 1-7, UC PIQ: 1-4
+
   // Visibility
-  visibility  Visibility      @default(PRIVATE)
-  
+  visibility Visibility @default(PRIVATE)
+
   // Verification
-  isVerified  Boolean         @default(false)
-  verifiedAt  DateTime?
-  verificationRequests VerificationRequest[]
-  
-  // Relations
-  caseViews   CaseView[]
-  caseSwipes  CaseSwipe[]
-  
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  isVerified            Boolean               @default(false)
+  verifiedAt            DateTime?
+  verificationRequests  VerificationRequest[]
+
+  // Swipe game
+  swipes CaseSwipe[]
+
+  // Case views
+  views CaseView[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([schoolId])
   @@index([visibility])
   @@index([year])
+  @@index([essayType])
+}
+
+// ============================================
+// Verification System (认证系统)
+// ============================================
+
+model VerificationRequest {
+  id         String             @id @default(cuid())
+  userId     String
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  caseId     String
+  case       AdmissionCase      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  proofType  String             // offer_letter, enrollment_proof, student_id
+  proofData  String?            @db.Text // Base64 data
+  proofUrl   String?            // Cloud storage URL
+  status     VerificationStatus @default(PENDING)
+  reviewerId String?
+  reviewNote String?
+  reviewedAt DateTime?
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+
+  @@index([userId])
+  @@index([caseId])
+  @@index([status])
 }
 
 // ============================================
@@ -895,13 +696,13 @@ model AdmissionCase {
 // ============================================
 
 model Follow {
-  id          String   @id @default(cuid())
+  id          String @id @default(cuid())
   followerId  String
   followingId String
-  follower    User     @relation("Followers", fields: [followerId], references: [id], onDelete: Cascade)
-  following   User     @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
-  
-  createdAt   DateTime @default(now())
+  follower    User   @relation("Followers", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User   @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
 
   @@unique([followerId, followingId])
   @@index([followerId])
@@ -909,12 +710,12 @@ model Follow {
 }
 
 model Block {
-  id        String   @id @default(cuid())
+  id        String @id @default(cuid())
   blockerId String
   blockedId String
-  blocker   User     @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
-  blocked   User     @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
-  
+  blocker   User   @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked   User   @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
 
   @@unique([blockerId, blockedId])
@@ -930,9 +731,9 @@ model Conversation {
   id           String                    @id @default(cuid())
   participants ConversationParticipant[]
   messages     Message[]
-  
-  createdAt    DateTime                  @default(now())
-  updatedAt    DateTime                  @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([updatedAt])
 }
@@ -943,10 +744,10 @@ model ConversationParticipant {
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   userId         String
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  lastReadAt     DateTime?
-  
-  createdAt      DateTime     @default(now())
+
+  lastReadAt DateTime?
+
+  createdAt DateTime @default(now())
 
   @@unique([conversationId, userId])
   @@index([userId])
@@ -958,11 +759,11 @@ model Message {
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   senderId       String
   sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  
-  content        String       @db.Text
-  isDeleted      Boolean      @default(false)
-  
-  createdAt      DateTime     @default(now())
+
+  content   String  @db.Text
+  isDeleted Boolean @default(false)
+
+  createdAt DateTime @default(now())
 
   @@index([conversationId])
   @@index([senderId])
@@ -974,55 +775,91 @@ model Message {
 // ============================================
 
 model Review {
-  id             String   @id @default(cuid())
-  reviewerId     String
-  reviewer       User     @relation("Reviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
-  profileUserId  String
-  profileUser    User     @relation("ReviewedProfile", fields: [profileUserId], references: [id], onDelete: Cascade)
-  
-  academicScore  Int      // 1-10
-  activityScore  Int      // 1-10
-  essayScore     Int      // 1-10
-  overallScore   Int      // 1-10
-  comment        String?  @db.Text
-  
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id            String @id @default(cuid())
+  reviewerId    String
+  reviewer      User   @relation("Reviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
+  profileUserId String
+  profileUser   User   @relation("ReviewedProfile", fields: [profileUserId], references: [id], onDelete: Cascade)
+
+  // 评分维度 (1-10)
+  academicScore Int // 学术/GPA
+  testScore     Int @default(5) // 标化成绩 (原 essayScore，语义修正)
+  activityScore Int // 课外活动
+  awardScore    Int @default(5) // 奖项荣誉 (新增独立维度)
+  overallScore  Int // 综合评分
+
+  // 按模块评语
+  comment         String? @db.Text // 总评
+  academicComment String? @db.Text // 学术评语
+  testComment     String? @db.Text // 标化评语
+  activityComment String? @db.Text // 活动评语
+  awardComment    String? @db.Text // 奖项评语
+
+  // 元数据
+  status       ReviewStatus @default(PUBLISHED)
+  tags         String[] // 评审标签: well-rounded, strong-stem 等
+  helpfulCount Int          @default(0) // 缓存: 被标记有帮助的次数
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reactions ReviewReaction[]
 
   @@unique([reviewerId, profileUserId])
+  @@index([profileUserId, status, createdAt])
   @@index([reviewerId])
-  @@index([profileUserId])
+}
+
+// 评审互动反应
+model ReviewReaction {
+  id       String @id @default(cuid())
+  reviewId String
+  review   Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type     String // "helpful" | "insightful"
+
+  createdAt DateTime @default(now())
+
+  @@unique([reviewId, userId, type])
+  @@index([reviewId])
+}
+
+enum ReviewStatus {
+  DRAFT
+  PUBLISHED
+  HIDDEN
 }
 
 model UserList {
-  id          String         @id @default(cuid())
-  userId      String
-  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   title       String
-  description String?        @db.Text
-  category    String?        // school_ranking, major_ranking, etc.
-  items       Json           // Array of list items
-  isPublic    Boolean        @default(true)
-  
-  votes       UserListVote[]
-  
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  description String? @db.Text
+  category    String? // school_ranking, major_ranking, etc.
+  items       Json // Array of list items
+  isPublic    Boolean @default(true)
+
+  votes UserListVote[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([isPublic])
 }
 
 model UserListVote {
-  id        String   @id @default(cuid())
-  listId    String
-  list      UserList @relation(fields: [listId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  value     Int      // 1 for upvote, -1 for downvote
-  
+  id     String   @id @default(cuid())
+  listId String
+  list   UserList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  userId String
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  value Int // 1 for upvote, -1 for downvote
+
   createdAt DateTime @default(now())
 
   @@unique([listId, userId])
@@ -1034,22 +871,22 @@ model UserListVote {
 // ============================================
 
 model Report {
-  id         String           @id @default(cuid())
+  id         String @id @default(cuid())
   reporterId String
-  reporter   User             @relation(fields: [reporterId], references: [id], onDelete: Cascade)
-  
+  reporter   User   @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
   targetType ReportTargetType
   targetId   String
   reason     String
   detail     String?          @db.Text
-  context    Json?            // Auto-attached context (e.g., chat messages)
+  context    Json? // Auto-attached context (e.g., chat messages)
   status     ReportStatus     @default(PENDING)
-  
+
   reviewedAt DateTime?
   reviewedBy String?
   resolution String?
-  
-  createdAt  DateTime         @default(now())
+
+  createdAt DateTime @default(now())
 
   @@index([reporterId])
   @@index([status])
@@ -1061,88 +898,20 @@ model Report {
 // ============================================
 
 model AuditLog {
-  id        String   @id @default(cuid())
-  userId    String?
-  action    String   // VIEW_VERIFIED_CONTENT, DOWNLOAD_FILE, EXPORT_DATA, etc.
-  resource  String   // profile, case, file
+  id         String  @id @default(cuid())
+  userId     String?
+  action     String // VIEW_VERIFIED_CONTENT, DOWNLOAD_FILE, EXPORT_DATA, etc.
+  resource   String // profile, case, file
   resourceId String?
-  metadata  Json?
-  ipAddress String?
-  userAgent String?
-  
+  metadata   Json?
+  ipAddress  String?
+  userAgent  String?
+
   createdAt DateTime @default(now())
 
   @@index([userId])
   @@index([action])
   @@index([createdAt])
-}
-
-// ============================================
-// Points & Incentive System
-// ============================================
-
-model PointHistory {
-  id        String   @id @default(cuid())
-  userId    String
-  action    String   // SUBMIT_CASE, CASE_VERIFIED, VIEW_CASE_DETAIL, etc.
-  points    Int      // positive for earning, negative for spending
-  metadata  Json?    // { caseId: "xxx", etc. }
-  
-  user      User     @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
-
-  @@index([userId])
-  @@index([action])
-  @@index([createdAt])
-}
-
-model CaseView {
-  id        String   @id @default(cuid())
-  userId    String
-  caseId    String
-  
-  user      User          @relation(fields: [userId], references: [id])
-  case      AdmissionCase @relation(fields: [caseId], references: [id])
-  createdAt DateTime      @default(now())
-
-  @@unique([userId, caseId])
-  @@index([userId])
-  @@index([caseId])
-}
-
-// ============================================
-// Verification System
-// ============================================
-
-enum VerificationStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-model VerificationRequest {
-  id          String             @id @default(cuid())
-  userId      String
-  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  caseId      String
-  case        AdmissionCase      @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  
-  // 上传的证明文件 (Base64 或 URL)
-  proofType   String             // "offer_letter" | "enrollment_proof" | "student_id"
-  proofUrl    String?            // 文件URL（如果使用云存储）
-  proofData   String?            // Base64数据（如果直接存储）
-  
-  status      VerificationStatus @default(PENDING)
-  reviewerId  String?            // 审核管理员ID
-  reviewNote  String?            // 审核备注
-  reviewedAt  DateTime?
-  
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-
-  @@index([userId])
-  @@index([caseId])
-  @@index([status])
 }
 
 // ============================================
@@ -1150,152 +919,968 @@ model VerificationRequest {
 // ============================================
 
 enum MemoryType {
-  FACT           // 用户陈述的事实
-  PREFERENCE     // 用户偏好
-  DECISION       // 做出的决定（如选校）
-  SUMMARY        // 对话摘要
-  FEEDBACK       // 用户反馈
+  FACT // 事实信息
+  PREFERENCE // 用户偏好
+  DECISION // 决策记录
+  SUMMARY // 对话摘要
+  FEEDBACK // 用户反馈
 }
 
 enum EntityType {
-  SCHOOL         // 学校
-  PERSON         // 人物
-  EVENT          // 事件
-  TOPIC          // 话题/主题
+  SCHOOL // 学校
+  PERSON // 人物
+  EVENT // 事件
+  TOPIC // 话题
 }
 
-// AI Agent 对话会话
+// AI Agent 对话记录
 model AgentConversation {
-  id          String    @id @default(cuid())
-  userId      String
-  title       String?
-  summary     String?   @db.Text
-  agentType   String?   // 主要处理的 Agent
-  metadata    Json?     // 额外元数据
-  isArchived  Boolean   @default(false)
-  
-  user        User      @relation(fields: [userId], references: [id])
-  messages    AgentMessage[]
-  
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  archivedAt  DateTime?
+  id        String  @id @default(cuid())
+  userId    String
+  title     String?
+  summary   String? @db.Text
+  agentType String? // orchestrator, essay, school, profile, timeline
+  metadata  Json?
+
+  messages AgentMessage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([createdAt])
-  @@index([isArchived])
 }
 
-// Agent 消息记录
+// AI Agent 消息
 model AgentMessage {
   id             String            @id @default(cuid())
   conversationId String
-  role           String            // user, assistant, tool, system
-  content        String            @db.Text
-  agentType      String?           // 处理消息的 Agent
-  toolCalls      Json?             // 工具调用记录
-  tokensUsed     Int?              // Token 使用量
-  latencyMs      Int?              // 响应延迟
-  
   conversation   AgentConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  
-  createdAt      DateTime          @default(now())
+
+  role       String // user, assistant, tool, system
+  content    String  @db.Text
+  agentType  String? // 处理该消息的 Agent 类型
+  toolCalls  Json? // 工具调用记录
+  tokensUsed Int? // Token 使用量
+  latencyMs  Int? // 响应延迟
+
+  createdAt DateTime @default(now())
 
   @@index([conversationId])
   @@index([createdAt])
 }
 
-// 记忆条目
+// 用户记忆 - 支持向量搜索
 model Memory {
-  id            String     @id @default(cuid())
-  userId        String
-  type          MemoryType
-  category      String?    // school, essay, profile, timeline
-  content       String     @db.Text
-  importance    Float      @default(0.5) // 0-1 重要性评分
-  accessCount   Int        @default(0)
+  id             String                       @id @default(cuid())
+  userId         String
+  type           MemoryType
+  category       String? // school, essay, profile, timeline
+  content        String                       @db.Text
+  importance     Float                        @default(0.5)
+  accessCount    Int                          @default(0)
   lastAccessedAt DateTime?
-  expiresAt     DateTime?  // 可选过期时间
-  
-  // 向量嵌入 (pgvector)
-  // Prisma 不原生支持 vector 类型，使用 Unsupported
-  embedding     Unsupported("vector(1536)")?
-  
-  metadata      Json?      // 额外元数据
-  
-  user          User       @relation(fields: [userId], references: [id])
-  
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  embedding      Unsupported("vector(1536)")? // pgvector 向量字段
+  metadata       Json?
+  expiresAt      DateTime?
 
-  @@index([userId, type])
-  @@index([userId, category])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([type])
+  @@index([category])
   @@index([importance])
-  @@index([createdAt])
 }
 
-// 实体记录
+// 实体提取 - 学校、人物、事件、话题
 model Entity {
   id          String     @id @default(cuid())
   userId      String
   type        EntityType
   name        String
   description String?    @db.Text
-  attributes  Json?      // 实体属性
-  relations   Json?      // 关系 [{type, targetId, targetName}]
-  
-  // 向量嵌入 (pgvector)
-  embedding   Unsupported("vector(1536)")?
-  
-  user        User       @relation(fields: [userId], references: [id])
-  
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  attributes  Json? // 额外属性
+  relations   Json? // 关系列表
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([userId, type, name])
-  @@index([userId, type])
+  @@index([userId])
+  @@index([type])
 }
 
-// 用户 AI 偏好
+// 用户 AI 偏好设置
 model UserAIPreference {
-  id                   String   @id @default(cuid())
-  userId               String   @unique
-  
-  // 沟通偏好
-  communicationStyle   String   @default("friendly") // friendly, professional, casual
-  responseLength       String   @default("moderate") // brief, moderate, detailed
-  language             String   @default("zh-CN")
-  
-  // 学校偏好
-  schoolPreferences    Json?    // { regions: [], size: [], type: [] }
-  
-  // 文书偏好
-  essayPreferences     Json?    // { style: "vivid", tone: "personal" }
-  
-  // 其他设置
-  enableMemory         Boolean  @default(true)
-  enableSuggestions    Boolean  @default(true)
-  
-  user                 User     @relation(fields: [userId], references: [id])
-  
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id                 String  @id @default(cuid())
+  userId             String  @unique
+  communicationStyle String  @default("friendly") // friendly, professional, casual
+  responseLength     String  @default("moderate") // brief, moderate, detailed
+  language           String  @default("zh")
+  schoolPreferences  Json? // { regions: [], size: [], type: [] }
+  essayPreferences   Json? // { style: "", tone: "" }
+  enableMemory       Boolean @default(true)
+  enableSuggestions  Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ============================================
-// 系统设置
+// AI Agent 企业级扩展
+// ============================================
+
+// Token 使用记录
+model AgentTokenUsage {
+  id               String   @id @default(cuid())
+  userId           String
+  conversationId   String?
+  agentType        String?
+  model            String
+  promptTokens     Int      @default(0)
+  completionTokens Int      @default(0)
+  totalTokens      Int      @default(0)
+  cost             Decimal  @db.Decimal(10, 6)
+  toolName         String?
+  metadata         Json?
+  createdAt        DateTime @default(now())
+
+  @@index([userId])
+  @@index([userId, createdAt])
+  @@index([agentType])
+  @@index([createdAt])
+}
+
+// 用户配额
+model AgentQuota {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  tier          String   @default("FREE") // FREE, PRO, ENTERPRISE
+  dailyTokens   Int      @default(100000)
+  monthlyTokens Int      @default(2000000)
+  dailyCost     Decimal  @default(5.00) @db.Decimal(10, 2)
+  monthlyCost   Decimal  @default(100.00) @db.Decimal(10, 2)
+  customLimits  Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tier])
+}
+
+// 审计日志
+model AgentAuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  sessionId  String?
+  traceId    String?
+  action     String
+  resource   String
+  resourceId String?
+  operation  String
+  status     String   @default("SUCCESS")
+  details    Json?
+  ipAddress  String?
+  userAgent  String?
+  duration   Int?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([traceId])
+  @@index([action])
+  @@index([createdAt])
+  @@index([status])
+}
+
+// 安全事件
+model AgentSecurityEvent {
+  id               String    @id @default(cuid())
+  userId           String?
+  sessionId        String?
+  eventType        String
+  severity         String    @default("MEDIUM")
+  description      String
+  payload          Json?
+  mitigationAction String?
+  resolved         Boolean   @default(false)
+  resolvedAt       DateTime?
+  resolvedBy       String?
+  createdAt        DateTime  @default(now())
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([severity])
+  @@index([resolved])
+  @@index([createdAt])
+}
+
+// 配置版本
+model AgentConfigVersion {
+  id         String   @id @default(cuid())
+  configType String
+  configKey  String
+  version    Int
+  value      Json
+  isActive   Boolean  @default(false)
+  createdBy  String?
+  comment    String?
+  createdAt  DateTime @default(now())
+
+  @@unique([configType, configKey, version])
+  @@index([isActive])
+}
+
+// 记忆压缩记录
+model MemoryCompaction {
+  id                String   @id @default(cuid())
+  userId            String
+  sourceMemoryIds   String[]
+  compactedMemoryId String
+  compressionType   String
+  originalTokens    Int
+  compactedTokens   Int
+  compressionRatio  Decimal  @db.Decimal(5, 2)
+  metadata          Json?
+  createdAt         DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// 异步任务
+model AgentTask {
+  id          String    @id @default(cuid())
+  userId      String?
+  type        String
+  status      String    @default("PENDING")
+  priority    Int       @default(0)
+  payload     Json
+  result      Json?
+  error       String?
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(3)
+  scheduledAt DateTime?
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([status])
+  @@index([type])
+  @@index([scheduledAt])
+  @@index([priority, status])
+}
+
+// ============================================
+// Forum System
+// ============================================
+
+enum TeamStatus {
+  RECRUITING
+  FULL
+  CLOSED
+}
+
+enum TeamAppStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+enum ForumPostTag {
+  COMPETITION // 竞赛
+  ACTIVITY // 活动
+  QUESTION // 提问
+  SHARING // 分享
+  OTHER // 其他
+}
+
+model ForumCategory {
+  id            String  @id @default(cuid())
+  name          String
+  nameZh        String
+  description   String?
+  descriptionZh String?
+  icon          String?
+  color         String?
+  sortOrder     Int     @default(0)
+  isActive      Boolean @default(true)
+
+  posts ForumPost[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
+model ForumPost {
+  id         String        @id @default(cuid())
+  categoryId String
+  category   ForumCategory @relation(fields: [categoryId], references: [id])
+  authorId   String
+  author     User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  title   String
+  content String        @db.Text
+  tags    String[]
+  postTag ForumPostTag? // 帖子标签：竞赛/活动/提问
+
+  // Team post fields
+  isTeamPost   Boolean    @default(false)
+  teamSize     Int?
+  currentSize  Int?       @default(1)
+  requirements String?    @db.Text
+  teamDeadline DateTime?
+  teamStatus   TeamStatus @default(RECRUITING)
+
+  // Stats
+  viewCount    Int @default(0)
+  likeCount    Int @default(0)
+  commentCount Int @default(0)
+
+  // Moderation
+  isPinned Boolean @default(false)
+  isLocked Boolean @default(false)
+
+  // Relations
+  comments         ForumComment[]
+  likes            ForumLike[]
+  teamMembers      TeamMember[]
+  teamApplications TeamApplication[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([authorId])
+  @@index([isTeamPost])
+  @@index([postTag])
+  @@index([createdAt])
+  @@index([likeCount])
+}
+
+model ForumComment {
+  id       String         @id @default(cuid())
+  postId   String
+  post     ForumPost      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId String
+  author   User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parentId String?
+  parent   ForumComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  ForumComment[] @relation("CommentReplies")
+
+  content   String @db.Text
+  likeCount Int    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([postId])
+  @@index([authorId])
+  @@index([parentId])
+}
+
+model ForumLike {
+  id     String    @id @default(cuid())
+  postId String
+  post   ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId String
+
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
+}
+
+model TeamMember {
+  id     String    @id @default(cuid())
+  postId String
+  post   ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId String
+  user   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role String @default("member") // owner, member
+
+  joinedAt DateTime @default(now())
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
+}
+
+model TeamApplication {
+  id          String    @id @default(cuid())
+  postId      String
+  post        ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  applicantId String
+
+  message    String?       @db.Text
+  status     TeamAppStatus @default(PENDING)
+  reviewedAt DateTime?
+  reviewNote String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([postId, applicantId])
+  @@index([postId])
+  @@index([applicantId])
+  @@index([status])
+}
+
+// ============================================
+// Essay Gallery (文书案例)
+// ============================================
+
+enum EssayType {
+  COMMON_APP
+  UC
+  MAIN
+  SUPPLEMENTAL
+  SUPPLEMENT
+  WHY_SCHOOL
+  WHY_US
+  SHORT_ANSWER
+  ACTIVITY
+  OPTIONAL
+  OTHER
+}
+
+model EssayExample {
+  id       String  @id @default(cuid())
+  authorId String? // Optional: can be anonymous
+  schoolId String? // Target school
+  school   School? @relation(fields: [schoolId], references: [id])
+
+  type      EssayType
+  prompt    String    @db.Text
+  content   String    @db.Text
+  wordCount Int
+  year      Int? // Application year
+
+  // For Common App: prompt number (1-7)
+  promptNumber Int?
+
+  // Stats
+  viewCount   Int      @default(0)
+  likeCount   Int      @default(0)
+  rating      Decimal? @db.Decimal(2, 1) // Average rating 1.0-5.0
+  ratingCount Int      @default(0)
+
+  // Verification
+  isVerified Boolean @default(false)
+  isPublic   Boolean @default(true)
+
+  tags String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([schoolId])
+  @@index([type])
+  @@index([isPublic])
+  @@index([year])
+}
+
+// ============================================
+// Swipe Game System (模拟招生官)
+// ============================================
+
+model CaseSwipe {
+  id     String        @id @default(cuid())
+  userId String
+  caseId String
+  case   AdmissionCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  prediction   String // admit, reject, waitlist
+  actualResult String
+  isCorrect    Boolean
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, caseId])
+  @@index([userId])
+  @@index([caseId])
+}
+
+model SwipeStats {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  totalSwipes         Int       @default(0)
+  correctCount        Int       @default(0)
+  streak              Int       @default(0)
+  bestStreak          Int       @default(0)
+  badge               String    @default("bronze")
+  dailyChallengeCount Int       @default(0)
+  dailyChallengeDate  DateTime?
+
+  updatedAt DateTime @updatedAt
+
+  @@index([badge])
+  @@index([correctCount])
+}
+
+model PointHistory {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  action   String // SWIPE_CORRECT, REVIEW_COMPLETE, DAILY_BONUS, etc.
+  points   Int
+  metadata Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ============================================
+// Peer Review System (互评系统)
+// ============================================
+
+enum PeerReviewStatus {
+  PENDING // 等待对方评价
+  COMPLETED // 双方都已评价
+  EXPIRED // 已过期 (7天)
+}
+
+model PeerReview {
+  id String @id @default(cuid())
+
+  // 发起方 (评价者)
+  reviewerId String
+  reviewer   User   @relation("ReviewsGiven", fields: [reviewerId], references: [id], onDelete: Cascade)
+
+  // 被评方 (被评价者)
+  revieweeId String
+  reviewee   User   @relation("ReviewsReceived", fields: [revieweeId], references: [id], onDelete: Cascade)
+
+  // 发起方对被评方的评分 (1-5分)
+  profileScore  Int?    @db.SmallInt // 背景真实性
+  helpfulScore  Int?    @db.SmallInt // 帮助程度
+  responseScore Int?    @db.SmallInt // 回复及时性
+  overallScore  Int?    @db.SmallInt // 总体评分
+  comment       String? @db.Text // 评价内容
+
+  // 被评方对发起方的评分 (反向评价)
+  reverseProfileScore  Int?    @db.SmallInt
+  reverseHelpfulScore  Int?    @db.SmallInt
+  reverseResponseScore Int?    @db.SmallInt
+  reverseOverallScore  Int?    @db.SmallInt
+  reverseComment       String? @db.Text
+
+  // 评价设置
+  isAnonymous Boolean @default(false)
+
+  // 状态
+  status      PeerReviewStatus @default(PENDING)
+  expiresAt   DateTime // 过期时间 (7天后)
+  completedAt DateTime? // 完成时间
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([reviewerId, revieweeId])
+  @@index([reviewerId])
+  @@index([revieweeId])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+// ============================================
+// School Deadlines (结构化截止日期)
+// ============================================
+
+model SchoolDeadline {
+  id       String @id @default(cuid())
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  year                 Int // 申请季年份，如 2026 表示 Fall 2026 入学
+  round                String // ED, ED2, EA, REA, RD, Rolling
+  applicationDeadline  DateTime // 申请截止日期
+  financialAidDeadline DateTime? // 助学金截止日期
+  decisionDate         DateTime? // 放榜日期
+
+  // 补充文书（结构化）
+  essayPrompts Json? // [{prompt: string, wordLimit: number, required: boolean}]
+  essayCount   Int? // 文书数量
+
+  // 额外信息
+  interviewRequired Boolean   @default(false)
+  interviewDeadline DateTime?
+  applicationFee    Int? // 申请费（美元）
+  notes             String?   @db.Text
+
+  // 数据来源
+  source String @default("MANUAL") // MANUAL, SCRAPED
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([schoolId, year, round])
+  @@index([schoolId])
+  @@index([year])
+  @@index([applicationDeadline])
+}
+
+// ============================================
+// Global Events (考试/竞赛/助学金)
+// ============================================
+
+model GlobalEvent {
+  id       String              @id @default(cuid())
+  title    String
+  titleZh  String?
+  category GlobalEventCategory
+
+  eventDate            DateTime // 事件日期（考试日、竞赛日）
+  registrationDeadline DateTime? // 报名截止
+  lateDeadline         DateTime? // 晚报名截止
+  resultDate           DateTime? // 出分日期
+
+  description   String? @db.Text
+  descriptionZh String? @db.Text
+  url           String? // 官方链接
+
+  year        Int // 年份
+  isRecurring Boolean @default(true)
+  isActive    Boolean @default(true)
+
+  // Relations
+  subscribers PersonalEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([eventDate])
+  @@index([year, isActive])
+}
+
+// ============================================
+// Application Timeline (个性化申请时间线)
+// ============================================
+
+model ApplicationTimeline {
+  id         String            @id @default(cuid())
+  userId     String
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  schoolId   String
+  school     School            @relation(fields: [schoolId], references: [id])
+  schoolName String // 冗余字段，便于查询展示
+  round      String // ED, EA, RD, ED2, REA, Rolling
+  deadline   DateTime?
+  status     ApplicationStatus @default(NOT_STARTED)
+  progress   Int               @default(0) // 0-100
+  priority   Int               @default(0)
+  notes      String?           @db.Text
+
+  tasks ApplicationTask[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, schoolId, round])
+  @@index([userId])
+  @@index([deadline])
+}
+
+model ApplicationTask {
+  id         String              @id @default(cuid())
+  timelineId String
+  timeline   ApplicationTimeline @relation(fields: [timelineId], references: [id], onDelete: Cascade)
+
+  title       String
+  type        TaskType
+  description String?   @db.Text
+  dueDate     DateTime?
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  essayId     String? // 关联到 Essay
+  essayPrompt String?   @db.Text
+  wordLimit   Int?
+  sortOrder   Int       @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([timelineId])
+  @@index([dueDate])
+}
+
+// ============================================
+// Personal Events (竞赛/考试/夏校/活动/材料)
+// ============================================
+
+model PersonalEvent {
+  id            String       @id @default(cuid())
+  userId        String
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  globalEventId String? // 从 GlobalEvent 订阅时关联
+  globalEvent   GlobalEvent? @relation(fields: [globalEventId], references: [id])
+
+  title       String
+  category    PersonalEventCategory
+  deadline    DateTime? // 主截止日期（如报名截止）
+  eventDate   DateTime? // 事件日期（如考试日、竞赛日）
+  status      PersonalEventStatus   @default(NOT_STARTED)
+  progress    Int                   @default(0) // 0-100
+  priority    Int                   @default(0)
+  description String?               @db.Text
+  url         String?
+  notes       String?               @db.Text
+
+  tasks PersonalTask[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, globalEventId]) // 防止重复订阅同一事件
+  @@index([userId])
+  @@index([deadline])
+  @@index([category])
+}
+
+model PersonalTask {
+  id      String        @id @default(cuid())
+  eventId String
+  event   PersonalEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  title       String
+  dueDate     DateTime?
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  sortOrder   Int       @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([dueDate])
+}
+
+// ============================================
+// Essay Prompt (文书题目)
+// ============================================
+
+enum EssayStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+model EssayPrompt {
+  id       String @id @default(cuid())
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  type      EssayType    @default(SUPPLEMENTAL)
+  status    EssayStatus  @default(PENDING)
+  year      Int          @default(2025)
+
+  prompt    String       @db.Text
+  promptZh  String?      @db.Text
+  wordLimit Int?
+  isRequired Boolean     @default(true)
+  sortOrder  Int         @default(0)
+
+  // AI 辅助字段
+  aiTips     String?     @db.Text
+  aiCategory String?
+
+  // 审核字段
+  verifiedBy   String?
+  verifiedAt   DateTime?
+  rejectReason String?   @db.Text
+
+  // 来源
+  sources    EssayPromptSource[]
+  auditLogs  EssayPromptAudit[]
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([schoolId])
+  @@index([status])
+  @@index([type])
+  @@index([year])
+}
+
+model EssayPromptSource {
+  id            String      @id @default(cuid())
+  essayPromptId String
+  essayPrompt   EssayPrompt @relation(fields: [essayPromptId], references: [id], onDelete: Cascade)
+
+  sourceType String
+  sourceUrl  String?
+  scrapedAt  DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([essayPromptId])
+}
+
+// ============================================
+// Assessment (测评系统)
+// ============================================
+
+enum AssessmentType {
+  MBTI
+  HOLLAND
+  STRENGTH
+}
+
+model Assessment {
+  id        String         @id @default(cuid())
+  type      AssessmentType @unique
+  title     String
+  titleZh   String?
+  questions Json
+
+  results AssessmentResult[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AssessmentResult {
+  id                   String     @id @default(cuid())
+  userId               String
+  user                 User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assessmentId         String
+  assessment           Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  answers              Json
+  result               Json
+  majorRecommendations Json?
+
+  completedAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([assessmentId])
+}
+
+model EssayPromptAudit {
+  id            String      @id @default(cuid())
+  essayPromptId String
+  essayPrompt   EssayPrompt @relation(fields: [essayPromptId], references: [id], onDelete: Cascade)
+
+  action       String       // CREATE, UPDATE, VERIFY, REJECT, ARCHIVE
+  fromStatus   EssayStatus?
+  toStatus     EssayStatus?
+  operatorId   String
+  operatorType String       // ADMIN, SYSTEM, USER
+  changes      Json?
+  reason       String?
+
+  createdAt DateTime @default(now())
+
+  @@index([essayPromptId])
+  @@index([operatorId])
+}
+
+// ============================================
+// Vault (密码保险库)
+// ============================================
+
+model VaultItem {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type          VaultItemType @default(OTHER)
+  title         String
+  encryptedData String        @db.Text
+  iv            String        // Initialization vector for encryption
+  category      String?
+  tags          String[]
+  icon          String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([type])
+  @@index([category])
+}
+
+// ============================================
+// System Settings (系统设置)
 // ============================================
 
 model SystemSetting {
-  id          String   @id @default(cuid())
-  key         String   @unique  // e.g. "admin_email", "site_name"
-  value       String   // JSON string for complex values
-  description String?  // 设置说明
-  category    String   @default("general") // general, notification, security, etc.
-  isPublic    Boolean  @default(false) // 是否可被前端读取
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  key         String  @id
+  value       String  @db.Text
+  description String?
+  category    String  @default("general")
 
-  @@index([category])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================
+// School Recommendation (选校推荐)
+// ============================================
+
+model SchoolRecommendation {
+  id              String @id @default(cuid())
+  userId          String
+  user            User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profileSnapshot Json
+  preferences     Json
+  recommendations Json
+  analysis        Json
+  summary         String? @db.Text
+  tokenUsed       Int     @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ============================================
+// Essay AI Result (文书 AI 结果)
+// ============================================
+
+model EssayAIResult {
+  id          String  @id @default(cuid())
+  essayId     String
+  essay       Essay   @relation(fields: [essayId], references: [id], onDelete: Cascade)
+  type        String  // 'polish' | 'review'
+  input       String  @db.Text
+  output      String  @db.Text
+  changes     Json?   // For polish type
+  scores      Json?   // For review type
+  suggestions Json?   // For review type
+  tokenUsed   Int     @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([essayId])
+  @@index([type])
+}
+
+// ============================================
+// Case View (案例查看记录)
+// ============================================
+
+model CaseView {
+  id     String        @id @default(cuid())
+  userId String
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  caseId String
+  case   AdmissionCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, caseId])
+  @@index([userId])
+  @@index([caseId])
 }

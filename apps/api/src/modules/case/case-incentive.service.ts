@@ -3,22 +3,22 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 /**
  * 案例提交激励系统
- * 
+ *
  * 设计理念：用户生成内容(UGC) + 积分激励
  * 这是最合规且可持续的数据获取方式
  */
 
 export enum PointAction {
   // 获得积分
-  SUBMIT_CASE = 'SUBMIT_CASE',           // 提交案例 +50
-  CASE_VERIFIED = 'CASE_VERIFIED',       // 案例被验证 +100
-  CASE_HELPFUL = 'CASE_HELPFUL',         // 案例被标记有帮助 +10
+  SUBMIT_CASE = 'SUBMIT_CASE', // 提交案例 +50
+  CASE_VERIFIED = 'CASE_VERIFIED', // 案例被验证 +100
+  CASE_HELPFUL = 'CASE_HELPFUL', // 案例被标记有帮助 +10
   COMPLETE_PROFILE = 'COMPLETE_PROFILE', // 完善档案 +30
-  REFER_USER = 'REFER_USER',             // 推荐新用户 +50
-  
+  REFER_USER = 'REFER_USER', // 推荐新用户 +50
+
   // 消耗积分
   VIEW_CASE_DETAIL = 'VIEW_CASE_DETAIL', // 查看案例详情 -20
-  AI_ANALYSIS = 'AI_ANALYSIS',           // AI分析 -30
+  AI_ANALYSIS = 'AI_ANALYSIS', // AI分析 -30
   MESSAGE_VERIFIED = 'MESSAGE_VERIFIED', // 私信认证用户 -10
 }
 
@@ -87,7 +87,9 @@ export class CaseIncentiveService {
       },
     });
 
-    this.logger.log(`User ${userId} ${action}: ${pointValue > 0 ? '+' : ''}${pointValue} points`);
+    this.logger.log(
+      `User ${userId} ${action}: ${pointValue > 0 ? '+' : ''}${pointValue} points`,
+    );
 
     return {
       success: true,
@@ -98,12 +100,15 @@ export class CaseIncentiveService {
   /**
    * 检查用户是否可以执行某操作
    */
-  async canPerformAction(userId: string, action: PointAction): Promise<boolean> {
+  async canPerformAction(
+    userId: string,
+    action: PointAction,
+  ): Promise<boolean> {
     const pointValue = POINT_VALUES[action];
-    
+
     // 获取积分的操作总是可以
     if (pointValue > 0) return true;
-    
+
     const currentPoints = await this.getUserPoints(userId);
     return currentPoints + pointValue >= 0;
   }
@@ -145,8 +150,12 @@ export class CaseIncentiveService {
     if (viewed) return true; // 已经查看过，不再扣费
 
     // 尝试扣除积分
-    const result = await this.adjustPoints(userId, PointAction.VIEW_CASE_DETAIL, { caseId });
-    
+    const result = await this.adjustPoints(
+      userId,
+      PointAction.VIEW_CASE_DETAIL,
+      { caseId },
+    );
+
     if (result.success) {
       // 记录查看
       await this.prisma.caseView.create({
@@ -157,10 +166,3 @@ export class CaseIncentiveService {
     return result.success;
   }
 }
-
-
-
-
-
-
-

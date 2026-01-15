@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CaseService } from './case.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
 import { Role, Visibility } from '@prisma/client';
 
@@ -36,7 +37,15 @@ describe('CaseService', () => {
               update: jest.fn(),
               delete: jest.fn(),
               count: jest.fn(),
+              groupBy: jest.fn().mockResolvedValue([]),
             },
+          },
+        },
+        {
+          provide: MemoryManagerService,
+          useValue: {
+            remember: jest.fn().mockResolvedValue(undefined),
+            recall: jest.fn().mockResolvedValue([]),
           },
         },
       ],
@@ -52,7 +61,9 @@ describe('CaseService', () => {
 
   describe('findAll', () => {
     it('should return paginated cases for admin', async () => {
-      (prismaService.admissionCase.findMany as jest.Mock).mockResolvedValue([mockCase]);
+      (prismaService.admissionCase.findMany as jest.Mock).mockResolvedValue([
+        mockCase,
+      ]);
       (prismaService.admissionCase.count as jest.Mock).mockResolvedValue(1);
 
       const result = await service.findAll(
@@ -67,7 +78,9 @@ describe('CaseService', () => {
     });
 
     it('should filter by schoolId', async () => {
-      (prismaService.admissionCase.findMany as jest.Mock).mockResolvedValue([mockCase]);
+      (prismaService.admissionCase.findMany as jest.Mock).mockResolvedValue([
+        mockCase,
+      ]);
       (prismaService.admissionCase.count as jest.Mock).mockResolvedValue(1);
 
       await service.findAll(
@@ -85,10 +98,17 @@ describe('CaseService', () => {
     });
 
     it('should apply visibility filter for regular users', async () => {
-      (prismaService.admissionCase.findMany as jest.Mock).mockResolvedValue([mockCase]);
+      (prismaService.admissionCase.findMany as jest.Mock).mockResolvedValue([
+        mockCase,
+      ]);
       (prismaService.admissionCase.count as jest.Mock).mockResolvedValue(1);
 
-      await service.findAll({ page: 1, pageSize: 20 }, {}, 'user-id', Role.USER);
+      await service.findAll(
+        { page: 1, pageSize: 20 },
+        {},
+        'user-id',
+        Role.USER,
+      );
 
       expect(prismaService.admissionCase.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -107,10 +127,17 @@ describe('CaseService', () => {
     });
 
     it('should allow verified users to see VERIFIED_ONLY cases', async () => {
-      (prismaService.admissionCase.findMany as jest.Mock).mockResolvedValue([mockCase]);
+      (prismaService.admissionCase.findMany as jest.Mock).mockResolvedValue([
+        mockCase,
+      ]);
       (prismaService.admissionCase.count as jest.Mock).mockResolvedValue(1);
 
-      await service.findAll({ page: 1, pageSize: 20 }, {}, 'verified-id', Role.VERIFIED);
+      await service.findAll(
+        { page: 1, pageSize: 20 },
+        {},
+        'verified-id',
+        Role.VERIFIED,
+      );
 
       expect(prismaService.admissionCase.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -132,7 +159,9 @@ describe('CaseService', () => {
 
   describe('findById', () => {
     it('should return case for owner', async () => {
-      (prismaService.admissionCase.findUnique as jest.Mock).mockResolvedValue(mockCase);
+      (prismaService.admissionCase.findUnique as jest.Mock).mockResolvedValue(
+        mockCase,
+      );
 
       const result = await service.findById('case-123', 'user-123', Role.USER);
 
@@ -141,7 +170,9 @@ describe('CaseService', () => {
 
     it('should return case for admin regardless of visibility', async () => {
       const privateCase = { ...mockCase, visibility: Visibility.PRIVATE };
-      (prismaService.admissionCase.findUnique as jest.Mock).mockResolvedValue(privateCase);
+      (prismaService.admissionCase.findUnique as jest.Mock).mockResolvedValue(
+        privateCase,
+      );
 
       const result = await service.findById('case-123', 'admin-id', Role.ADMIN);
 
@@ -149,7 +180,9 @@ describe('CaseService', () => {
     });
 
     it('should throw NotFoundException when case not found', async () => {
-      (prismaService.admissionCase.findUnique as jest.Mock).mockResolvedValue(null);
+      (prismaService.admissionCase.findUnique as jest.Mock).mockResolvedValue(
+        null,
+      );
 
       await expect(
         service.findById('nonexistent', 'user-id', Role.USER),
@@ -158,7 +191,9 @@ describe('CaseService', () => {
 
     it('should throw ForbiddenException for private case', async () => {
       const privateCase = { ...mockCase, visibility: Visibility.PRIVATE };
-      (prismaService.admissionCase.findUnique as jest.Mock).mockResolvedValue(privateCase);
+      (prismaService.admissionCase.findUnique as jest.Mock).mockResolvedValue(
+        privateCase,
+      );
 
       await expect(
         service.findById('case-123', 'other-user', Role.USER),
@@ -166,8 +201,13 @@ describe('CaseService', () => {
     });
 
     it('should throw ForbiddenException for VERIFIED_ONLY case when user is not verified', async () => {
-      const verifiedOnlyCase = { ...mockCase, visibility: Visibility.VERIFIED_ONLY };
-      (prismaService.admissionCase.findUnique as jest.Mock).mockResolvedValue(verifiedOnlyCase);
+      const verifiedOnlyCase = {
+        ...mockCase,
+        visibility: Visibility.VERIFIED_ONLY,
+      };
+      (prismaService.admissionCase.findUnique as jest.Mock).mockResolvedValue(
+        verifiedOnlyCase,
+      );
 
       await expect(
         service.findById('case-123', 'other-user', Role.USER),
@@ -195,33 +235,41 @@ describe('CaseService', () => {
       const result = await service.create('user-123', createData);
 
       expect(result.id).toBe('new-case');
-      expect(prismaService.admissionCase.create).toHaveBeenCalledWith({
-        data: {
-          year: 2024,
-          result: 'ADMITTED',
-          visibility: 'ANONYMOUS',
-          user: { connect: { id: 'user-123' } },
-          school: { connect: { id: 'school-123' } },
-        },
-      });
+      expect(prismaService.admissionCase.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            year: 2024,
+            result: 'ADMITTED',
+            visibility: 'ANONYMOUS',
+            user: { connect: { id: 'user-123' } },
+            school: { connect: { id: 'school-123' } },
+          }),
+        }),
+      );
     });
   });
 
   describe('update', () => {
     it('should update case for owner', async () => {
-      (prismaService.admissionCase.findUnique as jest.Mock).mockResolvedValue(mockCase);
+      (prismaService.admissionCase.findUnique as jest.Mock).mockResolvedValue(
+        mockCase,
+      );
       (prismaService.admissionCase.update as jest.Mock).mockResolvedValue({
         ...mockCase,
         gpaRange: '3.9-4.0',
       });
 
-      const result = await service.update('case-123', 'user-123', { gpaRange: '3.9-4.0' });
+      const result = await service.update('case-123', 'user-123', {
+        gpaRange: '3.9-4.0',
+      });
 
       expect(result.gpaRange).toBe('3.9-4.0');
     });
 
     it('should throw NotFoundException when updating non-owned case', async () => {
-      (prismaService.admissionCase.findUnique as jest.Mock).mockResolvedValue(mockCase);
+      (prismaService.admissionCase.findUnique as jest.Mock).mockResolvedValue(
+        mockCase,
+      );
 
       await expect(
         service.update('case-123', 'other-user', { gpaRange: '3.9-4.0' }),
@@ -231,8 +279,12 @@ describe('CaseService', () => {
 
   describe('delete', () => {
     it('should delete case for owner', async () => {
-      (prismaService.admissionCase.findUnique as jest.Mock).mockResolvedValue(mockCase);
-      (prismaService.admissionCase.delete as jest.Mock).mockResolvedValue(mockCase);
+      (prismaService.admissionCase.findUnique as jest.Mock).mockResolvedValue(
+        mockCase,
+      );
+      (prismaService.admissionCase.delete as jest.Mock).mockResolvedValue(
+        mockCase,
+      );
 
       await service.delete('case-123', 'user-123');
 
@@ -242,7 +294,9 @@ describe('CaseService', () => {
     });
 
     it('should throw NotFoundException when deleting non-owned case', async () => {
-      (prismaService.admissionCase.findUnique as jest.Mock).mockResolvedValue(mockCase);
+      (prismaService.admissionCase.findUnique as jest.Mock).mockResolvedValue(
+        mockCase,
+      );
 
       await expect(service.delete('case-123', 'other-user')).rejects.toThrow(
         NotFoundException,
@@ -252,7 +306,9 @@ describe('CaseService', () => {
 
   describe('getMyCases', () => {
     it('should return all cases for user', async () => {
-      (prismaService.admissionCase.findMany as jest.Mock).mockResolvedValue([mockCase]);
+      (prismaService.admissionCase.findMany as jest.Mock).mockResolvedValue([
+        mockCase,
+      ]);
 
       const result = await service.getMyCases('user-123');
 
@@ -267,4 +323,3 @@ describe('CaseService', () => {
     });
   });
 });
-

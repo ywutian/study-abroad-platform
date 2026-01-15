@@ -1,8 +1,8 @@
 /**
  * 学校官网数据爬虫脚本
- * 
+ *
  * 用法: npx ts-node scripts/scrape-schools.ts [school_name]
- * 
+ *
  * 示例:
  * - npx ts-node scripts/scrape-schools.ts          # 爬取所有配置学校
  * - npx ts-node scripts/scrape-schools.ts Stanford # 只爬取 Stanford
@@ -20,11 +20,14 @@ const SCHOOL_URLS: Record<string, SchoolUrls> = {
     essays: 'https://admission.stanford.edu/apply/freshman/essays.html',
   },
   'Harvard University': {
-    deadlines: 'https://college.harvard.edu/admissions/apply/application-requirements',
+    deadlines:
+      'https://college.harvard.edu/admissions/apply/application-requirements',
   },
   'Massachusetts Institute of Technology': {
-    deadlines: 'https://mitadmissions.org/apply/firstyear/deadlines-requirements/',
-    essays: 'https://mitadmissions.org/apply/firstyear/essays-activities-academics/',
+    deadlines:
+      'https://mitadmissions.org/apply/firstyear/deadlines-requirements/',
+    essays:
+      'https://mitadmissions.org/apply/firstyear/essays-activities-academics/',
   },
   'Yale University': {
     deadlines: 'https://admissions.yale.edu/dates-deadlines',
@@ -48,11 +51,12 @@ interface ScrapedData {
 
 async function fetchPage(url: string): Promise<string> {
   console.log(`  📥 获取: ${url}`);
-  
+
   const response = await fetch(url, {
     headers: {
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-      'Accept': 'text/html,application/xhtml+xml',
+      'User-Agent':
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+      Accept: 'text/html,application/xhtml+xml',
     },
   });
 
@@ -70,7 +74,10 @@ function parseDeadlines(html: string): Record<string, string> {
 
   // 常见日期模式
   const patterns = [
-    { key: 'rea', pattern: /restrictive\s*early\s*action[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i },
+    {
+      key: 'rea',
+      pattern: /restrictive\s*early\s*action[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i,
+    },
     { key: 'ea', pattern: /early\s*action[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i },
     { key: 'ed', pattern: /early\s*decision[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i },
     { key: 'rd', pattern: /regular\s*decision[:\s]*([A-Za-z]+\.?\s*\d{1,2})/i },
@@ -87,7 +94,7 @@ function parseDeadlines(html: string): Record<string, string> {
   // 如果没找到，尝试表格解析
   $('table tr, .deadline, [class*="date"]').each((_, elem) => {
     const rowText = $(elem).text().toLowerCase();
-    
+
     if (rowText.includes('november') || rowText.includes('january')) {
       if (rowText.includes('early') && !deadlines.ea && !deadlines.ed) {
         const dateMatch = rowText.match(/(november|january)\s*\d{1,2}/i);
@@ -129,14 +136,15 @@ function parseEssays(html: string): string[] {
   for (const selector of selectors) {
     $(selector).each((_, elem) => {
       const text = $(elem).text().trim();
-      
+
       // 文书题目通常是问句或以动词开头的指令
-      const isPrompt = 
-        (text.length > 30 && text.length < 500) &&
-        (
-          text.includes('?') ||
-          /^(tell|describe|reflect|share|explain|discuss|what|why|how)/i.test(text)
-        ) &&
+      const isPrompt =
+        text.length > 30 &&
+        text.length < 500 &&
+        (text.includes('?') ||
+          /^(tell|describe|reflect|share|explain|discuss|what|why|how)/i.test(
+            text,
+          )) &&
         !text.includes('click') &&
         !text.includes('visit') &&
         !seen.has(text);
@@ -151,7 +159,10 @@ function parseEssays(html: string): string[] {
   return essays.slice(0, 5);
 }
 
-async function scrapeSchool(schoolName: string, urls: SchoolUrls): Promise<ScrapedData> {
+async function scrapeSchool(
+  schoolName: string,
+  urls: SchoolUrls,
+): Promise<ScrapedData> {
   const data: ScrapedData = {
     deadlines: {},
     essays: [],
@@ -213,16 +224,16 @@ async function saveToDatabase(schoolName: string, data: ScrapedData) {
 }
 
 function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function main() {
   const targetSchool = process.argv[2];
-  
-  console.log('🚀 学校官网数据爬虫\n');
-  console.log('=' .repeat(50));
 
-  const schools = targetSchool 
+  console.log('🚀 学校官网数据爬虫\n');
+  console.log('='.repeat(50));
+
+  const schools = targetSchool
     ? { [targetSchool]: SCHOOL_URLS[targetSchool] }
     : SCHOOL_URLS;
 
@@ -237,9 +248,9 @@ async function main() {
 
   for (const [schoolName, urls] of Object.entries(schools)) {
     if (!urls) continue;
-    
+
     console.log(`\n📚 ${schoolName}`);
-    
+
     try {
       const data = await scrapeSchool(schoolName, urls);
       await saveToDatabase(schoolName, data);
@@ -252,19 +263,10 @@ async function main() {
     await delay(3000); // 学校之间等待 3 秒
   }
 
-  console.log('\n' + '=' .repeat(50));
+  console.log('\n' + '='.repeat(50));
   console.log(`✅ 完成: ${success} 成功, ${failed} 失败`);
 }
 
 main()
   .catch(console.error)
   .finally(() => prisma.$disconnect());
-
-
-
-
-
-
-
-
-

@@ -40,7 +40,9 @@ describe('HealthController', () => {
     });
 
     it('should return error status when database is not connected', async () => {
-      (prismaService.$queryRaw as jest.Mock).mockRejectedValue(new Error('DB connection failed'));
+      (prismaService.$queryRaw as jest.Mock).mockRejectedValue(
+        new Error('DB connection failed'),
+      );
 
       const result = await controller.check(mockResponse as Response);
 
@@ -63,7 +65,9 @@ describe('HealthController', () => {
     });
 
     it('should return error when database is not ready', async () => {
-      (prismaService.$queryRaw as jest.Mock).mockRejectedValue(new Error('DB not ready'));
+      (prismaService.$queryRaw as jest.Mock).mockRejectedValue(
+        new Error('DB not ready'),
+      );
 
       const result = await controller.readiness(mockResponse as Response);
       expect(result.status).toBe('error');

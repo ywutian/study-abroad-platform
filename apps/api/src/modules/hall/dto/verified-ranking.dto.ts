@@ -119,6 +119,3 @@ export class VerifiedRankingResponseDto {
   @ApiProperty()
   hasMore: boolean;
 }
-
-
-

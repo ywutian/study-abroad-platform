@@ -7,10 +7,19 @@ import {
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { StorageService, StorageFile } from '../../common/storage/storage.service';
+import {
+  StorageService,
+  StorageFile,
+} from '../../common/storage/storage.service';
 import { VerificationStatus, Role } from '@prisma/client';
-import { CreateVerificationDto, ProofType } from './dto/create-verification.dto';
-import { ReviewVerificationDto, ReviewAction } from './dto/review-verification.dto';
+import {
+  CreateVerificationDto,
+  ProofType,
+} from './dto/create-verification.dto';
+import {
+  ReviewVerificationDto,
+  ReviewAction,
+} from './dto/review-verification.dto';
 
 @Injectable()
 export class VerificationService {
@@ -23,17 +32,27 @@ export class VerificationService {
 
   /**
    * 上传验证材料文件
-   * 
+   *
    * 安全特性：
    * - 文件存储到云端（S3）或本地（开发环境）
    * - 文件名使用随机哈希，防止路径遍历攻击
    * - 支持的文件类型：图片、PDF
    */
-  async uploadProofFile(userId: string, file: StorageFile): Promise<{ url: string; key: string }> {
+  async uploadProofFile(
+    userId: string,
+    file: StorageFile,
+  ): Promise<{ url: string; key: string }> {
     // 验证文件类型
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+    const allowedTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'application/pdf',
+    ];
     if (!allowedTypes.includes(file.mimetype)) {
-      throw new BadRequestException('不支持的文件类型。支持：JPEG, PNG, WebP, PDF');
+      throw new BadRequestException(
+        '不支持的文件类型。支持：JPEG, PNG, WebP, PDF',
+      );
     }
 
     // 验证文件大小（最大 10MB）
@@ -43,7 +62,9 @@ export class VerificationService {
     }
 
     const result = await this.storage.uploadVerificationFile(userId, file);
-    this.logger.log(`Verification file uploaded: ${result.key} for user ${userId}`);
+    this.logger.log(
+      `Verification file uploaded: ${result.key} for user ${userId}`,
+    );
 
     return { url: result.url, key: result.key };
   }
@@ -169,7 +190,7 @@ export class VerificationService {
   async reviewVerification(
     requestId: string,
     reviewerId: string,
-    dto: ReviewVerificationDto
+    dto: ReviewVerificationDto,
   ) {
     const request = await this.prisma.verificationRequest.findUnique({
       where: { id: requestId },
@@ -294,4 +315,3 @@ export class VerificationService {
     return { pending, approved, rejected, total };
   }
 }
-

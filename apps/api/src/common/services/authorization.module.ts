@@ -7,5 +7,3 @@ import { AuthorizationService } from './authorization.service';
   exports: [AuthorizationService],
 })
 export class AuthorizationModule {}
-
-

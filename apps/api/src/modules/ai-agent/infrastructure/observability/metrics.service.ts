@@ -1,6 +1,6 @@
 /**
  * Agent 指标收集服务
- * 
+ *
  * 收集关键业务和性能指标
  */
 
@@ -17,7 +17,7 @@ interface Counter {
 interface Histogram {
   count: number;
   sum: number;
-  buckets: Map<number, number>;  // bucket -> count
+  buckets: Map<number, number>; // bucket -> count
 }
 
 interface Gauge {
@@ -27,7 +27,9 @@ interface Gauge {
 
 // ==================== 预定义指标 ====================
 
-const HISTOGRAM_BUCKETS = [10, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 30000];
+const HISTOGRAM_BUCKETS = [
+  10, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 30000,
+];
 
 export interface AgentMetrics {
   // 请求指标
@@ -36,14 +38,14 @@ export interface AgentMetrics {
     byStatus: Record<string, number>;
     byAgent: Record<string, number>;
   };
-  
+
   // 延迟指标
   latency: {
     llm: Histogram;
     tool: Histogram;
     total: Histogram;
   };
-  
+
   // Token 指标
   tokens: {
     prompt: number;
@@ -51,14 +53,14 @@ export interface AgentMetrics {
     total: number;
     byModel: Record<string, number>;
   };
-  
+
   // 错误指标
   errors: {
     total: number;
     byType: Record<string, number>;
     byAgent: Record<string, number>;
   };
-  
+
   // 系统指标
   system: {
     activeRequests: number;
@@ -71,7 +73,7 @@ export interface AgentMetrics {
 @Injectable()
 export class MetricsService implements OnModuleInit {
   private readonly logger = new Logger(MetricsService.name);
-  
+
   private metrics: AgentMetrics = this.createEmptyMetrics();
   private startTime = Date.now();
 
@@ -84,10 +86,15 @@ export class MetricsService implements OnModuleInit {
 
   // ==================== 请求指标 ====================
 
-  recordRequest(agentType: string, status: 'success' | 'error' | 'timeout' | 'rate_limited') {
+  recordRequest(
+    agentType: string,
+    status: 'success' | 'error' | 'timeout' | 'rate_limited',
+  ) {
     this.metrics.requests.total++;
-    this.metrics.requests.byStatus[status] = (this.metrics.requests.byStatus[status] || 0) + 1;
-    this.metrics.requests.byAgent[agentType] = (this.metrics.requests.byAgent[agentType] || 0) + 1;
+    this.metrics.requests.byStatus[status] =
+      (this.metrics.requests.byStatus[status] || 0) + 1;
+    this.metrics.requests.byAgent[agentType] =
+      (this.metrics.requests.byAgent[agentType] || 0) + 1;
   }
 
   // ==================== 延迟指标 ====================
@@ -110,16 +117,19 @@ export class MetricsService implements OnModuleInit {
     this.metrics.tokens.prompt += prompt;
     this.metrics.tokens.completion += completion;
     this.metrics.tokens.total += prompt + completion;
-    this.metrics.tokens.byModel[model] = (this.metrics.tokens.byModel[model] || 0) + prompt + completion;
+    this.metrics.tokens.byModel[model] =
+      (this.metrics.tokens.byModel[model] || 0) + prompt + completion;
   }
 
   // ==================== 错误指标 ====================
 
   recordError(errorType: string, agentType?: string) {
     this.metrics.errors.total++;
-    this.metrics.errors.byType[errorType] = (this.metrics.errors.byType[errorType] || 0) + 1;
+    this.metrics.errors.byType[errorType] =
+      (this.metrics.errors.byType[errorType] || 0) + 1;
     if (agentType) {
-      this.metrics.errors.byAgent[agentType] = (this.metrics.errors.byAgent[agentType] || 0) + 1;
+      this.metrics.errors.byAgent[agentType] =
+        (this.metrics.errors.byAgent[agentType] || 0) + 1;
     }
   }
 
@@ -156,24 +166,36 @@ export class MetricsService implements OnModuleInit {
     lines.push(`# TYPE ${prefix}requests_total counter`);
     lines.push(`${prefix}requests_total ${this.metrics.requests.total}`);
 
-    for (const [status, count] of Object.entries(this.metrics.requests.byStatus)) {
+    for (const [status, count] of Object.entries(
+      this.metrics.requests.byStatus,
+    )) {
       lines.push(`${prefix}requests_total{status="${status}"} ${count}`);
     }
 
-    for (const [agent, count] of Object.entries(this.metrics.requests.byAgent)) {
+    for (const [agent, count] of Object.entries(
+      this.metrics.requests.byAgent,
+    )) {
       lines.push(`${prefix}requests_total{agent="${agent}"} ${count}`);
     }
 
     // Token 计数
     lines.push(`# HELP ${prefix}tokens_total Total tokens used`);
     lines.push(`# TYPE ${prefix}tokens_total counter`);
-    lines.push(`${prefix}tokens_total{type="prompt"} ${this.metrics.tokens.prompt}`);
-    lines.push(`${prefix}tokens_total{type="completion"} ${this.metrics.tokens.completion}`);
+    lines.push(
+      `${prefix}tokens_total{type="prompt"} ${this.metrics.tokens.prompt}`,
+    );
+    lines.push(
+      `${prefix}tokens_total{type="completion"} ${this.metrics.tokens.completion}`,
+    );
 
     // 延迟直方图
     lines.push(`# HELP ${prefix}llm_duration_ms LLM call duration`);
     lines.push(`# TYPE ${prefix}llm_duration_ms histogram`);
-    this.appendHistogramLines(lines, `${prefix}llm_duration_ms`, this.metrics.latency.llm);
+    this.appendHistogramLines(
+      lines,
+      `${prefix}llm_duration_ms`,
+      this.metrics.latency.llm,
+    );
 
     // 错误计数
     lines.push(`# HELP ${prefix}errors_total Total errors`);
@@ -187,7 +209,9 @@ export class MetricsService implements OnModuleInit {
     // 系统指标
     lines.push(`# HELP ${prefix}active_requests Current active requests`);
     lines.push(`# TYPE ${prefix}active_requests gauge`);
-    lines.push(`${prefix}active_requests ${this.metrics.system.activeRequests}`);
+    lines.push(
+      `${prefix}active_requests ${this.metrics.system.activeRequests}`,
+    );
 
     return lines.join('\n');
   }
@@ -220,7 +244,7 @@ export class MetricsService implements OnModuleInit {
 
   private createHistogram(): Histogram {
     const buckets = new Map<number, number>();
-    HISTOGRAM_BUCKETS.forEach(b => buckets.set(b, 0));
+    HISTOGRAM_BUCKETS.forEach((b) => buckets.set(b, 0));
     return { count: 0, sum: 0, buckets };
   }
 
@@ -234,7 +258,11 @@ export class MetricsService implements OnModuleInit {
     }
   }
 
-  private appendHistogramLines(lines: string[], name: string, histogram: Histogram) {
+  private appendHistogramLines(
+    lines: string[],
+    name: string,
+    histogram: Histogram,
+  ) {
     for (const [bucket, count] of histogram.buckets.entries()) {
       lines.push(`${name}_bucket{le="${bucket}"} ${count}`);
     }
@@ -245,24 +273,24 @@ export class MetricsService implements OnModuleInit {
 
   private logMetricsSummary() {
     const uptime = Math.round((Date.now() - this.startTime) / 1000);
-    const avgLatency = this.metrics.latency.total.count > 0
-      ? Math.round(this.metrics.latency.total.sum / this.metrics.latency.total.count)
-      : 0;
-    const errorRate = this.metrics.requests.total > 0
-      ? ((this.metrics.errors.total / this.metrics.requests.total) * 100).toFixed(2)
-      : '0.00';
+    const avgLatency =
+      this.metrics.latency.total.count > 0
+        ? Math.round(
+            this.metrics.latency.total.sum / this.metrics.latency.total.count,
+          )
+        : 0;
+    const errorRate =
+      this.metrics.requests.total > 0
+        ? (
+            (this.metrics.errors.total / this.metrics.requests.total) *
+            100
+          ).toFixed(2)
+        : '0.00';
 
     this.logger.log(
       `[Metrics] uptime=${uptime}s requests=${this.metrics.requests.total} ` +
-      `tokens=${this.metrics.tokens.total} errors=${this.metrics.errors.total} (${errorRate}%) ` +
-      `avgLatency=${avgLatency}ms active=${this.metrics.system.activeRequests}`
+        `tokens=${this.metrics.tokens.total} errors=${this.metrics.errors.total} (${errorRate}%) ` +
+        `avgLatency=${avgLatency}ms active=${this.metrics.system.activeRequests}`,
     );
   }
 }
-
-
-
-
-
-
-

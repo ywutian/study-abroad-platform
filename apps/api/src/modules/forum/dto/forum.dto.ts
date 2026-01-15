@@ -1,5 +1,16 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsOptional, IsBoolean, IsInt, IsArray, IsEnum, IsDateString, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsBoolean,
+  IsInt,
+  IsArray,
+  IsEnum,
+  IsDateString,
+  Min,
+  Max,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 // ============ Enums ============
@@ -8,6 +19,16 @@ export enum PostSortBy {
   LATEST = 'latest',
   POPULAR = 'popular',
   COMMENTS = 'comments',
+  RECOMMENDED = 'recommended',
+}
+
+// 举报原因
+export enum ReportReason {
+  SPAM = 'spam',
+  INAPPROPRIATE = 'inappropriate',
+  HARASSMENT = 'harassment',
+  FALSE_INFO = 'false_info',
+  OTHER = 'other',
 }
 
 // ============ Request DTOs ============
@@ -147,6 +168,11 @@ export class PostQueryDto {
   @Type(() => Boolean)
   isTeamPost?: boolean;
 
+  @ApiPropertyOptional({ description: '帖子标签筛选' })
+  @IsOptional()
+  @IsString()
+  postTag?: string;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -168,6 +194,18 @@ export class PostQueryDto {
   @IsInt()
   @Type(() => Number)
   offset?: number = 0;
+}
+
+// 举报 DTO
+export class CreateReportDto {
+  @ApiProperty({ enum: ReportReason, description: '举报原因' })
+  @IsEnum(ReportReason)
+  reason: ReportReason;
+
+  @ApiPropertyOptional({ description: '补充说明' })
+  @IsOptional()
+  @IsString()
+  detail?: string;
 }
 
 export class TeamApplicationDto {
@@ -370,6 +408,3 @@ export class PostDetailResponseDto extends PostDto {
   @ApiPropertyOptional({ type: [TeamApplicationResponseDto] })
   teamApplications?: TeamApplicationResponseDto[];
 }
-
-
-

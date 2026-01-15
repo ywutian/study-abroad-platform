@@ -19,21 +19,28 @@ export class PaginationDto {
   pageSize?: number = 20;
 }
 
-export class PaginatedResponseDto<T> {
+export class PaginatedResponseDto<T, M = undefined> {
   items: T[];
   total: number;
   page: number;
   pageSize: number;
   totalPages: number;
+  meta?: M;
 }
 
-export function createPaginatedResponse<T>(items: T[], total: number, page: number, pageSize: number): PaginatedResponseDto<T> {
+export function createPaginatedResponse<T, M = undefined>(
+  items: T[],
+  total: number,
+  page: number,
+  pageSize: number,
+  meta?: M,
+): PaginatedResponseDto<T, M> {
   return {
     items,
     total,
     page,
     pageSize,
     totalPages: Math.ceil(total / pageSize),
+    ...(meta !== undefined && { meta }),
   };
 }
-

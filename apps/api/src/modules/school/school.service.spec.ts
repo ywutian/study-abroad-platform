@@ -24,8 +24,20 @@ describe('SchoolService', () => {
 
   const mockSchools = [
     mockSchool,
-    { ...mockSchool, id: 'school-456', name: 'MIT', nameZh: '麻省理工', usNewsRank: 2 },
-    { ...mockSchool, id: 'school-789', name: 'Stanford', nameZh: '斯坦福', usNewsRank: 3 },
+    {
+      ...mockSchool,
+      id: 'school-456',
+      name: 'MIT',
+      nameZh: '麻省理工',
+      usNewsRank: 2,
+    },
+    {
+      ...mockSchool,
+      id: 'school-789',
+      name: 'Stanford',
+      nameZh: '斯坦福',
+      usNewsRank: 3,
+    },
   ];
 
   beforeEach(async () => {
@@ -68,7 +80,9 @@ describe('SchoolService', () => {
 
   describe('findAll', () => {
     it('should return paginated schools', async () => {
-      (prismaService.school.findMany as jest.Mock).mockResolvedValue(mockSchools);
+      (prismaService.school.findMany as jest.Mock).mockResolvedValue(
+        mockSchools,
+      );
       (prismaService.school.count as jest.Mock).mockResolvedValue(3);
 
       const result = await service.findAll({ page: 1, pageSize: 20 });
@@ -79,7 +93,9 @@ describe('SchoolService', () => {
     });
 
     it('should filter by country', async () => {
-      (prismaService.school.findMany as jest.Mock).mockResolvedValue([mockSchool]);
+      (prismaService.school.findMany as jest.Mock).mockResolvedValue([
+        mockSchool,
+      ]);
       (prismaService.school.count as jest.Mock).mockResolvedValue(1);
 
       await service.findAll({ page: 1, pageSize: 20 }, { country: 'USA' });
@@ -92,7 +108,9 @@ describe('SchoolService', () => {
     });
 
     it('should filter by search term', async () => {
-      (prismaService.school.findMany as jest.Mock).mockResolvedValue([mockSchool]);
+      (prismaService.school.findMany as jest.Mock).mockResolvedValue([
+        mockSchool,
+      ]);
       (prismaService.school.count as jest.Mock).mockResolvedValue(1);
 
       await service.findAll({ page: 1, pageSize: 20 }, { search: 'Harvard' });
@@ -110,7 +128,9 @@ describe('SchoolService', () => {
     });
 
     it('should handle pagination correctly', async () => {
-      (prismaService.school.findMany as jest.Mock).mockResolvedValue([mockSchool]);
+      (prismaService.school.findMany as jest.Mock).mockResolvedValue([
+        mockSchool,
+      ]);
       (prismaService.school.count as jest.Mock).mockResolvedValue(100);
 
       const result = await service.findAll({ page: 3, pageSize: 10 });
@@ -149,7 +169,9 @@ describe('SchoolService', () => {
     it('should throw NotFoundException when school not found', async () => {
       (prismaService.school.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await expect(service.findById('nonexistent')).rejects.toThrow(NotFoundException);
+      await expect(service.findById('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -168,7 +190,9 @@ describe('SchoolService', () => {
       const result = await service.create(createData);
 
       expect(result.name).toBe('New University');
-      expect(prismaService.school.create).toHaveBeenCalledWith({ data: createData });
+      expect(prismaService.school.create).toHaveBeenCalledWith({
+        data: createData,
+      });
     });
   });
 
@@ -188,7 +212,9 @@ describe('SchoolService', () => {
 
   describe('findAllWithMetrics', () => {
     it('should return schools with US News rank', async () => {
-      (prismaService.school.findMany as jest.Mock).mockResolvedValue(mockSchools);
+      (prismaService.school.findMany as jest.Mock).mockResolvedValue(
+        mockSchools,
+      );
 
       const result = await service.findAllWithMetrics();
 
@@ -200,4 +226,3 @@ describe('SchoolService', () => {
     });
   });
 });
-

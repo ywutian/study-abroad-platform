@@ -1,7 +1,15 @@
 import { Controller, Post, Get, Body, Param, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { RecommendationService } from './recommendation.service';
-import { SchoolRecommendationRequestDto, SchoolRecommendationResponseDto } from './dto';
+import {
+  SchoolRecommendationRequestDto,
+  SchoolRecommendationResponseDto,
+} from './dto';
 import { CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -26,7 +34,9 @@ export class RecommendationController {
   @Get('history')
   @ApiOperation({ summary: '获取选校建议历史' })
   @ApiResponse({ status: 200, type: [SchoolRecommendationResponseDto] })
-  async getHistory(@CurrentUser() user: CurrentUserPayload): Promise<SchoolRecommendationResponseDto[]> {
+  async getHistory(
+    @CurrentUser() user: CurrentUserPayload,
+  ): Promise<SchoolRecommendationResponseDto[]> {
     return this.recommendationService.getRecommendationHistory(user.id);
   }
 
@@ -40,6 +50,3 @@ export class RecommendationController {
     return this.recommendationService.getRecommendationById(user.id, id);
   }
 }
-
-
-

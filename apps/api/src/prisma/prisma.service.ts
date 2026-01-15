@@ -1,15 +1,37 @@
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleInit,
+  OnModuleDestroy,
+  Logger,
+} from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+export class PrismaService
+  extends PrismaClient
+  implements OnModuleInit, OnModuleDestroy
+{
   private readonly logger = new Logger(PrismaService.name);
+
+  /** Slow query threshold in milliseconds */
+  private readonly slowQueryThresholdMs = Number(
+    process.env.PRISMA_SLOW_QUERY_MS || 200,
+  );
 
   constructor() {
     super({
-      log: process.env.NODE_ENV === 'development' 
-        ? ['query', 'info', 'warn', 'error'] 
-        : ['error'],
+      log:
+        process.env.NODE_ENV === 'development'
+          ? [
+              { emit: 'event', level: 'query' },
+              { emit: 'stdout', level: 'info' },
+              { emit: 'stdout', level: 'warn' },
+              { emit: 'stdout', level: 'error' },
+            ]
+          : [
+              { emit: 'event', level: 'query' },
+              { emit: 'stdout', level: 'error' },
+            ],
       datasources: {
         db: {
           url: process.env.DATABASE_URL,
@@ -19,14 +41,25 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
     // Connection pool configuration via DATABASE_URL parameters:
     // ?connection_limit=10&pool_timeout=20
-    // Or set via environment:
-    // - PRISMA_CONNECTION_LIMIT (default: 10)
-    // - PRISMA_POOL_TIMEOUT (default: 10s)
     this.logger.log('Prisma client initialized with connection pooling');
   }
 
   async onModuleInit() {
+    // Query performance monitoring middleware
+    this.$on('query' as never, (event: any) => {
+      const duration = event.duration as number;
+
+      if (duration > this.slowQueryThresholdMs) {
+        this.logger.warn(
+          `[SLOW QUERY] ${duration}ms | ${event.query} | params: ${event.params}`,
+        );
+      } else if (process.env.NODE_ENV === 'development' && duration > 50) {
+        this.logger.debug(`[QUERY] ${duration}ms | ${event.query}`);
+      }
+    });
+
     await this.$connect();
+    this.logger.log('Database connected successfully');
   }
 
   async onModuleDestroy() {
@@ -41,9 +74,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     if (process.env.NODE_ENV === 'production') {
       throw new Error('cleanDatabase is disabled in production');
     }
-    
+
     this.logger.warn('Cleaning database - this will delete all data');
-    
+
     // 使用 Prisma 原生 API 按依赖顺序删除
     // 注意：必须先删除有外键依赖的表
     await this.$transaction([
@@ -98,4 +131,3 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     this.logger.log('Database cleaned successfully');
   }
 }
-

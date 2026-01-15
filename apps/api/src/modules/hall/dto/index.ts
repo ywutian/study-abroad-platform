@@ -1,4 +1,13 @@
-import { IsString, IsInt, Min, Max, IsOptional, IsArray, IsBoolean, ArrayMinSize } from 'class-validator';
+import {
+  IsString,
+  IsInt,
+  Min,
+  Max,
+  IsOptional,
+  IsArray,
+  IsBoolean,
+  ArrayMinSize,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateReviewDto {
@@ -6,23 +15,46 @@ export class CreateReviewDto {
   @IsString()
   profileUserId: string;
 
-  @ApiProperty({ description: 'Academic score (1-10)', minimum: 1, maximum: 10 })
+  @ApiProperty({
+    description: 'Academic/GPA score (1-10)',
+    minimum: 1,
+    maximum: 10,
+  })
   @IsInt()
   @Min(1)
   @Max(10)
   academicScore: number;
 
-  @ApiProperty({ description: 'Activity score (1-10)', minimum: 1, maximum: 10 })
+  @ApiProperty({
+    description: 'Standardized test score (1-10)',
+    minimum: 1,
+    maximum: 10,
+  })
+  @IsInt()
+  @Min(1)
+  @Max(10)
+  testScore: number;
+
+  @ApiProperty({
+    description: 'Activity score (1-10)',
+    minimum: 1,
+    maximum: 10,
+  })
   @IsInt()
   @Min(1)
   @Max(10)
   activityScore: number;
 
-  @ApiProperty({ description: 'Essay score (1-10)', minimum: 1, maximum: 10 })
+  @ApiProperty({
+    description: 'Award score (1-10)',
+    minimum: 1,
+    maximum: 10,
+    default: 5,
+  })
   @IsInt()
   @Min(1)
   @Max(10)
-  essayScore: number;
+  awardScore: number;
 
   @ApiProperty({ description: 'Overall score (1-10)', minimum: 1, maximum: 10 })
   @IsInt()
@@ -30,10 +62,44 @@ export class CreateReviewDto {
   @Max(10)
   overallScore: number;
 
-  @ApiPropertyOptional({ description: 'Optional comment' })
+  @ApiPropertyOptional({ description: 'General comment' })
   @IsOptional()
   @IsString()
   comment?: string;
+
+  @ApiPropertyOptional({ description: 'Academic module comment' })
+  @IsOptional()
+  @IsString()
+  academicComment?: string;
+
+  @ApiPropertyOptional({ description: 'Test scores module comment' })
+  @IsOptional()
+  @IsString()
+  testComment?: string;
+
+  @ApiPropertyOptional({ description: 'Activities module comment' })
+  @IsOptional()
+  @IsString()
+  activityComment?: string;
+
+  @ApiPropertyOptional({ description: 'Awards module comment' })
+  @IsOptional()
+  @IsString()
+  awardComment?: string;
+
+  @ApiPropertyOptional({ description: 'Review tags', type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
+
+  @ApiPropertyOptional({
+    description: 'Review status',
+    enum: ['DRAFT', 'PUBLISHED'],
+  })
+  @IsOptional()
+  @IsString()
+  status?: 'DRAFT' | 'PUBLISHED';
 }
 
 export class CreateUserListDto {
@@ -55,7 +121,10 @@ export class CreateUserListDto {
   @IsArray()
   items: unknown[];
 
-  @ApiPropertyOptional({ description: 'Whether the list is public', default: true })
+  @ApiPropertyOptional({
+    description: 'Whether the list is public',
+    default: true,
+  })
   @IsOptional()
   @IsBoolean()
   isPublic?: boolean;
@@ -89,7 +158,10 @@ export class UpdateUserListDto {
 }
 
 export class VoteListDto {
-  @ApiProperty({ description: 'Vote value (1 for upvote, -1 for downvote)', enum: [1, -1] })
+  @ApiProperty({
+    description: 'Vote value (1 for upvote, -1 for downvote)',
+    enum: [1, -1],
+  })
   @IsInt()
   @Min(-1)
   @Max(1)
@@ -105,10 +177,3 @@ export class BatchRankingDto {
 }
 
 export * from './verified-ranking.dto';
-
-
-
-
-
-
-

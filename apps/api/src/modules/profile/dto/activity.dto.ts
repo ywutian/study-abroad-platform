@@ -157,12 +157,3 @@ export class UpdateActivityDto {
   @Min(0)
   order?: number;
 }
-
-
-
-
-
-
-
-
-

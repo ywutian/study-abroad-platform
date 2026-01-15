@@ -1,5 +1,20 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { ForumService } from './forum.service';
 import {
   CreateCategoryDto,
@@ -9,19 +24,37 @@ import {
   PostQueryDto,
   TeamApplicationDto,
   ReviewApplicationDto,
+  CreateReportDto,
   CategoryDto,
   PostDto,
   PostDetailResponseDto,
   PostListResponseDto,
 } from './dto';
-import { CurrentUser, Public } from '../../common/decorators';
+import { CurrentUser, Public, Roles } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { Role } from '@prisma/client';
 
 @ApiTags('forum')
 @Controller('forum')
 export class ForumController {
   constructor(private readonly forumService: ForumService) {}
+
+  // ============================================
+  // Stats
+  // ============================================
+
+  @Get('stats')
+  @Public()
+  @ApiOperation({ summary: 'Get forum statistics' })
+  async getStats(): Promise<{
+    postCount: number;
+    userCount: number;
+    teamingCount: number;
+    activeToday: number;
+  }> {
+    return this.forumService.getStats();
+  }
 
   // ============================================
   // Categories
@@ -36,7 +69,7 @@ export class ForumController {
   }
 
   @Post('categories')
-  @UseGuards(JwtAuthGuard)
+  @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new category (Admin only)' })
   @ApiResponse({ status: 201, type: CategoryDto })
@@ -204,10 +237,49 @@ export class ForumController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get teams I joined' })
   @ApiResponse({ status: 200, type: [PostDto] })
-  async getMyTeams(@CurrentUser() user: CurrentUserPayload): Promise<PostDto[]> {
+  async getMyTeams(
+    @CurrentUser() user: CurrentUserPayload,
+  ): Promise<PostDto[]> {
     return this.forumService.getMyTeams(user.id);
   }
+
+  // ============================================
+  // Reports
+  // ============================================
+
+  @Post('posts/:id/report')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '举报帖子' })
+  async reportPost(
+    @Param('id') postId: string,
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() data: CreateReportDto,
+  ): Promise<{ success: boolean }> {
+    await this.forumService.reportPost(
+      user.id,
+      postId,
+      data.reason,
+      data.detail,
+    );
+    return { success: true };
+  }
+
+  @Post('comments/:id/report')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '举报评论' })
+  async reportComment(
+    @Param('id') commentId: string,
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() data: CreateReportDto,
+  ): Promise<{ success: boolean }> {
+    await this.forumService.reportComment(
+      user.id,
+      commentId,
+      data.reason,
+      data.detail,
+    );
+    return { success: true };
+  }
 }
-
-
-

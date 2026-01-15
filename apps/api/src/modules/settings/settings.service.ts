@@ -12,7 +12,10 @@ export const SETTING_KEYS = {
 } as const;
 
 // 默认设置值
-const DEFAULT_SETTINGS: Record<string, { value: string; description: string; category: string }> = {
+const DEFAULT_SETTINGS: Record<
+  string,
+  { value: string; description: string; category: string }
+> = {
   [SETTING_KEYS.ADMIN_EMAIL]: {
     value: '',
     description: '管理员邮箱，用于接收系统通知',
@@ -128,7 +131,9 @@ export class SettingsService {
   /**
    * 批量设置
    */
-  async setMany(settings: Array<{ key: string; value: string }>): Promise<void> {
+  async setMany(
+    settings: Array<{ key: string; value: string }>,
+  ): Promise<void> {
     for (const { key, value } of settings) {
       await this.set(key, value);
     }
@@ -137,23 +142,28 @@ export class SettingsService {
   /**
    * 获取所有设置（按分类）
    */
-  async getAll(): Promise<Array<{
-    key: string;
-    value: string;
-    description: string | null;
-    category: string;
-  }>> {
+  async getAll(): Promise<
+    Array<{
+      key: string;
+      value: string;
+      description: string | null;
+      category: string;
+    }>
+  > {
     const dbSettings = await this.prisma.systemSetting.findMany({
       orderBy: [{ category: 'asc' }, { key: 'asc' }],
     });
 
     // Merge with defaults
-    const result = new Map<string, {
-      key: string;
-      value: string;
-      description: string | null;
-      category: string;
-    }>();
+    const result = new Map<
+      string,
+      {
+        key: string;
+        value: string;
+        description: string | null;
+        category: string;
+      }
+    >();
 
     // Add defaults first
     for (const [key, def] of Object.entries(DEFAULT_SETTINGS)) {
@@ -181,24 +191,28 @@ export class SettingsService {
   /**
    * 获取指定分类的设置
    */
-  async getByCategory(category: string): Promise<Array<{
-    key: string;
-    value: string;
-    description: string | null;
-  }>> {
+  async getByCategory(category: string): Promise<
+    Array<{
+      key: string;
+      value: string;
+      description: string | null;
+    }>
+  > {
     const all = await this.getAll();
-    return all.filter(s => s.category === category);
+    return all.filter((s) => s.category === category);
   }
 
   /**
    * 删除设置（恢复默认）
    */
   async delete(key: string): Promise<void> {
-    await this.prisma.systemSetting.delete({
-      where: { key },
-    }).catch(() => {
-      // Ignore if not exists
-    });
+    await this.prisma.systemSetting
+      .delete({
+        where: { key },
+      })
+      .catch(() => {
+        // Ignore if not exists
+      });
 
     await this.redis.del(`${CACHE_PREFIX}${key}`);
   }
@@ -227,5 +241,3 @@ export class SettingsService {
     this.logger.log('Default settings initialized');
   }
 }
-
-

@@ -1,6 +1,6 @@
 /**
  * 留学申请 AI Agent 核心服务
- * 
+ *
  * 架构设计:
  * 1. ReAct 模式: Reasoning + Acting
  * 2. 多轮对话支持，维护上下文
@@ -12,7 +12,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { ToolExecutor } from './tools.executor';
-import { getToolDefinitions, toOpenAITools, AGENT_TOOLS } from './tools.registry';
+import {
+  getToolDefinitions,
+  toOpenAITools,
+  AGENT_TOOLS,
+} from './tools.registry';
 import {
   AgentTool,
   AgentMessage,
@@ -60,7 +64,7 @@ export class AgentService {
   private readonly logger = new Logger(AgentService.name);
   private readonly apiKey: string | undefined;
   private readonly baseUrl: string;
-  
+
   // 会话状态存储 (生产环境应使用 Redis)
   private sessions: Map<string, AgentState> = new Map();
 
@@ -70,7 +74,9 @@ export class AgentService {
     private toolExecutor: ToolExecutor,
   ) {
     this.apiKey = this.configService.get<string>('OPENAI_API_KEY');
-    this.baseUrl = this.configService.get<string>('OPENAI_BASE_URL') || 'https://api.openai.com/v1';
+    this.baseUrl =
+      this.configService.get<string>('OPENAI_BASE_URL') ||
+      'https://api.openai.com/v1';
   }
 
   /**
@@ -105,7 +111,10 @@ export class AgentService {
   /**
    * 初始化会话状态
    */
-  private async initializeState(userId: string, conversationId: string): Promise<AgentState> {
+  private async initializeState(
+    userId: string,
+    conversationId: string,
+  ): Promise<AgentState> {
     // 加载用户上下文
     const context = await this.loadUserContext(userId);
 
@@ -139,7 +148,7 @@ export class AgentService {
         profile: {
           gpa: profile.gpa ? Number(profile.gpa) : undefined,
           gpaScale: profile.gpaScale ? Number(profile.gpaScale) : 4.0,
-          testScores: profile.testScores?.map(s => ({
+          testScores: profile.testScores?.map((s) => ({
             type: s.type,
             score: s.score,
           })),
@@ -171,11 +180,7 @@ export class AgentService {
       const systemPrompt = this.buildSystemPrompt(state.context);
 
       // 调用 LLM
-      const response = await this.callLLM(
-        systemPrompt,
-        state.messages,
-        config,
-      );
+      const response = await this.callLLM(systemPrompt, state.messages, config);
 
       // 如果没有工具调用，返回最终响应
       if (!response.toolCalls?.length) {
@@ -209,7 +214,9 @@ export class AgentService {
         try {
           args = JSON.parse(toolCall.function.arguments);
         } catch (e) {
-          this.logger.warn(`Failed to parse tool arguments for ${toolName}: ${e instanceof Error ? e.message : 'Unknown error'}`);
+          this.logger.warn(
+            `Failed to parse tool arguments for ${toolName}: ${e instanceof Error ? e.message : 'Unknown error'}`,
+          );
         }
 
         const result = await this.toolExecutor.execute(
@@ -233,7 +240,8 @@ export class AgentService {
 
     // 超过最大迭代次数
     return {
-      message: '抱歉，处理您的请求时遇到了一些问题。请尝试简化您的问题或分步骤提问。',
+      message:
+        '抱歉，处理您的请求时遇到了一些问题。请尝试简化您的问题或分步骤提问。',
       toolsUsed,
     };
   }
@@ -253,7 +261,7 @@ export class AgentService {
     // 转换消息格式
     const openaiMessages = [
       { role: 'system', content: systemPrompt },
-      ...messages.map(m => {
+      ...messages.map((m) => {
         if (m.role === 'tool') {
           return {
             role: 'tool' as const,
@@ -265,7 +273,7 @@ export class AgentService {
           return {
             role: 'assistant' as const,
             content: m.content || null,
-            tool_calls: m.toolCalls.map(tc => ({
+            tool_calls: m.toolCalls.map((tc) => ({
               id: tc.id,
               type: 'function' as const,
               function: {
@@ -332,10 +340,14 @@ export class AgentService {
     if (context.profile) {
       const parts = [];
       if (context.profile.gpa) {
-        parts.push(`GPA: ${context.profile.gpa}/${context.profile.gpaScale || 4.0}`);
+        parts.push(
+          `GPA: ${context.profile.gpa}/${context.profile.gpaScale || 4.0}`,
+        );
       }
       if (context.profile.testScores?.length) {
-        parts.push(`标化: ${context.profile.testScores.map(s => `${s.type}: ${s.score}`).join(', ')}`);
+        parts.push(
+          `标化: ${context.profile.testScores.map((s) => `${s.type}: ${s.score}`).join(', ')}`,
+        );
       }
       if (context.profile.targetMajor) {
         parts.push(`目标专业: ${context.profile.targetMajor}`);
@@ -371,7 +383,7 @@ export class AgentService {
     // 简单实现：提取带序号的建议
     const suggestions: string[] = [];
     const lines = content.split('\n');
-    
+
     for (const line of lines) {
       const match = line.match(/^\d+[\.\)]\s*(.+)$/);
       if (match) {
@@ -424,11 +436,3 @@ export class AgentService {
     return state?.messages || [];
   }
 }
-
-
-
-
-
-
-
-

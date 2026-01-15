@@ -1,5 +1,18 @@
-import { Controller, Get, Post, Delete, Body, Headers, Req } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Body,
+  Headers,
+  Req,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { SubscriptionService, SubscriptionPlan } from './subscription.service';
 import type { CreateSubscriptionDto } from './subscription.service';
 import { CurrentUser } from '../../common/decorators';
@@ -37,7 +50,10 @@ export class SubscriptionController {
   @Post('subscribe')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create or upgrade subscription' })
-  @ApiResponse({ status: 200, description: 'Subscription created successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Subscription created successfully',
+  })
   @ApiResponse({ status: 400, description: 'Invalid request' })
   async subscribe(
     @CurrentUser() user: CurrentUserPayload,
@@ -72,4 +88,3 @@ export class SubscriptionController {
     return { received: true };
   }
 }
-

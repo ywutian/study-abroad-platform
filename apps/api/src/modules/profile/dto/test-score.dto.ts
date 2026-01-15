@@ -63,12 +63,3 @@ export class UpdateTestScoreDto {
   @IsDateString()
   testDate?: string;
 }
-
-
-
-
-
-
-
-
-

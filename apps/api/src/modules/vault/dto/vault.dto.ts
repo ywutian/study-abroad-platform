@@ -1,6 +1,12 @@
-import { IsString, IsOptional, IsEnum, IsArray, MinLength } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsArray,
+  MinLength,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { VaultItemType } from '@prisma/client';
+import { VaultItemType } from '../../../common/types/enums';
 
 // ============================================
 // Create Vault Item
@@ -175,5 +181,3 @@ export class ImportVaultItemDto {
   @IsString({ each: true })
   tags?: string[];
 }
-
-

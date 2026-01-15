@@ -21,7 +21,9 @@ describe('App (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+    app.useGlobalPipes(
+      new ValidationPipe({ whitelist: true, transform: true }),
+    );
     await app.init();
   });
 
@@ -100,7 +102,10 @@ describe('App (e2e)', () => {
     it('/auth/login (POST) should reject non-existent user', () => {
       return request(app.getHttpServer())
         .post('/auth/login')
-        .send({ email: 'nonexistent@example.com', password: 'TestPassword123!' })
+        .send({
+          email: 'nonexistent@example.com',
+          password: 'TestPassword123!',
+        })
         .expect(401);
     });
 
@@ -244,17 +249,13 @@ describe('App (e2e)', () => {
     });
 
     it('/hall/lists (GET) should return public lists', () => {
-      return request(app.getHttpServer())
-        .get('/hall/lists')
-        .expect(200);
+      return request(app.getHttpServer()).get('/hall/lists').expect(200);
     });
   });
 
   describe('Protected Endpoints', () => {
     it('/profile (GET) should require authentication', () => {
-      return request(app.getHttpServer())
-        .get('/profile')
-        .expect(401);
+      return request(app.getHttpServer()).get('/profile').expect(401);
     });
 
     it('/chat/conversations (GET) should require authentication', () => {
@@ -297,9 +298,7 @@ describe('App (e2e)', () => {
   describe('Rate Limiting', () => {
     it('should allow requests within rate limit', async () => {
       for (let i = 0; i < 5; i++) {
-        await request(app.getHttpServer())
-          .get('/health')
-          .expect(200);
+        await request(app.getHttpServer()).get('/health').expect(200);
       }
     });
   });

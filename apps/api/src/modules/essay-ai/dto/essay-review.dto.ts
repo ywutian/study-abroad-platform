@@ -60,6 +60,3 @@ export class EssayReviewResponseDto {
   @ApiProperty()
   tokenUsed: number;
 }
-
-
-

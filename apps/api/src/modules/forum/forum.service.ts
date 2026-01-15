@@ -1,7 +1,23 @@
-import { Injectable, Logger, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+  Inject,
+  Optional,
+  forwardRef,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthorizationService } from '../../common/services/authorization.service';
-import { Prisma, TeamStatus, TeamAppStatus, Role } from '@prisma/client';
+import { ForumModerationService } from './moderation.service';
+import {
+  Prisma,
+  TeamStatus,
+  TeamAppStatus,
+  Role,
+  MemoryType,
+} from '@prisma/client';
 import {
   CreateCategoryDto,
   CreatePostDto,
@@ -17,6 +33,7 @@ import {
   PostListResponseDto,
   CommentDto,
 } from './dto';
+import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
 
 @Injectable()
 export class ForumService {
@@ -25,7 +42,69 @@ export class ForumService {
   constructor(
     private prisma: PrismaService,
     private auth: AuthorizationService,
+    private moderation: ForumModerationService,
+    @Optional()
+    @Inject(forwardRef(() => MemoryManagerService))
+    private memoryManager?: MemoryManagerService,
   ) {}
+
+  // ============================================
+  // Stats
+  // ============================================
+
+  async getStats(): Promise<{
+    postCount: number;
+    userCount: number;
+    teamingCount: number;
+    activeToday: number;
+  }> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const [postCount, userCount, teamingCount, activeToday] = await Promise.all(
+      [
+        // 总帖子数
+        this.prisma.forumPost.count(),
+        // 发帖用户数
+        this.prisma.forumPost
+          .groupBy({
+            by: ['authorId'],
+          })
+          .then((groups) => groups.length),
+        // 正在组队的帖子数
+        this.prisma.forumPost.count({
+          where: {
+            isTeamPost: true,
+            teamStatus: 'RECRUITING',
+          },
+        }),
+        // 今日活跃（今日发帖或评论的用户数）
+        Promise.all([
+          this.prisma.forumPost.findMany({
+            where: { createdAt: { gte: today } },
+            select: { authorId: true },
+          }),
+          this.prisma.forumComment.findMany({
+            where: { createdAt: { gte: today } },
+            select: { authorId: true },
+          }),
+        ]).then(([posts, comments]) => {
+          const userIds = new Set([
+            ...posts.map((p) => p.authorId),
+            ...comments.map((c) => c.authorId),
+          ]);
+          return userIds.size;
+        }),
+      ],
+    );
+
+    return {
+      postCount,
+      userCount,
+      teamingCount,
+      activeToday,
+    };
+  }
 
   // ============================================
   // Categories
@@ -81,8 +160,19 @@ export class ForumService {
   // Posts
   // ============================================
 
-  async getPosts(userId: string | null, query: PostQueryDto): Promise<PostListResponseDto> {
-    const { categoryId, isTeamPost, search, sortBy, limit = 20, offset = 0 } = query;
+  async getPosts(
+    userId: string | null,
+    query: PostQueryDto,
+  ): Promise<PostListResponseDto> {
+    const {
+      categoryId,
+      isTeamPost,
+      postTag,
+      search,
+      sortBy,
+      limit = 20,
+      offset = 0,
+    } = query;
 
     const where: Prisma.ForumPostWhereInput = {};
 
@@ -94,6 +184,11 @@ export class ForumService {
       where.isTeamPost = isTeamPost;
     }
 
+    // 标签筛选
+    if (postTag) {
+      where.postTag = postTag as any;
+    }
+
     if (search) {
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },
@@ -103,7 +198,9 @@ export class ForumService {
     }
 
     // 排序
-    let orderBy: Prisma.ForumPostOrderByWithRelationInput = {};
+    let orderBy:
+      | Prisma.ForumPostOrderByWithRelationInput
+      | Prisma.ForumPostOrderByWithRelationInput[] = {};
     switch (sortBy) {
       case PostSortBy.POPULAR:
         orderBy = { likeCount: 'desc' };
@@ -111,14 +208,28 @@ export class ForumService {
       case PostSortBy.COMMENTS:
         orderBy = { commentCount: 'desc' };
         break;
+      case PostSortBy.RECOMMENDED:
+        // 推荐排序: 综合考虑点赞数、评论数、浏览量、认证用户优先
+        orderBy = [
+          { author: { role: 'desc' } }, // 认证用户优先
+          { likeCount: 'desc' },
+          { commentCount: 'desc' },
+          { createdAt: 'desc' },
+        ];
+        break;
       default:
         orderBy = { createdAt: 'desc' };
     }
 
+    // 构建最终排序 (置顶帖子始终优先)
+    const finalOrderBy = Array.isArray(orderBy)
+      ? [{ isPinned: 'desc' as const }, ...orderBy]
+      : [{ isPinned: 'desc' as const }, orderBy];
+
     const [posts, total] = await Promise.all([
       this.prisma.forumPost.findMany({
         where,
-        orderBy: [{ isPinned: 'desc' }, orderBy],
+        orderBy: finalOrderBy,
         skip: offset,
         take: limit,
         include: {
@@ -154,7 +265,8 @@ export class ForumService {
         id: post.author.id,
         name: post.author.profile?.realName || undefined,
         avatar: undefined,
-        isVerified: post.author.role === Role.VERIFIED || post.author.role === Role.ADMIN,
+        isVerified:
+          post.author.role === Role.VERIFIED || post.author.role === Role.ADMIN,
       },
       title: post.title,
       content: post.content,
@@ -182,7 +294,10 @@ export class ForumService {
     };
   }
 
-  async getPostById(postId: string, userId: string | null): Promise<PostDetailResponseDto> {
+  async getPostById(
+    postId: string,
+    userId: string | null,
+  ): Promise<PostDetailResponseDto> {
     const post = await this.prisma.forumPost.findUnique({
       where: { id: postId },
       include: {
@@ -231,18 +346,23 @@ export class ForumService {
             },
           },
         },
-        teamApplications: userId === null ? false : {
-          where: { OR: [{ applicantId: userId }, { post: { authorId: userId } }] },
-          include: {
-            applicant: {
-              select: {
-                id: true,
-                role: true,
-                profile: { select: { realName: true } },
+        teamApplications:
+          userId === null
+            ? false
+            : {
+                where: {
+                  OR: [{ applicantId: userId }, { post: { authorId: userId } }],
+                },
+                include: {
+                  applicant: {
+                    select: {
+                      id: true,
+                      role: true,
+                      profile: { select: { realName: true } },
+                    },
+                  },
+                },
               },
-            },
-          },
-        },
       },
     });
 
@@ -256,13 +376,22 @@ export class ForumService {
       data: { viewCount: { increment: 1 } },
     });
 
+    // 记录浏览行为到记忆系统
+    if (userId) {
+      this.recordViewToMemory(userId, post).catch((err) => {
+        this.logger.warn('Failed to record view to memory', err);
+      });
+    }
+
     const formatComment = (comment: any): CommentDto => ({
       id: comment.id,
       author: {
         id: comment.author.id,
         name: comment.author.profile?.realName || undefined,
         avatar: undefined,
-        isVerified: comment.author.role === Role.VERIFIED || comment.author.role === Role.ADMIN,
+        isVerified:
+          comment.author.role === Role.VERIFIED ||
+          comment.author.role === Role.ADMIN,
       },
       content: comment.content,
       parentId: comment.parentId || undefined,
@@ -288,7 +417,8 @@ export class ForumService {
         id: post.author.id,
         name: post.author.profile?.realName || undefined,
         avatar: undefined,
-        isVerified: post.author.role === Role.VERIFIED || post.author.role === Role.ADMIN,
+        isVerified:
+          post.author.role === Role.VERIFIED || post.author.role === Role.ADMIN,
       },
       title: post.title,
       content: post.content,
@@ -314,7 +444,8 @@ export class ForumService {
           id: tm.user.id,
           name: tm.user.profile?.realName || undefined,
           avatar: undefined,
-          isVerified: tm.user.role === Role.VERIFIED || tm.user.role === Role.ADMIN,
+          isVerified:
+            tm.user.role === Role.VERIFIED || tm.user.role === Role.ADMIN,
         },
         role: tm.role,
         joinedAt: tm.joinedAt,
@@ -325,7 +456,9 @@ export class ForumService {
           id: ta.applicant.id,
           name: ta.applicant.profile?.realName || undefined,
           avatar: undefined,
-          isVerified: ta.applicant.role === Role.VERIFIED || ta.applicant.role === Role.ADMIN,
+          isVerified:
+            ta.applicant.role === Role.VERIFIED ||
+            ta.applicant.role === Role.ADMIN,
         },
         message: ta.message || undefined,
         status: ta.status,
@@ -335,6 +468,28 @@ export class ForumService {
   }
 
   async createPost(userId: string, data: CreatePostDto): Promise<PostDto> {
+    // 获取用户角色
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    // 组队帖子仅认证用户可发布
+    if (data.isTeamPost && user?.role === Role.USER) {
+      throw new ForbiddenException(
+        '仅认证用户可发布组队帖子 / Only verified users can create team posts',
+      );
+    }
+
+    // 内容审核
+    await this.moderation.validateMultiple([
+      { content: data.title, context: '标题' },
+      { content: data.content, context: '内容' },
+      ...(data.requirements
+        ? [{ content: data.requirements, context: '队友要求' }]
+        : []),
+    ]);
+
     // 验证分类存在
     const category = await this.prisma.forumCategory.findUnique({
       where: { id: data.categoryId },
@@ -354,7 +509,9 @@ export class ForumService {
         isTeamPost: data.isTeamPost || false,
         teamSize: data.teamSize,
         requirements: data.requirements,
-        teamDeadline: data.teamDeadline ? new Date(data.teamDeadline) : undefined,
+        teamDeadline: data.teamDeadline
+          ? new Date(data.teamDeadline)
+          : undefined,
       },
       include: {
         category: true,
@@ -379,7 +536,7 @@ export class ForumService {
       });
     }
 
-    return {
+    const result: PostDto = {
       id: post.id,
       categoryId: post.categoryId,
       category: {
@@ -392,7 +549,8 @@ export class ForumService {
         id: post.author.id,
         name: post.author.profile?.realName || undefined,
         avatar: undefined,
-        isVerified: post.author.role === Role.VERIFIED || post.author.role === Role.ADMIN,
+        isVerified:
+          post.author.role === Role.VERIFIED || post.author.role === Role.ADMIN,
       },
       title: post.title,
       content: post.content,
@@ -412,13 +570,188 @@ export class ForumService {
       createdAt: post.createdAt,
       updatedAt: post.updatedAt,
     };
+
+    // 记录到记忆系统
+    await this.savePostToMemory(
+      userId,
+      post.category.nameZh || post.category.name,
+      data,
+    );
+
+    return result;
   }
 
-  async updatePost(postId: string, userId: string, data: UpdatePostDto): Promise<PostDto> {
+  /**
+   * 保存帖子信息到记忆系统
+   */
+  private async savePostToMemory(
+    userId: string,
+    categoryName: string,
+    data: CreatePostDto,
+  ): Promise<void> {
+    if (!this.memoryManager) return;
+
+    try {
+      if (data.isTeamPost) {
+        // 组队帖记录为决策
+        await this.memoryManager.remember(userId, {
+          type: MemoryType.DECISION,
+          category: 'team_post',
+          content: `用户发起组队：${data.title}。要求：${data.requirements?.slice(0, 100) || '无'}。组队规模：${data.teamSize || '未限制'}人`,
+          importance: 0.6,
+          metadata: {
+            postTitle: data.title,
+            teamSize: data.teamSize,
+            tags: data.tags,
+            source: 'forum_service',
+          },
+        });
+      } else {
+        // 普通帖子记录感兴趣的话题
+        await this.memoryManager.remember(userId, {
+          type: MemoryType.PREFERENCE,
+          category: 'forum_interest',
+          content: `用户在论坛 ${categoryName} 板块发帖：${data.title}。标签：${data.tags?.join('、') || '无'}`,
+          importance: 0.4,
+          metadata: {
+            categoryId: data.categoryId,
+            tags: data.tags,
+            source: 'forum_service',
+          },
+        });
+      }
+    } catch (error) {
+      this.logger.warn('Failed to save forum post to memory', error);
+    }
+  }
+
+  /**
+   * 记录浏览帖子到记忆系统
+   */
+  private async recordViewToMemory(userId: string, post: any): Promise<void> {
+    if (!this.memoryManager) return;
+
+    try {
+      await this.memoryManager.remember(userId, {
+        type: MemoryType.FACT,
+        category: 'forum_view',
+        content: `用户浏览了论坛帖子：${post.title}${post.isTeamPost ? '（组队帖）' : ''}`,
+        importance: 0.2,
+        metadata: {
+          postId: post.id,
+          isTeamPost: post.isTeamPost,
+          categoryId: post.categoryId,
+          tags: post.tags,
+        },
+      });
+    } catch (error) {
+      this.logger.warn('Failed to record view to memory', error);
+    }
+  }
+
+  /**
+   * 记录点赞到记忆系统
+   */
+  private async recordLikeToMemory(
+    userId: string,
+    postId: string,
+  ): Promise<void> {
+    if (!this.memoryManager) return;
+
+    try {
+      const post = await this.prisma.forumPost.findUnique({
+        where: { id: postId },
+        select: { title: true, tags: true, isTeamPost: true },
+      });
+
+      if (post) {
+        await this.memoryManager.remember(userId, {
+          type: MemoryType.PREFERENCE,
+          category: 'forum_interest',
+          content: `用户点赞了帖子：${post.title}。标签：${post.tags?.join('、') || '无'}`,
+          importance: 0.3,
+          metadata: {
+            postId,
+            tags: post.tags,
+            isTeamPost: post.isTeamPost,
+          },
+        });
+      }
+    } catch (error) {
+      this.logger.warn('Failed to record like to memory', error);
+    }
+  }
+
+  /**
+   * 记录评论到记忆系统
+   */
+  private async recordCommentToMemory(
+    userId: string,
+    postId: string,
+    content: string,
+  ): Promise<void> {
+    if (!this.memoryManager) return;
+
+    try {
+      const post = await this.prisma.forumPost.findUnique({
+        where: { id: postId },
+        select: { title: true, tags: true },
+      });
+
+      if (post) {
+        await this.memoryManager.remember(userId, {
+          type: MemoryType.FACT,
+          category: 'forum_activity',
+          content: `用户在帖子"${post.title}"下发表了评论`,
+          importance: 0.3,
+          metadata: {
+            postId,
+            commentPreview: content.slice(0, 100),
+            tags: post.tags,
+          },
+        });
+      }
+    } catch (error) {
+      this.logger.warn('Failed to record comment to memory', error);
+    }
+  }
+
+  /**
+   * 记录组队申请到记忆系统
+   */
+  private async recordTeamApplicationToMemory(
+    userId: string,
+    postTitle: string,
+    message?: string,
+  ): Promise<void> {
+    if (!this.memoryManager) return;
+
+    try {
+      await this.memoryManager.remember(userId, {
+        type: MemoryType.DECISION,
+        category: 'team_application',
+        content: `用户申请加入组队：${postTitle}${message ? `，留言：${message.slice(0, 50)}` : ''}`,
+        importance: 0.6,
+        metadata: {
+          postTitle,
+          message,
+          source: 'forum_service',
+        },
+      });
+    } catch (error) {
+      this.logger.warn('Failed to record team application to memory', error);
+    }
+  }
+
+  async updatePost(
+    postId: string,
+    userId: string,
+    data: UpdatePostDto,
+  ): Promise<PostDto> {
     const post = this.auth.verifyOwnership(
       await this.prisma.forumPost.findUnique({ where: { id: postId } }),
       userId,
-      { entityName: 'Post', ownerField: 'authorId' }
+      { entityName: 'Post', ownerField: 'authorId' },
     );
 
     if (post.isLocked) {
@@ -432,7 +765,9 @@ export class ForumService {
         content: data.content,
         tags: data.tags,
         requirements: data.requirements,
-        teamDeadline: data.teamDeadline ? new Date(data.teamDeadline) : undefined,
+        teamDeadline: data.teamDeadline
+          ? new Date(data.teamDeadline)
+          : undefined,
       },
       include: {
         category: true,
@@ -453,7 +788,9 @@ export class ForumService {
       author: {
         id: updated.author.id,
         name: updated.author.profile?.realName || undefined,
-        isVerified: updated.author.role === Role.VERIFIED || updated.author.role === Role.ADMIN,
+        isVerified:
+          updated.author.role === Role.VERIFIED ||
+          updated.author.role === Role.ADMIN,
       },
       title: updated.title,
       content: updated.content,
@@ -476,7 +813,7 @@ export class ForumService {
     this.auth.verifyOwnership(
       await this.prisma.forumPost.findUnique({ where: { id: postId } }),
       userId,
-      { entityName: 'Post', ownerField: 'authorId' }
+      { entityName: 'Post', ownerField: 'authorId' },
     );
 
     await this.prisma.forumPost.delete({ where: { id: postId } });
@@ -506,6 +843,12 @@ export class ForumService {
           data: { likeCount: { increment: 1 } },
         }),
       ]);
+
+      // 记录点赞行为（只记录点赞，不记录取消点赞）
+      this.recordLikeToMemory(userId, postId).catch((err) => {
+        this.logger.warn('Failed to record like to memory', err);
+      });
+
       return { liked: true };
     }
   }
@@ -514,7 +857,14 @@ export class ForumService {
   // Comments
   // ============================================
 
-  async createComment(postId: string, userId: string, data: CreateCommentDto): Promise<CommentDto> {
+  async createComment(
+    postId: string,
+    userId: string,
+    data: CreateCommentDto,
+  ): Promise<CommentDto> {
+    // 内容审核
+    await this.moderation.validateContent(data.content, '评论');
+
     const post = await this.prisma.forumPost.findUnique({
       where: { id: postId },
     });
@@ -561,24 +911,33 @@ export class ForumService {
       data: { commentCount: { increment: 1 } },
     });
 
-    return {
+    const result = {
       id: comment.id,
       author: {
         id: comment.author.id,
         name: comment.author.profile?.realName || undefined,
         avatar: undefined,
-        isVerified: comment.author.role === Role.VERIFIED || comment.author.role === Role.ADMIN,
+        isVerified:
+          comment.author.role === Role.VERIFIED ||
+          comment.author.role === Role.ADMIN,
       },
       content: comment.content,
       parentId: comment.parentId || undefined,
       likeCount: 0,
       createdAt: comment.createdAt,
     };
+
+    // 记录评论行为到记忆系统
+    this.recordCommentToMemory(userId, postId, data.content).catch((err) => {
+      this.logger.warn('Failed to record comment to memory', err);
+    });
+
+    return result;
   }
 
   /**
    * 删除评论
-   * 
+   *
    * 业务逻辑：
    * - 只能删除自己的评论
    * - 删除时级联删除所有子回复
@@ -591,7 +950,7 @@ export class ForumService {
         include: { replies: { select: { id: true } } },
       }),
       userId,
-      { entityName: 'Comment', ownerField: 'authorId' }
+      { entityName: 'Comment', ownerField: 'authorId' },
     );
 
     // 计算要删除的评论总数（本评论 + 所有子回复）
@@ -604,12 +963,12 @@ export class ForumService {
     await this.prisma.$transaction([
       // 删除所有子回复（递归查询所有后代）
       this.prisma.forumComment.deleteMany({
-        where: { 
+        where: {
           OR: [
             { parentId: commentId },
             // 需要递归删除，但 Prisma 不支持递归查询，
             // 所以依赖 schema 的 onDelete: Cascade
-          ]
+          ],
         },
       }),
       // 删除本评论
@@ -632,7 +991,7 @@ export class ForumService {
     });
 
     let count = directReplies.length;
-    
+
     for (const reply of directReplies) {
       count += await this.countAllReplies(reply.id);
     }
@@ -644,7 +1003,11 @@ export class ForumService {
   // Team Applications
   // ============================================
 
-  async applyToTeam(postId: string, userId: string, data: TeamApplicationDto): Promise<{ applied: boolean }> {
+  async applyToTeam(
+    postId: string,
+    userId: string,
+    data: TeamApplicationDto,
+  ): Promise<{ applied: boolean }> {
     const post = await this.prisma.forumPost.findUnique({
       where: { id: postId },
       include: { teamMembers: true },
@@ -689,10 +1052,21 @@ export class ForumService {
       },
     });
 
+    // 记录申请组队行为
+    this.recordTeamApplicationToMemory(userId, post.title, data.message).catch(
+      (err) => {
+        this.logger.warn('Failed to record team application to memory', err);
+      },
+    );
+
     return { applied: true };
   }
 
-  async reviewApplication(applicationId: string, userId: string, data: ReviewApplicationDto): Promise<void> {
+  async reviewApplication(
+    applicationId: string,
+    userId: string,
+    data: ReviewApplicationDto,
+  ): Promise<void> {
     const application = await this.prisma.teamApplication.findUnique({
       where: { id: applicationId },
       include: { post: true },
@@ -710,7 +1084,10 @@ export class ForumService {
       throw new BadRequestException('Application already reviewed');
     }
 
-    const newStatus = data.status === 'ACCEPTED' ? TeamAppStatus.ACCEPTED : TeamAppStatus.REJECTED;
+    const newStatus =
+      data.status === 'ACCEPTED'
+        ? TeamAppStatus.ACCEPTED
+        : TeamAppStatus.REJECTED;
 
     await this.prisma.teamApplication.update({
       where: { id: applicationId },
@@ -739,7 +1116,10 @@ export class ForumService {
       const updateData: any = { currentSize: memberCount };
 
       // 检查是否已满员
-      if (application.post.teamSize && memberCount >= application.post.teamSize) {
+      if (
+        application.post.teamSize &&
+        memberCount >= application.post.teamSize
+      ) {
         updateData.teamStatus = TeamStatus.FULL;
       }
 
@@ -750,7 +1130,10 @@ export class ForumService {
     }
   }
 
-  async cancelApplication(applicationId: string, userId: string): Promise<void> {
+  async cancelApplication(
+    applicationId: string,
+    userId: string,
+  ): Promise<void> {
     const application = await this.prisma.teamApplication.findUnique({
       where: { id: applicationId },
     });
@@ -784,7 +1167,9 @@ export class ForumService {
     }
 
     if (member.role === 'owner') {
-      throw new BadRequestException('Team owner cannot leave. Delete the post instead.');
+      throw new BadRequestException(
+        'Team owner cannot leave. Delete the post instead.',
+      );
     }
 
     await this.prisma.teamMember.delete({
@@ -832,7 +1217,9 @@ export class ForumService {
       author: {
         id: m.post.author.id,
         name: m.post.author.profile?.realName || undefined,
-        isVerified: m.post.author.role === Role.VERIFIED || m.post.author.role === Role.ADMIN,
+        isVerified:
+          m.post.author.role === Role.VERIFIED ||
+          m.post.author.role === Role.ADMIN,
       },
       title: m.post.title,
       content: m.post.content,
@@ -851,5 +1238,110 @@ export class ForumService {
       updatedAt: m.post.updatedAt,
     }));
   }
-}
 
+  // ============================================
+  // Reports
+  // ============================================
+
+  async reportPost(
+    reporterId: string,
+    postId: string,
+    reason: string,
+    detail?: string,
+  ) {
+    // 验证帖子存在
+    const post = await this.prisma.forumPost.findUnique({
+      where: { id: postId },
+      select: { id: true, title: true, content: true, authorId: true },
+    });
+
+    if (!post) {
+      throw new NotFoundException('帖子不存在');
+    }
+
+    // 不能举报自己的帖子
+    if (post.authorId === reporterId) {
+      throw new BadRequestException('不能举报自己的帖子');
+    }
+
+    // 检查是否已举报过
+    const existingReport = await this.prisma.report.findFirst({
+      where: {
+        reporterId,
+        targetType: 'POST',
+        targetId: postId,
+        status: { not: 'RESOLVED' },
+      },
+    });
+
+    if (existingReport) {
+      throw new BadRequestException('您已举报过该帖子');
+    }
+
+    return this.prisma.report.create({
+      data: {
+        reporterId,
+        targetType: 'POST',
+        targetId: postId,
+        reason,
+        detail,
+        context: {
+          postTitle: post.title,
+          postContent: post.content.substring(0, 500),
+          authorId: post.authorId,
+        },
+      },
+    });
+  }
+
+  async reportComment(
+    reporterId: string,
+    commentId: string,
+    reason: string,
+    detail?: string,
+  ) {
+    // 验证评论存在
+    const comment = await this.prisma.forumComment.findUnique({
+      where: { id: commentId },
+      select: { id: true, content: true, authorId: true, postId: true },
+    });
+
+    if (!comment) {
+      throw new NotFoundException('评论不存在');
+    }
+
+    // 不能举报自己的评论
+    if (comment.authorId === reporterId) {
+      throw new BadRequestException('不能举报自己的评论');
+    }
+
+    // 检查是否已举报过
+    const existingReport = await this.prisma.report.findFirst({
+      where: {
+        reporterId,
+        targetType: 'COMMENT',
+        targetId: commentId,
+        status: { not: 'RESOLVED' },
+      },
+    });
+
+    if (existingReport) {
+      throw new BadRequestException('您已举报过该评论');
+    }
+
+    return this.prisma.report.create({
+      data: {
+        reporterId,
+        targetType: 'COMMENT',
+        targetId: commentId,
+        reason,
+        detail,
+        context: {
+          commentContent: comment.content,
+          authorId: comment.authorId,
+          postId: comment.postId,
+        },
+      },
+    });
+  }
+}

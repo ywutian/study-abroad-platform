@@ -27,5 +27,3 @@ export class UserQueryDto extends PaginationDto {
   @IsEnum(Role)
   role?: Role;
 }
-
-

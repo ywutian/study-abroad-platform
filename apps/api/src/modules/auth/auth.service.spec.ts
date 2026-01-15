@@ -5,7 +5,11 @@ import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { EmailService } from '../../common/email/email.service';
-import { UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  UnauthorizedException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
 // Mock bcrypt
@@ -78,6 +82,7 @@ describe('AuthService', () => {
           useValue: {
             sendVerificationEmail: jest.fn().mockResolvedValue(undefined),
             sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined),
+            sendWelcomeEmail: jest.fn().mockResolvedValue(undefined),
           },
         },
       ],
@@ -185,9 +190,13 @@ describe('AuthService', () => {
         expiresAt: new Date(Date.now() + 86400000), // 1 day from now
       };
 
-      (prismaService.refreshToken.findUnique as jest.Mock).mockResolvedValue(storedToken);
+      (prismaService.refreshToken.findUnique as jest.Mock).mockResolvedValue(
+        storedToken,
+      );
       (userService.findById as jest.Mock).mockResolvedValue(mockUser);
-      (prismaService.refreshToken.delete as jest.Mock).mockResolvedValue(undefined);
+      (prismaService.refreshToken.delete as jest.Mock).mockResolvedValue(
+        undefined,
+      );
       (prismaService.refreshToken.create as jest.Mock).mockResolvedValue({
         token: 'new_refresh_token',
       });
@@ -199,7 +208,9 @@ describe('AuthService', () => {
     });
 
     it('should throw UnauthorizedException if token not found', async () => {
-      (prismaService.refreshToken.findUnique as jest.Mock).mockResolvedValue(null);
+      (prismaService.refreshToken.findUnique as jest.Mock).mockResolvedValue(
+        null,
+      );
 
       await expect(service.refreshToken('invalid_token')).rejects.toThrow(
         UnauthorizedException,
@@ -214,7 +225,9 @@ describe('AuthService', () => {
         expiresAt: new Date(Date.now() - 86400000), // 1 day ago
       };
 
-      (prismaService.refreshToken.findUnique as jest.Mock).mockResolvedValue(expiredToken);
+      (prismaService.refreshToken.findUnique as jest.Mock).mockResolvedValue(
+        expiredToken,
+      );
 
       await expect(service.refreshToken('expired_token')).rejects.toThrow(
         UnauthorizedException,
