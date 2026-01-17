@@ -14,10 +14,7 @@ interface OfflineIndicatorProps {
 /**
  * 离线状态指示器
  */
-export function OfflineIndicator({
-  className,
-  position = 'bottom',
-}: OfflineIndicatorProps) {
+export function OfflineIndicator({ className, position = 'bottom' }: OfflineIndicatorProps) {
   const t = useTranslations('ui.offline');
   const { isOffline, showNotification, dismiss } = useOfflineNotification();
 
@@ -84,10 +81,8 @@ export function OfflinePage() {
         <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-muted flex items-center justify-center">
           <WifiOff className="w-10 h-10 text-muted-foreground" />
         </div>
-        <h1 className="text-2xl font-bold mb-2">{t('youAreOffline')}</h1>
-        <p className="text-muted-foreground mb-6 max-w-sm">
-          {t('checkConnection')}
-        </p>
+        <h1 className="text-title mb-2">{t('youAreOffline')}</h1>
+        <p className="text-muted-foreground mb-6 max-w-sm">{t('checkConnection')}</p>
         <button
           onClick={() => window.location.reload()}
           className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
@@ -98,6 +93,3 @@ export function OfflinePage() {
     </div>
   );
 }
-
-
-

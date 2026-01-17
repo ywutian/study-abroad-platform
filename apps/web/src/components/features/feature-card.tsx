@@ -1,11 +1,11 @@
 'use client';
 
 /**
- * 特性卡片组件 - 带 3D 悬浮效果
+ * 特性卡片组件 - 学术严肃风
+ * 去除 3D 效果和发光，使用简洁边框和过渡
  */
 
-import { useRef } from 'react';
-import { motion, useMotionValue, useSpring, useTransform, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { LucideIcon, ArrowUpRight } from 'lucide-react';
 import { transitions } from '@/lib/motion';
@@ -17,7 +17,7 @@ interface FeatureCardProps {
   href?: string;
   className?: string;
   index?: number;
-  gradient?: string;
+  gradient?: string; // 保留但不使用渐变
 }
 
 export function FeatureCard({
@@ -26,52 +26,18 @@ export function FeatureCard({
   icon: Icon,
   className,
   index = 0,
-  gradient,
 }: FeatureCardProps) {
-  const cardRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
-
-  // Motion values for 3D tilt effect
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-
-  // Spring physics
-  const springConfig = { stiffness: 300, damping: 30 };
-  const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [8, -8]), springConfig);
-  const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-8, 8]), springConfig);
-
-  // Glare position
-  const glareX = useTransform(x, [-0.5, 0.5], ['20%', '80%']);
-  const glareY = useTransform(y, [-0.5, 0.5], ['20%', '80%']);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (prefersReducedMotion || !cardRef.current) return;
-
-    const rect = cardRef.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-
-    const normalizedX = (e.clientX - centerX) / rect.width;
-    const normalizedY = (e.clientY - centerY) / rect.height;
-
-    x.set(normalizedX);
-    y.set(normalizedY);
-  };
-
-  const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
 
   // Animation variants
   const cardVariants = {
-    hidden: { opacity: 0, y: 24 },
+    hidden: { opacity: 0, y: 16 },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
         ...transitions.springGentle,
-        delay: index * 0.1,
+        delay: index * 0.08,
       },
     },
   };
@@ -80,62 +46,28 @@ export function FeatureCard({
     return (
       <div
         className={cn(
-          'group relative overflow-hidden rounded-xl border bg-card p-6 shadow-sm hover:shadow-md transition-shadow',
+          'group relative rounded-lg border-2 border-border bg-card p-6 transition-colors hover:border-primary/30',
           className
         )}
       >
-        <CardContent Icon={Icon} title={title} description={description} gradient={gradient} />
+        <CardContent Icon={Icon} title={title} description={description} />
       </div>
     );
   }
 
   return (
     <motion.div
-      ref={cardRef}
       className={cn('relative', className)}
       variants={cardVariants}
       initial="hidden"
       animate="visible"
-      style={{ perspective: 1000 }}
     >
       <motion.div
-        className="group relative overflow-hidden rounded-xl border bg-card p-6 shadow-sm"
-        style={{
-          rotateX,
-          rotateY,
-          transformStyle: 'preserve-3d',
-        }}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        whileHover={{ scale: 1.02, y: -4 }}
-        transition={transitions.spring}
+        className="group relative rounded-lg border-2 border-border bg-card p-6 transition-colors hover:border-primary/30"
+        whileHover={{ y: -2 }}
+        transition={{ duration: 0.15 }}
       >
-        {/* Glare Effect */}
-        <motion.div
-          className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-          style={{
-            background: `radial-gradient(circle at ${glareX} ${glareY}, rgba(255,255,255,0.15) 0%, transparent 50%)`,
-          }}
-        />
-
-        {/* Gradient Border on Hover */}
-        <motion.div
-          className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-          style={{
-            background: 'linear-gradient(135deg, rgba(99,102,241,0.2) 0%, transparent 50%, rgba(99,102,241,0.1) 100%)',
-          }}
-        />
-
-        {/* Content */}
-        <div style={{ transform: 'translateZ(20px)' }}>
-          <CardContent Icon={Icon} title={title} description={description} gradient={gradient} />
-        </div>
-
-        {/* Bottom Glow */}
-        <motion.div
-          className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-3/4 h-8 rounded-full blur-xl opacity-0 group-hover:opacity-50 transition-opacity"
-          style={{ background: gradient || 'rgba(99,102,241,0.5)' }}
-        />
+        <CardContent Icon={Icon} title={title} description={description} />
       </motion.div>
     </motion.div>
   );
@@ -145,36 +77,17 @@ function CardContent({
   Icon,
   title,
   description,
-  gradient,
 }: {
   Icon: LucideIcon;
   title: string;
   description: string;
-  gradient?: string;
 }) {
   return (
     <>
-      {/* 背景装饰 */}
-      <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-gradient-to-br from-primary/10 to-transparent transition-all duration-500 group-hover:scale-150 group-hover:from-primary/20" />
-
-      {/* 图标 */}
-      <motion.div
-        className="relative mb-4 inline-flex rounded-xl bg-primary/10 p-3 text-primary"
-        whileHover={{ scale: 1.1, rotate: 5 }}
-        transition={transitions.springSnappy}
-      >
+      {/* 学术风图标：方形边框容器 */}
+      <div className="mb-4 inline-flex rounded-md border-2 border-primary/20 bg-primary/5 p-3 text-primary">
         <Icon className="h-6 w-6" />
-
-        {/* Icon glow */}
-        <motion.div
-          className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100"
-          style={{
-            background: gradient || 'linear-gradient(135deg, rgba(99,102,241,0.3), rgba(99,102,241,0.1))',
-            filter: 'blur(8px)',
-          }}
-          transition={{ duration: 0.3 }}
-        />
-      </motion.div>
+      </div>
 
       {/* 内容 */}
       <div className="relative">
@@ -182,13 +95,9 @@ function CardContent({
           <h3 className="text-lg font-semibold transition-colors group-hover:text-primary">
             {title}
           </h3>
-          <motion.div
-            className="opacity-0 group-hover:opacity-100"
-            initial={{ x: -8, opacity: 0 }}
-            whileHover={{ x: 0, opacity: 1 }}
-          >
+          <div className="opacity-0 transition-opacity group-hover:opacity-100">
             <ArrowUpRight className="h-4 w-4 text-primary" />
-          </motion.div>
+          </div>
         </div>
         <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{description}</p>
       </div>
@@ -197,7 +106,7 @@ function CardContent({
 }
 
 // ============================================
-// 统计卡片
+// 统计卡片 - 学术严肃风
 // ============================================
 
 interface StatCardProps {
@@ -212,32 +121,24 @@ export function StatCard({ value, label, index = 0, icon: Icon }: StatCardProps)
 
   return (
     <motion.div
-      className="rounded-xl border border-stat-card bg-stat-card p-4 text-center backdrop-blur"
-      initial={prefersReducedMotion ? {} : { opacity: 0, y: 16, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ ...transitions.springGentle, delay: 0.3 + index * 0.1 }}
-      whileHover={prefersReducedMotion ? {} : { scale: 1.05, y: -2 }}
+      className="rounded-lg border-2 border-border bg-card p-4 text-center"
+      initial={prefersReducedMotion ? {} : { opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ ...transitions.springGentle, delay: 0.2 + index * 0.08 }}
     >
       {Icon && (
         <div className="mb-2 flex justify-center">
           <Icon className="h-5 w-5 text-primary" />
         </div>
       )}
-      <motion.div
-        className="text-2xl font-bold text-stat-card sm:text-3xl"
-        initial={prefersReducedMotion ? {} : { opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 + index * 0.1 }}
-      >
-        {value}
-      </motion.div>
-      <div className="mt-1 text-sm text-stat-card-muted">{label}</div>
+      <div className="text-2xl font-bold text-foreground sm:text-3xl">{value}</div>
+      <div className="mt-1 text-sm text-muted-foreground">{label}</div>
     </motion.div>
   );
 }
 
 // ============================================
-// CTA 卡片
+// CTA 卡片 - 学术严肃风
 // ============================================
 
 interface CTACardProps {
@@ -248,7 +149,7 @@ interface CTACardProps {
     onClick?: () => void;
     href?: string;
   };
-  variant?: 'default' | 'gradient';
+  variant?: 'default' | 'primary';
 }
 
 export function CTACard({ title, description, action, variant = 'default' }: CTACardProps) {
@@ -257,39 +158,36 @@ export function CTACard({ title, description, action, variant = 'default' }: CTA
   return (
     <motion.div
       className={cn(
-        'relative overflow-hidden rounded-2xl p-8 text-center',
-        variant === 'gradient'
-          ? 'bg-gradient-to-br from-primary to-primary/80 text-primary-foreground'
-          : 'border bg-card'
+        'relative rounded-lg p-8 text-center border-2',
+        variant === 'primary'
+          ? 'border-primary bg-primary text-primary-foreground'
+          : 'border-border bg-card'
       )}
-      initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
+      initial={prefersReducedMotion ? {} : { opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={transitions.springGentle}
     >
-      {/* Background decoration */}
-      {variant === 'gradient' && (
-        <>
-          <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
-          <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
-        </>
-      )}
-
       <div className="relative z-10">
         <h2 className="mb-3 text-2xl font-bold">{title}</h2>
-        <p className={cn('mb-6 max-w-md mx-auto', variant === 'gradient' ? 'text-white/80' : 'text-muted-foreground')}>
+        <p
+          className={cn(
+            'mb-6 max-w-md mx-auto',
+            variant === 'primary' ? 'text-primary-foreground/80' : 'text-muted-foreground'
+          )}
+        >
           {description}
         </p>
         <motion.button
           className={cn(
-            'inline-flex items-center gap-2 rounded-lg px-6 py-3 font-medium transition-colors',
-            variant === 'gradient'
-              ? 'bg-white text-primary hover:bg-white/90'
-              : 'bg-primary text-primary-foreground hover:bg-primary/90'
+            'inline-flex items-center gap-2 rounded-md px-6 py-3 font-medium border-2 transition-colors',
+            variant === 'primary'
+              ? 'bg-primary-foreground text-primary border-primary-foreground hover:bg-primary-foreground/90'
+              : 'bg-primary text-primary-foreground border-primary hover:bg-primary/90'
           )}
           onClick={action.onClick}
-          whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
-          whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
+          whileHover={prefersReducedMotion ? {} : { scale: 1.02 }}
+          whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
         >
           {action.label}
           <ArrowUpRight className="h-4 w-4" />

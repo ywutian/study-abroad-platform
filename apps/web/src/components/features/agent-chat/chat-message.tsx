@@ -4,19 +4,20 @@
  * 聊天消息组件 - 支持 Markdown 渲染、动画和工具状态可视化
  */
 
-import { memo, useMemo, useState, useEffect, useRef } from 'react';
-import { useTranslations } from 'next-intl';
+import { memo, useMemo, useState } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import { cn, getSchoolName, getSchoolSubName } from '@/lib/utils';
+import { getLocalizedName } from '@/lib/i18n/locale-utils';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { 
-  Loader2, 
-  Wrench, 
-  CheckCircle2, 
-  User, 
-  Copy, 
+import {
+  Loader2,
+  Wrench,
+  CheckCircle2,
+  User,
+  Copy,
   Check,
   ChevronDown,
   ChevronUp,
@@ -32,7 +33,7 @@ import {
 import { ChatMessage as ChatMessageType, AGENT_INFO, AgentType, ToolCallInfo } from './types';
 import ReactMarkdownOriginal from 'react-markdown';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const ReactMarkdown = ReactMarkdownOriginal as any;
 import remarkGfm from 'remark-gfm';
 import { transitions } from '@/lib/motion';
@@ -53,28 +54,32 @@ const TOOL_ICONS: Record<string, React.ReactNode> = {
   query_database: <Database className="h-3 w-3" />,
 };
 
-// 工具名称格式化（移到顶层以便 ToolCallCard 访问）
-const TOOL_NAME_LABELS: Record<string, string> = {
-  search_schools: '搜索学校',
-  get_user_profile: '获取档案',
-  analyze_profile: '分析档案',
-  search_cases: '搜索案例',
-  get_deadlines: '获取截止日期',
-  review_essay: '评估文书',
-  query_database: '查询数据库',
-  generate_essay_outline: '生成文书大纲',
-  recommend_schools: '推荐学校',
-  analyze_admission_chance: '分析录取概率',
-};
-
-function formatToolName(name: string): string {
-  return TOOL_NAME_LABELS[name] || name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-}
-
-export const ChatMessage = memo(function ChatMessage({ message, isLast }: ChatMessageProps) {
+export const ChatMessage = memo(function ChatMessage({
+  message,
+  isLast: _isLast,
+}: ChatMessageProps) {
   const t = useTranslations('agentChat');
+
+  // 工具名称格式化
+  const formatToolName = (name: string) => {
+    const labels: Record<string, string> = {
+      search_schools: t('tools.searchSchools'),
+      get_user_profile: t('tools.getProfile'),
+      analyze_profile: t('tools.analyzeProfile'),
+      search_cases: t('tools.searchCases'),
+      get_deadlines: t('tools.getDeadlines'),
+      review_essay: t('tools.reviewEssay'),
+      query_database: t('tools.queryDatabase'),
+      generate_essay_outline: t('tools.generateOutline'),
+      recommend_schools: t('tools.recommendSchools'),
+      analyze_admission_chance: t('tools.analyzeChance'),
+    };
+    return labels[name] || name.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  };
+  const locale = useLocale();
   const isUser = message.role === 'user';
   const agentInfo = message.agent ? AGENT_INFO[message.agent] : null;
+  const agentName = agentInfo ? getLocalizedName(agentInfo.nameZh, agentInfo.name, locale) : null;
   const prefersReducedMotion = useReducedMotion();
   const [copied, setCopied] = useState(false);
   const [toolsExpanded, setToolsExpanded] = useState(true);
@@ -90,15 +95,15 @@ export const ChatMessage = memo(function ChatMessage({ message, isLast }: ChatMe
 
   // 消息入场动画
   const messageVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: 16, 
+    hidden: {
+      opacity: 0,
+      y: 16,
       scale: 0.96,
       x: isUser ? 12 : -12,
     },
-    visible: { 
-      opacity: 1, 
-      y: 0, 
+    visible: {
+      opacity: 1,
+      y: 0,
       scale: 1,
       x: 0,
       transition: transitions.springGentle,
@@ -108,9 +113,9 @@ export const ChatMessage = memo(function ChatMessage({ message, isLast }: ChatMe
   // 头像动画
   const avatarVariants = {
     hidden: { opacity: 0, scale: 0.5 },
-    visible: { 
-      opacity: 1, 
-      scale: 1, 
+    visible: {
+      opacity: 1,
+      scale: 1,
       transition: { ...transitions.springSnappy, delay: 0.1 },
     },
   };
@@ -118,20 +123,27 @@ export const ChatMessage = memo(function ChatMessage({ message, isLast }: ChatMe
   // 工具调用动画
   const toolVariants = {
     hidden: { opacity: 0, height: 0 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       height: 'auto',
       transition: transitions.springGentle,
     },
-    exit: { 
-      opacity: 0, 
+    exit: {
+      opacity: 0,
       height: 0,
       transition: transitions.easeOutFast,
     },
   };
 
   if (prefersReducedMotion) {
-    return <StaticChatMessage message={message} agentInfo={agentInfo} isUser={isUser} />;
+    return (
+      <StaticChatMessage
+        message={message}
+        agentInfo={agentInfo}
+        agentName={agentName}
+        isUser={isUser}
+      />
+    );
   }
 
   return (
@@ -139,22 +151,22 @@ export const ChatMessage = memo(function ChatMessage({ message, isLast }: ChatMe
       variants={messageVariants}
       initial="hidden"
       animate="visible"
-      className={cn(
-        'flex gap-3 group',
-        isUser ? 'flex-row-reverse' : 'flex-row'
-      )}
+      className={cn('flex gap-3 group', isUser ? 'flex-row-reverse' : 'flex-row')}
     >
       {/* Avatar */}
       <motion.div variants={avatarVariants}>
-        <Avatar className={cn(
-          'h-8 w-8 shrink-0 ring-2 ring-background shadow-md',
-          isUser ? 'bg-primary' : 'bg-gradient-to-br from-primary/20 to-primary/5'
-        )}>
-          <AvatarFallback className={cn(
-            'text-sm',
-            isUser ? 'bg-primary text-primary-foreground' : ''
-          )}>
-            {isUser ? <User className="h-4 w-4" /> : (
+        <Avatar
+          className={cn(
+            'h-8 w-8 shrink-0 ring-2 ring-background shadow-md',
+            isUser ? 'bg-primary' : 'bg-primary/10'
+          )}
+        >
+          <AvatarFallback
+            className={cn('text-sm', isUser ? 'bg-primary text-primary-foreground' : '')}
+          >
+            {isUser ? (
+              <User className="h-4 w-4" />
+            ) : (
               <span className="text-lg">{agentInfo?.icon || '🤖'}</span>
             )}
           </AvatarFallback>
@@ -172,16 +184,14 @@ export const ChatMessage = memo(function ChatMessage({ message, isLast }: ChatMe
             className="flex items-center gap-1.5"
           >
             <Sparkles className="h-3 w-3 text-primary/60" />
-            <span className={cn('text-xs font-medium', agentInfo.color)}>
-              {agentInfo.name}
-            </span>
+            <span className={cn('text-xs font-medium', agentInfo.color)}>{agentName}</span>
           </motion.div>
         )}
 
         {/* Message Bubble */}
         <motion.div
           className={cn(
-            'relative rounded-2xl px-4 py-2.5 shadow-sm',
+            'relative rounded-lg px-4 py-2.5 shadow-sm',
             isUser
               ? 'bg-primary text-primary-foreground rounded-br-md'
               : 'bg-card border rounded-bl-md'
@@ -225,9 +235,9 @@ export const ChatMessage = memo(function ChatMessage({ message, isLast }: ChatMe
                       className="space-y-1.5"
                     >
                       {message.toolCalls.map((tool, idx) => (
-                        <ToolCallCard 
-                          key={`${tool.name}-${idx}`} 
-                          tool={tool} 
+                        <ToolCallCard
+                          key={`${tool.name}-${idx}`}
+                          tool={tool}
                           isUser={isUser}
                           index={idx}
                         />
@@ -239,14 +249,16 @@ export const ChatMessage = memo(function ChatMessage({ message, isLast }: ChatMe
             )}
           </AnimatePresence>
 
-          {/* Message Content with Typewriter Effect */}
+          {/* Message Content - 流式时用纯文本避免 Markdown 乱码 */}
           {message.content ? (
-            <div className={cn(
-              'prose prose-sm max-w-none',
-              isUser ? 'prose-invert' : 'dark:prose-invert'
-            )}>
-              {message.isStreaming && isLast ? (
-                <TypewriterContent content={message.content} />
+            <div
+              className={cn(
+                'prose prose-sm max-w-none',
+                isUser ? 'prose-invert' : 'dark:prose-invert'
+              )}
+            >
+              {message.isStreaming ? (
+                <StreamingContent content={message.content} />
               ) : (
                 <MarkdownContent content={message.content} />
               )}
@@ -280,11 +292,7 @@ export const ChatMessage = memo(function ChatMessage({ message, isLast }: ChatMe
                 className="h-6 w-6 rounded-full bg-background shadow-sm"
                 onClick={handleCopy}
               >
-                {copied ? (
-                  <Check className="h-3 w-3 text-success" />
-                ) : (
-                  <Copy className="h-3 w-3" />
-                )}
+                {copied ? <Check className="h-3 w-3 text-success" /> : <Copy className="h-3 w-3" />}
               </Button>
             </motion.div>
           )}
@@ -295,7 +303,7 @@ export const ChatMessage = memo(function ChatMessage({ message, isLast }: ChatMe
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="text-[10px] text-muted-foreground px-1"
+          className="text-2xs text-muted-foreground px-1"
         >
           {formatTime(message.timestamp)}
         </motion.span>
@@ -305,9 +313,34 @@ export const ChatMessage = memo(function ChatMessage({ message, isLast }: ChatMe
 });
 
 // 工具调用卡片组件
-function ToolCallCard({ tool, isUser, index }: { tool: ToolCallInfo; isUser: boolean; index: number }) {
+function ToolCallCard({
+  tool,
+  isUser,
+  index,
+}: {
+  tool: ToolCallInfo;
+  isUser: boolean;
+  index: number;
+}) {
+  const t = useTranslations('agentChat');
   const isRunning = tool.status === 'running';
   const isError = tool.status === 'error';
+
+  const formatToolName = (name: string): string => {
+    const labels: Record<string, string> = {
+      search_schools: t('tools.searchSchools'),
+      get_user_profile: t('tools.getProfile'),
+      analyze_profile: t('tools.analyzeProfile'),
+      search_cases: t('tools.searchCases'),
+      get_deadlines: t('tools.getDeadlines'),
+      review_essay: t('tools.reviewEssay'),
+      query_database: t('tools.queryDatabase'),
+      generate_essay_outline: t('tools.generateOutline'),
+      recommend_schools: t('tools.recommendSchools'),
+      analyze_admission_chance: t('tools.analyzeChance'),
+    };
+    return labels[name] || name.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  };
 
   return (
     <motion.div
@@ -316,11 +349,11 @@ function ToolCallCard({ tool, isUser, index }: { tool: ToolCallInfo; isUser: boo
       transition={{ delay: index * 0.05 }}
       className={cn(
         'flex items-center gap-2 text-xs px-2.5 py-1.5 rounded-lg',
-        isUser 
-          ? 'bg-primary-foreground/10' 
-          : isError 
+        isUser
+          ? 'bg-primary-foreground/10'
+          : isError
             ? 'bg-destructive/10 border border-destructive/20'
-            : isRunning 
+            : isRunning
               ? 'bg-primary/10 border border-primary/20'
               : 'bg-muted/50 border border-border/50'
       )}
@@ -349,10 +382,7 @@ function ToolCallCard({ tool, isUser, index }: { tool: ToolCallInfo; isUser: boo
       {TOOL_ICONS[tool.name] || <Wrench className="h-3 w-3" />}
 
       {/* Tool Name */}
-      <span className={cn(
-        'font-medium',
-        isRunning && 'text-primary'
-      )}>
+      <span className={cn('font-medium', isRunning && 'text-primary')}>
         {formatToolName(tool.name)}
       </span>
 
@@ -410,102 +440,221 @@ function ThinkingIndicator({ thinkingText }: { thinkingText: string }) {
   );
 }
 
-// 打字机效果内容
-function TypewriterContent({ content }: { content: string }) {
-  const [displayedContent, setDisplayedContent] = useState('');
-  const contentRef = useRef(content);
-
-  useEffect(() => {
-    // 如果内容变长，继续打字
-    if (content.length > contentRef.current.length) {
-      const newChars = content.slice(contentRef.current.length);
-      contentRef.current = content;
-      
-      // 快速追加新字符
-      let i = 0;
-      const interval = setInterval(() => {
-        if (i < newChars.length) {
-          const char = newChars.charAt(i); // 使用 charAt 而不是索引访问
-          if (char) {
-            setDisplayedContent(prev => prev + char);
-          }
-          i++;
-        } else {
-          clearInterval(interval);
-        }
-      }, 10); // 每10ms一个字符
-
-      return () => clearInterval(interval);
-    } else {
-      // 初始化或内容变短
-      contentRef.current = content;
-      setDisplayedContent(content);
-    }
-  }, [content]);
-
-  return <MarkdownContent content={displayedContent || content} />;
+// 流式内容组件 - 流式输出时显示纯文本，避免 Markdown 语法被截断导致乱码
+function StreamingContent({ content }: { content: string }) {
+  // 流式输出时直接显示纯文本，不解析 Markdown
+  // 这样 **粗体** 会显示为 **粗体**，但不会乱码
+  return <div className="whitespace-pre-wrap break-words leading-relaxed">{content}</div>;
 }
 
-// Markdown 渲染
-function MarkdownContent({ content }: { content: string }) {
+// 学校推荐数据类型
+interface SchoolRecommendation {
+  name: string;
+  nameZh: string;
+  tier: 'reach' | 'target' | 'safety';
+  reason: string;
+}
+
+// 学校推荐卡片组件
+function SchoolRecommendationCards({ schools }: { schools: SchoolRecommendation[] }) {
+  const t = useTranslations('agentChat');
+  const locale = useLocale();
+  const tierConfig = {
+    reach: {
+      label: t('tierReach'),
+      color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+      icon: '🎯',
+    },
+    target: {
+      label: t('tierTarget'),
+      color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+      icon: '✅',
+    },
+    safety: {
+      label: t('tierSafety'),
+      color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+      icon: '🛡️',
+    },
+  };
+
+  // 按 tier 分组
+  const grouped = schools.reduce(
+    (acc, school) => {
+      const tier = school.tier || 'target';
+      if (!acc[tier]) acc[tier] = [];
+      acc[tier].push(school);
+      return acc;
+    },
+    {} as Record<string, SchoolRecommendation[]>
+  );
+
+  const tierOrder: Array<'reach' | 'target' | 'safety'> = ['reach', 'target', 'safety'];
+
   return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
-      components={{
-        p: ({ children }: { children?: React.ReactNode }) => <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>,
-        ul: ({ children }: { children?: React.ReactNode }) => <ul className="mb-2 ml-4 list-disc space-y-1">{children}</ul>,
-        ol: ({ children }: { children?: React.ReactNode }) => <ol className="mb-2 ml-4 list-decimal space-y-1">{children}</ol>,
-        li: ({ children }: { children?: React.ReactNode }) => <li className="leading-relaxed">{children}</li>,
-        strong: ({ children }: { children?: React.ReactNode }) => <strong className="font-semibold">{children}</strong>,
-        code: ({ children, className }: { children?: React.ReactNode; className?: string }) => {
-          const isInline = !className;
-          return isInline ? (
-            <code className="px-1.5 py-0.5 rounded-md bg-black/10 dark:bg-white/10 text-[13px] font-mono">
+    <div className="my-3 space-y-3">
+      {tierOrder.map((tier) => {
+        const tierSchools = grouped[tier];
+        if (!tierSchools?.length) return null;
+        const config = tierConfig[tier];
+
+        return (
+          <div key={tier} className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span>{config.icon}</span>
+              <Badge variant="secondary" className={cn('text-xs', config.color)}>
+                {t('tierSchoolCount', { label: config.label, count: tierSchools.length })}
+              </Badge>
+            </div>
+            <div className="grid gap-2">
+              {tierSchools.map((school, idx) => (
+                <motion.div
+                  key={`${school.name}-${idx}`}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 border border-border/50 hover:border-primary/30 transition-colors"
+                >
+                  <School className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium text-sm">{getSchoolName(school, locale)}</span>
+                      {getSchoolSubName(school, locale) && (
+                        <span className="text-xs text-muted-foreground">
+                          {getSchoolSubName(school, locale)}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                      {school.reason}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// 尝试解析结构化数据
+function tryParseStructuredData(
+  content: string
+): { type: 'schools'; data: SchoolRecommendation[] } | null {
+  // 匹配 JSON 代码块
+  const jsonMatch = content.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+  if (!jsonMatch) return null;
+
+  try {
+    const parsed = JSON.parse(jsonMatch[1]);
+
+    // 检测学校推荐格式
+    if (parsed.schools && Array.isArray(parsed.schools)) {
+      const schools = parsed.schools.filter((s: SchoolRecommendation) => s.name);
+      if (schools.length > 0) {
+        return { type: 'schools', data: schools };
+      }
+    }
+  } catch {
+    // 解析失败，返回 null
+  }
+
+  return null;
+}
+
+// Markdown 渲染（增强版：支持结构化数据）
+function MarkdownContent({ content }: { content: string }) {
+  // 尝试提取结构化数据
+  const structuredData = useMemo(() => tryParseStructuredData(content), [content]);
+
+  // 如果有结构化数据，移除 JSON 代码块部分
+  const cleanedContent = useMemo(() => {
+    if (structuredData) {
+      return content.replace(/```(?:json)?\s*\n?[\s\S]*?\n?```/, '').trim();
+    }
+    return content;
+  }, [content, structuredData]);
+
+  return (
+    <>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          p: ({ children }: { children?: React.ReactNode }) => (
+            <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>
+          ),
+          ul: ({ children }: { children?: React.ReactNode }) => (
+            <ul className="mb-2 ml-4 list-disc space-y-1">{children}</ul>
+          ),
+          ol: ({ children }: { children?: React.ReactNode }) => (
+            <ol className="mb-2 ml-4 list-decimal space-y-1">{children}</ol>
+          ),
+          li: ({ children }: { children?: React.ReactNode }) => (
+            <li className="leading-relaxed">{children}</li>
+          ),
+          strong: ({ children }: { children?: React.ReactNode }) => (
+            <strong className="font-semibold">{children}</strong>
+          ),
+          code: ({ children, className }: { children?: React.ReactNode; className?: string }) => {
+            const isInline = !className;
+            return isInline ? (
+              <code className="px-1.5 py-0.5 rounded-md bg-black/10 dark:bg-white/10 text-sm font-mono">
+                {children}
+              </code>
+            ) : (
+              <code className="block p-3 rounded-lg bg-black/10 dark:bg-white/10 text-sm font-mono overflow-x-auto">
+                {children}
+              </code>
+            );
+          },
+          pre: ({ children }: { children?: React.ReactNode }) => (
+            <pre className="relative my-2 overflow-hidden rounded-lg">{children}</pre>
+          ),
+          h3: ({ children }: { children?: React.ReactNode }) => (
+            <h3 className="font-semibold text-base mt-4 mb-2">{children}</h3>
+          ),
+          h4: ({ children }: { children?: React.ReactNode }) => (
+            <h4 className="font-medium mt-3 mb-1.5">{children}</h4>
+          ),
+          blockquote: ({ children }: { children?: React.ReactNode }) => (
+            <blockquote className="border-l-2 border-primary/50 pl-3 my-2 italic text-muted-foreground">
               {children}
-            </code>
-          ) : (
-            <code className="block p-3 rounded-lg bg-black/10 dark:bg-white/10 text-[13px] font-mono overflow-x-auto">
+            </blockquote>
+          ),
+          a: ({ href, children }: { href?: string; children?: React.ReactNode }) => (
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline underline-offset-2 hover:text-primary/80"
+            >
               {children}
-            </code>
-          );
-        },
-        pre: ({ children }: { children?: React.ReactNode }) => (
-          <pre className="relative my-2 overflow-hidden rounded-lg">
-            {children}
-          </pre>
-        ),
-        h3: ({ children }: { children?: React.ReactNode }) => <h3 className="font-semibold text-base mt-4 mb-2">{children}</h3>,
-        h4: ({ children }: { children?: React.ReactNode }) => <h4 className="font-medium mt-3 mb-1.5">{children}</h4>,
-        blockquote: ({ children }: { children?: React.ReactNode }) => (
-          <blockquote className="border-l-2 border-primary/50 pl-3 my-2 italic text-muted-foreground">
-            {children}
-          </blockquote>
-        ),
-        a: ({ href, children }: { href?: string; children?: React.ReactNode }) => (
-          <a 
-            href={href} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-primary underline underline-offset-2 hover:text-primary/80"
-          >
-            {children}
-          </a>
-        ),
-      }}
-    >
-      {content}
-    </ReactMarkdown>
+            </a>
+          ),
+        }}
+      >
+        {cleanedContent}
+      </ReactMarkdown>
+
+      {/* 渲染结构化数据 */}
+      {structuredData?.type === 'schools' && (
+        <SchoolRecommendationCards schools={structuredData.data} />
+      )}
+    </>
   );
 }
 
 // 静态版本（用于 reduced motion）
-function StaticChatMessage({ 
-  message, 
-  agentInfo, 
-  isUser 
-}: { 
-  message: ChatMessageType; 
-  agentInfo: typeof AGENT_INFO[AgentType] | null;
+function StaticChatMessage({
+  message,
+  agentInfo,
+  agentName,
+  isUser,
+}: {
+  message: ChatMessageType;
+  agentInfo: (typeof AGENT_INFO)[AgentType] | null;
+  agentName: string | null;
   isUser: boolean;
 }) {
   return (
@@ -517,17 +666,17 @@ function StaticChatMessage({
       </Avatar>
       <div className={cn('flex flex-col gap-1 max-w-[80%]', isUser ? 'items-end' : 'items-start')}>
         {!isUser && agentInfo && (
-          <span className={cn('text-xs', agentInfo.color)}>{agentInfo.name}</span>
+          <span className={cn('text-xs', agentInfo.color)}>{agentName}</span>
         )}
-        <div className={cn(
-          'rounded-2xl px-4 py-2.5',
-          isUser ? 'bg-primary text-primary-foreground rounded-br-sm' : 'bg-muted rounded-bl-sm'
-        )}>
+        <div
+          className={cn(
+            'rounded-lg px-4 py-2.5',
+            isUser ? 'bg-primary text-primary-foreground rounded-br-sm' : 'bg-muted rounded-bl-sm'
+          )}
+        >
           <MarkdownContent content={message.content} />
         </div>
-        <span className="text-[10px] text-muted-foreground px-1">
-          {formatTime(message.timestamp)}
-        </span>
+        <span className="text-2xs text-muted-foreground px-1">{formatTime(message.timestamp)}</span>
       </div>
     </div>
   );
@@ -536,7 +685,7 @@ function StaticChatMessage({
 // Tool name formatting is now handled via translations in component
 
 function formatTime(date: Date): string {
-  return new Intl.DateTimeFormat('zh-CN', {
+  return new Intl.DateTimeFormat(undefined, {
     hour: '2-digit',
     minute: '2-digit',
   }).format(date);

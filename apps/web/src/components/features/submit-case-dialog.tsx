@@ -1,13 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
@@ -19,6 +25,7 @@ import {
 import { apiClient } from '@/lib/api';
 import { toast } from 'sonner';
 import { Loader2, Send, GraduationCap } from 'lucide-react';
+import { getSchoolName } from '@/lib/utils';
 import { SchoolSelector } from './school-selector';
 
 const RESULT_KEYS = [
@@ -55,6 +62,7 @@ interface SubmitCaseDialogProps {
 export function SubmitCaseDialog({ open, onOpenChange, onSuccess }: SubmitCaseDialogProps) {
   const t = useTranslations('submitCase');
   const tCommon = useTranslations('common');
+  const locale = useLocale();
   const queryClient = useQueryClient();
   const [schoolSelectorOpen, setSchoolSelectorOpen] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
@@ -115,7 +123,12 @@ export function SubmitCaseDialog({ open, onOpenChange, onSuccess }: SubmitCaseDi
       gpaRange: formData.gpaRange || undefined,
       satRange: formData.satRange || undefined,
       toeflRange: formData.toeflRange || undefined,
-      tags: formData.tags ? formData.tags.split(',').map((t) => t.trim()).filter(Boolean) : undefined,
+      tags: formData.tags
+        ? formData.tags
+            .split(',')
+            .map((t) => t.trim())
+            .filter(Boolean)
+        : undefined,
       reflection: formData.reflection || undefined,
     };
 
@@ -131,9 +144,7 @@ export function SubmitCaseDialog({ open, onOpenChange, onSuccess }: SubmitCaseDi
               <GraduationCap className="h-5 w-5" />
               {t('title')}
             </DialogTitle>
-            <DialogDescription>
-              {t('description')}
-            </DialogDescription>
+            <DialogDescription>{t('description')}</DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 max-h-[60vh] overflow-y-auto pr-2">
@@ -146,7 +157,7 @@ export function SubmitCaseDialog({ open, onOpenChange, onSuccess }: SubmitCaseDi
                 onClick={() => setSchoolSelectorOpen(true)}
               >
                 {selectedSchool ? (
-                  <span>{selectedSchool.nameZh || selectedSchool.name}</span>
+                  <span>{getSchoolName(selectedSchool, locale)}</span>
                 ) : (
                   <span className="text-muted-foreground">{t('selectSchool')}</span>
                 )}
@@ -297,4 +308,3 @@ export function SubmitCaseDialog({ open, onOpenChange, onSuccess }: SubmitCaseDi
     </>
   );
 }
-

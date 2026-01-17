@@ -43,11 +43,3 @@ export function useThemeTransition() {
     isLight: resolvedTheme === 'light',
   };
 }
-
-
-
-
-
-
-
-

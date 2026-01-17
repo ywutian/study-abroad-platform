@@ -12,12 +12,3 @@ Sentry.init({
   // Environment
   environment: process.env.NODE_ENV,
 });
-
-
-
-
-
-
-
-
-

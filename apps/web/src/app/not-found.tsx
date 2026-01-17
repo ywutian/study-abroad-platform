@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // Translations for 404 page
 const translations = {
@@ -19,7 +19,8 @@ const translations = {
   en: {
     title: 'Page Not Found - Study Abroad Platform',
     heading: 'Page Not Found',
-    message: 'Sorry, the page you are looking for does not exist or has been moved. Please check the link or return to the homepage.',
+    message:
+      'Sorry, the page you are looking for does not exist or has been moved. Please check the link or return to the homepage.',
     goHome: 'Back to Home',
     orVisit: 'Or visit the following pages:',
     casesLib: 'Case Library',
@@ -33,16 +34,12 @@ export default function NotFound() {
   const [locale, setLocale] = useState<'zh' | 'en'>('en');
 
   useEffect(() => {
-    // Check URL path for locale
     const path = window.location.pathname;
     if (path.startsWith('/zh')) {
       setLocale('zh');
-    } else if (path.startsWith('/en')) {
-      setLocale('en');
-    } else {
-      // Fallback to browser language
+    } else if (!path.startsWith('/en')) {
       const browserLang = navigator.language.toLowerCase();
-      setLocale(browserLang.startsWith('zh') ? 'zh' : 'en');
+      if (browserLang.startsWith('zh')) setLocale('zh');
     }
   }, []);
 
@@ -53,59 +50,70 @@ export default function NotFound() {
       <head>
         <title>{t.title}</title>
       </head>
-      <body style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
-        display: 'flex',
-        flexDirection: 'column',
-        fontFamily: 'system-ui, -apple-system, sans-serif',
-        margin: 0,
-        padding: 0,
-      }}>
-        {/* Main Content */}
-        <main style={{
-          flex: 1,
+      <body
+        style={{
+          minHeight: '100vh',
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '1rem',
-        }}>
+          flexDirection: 'column',
+          fontFamily:
+            '-apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif',
+          margin: 0,
+          padding: 0,
+        }}
+      >
+        {/* Main Content */}
+        <main
+          style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem',
+          }}
+        >
           <div style={{ textAlign: 'center', maxWidth: '32rem' }}>
             {/* 404 Number */}
-            <h1 style={{
-              fontSize: 'clamp(8rem, 20vw, 12rem)',
-              fontWeight: 'bold',
-              lineHeight: 1,
-              background: 'linear-gradient(135deg, #60a5fa, #22d3ee, #2dd4bf)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              opacity: 0.3,
-              marginBottom: '2rem',
-            }}>
+            <h1
+              style={{
+                fontSize: 'clamp(8rem, 20vw, 12rem)',
+                fontWeight: 'bold',
+                lineHeight: 1,
+                background: 'linear-gradient(135deg, #60a5fa, #22d3ee, #2dd4bf)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                opacity: 0.3,
+                marginBottom: '2rem',
+              }}
+            >
               404
             </h1>
 
             {/* Text Content */}
-            <h2 style={{
-              fontSize: '1.875rem',
-              fontWeight: 'bold',
-              color: 'white',
-              marginBottom: '1rem',
-            }}>
+            <h2
+              style={{
+                fontSize: '1.875rem',
+                fontWeight: 'bold',
+                color: 'white',
+                marginBottom: '1rem',
+              }}
+            >
               {t.heading}
             </h2>
-            <p style={{
-              color: '#94a3b8',
-              marginBottom: '2rem',
-              fontSize: '1.125rem',
-              lineHeight: 1.6,
-            }}>
+            <p
+              style={{
+                color: '#94a3b8',
+                marginBottom: '2rem',
+                fontSize: '1.125rem',
+                lineHeight: 1.6,
+              }}
+            >
               {t.message}
             </p>
 
             {/* Action Button */}
-            <Link 
+            <Link
               href={`/${locale}`}
               style={{
                 display: 'inline-flex',
@@ -124,31 +132,46 @@ export default function NotFound() {
             </Link>
 
             {/* Quick Links */}
-            <div style={{
-              marginTop: '3rem',
-              paddingTop: '2rem',
-              borderTop: '1px solid #334155',
-            }}>
-              <p style={{
-                fontSize: '0.875rem',
-                color: '#64748b',
-                marginBottom: '1rem',
-              }}>
+            <div
+              style={{
+                marginTop: '3rem',
+                paddingTop: '2rem',
+                borderTop: '1px solid #334155',
+              }}
+            >
+              <p
+                style={{
+                  fontSize: '0.875rem',
+                  color: '#64748b',
+                  marginBottom: '1rem',
+                }}
+              >
                 {t.orVisit}
               </p>
-              <div style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '1rem',
-                justifyContent: 'center',
-              }}>
-                <Link href={`/${locale}/cases`} style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '1rem',
+                  justifyContent: 'center',
+                }}
+              >
+                <Link
+                  href={`/${locale}/cases`}
+                  style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}
+                >
                   {t.casesLib}
                 </Link>
-                <Link href={`/${locale}/ranking`} style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}>
+                <Link
+                  href={`/${locale}/ranking`}
+                  style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}
+                >
                   {t.ranking}
                 </Link>
-                <Link href={`/${locale}/prediction`} style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}>
+                <Link
+                  href={`/${locale}/prediction`}
+                  style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}
+                >
                   {t.prediction}
                 </Link>
               </div>
@@ -157,15 +180,19 @@ export default function NotFound() {
         </main>
 
         {/* Footer */}
-        <footer style={{
-          padding: '1.5rem',
-          textAlign: 'center',
-        }}>
-          <p style={{
-            fontSize: '0.875rem',
-            color: '#64748b',
-            margin: 0,
-          }}>
+        <footer
+          style={{
+            padding: '1.5rem',
+            textAlign: 'center',
+          }}
+        >
+          <p
+            style={{
+              fontSize: '0.875rem',
+              color: '#64748b',
+              margin: 0,
+            }}
+          >
             {t.copyright}
           </p>
         </footer>

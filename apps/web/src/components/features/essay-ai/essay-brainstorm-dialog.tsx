@@ -21,7 +21,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Lightbulb, Sparkles, ChevronRight, Copy, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
-import { cn } from '@/lib/utils';
 
 interface EssayBrainstormDialogProps {
   open: boolean;
@@ -159,7 +158,7 @@ export const EssayBrainstormDialog: React.FC<EssayBrainstormDialogProps> = ({
           <ScrollArea className="max-h-[60vh]">
             <div className="space-y-4 pr-4">
               {/* Overall Advice */}
-              <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+              <Card className="bg-primary/10 border-primary/20">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
                     <Sparkles className="h-4 w-4 text-primary" />
@@ -253,6 +252,3 @@ export const EssayBrainstormDialog: React.FC<EssayBrainstormDialogProps> = ({
     </Dialog>
   );
 };
-
-
-

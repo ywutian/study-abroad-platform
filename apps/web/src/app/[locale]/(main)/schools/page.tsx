@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale, useFormatter } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import {
@@ -9,13 +9,11 @@ import {
   MapPin,
   Trophy,
   GraduationCap,
-  Building2,
   Globe,
   ChevronRight,
   SlidersHorizontal,
   X,
   Users,
-  DollarSign,
   Award,
 } from 'lucide-react';
 
@@ -26,6 +24,8 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
+import { SchoolRecommendation, AdvancedSchoolFilter, SchoolFilters } from '@/components/features';
+import { useAuthStore } from '@/stores/auth';
 import {
   Select,
   SelectContent,
@@ -35,7 +35,7 @@ import {
 } from '@/components/ui/select';
 import { Link } from '@/lib/i18n/navigation';
 import { apiClient } from '@/lib/api/client';
-import { cn } from '@/lib/utils';
+import { cn, getSchoolName, getSchoolSubName } from '@/lib/utils';
 
 interface School {
   id: string;
@@ -64,32 +64,91 @@ const countries = [
 
 // 根据排名返回不同的徽章样式
 const getRankBadgeStyle = (rank: number) => {
-  if (rank <= 10) return 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white';
+  if (rank <= 10) return 'bg-warning text-white';
   if (rank <= 30) return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20';
   if (rank <= 50) return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20';
   return 'bg-muted text-muted-foreground';
 };
 
+const defaultFilters: SchoolFilters = {};
+
 export default function SchoolsPage() {
   const t = useTranslations();
+  const locale = useLocale();
+  const format = useFormatter();
   const [search, setSearch] = useState('');
   const [country, setCountry] = useState('ALL');
   const [sortBy, setSortBy] = useState('rank');
+  const [showAIRecommend, setShowAIRecommend] = useState(true);
+  const [advancedFilters, setAdvancedFilters] = useState<SchoolFilters>(defaultFilters);
+  const { accessToken } = useAuthStore();
 
-  const { data: schoolsData, isLoading, isError, refetch } = useQuery({
-    queryKey: ['schools', search, country],
+  // 计算激活的高级筛选数量
+  const activeAdvancedFilterCount = useMemo(() => {
+    let count = 0;
+    if (advancedFilters.rankMin || advancedFilters.rankMax) count++;
+    if (advancedFilters.acceptanceMin || advancedFilters.acceptanceMax) count++;
+    if (advancedFilters.tuitionMin || advancedFilters.tuitionMax) count++;
+    if (advancedFilters.sizeMin || advancedFilters.sizeMax) count++;
+    if (advancedFilters.state) count++;
+    if (advancedFilters.region) count++;
+    if (advancedFilters.schoolType) count++;
+    if (advancedFilters.testOptional) count++;
+    if (advancedFilters.needBlind) count++;
+    if (advancedFilters.hasEarlyDecision) count++;
+    return count;
+  }, [advancedFilters]);
+
+  const {
+    data: schoolsData,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['schools', search, country, advancedFilters],
     queryFn: () => {
       const params: Record<string, string> = { pageSize: '50' };
       if (search) params.search = search;
       if (country && country !== 'ALL') params.country = country;
+      // 高级筛选参数
+      if (advancedFilters.rankMin) params.rankMin = advancedFilters.rankMin.toString();
+      if (advancedFilters.rankMax) params.rankMax = advancedFilters.rankMax.toString();
+      if (advancedFilters.acceptanceMin)
+        params.acceptanceMin = advancedFilters.acceptanceMin.toString();
+      if (advancedFilters.acceptanceMax)
+        params.acceptanceMax = advancedFilters.acceptanceMax.toString();
+      if (advancedFilters.tuitionMin)
+        params.tuitionMin = (advancedFilters.tuitionMin * 10000).toString();
+      if (advancedFilters.tuitionMax)
+        params.tuitionMax = (advancedFilters.tuitionMax * 10000).toString();
+      if (advancedFilters.sizeMin) params.sizeMin = advancedFilters.sizeMin.toString();
+      if (advancedFilters.sizeMax) params.sizeMax = advancedFilters.sizeMax.toString();
+      if (advancedFilters.state) params.state = advancedFilters.state;
+      if (advancedFilters.region) params.region = advancedFilters.region;
+      if (advancedFilters.schoolType) params.schoolType = advancedFilters.schoolType;
+      if (advancedFilters.testOptional) params.testOptional = 'true';
+      if (advancedFilters.needBlind) params.needBlind = 'true';
+      if (advancedFilters.hasEarlyDecision) params.hasEarlyDecision = 'true';
       return apiClient.get<{ items: School[]; total: number }>('/schools', { params });
     },
     retry: 2,
+    staleTime: 30 * 1000, // 30秒内不重新请求
+    refetchOnWindowFocus: false, // 窗口聚焦时不自动刷新
   });
+
+  // 前端调试：记录 API 请求错误
+  if (isError) {
+    console.error('[Schools] Failed to fetch schools:', error);
+  }
 
   const schools = schoolsData?.items || [];
   const total = schoolsData?.total || 0;
-  const hasFilters = search || country !== 'ALL';
+  const hasFilters = search || country !== 'ALL' || activeAdvancedFilterCount > 0;
+
+  const resetAdvancedFilters = () => {
+    setAdvancedFilters(defaultFilters);
+  };
 
   const sortedSchools = useMemo(() => {
     const sorted = [...schools];
@@ -115,12 +174,9 @@ export default function SchoolsPage() {
       />
 
       {/* Search and Filters */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <Card className="mb-6 overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-violet-500 to-purple-500" />
+          <div className="h-1 bg-primary dark:bg-primary" />
           <CardContent className="pt-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-center">
               {/* Search */}
@@ -151,7 +207,7 @@ export default function SchoolsPage() {
 
               {/* Sort */}
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-full md:w-[180px]">
+                <SelectTrigger className="w-full md:w-[150px]">
                   <SlidersHorizontal className="h-4 w-4 mr-2 text-muted-foreground" />
                   <SelectValue placeholder={t('schools.sortBy')} />
                 </SelectTrigger>
@@ -161,6 +217,14 @@ export default function SchoolsPage() {
                   <SelectItem value="acceptance">{t('schools.sort.acceptance')}</SelectItem>
                 </SelectContent>
               </Select>
+
+              {/* Advanced Filter */}
+              <AdvancedSchoolFilter
+                filters={advancedFilters}
+                onChange={setAdvancedFilters}
+                onReset={resetAdvancedFilters}
+                activeCount={activeAdvancedFilterCount}
+              />
             </div>
 
             {/* Active Filters */}
@@ -170,7 +234,10 @@ export default function SchoolsPage() {
                   <Badge variant="secondary" className="gap-1 pr-1">
                     <Search className="h-3 w-3" />
                     {search}
-                    <button onClick={() => setSearch('')} className="ml-1 rounded-full hover:bg-muted p-0.5">
+                    <button
+                      onClick={() => setSearch('')}
+                      className="ml-1 rounded-full hover:bg-muted p-0.5"
+                    >
                       <X className="h-3 w-3" />
                     </button>
                   </Badge>
@@ -178,8 +245,11 @@ export default function SchoolsPage() {
                 {country !== 'ALL' && (
                   <Badge variant="secondary" className="gap-1 pr-1">
                     <Globe className="h-3 w-3" />
-                    {t(`schools.countries.${countries.find(c => c.value === country)?.labelKey}`)}
-                    <button onClick={() => setCountry('ALL')} className="ml-1 rounded-full hover:bg-muted p-0.5">
+                    {t(`schools.countries.${countries.find((c) => c.value === country)?.labelKey}`)}
+                    <button
+                      onClick={() => setCountry('ALL')}
+                      className="ml-1 rounded-full hover:bg-muted p-0.5"
+                    >
                       <X className="h-3 w-3" />
                     </button>
                   </Badge>
@@ -189,6 +259,18 @@ export default function SchoolsPage() {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* AI School Recommendations - 登录用户可见 */}
+      {accessToken && showAIRecommend && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="mb-6"
+        >
+          <SchoolRecommendation />
+        </motion.div>
+      )}
 
       {/* Results Count */}
       <motion.div
@@ -200,6 +282,16 @@ export default function SchoolsPage() {
         <p className="text-sm text-muted-foreground">
           {t('schools.resultsCount', { count: total })}
         </p>
+        {accessToken && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowAIRecommend(!showAIRecommend)}
+            className="text-xs"
+          >
+            {showAIRecommend ? t('schools.hideAIRecommend') : t('schools.showAIRecommend')}
+          </Button>
+        )}
       </motion.div>
 
       {/* Schools Grid */}
@@ -207,7 +299,7 @@ export default function SchoolsPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[...Array(6)].map((_, i) => (
             <Card key={i} className="overflow-hidden animate-pulse">
-              <div className="h-1 bg-gradient-to-r from-violet-500/30 to-purple-500/30" />
+              <div className="h-1 bg-primary/20" />
               <CardContent className="pt-4">
                 <div className="flex items-start gap-3 mb-3">
                   <Skeleton className="h-12 w-12 rounded-xl" />
@@ -223,12 +315,9 @@ export default function SchoolsPage() {
           ))}
         </div>
       ) : isError ? (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <Card className="overflow-hidden">
-            <div className="h-1 bg-gradient-to-r from-red-500 to-orange-500" />
+            <div className="h-1 bg-destructive" />
             <CardContent className="py-8">
               <EmptyState
                 type="error"
@@ -255,31 +344,37 @@ export default function SchoolsPage() {
               <Link href={`/schools/${school.id}`}>
                 <Card className="h-full hover:shadow-lg transition-all duration-300 hover:border-primary/50 cursor-pointer group overflow-hidden">
                   {/* 顶部装饰条 */}
-                  <div className="h-1 bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 group-hover:h-1.5 transition-all" />
-                  
+                  <div className="h-1 bg-primary group-hover:h-1.5 transition-all" />
+
                   <CardContent className="pt-4">
                     <div className="flex items-start gap-3 mb-3">
                       {/* 学校首字母图标 */}
-                      <div className="shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500/20 to-purple-500/10 flex items-center justify-center border border-violet-500/20 group-hover:border-violet-500/40 group-hover:scale-105 transition-all">
-                        <span className="text-lg font-bold bg-gradient-to-br from-violet-600 to-purple-600 bg-clip-text text-transparent">
-                          {(school.nameZh || school.name).charAt(0)}
+                      <div className="shrink-0 w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center border border-violet-500/20 group-hover:border-violet-500/40 group-hover:scale-105 transition-all">
+                        <span className="text-lg font-bold bg-primary bg-clip-text text-transparent">
+                          {getSchoolName(school, locale).charAt(0)}
                         </span>
                       </div>
-                      
+
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
                           <h3 className="font-semibold text-base leading-tight group-hover:text-primary transition-colors line-clamp-2">
-                            {school.nameZh || school.name}
+                            {getSchoolName(school, locale)}
                           </h3>
                           {school.usNewsRank && (
-                            <Badge className={cn('shrink-0 gap-0.5', getRankBadgeStyle(school.usNewsRank))}>
-                              <Trophy className="h-3 w-3" />
-                              #{school.usNewsRank}
+                            <Badge
+                              className={cn(
+                                'shrink-0 gap-0.5',
+                                getRankBadgeStyle(school.usNewsRank)
+                              )}
+                            >
+                              <Trophy className="h-3 w-3" />#{school.usNewsRank}
                             </Badge>
                           )}
                         </div>
-                        {school.nameZh && (
-                          <p className="text-xs text-muted-foreground truncate mt-0.5">{school.name}</p>
+                        {getSchoolSubName(school, locale) && (
+                          <p className="text-xs text-muted-foreground truncate mt-0.5">
+                            {getSchoolSubName(school, locale)}
+                          </p>
                         )}
                       </div>
                     </div>
@@ -300,15 +395,21 @@ export default function SchoolsPage() {
                           <Award className="h-3 w-3" />
                           {t('schools.acceptanceRate')}
                         </div>
-                        <div className={cn(
-                          'font-semibold text-sm',
-                          school.acceptanceRate && school.acceptanceRate < 15 ? 'text-rose-500' :
-                          school.acceptanceRate && school.acceptanceRate < 30 ? 'text-amber-500' : ''
-                        )}>
-                          {school.acceptanceRate !== undefined && school.acceptanceRate !== null && typeof school.acceptanceRate === 'number'
+                        <div
+                          className={cn(
+                            'font-semibold text-sm',
+                            school.acceptanceRate && school.acceptanceRate < 15
+                              ? 'text-rose-500'
+                              : school.acceptanceRate && school.acceptanceRate < 30
+                                ? 'text-amber-500'
+                                : ''
+                          )}
+                        >
+                          {school.acceptanceRate !== undefined &&
+                          school.acceptanceRate !== null &&
+                          typeof school.acceptanceRate === 'number'
                             ? `${school.acceptanceRate.toFixed(1)}%`
-                            : '-'
-                          }
+                            : '-'}
                         </div>
                       </div>
                       <div className="text-center border-l border-border">
@@ -317,7 +418,9 @@ export default function SchoolsPage() {
                           {t('schools.students')}
                         </div>
                         <div className="font-semibold text-sm">
-                          {school.studentCount ? school.studentCount.toLocaleString() : '-'}
+                          {school.studentCount
+                            ? format.number(school.studentCount, 'standard')
+                            : '-'}
                         </div>
                       </div>
                     </div>
@@ -333,12 +436,9 @@ export default function SchoolsPage() {
           ))}
         </div>
       ) : (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <Card className="overflow-hidden">
-            <div className="h-1 bg-gradient-to-r from-violet-500/50 to-purple-500/50" />
+            <div className="h-1 bg-primary/40" />
             <CardContent className="py-8">
               {hasFilters ? (
                 <EmptyState
@@ -350,6 +450,7 @@ export default function SchoolsPage() {
                     onClick: () => {
                       setSearch('');
                       setCountry('ALL');
+                      resetAdvancedFilters();
                     },
                     variant: 'outline',
                     icon: <X className="h-4 w-4" />,

@@ -136,13 +136,13 @@ export function ResumeExportDialog({ open, onOpenChange, profileData }: ResumeEx
     const hasAcademics = resumeData.academics.gpa || resumeData.academics.testScores.length > 0;
     const hasActivities = resumeData.activities.length > 0;
     const hasAwards = resumeData.awards.length > 0;
-    
+
     return hasBasic || hasAcademics || hasActivities || hasAwards;
   }, [resumeData]);
 
   // 切换模块
   const toggleModule = (moduleId: string) => {
-    setOptions(prev => ({
+    setOptions((prev) => ({
       ...prev,
       includeModules: {
         ...prev.includeModules,
@@ -162,14 +162,11 @@ export function ResumeExportDialog({ open, onOpenChange, profileData }: ResumeEx
 
     try {
       // 选择模板
-      const TemplateComponent = options.template === 'professional' 
-        ? ProfessionalTemplate 
-        : BasicTemplate;
+      const TemplateComponent =
+        options.template === 'professional' ? ProfessionalTemplate : BasicTemplate;
 
       // 生成 PDF Blob
-      const blob = await pdf(
-        <TemplateComponent data={resumeData} options={options} />
-      ).toBlob();
+      const blob = await pdf(<TemplateComponent data={resumeData} options={options} />).toBlob();
 
       // 创建下载链接
       const url = URL.createObjectURL(blob);
@@ -201,9 +198,7 @@ export function ResumeExportDialog({ open, onOpenChange, profileData }: ResumeEx
             <FileText className="h-5 w-5 text-primary" />
             {t('resume.title')}
           </DialogTitle>
-          <DialogDescription>
-            {t('resume.description')}
-          </DialogDescription>
+          <DialogDescription>{t('resume.description')}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
@@ -212,7 +207,9 @@ export function ResumeExportDialog({ open, onOpenChange, profileData }: ResumeEx
             <Label className="text-sm font-medium mb-3 block">{t('resume.selectTemplate')}</Label>
             <RadioGroup
               value={options.template}
-              onValueChange={(v) => setOptions(prev => ({ ...prev, template: v as 'basic' | 'professional' }))}
+              onValueChange={(v) =>
+                setOptions((prev) => ({ ...prev, template: v as 'basic' | 'professional' }))
+              }
               className="grid grid-cols-2 gap-3"
             >
               {TEMPLATE_OPTIONS.map((template) => {
@@ -234,10 +231,12 @@ export function ResumeExportDialog({ open, onOpenChange, profileData }: ResumeEx
                           : 'border-muted hover:border-muted-foreground/50'
                       )}
                     >
-                      <div className={cn(
-                        'flex h-10 w-10 items-center justify-center rounded-lg transition-colors',
-                        isSelected ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'
-                      )}>
+                      <div
+                        className={cn(
+                          'flex h-10 w-10 items-center justify-center rounded-lg transition-colors',
+                          isSelected ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'
+                        )}
+                      >
                         <Icon className="h-5 w-5" />
                       </div>
                       <span className="text-sm font-medium">{t(template.labelKey)}</span>
@@ -256,7 +255,8 @@ export function ResumeExportDialog({ open, onOpenChange, profileData }: ResumeEx
             <Label className="text-sm font-medium mb-3 block">{t('resume.selectModules')}</Label>
             <div className="space-y-2">
               {MODULE_OPTIONS.map((module) => {
-                const isChecked = options.includeModules[module.id as keyof typeof options.includeModules];
+                const isChecked =
+                  options.includeModules[module.id as keyof typeof options.includeModules];
                 const Icon = module.icon;
                 return (
                   <motion.div
@@ -268,15 +268,15 @@ export function ResumeExportDialog({ open, onOpenChange, profileData }: ResumeEx
                     onClick={() => toggleModule(module.id)}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <Checkbox
-                      checked={isChecked}
-                      onCheckedChange={() => toggleModule(module.id)}
+                    <Checkbox checked={isChecked} onCheckedChange={() => toggleModule(module.id)} />
+                    <Icon
+                      className={cn(
+                        'h-4 w-4',
+                        isChecked ? 'text-primary' : 'text-muted-foreground'
+                      )}
                     />
-                    <Icon className={cn('h-4 w-4', isChecked ? 'text-primary' : 'text-muted-foreground')} />
                     <span className="text-sm">{t(module.labelKey)}</span>
-                    {isChecked && (
-                      <Check className="h-4 w-4 text-primary ml-auto" />
-                    )}
+                    {isChecked && <Check className="h-4 w-4 text-primary ml-auto" />}
                   </motion.div>
                 );
               })}
@@ -290,7 +290,9 @@ export function ResumeExportDialog({ open, onOpenChange, profileData }: ResumeEx
               <Label className="text-sm font-medium">{t('resume.language')}</Label>
               <RadioGroup
                 value={options.language}
-                onValueChange={(v) => setOptions(prev => ({ ...prev, language: v as 'zh' | 'en' }))}
+                onValueChange={(v) =>
+                  setOptions((prev) => ({ ...prev, language: v as 'zh' | 'en' }))
+                }
                 className="flex gap-2"
               >
                 <div className="flex items-center">
@@ -302,7 +304,7 @@ export function ResumeExportDialog({ open, onOpenChange, profileData }: ResumeEx
                       options.language === 'zh' ? 'border-primary bg-primary/10' : 'hover:bg-muted'
                     )}
                   >
-                    中文
+                    {t('resume.languageLabel.zh')}
                   </Label>
                 </div>
                 <div className="flex items-center">
@@ -314,7 +316,7 @@ export function ResumeExportDialog({ open, onOpenChange, profileData }: ResumeEx
                       options.language === 'en' ? 'border-primary bg-primary/10' : 'hover:bg-muted'
                     )}
                   >
-                    English
+                    {t('resume.languageLabel.en')}
                   </Label>
                 </div>
               </RadioGroup>
@@ -326,10 +328,16 @@ export function ResumeExportDialog({ open, onOpenChange, profileData }: ResumeEx
               <div className="flex items-center gap-2">
                 <Switch
                   checked={options.anonymize}
-                  onCheckedChange={(checked) => setOptions(prev => ({ ...prev, anonymize: checked }))}
+                  onCheckedChange={(checked) =>
+                    setOptions((prev) => ({ ...prev, anonymize: checked }))
+                  }
                 />
                 <span className="text-sm text-muted-foreground flex items-center gap-1">
-                  {options.anonymize ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                  {options.anonymize ? (
+                    <EyeOff className="h-3.5 w-3.5" />
+                  ) : (
+                    <Eye className="h-3.5 w-3.5" />
+                  )}
                   {options.anonymize ? t('resume.anonymizeOn') : t('resume.anonymizeOff')}
                 </span>
               </div>
@@ -348,23 +356,16 @@ export function ResumeExportDialog({ open, onOpenChange, profileData }: ResumeEx
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t('common.cancel')}
           </Button>
-          <Button
-            onClick={handleExport}
-            disabled={isExporting || !hasEnoughData}
-            className="gap-2"
-          >
+          <Button onClick={handleExport} disabled={isExporting || !hasEnoughData} className="gap-2">
             {isExporting ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <Download className="h-4 w-4" />
             )}
-            {isExporting ? t('resume.exporting') : t('resume.export')}
+            {isExporting ? t('resume.exporting') : t('resume.exportButton')}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
-
-
-

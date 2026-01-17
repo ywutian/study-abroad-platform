@@ -1,52 +1,9 @@
 {
   "meta": {
     "home": {
-      "title": "留学申请平台 - AI智能选校与录取预测",
-      "description": "智能选校、录取预测、案例分享 —— 您的一站式AI留学申请平台，助你圆梦理想院校"
-    },
-    "profile": {
-      "title": "我的档案 - 留学申请平台",
-      "description": "创建和管理您的申请档案，一键导出专业简历"
-    },
-    "ranking": {
-      "title": "学校榜单 - 留学申请平台",
-      "description": "根据个人偏好自定义学校排名榜单，找到最适合你的院校"
-    },
-    "prediction": {
-      "title": "录取预测 - 留学申请平台",
-      "description": "AI智能分析您的背景，精准预测各院校录取概率"
-    },
-    "cases": {
-      "title": "案例库 - 留学申请平台",
-      "description": "浏览真实申请案例，参考成功经验，了解录取趋势"
-    },
-    "chat": {
-      "title": "消息 - 留学申请平台",
-      "description": "与认证用户交流，获取第一手申请信息"
-    },
-    "hall": {
-      "title": "功能大厅 - 留学申请平台",
-      "description": "招生官打分、排名对比、创建榜单等多种功能"
-    },
-    "login": {
-      "title": "登录 - 留学申请平台",
-      "description": "登录您的账号，开始留学申请之旅"
-    },
-    "register": {
-      "title": "注册 - 留学申请平台",
-      "description": "免费注册，立即体验全部功能"
-    },
-    "notFound": {
-      "title": "页面未找到 - 留学申请平台",
-        "description": "抱歉，您访问的页面不存在",
-        "heading": "页面未找到",
-        "message": "抱歉，您访问的页面不存在或已被移动。请检查链接是否正确，或返回首页。",
-        "goHome": "返回首页",
-        "orVisit": "或者访问以下页面：",
-        "casesLib": "案例库",
-        "ranking": "学校榜单",
-        "prediction": "录取预测",
-        "copyright": "© 2026 留学申请平台"
+      "title": "留学申请平台 - 智能选校与录取预测",
+      "description": "基于 AI 的智能留学申请平台，提供选校推荐、录取预测、案例库等一站式服务",
+      "keywords": "留学申请,选校推荐,录取预测,AI留学,出国留学,美国留学,大学申请,留学规划"
     }
   },
   "common": {
@@ -58,6 +15,7 @@
     "delete": "删除",
     "confirm": "确认",
     "back": "返回",
+    "notSpecified": "未指定",
     "next": "下一步",
     "previous": "上一步",
     "loading": "加载中...",
@@ -72,229 +30,170 @@
     "logout": "退出登录",
     "register": "注册",
     "settings": "设置",
-    "loggedInAs": "登录为",
-    "add": "添加",
-    "clear": "清空",
+    "all": "全部",
+    "processing": "处理中...",
+    "retry": "重试",
     "clearAll": "清除全部",
-    "copy": "复制",
-    "copied": "已复制",
-    "noData": "暂无数据",
-    "notFilled": "未填写",
-    "anonymous": "匿名",
-    "status": "状态",
-    "items": "项",
-    "year": "年",
+    "ongoing": "进行中",
     "perWeek": "小时/周",
     "weeksPerYear": "周/年",
-    "ongoing": "进行中",
-    "all": "全部",
-    "processing": "处理中",
-    "pleaseCompleteProfile": "请先完善您的档案",
-    "changes": "主要修改",
+    "anonymous": "匿名",
+    "explore": "探索",
+    "enter": "进入",
     "administrator": "管理员",
-    "verified": "已验证",
-    "featureInDev": "功能开发中，请联系客服",
-    "retry": "重试",
-    "goHome": "返回首页"
+    "days": "天",
+    "featureInDev": "功能开发中",
+    "refresh": "刷新",
+    "status": "状态",
+    "verified": "已认证",
+    "words": "字",
+    "optional": "（选填）",
+    "notAvailable": "暂无数据",
+    "home": "首页",
+    "schools": "学校",
+    "cases": "案例",
+    "aiAssistant": "AI 助手",
+    "profile": "个人档案",
+    "nav": "导航",
+    "switchToLight": "切换亮色模式",
+    "switchToDark": "切换暗色模式",
+    "helpDocs": "帮助文档",
+    "other": "其他",
+    "searchPlaceholder": "搜索命令...",
+    "noResults": "未找到结果",
+    "navigate": "导航",
+    "select": "选择",
+    "keywords": {
+      "home": "首页,主页",
+      "schools": "学校,院校",
+      "cases": "案例,申请",
+      "aiAssistant": "AI,助手,智能",
+      "profile": "档案,个人",
+      "theme": "主题,暗色,亮色",
+      "help": "帮助,支持"
+    }
   },
-  "ui": {
-    "dialog": {
-      "confirm": "确认",
-      "cancel": "取消",
-      "delete": "删除",
-      "deleteTitle": "确认删除？",
-      "deleteWithName": "删除 \"{name}\"？",
-      "deleteDesc": "此操作无法撤销，删除后数据将永久丢失。"
+  "dashboard": {
+    "welcome": "欢迎回来，{name}",
+    "user": "用户",
+    "subtitle": "继续你的申请之旅",
+    "editProfile": "编辑档案",
+    "quickAccess": "快速入口",
+    "recentActivity": "最近动态",
+    "noRecentActivity": "暂无最近动态",
+    "startExploring": "开始探索",
+    "stats": {
+      "profileCompletion": "档案完成度",
+      "schoolList": "选校清单",
+      "pendingTasks": "待办任务",
+      "profileScore": "档案评分",
+      "essayCount": "文书数",
+      "followers": "粉丝",
+      "points": "积分",
+      "predictions": "预测次数",
+      "targetSchools": "目标学校",
+      "verified": "已认证"
     },
-    "error": {
-      "pageError": "页面出错了",
-      "error": "出错了",
-      "defaultMessage": "遇到了一些问题，请尝试刷新或返回首页。",
-      "retryCount": "已重试 {count}/{max} 次",
-      "details": "错误详情",
-      "errorMessage": "错误消息:",
-      "stack": "堆栈:",
-      "componentStack": "组件堆栈:",
-      "retryRemaining": "重试 ({remaining})",
-      "feedback": "反馈问题",
-      "errorId": "错误 ID: {id}",
-      "pageLoadFailed": "页面加载失败，请稍后重试或返回首页。"
+    "modules": {
+      "findCollege": "智能选校",
+      "findCollegeDesc": "智能筛选，找到最适合你的学校",
+      "uncommonApp": "智能申请",
+      "uncommonAppDesc": "AI 分析档案，智能推荐选校",
+      "featureHall": "功能大厅",
+      "featureHallDesc": "招生官视角评估申请",
+      "forum": "社交论坛",
+      "forumDesc": "与申请者交流经验"
     },
-    "empty": {
-      "noContent": "暂无内容",
-      "noContentDesc": "这里还没有任何内容",
-      "noResults": "未找到结果",
-      "noResultsDesc": "尝试调整筛选条件，或使用不同的关键词搜索",
-      "noData": "暂无数据",
-      "noDataDesc": "数据将在这里显示",
-      "loadFailed": "加载失败",
-      "loadFailedDesc": "网络可能出了点问题，请稍后重试",
-      "offline": "网络连接断开",
-      "offlineDesc": "请检查您的网络连接后重试",
-      "noResultsQuery": "未找到与「{query}」相关的结果",
-      "clearFilter": "清除筛选",
-      "firstTime": "欢迎来到这里！",
-      "firstTimeDesc": "准备好开始你的留学申请之旅了吗？",
-      "noSchools": "还没有找到学校",
-      "noSchoolsDesc": "试试调整筛选条件，或者浏览我们的推荐院校列表",
-      "noCases": "还没有案例",
-      "noCasesDesc": "成为第一个分享案例的人，帮助更多学弟学妹！",
-      "loading": "正在加载",
-      "loadingDesc": "数据马上就来...",
-      "browseAll": "浏览全部",
-      "shareMine": "分享我的案例",
-      "retryLoad": "重新加载"
-    },
-    "command": {
-      "home": "首页",
-      "schools": "院校库",
-      "cases": "案例库",
-      "aiAssistant": "AI 助手",
-      "profile": "个人中心",
-      "switchToDark": "切换到暗色模式",
-      "switchToLight": "切换到亮色模式",
-      "helpDocs": "帮助文档",
-      "nav": "导航",
-      "settings": "设置",
-      "other": "其他",
-      "searchPlaceholder": "搜索命令...",
-      "noResults": "没有找到匹配的命令",
-      "navigate": "导航",
-      "select": "选择",
-      "close": "关闭"
-    },
-    "errorState": {
-      "default": "出错了",
-      "defaultDesc": "发生了一些错误，请稍后重试",
-      "network": "网络连接失败",
-      "networkDesc": "请检查您的网络连接后重试",
-      "server": "服务器错误",
-      "serverDesc": "服务器暂时无法处理您的请求",
-      "permission": "没有权限",
-      "permissionDesc": "您没有权限访问此内容",
-      "notFound": "未找到",
-      "notFoundDesc": "请求的资源不存在"
-    },
-    "milestone": {
-      "profileCompleteTitle": "档案完善！",
-      "profileCompleteDesc": "太棒了！你已经完善了个人档案，AI 现在可以更好地为你推荐院校了。",
-      "firstPredictionTitle": "首次预测！",
-      "firstPredictionDesc": "恭喜完成第一次录取预测！继续探索更多目标院校吧。",
-      "firstEssayTitle": "文书起航！",
-      "firstEssayDesc": "你的第一篇文书已创建！继续打磨，让招生官看到你的闪光点。",
-      "schoolAddedTitle": "目标确定！",
-      "schoolAddedDesc": "已添加新的目标院校！距离梦想又近了一步。",
-      "continueButton": "继续前进 ✨"
-    },
-    "status": {
-      "pending": "待处理",
-      "inProgress": "进行中",
-      "completed": "已完成",
-      "failed": "失败",
-      "cancelled": "已取消",
-      "paused": "已暂停",
-      "active": "活跃",
-      "inactive": "未激活",
-      "draft": "草稿",
-      "published": "已发布",
-      "archived": "已归档",
-      "featured": "精选",
-      "preparing": "准备中",
-      "submitted": "已提交",
-      "interview": "面试中",
-      "admitted": "已录取",
-      "rejected": "已拒绝",
-      "waitlisted": "候补",
-      "withdrawn": "已撤回"
-    },
-    "sortable": {
-      "dragToSort": "拖拽排序"
-    },
-    "password": {
-      "strength": "密码强度",
-      "length": "至少8个字符",
-      "lowercase": "包含小写字母",
-      "uppercase": "包含大写字母",
-      "number": "包含数字",
-      "special": "包含特殊字符",
-      "veryWeak": "非常弱",
-      "weak": "弱",
-      "fair": "一般",
-      "strong": "强",
-      "veryStrong": "非常强"
-    },
-    "offline": {
-      "currentlyOffline": "当前离线",
-      "connectionRestored": "已恢复连接",
-      "close": "关闭",
-      "youAreOffline": "您当前离线",
-      "checkConnection": "请检查您的网络连接，部分功能可能暂时不可用"
-    },
-    "stepper": {
-      "step": "步骤 {current} / {total}",
-      "complete": "完成",
-      "next": "下一步",
-      "previous": "上一步",
-      "processing": "处理中...",
-      "submitSuccess": "提交成功！"
-    },
-    "theme": {
-      "switchToLight": "切换到亮色模式",
-      "switchToDark": "切换到暗色模式",
-      "light": "亮色",
-      "dark": "暗色",
-      "system": "系统"
-    },
-    "unsavedChanges": {
-      "title": "未保存的更改",
-      "description": "您有未保存的更改。如果离开此页面，所有更改将会丢失。",
-      "continueEditing": "继续编辑",
-      "discardAndLeave": "不保存并离开"
-    },
-    "a11y": {
-      "openMenu": "打开菜单",
-      "skipToMain": "跳转到主要内容",
-      "skipToNav": "跳转到导航",
-      "mainContent": "主要内容",
-      "currentAccount": "当前账号"
+    "onboarding": {
+      "title": "欢迎使用",
+      "subtitle": "跟随引导快速上手",
+      "step1Title": "完善档案",
+      "step1Desc": "填写你的教育背景和标化成绩",
+      "step2Title": "选择学校",
+      "step2Desc": "浏览学校榜单，添加目标学校",
+      "step3Title": "获取预测",
+      "step3Desc": "使用 AI 预测你的录取概率",
+      "completed": "已完成引导",
+      "hint": "点击跳过可随时返回"
     }
   },
   "home": {
     "badge": "AI 驱动的智能留学平台",
-    "heroTitle": "让留学申请更简单",
+    "heroTitle": "智能留学申请助手",
     "heroSubtitle": "智能选校、录取预测、案例分享 —— 您的一站式留学申请平台",
+    "scrollDown": "向下滚动",
+    "heroLeft": {
+      "top100": "覆盖美国 Top 100 院校",
+      "aiAnalysis": "AI 智能分析",
+      "realTimeData": "实时数据更新"
+    },
+    "heroRight": {
+      "dataSecurity": "数据安全加密",
+      "fastPrediction": "秒级预测响应",
+      "onlineSupport": "7×24 在线支持"
+    },
+    "usp": {
+      "gpt4": "GPT-4 智能分析",
+      "accuracy": "95% 预测准确率",
+      "cases": "10000+ 真实案例"
+    },
+    "stats": {
+      "cases": "真实案例",
+      "schools": "覆盖院校",
+      "accuracy": "预测准确率",
+      "aiAssistant": "AI 助手在线"
+    },
     "coreFeatures": "核心功能",
-    "coreFeaturesSubtitle": "全方位的留学申请辅助工具，助你圆梦理想院校",
+    "coreFeaturesSubtitle": "一站式解决留学申请的所有需求",
+    "whyChooseUs": {
+      "title": "为什么选择我们？",
+      "subtitle": "我们提供最专业的留学申请服务",
+      "realData": "真实案例数据",
+      "realDataDesc": "所有数据来自真实申请案例，确保参考价值",
+      "smartAlgorithm": "智能匹配算法",
+      "smartAlgorithmDesc": "基于 AI 的智能分析，精准预测录取概率",
+      "globalCoverage": "全球院校覆盖",
+      "globalCoverageDesc": "覆盖美国、英国、加拿大等热门留学目的地",
+      "admissionRate": "录取率"
+    },
+    "stories": {
+      "title": "成功案例",
+      "subtitle": "看看我们的用户是如何成功申请到梦校的",
+      "viewMore": "查看更多案例",
+      "story1": {
+        "name": "李同学",
+        "avatar": "李",
+        "background": "普高 | GPA 3.8",
+        "result": "成功录取",
+        "quote": "平台的录取预测非常准确，帮助我找到了最适合的选校策略。"
+      },
+      "story2": {
+        "name": "王同学",
+        "avatar": "王",
+        "background": "美高 | GPA 3.9",
+        "result": "全奖录取",
+        "quote": "案例库让我了解到很多申请技巧，最终拿到了梦校的全额奖学金。"
+      },
+      "story3": {
+        "name": "张同学",
+        "avatar": "张",
+        "background": "国际学校 | GPA 4.0",
+        "result": "成功录取",
+        "quote": "AI 助手全程指导我的申请，从选校到文书，每一步都很清晰。"
+      }
+    },
+    "ctaBadge": "开放注册中",
     "ctaTitle": "准备开始您的申请之旅？",
-    "ctaSubtitle": "免费注册，获取 AI 智能选校、录取预测、文书指导等全部功能",
-    "ctaButton": "免费开始使用",
-    "ctaBadge": "已有 10,000+ 学生选择我们",
-    "viewCases": "浏览成功案例",
-    "ctaFeature1": "免费注册",
+    "ctaSubtitle": "免费注册，立即体验全部功能",
+    "ctaButton": "立即开始",
+    "ctaFeature1": "免费使用",
     "ctaFeature2": "无需信用卡",
     "ctaFeature3": "随时取消",
-    "scrollDown": "向下滚动",
+    "viewCases": "浏览案例",
     "copyright": "© 2026 留学申请平台 保留所有权利",
     "aboutUs": "关于我们",
     "privacy": "隐私政策",
     "terms": "服务条款",
-    "stats": {
-      "cases": "录取案例",
-      "schools": "覆盖院校",
-      "accuracy": "预测准确率",
-      "aiAssistant": "AI 助手"
-    },
-    "whyChooseUs": {
-      "title": "为什么选择我们？",
-      "subtitle": "我们利用先进的 AI 技术和海量真实数据，为你提供最精准的留学申请建议。",
-      "realData": "真实案例数据",
-      "realDataDesc": "基于万余份真实录取案例，提供可靠的参考依据",
-      "smartAlgorithm": "智能预测算法",
-      "smartAlgorithmDesc": "AI 分析你的背景，精准预测各校录取概率",
-      "globalCoverage": "全球院校覆盖",
-      "globalCoverageDesc": "涵盖美国、英国、加拿大等主流留学目的地",
-      "admissionRate": "录取率"
-    },
     "features": {
       "profile": "创建和管理您的申请档案，一键导出专业简历",
       "ranking": "根据个人偏好自定义学校排名榜单",
@@ -303,43 +202,110 @@
       "chat": "与认证用户交流，获取第一手信息",
       "hall": "招生官打分、排名对比、创建榜单"
     },
-    "heroLeft": {
-      "top100": "Top 100 学校",
-      "aiAnalysis": "AI 智能分析",
-      "realTimeData": "实时数据更新"
-    },
-    "heroRight": {
-      "dataSecurity": "数据安全",
-      "fastPrediction": "快速预测",
-      "onlineSupport": "24/7 在线"
-    },
-    "usp": {
-      "gpt4": "GPT-4 驱动预测",
-      "accuracy": "95%+ 准确率",
-      "cases": "万份真实案例"
-    },
-    "stories": {
-      "title": "真实成功案例",
-      "subtitle": "看看他们是如何通过我们的平台实现留学梦想的",
-      "viewMore": "查看更多案例",
-      "story1": {
-        "name": "李同学",
-        "background": "GPA 3.8 / TOEFL 112",
-        "result": "成功录取 MIT CS",
-        "quote": "AI 预测帮我精准定位，节省了大量选校时间。录取概率分析让我更有信心冲刺梦校！"
+    "modules": {
+      "title": "四大核心模块",
+      "subtitle": "从选校到申请，一站式解决",
+      "findCollege": {
+        "title": "Find Your College",
+        "desc": "智能筛选，找到最适合你的学校"
       },
-      "story2": {
-        "name": "王同学",
-        "background": "GPA 3.5 / GMAT 720",
-        "result": "成功录取 Stanford MBA",
-        "quote": "案例库让我看到了很多相似背景的成功经验，文书指导也非常专业，强烈推荐！"
+      "uncommonApp": {
+        "title": "Uncommon App",
+        "desc": "AI 分析你的申请档案，智能推荐选校"
       },
-      "story3": {
-        "name": "张同学",
-        "background": "GPA 3.6 / GRE 325",
-        "result": "成功录取 CMU DS",
-        "quote": "从选校到文书，一站式服务帮我理清了整个申请流程，效率提升太多了！"
+      "featureHall": {
+        "title": "功能大厅",
+        "desc": "招生官视角评估，全方位提升申请"
+      },
+      "forum": {
+        "title": "社交论坛",
+        "desc": "与申请者交流，获取真实经验分享"
       }
+    },
+    "demo": {
+      "step1": {
+        "title": "智能选校",
+        "desc": "根据你的背景和偏好，筛选最适合的学校"
+      },
+      "step2": {
+        "title": "AI 分析",
+        "desc": "智能评估你的申请档案，预测录取概率"
+      },
+      "step3": {
+        "title": "申请规划",
+        "desc": "获取个性化的时间表和任务清单"
+      },
+      "step4": {
+        "title": "社区互动",
+        "desc": "与其他申请者交流，获取真实的申请经验"
+      }
+    },
+    "demoFlow": {
+      "badge": "使用体验展示",
+      "title": "简单四步，开启申请之旅",
+      "subtitle": "从选校到录取，我们全程陪伴",
+      "stepIndicator": "第 {current} 步"
+    },
+    "demoUI": {
+      "step1": {
+        "searchPlaceholder": "搜索学校名称...",
+        "filterUS": "美国",
+        "filterTop50": "Top 50",
+        "filterPrivate": "私立",
+        "filterHighRanking": "高排名",
+        "filterCSMajor": "CS 专业",
+        "acceptance": "录取率 {rate}%",
+        "viewAllSchools": "查看全部学校"
+      },
+      "step2": {
+        "yourProfile": "你的档案",
+        "profileDetail": "GPA 3.8 / SAT 1480 / 3个竞赛奖项",
+        "score": "匹配度",
+        "reach": "冲刺",
+        "target": "目标",
+        "safety": "保底",
+        "aiSuggestion": "AI 建议",
+        "suggestionText": "根据你的背景，建议增加 1-2 所保底学校",
+        "fullAnalysis": "查看完整分析"
+      },
+      "step3": {
+        "applicationProgress": "申请进度",
+        "tasksCompleted": "已完成任务",
+        "completeProfile": "完善个人档案",
+        "submitScores": "提交标化成绩",
+        "requestRecs": "请求推荐信",
+        "writeEssay": "撰写文书",
+        "viewTimeline": "查看完整时间线",
+        "dateOct15": "10月15日",
+        "dateOct20": "10月20日",
+        "dateNov1": "11月1日",
+        "dateNov15": "11月15日"
+      },
+      "step4": {
+        "trendingTopics": "热门话题",
+        "post1Title": "ED 选校策略分享",
+        "post1Tag": "选校",
+        "post2Title": "CS 专业申请经验",
+        "post2Tag": "经验",
+        "post3Title": "文书修改互助",
+        "post3Tag": "文书",
+        "joinCommunity": "加入社区",
+        "viewAll": "查看全部",
+        "connectMessage": "与同期申请者交流"
+      }
+    },
+    "scoreCard": {
+      "title": "我的标化成绩",
+      "subtitle": "管理你的语言和学术考试成绩",
+      "notAvailable": "暂无",
+      "editScores": "编辑成绩"
+    },
+    "footer": {
+      "description": "智能留学申请平台，为您提供选校推荐、录取预测、案例库等一站式服务",
+      "products": "产品服务",
+      "resources": "资源",
+      "contact": "联系我们",
+      "helpCenter": "帮助中心"
     }
   },
   "auth": {
@@ -352,7 +318,8 @@
       "forgotPassword": "忘记密码？",
       "noAccount": "没有账号？",
       "signUp": "立即注册",
-      "or": "或"
+      "welcomeBack": "欢迎回来",
+      "welcomeDesc": "登录你的账户继续"
     },
     "register": {
       "title": "注册",
@@ -363,11 +330,29 @@
       "hasAccount": "已有账号？",
       "signIn": "立即登录",
       "agreeTerms": "我同意服务条款和隐私政策",
-      "agreeText": "我已阅读并同意",
-      "terms": "服务条款",
-      "and": "和",
-      "privacy": "隐私政策",
-      "or": "或"
+      "success": "注册成功！请查收验证邮件。",
+      "realName": "姓名",
+      "realNamePlaceholder": "请输入您的真实姓名",
+      "birthday": "出生日期",
+      "graduationDate": "预计毕业日期",
+      "scoresOptional": "考试成绩为选填项，可以稍后在个人档案中补充",
+      "steps": {
+        "account": {
+          "title": "创建账号",
+          "desc": "输入您的邮箱和密码"
+        },
+        "profile": {
+          "title": "基本信息",
+          "desc": "填写您的个人资料"
+        },
+        "scores": {
+          "title": "考试成绩",
+          "desc": "输入您的标化考试成绩（可跳过）"
+        }
+      },
+      "common": {
+        "optional": "（选填）"
+      }
     },
     "verifyEmail": {
       "title": "验证邮箱",
@@ -375,372 +360,264 @@
       "sentTo": "验证邮件已发送至",
       "description": "我们已向 {email} 发送了验证邮件",
       "resend": "重新发送",
+      "resending": "发送中...",
+      "resendSuccess": "验证邮件已重新发送",
+      "resendCooldown": "{seconds}秒后可重新发送",
       "checkSpam": "如果没有收到，请检查垃圾邮件文件夹",
       "backToLogin": "返回登录",
-      "verifying": "验证中...",
-      "verifyingDesc": "正在验证您的邮箱地址",
-      "failed": "验证失败",
-      "invalidLink": "无效的验证链接",
-      "linkExpired": "验证链接可能已过期或无效",
+      "verifying": "正在验证邮箱...",
+      "pleaseWait": "请稍候，正在验证您的邮箱地址",
+      "verifiedTitle": "邮箱验证成功",
+      "verifiedDesc": "您的邮箱已成功验证，现在可以登录了",
+      "verifyFailedTitle": "验证失败",
+      "verifyFailed": "邮箱验证失败，请重试或联系支持",
+      "invalidToken": "无效的验证链接",
       "goToLogin": "前往登录",
-      "reRegister": "重新注册",
-      "success": "验证成功！",
-      "successDesc": "您的邮箱已成功验证",
-      "successHint": "现在您可以登录并开始使用留学申请平台的所有功能"
+      "emailVerifiedSuccess": "邮箱验证成功！请登录您的账号",
+      "emailVerifiedError": "验证链接无效或已过期",
+      "emailNotVerifiedWarning": "您的邮箱尚未验证，部分功能可能受限",
+      "emailNotVerifiedAction": "重新发送"
     },
     "forgotPassword": {
       "title": "忘记密码",
-      "description": "输入您的邮箱，我们将发送重置密码的链接",
-      "emailLabel": "邮箱地址",
-      "emailRequired": "请输入邮箱地址",
-      "sending": "发送中...",
+      "description": "输入您的邮箱，我们将发送重置链接",
+      "emailLabel": "邮箱",
       "sendLink": "发送重置链接",
+      "backToLogin": "返回登录",
+      "sending": "发送中...",
+      "success": "重置链接已发送！请查收邮箱。",
+      "emailRequired": "请输入邮箱地址",
       "emailSent": "邮件已发送",
-      "emailSentDesc": "如果该邮箱已注册，您将收到重置密码的链接",
-      "checkInbox": "请检查您的收件箱",
-      "checkSpam": "没有收到？请检查垃圾邮件文件夹",
-      "resend": "重新发送",
-      "backToLogin": "返回登录"
+      "emailSentDesc": "我们已向你的邮箱发送了重置密码的链接",
+      "checkInbox": "请查看收件箱",
+      "checkSpam": "如未收到，请查看垃圾邮件",
+      "resend": "重新发送"
     },
     "resetPassword": {
-      "title": "设置新密码",
-      "description": "请输入您的新密码",
+      "title": "重置密码",
+      "description": "输入您的邮箱，我们将发送重置链接",
       "sent": "重置链接已发送",
       "newPassword": "新密码",
-      "newPasswordPlaceholder": "至少8位，包含字母和数字",
-      "confirmPassword": "确认密码",
-      "confirmPlaceholder": "再次输入密码",
-      "invalidLink": "无效的链接",
-      "linkExpiredDesc": "重置密码链接无效或已过期",
-      "getNewLink": "重新获取链接",
-      "passwordTooShort": "密码至少8位",
-      "passwordMismatch": "两次输入的密码不一致",
-      "passwordNeedLetter": "密码必须包含字母和数字",
-      "resetting": "重置中...",
+      "confirmPassword": "确认新密码",
+      "invalidLink": "链接无效或已过期",
+      "linkExpiredDesc": "此密码重置链接无效或已过期，请重新获取。",
+      "getNewLink": "获取新链接",
       "resetButton": "重置密码",
-      "success": "密码重置成功",
-      "successDesc": "您的密码已更新，请使用新密码登录",
-      "goToLogin": "前往登录",
+      "resetting": "重置中...",
+      "success": "密码重置成功！正在跳转到登录页面...",
       "backToLogin": "返回登录",
+      "newPasswordPlaceholder": "输入新密码",
+      "confirmPlaceholder": "确认新密码",
+      "passwordTooShort": "密码至少 8 个字符",
+      "passwordNeedLetter": "密码需包含字母",
+      "passwordMismatch": "两次密码不一致",
+      "successDesc": "密码重置成功",
+      "goToLogin": "前往登录",
       "requirements": {
         "title": "密码要求",
-        "minLength": "至少 8 位字符",
+        "minLength": "至少 8 个字符",
         "hasLetter": "包含字母",
         "hasNumber": "包含数字"
+      }
+    },
+    "layout": {
+      "subtitle": "AI 驱动的智能留学平台",
+      "heroTitle": "开启你的",
+      "heroHighlight": "留学之旅",
+      "heroDesc": "智能选校、精准预测、案例分享\n让留学申请不再迷茫",
+      "features": {
+        "ai": "AI 智能选校推荐",
+        "accuracy": "95% 预测准确率",
+        "cases": "10,000+ 真实案例",
+        "schools": "覆盖 500+ 院校"
+      },
+      "testimonials": {
+        "rating": "10,000+ 用户好评",
+        "items": {
+          "0": {
+            "name": "李同学",
+            "school": "MIT CS 2025",
+            "quote": "这个平台帮助我成功拿到了 MIT 的 offer！"
+          },
+          "1": {
+            "name": "王同学",
+            "school": "Stanford EE 2025",
+            "quote": "AI 预测非常准确，推荐!"
+          },
+          "2": {
+            "name": "张同学",
+            "school": "CMU SCS 2025",
+            "quote": "案例库对我帮助很大"
+          }
+        }
       }
     }
   },
   "nav": {
-    "dashboard": "工作台",
     "profile": "我的档案",
-    "essays": "我的文书",
-    "ai": "AI 助手",
     "ranking": "学校榜单",
     "prediction": "录取预测",
     "cases": "案例库",
     "chat": "消息",
     "hall": "功能大厅",
-    "followers": "关注管理",
-    "admin": "管理后台",
-    "schools": "院校库",
-    "more": "更多",
+    "forum": "论坛",
+    "assessment": "性格测评",
+    "swipe": "滑动选校",
     "timeline": "申请时间线",
-    "timelineDesc": "追踪申请进度和截止日期",
-    "recommendation": "AI选校",
-    "recommendationDesc": "获取个性化选校建议",
-    "forum": "论坛组队",
-    "forumDesc": "交流经验、组队竞赛",
-    "swipe": "预测挑战",
-    "swipeDesc": "滑动卡片预测录取结果",
-    "assessment": "专业测评",
-    "assessmentDesc": "MBTI和霍兰德测试",
-    "verifiedRanking": "认证榜单",
-    "verifiedRankingDesc": "真实录取数据排行",
-    "vault": "保险箱",
-    "vaultDesc": "加密存储账号密码",
+    "recommendation": "智能推荐",
+    "vault": "密码库",
+    "essayGallery": "文书库",
+    "ai": "AI 助手",
+    "dashboard": "仪表盘",
     "mobile": {
       "home": "首页",
       "cases": "案例",
       "prediction": "预测",
       "profile": "我的"
+    },
+    "descriptions": {
+      "ai": "智能 AI 助手，帮你解答留学问题",
+      "recommendation": "基于背景的个性化选校推荐",
+      "assessment": "性格与职业兴趣测评",
+      "timeline": "追踪申请截止日期与任务",
+      "hall": "招生官视角评估与排名对比",
+      "essayGallery": "浏览优秀录取文书案例",
+      "chat": "与认证用户实时聊天交流",
+      "vault": "安全存储敏感信息与密码"
+    },
+    "sections": {
+      "tools": "工具与资源",
+      "community": "发现与社区"
+    },
+    "user": {
+      "manageAccount": "管理账户"
     }
   },
-  "dashboard": {
-    "title": "工作台",
-    "greetingMorning": "早上好",
-    "greetingAfternoon": "下午好",
-    "greetingEvening": "晚上好",
-    "statsOverview": "数据概览",
-    "coreFeatures": "核心功能",
-    "aiTools": "AI 与工具",
-    "community": "社区功能",
-    "otherFeatures": "更多功能",
-    "stats": {
-      "profileComplete": "档案完成度",
-      "essaysWritten": "已写文书",
-      "schoolsAdded": "目标院校",
-      "predictionsMade": "预测次数",
-      "essays": "篇文书",
-      "todos": "待办"
-    },
-    "progress": "进度",
-    "enter": "进入",
-    "features": {
-      "profileDesc": "管理您的个人背景和申请材料",
-      "essaysDesc": "撰写和管理申请文书",
-      "timelineDesc": "追踪申请进度和截止日期",
-      "recommendationDesc": "获取 AI 个性化选校建议",
-      "predictionDesc": "预测目标院校录取概率",
-      "schoolsDesc": "浏览全球顶尖院校信息",
-      "rankingDesc": "自定义权重生成榜单",
-      "assessmentDesc": "MBTI/霍兰德专业测评",
-      "casesDesc": "浏览真实录取案例",
-      "forumDesc": "交流经验、组队竞赛",
-      "swipeDesc": "滑动预测游戏",
-      "verifiedRankingDesc": "认证数据排行榜",
-      "chatDesc": "私信与实时聊天",
-      "hallDesc": "招生官点评、批次排名",
-      "vaultDesc": "加密存储账号密码"
-    },
+  "agentChat": {
+    "title": "AI 助手",
+    "assistant": "AI 助手",
+    "welcome": "欢迎使用 AI 助手",
+    "welcomeDesc": "我可以帮您分析档案、推荐学校、评估文书等。有什么可以帮您的？",
+    "placeholder": "输入您的问题...",
     "quickActions": {
-      "startPrediction": "开始预测",
-      "startPredictionDesc": "输入目标院校，获取录取概率",
-      "aiEssay": "AI 文书助手",
-      "aiEssayDesc": "让 AI 帮你润色和点评文书",
-      "playGame": "预测挑战",
-      "playGameDesc": "测试你的招生官眼光"
+      "title": "快速操作",
+      "analyzeProfile": "分析我的档案",
+      "recommendSchools": "推荐学校",
+      "evaluateEssay": "评估文书",
+      "viewDeadlines": "查看截止日期",
+      "analyzeProfileMessage": "请帮我分析一下我的档案竞争力",
+      "recommendSchoolsMessage": "根据我的背景推荐一些适合的学校",
+      "evaluateEssayMessage": "帮我评估一下我的文书",
+      "viewDeadlinesMessage": "帮我整理一下目标学校的申请截止日期"
     },
-    "onboarding": {
-      "title": "快速上手指南",
-      "subtitle": "已完成 {completed}/{total} 步",
-      "step1Title": "完善个人档案",
-      "step1Desc": "填写基本信息、成绩和活动，让 AI 更了解你",
-      "step2Title": "添加目标院校",
-      "step2Desc": "浏览院校库，添加你感兴趣的学校",
-      "step3Title": "获取录取预测",
-      "step3Desc": "AI 分析你的背景，预测录取概率",
-      "completed": "已完成",
-      "hint": "完成以上步骤，开启你的智能申请之旅 ✨"
-    }
-  },
-  "schools": {
-    "title": "院校库",
-    "description": "浏览全球顶尖院校，了解录取要求和申请信息",
-    "searchPlaceholder": "搜索学校名称...",
-    "country": "国家/地区",
-    "sortBy": "排序方式",
-    "sort": {
-      "rank": "按排名",
-      "name": "按名称",
-      "acceptance": "按录取率"
+    "sending": "发送中...",
+    "thinking": "思考中...",
+    "error": "抱歉，出现了一些问题，请稍后重试",
+    "retry": "重试",
+    "newChat": "新对话",
+    "clearHistory": "清除历史",
+    "minimize": "最小化",
+    "maximize": "最大化",
+    "sendHint": "按 Enter 发送，Shift+Enter 换行",
+    "usingTools": "正在使用工具",
+    "scrollToBottom": "滚动到底部",
+    "tierReach": "冲刺",
+    "tierTarget": "匹配",
+    "tierSafety": "保底",
+    "tierSchoolCount": "{label}校 ({count})",
+    "tools": {
+      "searchSchools": "搜索学校",
+      "getProfile": "获取档案",
+      "analyzeProfile": "分析档案",
+      "searchCases": "搜索案例",
+      "getDeadlines": "获取截止日期",
+      "reviewEssay": "评估文书",
+      "queryDatabase": "查询数据库",
+      "generateOutline": "生成文书大纲",
+      "recommendSchools": "推荐学校",
+      "analyzeChance": "分析录取概率"
     },
-    "countries": {
-      "all": "全部国家",
-      "us": "美国",
-      "uk": "英国",
-      "canada": "加拿大",
-      "australia": "澳大利亚",
-      "germany": "德国",
-      "japan": "日本"
+    "clear": "清空对话",
+    "characters": "字符",
+    "processing": "正在处理...",
+    "errorProcessing": "处理出错，请重试",
+    "assessmentActions": {
+      "interpret": "解读测评结果",
+      "interpretDesc": "让 AI 解读你的性格测评结果",
+      "interpretPrompt": "请解读我的性格测评结果",
+      "suggestMajor": "推荐专业",
+      "suggestMajorDesc": "根据测评结果推荐适合的专业",
+      "suggestMajorPrompt": "根据我的测评结果，推荐适合的专业",
+      "activities": "推荐活动",
+      "activitiesDesc": "根据测评推荐课外活动",
+      "activitiesPrompt": "根据我的性格特点，推荐适合的课外活动"
     },
-    "resultsCount": "共 {count} 所院校",
-    "acceptanceRate": "录取率",
-    "students": "学生",
-    "viewDetails": "查看详情",
-    "noResults": "未找到匹配的学校",
-    "tryDifferentSearch": "请尝试其他搜索词或调整筛选条件"
-  },
-  "admin": {
-    "title": "管理后台",
-    "description": "管理用户、处理举报、查看系统数据",
-    "tabs": {
-      "overview": "概览",
-      "reports": "举报",
-      "users": "用户",
-      "data": "数据"
+    "essayActions": {
+      "brainstorm": "文书头脑风暴",
+      "brainstormDesc": "帮你构思文书创意",
+      "brainstormPrompt": "帮我进行文书头脑风暴",
+      "review": "文书评审",
+      "reviewDesc": "评审你的文书",
+      "reviewPrompt": "请评审我的文书",
+      "polish": "文书润色",
+      "polishDesc": "优化文书表达",
+      "polishPrompt": "请帮我润色文书"
     },
-    "status": {
-      "pending": "待处理",
-      "reviewed": "已审核",
-      "resolved": "已解决"
+    "forumActions": {
+      "summarize": "总结讨论",
+      "summarizeDesc": "总结帖子讨论要点",
+      "summarizePrompt": "请总结这个帖子的讨论要点",
+      "answer": "回答问题",
+      "answerDesc": "帮你回答帖子问题",
+      "answerPrompt": "请帮我回答这个问题"
     },
-    "roles": {
-      "admin": "管理员",
-      "verified": "已认证",
-      "user": "普通用户"
-    },
-    "targetTypes": {
-      "user": "用户",
-      "message": "消息",
-      "case": "案例",
-      "review": "评价"
-    },
-    "toast": {
-      "reportResolved": "举报已处理",
-      "roleUpdated": "用户角色已更新",
-      "userDeleted": "用户已删除",
-      "syncComplete": "同步完成: {count} 所学校",
-      "syncFailed": "同步失败",
-      "scrapeComplete": "爬取完成: {count} 所学校",
-      "scrapeFailed": "爬取失败"
-    },
-    "stats": {
-      "totalUsers": "总用户数",
-      "verifiedUsers": "认证用户",
-      "totalCases": "案例数",
-      "pendingReports": "待处理举报",
-      "totalReviews": "评价数"
-    },
-    "reports": {
-      "title": "举报管理",
-      "description": "查看和处理用户举报",
-      "empty": "暂无举报",
-      "emptyDesc": "当前没有待处理的举报",
-      "reporter": "举报人",
-      "target": "举报对象",
-      "reason": "原因",
-      "time": "时间",
-      "action": "操作",
-      "markReviewed": "标记已审核",
-      "resolve": "解决",
-      "resolveTitle": "处理举报",
-      "resolveDesc": "请输入处理结果描述",
-      "resolution": "处理结果"
-    },
-    "users": {
-      "title": "用户管理",
-      "description": "管理平台用户",
-      "searchPlaceholder": "搜索用户邮箱...",
-      "email": "邮箱",
-      "role": "角色",
-      "cases": "案例",
-      "reviews": "评价",
-      "joinDate": "注册时间",
-      "action": "操作",
-      "setAdmin": "设为管理员",
-      "setVerified": "设为认证用户",
-      "setUser": "设为普通用户",
-      "delete": "删除用户",
-      "deleteTitle": "确认删除用户？",
-      "deleteDesc": "此操作将软删除该用户，用户数据将被保留但无法登录。"
-    },
-    "dialogs": {
-      "resolveReport": "处理举报",
-      "resolveReportDesc": "确认将此举报标记为已解决？",
-      "resolveConfirm": "确认解决",
-      "defaultResolution": "管理员已处理",
-      "deleteUserTitle": "确认删除用户？",
-      "deleteUserDesc": "此操作将软删除该用户，用户数据将被保留但无法登录。",
-      "delete": "删除",
-      "cancel": "取消"
-    },
-    "schools": {
-      "notFound": "未找到学校",
-      "tryOther": "尝试其他搜索条件"
-    },
-    "data": {
-      "title": "数据管理",
-      "description": "同步和管理学校数据",
-      "syncScorecard": "College Scorecard 同步",
-      "syncScorecardDesc": "从美国教育部官方 API 同步学校数据",
-      "schoolsToSync": "同步数量",
-      "startSync": "同步",
-      "scrapeSchools": "学校官网爬取",
-      "scrapeSchoolsDesc": "爬取截止日期、文书题目等信息",
-      "startScrape": "爬取 Top 10",
-      "lastUpdate": "最后更新",
-      "status": "数据状态",
-      "statusDesc": "当前数据库学校数量",
-      "cycle": "数据周期",
-      "rank": "排名",
-      "schoolName": "学校名称",
-      "state": "州",
-      "applicationType": "申请类型",
-      "deadline": "截止日期",
-      "acceptanceRate": "录取率"
-    },
-    "users": {
-      "title": "用户管理",
-      "description": "管理平台用户",
-      "searchPlaceholder": "搜索用户邮箱...",
-      "email": "邮箱",
-      "role": "角色",
-      "cases": "案例",
-      "reviews": "评价",
-      "joinDate": "注册时间",
-      "action": "操作",
-      "setAdmin": "设为管理员",
-      "setVerified": "设为已认证",
-      "setUser": "设为普通用户",
-      "delete": "删除用户",
-      "deleteTitle": "确认删除用户？",
-      "deleteDesc": "此操作不可逆，用户的所有数据将被永久删除。",
-      "noResults": "未找到用户",
-      "noResultsDesc": "尝试其他搜索条件",
-      "notVerified": "未验证"
-    }
-  },
-  "followers": {
-    "title": "关注管理",
-    "description": "管理您的关注列表、粉丝和黑名单",
-    "tabs": {
-      "followers": "粉丝",
-      "following": "关注",
-      "blocked": "黑名单"
-    },
-    "search": "搜索用户...",
-    "mutualFollow": "互相关注",
-    "blocked": "已拉黑",
-    "unblock": "解除",
-    "empty": {
-      "followers": "暂无粉丝",
-      "followersDesc": "分享您的档案，吸引更多关注",
-      "following": "暂未关注任何人",
-      "followingDesc": "在功能大厅发现优秀的申请者",
-      "blocked": "黑名单为空",
-      "blockedDesc": "您没有拉黑任何用户"
-    },
-    "dialogs": {
-      "unfollowTitle": "确认取消关注？",
-      "unfollowDesc": "取消关注后，如果对方也取消关注您，你们将无法私聊。",
-      "unblockTitle": "确认解除拉黑？",
-      "unblockDesc": "解除后，该用户可以再次关注您并发送消息。",
-      "confirm": "确认解除",
-      "unfollow": "取消关注"
-    },
-    "toast": {
-      "followSuccess": "关注成功",
-      "unfollowSuccess": "已取消关注",
-      "blockSuccess": "已拉黑",
-      "unblockSuccess": "已解除拉黑"
+    "swipeActions": {
+      "explain": "解释评估",
+      "explainDesc": "解释录取评估结果",
+      "explainPrompt": "请解释这个评估结果",
+      "compare": "对比分析",
+      "compareDesc": "对比不同申请者",
+      "comparePrompt": "请对比分析这些申请者",
+      "tips": "申请建议",
+      "tipsDesc": "提供申请改进建议",
+      "tipsPrompt": "请给出申请改进建议"
     }
   },
   "profile": {
     "title": "我的档案",
-    "description": "管理你的留学申请档案",
-    "quickStart": {
-      "title": "快速开始预测",
-      "description": "只需填写 GPA 和标化成绩，即可快速获取录取预测",
-      "fillGpa": "填写 GPA",
-      "fillScore": "添加成绩"
-    },
+    "description": "创建和管理您的申请档案",
+    "completeness": "档案完整度",
+    "completenessHint": "完善档案可以获得更准确的预测",
+    "completenessComplete": "档案已完善",
     "basicInfo": "基本信息",
     "basicInfoDesc": "填写你的基本信息",
     "testScores": "标化成绩",
-    "testScoresDesc": "添加你的标准化考试成绩",
+    "testScoresDesc": "添加你的标化考试成绩",
     "gpa": "GPA",
-    "gpaDesc": "输入你的 GPA 信息",
-    "gpaScale": "GPA 满分",
+    "gpaDesc": "记录你的 GPA 信息",
+    "gpaScale": "GPA 制式",
+    "yourGpa": "你的 GPA",
     "activities": "活动经历",
-    "activitiesDesc": "添加你的课外活动经历",
+    "activitiesDesc": "记录你的活动经历",
     "awards": "荣誉奖项",
-    "awardsDesc": "添加你的荣誉和奖项",
+    "awardsDesc": "记录你的荣誉奖项",
     "targetSchools": "目标院校",
-    "targetSchoolsDesc": "选择你的目标院校（冲刺/匹配/保底）",
+    "targetSchoolsDesc": "选择你的目标院校",
     "visibility": "隐私设置",
-    "visibilityDesc": "控制谁可以查看你的档案",
+    "visibilityDesc": {
+      "title": "设置你的档案可见性",
+      "private": "仅自己可见",
+      "anonymous": "他人可见但隐藏身份",
+      "verifiedOnly": "仅认证用户可见"
+    },
     "exportResume": "导出简历",
     "exportData": "导出数据",
+    "quickStart": {
+      "title": "快速开始",
+      "description": "完成以下步骤快速完善你的档案",
+      "fillGpa": "填写 GPA",
+      "fillScore": "填写成绩"
+    },
     "steps": {
       "basic": "基本信息",
       "scores": "标化成绩",
@@ -748,58 +625,69 @@
       "activities": "活动",
       "awards": "奖项",
       "targets": "目标院校",
-      "privacy": "隐私"
+      "privacy": "隐私设置"
     },
     "fields": {
       "grade": "年级",
       "schoolType": "学校类型",
       "currentSchool": "在读学校",
-      "currentSchoolPlaceholder": "你目前就读的学校",
+      "currentSchoolPlaceholder": "输入当前学校...",
       "targetMajor": "目标专业",
-      "targetMajorPlaceholder": "例如：计算机科学、经济学",
+      "targetMajorPlaceholder": "输入目标专业...",
       "regionPref": "地区偏好",
       "budget": "预算"
     },
+    "placeholders": {
+      "selectGrade": "选择年级",
+      "selectBudget": "选择预算",
+      "gpaExample": "如：3.8"
+    },
     "grades": {
-      "freshman": "高一",
-      "sophomore": "高二",
-      "junior": "高三",
-      "senior": "高四",
+      "freshman": "高一 / 大一",
+      "sophomore": "高二 / 大二",
+      "junior": "高三 / 大三",
+      "senior": "大四",
       "gapYear": "Gap Year"
     },
     "budgetTiers": {
-      "low": "< $30,000/年",
-      "medium": "$30,000 - $50,000/年",
-      "high": "$50,000 - $70,000/年",
-      "unlimited": "> $70,000/年"
+      "low": "50万以下/年",
+      "medium": "50-80万/年",
+      "high": "80万以上/年",
+      "unlimited": "不限"
     },
-    "visibilityOptions": {
-      "private": "仅自己可见",
-      "anonymous": "匿名展示",
-      "verifiedOnly": "仅认证用户可见"
-    },
-    "visibilityDesc": {
-      "private": "你的档案完全保密，其他用户无法查看任何信息",
-      "anonymous": "其他用户可以查看你的档案，但无法看到你的真实身份",
-      "verifiedOnly": "仅经过认证的用户可以查看你的完整档案"
-    },
-    "completeness": "档案完整度",
-    "completenessHint": "完善更多信息可以获得更精准的推荐",
-    "completenessComplete": "太棒了！你的档案已经非常完整",
-    "yourGpa": "你的 GPA",
     "gpaScales": {
       "scale4": "4.0 制",
-      "scale5": "5.0 制（加权）",
-      "scale100": "百分制"
+      "scale5": "5.0 制",
+      "scale100": "100 分制",
+      "scale": "满分 {max}"
+    },
+    "selector": {
+      "searchPlaceholder": "搜索档案...",
+      "noProfiles": "暂无公开档案",
+      "noProfilesHint": "目前没有可查看的公开档案",
+      "activities": "活动",
+      "awards": "奖项"
+    },
+    "actions": {
+      "addScore": "添加成绩",
+      "addActivity": "添加活动",
+      "addAward": "添加奖项",
+      "addSchool": "添加学校",
+      "selectSchools": "选择学校",
+      "save": "保存",
+      "cancel": "取消",
+      "edit": "编辑",
+      "delete": "删除",
+      "addEducation": "添加教育经历"
     },
     "activityCategories": {
-      "academic": "学术研究",
+      "academic": "学术",
       "arts": "艺术",
       "athletics": "体育",
       "communityService": "社区服务",
       "leadership": "领导力",
-      "work": "工作/实习",
-      "research": "科研",
+      "work": "工作经历",
+      "research": "研究",
       "other": "其他"
     },
     "awardLevels": {
@@ -809,352 +697,174 @@
       "national": "国家级",
       "international": "国际级"
     },
-    "actions": {
+    "form": {
       "addScore": "添加成绩",
+      "testType": "考试类型",
+      "selectTestType": "选择考试类型",
+      "score": "分数",
+      "scorePlaceholder": "输入分数",
+      "testDate": "考试日期",
       "addActivity": "添加活动",
+      "activityName": "活动名称",
+      "activityNamePlaceholder": "输入活动名称",
+      "activityCategory": "类别",
+      "selectCategory": "选择类别",
+      "role": "角色",
+      "rolePlaceholder": "输入你的角色",
+      "organization": "组织",
+      "organizationPlaceholder": "输入组织名称",
+      "activityDescription": "描述",
+      "activityDescPlaceholder": "描述这项活动",
+      "startDate": "开始日期",
+      "endDate": "结束日期",
+      "ongoing": "进行中",
+      "hoursPerWeek": "每周小时数",
+      "weeksPerYear": "每年周数",
       "addAward": "添加奖项",
-      "addSchool": "添加学校",
-      "selectSchools": "选择目标院校"
-    },
-    "placeholders": {
-      "selectGrade": "选择年级",
-      "selectBudget": "选择预算范围",
-      "gpaExample": "例如：3.85"
+      "awardName": "奖项名称",
+      "awardNamePlaceholder": "输入奖项名称",
+      "awardLevel": "级别",
+      "selectLevel": "选择级别",
+      "awardDate": "获奖日期",
+      "awardDescription": "描述",
+      "awardDescPlaceholder": "描述这项奖项",
+      "level": "等级",
+      "awardYear": "获奖年份",
+      "addEducation": "添加教育经历",
+      "addEducationDesc": "添加你的教育背景信息",
+      "editEducation": "编辑教育经历",
+      "editEducationDesc": "修改你的教育背景信息",
+      "schoolName": "学校名称",
+      "schoolNamePlaceholder": "请输入学校名称",
+      "schoolType": "学校类型",
+      "selectType": "选择学校类型",
+      "degree": "学位",
+      "degreePlaceholder": "请输入学位",
+      "major": "专业",
+      "majorPlaceholder": "请输入专业",
+      "gpaMax": "GPA 满分",
+      "description": "描述",
+      "descriptionPlaceholder": "请描述...",
+      "editActivity": "编辑活动",
+      "editAward": "编辑奖项",
+      "editScore": "编辑成绩",
+      "listening": "听力",
+      "reading": "阅读",
+      "readingEBRW": "阅读/EBRW",
+      "speaking": "口语",
+      "writing": "写作",
+      "math": "数学",
+      "educationTypes": {
+        "highSchool": "高中",
+        "college": "本科",
+        "graduate": "研究生",
+        "other": "其他"
+      }
     },
     "empty": {
-      "noScores": "暂无成绩记录",
-      "noScoresHint": "点击\"添加成绩\"开始录入",
-      "noActivities": "暂无活动记录",
-      "noActivitiesHint": "点击\"添加活动\"开始录入",
-      "noAwards": "暂无奖项记录",
-      "noAwardsHint": "点击\"添加奖项\"开始录入",
-      "noTargets": "暂无目标院校",
-      "noTargetsHint": "点击\"添加学校\"开始选择"
+      "noScores": "还没有成绩",
+      "noScoresHint": "添加你的标化考试成绩",
+      "noActivities": "还没有活动",
+      "noActivitiesHint": "添加你的活动经历",
+      "noAwards": "还没有奖项",
+      "noAwardsHint": "添加你的荣誉奖项",
+      "noTargets": "还没有目标院校",
+      "noTargetsHint": "添加你的目标院校"
     },
     "toast": {
       "scoreDeleted": "成绩已删除",
       "activityDeleted": "活动已删除",
       "awardDeleted": "奖项已删除",
-      "activityAdded": "活动添加成功",
-      "activityUpdated": "活动更新成功",
-      "awardAdded": "奖项添加成功",
-      "awardUpdated": "奖项更新成功",
+      "activityAdded": "活动已添加",
+      "activityUpdated": "活动已更新",
+      "awardAdded": "奖项已添加",
+      "awardUpdated": "奖项已更新",
       "educationAdded": "教育经历已添加",
       "educationUpdated": "教育经历已更新",
-      "scoreAdded": "成绩添加成功",
-      "scoreUpdated": "成绩更新成功"
+      "scoreAdded": "成绩已添加",
+      "scoreUpdated": "成绩已更新"
     },
-    "form": {
-      "editActivity": "编辑活动",
-      "addActivity": "添加活动",
-      "editAward": "编辑奖项",
-      "addAward": "添加奖项",
-      "editEducation": "编辑教育经历",
-      "addEducation": "添加教育经历",
-      "editEducationDesc": "修改您的教育经历信息",
-      "addEducationDesc": "添加一段教育经历",
-      "editScore": "编辑标化成绩",
-      "addScore": "添加标化成绩",
-      "activityName": "活动名称",
-      "activityNamePlaceholder": "例如：机器人社",
-      "activityCategory": "类别",
-      "selectCategory": "选择类别",
-      "role": "角色",
-      "rolePlaceholder": "例如：社长",
-      "organization": "组织名称",
-      "organizationPlaceholder": "例如：学校科技创新中心",
-      "activityDescription": "活动描述",
-      "activityDescPlaceholder": "简要描述你的职责和成就...",
-      "startDate": "开始日期",
-      "endDate": "结束日期",
-      "ongoing": "活动进行中",
-      "hoursPerWeek": "每周小时数",
-      "weeksPerYear": "每年周数",
-      "awardName": "奖项名称",
-      "awardNamePlaceholder": "例如：AMC 12 满分",
-      "level": "级别",
-      "selectLevel": "选择级别",
-      "awardYear": "获奖年份",
-      "awardDescription": "奖项描述",
-      "awardDescPlaceholder": "简要描述这个奖项的含金量或你的成就...",
-      "schoolName": "学校名称",
-      "schoolNamePlaceholder": "例如：北京大学",
-      "schoolType": "学校类型",
-      "selectType": "选择类型",
-      "degree": "学位",
-      "degreePlaceholder": "例如：学士",
-      "major": "专业",
-      "majorPlaceholder": "例如：计算机科学",
-      "gpaMax": "GPA 满分",
-      "description": "描述",
-      "descriptionPlaceholder": "可以添加课程、荣誉等信息",
-      "testType": "考试类型",
-      "selectTestType": "选择考试类型",
-      "score": "分数",
-      "scorePlaceholder": "请输入分数",
-      "reading": "阅读",
-      "readingEBRW": "阅读 (EBRW)",
-      "math": "数学",
-      "listening": "听力",
-      "speaking": "口语",
-      "writing": "写作",
-      "testDate": "考试日期",
-      "educationTypes": {
-        "highSchool": "高中",
-        "college": "大学本科",
-        "graduate": "研究生",
-        "other": "其他"
+    "visibilityOptions": {
+      "private": "仅自己可见",
+      "anonymous": "匿名公开",
+      "verifiedOnly": "认证用户可见"
+    },
+    "aiAnalysis": {
+      "title": "AI 智能分析",
+      "subtitle": "基于您的档案生成的个性化评估",
+      "analyzing": "AI 正在分析您的档案...",
+      "analyzingHint": "首次分析可能需要几秒钟",
+      "overallScore": "综合分",
+      "suggestions": "AI 个性化建议",
+      "recommendedMajors": "推荐专业方向",
+      "recommendedCompetitions": "推荐竞赛",
+      "recommendedActivities": "推荐活动",
+      "planSuggestions": "规划建议",
+      "suitableFor": "适合冲刺",
+      "expand": "查看详细分析",
+      "collapse": "收起详情",
+      "score": "评分",
+      "status": {
+        "excellent": "优秀",
+        "needsWork": "待提升",
+        "needsImprovement": "需改进"
+      },
+      "sections": {
+        "academic": "学术背景",
+        "testScores": "标化成绩",
+        "activities": "课外活动",
+        "awards": "奖项荣誉"
       }
     },
     "validation": {
-      "activityRequired": "请填写活动名称、类别和角色",
-      "awardRequired": "请填写奖项名称和级别",
-      "scoreRequired": "请填写考试类型和分数"
-    },
-    "selector": {
-      "searchPlaceholder": "搜索目标专业...",
-      "noProfiles": "暂无公开档案",
-      "noProfilesHint": "等待更多用户分享档案",
-      "activities": "活动",
-      "awards": "奖项"
+      "activityRequired": "请填写活动信息",
+      "awardRequired": "请填写奖项信息",
+      "scoreRequired": "请填写成绩信息"
     }
-  },
-  "stats": {
-    "vsLastMonth": "vs 上月"
-  },
-  "agentChat": {
-    "title": "AI 留学顾问",
-    "processing": "处理中",
-    "clear": "清空",
-    "welcome": "你好！我是留学申请助手",
-    "welcomeDesc": "我可以帮你分析档案竞争力、推荐适合的学校、指导文书写作、规划申请时间线",
-    "placeholder": "输入你的问题...",
-    "characters": "字符",
-    "thinking": "思考中...",
-    "usingTools": "正在使用 {count} 个工具",
-    "sendHint": "按 Enter 发送，Shift + Enter 换行",
-    "assistant": "AI 助手",
-    "tools": {
-      "searchSchools": "搜索学校",
-      "getUserProfile": "获取档案",
-      "analyzeProfile": "分析档案",
-      "searchCases": "搜索案例",
-      "getDeadlines": "获取截止日期",
-      "reviewEssay": "评估文书",
-      "queryDatabase": "查询数据库"
-    }
-  },
-  "globalSearch": {
-    "placeholder": "搜索院校、案例、或询问 AI...",
-    "searchButton": "搜索...",
-    "searchButtonShort": "搜索",
-    "quickActions": "快速操作",
-    "recentSearches": "最近搜索",
-    "hotSearches": "热门搜索",
-    "noResults": "未找到 \"{query}\" 相关结果",
-    "navigate": "导航",
-    "select": "选择",
-    "close": "关闭",
-    "openSearch": "打开搜索",
-    "types": {
-      "school": "院校",
-      "case": "案例",
-      "article": "文章",
-      "ai": "AI 建议",
-      "page": "页面"
-    },
-    "actions": {
-      "aiChat": "与 AI 对话",
-      "browseSchools": "浏览院校",
-      "viewCases": "查看案例",
-      "profile": "个人资料"
-    },
-    "mockResults": {
-      "universityDesc": "世界顶尖研究型大学",
-      "caseTitle": "{query}申请案例",
-      "askAi": "询问 AI 关于 {query}",
-      "askAiDesc": "获取个性化建议"
-    }
-  },
-  "createList": {
-    "title": "创建选校清单",
-    "description": "分享你的选校策略，帮助其他申请者",
-    "titleLabel": "清单标题",
-    "titlePlaceholder": "例如：CS 专业 Top 20 选校清单",
-    "categoryLabel": "分类",
-    "visibilityLabel": "公开可见",
-    "public": "公开",
-    "private": "仅自己可见",
-    "descriptionLabel": "清单描述",
-    "descriptionPlaceholder": "介绍你的选校思路...",
-    "schoolsLabel": "学校列表",
-    "addSchool": "添加学校",
-    "noSchools": "点击\"添加学校\"选择院校",
-    "selectSchools": "选择学校",
-    "createButton": "创建清单",
-    "categories": {
-      "schoolRanking": "选校清单",
-      "majorRanking": "专业推荐",
-      "tips": "申请技巧",
-      "other": "其他"
-    },
-    "toast": {
-      "success": "清单创建成功",
-      "titleRequired": "请输入清单标题",
-      "schoolsRequired": "请至少选择一所学校"
-    }
-  },
-  "dataExport": {
-    "trigger": "导出",
-    "title": "导出我的数据",
-    "description": "选择要导出的数据类型和格式，我们会为您生成下载文件。",
-    "formatLabel": "导出格式",
-    "selectDataLabel": "选择数据",
-    "selectAll": "全选",
-    "deselectAll": "取消全选",
-    "securityNote": "您的数据安全加密传输。导出文件仅包含您选择的数据类型，不包含密码等敏感信息。",
-    "startExport": "开始导出",
-    "exportingTitle": "正在导出数据...",
-    "exportingDescription": "请稍候，正在处理您的数据",
-    "exportCompleteTitle": "导出完成！",
-    "exportCompleteDescription": "您的数据已准备好下载",
-    "downloadFile": "下载文件",
-    "formats": {
-      "json": {
-        "label": "JSON (原始数据)",
-        "description": "完整数据，适合备份"
-      },
-      "csv": {
-        "label": "CSV (表格)",
-        "description": "表格格式，可用 Excel 打开"
-      },
-      "pdf": {
-        "label": "PDF (报告)",
-        "description": "打印友好的报告格式"
-      }
-    },
-    "dataTypes": {
-      "profile": {
-        "label": "个人资料",
-        "description": "基本信息、学术背景、语言成绩"
-      },
-      "applications": {
-        "label": "申请记录",
-        "description": "申请的学校、状态、时间线"
-      },
-      "favorites": {
-        "label": "收藏内容",
-        "description": "收藏的学校、案例、文章"
-      },
-      "aiChats": {
-        "label": "AI 对话记录",
-        "description": "与 AI 助手的历史对话"
-      },
-      "preferences": {
-        "label": "偏好设置",
-        "description": "通知设置、显示偏好"
-      }
-    },
-    "toast": {
-      "selectDataType": "请至少选择一种数据类型",
-      "success": "导出成功！",
-      "failed": "导出失败"
-    }
-  },
-  "submitCase": {
-    "title": "提交录取案例",
-    "description": "分享您的申请结果，帮助后来者参考",
-    "selectSchool": "选择学校",
-    "roundLabel": "申请轮次",
-    "roundPlaceholder": "选择轮次",
-    "yearLabel": "申请年份",
-    "resultLabel": "申请结果",
-    "resultPlaceholder": "选择结果",
-    "majorLabel": "专业",
-    "majorPlaceholder": "例如：Computer Science",
-    "gpaLabel": "GPA 范围",
-    "gpaPlaceholder": "例如：3.8-4.0",
-    "satLabel": "SAT 范围",
-    "satPlaceholder": "例如：1500-1550",
-    "toeflLabel": "TOEFL 范围",
-    "toeflPlaceholder": "例如：110-115",
-    "tagsLabel": "标签",
-    "tagsPlaceholder": "用逗号分隔，例如：科研强, 竞赛获奖",
-    "reflectionLabel": "申请感悟",
-    "reflectionPlaceholder": "分享您的申请经验和建议...",
-    "submitButton": "提交案例",
-    "selectSchoolTitle": "选择申请学校",
-    "rounds": {
-      "ED": "ED (Early Decision)",
-      "ED2": "ED2",
-      "EA": "EA (Early Action)",
-      "REA": "REA (Restrictive EA)",
-      "RD": "RD (常规申请)"
-    },
-    "results": {
-      "admitted": "录取",
-      "rejected": "拒绝",
-      "waitlisted": "候补",
-      "deferred": "延期"
-    },
-    "toast": {
-      "success": "案例提交成功，感谢分享！",
-      "requiredFields": "请填写必填项"
-    }
-  },
-  "schoolSelector": {
-    "title": "选择学校",
-    "searchPlaceholder": "搜索学校名称...",
-    "noResults": "未找到学校",
-    "noResultsHint": "请尝试其他搜索词",
-    "acceptanceRate": "录取率",
-    "selectedCount": "已选 {count}/{max} 所学校",
-    "confirmSelection": "确认选择"
   },
   "ranking": {
     "title": "自定义榜单",
-    "description": "自定义权重，生成你的个性化院校排名",
-    "weights": "权重设置",
-    "weightsDesc": "调整各项指标权重来定制你的排名",
+    "description": "根据个人偏好自定义学校排名榜单",
     "totalWeight": "总权重",
-    "schoolsCount": "院校数量",
+    "schoolsCount": "学校数",
+    "weights": "权重设置",
+    "weightsDesc": "调整各项指标的权重",
     "usNewsRank": "US News 排名",
     "acceptanceRate": "录取率",
-    "acceptanceRateHint": "录取率越低 = 分数越高",
+    "acceptanceRateHint": "越低表示竞争越激烈",
     "tuition": "学费",
-    "tuitionHint": "学费越低 = 分数越高",
+    "tuitionHint": "年度学费金额",
     "avgSalary": "毕业薪资",
     "preview": "预览排名",
     "saveRanking": "保存榜单",
     "shareRanking": "分享榜单",
     "myRankings": "我的榜单",
+    "namePlaceholder": "输入榜单名称...",
     "rankingResults": "排名结果",
-    "rankingResultsDesc": "根据你的权重计算的院校排名",
-    "namePlaceholder": "我的自定义排名",
+    "rankingResultsDesc": "根据你的权重设置生成的排名",
     "tableHeaders": {
-      "rank": "排名",
-      "school": "学校",
-      "usNews": "US News",
       "acceptance": "录取率",
       "tuition": "学费",
-      "salary": "薪资",
-      "score": "得分"
+      "score": "综合得分"
     },
     "empty": {
-      "title": "点击「预览排名」查看结果",
-      "description": "调整左侧权重参数，生成你的个性化院校排名"
+      "title": "还没有排名",
+      "description": "调整权重后点击预览查看排名"
     },
     "toast": {
-      "saved": "排名已保存！",
-      "enterName": "请输入排名名称"
+      "saved": "榜单保存成功",
+      "enterName": "请输入榜单名称"
     }
   },
   "prediction": {
     "title": "录取预测",
-    "description": "基于 AI 分析你的背景，预测各校录取概率",
+    "noResult": "未获取到预测结果",
+    "successMessage": "成功获取 {count} 所学校的预测结果",
     "selectSchools": "选择目标院校",
-    "selectSchoolsDesc": "选择目标院校，获取个性化录取预测",
-    "selectedCount": "已选择 {count} 所学校",
+    "selectSchoolsDesc": "选择目标学校以预测您的录取概率",
+    "comingSoon": "学校选择器即将上线",
+    "comingSoonDesc": "目前请点击下方按钮查看演示预测",
+    "emptyHint": "选择学校并运行预测以查看您的录取概率",
     "runPrediction": "开始预测",
     "probability": "录取概率",
     "factors": "影响因素",
@@ -1162,44 +872,72 @@
     "negative": "不利因素",
     "suggestion": "建议",
     "results": "预测结果",
-    "selectSchoolsButton": "选择学校",
-    "selectSchoolsTitle": "选择目标院校",
-    "schoolsAnalyzed": "所学校已分析",
-    "highChance": "录取概率较高",
-    "mediumChance": "录取概率中等",
-    "lowChance": "录取概率较低",
-    "tier": {
-      "reach": "冲刺",
-      "match": "匹配",
-      "safety": "保底"
+    "searchPlaceholder": "搜索学校...",
+    "searchSchoolsDesc": "搜索并选择想要预测的学校",
+    "selectSchoolsFirst": "请先选择学校",
+    "startPrediction": "开始预测",
+    "noSchoolsFound": "未找到学校",
+    "selectedCount": "已选 {count} 所",
+    "showMore": "展开更多",
+    "showLess": "收起",
+    "acceptanceRateLabel": "录取率",
+    "range": "预测范围",
+    "weight": "权重",
+    "suggestions": "提升建议",
+    "engineBreakdown": "引擎分析",
+    "memoryAdjustment": "记忆调整",
+    "engine": {
+      "stats": "统计模型",
+      "ai": "AI 模型",
+      "historical": "历史数据"
+    },
+    "loading": {
+      "analyzing": "正在分析..."
+    },
+    "badge": {
+      "ensemble": "集成模型"
     },
     "confidence": {
       "high": "高置信度",
       "medium": "中置信度",
       "low": "低置信度"
     },
-    "comparison": {
-      "testScore": "标化",
-      "activity": "活动"
+    "tier": {
+      "reach": "冲刺",
+      "match": "匹配",
+      "safety": "保底",
+      "unknown": "未知"
     },
-    "empty": {
-      "noSchools": "尚未选择学校",
-      "noSchoolsHint": "点击下方按钮添加目标院校",
-      "startTitle": "开始你的预测之旅",
-      "startDesc": "选择目标院校并运行预测，查看你的录取概率分析"
+    "tooltip": {
+      "ensemble": "基于多个模型的综合预测"
     },
-    "toast": {
-      "selectFirst": "请先选择目标院校"
+    "aiAssistantTitle": "AI 预测助手",
+    "aiAssistantDescNoResults": "选择学校后，AI 将为你提供个性化分析",
+    "aiAssistantDescWithResults": "基于预测结果，AI 为你提供详细分析",
+    "aiInitialNoResults": "选择学校并开始预测，我会为你分析录取概率",
+    "aiInitialWithResults": "预测完成！我可以帮你分析结果，点击下方按钮获取建议",
+    "aiActions": {
+      "analyzeResults": "分析预测结果",
+      "analyzeResultsPrompt": "请分析我的预测结果，给出详细建议",
+      "analyzeSelectedSchools": "分析选校策略",
+      "analyzeSelectedSchoolsPrompt": "请分析我选择的学校组合是否合理",
+      "applicationStrategy": "申请策略",
+      "applicationStrategyPrompt": "请根据预测结果制定申请策略",
+      "explainModel": "解释预测模型",
+      "explainModelPrompt": "请解释预测模型是如何工作的",
+      "improveChances": "提升录取概率",
+      "improveChancesPrompt": "我该如何提升录取概率？",
+      "recommendSchools": "推荐学校",
+      "recommendSchoolsPrompt": "请根据我的背景推荐适合的学校"
     }
   },
   "cases": {
     "title": "案例库",
-    "description": "浏览真实的留学申请案例，了解录取趋势",
-    "shareCase": "分享我的案例",
-    "searchPlaceholder": "搜索学校、专业...",
-    "activeFilters": "筛选条件",
+    "description": "浏览真实申请案例，参考成功经验",
+    "shareCase": "分享案例",
+    "searchPlaceholder": "搜索案例...",
     "stats": {
-      "total": "总案例数",
+      "total": "总数",
       "admissionRate": "录取率"
     },
     "filters": {
@@ -1210,24 +948,40 @@
       "allYears": "全部年份",
       "allResults": "全部结果"
     },
+    "activeFilters": "当前筛选",
     "result": {
       "admitted": "录取",
       "rejected": "拒绝",
       "waitlisted": "候补",
-      "deferred": "延迟"
+      "deferred": "延期"
     },
     "viewDetail": "查看详情",
     "similarCases": "相似案例",
-    "empty": {
-      "title": "暂无案例数据",
-      "description": "当用户开始分享他们的申请结果后，案例将会显示在这里"
+    "notFound": "案例不存在",
+    "notFoundDesc": "该案例可能已被删除或您没有权限查看",
+    "backToList": "返回案例库",
+    "detail": {
+      "backToList": "返回案例库",
+      "verified": "已验证",
+      "applicationYear": "申请年份",
+      "applicationRound": "申请轮次",
+      "major": "申请专业",
+      "schoolRanking": "学校排名",
+      "academicBackground": "成绩背景",
+      "noScoreInfo": "暂无成绩信息",
+      "applicantFeatures": "申请者特点",
+      "share": "分享",
+      "report": "举报",
+      "relatedCases": "同校其他案例",
+      "viewMoreCases": "查看更多 {school} 的申请案例..."
     }
   },
   "chat": {
     "title": "消息",
-    "description": "与其他申请者交流经验",
+    "description": "与认证用户交流，获取第一手信息",
     "conversations": "对话列表",
-    "searchConversations": "搜索对话...",
+    "connecting": "连接中...",
+    "connected": "已连接",
     "noMessages": "暂无消息",
     "typeMessage": "输入消息...",
     "send": "发送",
@@ -1236,75 +990,346 @@
     "mutualFollowRequired": "需要互相关注才能发起私聊",
     "blocked": "已拉黑",
     "report": "举报",
+    "typing": "正在输入...",
+    "userTyping": "{name} 正在输入...",
     "block": "拉黑",
-    "startConversation": "开始对话吧！",
-    "selectConversation": "选择一个对话",
-    "selectConversationHint": "从左侧列表选择一个对话开始聊天"
+    "searchConversations": "搜索对话...",
+    "selectConversation": "选择对话",
+    "selectConversationHint": "从左侧列表选择一个对话开始聊天",
+    "startConversation": "开始对话",
+    "sendFailed": "发送失败",
+    "socketDisconnected": "连接已断开",
+    "socketError": "连接错误",
+    "permissionRequired": "仅认证用户可发起私信",
+    "rateLimitExceeded": "消息发送过于频繁，请稍后再试",
+    "repeatedContent": "请勿重复发送相同内容"
   },
   "hall": {
     "title": "功能大厅",
-    "description": "互评档案、查看排名、分享选校清单",
+    "description": "招生官打分、排名对比、创建榜单",
     "tabs": {
-      "review": "招生官打分",
+      "tinder": "预测游戏",
+      "review": "锐评模式",
       "ranking": "排名对比",
       "lists": "用户榜单"
     },
+    "tinder": {
+      "title": "案例预测",
+      "description": "猜测申请者的录取结果，赢取积分",
+      "correctToast": "预测正确！+{points} 积分",
+      "incorrectToast": "预测错误，实际结果：{result}",
+      "emptyPool": "暂无更多申请者",
+      "emptyPoolDesc": "稍后再来查看新的申请者",
+      "emptyPoolAction": "刷新",
+      "allSwiped": "全部评估完毕",
+      "allSwipedDesc": "你已经评估了所有申请者",
+      "restart": "重新开始"
+    },
+    "stats": {
+      "accuracy": "准确率",
+      "accuracyCompact": "{value}% 准确率",
+      "correctOf": "{correct}/{total} 次正确",
+      "currentStreak": "当前连胜",
+      "bestStreak": "最佳连胜",
+      "totalPredictions": "总预测",
+      "correctPredictions": "正确预测"
+    },
     "review": {
-      "title": "扮演招生官",
-      "selectProfile": "选择待评档案",
-      "selectProfileDesc": "浏览并选择其他用户的公开档案进行评估",
-      "evaluating": "评估 {major} 申请者",
-      "evaluateHint": "以招生官视角评估档案",
-      "unknownMajor": "未知专业",
-      "noMajor": "未指定专业",
-      "selectFirst": "请先选择档案",
-      "selectFirstDesc": "从左侧列表选择一个公开档案进行评估",
-      "activities": "活动",
-      "awards": "奖项",
-      "commentPlaceholder": "分享你对这位申请者的建议和评价...",
+      "submitSuccess": "锐评提交成功",
+      "submitError": "提交失败，请重试",
+      "applicantProfile": "申请者档案",
+      "targetMajor": "目标专业",
+      "notDetermined": "未确定",
+      "unknownGrade": "未知年级",
+      "swipeToStart": "向左或向右滑动开始评审",
+      "academicBackground": "学术背景",
+      "testScores": "标化成绩",
+      "finalVerdict": "最终评定",
+      "scores": "标化",
+      "title": "锐评模式",
       "academic": "学术能力",
-      "academicDesc": "课程难度、GPA、班级排名",
+      "academicDesc": "评估学术能力",
       "activity": "活动质量",
-      "activityDesc": "领导力、深度、持续性",
-      "essay": "文书水平",
-      "essayDesc": "个人特色、叙事能力",
+      "activityDesc": "评估活动质量",
+      "test": "标化成绩",
+      "testDesc": "评估标化考试表现",
+      "award": "奖项荣誉",
+      "awardDesc": "评估获奖情况",
       "overall": "综合评分",
-      "overallDesc": "整体竞争力评估",
+      "overallDesc": "综合评分",
       "comment": "点评",
-      "submitReview": "提交评分",
-      "toastSuccess": "评价提交成功，感谢你的贡献！",
-      "toastError": "请先选择一个档案"
+      "commentPlaceholder": "输入你的评价...",
+      "submitReview": "提交锐评",
+      "selectProfile": "选择档案",
+      "selectProfileDesc": "选择一个公开档案进行评审",
+      "selectFirst": "请先选择档案",
+      "selectFirstDesc": "从左侧选择一个公开档案开始评分",
+      "selectProfileFirst": "请先选择档案",
+      "immersiveMode": "沉浸模式",
+      "tryImmersive": "试试沉浸式招生官模式",
+      "tryImmersiveDesc": "全屏滑动评审，体验真实招生官视角",
+      "start": "开始",
+      "startReview": "开始评审",
+      "academicBg": "学术背景",
+      "weakLeft": "← 较弱",
+      "excellentRight": "优秀 →",
+      "noTestScores": "暂无标化成绩",
+      "activities": "课外活动",
+      "activitiesCount": "共 {count} 项活动",
+      "noActivities": "暂无活动记录",
+      "averageLeft": "← 一般",
+      "excellentAct": "出色 →",
+      "awards": "奖项",
+      "awardsCount": "共 {count} 项奖项",
+      "noAwards": "暂无奖项记录",
+      "finalScore": "最终评分 (1-10)",
+      "reviewComment": "评审评语 (可选)",
+      "processing": "处理中...",
+      "back": "返回",
+      "evaluating": "正在评估 {major} 专业申请",
+      "unknownMajor": "未定专业",
+      "noMajor": "未定专业",
+      "evaluateHint": "根据申请者背景进行评分",
+      "selectModule": "选择评测模块",
+      "score": "评分",
+      "weak": "较弱",
+      "average": "一般",
+      "excellent": "优秀",
+      "moduleComment": "模块评语 (可选)",
+      "summary": "评审汇总",
+      "summaryDesc": "确认各维度评分并提交",
+      "suggestedScore": "建议综合分: {score}",
+      "tags": "评审标签",
+      "generalComment": "总评 (可选)",
+      "generalCommentHint": "写下你对这位申请者的整体评价...",
+      "dimension": {
+        "academic": "学术 / GPA",
+        "test": "标化成绩",
+        "activity": "课外活动",
+        "award": "奖项荣誉"
+      },
+      "dimensionDesc": {
+        "academic": "评估学术表现与 GPA",
+        "test": "评估 SAT/ACT/TOEFL 等标化成绩",
+        "activity": "评估课外活动的广度与深度",
+        "award": "评估获奖情况与竞赛表现"
+      },
+      "commentHint": {
+        "academic": "对学术表现的评价...",
+        "test": "对标化成绩的评价...",
+        "activity": "对课外活动的评价...",
+        "award": "对奖项荣誉的评价..."
+      },
+      "steps": {
+        "intro": "申请者概览",
+        "academic": "学术背景",
+        "scores": "标化成绩",
+        "activities": "课外活动",
+        "awards": "奖项荣誉",
+        "verdict": "最终评定"
+      },
+      "helpful": "有帮助",
+      "insightful": "有见地",
+      "markedHelpful": "已标记有帮助",
+      "markedInsightful": "已标记有见地"
     },
     "ranking": {
       "title": "排名对比",
-      "selectSchools": "选择目标院校",
-      "selectSchoolsDesc": "选择想要查看排名的学校",
-      "selectSchoolsButton": "选择学校",
-      "selectedCount": "已选择 {count} 所学校",
-      "moreSchools": "还有 {count} 所学校...",
-      "viewRanking": "查看排名",
-      "resultsDesc": "查看你在目标院校申请者中的排名",
-      "emptyTitle": "选择学校查看排名",
-      "emptyDesc": "排名基于匿名档案数据计算，帮助你了解竞争情况",
-      "totalApplicants": "共 {count} 位申请者",
-      "factorActivities": "活动",
-      "factorAwards": "奖项",
-      "factorScores": "标化",
       "myRank": "我的排名",
       "selectSchool": "选择目标院校",
-      "toastError": "请至少选择一所学校"
+      "selectSchools": "选择学校",
+      "selectSchoolsDesc": "选择要对比排名的学校",
+      "selectSchoolsButton": "选择学校",
+      "selectedCount": "已选 {count} 所",
+      "moreSchools": "还有 {count} 所...",
+      "viewRanking": "查看排名",
+      "resultsDesc": "你在这些学校中的排名情况",
+      "totalApplicants": "共 {count} 人申请",
+      "factorAcademic": "学术",
+      "factorActivities": "活动",
+      "factorAwards": "奖项",
+      "factorScores": "成绩",
+      "aiAnalysis": "AI 竞争力分析",
+      "getAiAnalysis": "AI 分析我的竞争力",
+      "emptyTitle": "暂无排名数据",
+      "emptyDesc": "选择学校后查看排名",
+      "selectSchoolFirst": "请先选择学校",
+      "topPercentile": "前 {percent}%",
+      "summaryTitle": "排名概览",
+      "avgPercentile": "平均百分位",
+      "totalCompetitors": "总竞争者",
+      "overallPosition": "综合竞争力",
+      "bestSchool": "最佳排名",
+      "strong": "竞争力强",
+      "moderate": "竞争力中等",
+      "challenging": "竞争力待提升",
+      "median": "中位数",
+      "average": "平均",
+      "competitorsCount": "共 {count} 名竞争者",
+      "sortBy": "排序方式",
+      "sortByPercentile": "按百分位",
+      "sortByScore": "按得分",
+      "sortByApplicants": "按人数",
+      "vsMedian": "vs 中位数 {value}",
+      "aboveMedian": "高于中位数",
+      "belowMedian": "低于中位数",
+      "middle50": "中间 50%: {low}-{high}"
     },
     "lists": {
       "title": "用户榜单",
       "createList": "创建榜单",
       "vote": "投票",
-      "emptyTitle": "暂无公开清单",
-      "emptyDesc": "成为第一个分享选校清单的人！"
+      "emptyTitle": "暂无榜单",
+      "emptyDesc": "创建你的第一个榜单",
+      "byAuthor": "作者"
+    },
+    "modules": {
+      "standardized": "标化成绩",
+      "standardizedDesc": "评估标化考试成绩（SAT/ACT/TOEFL 等）",
+      "honors": "奖项荣誉",
+      "honorsDesc": "评估竞赛获奖与荣誉经历",
+      "activities": "课外活动",
+      "activitiesDesc": "评估课外活动的深度与广度",
+      "noTestScores": "暂无标化成绩",
+      "scoreLabel": "分数",
+      "noAwards": "暂无获奖经历",
+      "awardsTotal": "共 {count} 项",
+      "awardsScoreLabel": "奖项分数",
+      "hoursPerWeek": "小时/周",
+      "weeksPerYear": "周/年",
+      "noActivities": "暂无课外活动",
+      "activitiesTotal": "共 {count} 项",
+      "activitiesScoreLabel": "活动分数",
+      "moduleReview": {
+        "commentLabel": "评价",
+        "commentPlaceholder": "输入你的评价...",
+        "back": "返回",
+        "submitScore": "提交评分"
+      }
+    },
+    "moduleReview": {
+      "noTestScores": "暂无标化成绩",
+      "scoreLabel": "标化成绩评分",
+      "noAwards": "暂无奖项记录",
+      "awardsTotal": "共 {count} 项奖项",
+      "awardsScoreLabel": "奖项荣誉评分",
+      "noActivities": "暂无活动记录",
+      "hoursPerWeek": "每周 {hours} 小时",
+      "weeksPerYear": "每年 {weeks} 周",
+      "activitiesTotal": "共 {count} 项活动",
+      "activitiesScoreLabel": "课外活动评分",
+      "commentLabel": "评审评语",
+      "commentPlaceholder": "输入你对该模块的评价...",
+      "back": "返回",
+      "submitScore": "提交评分",
+      "moduleReview": {
+        "commentLabel": "评价",
+        "commentPlaceholder": "输入你的评价...",
+        "back": "返回",
+        "submitScore": "提交评分"
+      },
+      "modules": {
+        "standardized": "标准化考试",
+        "standardizedDesc": "SAT、ACT、TOEFL 等考试成绩",
+        "honors": "荣誉奖项",
+        "honorsDesc": "竞赛、学术奖项和成就",
+        "activities": "课外活动",
+        "activitiesDesc": "社团、志愿服务、实习等"
+      }
+    },
+    "swipeCard": {
+      "applicantProfile": "申请者档案",
+      "applicantFeatures": "申请特点",
+      "acceptanceRate": "录取率",
+      "activities": "课外活动",
+      "awards": "获奖经历",
+      "apCourses": "AP 课程",
+      "graduationRate": "毕业率",
+      "publicSchool": "公立学校",
+      "privateSchool": "私立学校",
+      "verified": "已认证",
+      "admitStamp": "录取",
+      "rejectStamp": "拒绝",
+      "skipStamp": "跳过",
+      "waitlistStamp": "候补",
+      "gradeFRESHMAN": "大一",
+      "gradeSOPHOMORE": "大二",
+      "gradeJUNIOR": "大三",
+      "gradeSENIOR": "大四",
+      "gradeGAP_YEAR": "间隔年",
+      "schoolTypePUBLIC_US": "美国公立",
+      "schoolTypePRIVATE_US": "美国私立",
+      "schoolTypeINTERNATIONAL": "国际学校",
+      "awardLevelINTERNATIONAL": "国际级",
+      "awardLevelNATIONAL": "国家级",
+      "awardLevelSTATE": "州级",
+      "awardLevelREGIONAL": "地区级",
+      "awardLevelSCHOOL": "校级",
+      "categoryACADEMIC": "学术",
+      "categoryARTS": "艺术",
+      "categoryATHLETICS": "体育",
+      "categoryCOMMUNITY_SERVICE": "社区服务",
+      "categoryLEADERSHIP": "领导力",
+      "categoryWORK": "工作",
+      "categoryRESEARCH": "研究",
+      "categoryOTHER": "其他"
+    },
+    "result": {
+      "correct": "判断正确",
+      "wrong": "判断错误",
+      "actual": "实际结果",
+      "points": "积分",
+      "streak": "连胜"
+    },
+    "leaderboard": {
+      "title": "排行榜",
+      "you": "你",
+      "yourRank": "你的排名",
+      "predictions": "预测次数",
+      "correct": "正确次数",
+      "accuracy": "准确率",
+      "empty": "暂无数据",
+      "emptyDesc": "还没有人参与排行",
+      "userFallback": "匿名用户"
+    },
+    "dailyChallenge": {
+      "title": "每日挑战",
+      "progress": "进度",
+      "remaining": "剩余",
+      "completed": "已完成",
+      "challengeComplete": "挑战完成！",
+      "keepItUp": "继续保持！"
+    },
+    "badgeProgress": "徽章进度",
+    "noTestScores": "暂无标化成绩",
+    "scoreLabel": "分数",
+    "noAwards": "暂无获奖经历",
+    "awardsTotal": "共 {count} 项",
+    "awardsScoreLabel": "奖项分数",
+    "hoursPerWeek": "小时/周",
+    "weeksPerYear": "周/年",
+    "noActivities": "暂无课外活动",
+    "activitiesTotal": "共 {count} 项",
+    "activitiesScoreLabel": "活动分数",
+    "swipeStack": {
+      "progress": "进度",
+      "keyboardHint": "使用方向键操作",
+      "rejectLabel": "拒绝",
+      "skipLabel": "跳过",
+      "favoriteLabel": "候补",
+      "admitLabel": "录取"
+    },
+    "badges": {
+      "bronze": "青铜",
+      "silver": "白银",
+      "gold": "黄金",
+      "platinum": "白金",
+      "diamond": "钻石"
     }
   },
   "settings": {
     "title": "设置",
-    "description": "管理您的账号和偏好设置",
+    "description": "管理您的账户和应用设置",
     "account": "账号设置",
     "notification": "通知设置",
     "privacy": "隐私设置",
@@ -1316,352 +1341,2273 @@
       "profile": "个人资料",
       "preferences": "偏好设置",
       "notifications": "通知",
-      "subscription": "订阅与支付",
+      "subscription": "订阅",
       "help": "帮助与支持",
-      "accountActions": "账号操作"
+      "accountActions": "账户操作"
     },
     "items": {
       "editProfile": "编辑资料",
-      "editProfileDesc": "修改头像、昵称等信息",
-      "security": "账号安全",
-      "securityDesc": "修改密码、绑定手机",
+      "editProfileDesc": "修改您的个人信息",
+      "security": "安全设置",
+      "securityDesc": "管理密码和安全选项",
       "darkMode": "深色模式",
-      "darkModeDesc": "切换明暗主题",
+      "darkModeDesc": "切换深色/浅色主题",
       "language": "语言",
       "languageDesc": "选择界面语言",
       "pushNotification": "推送通知",
-      "pushNotificationDesc": "接收申请进度、AI回复等通知",
+      "pushNotificationDesc": "接收重要更新推送",
       "emailNotification": "邮件通知",
-      "emailNotificationDesc": "接收重要更新和周报",
-      "subscription": "会员订阅",
-      "subscriptionDesc": "升级解锁更多功能",
+      "emailNotificationDesc": "接收邮件通知",
+      "subscription": "订阅管理",
+      "subscriptionDesc": "管理您的订阅计划",
       "helpCenter": "帮助中心",
-      "helpCenterDesc": "常见问题与使用指南",
-      "termsOfService": "用户协议",
+      "helpCenterDesc": "查看常见问题和文档",
+      "termsOfService": "服务条款",
       "privacyPolicy": "隐私政策",
       "logout": "退出登录",
-      "deleteAccount": "删除账号",
-      "deleteAccountDesc": "永久删除您的账号和所有数据"
+      "deleteAccount": "删除账户",
+      "deleteAccountDesc": "永久删除您的账户和数据"
     },
     "dialogs": {
       "logoutTitle": "退出登录",
       "logoutDesc": "确定要退出登录吗？",
-      "deleteTitle": "删除账号",
-      "deleteDesc": "此操作不可逆，您的所有数据将被永久删除。确定要继续吗？"
+      "deleteTitle": "删除账户",
+      "deleteDesc": "此操作不可撤销，您的所有数据将被永久删除。",
+      "cancel": "取消",
+      "confirm": "确认"
     },
     "toast": {
       "logoutSuccess": "已退出登录"
     }
   },
-  "ai": {
-    "title": "AI 助手",
-    "description": "利用 AI 技术分析档案、评估文书、智能选校",
-    "tabs": {
-      "chat": "智能对话",
-      "analysis": "档案分析",
-      "essay": "文书评估",
-      "ideas": "创意灵感",
-      "schoolMatch": "选校推荐",
-      "polish": "文书润色",
-      "freeChat": "自由问答"
+  "submitCase": {
+    "title": "提交申请案例",
+    "description": "分享你的申请经历，帮助更多申请者",
+    "selectSchool": "选择学校",
+    "selectSchoolTitle": "选择目标学校",
+    "yearLabel": "申请年份",
+    "roundLabel": "申请轮次",
+    "roundPlaceholder": "选择轮次",
+    "resultLabel": "申请结果",
+    "resultPlaceholder": "选择结果",
+    "majorLabel": "申请专业",
+    "majorPlaceholder": "如：Computer Science",
+    "gpaLabel": "GPA 区间",
+    "gpaPlaceholder": "如：3.8-4.0",
+    "satLabel": "SAT 区间",
+    "satPlaceholder": "如：1500-1550",
+    "toeflLabel": "TOEFL 区间",
+    "toeflPlaceholder": "如：110-115",
+    "tagsLabel": "标签",
+    "tagsPlaceholder": "用逗号分隔，如：科研, 竞赛",
+    "reflectionLabel": "申请反思",
+    "reflectionPlaceholder": "分享你的申请经验和建议...",
+    "submitButton": "提交案例",
+    "rounds": {
+      "ED": "早决定 (ED)",
+      "ED2": "早决定2 (ED2)",
+      "EA": "早申请 (EA)",
+      "REA": "限制性早申请 (REA)",
+      "RD": "常规申请 (RD)"
     },
-    "analysis": {
-      "title": "当前档案",
-      "description": "基于您的档案进行竞争力分析",
-      "targetMajor": "目标专业",
-      "testScores": "标化成绩",
-      "activitiesAwards": "活动/奖项",
-      "startAnalysis": "开始 AI 分析",
-      "resultTitle": "分析结果",
-      "resultDesc": "AI 竞争力评估报告",
-      "overallEvaluation": "综合评价",
-      "strengths": "优势亮点",
-      "improvements": "需要改进",
-      "suggestions": "建议",
-      "empty": "点击\"开始 AI 分析\"获取评估报告"
-    },
-    "essay": {
-      "title": "文书内容",
-      "description": "粘贴您的文书进行 AI 评估",
-      "prompt": "题目 (Prompt)",
-      "promptPlaceholder": "例如: Describe a challenge you faced...",
-      "wordLimit": "字数限制",
-      "content": "文书正文",
-      "contentPlaceholder": "粘贴您的文书内容...",
-      "currentWords": "当前字数: {count} 词",
-      "evaluate": "AI 评估文书",
-      "resultTitle": "评估结果",
-      "resultDesc": "AI 文书评分与建议",
-      "overallScore": "总体评分 (满分10分)",
-      "dimensions": {
-        "structure": "文章结构",
-        "content": "内容深度",
-        "language": "语言表达"
-      },
-      "improvementSuggestions": "改进建议",
-      "empty": "输入文书内容后点击评估"
-    },
-    "ideas": {
-      "title": "生成写作灵感",
-      "description": "输入题目，AI 帮你 brainstorm",
-      "topic": "文书题目",
-      "topicPlaceholder": "例如: Some students have a background, identity, interest, or talent that is so meaningful they believe their application would be incomplete without it.",
-      "background": "个人背景 (可选)",
-      "backgroundPlaceholder": "简要描述您的经历、兴趣爱好等，帮助 AI 生成更贴切的想法",
-      "generate": "生成创意",
-      "resultTitle": "写作思路",
-      "resultDesc": "AI 生成的创意点子",
-      "ideaNumber": "创意 #{number}",
-      "empty": "输入题目后生成创意"
-    },
-    "schoolMatch": {
-      "title": "AI 选校推荐",
-      "description": "基于您的档案智能匹配适合的学校",
-      "getRecommendations": "获取推荐",
-      "matchTypes": {
-        "reach": "冲刺校",
-        "match": "匹配校",
-        "safety": "保底校"
-      },
-      "empty": "点击\"获取推荐\"开始智能选校",
-      "fillGpaFirst": "请先填写 GPA 信息"
-    },
-    "polish": {
-      "title": "文书内容",
-      "description": "粘贴您的文书进行 AI 润色",
-      "style": "润色风格",
-      "styles": {
-        "formal": "正式学术 - 适合严肃主题",
-        "vivid": "生动有力 - 多用具体细节",
-        "concise": "简洁精炼 - 精简冗余表达"
-      },
-      "content": "文书正文",
-      "contentPlaceholder": "粘贴您想要润色的文书...",
-      "polish": "AI 润色",
-      "resultTitle": "润色结果",
-      "resultDesc": "AI 优化后的文书",
-      "copyToClipboard": "复制到剪贴板",
-      "empty": "输入文书后点击润色"
-    },
-    "freeChat": {
-      "title": "自由问答",
-      "description": "直接与 AI 对话，询问任何留学相关问题",
-      "placeholder": "输入你的问题...",
-      "send": "发送",
-      "empty": "开始与 AI 对话"
-    },
-    "chatbot": {
-      "title": "AI 留学顾问",
-      "greeting": "你好！我是留学申请助手",
-      "greetingDesc": "我可以帮你分析档案竞争力、推荐适合的学校、指导文书写作、规划申请时间线",
-      "placeholder": "输入你的问题...",
-      "usingTools": "正在使用 {count} 个工具",
-      "thinking": "思考中...",
-      "charCount": "{count} 字符",
-      "sendHint": "按 Enter 发送，Shift + Enter 换行",
-      "tools": {
-        "searchSchools": "搜索学校",
-        "getUserProfile": "获取档案",
-        "analyzeProfile": "分析档案",
-        "searchCases": "搜索案例",
-        "getDeadlines": "获取截止日期",
-        "reviewEssay": "评估文书",
-        "queryDatabase": "查询数据库"
-      },
-      "agents": {
-        "orchestrator": "智能助手",
-        "essay": "文书专家",
-        "school": "选校专家",
-        "profile": "档案分析",
-        "timeline": "时间规划"
-      },
-      "quickActions": {
-        "analyzeProfile": "分析我的档案",
-        "recommendSchools": "推荐学校",
-        "reviewEssay": "评估文书",
-        "checkDeadlines": "查看截止日期"
-      },
-      "quickMessages": {
-        "analyzeProfile": "请帮我分析一下我的档案竞争力",
-        "recommendSchools": "根据我的背景推荐一些适合的学校",
-        "reviewEssay": "帮我评估一下我的文书",
-        "checkDeadlines": "帮我整理一下目标学校的申请截止日期"
-      }
+    "results": {
+      "admitted": "录取",
+      "rejected": "拒绝",
+      "waitlisted": "候补",
+      "deferred": "延迟"
     },
     "toast": {
-      "analysisComplete": "分析完成",
-      "analysisFailed": "分析失败",
-      "evaluationComplete": "评估完成",
-      "evaluationFailed": "评估失败",
-      "generationComplete": "生成完成",
-      "generationFailed": "生成失败",
-      "recommendationComplete": "推荐完成",
-      "recommendationFailed": "推荐失败",
-      "sendFailed": "发送失败",
-      "polishComplete": "润色完成",
-      "polishFailed": "润色失败",
-      "copiedToClipboard": "已复制到剪贴板"
-    },
-    "errors": {
-      "requestError": "抱歉，处理请求时出现错误。请稍后重试。",
-      "genericError": "出现错误"
+      "success": "案例提交成功",
+      "requiredFields": "请填写必填字段"
     }
+  },
+  "ui": {
+    "theme": {
+      "switchToDark": "切换到深色模式",
+      "switchToLight": "切换到浅色模式",
+      "dark": "暗色",
+      "light": "亮色",
+      "system": "跟随系统"
+    },
+    "empty": {
+      "loadFailed": "加载失败",
+      "loadFailedDesc": "无法加载数据，请稍后重试。",
+      "retryLoad": "重新加载",
+      "retry": "重试",
+      "noContent": "暂无内容",
+      "noContentDesc": "当前没有可显示的内容",
+      "noResultsDesc": "没有找到匹配的结果，请尝试其他筛选条件",
+      "clearFilter": "清除筛选",
+      "noCases": "暂无案例",
+      "noCasesDesc": "目前还没有申请案例，快来分享你的经历吧！",
+      "shareMine": "分享我的案例",
+      "noSchools": "没有找到学校",
+      "noSchoolsDesc": "没有匹配的学校，请尝试修改搜索条件",
+      "browseAll": "浏览全部",
+      "noResults": "暂无结果",
+      "noResultsQuery": "未找到 \"{query}\" 相关结果"
+    },
+    "milestone": {
+      "profileCompleteTitle": "档案完善！",
+      "profileCompleteDesc": "您的档案已经可以用于录取预测了"
+    },
+    "dialog": {
+      "cancel": "取消",
+      "confirm": "确认",
+      "delete": "删除",
+      "save": "保存",
+      "close": "关闭",
+      "deleteTitle": "确认删除",
+      "deleteDesc": "此操作不可撤回，确定要继续吗？",
+      "deleteWithName": "确定要删除 \"{name}\" 吗？"
+    },
+    "a11y": {
+      "currentAccount": "当前账户",
+      "mainContent": "主要内容",
+      "openMenu": "打开菜单",
+      "skipToMain": "跳转到主内容",
+      "skipToNav": "跳转到导航"
+    },
+    "command": {
+      "searchPlaceholder": "搜索命令...",
+      "nav": "导航",
+      "navigate": "导航到",
+      "other": "其他",
+      "noResults": "未找到结果",
+      "select": "选择",
+      "home": "首页",
+      "profile": "个人档案",
+      "schools": "学校",
+      "cases": "案例",
+      "aiAssistant": "AI 助手",
+      "helpDocs": "帮助文档",
+      "switchToDark": "切换暗色模式",
+      "switchToLight": "切换亮色模式",
+      "keywords": {
+        "home": "首页,主页",
+        "profile": "档案,个人",
+        "schools": "学校,院校",
+        "cases": "案例,申请",
+        "aiAssistant": "AI,助手,智能",
+        "help": "帮助,支持",
+        "theme": "主题,暗色,亮色"
+      },
+      "settings": "设置",
+      "close": "关闭",
+      "search": "搜索"
+    },
+    "offline": {
+      "checkConnection": "请检查网络连接",
+      "connectionRestored": "网络连接已恢复",
+      "currentlyOffline": "当前离线",
+      "youAreOffline": "您已离线",
+      "close": "关闭"
+    },
+    "password": {
+      "strength": "密码强度"
+    },
+    "sortable": {
+      "dragToSort": "拖拽排序"
+    },
+    "stepper": {
+      "step": "步骤",
+      "next": "下一步",
+      "previous": "上一步",
+      "complete": "完成",
+      "processing": "处理中...",
+      "submitSuccess": "提交成功"
+    },
+    "unsavedChanges": {
+      "title": "未保存的更改",
+      "description": "您有未保存的更改，确定要离开吗？",
+      "continueEditing": "继续编辑",
+      "discardAndLeave": "放弃并离开"
+    }
+  },
+  "feedback": {
+    "button": "反馈",
+    "title": "发送反馈",
+    "description": "帮助我们改进产品",
+    "types": {
+      "bug": "问题报告",
+      "feature": "功能建议",
+      "question": "问题咨询",
+      "other": "其他"
+    },
+    "selectType": "选择反馈类型",
+    "placeholder": "请描述您的反馈...",
+    "submit": "提交",
+    "success": "感谢您的反馈！",
+    "error": "提交失败，请重试",
+    "quickLabel": "快速反馈",
+    "detailDescription": "详细描述",
+    "emailLabel": "联系邮箱",
+    "emailPlaceholder": "输入你的邮箱",
+    "addScreenshot": "添加截图",
+    "screenshotInDev": "截图功能开发中",
+    "contentRequired": "请输入反馈内容",
+    "submitting": "提交中...",
+    "successTitle": "感谢反馈",
+    "successDesc": "我们会认真对待每条反馈",
+    "submitFailed": "提交失败，请重试",
+    "thumbsUpThanks": "感谢你的肯定！",
+    "thumbsDownThanks": "感谢你的反馈，我们会改进",
+    "placeholders": {
+      "bug": "请详细描述您遇到的问题，包括操作步骤和错误信息...",
+      "feature": "请描述您希望添加的功能或改进建议...",
+      "question": "请描述您的问题，我们会尽快回复...",
+      "other": "请描述您的反馈内容..."
+    }
+  },
+  "welcome": {
+    "welcome": {
+      "title": "欢迎来到 StudyAbroad",
+      "description": "您的 AI 留学助手，帮助您找到梦想学校"
+    },
+    "schools": {
+      "title": "浏览全球顶尖学校",
+      "description": "探索世界各地的大学，查看详细的学校信息和录取率"
+    },
+    "ai": {
+      "title": "AI 智能推荐",
+      "description": "根据您的背景获取个性化学校推荐和专业指导"
+    },
+    "prediction": {
+      "title": "精准录取预测",
+      "description": "利用大数据分析和机器学习预测您的录取概率"
+    },
+    "start": "开始探索",
+    "skip": "跳过",
+    "next": "下一步",
+    "prev": "上一步",
+    "finish": "完成",
+    "skipTour": "跳过引导",
+    "nextBtn": "下一步",
+    "prevBtn": "上一步",
+    "startExperience": "开始体验",
+    "resetButton": "重置引导",
+    "steps": {
+      "welcome": {
+        "title": "欢迎使用留学平台",
+        "desc": "探索你的留学之路，发现最适合的学校和专业"
+      },
+      "schools": {
+        "title": "浏览学校",
+        "desc": "查看详细的学校信息、排名和录取数据"
+      },
+      "ai": {
+        "title": "AI 助手",
+        "desc": "智能问答，获取个性化的留学建议"
+      },
+      "prediction": {
+        "title": "录取预测",
+        "desc": "基于你的档案预测录取概率"
+      }
+    }
+  },
+  "schoolSelector": {
+    "title": "选择学校",
+    "searchPlaceholder": "搜索学校...",
+    "noResults": "没有找到学校",
+    "noResultsHint": "尝试使用不同的关键词",
+    "acceptanceRate": "录取率",
+    "selectedCount": "已选择 {count}/{max}",
+    "confirmSelection": "确认选择"
+  },
+  "createList": {
+    "title": "创建榜单",
+    "description": "创建一个新的学校榜单",
+    "titleLabel": "标题",
+    "titlePlaceholder": "输入榜单标题...",
+    "categoryLabel": "分类",
+    "categories": {
+      "school_ranking": "学校排名",
+      "schoolRanking": "学校排名",
+      "majorRanking": "专业排名",
+      "tips": "经验分享",
+      "other": "其他"
+    },
+    "visibilityLabel": "可见性",
+    "public": "公开",
+    "private": "私密",
+    "descriptionLabel": "描述",
+    "descriptionPlaceholder": "输入榜单描述...",
+    "schoolsLabel": "学校",
+    "addSchool": "添加学校",
+    "noSchools": "还没有添加学校",
+    "toast": {
+      "success": "榜单创建成功",
+      "titleRequired": "请输入标题",
+      "schoolsRequired": "请至少添加一所学校"
+    },
+    "createButton": "创建",
+    "selectSchools": "选择学校"
+  },
+  "resume": {
+    "export": {
+      "title": "导出简历",
+      "description": "选择模板和格式导出你的简历"
+    },
+    "title": "导出简历",
+    "description": "选择模板和格式导出你的简历",
+    "selectTemplate": "选择模板",
+    "selectModules": "选择模块",
+    "language": "语言",
+    "anonymize": "匿名模式",
+    "anonymizeOff": "关闭匿名",
+    "noDataWarning": "请先完善个人资料",
+    "templates": {
+      "basic": "基础模板",
+      "basicDesc": "简洁清晰的简历模板",
+      "professional": "专业模板",
+      "professionalDesc": "详细的专业简历模板"
+    },
+    "modules": {
+      "basic": "基本信息",
+      "academics": "学术背景",
+      "activities": "活动经历",
+      "awards": "获奖情况",
+      "targetSchools": "目标学校"
+    },
+    "exportButton": "导出",
+    "exporting": "导出中...",
+    "anonymizeOn": "匿名模式开启",
+    "toast": {
+      "noData": "请先完善个人资料",
+      "success": "简历导出成功",
+      "failed": "导出失败，请重试"
+    },
+    "languageLabel": {
+      "zh": "中文",
+      "en": "英文"
+    }
+  },
+  "stats": {
+    "vsLastMonth": "较上月"
+  },
+  "schools": {
+    "title": "学校库",
+    "description": "浏览和搜索全球顶尖院校",
+    "searchPlaceholder": "搜索学校名称...",
+    "noResults": "没有找到学校",
+    "tryDifferentSearch": "尝试使用不同的关键词搜索",
+    "resultsCount": "共 {count} 所学校",
+    "country": "国家",
+    "countries": {
+      "all": "全部国家",
+      "us": "美国",
+      "uk": "英国",
+      "ca": "加拿大",
+      "canada": "加拿大",
+      "australia": "澳大利亚",
+      "germany": "德国",
+      "japan": "日本"
+    },
+    "sort": {
+      "rank": "按排名",
+      "name": "按名称",
+      "acceptance": "按录取率"
+    },
+    "sortBy": "排序方式",
+    "advancedFilter": "高级筛选",
+    "showAIRecommend": "显示AI推荐",
+    "hideAIRecommend": "隐藏AI推荐",
+    "acceptanceRate": "录取率",
+    "students": "学生数",
+    "viewDetails": "查看详情",
+    "indices": {
+      "legend": "指数图例",
+      "safetyIndex": "安全指数",
+      "happinessIndex": "幸福指数",
+      "foodIndex": "美食指数",
+      "moreIsBetter": "图标越多越好",
+      "noData": "暂无数据"
+    },
+    "gradeLabels": {
+      "A+": "A+",
+      "A": "A",
+      "A-": "A-",
+      "B+": "B+",
+      "B": "B",
+      "B-": "B-",
+      "C+": "C+",
+      "C": "C",
+      "C-": "C-",
+      "D+": "D+",
+      "D": "D",
+      "D-": "D-",
+      "F": "F"
+    }
+  },
+  "findCollege": {
+    "title": "Find Your College",
+    "description": "DIY 选校工具，智能筛选和排序，找到最适合你的学校",
+    "searchPlaceholder": "搜索学校名称...",
+    "allFilters": "全部筛选",
+    "filterOptions": "筛选选项",
+    "schoolType": "学校类型",
+    "public": "公立",
+    "private": "私立",
+    "tuitionRange": "学费范围",
+    "tuition": {
+      "all": "全部",
+      "20k-30k": "$20,000 - $30,000",
+      "30k-40k": "$30,000 - $40,000",
+      "40k-50k": "$40,000 - $50,000",
+      "50k+": "$50,000+"
+    },
+    "resetFilters": "重置筛选",
+    "weightSort": "权重排序",
+    "weights": {
+      "title": "权重设置",
+      "description": "调整各项指标的权重",
+      "ranking": "US News 排名",
+      "salary": "平均薪资",
+      "tuition": "学费",
+      "tuitionDesc": "年度学费金额",
+      "acceptanceRate": "录取率",
+      "acceptanceRateDesc": "越低表示竞争越激烈",
+      "preview": "预览排名"
+    },
+    "indexLegend": "指数图例",
+    "safetyIndex": "安全指数",
+    "happinessIndex": "幸福指数",
+    "foodIndex": "美食指数",
+    "indexHint": "图标越多越好",
+    "noData": "暂无数据",
+    "resultsCount": "共 {count} 所学校",
+    "addToList": "加入清单",
+    "added": "已添加",
+    "addedToList": "已添加到选校清单",
+    "alreadyInList": "该学校已在清单中",
+    "addFailed": "添加失败，请重试",
+    "noResults": "没有找到学校",
+    "noResultsDesc": "尝试调整筛选条件",
+    "loadError": "加载失败",
+    "loadErrorDesc": "无法加载学校数据，请重试",
+    "selectSchools": "选择学校",
+    "selectedCount": "已选 {count} 所",
+    "selectedSchools": "已选学校",
+    "batchAdd": "批量加入清单",
+    "addAllToList": "全部加入清单",
+    "clearSelection": "清除全部",
+    "selectHint": "勾选学校后点击",
+    "batchAddDesc": "将以下学校批量加入你的选校清单",
+    "batchAddSuccess": "已将 {count} 所学校加入清单",
+    "timelineGenerated": "已自动生成申请时间线",
+    "viewTimeline": "查看时间线",
+    "advancedFilter": "高级筛选"
+  },
+  "uncommonApp": {
+    "title": "Uncommon App",
+    "description": "管理你的选校清单和个人档案，获取 AI 智能推荐",
+    "mySchoolList": "我的选校清单",
+    "addSchool": "添加学校",
+    "emptyList": "清单为空",
+    "emptyListDesc": "开始添加你感兴趣的学校",
+    "startAdding": "开始添加",
+    "removedFromList": "已从清单移除",
+    "tier": {
+      "safety": "保底校",
+      "target": "匹配校",
+      "reach": "冲刺校"
+    },
+    "aiRecommendations": "AI 智能推荐",
+    "aiRecommendationsDesc": "基于你的背景，AI 为你推荐最适合的学校",
+    "getRecommendations": "获取推荐",
+    "aiRecommendationsLoaded": "AI 推荐已加载",
+    "aiRecommendationsError": "获取推荐失败",
+    "clickToGetRecommendations": "点击获取 AI 个性化推荐",
+    "myProfile": "我的档案",
+    "profileScore": "档案完成度",
+    "testScores": "考试成绩",
+    "activities": "活动经历",
+    "awards": "获奖情况",
+    "gradeProfile": "评估我的档案",
+    "analyzing": "分析中...",
+    "aiAnalyzing": "AI Agent 分析中...",
+    "analysisComplete": "分析完成！",
+    "editProfile": "编辑档案",
+    "noProfile": "未创建档案",
+    "noProfileDesc": "创建档案后可获取 AI 分析",
+    "createProfile": "创建档案",
+    "aiAnalysis": "AI 档案分析",
+    "exportReport": "导出报告",
+    "done": "完成",
+    "reportExported": "报告导出成功",
+    "analysisError": "分析失败，请重试",
+    "aiTimeout": "AI 处理时间较长，请稍后重试",
+    "loginRequired": "请先登录",
+    "reAnalyzing": "重新分析...",
+    "reAnalyze": "重新分析",
+    "potential": "+{score} 潜力",
+    "tabs": {
+      "overview": "综合分析",
+      "strengths": "优势劣势",
+      "suggestions": "提升建议",
+      "activities": "推荐活动"
+    },
+    "aiPrompts": {
+      "analyzeProfile": "请全面分析我的档案背景，评估我的申请竞争力。包括：1) 整体评分 2) 优势分析 3) 不足分析 4) 提升建议 5) 推荐活动 6) 预计提升空间",
+      "recommendSchools": "根据我的背景，请推荐适合我的学校列表，分为冲刺校(Reach)、匹配校(Target)、保底校(Safety)三类，每类推荐2-3所。请用清晰的列表格式输出。"
+    },
+    "defaults": {
+      "nearTerm": "近期",
+      "nearTermTask": "完善背景",
+      "laterTerm": "3个月后",
+      "laterTermTask": "开始申请",
+      "viewRecommendation": "查看详细推荐"
+    },
+    "analysis": {
+      "prediction": {
+        "title": "录取率预测",
+        "subtitle": "综合评分",
+        "content": "根据你的背景分析，你在目标学校的录取几率整体处于中上水平。标化成绩优秀，活动经历丰富，但可以进一步加强学术研究方面的经历。"
+      },
+      "strengths": {
+        "title": "强弱分析",
+        "label": "优势",
+        "item1": "标化成绩优秀，高于目标学校平均水平",
+        "item2": "活动经历丰富，展现出领导力"
+      },
+      "weaknesses": {
+        "label": "待提升",
+        "item1": "学术研究经历相对较少"
+      },
+      "improvements": {
+        "title": "提升建议",
+        "item1": "参加学术研究项目，发表论文或参加学术会议",
+        "item2": "深化现有活动的影响力，争取更高级别的奖项"
+      },
+      "activities": {
+        "title": "推荐活动",
+        "item1": "参加大学暑期研究项目",
+        "item2": "申请实习机会，积累实践经验"
+      },
+      "timeline": {
+        "title": "时间规划",
+        "task1": "完成 SAT/ACT 考试",
+        "task2": "开始撰写主文书"
+      },
+      "projection": {
+        "title": "预计提升",
+        "currentScore": "当前评分",
+        "projectedScore": "预计提升至"
+      },
+      "noData": "暂无数据"
+    }
+  },
+  "notifications": {
+    "title": "通知",
+    "unreadCount": "{count} 未读",
+    "noUnread": "暂无未读通知",
+    "tabs": {
+      "all": "全部",
+      "unread": "未读"
+    },
+    "empty": "暂无通知",
+    "emptyHint": "有新消息会在这里显示",
+    "markAllRead": "全部已读",
+    "clearRead": "清除已读",
+    "allRead": "全部已读",
+    "view": "查看"
+  },
+  "milestone": {
+    "profileComplete": {
+      "title": "档案完善！",
+      "message": "太棒了！你已经完成了个人档案，AI 现在可以更好地为你推荐院校了。"
+    },
+    "firstPrediction": {
+      "title": "首次预测！",
+      "message": "恭喜完成第一次录取预测！继续探索更多目标院校吧。"
+    },
+    "firstEssay": {
+      "title": "文书起航！",
+      "message": "你的第一篇文书已创建！继续打磨，让招生官看到你的闪光点。"
+    },
+    "schoolAdded": {
+      "title": "目标确定！",
+      "message": "已添加新的目标院校！距离梦想又近了一步。"
+    },
+    "streak": {
+      "title": "连续打卡！",
+      "message": "保持这份热情，坚持就是胜利！"
+    },
+    "levelUp": {
+      "title": "等级提升！",
+      "message": "你的努力得到了回报，继续加油！"
+    },
+    "achievement": {
+      "title": "成就解锁！",
+      "message": "你解锁了一个新成就！继续探索更多。"
+    },
+    "continue": "继续前进"
+  },
+  "terms": {
+    "title": "服务条款",
+    "lastUpdated": "最后更新: {date}",
+    "importantBadge": "重要提示",
+    "sectionNumber": "第 {num} 条",
+    "introduction": "请仔细阅读以下服务条款。使用我们的服务即表示您同意受这些条款的约束。",
+    "acceptance": {
+      "title": "接受条款",
+      "content": "通过访问或使用留学申请平台，您同意遵守本服务条款。如果您不同意这些条款，请勿使用我们的服务。"
+    },
+    "services": {
+      "title": "服务描述",
+      "content": "我们提供留学申请相关的信息服务，包括但不限于学校推荐、录取预测、案例分享等功能。"
+    },
+    "userConduct": {
+      "title": "用户行为规范",
+      "content": "用户承诺不会上传虚假信息、侵犯他人权益、或进行任何违法行为。"
+    },
+    "intellectualProperty": {
+      "title": "知识产权",
+      "content": "平台上的所有内容（包括但不限于文字、图片、代码）均受知识产权法保护。"
+    },
+    "disclaimer": {
+      "title": "免责声明",
+      "content": "我们尽力确保信息准确，但不对预测结果或建议的准确性做出保证。最终申请决定应由用户自行判断。"
+    },
+    "termination": {
+      "title": "终止条款",
+      "content": "我们保留在用户违反条款时终止其账户的权利。"
+    },
+    "contact": {
+      "title": "联系我们",
+      "content": "如有任何问题，请通过以下方式联系我们"
+    }
+  },
+  "privacy": {
+    "title": "隐私政策",
+    "lastUpdated": "最后更新: {date}",
+    "securityBadge": "安全承诺",
+    "commitment": {
+      "title": "我们的承诺",
+      "content": "我们致力于保护您的隐私和个人信息安全。本隐私政策说明我们如何收集、使用和保护您的数据。"
+    },
+    "collection": {
+      "title": "信息收集",
+      "content": "我们收集以下类型的信息以提供更好的服务：",
+      "items": {
+        "personal": "个人身份信息（姓名、邮箱等）",
+        "academic": "学术背景信息（GPA、标化成绩等）",
+        "usage": "使用数据（浏览记录、功能使用情况）",
+        "device": "设备信息（浏览器类型、IP地址等）"
+      }
+    },
+    "usage": {
+      "title": "信息使用",
+      "content": "我们使用收集的信息用于以下目的：",
+      "items": {
+        "service": "提供和改进我们的服务",
+        "personalization": "个性化您的体验",
+        "communication": "与您沟通服务相关信息",
+        "analytics": "分析和改进平台性能"
+      }
+    },
+    "sharing": {
+      "title": "信息共享",
+      "content": "我们不会出售您的个人信息。仅在以下情况下可能共享：",
+      "items": {
+        "consent": "经您明确同意",
+        "legal": "法律要求或配合执法",
+        "partners": "与服务提供商合作（受保密协议约束）"
+      }
+    },
+    "security": {
+      "title": "数据安全",
+      "content": "我们采用行业标准的安全措施保护您的数据，包括加密传输、安全存储和访问控制。"
+    },
+    "rights": {
+      "title": "您的权利",
+      "content": "您对自己的数据享有以下权利：",
+      "items": {
+        "access": "访问您的个人数据",
+        "correction": "更正不准确的数据",
+        "deletion": "请求删除您的数据",
+        "portability": "导出您的数据"
+      }
+    },
+    "cookies": {
+      "title": "Cookie 使用",
+      "content": "我们使用 Cookie 和类似技术来改善用户体验、分析流量和个性化内容。"
+    },
+    "changes": {
+      "title": "政策变更",
+      "content": "我们可能会不时更新本隐私政策。重大变更时我们会通过邮件或平台通知您。"
+    },
+    "contact": {
+      "title": "隐私问题咨询",
+      "content": "如有任何隐私相关问题，请联系我们"
+    }
+  },
+  "about": {
+    "badge": "关于我们",
+    "title": "留学申请平台",
+    "subtitle": "让每一个留学梦想都能实现",
+    "stats": {
+      "users": "注册用户",
+      "schools": "覆盖院校",
+      "cases": "真实案例",
+      "accuracy": "预测准确率"
+    },
+    "story": {
+      "title": "我们的故事",
+      "content": "留学申请平台诞生于一群留学归来的创业者对教育公平的追求。我们深知留学申请过程中信息不对称带来的困扰，因此致力于用技术手段为每一位申请者提供专业、透明、高效的服务。"
+    },
+    "vision": {
+      "title": "我们的愿景",
+      "content": "我们希望成为全球最值得信赖的留学服务平台，通过AI技术和真实数据，让每一位申请者都能做出最适合自己的选择。"
+    },
+    "values": {
+      "badge": "我们的价值观",
+      "title": "我们的价值观",
+      "mission": {
+        "title": "使命驱动",
+        "desc": "帮助学生实现留学梦想是我们的核心使命"
+      },
+      "innovation": {
+        "title": "持续创新",
+        "desc": "用最新技术不断优化用户体验"
+      },
+      "trust": {
+        "title": "诚信透明",
+        "desc": "真实数据，客观分析，不夸大不误导"
+      },
+      "care": {
+        "title": "用心服务",
+        "desc": "每一位用户都值得最好的服务"
+      }
+    },
+    "timeline": {
+      "badge": "发展历程",
+      "title": "发展历程",
+      "founded": {
+        "title": "平台创立",
+        "desc": "团队组建，开始产品研发"
+      },
+      "growth": {
+        "title": "快速发展",
+        "desc": "用户突破1万，覆盖500+院校"
+      },
+      "ai": {
+        "title": "AI升级",
+        "desc": "引入GPT-4，预测准确率大幅提升"
+      },
+      "expansion": {
+        "title": "全球拓展",
+        "desc": "服务范围扩展至全球主要留学目的地"
+      }
+    },
+    "team": {
+      "badge": "核心团队",
+      "title": "核心团队",
+      "members": {
+        "zhangming": {
+          "name": "张明",
+          "role": "CEO & 创始人"
+        },
+        "lihua": {
+          "name": "李华",
+          "role": "CTO"
+        },
+        "wangfang": {
+          "name": "王芳",
+          "role": "产品总监"
+        },
+        "chenjie": {
+          "name": "陈杰",
+          "role": "AI 研发负责人"
+        }
+      }
+    },
+    "contact": {
+      "title": "联系我们",
+      "desc": "有任何问题或建议？我们随时欢迎您的来信"
+    }
+  },
+  "security": {
+    "title": "账号安全",
+    "description": "管理您的账号安全设置",
+    "changePassword": "修改密码",
+    "changePasswordDesc": "定期修改密码可以提高账号安全性",
+    "currentPassword": "当前密码",
+    "newPassword": "新密码",
+    "confirmPassword": "确认新密码",
+    "passwordRequirements": "密码至少8位，包含字母和数字",
+    "updatePassword": "更新密码",
+    "passwordMismatch": "两次输入的密码不一致",
+    "passwordTooShort": "密码长度至少8位",
+    "passwordChanged": "密码修改成功",
+    "twoFactor": "两步验证",
+    "twoFactorDesc": "为您的账号添加额外的安全保护",
+    "twoFactorEnabled": "两步验证已开启",
+    "twoFactorDisabled": "两步验证已关闭",
+    "twoFactorOn": "两步验证已启用，每次登录需要验证码",
+    "twoFactorOff": "启用两步验证以增强账号安全",
+    "enabled": "已启用",
+    "disabled": "已禁用",
+    "activeSessions": "活跃会话",
+    "activeSessionsDesc": "查看和管理您的登录设备",
+    "currentSession": "当前设备",
+    "lastActive": "最后活跃",
+    "revokeSession": "撤销",
+    "sessionRevoked": "会话已撤销",
+    "logoutAll": "登出所有设备",
+    "logoutAllDesc": "从所有设备登出（当前设备除外）",
+    "logoutAllTitle": "登出所有设备",
+    "logoutAllConfirm": "确定要从所有其他设备登出吗？",
+    "loggedOutAll": "已从所有其他设备登出",
+    "revoke": "撤销",
+    "dangerZone": "危险操作",
+    "dangerZoneDesc": "删除账户将永久删除您的所有数据，此操作不可逆。",
+    "deleteAccount": "删除账户"
+  },
+  "subscription": {
+    "title": "订阅管理",
+    "description": "管理您的订阅计划和账单",
+    "currentPlan": "当前计划",
+    "freePlan": "免费版",
+    "proPlan": "专业版",
+    "premiumPlan": "高级版",
+    "features": "功能特性",
+    "upgrade": "升级",
+    "downgrade": "降级",
+    "cancel": "取消订阅",
+    "renew": "续订",
+    "billingHistory": "账单历史",
+    "nextBilling": "下次扣款",
+    "amount": "金额",
+    "status": "状态",
+    "paid": "已支付",
+    "pending": "待支付",
+    "failed": "支付失败",
+    "popular": "热门",
+    "current": "当前",
+    "perMonth": "/月",
+    "perYear": "/年",
+    "savePercent": "节省 {percent}%",
+    "monthlyBilling": "按月付费",
+    "yearlyBilling": "按年付费",
+    "validForever": "永久有效",
+    "currentPlanLabel": "当前计划",
+    "mostPopular": "最受欢迎",
+    "paymentHistory": "支付记录",
+    "paymentHistoryDesc": "查看您的历史支付记录",
+    "plans": {
+      "free": {
+        "name": "免费版",
+        "period": "永久",
+        "description": "基础功能，适合初次体验",
+        "features": ["浏览学校信息", "查看公开案例", "基础 AI 对话 (每日5次)", "档案管理"]
+      },
+      "pro": {
+        "name": "专业版",
+        "period": "月",
+        "description": "解锁全部功能，高效申请",
+        "features": [
+          "免费版所有功能",
+          "无限 AI 对话",
+          "录取概率预测",
+          "文书评估与润色",
+          "详细案例数据",
+          "优先客服支持"
+        ]
+      },
+      "premium": {
+        "name": "尊享版",
+        "period": "月",
+        "description": "一对一服务，全程陪伴",
+        "features": [
+          "专业版所有功能",
+          "专属留学顾问",
+          "申请策略规划",
+          "文书深度修改",
+          "模拟面试指导",
+          "VIP 专属社群"
+        ]
+      }
+    },
+    "getStarted": "开始订阅",
+    "noInvoices": "暂无账单",
+    "upgradeSuccess": "升级成功"
+  },
+  "helpCenter": {
+    "title": "帮助中心",
+    "description": "找到您需要的帮助和支持",
+    "searchTitle": "有什么可以帮您？",
+    "searchPlaceholder": "搜索帮助内容...",
+    "all": "全部",
+    "faqTitle": "常见问题",
+    "faqDescription": "浏览常见问题获取答案",
+    "resources": {
+      "docs": {
+        "title": "文档中心",
+        "description": "查看详细使用文档"
+      },
+      "video": {
+        "title": "视频教程",
+        "description": "观看视频学习使用"
+      },
+      "blog": {
+        "title": "博客文章",
+        "description": "阅读最新资讯和技巧"
+      }
+    },
+    "categories": {
+      "gettingStarted": "入门指南",
+      "aiFeatures": "AI 功能",
+      "featureUsage": "功能使用",
+      "privacySecurity": "隐私安全"
+    },
+    "faqItems": {
+      "howToStart": {
+        "question": "如何开始使用平台？",
+        "answer": "注册账号后，完善您的个人档案，然后就可以开始使用各项功能了。"
+      },
+      "whatCanAIDo": {
+        "question": "AI 可以帮我做什么？",
+        "answer": "AI 可以帮助您进行选校推荐、录取预测、文书润色等。"
+      },
+      "predictionAccuracy": {
+        "question": "预测准确率如何？",
+        "answer": "基于大量真实案例数据，我们的预测准确率达到 95% 以上。"
+      },
+      "dataPrivacy": {
+        "question": "我的数据安全吗？",
+        "answer": "我们采用端到端加密保护您的数据，绝不会泄露给第三方。"
+      },
+      "deleteAccount": {
+        "question": "如何删除账户？",
+        "answer": "在设置页面的账户操作中可以删除账户。"
+      },
+      "shareCase": {
+        "question": "如何分享申请案例？",
+        "answer": "在案例库页面点击分享案例按钮，填写相关信息即可。"
+      },
+      "exportData": {
+        "question": "如何导出我的数据？",
+        "answer": "在个人档案页面点击导出数据按钮。"
+      },
+      "verifiedUser": {
+        "question": "如何成为认证用户？",
+        "answer": "完成身份验证流程即可获得认证标识。"
+      }
+    },
+    "otherQuestions": "还有其他问题？",
+    "contactSupport": "联系我们的客服团队",
+    "sendEmail": "发送邮件",
+    "onlineService": "在线客服",
+    "noResults": "未找到相关帮助"
   },
   "essays": {
     "title": "我的文书",
-    "description": "管理您的申请文书，使用 AI 获取专业评估",
+    "description": "管理您的申请文书，使用 AI 功能提升写作质量",
+    "new": "新建文书",
     "list": "文书列表",
-    "new": "新建",
+    "selectToView": "选择一篇文书查看",
+    "clickNewToCreate": "点击「新建文书」开始创作",
     "edit": "编辑文书",
-    "create": "新建文书",
-    "editDesc": "修改您的文书内容",
+    "create": "创建文书",
+    "editDesc": "编辑您的文书内容",
     "createDesc": "创建一篇新的申请文书",
-    "label": {
-      "title": "标题",
-      "prompt": "题目 (Prompt)",
-      "content": "正文"
-    },
-    "placeholder": {
-      "title": "例如：Common App 主文书",
-      "prompt": "例如：Describe a challenge you faced and how you overcame it...",
-      "content": "开始写作..."
-    },
     "wordCount": "{count} 词",
     "updatedAt": "更新于",
-    "selectToView": "选择一篇文书查看",
-    "clickNewToCreate": "或点击\"新建\"开始创作",
-    "empty": {
-      "title": "暂无文书",
-      "description": "点击右上角「新建」开始写作"
-    },
     "aiTools": "AI 工具",
     "aiActions": {
-      "review": "文书评估",
+      "review": "AI 评分",
       "polish": "AI 润色",
       "continue": "AI 续写",
       "generateOpening": "生成开头",
-      "rewriteSelected": "改写选中段落"
+      "rewriteSelected": "改写选中",
+      "brainstorm": "头脑风暴",
+      "askQuestion": "提问",
+      "askQuestionMessage": "关于文书，我有一个问题..."
+    },
+    "label": {
+      "title": "标题",
+      "prompt": "题目/提示",
+      "content": "正文"
+    },
+    "placeholder": {
+      "title": "输入文书标题",
+      "prompt": "输入文书题目或写作提示（可选）",
+      "content": "开始写作..."
     },
     "dialog": {
-      "reviewTitle": "AI 文书评估",
+      "deleteTitle": "删除文书",
+      "deleteDesc": "确定要删除这篇文书吗？此操作无法撤销。",
+      "reviewTitle": "AI 评分结果",
       "polishTitle": "AI 润色结果",
-      "polishDesc": "保持原意的同时提升语言表达质量",
-      "continueTitle": "AI 续写",
-      "continueDesc": "根据已有内容智能续写",
-      "openingTitle": "AI 生成开头",
-      "openingDesc": "选择一个吸引人的开头",
+      "polishDesc": "AI 已根据您的文书生成润色建议",
+      "continueTitle": "AI 续写结果",
+      "continueDesc": "AI 根据您的内容生成了续写建议",
+      "openingTitle": "开头建议",
+      "openingDesc": "AI 为您的文书生成了多种开头风格",
       "rewriteTitle": "段落改写",
-      "rewriteDesc": "选择一个改写版本",
-      "deleteTitle": "确认删除？",
-      "deleteDesc": "此操作不可撤销，文书将被永久删除。"
+      "rewriteDesc": "AI 为选中的段落生成了多种改写版本"
+    },
+    "toast": {
+      "saved": "文书保存成功",
+      "updated": "文书更新成功",
+      "deleted": "文书删除成功",
+      "reviewFailed": "AI 评分失败，请重试",
+      "polishFailed": "AI 润色失败，请重试",
+      "rewriteFailed": "改写失败，请重试",
+      "continueFailed": "续写失败，请重试",
+      "openingFailed": "生成开头失败，请重试",
+      "contentRequired": "请先输入文书内容",
+      "selectParagraph": "请先选中要改写的段落",
+      "promptRequired": "请先输入文书题目",
+      "copied": "已复制到剪贴板",
+      "polishApplied": "已应用润色结果",
+      "continuationAdded": "已将续写内容添加到文书"
+    },
+    "empty": {
+      "title": "暂无文书",
+      "description": "点击「新建文书」开始创作您的申请文书"
     },
     "tabs": {
-      "polishedResult": "润色后文书",
-      "changeComparison": "修改对比",
-      "details": "详细评分"
-    },
-    "review": {
-      "noSuggestions": "暂无改进建议",
-      "excellentWork": "您的文书表现优秀！"
+      "details": "详细评分",
+      "polishedResult": "润色结果",
+      "changeComparison": "修改对比"
     },
     "labels": {
       "change": "修改",
-      "original": "原文:",
-      "revised": "修改后:",
-      "nextSteps": "后续发展建议"
+      "original": "原文",
+      "revised": "修改后",
+      "nextSteps": "后续写作建议"
     },
     "actions": {
-      "applyPolish": "应用润色结果",
-      "copyText": "复制",
+      "applyPolish": "应用润色",
+      "copyText": "复制文本",
       "addToEssay": "添加到文书"
     },
+    "review": {
+      "noSuggestions": "太棒了！",
+      "excellentWork": "您的文书质量很高，暂无修改建议"
+    },
+    "aiAssistant": {
+      "title": "AI 文书助手",
+      "defaultDesc": "我可以帮你评审、润色和头脑风暴文书",
+      "selectedDesc": "已选择文书，我可以帮你分析",
+      "currentEssay": "当前文书"
+    },
+    "aiMessages": {
+      "brainstormWithPrompt": "帮我为这个题目头脑风暴",
+      "brainstormWithTitle": "帮我为文书头脑风暴",
+      "review": "请评审这篇文书",
+      "polish": "请润色这篇文书"
+    }
+  },
+  "essayAi": {
+    "review": {
+      "description": "AI 已从多个维度评估了您的文书",
+      "suggestions": "改进建议",
+      "newReview": "重新评分",
+      "title": "文书评审",
+      "schoolName": "目标学校",
+      "schoolNamePlaceholder": "输入学校名称",
+      "major": "申请专业",
+      "majorPlaceholder": "输入专业名称",
+      "start": "开始评审",
+      "result": "评审结果",
+      "strengths": "亮点",
+      "weaknesses": "不足",
+      "success": "评审完成",
+      "failed": "评审失败，请重试",
+      "cost": "消耗积分"
+    },
+    "radar": {
+      "title": "雷达图",
+      "dimensions": {
+        "structure": "结构",
+        "originality": "原创性",
+        "language": "语言",
+        "clarity": "清晰度",
+        "impact": "影响力",
+        "relevance": "相关性"
+      }
+    },
+    "scores": {
+      "clarity": "主题清晰度",
+      "uniqueness": "个人特色",
+      "storytelling": "故事性",
+      "fit": "学校契合度",
+      "language": "语言表达"
+    },
+    "brainstorm": {
+      "title": "文书头脑风暴",
+      "description": "AI 助您发掘独特的文书创意",
+      "school": "目标学校",
+      "schoolPlaceholder": "输入学校名称",
+      "major": "申请专业",
+      "majorPlaceholder": "输入专业名称",
+      "prompt": "文书题目",
+      "promptPlaceholder": "粘贴文书题目...",
+      "background": "个人背景",
+      "backgroundPlaceholder": "描述你的经历和特点...",
+      "start": "开始头脑风暴",
+      "newBrainstorm": "重新开始",
+      "success": "头脑风暴完成",
+      "failed": "头脑风暴失败，请重试",
+      "ideaSelected": "创意已选择",
+      "overallAdvice": "总体建议",
+      "suitableFor": "适合方向",
+      "cost": "消耗积分"
+    },
+    "cancel": "取消",
+    "characters": "字符",
+    "copied": "已复制",
+    "copy": "复制",
+    "tokenUsed": "消耗 Token",
+    "polish": {
+      "title": "文书润色",
+      "description": "AI 帮你优化文书表达",
+      "style": "润色风格",
+      "styles": {
+        "concise": "简洁",
+        "formal": "正式",
+        "vivid": "生动"
+      },
+      "start": "开始润色",
+      "result": "润色结果",
+      "original": "原文",
+      "revised": "修改后",
+      "changes": "修改说明",
+      "preview": "预览",
+      "apply": "应用修改",
+      "applied": "已应用",
+      "retry": "重试",
+      "success": "润色完成",
+      "failed": "润色失败，请重试",
+      "cost": "消耗积分",
+      "styleDesc": {
+        "formal": "正式学术风格，适合申请文书",
+        "vivid": "生动表现力风格，突出个人特色",
+        "concise": "简洁精炼风格，突出核心要点"
+      }
+    },
+    "scoreAverage": "一般",
+    "scoreExcellent": "优秀",
+    "scoreGood": "良好",
+    "scoreNeedsWork": "需改进"
+  },
+  "assessment": {
+    "title": "性格与职业测评",
+    "description": "通过专业测评发现你的性格类型和职业兴趣",
+    "history": "测评历史",
+    "tabs": {
+      "intro": "开始",
+      "mbti": "MBTI",
+      "holland": "霍兰德",
+      "history": "测评历史"
+    },
+    "mbti": {
+      "title": "MBTI 性格测试",
+      "description": "发现你的性格类型",
+      "start": "开始测试",
+      "intro": "通过 48 道题目，基于荣格心理类型理论，发现你的性格类型，了解适合你的学习方式和职业方向。",
+      "disclaimer": "⚠️ 本测评非官方 MBTI®，仅供参考",
+      "strengths": "性格优势",
+      "majors": "推荐专业",
+      "careers": "推荐职业"
+    },
+    "holland": {
+      "title": "霍兰德职业测试",
+      "description": "探索你的职业兴趣",
+      "start": "开始测试",
+      "intro": "通过 30 道题目，了解你的职业兴趣代码，找到最匹配的专业领域。",
+      "fields": "适合领域",
+      "majors": "推荐专业"
+    },
+    "testTypes": {
+      "mbti": "荣格类型性格测试",
+      "holland": "霍兰德职业测试"
+    },
+    "dimensions": {
+      "EI": {
+        "name": "E/I 外向-内向",
+        "description": "你的能量来源"
+      },
+      "SN": {
+        "name": "S/N 感觉-直觉",
+        "description": "你获取信息的方式"
+      },
+      "TF": {
+        "name": "T/F 思考-情感",
+        "description": "你做决定的方式"
+      },
+      "JP": {
+        "name": "J/P 判断-知觉",
+        "description": "你的生活方式"
+      }
+    },
+    "likert": {
+      "stronglyDisagree": "强烈不同意",
+      "stronglyAgree": "强烈同意"
+    },
+    "timeRemaining": "预计还需 {minutes} 分钟",
+    "keyboardHint": "按 1-5 快速选择，←→ 切换题目",
+    "dimensionAnalysis": "维度分析",
+    "mbtiDimensions": {
+      "EI": {
+        "left": "E 外向",
+        "right": "I 内向"
+      },
+      "SN": {
+        "left": "S 感觉",
+        "right": "N 直觉"
+      },
+      "TF": {
+        "left": "T 思考",
+        "right": "F 情感"
+      },
+      "JP": {
+        "left": "J 判断",
+        "right": "P 知觉"
+      }
+    },
+    "mbtiDisclaimer": "⚠️ 本测评基于荣格心理类型理论，非官方 MBTI® 测评，仅供个人探索和教育用途。",
+    "mbtiTrademark": "MBTI® 是 The Myers-Briggs Company 的注册商标。",
+    "hollandCode": "你的职业代码: {code}",
+    "interestScores": "兴趣类型得分",
+    "noHistory": "暂无测评历史",
+    "noHistoryHint": "完成测评后，结果将显示在这里",
+    "startAssessment": "开始测评",
+    "prev": "上一题",
+    "next": "下一题",
+    "submit": "提交测评",
+    "submitError": "提交失败，请重试",
+    "retake": "重新测评",
+    "viewResult": "查看结果",
+    "completedAt": "完成时间",
+    "aiAssistant": {
+      "title": "AI 测评助手",
+      "default": "完成测评后，我可以为你提供个性化分析",
+      "initialNoResult": "完成测评后，AI 将为你解读结果",
+      "initialWithResult": "测评完成！让我来为你详细解读结果",
+      "withResult": "基于你的测评结果，我可以提供以下帮助"
+    },
+    "aiActions": {
+      "explainMbti": "解释 MBTI 结果",
+      "explainMbtiPrompt": "请详细解释我的 MBTI 测评结果",
+      "interpretMbti": "解读 MBTI 性格",
+      "interpretMbtiPrompt": "请解读我的 MBTI 性格特点",
+      "recommendMajorsMbti": "基于 MBTI 推荐专业",
+      "recommendMajorsMbtiPrompt": "根据我的 MBTI 结果推荐适合的专业",
+      "explainHolland": "解释 Holland 结果",
+      "explainHollandPrompt": "请详细解释我的 Holland 测评结果",
+      "interpretHolland": "解读 Holland 类型",
+      "interpretHollandPrompt": "请解读我的 Holland 职业兴趣类型",
+      "recommendMajorsHolland": "基于 Holland 推荐专业",
+      "recommendMajorsHollandPrompt": "根据我的 Holland 结果推荐专业",
+      "majorSelectionGuide": "选专业指南",
+      "majorSelectionGuidePrompt": "请给我提供选专业的指导建议",
+      "comprehensiveAnalysis": "综合分析",
+      "comprehensiveAnalysisPrompt": "请综合分析我的所有测评结果"
+    }
+  },
+  "swipe": {
+    "title": "滑动选校",
+    "description": "像 Tinder 一样发现心仪学校",
+    "play": "开始滑动",
+    "leaderboard": "排行榜",
+    "like": "喜欢",
+    "dislike": "跳过",
+    "superLike": "超级喜欢",
+    "noMore": "暂无更多学校",
+    "loading": "加载中...",
+    "badge": "当前等级",
+    "badgeUpgraded": "等级提升",
+    "newBadge": "新等级",
+    "actualResult": "实际结果",
+    "swipes": "次滑动",
+    "badges": {
+      "bronze": "青铜",
+      "silver": "白银",
+      "gold": "黄金",
+      "platinum": "铂金",
+      "diamond": "钻石"
+    },
+    "noCases": "暂无案例",
+    "noCasesDesc": "当前没有可滑动的案例，请稍后再来！",
+    "refresh": "刷新",
+    "correct": "预测正确",
+    "incorrect": "预测错误",
+    "failed": "操作失败",
+    "points": "积分",
+    "streak": "连胜",
+    "admit": "录取",
+    "reject": "拒绝",
+    "verified": "已认证",
+    "undeclared": "未声明",
+    "none": "无",
+    "acceptanceRate": "录取率",
+    "youreRight": "猜对了！",
+    "notQuite": "猜错了",
+    "nextCase": "下一个案例",
+    "accuracy": "准确率",
+    "totalSwipes": "总预测",
+    "bestStreak": "最佳连胜",
+    "current": "当前",
+    "toNextBadge": "距下一等级",
+    "swipeHint": "向左滑动拒绝，向右滑动录取",
+    "you": "你",
+    "aiTitle": "招生预测 AI 助手",
+    "aiDesc": "我可以帮你分析案例、提高预测准确率",
+    "aiDescWithResult": "我可以帮你分析这个案例的结果",
+    "aiActions": {
+      "explainResult": "解释这个案例的结果",
+      "analyzeCase": "分析当前案例",
+      "analyzePerformance": "分析我的预测表现",
+      "compareProfile": "对比我的档案",
+      "predictionTips": "录取预测技巧"
+    },
+    "aiPrompts": {
+      "explainResult": "请帮我分析这个录取案例：\n- 学校: {school}\n- 排名: #{rank}\n- 录取率: {rate}%\n- GPA: {gpa}\n- SAT: {sat}\n- 实际结果: {actualResult}\n- 我的预测: {prediction}\n- 预测{correctText}\n\n请分析：\n1. 为什么这个申请者得到了这个结果？\n2. 我的预测为什么{correctText}？\n3. 从这个案例中我能学到什么？",
+      "analyzeCase": "请帮我分析这个申请者被录取的可能性：\n- 学校: {school}\n- 排名: #{rank}\n- 录取率: {rate}%\n- 专业: {major}\n- GPA: {gpa}\n- SAT: {sat}\n- ACT: {act}\n- TOEFL: {toefl}\n- 标签: {tags}\n\n请分析录取、拒绝、等待名单的可能性，并解释原因。（不要直接告诉我答案，给我提示）",
+      "analyzePerformance": "请分析我的招生预测游戏表现：\n- 总预测次数: {totalSwipes}\n- 正确次数: {correctCount}\n- 准确率: {accuracy}%\n- 当前连胜: {currentStreak}\n- 最佳连胜: {bestStreak}\n- 当前徽章: {badge}\n\n请分析：\n1. 我的表现如何？和一般水平相比呢？\n2. 我可能在哪些类型的案例上容易判断错误？\n3. 给我一些提高准确率的建议",
+      "compareProfile": "请将我的个人档案与最近的录取案例进行对比，分析我申请类似学校的竞争力。我的优势和劣势是什么？",
+      "predictionTips": "请教我一些预测录取结果的技巧。招生官一般会看重哪些因素？不同类型的学校（如文理学院、研究型大学）的录取标准有什么区别？"
+    },
+    "aiInitialCorrect": "你猜对了！实际结果是{result}。想让我帮你分析这个案例吗？",
+    "aiInitialWrong": "你猜错了！实际结果是{result}。想让我帮你分析这个案例吗？",
+    "aiWelcome": "你好！我是招生预测 AI 助手。我可以帮你分析案例、提高预测准确率、或者对比你的档案。有什么需要帮助的吗？"
+  },
+  "essayGallery": {
+    "title": "文书案例库",
+    "description": "浏览优秀录取文书，学习写作技巧",
+    "searchPlaceholder": "搜索学校名称...",
+    "essayTypeFilter": "文书类型",
+    "essayTypes": {
+      "all": "全部类型",
+      "commonApp": "Common App",
+      "common_app": "Common App",
+      "uc": "UC 文书",
+      "supplemental": "补充文书",
+      "whySchool": "Why School",
+      "why_school": "Why School"
+    },
+    "yearFilter": "申请年份",
+    "allYears": "全部年份",
+    "resultsCount": "共 {count} 篇文书",
+    "noResults": "暂无文书",
+    "noResultsDesc": "尝试修改筛选条件",
+    "loading": "加载中...",
+    "viewDetail": "查看详情",
+    "loadError": "加载失败",
+    "loadErrorDesc": "无法获取文书列表，请稍后重试",
+    "retry": "重试",
+    "clearFilters": "清除筛选",
+    "unknownSchool": "未知学校",
+    "copiedToClipboard": "已复制到剪贴板",
+    "analysisComplete": "分析完成！",
+    "noPublicEssays": "暂无公开文书",
+    "noPublicEssaysDesc": "还没有用户分享文书，敬请期待",
+    "wordCount": "{count} 词",
+    "readMore": "阅读全文",
+    "prevPage": "上一页",
+    "nextPage": "下一页",
+    "stats": {
+      "total": "总文书数",
+      "admitted": "录取文书",
+      "top20": "Top 20 学校",
+      "commonApp": "Common App"
+    },
+    "filter": {
+      "advanced": "高级筛选",
+      "advancedTitle": "高级筛选",
+      "advancedDesc": "通过更多条件精确筛选文书",
+      "essayType": "文书类型",
+      "schoolRanking": "学校排名",
+      "admissionResult": "录取结果",
+      "otherConditions": "其他条件",
+      "verifiedOnly": "仅显示已验证",
+      "verifiedOnlyDesc": "只显示经过审核认证的文书",
+      "reset": "重置筛选",
+      "apply": "应用筛选",
+      "ucEssays": "UC 系文书",
+      "supplementalEssays": "补充文书",
+      "selectPrompt": "选择题号 (1-7)",
+      "selectPIQ": "选择 PIQ (1-4)",
+      "promptLabel": "题目 {number}: {label}",
+      "piqLabel": "PIQ {number}: {label}",
+      "usNewsRanking": "US News 排名",
+      "admitted": "录取",
+      "rejected": "拒绝",
+      "deferred": "延期",
+      "commonAppPrompts": {
+        "1": "背景/身份/兴趣",
+        "2": "挫折/失败经历",
+        "3": "质疑信念的时刻",
+        "4": "解决问题的经历",
+        "5": "个人成长",
+        "6": "深入探索的话题",
+        "7": "自选主题"
+      },
+      "ucPIQs": {
+        "1": "领导力经历",
+        "2": "创意表达",
+        "3": "最重要的才能",
+        "4": "重要的教育机会"
+      }
+    },
+    "quality": {
+      "excellent": "优秀",
+      "good": "良好",
+      "needsWork": "待改进"
+    },
+    "detail": {
+      "notFound": "文书不存在或已被删除",
+      "words": "词",
+      "verified": "已认证",
+      "essayPrompt": "文书题目",
+      "tabs": {
+        "original": "文书原文",
+        "aiReview": "AI逐段点评"
+      },
+      "background": "背景信息",
+      "ai": {
+        "loginRequired": "登录后可使用AI逐段点评",
+        "costHint": "消耗20积分，获取专业招生官视角的逐段分析",
+        "loginButton": "登录使用",
+        "title": "AI 逐段点评",
+        "description": "招生官视角分析每个段落，给出具体改进建议",
+        "analyzing": "分析中...",
+        "startAnalysis": "开始分析 (20积分)",
+        "analysisError": "分析失败，请稍后重试"
+      },
+      "analysis": {
+        "overallScore": "总分",
+        "overallComment": "整体评价",
+        "structureAnalysis": "结构分析",
+        "hookStrength": "开头吸引力",
+        "themeClarity": "主题清晰度",
+        "endingImpact": "结尾有力度",
+        "paragraphReview": "逐段点评",
+        "paragraph": "第 {num} 段",
+        "score": "分",
+        "highlights": "亮点",
+        "suggestions": "建议"
+      }
+    },
+    "quickTags": {
+      "supplemental": "补充文书",
+      "top20": "Top 20",
+      "uc": "UC 文书",
+      "verified": "已认证"
+    }
+  },
+  "followers": {
+    "title": "关注管理",
+    "description": "管理您的关注和粉丝",
+    "userProfile": "用户资料",
+    "verified": "已认证用户",
+    "mutual": "互相关注",
+    "followers": "粉丝",
+    "following": "关注",
+    "cases": "案例",
+    "profileCompleteness": "档案完整度",
+    "loadError": "无法加载用户信息",
+    "tabs": {
+      "followers": "粉丝",
+      "following": "关注",
+      "blocked": "已屏蔽"
+    },
+    "mutualFollow": "互相关注",
+    "search": "搜索用户...",
+    "blocked": "已屏蔽",
+    "unblock": "取消屏蔽",
+    "empty": {
+      "followers": "暂无粉丝",
+      "followersDesc": "当有用户关注您时，会显示在这里",
+      "following": "暂未关注任何人",
+      "followingDesc": "关注其他用户来获取他们的更新",
+      "blocked": "暂无屏蔽用户",
+      "blockedDesc": "您屏蔽的用户会显示在这里"
+    },
     "toast": {
-      "saved": "文书已保存",
-      "updated": "文书已更新",
-      "deleted": "文书已删除",
-      "reviewFailed": "AI 评估失败",
-      "polishFailed": "润色失败",
-      "rewriteFailed": "改写失败",
-      "continueFailed": "续写失败",
-      "openingFailed": "生成开头失败",
-      "contentRequired": "文书内容不能为空",
-      "selectParagraph": "请先选中要改写的段落",
-      "promptRequired": "请先填写文书题目",
-      "copied": "已复制到剪贴板",
-      "polishApplied": "已应用润色内容",
-      "continuationAdded": "续写内容已添加"
+      "followSuccess": "关注成功",
+      "unfollowSuccess": "已取消关注",
+      "blockSuccess": "已屏蔽用户",
+      "unblockSuccess": "已取消屏蔽"
+    },
+    "dialogs": {
+      "unfollowTitle": "取消关注",
+      "unfollowDesc": "确定要取消关注此用户吗？",
+      "unfollow": "取消关注",
+      "unblockTitle": "取消屏蔽",
+      "unblockDesc": "确定要取消屏蔽此用户吗？",
+      "confirm": "确认"
+    },
+    "actions": {
+      "follow": "关注",
+      "unfollow": "取消关注",
+      "sendMessage": "发消息"
+    },
+    "activities": "{count} 活动",
+    "follow": "关注",
+    "recommended": {
+      "title": "推荐用户",
+      "description": "你可能感兴趣的用户"
     }
   },
   "school": {
     "notFound": "学校未找到",
     "notFoundDesc": "该学校不存在或已被删除",
-    "backToRanking": "返回排名",
-    "website": "官网",
+    "backToRanking": "返回榜单",
+    "website": "访问官网",
     "bookmark": "收藏",
     "share": "分享",
+    "difficulty": {
+      "veryHigh": "竞争激烈",
+      "high": "较难",
+      "moderatelyHigh": "中等偏难",
+      "medium": "中等"
+    },
+    "aiSuggestion": {
+      "title": "AI 建议",
+      "default": "根据学校特点合理规划申请策略",
+      "veryLow": "该校竞争非常激烈，建议作为冲刺校，同时准备多所保底校",
+      "low": "该校竞争较为激烈，建议展示独特亮点，提高文书质量",
+      "moderate": "该校申请难度适中，注重展示与学校的匹配度"
+    },
     "stats": {
       "acceptanceRate": "录取率",
-      "tuition": "年学费",
+      "tuition": "学费/年",
       "avgSalary": "毕业薪资",
       "studentCount": "学生人数"
     },
     "tabs": {
       "overview": "概览",
-      "admission": "申请信息",
-      "essays": "文书题目",
-      "cases": "录取案例"
+      "admission": "录取",
+      "essays": "文书",
+      "cases": "案例"
     },
-    "academicStats": "学术数据",
+    "academicStats": "学术统计",
     "usNewsRank": "US News 排名",
     "satAvg": "SAT 平均分",
     "actAvg": "ACT 平均分",
     "graduationRate": "毕业率",
+    "about": "学校简介",
     "deadlines": {
       "title": "申请截止日期",
       "cycle": "申请季",
-      "rea": "限制性早申请",
-      "ea": "早申请",
-      "ed": "早决定",
-      "ed2": "早决定 II",
-      "rd": "常规申请",
-      "noData": "暂无截止日期数据"
+      "rea": "REA 限制性早申",
+      "ea": "EA 早申请",
+      "ed": "ED 提前决定",
+      "ed2": "ED2 提前决定",
+      "rd": "RD 常规申请",
+      "noData": "暂无截止日期信息"
     },
-    "about": "学校简介",
     "requirements": {
       "title": "申请要求",
-      "applicationType": "申请类型",
+      "applicationType": "申请系统",
       "essayCount": "文书数量",
       "applicationFee": "申请费",
-      "toeflMin": "TOEFL 最低分",
-      "ieltsMin": "IELTS 最低分"
+      "toeflMin": "托福最低分",
+      "ieltsMin": "雅思最低分"
     },
-    "difficultyAnalysis": "录取难度分析",
-    "competitionLevel": "录取竞争度",
-    "difficulty": {
-      "veryHigh": "极高",
-      "high": "很高",
-      "moderatelyHigh": "较高",
-      "medium": "中等"
-    },
-    "aiSuggestion": {
-      "title": "AI 选校建议",
-      "veryLow": "该校录取率极低，建议作为冲刺校申请，同时确保有足够的匹配校和保底校。",
-      "low": "该校竞争激烈，需要在标化成绩、活动和文书上都有亮点。",
-      "moderate": "该校录取率适中，如果你的背景与学校匹配度高，可以作为匹配校。",
-      "default": "请根据您的整体背景综合考虑。"
-    },
+    "difficultyAnalysis": "难度分析",
+    "competitionLevel": "竞争程度",
     "essays": {
-      "title": "补充文书题目",
-      "noData": "暂无文书题目数据",
-      "updateHint": "文书题目通常在每年 8 月 1 日 Common App 开放后更新"
+      "title": "文书题目",
+      "totalCount": "文书总数",
+      "required": "必选",
+      "optional": "可选",
+      "requiredTag": "必写",
+      "optionalTag": "选写",
+      "words": "词",
+      "aiTips": "AI 写作提示",
+      "category": "类别",
+      "noData": "暂无文书题目",
+      "updateHint": "文书题目通常在每年8月更新"
     },
     "cases": {
       "title": "录取案例",
-      "description": "来自平台用户提交的真实录取案例",
+      "description": "查看该校的真实录取案例",
       "noData": "暂无录取案例",
-      "beFirst": "成为第一个分享录取经历的用户",
-      "submitCase": "提交我的案例"
+      "beFirst": "成为第一个分享者",
+      "submitCase": "提交案例"
     }
+  },
+  "verifiedRanking": {
+    "title": "认证榜单",
+    "description": "查看已认证用户的录取排名",
+    "filtersLabel": "筛选",
+    "totalRecords": "共 {count} 条认证记录",
+    "year": "申请年份",
+    "filters": {
+      "year": "申请年份",
+      "school": "目标学校",
+      "major": "目标专业",
+      "all": "全部认证",
+      "admitted": "仅录取",
+      "top20": "Top 20 名校",
+      "ivy": "藤校+"
+    },
+    "columns": {
+      "rank": "排名",
+      "user": "用户",
+      "school": "学校",
+      "major": "专业",
+      "gpa": "GPA",
+      "sat": "SAT",
+      "result": "结果"
+    },
+    "empty": "暂无认证数据",
+    "emptyDesc": "提交认证后可在此查看排名",
+    "verified": "已认证",
+    "loadMore": "加载更多",
+    "noData": "暂无数据",
+    "adjustFilters": "尝试调整筛选条件",
+    "totalVerified": "认证总数",
+    "totalAdmitted": "录取总数",
+    "topSchools": "顶尖学校",
+    "ivyPlus": "藤校+"
+  },
+  "vault": {
+    "title": "安全保险库",
+    "description": "安全存储您的敏感信息",
+    "subtitle": "采用端到端加密，确保您的数据安全",
+    "security": {
+      "encryption": "AES-256 加密",
+      "zeroKnowledge": "零知识架构"
+    },
+    "addItem": "添加项目",
+    "allItems": "全部",
+    "credential": "账号密码",
+    "document": "文档",
+    "note": "笔记",
+    "certificate": "证书",
+    "categories": "类型",
+    "search": "搜索保险库...",
+    "noItems": "暂无项目",
+    "noItemsDesc": "点击上方按钮添加您的第一个安全项目",
+    "stats": {
+      "total": "总计",
+      "credentials": "账号密码",
+      "documents": "文档",
+      "notes": "笔记",
+      "certificates": "证书"
+    },
+    "createTitle": "添加安全项目",
+    "editTitle": "编辑安全项目",
+    "itemTitle": "标题",
+    "itemTitlePlaceholder": "输入标题...",
+    "itemCategory": "分类",
+    "itemCategoryPlaceholder": "输入或选择分类...",
+    "itemTags": "标签",
+    "itemTagsPlaceholder": "输入标签后按回车添加...",
+    "itemData": "内容",
+    "itemDataPlaceholder": "输入内容...",
+    "website": "网站",
+    "websitePlaceholder": "https://example.com",
+    "username": "用户名",
+    "usernamePlaceholder": "输入用户名...",
+    "password": "密码",
+    "passwordPlaceholder": "输入密码...",
+    "notes": "备注",
+    "notesPlaceholder": "输入备注...",
+    "cancel": "取消",
+    "save": "保存",
+    "delete": "删除",
+    "deleteConfirm": "此操作将永久删除该项目，确定要继续吗？",
+    "allCategories": "全部分类",
+    "edit": "编辑",
+    "updatedAt": "更新于 {date}",
+    "confirmDelete": "确认删除",
+    "demo": {
+      "commonAppTitle": "Common App 账户",
+      "satTitle": "SAT 成绩查询",
+      "schoolNotesTitle": "选校笔记",
+      "applicationCategory": "申请",
+      "testScoreCategory": "标化",
+      "planningCategory": "规划",
+      "applicationTag": "申请",
+      "standardizedTag": "标化",
+      "schoolSelectionTag": "选校",
+      "importantTag": "重要",
+      "mainAccountNote": "主账户信息"
+    }
+  },
+  "recommendation": {
+    "title": "智能选校",
+    "description": "基于您的背景获取个性化学校推荐",
+    "generate": "生成推荐",
+    "history": "推荐历史",
+    "preferences": "选校偏好",
+    "preferencesDesc": "设置您的选校偏好以获取更精准的推荐",
+    "regions": "目标地区",
+    "regionsPlaceholder": "输入目标地区...",
+    "majors": "目标专业",
+    "majorsPlaceholder": "输入目标专业...",
+    "budget": "预算范围",
+    "budgetPlaceholder": "选择预算范围",
+    "budgetOptions": {
+      "low": "30万以下",
+      "medium": "30-50万",
+      "high": "50-80万",
+      "unlimited": "不限预算"
+    },
+    "additional": "其他要求",
+    "additionalPlaceholder": "输入其他要求...",
+    "generateBtn": "生成推荐",
+    "cost": "每次推荐消耗 1 个 AI 额度",
+    "howItWorks": "智能选校流程",
+    "step1Title": "分析档案",
+    "step1Desc": "AI 分析您的学术背景和活动经历",
+    "step2Title": "匹配学校",
+    "step2Desc": "根据您的条件匹配最适合的学校",
+    "step3Title": "生成报告",
+    "step3Desc": "输出详细的选校建议报告",
+    "tiers": {
+      "reach": "冲刺校",
+      "match": "匹配校",
+      "safety": "保底校"
+    },
+    "categories": {
+      "reach": {
+        "label": "冲刺校",
+        "description": "有挑战但值得尝试"
+      },
+      "target": {
+        "label": "匹配校",
+        "description": "与你的背景匹配度高"
+      },
+      "safety": {
+        "label": "保底校",
+        "description": "录取把握较大"
+      }
+    },
+    "noHistory": "暂无推荐历史",
+    "noHistoryDesc": "生成您的第一份选校推荐",
+    "loading": "AI 正在为你匹配学校...",
+    "loadingDesc": "根据你的档案分析最适合的学校",
+    "errorTitle": "暂时无法获取推荐",
+    "errorDesc": "请先完善你的个人档案",
+    "retry": "重试",
+    "aiSmartMatch": "AI 智能选校",
+    "recommendCount": "基于你的背景推荐 {count} 所学校",
+    "strategyTitle": "选校策略",
+    "schoolCount": "{count} 所",
+    "unknownSchool": "未知学校",
+    "admissionChance": "录取概率",
+    "noSchoolsInCategory": "暂无{category}推荐，请完善档案信息",
+    "disclaimer": "推荐结果基于AI分析，仅供参考。实际录取受多种因素影响。",
+    "result": "推荐结果",
+    "newRecommendation": "重新推荐",
+    "success": "推荐完成",
+    "failed": "推荐失败，请重试",
+    "fitScore": "匹配度",
+    "probability": "录取概率",
+    "strengths": "优势",
+    "weaknesses": "不足",
+    "concerns": "关注点",
+    "reasons": "推荐理由",
+    "tips": "申请建议",
+    "reach": "冲刺",
+    "match": "匹配",
+    "safety": "保底"
+  },
+  "timeline": {
+    "title": "申请时间线",
+    "description": "追踪您的申请截止日期、竞赛、活动等重要时间节点",
+    "dynamicNote": "时间线根据您的选校清单和订阅的事件自动生成，截止日期数据来源于学校官网和管理员配置。",
+    "addSchool": "添加学校",
+    "daysLeft": "剩余 {days} 天",
+    "daysAgo": "已过 {days} 天",
+    "today": "今天",
+    "tomorrow": "明天",
+    "deleteSuccess": "已删除",
+    "deleteConfirm": "确定要删除吗？所有关联任务也会被删除。",
+    "deleteTimeline": "删除时间线",
+    "tabs": {
+      "all": "全部",
+      "school": "学校申请",
+      "personal": "个人事件"
+    },
+    "statuses": {
+      "notStarted": "未开始",
+      "inProgress": "进行中",
+      "submitted": "已提交",
+      "accepted": "已录取",
+      "rejected": "已拒绝",
+      "waitlisted": "候补名单",
+      "withdrawn": "已撤回",
+      "completed": "已完成",
+      "cancelled": "已取消"
+    },
+    "overview": {
+      "totalSchools": "目标学校",
+      "inProgress": "进行中",
+      "submitted": "已提交",
+      "notStarted": "未开始",
+      "totalPersonalEvents": "个人事件",
+      "personalCompleted": "已完成事件"
+    },
+    "empty": {
+      "title": "还没有时间线",
+      "description": "添加学校申请或创建个人事件（竞赛、考试、夏校等），系统将为您生成个性化的时间线。",
+      "action": "去选校"
+    },
+    "globalEvents": {
+      "title": "全局事件",
+      "description": "考试、竞赛、夏校、助学金等重要日期 — 点击订阅添加到你的时间线",
+      "regBy": "报名截止",
+      "subscribe": "订阅",
+      "subscribed": "已订阅"
+    },
+    "personalEvents": {
+      "title": "个人事件",
+      "description": "竞赛、考试、夏校、实习、活动及材料准备",
+      "create": "创建事件",
+      "createTitle": "创建个人事件",
+      "createSuccess": "事件创建成功，已自动生成子任务",
+      "subscribed": "已订阅到个人时间线",
+      "alreadySubscribed": "已经订阅过该事件",
+      "delete": "删除事件",
+      "deadline": "截止日期",
+      "eventDate": "事件日期",
+      "fromGlobal": "订阅事件",
+      "categories": {
+        "COMPETITION": "竞赛",
+        "TEST": "标化考试",
+        "SUMMER_PROGRAM": "夏校/暑期项目",
+        "INTERNSHIP": "实习",
+        "ACTIVITY": "课外活动",
+        "MATERIAL": "材料准备",
+        "OTHER": "其他"
+      },
+      "form": {
+        "title": "事件名称",
+        "titlePlaceholder": "如：AMC 12 竞赛、TOEFL 考试",
+        "category": "分类",
+        "deadline": "截止日期",
+        "eventDate": "事件日期",
+        "description": "备注",
+        "descriptionPlaceholder": "可选，添加备注信息",
+        "cancel": "取消",
+        "submit": "创建"
+      }
+    },
+    "schoolTimelines": {
+      "title": "学校时间线",
+      "description": "按截止日期排序的申请进度",
+      "deadline": "截止日期",
+      "tasks": "任务",
+      "loadingTasks": "加载任务中..."
+    },
+    "events": {
+      "earlyDecision": "ED 早申截止",
+      "earlyDecisionDesc": "提前决定申请截止，具有约束力",
+      "earlyAction": "EA 早申截止",
+      "earlyActionDesc": "提前行动申请截止，无约束力",
+      "regularDecision": "常规申请截止",
+      "regularDecisionDesc": "大部分学校的 RD 申请截止日期",
+      "ed2Deadline": "ED II 截止",
+      "ed2DeadlineDesc": "第二轮提前决定申请截止",
+      "financialAid": "助学金申请",
+      "financialAidDesc": "FAFSA/CSS Profile 优先截止日期",
+      "decisionsRelease": "录取结果公布",
+      "decisionsReleaseDesc": "大部分学校公布录取结果",
+      "commitmentDeadline": "入学确认截止",
+      "commitmentDeadlineDesc": "全国统一答复日，确认入学意向",
+      "scholarships": "奖学金申请",
+      "scholarshipsDesc": "各校奖学金申请截止"
+    }
+  },
+  "forum": {
+    "title": "社区论坛",
+    "description": "交流申请经验，分享留学心得",
+    "postDetail": "帖子详情",
+    "createPost": "发布帖子",
+    "createTeam": "发起组队",
+    "categories": "分类",
+    "allPosts": "全部帖子",
+    "teamPosts": "组队帖子",
+    "normalPost": "普通帖子",
+    "categoryTeam": "组队招募",
+    "categoryActivity": "活动经历",
+    "categoryExperience": "申请经验",
+    "categoryQuestion": "问答求助",
+    "categoryResource": "资源分享",
+    "search": "搜索帖子...",
+    "latest": "最新",
+    "popular": "最热",
+    "mostComments": "最多评论",
+    "noResults": "暂无帖子",
+    "loading": "加载中...",
+    "title_label": "标题",
+    "titlePlaceholder": "请输入标题...",
+    "category_label": "分类",
+    "categoryPlaceholder": "选择分类",
+    "content_label": "内容",
+    "contentPlaceholder": "请输入内容...",
+    "teamSize": "团队人数",
+    "deadline": "截止日期",
+    "requirements": "队友要求",
+    "requirementsPlaceholder": "描述队友要求...",
+    "tags_label": "标签",
+    "tagsPlaceholder": "输入标签后按回车添加",
+    "pinned": "置顶",
+    "teamStatus": "组队 {current}/{total}",
+    "teamInfo": "组队信息",
+    "teamSizeLabel": "团队人数:",
+    "deadlineLabel": "截止日期:",
+    "requirementsLabel": "队友要求:",
+    "cancel": "取消",
+    "submit": "发布",
+    "noPosts": "暂无帖子",
+    "noPostsDesc": "成为第一个发帖的人吧",
+    "loadMore": "加载更多",
+    "applicationPlaceholder": "介绍一下你自己...",
+    "apply": "申请加入",
+    "likes": "赞",
+    "views": "浏览",
+    "comments": "评论",
+    "writeComment": "写下你的评论...",
+    "reviewApplications": "查看申请",
+    "noApplications": "暂无申请",
+    "stats": {
+      "posts": "帖子",
+      "users": "用户",
+      "teaming": "组队中",
+      "activeToday": "今日活跃"
+    },
+    "time": {
+      "justNow": "刚刚",
+      "minutesAgo": "{count}分钟前",
+      "hoursAgo": "{count}小时前",
+      "daysAgo": "{count}天前"
+    },
+    "appStatus": {
+      "accepted": "已接受",
+      "rejected": "已拒绝",
+      "pending": "待处理"
+    },
+    "sortLatest": "最新",
+    "sortPopular": "最热",
+    "sortComments": "最多评论",
+    "sortRecommended": "推荐",
+    "tagAll": "全部",
+    "tagCompetition": "竞赛",
+    "tagActivity": "活动",
+    "tagQuestion": "提问",
+    "tagSharing": "分享",
+    "tagOTHER": "其他",
+    "tagCOMPETITION": "竞赛",
+    "tagACTIVITY": "活动",
+    "tagQUESTION": "提问",
+    "tagSHARING": "分享",
+    "teamOnly": "组队中",
+    "teamRecruiting": "招募中",
+    "teamFull": "已满员",
+    "teamClosed": "已关闭",
+    "anonymous": "匿名用户",
+    "report": "举报",
+    "reportTitle": "举报内容",
+    "reportDescription": "请选择举报原因，我们会尽快处理。恶意举报可能导致账号受限。",
+    "reportSubmitted": "举报已提交，我们会尽快处理",
+    "reportFailed": "举报提交失败，请重试",
+    "reportDetailLabel": "补充说明（可选）",
+    "reportDetailPlaceholder": "请提供更多详情...",
+    "submitReport": "提交举报",
+    "verifiedOnly": "仅认证用户可发布组队帖子",
+    "goVerify": "去认证",
+    "categoryFilter": "分类筛选",
+    "quickPost": "快速发帖",
+    "quickPostDesc": "分享你的经验、问题或寻找队友",
+    "postAction": "发帖",
+    "teamUp": "组队",
+    "hotTags": "热门标签",
+    "searchPostsPlaceholder": "搜索帖子、标签...",
+    "currentFilterLabel": "当前筛选:",
+    "searchLabel": "搜索: {query}",
+    "firstPost": "发布第一篇帖子",
+    "createTeamPost": "发布组队帖子",
+    "createNewPost": "发布新帖子",
+    "editTab": "编辑",
+    "previewTab": "预览",
+    "uncategorized": "未分类",
+    "agreeRules": "发布即表示您同意社区规范",
+    "publishTeam": "发布组队",
+    "publishPost": "发布帖子",
+    "teamSettingsTitle": "组队设置",
+    "teamMembersLabel": "团队人数",
+    "teamDeadlineLabel": "截止日期",
+    "teamRequirementsDesc": "要求说明",
+    "teamReqPlaceholder": "描述你对队友的要求，如技能、时间安排等...",
+    "maxTags": "标签 (最多5个)",
+    "verificationRequired": "组队功能需要完成身份认证",
+    "selectPostCategory": "选择帖子分类",
+    "postTitleLabel": "标题",
+    "postTitlePlaceholder": "输入帖子标题...",
+    "categoryLabel": "分类",
+    "contentLabel": "内容",
+    "charCount": "{count} 字",
+    "currentMembersLabel": "当前人数",
+    "memberCount": "{current}/{total} 人",
+    "recruitRequirements": "招募要求",
+    "joinPlaceholder": "简单介绍一下自己，为什么想加入...",
+    "joinTeam": "申请加入",
+    "commentsTitle": "评论 ({count})",
+    "noComments": "暂无评论，来发表第一条评论吧",
+    "bookmarkAction": "收藏",
+    "shareAction": "分享",
+    "reviewAppsTitle": "审核申请",
+    "noApps": "暂无申请",
+    "appApproved": "已通过",
+    "appDenied": "已拒绝",
+    "appWaiting": "待审核",
+    "noAdditionalInfo": "无附加信息",
+    "unchosenCategory": "未选择分类",
+    "teamProgress": "组队 {current}/{total}",
+    "postTitlePreview": "帖子标题",
+    "contentPreviewText": "帖子内容预览...",
+    "aiTitle": "论坛 AI 助手",
+    "aiDesc": "我可以帮你搜索讨论、回答问题、总结热门话题",
+    "aiWelcome": "你好！我是论坛 AI 助手，可以帮你搜索讨论内容、回答留学问题、总结热门话题，或者帮你找到志同道合的申请小伙伴。有什么我可以帮助你的吗？",
+    "aiActions": {
+      "searchPosts": "搜索论坛讨论",
+      "searchPostsPrompt": "请帮我搜索论坛中关于留学申请的热门讨论，特别是关于选校和文书的内容。",
+      "trendingTopics": "总结热门话题",
+      "trendingTopicsPrompt": "请总结一下最近论坛里最热门的讨论话题，有哪些大家普遍关心的问题？",
+      "findTeammates": "寻找申请小伙伴",
+      "findTeammatesPrompt": "我想找一些和我申请方向相似的小伙伴，可以互相帮助。请帮我推荐一些组队贴或者活跃的申请群组。",
+      "askQuestion": "提问留学问题",
+      "askQuestionPrompt": "我想问一个关于留学申请的问题：",
+      "essayHelp": "文书求助建议",
+      "essayHelpPrompt": "我正在写文书，不知道该从哪个角度下手。请给我一些建议，或者告诉我论坛里有哪些关于文书写作的好帖子。"
+    }
+  },
+  "points": {
+    "levels": {
+      "novice": "新手",
+      "beginner": "初级",
+      "intermediate": "中级",
+      "advanced": "高级",
+      "expert": "专家",
+      "master": "大师"
+    },
+    "rules": {
+      "title": "积分规则",
+      "earn": "获取积分",
+      "spend": "消耗积分",
+      "tip": "💡 提示：提交并验证录取案例可获得最多150积分！分享越多，积分越多。"
+    },
+    "history": {
+      "title": "积分记录",
+      "noRecords": "暂无积分记录",
+      "noRecordsHint": "完成任务获取积分吧！"
+    },
+    "overview": {
+      "title": "我的积分",
+      "currentPoints": "当前积分",
+      "availablePoints": "当前可用积分",
+      "upgradeHint": "还需 {points} 分升级到 {level}",
+      "totalEarned": "累计获取",
+      "totalSpent": "累计消耗",
+      "transactions": "交易次数"
+    }
+  },
+  "verification": {
+    "status": {
+      "verified": "已认证",
+      "pending": "审核中",
+      "rejected": "未通过",
+      "none": "未认证",
+      "notVerified": "未认证",
+      "notVerifiedDesc": "完成认证以获得更多权限",
+      "pendingDesc": "您的认证正在审核中",
+      "verifiedDesc": "您已完成身份认证"
+    },
+    "badge": {
+      "verifiedUser": "认证用户",
+      "verifiedInfo": "已验证录取信息",
+      "admittedYear": "{year} 年录取",
+      "pendingReview": "认证申请正在审核中，请耐心等待",
+      "verifiedUserShort": "已认证用户",
+      "verified": "已认证用户"
+    },
+    "verify": "认证",
+    "pleaseSelectFile": "请选择文件",
+    "title": "身份认证",
+    "description": "上传录取证明完成身份认证",
+    "descriptionWithSchool": "上传 {school} 的录取证明",
+    "proofTypeLabel": "证明类型",
+    "selectProofType": "选择证明类型",
+    "schoolLabel": "学校名称",
+    "fileLabel": "上传文件",
+    "uploadLabel": "上传证明",
+    "uploadProof": "上传录取证明",
+    "dragOrClick": "拖拽或点击上传",
+    "dropHere": "松开以上传",
+    "dropOrClick": "拖拽文件到此处或点击上传",
+    "supportedFormats": "支持 PDF、JPG、PNG 格式",
+    "fileRequirements": "文件大小不超过 10MB",
+    "fileTooLarge": "文件过大，请选择小于 10MB 的文件",
+    "invalidFileType": "不支持的文件格式",
+    "noFile": "请选择文件",
+    "showPreview": "查看预览",
+    "hidePreview": "隐藏预览",
+    "removeFile": "移除文件",
+    "uploading": "上传中...",
+    "submit": "提交认证",
+    "submitting": "提交中...",
+    "submitSuccess": "认证已提交",
+    "submitError": "提交失败，请重试",
+    "confirmInfo": "请确认信息无误",
+    "privacyNote": "您的隐私受到保护",
+    "privacyTip": "您的信息仅用于认证目的",
+    "reviewProcess": "审核流程",
+    "reviewStep1": "提交认证材料",
+    "reviewStep2": "管理员审核",
+    "reviewStep3": "获得认证标识",
+    "estimatedTime": "预计审核时间：1-3 个工作日",
+    "startTitle": "开始身份认证",
+    "startDesc": "认证后可获得专属标识和更多权限",
+    "startButton": "开始认证",
+    "pendingReview": "认证审核中",
+    "verified": "已认证",
+    "rejected": "认证被拒绝",
+    "reason": "原因",
+    "benefits": {
+      "title": "认证权益",
+      "badge": "专属认证标识",
+      "points": "额外积分奖励"
+    }
+  },
+  "activity": {
+    "title": "最近动态",
+    "noActivity": "暂无活动记录",
+    "noActivityDesc": "开始使用平台功能后，活动会显示在这里"
+  },
+  "deadline": {
+    "title": "截止日期提醒",
+    "viewAll": "查看全部",
+    "noDeadlines": "暂无即将截止的申请",
+    "noDeadlinesDesc": "添加目标学校后，截止日期会显示在这里",
+    "daysLeft": "天后",
+    "manageTimeline": "管理时间线",
+    "urgency": {
+      "critical": "紧急",
+      "soon": "即将"
+    }
+  },
+  "schoolFilter": {
+    "title": "高级筛选",
+    "description": "设置更精确的筛选条件找到理想学校",
+    "reset": "重置",
+    "apply": "应用筛选",
+    "sections": {
+      "location": "地理位置",
+      "ranking": "排名范围",
+      "acceptance": "录取率",
+      "tuition": "学费范围",
+      "type": "学校类型",
+      "special": "特殊条件"
+    },
+    "labels": {
+      "country": "国家/地区",
+      "state": "州",
+      "region": "区域偏好",
+      "usNewsRanking": "US News 排名",
+      "acceptanceRange": "录取率范围",
+      "annualTuition": "年学费 (万美元)",
+      "publicPrivate": "公立/私立",
+      "schoolSize": "学校规模 (学生人数)"
+    },
+    "placeholders": {
+      "selectCountry": "选择国家",
+      "selectState": "选择州",
+      "selectRegion": "选择区域",
+      "selectType": "选择类型"
+    },
+    "schoolTypes": {
+      "all": "全部",
+      "public": "公立大学",
+      "private": "私立大学"
+    },
+    "tuitionPresets": {
+      "budget": "经济 (<3万)",
+      "moderate": "适中 (3-5万)",
+      "high": "较高 (5-7万)",
+      "noLimit": "不限"
+    },
+    "regions": {
+      "all": "全部地区",
+      "northeast": "东北部",
+      "midwest": "中西部",
+      "south": "南部",
+      "west": "西部"
+    },
+    "countries": {
+      "all": "全部国家",
+      "us": "美国",
+      "uk": "英国",
+      "ca": "加拿大",
+      "au": "澳大利亚"
+    },
+    "acceptancePresets": {
+      "veryHard": "极难 (<10%)",
+      "hard": "困难 (10-20%)",
+      "medium": "中等 (20-40%)",
+      "easy": "容易 (>40%)"
+    },
+    "specialConditions": {
+      "testOptional": "标化可选",
+      "testOptionalDesc": "标化成绩可选",
+      "needBlind": "Need-Blind",
+      "needBlindDesc": "录取时不考虑经济状况",
+      "hasED": "提供 Early Decision",
+      "hasEDDesc": "支持早申请绑定录取"
+    }
+  },
+  "peerReview": {
+    "title": "用户评价",
+    "requestReview": "发起互评",
+    "submitReview": "提交评价",
+    "requestDescription": "向对方发起互评请求，双方都提交评价后即可完成。",
+    "submitDescription": "请根据您与对方的互动体验进行评价。",
+    "profileScore": "背景真实性",
+    "profileScoreDesc": "评价对方资料信息的真实可靠程度",
+    "helpfulScore": "帮助程度",
+    "helpfulScoreDesc": "评价对方在交流中提供的帮助程度",
+    "responseScore": "回复及时性",
+    "responseScoreDesc": "评价对方的回复速度和积极程度",
+    "overallScore": "总体评分",
+    "overallScoreDesc": "对对方的整体评价",
+    "anonymous": "匿名评价",
+    "anonymousDescription": "对方将无法看到您的身份",
+    "commentLabel": "评价内容（可选）",
+    "commentPlaceholder": "分享您的互动体验...",
+    "willRequestReview": "将收到您的互评请求",
+    "evaluating": "正在评价此用户",
+    "sendRequest": "发送请求",
+    "cancel": "取消",
+    "requestSent": "互评请求已发送",
+    "requestFailed": "发送失败，请重试",
+    "reviewSubmitted": "评价已提交",
+    "submitFailed": "提交失败，请重试",
+    "pleaseRateAll": "请完成所有评分项",
+    "pending": "等待对方评价",
+    "completed": "已完成",
+    "expired": "已过期",
+    "noReviews": "暂无评价",
+    "viewAll": "查看全部"
+  },
+  "validation": {
+    "invalidEmail": "请输入有效的邮箱地址",
+    "passwordMin": "密码至少需要8个字符",
+    "passwordMismatch": "两次输入的密码不一致",
+    "agreeRequired": "请同意服务条款",
+    "required": "此字段为必填项",
+    "awardRequired": "请填写奖项信息",
+    "activityRequired": "请填写活动信息",
+    "scoreRequired": "请填写成绩信息"
   },
   "errors": {
     "required": "此字段必填",
@@ -1669,840 +3615,246 @@
     "passwordTooShort": "密码至少 8 位",
     "passwordMismatch": "两次密码不一致",
     "networkError": "网络错误，请重试",
+    "operationFailed": "操作失败，请重试",
+    "dataUpdateFailed": "数据更新失败: {message}",
     "unauthorized": "请先登录",
     "forbidden": "无权访问"
   },
-  "feedback": {
-    "button": "反馈",
-    "selectType": "选择反馈类型",
-    "types": {
-      "bug": "问题反馈",
-      "feature": "功能建议",
-      "question": "使用疑问",
-      "other": "其他"
-    },
-    "placeholders": {
-      "bug": "请描述您遇到的问题，包括操作步骤和预期行为...",
-      "feature": "请描述您希望添加的功能或改进建议...",
-      "question": "请描述您的疑问，我们会尽快回复...",
-      "other": "请输入您想反馈的内容..."
-    },
-    "detailDescription": "详细描述",
-    "emailLabel": "联系邮箱（选填）",
-    "emailPlaceholder": "方便我们回复您",
-    "addScreenshot": "添加截图",
-    "submitting": "提交中...",
-    "submit": "提交反馈",
-    "successTitle": "感谢您的反馈！",
-    "successDesc": "我们已收到您的反馈，会尽快处理。",
-    "screenshotInDev": "截图功能开发中...",
-    "contentRequired": "请输入反馈内容",
-    "submitFailed": "提交失败，请稍后重试",
-    "thumbsUpThanks": "感谢您的认可！",
-    "thumbsDownThanks": "感谢您的反馈，我们会改进！",
-    "quickLabel": "这个页面有帮助吗？"
-  },
-  "helpCenter": {
-    "title": "帮助中心",
-    "description": "有问题？在这里找到答案",
-    "searchTitle": "有什么可以帮助您？",
-    "faqDescription": "浏览常见问题找到答案",
-    "searchPlaceholder": "搜索帮助内容...",
-    "resources": {
-      "docs": {
-        "title": "使用文档",
-        "description": "详细的功能说明和操作指南"
-      },
-      "video": {
-        "title": "视频教程",
-        "description": "观看视频快速上手"
-      },
-      "blog": {
-        "title": "留学攻略",
-        "description": "申请技巧和经验分享"
-      }
-    },
-    "categoryAll": "全部",
-    "faq": "常见问题",
-    "noResults": "未找到相关问题",
-    "contact": {
-      "title": "还有其他问题？",
-      "desc": "如果您没有找到答案，可以联系我们的客服团队。",
-      "email": "发送邮件",
-      "chat": "在线客服"
-    },
-    "all": "全部",
-    "faqTitle": "常见问题",
-    "otherQuestions": "还有其他问题？",
-    "contactSupport": "如果您没有找到答案，可以联系我们的客服团队。",
-    "sendEmail": "发送邮件",
-    "onlineService": "在线客服",
-    "categories": {
-      "gettingStarted": "入门指南",
-      "aiFeatures": "AI 功能",
-      "usage": "功能使用",
-      "featureUsage": "功能使用",
-      "privacySecurity": "隐私安全"
-    },
-    "faqItems": {
-      "howToStart": {
-        "question": "如何开始使用平台？",
-        "answer": "注册账号后，您可以先完善个人资料，包括学术背景、语言成绩等信息。然后浏览院校库了解目标学校，或直接与 AI 助手对话获取个性化建议。"
-      },
-      "whatCanAIDo": {
-        "question": "AI 助手可以帮我做什么？",
-        "answer": "AI 助手可以根据您的背景提供选校建议、分析录取概率、回答留学相关问题、帮助规划申请时间线，以及提供文书写作建议。"
-      },
-      "predictionAccuracy": {
-        "question": "录取预测的准确性如何？",
-        "answer": "我们的预测模型基于大量历史申请数据训练，准确率约为 85%。但请注意，预测仅供参考，实际录取还会受到多种因素影响。"
-      },
-      "viewCases": {
-        "question": "如何查看申请案例？",
-        "answer": "在\"案例库\"页面，您可以按学校、专业、录取结果等条件筛选案例。每个案例都包含申请者的背景信息和经验分享。"
-      },
-      "dataSecure": {
-        "question": "我的个人信息安全吗？",
-        "answer": "我们严格遵守数据保护法规，采用加密传输和存储。您的个人信息仅用于提供服务，不会分享给第三方。您也可以随时删除账号和数据。"
-      },
-      "exportData": {
-        "question": "如何导出我的申请数据？",
-        "answer": "在个人中心的\"设置\"页面，点击\"导出数据\"按钮，可以下载包含您所有申请信息的 JSON 或 CSV 文件。"
-      },
-      "dataPrivacy": {
-        "question": "平台如何保护我的数据隐私？",
-        "answer": "我们严格遵守 GDPR 等数据保护法规，采用端到端加密技术。您的个人信息仅用于提供服务，绝不会出售或未经授权分享给第三方。"
-      },
-      "deleteAccount": {
-        "question": "如何删除我的账号？",
-        "answer": "您可以在设置页面的【账号安全】选项中找到删除账号的选项。删除后，您的所有数据将在30天内被永久清除。"
-      },
-      "shareCase": {
-        "question": "如何分享我的申请案例？",
-        "answer": "在案例库页面点击【分享我的案例】按钮，填写您的申请背景和结果信息。您可以选择匿名分享或仅对认证用户可见。"
-      },
-      "verifiedUser": {
-        "question": "如何成为认证用户？",
-        "answer": "认证用户需要完成邮箱验证并提供学生身份证明。认证后可以查看更多详细案例信息，并与其他认证用户交流。"
-      }
-    }
-  },
-  "notifications": {
-    "title": "通知",
-    "markAllRead": "全部已读",
-    "view": "查看",
-    "empty": "暂无通知",
-    "emptyHint": "新消息将会显示在这里",
+  "admin": {
+    "title": "管理后台",
+    "description": "管理用户、案例、举报和数据",
     "tabs": {
-      "all": "全部",
-      "unread": "未读"
+      "overview": "概览",
+      "users": "用户管理",
+      "reports": "举报管理",
+      "data": "数据管理",
+      "essays": "文书管理"
     },
-    "allRead": "已全部读取",
-    "clearRead": "清除已读通知"
-  },
-  "tour": {
-    "nextBtn": "下一步",
-    "prevBtn": "上一步",
-    "doneBtn": "完成",
-    "welcome": {
-      "title": "欢迎使用留学平台",
-      "desc": "这是您的主页入口，可以快速了解平台功能和最新动态。"
-    },
-    "schools": {
-      "title": "院校库",
-      "desc": "浏览全球顶尖院校信息，了解录取要求和申请截止日期。"
-    },
-    "cases": {
-      "title": "案例库",
-      "desc": "查看真实的申请案例，了解成功申请者的背景和经验。"
-    },
-    "ai": {
-      "title": "AI 智能助手",
-      "desc": "与 AI 助手对话，获取个性化的留学规划建议。"
-    },
-    "userMenu": {
-      "title": "个人中心",
-      "desc": "管理您的个人资料、申请进度和偏好设置。"
-    }
-  },
-  "welcome": {
-    "steps": {
-      "welcome": {
-        "title": "欢迎使用留学平台",
-        "desc": "一站式留学申请服务，帮助你实现留学梦想。让我们快速了解平台的核心功能。"
-      },
-      "schools": {
-        "title": "探索全球院校",
-        "desc": "浏览世界顶尖大学的详细信息，了解录取要求、专业设置和申请截止日期。"
-      },
-      "ai": {
-        "title": "AI 智能助手",
-        "desc": "与 AI 助手对话，获取个性化的选校建议、文书指导和申请策略。"
-      },
-      "prediction": {
-        "title": "录取预测",
-        "desc": "基于你的背景，智能预测各院校的录取概率，帮助你科学选校。"
-      }
-    },
-    "prevBtn": "上一步",
-    "nextBtn": "下一步",
-    "skipTour": "跳过引导",
-    "startExperience": "开始体验",
-    "resetButton": "重新查看欢迎引导"
-  },
-  "terms": {
-    "title": "服务条款",
-    "lastUpdated": "最后更新：{date}",
-    "introduction": "欢迎使用留学申请平台。使用本服务即表示您同意以下条款和条件。请仔细阅读。",
-    "acceptance": {
-      "title": "接受条款",
-      "content": "访问或使用本平台即表示您同意受这些服务条款的约束。如果您不同意任何条款，请勿使用本服务。"
-    },
-    "services": {
-      "title": "服务说明",
-      "content": "本平台提供留学申请相关的信息服务，包括但不限于学校信息查询、录取预测、AI 咨询等。我们致力于提供准确的信息，但不保证所有信息的完整性和实时性。"
-    },
-    "userConduct": {
-      "title": "用户行为规范",
-      "content": "您同意在使用本服务时：\n• 提供真实、准确的个人信息\n• 不发布虚假或误导性内容\n• 不侵犯他人的知识产权或隐私权\n• 不进行任何违法或不当行为\n• 不干扰或破坏本服务的正常运行"
-    },
-    "intellectualProperty": {
-      "title": "知识产权",
-      "content": "本平台的所有内容，包括但不限于文字、图形、标志、图标、图像、音频、视频和软件，均受知识产权法律保护。未经授权，不得复制、修改、分发或以其他方式使用。"
-    },
-    "disclaimer": {
-      "title": "免责声明",
-      "content": "本平台提供的录取预测、选校建议等仅供参考，不构成任何形式的保证或承诺。实际录取结果由各院校自行决定，我们不对预测结果的准确性负责。"
-    },
-    "termination": {
-      "title": "服务终止",
-      "content": "我们保留在任何时候、以任何原因暂停或终止您访问本服务的权利，包括但不限于违反服务条款的行为。"
-    },
-    "contact": {
-      "title": "联系我们",
-      "content": "如对本服务条款有任何疑问，请联系："
-    }
-  },
-  "privacy": {
-    "title": "隐私政策",
-    "lastUpdated": "最后更新：{date}",
-    "commitment": {
-      "title": "我们的承诺",
-      "content": "保护您的隐私是我们的首要任务。本隐私政策说明了我们如何收集、使用和保护您的个人信息。"
-    },
-    "collection": {
-      "title": "信息收集",
-      "content": "我们收集的信息类型包括：",
-      "items": {
-        "personal": "个人身份信息（姓名、邮箱、电话）",
-        "academic": "学术背景信息（学校、成绩、考试分数）",
-        "usage": "服务使用数据（浏览记录、功能使用情况）",
-        "device": "设备信息（IP地址、浏览器类型、操作系统）"
-      }
-    },
-    "usage": {
-      "title": "信息使用",
-      "content": "我们使用收集的信息用于：",
-      "items": {
-        "service": "提供和改进我们的服务",
-        "personalization": "个性化您的体验和推荐",
-        "communication": "与您沟通服务相关信息",
-        "analytics": "分析和研究以改进产品"
-      }
-    },
-    "sharing": {
-      "title": "信息共享",
-      "content": "我们不会出售您的个人信息。我们仅在以下情况下共享信息：",
-      "items": {
-        "consent": "获得您的明确同意",
-        "legal": "法律要求或配合执法",
-        "partners": "与可信赖的服务提供商合作（受保密协议约束）"
-      }
-    },
-    "security": {
-      "title": "数据安全",
-      "content": "我们采用行业标准的安全措施保护您的数据，包括加密传输、安全存储和访问控制。但请注意，没有任何互联网传输方式是100%安全的。"
-    },
-    "rights": {
-      "title": "您的权利",
-      "content": "您对自己的数据拥有以下权利：",
-      "items": {
-        "access": "访问您的个人数据",
-        "correction": "更正不准确的数据",
-        "deletion": "请求删除您的数据",
-        "portability": "获取数据副本"
-      }
-    },
-    "cookies": {
-      "title": "Cookie 使用",
-      "content": "我们使用 Cookie 和类似技术来改善您的体验、分析网站流量和个性化内容。您可以通过浏览器设置管理 Cookie 偏好。"
-    },
-    "changes": {
-      "title": "政策变更",
-      "content": "我们可能会不时更新本隐私政策。重大变更会通过邮件或网站通知您。继续使用服务即表示您接受更新后的政策。"
-    },
-    "contact": {
-      "title": "联系我们",
-      "content": "如有隐私相关问题，请联系我们的数据保护团队："
-    }
-  },
-  "security": {
-    "title": "账号安全",
-    "description": "管理您的密码、两步验证和登录会话",
-    "changePassword": "修改密码",
-    "changePasswordDesc": "定期更换密码以保护账号安全",
-    "currentPassword": "当前密码",
-    "newPassword": "新密码",
-    "confirmPassword": "确认新密码",
-    "passwordRequirements": "密码至少8位，包含字母和数字",
-    "updatePassword": "更新密码",
-    "passwordMismatch": "两次输入的密码不一致",
-    "passwordTooShort": "密码至少需要8个字符",
-    "passwordChanged": "密码已更新",
-    "twoFactor": "两步验证",
-    "twoFactorDesc": "启用两步验证为您的账号添加额外保护",
-    "enabled": "已启用",
-    "disabled": "未启用",
-    "twoFactorOn": "您的账号已启用两步验证",
-    "twoFactorOff": "建议启用以提高安全性",
-    "twoFactorEnabled": "两步验证已启用",
-    "twoFactorDisabled": "两步验证已禁用",
-    "activeSessions": "登录会话",
-    "activeSessionsDesc": "管理您在各设备上的登录状态",
-    "currentSession": "当前",
-    "logoutAll": "登出所有设备",
-    "revoke": "撤销",
-    "sessionRevoked": "会话已撤销",
-    "logoutAllTitle": "登出所有设备",
-    "logoutAllDesc": "这将终止除当前设备外的所有登录会话，确定继续？",
-    "loggedOutAll": "已登出所有其他设备",
-    "dangerZone": "危险操作",
-    "dangerZoneDesc": "删除账号后，所有数据将被永久清除且无法恢复。",
-    "deleteAccount": "删除账号"
-  },
-  "subscription": {
-    "title": "订阅管理",
-    "description": "查看和管理您的订阅计划",
-    "currentPlan": "当前计划",
-    "validForever": "永久有效",
-    "mostPopular": "最受欢迎",
-    "currentPlanLabel": "当前计划",
-    "getStarted": "开始使用",
-    "upgrade": "立即升级",
-    "upgradeSuccess": "升级成功！",
-    "paymentHistory": "账单记录",
-    "paymentHistoryDesc": "查看您的历史订单和发票",
-    "paid": "已支付",
-    "pending": "待支付",
-    "noInvoices": "暂无账单记录"
-  },
-  "resume": {
-    "title": "导出简历",
-    "description": "选择模板和内容，生成专业的 PDF 简历",
-    "selectTemplate": "选择模板",
-    "selectModules": "选择导出内容",
-    "language": "语言",
-    "anonymize": "匿名模式",
-    "anonymizeOn": "隐藏姓名和学校",
-    "anonymizeOff": "显示完整信息",
-    "export": "下载 PDF",
-    "exporting": "生成中...",
-    "noDataWarning": "请先完善您的档案再导出简历",
-    "templates": {
-      "basic": "基础模板",
-      "basicDesc": "简洁清晰，适合大多数场景",
-      "professional": "专业模板",
-      "professionalDesc": "精美设计，更具视觉冲击力"
-    },
-    "modules": {
-      "basic": "基本信息",
-      "academics": "学术成绩",
-      "activities": "活动经历",
-      "awards": "获奖情况",
-      "targetSchools": "目标学校"
-    },
-    "toast": {
-      "success": "简历已下载",
-      "failed": "导出失败，请重试",
-      "noData": "请先完善您的档案"
-    }
-  },
-  "verification": {
-    "title": "申请认证",
-    "description": "上传录取证明，认证您的 {school} 录取案例",
-    "selectProofType": "选择证明类型",
-    "uploadProof": "上传证明文件",
-    "dropOrClick": "拖拽文件到此处，或点击选择",
-    "fileRequirements": "支持 JPG、PNG、PDF，最大 5MB",
-    "fileTooLarge": "文件过大，请选择小于 5MB 的文件",
-    "invalidFileType": "不支持的文件类型",
-    "noFile": "请选择证明文件",
-    "privacyNote": "您的证明材料仅用于认证审核，审核通过后将自动删除，不会被公开或用于其他用途。",
-    "submit": "提交认证",
-    "submitSuccess": "认证申请已提交，我们将在 1-3 个工作日内审核",
-    "submitError": "提交失败，请重试",
-    "proofTypes": {
-      "offerLetter": "录取通知书",
-      "offerLetterDesc": "学校官方发送的录取通知书 (Offer Letter)",
-      "enrollmentProof": "入学证明",
-      "enrollmentProofDesc": "入学确认函或缴费凭证",
-      "studentId": "学生证",
-      "studentIdDesc": "目标学校的学生证照片"
+    "stats": {
+      "totalUsers": "总用户数",
+      "totalCases": "总案例数",
+      "totalReviews": "总评论数",
+      "pendingReports": "待处理举报"
     },
     "status": {
-      "pending": "审核中",
-      "approved": "已认证",
-      "rejected": "未通过"
+      "pending": "待处理",
+      "resolved": "已解决",
+      "reviewed": "已审核"
     },
-    "badge": {
-      "verified": "已认证",
-      "unverified": "未认证"
-    }
-  },
-  "timeline": {
-    "title": "申请时间线",
-    "description": "追踪每所学校的申请进度，管理任务和截止日期",
-    "totalSchools": "目标学校",
-    "submitted": "已提交",
-    "inProgress": "进行中",
-    "notStarted": "未开始",
-    "progress": "进度",
-    "tasks": "任务",
-    "addSchool": "添加学校",
-    "addFirstSchool": "添加第一所学校",
-    "noTimelines": "暂无申请计划",
-    "noTimelinesDesc": "添加目标学校开始追踪你的申请进度",
-    "upcomingDeadlines": "即将到来的截止日期",
-    "edit": "编辑",
-    "delete": "删除",
-    "deleted": "已删除",
-    "close": "关闭",
-    "loadingTasks": "加载任务中..."
-  },
-  "recommendation": {
-    "title": "AI 选校建议",
-    "description": "基于你的背景和偏好，AI 智能推荐最适合的学校组合",
-    "generate": "生成建议",
-    "history": "历史记录",
-    "preferences": "偏好设置",
-    "preferencesDesc": "设置你的选校偏好，获取更精准的推荐",
-    "regions": "偏好地区",
-    "regionsPlaceholder": "如：California, New York（多个用逗号分隔）",
-    "majors": "意向专业",
-    "majorsPlaceholder": "如：Computer Science, Data Science",
-    "budget": "年度预算",
-    "budgetPlaceholder": "选择预算范围",
-    "additional": "其他偏好",
-    "additionalPlaceholder": "如：希望在大城市、有实习机会、校园安全等",
-    "generateBtn": "生成选校建议",
-    "cost": "消耗 {points} 积分",
-    "success": "选校建议生成成功！",
-    "failed": "生成失败，请重试",
-    "result": "推荐结果",
-    "newRecommendation": "重新生成",
-    "reach": "冲刺校",
-    "match": "匹配校",
-    "safety": "保底校",
-    "probability": "录取概率",
-    "fitScore": "契合度",
-    "reasons": "推荐理由",
-    "concerns": "注意事项",
-    "strengths": "你的优势",
-    "weaknesses": "需要改进",
-    "tips": "提升建议",
-    "noHistory": "暂无历史记录",
-    "howItWorks": "工作原理",
-    "step1Title": "分析档案",
-    "step1Desc": "AI 分析你的 GPA、标化、活动、奖项等背景信息",
-    "step2Title": "智能匹配",
-    "step2Desc": "结合你的偏好和数千所学校数据进行智能匹配",
-    "step3Title": "生成建议",
-    "step3Desc": "输出冲刺、匹配、保底三档学校，并给出详细分析"
-  },
-  "essayAi": {
-    "cancel": "取消",
-    "copy": "复制",
-    "copied": "已复制",
-    "characters": "字符",
-    "tokenUsed": "消耗 {tokens} tokens",
-    "polish": {
-      "title": "AI 文书润色",
-      "description": "AI 将在保持原意的基础上优化语言表达、修正语法错误",
-      "style": "润色风格",
-      "styles": {
-        "formal": "正式学术",
-        "vivid": "生动有力",
-        "concise": "简洁精炼"
-      },
-      "styleDesc": {
-        "formal": "使用更正式、学术化的语言，适合严肃主题",
-        "vivid": "使用更生动、有画面感的语言，多用具体细节和感官描写",
-        "concise": "精简冗余表达，每个词都要有意义"
-      },
-      "preview": "待润色内容预览",
-      "cost": "消耗 {points} 积分",
-      "start": "开始润色",
-      "success": "润色完成！",
-      "failed": "润色失败，请重试",
-      "changes": "主要修改",
-      "original": "原文",
-      "revised": "修改",
-      "result": "润色结果",
-      "retry": "重新润色",
-      "apply": "应用修改",
-      "applied": "已应用润色结果"
+    "roles": {
+      "admin": "管理员",
+      "user": "普通用户",
+      "verified": "已认证"
     },
-    "review": {
-      "title": "招生官视角点评",
-      "description": "AI 将从招生官角度评估文书，给出评分和详细反馈",
-      "schoolName": "目标学校",
-      "schoolNamePlaceholder": "如：Harvard University",
-      "major": "目标专业",
-      "majorPlaceholder": "如：Computer Science",
-      "cost": "消耗 {points} 积分",
-      "start": "开始点评",
-      "success": "点评完成！",
-      "failed": "点评失败，请重试",
-      "result": "点评结果",
-      "newReview": "重新点评",
-      "strengths": "亮点",
-      "weaknesses": "不足",
-      "suggestions": "改进建议"
+    "overview": {
+      "needsAttention": "需要关注",
+      "pendingReports": "待处理举报",
+      "schoolsInDb": "数据库学校数",
+      "manage": "管理",
+      "handle": "处理",
+      "dataManagement": "数据管理",
+      "essayDesc": "管理文书提示和翻译"
     },
-    "brainstorm": {
-      "title": "AI 文书创意",
-      "description": "AI 根据题目和背景，生成独特的写作角度和思路",
-      "prompt": "文书题目",
-      "promptPlaceholder": "输入文书题目，如：Describe a challenge you faced and how you overcame it",
-      "background": "个人背景",
-      "backgroundPlaceholder": "简述你的经历、特长、兴趣等（可选）",
-      "school": "目标学校",
-      "schoolPlaceholder": "可选",
-      "major": "目标专业",
-      "majorPlaceholder": "可选",
-      "cost": "消耗 {points} 积分",
-      "start": "生成创意",
-      "success": "创意生成成功！",
-      "failed": "生成失败，请重试",
-      "overallAdvice": "整体写作建议",
-      "suitableFor": "适合",
-      "newBrainstorm": "重新生成",
-      "ideaSelected": "已选择该创意"
-    },
-    "scoreExcellent": "优秀",
-    "scoreGood": "良好",
-    "scoreAverage": "一般",
-    "scoreNeedsWork": "需改进",
-    "radar": {
-      "title": "AI 评分雷达图",
-      "overallScore": "综合评分",
-      "dimensions": {
-        "clarity": "清晰度",
-        "originality": "原创性",
-        "structure": "结构",
-        "language": "语言表达",
-        "impact": "感染力",
-        "relevance": "相关性"
-      },
-      "feedback": {
-        "clarity": "表达的清晰程度和逻辑性",
-        "originality": "内容的独特性和创新性",
-        "structure": "文章的组织和段落安排",
-        "language": "词汇选择和语法准确性",
-        "impact": "对读者的吸引力和情感共鸣",
-        "relevance": "与题目和学校的契合程度"
-      }
-    }
-  },
-  "about": {
-    "badge": "留学服务平台",
-    "title": "关于我们",
-    "subtitle": "用科技和数据，让每一个留学梦想都能照进现实",
-    "stats": {
-      "users": "注册用户",
-      "schools": "覆盖院校",
-      "cases": "申请案例",
-      "accuracy": "预测准确率"
-    },
-    "story": {
-      "title": "我们的故事",
-      "content": "留学申请平台诞生于一群留学生的亲身经历。我们深知申请过程中的迷茫与焦虑，也见证了无数学子因信息不对称而错失良机。2023年，我们决定用技术改变这一切，让每个人都能获得专业、透明、个性化的留学指导。"
-    },
-    "vision": {
-      "title": "我们的愿景",
-      "content": "成为全球最值得信赖的留学申请平台，通过AI技术和大数据分析，为每一位申请者提供精准的选校建议和录取预测，让留学申请不再是一场信息战，而是一次充满希望的旅程。"
-    },
-    "values": {
-      "title": "核心价值观",
-      "mission": {
-        "title": "使命驱动",
-        "desc": "帮助每一位学子实现留学梦想"
-      },
-      "innovation": {
-        "title": "持续创新",
-        "desc": "用最新的AI技术提升服务体验"
-      },
-      "trust": {
-        "title": "诚信透明",
-        "desc": "提供真实数据，做值得信赖的伙伴"
-      },
-      "care": {
-        "title": "用户至上",
-        "desc": "倾听用户声音，持续优化产品"
-      }
-    },
-    "timeline": {
-      "title": "发展历程",
-      "founded": {
-        "title": "平台创立",
-        "desc": "团队组建，产品原型开发"
-      },
-      "growth": {
-        "title": "快速增长",
-        "desc": "用户突破万人，合作院校超过500所"
-      },
-      "ai": {
-        "title": "AI升级",
-        "desc": "推出AI智能选校和录取预测功能"
-      },
-      "expansion": {
-        "title": "全球拓展",
-        "desc": "覆盖美英加澳等主流留学国家"
-      }
-    },
-    "team": {
-      "title": "核心团队"
-    },
-    "contact": {
-      "title": "联系我们",
-      "desc": "如果您有任何问题或建议，欢迎随时与我们联系"
-    }
-  },
-  "swipe": {
-    "title": "录取预测挑战",
-    "description": "滑动卡片，预测录取结果，挑战你的招生官直觉",
-    "play": "开始挑战",
-    "leaderboard": "排行榜",
-    "accuracy": "命中率",
-    "totalSwipes": "总预测",
-    "correct": "正确",
-    "incorrect": "错误",
-    "bestStreak": "最高连胜",
-    "current": "当前",
-    "badge": "徽章",
-    "toNextBadge": "距离升级",
-    "points": "积分",
-    "streak": "连胜",
-    "admit": "录取",
-    "reject": "拒绝",
-    "waitlist": "候补",
-    "verified": "已认证",
-    "undeclared": "未定专业",
-    "acceptanceRate": "录取率",
-    "youreRight": "预测正确！",
-    "notQuite": "很遗憾，不对",
-    "actualResult": "真实结果",
-    "nextCase": "下一个",
-    "swipeHint": "← 左滑拒绝 | 点击中间候补 | 右滑录取 →",
-    "noCases": "没有更多案例了",
-    "noCasesDesc": "你已经预测完所有可用案例，稍后再来",
-    "refresh": "刷新",
-    "swipes": "次预测",
-    "you": "你",
-    "badgeUpgraded": "徽章升级！",
-    "newBadge": "新徽章",
-    "failed": "提交失败，请重试"
-  },
-  "assessment": {
-    "title": "专业测评中心",
-    "description": "通过科学测评，发现适合你的专业方向",
-    "mbti": {
-      "title": "MBTI性格测试",
-      "description": "发现你的性格类型，了解适合的学习风格和职业方向",
-      "start": "开始测试",
-      "result": "你的性格类型",
-      "strengths": "性格优势",
-      "careers": "适合职业",
-      "majors": "推荐专业"
-    },
-    "holland": {
-      "title": "霍兰德职业测试",
-      "description": "了解你的职业兴趣，找到最匹配的专业领域",
-      "start": "开始测试",
-      "result": "你的职业代码",
-      "types": "兴趣类型",
-      "fields": "适合领域",
-      "majors": "推荐专业"
-    },
-    "progress": "第 {current} 题 / 共 {total} 题",
-    "next": "下一题",
-    "prev": "上一题",
-    "submit": "提交",
-    "viewResult": "查看结果",
-    "retake": "重新测试",
-    "history": "测试历史",
-    "noHistory": "暂无测试记录",
-    "completedAt": "完成于"
-  },
-  "forum": {
-    "title": "论坛与组队",
-    "description": "发布帖子、组建团队、交流经验",
-    "createPost": "发帖",
-    "createTeam": "发起组队",
-    "categories": "分类",
-    "allPosts": "全部帖子",
-    "teamPosts": "组队招募",
-    "myTeams": "我的团队",
-    "latest": "最新",
-    "popular": "热门",
-    "mostComments": "最多评论",
-    "search": "搜索帖子...",
-    "title_label": "标题",
-    "content_label": "内容",
-    "category_label": "分类",
-    "tags_label": "标签",
-    "tagsPlaceholder": "输入标签，按回车添加",
-    "teamSize": "团队人数",
-    "requirements": "招募要求",
-    "deadline": "截止日期",
-    "submit": "发布",
-    "cancel": "取消",
-    "edit": "编辑",
-    "delete": "删除",
-    "like": "点赞",
-    "comment": "评论",
-    "reply": "回复",
-    "share": "分享",
-    "views": "浏览",
-    "likes": "点赞",
-    "comments": "评论",
-    "members": "成员",
-    "recruiting": "招募中",
-    "full": "已满员",
-    "closed": "已关闭",
-    "apply": "申请加入",
-    "applied": "已申请",
-    "joined": "已加入",
-    "leaveTeam": "退出团队",
-    "applicationMessage": "申请留言",
-    "applicationPlaceholder": "介绍一下你自己，为什么想加入这个团队...",
-    "pending": "待审核",
-    "accept": "接受",
-    "reject": "拒绝",
-    "reviewApplications": "审核申请",
-    "noApplications": "暂无申请",
-    "noPosts": "暂无帖子",
-    "noPostsDesc": "成为第一个发帖的人吧！",
-    "loadMore": "加载更多",
-    "writeComment": "写下你的评论...",
-    "postComment": "发表",
-    "deleteConfirm": "确定要删除吗？",
-    "postSuccess": "发布成功",
-    "postFailed": "发布失败",
-    "applySuccess": "申请已提交",
-    "applyFailed": "申请失败",
-    "categoryTeam": "竞赛组队",
-    "categoryActivity": "活动招募",
-    "categoryExperience": "经验分享",
-    "categoryQuestion": "问答求助",
-    "categoryResource": "资源分享"
-  },
-  "vault": {
-    "title": "保险箱",
-    "description": "安全存储您的账号、密码、证书等重要信息",
-    "subtitle": "端到端加密保护您的敏感数据",
-    "addItem": "添加项目",
-    "credential": "账号密码",
-    "credentialDesc": "安全存储网站账号密码",
-    "document": "文档",
-    "documentDesc": "保存重要文件内容",
-    "note": "笔记",
-    "noteDesc": "加密存储私密笔记",
-    "certificate": "证书",
-    "certificateDesc": "保存证书和奖状信息",
-    "allItems": "全部项目",
-    "categories": "分类",
-    "search": "搜索保险箱...",
-    "noItems": "保险箱为空",
-    "noItemsDesc": "点击上方按钮添加您的第一个项目",
-    "createTitle": "添加新项目",
-    "editTitle": "编辑项目",
-    "viewTitle": "查看详情",
-    "itemType": "类型",
-    "itemTitle": "标题",
-    "itemTitlePlaceholder": "输入标题...",
-    "itemCategory": "分类",
-    "itemCategoryPlaceholder": "选择或输入分类",
-    "itemTags": "标签",
-    "itemTagsPlaceholder": "输入标签后按回车",
-    "itemData": "内容",
-    "itemDataPlaceholder": "输入要加密存储的内容...",
-    "username": "用户名",
-    "usernamePlaceholder": "输入用户名",
-    "password": "密码",
-    "passwordPlaceholder": "输入密码",
-    "website": "网站",
-    "websitePlaceholder": "https://example.com",
-    "notes": "备注",
-    "notesPlaceholder": "可选备注信息",
-    "generatePassword": "生成密码",
-    "showPassword": "显示密码",
-    "hidePassword": "隐藏密码",
-    "copyPassword": "复制密码",
-    "passwordCopied": "密码已复制",
-    "save": "保存",
-    "cancel": "取消",
-    "delete": "删除",
-    "deleteConfirm": "确定要删除此项目吗？此操作不可撤销。",
-    "saveSuccess": "保存成功",
-    "saveFailed": "保存失败",
-    "deleteSuccess": "删除成功",
-    "deleteFailed": "删除失败",
-    "decryptFailed": "解密失败",
-    "exportAll": "导出全部",
-    "importItems": "导入",
-    "stats": {
-      "total": "总项目数",
-      "credentials": "账号密码",
-      "documents": "文档",
-      "notes": "笔记",
-      "certificates": "证书"
-    },
-    "security": {
-      "title": "安全说明",
-      "encryption": "AES-256-GCM 加密",
-      "zeroKnowledge": "端到端加密",
-      "localDecrypt": "本地解密"
-    },
-    "categories_default": {
-      "social": "社交媒体",
+    "users": {
+      "searchPlaceholder": "搜索用户邮箱...",
       "email": "邮箱",
-      "school": "学校相关",
-      "application": "申请材料",
-      "financial": "财务信息",
-      "other": "其他"
+      "role": "角色",
+      "joinDate": "注册时间",
+      "cases": "案例数",
+      "reviews": "评论数",
+      "delete": "删除",
+      "noResults": "无搜索结果",
+      "noResultsDesc": "尝试修改搜索条件",
+      "notVerified": "未认证",
+      "setVerified": "设为认证",
+      "setUser": "设为普通用户"
+    },
+    "reports": {
+      "reporter": "举报人",
+      "resolve": "解决",
+      "markReviewed": "标记已审核",
+      "empty": "暂无举报",
+      "emptyDesc": "目前没有待处理的举报"
+    },
+    "dialogs": {
+      "resolveReport": "解决举报",
+      "resolveReportDesc": "请输入处理备注",
+      "resolveConfirm": "确认解决",
+      "deleteUserTitle": "删除用户",
+      "deleteUserDesc": "确定要删除此用户吗？此操作不可撤回。",
+      "delete": "删除",
+      "cancel": "取消",
+      "defaultResolution": "已处理"
+    },
+    "targetTypes": {
+      "user": "用户",
+      "case": "案例",
+      "review": "评论",
+      "message": "消息"
+    },
+    "toast": {
+      "roleUpdated": "用户角色已更新",
+      "userDeleted": "用户已删除",
+      "reportResolved": "举报已解决",
+      "scrapeComplete": "数据抓取完成",
+      "scrapeFailed": "数据抓取失败",
+      "syncComplete": "数据同步完成",
+      "syncFailed": "数据同步失败"
+    },
+    "schools": {
+      "notFound": "未找到学校",
+      "tryOther": "尝试其他搜索条件"
+    },
+    "data": {
+      "scrapeSchools": "抓取学校数据",
+      "scrapeSchoolsDesc": "从外部数据源抓取最新学校信息",
+      "startScrape": "开始抓取",
+      "syncScorecard": "同步成绩单",
+      "syncScorecardDesc": "从数据源同步学校评分数据",
+      "startSync": "开始同步",
+      "statusDesc": "数据管理状态",
+      "schoolName": "学校名称",
+      "rank": "排名",
+      "acceptanceRate": "录取率",
+      "applicationType": "申请类型",
+      "deadline": "截止日期",
+      "cycle": "申请周期",
+      "state": "州",
+      "status": "状态"
     }
   },
-  "verifiedRanking": {
-    "title": "认证用户排行榜",
-    "description": "查看已认证用户的真实录取数据排名",
-    "filters": "筛选条件",
-    "year": "申请年份",
-    "result": "录取结果",
+  "essayAdmin": {
+    "searchPlaceholder": "搜索学校或文书...",
+    "total": "总计",
+    "actions": "操作",
     "school": "学校",
-    "all": "全部",
-    "admitted": "录取",
-    "topSchools": "Top 20 名校",
-    "ivyPlus": "藤校+",
+    "prompt": "文书题目",
     "rank": "排名",
-    "user": "用户",
-    "gpa": "GPA",
-    "sat": "SAT",
-    "toefl": "托福",
-    "target": "目标学校",
-    "resultLabel": "结果",
-    "viewProfile": "查看档案",
-    "totalVerified": "认证用户",
-    "totalAdmitted": "录取案例"
+    "wordCount": "字数",
+    "wordCountBadge": "字",
+    "englishOriginal": "英文原文",
+    "chineseTranslation": "中文翻译",
+    "aiWritingTips": "AI 写作建议",
+    "dataSources": "数据来源",
+    "required": "必写",
+    "optional": "选写",
+    "approve": "通过",
+    "reject": "拒绝",
+    "batchApprove": "批量通过",
+    "batchReject": "批量拒绝",
+    "batchRejectReason": "批量拒绝原因",
+    "defaultRejectReason": "内容不符合要求",
+    "rejectReasonLabel": "拒绝原因",
+    "rejectReasonPlaceholder": "请输入拒绝原因...",
+    "essayDetail": "文书详情",
+    "close": "关闭",
+    "scrapeData": "抓取数据",
+    "scrapeSuccess": "数据抓取成功",
+    "scrapeFailed": "数据抓取失败",
+    "verifySuccess": "审核成功",
+    "batchVerifySuccess": "批量审核完成",
+    "emptyTitle": "暂无文书数据",
+    "emptyDescription": "尝试修改筛选条件或抓取新数据",
+    "status": {
+      "label": "状态",
+      "all": "全部",
+      "pending": "待审核",
+      "verified": "已通过",
+      "rejected": "已拒绝",
+      "outdated": "已过期"
+    },
+    "type": {
+      "label": "类型",
+      "all": "全部"
+    }
+  },
+  "dataExport": {
+    "title": "导出数据",
+    "description": "选择要导出的数据类型",
+    "trigger": "导出数据",
+    "selectDataLabel": "选择数据",
+    "selectAll": "全选",
+    "deselectAll": "取消全选",
+    "formatLabel": "导出格式",
+    "startExport": "开始导出",
+    "securityNote": "导出的数据经过加密处理",
+    "downloadFile": "下载文件",
+    "exportingTitle": "正在导出",
+    "exportingDescription": "请稍候...",
+    "exportCompleteTitle": "导出完成",
+    "exportCompleteDescription": "数据已准备好下载",
+    "toast": {
+      "success": "数据导出成功",
+      "failed": "数据导出失败",
+      "selectDataType": "请选择要导出的数据类型"
+    },
+    "formats": {
+      "json": {
+        "label": "JSON",
+        "description": "结构化数据格式，便于程序处理"
+      },
+      "csv": {
+        "label": "CSV",
+        "description": "表格格式，适合 Excel 打开"
+      },
+      "pdf": {
+        "label": "PDF",
+        "description": "文档格式，适合打印和分享"
+      }
+    },
+    "dataTypes": {
+      "profile": {
+        "label": "个人资料",
+        "description": "基本信息、教育背景、成绩等"
+      },
+      "applications": {
+        "label": "申请记录",
+        "description": "学校申请、状态跟踪等"
+      },
+      "favorites": {
+        "label": "收藏",
+        "description": "收藏的学校和专业"
+      },
+      "aiChats": {
+        "label": "AI 对话",
+        "description": "与 AI 助手的聊天记录"
+      },
+      "preferences": {
+        "label": "偏好设置",
+        "description": "个人设置和偏好配置"
+      }
+    }
+  },
+  "globalSearch": {
+    "placeholder": "搜索学校、案例、帖子...",
+    "openSearch": "打开搜索",
+    "close": "关闭",
+    "searchButton": "搜索",
+    "searchButtonShort": "搜索",
+    "select": "选择",
+    "navigate": "导航",
+    "noResults": "暂无结果",
+    "recentSearches": "最近搜索",
+    "hotSearches": "热门搜索",
+    "quickActions": "快捷操作",
+    "mockResults": {
+      "caseTitle": "案例搜索结果",
+      "universityDesc": "大学搜索结果",
+      "askAi": "问 AI",
+      "askAiDesc": "让 AI 帮你搜索"
+    },
+    "actions": {
+      "aiChat": "AI 对话",
+      "browseSchools": "浏览学校",
+      "viewCases": "查看案例",
+      "profile": "个人档案"
+    },
+    "types": {
+      "school": "学校",
+      "case": "案例",
+      "article": "文章",
+      "ai": "AI",
+      "page": "页面"
+    }
   }
 }

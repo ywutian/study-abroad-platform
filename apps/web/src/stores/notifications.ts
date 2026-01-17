@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { toBcp47 } from '@/lib/i18n/locale-utils';
 
 // 通知类型
 export type NotificationType = 'info' | 'success' | 'warning' | 'error' | 'system';
@@ -35,7 +36,7 @@ export interface CreateNotificationInput {
 interface NotificationsState {
   notifications: Notification[];
   unreadCount: number;
-  
+
   // Actions
   addNotification: (input: CreateNotificationInput) => string;
   markAsRead: (id: string) => void;
@@ -50,7 +51,7 @@ const generateId = () => `notif_${Date.now()}_${Math.random().toString(36).subst
 
 export const useNotificationsStore = create<NotificationsState>()(
   persist(
-    (set, get) => ({
+    (set, _get) => ({
       notifications: [],
       unreadCount: 0,
 
@@ -79,13 +80,11 @@ export const useNotificationsStore = create<NotificationsState>()(
 
       markAsRead: (id) => {
         set((state) => {
-          const notification = state.notifications.find(n => n.id === id);
+          const notification = state.notifications.find((n) => n.id === id);
           if (!notification || notification.read) return state;
 
           return {
-            notifications: state.notifications.map(n =>
-              n.id === id ? { ...n, read: true } : n
-            ),
+            notifications: state.notifications.map((n) => (n.id === id ? { ...n, read: true } : n)),
             unreadCount: Math.max(0, state.unreadCount - 1),
           };
         });
@@ -93,18 +92,18 @@ export const useNotificationsStore = create<NotificationsState>()(
 
       markAllAsRead: () => {
         set((state) => ({
-          notifications: state.notifications.map(n => ({ ...n, read: true })),
+          notifications: state.notifications.map((n) => ({ ...n, read: true })),
           unreadCount: 0,
         }));
       },
 
       removeNotification: (id) => {
         set((state) => {
-          const notification = state.notifications.find(n => n.id === id);
+          const notification = state.notifications.find((n) => n.id === id);
           const wasUnread = notification && !notification.read;
 
           return {
-            notifications: state.notifications.filter(n => n.id !== id),
+            notifications: state.notifications.filter((n) => n.id !== id),
             unreadCount: wasUnread ? Math.max(0, state.unreadCount - 1) : state.unreadCount,
           };
         });
@@ -116,7 +115,7 @@ export const useNotificationsStore = create<NotificationsState>()(
 
       clearRead: () => {
         set((state) => ({
-          notifications: state.notifications.filter(n => !n.read),
+          notifications: state.notifications.filter((n) => !n.read),
         }));
       },
     }),
@@ -130,30 +129,26 @@ export const useNotificationsStore = create<NotificationsState>()(
   )
 );
 
-// 辅助函数：格式化时间
-export function formatNotificationTime(timestamp: number): string {
+// 辅助函数：格式化时间（接受 locale 参数以支持国际化）
+export function formatNotificationTime(
+  timestamp: number,
+  locale: string = 'zh',
+  labels = { justNow: '刚刚', minutesAgo: '{m}分钟前', hoursAgo: '{h}小时前', daysAgo: '{d}天前' }
+): string {
   const now = Date.now();
   const diff = now - timestamp;
-  
+
   const minutes = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
-  
-  if (minutes < 1) return '刚刚';
-  if (minutes < 60) return `${minutes}分钟前`;
-  if (hours < 24) return `${hours}小时前`;
-  if (days < 7) return `${days}天前`;
-  
-  return new Date(timestamp).toLocaleDateString('zh-CN', {
+
+  if (minutes < 1) return labels.justNow;
+  if (minutes < 60) return labels.minutesAgo.replace('{m}', String(minutes));
+  if (hours < 24) return labels.hoursAgo.replace('{h}', String(hours));
+  if (days < 7) return labels.daysAgo.replace('{d}', String(days));
+
+  return new Date(timestamp).toLocaleDateString(toBcp47(locale), {
     month: 'short',
     day: 'numeric',
   });
 }
-
-
-
-
-
-
-
-

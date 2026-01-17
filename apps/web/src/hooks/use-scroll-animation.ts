@@ -35,9 +35,7 @@ export function useScrollAnimation<T extends HTMLElement = HTMLDivElement>(
     if (disabled || !ref.current) return;
 
     // 检查用户是否偏好减少动画
-    const prefersReducedMotion = window.matchMedia(
-      '(prefers-reduced-motion: reduce)'
-    ).matches;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (prefersReducedMotion) {
       setIsInView(true);
@@ -71,19 +69,14 @@ export function useScrollAnimation<T extends HTMLElement = HTMLDivElement>(
 /**
  * 批量滚动动画 Hook - 用于列表
  */
-export function useScrollAnimationList(
-  count: number,
-  options: ScrollAnimationOptions = {}
-) {
+export function useScrollAnimationList(count: number, options: ScrollAnimationOptions = {}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [visibleItems, setVisibleItems] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const prefersReducedMotion = window.matchMedia(
-      '(prefers-reduced-motion: reduce)'
-    ).matches;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (prefersReducedMotion) {
       setVisibleItems(new Set(Array.from({ length: count }, (_, i) => i)));
@@ -116,18 +109,7 @@ export function useScrollAnimationList(
     return () => observers.forEach((obs) => obs.disconnect());
   }, [count, options.threshold, options.rootMargin, options.triggerOnce]);
 
-  const isVisible = useCallback(
-    (index: number) => visibleItems.has(index),
-    [visibleItems]
-  );
+  const isVisible = useCallback((index: number) => visibleItems.has(index), [visibleItems]);
 
   return { containerRef, isVisible, visibleItems };
 }
-
-
-
-
-
-
-
-

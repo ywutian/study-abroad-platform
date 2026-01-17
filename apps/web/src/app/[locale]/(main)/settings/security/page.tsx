@@ -5,7 +5,6 @@ import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import {
-  Shield,
   Key,
   Smartphone,
   History,
@@ -29,7 +28,6 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { useAuthStore } from '@/stores/auth';
 import { cn } from '@/lib/utils';
 
 interface Session {
@@ -41,14 +39,25 @@ interface Session {
 }
 
 const mockSessions: Session[] = [
-  { id: '1', device: 'Chrome on macOS', location: '北京, 中国', lastActive: '当前会话', current: true },
-  { id: '2', device: 'Safari on iPhone', location: '上海, 中国', lastActive: '2小时前', current: false },
+  {
+    id: '1',
+    device: 'Chrome on macOS',
+    location: '北京, 中国',
+    lastActive: '当前会话',
+    current: true,
+  },
+  {
+    id: '2',
+    device: 'Safari on iPhone',
+    location: '上海, 中国',
+    lastActive: '2小时前',
+    current: false,
+  },
 ];
 
 export default function SecurityPage() {
   const t = useTranslations('security');
   const tCommon = useTranslations('common');
-  const { user } = useAuthStore();
 
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -76,7 +85,7 @@ export default function SecurityPage() {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-    } catch (error) {
+    } catch (_error) {
       toast.error(tCommon('error'));
     } finally {
       setIsChangingPassword(false);
@@ -95,7 +104,7 @@ export default function SecurityPage() {
     setLogoutAllDialogOpen(false);
   };
 
-  const handleRevokeSession = async (sessionId: string) => {
+  const handleRevokeSession = async (_sessionId: string) => {
     toast.success(t('sessionRevoked'));
   };
 
@@ -110,12 +119,9 @@ export default function SecurityPage() {
 
       <div className="space-y-6">
         {/* Password Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <Card className="overflow-hidden">
-            <div className="h-1 bg-gradient-to-r from-blue-500 to-cyan-500" />
+            <div className="h-1 bg-primary" />
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10">
@@ -147,7 +153,11 @@ export default function SecurityPage() {
                     className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                     onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                   >
-                    {showCurrentPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                    {showCurrentPassword ? (
+                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-muted-foreground" />
+                    )}
                   </Button>
                 </div>
               </div>
@@ -171,7 +181,11 @@ export default function SecurityPage() {
                     className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                     onClick={() => setShowNewPassword(!showNewPassword)}
                   >
-                    {showNewPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                    {showNewPassword ? (
+                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-muted-foreground" />
+                    )}
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">{t('passwordRequirements')}</p>
@@ -194,8 +208,10 @@ export default function SecurityPage() {
 
               <Button
                 onClick={handleChangePassword}
-                disabled={!currentPassword || !newPassword || !confirmPassword || isChangingPassword}
-                className="gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:opacity-90 text-white shadow-md shadow-blue-500/25"
+                disabled={
+                  !currentPassword || !newPassword || !confirmPassword || isChangingPassword
+                }
+                className="gap-2 bg-primary hover:opacity-90 text-white "
               >
                 {isChangingPassword ? (
                   <>
@@ -220,11 +236,11 @@ export default function SecurityPage() {
           transition={{ delay: 0.1 }}
         >
           <Card className="overflow-hidden">
-            <div className="h-1 bg-gradient-to-r from-violet-500 to-purple-500" />
+            <div className="h-1 bg-primary dark:bg-primary" />
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-500/10">
-                  <Smartphone className="h-5 w-5 text-violet-500" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                  <Smartphone className="h-5 w-5 text-primary" />
                 </div>
                 <div>
                   <CardTitle>{t('twoFactor')}</CardTitle>
@@ -241,18 +257,13 @@ export default function SecurityPage() {
                       {t('enabled')}
                     </Badge>
                   ) : (
-                    <Badge variant="secondary">
-                      {t('disabled')}
-                    </Badge>
+                    <Badge variant="secondary">{t('disabled')}</Badge>
                   )}
                   <span className="text-sm text-muted-foreground">
                     {twoFactorEnabled ? t('twoFactorOn') : t('twoFactorOff')}
                   </span>
                 </div>
-                <Switch
-                  checked={twoFactorEnabled}
-                  onCheckedChange={handleToggle2FA}
-                />
+                <Switch checked={twoFactorEnabled} onCheckedChange={handleToggle2FA} />
               </div>
             </CardContent>
           </Card>
@@ -265,7 +276,7 @@ export default function SecurityPage() {
           transition={{ delay: 0.2 }}
         >
           <Card className="overflow-hidden">
-            <div className="h-1 bg-gradient-to-r from-amber-500 to-yellow-500" />
+            <div className="h-1 bg-warning" />
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -295,15 +306,24 @@ export default function SecurityPage() {
                     key={session.id}
                     className={cn(
                       'flex items-center justify-between p-4 rounded-xl transition-colors',
-                      session.current ? 'bg-emerald-500/5 border border-emerald-500/20' : 'bg-muted/50'
+                      session.current
+                        ? 'bg-emerald-500/5 border border-emerald-500/20'
+                        : 'bg-muted/50'
                     )}
                   >
                     <div className="flex items-center gap-4">
-                      <div className={cn(
-                        'flex h-10 w-10 items-center justify-center rounded-lg',
-                        session.current ? 'bg-emerald-500/10' : 'bg-muted'
-                      )}>
-                        <Monitor className={cn('h-5 w-5', session.current ? 'text-emerald-500' : 'text-muted-foreground')} />
+                      <div
+                        className={cn(
+                          'flex h-10 w-10 items-center justify-center rounded-lg',
+                          session.current ? 'bg-emerald-500/10' : 'bg-muted'
+                        )}
+                      >
+                        <Monitor
+                          className={cn(
+                            'h-5 w-5',
+                            session.current ? 'text-emerald-500' : 'text-muted-foreground'
+                          )}
+                        />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
@@ -350,7 +370,7 @@ export default function SecurityPage() {
           transition={{ delay: 0.3 }}
         >
           <Card className="overflow-hidden border-destructive/30">
-            <div className="h-1 bg-gradient-to-r from-red-500 to-rose-500" />
+            <div className="h-1 bg-gradient-to-r bg-destructive" />
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-destructive/10">
@@ -360,9 +380,7 @@ export default function SecurityPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
-                {t('dangerZoneDesc')}
-              </p>
+              <p className="text-sm text-muted-foreground mb-4">{t('dangerZoneDesc')}</p>
               <Button variant="destructive" className="gap-2" asChild>
                 <a href="/settings">
                   <AlertTriangle className="h-4 w-4" />

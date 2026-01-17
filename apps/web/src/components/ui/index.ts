@@ -1,6 +1,7 @@
 // UI 组件统一导出
 
 // 基础组件
+export * from './alert';
 export * from './alert-dialog';
 export * from './avatar';
 export * from './badge';
@@ -37,7 +38,13 @@ export * from './error-boundary';
 export * from './error-state';
 export * from './floating-input';
 export { FormField as CustomFormField, FormTextarea } from './form-field';
-export { LoadingState, ListSkeleton, CardSkeleton, TableSkeleton, ProfileSkeleton } from './loading-state';
+export {
+  LoadingState,
+  ListSkeleton,
+  CardSkeleton,
+  TableSkeleton,
+  ProfileSkeleton,
+} from './loading-state';
 export * from './logo';
 export * from './motion';
 // motion-button exports are included via motion.tsx
@@ -54,6 +61,3 @@ export * from './tilt-card';
 export * from './touch-card';
 export * from './unsaved-changes-dialog';
 export * from './virtual-list';
-
-
-

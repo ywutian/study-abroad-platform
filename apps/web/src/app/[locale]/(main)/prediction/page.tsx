@@ -1,41 +1,45 @@
 'use client';
 
-import { useState } from 'react';
-import { useTranslations } from 'next-intl';
-import { useMutation } from '@tanstack/react-query';
+import { useState, useMemo, useEffect } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
-import { PageContainer } from '@/components/layout';
-import { ProbabilityRing, SchoolSelector, MilestoneCelebration } from '@/components/features';
-import { cn } from '@/lib/utils';
+import { AiAssistantPanel, type ContextAction } from '@/components/features/agent-chat';
 import {
-  Target,
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  Sparkles,
-  Plus,
+  Bot,
+  Search,
   X,
+  CheckCircle,
+  School,
+  TrendingUp,
+  Target,
+  Lightbulb,
   GraduationCap,
-  Brain,
-  ChevronRight,
-  Zap,
   BarChart3,
+  Loader2,
+  ChevronDown,
+  ChevronUp,
+  Info,
+  Shield,
+  Zap,
+  Database,
+  Brain,
+  History,
 } from 'lucide-react';
+import { cn, getSchoolName } from '@/lib/utils';
 
-interface School {
-  id: string;
-  name: string;
-  nameZh?: string;
-  country: string;
-  state?: string;
-  usNewsRank?: number;
-  acceptanceRate?: number;
-}
+// ============================================
+// Types
+// ============================================
 
 interface PredictionFactor {
   name: string;
@@ -45,421 +49,708 @@ interface PredictionFactor {
   improvement?: string;
 }
 
-interface PredictionComparison {
-  gpaPercentile: number;
-  testScorePercentile: number;
-  activityStrength: 'weak' | 'average' | 'strong';
+interface EngineScores {
+  stats: number;
+  ai?: number;
+  historical?: number;
+  memoryAdjustment?: number;
+  weights: Record<string, number>;
+  fusionMethod: string;
 }
 
 interface PredictionResult {
   schoolId: string;
   schoolName: string;
   probability: number;
-  confidence: 'low' | 'medium' | 'high';
-  tier: 'reach' | 'match' | 'safety';
+  probabilityLow?: number;
+  probabilityHigh?: number;
+  confidence?: 'low' | 'medium' | 'high';
+  tier?: 'reach' | 'match' | 'safety';
   factors: PredictionFactor[];
-  suggestions: string[];
-  comparison: PredictionComparison;
-  fromCache?: boolean;
+  suggestions?: string[];
+  engineScores?: EngineScores;
+  modelVersion?: string;
 }
+
+interface SchoolItem {
+  id: string;
+  name: string;
+  nameZh?: string;
+  usNewsRank?: number;
+  acceptanceRate?: number | string;
+}
+
+// ============================================
+// Component
+// ============================================
 
 export default function PredictionPage() {
   const t = useTranslations();
+  const locale = useLocale();
   const [results, setResults] = useState<PredictionResult[]>([]);
-  const [selectedSchools, setSelectedSchools] = useState<School[]>([]);
-  const [selectorOpen, setSelectorOpen] = useState(false);
-  const [showCelebration, setShowCelebration] = useState(false);
-  const [isFirstPrediction, setIsFirstPrediction] = useState(true);
+  const [selectedSchools, setSelectedSchools] = useState<SchoolItem[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [showAiPanel, setShowAiPanel] = useState(false);
+  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+
+  // 防抖处理搜索查询 (300ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery.trim());
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // 搜索学校
+  const { data: searchResults, isLoading: searchLoading } = useQuery<{ items: SchoolItem[] }>({
+    queryKey: ['schools-search', debouncedQuery],
+    queryFn: () =>
+      apiClient.get(`/schools`, {
+        params: { search: debouncedQuery, pageSize: '10' },
+      }),
+    enabled: debouncedQuery.length >= 1,
+  });
 
   const predictMutation = useMutation({
     mutationFn: (schoolIds: string[]) =>
-      apiClient.post<{ results: PredictionResult[] }>('/predictions', { schoolIds }),
+      apiClient.post<{ results: PredictionResult[]; processingTime?: number }>('/predictions', {
+        schoolIds,
+        forceRefresh: true,
+      }),
     onSuccess: (data) => {
-      setResults(data?.results || []);
-      // 检查是否是首次预测，显示庆祝动画
-      if (isFirstPrediction && data?.results && data.results.length > 0) {
-        const hasCompletedPrediction = localStorage.getItem('hasCompletedPrediction');
-        if (!hasCompletedPrediction) {
-          setShowCelebration(true);
-          localStorage.setItem('hasCompletedPrediction', 'true');
-        }
-        setIsFirstPrediction(false);
+      const predictionResults = data.results || [];
+      setResults(predictionResults);
+      if (predictionResults.length > 0) {
+        toast.success(t('prediction.successMessage', { count: predictionResults.length }));
+      } else {
+        toast.info(t('prediction.noResult'));
       }
     },
     onError: (error: Error) => {
+      console.error('Prediction error:', error);
       toast.error(error.message);
     },
   });
 
+  const handleAddSchool = (school: SchoolItem) => {
+    if (!selectedSchools.find((s) => s.id === school.id)) {
+      setSelectedSchools([...selectedSchools, school]);
+    }
+    setSearchQuery('');
+  };
+
+  const handleRemoveSchool = (schoolId: string) => {
+    setSelectedSchools(selectedSchools.filter((s) => s.id !== schoolId));
+  };
+
   const handlePredict = () => {
     if (selectedSchools.length === 0) {
-      toast.error(t('prediction.toast.selectFirst'));
+      toast.error(t('prediction.selectSchoolsFirst'));
       return;
     }
     predictMutation.mutate(selectedSchools.map((s) => s.id));
   };
 
-  const removeSchool = (schoolId: string) => {
-    setSelectedSchools(selectedSchools.filter((s) => s.id !== schoolId));
+  const toggleCardExpansion = (schoolId: string) => {
+    setExpandedCards((prev) => {
+      const next = new Set(prev);
+      if (next.has(schoolId)) next.delete(schoolId);
+      else next.add(schoolId);
+      return next;
+    });
   };
 
-  const getImpactIcon = (impact: string) => {
-    switch (impact) {
-      case 'positive':
-        return <TrendingUp className="h-3.5 w-3.5" />;
-      case 'negative':
-        return <TrendingDown className="h-3.5 w-3.5" />;
-      default:
-        return <Minus className="h-3.5 w-3.5" />;
-    }
-  };
+  // ============================================
+  // Style Helpers
+  // ============================================
 
-  const getImpactStyle = (impact: string) => {
+  const getImpactColor = (impact: string) => {
     switch (impact) {
       case 'positive':
-        return 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20';
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
       case 'negative':
-        return 'bg-red-500/10 text-red-600 border-red-500/20';
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
       default:
-        return 'bg-muted text-muted-foreground';
+        return 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300';
     }
   };
 
   const getProbabilityColor = (prob: number) => {
-    if (prob >= 0.7) return 'from-emerald-500 to-teal-500';
-    if (prob >= 0.4) return 'from-amber-500 to-yellow-500';
-    return 'from-red-500 to-orange-500';
+    if (prob >= 0.6) return 'text-green-600 dark:text-green-400';
+    if (prob >= 0.3) return 'text-amber-600 dark:text-amber-400';
+    return 'text-red-600 dark:text-red-400';
   };
 
-  const getTierStyle = (tier: string) => {
+  const getTierBadge = (tier?: string) => {
     switch (tier) {
       case 'safety':
-        return { bg: 'bg-emerald-500/10', text: 'text-emerald-600', border: 'border-emerald-500/30' };
+        return (
+          <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200">
+            {t('prediction.tier.safety')}
+          </Badge>
+        );
       case 'match':
-        return { bg: 'bg-amber-500/10', text: 'text-amber-600', border: 'border-amber-500/30' };
+        return (
+          <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200">
+            {t('prediction.tier.match')}
+          </Badge>
+        );
       case 'reach':
-        return { bg: 'bg-violet-500/10', text: 'text-violet-600', border: 'border-violet-500/30' };
+        return (
+          <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200">
+            {t('prediction.tier.reach')}
+          </Badge>
+        );
       default:
-        return { bg: 'bg-muted', text: 'text-muted-foreground', border: 'border-muted' };
+        return null;
     }
   };
 
-  const getTierLabel = (tier: string) => {
-    switch (tier) {
-      case 'safety': return t('prediction.tier.safety');
-      case 'match': return t('prediction.tier.match');
-      case 'reach': return t('prediction.tier.reach');
-      default: return tier;
+  const getConfidenceBadge = (confidence?: string) => {
+    switch (confidence) {
+      case 'high':
+        return (
+          <Badge variant="outline" className="border-green-300 text-green-600">
+            <Shield className="h-3 w-3 mr-1" />
+            {t('prediction.confidence.high')}
+          </Badge>
+        );
+      case 'medium':
+        return (
+          <Badge variant="outline" className="border-amber-300 text-amber-600">
+            <Shield className="h-3 w-3 mr-1" />
+            {t('prediction.confidence.medium')}
+          </Badge>
+        );
+      case 'low':
+        return (
+          <Badge variant="outline" className="border-red-300 text-red-600">
+            <Shield className="h-3 w-3 mr-1" />
+            {t('prediction.confidence.low')}
+          </Badge>
+        );
+      default:
+        return null;
     }
   };
 
-  const getConfidenceLabel = (conf: string) => {
-    switch (conf) {
-      case 'high': return t('prediction.confidence.high');
-      case 'medium': return t('prediction.confidence.medium');
-      case 'low': return t('prediction.confidence.low');
-      default: return conf;
+  const getEngineIcon = (engine: string) => {
+    switch (engine) {
+      case 'stats':
+        return <Zap className="h-3.5 w-3.5" />;
+      case 'ai':
+        return <Brain className="h-3.5 w-3.5" />;
+      case 'historical':
+        return <History className="h-3.5 w-3.5" />;
+      default:
+        return <Database className="h-3.5 w-3.5" />;
     }
   };
+
+  const getEngineLabel = (engine: string) => {
+    const key = `prediction.engine.${engine}`;
+    try {
+      return t(key);
+    } catch {
+      return engine;
+    }
+  };
+
+  // ============================================
+  // AI Context Actions
+  // ============================================
+
+  const aiContextActions = useMemo((): ContextAction[] => {
+    const actions: ContextAction[] = [];
+
+    if (results.length > 0) {
+      const resultsText = results
+        .map((r) => {
+          const range =
+            r.probabilityLow && r.probabilityHigh
+              ? ` (${(r.probabilityLow * 100).toFixed(0)}-${(r.probabilityHigh * 100).toFixed(0)}%)`
+              : '';
+          return `- ${r.schoolName}: ${(r.probability * 100).toFixed(0)}%${range} [${r.tier || t('prediction.tier.unknown')}] (${r.factors.map((f) => `${f.name}: ${f.detail}`).join(', ')})`;
+        })
+        .join('\n');
+      const resultsTextShort = results
+        .map((r) => `- ${r.schoolName}: ${(r.probability * 100).toFixed(0)}%`)
+        .join('\n');
+      actions.push(
+        {
+          id: 'analyze-results',
+          label: t('prediction.aiActions.analyzeResults'),
+          prompt: t('prediction.aiActions.analyzeResultsPrompt', { results: resultsText }),
+          icon: <BarChart3 className="h-4 w-4" />,
+        },
+        {
+          id: 'improve-chances',
+          label: t('prediction.aiActions.improveChances'),
+          prompt: t('prediction.aiActions.improveChancesPrompt', { results: resultsTextShort }),
+          icon: <TrendingUp className="h-4 w-4" />,
+        }
+      );
+    }
+
+    if (selectedSchools.length > 0) {
+      const schoolsText = selectedSchools
+        .map(
+          (s) =>
+            `- ${getSchoolName(s, locale)}${s.usNewsRank ? ` (#${s.usNewsRank})` : ''}${s.acceptanceRate ? ` (${t('prediction.acceptanceRateLabel', { rate: s.acceptanceRate })})` : ''}`
+        )
+        .join('\n');
+      actions.push({
+        id: 'school-analysis',
+        label: t('prediction.aiActions.analyzeSelectedSchools'),
+        prompt: t('prediction.aiActions.analyzeSelectedSchoolsPrompt', { schools: schoolsText }),
+        icon: <School className="h-4 w-4" />,
+      });
+    }
+
+    actions.push(
+      {
+        id: 'recommend-schools',
+        label: t('prediction.aiActions.recommendSchools'),
+        prompt: t('prediction.aiActions.recommendSchoolsPrompt'),
+        icon: <Target className="h-4 w-4" />,
+      },
+      {
+        id: 'application-strategy',
+        label: t('prediction.aiActions.applicationStrategy'),
+        prompt: t('prediction.aiActions.applicationStrategyPrompt'),
+        icon: <Lightbulb className="h-4 w-4" />,
+      },
+      {
+        id: 'explain-prediction',
+        label: t('prediction.aiActions.explainModel'),
+        prompt: t('prediction.aiActions.explainModelPrompt'),
+        icon: <GraduationCap className="h-4 w-4" />,
+      }
+    );
+
+    return actions;
+  }, [results, selectedSchools, locale, t]);
+
+  // ============================================
+  // Render
+  // ============================================
 
   return (
-    <PageContainer maxWidth="5xl">
-      {/* 页面头部 */}
-      <div className="relative mb-8 overflow-hidden rounded-2xl bg-gradient-to-br from-violet-500/10 via-background to-purple-500/10 p-6 sm:p-8">
-        {/* 装饰元素 */}
-        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gradient-to-br from-violet-500/20 to-purple-500/20 blur-3xl" />
-        <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-gradient-to-br from-indigo-500/20 to-violet-500/20 blur-3xl" />
-        
+    <div className="container mx-auto py-8 px-4 max-w-4xl">
+      {/* Header */}
+      <div className="relative mb-8 overflow-hidden rounded-lg bg-primary/5 p-6 sm:p-8">
+        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/20 blur-3xl" />
         <div className="relative z-10">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-500 shadow-lg shadow-violet-500/25">
-                  <Brain className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t('prediction.title')}</h1>
-                  <p className="text-muted-foreground">{t('prediction.description')}</p>
-                </div>
-              </div>
+          <div className="flex items-center gap-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-primary">
+              <Target className="h-7 w-7 text-white" />
             </div>
-
-            {/* 功能卡片 */}
-            <div className="flex gap-3">
-              <div className="rounded-xl border bg-card/50 backdrop-blur-sm px-4 py-3 flex items-center gap-3">
-                <Zap className="h-5 w-5 text-violet-500" />
-                <div>
-                  <p className="text-xs text-muted-foreground">AI 模型</p>
-                  <p className="font-semibold text-sm">GPT-4 驱动</p>
-                </div>
-              </div>
-              <div className="hidden sm:flex rounded-xl border bg-card/50 backdrop-blur-sm px-4 py-3 items-center gap-3">
-                <BarChart3 className="h-5 w-5 text-violet-500" />
-                <div>
-                  <p className="text-xs text-muted-foreground">准确率</p>
-                  <p className="font-semibold text-sm">95%+</p>
-                </div>
-              </div>
+            <div>
+              <h1 className="text-title">{t('prediction.title')}</h1>
+              <p className="text-muted-foreground">{t('prediction.selectSchoolsDesc')}</p>
             </div>
+          </div>
+          {/* Model Version Badge */}
+          <div className="mt-3 flex items-center gap-2">
+            <Badge variant="secondary" className="text-xs">
+              <Zap className="h-3 w-3 mr-1" />
+              {t('prediction.badge.ensemble')}
+            </Badge>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <p className="text-xs">{t('prediction.tooltip.ensemble')}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
       </div>
 
-      {/* 选择学校 */}
-      <Card className="mb-6 overflow-hidden">
-        <div className="h-1.5 bg-gradient-to-r from-violet-500 to-purple-500" />
+      {/* 学校选择器 */}
+      <Card className="mb-6">
         <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-500/10 text-violet-500">
-              <Target className="h-5 w-5" />
-            </div>
-            <div>
-              <CardTitle className="text-lg">{t('prediction.selectSchools')}</CardTitle>
-              <CardDescription>{t('prediction.selectSchoolsDesc')}</CardDescription>
-            </div>
-          </div>
+          <CardTitle className="flex items-center gap-2">
+            <School className="h-5 w-5" />
+            {t('prediction.selectSchools')}
+          </CardTitle>
+          <CardDescription>{t('prediction.searchSchoolsDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* 已选学校 */}
-          {selectedSchools.length > 0 ? (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  {t('prediction.selectedCount', { count: selectedSchools.length })}
-                </p>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedSchools([])}
-                  className="text-muted-foreground hover:text-destructive"
-                >
-                  {t('common.clearAll')}
-                </Button>
-              </div>
-              <div className="grid gap-2 sm:grid-cols-2">
-                <AnimatePresence>
-                  {selectedSchools.map((school, index) => (
-                    <motion.div
-                      key={school.id}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      transition={{ delay: index * 0.05 }}
-                      className="group flex items-center gap-3 rounded-xl border bg-gradient-to-r from-violet-500/5 to-transparent p-3"
+          {/* 搜索框 */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder={t('prediction.searchPlaceholder')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+
+            {/* 搜索结果下拉 */}
+            {searchQuery.trim().length >= 1 && (
+              <Card className="absolute top-full left-0 right-0 mt-1 z-50 shadow-lg">
+                <ScrollArea className="max-h-60">
+                  {searchLoading ? (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                    </div>
+                  ) : searchResults?.items && searchResults.items.length > 0 ? (
+                    <div className="p-1">
+                      {searchResults.items.map((school) => (
+                        <button
+                          key={school.id}
+                          onClick={() => handleAddSchool(school)}
+                          disabled={selectedSchools.some((s) => s.id === school.id)}
+                          className={cn(
+                            'w-full flex items-center justify-between p-2 rounded-md text-left',
+                            'hover:bg-muted transition-colors',
+                            selectedSchools.some((s) => s.id === school.id) &&
+                              'opacity-50 cursor-not-allowed'
+                          )}
+                        >
+                          <div>
+                            <p className="font-medium">{getSchoolName(school, locale)}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {school.usNewsRank && `#${school.usNewsRank}`}
+                              {school.acceptanceRate &&
+                                ` · ${t('prediction.acceptanceRateLabel', { rate: Number(school.acceptanceRate).toFixed(1) })}`}
+                            </p>
+                          </div>
+                          {selectedSchools.some((s) => s.id === school.id) && (
+                            <CheckCircle className="h-4 w-4 text-primary" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-center py-4 text-muted-foreground">
+                      {t('prediction.noSchoolsFound')}
+                    </p>
+                  )}
+                </ScrollArea>
+              </Card>
+            )}
+          </div>
+
+          {/* 已选学校列表 */}
+          {selectedSchools.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                {t('prediction.selectedCount', { count: selectedSchools.length })}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {selectedSchools.map((school) => (
+                  <Badge
+                    key={school.id}
+                    variant="secondary"
+                    className="flex items-center gap-1 py-1.5 px-3"
+                  >
+                    {getSchoolName(school, locale)}
+                    {school.usNewsRank && (
+                      <span className="text-xs opacity-70">#{school.usNewsRank}</span>
+                    )}
+                    <button
+                      onClick={() => handleRemoveSchool(school.id)}
+                      className="ml-1 hover:text-destructive"
                     >
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-500/10 text-violet-500 font-bold">
-                        {school.usNewsRank ? `#${school.usNewsRank}` : <GraduationCap className="h-5 w-5" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{school.nameZh || school.name}</p>
-                        {school.nameZh && (
-                          <p className="text-xs text-muted-foreground truncate">{school.name}</p>
-                        )}
-                      </div>
-                      <button
-                        onClick={() => removeSchool(school.id)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/10 text-destructive"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
               </div>
-            </div>
-          ) : (
-            <div className="rounded-xl border-2 border-dashed p-8 text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-500/10">
-                <GraduationCap className="h-8 w-8 text-violet-500/50" />
-              </div>
-              <p className="font-medium">{t('prediction.empty.noSchools')}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{t('prediction.empty.noSchoolsHint')}</p>
             </div>
           )}
 
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={() => setSelectorOpen(true)}
-              className="flex-1 h-11 gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              {t('prediction.selectSchoolsButton')}
-            </Button>
-            <Button
-              onClick={handlePredict}
-              disabled={predictMutation.isPending || selectedSchools.length === 0}
-              className="flex-1 h-11 gap-2 bg-gradient-to-r from-violet-500 to-purple-500 hover:opacity-90"
-            >
-              <Sparkles className="h-4 w-4" />
-              {predictMutation.isPending ? t('common.loading') : t('prediction.runPrediction')}
-            </Button>
-          </div>
+          <Button
+            onClick={handlePredict}
+            disabled={predictMutation.isPending || selectedSchools.length === 0}
+            className="w-full"
+          >
+            {predictMutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {t('prediction.loading.analyzing')}
+              </>
+            ) : (
+              <>
+                <Target className="mr-2 h-4 w-4" />
+                {t('prediction.runPrediction')}
+              </>
+            )}
+          </Button>
         </CardContent>
       </Card>
 
       {/* 预测结果 */}
-      {results.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold">{t('prediction.results')}</h2>
-            <Badge variant="secondary" className="gap-1">
-              <Sparkles className="h-3 w-3" />
-              {results.length} {t('prediction.schoolsAnalyzed')}
-            </Badge>
-          </div>
-          
-          <div className="grid gap-4 sm:grid-cols-2">
-            <AnimatePresence>
-              {results.map((result, index) => (
+      <AnimatePresence>
+        {results.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-4"
+          >
+            <h2 className="text-subtitle flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-primary" />
+              {t('prediction.results')}
+            </h2>
+
+            {results.map((result, index) => {
+              const isExpanded = expandedCards.has(result.schoolId);
+
+              return (
                 <motion.div
                   key={result.schoolId}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <Card className="group overflow-hidden hover:shadow-lg transition-all">
-                    <div className={cn('h-1.5 bg-gradient-to-r', getProbabilityColor(result.probability))} />
-                    <CardContent className="p-5">
-                      <div className="flex items-start gap-4">
-                        {/* 概率环 */}
-                        <div className="shrink-0">
-                          <ProbabilityRing
-                            value={Math.round(result.probability * 100)}
-                            size="md"
-                          />
-                        </div>
-
-                        {/* 学校信息和因素 */}
-                        <div className="flex-1 min-w-0 space-y-3">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="min-w-0">
-                              <h3 className="font-semibold group-hover:text-primary transition-colors truncate">
-                                {result.schoolName}
-                              </h3>
-                              <div className="flex items-center gap-2 mt-1">
-                                {/* Tier 标签 */}
-                                {result.tier && (
-                                  <span className={cn(
-                                    'inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border',
-                                    getTierStyle(result.tier).bg,
-                                    getTierStyle(result.tier).text,
-                                    getTierStyle(result.tier).border
-                                  )}>
-                                    {getTierLabel(result.tier)}
-                                  </span>
-                                )}
-                                {/* 置信度 */}
-                                {result.confidence && (
-                                  <span className="text-xs text-muted-foreground">
-                                    {getConfidenceLabel(result.confidence)}
-                                  </span>
-                                )}
-                                {/* 缓存标记 */}
-                                {result.fromCache && (
-                                  <span className="text-xs text-muted-foreground/60">缓存</span>
-                                )}
-                              </div>
-                            </div>
-                            <ChevronRight className="h-5 w-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                          </div>
-
-                          {/* 因素标签 */}
-                          <div className="flex flex-wrap gap-1.5">
-                            {result.factors.slice(0, 4).map((factor, idx) => (
-                              <Badge
-                                key={idx}
-                                variant="outline"
-                                className={cn('gap-1 text-xs', getImpactStyle(factor.impact))}
-                                title={factor.detail}
-                              >
-                                {getImpactIcon(factor.impact)}
-                                {factor.name}
-                              </Badge>
-                            ))}
-                            {result.factors.length > 4 && (
-                              <Badge variant="secondary" className="text-xs">
-                                +{result.factors.length - 4}
-                              </Badge>
+                  <Card className="overflow-hidden">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1.5">
+                          <CardTitle className="flex items-center gap-2">
+                            {result.schoolName}
+                            {getTierBadge(result.tier)}
+                          </CardTitle>
+                          <div className="flex items-center gap-2">
+                            {getConfidenceBadge(result.confidence)}
+                            {result.modelVersion && (
+                              <span className="text-xs text-muted-foreground">
+                                {result.modelVersion}
+                              </span>
                             )}
                           </div>
-
-                          {/* 对比数据条 */}
-                          {result.comparison && (
-                            <div className="grid grid-cols-3 gap-2 pt-2 border-t">
-                              <div className="text-center">
-                                <div className="text-xs text-muted-foreground">GPA</div>
-                                <div className="text-sm font-medium">{result.comparison.gpaPercentile}%</div>
-                              </div>
-                              <div className="text-center border-x">
-                                <div className="text-xs text-muted-foreground">{t('prediction.comparison.testScore')}</div>
-                                <div className="text-sm font-medium">{result.comparison.testScorePercentile}%</div>
-                              </div>
-                              <div className="text-center">
-                                <div className="text-xs text-muted-foreground">{t('prediction.comparison.activity')}</div>
-                                <div className="text-sm font-medium">
-                                  {result.comparison.activityStrength === 'strong' ? '💪' : 
-                                   result.comparison.activityStrength === 'average' ? '👍' : '📈'}
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* 建议（展示第一条） */}
-                          {result.suggestions && result.suggestions.length > 0 && (
-                            <div className="text-xs text-muted-foreground bg-muted/50 rounded-lg p-2">
-                              💡 {result.suggestions[0]}
-                            </div>
-                          )}
+                        </div>
+                        <div className="text-right">
+                          <div
+                            className={`text-3xl font-bold ${getProbabilityColor(result.probability)}`}
+                          >
+                            {(result.probability * 100).toFixed(0)}%
+                          </div>
+                          {result.probabilityLow !== undefined &&
+                            result.probabilityHigh !== undefined && (
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {t('prediction.range')}: {(result.probabilityLow * 100).toFixed(0)}-
+                                {(result.probabilityHigh * 100).toFixed(0)}%
+                              </p>
+                            )}
                         </div>
                       </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* 概率条 (带置信区间) */}
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>{t('prediction.probability')}</span>
+                          <span className="font-medium">
+                            {(result.probability * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                        <div className="relative">
+                          <Progress value={result.probability * 100} className="h-2.5" />
+                          {/* 置信区间标记 */}
+                          {result.probabilityLow !== undefined &&
+                            result.probabilityHigh !== undefined && (
+                              <div
+                                className="absolute top-0 h-2.5 bg-primary/20 rounded-full"
+                                style={{
+                                  left: `${result.probabilityLow * 100}%`,
+                                  width: `${(result.probabilityHigh - result.probabilityLow) * 100}%`,
+                                }}
+                              />
+                            )}
+                        </div>
+                      </div>
+
+                      {/* 因素分析 */}
+                      <div className="space-y-2">
+                        <h4 className="font-medium text-sm">{t('prediction.factors')}</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {result.factors.map((factor, idx) => (
+                            <TooltipProvider key={idx}>
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <div
+                                    className={`px-3 py-1.5 rounded-full text-sm ${getImpactColor(factor.impact)}`}
+                                  >
+                                    <span className="font-medium">{factor.name}:</span>{' '}
+                                    {factor.detail}
+                                  </div>
+                                </TooltipTrigger>
+                                {factor.improvement && (
+                                  <TooltipContent className="max-w-xs">
+                                    <p className="text-xs">{factor.improvement}</p>
+                                  </TooltipContent>
+                                )}
+                              </Tooltip>
+                            </TooltipProvider>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* 展开/收起按钮 */}
+                      <button
+                        onClick={() => toggleCardExpansion(result.schoolId)}
+                        className="w-full flex items-center justify-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors py-1"
+                      >
+                        {isExpanded ? (
+                          <>
+                            <ChevronUp className="h-4 w-4" />
+                            {t('prediction.showLess')}
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="h-4 w-4" />
+                            {t('prediction.showMore')}
+                          </>
+                        )}
+                      </button>
+
+                      {/* 展开的详细信息 */}
+                      <AnimatePresence>
+                        {isExpanded && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="space-y-4 overflow-hidden"
+                          >
+                            {/* 建议 */}
+                            {result.suggestions && result.suggestions.length > 0 && (
+                              <div className="space-y-2">
+                                <h4 className="font-medium text-sm flex items-center gap-1.5">
+                                  <Lightbulb className="h-4 w-4 text-amber-500" />
+                                  {t('prediction.suggestions')}
+                                </h4>
+                                <ul className="space-y-1">
+                                  {result.suggestions.map((s, idx) => (
+                                    <li
+                                      key={idx}
+                                      className="text-sm text-muted-foreground flex items-start gap-2"
+                                    >
+                                      <span className="text-primary mt-0.5">-</span>
+                                      {s}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {/* 引擎明细 */}
+                            {result.engineScores && (
+                              <div className="space-y-2">
+                                <h4 className="font-medium text-sm flex items-center gap-1.5">
+                                  <Database className="h-4 w-4 text-blue-500" />
+                                  {t('prediction.engineBreakdown')}
+                                </h4>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                  {(['stats', 'ai', 'historical'] as const).map((engine) => {
+                                    const score =
+                                      engine === 'stats'
+                                        ? result.engineScores!.stats
+                                        : engine === 'ai'
+                                          ? result.engineScores!.ai
+                                          : result.engineScores!.historical;
+                                    const weight = result.engineScores!.weights[engine];
+
+                                    if (score === undefined) return null;
+
+                                    return (
+                                      <div
+                                        key={engine}
+                                        className="flex items-center gap-2 rounded-lg border p-2.5"
+                                      >
+                                        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted">
+                                          {getEngineIcon(engine)}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <p className="text-xs text-muted-foreground">
+                                            {getEngineLabel(engine)}
+                                          </p>
+                                          <p className="font-semibold text-sm">
+                                            {(score * 100).toFixed(0)}%
+                                            {weight !== undefined && (
+                                              <span className="text-xs font-normal text-muted-foreground ml-1">
+                                                ({t('prediction.weight')}:{' '}
+                                                {(weight * 100).toFixed(0)}%)
+                                              </span>
+                                            )}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                                {result.engineScores.memoryAdjustment !== undefined &&
+                                  result.engineScores.memoryAdjustment !== 0 && (
+                                    <p className="text-xs text-muted-foreground">
+                                      <Brain className="h-3 w-3 inline mr-1" />
+                                      {t('prediction.memoryAdjustment')}:{' '}
+                                      {result.engineScores.memoryAdjustment > 0 ? '+' : ''}
+                                      {(result.engineScores.memoryAdjustment * 100).toFixed(1)}%
+                                    </p>
+                                  )}
+                              </div>
+                            )}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </CardContent>
                   </Card>
                 </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {results.length === 0 && selectedSchools.length === 0 && !predictMutation.isPending && (
+        <div className="text-center py-12 text-muted-foreground">
+          <GraduationCap className="h-16 w-16 mx-auto mb-4 opacity-50" />
+          <p className="text-lg font-medium">{t('prediction.startPrediction')}</p>
+          <p className="text-sm">{t('prediction.emptyHint')}</p>
         </div>
       )}
 
-      {/* 空状态 */}
-      {results.length === 0 && !predictMutation.isPending && selectedSchools.length === 0 && (
-        <Card className="border-dashed">
-          <CardContent className="py-16 text-center">
-            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500/10 to-purple-500/10">
-              <Target className="h-10 w-10 text-violet-500/50" />
-            </div>
-            <h3 className="text-lg font-semibold">{t('prediction.empty.startTitle')}</h3>
-            <p className="mt-2 text-muted-foreground max-w-sm mx-auto">{t('prediction.empty.startDesc')}</p>
-            <Button
-              onClick={() => setSelectorOpen(true)}
-              className="mt-6 gap-2"
-              variant="outline"
-            >
-              <Plus className="h-4 w-4" />
-              {t('prediction.selectSchoolsButton')}
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+      {/* AI 助手触发按钮 */}
+      <motion.button
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={() => setShowAiPanel(true)}
+        className={cn(
+          'fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center',
+          'rounded-full bg-primary text-white shadow-lg',
+          'hover:bg-primary/90 transition-colors',
+          showAiPanel && 'hidden'
+        )}
+      >
+        <Bot className="h-6 w-6" />
+      </motion.button>
 
-      <SchoolSelector
-        open={selectorOpen}
-        onOpenChange={setSelectorOpen}
-        selectedSchools={selectedSchools}
-        onSelect={setSelectedSchools}
-        maxSelection={10}
-        title={t('prediction.selectSchoolsTitle')}
+      {/* AI 助手面板 */}
+      <AiAssistantPanel
+        isOpen={showAiPanel}
+        onClose={() => setShowAiPanel(false)}
+        title={t('prediction.aiAssistantTitle')}
+        description={
+          results.length > 0
+            ? t('prediction.aiAssistantDescWithResults')
+            : t('prediction.aiAssistantDescNoResults')
+        }
+        contextActions={aiContextActions}
+        initialMessage={
+          results.length > 0
+            ? t('prediction.aiInitialWithResults', { count: results.length })
+            : t('prediction.aiInitialNoResults')
+        }
       />
-
-      {/* 首次预测完成庆祝动画 */}
-      <MilestoneCelebration
-        type="first_prediction"
-        show={showCelebration}
-        title={t('ui.milestone.firstPredictionTitle')}
-        message={t('ui.milestone.firstPredictionDesc')}
-        onClose={() => setShowCelebration(false)}
-      />
-    </PageContainer>
+    </div>
   );
 }

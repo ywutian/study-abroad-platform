@@ -28,47 +28,40 @@ export function useKeyboardShortcuts(
   const shortcutsRef = useRef(shortcuts);
   shortcutsRef.current = shortcuts;
 
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      // 如果在输入框中，忽略快捷键（除非明确指定）
-      const target = e.target as HTMLElement;
-      const isInput =
-        target.tagName === 'INPUT' ||
-        target.tagName === 'TEXTAREA' ||
-        target.isContentEditable;
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    // 如果在输入框中，忽略快捷键（除非明确指定）
+    const target = e.target as HTMLElement;
+    const isInput =
+      target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
 
-      for (const shortcut of shortcutsRef.current) {
-        const { key, modifiers = [], handler, preventDefault = true } = shortcut;
+    for (const shortcut of shortcutsRef.current) {
+      const { key, modifiers = [], handler, preventDefault = true } = shortcut;
 
-        // 检查按键是否匹配
-        if (e.key.toLowerCase() !== key.toLowerCase()) continue;
+      // 检查按键是否匹配
+      if (e.key.toLowerCase() !== key.toLowerCase()) continue;
 
-        // 检查修饰键
-        const ctrlOrMeta = modifiers.includes('ctrl') || modifiers.includes('meta');
-        const needsCtrlOrMeta = ctrlOrMeta && (e.ctrlKey || e.metaKey);
-        const needsAlt = modifiers.includes('alt') ? e.altKey : !e.altKey;
-        const needsShift = modifiers.includes('shift') ? e.shiftKey : !e.shiftKey;
+      // 检查修饰键
+      const ctrlOrMeta = modifiers.includes('ctrl') || modifiers.includes('meta');
+      const needsCtrlOrMeta = ctrlOrMeta && (e.ctrlKey || e.metaKey);
+      const needsAlt = modifiers.includes('alt') ? e.altKey : !e.altKey;
+      const needsShift = modifiers.includes('shift') ? e.shiftKey : !e.shiftKey;
 
-        const modifiersMatch =
-          (ctrlOrMeta ? needsCtrlOrMeta : !e.ctrlKey && !e.metaKey) &&
-          needsAlt &&
-          needsShift;
+      const modifiersMatch =
+        (ctrlOrMeta ? needsCtrlOrMeta : !e.ctrlKey && !e.metaKey) && needsAlt && needsShift;
 
-        if (!modifiersMatch) continue;
+      if (!modifiersMatch) continue;
 
-        // 在输入框中时，只允许带修饰键的快捷键
-        if (isInput && !ctrlOrMeta && !modifiers.includes('alt')) continue;
+      // 在输入框中时，只允许带修饰键的快捷键
+      if (isInput && !ctrlOrMeta && !modifiers.includes('alt')) continue;
 
-        if (preventDefault) {
-          e.preventDefault();
-        }
-
-        handler(e);
-        return;
+      if (preventDefault) {
+        e.preventDefault();
       }
-    },
-    []
-  );
+
+      handler(e);
+      return;
+    }
+  }, []);
 
   useEffect(() => {
     if (!enabled) return;
@@ -87,10 +80,7 @@ export function useHotkey(
   modifiers: Modifier[] = [],
   options: UseKeyboardShortcutsOptions = {}
 ) {
-  useKeyboardShortcuts(
-    [{ key, modifiers, handler }],
-    options
-  );
+  useKeyboardShortcuts([{ key, modifiers, handler }], options);
 }
 
 /**
@@ -116,11 +106,3 @@ export function useIsMac(): boolean {
   if (typeof navigator === 'undefined') return false;
   return /Mac|iPod|iPhone|iPad/.test(navigator.platform);
 }
-
-
-
-
-
-
-
-

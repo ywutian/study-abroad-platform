@@ -3,11 +3,11 @@
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { 
-  CheckCircle, 
-  Clock, 
-  XCircle, 
-  AlertCircle, 
+import {
+  CheckCircle,
+  Clock,
+  XCircle,
+  AlertCircle,
   Loader2,
   PauseCircle,
   PlayCircle,
@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 // 状态类型
-type StatusType = 
+type StatusType =
   | 'pending'
   | 'in_progress'
   | 'completed'
@@ -101,8 +101,8 @@ const statusConfig: Record<StatusType, StatusConfig> = {
   archived: {
     labelKey: 'archived',
     icon: AlertCircle,
-    className: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
-    dotClassName: 'bg-purple-500',
+    className: 'bg-primary/10 text-primary dark:text-purple-400 border-primary/20',
+    dotClassName: 'bg-primary',
   },
   featured: {
     labelKey: 'featured',
@@ -158,12 +158,7 @@ export function StatusBadge({
   return (
     <Badge
       variant="outline"
-      className={cn(
-        'font-medium gap-1.5 border',
-        sizeClasses[size],
-        config.className,
-        className
-      )}
+      className={cn('font-medium gap-1.5 border', sizeClasses[size], config.className, className)}
     >
       {showDot && !showIcon && (
         <span
@@ -175,21 +170,14 @@ export function StatusBadge({
           )}
         />
       )}
-      {showIcon && (
-        <Icon
-          className={cn(
-            iconSizeClasses[size],
-            isAnimated && 'animate-spin'
-          )}
-        />
-      )}
+      {showIcon && <Icon className={cn(iconSizeClasses[size], isAnimated && 'animate-spin')} />}
       {label || t(config.labelKey)}
     </Badge>
   );
 }
 
 // 申请状态特化版本
-type ApplicationStatus = 
+type ApplicationStatus =
   | 'preparing'
   | 'submitted'
   | 'interview'
@@ -214,8 +202,8 @@ const applicationStatusConfig: Record<ApplicationStatus, StatusConfig> = {
   interview: {
     labelKey: 'interview',
     icon: Loader2,
-    className: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
-    dotClassName: 'bg-purple-500',
+    className: 'bg-primary/10 text-primary dark:text-purple-400 border-primary/20',
+    dotClassName: 'bg-primary',
   },
   admitted: {
     labelKey: 'admitted',
@@ -264,12 +252,7 @@ export function ApplicationStatusBadge({
   return (
     <Badge
       variant="outline"
-      className={cn(
-        'font-medium gap-1.5 border',
-        sizeClasses[size],
-        config.className,
-        className
-      )}
+      className={cn('font-medium gap-1.5 border', sizeClasses[size], config.className, className)}
     >
       {!showIcon && (
         <span
@@ -281,18 +264,8 @@ export function ApplicationStatusBadge({
           )}
         />
       )}
-      {showIcon && (
-        <Icon
-          className={cn(
-            iconSizeClasses[size],
-            isAnimated && 'animate-spin'
-          )}
-        />
-      )}
+      {showIcon && <Icon className={cn(iconSizeClasses[size], isAnimated && 'animate-spin')} />}
       {t(config.labelKey)}
     </Badge>
   );
 }
-
-
-

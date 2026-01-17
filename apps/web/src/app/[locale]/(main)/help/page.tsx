@@ -43,9 +43,19 @@ interface FAQItem {
 const faqData: FAQItem[] = [
   { id: '1', questionKey: 'howToStart', answerKey: 'howToStart', category: 'gettingStarted' },
   { id: '2', questionKey: 'whatCanAIDo', answerKey: 'whatCanAIDo', category: 'aiFeatures' },
-  { id: '3', questionKey: 'predictionAccuracy', answerKey: 'predictionAccuracy', category: 'aiFeatures' },
+  {
+    id: '3',
+    questionKey: 'predictionAccuracy',
+    answerKey: 'predictionAccuracy',
+    category: 'aiFeatures',
+  },
   { id: '4', questionKey: 'dataPrivacy', answerKey: 'dataPrivacy', category: 'privacySecurity' },
-  { id: '5', questionKey: 'deleteAccount', answerKey: 'deleteAccount', category: 'privacySecurity' },
+  {
+    id: '5',
+    questionKey: 'deleteAccount',
+    answerKey: 'deleteAccount',
+    category: 'privacySecurity',
+  },
   { id: '6', questionKey: 'shareCase', answerKey: 'shareCase', category: 'featureUsage' },
   { id: '7', questionKey: 'exportData', answerKey: 'exportData', category: 'featureUsage' },
   { id: '8', questionKey: 'verifiedUser', answerKey: 'verifiedUser', category: 'gettingStarted' },
@@ -62,9 +72,9 @@ const categoryConfig: Record<string, { icon: typeof HelpCircle; color: string }>
 };
 
 const resourceConfig = [
-  { key: 'docs', icon: BookOpen, color: 'blue', gradient: 'from-blue-500 to-cyan-500' },
-  { key: 'video', icon: Video, color: 'rose', gradient: 'from-rose-500 to-pink-500' },
-  { key: 'blog', icon: FileText, color: 'violet', gradient: 'from-violet-500 to-purple-500' },
+  { key: 'docs', icon: BookOpen, color: 'blue', gradient: 'bg-primary' },
+  { key: 'video', icon: Video, color: 'rose', gradient: 'bg-destructive' },
+  { key: 'blog', icon: FileText, color: 'violet', gradient: 'bg-primary' },
 ];
 
 export default function HelpPage() {
@@ -77,7 +87,9 @@ export default function HelpPage() {
       const matchesCategory = activeCategory === 'all' || faq.category === activeCategory;
       const matchesSearch =
         !searchQuery ||
-        t(`faqItems.${faq.questionKey}.question`).toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t(`faqItems.${faq.questionKey}.question`)
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
         t(`faqItems.${faq.answerKey}.answer`).toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
@@ -93,19 +105,15 @@ export default function HelpPage() {
       />
 
       {/* Search Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
-      >
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
         <Card className="overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-blue-500 to-cyan-500" />
+          <div className="h-1 bg-primary" />
           <CardContent className="pt-6 pb-6">
             <div className="relative max-w-2xl mx-auto">
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-500/10 mx-auto mb-4">
                 <Search className="h-6 w-6 text-blue-500" />
               </div>
-              <h3 className="text-center text-lg font-semibold mb-4">{t('searchTitle') || '有什么可以帮助您？'}</h3>
+              <h3 className="text-center text-lg font-semibold mb-4">{t('searchTitle')}</h3>
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
@@ -134,15 +142,19 @@ export default function HelpPage() {
               <Card className="group cursor-pointer overflow-hidden hover:shadow-lg transition-all duration-300">
                 <div className={cn('h-1 bg-gradient-to-r', resource.gradient)} />
                 <CardContent className="flex items-center gap-4 p-5">
-                  <div className={cn(
-                    'flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-all duration-300',
-                    `bg-${resource.color}-500/10 group-hover:bg-${resource.color}-500/20`
-                  )}>
+                  <div
+                    className={cn(
+                      'flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-all duration-300',
+                      `bg-${resource.color}-500/10 group-hover:bg-${resource.color}-500/20`
+                    )}
+                  >
                     <Icon className={cn('h-6 w-6', `text-${resource.color}-500`)} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold">{t(`resources.${resource.key}.title`)}</h3>
-                    <p className="text-sm text-muted-foreground truncate">{t(`resources.${resource.key}.description`)}</p>
+                    <p className="text-sm text-muted-foreground truncate">
+                      {t(`resources.${resource.key}.description`)}
+                    </p>
                   </div>
                   <ExternalLink className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                 </CardContent>
@@ -159,7 +171,7 @@ export default function HelpPage() {
         transition={{ delay: 0.3 }}
       >
         <Card className="overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-amber-500 to-yellow-500" />
+          <div className="h-1 bg-warning" />
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10">
@@ -167,7 +179,7 @@ export default function HelpPage() {
               </div>
               <div>
                 <CardTitle>{t('faqTitle')}</CardTitle>
-                <CardDescription>{t('faqDescription') || '浏览常见问题找到答案'}</CardDescription>
+                <CardDescription>{t('faqDescription')}</CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -184,15 +196,22 @@ export default function HelpPage() {
                       value={cat}
                       className={cn(
                         'gap-2 rounded-full px-4 data-[state=active]:shadow-sm transition-all',
-                        cat === 'all' && 'data-[state=active]:bg-blue-500/10 data-[state=active]:text-blue-600',
-                        cat === 'gettingStarted' && 'data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-600',
-                        cat === 'aiFeatures' && 'data-[state=active]:bg-violet-500/10 data-[state=active]:text-violet-600',
-                        cat === 'featureUsage' && 'data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600',
-                        cat === 'privacySecurity' && 'data-[state=active]:bg-rose-500/10 data-[state=active]:text-rose-600',
+                        cat === 'all' &&
+                          'data-[state=active]:bg-blue-500/10 data-[state=active]:text-blue-600',
+                        cat === 'gettingStarted' &&
+                          'data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-600',
+                        cat === 'aiFeatures' &&
+                          'data-[state=active]:bg-primary/10 data-[state=active]:text-primary',
+                        cat === 'featureUsage' &&
+                          'data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600',
+                        cat === 'privacySecurity' &&
+                          'data-[state=active]:bg-rose-500/10 data-[state=active]:text-rose-600'
                       )}
                     >
                       <CatIcon className="h-4 w-4" />
-                      <span className="hidden sm:inline">{cat === 'all' ? t('all') : t(`categories.${cat}`)}</span>
+                      <span className="hidden sm:inline">
+                        {cat === 'all' ? t('all') : t(`categories.${cat}`)}
+                      </span>
                     </TabsTrigger>
                   );
                 })}
@@ -203,7 +222,7 @@ export default function HelpPage() {
             {filteredFAQs.length > 0 ? (
               <Accordion type="single" collapsible className="w-full space-y-2">
                 {filteredFAQs.map((faq, index) => {
-                  const config = categoryConfig[faq.category];
+                  const _config = categoryConfig[faq.category];
                   return (
                     <motion.div
                       key={faq.id}
@@ -211,22 +230,31 @@ export default function HelpPage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
                     >
-                      <AccordionItem value={faq.id} className="border rounded-xl px-4 data-[state=open]:bg-muted/30">
+                      <AccordionItem
+                        value={faq.id}
+                        className="border rounded-xl px-4 data-[state=open]:bg-muted/30"
+                      >
                         <AccordionTrigger className="text-left hover:no-underline py-4">
                           <div className="flex items-center gap-3">
                             <Badge
                               variant="outline"
                               className={cn(
                                 'shrink-0',
-                                faq.category === 'gettingStarted' && 'border-emerald-500/30 text-emerald-600 bg-emerald-500/5',
-                                faq.category === 'aiFeatures' && 'border-violet-500/30 text-violet-600 bg-violet-500/5',
-                                faq.category === 'featureUsage' && 'border-amber-500/30 text-amber-600 bg-amber-500/5',
-                                faq.category === 'privacySecurity' && 'border-rose-500/30 text-rose-600 bg-rose-500/5',
+                                faq.category === 'gettingStarted' &&
+                                  'border-emerald-500/30 text-emerald-600 bg-emerald-500/5',
+                                faq.category === 'aiFeatures' &&
+                                  'border-violet-500/30 text-primary bg-primary/5',
+                                faq.category === 'featureUsage' &&
+                                  'border-amber-500/30 text-amber-600 bg-amber-500/5',
+                                faq.category === 'privacySecurity' &&
+                                  'border-rose-500/30 text-rose-600 bg-rose-500/5'
                               )}
                             >
                               {t(`categories.${faq.category}`)}
                             </Badge>
-                            <span className="font-medium">{t(`faqItems.${faq.questionKey}.question`)}</span>
+                            <span className="font-medium">
+                              {t(`faqItems.${faq.questionKey}.question`)}
+                            </span>
                           </div>
                         </AccordionTrigger>
                         <AccordionContent className="text-muted-foreground pb-4 pl-[90px]">
@@ -257,7 +285,7 @@ export default function HelpPage() {
         className="mt-8"
       >
         <Card className="overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
+          <div className="h-1 bg-success" />
           <CardContent className="flex flex-col md:flex-row items-center justify-between gap-6 p-6">
             <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10">
@@ -275,7 +303,7 @@ export default function HelpPage() {
                   {t('sendEmail')}
                 </a>
               </Button>
-              <Button className="gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-90 text-white shadow-md shadow-emerald-500/25">
+              <Button className="gap-2 bg-success hover:opacity-90 text-white ">
                 <MessageCircle className="h-4 w-4" />
                 {t('onlineService')}
               </Button>

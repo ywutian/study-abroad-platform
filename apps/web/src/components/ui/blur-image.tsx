@@ -25,11 +25,7 @@ export function BlurImage({
 
   return (
     <div
-      className={cn(
-        'relative overflow-hidden bg-muted',
-        isLoading && 'animate-pulse',
-        className
-      )}
+      className={cn('relative overflow-hidden bg-muted', isLoading && 'animate-pulse', className)}
       style={aspectRatio ? { aspectRatio } : undefined}
     >
       <Image
@@ -46,7 +42,7 @@ export function BlurImage({
         }}
         {...props}
       />
-      
+
       {/* 加载时的占位符 */}
       {isLoading && (
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-foreground/5 to-transparent animate-shimmer" />
@@ -95,11 +91,7 @@ export function NativeBlurImage({
 
   return (
     <div
-      className={cn(
-        'relative overflow-hidden bg-muted',
-        isLoading && 'animate-pulse',
-        className
-      )}
+      className={cn('relative overflow-hidden bg-muted', isLoading && 'animate-pulse', className)}
       style={aspectRatio ? { aspectRatio } : undefined}
     >
       {currentSrc && (
@@ -113,7 +105,7 @@ export function NativeBlurImage({
           {...props}
         />
       )}
-      
+
       {/* 占位符骨架 */}
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center">
@@ -142,13 +134,7 @@ const sizeMap = {
   xl: 'w-16 h-16',
 };
 
-export function BlurAvatar({
-  src,
-  alt,
-  fallback,
-  size = 'md',
-  className,
-}: BlurAvatarProps) {
+export function BlurAvatar({ src, alt, fallback, size = 'md', className }: BlurAvatarProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -174,13 +160,7 @@ export function BlurAvatar({
   }
 
   return (
-    <div
-      className={cn(
-        'relative rounded-full overflow-hidden bg-muted',
-        sizeMap[size],
-        className
-      )}
-    >
+    <div className={cn('relative rounded-full overflow-hidden bg-muted', sizeMap[size], className)}>
       <img
         src={src}
         alt={alt}
@@ -197,11 +177,3 @@ export function BlurAvatar({
     </div>
   );
 }
-
-
-
-
-
-
-
-

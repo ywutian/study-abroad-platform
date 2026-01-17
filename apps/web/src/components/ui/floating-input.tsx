@@ -58,7 +58,7 @@ const FloatingInput = forwardRef<HTMLInputElement, FloatingInputProps>(
     };
 
     const labelSizeStyles = {
-      sm: isActive ? 'text-[10px] -translate-y-[18px]' : 'text-sm',
+      sm: isActive ? 'text-2xs -translate-y-[18px]' : 'text-sm',
       md: isActive ? 'text-xs -translate-y-[22px]' : 'text-base',
       lg: isActive ? 'text-xs -translate-y-[26px]' : 'text-lg',
     };
@@ -122,11 +122,7 @@ const FloatingInput = forwardRef<HTMLInputElement, FloatingInputProps>(
             className={cn(
               'absolute left-3 pointer-events-none transition-all duration-200 origin-left',
               leftIcon && 'left-10',
-              isActive
-                ? error
-                  ? 'text-destructive'
-                  : 'text-primary'
-                : 'text-muted-foreground',
+              isActive ? (error ? 'text-destructive' : 'text-primary') : 'text-muted-foreground',
               labelSizeStyles[size]
             )}
             initial={false}
@@ -246,7 +242,11 @@ const FloatingTextarea = forwardRef<HTMLTextAreaElement, FloatingTextareaProps>(
     const id = useId();
     const [isFocused, setIsFocused] = useState(false);
     const [charCount, setCharCount] = useState(
-      typeof value === 'string' ? value.length : typeof defaultValue === 'string' ? defaultValue.length : 0
+      typeof value === 'string'
+        ? value.length
+        : typeof defaultValue === 'string'
+          ? defaultValue.length
+          : 0
     );
 
     const hasValue = value !== undefined ? !!value : !!defaultValue;
@@ -347,10 +347,3 @@ const FloatingTextarea = forwardRef<HTMLTextAreaElement, FloatingTextareaProps>(
 FloatingTextarea.displayName = 'FloatingTextarea';
 
 export { FloatingInput, FloatingTextarea };
-
-
-
-
-
-
-

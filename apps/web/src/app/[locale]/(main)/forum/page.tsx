@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslations, useLocale, useFormatter } from 'next-intl';
+import { getLocalizedName } from '@/lib/i18n/locale-utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MessageSquare,
@@ -14,8 +15,6 @@ import {
   Clock,
   Flame,
   MessageCircle,
-  ChevronRight,
-  Tag,
   Trophy,
   Sparkles,
   BookOpen,
@@ -23,34 +22,24 @@ import {
   FolderOpen,
   X,
   Send,
-  MoreHorizontal,
-  Edit,
-  Trash2,
-  Share2,
   UserPlus,
   CheckCircle,
   XCircle,
   Loader2,
-  Calendar,
+  TrendingUp,
+  Bookmark,
+  Share2,
+  PenLine,
+  Globe,
+  Home,
+  FileText,
 } from 'lucide-react';
+import DOMPurify from 'isomorphic-dompurify';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
@@ -58,38 +47,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { apiClient as api } from '@/lib/api';
+import { ReportDialog } from '@/components/features/forum/ReportDialog';
+import { useAuthStore } from '@/stores/auth';
+import { Flag, ShieldAlert, ArrowRight, Bot } from 'lucide-react';
+import Link from 'next/link';
+import { AiAssistantPanel, type ContextAction } from '@/components/features/agent-chat';
 
-// API 响应类型
-interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
-}
-
+// Types
 interface Category {
   id: string;
   name: string;
-  slug: string;
-  description: string;
-  color: string;
-  icon: string;
-  _count: { posts: number };
+  nameZh: string;
+  description?: string;
+  descriptionZh?: string;
+  color?: string;
+  icon?: string;
+  postCount: number;
 }
 
 interface Author {
   id: string;
-  nickname: string;
-  avatar: string;
+  name?: string;
+  avatar?: string;
   isVerified: boolean;
 }
 
@@ -99,74 +83,187 @@ interface Post {
   content: string;
   categoryId: string;
   category: Category;
-  authorId: string;
   author: Author;
   isTeamPost: boolean;
   teamSize?: number;
-  currentMembers?: number;
-  deadline?: string;
+  currentSize?: number;
+  teamDeadline?: string;
   requirements?: string;
+  teamStatus?: string;
   tags: string[];
-  views: number;
+  viewCount: number;
+  likeCount: number;
+  commentCount: number;
   isPinned: boolean;
+  isLocked: boolean;
   createdAt: string;
   updatedAt: string;
-  _count: { comments: number; likes: number };
   isLiked?: boolean;
 }
 
 interface Comment {
   id: string;
   content: string;
-  authorId: string;
   author: Author;
   createdAt: string;
   parentId?: string;
+  likeCount: number;
   replies?: Comment[];
 }
 
 interface TeamApplication {
   id: string;
-  postId: string;
-  userId: string;
-  user: Author;
-  message: string;
+  applicant: Author;
+  message?: string;
   status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
   createdAt: string;
 }
 
-const categoryIcons: Record<string, React.ReactNode> = {
-  team: <Trophy className="h-4 w-4" />,
-  activity: <Sparkles className="h-4 w-4" />,
-  experience: <BookOpen className="h-4 w-4" />,
-  question: <HelpCircle className="h-4 w-4" />,
-  resource: <FolderOpen className="h-4 w-4" />,
+interface PostDetailResponse extends Post {
+  comments: Comment[];
+  teamMembers?: { id: string; user: Author; role: string; joinedAt: string }[];
+  teamApplications?: TeamApplication[];
+}
+
+// Helper functions
+const getCategoryIcon = (category: Category): React.ReactNode => {
+  const nameLC = (category.name || category.nameZh || '').toLowerCase();
+  if (nameLC.includes('team') || nameLC.includes('组队')) return <Trophy className="h-4 w-4" />;
+  if (nameLC.includes('activity') || nameLC.includes('活动'))
+    return <Sparkles className="h-4 w-4" />;
+  if (nameLC.includes('experience') || nameLC.includes('经验'))
+    return <BookOpen className="h-4 w-4" />;
+  if (nameLC.includes('question') || nameLC.includes('问答') || nameLC.includes('q&a'))
+    return <HelpCircle className="h-4 w-4" />;
+  if (nameLC.includes('resource') || nameLC.includes('资源'))
+    return <FolderOpen className="h-4 w-4" />;
+  if (nameLC.includes('life') || nameLC.includes('生活')) return <Globe className="h-4 w-4" />;
+  if (nameLC.includes('essay') || nameLC.includes('文书')) return <FileText className="h-4 w-4" />;
+  if (nameLC.includes('school') || nameLC.includes('选校')) return <Home className="h-4 w-4" />;
+  return <MessageSquare className="h-4 w-4" />;
 };
 
-const categoryColors: Record<string, string> = {
-  team: 'from-amber-500 to-orange-600',
-  activity: 'from-violet-500 to-purple-600',
-  experience: 'from-emerald-500 to-green-600',
-  question: 'from-blue-500 to-cyan-600',
-  resource: 'from-rose-500 to-pink-600',
+const getCategoryColorStyle = (
+  category: Category
+): { className?: string; style?: React.CSSProperties } => {
+  if (category.color) {
+    return { style: { background: category.color } };
+  }
+  const nameLC = (category.name || category.nameZh || '').toLowerCase();
+  if (nameLC.includes('team') || nameLC.includes('组队'))
+    return { className: 'bg-gradient-to-r from-amber-500 to-orange-500' };
+  if (nameLC.includes('activity') || nameLC.includes('活动')) return { className: 'bg-primary' };
+  if (nameLC.includes('experience') || nameLC.includes('经验'))
+    return { className: 'bg-gradient-to-r from-emerald-500 to-teal-500' };
+  if (nameLC.includes('question') || nameLC.includes('问答') || nameLC.includes('q&a'))
+    return { className: 'bg-gradient-to-r from-pink-500 to-rose-500' };
+  if (nameLC.includes('resource') || nameLC.includes('资源'))
+    return { className: 'bg-gradient-to-r from-violet-500 to-purple-500' };
+  if (nameLC.includes('life') || nameLC.includes('生活'))
+    return { className: 'bg-gradient-to-r from-orange-400 to-amber-500' };
+  if (nameLC.includes('essay') || nameLC.includes('文书'))
+    return { className: 'bg-gradient-to-r from-blue-500 to-cyan-500' };
+  if (nameLC.includes('school') || nameLC.includes('选校'))
+    return { className: 'bg-gradient-to-r from-teal-500 to-emerald-500' };
+  return { className: 'bg-gray-500' };
+};
+
+const stripMarkdown = (content: string): string => {
+  return content
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/\*(.*?)\*/g, '$1')
+    .replace(/~~(.*?)~~/g, '$1')
+    .replace(/`(.*?)`/g, '$1')
+    .replace(/^#+\s*/gm, '')
+    .replace(/^[-*+]\s*/gm, '• ')
+    .replace(/^\d+\.\s*/gm, '')
+    .replace(/\[(.*?)\]\(.*?\)/g, '$1')
+    .replace(/\n+/g, ' ')
+    .trim();
+};
+
+// Simple markdown renderer for post detail (with XSS sanitization)
+const renderMarkdown = (content: string): React.ReactNode => {
+  const sanitize = (html: string): string => {
+    return DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ['strong', 'em', 'a', 'code'],
+      ALLOWED_ATTR: ['href', 'target', 'rel'],
+    });
+  };
+
+  const lines = content.split('\n');
+  return lines.map((line, i) => {
+    // Bold
+    line = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Headers
+    if (line.startsWith('# ')) {
+      return (
+        <h2 key={i} className="text-xl font-bold mt-4 mb-2">
+          {line.slice(2)}
+        </h2>
+      );
+    }
+    if (line.startsWith('## ')) {
+      return (
+        <h3 key={i} className="text-lg font-semibold mt-3 mb-2">
+          {line.slice(3)}
+        </h3>
+      );
+    }
+    // List items
+    if (line.startsWith('- ') || line.startsWith('* ')) {
+      return (
+        <li
+          key={i}
+          className="ml-4 list-disc"
+          dangerouslySetInnerHTML={{ __html: sanitize(line.slice(2)) }}
+        />
+      );
+    }
+    if (/^\d+\.\s/.test(line)) {
+      return (
+        <li
+          key={i}
+          className="ml-4 list-decimal"
+          dangerouslySetInnerHTML={{ __html: sanitize(line.replace(/^\d+\.\s/, '')) }}
+        />
+      );
+    }
+    // Empty line
+    if (!line.trim()) {
+      return <br key={i} />;
+    }
+    // Normal paragraph
+    return <p key={i} className="mb-1" dangerouslySetInnerHTML={{ __html: sanitize(line) }} />;
+  });
 };
 
 export default function ForumPage() {
   const t = useTranslations('forum');
+  const locale = useLocale();
+  const format = useFormatter();
+  const { user } = useAuthStore();
+  const isVerified = user?.role === 'VERIFIED' || user?.role === 'ADMIN';
 
+  // States
   const [categories, setCategories] = useState<Category[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<'latest' | 'popular' | 'comments'>('latest');
+  const [sortBy, setSortBy] = useState<'latest' | 'popular' | 'comments' | 'recommended'>('latest');
   const [searchQuery, setSearchQuery] = useState('');
   const [showTeamOnly, setShowTeamOnly] = useState(false);
+  const [postTag] = useState<string | null>(null);
+  const [reportTarget, setReportTarget] = useState<{ type: 'POST' | 'COMMENT'; id: string } | null>(
+    null
+  );
+  const [showAiPanel, setShowAiPanel] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
-  // Dialogs
+  // Dialog states
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [showPostDetail, setShowPostDetail] = useState<Post | null>(null);
+  const [showPostDetail, setShowPostDetail] = useState<PostDetailResponse | null>(null);
   const [showApplications, setShowApplications] = useState<string | null>(null);
 
   // Form states
@@ -180,127 +277,117 @@ export default function ForumPage() {
   const [formDeadline, setFormDeadline] = useState('');
   const [formRequirements, setFormRequirements] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [_showPreview, setShowPreview] = useState(false);
 
-  // Post detail states
+  // Detail states
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentContent, setCommentContent] = useState('');
   const [loadingComments, setLoadingComments] = useState(false);
   const [applications, setApplications] = useState<TeamApplication[]>([]);
   const [applicationMessage, setApplicationMessage] = useState('');
 
-  // Fetch categories
+  // Stats
+  const [forumStats, setForumStats] = useState({
+    postCount: 0,
+    userCount: 0,
+    teamingCount: 0,
+    activeToday: 0,
+  });
+
+  // Suggested tags for quick selection
+  const suggestedTags = useMemo(
+    () => ['MIT', 'Stanford', 'Harvard', 'CS', 'GPA', 'GRE', 'TOEFL', 'SAT', 'ACT'],
+    []
+  );
+
+  // Fetch categories and stats
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchData = async () => {
       try {
-        const res = await api.get<ApiResponse<Category[]>>('/forum/categories');
-        if (res.success) {
-          setCategories(res.data);
+        const [categoriesRes, statsRes] = await Promise.all([
+          api.get<Category[]>('/forum/categories'),
+          api.get<{
+            postCount: number;
+            userCount: number;
+            teamingCount: number;
+            activeToday: number;
+          }>('/forum/stats'),
+        ]);
+        if (categoriesRes && categoriesRes.length > 0) {
+          setCategories(categoriesRes);
         }
-      } catch (error) {
-        // Use default categories if API fails
+        if (statsRes) {
+          setForumStats(statsRes);
+        }
+      } catch (_error) {
         setCategories([
-          { id: '1', name: t('categoryTeam'), slug: 'team', description: '', color: '#f59e0b', icon: 'trophy', _count: { posts: 0 } },
-          { id: '2', name: t('categoryActivity'), slug: 'activity', description: '', color: '#8b5cf6', icon: 'sparkles', _count: { posts: 0 } },
-          { id: '3', name: t('categoryExperience'), slug: 'experience', description: '', color: '#10b981', icon: 'book', _count: { posts: 0 } },
-          { id: '4', name: t('categoryQuestion'), slug: 'question', description: '', color: '#3b82f6', icon: 'help', _count: { posts: 0 } },
-          { id: '5', name: t('categoryResource'), slug: 'resource', description: '', color: '#f43f5e', icon: 'folder', _count: { posts: 0 } },
+          { id: '1', name: 'Experience', nameZh: '经验分享', postCount: 0 },
+          { id: '2', name: 'Question', nameZh: '问答互助', postCount: 0 },
+          { id: '3', name: 'Team', nameZh: '组队找伴', postCount: 0 },
+          { id: '4', name: 'Life', nameZh: '留学生活', postCount: 0 },
+          { id: '5', name: 'Essay', nameZh: '文书讨论', postCount: 0 },
+          { id: '6', name: 'School', nameZh: '选校建议', postCount: 0 },
         ]);
       }
     };
-    fetchCategories();
-  }, [t]);
+    fetchData();
+  }, []);
 
   // Fetch posts
-  const fetchPosts = useCallback(async (reset = false) => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams({
-        page: reset ? '1' : String(page),
-        limit: '10',
-        sort: sortBy,
-      });
-      if (selectedCategory) params.append('categoryId', selectedCategory);
-      if (searchQuery) params.append('search', searchQuery);
-      if (showTeamOnly) params.append('isTeamPost', 'true');
+  const fetchPosts = useCallback(
+    async (reset = false) => {
+      try {
+        setLoading(true);
+        const currentPage = reset ? 1 : page;
+        const limit = 10;
+        const offset = (currentPage - 1) * limit;
 
-      const res = await api.get<ApiResponse<{ posts: Post[]; total: number }>>(`/forum/posts?${params.toString()}`);
-      if (res.success) {
-        const newPosts = res.data.posts;
-        setPosts(reset ? newPosts : [...posts, ...newPosts]);
-        setHasMore(newPosts.length === 10);
-        if (reset) setPage(1);
+        const params = new URLSearchParams({
+          offset: String(offset),
+          limit: String(limit),
+          sortBy: sortBy,
+        });
+        if (selectedCategory) params.append('categoryId', selectedCategory);
+        if (searchQuery) params.append('search', searchQuery);
+        if (showTeamOnly) params.append('isTeamPost', 'true');
+        if (postTag) params.append('postTag', postTag);
+
+        const res = await api.get<{ posts: Post[]; total: number; hasMore: boolean }>(
+          `/forum/posts?${params.toString()}`
+        );
+        if (res && res.posts) {
+          setPosts(reset ? res.posts : [...posts, ...res.posts]);
+          setHasMore(res.hasMore);
+          if (reset) setPage(1);
+        }
+      } catch (_error) {
+        setPosts([]);
+        setHasMore(false);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      // Demo data if API fails
-      const demoPosts: Post[] = [
-        {
-          id: '1',
-          title: '【组队】2026 MCM/ICM 数学建模竞赛组队',
-          content: '寻找队友参加2026年美国数学建模竞赛，需要编程能力强的同学...',
-          categoryId: '1',
-          category: { id: '1', name: t('categoryTeam'), slug: 'team', description: '', color: '#f59e0b', icon: 'trophy', _count: { posts: 12 } },
-          authorId: '1',
-          author: { id: '1', nickname: 'Alex Chen', avatar: '', isVerified: true },
-          isTeamPost: true,
-          teamSize: 3,
-          currentMembers: 1,
-          deadline: '2026-02-15',
-          requirements: '编程能力强，熟悉Python/MATLAB',
-          tags: ['数学建模', 'MCM', '竞赛'],
-          views: 234,
-          isPinned: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          _count: { comments: 8, likes: 23 },
-          isLiked: false,
-        },
-        {
-          id: '2',
-          title: '分享：我是如何拿到MIT EECS录取的',
-          content: '从高一开始准备，三年的努力终于有了回报。分享一下我的申请经验...',
-          categoryId: '3',
-          category: { id: '3', name: t('categoryExperience'), slug: 'experience', description: '', color: '#10b981', icon: 'book', _count: { posts: 45 } },
-          authorId: '2',
-          author: { id: '2', nickname: 'Emily Wang', avatar: '', isVerified: true },
-          isTeamPost: false,
-          tags: ['MIT', 'EECS', '申请经验'],
-          views: 1520,
-          isPinned: false,
-          createdAt: new Date(Date.now() - 3600000).toISOString(),
-          updatedAt: new Date(Date.now() - 3600000).toISOString(),
-          _count: { comments: 56, likes: 189 },
-          isLiked: true,
-        },
-        {
-          id: '3',
-          title: '请问：文书PS和SOP有什么区别？',
-          content: '最近在准备文书，但是不太理解Personal Statement和Statement of Purpose的区别...',
-          categoryId: '4',
-          category: { id: '4', name: t('categoryQuestion'), slug: 'question', description: '', color: '#3b82f6', icon: 'help', _count: { posts: 78 } },
-          authorId: '3',
-          author: { id: '3', nickname: 'Kevin Liu', avatar: '', isVerified: false },
-          isTeamPost: false,
-          tags: ['文书', 'PS', 'SOP'],
-          views: 89,
-          isPinned: false,
-          createdAt: new Date(Date.now() - 7200000).toISOString(),
-          updatedAt: new Date(Date.now() - 7200000).toISOString(),
-          _count: { comments: 12, likes: 15 },
-          isLiked: false,
-        },
-      ];
-      setPosts(demoPosts);
-      setHasMore(false);
-    } finally {
-      setLoading(false);
-    }
-  }, [page, sortBy, selectedCategory, searchQuery, showTeamOnly, posts, t]);
+    },
+    [page, sortBy, selectedCategory, searchQuery, showTeamOnly, postTag, posts]
+  );
 
   useEffect(() => {
     fetchPosts(true);
   }, [sortBy, selectedCategory, showTeamOnly]);
 
-  // Create post
+  // Form handlers
+  const resetForm = () => {
+    setFormTitle('');
+    setFormContent('');
+    setFormCategory('');
+    setFormTags([]);
+    setFormTagInput('');
+    setIsTeamPost(false);
+    setFormTeamSize(5);
+    setFormDeadline('');
+    setFormRequirements('');
+    setShowPreview(false);
+  };
+
   const handleCreatePost = async () => {
     if (!formTitle.trim() || !formContent.trim() || !formCategory) return;
 
@@ -315,116 +402,91 @@ export default function ForumPage() {
       };
       if (isTeamPost) {
         payload.teamSize = formTeamSize;
-        payload.deadline = formDeadline;
+        payload.teamDeadline = formDeadline;
         payload.requirements = formRequirements;
       }
 
-      const res = await api.post<ApiResponse<Post>>('/forum/posts', payload);
-      if (res.success) {
+      const res = await api.post<Post>('/forum/posts', payload);
+      if (res && res.id) {
         setShowCreateDialog(false);
         resetForm();
         fetchPosts(true);
       }
-    } catch (error) {
-      console.error('Failed to create post:', error);
+    } catch (_error) {
+      console.error('Failed to create post:', _error);
     } finally {
       setSubmitting(false);
     }
   };
 
-  const resetForm = () => {
-    setFormTitle('');
-    setFormContent('');
-    setFormCategory('');
-    setFormTags([]);
-    setFormTagInput('');
-    setIsTeamPost(false);
-    setFormTeamSize(5);
-    setFormDeadline('');
-    setFormRequirements('');
-  };
-
   const handleTagInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && formTagInput.trim()) {
       e.preventDefault();
-      if (!formTags.includes(formTagInput.trim())) {
-        setFormTags([...formTags, formTagInput.trim()]);
-      }
-      setFormTagInput('');
+      addTag(formTagInput.trim());
     }
   };
 
+  const addTag = (tag: string) => {
+    if (!formTags.includes(tag) && formTags.length < 5) {
+      setFormTags([...formTags, tag]);
+    }
+    setFormTagInput('');
+  };
+
   const removeTag = (tag: string) => {
-    setFormTags(formTags.filter(t => t !== tag));
+    setFormTags(formTags.filter((t) => t !== tag));
   };
 
   // Like post
-  const handleLike = async (postId: string) => {
+  const handleLike = async (postId: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
     try {
-      const res = await api.post<ApiResponse<{ liked: boolean }>>(`/forum/posts/${postId}/like`);
-      if (res.success) {
-        setPosts(posts.map(p => {
-          if (p.id === postId) {
-            return {
+      const res = await api.post<{ liked: boolean }>(`/forum/posts/${postId}/like`);
+      if (res) {
+        const updatePost = (p: Post) =>
+          p.id === postId
+            ? {
+                ...p,
+                isLiked: res.liked,
+                likeCount: res.liked ? p.likeCount + 1 : p.likeCount - 1,
+              }
+            : p;
+        setPosts(posts.map(updatePost));
+        if (showPostDetail?.id === postId) {
+          setShowPostDetail({
+            ...showPostDetail,
+            isLiked: res.liked,
+            likeCount: res.liked ? showPostDetail.likeCount + 1 : showPostDetail.likeCount - 1,
+          });
+        }
+      }
+    } catch {
+      // Optimistic toggle
+      const updatePost = (p: Post) =>
+        p.id === postId
+          ? {
               ...p,
               isLiked: !p.isLiked,
-              _count: {
-                ...p._count,
-                likes: p.isLiked ? p._count.likes - 1 : p._count.likes + 1,
-              },
-            };
-          }
-          return p;
-        }));
-      }
-    } catch (error) {
-      // Toggle optimistically for demo
-      setPosts(posts.map(p => {
-        if (p.id === postId) {
-          return {
-            ...p,
-            isLiked: !p.isLiked,
-            _count: {
-              ...p._count,
-              likes: p.isLiked ? p._count.likes - 1 : p._count.likes + 1,
-            },
-          };
-        }
-        return p;
-      }));
+              likeCount: p.isLiked ? p.likeCount - 1 : p.likeCount + 1,
+            }
+          : p;
+      setPosts(posts.map(updatePost));
     }
   };
 
   // View post detail
   const viewPostDetail = async (post: Post) => {
-    setShowPostDetail(post);
+    setShowPostDetail(post as PostDetailResponse);
     setLoadingComments(true);
     try {
-      const res = await api.get<ApiResponse<Comment[]>>(`/forum/posts/${post.id}/comments`);
-      if (res.success) {
-        setComments(res.data);
+      const res = await api.get<PostDetailResponse>(`/forum/posts/${post.id}`);
+      if (res && res.id) {
+        setShowPostDetail(res);
+        setComments(res.comments || []);
+        setApplications(res.teamApplications || []);
       }
-    } catch (error) {
-      // Demo comments
-      setComments([
-        {
-          id: '1',
-          content: '非常详细的分享！请问你的GPA是多少？',
-          authorId: '3',
-          author: { id: '3', nickname: 'Kevin Liu', avatar: '', isVerified: false },
-          createdAt: new Date(Date.now() - 1800000).toISOString(),
-          replies: [
-            {
-              id: '2',
-              content: '我的GPA是3.95，不过我觉得课外活动和文书更重要',
-              authorId: '2',
-              author: { id: '2', nickname: 'Emily Wang', avatar: '', isVerified: true },
-              parentId: '1',
-              createdAt: new Date(Date.now() - 900000).toISOString(),
-            },
-          ],
-        },
-      ]);
+    } catch {
+      setComments([]);
     } finally {
       setLoadingComments(false);
     }
@@ -434,21 +496,21 @@ export default function ForumPage() {
   const handlePostComment = async () => {
     if (!commentContent.trim() || !showPostDetail) return;
     try {
-      const res = await api.post<ApiResponse<Comment>>(`/forum/posts/${showPostDetail.id}/comments`, {
+      const res = await api.post<Comment>(`/forum/posts/${showPostDetail.id}/comments`, {
         content: commentContent,
       });
-      if (res.success) {
-        setComments([res.data, ...comments]);
+      if (res && res.id) {
+        setComments([res, ...comments]);
         setCommentContent('');
+        setShowPostDetail({ ...showPostDetail, commentCount: showPostDetail.commentCount + 1 });
       }
-    } catch (error) {
-      // Optimistic add for demo
+    } catch {
       const newComment: Comment = {
         id: String(Date.now()),
         content: commentContent,
-        authorId: 'me',
-        author: { id: 'me', nickname: 'Me', avatar: '', isVerified: false },
+        author: { id: 'me', name: user?.email?.split('@')[0] || t('anonymous'), isVerified: false },
         createdAt: new Date().toISOString(),
+        likeCount: 0,
       };
       setComments([newComment, ...comments]);
       setCommentContent('');
@@ -459,335 +521,467 @@ export default function ForumPage() {
   const handleApply = async (postId: string) => {
     if (!applicationMessage.trim()) return;
     try {
-      await api.post(`/forum/posts/${postId}/apply`, {
-        message: applicationMessage,
-      });
+      await api.post(`/forum/posts/${postId}/apply`, { message: applicationMessage });
       setApplicationMessage('');
-      // Update UI
-    } catch (error) {
-      console.error('Failed to apply:', error);
+    } catch (_error) {
+      console.error('Failed to apply:', _error);
     }
   };
 
-  // Load applications (for team owner)
-  const loadApplications = async (postId: string) => {
-    setShowApplications(postId);
-    try {
-      const res = await api.get<ApiResponse<TeamApplication[]>>(`/forum/posts/${postId}/applications`);
-      if (res.success) {
-        setApplications(res.data);
-      }
-    } catch (error) {
-      // Demo data
-      setApplications([
-        {
-          id: '1',
-          postId,
-          userId: '4',
-          user: { id: '4', nickname: 'Sarah Johnson', avatar: '', isVerified: true },
-          message: '我对数学建模很有热情，Python和MATLAB都很熟练',
-          status: 'PENDING',
-          createdAt: new Date().toISOString(),
-        },
-      ]);
-    }
-  };
-
-  // Handle application
   const handleApplication = async (appId: string, action: 'accept' | 'reject') => {
     try {
-      await api.patch(`/forum/applications/${appId}`, { action });
-      setApplications(applications.map(a => 
+      await api.post(`/forum/applications/${appId}/review`, {
+        status: action === 'accept' ? 'ACCEPTED' : 'REJECTED',
+      });
+    } catch {}
+    setApplications(
+      applications.map((a) =>
         a.id === appId ? { ...a, status: action === 'accept' ? 'ACCEPTED' : 'REJECTED' } : a
-      ));
-    } catch (error) {
-      // Optimistic update
-      setApplications(applications.map(a => 
-        a.id === appId ? { ...a, status: action === 'accept' ? 'ACCEPTED' : 'REJECTED' } : a
-      ));
-    }
+      )
+    );
   };
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     const now = new Date();
     const diff = now.getTime() - date.getTime();
+    const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
-    
-    if (hours < 1) return '刚刚';
-    if (hours < 24) return `${hours}小时前`;
-    if (days < 7) return `${days}天前`;
-    return date.toLocaleDateString();
+
+    if (minutes < 1) return t('time.justNow');
+    if (minutes < 60) return t('time.minutesAgo', { count: minutes });
+    if (hours < 24) return t('time.hoursAgo', { count: hours });
+    if (days < 7) return t('time.daysAgo', { count: days });
+    return format.dateTime(date, 'short');
   };
 
+  const formatNumber = (num: number) => {
+    return num >= 1000 ? format.number(num, 'compact') : num.toString();
+  };
+
+  const selectedCategoryObj = categories.find((c) => c.id === selectedCategory);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-violet-50/30">
-      {/* Hero Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full mb-4">
-              <MessageSquare className="h-5 w-5 text-white" />
-              <span className="text-white font-medium">{t('title')}</span>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      {/* Compact Header */}
+      <div className="bg-white border-b sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+                  <MessageSquare className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-body-lg font-semibold">{t('title')}</h1>
+                  <p className="text-xs text-muted-foreground hidden sm:block">
+                    {t('description')}
+                  </p>
+                </div>
+              </div>
             </div>
-            <h1 className="text-4xl font-bold text-white mb-4">{t('description')}</h1>
-            <div className="flex items-center justify-center gap-4 mt-6">
+
+            {/* Quick Stats */}
+            <div className="hidden md:flex items-center gap-6 text-sm">
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <FileText className="h-4 w-4" />
+                <span className="font-medium">{formatNumber(forumStats.postCount)}</span>
+                <span className="text-xs">{t('stats.posts')}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <Users className="h-4 w-4" />
+                <span className="font-medium">{formatNumber(forumStats.userCount)}</span>
+                <span className="text-xs">{t('stats.users')}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-green-600">
+                <TrendingUp className="h-4 w-4" />
+                <span className="font-medium">{forumStats.activeToday}</span>
+                <span className="text-xs">{t('stats.activeToday')}</span>
+              </div>
+            </div>
+
+            {/* Create Button */}
+            <div className="flex items-center gap-2">
               <Button
-                onClick={() => setShowCreateDialog(true)}
-                className="bg-white text-purple-600 hover:bg-white/90"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                {t('createPost')}
-              </Button>
-              <Button
-                variant="outline"
-                className="border-white/30 text-white hover:bg-white/10"
                 onClick={() => {
-                  setIsTeamPost(true);
+                  setIsTeamPost(false);
                   setShowCreateDialog(true);
                 }}
+                className="gap-2"
               >
-                <Users className="h-4 w-4 mr-2" />
-                {t('createTeam')}
+                <PenLine className="h-4 w-4" />
+                <span className="hidden sm:inline">{t('createPost')}</span>
               </Button>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar - Categories */}
-          <div className="lg:col-span-1 space-y-6">
-            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Filter className="h-5 w-5 text-purple-500" />
-                  {t('categories')}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Sidebar */}
+          <div className="lg:col-span-3 space-y-4">
+            {/* Categories */}
+            <Card className="overflow-hidden">
+              <CardHeader className="pb-2 bg-gradient-to-r from-primary/5 to-primary/10">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <Filter className="h-4 w-4 text-primary" />
+                  {t('categoryFilter')}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <Button
-                  variant={selectedCategory === null ? 'default' : 'ghost'}
-                  className={`w-full justify-start ${selectedCategory === null ? 'bg-gradient-to-r from-purple-500 to-pink-500' : ''}`}
-                  onClick={() => setSelectedCategory(null)}
-                >
-                  {t('allPosts')}
-                </Button>
-                <Button
-                  variant={showTeamOnly ? 'default' : 'ghost'}
-                  className={`w-full justify-start ${showTeamOnly ? 'bg-gradient-to-r from-amber-500 to-orange-500' : ''}`}
-                  onClick={() => setShowTeamOnly(!showTeamOnly)}
-                >
-                  <Users className="h-4 w-4 mr-2" />
-                  {t('teamPosts')}
-                </Button>
-                <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent my-2" />
-                {categories.map((category) => (
-                  <Button
-                    key={category.id}
-                    variant={selectedCategory === category.id ? 'default' : 'ghost'}
-                    className={`w-full justify-between ${
-                      selectedCategory === category.id 
-                        ? `bg-gradient-to-r ${categoryColors[category.slug] || 'from-gray-500 to-gray-600'}` 
-                        : ''
+              <CardContent className="p-2">
+                <div className="space-y-1">
+                  <button
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
+                      selectedCategory === null && !showTeamOnly
+                        ? 'bg-primary text-white'
+                        : 'hover:bg-gray-100'
                     }`}
-                    onClick={() => setSelectedCategory(category.id)}
+                    onClick={() => {
+                      setSelectedCategory(null);
+                      setShowTeamOnly(false);
+                    }}
                   >
                     <span className="flex items-center gap-2">
-                      {categoryIcons[category.slug]}
-                      {category.name}
+                      <MessageSquare className="h-4 w-4" />
+                      {t('allPosts')}
                     </span>
-                    <Badge variant="secondary" className="bg-white/20">
-                      {category._count.posts}
-                    </Badge>
-                  </Button>
-                ))}
+                    <span className="text-xs opacity-70">{forumStats.postCount}</span>
+                  </button>
+
+                  <button
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
+                      showTeamOnly
+                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
+                        : 'hover:bg-gray-100'
+                    }`}
+                    onClick={() => {
+                      setShowTeamOnly(!showTeamOnly);
+                      setSelectedCategory(null);
+                    }}
+                  >
+                    <span className="flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      {t('teamPosts')}
+                    </span>
+                    <span className="text-xs opacity-70">{forumStats.teamingCount}</span>
+                  </button>
+
+                  <div className="h-px bg-gray-100 my-2" />
+
+                  {categories.map((category) => {
+                    const colorStyle = getCategoryColorStyle(category);
+                    const isSelected = selectedCategory === category.id;
+                    return (
+                      <button
+                        key={category.id}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
+                          isSelected ? 'text-white' : 'hover:bg-gray-100'
+                        } ${isSelected ? colorStyle.className : ''}`}
+                        style={isSelected ? colorStyle.style : undefined}
+                        onClick={() => {
+                          setSelectedCategory(category.id);
+                          setShowTeamOnly(false);
+                        }}
+                      >
+                        <span className="flex items-center gap-2">
+                          {getCategoryIcon(category)}
+                          {getLocalizedName(category.nameZh, category.name, locale)}
+                        </span>
+                        <span className="text-xs opacity-70">{category.postCount}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </CardContent>
             </Card>
 
-            {/* Stats Card */}
-            <Card className="bg-gradient-to-br from-purple-500 to-pink-500 border-0 shadow-lg text-white">
-              <CardContent className="pt-6">
-                <div className="grid grid-cols-2 gap-4 text-center">
-                  <div>
-                    <div className="text-3xl font-bold">1.2K</div>
-                    <div className="text-white/80 text-sm">帖子</div>
-                  </div>
-                  <div>
-                    <div className="text-3xl font-bold">856</div>
-                    <div className="text-white/80 text-sm">用户</div>
-                  </div>
-                  <div>
-                    <div className="text-3xl font-bold">45</div>
-                    <div className="text-white/80 text-sm">组队中</div>
-                  </div>
-                  <div>
-                    <div className="text-3xl font-bold">128</div>
-                    <div className="text-white/80 text-sm">今日活跃</div>
-                  </div>
+            {/* Quick Create */}
+            <Card className="bg-gradient-to-br from-primary to-blue-600 text-white overflow-hidden">
+              <CardContent className="p-4">
+                <h3 className="font-semibold mb-2">{t('quickPost')}</h3>
+                <p className="text-sm text-white/80 mb-3">{t('quickPostDesc')}</p>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur"
+                    onClick={() => {
+                      setIsTeamPost(false);
+                      setShowCreateDialog(true);
+                    }}
+                  >
+                    <PenLine className="h-3.5 w-3.5 mr-1" />
+                    {t('postAction')}
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur"
+                    onClick={() => {
+                      setIsTeamPost(true);
+                      setShowCreateDialog(true);
+                    }}
+                  >
+                    <Users className="h-3.5 w-3.5 mr-1" />
+                    {t('teamUp')}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Hot Tags */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <Flame className="h-4 w-4 text-orange-500" />
+                  {t('hotTags')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="flex flex-wrap gap-1.5">
+                  {suggestedTags.slice(0, 10).map((tag) => (
+                    <Badge
+                      key={tag}
+                      variant="secondary"
+                      className="cursor-pointer hover:bg-primary hover:text-white transition-colors text-xs"
+                      onClick={() => {
+                        setSearchQuery(tag);
+                        fetchPosts(true);
+                      }}
+                    >
+                      {tag}
+                    </Badge>
+                  ))}
                 </div>
               </CardContent>
             </Card>
           </div>
 
           {/* Main Content */}
-          <div className="lg:col-span-3 space-y-6">
-            {/* Search & Sort */}
-            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-              <CardContent className="py-4">
-                <div className="flex flex-col sm:flex-row gap-4">
+          <div className="lg:col-span-9 space-y-4">
+            {/* Search & Filter Bar */}
+            <Card className="overflow-hidden">
+              <CardContent className="p-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder={t('search')}
+                      placeholder={t('searchPostsPlaceholder')}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && fetchPosts(true)}
-                      className="pl-10 bg-gray-50 border-0"
+                      className="pl-9 bg-gray-50/50"
                     />
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant={sortBy === 'latest' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setSortBy('latest')}
-                      className={sortBy === 'latest' ? 'bg-purple-500' : ''}
-                    >
-                      <Clock className="h-4 w-4 mr-1" />
-                      {t('latest')}
-                    </Button>
-                    <Button
-                      variant={sortBy === 'popular' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setSortBy('popular')}
-                      className={sortBy === 'popular' ? 'bg-purple-500' : ''}
-                    >
-                      <Flame className="h-4 w-4 mr-1" />
-                      {t('popular')}
-                    </Button>
-                    <Button
-                      variant={sortBy === 'comments' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setSortBy('comments')}
-                      className={sortBy === 'comments' ? 'bg-purple-500' : ''}
-                    >
-                      <MessageCircle className="h-4 w-4 mr-1" />
-                      {t('mostComments')}
-                    </Button>
+                  <div className="flex gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+                    {[
+                      { key: 'latest', icon: Clock, label: t('sortLatest') },
+                      { key: 'popular', icon: Flame, label: t('sortPopular') },
+                      { key: 'comments', icon: MessageCircle, label: t('sortComments') },
+                      { key: 'recommended', icon: Sparkles, label: t('sortRecommended') },
+                    ].map(({ key, icon: Icon, label }) => (
+                      <Button
+                        key={key}
+                        variant={sortBy === key ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => setSortBy(key as typeof sortBy)}
+                        className={`whitespace-nowrap ${sortBy === key && key === 'recommended' ? 'bg-gradient-to-r from-purple-500 to-pink-500' : ''}`}
+                      >
+                        <Icon className="h-3.5 w-3.5 mr-1" />
+                        {label}
+                      </Button>
+                    ))}
                   </div>
                 </div>
+
+                {/* Active Filters */}
+                {(selectedCategoryObj || showTeamOnly || searchQuery) && (
+                  <div className="flex items-center gap-2 mt-3 pt-3 border-t">
+                    <span className="text-xs text-muted-foreground">{t('currentFilterLabel')}</span>
+                    {selectedCategoryObj && (
+                      <Badge variant="secondary" className="gap-1">
+                        {getLocalizedName(
+                          selectedCategoryObj.nameZh,
+                          selectedCategoryObj.name,
+                          locale
+                        )}
+                        <X
+                          className="h-3 w-3 cursor-pointer"
+                          onClick={() => setSelectedCategory(null)}
+                        />
+                      </Badge>
+                    )}
+                    {showTeamOnly && (
+                      <Badge variant="secondary" className="gap-1 bg-amber-100 text-amber-700">
+                        {t('teamPosts')}
+                        <X
+                          className="h-3 w-3 cursor-pointer"
+                          onClick={() => setShowTeamOnly(false)}
+                        />
+                      </Badge>
+                    )}
+                    {searchQuery && (
+                      <Badge variant="secondary" className="gap-1">
+                        {t('searchLabel', { query: searchQuery })}
+                        <X className="h-3 w-3 cursor-pointer" onClick={() => setSearchQuery('')} />
+                      </Badge>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
             {/* Posts List */}
             <AnimatePresence mode="popLayout">
               {loading && posts.length === 0 ? (
-                <div className="flex justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+                <div className="flex flex-col items-center justify-center py-16">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary mb-3" />
+                  <p className="text-sm text-muted-foreground">{t('loading')}</p>
                 </div>
               ) : posts.length === 0 ? (
-                <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-                  <CardContent className="py-12 text-center">
-                    <MessageSquare className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-                    <h3 className="text-lg font-medium text-gray-500">{t('noPosts')}</h3>
-                    <p className="text-gray-400 mt-1">{t('noPostsDesc')}</p>
+                <Card>
+                  <CardContent className="py-16 text-center">
+                    <MessageSquare className="h-12 w-12 mx-auto text-gray-200 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-500 mb-1">{t('noPosts')}</h3>
+                    <p className="text-gray-400 text-sm mb-4">{t('noPostsDesc')}</p>
+                    <Button onClick={() => setShowCreateDialog(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      {t('firstPost')}
+                    </Button>
                   </CardContent>
                 </Card>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {posts.map((post, index) => (
                     <motion.div
                       key={post.id}
-                      initial={{ opacity: 0, y: 20 }}
+                      initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ delay: index * 0.05 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ delay: index * 0.03 }}
                     >
-                      <Card 
-                        className={`bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all cursor-pointer group ${
-                          post.isPinned ? 'ring-2 ring-amber-400' : ''
+                      <Card
+                        className={`overflow-hidden hover:shadow-md transition-all cursor-pointer group ${
+                          post.isPinned ? 'ring-1 ring-amber-300 bg-amber-50/30' : ''
                         }`}
                         onClick={() => viewPostDetail(post)}
                       >
-                        <CardContent className="p-5">
-                          <div className="flex items-start gap-4">
-                            <Avatar className="h-12 w-12 ring-2 ring-purple-100">
-                              <AvatarImage src={post.author.avatar} />
-                              <AvatarFallback className="bg-gradient-to-br from-purple-400 to-pink-400 text-white">
-                                {post.author.nickname.charAt(0)}
+                        <CardContent className="p-4">
+                          <div className="flex gap-3">
+                            {/* Avatar */}
+                            <Avatar className="h-10 w-10 shrink-0">
+                              <AvatarImage src={post.author.avatar || ''} />
+                              <AvatarFallback className="bg-gradient-to-br from-primary to-blue-600 text-white text-sm">
+                                {(post.author.name || 'U').charAt(0).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
+
+                            {/* Content */}
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
+                              {/* Header */}
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
                                 {post.isPinned && (
-                                  <Badge className="bg-amber-100 text-amber-700 text-xs">置顶</Badge>
-                                )}
-                                {post.isTeamPost && (
-                                  <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs">
-                                    <Users className="h-3 w-3 mr-1" />
-                                    组队 {post.currentMembers}/{post.teamSize}
+                                  <Badge
+                                    variant="outline"
+                                    className="bg-amber-50 text-amber-600 border-amber-200 text-xs py-0"
+                                  >
+                                    {t('pinned')}
                                   </Badge>
                                 )}
-                                <Badge 
-                                  className={`bg-gradient-to-r ${categoryColors[post.category.slug] || 'from-gray-500 to-gray-600'} text-white text-xs`}
+                                {post.isTeamPost && (
+                                  <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs py-0">
+                                    <Users className="h-3 w-3 mr-0.5" />
+                                    {post.currentSize ?? 1}/{post.teamSize ?? 5}
+                                  </Badge>
+                                )}
+                                <Badge
+                                  className={`${getCategoryColorStyle(post.category).className || ''} text-white text-xs py-0`}
+                                  style={getCategoryColorStyle(post.category).style}
                                 >
-                                  {categoryIcons[post.category.slug]}
-                                  <span className="ml-1">{post.category.name}</span>
+                                  {getLocalizedName(
+                                    post.category?.nameZh,
+                                    post.category?.name,
+                                    locale
+                                  ) || t('uncategorized')}
                                 </Badge>
                               </div>
-                              <h3 className="font-semibold text-gray-900 group-hover:text-purple-600 transition-colors line-clamp-1">
+
+                              {/* Title */}
+                              <h3 className="font-semibold text-gray-900 group-hover:text-primary transition-colors line-clamp-1 mb-1">
                                 {post.title}
                               </h3>
-                              <p className="text-gray-600 text-sm mt-1 line-clamp-2">{post.content}</p>
-                              <div className="flex items-center gap-4 mt-3">
-                                <div className="flex items-center gap-1 text-sm text-gray-500">
-                                  <span className="font-medium text-gray-700">{post.author.nickname}</span>
-                                  {post.author.isVerified && (
-                                    <CheckCircle className="h-4 w-4 text-blue-500" />
-                                  )}
-                                </div>
-                                <span className="text-xs text-gray-400">{formatDate(post.createdAt)}</span>
-                                <div className="flex-1" />
-                                <div className="flex items-center gap-4 text-sm text-gray-500">
-                                  <span className="flex items-center gap-1">
-                                    <Eye className="h-4 w-4" />
-                                    {post.views}
-                                  </span>
-                                  <span className="flex items-center gap-1">
-                                    <MessageCircle className="h-4 w-4" />
-                                    {post._count.comments}
-                                  </span>
-                                  <button 
-                                    className={`flex items-center gap-1 transition-colors ${post.isLiked ? 'text-red-500' : 'hover:text-red-500'}`}
-                                    onClick={(e) => { e.stopPropagation(); handleLike(post.id); }}
-                                  >
-                                    <Heart className={`h-4 w-4 ${post.isLiked ? 'fill-current' : ''}`} />
-                                    {post._count.likes}
-                                  </button>
-                                </div>
-                              </div>
+
+                              {/* Content Preview */}
+                              <p className="text-gray-500 text-sm line-clamp-2 mb-2">
+                                {stripMarkdown(post.content)}
+                              </p>
+
+                              {/* Tags */}
                               {post.tags.length > 0 && (
-                                <div className="flex items-center gap-2 mt-3">
-                                  {post.tags.slice(0, 3).map((tag) => (
-                                    <Badge key={tag} variant="outline" className="text-xs text-purple-600 border-purple-200">
-                                      <Tag className="h-3 w-3 mr-1" />
-                                      {tag}
-                                    </Badge>
+                                <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+                                  {post.tags.slice(0, 4).map((tag) => (
+                                    <span
+                                      key={tag}
+                                      className="text-xs text-primary/70 bg-primary/5 px-1.5 py-0.5 rounded"
+                                    >
+                                      #{tag}
+                                    </span>
                                   ))}
-                                  {post.tags.length > 3 && (
-                                    <span className="text-xs text-gray-400">+{post.tags.length - 3}</span>
+                                  {post.tags.length > 4 && (
+                                    <span className="text-xs text-gray-400">
+                                      +{post.tags.length - 4}
+                                    </span>
                                   )}
                                 </div>
                               )}
+
+                              {/* Footer */}
+                              <div className="flex items-center justify-between text-xs text-gray-400">
+                                <div className="flex items-center gap-3">
+                                  <span className="flex items-center gap-1">
+                                    <span className="font-medium text-gray-600">
+                                      {post.author.name || t('anonymous')}
+                                    </span>
+                                    {post.author.isVerified && (
+                                      <CheckCircle className="h-3 w-3 text-blue-500" />
+                                    )}
+                                  </span>
+                                  <span>{formatDate(post.createdAt)}</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <span className="flex items-center gap-1">
+                                    <Eye className="h-3.5 w-3.5" />
+                                    {formatNumber(post.viewCount)}
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <MessageCircle className="h-3.5 w-3.5" />
+                                    {post.commentCount}
+                                  </span>
+                                  <button
+                                    className={`flex items-center gap-1 transition-colors ${post.isLiked ? 'text-red-500' : 'hover:text-red-500'}`}
+                                    onClick={(e) => handleLike(post.id, e)}
+                                  >
+                                    <Heart
+                                      className={`h-3.5 w-3.5 ${post.isLiked ? 'fill-current' : ''}`}
+                                    />
+                                    {post.likeCount}
+                                  </button>
+                                </div>
+                              </div>
                             </div>
-                            <ChevronRight className="h-5 w-5 text-gray-300 group-hover:text-purple-500 transition-colors" />
+
+                            {/* Actions */}
+                            <div className="flex flex-col items-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button
+                                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setReportTarget({ type: 'POST', id: post.id });
+                                }}
+                              >
+                                <Flag className="h-4 w-4 text-gray-400 hover:text-red-500" />
+                              </button>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
@@ -799,11 +993,15 @@ export default function ForumPage() {
 
             {/* Load More */}
             {hasMore && posts.length > 0 && (
-              <div className="text-center">
+              <div className="text-center pt-4">
                 <Button
                   variant="outline"
-                  onClick={() => { setPage(p => p + 1); fetchPosts(); }}
+                  onClick={() => {
+                    setPage((p) => p + 1);
+                    fetchPosts();
+                  }}
                   disabled={loading}
+                  className="min-w-[200px]"
                 >
                   {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                   {t('loadMore')}
@@ -816,153 +1014,294 @@ export default function ForumPage() {
 
       {/* Create Post Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader className="shrink-0">
             <DialogTitle className="flex items-center gap-2">
               {isTeamPost ? (
                 <>
-                  <Users className="h-5 w-5 text-amber-500" />
-                  {t('createTeam')}
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center">
+                    <Users className="h-4 w-4 text-white" />
+                  </div>
+                  {t('createTeamPost')}
                 </>
               ) : (
                 <>
-                  <MessageSquare className="h-5 w-5 text-purple-500" />
-                  {t('createPost')}
+                  <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+                    <PenLine className="h-4 w-4 text-white" />
+                  </div>
+                  {t('createNewPost')}
                 </>
               )}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 mt-4">
+
+          <div className="flex-1 overflow-y-auto pr-2 -mr-2">
+            <Tabs defaultValue="edit" className="w-full">
+              <TabsList className="w-full grid grid-cols-2 mb-4">
+                <TabsTrigger value="edit" onClick={() => setShowPreview(false)}>
+                  {t('editTab')}
+                </TabsTrigger>
+                <TabsTrigger value="preview" onClick={() => setShowPreview(true)}>
+                  {t('previewTab')}
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="edit" className="space-y-4 mt-0">
+                {/* Post Type Toggle */}
+                <div className="flex gap-2 p-1 bg-gray-100 rounded-lg w-fit">
+                  <button
+                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                      !isTeamPost ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                    onClick={() => setIsTeamPost(false)}
+                  >
+                    {t('normalPost')}
+                  </button>
+                  <button
+                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-1.5 ${
+                      isTeamPost
+                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                    onClick={() => isVerified && setIsTeamPost(true)}
+                    disabled={!isVerified}
+                  >
+                    <Users className="h-3.5 w-3.5" />
+                    {t('teamPosts')}
+                  </button>
+                </div>
+
+                {!isVerified && isTeamPost && (
+                  <Alert className="bg-amber-50 border-amber-200">
+                    <ShieldAlert className="h-4 w-4 text-amber-600" />
+                    <AlertDescription className="flex items-center justify-between text-amber-800">
+                      <span className="text-sm">{t('verificationRequired')}</span>
+                      <Link
+                        href="/verification"
+                        className="inline-flex items-center gap-1 text-primary hover:underline text-sm font-medium"
+                      >
+                        {t('goVerify')} <ArrowRight className="h-3 w-3" />
+                      </Link>
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {/* Title */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                    {t('postTitleLabel')}
+                  </label>
+                  <Input
+                    value={formTitle}
+                    onChange={(e) => setFormTitle(e.target.value)}
+                    placeholder={t('postTitlePlaceholder')}
+                    className="text-base"
+                    maxLength={100}
+                  />
+                  <p className="text-xs text-gray-400 mt-1 text-right">{formTitle.length}/100</p>
+                </div>
+
+                {/* Category */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                    {t('categoryLabel')}
+                  </label>
+                  <Select value={formCategory} onValueChange={setFormCategory}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t('selectPostCategory')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          <span className="flex items-center gap-2">
+                            {getCategoryIcon(cat)}
+                            {locale === 'zh' ? cat.nameZh || cat.name : cat.name || cat.nameZh}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Content */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                    {t('contentLabel')}
+                  </label>
+                  <Textarea
+                    value={formContent}
+                    onChange={(e) => setFormContent(e.target.value)}
+                    placeholder={t('contentPlaceholder')}
+                    className="min-h-[200px] resize-none"
+                  />
+                  <p className="text-xs text-gray-400 mt-1 text-right">
+                    {t('charCount', { count: formContent.length })}
+                  </p>
+                </div>
+
+                {/* Team Options */}
+                {isTeamPost && (
+                  <div className="space-y-4 p-4 bg-amber-50/50 rounded-lg border border-amber-100">
+                    <h4 className="font-medium text-amber-800 flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      {t('teamSettingsTitle')}
+                    </h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm text-gray-600 mb-1.5 block">
+                          {t('teamMembersLabel')}
+                        </label>
+                        <Input
+                          type="number"
+                          value={formTeamSize}
+                          onChange={(e) => setFormTeamSize(Number(e.target.value))}
+                          min={2}
+                          max={20}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm text-gray-600 mb-1.5 block">
+                          {t('teamDeadlineLabel')}
+                        </label>
+                        <Input
+                          type="date"
+                          value={formDeadline}
+                          onChange={(e) => setFormDeadline(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-sm text-gray-600 mb-1.5 block">
+                        {t('teamRequirementsDesc')}
+                      </label>
+                      <Textarea
+                        value={formRequirements}
+                        onChange={(e) => setFormRequirements(e.target.value)}
+                        placeholder={t('teamReqPlaceholder')}
+                        className="min-h-[80px] resize-none"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Tags */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                    {t('maxTags')}
+                  </label>
+                  {formTags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {formTags.map((tag) => (
+                        <Badge key={tag} variant="secondary" className="gap-1 pr-1">
+                          #{tag}
+                          <button onClick={() => removeTag(tag)} className="hover:text-red-500">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <Input
+                      value={formTagInput}
+                      onChange={(e) => setFormTagInput(e.target.value)}
+                      onKeyDown={handleTagInput}
+                      placeholder={t('tagsPlaceholder')}
+                      disabled={formTags.length >= 5}
+                    />
+                  </div>
+                  {formTags.length < 5 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {suggestedTags
+                        .filter((t) => !formTags.includes(t))
+                        .slice(0, 8)
+                        .map((tag) => (
+                          <button
+                            key={tag}
+                            className="text-xs text-gray-500 hover:text-primary hover:bg-primary/5 px-2 py-0.5 rounded transition-colors"
+                            onClick={() => addTag(tag)}
+                          >
+                            +{tag}
+                          </button>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="preview" className="mt-0">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      {formCategory &&
+                        (() => {
+                          const category = categories.find((c) => c.id === formCategory);
+                          return (
+                            <Badge
+                              className={`${category ? getCategoryColorStyle(category).className : 'bg-gray-500'} text-white text-xs`}
+                            >
+                              {getLocalizedName(category?.nameZh, category?.name, locale) ||
+                                t('unchosenCategory')}
+                            </Badge>
+                          );
+                        })()}
+                      {isTeamPost && (
+                        <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs">
+                          <Users className="h-3 w-3 mr-1" />
+                          {t('teamProgress', { current: 1, total: formTeamSize })}
+                        </Badge>
+                      )}
+                    </div>
+                    <h2 className="text-xl font-bold mb-3">{formTitle || t('postTitlePreview')}</h2>
+                    <div className="prose prose-sm max-w-none text-gray-700">
+                      {formContent ? (
+                        renderMarkdown(formContent)
+                      ) : (
+                        <p className="text-gray-400">{t('contentPreviewText')}</p>
+                      )}
+                    </div>
+                    {formTags.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-4 pt-4 border-t">
+                        {formTags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="text-xs text-primary bg-primary/5 px-2 py-1 rounded"
+                          >
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between pt-4 border-t shrink-0">
+            <p className="text-xs text-muted-foreground">{t('agreeRules')}</p>
             <div className="flex gap-2">
               <Button
-                variant={!isTeamPost ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setIsTeamPost(false)}
-                className={!isTeamPost ? 'bg-purple-500' : ''}
+                variant="outline"
+                onClick={() => {
+                  setShowCreateDialog(false);
+                  resetForm();
+                }}
               >
-                普通帖子
-              </Button>
-              <Button
-                variant={isTeamPost ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setIsTeamPost(true)}
-                className={isTeamPost ? 'bg-amber-500' : ''}
-              >
-                <Users className="h-4 w-4 mr-1" />
-                组队帖子
-              </Button>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-700">{t('title_label')}</label>
-              <Input
-                value={formTitle}
-                onChange={(e) => setFormTitle(e.target.value)}
-                placeholder="请输入标题..."
-                className="mt-1"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-700">{t('category_label')}</label>
-              <Select value={formCategory} onValueChange={setFormCategory}>
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="选择分类" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      <span className="flex items-center gap-2">
-                        {categoryIcons[cat.slug]}
-                        {cat.name}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-700">{t('content_label')}</label>
-              <Textarea
-                value={formContent}
-                onChange={(e) => setFormContent(e.target.value)}
-                placeholder="请输入内容..."
-                className="mt-1 min-h-[150px]"
-              />
-            </div>
-
-            {isTeamPost && (
-              <>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">{t('teamSize')}</label>
-                    <Input
-                      type="number"
-                      value={formTeamSize}
-                      onChange={(e) => setFormTeamSize(Number(e.target.value))}
-                      min={2}
-                      max={20}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">{t('deadline')}</label>
-                    <Input
-                      type="date"
-                      value={formDeadline}
-                      onChange={(e) => setFormDeadline(e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700">{t('requirements')}</label>
-                  <Textarea
-                    value={formRequirements}
-                    onChange={(e) => setFormRequirements(e.target.value)}
-                    placeholder="描述队友要求..."
-                    className="mt-1"
-                  />
-                </div>
-              </>
-            )}
-
-            <div>
-              <label className="text-sm font-medium text-gray-700">{t('tags_label')}</label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {formTags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="pl-2 pr-1 py-1">
-                    {tag}
-                    <button
-                      onClick={() => removeTag(tag)}
-                      className="ml-1 hover:text-red-500"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-              <Input
-                value={formTagInput}
-                onChange={(e) => setFormTagInput(e.target.value)}
-                onKeyDown={handleTagInput}
-                placeholder={t('tagsPlaceholder')}
-                className="mt-2"
-              />
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button variant="outline" onClick={() => { setShowCreateDialog(false); resetForm(); }}>
                 {t('cancel')}
               </Button>
               <Button
                 onClick={handleCreatePost}
                 disabled={submitting || !formTitle.trim() || !formContent.trim() || !formCategory}
-                className="bg-gradient-to-r from-purple-500 to-pink-500"
+                className={
+                  isTeamPost
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600'
+                    : ''
+                }
               >
-                {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                {t('submit')}
+                {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                {isTeamPost ? t('publishTeam') : t('publishPost')}
               </Button>
             </div>
           </div>
@@ -971,180 +1310,252 @@ export default function ForumPage() {
 
       {/* Post Detail Dialog */}
       <Dialog open={!!showPostDetail} onOpenChange={() => setShowPostDetail(null)}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-0">
+          <DialogTitle className="sr-only">{showPostDetail?.title || t('postDetail')}</DialogTitle>
           {showPostDetail && (
             <>
-              <DialogHeader>
-                <div className="flex items-center gap-2 mb-2">
-                  {showPostDetail.isTeamPost && (
-                    <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white">
-                      <Users className="h-3 w-3 mr-1" />
-                      组队 {showPostDetail.currentMembers}/{showPostDetail.teamSize}
+              {/* Header */}
+              <div className="p-6 pb-4 border-b shrink-0">
+                <div className="flex items-center gap-2 mb-3 flex-wrap">
+                  {showPostDetail.isPinned && (
+                    <Badge
+                      variant="outline"
+                      className="bg-amber-50 text-amber-600 border-amber-200 text-xs"
+                    >
+                      {t('pinned')}
                     </Badge>
                   )}
-                  <Badge className={`bg-gradient-to-r ${categoryColors[showPostDetail.category.slug] || 'from-gray-500 to-gray-600'} text-white`}>
-                    {showPostDetail.category.name}
+                  {showPostDetail.isTeamPost && (
+                    <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs">
+                      <Users className="h-3 w-3 mr-1" />
+                      {showPostDetail.currentSize ?? 1}/{showPostDetail.teamSize ?? 5}
+                    </Badge>
+                  )}
+                  <Badge
+                    className={`${getCategoryColorStyle(showPostDetail.category).className || ''} text-white text-xs`}
+                    style={getCategoryColorStyle(showPostDetail.category).style}
+                  >
+                    {getLocalizedName(
+                      showPostDetail.category?.nameZh,
+                      showPostDetail.category?.name,
+                      locale
+                    ) || t('uncategorized')}
                   </Badge>
                 </div>
-                <DialogTitle className="text-xl">{showPostDetail.title}</DialogTitle>
-                <div className="flex items-center gap-3 mt-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={showPostDetail.author.avatar} />
-                    <AvatarFallback className="bg-gradient-to-br from-purple-400 to-pink-400 text-white text-sm">
-                      {showPostDetail.author.nickname.charAt(0)}
+                <h2 className="text-xl font-bold text-gray-900 mb-3">{showPostDetail.title}</h2>
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage src={showPostDetail.author.avatar || ''} />
+                    <AvatarFallback className="bg-gradient-to-br from-primary to-blue-600 text-white text-sm">
+                      {(showPostDetail.author.name || 'U').charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{showPostDetail.author.nickname}</span>
-                    {showPostDetail.author.isVerified && <CheckCircle className="h-4 w-4 text-blue-500" />}
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-medium text-sm">
+                        {showPostDetail.author.name || t('anonymous')}
+                      </span>
+                      {showPostDetail.author.isVerified && (
+                        <CheckCircle className="h-3.5 w-3.5 text-blue-500" />
+                      )}
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {formatDate(showPostDetail.createdAt)}
+                    </span>
                   </div>
-                  <span className="text-sm text-gray-400">{formatDate(showPostDetail.createdAt)}</span>
                 </div>
-              </DialogHeader>
+              </div>
 
-              <div className="mt-4 space-y-4">
-                <div className="prose prose-sm max-w-none">
-                  <p className="whitespace-pre-wrap text-gray-700">{showPostDetail.content}</p>
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-6">
+                <div className="prose prose-sm max-w-none text-gray-700 mb-6">
+                  {renderMarkdown(showPostDetail.content)}
                 </div>
 
+                {/* Team Info */}
                 {showPostDetail.isTeamPost && (
-                  <Card className="bg-amber-50 border-amber-200">
+                  <Card className="bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200 mb-6">
                     <CardContent className="p-4">
-                      <h4 className="font-medium text-amber-800 flex items-center gap-2">
+                      <h4 className="font-semibold text-amber-800 flex items-center gap-2 mb-3">
                         <Users className="h-4 w-4" />
-                        组队信息
+                        {t('teamInfo')}
                       </h4>
-                      <div className="grid grid-cols-2 gap-4 mt-3 text-sm">
+                      <div className="grid grid-cols-2 gap-4 text-sm mb-4">
                         <div>
-                          <span className="text-gray-500">团队人数:</span>
-                          <span className="ml-2 font-medium">{showPostDetail.currentMembers}/{showPostDetail.teamSize}</span>
+                          <span className="text-gray-500">{t('currentMembersLabel')}</span>
+                          <p className="font-medium">
+                            {t('memberCount', {
+                              current: showPostDetail.currentSize ?? 1,
+                              total: showPostDetail.teamSize ?? 5,
+                            })}
+                          </p>
                         </div>
-                        {showPostDetail.deadline && (
+                        {showPostDetail.teamDeadline && (
                           <div>
-                            <span className="text-gray-500">截止日期:</span>
-                            <span className="ml-2 font-medium">{new Date(showPostDetail.deadline).toLocaleDateString()}</span>
+                            <span className="text-gray-500">{t('teamDeadlineLabel')}</span>
+                            <p className="font-medium">
+                              {format.dateTime(new Date(showPostDetail.teamDeadline), 'medium')}
+                            </p>
                           </div>
                         )}
                         {showPostDetail.requirements && (
                           <div className="col-span-2">
-                            <span className="text-gray-500">队友要求:</span>
+                            <span className="text-gray-500">{t('recruitRequirements')}</span>
                             <p className="mt-1 text-gray-700">{showPostDetail.requirements}</p>
                           </div>
                         )}
                       </div>
-                      <div className="mt-4 flex gap-2">
-                        <div className="flex-1">
-                          <Input
-                            value={applicationMessage}
-                            onChange={(e) => setApplicationMessage(e.target.value)}
-                            placeholder={t('applicationPlaceholder')}
-                          />
-                        </div>
-                        <Button 
+                      <div className="flex gap-2">
+                        <Input
+                          value={applicationMessage}
+                          onChange={(e) => setApplicationMessage(e.target.value)}
+                          placeholder={t('joinPlaceholder')}
+                          className="flex-1"
+                        />
+                        <Button
                           onClick={() => handleApply(showPostDetail.id)}
-                          className="bg-amber-500 hover:bg-amber-600"
+                          className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+                          disabled={!applicationMessage.trim()}
                         >
                           <UserPlus className="h-4 w-4 mr-1" />
-                          {t('apply')}
+                          {t('joinTeam')}
                         </Button>
                       </div>
                     </CardContent>
                   </Card>
                 )}
 
+                {/* Tags */}
                 {showPostDetail.tags.length > 0 && (
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap gap-1.5 mb-6">
                     {showPostDetail.tags.map((tag) => (
-                      <Badge key={tag} variant="outline" className="text-purple-600 border-purple-200">
-                        <Tag className="h-3 w-3 mr-1" />
-                        {tag}
-                      </Badge>
+                      <span
+                        key={tag}
+                        className="text-sm text-primary bg-primary/5 px-2 py-1 rounded"
+                      >
+                        #{tag}
+                      </span>
                     ))}
                   </div>
                 )}
 
-                <div className="flex items-center gap-4 py-3 border-t border-b">
-                  <button 
-                    className={`flex items-center gap-1 px-3 py-1 rounded-full transition-colors ${
-                      showPostDetail.isLiked ? 'bg-red-100 text-red-500' : 'hover:bg-gray-100'
+                {/* Stats Bar */}
+                <div className="flex items-center gap-4 py-4 border-y mb-6">
+                  <button
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-full transition-all ${
+                      showPostDetail.isLiked
+                        ? 'bg-red-100 text-red-500'
+                        : 'hover:bg-gray-100 text-gray-600'
                     }`}
                     onClick={() => handleLike(showPostDetail.id)}
                   >
                     <Heart className={`h-5 w-5 ${showPostDetail.isLiked ? 'fill-current' : ''}`} />
-                    <span>{showPostDetail._count.likes} {t('likes')}</span>
+                    <span className="font-medium">{showPostDetail.likeCount}</span>
                   </button>
-                  <div className="flex items-center gap-1 text-gray-500">
+                  <div className="flex items-center gap-1.5 text-gray-500">
                     <Eye className="h-5 w-5" />
-                    <span>{showPostDetail.views} {t('views')}</span>
+                    <span>{formatNumber(showPostDetail.viewCount)}</span>
                   </div>
-                  <div className="flex items-center gap-1 text-gray-500">
+                  <div className="flex items-center gap-1.5 text-gray-500">
                     <MessageCircle className="h-5 w-5" />
-                    <span>{showPostDetail._count.comments} {t('comments')}</span>
+                    <span>{showPostDetail.commentCount}</span>
                   </div>
+                  <div className="flex-1" />
+                  <Button variant="ghost" size="sm">
+                    <Bookmark className="h-4 w-4 mr-1" />
+                    {t('bookmarkAction')}
+                  </Button>
+                  <Button variant="ghost" size="sm">
+                    <Share2 className="h-4 w-4 mr-1" />
+                    {t('shareAction')}
+                  </Button>
                 </div>
 
                 {/* Comments */}
                 <div>
-                  <h4 className="font-medium mb-4">{t('comments')} ({showPostDetail._count.comments})</h4>
-                  
+                  <h4 className="font-semibold mb-4">
+                    {t('commentsTitle', { count: comments.length })}
+                  </h4>
+
+                  {/* Comment Input */}
                   <div className="flex gap-3 mb-6">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-purple-100 text-purple-600">Me</AvatarFallback>
+                    <Avatar className="h-8 w-8 shrink-0">
+                      <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                        {user?.email?.charAt(0).toUpperCase() || 'U'}
+                      </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 flex gap-2">
                       <Input
                         value={commentContent}
                         onChange={(e) => setCommentContent(e.target.value)}
                         placeholder={t('writeComment')}
-                        onKeyDown={(e) => e.key === 'Enter' && handlePostComment()}
+                        onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handlePostComment()}
                       />
-                      <Button onClick={handlePostComment} size="icon" className="bg-purple-500">
+                      <Button onClick={handlePostComment} disabled={!commentContent.trim()}>
                         <Send className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
 
+                  {/* Comments List */}
                   {loadingComments ? (
                     <div className="flex justify-center py-8">
-                      <Loader2 className="h-6 w-6 animate-spin text-purple-500" />
+                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    </div>
+                  ) : comments.length === 0 ? (
+                    <div className="text-center py-8 text-gray-400">
+                      <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p>{t('noComments')}</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
                       {comments.map((comment) => (
                         <div key={comment.id} className="space-y-3">
                           <div className="flex gap-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage src={comment.author.avatar} />
+                            <Avatar className="h-8 w-8 shrink-0">
+                              <AvatarImage src={comment.author.avatar || ''} />
                               <AvatarFallback className="bg-gray-100 text-gray-600 text-sm">
-                                {comment.author.nickname.charAt(0)}
+                                {(comment.author.name || 'U').charAt(0).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium text-sm">{comment.author.nickname}</span>
-                                {comment.author.isVerified && <CheckCircle className="h-3 w-3 text-blue-500" />}
-                                <span className="text-xs text-gray-400">{formatDate(comment.createdAt)}</span>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-medium text-sm">
+                                  {comment.author.name || t('anonymous')}
+                                </span>
+                                {comment.author.isVerified && (
+                                  <CheckCircle className="h-3 w-3 text-blue-500" />
+                                )}
+                                <span className="text-xs text-gray-400">
+                                  {formatDate(comment.createdAt)}
+                                </span>
                               </div>
-                              <p className="text-gray-700 text-sm mt-1">{comment.content}</p>
+                              <p className="text-gray-700 text-sm">{comment.content}</p>
                             </div>
                           </div>
                           {comment.replies && comment.replies.length > 0 && (
-                            <div className="ml-11 space-y-3">
+                            <div className="ml-11 space-y-3 pl-3 border-l-2 border-gray-100">
                               {comment.replies.map((reply) => (
                                 <div key={reply.id} className="flex gap-3">
-                                  <Avatar className="h-6 w-6">
-                                    <AvatarImage src={reply.author.avatar} />
+                                  <Avatar className="h-6 w-6 shrink-0">
+                                    <AvatarImage src={reply.author.avatar || ''} />
                                     <AvatarFallback className="bg-gray-100 text-gray-600 text-xs">
-                                      {reply.author.nickname.charAt(0)}
+                                      {(reply.author.name || 'U').charAt(0).toUpperCase()}
                                     </AvatarFallback>
                                   </Avatar>
-                                  <div className="flex-1">
-                                    <div className="flex items-center gap-2">
-                                      <span className="font-medium text-sm">{reply.author.nickname}</span>
-                                      {reply.author.isVerified && <CheckCircle className="h-3 w-3 text-blue-500" />}
-                                      <span className="text-xs text-gray-400">{formatDate(reply.createdAt)}</span>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-0.5">
+                                      <span className="font-medium text-sm">
+                                        {reply.author.name || t('anonymous')}
+                                      </span>
+                                      {reply.author.isVerified && (
+                                        <CheckCircle className="h-3 w-3 text-blue-500" />
+                                      )}
+                                      <span className="text-xs text-gray-400">
+                                        {formatDate(reply.createdAt)}
+                                      </span>
                                     </div>
-                                    <p className="text-gray-700 text-sm mt-1">{reply.content}</p>
+                                    <p className="text-gray-700 text-sm">{reply.content}</p>
                                   </div>
                                 </div>
                               ))}
@@ -1167,37 +1578,51 @@ export default function ForumPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <UserPlus className="h-5 w-5 text-amber-500" />
-              {t('reviewApplications')}
+              {t('reviewAppsTitle')}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 mt-4">
             {applications.length === 0 ? (
-              <p className="text-center text-gray-500 py-8">{t('noApplications')}</p>
+              <p className="text-center text-gray-500 py-8">{t('noApps')}</p>
             ) : (
               applications.map((app) => (
-                <Card key={app.id} className="border">
+                <Card key={app.id}>
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
                       <Avatar className="h-10 w-10">
-                        <AvatarImage src={app.user.avatar} />
-                        <AvatarFallback className="bg-purple-100 text-purple-600">
-                          {app.user.nickname.charAt(0)}
+                        <AvatarImage src={app.applicant.avatar || ''} />
+                        <AvatarFallback className="bg-primary/10 text-primary">
+                          {(app.applicant.name || 'U').charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{app.user.nickname}</span>
-                          {app.user.isVerified && <CheckCircle className="h-4 w-4 text-blue-500" />}
-                          <Badge variant={
-                            app.status === 'ACCEPTED' ? 'default' :
-                            app.status === 'REJECTED' ? 'destructive' : 'secondary'
-                          }>
-                            {app.status === 'ACCEPTED' ? '已接受' :
-                             app.status === 'REJECTED' ? '已拒绝' : '待处理'}
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-medium">
+                            {app.applicant.name || t('anonymous')}
+                          </span>
+                          {app.applicant.isVerified && (
+                            <CheckCircle className="h-4 w-4 text-blue-500" />
+                          )}
+                          <Badge
+                            variant={
+                              app.status === 'ACCEPTED'
+                                ? 'default'
+                                : app.status === 'REJECTED'
+                                  ? 'destructive'
+                                  : 'secondary'
+                            }
+                          >
+                            {app.status === 'ACCEPTED'
+                              ? t('appApproved')
+                              : app.status === 'REJECTED'
+                                ? t('appDenied')
+                                : t('appWaiting')}
                           </Badge>
                         </div>
-                        <p className="text-sm text-gray-600 mt-1">{app.message}</p>
-                        <div className="text-xs text-gray-400 mt-1">{formatDate(app.createdAt)}</div>
+                        <p className="text-sm text-gray-600">
+                          {app.message || t('noAdditionalInfo')}
+                        </p>
+                        <span className="text-xs text-gray-400">{formatDate(app.createdAt)}</span>
                       </div>
                       {app.status === 'PENDING' && (
                         <div className="flex gap-2">
@@ -1227,7 +1652,69 @@ export default function ForumPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Report Dialog */}
+      <ReportDialog
+        open={reportTarget !== null}
+        onOpenChange={(open) => !open && setReportTarget(null)}
+        targetType={reportTarget?.type || 'POST'}
+        targetId={reportTarget?.id || ''}
+      />
+
+      {/* AI 助手触发按钮 */}
+      <motion.button
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={() => setShowAiPanel(true)}
+        className={`fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg hover:bg-primary/90 transition-colors ${showAiPanel ? 'hidden' : ''}`}
+      >
+        <Bot className="h-6 w-6" />
+      </motion.button>
+
+      {/* AI 助手面板 */}
+      <AiAssistantPanel
+        isOpen={showAiPanel}
+        onClose={() => setShowAiPanel(false)}
+        title={t('aiTitle')}
+        description={t('aiDesc')}
+        contextActions={
+          [
+            {
+              id: 'search-posts',
+              label: t('aiActions.searchPosts'),
+              prompt: t('aiActions.searchPostsPrompt'),
+              icon: <Search className="h-4 w-4" />,
+            },
+            {
+              id: 'trending-topics',
+              label: t('aiActions.trendingTopics'),
+              prompt: t('aiActions.trendingTopicsPrompt'),
+              icon: <Flame className="h-4 w-4" />,
+            },
+            {
+              id: 'find-teammates',
+              label: t('aiActions.findTeammates'),
+              prompt: t('aiActions.findTeammatesPrompt'),
+              icon: <Users className="h-4 w-4" />,
+            },
+            {
+              id: 'ask-question',
+              label: t('aiActions.askQuestion'),
+              prompt: t('aiActions.askQuestionPrompt'),
+              icon: <HelpCircle className="h-4 w-4" />,
+            },
+            {
+              id: 'essay-feedback',
+              label: t('aiActions.essayHelp'),
+              prompt: t('aiActions.essayHelpPrompt'),
+              icon: <PenLine className="h-4 w-4" />,
+            },
+          ] as ContextAction[]
+        }
+        initialMessage={t('aiWelcome')}
+      />
     </div>
   );
 }
-

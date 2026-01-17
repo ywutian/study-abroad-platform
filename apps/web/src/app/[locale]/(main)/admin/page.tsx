@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale, useFormatter } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +10,13 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -37,12 +43,13 @@ import {
 } from '@/components/ui/alert-dialog';
 import { apiClient } from '@/lib/api';
 import { PageContainer, PageHeader } from '@/components/layout';
-import { LoadingState, CardSkeleton, ListSkeleton } from '@/components/ui/loading-state';
+import { CardSkeleton, ListSkeleton } from '@/components/ui/loading-state';
+import { EssayPromptManager } from '@/components/features';
 import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import { cn, getSchoolName, getSchoolSubName } from '@/lib/utils';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
+// date-fns format removed — using useFormatter() from next-intl instead
 import {
   Users,
   AlertTriangle,
@@ -62,6 +69,7 @@ import {
   Database,
   Calendar,
   Globe,
+  PenTool,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores';
 import { useRouter } from '@/lib/i18n/navigation';
@@ -124,6 +132,8 @@ interface School {
 
 export default function AdminPage() {
   const t = useTranslations();
+  const locale = useLocale();
+  const fmt = useFormatter();
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
@@ -139,48 +149,45 @@ export default function AdminPage() {
 
   const isAdmin = user?.role === 'ADMIN';
 
+  // apiClient 已自动解包 { success, data } -> data
   // Fetch stats
-  const { data: statsData, isLoading: statsLoading } = useQuery({
+  const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['adminStats'],
-    queryFn: () => apiClient.get<{ success: boolean; data: AdminStats }>('/admin/stats'),
+    queryFn: () => apiClient.get<AdminStats>('/admin/stats'),
     enabled: isAdmin,
   });
-  const stats = statsData?.data;
 
   // Fetch reports
-  const { data: reportsResponse, isLoading: reportsLoading } = useQuery({
+  const { data: reportsData, isLoading: reportsLoading } = useQuery({
     queryKey: ['adminReports', reportFilter],
     queryFn: () =>
-      apiClient.get<{ success: boolean; data: { data: Report[]; total: number } }>('/admin/reports', {
+      apiClient.get<{ data: Report[]; total: number }>('/admin/reports', {
         params: reportFilter ? { status: reportFilter } : {},
       }),
     enabled: isAdmin,
   });
-  const reportsData = reportsResponse?.data;
 
   // Fetch users
-  const { data: usersResponse, isLoading: usersLoading } = useQuery({
+  const { data: usersData, isLoading: usersLoading } = useQuery({
     queryKey: ['adminUsers', userSearch, userRoleFilter],
     queryFn: () => {
       const params: Record<string, string> = {};
       if (userSearch) params.search = userSearch;
       if (userRoleFilter && userRoleFilter !== 'ALL') params.role = userRoleFilter;
-      return apiClient.get<{ success: boolean; data: { data: User[]; total: number } }>('/admin/users', { params });
+      return apiClient.get<{ data: User[]; total: number }>('/admin/users', { params });
     },
     enabled: isAdmin,
   });
-  const usersData = usersResponse?.data;
 
   // Fetch schools
-  const { data: schoolsResponse, isLoading: schoolsLoading, refetch: refetchSchools } = useQuery({
+  const { data: schoolsData, isLoading: schoolsLoading } = useQuery({
     queryKey: ['adminSchools', schoolSearch],
     queryFn: () =>
-      apiClient.get<{ success: boolean; data: { items: School[]; total: number } }>('/schools', {
+      apiClient.get<{ items: School[]; total: number }>('/schools', {
         params: { search: schoolSearch ?? '', pageSize: '50' },
       }),
     enabled: isAdmin,
   });
-  const schoolsData = schoolsResponse?.data;
 
   // Update report mutation
   const updateReportMutation = useMutation({
@@ -240,7 +247,9 @@ export default function AdminPage() {
   // Scrape school websites
   const scrapeSchoolsMutation = useMutation({
     mutationFn: () =>
-      apiClient.post<{ success: string[]; failed: { school: string; error: string }[] }>('/schools/scrape/all'),
+      apiClient.post<{ success: string[]; failed: { school: string; error: string }[] }>(
+        '/schools/scrape/all'
+      ),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['adminSchools'] });
       toast.success(t('admin.toast.scrapeComplete', { count: data.success.length }));
@@ -253,11 +262,26 @@ export default function AdminPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'PENDING':
-        return <Badge variant="warning" className="gap-1"><Clock className="h-3 w-3" />{t('admin.status.pending')}</Badge>;
+        return (
+          <Badge variant="warning" className="gap-1">
+            <Clock className="h-3 w-3" />
+            {t('admin.status.pending')}
+          </Badge>
+        );
       case 'REVIEWED':
-        return <Badge variant="info" className="gap-1"><CheckCircle className="h-3 w-3" />{t('admin.status.reviewed')}</Badge>;
+        return (
+          <Badge variant="info" className="gap-1">
+            <CheckCircle className="h-3 w-3" />
+            {t('admin.status.reviewed')}
+          </Badge>
+        );
       case 'RESOLVED':
-        return <Badge variant="success" className="gap-1"><CheckCircle className="h-3 w-3" />{t('admin.status.resolved')}</Badge>;
+        return (
+          <Badge variant="success" className="gap-1">
+            <CheckCircle className="h-3 w-3" />
+            {t('admin.status.resolved')}
+          </Badge>
+        );
       default:
         return <Badge>{status}</Badge>;
     }
@@ -266,9 +290,9 @@ export default function AdminPage() {
   const getRoleBadge = (role: string) => {
     switch (role) {
       case 'ADMIN':
-        return <Badge variant="gradient-purple">{t('admin.roles.admin')}</Badge>;
+        return <Badge variant="purple">{t('admin.roles.admin')}</Badge>;
       case 'VERIFIED':
-        return <Badge variant="gradient-success">{t('admin.roles.verified')}</Badge>;
+        return <Badge variant="success">{t('admin.roles.verified')}</Badge>;
       default:
         return <Badge variant="secondary">{t('admin.roles.user')}</Badge>;
     }
@@ -276,11 +300,16 @@ export default function AdminPage() {
 
   const getTargetTypeName = (type: string) => {
     switch (type) {
-      case 'USER': return t('admin.targetTypes.user');
-      case 'MESSAGE': return t('admin.targetTypes.message');
-      case 'CASE': return t('admin.targetTypes.case');
-      case 'REVIEW': return t('admin.targetTypes.review');
-      default: return type;
+      case 'USER':
+        return t('admin.targetTypes.user');
+      case 'MESSAGE':
+        return t('admin.targetTypes.message');
+      case 'CASE':
+        return t('admin.targetTypes.case');
+      case 'REVIEW':
+        return t('admin.targetTypes.review');
+      default:
+        return type;
     }
   };
 
@@ -303,93 +332,256 @@ export default function AdminPage() {
         description={t('admin.description')}
         icon={Shield}
         color="violet"
-        stats={stats ? [
-          { label: t('admin.stats.totalUsers'), value: stats.totalUsers, icon: Users, color: 'text-blue-500' },
-          { label: t('admin.stats.totalCases'), value: stats.totalCases, icon: FileText, color: 'text-emerald-500' },
-          { label: t('admin.stats.pendingReports'), value: stats.pendingReports, icon: AlertTriangle, color: 'text-amber-500' },
-          { label: t('admin.stats.totalReviews'), value: stats.totalReviews, icon: UserCheck, color: 'text-violet-500' },
-        ] : undefined}
+        stats={
+          stats
+            ? [
+                {
+                  label: t('admin.stats.totalUsers'),
+                  value: stats.totalUsers,
+                  icon: Users,
+                  color: 'text-blue-500',
+                },
+                {
+                  label: t('admin.stats.totalCases'),
+                  value: stats.totalCases,
+                  icon: FileText,
+                  color: 'text-emerald-500',
+                },
+                {
+                  label: t('admin.stats.pendingReports'),
+                  value: stats.pendingReports,
+                  icon: AlertTriangle,
+                  color: 'text-amber-500',
+                },
+                {
+                  label: t('admin.stats.totalReviews'),
+                  value: stats.totalReviews,
+                  icon: UserCheck,
+                  color: 'text-primary',
+                },
+              ]
+            : undefined
+        }
       />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-6 bg-muted/50">
-          <TabsTrigger value="overview" className="gap-2 data-[state=active]:bg-violet-500/10 data-[state=active]:text-violet-600">
+          <TabsTrigger
+            value="overview"
+            className="gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+          >
             <BarChart3 className="h-4 w-4" />
             <span className="hidden sm:inline">{t('admin.tabs.overview')}</span>
           </TabsTrigger>
-          <TabsTrigger value="reports" className="gap-2 data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600">
+          <TabsTrigger
+            value="reports"
+            className="gap-2 data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600"
+          >
             <AlertTriangle className="h-4 w-4" />
             <span className="hidden sm:inline">{t('admin.tabs.reports')}</span>
-            {stats?.pendingReports ? (
-              <Badge variant="warning">{stats.pendingReports}</Badge>
-            ) : null}
+            {stats?.pendingReports ? <Badge variant="warning">{stats.pendingReports}</Badge> : null}
           </TabsTrigger>
-          <TabsTrigger value="users" className="gap-2 data-[state=active]:bg-blue-500/10 data-[state=active]:text-blue-600">
+          <TabsTrigger
+            value="users"
+            className="gap-2 data-[state=active]:bg-blue-500/10 data-[state=active]:text-blue-600"
+          >
             <Users className="h-4 w-4" />
             <span className="hidden sm:inline">{t('admin.tabs.users')}</span>
           </TabsTrigger>
-          <TabsTrigger value="schools" className="gap-2 data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-600">
+          <TabsTrigger
+            value="schools"
+            className="gap-2 data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-600"
+          >
             <GraduationCap className="h-4 w-4" />
             <span className="hidden sm:inline">{t('admin.tabs.data')}</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="essays"
+            className="gap-2 data-[state=active]:bg-pink-500/10 data-[state=active]:text-pink-600"
+          >
+            <PenTool className="h-4 w-4" />
+            <span className="hidden sm:inline">{t('admin.tabs.essays')}</span>
           </TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
-        <TabsContent value="overview">
+        <TabsContent value="overview" className="space-y-6">
+          {/* 统计卡片 */}
           {statsLoading ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {[...Array(4)].map((_, i) => <CardSkeleton key={i} />)}
+              {[...Array(4)].map((_, i) => (
+                <CardSkeleton key={i} />
+              ))}
             </div>
           ) : stats ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {[
-                { title: t('admin.stats.totalUsers'), value: stats.totalUsers, sub: `${stats.verifiedUsers} ${t('admin.roles.verified')}`, icon: Users, color: 'blue' },
-                { title: t('admin.stats.totalCases'), value: stats.totalCases, icon: FileText, color: 'emerald' },
-                { title: t('admin.stats.pendingReports'), value: stats.pendingReports, icon: AlertTriangle, color: 'amber' },
-                { title: t('admin.stats.totalReviews'), value: stats.totalReviews, icon: UserCheck, color: 'violet' },
-              ].map((stat, index) => {
-                const StatIcon = stat.icon;
-                return (
+            <>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {[
+                  {
+                    title: t('admin.stats.totalUsers'),
+                    value: stats.totalUsers,
+                    sub: `${stats.verifiedUsers} ${t('admin.roles.verified')}`,
+                    icon: Users,
+                    color: 'blue',
+                    tab: 'users',
+                  },
+                  {
+                    title: t('admin.stats.totalCases'),
+                    value: stats.totalCases,
+                    icon: FileText,
+                    color: 'emerald',
+                    tab: null,
+                  },
+                  {
+                    title: t('admin.stats.pendingReports'),
+                    value: stats.pendingReports,
+                    icon: AlertTriangle,
+                    color: 'amber',
+                    tab: 'reports',
+                  },
+                  {
+                    title: t('admin.stats.totalReviews'),
+                    value: stats.totalReviews,
+                    icon: UserCheck,
+                    color: 'violet',
+                    tab: null,
+                  },
+                ].map((stat, index) => {
+                  const StatIcon = stat.icon;
+                  return (
+                    <motion.div
+                      key={stat.title}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <Card
+                        className={cn(
+                          'overflow-hidden transition-shadow',
+                          stat.tab && 'cursor-pointer hover:shadow-md'
+                        )}
+                        onClick={() => stat.tab && setActiveTab(stat.tab)}
+                      >
+                        <div
+                          className={cn('h-1 bg-gradient-to-r', {
+                            'bg-primary': stat.color === 'blue' || stat.color === 'violet',
+                            'bg-success': stat.color === 'emerald',
+                            'bg-warning': stat.color === 'amber',
+                          })}
+                        />
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                          <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                          <div
+                            className={cn('flex h-8 w-8 items-center justify-center rounded-lg', {
+                              'bg-blue-500/10 text-blue-500': stat.color === 'blue',
+                              'bg-emerald-500/10 text-emerald-500': stat.color === 'emerald',
+                              'bg-amber-500/10 text-amber-500': stat.color === 'amber',
+                              'bg-primary/10 text-primary': stat.color === 'violet',
+                            })}
+                          >
+                            <StatIcon className="h-4 w-4" />
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div
+                            className={cn('text-3xl font-bold', {
+                              'text-blue-600': stat.color === 'blue',
+                              'text-emerald-600': stat.color === 'emerald',
+                              'text-amber-600': stat.color === 'amber',
+                              'text-primary': stat.color === 'violet',
+                            })}
+                          >
+                            {stat.value}
+                          </div>
+                          {stat.sub && (
+                            <p className="text-xs text-muted-foreground mt-1">{stat.sub}</p>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              {/* 快捷操作 */}
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {/* 待处理事项 */}
+                {stats.pendingReports > 0 && (
                   <motion.div
-                    key={stat.title}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
+                    transition={{ delay: 0.5 }}
                   >
-                    <Card className="overflow-hidden">
-                      <div className={cn('h-1 bg-gradient-to-r', {
-                        'from-blue-500 to-cyan-500': stat.color === 'blue',
-                        'from-emerald-500 to-teal-500': stat.color === 'emerald',
-                        'from-amber-500 to-yellow-500': stat.color === 'amber',
-                        'from-violet-500 to-purple-500': stat.color === 'violet',
-                      })} />
-                      <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-                        <div className={cn('flex h-8 w-8 items-center justify-center rounded-lg', {
-                          'bg-blue-500/10 text-blue-500': stat.color === 'blue',
-                          'bg-emerald-500/10 text-emerald-500': stat.color === 'emerald',
-                          'bg-amber-500/10 text-amber-500': stat.color === 'amber',
-                          'bg-violet-500/10 text-violet-500': stat.color === 'violet',
-                        })}>
-                          <StatIcon className="h-4 w-4" />
+                    <Card className="border-amber-500/30 bg-amber-500/5">
+                      <CardContent className="flex items-center gap-4 p-4">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10">
+                          <AlertTriangle className="h-6 w-6 text-amber-500" />
                         </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className={cn('text-3xl font-bold', {
-                          'text-blue-600': stat.color === 'blue',
-                          'text-emerald-600': stat.color === 'emerald',
-                          'text-amber-600': stat.color === 'amber',
-                          'text-violet-600': stat.color === 'violet',
-                        })}>{stat.value}</div>
-                        {stat.sub && (
-                          <p className="text-xs text-muted-foreground mt-1">{stat.sub}</p>
-                        )}
+                        <div className="flex-1">
+                          <p className="font-semibold text-amber-700 dark:text-amber-400">
+                            {stats.pendingReports} {t('admin.overview.pendingReports')}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {t('admin.overview.needsAttention')}
+                          </p>
+                        </div>
+                        <Button size="sm" variant="outline" onClick={() => setActiveTab('reports')}>
+                          {t('admin.overview.handle')}
+                        </Button>
                       </CardContent>
                     </Card>
                   </motion.div>
-                );
-              })}
-            </div>
+                )}
+
+                {/* 数据同步入口 */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                >
+                  <Card>
+                    <CardContent className="flex items-center gap-4 p-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10">
+                        <Database className="h-6 w-6 text-emerald-500" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-semibold">{t('admin.overview.dataManagement')}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {schoolsData?.total || 0} {t('admin.overview.schoolsInDb')}
+                        </p>
+                      </div>
+                      <Button size="sm" variant="outline" onClick={() => setActiveTab('schools')}>
+                        {t('admin.overview.manage')}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+
+                {/* 文书管理入口 */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7 }}
+                >
+                  <Card>
+                    <CardContent className="flex items-center gap-4 p-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-pink-500/10">
+                        <PenTool className="h-6 w-6 text-pink-500" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-semibold">{t('admin.tabs.essays')}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {t('admin.overview.essayDesc')}
+                        </p>
+                      </div>
+                      <Button size="sm" variant="outline" onClick={() => setActiveTab('essays')}>
+                        {t('admin.overview.manage')}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </div>
+            </>
           ) : null}
         </TabsContent>
 
@@ -410,7 +602,9 @@ export default function AdminPage() {
 
           {reportsLoading ? (
             <div className="space-y-4">
-              {[...Array(3)].map((_, i) => <CardSkeleton key={i} />)}
+              {[...Array(3)].map((_, i) => (
+                <CardSkeleton key={i} />
+              ))}
             </div>
           ) : reportsData?.data && reportsData.data.length > 0 ? (
             <div className="space-y-4">
@@ -428,7 +622,8 @@ export default function AdminPage() {
                           <p className="text-sm text-muted-foreground">{report.detail}</p>
                         )}
                         <p className="text-xs text-muted-foreground">
-                          {t('admin.reports.reporter')}: {report.reporter.email} · {format(new Date(report.createdAt), 'yyyy-MM-dd HH:mm')}
+                          {t('admin.reports.reporter')}: {report.reporter.email} ·{' '}
+                          {fmt.dateTime(new Date(report.createdAt), 'medium')}
                         </p>
                       </div>
                       {report.status === 'PENDING' && (
@@ -436,14 +631,13 @@ export default function AdminPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => updateReportMutation.mutate({ id: report.id, status: 'REVIEWED' })}
+                            onClick={() =>
+                              updateReportMutation.mutate({ id: report.id, status: 'REVIEWED' })
+                            }
                           >
                             {t('admin.reports.markReviewed')}
                           </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => setReportToResolve(report)}
-                          >
+                          <Button size="sm" onClick={() => setReportToResolve(report)}>
                             {t('admin.reports.resolve')}
                           </Button>
                         </div>
@@ -498,7 +692,9 @@ export default function AdminPage() {
                       <TableHead>{t('admin.users.email')}</TableHead>
                       <TableHead>{t('admin.users.role')}</TableHead>
                       <TableHead>{t('common.status')}</TableHead>
-                      <TableHead>{t('admin.users.cases')}/{t('admin.users.reviews')}</TableHead>
+                      <TableHead>
+                        {t('admin.users.cases')}/{t('admin.users.reviews')}
+                      </TableHead>
                       <TableHead>{t('admin.users.joinDate')}</TableHead>
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
@@ -532,7 +728,7 @@ export default function AdminPage() {
                           {u._count.admissionCases} / {u._count.reviewsGiven}
                         </TableCell>
                         <TableCell className="text-muted-foreground">
-                          {format(new Date(u.createdAt), 'yyyy-MM-dd')}
+                          {fmt.dateTime(new Date(u.createdAt), 'medium')}
                         </TableCell>
                         <TableCell>
                           <DropdownMenu>
@@ -543,14 +739,18 @@ export default function AdminPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem
-                                onClick={() => updateUserRoleMutation.mutate({ userId: u.id, role: 'VERIFIED' })}
+                                onClick={() =>
+                                  updateUserRoleMutation.mutate({ userId: u.id, role: 'VERIFIED' })
+                                }
                                 disabled={u.role === 'VERIFIED' || u.role === 'ADMIN'}
                               >
                                 <UserCheck className="mr-2 h-4 w-4" />
                                 {t('admin.users.setVerified')}
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => updateUserRoleMutation.mutate({ userId: u.id, role: 'USER' })}
+                                onClick={() =>
+                                  updateUserRoleMutation.mutate({ userId: u.id, role: 'USER' })
+                                }
                                 disabled={u.role === 'USER' || u.role === 'ADMIN'}
                               >
                                 <Users className="mr-2 h-4 w-4" />
@@ -592,9 +792,7 @@ export default function AdminPage() {
                   <Database className="h-4 w-4" />
                   {t('admin.data.syncScorecard')}
                 </CardTitle>
-                <CardDescription>
-                  {t('admin.data.syncScorecardDesc')}
-                </CardDescription>
+                <CardDescription>{t('admin.data.syncScorecardDesc')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-2">
@@ -629,9 +827,7 @@ export default function AdminPage() {
                   <Globe className="h-4 w-4" />
                   {t('admin.data.scrapeSchools')}
                 </CardTitle>
-                <CardDescription>
-                  {t('admin.data.scrapeSchoolsDesc')}
-                </CardDescription>
+                <CardDescription>{t('admin.data.scrapeSchoolsDesc')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button
@@ -655,14 +851,10 @@ export default function AdminPage() {
                   <Calendar className="h-4 w-4" />
                   {t('admin.data.status')}
                 </CardTitle>
-                <CardDescription>
-                  {t('admin.data.statusDesc')}
-                </CardDescription>
+                <CardDescription>{t('admin.data.statusDesc')}</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {schoolsData?.total || 0}
-                </div>
+                <div className="text-2xl font-bold">{schoolsData?.total || 0}</div>
                 <p className="text-xs text-muted-foreground mt-1">
                   {t('admin.data.cycle')}: 2025-2026
                 </p>
@@ -712,9 +904,11 @@ export default function AdminPage() {
                         </TableCell>
                         <TableCell>
                           <div>
-                            <div className="font-medium">{school.nameZh || school.name}</div>
-                            {school.nameZh && (
-                              <div className="text-xs text-muted-foreground">{school.name}</div>
+                            <div className="font-medium">{getSchoolName(school, locale)}</div>
+                            {getSchoolSubName(school, locale) && (
+                              <div className="text-xs text-muted-foreground">
+                                {getSchoolSubName(school, locale)}
+                              </div>
                             )}
                           </div>
                         </TableCell>
@@ -767,6 +961,11 @@ export default function AdminPage() {
             />
           )}
         </TabsContent>
+
+        {/* Essays Tab */}
+        <TabsContent value="essays">
+          <EssayPromptManager />
+        </TabsContent>
       </Tabs>
 
       {/* Resolve Report Dialog */}
@@ -774,9 +973,7 @@ export default function AdminPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('admin.dialogs.resolveReport')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('admin.dialogs.resolveReportDesc')}
-            </AlertDialogDescription>
+            <AlertDialogDescription>{t('admin.dialogs.resolveReportDesc')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('admin.dialogs.cancel')}</AlertDialogCancel>
@@ -802,9 +999,7 @@ export default function AdminPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('admin.dialogs.deleteUserTitle')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('admin.dialogs.deleteUserDesc')}
-            </AlertDialogDescription>
+            <AlertDialogDescription>{t('admin.dialogs.deleteUserDesc')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('admin.dialogs.cancel')}</AlertDialogCancel>
@@ -821,4 +1016,3 @@ export default function AdminPage() {
     </PageContainer>
   );
 }
-

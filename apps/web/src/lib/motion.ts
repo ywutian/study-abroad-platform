@@ -148,7 +148,7 @@ export const staggerItemSlide: Variants = {
 
 export const fadeIn: Variants = {
   hidden: { opacity: 0 },
-  visible: { 
+  visible: {
     opacity: 1,
     transition: transitions.easeOut,
   },
@@ -443,12 +443,3 @@ export const withDelay = (variants: Variants, delay: number): Variants => {
 export const withIndexDelay = (index: number, baseDelay: number = 0.05) => ({
   transition: { delay: index * baseDelay },
 });
-
-
-
-
-
-
-
-
-

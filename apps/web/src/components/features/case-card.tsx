@@ -41,7 +41,7 @@ export function CaseCard({
   schoolName,
   year,
   round = 'RD',
-  major = 'Undeclared',
+  major,
   result,
   gpa,
   sat,
@@ -52,6 +52,7 @@ export function CaseCard({
   onClick,
 }: CaseCardProps) {
   const t = useTranslations('cases');
+  const tc = useTranslations('common');
   const tv = useTranslations('verification');
   const resultStyle = resultStyleConfig[result];
   const resultLabel = t(`result.${resultKeyMap[result]}`);
@@ -80,7 +81,7 @@ export function CaseCard({
               )}
             </div>
             <p className="text-sm text-muted-foreground">
-              {year} · {round} · {major}
+              {year} · {round} · {major || tc('notSpecified')}
             </p>
           </div>
           <Badge variant="outline" className={cn('shrink-0', resultStyle)}>
@@ -127,8 +128,3 @@ export function CaseCard({
     </Card>
   );
 }
-
-
-
-
-

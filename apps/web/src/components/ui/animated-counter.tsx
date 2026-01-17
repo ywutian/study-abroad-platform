@@ -49,7 +49,7 @@ export function AnimatedCounter({
   // 格式化数字
   const formatNumber = (num: number): string => {
     if (formatter) return formatter(num);
-    
+
     const fixed = num.toFixed(decimals);
     if (separator) {
       const [integer, decimal] = fixed.split('.');
@@ -133,14 +133,7 @@ interface StatNumberProps {
   className?: string;
 }
 
-export function StatNumber({
-  value,
-  label,
-  prefix,
-  suffix,
-  trend,
-  className,
-}: StatNumberProps) {
+export function StatNumber({ value, label, prefix, suffix, trend, className }: StatNumberProps) {
   return (
     <div className={cn('text-center', className)}>
       <div className="text-3xl font-bold tracking-tight">
@@ -203,11 +196,3 @@ export function ProgressNumber({
     </div>
   );
 }
-
-
-
-
-
-
-
-

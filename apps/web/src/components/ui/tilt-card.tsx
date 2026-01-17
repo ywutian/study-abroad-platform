@@ -89,11 +89,7 @@ const TiltCard = forwardRef<HTMLDivElement, TiltCardProps>(
     }
 
     return (
-      <div
-        ref={ref}
-        className={cn('relative', containerClassName)}
-        style={{ perspective }}
-      >
+      <div ref={ref} className={cn('relative', containerClassName)} style={{ perspective }}>
         <motion.div
           ref={cardRef}
           className={cn(
@@ -271,12 +267,3 @@ const Magnetic = forwardRef<HTMLDivElement, MagneticProps>(
 Magnetic.displayName = 'Magnetic';
 
 export { TiltCard, HoverCard, Magnetic };
-
-
-
-
-
-
-
-
-

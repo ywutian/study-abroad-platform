@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import {
@@ -16,64 +17,64 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-type MilestoneType = 
-  | 'profile_complete' 
-  | 'first_prediction' 
-  | 'first_essay' 
-  | 'school_added' 
-  | 'streak' 
+type MilestoneType =
+  | 'profile_complete'
+  | 'first_prediction'
+  | 'first_essay'
+  | 'school_added'
+  | 'streak'
   | 'level_up'
   | 'achievement';
 
 interface MilestoneConfig {
   icon: React.ElementType;
   gradient: string;
-  title: string;
-  message: string;
+  titleKey: string;
+  messageKey: string;
 }
 
 const milestoneConfigs: Record<MilestoneType, MilestoneConfig> = {
   profile_complete: {
     icon: CheckCircle2,
-    gradient: 'from-emerald-500 to-teal-500',
-    title: '档案完善！',
-    message: '太棒了！你已经完成了个人档案，AI 现在可以更好地为你推荐院校了。',
+    gradient: 'bg-success',
+    titleKey: 'profileComplete.title',
+    messageKey: 'profileComplete.message',
   },
   first_prediction: {
     icon: Target,
-    gradient: 'from-blue-500 to-cyan-500',
-    title: '首次预测！',
-    message: '恭喜完成第一次录取预测！继续探索更多目标院校吧。',
+    gradient: 'bg-primary',
+    titleKey: 'firstPrediction.title',
+    messageKey: 'firstPrediction.message',
   },
   first_essay: {
     icon: Sparkles,
-    gradient: 'from-violet-500 to-purple-500',
-    title: '文书起航！',
-    message: '你的第一篇文书已创建！继续打磨，让招生官看到你的闪光点。',
+    gradient: 'bg-primary',
+    titleKey: 'firstEssay.title',
+    messageKey: 'firstEssay.message',
   },
   school_added: {
     icon: Star,
-    gradient: 'from-amber-500 to-orange-500',
-    title: '目标确定！',
-    message: '已添加新的目标院校！距离梦想又近了一步。',
+    gradient: 'bg-warning',
+    titleKey: 'schoolAdded.title',
+    messageKey: 'schoolAdded.message',
   },
   streak: {
     icon: Flame,
     gradient: 'from-orange-500 to-red-500',
-    title: '连续打卡！',
-    message: '保持这份热情，坚持就是胜利！',
+    titleKey: 'streak.title',
+    messageKey: 'streak.message',
   },
   level_up: {
     icon: Medal,
     gradient: 'from-yellow-500 to-amber-500',
-    title: '等级提升！',
-    message: '你的努力得到了回报，继续加油！',
+    titleKey: 'levelUp.title',
+    messageKey: 'levelUp.message',
   },
   achievement: {
     icon: Trophy,
-    gradient: 'from-rose-500 to-pink-500',
-    title: '成就解锁！',
-    message: '你解锁了一个新成就！继续探索更多。',
+    gradient: 'bg-destructive',
+    titleKey: 'achievement.title',
+    messageKey: 'achievement.message',
   },
 };
 
@@ -98,10 +99,11 @@ export function MilestoneCelebration({
   autoClose = true,
   autoCloseDelay = 5000,
 }: MilestoneCelebrationProps) {
+  const t = useTranslations('milestone');
   const config = milestoneConfigs[type] || milestoneConfigs.achievement;
   const Icon = config.icon;
-  const displayMessage = message || description;
-
+  const displayTitle = title || t(config.titleKey);
+  const displayMessage = message || description || t(config.messageKey);
 
   useEffect(() => {
     if (show && autoClose) {
@@ -135,9 +137,13 @@ export function MilestoneCelebration({
                 key={i}
                 className={cn(
                   'absolute w-3 h-3 rounded-full',
-                  i % 4 === 0 ? 'bg-amber-400' :
-                  i % 4 === 1 ? 'bg-rose-400' :
-                  i % 4 === 2 ? 'bg-emerald-400' : 'bg-blue-400'
+                  i % 4 === 0
+                    ? 'bg-amber-400'
+                    : i % 4 === 1
+                      ? 'bg-rose-400'
+                      : i % 4 === 2
+                        ? 'bg-emerald-400'
+                        : 'bg-blue-400'
                 )}
                 initial={{
                   x: '50%',
@@ -168,7 +174,7 @@ export function MilestoneCelebration({
             exit={{ scale: 0.8, y: 20, opacity: 0 }}
             transition={{ type: 'spring', damping: 20, stiffness: 300 }}
           >
-            <div className="relative overflow-hidden rounded-3xl bg-card border shadow-2xl">
+            <div className="relative overflow-hidden rounded-xl bg-card border shadow-2xl">
               {/* 顶部渐变装饰 */}
               <div className={cn('h-2 bg-gradient-to-r', config.gradient)} />
 
@@ -234,7 +240,7 @@ export function MilestoneCelebration({
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.2 }}
                 >
-                  {title || config.title}
+                  {displayTitle}
                 </motion.h3>
 
                 {/* 消息 */}
@@ -244,7 +250,7 @@ export function MilestoneCelebration({
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.3 }}
                 >
-                  {displayMessage || config.message}
+                  {displayMessage}
                 </motion.p>
 
                 {/* 继续按钮 */}
@@ -255,12 +261,9 @@ export function MilestoneCelebration({
                 >
                   <Button
                     onClick={onClose}
-                    className={cn(
-                      'mt-6 px-8 bg-gradient-to-r text-white',
-                      config.gradient
-                    )}
+                    className={cn('mt-6 px-8 bg-gradient-to-r text-white', config.gradient)}
                   >
-                    继续前进 ✨
+                    {t('continue')} ✨
                   </Button>
                 </motion.div>
               </div>
@@ -280,12 +283,12 @@ export function useMilestoneCelebration() {
     message?: string;
   } | null>(null);
 
-  const celebrate = useCallback((
-    type: MilestoneType,
-    options?: { title?: string; message?: string }
-  ) => {
-    setMilestone({ type, ...options });
-  }, []);
+  const celebrate = useCallback(
+    (type: MilestoneType, options?: { title?: string; message?: string }) => {
+      setMilestone({ type, ...options });
+    },
+    []
+  );
 
   const close = useCallback(() => {
     setMilestone(null);
@@ -306,4 +309,3 @@ export function useMilestoneCelebration() {
     ) : null,
   };
 }
-

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { useTranslations } from 'next-intl';
+import { useState, useMemo, useRef } from 'react';
+import { useTranslations, useFormatter } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +11,17 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { AIScoreRadar, ScoreDetailList, type ScoreDimension } from '@/components/features/essay-ai';
+import dynamic from 'next/dynamic';
+
+// Code-split heavy AI visualization components
+const AIScoreRadar = dynamic(
+  () => import('@/components/features/essay-ai').then((m) => ({ default: m.AIScoreRadar })),
+  { ssr: false }
+);
+const ScoreDetailList = dynamic(
+  () => import('@/components/features/essay-ai').then((m) => ({ default: m.ScoreDetailList })),
+  { ssr: false }
+);
 import {
   Dialog,
   DialogContent,
@@ -46,7 +56,6 @@ import {
   Loader2,
   Calendar,
   Hash,
-  ExternalLink,
   Wand2,
   RefreshCw,
   PenTool,
@@ -54,7 +63,10 @@ import {
   Copy,
   Check,
   ChevronDown,
+  Lightbulb,
+  HelpCircle,
 } from 'lucide-react';
+import { AiAssistantPanel } from '@/components/features/agent-chat';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -63,14 +75,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { format } from 'date-fns';
+// date-fns format removed — using useFormatter() from next-intl instead
 
 interface Essay {
   id: string;
@@ -111,6 +116,7 @@ interface OpeningResult {
 
 export default function EssaysPage() {
   const t = useTranslations();
+  const fmt = useFormatter();
   const queryClient = useQueryClient();
 
   const [selectedEssay, setSelectedEssay] = useState<Essay | null>(null);
@@ -123,20 +129,20 @@ export default function EssaysPage() {
   // AI 增强功能状态
   const [isPolishOpen, setIsPolishOpen] = useState(false);
   const [polishResult, setPolishResult] = useState<PolishResult | null>(null);
-  const [polishStyle, setPolishStyle] = useState<'formal' | 'vivid' | 'concise'>('formal');
-  
+  const [polishStyle] = useState<'formal' | 'vivid' | 'concise'>('formal');
+
   const [isRewriteOpen, setIsRewriteOpen] = useState(false);
   const [rewriteResult, setRewriteResult] = useState<RewriteResult | null>(null);
   const [selectedText, setSelectedText] = useState('');
   const [rewriteInstruction, setRewriteInstruction] = useState('');
-  
+
   const [isContinueOpen, setIsContinueOpen] = useState(false);
   const [continueResult, setContinueResult] = useState<ContinueResult | null>(null);
-  const [continueDirection, setContinueDirection] = useState('');
-  
+  const [continueDirection] = useState('');
+
   const [isOpeningOpen, setIsOpeningOpen] = useState(false);
   const [openingResult, setOpeningResult] = useState<OpeningResult | null>(null);
-  
+
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
@@ -145,17 +151,35 @@ export default function EssaysPage() {
     content: '',
   });
 
-  // Fetch essays
-  const { data: essaysData, isLoading } = useQuery({
-    queryKey: ['essays'],
-    queryFn: () => apiClient.get<{ success: boolean; data: Essay[] }>('/profiles/me/essays'),
+  // Store random offsets in ref so they're computed once on mount
+  const randomOffsetsRef = useRef({
+    originality: Math.random() * 2,
+    impact: Math.random() * 1.5,
+    relevance: Math.random() * 1,
   });
-  const essays = essaysData?.data;
+
+  // Memoize derived scores using stable random offsets
+  const derivedScores = useMemo(() => {
+    if (!reviewResult) return null;
+    const offsets = randomOffsetsRef.current;
+    return {
+      originality: Math.min(10, Math.max(0, reviewResult.overallScore - 1 + offsets.originality)),
+      impact: Math.min(10, Math.max(0, reviewResult.overallScore - 0.5 + offsets.impact)),
+      relevance: Math.min(10, Math.max(0, reviewResult.overallScore + offsets.relevance)),
+    };
+  }, [reviewResult]);
+
+  // Fetch essays
+  // apiClient 已自动解包 { success, data } -> data
+  const { data: essays, isLoading } = useQuery({
+    queryKey: ['essays'],
+    queryFn: () => apiClient.get<Essay[]>('/profiles/me/essays'),
+  });
 
   // Create essay
   const createMutation = useMutation({
     mutationFn: (data: { title: string; prompt?: string; content: string }) =>
-      apiClient.post<{ success: boolean; data: Essay }>('/profiles/me/essays', data),
+      apiClient.post<Essay>('/profiles/me/essays', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['essays'] });
       setIsFormOpen(false);
@@ -169,8 +193,13 @@ export default function EssaysPage() {
 
   // Update essay
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { title: string; prompt?: string; content: string } }) =>
-      apiClient.put<{ success: boolean; data: Essay }>(`/profiles/me/essays/${id}`, data),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: { title: string; prompt?: string; content: string };
+    }) => apiClient.put<Essay>(`/profiles/me/essays/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['essays'] });
       setIsFormOpen(false);
@@ -328,7 +357,10 @@ export default function EssaysPage() {
       toast.error(t('essays.toast.selectParagraph'));
       return;
     }
-    rewriteMutation.mutate({ paragraph: selectedText, instruction: rewriteInstruction || undefined });
+    rewriteMutation.mutate({
+      paragraph: selectedText,
+      instruction: rewriteInstruction || undefined,
+    });
   };
 
   const handleContinue = (essay: Essay) => {
@@ -368,7 +400,11 @@ export default function EssaysPage() {
       setSelectedEssay({ ...selectedEssay, content: polishResult.polished });
       updateMutation.mutate({
         id: selectedEssay.id,
-        data: { title: selectedEssay.title, prompt: selectedEssay.prompt, content: polishResult.polished },
+        data: {
+          title: selectedEssay.title,
+          prompt: selectedEssay.prompt,
+          content: polishResult.polished,
+        },
       });
       setIsPolishOpen(false);
       toast.success(t('essays.toast.polishApplied'));
@@ -399,7 +435,10 @@ export default function EssaysPage() {
         icon={PenTool}
         color="rose"
         actions={
-          <Button onClick={handleCreate} className="gap-2 bg-gradient-to-r from-rose-500 to-pink-500 hover:opacity-90 text-white shadow-md shadow-rose-500/25">
+          <Button
+            onClick={handleCreate}
+            className="gap-2 bg-destructive hover:opacity-90 text-white shadow-md "
+          >
             <Plus className="h-4 w-4" />
             {t('essays.new')}
           </Button>
@@ -410,7 +449,7 @@ export default function EssaysPage() {
         {/* Essay List */}
         <div className="lg:col-span-1">
           <Card className="overflow-hidden">
-            <div className="h-1 bg-gradient-to-r from-rose-500 to-pink-500" />
+            <div className="h-1 bg-destructive" />
             <CardHeader className="pb-2">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-rose-500/10">
@@ -434,7 +473,8 @@ export default function EssaysPage() {
                         className={cn(
                           'cursor-pointer rounded-xl border p-4 transition-all duration-200',
                           'hover:border-rose-500/40 hover:bg-rose-500/5 hover:shadow-sm',
-                          selectedEssay?.id === essay.id && 'border-rose-500 bg-rose-500/5 shadow-sm'
+                          selectedEssay?.id === essay.id &&
+                            'border-rose-500 bg-rose-500/5 shadow-sm'
                         )}
                         onClick={() => setSelectedEssay(essay)}
                       >
@@ -449,7 +489,7 @@ export default function EssaysPage() {
                         </p>
                         <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
                           <Calendar className="h-3 w-3" />
-                          {format(new Date(essay.updatedAt), 'yyyy-MM-dd HH:mm')}
+                          {fmt.dateTime(new Date(essay.updatedAt), 'medium')}
                         </div>
                       </motion.div>
                     ))}
@@ -470,18 +510,20 @@ export default function EssaysPage() {
         {/* Essay Detail / Editor */}
         <div className="lg:col-span-2">
           <Card className="h-full overflow-hidden">
-            <div className="h-1 bg-gradient-to-r from-violet-500 to-purple-500" />
+            <div className="h-1 bg-primary dark:bg-primary" />
             {selectedEssay ? (
               <>
                 <CardHeader className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                   <div className="flex items-start gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-violet-500/10">
-                      <Sparkles className="h-5 w-5 text-violet-500" />
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                      <Sparkles className="h-5 w-5 text-primary" />
                     </div>
                     <div className="space-y-1">
                       <CardTitle className="text-xl">{selectedEssay.title}</CardTitle>
                       {selectedEssay.prompt && (
-                        <CardDescription className="line-clamp-2">{selectedEssay.prompt}</CardDescription>
+                        <CardDescription className="line-clamp-2">
+                          {selectedEssay.prompt}
+                        </CardDescription>
                       )}
                     </div>
                   </div>
@@ -563,29 +605,34 @@ export default function EssaysPage() {
                   <div className="mb-4 flex gap-4 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Hash className="h-4 w-4" />
-                      {t('essays.wordCount', { count: selectedEssay.wordCount || getWordCount(selectedEssay.content) })}
+                      {t('essays.wordCount', {
+                        count: selectedEssay.wordCount || getWordCount(selectedEssay.content),
+                      })}
                     </span>
                     <span className="flex items-center gap-1">
                       <Calendar className="h-4 w-4" />
-                      {t('essays.updatedAt')} {format(new Date(selectedEssay.updatedAt), 'yyyy-MM-dd')}
+                      {t('essays.updatedAt')}{' '}
+                      {fmt.dateTime(new Date(selectedEssay.updatedAt), 'medium')}
                     </span>
                   </div>
                   <ScrollArea className="h-[400px] rounded-md border bg-muted/30 p-4">
-                    <p className="whitespace-pre-wrap text-sm leading-relaxed">{selectedEssay.content}</p>
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                      {selectedEssay.content}
+                    </p>
                   </ScrollArea>
                 </CardContent>
               </>
             ) : (
               <div className="flex h-[500px] flex-col items-center justify-center px-8 text-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500/10 to-purple-500/10 mb-6">
-                  <PenTool className="h-10 w-10 text-violet-500/60" />
+                <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-primary/10 mb-6">
+                  <PenTool className="h-10 w-10 text-primary/60" />
                 </div>
                 <p className="text-lg font-semibold">{t('essays.selectToView')}</p>
                 <p className="mt-2 text-sm text-muted-foreground max-w-sm">
                   {t('essays.clickNewToCreate')}
                 </p>
                 <Button
-                  className="mt-6 gap-2 bg-gradient-to-r from-violet-500 to-purple-500 hover:opacity-90 text-white"
+                  className="mt-6 gap-2 bg-primary dark:bg-primary hover:opacity-90 text-white"
                   onClick={handleCreate}
                 >
                   <Plus className="h-4 w-4" />
@@ -650,7 +697,12 @@ export default function EssaysPage() {
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={!formData.title || !formData.content || createMutation.isPending || updateMutation.isPending}
+              disabled={
+                !formData.title ||
+                !formData.content ||
+                createMutation.isPending ||
+                updateMutation.isPending
+              }
             >
               {(createMutation.isPending || updateMutation.isPending) && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -690,9 +742,7 @@ export default function EssaysPage() {
               <Sparkles className="h-5 w-5 text-primary" />
               {t('essays.dialog.reviewTitle')}
             </DialogTitle>
-            <DialogDescription>
-              {t('essayAi.review.description')}
-            </DialogDescription>
+            <DialogDescription>{t('essayAi.review.description')}</DialogDescription>
           </DialogHeader>
 
           {reviewResult && (
@@ -703,7 +753,7 @@ export default function EssaysPage() {
                   <TabsTrigger value="details">{t('essays.tabs.details')}</TabsTrigger>
                   <TabsTrigger value="suggestions">{t('essayAi.review.suggestions')}</TabsTrigger>
                 </TabsList>
-                
+
                 {/* Radar Chart View */}
                 <TabsContent value="radar" className="flex-1 mt-4">
                   <div className="flex justify-center py-4">
@@ -719,7 +769,7 @@ export default function EssaysPage() {
                         {
                           key: 'originality',
                           label: t('essayAi.radar.dimensions.originality'),
-                          score: Math.min(10, Math.max(0, reviewResult.overallScore - 1 + Math.random() * 2)),
+                          score: derivedScores?.originality ?? 0,
                           maxScore: 10,
                         },
                         {
@@ -739,13 +789,13 @@ export default function EssaysPage() {
                         {
                           key: 'impact',
                           label: t('essayAi.radar.dimensions.impact'),
-                          score: Math.min(10, Math.max(0, reviewResult.overallScore - 0.5 + Math.random() * 1.5)),
+                          score: derivedScores?.impact ?? 0,
                           maxScore: 10,
                         },
                         {
                           key: 'relevance',
                           label: t('essayAi.radar.dimensions.relevance'),
-                          score: Math.min(10, Math.max(0, reviewResult.overallScore + Math.random() * 1)),
+                          score: derivedScores?.relevance ?? 0,
                           maxScore: 10,
                         },
                       ]}
@@ -755,7 +805,7 @@ export default function EssaysPage() {
                     />
                   </div>
                 </TabsContent>
-                
+
                 {/* Detailed Scores View */}
                 <TabsContent value="details" className="flex-1 mt-4">
                   <ScrollArea className="h-[350px] pr-4">
@@ -786,7 +836,7 @@ export default function EssaysPage() {
                     />
                   </ScrollArea>
                 </TabsContent>
-                
+
                 {/* Suggestions View */}
                 <TabsContent value="suggestions" className="flex-1 mt-4">
                   <ScrollArea className="h-[350px] pr-4">
@@ -803,7 +853,9 @@ export default function EssaysPage() {
                             <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
                               {i + 1}
                             </div>
-                            <p className="text-sm text-muted-foreground leading-relaxed">{suggestion}</p>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                              {suggestion}
+                            </p>
                           </motion.div>
                         ))}
                       </div>
@@ -811,7 +863,9 @@ export default function EssaysPage() {
                       <div className="flex flex-col items-center justify-center h-full text-center py-12">
                         <Check className="h-12 w-12 text-emerald-500 mb-4" />
                         <p className="text-lg font-semibold">{t('essays.review.noSuggestions')}</p>
-                        <p className="text-sm text-muted-foreground mt-1">{t('essays.review.excellentWork')}</p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {t('essays.review.excellentWork')}
+                        </p>
                       </div>
                     )}
                   </ScrollArea>
@@ -838,9 +892,7 @@ export default function EssaysPage() {
               <Wand2 className="h-5 w-5 text-primary" />
               {t('essays.dialog.polishTitle')}
             </DialogTitle>
-            <DialogDescription>
-              {t('essays.dialog.polishDesc')}
-            </DialogDescription>
+            <DialogDescription>{t('essays.dialog.polishDesc')}</DialogDescription>
           </DialogHeader>
 
           {polishResult && (
@@ -848,9 +900,11 @@ export default function EssaysPage() {
               <Tabs defaultValue="result" className="h-full flex flex-col">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="result">{t('essays.tabs.polishedResult')}</TabsTrigger>
-                  <TabsTrigger value="changes">{t('essays.tabs.changeComparison')} ({polishResult.changes?.length || 0})</TabsTrigger>
+                  <TabsTrigger value="changes">
+                    {t('essays.tabs.changeComparison')} ({polishResult.changes?.length || 0})
+                  </TabsTrigger>
                 </TabsList>
-                
+
                 <TabsContent value="result" className="flex-1 mt-4">
                   <ScrollArea className="h-[350px] rounded-md border p-4 bg-muted/30">
                     <p className="whitespace-pre-wrap text-sm leading-relaxed">
@@ -858,23 +912,31 @@ export default function EssaysPage() {
                     </p>
                   </ScrollArea>
                 </TabsContent>
-                
+
                 <TabsContent value="changes" className="flex-1 mt-4">
                   <ScrollArea className="h-[350px]">
                     <div className="space-y-4">
                       {polishResult.changes?.map((change, i) => (
                         <div key={i} className="rounded-lg border p-3">
                           <div className="mb-2 flex items-center gap-2">
-                            <Badge variant="outline" className="text-xs">{t('essays.labels.change')} {i + 1}</Badge>
+                            <Badge variant="outline" className="text-xs">
+                              {t('essays.labels.change')} {i + 1}
+                            </Badge>
                             <span className="text-xs text-muted-foreground">{change.reason}</span>
                           </div>
                           <div className="grid gap-2 text-sm">
                             <div className="rounded bg-red-50 dark:bg-red-950/30 p-2">
-                              <span className="text-xs text-red-600 dark:text-red-400 font-medium">{t('essays.labels.original')}</span>
-                              <p className="mt-1 line-through text-muted-foreground">{change.original}</p>
+                              <span className="text-xs text-red-600 dark:text-red-400 font-medium">
+                                {t('essays.labels.original')}
+                              </span>
+                              <p className="mt-1 line-through text-muted-foreground">
+                                {change.original}
+                              </p>
                             </div>
                             <div className="rounded bg-green-50 dark:bg-green-950/30 p-2">
-                              <span className="text-xs text-green-600 dark:text-green-400 font-medium">{t('essays.labels.revised')}</span>
+                              <span className="text-xs text-green-600 dark:text-green-400 font-medium">
+                                {t('essays.labels.revised')}
+                              </span>
                               <p className="mt-1">{change.revised}</p>
                             </div>
                           </div>
@@ -888,7 +950,9 @@ export default function EssaysPage() {
           )}
 
           <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setIsPolishOpen(false)}>{t('common.cancel')}</Button>
+            <Button variant="outline" onClick={() => setIsPolishOpen(false)}>
+              {t('common.cancel')}
+            </Button>
             <Button onClick={applyPolishedContent}>
               <Check className="mr-2 h-4 w-4" />
               {t('essays.actions.applyPolish')}
@@ -905,9 +969,7 @@ export default function EssaysPage() {
               <ArrowRight className="h-5 w-5 text-primary" />
               {t('essays.dialog.continueTitle')}
             </DialogTitle>
-            <DialogDescription>
-              {t('essays.dialog.continueDesc')}
-            </DialogDescription>
+            <DialogDescription>{t('essays.dialog.continueDesc')}</DialogDescription>
           </DialogHeader>
 
           {continueResult && (
@@ -962,9 +1024,7 @@ export default function EssaysPage() {
               <PenTool className="h-5 w-5 text-primary" />
               {t('essays.dialog.openingTitle')}
             </DialogTitle>
-            <DialogDescription>
-              {t('essays.dialog.openingDesc')}
-            </DialogDescription>
+            <DialogDescription>{t('essays.dialog.openingDesc')}</DialogDescription>
           </DialogHeader>
 
           {openingResult && (
@@ -1010,9 +1070,7 @@ export default function EssaysPage() {
               <RefreshCw className="h-5 w-5 text-primary" />
               {t('essays.dialog.rewriteTitle')}
             </DialogTitle>
-            <DialogDescription>
-              {t('essays.dialog.rewriteDesc')}
-            </DialogDescription>
+            <DialogDescription>{t('essays.dialog.rewriteDesc')}</DialogDescription>
           </DialogHeader>
 
           {rewriteResult && (
@@ -1049,7 +1107,58 @@ export default function EssaysPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* AI 助手面板 */}
+      <AiAssistantPanel
+        contextTitle={
+          selectedEssay
+            ? t('essays.aiAssistant.currentEssay', { title: selectedEssay.title })
+            : t('essays.aiAssistant.title')
+        }
+        contextDescription={
+          selectedEssay
+            ? t('essays.aiAssistant.selectedDesc', { title: selectedEssay.title })
+            : t('essays.aiAssistant.defaultDesc')
+        }
+        contextActions={
+          selectedEssay
+            ? [
+                {
+                  id: 'review',
+                  icon: <Sparkles className="h-3.5 w-3.5" />,
+                  label: t('essays.aiActions.review'),
+                  message: t('essays.aiMessages.review', {
+                    title: selectedEssay.title,
+                    content: selectedEssay.content.slice(0, 500),
+                  }),
+                },
+                {
+                  id: 'polish',
+                  icon: <Wand2 className="h-3.5 w-3.5" />,
+                  label: t('essays.aiActions.polish'),
+                  message: t('essays.aiMessages.polish', { title: selectedEssay.title }),
+                },
+                {
+                  id: 'brainstorm',
+                  icon: <Lightbulb className="h-3.5 w-3.5" />,
+                  label: t('essays.aiActions.brainstorm'),
+                  message: selectedEssay.prompt
+                    ? t('essays.aiMessages.brainstormWithPrompt', { prompt: selectedEssay.prompt })
+                    : t('essays.aiMessages.brainstormWithTitle', { title: selectedEssay.title }),
+                },
+              ]
+            : [
+                {
+                  id: 'help',
+                  icon: <HelpCircle className="h-3.5 w-3.5" />,
+                  label: t('essays.aiActions.askQuestion'),
+                  message: t('essays.aiActions.askQuestionMessage'),
+                },
+              ]
+        }
+        triggerPosition="fixed"
+        panelWidth="md"
+      />
     </PageContainer>
   );
 }
-

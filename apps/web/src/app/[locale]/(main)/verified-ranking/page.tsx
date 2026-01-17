@@ -1,19 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
+import { getLocalizedName } from '@/lib/i18n/locale-utils';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
@@ -74,22 +68,34 @@ interface VerifiedRankingResponse {
   hasMore: boolean;
 }
 
-const RESULT_CONFIG: Record<string, { label: string; labelZh: string; color: string; icon: any }> = {
-  ADMITTED: { label: 'Admitted', labelZh: '录取', color: 'bg-emerald-500', icon: CheckCircle2 },
-  REJECTED: { label: 'Rejected', labelZh: '拒绝', color: 'bg-red-500', icon: null },
-  WAITLISTED: { label: 'Waitlisted', labelZh: '候补', color: 'bg-amber-500', icon: null },
-  DEFERRED: { label: 'Deferred', labelZh: '延期', color: 'bg-blue-500', icon: null },
+const RESULT_STYLES: Record<string, { color: string; icon: any }> = {
+  ADMITTED: { color: 'bg-emerald-500', icon: CheckCircle2 },
+  REJECTED: { color: 'bg-red-500', icon: null },
+  WAITLISTED: { color: 'bg-amber-500', icon: null },
+  DEFERRED: { color: 'bg-blue-500', icon: null },
 };
-
-const FILTERS = [
-  { value: 'all', label: '全部认证' },
-  { value: 'admitted', label: '仅录取' },
-  { value: 'top20', label: 'Top 20 名校' },
-  { value: 'ivy', label: '藤校+' },
-];
 
 export default function VerifiedRankingPage() {
   const t = useTranslations('verifiedRanking');
+  const tc = useTranslations('cases');
+  const locale = useLocale();
+
+  const getResultLabel = (result: string) => {
+    const labels: Record<string, string> = {
+      ADMITTED: tc('result.admitted'),
+      REJECTED: tc('result.rejected'),
+      WAITLISTED: tc('result.waitlisted'),
+      DEFERRED: tc('result.deferred'),
+    };
+    return labels[result] || result;
+  };
+
+  const FILTERS = [
+    { value: 'all', label: t('filters.all') },
+    { value: 'admitted', label: t('filters.admitted') },
+    { value: 'top20', label: t('filters.top20') },
+    { value: 'ivy', label: t('filters.ivy') },
+  ];
   const [filter, setFilter] = useState('all');
   const [year, setYear] = useState<string>('');
   const [offset, setOffset] = useState(0);
@@ -122,21 +128,21 @@ export default function VerifiedRankingPage() {
   const renderRankBadge = (rank: number) => {
     if (rank === 1) {
       return (
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br bg-warning flex items-center justify-center border-2 border-amber-500/30">
           <Crown className="h-5 w-5 text-white" />
         </div>
       );
     }
     if (rank === 2) {
       return (
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center shadow-lg shadow-gray-400/30">
+        <div className="w-10 h-10 rounded-full bg-slate-400 flex items-center justify-center shadow-lg shadow-gray-400/30">
           <Medal className="h-5 w-5 text-white" />
         </div>
       );
     }
     if (rank === 3) {
       return (
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-600 to-amber-700 flex items-center justify-center shadow-lg shadow-amber-600/30">
+        <div className="w-10 h-10 rounded-full bg-warning flex items-center justify-center shadow-lg shadow-amber-600/30">
           <Award className="h-5 w-5 text-white" />
         </div>
       );
@@ -151,15 +157,15 @@ export default function VerifiedRankingPage() {
   return (
     <div className="container mx-auto py-8 px-4 max-w-6xl">
       {/* Header */}
-      <div className="relative mb-8 overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500/10 via-background to-yellow-500/10 p-6 sm:p-8">
-        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gradient-to-br from-amber-500/20 to-yellow-500/20 blur-3xl" />
+      <div className="relative mb-8 overflow-hidden rounded-lg bg-warning/5 p-6 sm:p-8">
+        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-warning/15 blur-3xl" />
         <div className="relative z-10">
           <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-yellow-500 shadow-lg shadow-amber-500/25">
+            <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-warning ">
               <Trophy className="h-7 w-7 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t('title')}</h1>
+              <h1 className="text-title">{t('title')}</h1>
               <p className="text-muted-foreground">{t('description')}</p>
             </div>
           </div>
@@ -169,12 +175,18 @@ export default function VerifiedRankingPage() {
       {/* 统计卡片 */}
       {data?.stats && (
         <div className="grid gap-4 md:grid-cols-4 mb-8">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/30 dark:to-emerald-900/30 border-emerald-200 dark:border-emerald-800">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="bg-success/10 dark:from-emerald-950/30 dark:to-emerald-900/30 border-emerald-200 dark:border-emerald-800">
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-emerald-600 dark:text-emerald-400">{t('totalVerified')}</p>
+                    <p className="text-sm text-emerald-600 dark:text-emerald-400">
+                      {t('totalVerified')}
+                    </p>
                     <p className="text-3xl font-bold text-emerald-700 dark:text-emerald-300">
                       {data.stats.totalVerified}
                     </p>
@@ -185,8 +197,12 @@ export default function VerifiedRankingPage() {
             </Card>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/30 border-blue-200 dark:border-blue-800">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Card className="bg-primary/10 dark:from-blue-950/30 dark:to-blue-900/30 border-blue-200 dark:border-blue-800">
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -201,24 +217,32 @@ export default function VerifiedRankingPage() {
             </Card>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/30 dark:to-purple-900/30 border-purple-200 dark:border-purple-800">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <Card className="bg-primary/10 dark:from-purple-950/30 dark:to-purple-900/30 border-primary/30 dark:border-purple-800">
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-purple-600 dark:text-purple-400">{t('topSchools')}</p>
+                    <p className="text-sm text-primary dark:text-purple-400">{t('topSchools')}</p>
                     <p className="text-3xl font-bold text-purple-700 dark:text-purple-300">
                       {data.stats.topSchoolsCount}
                     </p>
                   </div>
-                  <Star className="h-8 w-8 text-purple-500/30" />
+                  <Star className="h-8 w-8 text-primary/30" />
                 </div>
               </CardContent>
             </Card>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-            <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/30 dark:to-amber-900/30 border-amber-200 dark:border-amber-800">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <Card className="bg-warning/10 dark:from-amber-950/30 dark:to-amber-900/30 border-amber-200 dark:border-amber-800">
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -241,9 +265,9 @@ export default function VerifiedRankingPage() {
           <div className="flex flex-wrap gap-4 items-center">
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">{t('filters')}:</span>
+              <span className="text-sm font-medium">{t('filtersLabel')}:</span>
             </div>
-            
+
             <Tabs value={filter} onValueChange={setFilter} className="flex-1">
               <TabsList>
                 {FILTERS.map((f) => (
@@ -260,7 +284,7 @@ export default function VerifiedRankingPage() {
                 <SelectValue placeholder={t('year')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t('all')}</SelectItem>
+                <SelectItem value="all">{t('filters.all')}</SelectItem>
                 {years?.map((y) => (
                   <SelectItem key={y} value={y.toString()}>
                     {y}
@@ -279,9 +303,7 @@ export default function VerifiedRankingPage() {
             <Trophy className="h-5 w-5 text-amber-500" />
             {t('title')}
           </CardTitle>
-          <CardDescription>
-            共 {data?.total || 0} 条认证记录
-          </CardDescription>
+          <CardDescription>{t('totalRecords', { count: data?.total || 0 })}</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -291,7 +313,7 @@ export default function VerifiedRankingPage() {
           ) : data?.users && data.users.length > 0 ? (
             <div className="space-y-3">
               {data.users.map((user, index) => {
-                const resultConfig = RESULT_CONFIG[user.result] || RESULT_CONFIG.ADMITTED;
+                const resultStyle = RESULT_STYLES[user.result] || RESULT_STYLES.ADMITTED;
 
                 return (
                   <motion.div
@@ -301,7 +323,7 @@ export default function VerifiedRankingPage() {
                     transition={{ delay: index * 0.03 }}
                     className={cn(
                       'flex items-center gap-4 p-4 rounded-lg border transition-colors',
-                      user.rank <= 3 ? 'bg-gradient-to-r from-amber-50/50 to-transparent dark:from-amber-950/20' : 'hover:bg-muted/50'
+                      user.rank <= 3 ? 'bg-warning/5 dark:from-amber-950/20' : 'hover:bg-muted/50'
                     )}
                   >
                     {/* 排名 */}
@@ -311,22 +333,27 @@ export default function VerifiedRankingPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-semibold truncate">{user.userName}</span>
-                        <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
+                        <Badge
+                          variant="secondary"
+                          className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300"
+                        >
                           <CheckCircle2 className="h-3 w-3 mr-1" />
-                          已认证
+                          {t('verified')}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Building2 className="h-3 w-3" />
-                          {user.schoolNameZh || user.schoolName}
+                          {getLocalizedName(user.schoolNameZh, user.schoolName, locale)}
                           {user.schoolRank && (
                             <Badge variant="outline" className="ml-1 text-xs">
                               #{user.schoolRank}
                             </Badge>
                           )}
                         </span>
-                        <span>{user.year} {user.round}</span>
+                        <span>
+                          {user.year} {user.round}
+                        </span>
                         {user.major && <span>{user.major}</span>}
                       </div>
                     </div>
@@ -354,8 +381,8 @@ export default function VerifiedRankingPage() {
                     </div>
 
                     {/* 结果 */}
-                    <Badge className={cn('text-white', resultConfig.color)}>
-                      {resultConfig.labelZh}
+                    <Badge className={cn('text-white', resultStyle.color)}>
+                      {getResultLabel(user.result)}
                     </Badge>
 
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -366,15 +393,9 @@ export default function VerifiedRankingPage() {
               {/* 加载更多 */}
               {data.hasMore && (
                 <div className="flex justify-center pt-4">
-                  <Button
-                    variant="outline"
-                    onClick={handleLoadMore}
-                    disabled={isFetching}
-                  >
-                    {isFetching ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : null}
-                    加载更多
+                  <Button variant="outline" onClick={handleLoadMore} disabled={isFetching}>
+                    {isFetching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    {t('loadMore')}
                   </Button>
                 </div>
               )}
@@ -382,10 +403,8 @@ export default function VerifiedRankingPage() {
           ) : (
             <div className="flex flex-col items-center justify-center h-64 text-center">
               <Users className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="font-semibold">暂无数据</h3>
-              <p className="text-sm text-muted-foreground">
-                尝试调整筛选条件
-              </p>
+              <h3 className="font-semibold">{t('noData')}</h3>
+              <p className="text-sm text-muted-foreground">{t('adjustFilters')}</p>
             </div>
           )}
         </CardContent>
@@ -393,4 +412,3 @@ export default function VerifiedRankingPage() {
     </div>
   );
 }
-

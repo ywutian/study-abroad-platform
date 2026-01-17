@@ -18,14 +18,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useHydrated } from '@/hooks/use-hydration';
 
 // 反馈类型
 type FeedbackType = 'bug' | 'feature' | 'question' | 'other';
@@ -64,7 +61,7 @@ const feedbackTypes: FeedbackTypeOption[] = [
     id: 'other',
     labelKey: 'other',
     icon: MessageSquarePlus,
-    color: 'text-purple-500 bg-purple-500/10',
+    color: 'text-primary bg-primary/10',
     placeholderKey: 'other',
   },
 ];
@@ -72,13 +69,22 @@ const feedbackTypes: FeedbackTypeOption[] = [
 export function FeedbackWidget() {
   const t = useTranslations('feedback');
   const tCommon = useTranslations('common');
+
+  // 企业级 Hydration 安全方案：使用 useSyncExternalStore
+  const isHydrated = useHydrated();
+
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<'type' | 'form' | 'success'>('type');
   const [selectedType, setSelectedType] = useState<FeedbackType | null>(null);
   const [content, setContent] = useState('');
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [screenshot, setScreenshot] = useState<string | null>(null);
+  const [, setScreenshot] = useState<string | null>(null);
+
+  // SSR 时不渲染（避免 Radix UI Popover 的动态 ID 导致 hydration mismatch）
+  if (!isHydrated) {
+    return null;
+  }
 
   // 重置表单
   const resetForm = () => {
@@ -109,11 +115,11 @@ export function FeedbackWidget() {
     }
 
     setSubmitting(true);
-    
+
     try {
       // 模拟 API 调用
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
       // 实际应该调用 API
       // await api.submitFeedback({
       //   type: selectedType,
@@ -126,7 +132,7 @@ export function FeedbackWidget() {
 
       setStep('success');
       toast.success(t('successTitle'));
-    } catch (error) {
+    } catch (_error) {
       toast.error(t('submitFailed'));
     } finally {
       setSubmitting(false);
@@ -141,7 +147,7 @@ export function FeedbackWidget() {
     }
   };
 
-  const currentType = feedbackTypes.find(t => t.id === selectedType);
+  const currentType = feedbackTypes.find((t) => t.id === selectedType);
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
@@ -155,12 +161,7 @@ export function FeedbackWidget() {
           {t('button')}
         </Button>
       </PopoverTrigger>
-      <PopoverContent 
-        className="w-[360px] p-0" 
-        align="start"
-        side="top"
-        sideOffset={16}
-      >
+      <PopoverContent className="w-[360px] p-0" align="start" side="top" sideOffset={16}>
         <AnimatePresence mode="wait">
           {/* 步骤1：选择类型 */}
           {step === 'type' && (
@@ -184,7 +185,12 @@ export function FeedbackWidget() {
                         'hover:border-primary hover:bg-primary/5'
                       )}
                     >
-                      <div className={cn('w-10 h-10 rounded-full flex items-center justify-center', type.color)}>
+                      <div
+                        className={cn(
+                          'w-10 h-10 rounded-full flex items-center justify-center',
+                          type.color
+                        )}
+                      >
                         <Icon className="w-5 h-5" />
                       </div>
                       <span className="text-sm font-medium">{t(`types.${type.labelKey}`)}</span>
@@ -205,15 +211,20 @@ export function FeedbackWidget() {
               className="p-4"
             >
               <div className="flex items-center gap-2 mb-4">
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="icon"
                   className="h-8 w-8"
                   onClick={() => setStep('type')}
                 >
                   <X className="w-4 h-4" />
                 </Button>
-                <div className={cn('w-8 h-8 rounded-full flex items-center justify-center', currentType.color)}>
+                <div
+                  className={cn(
+                    'w-8 h-8 rounded-full flex items-center justify-center',
+                    currentType.color
+                  )}
+                >
                   <currentType.icon className="w-4 h-4" />
                 </div>
                 <span className="font-semibold">{t(`types.${currentType.labelKey}`)}</span>
@@ -250,19 +261,14 @@ export function FeedbackWidget() {
 
                 {/* 截图按钮 */}
                 {currentType.id === 'bug' && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                    onClick={handleScreenshot}
-                  >
+                  <Button variant="outline" size="sm" className="w-full" onClick={handleScreenshot}>
                     <Camera className="w-4 h-4 mr-2" />
                     {t('addScreenshot')}
                   </Button>
                 )}
 
-                <Button 
-                  className="w-full" 
+                <Button
+                  className="w-full"
                   onClick={handleSubmit}
                   disabled={submitting || !content.trim()}
                 >
@@ -300,9 +306,7 @@ export function FeedbackWidget() {
                 <Check className="w-8 h-8 text-success" />
               </motion.div>
               <h4 className="font-semibold mb-2">{t('successTitle')}</h4>
-              <p className="text-sm text-muted-foreground mb-4">
-                {t('successDesc')}
-              </p>
+              <p className="text-sm text-muted-foreground mb-4">{t('successDesc')}</p>
               <Button variant="outline" onClick={() => handleOpenChange(false)}>
                 {tCommon('close')}
               </Button>
@@ -315,10 +319,10 @@ export function FeedbackWidget() {
 }
 
 // 简化版反馈按钮（用于特定页面）
-export function QuickFeedbackButton({ 
+export function QuickFeedbackButton({
   label,
-  pageId,
-}: { 
+  pageId: _pageId,
+}: {
   label?: string;
   pageId: string;
 }) {
@@ -358,6 +362,3 @@ export function QuickFeedbackButton({
     </div>
   );
 }
-
-
-

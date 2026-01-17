@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useFormatter } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Lock,
@@ -23,36 +23,20 @@ import {
   Folder,
   ChevronRight,
   Loader2,
-  Download,
-  Upload,
   Check,
   AlertTriangle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -64,7 +48,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { apiClient as api } from '@/lib/api';
 
 // API 响应类型
@@ -119,7 +102,7 @@ const typeColors: Record<VaultItemType, string> = {
   CREDENTIAL: 'from-amber-500 to-orange-600',
   DOCUMENT: 'from-blue-500 to-cyan-600',
   NOTE: 'from-emerald-500 to-green-600',
-  CERTIFICATE: 'from-violet-500 to-purple-600',
+  CERTIFICATE: 'from-primary to-primary',
 };
 
 const typeBgColors: Record<VaultItemType, string> = {
@@ -131,6 +114,7 @@ const typeBgColors: Record<VaultItemType, string> = {
 
 export default function VaultPage() {
   const t = useTranslations('vault');
+  const format = useFormatter();
 
   const [items, setItems] = useState<VaultItem[]>([]);
   const [stats, setStats] = useState<VaultStats | null>(null);
@@ -152,16 +136,16 @@ export default function VaultPage() {
   const [formTags, setFormTags] = useState<string[]>([]);
   const [formTagInput, setFormTagInput] = useState('');
   const [formData, setFormData] = useState('');
-  
+
   // Credential specific
   const [formUsername, setFormUsername] = useState('');
   const [formPassword, setFormPassword] = useState('');
   const [formWebsite, setFormWebsite] = useState('');
   const [formNotes, setFormNotes] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  
+
   const [submitting, setSubmitting] = useState(false);
-  const [loadingItem, setLoadingItem] = useState(false);
+  const [, setLoadingItem] = useState(false);
   const [copied, setCopied] = useState(false);
 
   // Fetch items and stats
@@ -191,27 +175,27 @@ export default function VaultPage() {
         {
           id: '1',
           type: 'CREDENTIAL',
-          title: 'CommonApp 账号',
-          category: '申请材料',
-          tags: ['申请', '重要'],
+          title: t('demo.commonAppTitle'),
+          category: t('demo.applicationCategory'),
+          tags: [t('demo.applicationTag'), t('demo.importantTag')],
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
         {
           id: '2',
           type: 'DOCUMENT',
-          title: 'SAT成绩单',
-          category: '考试成绩',
-          tags: ['SAT', '标化'],
+          title: t('demo.satTitle'),
+          category: t('demo.testScoreCategory'),
+          tags: ['SAT', t('demo.standardizedTag')],
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
         {
           id: '3',
           type: 'NOTE',
-          title: '选校笔记',
-          category: '规划',
-          tags: ['选校'],
+          title: t('demo.schoolNotesTitle'),
+          category: t('demo.planningCategory'),
+          tags: [t('demo.schoolSelectionTag')],
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
@@ -222,7 +206,11 @@ export default function VaultPage() {
         documentCount: 1,
         noteCount: 1,
         certificateCount: 0,
-        categories: ['申请材料', '考试成绩', '规划'],
+        categories: [
+          t('demo.applicationCategory'),
+          t('demo.testScoreCategory'),
+          t('demo.planningCategory'),
+        ],
       });
     } finally {
       setLoading(false);
@@ -241,21 +229,21 @@ export default function VaultPage() {
       if (res.success) {
         setShowViewDialog(res.data);
       }
-    } catch (error) {
+    } catch (_error) {
       // Demo data
       setShowViewDialog({
         id: itemId,
         type: 'CREDENTIAL',
-        title: 'CommonApp 账号',
-        category: '申请材料',
-        tags: ['申请', '重要'],
+        title: t('demo.commonAppTitle'),
+        category: t('demo.applicationCategory'),
+        tags: [t('demo.applicationTag'), t('demo.importantTag')],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         data: JSON.stringify({
           username: 'student@email.com',
           password: 'SecurePass123!',
           website: 'https://commonapp.org',
-          notes: '主申请账号',
+          notes: t('demo.mainAccountNote'),
         }),
       });
     } finally {
@@ -279,7 +267,7 @@ export default function VaultPage() {
     setSubmitting(true);
     try {
       let dataToSave = formData;
-      
+
       // For credentials, structure the data
       if (formType === 'CREDENTIAL') {
         dataToSave = JSON.stringify({
@@ -329,11 +317,13 @@ export default function VaultPage() {
   // Generate password
   const generatePassword = async () => {
     try {
-      const res = await api.get<ApiResponse<{ password: string }>>('/vault/generate-password?length=16');
+      const res = await api.get<ApiResponse<{ password: string }>>(
+        '/vault/generate-password?length=16'
+      );
       if (res.success) {
         setFormPassword(res.data.password);
       }
-    } catch (error) {
+    } catch (_error) {
       // Generate locally
       const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
       let pass = '';
@@ -374,7 +364,7 @@ export default function VaultPage() {
     setFormTitle(item.title);
     setFormCategory(item.category || '');
     setFormTags(item.tags);
-    
+
     if (item.type === 'CREDENTIAL') {
       const credData = parseCredentialData(item.data);
       setFormUsername(credData.username || '');
@@ -384,7 +374,7 @@ export default function VaultPage() {
     } else {
       setFormData(item.data);
     }
-    
+
     setShowViewDialog(null);
     setShowCreateDialog(true);
   };
@@ -400,19 +390,15 @@ export default function VaultPage() {
   };
 
   const removeTag = (tag: string) => {
-    setFormTags(formTags.filter(t => t !== tag));
+    setFormTags(formTags.filter((t) => t !== tag));
   };
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('zh-CN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    return format.dateTime(new Date(dateStr), 'medium');
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-slate-900">
       {/* Hero Header */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
@@ -426,9 +412,9 @@ export default function VaultPage() {
               <Lock className="h-5 w-5 text-emerald-400" />
               <span className="text-emerald-300 font-medium">{t('title')}</span>
             </div>
-            <h1 className="text-4xl font-bold text-white mb-4">{t('description')}</h1>
+            <h1 className="text-title-lg text-white mb-4">{t('description')}</h1>
             <p className="text-slate-400">{t('subtitle')}</p>
-            
+
             {/* Security badges */}
             <div className="flex items-center justify-center gap-4 mt-6">
               <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/50 rounded-full text-sm">
@@ -443,7 +429,7 @@ export default function VaultPage() {
 
             <Button
               onClick={() => setShowCreateDialog(true)}
-              className="mt-8 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600"
+              className="mt-8 bg-success hover:bg-success/90"
             >
               <Plus className="h-4 w-4 mr-2" />
               {t('addItem')}
@@ -455,7 +441,7 @@ export default function VaultPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
         {stats && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8"
@@ -501,7 +487,7 @@ export default function VaultPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-white text-lg flex items-center gap-2">
                   <Folder className="h-5 w-5 text-emerald-400" />
-                  类型
+                  {t('categories')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -512,21 +498,23 @@ export default function VaultPage() {
                 >
                   {t('allItems')}
                 </Button>
-                {(['CREDENTIAL', 'DOCUMENT', 'NOTE', 'CERTIFICATE'] as VaultItemType[]).map((type) => (
-                  <Button
-                    key={type}
-                    variant={selectedType === type ? 'default' : 'ghost'}
-                    className={`w-full justify-start gap-2 ${
-                      selectedType === type 
-                        ? `bg-gradient-to-r ${typeColors[type]}` 
-                        : 'text-slate-300 hover:bg-slate-700'
-                    }`}
-                    onClick={() => setSelectedType(type)}
-                  >
-                    {typeIcons[type]}
-                    {t(type.toLowerCase())}
-                  </Button>
-                ))}
+                {(['CREDENTIAL', 'DOCUMENT', 'NOTE', 'CERTIFICATE'] as VaultItemType[]).map(
+                  (type) => (
+                    <Button
+                      key={type}
+                      variant={selectedType === type ? 'default' : 'ghost'}
+                      className={`w-full justify-start gap-2 ${
+                        selectedType === type
+                          ? `bg-gradient-to-r ${typeColors[type]}`
+                          : 'text-slate-300 hover:bg-slate-700'
+                      }`}
+                      onClick={() => setSelectedType(type)}
+                    >
+                      {typeIcons[type]}
+                      {t(type.toLowerCase())}
+                    </Button>
+                  )
+                )}
               </CardContent>
             </Card>
 
@@ -545,7 +533,7 @@ export default function VaultPage() {
                     className={`w-full justify-start ${selectedCategory === null ? 'bg-emerald-500' : 'text-slate-300 hover:bg-slate-700'}`}
                     onClick={() => setSelectedCategory(null)}
                   >
-                    全部分类
+                    {t('allCategories')}
                   </Button>
                   {stats.categories.map((cat) => (
                     <Button
@@ -603,13 +591,15 @@ export default function VaultPage() {
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ delay: index * 0.05 }}
                     >
-                      <Card 
+                      <Card
                         className="bg-slate-800/50 border-slate-700 backdrop-blur-sm hover:bg-slate-800/70 transition-all cursor-pointer group"
                         onClick={() => viewItem(item.id)}
                       >
                         <CardContent className="p-5">
                           <div className="flex items-start gap-4">
-                            <div className={`p-3 rounded-xl bg-gradient-to-br ${typeColors[item.type]}`}>
+                            <div
+                              className={`p-3 rounded-xl bg-gradient-to-br ${typeColors[item.type]}`}
+                            >
                               {typeIcons[item.type]}
                             </div>
                             <div className="flex-1 min-w-0">
@@ -618,7 +608,10 @@ export default function VaultPage() {
                                   {t(item.type.toLowerCase())}
                                 </Badge>
                                 {item.category && (
-                                  <Badge variant="outline" className="border-slate-600 text-slate-400">
+                                  <Badge
+                                    variant="outline"
+                                    className="border-slate-600 text-slate-400"
+                                  >
                                     {item.category}
                                   </Badge>
                                 )}
@@ -628,12 +621,18 @@ export default function VaultPage() {
                               </h3>
                               <div className="flex items-center gap-2 mt-2">
                                 {item.tags.slice(0, 2).map((tag) => (
-                                  <Badge key={tag} variant="secondary" className="bg-slate-700 text-slate-300 text-xs">
+                                  <Badge
+                                    key={tag}
+                                    variant="secondary"
+                                    className="bg-slate-700 text-slate-300 text-xs"
+                                  >
                                     {tag}
                                   </Badge>
                                 ))}
                                 {item.tags.length > 2 && (
-                                  <span className="text-xs text-slate-500">+{item.tags.length - 2}</span>
+                                  <span className="text-xs text-slate-500">
+                                    +{item.tags.length - 2}
+                                  </span>
                                 )}
                               </div>
                               <div className="text-xs text-slate-500 mt-2">
@@ -654,7 +653,15 @@ export default function VaultPage() {
       </div>
 
       {/* Create/Edit Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={(open) => { if (!open) { setShowCreateDialog(false); resetForm(); } }}>
+      <Dialog
+        open={showCreateDialog}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowCreateDialog(false);
+            resetForm();
+          }
+        }}
+      >
         <DialogContent className="max-w-lg bg-slate-800 border-slate-700 text-white">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -666,21 +673,23 @@ export default function VaultPage() {
             {/* Type Selection */}
             {!editingItem && (
               <div className="grid grid-cols-4 gap-2">
-                {(['CREDENTIAL', 'DOCUMENT', 'NOTE', 'CERTIFICATE'] as VaultItemType[]).map((type) => (
-                  <Button
-                    key={type}
-                    variant={formType === type ? 'default' : 'outline'}
-                    className={`flex flex-col items-center gap-1 h-auto py-3 ${
-                      formType === type 
-                        ? `bg-gradient-to-r ${typeColors[type]} border-0` 
-                        : 'border-slate-600 text-slate-300 hover:bg-slate-700'
-                    }`}
-                    onClick={() => setFormType(type)}
-                  >
-                    {typeIcons[type]}
-                    <span className="text-xs">{t(type.toLowerCase())}</span>
-                  </Button>
-                ))}
+                {(['CREDENTIAL', 'DOCUMENT', 'NOTE', 'CERTIFICATE'] as VaultItemType[]).map(
+                  (type) => (
+                    <Button
+                      key={type}
+                      variant={formType === type ? 'default' : 'outline'}
+                      className={`flex flex-col items-center gap-1 h-auto py-3 ${
+                        formType === type
+                          ? `bg-gradient-to-r ${typeColors[type]} border-0`
+                          : 'border-slate-600 text-slate-300 hover:bg-slate-700'
+                      }`}
+                      onClick={() => setFormType(type)}
+                    >
+                      {typeIcons[type]}
+                      <span className="text-xs">{t(type.toLowerCase())}</span>
+                    </Button>
+                  )
+                )}
               </div>
             )}
 
@@ -765,7 +774,11 @@ export default function VaultPage() {
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
                       >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
                       </button>
                     </div>
                     <Button
@@ -801,13 +814,20 @@ export default function VaultPage() {
             )}
 
             <DialogFooter className="gap-2">
-              <Button variant="outline" onClick={() => { setShowCreateDialog(false); resetForm(); }} className="border-slate-600 text-slate-300">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowCreateDialog(false);
+                  resetForm();
+                }}
+                className="border-slate-600 text-slate-300"
+              >
                 {t('cancel')}
               </Button>
               <Button
                 onClick={handleSave}
                 disabled={submitting || !formTitle.trim()}
-                className="bg-gradient-to-r from-emerald-500 to-cyan-500"
+                className="bg-success"
               >
                 {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                 {t('save')}
@@ -824,7 +844,9 @@ export default function VaultPage() {
             <>
               <DialogHeader>
                 <div className="flex items-center gap-3">
-                  <div className={`p-3 rounded-xl bg-gradient-to-br ${typeColors[showViewDialog.type]}`}>
+                  <div
+                    className={`p-3 rounded-xl bg-gradient-to-br ${typeColors[showViewDialog.type]}`}
+                  >
                     {typeIcons[showViewDialog.type]}
                   </div>
                   <div>
@@ -854,11 +876,24 @@ export default function VaultPage() {
                             <div className="bg-slate-900/50 rounded-lg p-3">
                               <label className="text-xs text-slate-500">{t('website')}</label>
                               <div className="flex items-center justify-between mt-1">
-                                <a href={cred.website} target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">
+                                <a
+                                  href={cred.website}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-emerald-400 hover:underline"
+                                >
                                   {cred.website}
                                 </a>
-                                <Button size="icon" variant="ghost" onClick={() => copyToClipboard(cred.website!)}>
-                                  {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4 text-slate-400" />}
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => copyToClipboard(cred.website!)}
+                                >
+                                  {copied ? (
+                                    <Check className="h-4 w-4 text-green-500" />
+                                  ) : (
+                                    <Copy className="h-4 w-4 text-slate-400" />
+                                  )}
                                 </Button>
                               </div>
                             </div>
@@ -868,8 +903,16 @@ export default function VaultPage() {
                               <label className="text-xs text-slate-500">{t('username')}</label>
                               <div className="flex items-center justify-between mt-1">
                                 <span className="text-white font-mono">{cred.username}</span>
-                                <Button size="icon" variant="ghost" onClick={() => copyToClipboard(cred.username!)}>
-                                  {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4 text-slate-400" />}
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => copyToClipboard(cred.username!)}
+                                >
+                                  {copied ? (
+                                    <Check className="h-4 w-4 text-green-500" />
+                                  ) : (
+                                    <Copy className="h-4 w-4 text-slate-400" />
+                                  )}
                                 </Button>
                               </div>
                             </div>
@@ -882,11 +925,27 @@ export default function VaultPage() {
                                   {showPassword ? cred.password : '••••••••••••'}
                                 </span>
                                 <div className="flex gap-1">
-                                  <Button size="icon" variant="ghost" onClick={() => setShowPassword(!showPassword)}>
-                                    {showPassword ? <EyeOff className="h-4 w-4 text-slate-400" /> : <Eye className="h-4 w-4 text-slate-400" />}
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                  >
+                                    {showPassword ? (
+                                      <EyeOff className="h-4 w-4 text-slate-400" />
+                                    ) : (
+                                      <Eye className="h-4 w-4 text-slate-400" />
+                                    )}
                                   </Button>
-                                  <Button size="icon" variant="ghost" onClick={() => copyToClipboard(cred.password!)}>
-                                    {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4 text-slate-400" />}
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={() => copyToClipboard(cred.password!)}
+                                  >
+                                    {copied ? (
+                                      <Check className="h-4 w-4 text-green-500" />
+                                    ) : (
+                                      <Copy className="h-4 w-4 text-slate-400" />
+                                    )}
                                   </Button>
                                 </div>
                               </div>
@@ -895,7 +954,9 @@ export default function VaultPage() {
                           {cred.notes && (
                             <div className="bg-slate-900/50 rounded-lg p-3">
                               <label className="text-xs text-slate-500">{t('notes')}</label>
-                              <p className="text-slate-300 mt-1 whitespace-pre-wrap">{cred.notes}</p>
+                              <p className="text-slate-300 mt-1 whitespace-pre-wrap">
+                                {cred.notes}
+                              </p>
                             </div>
                           )}
                         </>
@@ -919,7 +980,7 @@ export default function VaultPage() {
                 )}
 
                 <div className="text-xs text-slate-500">
-                  更新于 {formatDate(showViewDialog.updatedAt)}
+                  {t('updatedAt', { date: formatDate(showViewDialog.updatedAt) })}
                 </div>
 
                 <DialogFooter className="gap-2">
@@ -931,12 +992,9 @@ export default function VaultPage() {
                     <Trash2 className="h-4 w-4 mr-2" />
                     {t('delete')}
                   </Button>
-                  <Button
-                    onClick={() => openEditDialog(showViewDialog)}
-                    className="bg-gradient-to-r from-emerald-500 to-cyan-500"
-                  >
+                  <Button onClick={() => openEditDialog(showViewDialog)} className="bg-success">
                     <Edit className="h-4 w-4 mr-2" />
-                    编辑
+                    {t('edit')}
                   </Button>
                 </DialogFooter>
               </div>
@@ -951,7 +1009,7 @@ export default function VaultPage() {
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-white">
               <AlertTriangle className="h-5 w-5 text-red-500" />
-              确认删除
+              {t('confirmDelete')}
             </AlertDialogTitle>
             <AlertDialogDescription className="text-slate-400">
               {t('deleteConfirm')}
@@ -973,4 +1031,3 @@ export default function VaultPage() {
     </div>
   );
 }
-

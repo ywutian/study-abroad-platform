@@ -7,6 +7,7 @@ import {
   type ResumeData,
   type ResumeExportOptions,
 } from '../styles/pdf-styles';
+import { toBcp47 } from '@/lib/i18n/locale-utils';
 
 interface BasicTemplateProps {
   data: ResumeData;
@@ -17,8 +18,10 @@ export function BasicTemplate({ data, options }: BasicTemplateProps) {
   const t = translations[options.language];
   const { includeModules, anonymize } = options;
 
-  const displayName = anonymize ? t.applicant : (data.basic.name || t.applicant);
-  const gradeText = data.basic.grade ? t.grades[data.basic.grade as keyof typeof t.grades] || data.basic.grade : '';
+  const displayName = anonymize ? t.applicant : data.basic.name || t.applicant;
+  const gradeText = data.basic.grade
+    ? t.grades[data.basic.grade as keyof typeof t.grades] || data.basic.grade
+    : '';
 
   return (
     <Document>
@@ -33,7 +36,9 @@ export function BasicTemplate({ data, options }: BasicTemplateProps) {
                 <Text style={styles.subtitleItem}>• {data.basic.school}</Text>
               )}
               {data.basic.targetMajor && (
-                <Text style={styles.subtitleItem}>• {t.targetMajor}: {data.basic.targetMajor}</Text>
+                <Text style={styles.subtitleItem}>
+                  • {t.targetMajor}: {data.basic.targetMajor}
+                </Text>
               )}
             </View>
           </View>
@@ -69,7 +74,11 @@ export function BasicTemplate({ data, options }: BasicTemplateProps) {
                         <Text>{score.score}</Text>
                         {score.subScores && Object.keys(score.subScores).length > 0 && (
                           <Text style={{ color: colors.textMuted, fontSize: 8, marginLeft: 8 }}>
-                            ({Object.entries(score.subScores).map(([k, v]) => `${k}: ${v}`).join(', ')})
+                            (
+                            {Object.entries(score.subScores)
+                              .map(([k, v]) => `${k}: ${v}`)
+                              .join(', ')}
+                            )
                           </Text>
                         )}
                       </View>
@@ -95,10 +104,16 @@ export function BasicTemplate({ data, options }: BasicTemplateProps) {
                   <View style={styles.flexRow}>
                     <Text style={styles.listItemTitle}>{activity.name}</Text>
                     <Text style={styles.badge}>
-                      {t.categories[activity.category as keyof typeof t.categories] || activity.category}
+                      {t.categories[activity.category as keyof typeof t.categories] ||
+                        activity.category}
                     </Text>
                     {activity.isOngoing && (
-                      <Text style={[styles.badge, { backgroundColor: colors.success, color: colors.white }]}>
+                      <Text
+                        style={[
+                          styles.badge,
+                          { backgroundColor: colors.success, color: colors.white },
+                        ]}
+                      >
                         {t.ongoing}
                       </Text>
                     )}
@@ -154,20 +169,17 @@ export function BasicTemplate({ data, options }: BasicTemplateProps) {
               <Text style={styles.sectionIcon}>🎓</Text>
               <Text>{t.targetSchools}</Text>
             </View>
-            <Text style={{ lineHeight: 1.6 }}>
-              {data.targetSchools.join('、')}
-            </Text>
+            <Text style={{ lineHeight: 1.6 }}>{data.targetSchools.join('、')}</Text>
           </View>
         )}
 
         {/* 页脚 */}
         <View style={styles.footer}>
-          <Text>{t.generatedBy} • {new Date().toLocaleDateString(options.language === 'zh' ? 'zh-CN' : 'en-US')}</Text>
+          <Text>
+            {t.generatedBy} • {new Date().toLocaleDateString(toBcp47(options.language))}
+          </Text>
         </View>
       </Page>
     </Document>
   );
 }
-
-
-

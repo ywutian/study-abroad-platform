@@ -1,16 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useTranslations, useLocale, useFormatter } from 'next-intl';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { motion } from 'framer-motion';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -35,10 +29,12 @@ import {
   Users,
   LineChart,
   Wrench,
+  Bot,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { AiAssistantPanel, type ContextAction } from '@/components/features/agent-chat';
 
 interface Question {
   id: string;
@@ -53,12 +49,15 @@ const isLikertQuestion = (options: Question['options']) => {
   return options.length === 5 && typeof options[0]?.value === 'number';
 };
 
-// MBTI 维度中文名称
-const DIMENSION_NAMES: Record<string, { name: string; description: string }> = {
-  EI: { name: 'E/I 外向-内向', description: '你的能量来源' },
-  SN: { name: 'S/N 感觉-直觉', description: '你获取信息的方式' },
-  TF: { name: 'T/F 思考-情感', description: '你做决定的方式' },
-  JP: { name: 'J/P 判断-知觉', description: '你的生活方式' },
+// MBTI dimension keys (translations loaded via i18n)
+const _DIMENSION_KEYS = ['EI', 'SN', 'TF', 'JP'] as const;
+
+// MBTI dimension display names
+const DIMENSION_NAMES: Record<string, string> = {
+  EI: 'E-I',
+  SN: 'S-N',
+  TF: 'T-F',
+  JP: 'J-P',
 };
 
 // 估算每题答题时间（秒）
@@ -118,7 +117,7 @@ const HOLLAND_ICONS: Record<string, any> = {
 const HOLLAND_COLORS: Record<string, string> = {
   R: 'bg-amber-500',
   I: 'bg-blue-500',
-  A: 'bg-purple-500',
+  A: 'bg-primary',
   S: 'bg-green-500',
   E: 'bg-red-500',
   C: 'bg-cyan-500',
@@ -126,6 +125,8 @@ const HOLLAND_COLORS: Record<string, string> = {
 
 export default function AssessmentPage() {
   const t = useTranslations('assessment');
+  const locale = useLocale();
+  const format = useFormatter();
   const [activeTab, setActiveTab] = useState<'intro' | 'mbti' | 'holland' | 'history'>('intro');
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -164,7 +165,7 @@ export default function AssessmentPage() {
       toast.success(t('viewResult'));
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to submit assessment');
+      toast.error(error.message || t('submitError'));
     },
   });
 
@@ -172,32 +173,58 @@ export default function AssessmentPage() {
   const isLoading = activeTab === 'mbti' ? mbtiLoading : hollandLoading;
 
   // B. 自动跳题：选中答案后自动进入下一题
-  const handleSelectAnswer = (questionId: string, value: string, autoAdvance = true) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: value }));
-    
-    // 自动跳转到下一题（最后一题除外）
-    if (autoAdvance && currentAssessment?.questions && currentQuestion < currentAssessment.questions.length - 1) {
-      setTimeout(() => {
-        setCurrentQuestion((prev) => prev + 1);
-      }, 300); // 300ms 延迟，让用户看到选中效果
-    }
-  };
+  const handleSelectAnswer = useCallback(
+    (questionId: string, value: string, autoAdvance = true) => {
+      setAnswers((prev) => ({ ...prev, [questionId]: value }));
 
-  const handleNext = () => {
+      // 自动跳转到下一题（最后一题除外）
+      if (
+        autoAdvance &&
+        currentAssessment?.questions &&
+        currentQuestion < currentAssessment.questions.length - 1
+      ) {
+        setTimeout(() => {
+          setCurrentQuestion((prev) => prev + 1);
+        }, 300); // 300ms 延迟，让用户看到选中效果
+      }
+    },
+    [currentAssessment, currentQuestion]
+  );
+
+  const handleNext = useCallback(() => {
     if (currentAssessment && currentQuestion < currentAssessment.questions.length - 1) {
       setCurrentQuestion((prev) => prev + 1);
     }
-  };
+  }, [currentAssessment, currentQuestion]);
 
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
     if (currentQuestion > 0) {
       setCurrentQuestion((prev) => prev - 1);
     }
-  };
+  }, [currentQuestion]);
+
+  const handleSubmit = useCallback(() => {
+    if (!currentAssessment) return;
+
+    const formattedAnswers = Object.entries(answers).map(([questionId, answer]) => ({
+      questionId,
+      answer,
+    }));
+
+    submitMutation.mutate({
+      type: activeTab.toUpperCase(),
+      answers: formattedAnswers,
+    });
+  }, [currentAssessment, answers, activeTab, submitMutation]);
 
   // D. 键盘快捷键支持
   useEffect(() => {
-    if (!currentAssessment?.questions || showResult || (activeTab !== 'mbti' && activeTab !== 'holland')) return;
+    if (
+      !currentAssessment?.questions ||
+      showResult ||
+      (activeTab !== 'mbti' && activeTab !== 'holland')
+    )
+      return;
 
     const question = currentAssessment.questions[currentQuestion];
     if (!question) return;
@@ -211,7 +238,7 @@ export default function AssessmentPage() {
           handleSelectAnswer(question.id, String(keyNum));
         }
       }
-      
+
       // 左右箭头切换题目
       if (e.key === 'ArrowLeft' && currentQuestion > 0) {
         e.preventDefault();
@@ -221,7 +248,7 @@ export default function AssessmentPage() {
         e.preventDefault();
         handleNext();
       }
-      
+
       // Enter 键：最后一题时提交
       if (e.key === 'Enter' && currentQuestion === currentAssessment.questions.length - 1) {
         const allAnswered = Object.keys(answers).length === currentAssessment.questions.length;
@@ -234,21 +261,17 @@ export default function AssessmentPage() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentAssessment, currentQuestion, showResult, activeTab, answers]);
-
-  const handleSubmit = () => {
-    if (!currentAssessment) return;
-
-    const formattedAnswers = Object.entries(answers).map(([questionId, answer]) => ({
-      questionId,
-      answer,
-    }));
-
-    submitMutation.mutate({
-      type: activeTab.toUpperCase(),
-      answers: formattedAnswers,
-    });
-  };
+  }, [
+    currentAssessment,
+    currentQuestion,
+    showResult,
+    activeTab,
+    answers,
+    handleSelectAnswer,
+    handlePrev,
+    handleNext,
+    handleSubmit,
+  ]);
 
   const handleRetake = () => {
     setShowResult(false);
@@ -269,11 +292,13 @@ export default function AssessmentPage() {
     ? Math.round(((currentQuestion + 1) / currentAssessment.questions.length) * 100)
     : 0;
 
-  const canSubmit = currentAssessment?.questions && Object.keys(answers).length === currentAssessment.questions.length;
+  const canSubmit =
+    currentAssessment?.questions &&
+    Object.keys(answers).length === currentAssessment.questions.length;
 
   // C. 计算预计剩余时间
-  const remainingQuestions = currentAssessment?.questions?.length 
-    ? currentAssessment.questions.length - currentQuestion - 1 
+  const remainingQuestions = currentAssessment?.questions?.length
+    ? currentAssessment.questions.length - currentQuestion - 1
     : 0;
   const remainingSeconds = remainingQuestions * SECONDS_PER_QUESTION;
   const remainingMinutes = Math.ceil(remainingSeconds / 60);
@@ -296,12 +321,14 @@ export default function AssessmentPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="overflow-hidden h-full hover:shadow-lg transition-shadow cursor-pointer group"
-                onClick={() => handleStartTest('mbti')}>
-            <div className="h-2 bg-gradient-to-r from-violet-500 to-purple-500" />
+          <Card
+            className="overflow-hidden h-full hover:shadow-lg transition-shadow cursor-pointer group"
+            onClick={() => handleStartTest('mbti')}
+          >
+            <div className="h-2 bg-primary dark:bg-primary" />
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-500 text-white shadow-lg shadow-violet-500/25">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary dark:bg-primary text-white ">
                   <Brain className="h-6 w-6" />
                 </div>
                 <div>
@@ -312,21 +339,21 @@ export default function AssessmentPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  通过 48 道题目，基于荣格心理类型理论，发现你的性格类型，了解适合你的学习方式和职业方向。
-                </p>
-                <p className="text-xs text-muted-foreground/70 mt-1">
-                  ⚠️ 本测评非官方 MBTI®，仅供参考
-                </p>
+                <p className="text-sm text-muted-foreground">{t('mbti.intro')}</p>
+                <p className="text-xs text-muted-foreground/70 mt-1">{t('mbti.disclaimer')}</p>
                 <div className="flex flex-wrap gap-2">
                   {['INTJ', 'ENFP', 'ISTJ', 'ENTP'].map((type) => (
-                    <Badge key={type} variant="secondary" className="bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-300">
+                    <Badge
+                      key={type}
+                      variant="secondary"
+                      className="bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-300"
+                    >
                       {type}
                     </Badge>
                   ))}
                   <Badge variant="secondary">+12</Badge>
                 </div>
-                <Button className="w-full group-hover:bg-violet-500 group-hover:text-white transition-colors">
+                <Button className="w-full group-hover:bg-primary group-hover:text-white transition-colors">
                   {t('mbti.start')}
                   <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -341,12 +368,14 @@ export default function AssessmentPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card className="overflow-hidden h-full hover:shadow-lg transition-shadow cursor-pointer group"
-                onClick={() => handleStartTest('holland')}>
-            <div className="h-2 bg-gradient-to-r from-emerald-500 to-teal-500" />
+          <Card
+            className="overflow-hidden h-full hover:shadow-lg transition-shadow cursor-pointer group"
+            onClick={() => handleStartTest('holland')}
+          >
+            <div className="h-2 bg-success" />
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/25">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-success text-white ">
                   <Compass className="h-6 w-6" />
                 </div>
                 <div>
@@ -357,12 +386,14 @@ export default function AssessmentPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  通过 30 道题目，了解你的职业兴趣代码，找到最匹配的专业领域。
-                </p>
+                <p className="text-sm text-muted-foreground">{t('holland.intro')}</p>
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(HOLLAND_ICONS).map(([type, Icon]) => (
-                    <Badge key={type} variant="secondary" className={cn('text-white', HOLLAND_COLORS[type])}>
+                    <Badge
+                      key={type}
+                      variant="secondary"
+                      className={cn('text-white', HOLLAND_COLORS[type])}
+                    >
                       <Icon className="h-3 w-3 mr-1" />
                       {type}
                     </Badge>
@@ -400,23 +431,25 @@ export default function AssessmentPage() {
           {/* 主进度条 */}
           <div className="space-y-2">
             <div className="flex justify-between text-sm text-muted-foreground">
-              <span className="font-medium">{currentQuestion + 1} / {currentAssessment.questions.length}</span>
+              <span className="font-medium">
+                {currentQuestion + 1} / {currentAssessment.questions.length}
+              </span>
               <span>{progress}%</span>
             </div>
             <Progress value={progress} className="h-2" />
           </div>
-          
+
           {/* 维度信息 + 剩余时间 */}
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
             {currentDimension && (
               <Badge variant="outline" className="bg-primary/5">
                 <Target className="h-3 w-3 mr-1" />
-                {currentDimension.name}
+                {currentDimension}
               </Badge>
             )}
             {remainingQuestions > 0 && (
               <span className="text-muted-foreground">
-                预计还需 {remainingMinutes} 分钟
+                {t('timeRemaining', { minutes: remainingMinutes })}
               </span>
             )}
           </div>
@@ -427,16 +460,16 @@ export default function AssessmentPage() {
           <h3 className="text-base sm:text-lg font-semibold mb-4 sm:mb-6 leading-relaxed">
             {question.textZh}
           </h3>
-          
+
           {isLikert ? (
             /* Likert 量表 UI - E. 移动端优化：更大点击区域 */
             <div className="space-y-4 sm:space-y-6">
               {/* 端点标签 */}
               <div className="flex justify-between text-xs sm:text-sm text-muted-foreground px-1">
-                <span>强烈不同意</span>
-                <span>强烈同意</span>
+                <span>{t('likert.stronglyDisagree')}</span>
+                <span>{t('likert.stronglyAgree')}</span>
               </div>
-              
+
               {/* E. 移动端优化：更大的按钮，更好的触控体验 */}
               <div className="flex justify-between gap-2 sm:gap-3 px-1">
                 {question.options.map((option, index) => (
@@ -461,7 +494,7 @@ export default function AssessmentPage() {
                   </motion.button>
                 ))}
               </div>
-              
+
               {/* 选项标签 - 移动端隐藏部分 */}
               <div className="hidden sm:flex justify-between gap-1 text-xs text-muted-foreground px-1">
                 {question.options.map((option) => (
@@ -470,12 +503,11 @@ export default function AssessmentPage() {
                   </span>
                 ))}
               </div>
-              
+
               {/* D. 键盘快捷键提示 - 仅桌面端显示 */}
               <div className="hidden sm:flex justify-center">
                 <span className="text-xs text-muted-foreground bg-muted/50 px-3 py-1 rounded-full">
-                  💡 按 <kbd className="px-1.5 py-0.5 bg-background border rounded text-[10px] mx-0.5">1</kbd>-<kbd className="px-1.5 py-0.5 bg-background border rounded text-[10px] mx-0.5">5</kbd> 快速选择，
-                  <kbd className="px-1.5 py-0.5 bg-background border rounded text-[10px] mx-0.5">←</kbd><kbd className="px-1.5 py-0.5 bg-background border rounded text-[10px] mx-0.5">→</kbd> 切换题目
+                  💡 {t('keyboardHint')}
                 </span>
               </div>
             </div>
@@ -499,13 +531,17 @@ export default function AssessmentPage() {
                   )}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={cn(
-                      'w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0',
-                      selectedAnswer === String(option.value)
-                        ? 'border-primary bg-primary text-white'
-                        : 'border-muted-foreground'
-                    )}>
-                      {selectedAnswer === String(option.value) && <Check className="h-3 w-3 sm:h-4 sm:w-4" />}
+                    <div
+                      className={cn(
+                        'w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0',
+                        selectedAnswer === String(option.value)
+                          ? 'border-primary bg-primary text-white'
+                          : 'border-muted-foreground'
+                      )}
+                    >
+                      {selectedAnswer === String(option.value) && (
+                        <Check className="h-3 w-3 sm:h-4 sm:w-4" />
+                      )}
                     </div>
                     <span className="text-sm sm:text-base">{option.textZh}</span>
                   </div>
@@ -517,20 +553,13 @@ export default function AssessmentPage() {
 
         {/* 导航 */}
         <div className="flex justify-between">
-          <Button
-            variant="outline"
-            onClick={handlePrev}
-            disabled={currentQuestion === 0}
-          >
+          <Button variant="outline" onClick={handlePrev} disabled={currentQuestion === 0}>
             <ChevronLeft className="mr-2 h-4 w-4" />
             {t('prev')}
           </Button>
 
           {currentQuestion === currentAssessment.questions.length - 1 ? (
-            <Button
-              onClick={handleSubmit}
-              disabled={!canSubmit || submitMutation.isPending}
-            >
+            <Button onClick={handleSubmit} disabled={!canSubmit || submitMutation.isPending}>
               {submitMutation.isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
@@ -539,10 +568,7 @@ export default function AssessmentPage() {
               {t('submit')}
             </Button>
           ) : (
-            <Button
-              onClick={handleNext}
-              disabled={!selectedAnswer}
-            >
+            <Button onClick={handleNext} disabled={!selectedAnswer}>
               {t('next')}
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
@@ -560,10 +586,10 @@ export default function AssessmentPage() {
         animate={{ scale: 1, opacity: 1 }}
         className="text-center py-8"
       >
-        <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-gradient-to-br from-violet-500 to-purple-500 shadow-lg shadow-violet-500/30 mb-4">
+        <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-primary dark:bg-primary border-2 border-violet-500/30 mb-4">
           <span className="text-4xl font-bold text-white">{result.type}</span>
         </div>
-        <h2 className="text-2xl font-bold">{result.titleZh}</h2>
+        <h2 className="text-subtitle">{result.titleZh}</h2>
         <p className="text-muted-foreground mt-2">{result.descriptionZh}</p>
       </motion.div>
 
@@ -572,30 +598,35 @@ export default function AssessmentPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <LineChart className="h-5 w-5 text-primary" />
-            维度分析
+            {t('dimensionAnalysis')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {[
-            { label: 'E/I', left: 'E 外向', right: 'I 内向', leftScore: result.scores.E, rightScore: result.scores.I },
-            { label: 'S/N', left: 'S 感觉', right: 'N 直觉', leftScore: result.scores.S, rightScore: result.scores.N },
-            { label: 'T/F', left: 'T 思考', right: 'F 情感', leftScore: result.scores.T, rightScore: result.scores.F },
-            { label: 'J/P', left: 'J 判断', right: 'P 知觉', leftScore: result.scores.J, rightScore: result.scores.P },
+            { label: 'E/I', key: 'EI', leftScore: result.scores.E, rightScore: result.scores.I },
+            { label: 'S/N', key: 'SN', leftScore: result.scores.S, rightScore: result.scores.N },
+            { label: 'T/F', key: 'TF', leftScore: result.scores.T, rightScore: result.scores.F },
+            { label: 'J/P', key: 'JP', leftScore: result.scores.J, rightScore: result.scores.P },
           ].map((dim) => (
             <div key={dim.label} className="space-y-1">
               <div className="flex justify-between text-sm">
-                <span className={dim.leftScore > 50 ? 'font-bold text-primary' : 'text-muted-foreground'}>
-                  {dim.left} ({dim.leftScore}%)
+                <span
+                  className={
+                    dim.leftScore > 50 ? 'font-bold text-primary' : 'text-muted-foreground'
+                  }
+                >
+                  {t(`mbtiDimensions.${dim.key}.left`)} ({dim.leftScore}%)
                 </span>
-                <span className={dim.rightScore > 50 ? 'font-bold text-primary' : 'text-muted-foreground'}>
-                  {dim.right} ({dim.rightScore}%)
+                <span
+                  className={
+                    dim.rightScore > 50 ? 'font-bold text-primary' : 'text-muted-foreground'
+                  }
+                >
+                  {t(`mbtiDimensions.${dim.key}.right`)} ({dim.rightScore}%)
                 </span>
               </div>
               <div className="h-3 bg-muted rounded-full overflow-hidden flex">
-                <div
-                  className="bg-primary transition-all"
-                  style={{ width: `${dim.leftScore}%` }}
-                />
+                <div className="bg-primary transition-all" style={{ width: `${dim.leftScore}%` }} />
               </div>
             </div>
           ))}
@@ -614,7 +645,9 @@ export default function AssessmentPage() {
           <CardContent>
             <div className="flex flex-wrap gap-2">
               {result.strengths.map((s) => (
-                <Badge key={s} variant="secondary">{s}</Badge>
+                <Badge key={s} variant="secondary">
+                  {s}
+                </Badge>
               ))}
             </div>
           </CardContent>
@@ -630,7 +663,9 @@ export default function AssessmentPage() {
           <CardContent>
             <div className="flex flex-wrap gap-2">
               {result.careers.map((c) => (
-                <Badge key={c} variant="outline">{c}</Badge>
+                <Badge key={c} variant="outline">
+                  {c}
+                </Badge>
               ))}
             </div>
           </CardContent>
@@ -646,7 +681,10 @@ export default function AssessmentPage() {
           <CardContent>
             <div className="flex flex-wrap gap-2">
               {result.majors.map((m) => (
-                <Badge key={m} className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
+                <Badge
+                  key={m}
+                  className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300"
+                >
                   {m}
                 </Badge>
               ))}
@@ -657,9 +695,9 @@ export default function AssessmentPage() {
 
       {/* 免责声明 */}
       <div className="text-xs text-muted-foreground text-center p-3 bg-muted/50 rounded-lg">
-        ⚠️ 本测评基于荣格心理类型理论，非官方 MBTI® 测评，仅供个人探索和教育用途。
+        {t('mbtiDisclaimer')}
         <br />
-        MBTI® 是 The Myers-Briggs Company 的注册商标。
+        {t('mbtiTrademark')}
       </div>
 
       <Button onClick={handleRetake} variant="outline" className="w-full">
@@ -697,10 +735,8 @@ export default function AssessmentPage() {
             );
           })}
         </div>
-        <h2 className="text-2xl font-bold">你的职业代码: {result.codes}</h2>
-        <p className="text-muted-foreground mt-2">
-          {result.typesZh.join(' · ')}
-        </p>
+        <h2 className="text-subtitle">{t('hollandCode', { code: result.codes })}</h2>
+        <p className="text-muted-foreground mt-2">{result.typesZh.join(' · ')}</p>
       </motion.div>
 
       {/* 各类型得分 */}
@@ -708,7 +744,7 @@ export default function AssessmentPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Target className="h-5 w-5 text-primary" />
-            兴趣类型得分
+            {t('interestScores')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -725,7 +761,9 @@ export default function AssessmentPage() {
                       <Icon className="h-4 w-4" />
                       {type}
                     </span>
-                    <span className="font-medium">{score}/{maxScore}</span>
+                    <span className="font-medium">
+                      {score}/{maxScore}
+                    </span>
                   </div>
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
                     <motion.div
@@ -753,7 +791,9 @@ export default function AssessmentPage() {
           <CardContent>
             <div className="flex flex-wrap gap-2">
               {result.fieldsZh.slice(0, 8).map((f) => (
-                <Badge key={f} variant="outline">{f}</Badge>
+                <Badge key={f} variant="outline">
+                  {f}
+                </Badge>
               ))}
             </div>
           </CardContent>
@@ -769,7 +809,10 @@ export default function AssessmentPage() {
           <CardContent>
             <div className="flex flex-wrap gap-2">
               {result.majors.slice(0, 8).map((m) => (
-                <Badge key={m} className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
+                <Badge
+                  key={m}
+                  className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300"
+                >
                   {m}
                 </Badge>
               ))}
@@ -805,9 +848,9 @@ export default function AssessmentPage() {
         <Card className="p-12 text-center">
           <Trophy className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
           <h3 className="font-semibold">{t('noHistory')}</h3>
-          <p className="text-sm text-muted-foreground mt-1">完成测评后，结果将显示在这里</p>
+          <p className="text-sm text-muted-foreground mt-1">{t('noHistoryHint')}</p>
           <Button className="mt-4" onClick={() => setActiveTab('intro')}>
-            开始测评
+            {t('startAssessment')}
           </Button>
         </Card>
       ) : (
@@ -820,7 +863,7 @@ export default function AssessmentPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
               >
-                <Card 
+                <Card
                   className="cursor-pointer hover:shadow-md transition-shadow"
                   onClick={() => {
                     setCurrentResult(result);
@@ -830,12 +873,12 @@ export default function AssessmentPage() {
                 >
                   <CardContent className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className={cn(
-                        'w-12 h-12 rounded-lg flex items-center justify-center text-white',
-                        result.type === 'MBTI' 
-                          ? 'bg-gradient-to-br from-violet-500 to-purple-500'
-                          : 'bg-gradient-to-br from-emerald-500 to-teal-500'
-                      )}>
+                      <div
+                        className={cn(
+                          'w-12 h-12 rounded-lg flex items-center justify-center text-white',
+                          result.type === 'MBTI' ? 'bg-primary dark:bg-primary' : 'bg-success'
+                        )}
+                      >
                         {result.type === 'MBTI' ? (
                           <Brain className="h-6 w-6" />
                         ) : (
@@ -844,12 +887,13 @@ export default function AssessmentPage() {
                       </div>
                       <div>
                         <h4 className="font-semibold">
-                          {result.type === 'MBTI' ? '荣格类型性格测试' : '霍兰德职业测试'}
+                          {result.type === 'MBTI' ? t('testTypes.mbti') : t('testTypes.holland')}
                         </h4>
                         <p className="text-sm text-muted-foreground">
                           {result.mbtiResult?.type || result.hollandResult?.codes}
                           {' · '}
-                          {t('completedAt')}: {new Date(result.completedAt).toLocaleDateString()}
+                          {t('completedAt')}:{' '}
+                          {format.dateTime(new Date(result.completedAt), 'medium')}
                         </p>
                       </div>
                     </div>
@@ -864,18 +908,122 @@ export default function AssessmentPage() {
     </div>
   );
 
+  // AI 助手面板的上下文操作 - 根据当前状态动态生成
+  const aiContextActions = useMemo((): ContextAction[] => {
+    const actions: ContextAction[] = [];
+
+    // 如果有测评结果，提供结果解读操作
+    if (currentResult) {
+      if (currentResult.mbtiResult) {
+        const mbtiScores = `E=${currentResult.mbtiResult.scores.E}%, I=${currentResult.mbtiResult.scores.I}%, S=${currentResult.mbtiResult.scores.S}%, N=${currentResult.mbtiResult.scores.N}%, T=${currentResult.mbtiResult.scores.T}%, F=${currentResult.mbtiResult.scores.F}%, J=${currentResult.mbtiResult.scores.J}%, P=${currentResult.mbtiResult.scores.P}%`;
+        actions.push(
+          {
+            id: 'interpret-mbti',
+            label: t('aiActions.interpretMbti'),
+            prompt: t('aiActions.interpretMbtiPrompt', {
+              type: currentResult.mbtiResult.type,
+              scores: mbtiScores,
+            }),
+            icon: <Brain className="h-4 w-4" />,
+          },
+          {
+            id: 'recommend-majors-mbti',
+            label: t('aiActions.recommendMajorsMbti'),
+            prompt: t('aiActions.recommendMajorsMbtiPrompt', {
+              type: currentResult.mbtiResult.type,
+              strengths: currentResult.mbtiResult.strengths.join(', '),
+              majors: currentResult.mbtiResult.majors.join(', '),
+              careers: currentResult.mbtiResult.careers.join(', '),
+            }),
+            icon: <GraduationCap className="h-4 w-4" />,
+          }
+        );
+      }
+
+      if (currentResult.hollandResult) {
+        const hollandScores = Object.entries(currentResult.hollandResult.scores)
+          .map(([k, v]) => `${k}=${v}`)
+          .join(', ');
+        actions.push(
+          {
+            id: 'interpret-holland',
+            label: t('aiActions.interpretHolland'),
+            prompt: t('aiActions.interpretHollandPrompt', {
+              codes: currentResult.hollandResult.codes,
+              types: currentResult.hollandResult.typesZh.join(', '),
+              scores: hollandScores,
+            }),
+            icon: <Compass className="h-4 w-4" />,
+          },
+          {
+            id: 'recommend-majors-holland',
+            label: t('aiActions.recommendMajorsHolland'),
+            prompt: t('aiActions.recommendMajorsHollandPrompt', {
+              codes: currentResult.hollandResult.codes,
+              types: currentResult.hollandResult.typesZh.join(', '),
+              fields: currentResult.hollandResult.fieldsZh.join(', '),
+              majors: currentResult.hollandResult.majors.join(', '),
+            }),
+            icon: <GraduationCap className="h-4 w-4" />,
+          }
+        );
+      }
+
+      // 通用的综合建议
+      const testResults = [
+        currentResult.mbtiResult ? `- MBTI: ${currentResult.mbtiResult.type}` : '',
+        currentResult.hollandResult ? `- Holland: ${currentResult.hollandResult.codes}` : '',
+      ]
+        .filter(Boolean)
+        .join('\n');
+      actions.push({
+        id: 'comprehensive-analysis',
+        label: t('aiActions.comprehensiveAnalysis'),
+        prompt: t('aiActions.comprehensiveAnalysisPrompt', { testResults }),
+        icon: <Lightbulb className="h-4 w-4" />,
+      });
+    } else {
+      // 没有结果时，提供通用操作
+      actions.push(
+        {
+          id: 'explain-mbti',
+          label: t('aiActions.explainMbti'),
+          prompt: t('aiActions.explainMbtiPrompt'),
+          icon: <Brain className="h-4 w-4" />,
+        },
+        {
+          id: 'explain-holland',
+          label: t('aiActions.explainHolland'),
+          prompt: t('aiActions.explainHollandPrompt'),
+          icon: <Compass className="h-4 w-4" />,
+        },
+        {
+          id: 'major-selection-guide',
+          label: t('aiActions.majorSelectionGuide'),
+          prompt: t('aiActions.majorSelectionGuidePrompt'),
+          icon: <Target className="h-4 w-4" />,
+        }
+      );
+    }
+
+    return actions;
+  }, [currentResult, t]);
+
+  // AI 助手面板状态
+  const [showAiPanel, setShowAiPanel] = useState(false);
+
   return (
     <div className="container mx-auto py-8 px-4 max-w-4xl">
       {/* Header */}
-      <div className="relative mb-8 overflow-hidden rounded-2xl bg-gradient-to-br from-violet-500/10 via-background to-emerald-500/10 p-6 sm:p-8">
-        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gradient-to-br from-violet-500/20 to-emerald-500/20 blur-3xl" />
+      <div className="relative mb-8 overflow-hidden rounded-lg bg-primary/5 p-6 sm:p-8">
+        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/15 blur-3xl" />
         <div className="relative z-10">
           <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-emerald-500 shadow-lg shadow-violet-500/25">
+            <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-primary ">
               <BookOpen className="h-7 w-7 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t('title')}</h1>
+              <h1 className="text-title">{t('title')}</h1>
               <p className="text-muted-foreground">{t('description')}</p>
             </div>
           </div>
@@ -887,58 +1035,83 @@ export default function AssessmentPage() {
         <TabsList className="grid w-full grid-cols-4 mb-6">
           <TabsTrigger value="intro">
             <Sparkles className="h-4 w-4 mr-2" />
-            开始
+            {t('tabs.intro')}
           </TabsTrigger>
           <TabsTrigger value="mbti">
             <Brain className="h-4 w-4 mr-2" />
-            MBTI
+            {t('tabs.mbti')}
           </TabsTrigger>
           <TabsTrigger value="holland">
             <Compass className="h-4 w-4 mr-2" />
-            霍兰德
+            {t('tabs.holland')}
           </TabsTrigger>
           <TabsTrigger value="history">
             <Trophy className="h-4 w-4 mr-2" />
-            {t('history')}
+            {t('tabs.history')}
           </TabsTrigger>
         </TabsList>
 
-        <AnimatePresence mode="wait">
-          <TabsContent value="intro">
-            {renderIntro()}
-          </TabsContent>
+        <TabsContent value="intro">{renderIntro()}</TabsContent>
 
-          <TabsContent value="mbti">
-            {isLoading ? (
-              <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : showResult ? (
-              renderResult()
-            ) : (
-              renderQuestion()
-            )}
-          </TabsContent>
+        <TabsContent value="mbti">
+          {isLoading ? (
+            <div className="flex items-center justify-center h-64">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : showResult ? (
+            renderResult()
+          ) : (
+            renderQuestion()
+          )}
+        </TabsContent>
 
-          <TabsContent value="holland">
-            {isLoading ? (
-              <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : showResult ? (
-              renderResult()
-            ) : (
-              renderQuestion()
-            )}
-          </TabsContent>
+        <TabsContent value="holland">
+          {isLoading ? (
+            <div className="flex items-center justify-center h-64">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : showResult ? (
+            renderResult()
+          ) : (
+            renderQuestion()
+          )}
+        </TabsContent>
 
-          <TabsContent value="history">
-            {renderHistory()}
-          </TabsContent>
-        </AnimatePresence>
+        <TabsContent value="history">{renderHistory()}</TabsContent>
       </Tabs>
+
+      {/* AI 助手触发按钮 */}
+      <motion.button
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={() => setShowAiPanel(true)}
+        className={cn(
+          'fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center',
+          'rounded-full bg-primary text-white shadow-lg',
+          'hover:bg-primary/90 transition-colors',
+          showAiPanel && 'hidden'
+        )}
+      >
+        <Bot className="h-6 w-6" />
+      </motion.button>
+
+      {/* AI 助手面板 */}
+      <AiAssistantPanel
+        isOpen={showAiPanel}
+        onClose={() => setShowAiPanel(false)}
+        title={t('aiAssistant.title')}
+        description={currentResult ? t('aiAssistant.withResult') : t('aiAssistant.default')}
+        contextActions={aiContextActions}
+        initialMessage={
+          currentResult
+            ? t('aiAssistant.initialWithResult', {
+                testType: currentResult.mbtiResult ? 'MBTI' : 'Holland',
+              })
+            : t('aiAssistant.initialNoResult')
+        }
+      />
     </div>
   );
 }
-
-

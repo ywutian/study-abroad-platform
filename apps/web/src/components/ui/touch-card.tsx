@@ -204,18 +204,5 @@ interface SwipeableItemProps {
 }
 
 export function SwipeableItem({ children, className }: SwipeableItemProps) {
-  return (
-    <div className={cn('scroll-snap-item flex-shrink-0', className)}>
-      {children}
-    </div>
-  );
+  return <div className={cn('scroll-snap-item flex-shrink-0', className)}>{children}</div>;
 }
-
-
-
-
-
-
-
-
-

@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
@@ -24,6 +24,7 @@ import { apiClient } from '@/lib/api';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { LoadingState } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
+import { RecommendedUsers, UserProfilePreview } from '@/components/features';
 import { toast } from 'sonner';
 import {
   Users,
@@ -35,14 +36,23 @@ import {
   Loader2,
   UserCheck,
   Heart,
+  Eye,
 } from 'lucide-react';
 import { useRouter } from '@/lib/i18n/navigation';
 import { cn } from '@/lib/utils';
+
+interface UserProfile {
+  nickname?: string;
+  avatar?: string;
+  bio?: string;
+  targetMajor?: string;
+}
 
 interface User {
   id: string;
   email: string;
   role: string;
+  profile?: UserProfile;
 }
 
 interface FollowRelation {
@@ -70,27 +80,26 @@ export default function FollowersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [userToUnfollow, setUserToUnfollow] = useState<string | null>(null);
   const [userToUnblock, setUserToUnblock] = useState<string | null>(null);
+  const [previewUserId, setPreviewUserId] = useState<string | null>(null);
 
   // Fetch followers
-  const { data: followersData, isLoading: followersLoading } = useQuery({
+  // apiClient 已自动解包 { success, data } -> data
+  const { data: followers = [], isLoading: followersLoading } = useQuery({
     queryKey: ['followers'],
-    queryFn: () => apiClient.get<{ success: boolean; data: FollowRelation[] }>('/chat/followers'),
+    queryFn: () => apiClient.get<FollowRelation[]>('/chat/followers'),
   });
-  const followers = followersData?.data || [];
 
   // Fetch following
-  const { data: followingData, isLoading: followingLoading } = useQuery({
+  const { data: following = [], isLoading: followingLoading } = useQuery({
     queryKey: ['following'],
-    queryFn: () => apiClient.get<{ success: boolean; data: FollowRelation[] }>('/chat/following'),
+    queryFn: () => apiClient.get<FollowRelation[]>('/chat/following'),
   });
-  const following = followingData?.data || [];
 
   // Fetch blocked users
-  const { data: blockedData, isLoading: blockedLoading } = useQuery({
+  const { data: blocked = [], isLoading: blockedLoading } = useQuery({
     queryKey: ['blocked'],
-    queryFn: () => apiClient.get<{ success: boolean; data: BlockRelation[] }>('/chat/blocked'),
+    queryFn: () => apiClient.get<BlockRelation[]>('/chat/blocked'),
   });
-  const blocked = blockedData?.data || [];
 
   // Follow user mutation
   const followMutation = useMutation({
@@ -119,7 +128,7 @@ export default function FollowersPage() {
   });
 
   // Block user mutation
-  const blockMutation = useMutation({
+  const _blockMutation = useMutation({
     mutationFn: (userId: string) => apiClient.post(`/chat/block/${userId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['blocked'] });
@@ -160,17 +169,28 @@ export default function FollowersPage() {
   const getRoleBadge = (role: string) => {
     switch (role) {
       case 'ADMIN':
-        return <Badge variant="gradient-purple">{t('common.administrator')}</Badge>;
+        return <Badge variant="purple">{t('common.administrator')}</Badge>;
       case 'VERIFIED':
-        return <Badge variant="gradient-success">{t('common.verified')}</Badge>;
+        return <Badge variant="success">{t('common.verified')}</Badge>;
       default:
         return null;
     }
   };
 
-  const filterBySearch = (email: string) => {
-    if (!searchQuery) return true;
-    return email.toLowerCase().includes(searchQuery.toLowerCase());
+  const filterBySearch = (user?: User) => {
+    if (!searchQuery || !user) return true;
+    const query = searchQuery.toLowerCase();
+    const nickname = user.profile?.nickname?.toLowerCase() || '';
+    const email = user.email?.toLowerCase() || '';
+    return nickname.includes(query) || email.includes(query);
+  };
+
+  const getDisplayName = (user?: User) => {
+    return user?.profile?.nickname || user?.email?.split('@')[0] || '';
+  };
+
+  const getAvatarFallback = (user?: User) => {
+    return (user?.profile?.nickname?.[0] || user?.email?.[0] || '?').toUpperCase();
   };
 
   const tabConfig = [
@@ -187,33 +207,61 @@ export default function FollowersPage() {
         icon={Users}
         color="indigo"
         stats={[
-          { label: t('followers.tabs.followers'), value: followers?.length || 0, icon: Users, color: 'text-blue-500' },
-          { label: t('followers.tabs.following'), value: following?.length || 0, icon: Heart, color: 'text-rose-500' },
-          { label: t('followers.mutualFollow'), value: followers?.filter(f => isMutualFollow(f.follower?.id || '')).length || 0, icon: UserCheck, color: 'text-emerald-500' },
+          {
+            label: t('followers.tabs.followers'),
+            value: followers?.length || 0,
+            icon: Users,
+            color: 'text-blue-500',
+          },
+          {
+            label: t('followers.tabs.following'),
+            value: following?.length || 0,
+            icon: Heart,
+            color: 'text-rose-500',
+          },
+          {
+            label: t('followers.mutualFollow'),
+            value: followers?.filter((f) => isMutualFollow(f.follower?.id || '')).length || 0,
+            icon: UserCheck,
+            color: 'text-emerald-500',
+          },
         ]}
       />
+
+      {/* 推荐关注 */}
+      <RecommendedUsers className="mb-6" />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
           <TabsList className="bg-muted/50">
             {tabConfig.map((tab) => {
               const TabIcon = tab.icon;
-              const count = tab.value === 'followers' ? followers?.length : tab.value === 'following' ? following?.length : blocked?.length;
+              const count =
+                tab.value === 'followers'
+                  ? followers?.length
+                  : tab.value === 'following'
+                    ? following?.length
+                    : blocked?.length;
               return (
                 <TabsTrigger
                   key={tab.value}
                   value={tab.value}
                   className={cn(
                     'gap-2 data-[state=active]:shadow-sm',
-                    tab.value === 'followers' && 'data-[state=active]:bg-blue-500/10 data-[state=active]:text-blue-600',
-                    tab.value === 'following' && 'data-[state=active]:bg-rose-500/10 data-[state=active]:text-rose-600',
-                    tab.value === 'blocked' && 'data-[state=active]:bg-muted data-[state=active]:text-muted-foreground',
+                    tab.value === 'followers' &&
+                      'data-[state=active]:bg-blue-500/10 data-[state=active]:text-blue-600',
+                    tab.value === 'following' &&
+                      'data-[state=active]:bg-rose-500/10 data-[state=active]:text-rose-600',
+                    tab.value === 'blocked' &&
+                      'data-[state=active]:bg-muted data-[state=active]:text-muted-foreground'
                   )}
                 >
                   <TabIcon className="h-4 w-4" />
                   <span className="hidden sm:inline">{t(`followers.tabs.${tab.value}`)}</span>
                   {count !== undefined && count > 0 && (
-                    <Badge variant="secondary" className="h-5 px-1.5 text-xs">{count}</Badge>
+                    <Badge variant="secondary" className="h-5 px-1.5 text-xs">
+                      {count}
+                    </Badge>
                   )}
                 </TabsTrigger>
               );
@@ -236,10 +284,10 @@ export default function FollowersPage() {
         <TabsContent value="followers" className="mt-0">
           {followersLoading ? (
             <LoadingState variant="card" count={6} />
-          ) : followers && followers.filter((f) => filterBySearch(f.follower?.email || '')).length > 0 ? (
+          ) : followers && followers.filter((f) => filterBySearch(f.follower)).length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {followers
-                .filter((f) => filterBySearch(f.follower?.email || ''))
+                .filter((f) => filterBySearch(f.follower))
                 .map((relation, index) => (
                   <motion.div
                     key={relation.id}
@@ -248,16 +296,27 @@ export default function FollowersPage() {
                     transition={{ delay: index * 0.05 }}
                   >
                     <Card className="overflow-hidden hover:shadow-md transition-shadow">
-                      <div className="h-1 bg-gradient-to-r from-blue-500 to-cyan-500" />
+                      <div className="h-1 bg-primary" />
                       <CardContent className="flex items-center gap-4 p-4">
                         <Avatar className="h-12 w-12 border-2 border-blue-500/20">
-                          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-cyan-500 text-white font-semibold">
-                            {relation.follower?.email?.[0]?.toUpperCase()}
-                          </AvatarFallback>
+                          {relation.follower?.profile?.avatar ? (
+                            <AvatarImage src={relation.follower.profile.avatar} />
+                          ) : (
+                            <AvatarFallback className="bg-primary text-white font-semibold">
+                              {getAvatarFallback(relation.follower)}
+                            </AvatarFallback>
+                          )}
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold truncate">{relation.follower?.email?.split('@')[0]}</p>
-                          <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-semibold truncate">
+                            {getDisplayName(relation.follower)}
+                          </p>
+                          {relation.follower?.profile?.bio && (
+                            <p className="text-xs text-muted-foreground truncate">
+                              {relation.follower.profile.bio}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-2 flex-wrap mt-1">
                             {getRoleBadge(relation.follower?.role || '')}
                             {isMutualFollow(relation.follower?.id || '') && (
                               <Badge variant="success" className="gap-1">
@@ -268,6 +327,14 @@ export default function FollowersPage() {
                           </div>
                         </div>
                         <div className="flex gap-1.5">
+                          <Button
+                            size="icon-sm"
+                            variant="ghost"
+                            onClick={() => setPreviewUserId(relation.follower?.id || '')}
+                            className="hover:bg-muted"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
                           {!isFollowing(relation.follower?.id || '') && (
                             <Button
                               size="icon-sm"
@@ -308,10 +375,10 @@ export default function FollowersPage() {
         <TabsContent value="following" className="mt-0">
           {followingLoading ? (
             <LoadingState variant="card" count={6} />
-          ) : following && following.filter((f) => filterBySearch(f.following?.email || '')).length > 0 ? (
+          ) : following && following.filter((f) => filterBySearch(f.following)).length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {following
-                .filter((f) => filterBySearch(f.following?.email || ''))
+                .filter((f) => filterBySearch(f.following))
                 .map((relation, index) => (
                   <motion.div
                     key={relation.id}
@@ -320,16 +387,27 @@ export default function FollowersPage() {
                     transition={{ delay: index * 0.05 }}
                   >
                     <Card className="overflow-hidden hover:shadow-md transition-shadow">
-                      <div className="h-1 bg-gradient-to-r from-rose-500 to-pink-500" />
+                      <div className="h-1 bg-destructive" />
                       <CardContent className="flex items-center gap-4 p-4">
                         <Avatar className="h-12 w-12 border-2 border-rose-500/20">
-                          <AvatarFallback className="bg-gradient-to-br from-rose-500 to-pink-500 text-white font-semibold">
-                            {relation.following?.email?.[0]?.toUpperCase()}
-                          </AvatarFallback>
+                          {relation.following?.profile?.avatar ? (
+                            <AvatarImage src={relation.following.profile.avatar} />
+                          ) : (
+                            <AvatarFallback className="bg-destructive text-white font-semibold">
+                              {getAvatarFallback(relation.following)}
+                            </AvatarFallback>
+                          )}
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold truncate">{relation.following?.email?.split('@')[0]}</p>
-                          <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-semibold truncate">
+                            {getDisplayName(relation.following)}
+                          </p>
+                          {relation.following?.profile?.bio && (
+                            <p className="text-xs text-muted-foreground truncate">
+                              {relation.following.profile.bio}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-2 flex-wrap mt-1">
                             {getRoleBadge(relation.following?.role || '')}
                             {isMutualFollow(relation.following?.id || '') && (
                               <Badge variant="success" className="gap-1">
@@ -340,6 +418,14 @@ export default function FollowersPage() {
                           </div>
                         </div>
                         <div className="flex gap-1.5">
+                          <Button
+                            size="icon-sm"
+                            variant="ghost"
+                            onClick={() => setPreviewUserId(relation.following?.id || '')}
+                            className="hover:bg-muted"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
                           {isMutualFollow(relation.following?.id || '') && (
                             <Button
                               size="icon-sm"
@@ -377,10 +463,10 @@ export default function FollowersPage() {
         <TabsContent value="blocked" className="mt-0">
           {blockedLoading ? (
             <LoadingState variant="card" count={3} />
-          ) : blocked && blocked.filter((b) => filterBySearch(b.blocked?.email || '')).length > 0 ? (
+          ) : blocked && blocked.filter((b) => filterBySearch(b.blocked)).length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {blocked
-                .filter((b) => filterBySearch(b.blocked?.email || ''))
+                .filter((b) => filterBySearch(b.blocked))
                 .map((relation, index) => (
                   <motion.div
                     key={relation.id}
@@ -389,15 +475,24 @@ export default function FollowersPage() {
                     transition={{ delay: index * 0.05 }}
                   >
                     <Card className="overflow-hidden hover:shadow-md transition-shadow">
-                      <div className="h-1 bg-gradient-to-r from-slate-500 to-gray-500" />
+                      <div className="h-1 bg-slate-500" />
                       <CardContent className="flex items-center gap-4 p-4">
                         <Avatar className="h-12 w-12 opacity-60">
-                          <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
-                            {relation.blocked?.email?.[0]?.toUpperCase()}
-                          </AvatarFallback>
+                          {relation.blocked?.profile?.avatar ? (
+                            <AvatarImage
+                              src={relation.blocked.profile.avatar}
+                              className="grayscale"
+                            />
+                          ) : (
+                            <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
+                              {getAvatarFallback(relation.blocked)}
+                            </AvatarFallback>
+                          )}
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold truncate text-muted-foreground">{relation.blocked?.email?.split('@')[0]}</p>
+                          <p className="font-semibold truncate text-muted-foreground">
+                            {getDisplayName(relation.blocked)}
+                          </p>
                           <Badge variant="destructive" className="mt-1">
                             <Shield className="h-3 w-3 mr-1" />
                             {t('followers.blocked')}
@@ -430,9 +525,7 @@ export default function FollowersPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('followers.dialogs.unfollowTitle')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('followers.dialogs.unfollowDesc')}
-            </AlertDialogDescription>
+            <AlertDialogDescription>{t('followers.dialogs.unfollowDesc')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
@@ -452,19 +545,26 @@ export default function FollowersPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('followers.dialogs.unblockTitle')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('followers.dialogs.unblockDesc')}
-            </AlertDialogDescription>
+            <AlertDialogDescription>{t('followers.dialogs.unblockDesc')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={() => userToUnblock && unblockMutation.mutate(userToUnblock)}>
+            <AlertDialogAction
+              onClick={() => userToUnblock && unblockMutation.mutate(userToUnblock)}
+            >
               {unblockMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t('followers.dialogs.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* User Profile Preview */}
+      <UserProfilePreview
+        userId={previewUserId}
+        open={!!previewUserId}
+        onOpenChange={(open) => !open && setPreviewUserId(null)}
+      />
     </PageContainer>
   );
 }

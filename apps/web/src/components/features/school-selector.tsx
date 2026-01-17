@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { apiClient } from '@/lib/api';
 import { Search, GraduationCap, X, Loader2 } from 'lucide-react';
+import { getSchoolName, getSchoolSubName } from '@/lib/utils';
 
 interface School {
   id: string;
@@ -47,6 +48,7 @@ export function SchoolSelector({
 }: SchoolSelectorProps) {
   const t = useTranslations('schoolSelector');
   const tCommon = useTranslations('common');
+  const locale = useLocale();
   const [search, setSearch] = useState('');
   const finalTitle = title ?? t('title');
   const [tempSelected, setTempSelected] = useState<School[]>(selectedSchools);
@@ -55,13 +57,13 @@ export function SchoolSelector({
   const { data: schoolsResponse, isLoading } = useQuery({
     queryKey: ['schools', search],
     queryFn: () =>
-      apiClient.get<{ success: boolean; data: { items: School[]; total: number } }>('/schools', {
+      apiClient.get<{ items: School[]; total: number }>('/schools', {
         params: { search, pageSize: '100' },
       }),
     enabled: open,
   });
 
-  const schools = schoolsResponse?.data?.items || [];
+  const schools = schoolsResponse?.items || [];
 
   // Filter and sort schools
   const filteredSchools = useMemo(() => {
@@ -131,7 +133,7 @@ export function SchoolSelector({
           <div className="flex flex-wrap gap-2">
             {tempSelected.map((school) => (
               <Badge key={school.id} variant="secondary" className="gap-1 pr-1">
-                {school.nameZh || school.name}
+                {getSchoolName(school, locale)}
                 <button
                   onClick={() => toggleSchool(school)}
                   className="ml-1 rounded-full p-0.5 hover:bg-muted"
@@ -171,7 +173,7 @@ export function SchoolSelector({
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="font-medium truncate">{school.nameZh || school.name}</p>
+                      <p className="font-medium truncate">{getSchoolName(school, locale)}</p>
                       {school.usNewsRank && (
                         <Badge variant="outline" className="text-xs shrink-0">
                           #{school.usNewsRank}
@@ -179,7 +181,7 @@ export function SchoolSelector({
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground truncate">
-                      {school.name}
+                      {getSchoolSubName(school, locale) || school.name}
                       {school.state && ` · ${school.state}`}
                     </p>
                   </div>
@@ -210,7 +212,3 @@ export function SchoolSelector({
     </Dialog>
   );
 }
-
-
-
-

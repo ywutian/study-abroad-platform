@@ -1,55 +1,103 @@
-// 功能组件导出
+// Core feature components
+export { FeatureCard, StatCard, CTACard } from './feature-card';
 
-// 新手引导
-export { TourProvider, useTour, TOURS, welcomeTourSteps } from './onboarding/tour-provider';
-export { WelcomeDialog, ResetWelcomeButton } from './onboarding/welcome-dialog';
-export { OnboardingGuide } from './onboarding-guide';
-export { MilestoneCelebration, useMilestoneCelebration } from './milestone-celebration';
+// Case components
+export { CaseCard } from './case-card';
+export { SubmitCaseDialog } from './submit-case-dialog';
 
-// 通知系统
-export { NotificationCenter } from './notifications/notification-center';
-
-// 全局搜索
-export { GlobalSearch, SearchTrigger } from './search/global-search';
-
-// 帮助中心
-export { HelpCenter } from './help/help-center';
-
-// 用户反馈
-export { FeedbackWidget, QuickFeedbackButton } from './feedback/feedback-widget';
-
-// 数据导出
-export { DataExportDialog, QuickExportButton } from './export/data-export';
-
-// 个人资料表单
-export { TestScoreForm } from './test-score-form';
+// Form components
 export { ActivityForm } from './activity-form';
 export { AwardForm } from './award-form';
 export { EducationForm } from './education-form';
+export { TestScoreForm } from './test-score-form';
 
-// 选择器
-export { SchoolSelector } from './school-selector';
+// Selector components
 export { ProfileSelector } from './profile-selector';
+export { SchoolSelector } from './school-selector';
 
-// 案例相关
-export { CaseCard } from './case-card';
-export { SubmitCaseDialog } from './submit-case-dialog';
+// UI components
+export { ProbabilityRing } from './probability-ring';
+export { MilestoneCelebration } from './milestone-celebration';
+export { OnboardingGuide } from './onboarding-guide';
 export { CreateListDialog } from './create-list-dialog';
 
-// 展示组件
-export { FeatureCard } from './feature-card';
-export { StatCard } from './stat-card';
-export { ProbabilityRing } from './probability-ring';
+// Dashboard components
+export * from './dashboard';
 
-// AI 聊天
+// Chat components
+export * from './chat';
+
+// Essay AI components
+export * from './essay-ai';
+
+// Essay Gallery components
+export * from './essay-gallery';
+
+// Agent chat components
 export * from './agent-chat';
 
-// 简历导出
-export { ResumeExportDialog } from './resume';
-export type { ResumeData, ResumeExportOptions } from './resume';
+// Points components
+export * from './points';
 
-// 认证
-export { VerificationDialog } from './verification';
+// Followers components
+export * from './followers';
 
-// AI 文书服务
-export { EssayPolishDialog, EssayReviewPanel, EssayBrainstormDialog } from './essay-ai';
+// Resume components
+export * from './resume';
+
+// Verification components
+export * from './verification';
+
+// Profile components
+export { ProfileAIAnalysis } from './profile/ProfileAIAnalysis';
+
+// Admin components
+export { EssayPromptManager } from './admin/essay-prompt-manager';
+
+// Schools components
+export { AdvancedSchoolFilter } from './schools/AdvancedSchoolFilter';
+export type { SchoolFilters } from './schools/AdvancedSchoolFilter';
+export { SchoolRecommendation } from './schools/SchoolRecommendation';
+
+// Feedback components
+export { FeedbackWidget } from './feedback/feedback-widget';
+
+// Help components
+export { HelpCenter } from './help/help-center';
+
+// Search components
+export { GlobalSearch } from './search/global-search';
+
+// Notifications components
+export { NotificationCenter } from './notifications/notification-center';
+
+// Onboarding components
+export { TourProvider } from './onboarding/tour-provider';
+export { WelcomeDialog } from './onboarding/welcome-dialog';
+
+// Export components
+export { DataExportDialog } from './export/data-export';
+
+// Hall components
+export {
+  SwipeCard,
+  SwipeStack,
+  BadgeDisplay,
+  BadgeProgress,
+  StatsPanel,
+  DailyChallenge,
+  LeaderboardList,
+  ModuleSelector,
+  ReviewModuleCard,
+  SwipeReviewMode,
+  SwipeResultOverlay,
+  // Tab components (from hall/page.tsx refactor)
+  TinderTab,
+  ReviewTab,
+  RankingTab,
+  ListsTab,
+} from './hall';
+export type { SwipeCaseData, SwipeBadge } from './hall';
+
+// Landing page components
+export * from './landing';

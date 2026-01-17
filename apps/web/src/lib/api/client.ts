@@ -1,6 +1,31 @@
 import { toast } from 'sonner';
 import { useAuthStore } from '@/stores/auth';
 
+// ============================================
+// 非 React 上下文翻译（与 error-boundary / not-found 一致的模式）
+// ============================================
+const API_I18N = {
+  zh: {
+    forbidden: '没有权限执行此操作',
+    serverError: '服务器错误，请稍后重试',
+    requestTimeout: '请求超时 ({seconds}s)',
+    networkError: '网络连接失败，正在重试...',
+  },
+  en: {
+    forbidden: 'You do not have permission to perform this action',
+    serverError: 'Server error, please try again later',
+    requestTimeout: 'Request timed out ({seconds}s)',
+    networkError: 'Network connection failed, retrying...',
+  },
+} as const;
+
+function getApiLocale(): 'zh' | 'en' {
+  if (typeof window === 'undefined') return 'en';
+  const path = window.location.pathname;
+  if (path.startsWith('/zh')) return 'zh';
+  return 'en';
+}
+
 // API URL 验证
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 if (!API_BASE_URL && typeof window !== 'undefined') {
@@ -12,7 +37,7 @@ const RESOLVED_API_URL = API_BASE_URL || 'http://localhost:3006';
 const API_VERSION = '/api/v1';
 
 interface RequestConfig extends RequestInit {
-  params?: Record<string, string>;
+  params?: Record<string, string | number | boolean | undefined>;
   retries?: number;
   timeout?: number;
   signal?: AbortSignal;
@@ -21,7 +46,7 @@ interface RequestConfig extends RequestInit {
 
 /**
  * API 客户端
- * 
+ *
  * 安全特性：
  * - 所有请求携带 credentials: 'include' 以发送 httpOnly cookie
  * - AccessToken 从内存中获取（不持久化）
@@ -84,7 +109,13 @@ class ApiClient {
     const versionPrefix = this.apiVersion;
     let url = `${this.baseUrl}${versionPrefix}${endpoint}`;
     if (params) {
-      const searchParams = new URLSearchParams(params);
+      const filteredParams: Record<string, string> = {};
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          filteredParams[key] = String(value);
+        }
+      });
+      const searchParams = new URLSearchParams(filteredParams);
       url += `?${searchParams.toString()}`;
     }
 
@@ -130,12 +161,13 @@ class ApiClient {
           const error = await response.json().catch(() => ({ message: 'Request failed' }));
           const errorMessage = error.error?.message || error.message || `HTTP ${response.status}`;
 
+          const i18n = API_I18N[getApiLocale()];
           if (response.status === 403) {
-            toast.error('没有权限执行此操作');
+            toast.error(i18n.forbidden);
           } else if (response.status === 404) {
             // 404 不显示 toast
           } else if (response.status >= 500) {
-            toast.error('服务器错误，请稍后重试');
+            toast.error(i18n.serverError);
           }
 
           throw new Error(errorMessage);
@@ -155,7 +187,8 @@ class ApiClient {
         clearTimeout(timeoutId);
 
         if (error instanceof Error && error.name === 'AbortError') {
-          throw new Error(`请求超时 (${timeout / 1000}s)`);
+          const i18n = API_I18N[getApiLocale()];
+          throw new Error(i18n.requestTimeout.replace('{seconds}', String(timeout / 1000)));
         }
 
         throw error;

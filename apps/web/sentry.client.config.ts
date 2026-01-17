@@ -33,7 +33,7 @@ Sentry.init({
   ],
 
   // Before sending events
-  beforeSend(event, hint) {
+  beforeSend(event, _hint) {
     // Filter out events in development
     if (process.env.NODE_ENV !== 'production') {
       return null;
@@ -55,12 +55,3 @@ Sentry.init({
     }),
   ],
 });
-
-
-
-
-
-
-
-
-

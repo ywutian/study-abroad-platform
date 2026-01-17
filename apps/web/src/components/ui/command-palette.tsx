@@ -72,7 +72,7 @@ export function CommandPalette({ customCommands = [] }: CommandPaletteProps) {
         title: t('home'),
         icon: <Home className="w-4 h-4" />,
         action: () => router.push('/'),
-        keywords: ['home', 'index', '主页'],
+        keywords: t('keywords.home').split(','),
         section: t('nav'),
       },
       {
@@ -80,7 +80,7 @@ export function CommandPalette({ customCommands = [] }: CommandPaletteProps) {
         title: t('schools'),
         icon: <School className="w-4 h-4" />,
         action: () => router.push('/schools'),
-        keywords: ['school', 'university', '学校', '院校'],
+        keywords: t('keywords.schools').split(','),
         section: t('nav'),
       },
       {
@@ -88,7 +88,7 @@ export function CommandPalette({ customCommands = [] }: CommandPaletteProps) {
         title: t('cases'),
         icon: <FileText className="w-4 h-4" />,
         action: () => router.push('/cases'),
-        keywords: ['case', 'example', '案例', '成功案例'],
+        keywords: t('keywords.cases').split(','),
         section: t('nav'),
       },
       {
@@ -96,7 +96,7 @@ export function CommandPalette({ customCommands = [] }: CommandPaletteProps) {
         title: t('aiAssistant'),
         icon: <MessageSquare className="w-4 h-4" />,
         action: () => router.push('/chat'),
-        keywords: ['chat', 'ai', 'assistant', '聊天', '智能'],
+        keywords: t('keywords.aiAssistant').split(','),
         section: t('nav'),
       },
       {
@@ -104,7 +104,7 @@ export function CommandPalette({ customCommands = [] }: CommandPaletteProps) {
         title: t('profile'),
         icon: <User className="w-4 h-4" />,
         action: () => router.push('/profile'),
-        keywords: ['profile', 'account', '个人', '账户'],
+        keywords: t('keywords.profile').split(','),
         section: t('nav'),
       },
       {
@@ -112,7 +112,7 @@ export function CommandPalette({ customCommands = [] }: CommandPaletteProps) {
         title: theme === 'dark' ? t('switchToLight') : t('switchToDark'),
         icon: theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />,
         action: () => setTheme(theme === 'dark' ? 'light' : 'dark'),
-        keywords: ['theme', 'dark', 'light', '主题', '暗色', '亮色'],
+        keywords: t('keywords.theme').split(','),
         section: t('settings'),
       },
       {
@@ -121,7 +121,7 @@ export function CommandPalette({ customCommands = [] }: CommandPaletteProps) {
         icon: <HelpCircle className="w-4 h-4" />,
         shortcut: ['?'],
         action: () => window.open('/help', '_blank'),
-        keywords: ['help', 'docs', '帮助', '文档'],
+        keywords: t('keywords.help').split(','),
         section: t('other'),
       },
     ],
@@ -141,9 +141,7 @@ export function CommandPalette({ customCommands = [] }: CommandPaletteProps) {
     return allCommands.filter((cmd) => {
       const titleMatch = cmd.title.toLowerCase().includes(searchLower);
       const descMatch = cmd.description?.toLowerCase().includes(searchLower);
-      const keywordMatch = cmd.keywords?.some((k) =>
-        k.toLowerCase().includes(searchLower)
-      );
+      const keywordMatch = cmd.keywords?.some((k) => k.toLowerCase().includes(searchLower));
       return titleMatch || descMatch || keywordMatch;
     });
   }, [allCommands, search]);
@@ -273,10 +271,12 @@ export function CommandPalette({ customCommands = [] }: CommandPaletteProps) {
                         }}
                         onMouseEnter={() => setSelectedIndex(globalIndex)}
                       >
-                        <span className={cn(
-                          'flex-shrink-0',
-                          isSelected ? 'text-primary' : 'text-muted-foreground'
-                        )}>
+                        <span
+                          className={cn(
+                            'flex-shrink-0',
+                            isSelected ? 'text-primary' : 'text-muted-foreground'
+                          )}
+                        >
                           {cmd.icon}
                         </span>
                         <span className="flex-1">
@@ -299,9 +299,7 @@ export function CommandPalette({ customCommands = [] }: CommandPaletteProps) {
               ))}
 
               {filteredCommands.length === 0 && (
-                <div className="px-4 py-8 text-center text-muted-foreground">
-                  {t('noResults')}
-                </div>
+                <div className="px-4 py-8 text-center text-muted-foreground">{t('noResults')}</div>
               )}
             </div>
 
@@ -351,6 +349,3 @@ export function CommandPaletteTrigger() {
     </button>
   );
 }
-
-
-

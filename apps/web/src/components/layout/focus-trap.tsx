@@ -2,7 +2,7 @@
 
 /**
  * Focus Trap 组件
- * 
+ *
  * 将焦点限制在指定区域内（用于 Modal、Dialog 等）
  */
 
@@ -116,10 +116,3 @@ export function FocusTrap({
     </div>
   );
 }
-
-
-
-
-
-
-

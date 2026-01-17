@@ -11,7 +11,6 @@ import {
   Check,
   Loader2,
   Shield,
-  AlertCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -76,10 +75,8 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
 
   // 切换数据类型选择
   const toggleType = (typeId: string) => {
-    setSelectedTypes(prev => 
-      prev.includes(typeId)
-        ? prev.filter(id => id !== typeId)
-        : [...prev, typeId]
+    setSelectedTypes((prev) =>
+      prev.includes(typeId) ? prev.filter((id) => id !== typeId) : [...prev, typeId]
     );
   };
 
@@ -88,7 +85,7 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
     if (selectedTypes.length === dataTypes.length) {
       setSelectedTypes([]);
     } else {
-      setSelectedTypes(dataTypes.map(t => t.id));
+      setSelectedTypes(dataTypes.map((t) => t.id));
     }
   };
 
@@ -105,7 +102,7 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
     try {
       // 模拟导出过程
       for (let i = 0; i <= 100; i += 10) {
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise((resolve) => setTimeout(resolve, 200));
         setProgress(i);
       }
 
@@ -114,7 +111,7 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
       //   format,
       //   types: selectedTypes,
       // });
-      
+
       // 模拟生成下载链接
       const mockData = {
         exportedAt: new Date().toISOString(),
@@ -124,16 +121,16 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
           // ... actual data
         },
       };
-      
+
       const blob = new Blob([JSON.stringify(mockData, null, 2)], {
         type: format === 'json' ? 'application/json' : 'text/csv',
       });
-      
+
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setStep('done');
       toast.success(t('toast.success'));
-    } catch (error) {
+    } catch (_error) {
       toast.error(t('toast.failed'));
       setStep('select');
     }
@@ -142,14 +139,14 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
   // 下载文件
   const handleDownload = () => {
     if (!downloadUrl) return;
-    
+
     const link = document.createElement('a');
     link.href = downloadUrl;
     link.download = `study-abroad-export-${new Date().toISOString().split('T')[0]}.${format}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     // 清理
     setTimeout(() => {
       URL.revokeObjectURL(downloadUrl);
@@ -187,9 +184,7 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
           <>
             <DialogHeader>
               <DialogTitle>{t('title')}</DialogTitle>
-              <DialogDescription>
-                {t('description')}
-              </DialogDescription>
+              <DialogDescription>{t('description')}</DialogDescription>
             </DialogHeader>
 
             <div className="space-y-6 py-4">
@@ -219,7 +214,9 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
                           )}
                         >
                           <Icon className="w-6 h-6" />
-                          <span className="text-sm font-medium">{t(`formats.${fmt.labelKey}.label`)}</span>
+                          <span className="text-sm font-medium">
+                            {t(`formats.${fmt.labelKey}.label`)}
+                          </span>
                           <span className="text-xs text-muted-foreground text-center">
                             {t(`formats.${fmt.labelKey}.description`)}
                           </span>
@@ -234,9 +231,9 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <Label className="text-sm font-medium">{t('selectDataLabel')}</Label>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     className="h-auto p-0 text-xs"
                     onClick={toggleAll}
                   >
@@ -260,15 +257,15 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
                         onCheckedChange={() => toggleType(type.id)}
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium">{t(`dataTypes.${type.labelKey}.label`)}</p>
+                        <p className="text-sm font-medium">
+                          {t(`dataTypes.${type.labelKey}.label`)}
+                        </p>
                         <p className="text-xs text-muted-foreground">
                           {t(`dataTypes.${type.labelKey}.description`)}
                         </p>
                       </div>
                       {type.size && (
-                        <span className="text-xs text-muted-foreground">
-                          {type.size}
-                        </span>
+                        <span className="text-xs text-muted-foreground">{type.size}</span>
                       )}
                     </div>
                   ))}
@@ -278,9 +275,7 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
               {/* 隐私提示 */}
               <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50">
                 <Shield className="w-4 h-4 text-success mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-muted-foreground">
-                  {t('securityNote')}
-                </p>
+                <p className="text-xs text-muted-foreground">{t('securityNote')}</p>
               </div>
             </div>
 
@@ -300,9 +295,7 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
           <div className="py-8 text-center">
             <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
             <h4 className="font-semibold mb-2">{t('exportingTitle')}</h4>
-            <p className="text-sm text-muted-foreground mb-6">
-              {t('exportingDescription')}
-            </p>
+            <p className="text-sm text-muted-foreground mb-6">{t('exportingDescription')}</p>
             <div className="max-w-xs mx-auto">
               <Progress value={progress} className="h-2" />
               <p className="text-xs text-muted-foreground mt-2">{progress}%</p>
@@ -321,9 +314,7 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
               <Check className="w-8 h-8 text-success" />
             </motion.div>
             <h4 className="font-semibold mb-2">{t('exportCompleteTitle')}</h4>
-            <p className="text-sm text-muted-foreground mb-6">
-              {t('exportCompleteDescription')}
-            </p>
+            <p className="text-sm text-muted-foreground mb-6">{t('exportCompleteDescription')}</p>
             <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
               <Button onClick={handleDownload}>
                 <Download className="w-4 h-4 mr-2" />
@@ -342,8 +333,8 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
 
 // 快速导出按钮（用于特定数据）
 export function QuickExportButton({
-  dataType,
-  format = 'csv',
+  dataType: _dataType,
+  format: _format = 'csv',
   label,
   className,
 }: {
@@ -360,7 +351,7 @@ export function QuickExportButton({
     setLoading(true);
     try {
       // 模拟导出
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       toast.success(t('toast.success'));
     } catch {
       toast.error(t('toast.failed'));
@@ -386,6 +377,3 @@ export function QuickExportButton({
     </Button>
   );
 }
-
-
-

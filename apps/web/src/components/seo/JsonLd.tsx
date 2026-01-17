@@ -1,6 +1,6 @@
 /**
  * JSON-LD 结构化数据组件
- * 
+ *
  * 用于 SEO 优化，支持多种 schema.org 类型
  */
 
@@ -231,10 +231,3 @@ export function FAQJsonLd(props: Omit<FAQPageSchema, 'type'>) {
 export function BreadcrumbJsonLd(props: Omit<BreadcrumbListSchema, 'type'>) {
   return <JsonLd data={{ type: 'BreadcrumbList', ...props }} />;
 }
-
-
-
-
-
-
-

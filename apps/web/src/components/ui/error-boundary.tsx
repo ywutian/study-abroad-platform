@@ -11,6 +11,51 @@ import { cn } from '@/lib/utils';
 // 类型定义
 // ============================================
 
+/**
+ * 错误边界独立翻译（class 组件无法使用 hooks，采用 URL 检测 locale + 本地翻译）
+ */
+const ERROR_TRANSLATIONS = {
+  zh: {
+    pageError: '页面错误',
+    somethingWrong: '出了点问题',
+    defaultMessage: '出了点问题，请尝试刷新页面或返回首页。',
+    retried: '已重试 {current}/{max} 次',
+    errorDetails: '错误详情',
+    errorMessage: '错误消息：',
+    stack: '堆栈：',
+    componentStack: '组件堆栈：',
+    retry: '重试',
+    goHome: '返回首页',
+    reportIssue: '报告问题',
+    errorId: '错误 ID：',
+    pageLoadFailed: '页面加载失败，请重试或返回首页。',
+  },
+  en: {
+    pageError: 'Page Error',
+    somethingWrong: 'Something went wrong',
+    defaultMessage: 'Something went wrong. Please try refreshing or go back to the homepage.',
+    retried: 'Retried {current}/{max} times',
+    errorDetails: 'Error Details',
+    errorMessage: 'Error Message:',
+    stack: 'Stack:',
+    componentStack: 'Component Stack:',
+    retry: 'Retry',
+    goHome: 'Go Home',
+    reportIssue: 'Report Issue',
+    errorId: 'Error ID:',
+    pageLoadFailed: 'Page failed to load. Please try again or go back to the homepage.',
+  },
+} as const;
+
+function detectLocale(): 'zh' | 'en' {
+  if (typeof window === 'undefined') return 'en';
+  const path = window.location.pathname;
+  if (path.startsWith('/zh')) return 'zh';
+  if (path.startsWith('/en')) return 'en';
+  const browserLang = navigator.language.toLowerCase();
+  return browserLang.startsWith('zh') ? 'zh' : 'en';
+}
+
 interface ErrorBoundaryProps {
   children: ReactNode;
   fallback?: ReactNode;
@@ -63,7 +108,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     this.props.onError?.(error, errorInfo);
     this.setState({ errorInfo });
-    
+
     // Send to Sentry in production
     if (process.env.NODE_ENV === 'production') {
       const eventId = Sentry.captureException(error, {
@@ -82,7 +127,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   handleRetry = () => {
     const { maxRetries = 3 } = this.props;
     const { retryCount } = this.state;
-    
+
     if (retryCount < maxRetries) {
       this.setState({
         hasError: false,
@@ -117,6 +162,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     }
 
     const canRetry = retryCount < maxRetries;
+    const i18n = ERROR_TRANSLATIONS[detectLocale()];
 
     // 根据级别使用不同样式
     const containerClass = cn(
@@ -142,18 +188,18 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           >
             <AlertTriangle className="h-8 w-8 text-destructive" />
           </motion.div>
-          
+
           <h2 className="mb-2 text-2xl font-bold">
-            {level === 'page' ? 'Page Error' : 'Something went wrong'}
+            {level === 'page' ? i18n.pageError : i18n.somethingWrong}
           </h2>
-          <p className="mb-6 text-muted-foreground">
-            {message || 'Something went wrong. Please try refreshing or go back to the homepage.'}
-          </p>
+          <p className="mb-6 text-muted-foreground">{message || i18n.defaultMessage}</p>
 
           {/* Retry count hint */}
           {retryCount > 0 && (
             <p className="mb-4 text-sm text-warning">
-              Retried {retryCount}/{maxRetries} times
+              {i18n.retried
+                .replace('{current}', String(retryCount))
+                .replace('{max}', String(maxRetries))}
             </p>
           )}
 
@@ -162,19 +208,21 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             <details className="mb-6 rounded-lg border bg-muted/50 p-4 text-left group">
               <summary className="cursor-pointer text-sm font-medium flex items-center gap-2">
                 <Bug className="h-4 w-4" />
-                Error Details
+                {i18n.errorDetails}
                 <ChevronDown className="h-4 w-4 ml-auto transition-transform group-open:rotate-180" />
               </summary>
               <div className="mt-4 space-y-2">
                 <div>
-                  <span className="text-xs font-medium text-muted-foreground">Error Message:</span>
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {i18n.errorMessage}
+                  </span>
                   <pre className="mt-1 overflow-auto rounded bg-background p-2 text-xs">
                     {error.message}
                   </pre>
                 </div>
                 {error.stack && (
                   <div>
-                    <span className="text-xs font-medium text-muted-foreground">Stack:</span>
+                    <span className="text-xs font-medium text-muted-foreground">{i18n.stack}</span>
                     <pre className="mt-1 max-h-40 overflow-auto rounded bg-background p-2 text-xs">
                       {error.stack}
                     </pre>
@@ -182,7 +230,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 )}
                 {errorInfo?.componentStack && (
                   <div>
-                    <span className="text-xs font-medium text-muted-foreground">Component Stack:</span>
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {i18n.componentStack}
+                    </span>
                     <pre className="mt-1 max-h-40 overflow-auto rounded bg-background p-2 text-xs">
                       {errorInfo.componentStack}
                     </pre>
@@ -197,17 +247,17 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             {canRetry && (
               <Button onClick={this.handleRetry} variant="default">
                 <RefreshCw className="mr-2 h-4 w-4" />
-                Retry {retryCount > 0 && `(${maxRetries - retryCount})`}
+                {i18n.retry} {retryCount > 0 && `(${maxRetries - retryCount})`}
               </Button>
             )}
             <Button onClick={this.handleGoHome} variant="outline">
               <Home className="mr-2 h-4 w-4" />
-              Go Home
+              {i18n.goHome}
             </Button>
             {eventId && process.env.NODE_ENV === 'production' && (
               <Button onClick={this.handleReportFeedback} variant="ghost" size="sm">
                 <Send className="mr-2 h-4 w-4" />
-                Report Issue
+                {i18n.reportIssue}
               </Button>
             )}
           </div>
@@ -215,7 +265,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           {/* Error ID (production) */}
           {eventId && (
             <p className="mt-4 text-xs text-muted-foreground">
-              Error ID: {eventId.slice(0, 8)}
+              {i18n.errorId} {eventId.slice(0, 8)}
             </p>
           )}
         </div>
@@ -229,14 +279,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 // ============================================
 
 export function PageErrorBoundary({ children }: { children: ReactNode }) {
-  return (
-    <ErrorBoundary
-      level="page"
-      message="Page failed to load. Please try again or go back to the homepage."
-    >
-      {children}
-    </ErrorBoundary>
-  );
+  return <ErrorBoundary level="page">{children}</ErrorBoundary>;
 }
 
 // ============================================
@@ -251,12 +294,7 @@ export function ComponentErrorBoundary({
   fallback?: ReactNode;
 }) {
   return (
-    <ErrorBoundary
-      level="component"
-      fallback={fallback}
-      showDetails={false}
-      maxRetries={2}
-    >
+    <ErrorBoundary level="component" fallback={fallback} showDetails={false} maxRetries={2}>
       {children}
     </ErrorBoundary>
   );
@@ -286,15 +324,12 @@ export function useErrorHandler() {
  */
 export function useAsyncError() {
   const [, setError] = useState();
-  
-  return useCallback(
-    (error: Error) => {
-      setError(() => {
-        throw error;
-      });
-    },
-    []
-  );
+
+  return useCallback((error: Error) => {
+    setError(() => {
+      throw error;
+    });
+  }, []);
 }
 
 /**
@@ -323,4 +358,3 @@ export function useSafeHandler<T extends (...args: unknown[]) => unknown>(
     [handler, onError]
   );
 }
-

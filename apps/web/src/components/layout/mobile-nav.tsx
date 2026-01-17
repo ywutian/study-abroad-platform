@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Menu, X, ChevronRight } from 'lucide-react';
 import { Link, usePathname } from '@/lib/i18n/navigation';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { useHydrated } from '@/hooks/use-hydration';
 
 interface NavItem {
   href: string;
@@ -25,16 +26,12 @@ export function MobileNav({ items, user, onLogout }: MobileNavProps) {
   const t = useTranslations();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const isHydrated = useHydrated();
 
-  // 仅在客户端渲染后显示，避免 hydration mismatch
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
+  // 仅在客户端渲染后显示完整组件，避免 hydration mismatch
+  if (!isHydrated) {
     return (
-      <Button variant="ghost" size="icon" className="md:hidden">
+      <Button variant="ghost" size="icon" className="md:hidden" suppressHydrationWarning>
         <Menu className="h-5 w-5" />
       </Button>
     );
@@ -54,7 +51,7 @@ export function MobileNav({ items, user, onLogout }: MobileNavProps) {
             {t('common.appName')}
           </SheetTitle>
         </SheetHeader>
-        
+
         <nav className="flex flex-col p-4">
           {items.map((item) => {
             const isActive = pathname === item.href;
@@ -74,7 +71,9 @@ export function MobileNav({ items, user, onLogout }: MobileNavProps) {
                   {item.icon}
                   {item.label}
                 </span>
-                <ChevronRight className={cn('h-4 w-4 opacity-0 transition-opacity', isActive && 'opacity-100')} />
+                <ChevronRight
+                  className={cn('h-4 w-4 opacity-0 transition-opacity', isActive && 'opacity-100')}
+                />
               </Link>
             );
           })}
@@ -129,8 +128,3 @@ export function MobileNav({ items, user, onLogout }: MobileNavProps) {
     </Sheet>
   );
 }
-
-
-
-
-

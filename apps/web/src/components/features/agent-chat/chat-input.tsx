@@ -48,12 +48,15 @@ export function ChatInput({
     textareaRef.current?.focus();
   }, [value, disabled, isLoading, onSend]);
 
-  const handleKeyDown = useCallback((e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  }, [handleSend]);
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleSend();
+      }
+    },
+    [handleSend]
+  );
 
   // 自动调整高度
   const handleInput = useCallback(() => {
@@ -67,16 +70,14 @@ export function ChatInput({
   const hasContent = value.trim().length > 0;
 
   return (
-    <motion.div 
+    <motion.div
       className={cn(
         'relative border-t bg-background/95 backdrop-blur transition-all duration-200',
         isFocused && 'border-t-primary/50'
       )}
       initial={false}
-      animate={{ 
-        boxShadow: isFocused 
-          ? '0 -4px 20px rgba(99, 102, 241, 0.08)' 
-          : '0 0 0 transparent' 
+      animate={{
+        boxShadow: isFocused ? '0 -4px 20px rgba(99, 102, 241, 0.08)' : '0 0 0 transparent',
       }}
     >
       {/* Loading indicator bar */}
@@ -86,7 +87,7 @@ export function ChatInput({
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
             exit={{ scaleX: 0, opacity: 0 }}
-            className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary/50 via-primary to-primary/50 origin-left"
+            className="absolute top-0 left-0 right-0 h-0.5 bg-primary origin-left"
             transition={{ duration: 0.3 }}
           />
         )}
@@ -95,7 +96,7 @@ export function ChatInput({
       <div className="flex items-end gap-2 p-3 sm:p-4">
         {/* Extra buttons */}
         {showExtras && (
-          <motion.div 
+          <motion.div
             className="flex gap-1"
             initial={{ opacity: 0, x: -8 }}
             animate={{ opacity: 1, x: 0 }}
@@ -135,12 +136,10 @@ export function ChatInput({
             placeholder={finalPlaceholder}
             disabled={disabled}
             className={cn(
-              'min-h-[44px] max-h-[160px] resize-none pr-12 rounded-2xl',
+              'min-h-[44px] max-h-[160px] resize-none pr-12 rounded-lg',
               'border-2 transition-all duration-200',
               'scrollbar-thin scrollbar-thumb-muted',
-              isFocused 
-                ? 'border-primary/50 shadow-sm' 
-                : 'border-input hover:border-input/80',
+              isFocused ? 'border-primary/50 shadow-sm' : 'border-input hover:border-input/80',
               disabled && 'opacity-50'
             )}
             rows={1}
@@ -153,7 +152,7 @@ export function ChatInput({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute left-3 -top-5 text-[10px] text-muted-foreground"
+                className="absolute left-3 -top-5 text-2xs text-muted-foreground"
               >
                 {value.length} {t('characters')}
               </motion.span>
@@ -204,11 +203,7 @@ export function ChatInput({
                       : 'bg-muted text-muted-foreground'
                   )}
                 >
-                  {hasContent ? (
-                    <Send className="h-4 w-4" />
-                  ) : (
-                    <Sparkles className="h-4 w-4" />
-                  )}
+                  {hasContent ? <Send className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}
                 </Button>
               </motion.div>
             )}
@@ -232,7 +227,7 @@ export function ChatInput({
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            className="text-[11px] text-muted-foreground text-center pb-2 -mt-1"
+            className="text-xs text-muted-foreground text-center pb-2 -mt-1"
           >
             {t('sendHint')}
           </motion.p>

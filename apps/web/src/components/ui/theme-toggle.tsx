@@ -34,6 +34,7 @@ export function ThemeToggle({ className, showLabel = false }: ThemeToggleProps) 
         className
       )}
       aria-label={mounted ? (isDark ? t('switchToLight') : t('switchToDark')) : t('switchToDark')}
+      suppressHydrationWarning
     >
       <div className="relative w-5 h-5">
         {/* 在 mounted 之前显示一个占位符，避免 hydration 不匹配 */}
@@ -70,9 +71,7 @@ export function ThemeToggle({ className, showLabel = false }: ThemeToggleProps) 
         )}
       </div>
       {showLabel && mounted && (
-        <span className="ml-2 text-sm">
-          {isDark ? t('dark') : t('light')}
-        </span>
+        <span className="ml-2 text-sm">{isDark ? t('dark') : t('light')}</span>
       )}
     </button>
   );
@@ -99,9 +98,7 @@ export function ThemeSelector({ className }: { className?: string }) {
           onClick={() => setTheme(value)}
           className={cn(
             'relative flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors',
-            theme === value
-              ? 'text-foreground'
-              : 'text-muted-foreground hover:text-foreground'
+            theme === value ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
           )}
         >
           {theme === value && (

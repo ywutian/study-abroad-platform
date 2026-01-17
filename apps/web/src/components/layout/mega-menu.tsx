@@ -29,9 +29,7 @@ export function MegaMenu({ label, groups, singleColumn }: MegaMenuProps) {
   const pathname = usePathname();
   const timeoutRef = React.useRef<NodeJS.Timeout>();
 
-  const isActive = groups.some(group => 
-    group.items.some(item => pathname === item.href)
-  );
+  const isActive = groups.some((group) => group.items.some((item) => pathname === item.href));
 
   const handleMouseEnter = () => {
     clearTimeout(timeoutRef.current);
@@ -50,24 +48,17 @@ export function MegaMenu({ label, groups, singleColumn }: MegaMenuProps) {
   const isSingle = singleColumn || totalItems <= 4;
 
   return (
-    <div 
-      className="relative"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
+    <div className="relative" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <button
         className={cn(
           'flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-          isActive
-            ? 'text-primary'
-            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+          isActive ? 'text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
         )}
       >
         {label}
-        <ChevronDown className={cn(
-          'h-3.5 w-3.5 transition-transform duration-200',
-          open && 'rotate-180'
-        )} />
+        <ChevronDown
+          className={cn('h-3.5 w-3.5 transition-transform duration-200', open && 'rotate-180')}
+        />
         {isActive && (
           <span className="absolute inset-x-1 -bottom-[13px] h-0.5 rounded-full bg-primary" />
         )}
@@ -81,17 +72,21 @@ export function MegaMenu({ label, groups, singleColumn }: MegaMenuProps) {
           open && 'opacity-100 visible'
         )}
       >
-        <div className={cn(
-          'rounded-xl border bg-popover/95 backdrop-blur-sm shadow-xl',
-          'ring-1 ring-black/5 dark:ring-white/10',
-          isSingle ? 'min-w-[280px]' : 'min-w-[520px]'
-        )}>
-          <div className={cn(
-            'p-4',
-            !isSingle && 'grid gap-6',
-            groups.length === 2 && !isSingle && 'grid-cols-2',
-            groups.length >= 3 && !isSingle && 'grid-cols-3'
-          )}>
+        <div
+          className={cn(
+            'rounded-xl border bg-popover/95 backdrop-blur-sm shadow-xl',
+            'ring-1 ring-black/5 dark:ring-white/10',
+            isSingle ? 'min-w-[280px]' : 'min-w-[520px]'
+          )}
+        >
+          <div
+            className={cn(
+              'p-4',
+              !isSingle && 'grid gap-6',
+              groups.length === 2 && !isSingle && 'grid-cols-2',
+              groups.length >= 3 && !isSingle && 'grid-cols-3'
+            )}
+          >
             {groups.map((group) => (
               <div key={group.label}>
                 {groups.length > 1 && (
@@ -109,24 +104,26 @@ export function MegaMenu({ label, groups, singleColumn }: MegaMenuProps) {
                         onClick={() => setOpen(false)}
                         className={cn(
                           'group flex items-start gap-3 rounded-lg p-2.5 transition-colors',
-                          itemActive 
-                            ? 'bg-primary/10 text-primary' 
-                            : 'hover:bg-muted'
+                          itemActive ? 'bg-primary/10 text-primary' : 'hover:bg-muted'
                         )}
                       >
-                        <div className={cn(
-                          'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors',
-                          itemActive 
-                            ? 'bg-primary/20 text-primary' 
-                            : 'bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary'
-                        )}>
+                        <div
+                          className={cn(
+                            'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors',
+                            itemActive
+                              ? 'bg-primary/20 text-primary'
+                              : 'bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary'
+                          )}
+                        >
                           {item.icon}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <div className={cn(
-                            'font-medium leading-tight',
-                            itemActive && 'text-primary'
-                          )}>
+                          <div
+                            className={cn(
+                              'font-medium leading-tight',
+                              itemActive && 'text-primary'
+                            )}
+                          >
                             {item.label}
                           </div>
                           {item.description && (
@@ -147,4 +144,3 @@ export function MegaMenu({ label, groups, singleColumn }: MegaMenuProps) {
     </div>
   );
 }
-

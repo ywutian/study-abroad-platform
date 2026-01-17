@@ -349,6 +349,3 @@ export const translations = {
     },
   },
 };
-
-
-

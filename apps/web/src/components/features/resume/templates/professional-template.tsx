@@ -8,6 +8,7 @@ import {
   type ResumeData,
   type ResumeExportOptions,
 } from '../styles/pdf-styles';
+import { toBcp47 } from '@/lib/i18n/locale-utils';
 
 interface ProfessionalTemplateProps {
   data: ResumeData;
@@ -18,8 +19,10 @@ export function ProfessionalTemplate({ data, options }: ProfessionalTemplateProp
   const t = translations[options.language];
   const { includeModules, anonymize } = options;
 
-  const displayName = anonymize ? t.applicant : (data.basic.name || t.applicant);
-  const gradeText = data.basic.grade ? t.grades[data.basic.grade as keyof typeof t.grades] || data.basic.grade : '';
+  const displayName = anonymize ? t.applicant : data.basic.name || t.applicant;
+  const gradeText = data.basic.grade
+    ? t.grades[data.basic.grade as keyof typeof t.grades] || data.basic.grade
+    : '';
 
   return (
     <Document>
@@ -37,7 +40,9 @@ export function ProfessionalTemplate({ data, options }: ProfessionalTemplateProp
                 <Text style={baseStyles.subtitleItem}>• {data.basic.school}</Text>
               )}
               {data.basic.targetMajor && (
-                <Text style={baseStyles.subtitleItem}>• {t.targetMajor}: {data.basic.targetMajor}</Text>
+                <Text style={baseStyles.subtitleItem}>
+                  • {t.targetMajor}: {data.basic.targetMajor}
+                </Text>
               )}
             </View>
           </View>
@@ -61,18 +66,20 @@ export function ProfessionalTemplate({ data, options }: ProfessionalTemplateProp
 
               {/* 标化成绩卡片 */}
               {data.academics.testScores.map((score, index) => (
-                <View 
-                  key={index} 
+                <View
+                  key={index}
                   style={[
-                    styles.scoreCard, 
-                    { width: '48%', marginRight: index % 2 === 0 ? '2%' : 0 }
+                    styles.scoreCard,
+                    { width: '48%', marginRight: index % 2 === 0 ? '2%' : 0 },
                   ]}
                 >
                   <View>
                     <Text style={styles.scoreType}>{score.type}</Text>
                     {score.subScores && Object.keys(score.subScores).length > 0 && (
                       <Text style={{ fontSize: 7, color: colors.textMuted, marginTop: 2 }}>
-                        {Object.entries(score.subScores).map(([k, v]) => `${k}: ${v}`).join(' | ')}
+                        {Object.entries(score.subScores)
+                          .map(([k, v]) => `${k}: ${v}`)
+                          .join(' | ')}
                       </Text>
                     )}
                   </View>
@@ -94,26 +101,31 @@ export function ProfessionalTemplate({ data, options }: ProfessionalTemplateProp
                   <View style={baseStyles.flexRow}>
                     <Text style={{ fontWeight: 700, fontSize: 11 }}>{activity.name}</Text>
                     {activity.isOngoing && (
-                      <View style={{
-                        backgroundColor: colors.success,
-                        paddingHorizontal: 6,
-                        paddingVertical: 2,
-                        borderRadius: 4,
-                        marginLeft: 6,
-                      }}>
+                      <View
+                        style={{
+                          backgroundColor: colors.success,
+                          paddingHorizontal: 6,
+                          paddingVertical: 2,
+                          borderRadius: 4,
+                          marginLeft: 6,
+                        }}
+                      >
                         <Text style={{ fontSize: 7, color: colors.white }}>{t.ongoing}</Text>
                       </View>
                     )}
                   </View>
                   <Text style={{ fontSize: 8, color: colors.textMuted }}>
-                    {t.categories[activity.category as keyof typeof t.categories] || activity.category}
+                    {t.categories[activity.category as keyof typeof t.categories] ||
+                      activity.category}
                   </Text>
                 </View>
                 <Text style={{ fontSize: 9, color: colors.secondary, marginTop: 2 }}>
                   {activity.role}
                 </Text>
                 {activity.description && (
-                  <Text style={{ fontSize: 8, color: colors.textMuted, marginTop: 4, lineHeight: 1.4 }}>
+                  <Text
+                    style={{ fontSize: 8, color: colors.textMuted, marginTop: 4, lineHeight: 1.4 }}
+                  >
                     {activity.description}
                   </Text>
                 )}
@@ -141,12 +153,14 @@ export function ProfessionalTemplate({ data, options }: ProfessionalTemplateProp
                   <View style={baseStyles.flexBetween}>
                     <Text style={{ fontWeight: 700, fontSize: 10 }}>{award.name}</Text>
                     <View style={baseStyles.flexRow}>
-                      <View style={{
-                        backgroundColor: colors.warning,
-                        paddingHorizontal: 6,
-                        paddingVertical: 2,
-                        borderRadius: 4,
-                      }}>
+                      <View
+                        style={{
+                          backgroundColor: colors.warning,
+                          paddingHorizontal: 6,
+                          paddingVertical: 2,
+                          borderRadius: 4,
+                        }}
+                      >
                         <Text style={{ fontSize: 7, color: colors.white }}>
                           {t.levels[award.level as keyof typeof t.levels] || award.level}
                         </Text>
@@ -175,8 +189,8 @@ export function ProfessionalTemplate({ data, options }: ProfessionalTemplateProp
             <Text style={styles.sectionTitle}>{t.targetSchools}</Text>
             <View style={[baseStyles.grid, { marginTop: 4 }]}>
               {data.targetSchools.map((school, index) => (
-                <View 
-                  key={index} 
+                <View
+                  key={index}
                   style={{
                     backgroundColor: colors.background,
                     paddingHorizontal: 10,
@@ -195,12 +209,11 @@ export function ProfessionalTemplate({ data, options }: ProfessionalTemplateProp
 
         {/* 页脚 */}
         <View style={baseStyles.footer}>
-          <Text>{t.generatedBy} • {new Date().toLocaleDateString(options.language === 'zh' ? 'zh-CN' : 'en-US')}</Text>
+          <Text>
+            {t.generatedBy} • {new Date().toLocaleDateString(toBcp47(options.language))}
+          </Text>
         </View>
       </Page>
     </Document>
   );
 }
-
-
-

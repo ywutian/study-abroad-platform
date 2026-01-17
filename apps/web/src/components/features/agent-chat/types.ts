@@ -23,6 +23,7 @@ export interface ToolCallInfo {
 export interface StreamEvent {
   type: 'start' | 'content' | 'tool_start' | 'tool_end' | 'agent_switch' | 'done' | 'error';
   agent?: AgentType;
+  conversationId?: string; // 对话 ID，用于保持上下文
   content?: string;
   tool?: string;
   toolResult?: any;
@@ -50,26 +51,20 @@ export interface QuickAction {
   icon?: React.ReactNode;
 }
 
-export const AGENT_INFO: Record<AgentType, { name: string; icon: string; color: string }> = {
-  orchestrator: { name: '智能助手', icon: '🤖', color: 'text-primary' },
-  essay: { name: '文书专家', icon: '📝', color: 'text-purple-500' },
-  school: { name: '选校专家', icon: '🎯', color: 'text-blue-500' },
-  profile: { name: '档案分析', icon: '📊', color: 'text-green-500' },
-  timeline: { name: '时间规划', icon: '📅', color: 'text-orange-500' },
+export const AGENT_INFO: Record<
+  AgentType,
+  { name: string; nameZh: string; icon: string; color: string }
+> = {
+  orchestrator: { name: 'AI Assistant', nameZh: '智能助手', icon: '🤖', color: 'text-primary' },
+  essay: { name: 'Essay Expert', nameZh: '文书专家', icon: '📝', color: 'text-purple-500' },
+  school: { name: 'School Advisor', nameZh: '选校专家', icon: '🎯', color: 'text-blue-500' },
+  profile: { name: 'Profile Analyst', nameZh: '档案分析', icon: '📊', color: 'text-green-500' },
+  timeline: { name: 'Timeline Planner', nameZh: '时间规划', icon: '📅', color: 'text-orange-500' },
 };
 
-export const QUICK_ACTIONS: QuickAction[] = [
-  { label: '分析我的档案', message: '请帮我分析一下我的档案竞争力' },
-  { label: '推荐学校', message: '根据我的背景推荐一些适合的学校' },
-  { label: '评估文书', message: '帮我评估一下我的文书' },
-  { label: '查看截止日期', message: '帮我整理一下目标学校的申请截止日期' },
+export const QUICK_ACTION_KEYS = [
+  { labelKey: 'analyzeProfile', messageKey: 'analyzeProfileMessage' },
+  { labelKey: 'recommendSchools', messageKey: 'recommendSchoolsMessage' },
+  { labelKey: 'evaluateEssay', messageKey: 'evaluateEssayMessage' },
+  { labelKey: 'viewDeadlines', messageKey: 'viewDeadlinesMessage' },
 ];
-
-
-
-
-
-
-
-
-

@@ -21,15 +21,20 @@ import {
   Languages,
   Settings,
   Palette,
-  Volume2,
   Sparkles,
 } from 'lucide-react';
 
 import { PageContainer, PageHeader } from '@/components/layout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -88,7 +93,7 @@ export default function SettingsPage() {
 
   const handleLanguageChange = (lang: string) => {
     const newPath = pathname.replace(/^\/[a-z]{2}/, `/${lang}`);
-    window.location.href = newPath;
+    window.location.assign(newPath);
   };
 
   const sections: SettingSection[] = [
@@ -182,7 +187,8 @@ export default function SettingsPage() {
           id: 'subscription',
           icon: CreditCard,
           label: t('settings.items.subscription'),
-          description: user?.role === 'VERIFIED' ? t('common.verified') : t('settings.items.subscriptionDesc'),
+          description:
+            user?.role === 'VERIFIED' ? t('common.verified') : t('settings.items.subscriptionDesc'),
           type: 'link',
           href: '/settings/subscription',
         },
@@ -245,12 +251,12 @@ export default function SettingsPage() {
   ];
 
   const colorMap: Record<string, { bg: string; icon: string; border: string }> = {
-    blue: { bg: 'bg-blue-500/10', icon: 'text-blue-500', border: 'from-blue-500 to-cyan-500' },
-    violet: { bg: 'bg-violet-500/10', icon: 'text-violet-500', border: 'from-violet-500 to-purple-500' },
-    amber: { bg: 'bg-amber-500/10', icon: 'text-amber-500', border: 'from-amber-500 to-yellow-500' },
-    emerald: { bg: 'bg-emerald-500/10', icon: 'text-emerald-500', border: 'from-emerald-500 to-teal-500' },
+    blue: { bg: 'bg-blue-500/10', icon: 'text-blue-500', border: 'bg-primary' },
+    violet: { bg: 'bg-primary/10', icon: 'text-primary', border: 'bg-primary' },
+    amber: { bg: 'bg-amber-500/10', icon: 'text-amber-500', border: 'bg-warning' },
+    emerald: { bg: 'bg-emerald-500/10', icon: 'text-emerald-500', border: 'bg-success' },
     slate: { bg: 'bg-muted', icon: 'text-muted-foreground', border: 'from-slate-500 to-gray-500' },
-    rose: { bg: 'bg-rose-500/10', icon: 'text-rose-500', border: 'from-rose-500 to-pink-500' },
+    rose: { bg: 'bg-rose-500/10', icon: 'text-rose-500', border: 'bg-destructive' },
   };
 
   return (
@@ -265,11 +271,11 @@ export default function SettingsPage() {
       {/* 用户卡片 */}
       {user && (
         <Card className="mb-8 overflow-hidden">
-          <div className="h-1.5 bg-gradient-to-r from-blue-500 to-cyan-500" />
+          <div className="h-1.5 bg-primary" />
           <CardContent className="flex flex-col sm:flex-row items-center gap-4 p-6">
             <Avatar className="h-20 w-20 border-4 border-background shadow-lg">
               <AvatarImage src={undefined} />
-              <AvatarFallback className="text-2xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white">
+              <AvatarFallback className="text-2xl bg-primary text-white">
                 {user.email?.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -277,15 +283,13 @@ export default function SettingsPage() {
               <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
                 <h3 className="text-xl font-bold">{user.email?.split('@')[0]}</h3>
                 {user.role === 'ADMIN' && (
-                  <Badge variant="gradient-purple">
+                  <Badge variant="purple">
                     <Sparkles className="h-3 w-3 mr-1" />
                     {t('common.administrator')}
                   </Badge>
                 )}
                 {user.role === 'VERIFIED' && (
-                  <Badge variant="gradient-success">
-                    {t('common.verified')}
-                  </Badge>
+                  <Badge variant="success">{t('common.verified')}</Badge>
                 )}
               </div>
               <p className="text-muted-foreground">{user.email}</p>
@@ -305,7 +309,7 @@ export default function SettingsPage() {
         {sections.map((section, sectionIndex) => {
           const colors = colorMap[section.color];
           const SectionIcon = section.icon;
-          
+
           return (
             <motion.div
               key={section.id}
@@ -317,7 +321,12 @@ export default function SettingsPage() {
                 <div className={cn('h-1 bg-gradient-to-r', colors.border)} />
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-3">
-                    <div className={cn('flex h-9 w-9 items-center justify-center rounded-lg', colors.bg)}>
+                    <div
+                      className={cn(
+                        'flex h-9 w-9 items-center justify-center rounded-lg',
+                        colors.bg
+                      )}
+                    >
                       <SectionIcon className={cn('h-4 w-4', colors.icon)} />
                     </div>
                     <CardTitle className="text-base">{section.title}</CardTitle>
@@ -363,15 +372,19 @@ function SettingItemRow({ item }: { item: SettingItem }) {
   const Icon = item.icon;
 
   const content = (
-    <div className={cn(
-      'flex items-center gap-3 rounded-xl p-3 transition-all duration-200',
-      (item.type === 'link' || item.type === 'action') && 'hover:bg-muted cursor-pointer',
-      item.danger && 'text-destructive hover:bg-destructive/5'
-    )}>
-      <div className={cn(
-        'flex h-9 w-9 items-center justify-center rounded-lg shrink-0',
-        item.danger ? 'bg-destructive/10' : 'bg-muted'
-      )}>
+    <div
+      className={cn(
+        'flex items-center gap-3 rounded-xl p-3 transition-all duration-200',
+        (item.type === 'link' || item.type === 'action') && 'hover:bg-muted cursor-pointer',
+        item.danger && 'text-destructive hover:bg-destructive/5'
+      )}
+    >
+      <div
+        className={cn(
+          'flex h-9 w-9 items-center justify-center rounded-lg shrink-0',
+          item.danger ? 'bg-destructive/10' : 'bg-muted'
+        )}
+      >
         <Icon className="h-4 w-4" />
       </div>
       <div className="flex-1 min-w-0">
@@ -382,10 +395,7 @@ function SettingItemRow({ item }: { item: SettingItem }) {
       </div>
 
       {item.type === 'toggle' && (
-        <Switch
-          checked={item.value as boolean}
-          onCheckedChange={item.onToggle}
-        />
+        <Switch checked={item.value as boolean} onCheckedChange={item.onToggle} />
       )}
 
       {item.type === 'select' && (
@@ -414,7 +424,11 @@ function SettingItemRow({ item }: { item: SettingItem }) {
   }
 
   if (item.type === 'action' && item.onClick) {
-    return <button onClick={item.onClick} className="w-full text-left">{content}</button>;
+    return (
+      <button onClick={item.onClick} className="w-full text-left">
+        {content}
+      </button>
+    );
   }
 
   return content;

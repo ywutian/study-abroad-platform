@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, ReactNode, useCallback, useMemo } from 'react';
+import { useRef, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { useVirtualizer, VirtualItem } from '@tanstack/react-virtual';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -94,10 +94,7 @@ export function VirtualList<T>({
       style={{ height }}
       onScroll={handleScroll}
     >
-      <div
-        className="relative w-full"
-        style={{ height: virtualizer.getTotalSize() }}
-      >
+      <div className="relative w-full" style={{ height: virtualizer.getTotalSize() }}>
         {virtualItems.map((virtualItem) => {
           const item = items[virtualItem.index];
           const key = keyExtractor(item, virtualItem.index);
@@ -164,7 +161,7 @@ export function VirtualGrid<T>({
 }: VirtualGridProps<T>) {
   const parentRef = useRef<HTMLDivElement>(null);
 
-  // 响应式列数
+  // 响应式列数 — 使用 state 避免 hydration mismatch
   const getColumnCount = useCallback(() => {
     if (typeof columns === 'number') return columns;
     if (typeof window === 'undefined') return columns.md || 2;
@@ -176,7 +173,16 @@ export function VirtualGrid<T>({
     return columns.sm || 1;
   }, [columns]);
 
-  const columnCount = useMemo(() => getColumnCount(), [getColumnCount]);
+  // SSR 安全的默认值
+  const defaultColumnCount = typeof columns === 'number' ? columns : columns.md || 2;
+  const [columnCount, setColumnCount] = useState(defaultColumnCount);
+
+  useEffect(() => {
+    const update = () => setColumnCount(getColumnCount());
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, [getColumnCount]);
   const rowCount = Math.ceil(items.length / columnCount);
 
   const virtualizer = useVirtualizer({
@@ -193,15 +199,8 @@ export function VirtualGrid<T>({
   }
 
   return (
-    <div
-      ref={parentRef}
-      className={cn('overflow-auto', className)}
-      style={{ height }}
-    >
-      <div
-        className="relative w-full"
-        style={{ height: virtualizer.getTotalSize() }}
-      >
+    <div ref={parentRef} className={cn('overflow-auto', className)} style={{ height }}>
+      <div className="relative w-full" style={{ height: virtualizer.getTotalSize() }}>
         {virtualRows.map((virtualRow) => {
           const startIndex = virtualRow.index * columnCount;
           const rowItems = items.slice(startIndex, startIndex + columnCount);
@@ -278,15 +277,8 @@ export function SimpleVirtualList({
   });
 
   return (
-    <div
-      ref={parentRef}
-      className={cn('overflow-auto', className)}
-      style={{ height, width }}
-    >
-      <div
-        className="relative w-full"
-        style={{ height: virtualizer.getTotalSize() }}
-      >
+    <div ref={parentRef} className={cn('overflow-auto', className)} style={{ height, width }}>
+      <div className="relative w-full" style={{ height: virtualizer.getTotalSize() }}>
         {virtualizer.getVirtualItems().map((virtualItem) => {
           const style: React.CSSProperties = {
             position: 'absolute',
@@ -297,21 +289,9 @@ export function SimpleVirtualList({
             transform: `translateY(${virtualItem.start}px)`,
           };
 
-          return (
-            <div key={virtualItem.key}>
-              {children(virtualItem.index, style)}
-            </div>
-          );
+          return <div key={virtualItem.key}>{children(virtualItem.index, style)}</div>;
         })}
       </div>
     </div>
   );
 }
-
-
-
-
-
-
-
-

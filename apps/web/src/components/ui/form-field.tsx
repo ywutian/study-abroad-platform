@@ -5,12 +5,7 @@ import { Check, Eye, EyeOff, X, AlertCircle, HelpCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { PasswordStrength } from './password-strength';
 
@@ -42,29 +37,32 @@ interface FormFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
-  ({
-    label,
-    error,
-    helperText,
-    tooltip,
-    required,
-    success,
-    endContent,
-    startContent,
-    containerClassName,
-    showPasswordStrength,
-    showCharCount,
-    maxLength,
-    type,
-    className,
-    value,
-    ...props
-  }, ref) => {
+  (
+    {
+      label,
+      error,
+      helperText,
+      tooltip,
+      required,
+      success,
+      endContent,
+      startContent,
+      containerClassName,
+      showPasswordStrength,
+      showCharCount,
+      maxLength,
+      type,
+      className,
+      value,
+      ...props
+    },
+    ref
+  ) => {
     const id = useId();
     const [showPassword, setShowPassword] = useState(false);
     const isPassword = type === 'password';
     const inputType = isPassword && showPassword ? 'text' : type;
-    
+
     const charCount = typeof value === 'string' ? value.length : 0;
     const isOverLimit = maxLength && charCount > maxLength;
 
@@ -94,10 +92,12 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
               )}
             </div>
             {showCharCount && maxLength && (
-              <span className={cn(
-                'text-xs',
-                isOverLimit ? 'text-destructive' : 'text-muted-foreground'
-              )}>
+              <span
+                className={cn(
+                  'text-xs',
+                  isOverLimit ? 'text-destructive' : 'text-muted-foreground'
+                )}
+              >
                 {charCount}/{maxLength}
               </span>
             )}
@@ -111,7 +111,7 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
               {startContent}
             </div>
           )}
-          
+
           <Input
             ref={ref}
             id={id}
@@ -132,7 +132,7 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
           {/* 右侧图标区域 */}
           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
             {endContent}
-            
+
             {isPassword && (
               <button
                 type="button"
@@ -140,21 +140,13 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
                 className="text-muted-foreground hover:text-foreground transition-colors"
                 tabIndex={-1}
               >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             )}
-            
-            {error && !isPassword && (
-              <AlertCircle className="h-4 w-4 text-destructive" />
-            )}
-            
-            {success && !error && (
-              <Check className="h-4 w-4 text-success" />
-            )}
+
+            {error && !isPassword && <AlertCircle className="h-4 w-4 text-destructive" />}
+
+            {success && !error && <Check className="h-4 w-4 text-success" />}
           </div>
         </div>
 
@@ -193,19 +185,22 @@ interface FormTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaEle
 }
 
 export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
-  ({
-    label,
-    error,
-    helperText,
-    tooltip,
-    required,
-    showCharCount,
-    containerClassName,
-    className,
-    value,
-    maxLength,
-    ...props
-  }, ref) => {
+  (
+    {
+      label,
+      error,
+      helperText,
+      tooltip,
+      required,
+      showCharCount,
+      containerClassName,
+      className,
+      value,
+      maxLength,
+      ...props
+    },
+    ref
+  ) => {
     const id = useId();
     const charCount = typeof value === 'string' ? value.length : 0;
     const isOverLimit = maxLength && charCount > maxLength;
@@ -235,10 +230,12 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
               )}
             </div>
             {showCharCount && maxLength && (
-              <span className={cn(
-                'text-xs',
-                isOverLimit ? 'text-destructive' : 'text-muted-foreground'
-              )}>
+              <span
+                className={cn(
+                  'text-xs',
+                  isOverLimit ? 'text-destructive' : 'text-muted-foreground'
+                )}
+              >
                 {charCount}/{maxLength}
               </span>
             )}
@@ -250,10 +247,7 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
           id={id}
           value={value}
           maxLength={maxLength}
-          className={cn(
-            error && 'border-destructive focus-visible:ring-destructive/30',
-            className
-          )}
+          className={cn(error && 'border-destructive focus-visible:ring-destructive/30', className)}
           aria-invalid={!!error}
           aria-describedby={error ? `${id}-error` : helperText ? `${id}-helper` : undefined}
           {...props}
@@ -275,11 +269,3 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
 );
 
 FormTextarea.displayName = 'FormTextarea';
-
-
-
-
-
-
-
-

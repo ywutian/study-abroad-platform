@@ -41,15 +41,11 @@ export default function ForgotPasswordPage() {
       <div className="space-y-6">
         {/* 成功图标 */}
         <div className="text-center">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/10 ring-1 ring-emerald-500/20">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-lg bg-emerald-500/10 ring-1 ring-emerald-500/20">
             <CheckCircle className="h-8 w-8 text-emerald-400" />
           </div>
-          <h1 className="text-2xl font-bold text-auth tracking-tight">
-            {t('auth.forgotPassword.emailSent')}
-          </h1>
-          <p className="mt-2 text-sm text-auth-muted">
-            {t('auth.forgotPassword.emailSentDesc')}
-          </p>
+          <h1 className="text-title text-auth">{t('auth.forgotPassword.emailSent')}</h1>
+          <p className="mt-2 text-sm text-auth-muted">{t('auth.forgotPassword.emailSentDesc')}</p>
         </div>
 
         {/* 提示信息 */}
@@ -58,24 +54,22 @@ export default function ForgotPasswordPage() {
             {t('auth.forgotPassword.checkInbox')}{' '}
             <span className="font-medium text-auth">{email}</span>
           </p>
-          <p className="text-xs text-auth-muted">
-            {t('auth.forgotPassword.checkSpam')}
-          </p>
+          <p className="text-xs text-auth-muted">{t('auth.forgotPassword.checkSpam')}</p>
         </div>
 
         {/* 操作按钮 */}
         <div className="space-y-3 pt-2">
-          <Button 
-            variant="outline" 
-            onClick={() => setSubmitted(false)} 
+          <Button
+            variant="outline"
+            onClick={() => setSubmitted(false)}
             className="w-full h-11 bg-auth-input-bg border-auth-input-border text-auth hover:bg-accent hover:text-auth rounded-xl"
           >
             <Send className="mr-2 h-4 w-4" />
             {t('auth.forgotPassword.resend')}
           </Button>
           <Link href="/login" className="block">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               className="w-full h-11 text-auth-subtle hover:text-auth hover:bg-auth-input-bg rounded-xl"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -91,15 +85,11 @@ export default function ForgotPasswordPage() {
     <div className="space-y-6">
       {/* 标题区 */}
       <div className="text-center">
-        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--auth-icon-bg)] ring-1 ring-[var(--auth-icon-ring)]">
-          <Mail className="h-8 w-8 text-[var(--auth-accent)]" />
+        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-lg bg-auth-icon-bg ring-1 ring-auth-icon-ring">
+          <Mail className="h-8 w-8 text-auth-accent" />
         </div>
-        <h1 className="text-2xl font-bold text-auth tracking-tight">
-          {t('auth.forgotPassword.title')}
-        </h1>
-        <p className="mt-2 text-sm text-auth-muted">
-          {t('auth.forgotPassword.description')}
-        </p>
+        <h1 className="text-title text-auth">{t('auth.forgotPassword.title')}</h1>
+        <p className="mt-2 text-sm text-auth-muted">{t('auth.forgotPassword.description')}</p>
       </div>
 
       {/* 表单 */}
@@ -119,15 +109,15 @@ export default function ForgotPasswordPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={mutation.isPending}
-              className="h-12 pl-11 pr-4 bg-auth-input-bg border-auth-input-border text-auth-input-text placeholder:text-auth-input-placeholder rounded-xl focus:bg-auth-input-bg focus:border-[var(--auth-focus-border)] focus:ring-2 focus:ring-[var(--auth-focus-ring)] transition-all"
+              className="h-12 pl-11 pr-4 bg-auth-input-bg border-auth-input-border text-auth-input-text placeholder:text-auth-input-placeholder rounded-xl focus:bg-auth-input-bg focus:border-auth-focus-border focus:ring-2 focus:ring-auth-focus-ring transition-all"
               autoComplete="email"
             />
           </div>
         </div>
 
-        <Button 
-          type="submit" 
-          className="w-full h-12 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300 disabled:opacity-50"
+        <Button
+          type="submit"
+          className="w-full h-12 bg-primary hover:from-blue-600 hover:to-cyan-600 text-white font-medium rounded-xl   transition-all duration-300 disabled:opacity-50"
           disabled={mutation.isPending}
         >
           {mutation.isPending ? (
@@ -145,8 +135,8 @@ export default function ForgotPasswordPage() {
 
         <div className="text-center pt-2">
           <Link href="/login">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="sm"
               className="text-auth-muted hover:text-auth hover:bg-transparent"
             >

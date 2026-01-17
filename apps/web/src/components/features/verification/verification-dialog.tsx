@@ -96,32 +96,35 @@ export function VerificationDialog({
     setPreviewUrl(null);
   };
 
-  const handleFileChange = useCallback((selectedFile: File | null) => {
-    if (!selectedFile) return;
+  const handleFileChange = useCallback(
+    (selectedFile: File | null) => {
+      if (!selectedFile) return;
 
-    if (selectedFile.size > MAX_FILE_SIZE) {
-      toast.error(t('verification.fileTooLarge'));
-      return;
-    }
+      if (selectedFile.size > MAX_FILE_SIZE) {
+        toast.error(t('verification.fileTooLarge'));
+        return;
+      }
 
-    if (!ACCEPTED_TYPES.includes(selectedFile.type)) {
-      toast.error(t('verification.invalidFileType'));
-      return;
-    }
+      if (!ACCEPTED_TYPES.includes(selectedFile.type)) {
+        toast.error(t('verification.invalidFileType'));
+        return;
+      }
 
-    setFile(selectedFile);
+      setFile(selectedFile);
 
-    // Create preview for images
-    if (selectedFile.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setPreviewUrl(e.target?.result as string);
-      };
-      reader.readAsDataURL(selectedFile);
-    } else {
-      setPreviewUrl(null);
-    }
-  }, [t]);
+      // Create preview for images
+      if (selectedFile.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setPreviewUrl(e.target?.result as string);
+        };
+        reader.readAsDataURL(selectedFile);
+      } else {
+        setPreviewUrl(null);
+      }
+    },
+    [t]
+  );
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
@@ -225,7 +228,7 @@ export function VerificationDialog({
                 onChange={(e) => handleFileChange(e.target.files?.[0] || null)}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
-              
+
               {file ? (
                 <div className="flex items-center gap-3">
                   {previewUrl ? (
@@ -280,10 +283,7 @@ export function VerificationDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t('common.cancel')}
           </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={!file || submitMutation.isPending}
-          >
+          <Button onClick={handleSubmit} disabled={!file || submitMutation.isPending}>
             {submitMutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -301,6 +301,3 @@ export function VerificationDialog({
     </Dialog>
   );
 }
-
-
-

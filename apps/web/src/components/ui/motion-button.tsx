@@ -17,13 +17,14 @@ const motionButtonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30',
+        default:
+          'bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30',
         destructive: 'bg-destructive text-white shadow-md shadow-destructive/20',
         outline: 'border-2 bg-background hover:bg-accent hover:text-accent-foreground',
         secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
-        gradient: 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg shadow-primary/25',
+        gradient: 'bg-primary text-primary-foreground shadow-lg shadow-primary/25',
         glow: 'bg-primary text-primary-foreground shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)]',
       },
       size: {
@@ -51,8 +52,7 @@ interface RippleEffect {
 }
 
 export interface MotionButtonProps
-  extends Omit<HTMLMotionProps<'button'>, 'children'>,
-    VariantProps<typeof motionButtonVariants> {
+  extends Omit<HTMLMotionProps<'button'>, 'children'>, VariantProps<typeof motionButtonVariants> {
   children?: React.ReactNode;
   asChild?: boolean;
   loading?: boolean;
@@ -199,12 +199,3 @@ const MotionButton = forwardRef<HTMLButtonElement, MotionButtonProps>(
 MotionButton.displayName = 'MotionButton';
 
 export { MotionButton, motionButtonVariants };
-
-
-
-
-
-
-
-
-

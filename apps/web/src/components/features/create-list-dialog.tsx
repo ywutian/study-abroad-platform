@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +27,7 @@ import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
 import { Save, Loader2, Plus, X, GraduationCap } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { getSchoolName } from '@/lib/utils';
 import { SchoolSelector } from './school-selector';
 
 const CATEGORY_KEYS = [
@@ -54,6 +55,7 @@ interface CreateListDialogProps {
 export function CreateListDialog({ open, onOpenChange }: CreateListDialogProps) {
   const t = useTranslations('createList');
   const tCommon = useTranslations('common');
+  const locale = useLocale();
   const queryClient = useQueryClient();
   const [schoolSelectorOpen, setSchoolSelectorOpen] = useState(false);
 
@@ -114,7 +116,7 @@ export function CreateListDialog({ open, onOpenChange }: CreateListDialogProps) 
       items: formData.schools.map((s, index) => ({
         rank: index + 1,
         schoolId: s.id,
-        schoolName: s.nameZh || s.name,
+        schoolName: getSchoolName(s, locale),
         usNewsRank: s.usNewsRank,
       })),
     });
@@ -172,9 +174,7 @@ export function CreateListDialog({ open, onOpenChange }: CreateListDialogProps) 
                 <div className="flex items-center gap-2 pt-2">
                   <Switch
                     checked={formData.isPublic}
-                    onCheckedChange={(checked) =>
-                      setFormData((p) => ({ ...p, isPublic: checked }))
-                    }
+                    onCheckedChange={(checked) => setFormData((p) => ({ ...p, isPublic: checked }))}
                   />
                   <span className="text-sm text-muted-foreground">
                     {formData.isPublic ? t('public') : t('private')}
@@ -198,11 +198,7 @@ export function CreateListDialog({ open, onOpenChange }: CreateListDialogProps) 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label>{t('schoolsLabel')}</Label>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSchoolSelectorOpen(true)}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => setSchoolSelectorOpen(true)}>
                     <Plus className="mr-1 h-4 w-4" />
                     {t('addSchool')}
                   </Button>
@@ -219,7 +215,7 @@ export function CreateListDialog({ open, onOpenChange }: CreateListDialogProps) 
                           {index + 1}
                         </span>
                         <GraduationCap className="h-4 w-4 text-muted-foreground" />
-                        <span className="flex-1 text-sm">{school.nameZh || school.name}</span>
+                        <span className="flex-1 text-sm">{getSchoolName(school, locale)}</span>
                         {school.usNewsRank && (
                           <Badge variant="outline" className="text-xs">
                             #{school.usNewsRank}
@@ -271,4 +267,3 @@ export function CreateListDialog({ open, onOpenChange }: CreateListDialogProps) 
     </>
   );
 }
-

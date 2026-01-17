@@ -22,23 +22,119 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const sections = [
-  { id: 'collection', icon: Database, titleKey: 'collection.title', contentKey: 'collection.content', color: 'blue', items: ['collection.items.personal', 'collection.items.academic', 'collection.items.usage', 'collection.items.device'] },
-  { id: 'usage', icon: Eye, titleKey: 'usage.title', contentKey: 'usage.content', color: 'violet', items: ['usage.items.service', 'usage.items.personalization', 'usage.items.communication', 'usage.items.analytics'] },
-  { id: 'sharing', icon: Share2, titleKey: 'sharing.title', contentKey: 'sharing.content', color: 'amber', items: ['sharing.items.consent', 'sharing.items.legal', 'sharing.items.partners'] },
-  { id: 'security', icon: Lock, titleKey: 'security.title', contentKey: 'security.content', color: 'emerald' },
-  { id: 'rights', icon: Shield, titleKey: 'rights.title', contentKey: 'rights.content', color: 'rose', items: ['rights.items.access', 'rights.items.correction', 'rights.items.deletion', 'rights.items.portability'] },
-  { id: 'cookies', icon: Globe, titleKey: 'cookies.title', contentKey: 'cookies.content', color: 'indigo' },
-  { id: 'changes', icon: Bell, titleKey: 'changes.title', contentKey: 'changes.content', color: 'slate' },
+  {
+    id: 'collection',
+    icon: Database,
+    titleKey: 'collection.title',
+    contentKey: 'collection.content',
+    color: 'blue',
+    items: [
+      'collection.items.personal',
+      'collection.items.academic',
+      'collection.items.usage',
+      'collection.items.device',
+    ],
+  },
+  {
+    id: 'usage',
+    icon: Eye,
+    titleKey: 'usage.title',
+    contentKey: 'usage.content',
+    color: 'violet',
+    items: [
+      'usage.items.service',
+      'usage.items.personalization',
+      'usage.items.communication',
+      'usage.items.analytics',
+    ],
+  },
+  {
+    id: 'sharing',
+    icon: Share2,
+    titleKey: 'sharing.title',
+    contentKey: 'sharing.content',
+    color: 'amber',
+    items: ['sharing.items.consent', 'sharing.items.legal', 'sharing.items.partners'],
+  },
+  {
+    id: 'security',
+    icon: Lock,
+    titleKey: 'security.title',
+    contentKey: 'security.content',
+    color: 'emerald',
+  },
+  {
+    id: 'rights',
+    icon: Shield,
+    titleKey: 'rights.title',
+    contentKey: 'rights.content',
+    color: 'rose',
+    items: [
+      'rights.items.access',
+      'rights.items.correction',
+      'rights.items.deletion',
+      'rights.items.portability',
+    ],
+  },
+  {
+    id: 'cookies',
+    icon: Globe,
+    titleKey: 'cookies.title',
+    contentKey: 'cookies.content',
+    color: 'indigo',
+  },
+  {
+    id: 'changes',
+    icon: Bell,
+    titleKey: 'changes.title',
+    contentKey: 'changes.content',
+    color: 'slate',
+  },
 ];
 
 const colorMap: Record<string, { bg: string; text: string; gradient: string; checkBg: string }> = {
-  blue: { bg: 'bg-blue-500/10', text: 'text-blue-500', gradient: 'from-blue-500 to-cyan-500', checkBg: 'bg-blue-500' },
-  violet: { bg: 'bg-violet-500/10', text: 'text-violet-500', gradient: 'from-violet-500 to-purple-500', checkBg: 'bg-violet-500' },
-  amber: { bg: 'bg-amber-500/10', text: 'text-amber-500', gradient: 'from-amber-500 to-yellow-500', checkBg: 'bg-amber-500' },
-  emerald: { bg: 'bg-emerald-500/10', text: 'text-emerald-500', gradient: 'from-emerald-500 to-teal-500', checkBg: 'bg-emerald-500' },
-  rose: { bg: 'bg-rose-500/10', text: 'text-rose-500', gradient: 'from-rose-500 to-pink-500', checkBg: 'bg-rose-500' },
-  indigo: { bg: 'bg-indigo-500/10', text: 'text-indigo-500', gradient: 'from-indigo-500 to-blue-500', checkBg: 'bg-indigo-500' },
-  slate: { bg: 'bg-muted', text: 'text-muted-foreground', gradient: 'from-slate-500 to-gray-500', checkBg: 'bg-slate-500' },
+  blue: {
+    bg: 'bg-blue-500/10',
+    text: 'text-blue-500',
+    gradient: 'bg-primary',
+    checkBg: 'bg-blue-500',
+  },
+  violet: {
+    bg: 'bg-primary/10',
+    text: 'text-primary',
+    gradient: 'bg-primary',
+    checkBg: 'bg-primary',
+  },
+  amber: {
+    bg: 'bg-amber-500/10',
+    text: 'text-amber-500',
+    gradient: 'bg-warning',
+    checkBg: 'bg-amber-500',
+  },
+  emerald: {
+    bg: 'bg-emerald-500/10',
+    text: 'text-emerald-500',
+    gradient: 'bg-success',
+    checkBg: 'bg-emerald-500',
+  },
+  rose: {
+    bg: 'bg-rose-500/10',
+    text: 'text-rose-500',
+    gradient: 'bg-destructive',
+    checkBg: 'bg-rose-500',
+  },
+  indigo: {
+    bg: 'bg-indigo-500/10',
+    text: 'text-indigo-500',
+    gradient: 'from-indigo-500 to-blue-500',
+    checkBg: 'bg-indigo-500',
+  },
+  slate: {
+    bg: 'bg-muted',
+    text: 'text-muted-foreground',
+    gradient: 'from-slate-500 to-gray-500',
+    checkBg: 'bg-slate-500',
+  },
 };
 
 export default function PrivacyPage() {
@@ -48,29 +144,26 @@ export default function PrivacyPage() {
     <PageContainer maxWidth="4xl">
       <PageHeader
         title={t('title')}
-        description={t('lastUpdated', { date: '2026年1月1日' })}
+        description={t('lastUpdated', { date: '2026-01-01' })}
         icon={ShieldCheck}
         color="emerald"
       />
 
       {/* Commitment Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <Card className="mb-8 overflow-hidden border-emerald-500/20">
-          <div className="h-1.5 bg-gradient-to-r from-emerald-500 to-teal-500" />
+          <div className="h-1.5 bg-success" />
           <CardContent className="pt-6">
             <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 shadow-lg shadow-emerald-500/25">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-success ">
                 <Shield className="h-6 w-6 text-white" />
               </div>
               <div>
-                <Badge variant="gradient-success" className="mb-2">安全承诺</Badge>
+                <Badge variant="success" className="mb-2">
+                  {t('securityBadge')}
+                </Badge>
                 <h3 className="font-semibold mb-2 text-lg">{t('commitment.title')}</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  {t('commitment.content')}
-                </p>
+                <p className="text-muted-foreground leading-relaxed">{t('commitment.content')}</p>
               </div>
             </div>
           </CardContent>
@@ -93,7 +186,12 @@ export default function PrivacyPage() {
                 <div className={cn('h-1 bg-gradient-to-r', colors.gradient)} />
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-3 text-lg">
-                    <div className={cn('flex h-9 w-9 items-center justify-center rounded-lg', colors.bg)}>
+                    <div
+                      className={cn(
+                        'flex h-9 w-9 items-center justify-center rounded-lg',
+                        colors.bg
+                      )}
+                    >
                       <Icon className={cn('h-4 w-4', colors.text)} />
                     </div>
                     <span className="flex-1">{t(section.titleKey)}</span>
@@ -128,7 +226,7 @@ export default function PrivacyPage() {
         className="mt-8"
       >
         <Card className="overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-blue-500 to-cyan-500" />
+          <div className="h-1 bg-primary" />
           <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-4 py-6">
             <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10">

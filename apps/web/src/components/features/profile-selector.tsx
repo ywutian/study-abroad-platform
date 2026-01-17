@@ -44,16 +44,19 @@ export function ProfileSelector({ onSelect, selectedProfileId }: ProfileSelector
   const [search, setSearch] = useState('');
 
   // Fetch public profiles
+  // apiClient 已自动解包 { success, data } -> data
+  // 后端 getPublicProfiles() 返回 { data: [...profiles] }
+  // 经 TransformInterceptor 包装后为 { success, data: { data: [...] } }
+  // apiClient 解包后得到 { data: [...profiles] }
   const { data: profilesResponse, isLoading } = useQuery({
     queryKey: ['publicProfiles', search],
     queryFn: () =>
-      apiClient.get<{ data: { data: PublicProfile[] } }>('/hall/public-profiles', {
+      apiClient.get<{ data: PublicProfile[] }>('/hall/public-profiles', {
         params: search ? { search } : undefined,
       }),
   });
 
-  // API response: { success: true, data: { data: [...] } }
-  const profileList = profilesResponse?.data?.data || [];
+  const profileList = profilesResponse?.data || [];
 
   return (
     <div className="space-y-4">
@@ -94,7 +97,7 @@ export function ProfileSelector({ onSelect, selectedProfileId }: ProfileSelector
               >
                 <CardContent className="flex items-center gap-4 p-4">
                   {/* Avatar placeholder */}
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 text-white">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white">
                     <User className="h-6 w-6" />
                   </div>
 
@@ -103,13 +106,13 @@ export function ProfileSelector({ onSelect, selectedProfileId }: ProfileSelector
                     <div className="flex items-center gap-2 mb-1">
                       {profile.grade && (
                         <Badge variant="secondary" className="text-xs">
-                          {GRADE_KEYS[profile.grade] ? t(`grades.${GRADE_KEYS[profile.grade]}`) : profile.grade}
+                          {GRADE_KEYS[profile.grade]
+                            ? t(`grades.${GRADE_KEYS[profile.grade]}`)
+                            : profile.grade}
                         </Badge>
                       )}
                       {profile.targetMajor && (
-                        <span className="text-sm font-medium truncate">
-                          {profile.targetMajor}
-                        </span>
+                        <span className="text-sm font-medium truncate">{profile.targetMajor}</span>
                       )}
                     </div>
 
@@ -145,7 +148,3 @@ export function ProfileSelector({ onSelect, selectedProfileId }: ProfileSelector
     </div>
   );
 }
-
-
-
-

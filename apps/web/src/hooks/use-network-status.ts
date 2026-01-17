@@ -92,11 +92,3 @@ export function useOfflineNotification() {
     dismiss: () => setShowNotification(false),
   };
 }
-
-
-
-
-
-
-
-

@@ -120,11 +120,3 @@ export function ScrollRevealItem({
 
 // 导出变体供外部使用
 export { variants as scrollRevealVariants };
-
-
-
-
-
-
-
-

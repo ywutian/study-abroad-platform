@@ -3,21 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Rocket,
-  GraduationCap,
-  Brain,
-  Target,
-  ChevronRight,
-  ChevronLeft,
-  X,
-} from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Rocket, GraduationCap, Brain, Target, ChevronRight, ChevronLeft, X } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useTour, TOURS, welcomeTourSteps } from './tour-provider';
@@ -40,7 +27,7 @@ const welcomeStepConfigs = [
     id: 'ai',
     icon: Brain,
     titleKey: 'ai',
-    color: 'from-purple-500/20 to-purple-500/5',
+    color: 'from-primary/20 to-purple-500/5',
   },
   {
     id: 'prediction',
@@ -135,10 +122,12 @@ export function WelcomeDialog({ forceShow = false, onClose }: WelcomeDialogProps
         {/* 内容区域 */}
         <div className="relative">
           {/* 背景渐变 */}
-          <div className={cn(
-            'absolute inset-0 bg-gradient-to-br transition-colors duration-500',
-            stepConfig.color
-          )} />
+          <div
+            className={cn(
+              'absolute inset-0 bg-gradient-to-br transition-colors duration-500',
+              stepConfig.color
+            )}
+          />
 
           {/* 步骤内容 */}
           <AnimatePresence mode="wait">
@@ -155,7 +144,7 @@ export function WelcomeDialog({ forceShow = false, onClose }: WelcomeDialogProps
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.1, type: 'spring' }}
-                className="w-16 h-16 rounded-2xl bg-background/80 backdrop-blur-sm shadow-lg flex items-center justify-center mb-6"
+                className="w-16 h-16 rounded-lg bg-background/80 backdrop-blur-sm shadow-lg flex items-center justify-center mb-6"
               >
                 <Icon className="w-8 h-8 text-primary" />
               </motion.div>
@@ -239,12 +228,7 @@ export function ResetWelcomeButton() {
       <Button variant="outline" onClick={handleReset}>
         {t('resetButton')}
       </Button>
-      {showWelcome && (
-        <WelcomeDialog forceShow onClose={() => setShowWelcome(false)} />
-      )}
+      {showWelcome && <WelcomeDialog forceShow onClose={() => setShowWelcome(false)} />}
     </>
   );
 }
-
-
-

@@ -5,12 +5,8 @@ import { Link } from '@/lib/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import {
-  Home,
-  BookOpen,
-  Target,
-  User,
-} from 'lucide-react';
+import { Home, BookOpen, Target, User } from 'lucide-react';
+import { useHydrated } from '@/hooks/use-hydration';
 
 interface TabItem {
   href: string;
@@ -50,11 +46,17 @@ export function MobileTabBar() {
   const pathname = usePathname();
   const t = useTranslations('nav.mobile');
 
+  // 企业级 Hydration 安全方案：使用 useSyncExternalStore
+  const isHydrated = useHydrated();
+
   // 检查当前路径是否匹配
   const isActive = (tab: TabItem) => {
     const normalizedPath = pathname.replace(/^\/(zh|en)/, '');
     return tab.matchPaths?.some((p) => normalizedPath === p || normalizedPath.startsWith(p + '/'));
   };
+
+  // SSR 时不渲染（避免 framer-motion layoutId 导致 hydration mismatch）
+  if (!isHydrated) return null;
 
   return (
     <nav
@@ -94,21 +96,11 @@ export function MobileTabBar() {
                 animate={active ? { scale: 1.1 } : { scale: 1 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
               >
-                <Icon
-                  className={cn(
-                    'h-5 w-5 mb-1 transition-all',
-                    active && 'stroke-[2.5px]'
-                  )}
-                />
+                <Icon className={cn('h-5 w-5 mb-1 transition-all', active && 'stroke-[2.5px]')} />
               </motion.div>
 
               {/* 标签 */}
-              <span
-                className={cn(
-                  'text-[10px] font-medium',
-                  active && 'font-semibold'
-                )}
-              >
+              <span className={cn('text-2xs font-medium', active && 'font-semibold')}>
                 {t(tab.labelKey)}
               </span>
 
@@ -121,4 +113,3 @@ export function MobileTabBar() {
     </nav>
   );
 }
-

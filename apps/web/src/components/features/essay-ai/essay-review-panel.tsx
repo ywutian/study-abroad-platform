@@ -38,14 +38,6 @@ interface ReviewResult {
   tokenUsed: number;
 }
 
-const SCORE_LABELS = {
-  clarity: '主题清晰度',
-  uniqueness: '个人特色',
-  storytelling: '故事性',
-  fit: '学校契合度',
-  language: '语言表达',
-};
-
 const getScoreColor = (score: number) => {
   if (score >= 8) return 'text-green-600';
   if (score >= 6) return 'text-yellow-600';
@@ -114,7 +106,7 @@ export const EssayReviewPanel: React.FC<EssayReviewPanelProps> = ({ essayId, cla
             {Object.entries(result.scores).map(([key, value]) => (
               <div key={key} className="space-y-1">
                 <div className="flex items-center justify-between text-sm">
-                  <span>{SCORE_LABELS[key as keyof ReviewScores]}</span>
+                  <span>{t(`scores.${key}`)}</span>
                   <span className={cn('font-medium', getScoreColor(value))}>{value}/10</span>
                 </div>
                 <Progress value={value * 10} className={cn('h-2', getScoreBg(value))} />
@@ -226,7 +218,11 @@ export const EssayReviewPanel: React.FC<EssayReviewPanelProps> = ({ essayId, cla
           <span>{t('review.cost', { points: 30 })}</span>
         </div>
 
-        <Button onClick={() => reviewMutation.mutate()} disabled={reviewMutation.isPending} className="w-full">
+        <Button
+          onClick={() => reviewMutation.mutate()}
+          disabled={reviewMutation.isPending}
+          className="w-full"
+        >
           {reviewMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           <Star className="mr-2 h-4 w-4" />
           {t('review.start')}
@@ -235,6 +231,3 @@ export const EssayReviewPanel: React.FC<EssayReviewPanelProps> = ({ essayId, cla
     </Card>
   );
 };
-
-
-

@@ -10,7 +10,17 @@ import { Label } from '@/components/ui/label';
 import { Link } from '@/lib/i18n/navigation';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
-import { KeyRound, ArrowLeft, Loader2, CheckCircle, AlertCircle, Eye, EyeOff, Lock, ShieldCheck } from 'lucide-react';
+import {
+  KeyRound,
+  ArrowLeft,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+  Eye,
+  EyeOff,
+  Lock,
+  ShieldCheck,
+} from 'lucide-react';
 
 export default function ResetPasswordPage() {
   const t = useTranslations();
@@ -65,18 +75,14 @@ export default function ResetPasswordPage() {
     return (
       <div className="space-y-6">
         <div className="text-center">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--auth-error-bg)] ring-1 ring-[var(--auth-error-ring)]">
-            <AlertCircle className="h-8 w-8 text-[var(--auth-error)]" />
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-lg bg-auth-error-bg ring-1 ring-auth-error-ring">
+            <AlertCircle className="h-8 w-8 text-auth-error" />
           </div>
-          <h1 className="text-2xl font-bold text-auth tracking-tight">
-            {t('auth.resetPassword.invalidLink')}
-          </h1>
-          <p className="mt-2 text-sm text-auth-muted">
-            {t('auth.resetPassword.linkExpiredDesc')}
-          </p>
+          <h1 className="text-title text-auth">{t('auth.resetPassword.invalidLink')}</h1>
+          <p className="mt-2 text-sm text-auth-muted">{t('auth.resetPassword.linkExpiredDesc')}</p>
         </div>
         <Link href="/forgot-password" className="block">
-          <Button className="w-full h-12 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25">
+          <Button className="w-full h-12 bg-primary hover:from-blue-600 hover:to-cyan-600 text-white font-medium rounded-xl ">
             {t('auth.resetPassword.getNewLink')}
           </Button>
         </Link>
@@ -89,18 +95,14 @@ export default function ResetPasswordPage() {
     return (
       <div className="space-y-6">
         <div className="text-center">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/10 ring-1 ring-emerald-500/20">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-lg bg-emerald-500/10 ring-1 ring-emerald-500/20">
             <CheckCircle className="h-8 w-8 text-emerald-400" />
           </div>
-          <h1 className="text-2xl font-bold text-auth tracking-tight">
-            {t('auth.resetPassword.success')}
-          </h1>
-          <p className="mt-2 text-sm text-auth-muted">
-            {t('auth.resetPassword.successDesc')}
-          </p>
+          <h1 className="text-title text-auth">{t('auth.resetPassword.success')}</h1>
+          <p className="mt-2 text-sm text-auth-muted">{t('auth.resetPassword.successDesc')}</p>
         </div>
         <Link href="/login" className="block">
-          <Button className="w-full h-12 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25">
+          <Button className="w-full h-12 bg-primary hover:from-blue-600 hover:to-cyan-600 text-white font-medium rounded-xl ">
             {t('auth.resetPassword.goToLogin')}
           </Button>
         </Link>
@@ -112,15 +114,11 @@ export default function ResetPasswordPage() {
     <div className="space-y-6">
       {/* 标题区 */}
       <div className="text-center">
-        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--auth-icon-bg)] ring-1 ring-[var(--auth-icon-ring)]">
-          <KeyRound className="h-8 w-8 text-[var(--auth-accent)]" />
+        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-lg bg-auth-icon-bg ring-1 ring-auth-icon-ring">
+          <KeyRound className="h-8 w-8 text-auth-accent" />
         </div>
-        <h1 className="text-2xl font-bold text-auth tracking-tight">
-          {t('auth.resetPassword.title')}
-        </h1>
-        <p className="mt-2 text-sm text-auth-muted">
-          {t('auth.resetPassword.description')}
-        </p>
+        <h1 className="text-title text-auth">{t('auth.resetPassword.title')}</h1>
+        <p className="mt-2 text-sm text-auth-muted">{t('auth.resetPassword.description')}</p>
       </div>
 
       {/* 表单 */}
@@ -140,7 +138,7 @@ export default function ResetPasswordPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={mutation.isPending}
-              className="h-12 pl-11 pr-11 bg-auth-input-bg border-auth-input-border text-auth-input-text placeholder:text-auth-input-placeholder rounded-xl focus:bg-auth-input-bg focus:border-[var(--auth-focus-border)] focus:ring-2 focus:ring-[var(--auth-focus-ring)] transition-all"
+              className="h-12 pl-11 pr-11 bg-auth-input-bg border-auth-input-border text-auth-input-text placeholder:text-auth-input-placeholder rounded-xl focus:bg-auth-input-bg focus:border-auth-focus-border focus:ring-2 focus:ring-auth-focus-ring transition-all"
             />
             <button
               type="button"
@@ -167,7 +165,7 @@ export default function ResetPasswordPage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               disabled={mutation.isPending}
-              className="h-12 pl-11 pr-11 bg-auth-input-bg border-auth-input-border text-auth-input-text placeholder:text-auth-input-placeholder rounded-xl focus:bg-auth-input-bg focus:border-[var(--auth-focus-border)] focus:ring-2 focus:ring-[var(--auth-focus-ring)] transition-all"
+              className="h-12 pl-11 pr-11 bg-auth-input-bg border-auth-input-border text-auth-input-text placeholder:text-auth-input-placeholder rounded-xl focus:bg-auth-input-bg focus:border-auth-focus-border focus:ring-2 focus:ring-auth-focus-ring transition-all"
             />
             <button
               type="button"
@@ -181,22 +179,36 @@ export default function ResetPasswordPage() {
 
         {/* 密码要求 */}
         <div className="space-y-2 p-3 rounded-xl bg-auth-input-bg border border-auth-input-border">
-          <p className="text-xs text-auth-muted mb-2">{t('auth.resetPassword.requirements.title') || '密码要求'}</p>
+          <p className="text-xs text-auth-muted mb-2">
+            {t('auth.resetPassword.requirements.title')}
+          </p>
           <div className="space-y-1.5 text-xs">
-            <p className={`flex items-center gap-2 ${password.length >= 8 ? 'text-emerald-400' : 'text-auth-muted'}`}>
-              <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${password.length >= 8 ? 'bg-emerald-500/20' : 'bg-auth-input-bg'}`}>
+            <p
+              className={`flex items-center gap-2 ${password.length >= 8 ? 'text-emerald-400' : 'text-auth-muted'}`}
+            >
+              <span
+                className={`w-4 h-4 rounded-full flex items-center justify-center text-2xs ${password.length >= 8 ? 'bg-emerald-500/20' : 'bg-auth-input-bg'}`}
+              >
                 {password.length >= 8 ? '✓' : '○'}
               </span>
               {t('auth.resetPassword.requirements.minLength')}
             </p>
-            <p className={`flex items-center gap-2 ${/[A-Za-z]/.test(password) ? 'text-emerald-400' : 'text-auth-muted'}`}>
-              <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${/[A-Za-z]/.test(password) ? 'bg-emerald-500/20' : 'bg-auth-input-bg'}`}>
+            <p
+              className={`flex items-center gap-2 ${/[A-Za-z]/.test(password) ? 'text-emerald-400' : 'text-auth-muted'}`}
+            >
+              <span
+                className={`w-4 h-4 rounded-full flex items-center justify-center text-2xs ${/[A-Za-z]/.test(password) ? 'bg-emerald-500/20' : 'bg-auth-input-bg'}`}
+              >
                 {/[A-Za-z]/.test(password) ? '✓' : '○'}
               </span>
               {t('auth.resetPassword.requirements.hasLetter')}
             </p>
-            <p className={`flex items-center gap-2 ${/\d/.test(password) ? 'text-emerald-400' : 'text-auth-muted'}`}>
-              <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${/\d/.test(password) ? 'bg-emerald-500/20' : 'bg-auth-input-bg'}`}>
+            <p
+              className={`flex items-center gap-2 ${/\d/.test(password) ? 'text-emerald-400' : 'text-auth-muted'}`}
+            >
+              <span
+                className={`w-4 h-4 rounded-full flex items-center justify-center text-2xs ${/\d/.test(password) ? 'bg-emerald-500/20' : 'bg-auth-input-bg'}`}
+              >
                 {/\d/.test(password) ? '✓' : '○'}
               </span>
               {t('auth.resetPassword.requirements.hasNumber')}
@@ -204,9 +216,9 @@ export default function ResetPasswordPage() {
           </div>
         </div>
 
-        <Button 
-          type="submit" 
-          className="w-full h-12 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300 disabled:opacity-50"
+        <Button
+          type="submit"
+          className="w-full h-12 bg-primary hover:from-blue-600 hover:to-cyan-600 text-white font-medium rounded-xl   transition-all duration-300 disabled:opacity-50"
           disabled={mutation.isPending}
         >
           {mutation.isPending ? (
@@ -221,8 +233,8 @@ export default function ResetPasswordPage() {
 
         <div className="text-center pt-2">
           <Link href="/login">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="sm"
               className="text-auth-muted hover:text-auth hover:bg-transparent"
             >

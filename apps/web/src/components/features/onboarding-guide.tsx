@@ -54,7 +54,7 @@ export function OnboardingGuide({
       icon: User,
       href: '/profile',
       completed: profileProgress >= 60,
-      gradient: 'from-violet-500 to-purple-500',
+      gradient: 'bg-primary',
     },
     {
       id: 'schools',
@@ -63,7 +63,7 @@ export function OnboardingGuide({
       icon: GraduationCap,
       href: '/schools',
       completed: hasSchools,
-      gradient: 'from-blue-500 to-cyan-500',
+      gradient: 'bg-primary',
     },
     {
       id: 'prediction',
@@ -72,7 +72,7 @@ export function OnboardingGuide({
       icon: Target,
       href: '/prediction',
       completed: hasPredictions,
-      gradient: 'from-emerald-500 to-teal-500',
+      gradient: 'bg-success',
     },
   ];
 
@@ -98,11 +98,11 @@ export function OnboardingGuide({
       exit={{ opacity: 0, y: -20 }}
       className="mb-8"
     >
-      <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 via-background to-blue-500/5">
+      <Card className="overflow-hidden border-primary/20 bg-primary/5">
         {/* 顶部进度条 */}
         <div className="h-1 bg-muted">
           <motion.div
-            className="h-full bg-gradient-to-r from-primary to-blue-500"
+            className="h-full bg-primary"
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.5, delay: 0.2 }}
@@ -113,7 +113,7 @@ export function OnboardingGuide({
           {/* 头部 */}
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary to-blue-500 text-white">
+              <div className="p-2.5 rounded-xl bg-primary text-white">
                 <Rocket className="h-5 w-5" />
               </div>
               <div>
@@ -153,8 +153,8 @@ export function OnboardingGuide({
                       step.completed
                         ? 'bg-emerald-500/10 border border-emerald-500/20'
                         : isActive
-                        ? 'bg-primary/10 border border-primary/20 shadow-sm'
-                        : 'bg-muted/50 border border-transparent hover:border-border'
+                          ? 'bg-primary/10 border border-primary/20 shadow-sm'
+                          : 'bg-muted/50 border border-transparent hover:border-border'
                     )}
                   >
                     {/* 步骤图标 */}
@@ -164,8 +164,8 @@ export function OnboardingGuide({
                         step.completed
                           ? 'bg-emerald-500 text-white'
                           : isActive
-                          ? `bg-gradient-to-br ${step.gradient} text-white`
-                          : 'bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary'
+                            ? `bg-gradient-to-br ${step.gradient} text-white`
+                            : 'bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary'
                       )}
                     >
                       {step.completed ? (
@@ -195,8 +195,8 @@ export function OnboardingGuide({
                             step.completed
                               ? 'text-emerald-600 dark:text-emerald-400'
                               : isActive
-                              ? 'text-foreground'
-                              : 'text-muted-foreground'
+                                ? 'text-foreground'
+                                : 'text-muted-foreground'
                           )}
                         >
                           {step.title}
@@ -210,7 +210,9 @@ export function OnboardingGuide({
                       <p
                         className={cn(
                           'text-sm truncate',
-                          step.completed ? 'text-emerald-600/70 dark:text-emerald-400/70' : 'text-muted-foreground'
+                          step.completed
+                            ? 'text-emerald-600/70 dark:text-emerald-400/70'
+                            : 'text-muted-foreground'
                         )}
                       >
                         {step.description}
@@ -236,13 +238,10 @@ export function OnboardingGuide({
 
           {/* 底部提示 */}
           <div className="mt-4 pt-4 border-t border-border/50">
-            <p className="text-xs text-muted-foreground text-center">
-              {t('hint')}
-            </p>
+            <p className="text-xs text-muted-foreground text-center">{t('hint')}</p>
           </div>
         </CardContent>
       </Card>
     </motion.div>
   );
 }
-

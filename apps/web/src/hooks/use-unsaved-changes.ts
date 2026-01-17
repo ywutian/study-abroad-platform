@@ -11,14 +11,8 @@ interface UseUnsavedChangesOptions {
 /**
  * Hook 用于检测和提示未保存的更改
  */
-export function useUnsavedChanges(
-  hasChanges: boolean,
-  options: UseUnsavedChangesOptions = {}
-) {
-  const { 
-    message = '您有未保存的更改，确定要离开吗？',
-    enabled = true 
-  } = options;
+export function useUnsavedChanges(hasChanges: boolean, options: UseUnsavedChangesOptions = {}) {
+  const { message = '您有未保存的更改，确定要离开吗？', enabled = true } = options;
   const router = useRouter();
   const [isBlocking, setIsBlocking] = useState(false);
 
@@ -68,29 +62,35 @@ export function useUnsavedChanges(
     };
 
     window.addEventListener('popstate', handlePopState);
-    
+
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
   }, [hasChanges, message, enabled, router]);
 
   // 确认离开
-  const confirmLeave = useCallback((callback: () => void) => {
-    if (!hasChanges || !enabled) {
-      callback();
-      return;
-    }
+  const confirmLeave = useCallback(
+    (callback: () => void) => {
+      if (!hasChanges || !enabled) {
+        callback();
+        return;
+      }
 
-    const confirmed = window.confirm(message);
-    if (confirmed) {
-      callback();
-    }
-  }, [hasChanges, message, enabled]);
+      const confirmed = window.confirm(message);
+      if (confirmed) {
+        callback();
+      }
+    },
+    [hasChanges, message, enabled]
+  );
 
   // 安全导航
-  const safeNavigate = useCallback((path: string) => {
-    confirmLeave(() => router.push(path));
-  }, [confirmLeave, router]);
+  const safeNavigate = useCallback(
+    (path: string) => {
+      confirmLeave(() => router.push(path));
+    },
+    [confirmLeave, router]
+  );
 
   return {
     isBlocking,
@@ -100,9 +100,7 @@ export function useUnsavedChanges(
 }
 
 // 表单变更跟踪 Hook
-export function useFormChanges<T extends Record<string, unknown>>(
-  initialValues: T
-) {
+export function useFormChanges<T extends Record<string, unknown>>(initialValues: T) {
   const [values, setValues] = useState<T>(initialValues);
   const [initialSnapshot, setInitialSnapshot] = useState<T>(initialValues);
 
@@ -111,12 +109,12 @@ export function useFormChanges<T extends Record<string, unknown>>(
 
   // 更新值
   const updateValue = useCallback(<K extends keyof T>(key: K, value: T[K]) => {
-    setValues(prev => ({ ...prev, [key]: value }));
+    setValues((prev) => ({ ...prev, [key]: value }));
   }, []);
 
   // 批量更新
   const updateValues = useCallback((updates: Partial<T>) => {
-    setValues(prev => ({ ...prev, ...updates }));
+    setValues((prev) => ({ ...prev, ...updates }));
   }, []);
 
   // 重置为初始值
@@ -145,11 +143,3 @@ export function useFormChanges<T extends Record<string, unknown>>(
     setInitialValues,
   };
 }
-
-
-
-
-
-
-
-

@@ -15,7 +15,7 @@ function getErrorMessage(error: unknown): string {
   if (typeof error === 'string') {
     return error;
   }
-  return '操作失败，请重试';
+  return 'Operation failed, please try again';
 }
 
 export function QueryProvider({ children }: { children: React.ReactNode }) {
@@ -26,7 +26,7 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
           onError: (error, query) => {
             // 仅对已有数据的查询显示错误（避免初始加载时显示错误）
             if (query.state.data !== undefined) {
-              toast.error(`数据更新失败: ${getErrorMessage(error)}`);
+              toast.error(getErrorMessage(error));
             }
           },
         }),
@@ -50,4 +50,3 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
 
   return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }
-

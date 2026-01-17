@@ -4,11 +4,11 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Search, 
-  School, 
-  FileText, 
-  User, 
+import {
+  Search,
+  School,
+  FileText,
+  User,
   MessageSquare,
   ArrowRight,
   Clock,
@@ -17,10 +17,7 @@ import {
   Command,
   Loader2,
 } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -54,7 +51,7 @@ const typeIcons: Record<SearchResultType, React.ElementType> = {
 const typeColors: Record<SearchResultType, string> = {
   school: 'bg-blue-500/10 text-blue-500',
   case: 'bg-green-500/10 text-green-500',
-  article: 'bg-purple-500/10 text-purple-500',
+  article: 'bg-primary/10 text-primary',
   ai: 'bg-primary/10 text-primary',
   page: 'bg-muted text-muted-foreground',
 };
@@ -68,13 +65,7 @@ const quickActionKeys = [
 ];
 
 // Hot searches - English terms that are commonly used
-const hotSearchTerms = [
-  'Harvard',
-  'MIT',
-  'Stanford',
-  'Computer Science',
-  'Scholarship',
-];
+const hotSearchTerms = ['Harvard', 'MIT', 'Stanford', 'Computer Science', 'Scholarship'];
 
 interface GlobalSearchProps {
   open: boolean;
@@ -94,7 +85,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
   const debouncedQuery = useDebounce(query, 300);
 
   // Get translated quick actions
-  const quickActions = quickActionKeys.map(action => ({
+  const quickActions = quickActionKeys.map((action) => ({
     ...action,
     label: t(`actions.${action.labelKey}`),
   }));
@@ -111,11 +102,14 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
   }, []);
 
   // 保存最近搜索
-  const saveRecentSearch = useCallback((term: string) => {
-    const updated = [term, ...recentSearches.filter(s => s !== term)].slice(0, 5);
-    setRecentSearches(updated);
-    localStorage.setItem('recent_searches', JSON.stringify(updated));
-  }, [recentSearches]);
+  const saveRecentSearch = useCallback(
+    (term: string) => {
+      const updated = [term, ...recentSearches.filter((s) => s !== term)].slice(0, 5);
+      setRecentSearches(updated);
+      localStorage.setItem('recent_searches', JSON.stringify(updated));
+    },
+    [recentSearches]
+  );
 
   // 模拟搜索（实际应调用 API）
   useEffect(() => {
@@ -164,7 +158,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
     if (query.trim()) {
       return results;
     }
-    return quickActions.map(action => ({
+    return quickActions.map((action) => ({
       id: action.id,
       type: action.type,
       title: action.label,
@@ -173,37 +167,43 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
   }, [query, results]);
 
   // 处理键盘事件
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setSelectedIndex(i => Math.min(i + 1, allItems.length - 1));
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setSelectedIndex(i => Math.max(i - 1, 0));
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (allItems[selectedIndex]) {
-          handleSelect(allItems[selectedIndex]);
-        }
-        break;
-      case 'Escape':
-        onOpenChange(false);
-        break;
-    }
-  }, [allItems, selectedIndex, onOpenChange]);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          setSelectedIndex((i) => Math.min(i + 1, allItems.length - 1));
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          setSelectedIndex((i) => Math.max(i - 1, 0));
+          break;
+        case 'Enter':
+          e.preventDefault();
+          if (allItems[selectedIndex]) {
+            handleSelect(allItems[selectedIndex]);
+          }
+          break;
+        case 'Escape':
+          onOpenChange(false);
+          break;
+      }
+    },
+    [allItems, selectedIndex, onOpenChange]
+  );
 
   // 选择结果
-  const handleSelect = useCallback((item: SearchResult | typeof quickActions[0]) => {
-    if (query.trim()) {
-      saveRecentSearch(query.trim());
-    }
-    router.push(item.url);
-    onOpenChange(false);
-    setQuery('');
-  }, [query, router, onOpenChange, saveRecentSearch]);
+  const handleSelect = useCallback(
+    (item: SearchResult | (typeof quickActions)[0]) => {
+      if (query.trim()) {
+        saveRecentSearch(query.trim());
+      }
+      router.push(item.url);
+      onOpenChange(false);
+      setQuery('');
+    },
+    [query, router, onOpenChange, saveRecentSearch]
+  );
 
   // 聚焦输入框
   useEffect(() => {
@@ -227,8 +227,8 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
             className="border-0 shadow-none focus-visible:ring-0 h-14 text-base"
           />
           {query && (
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="icon"
               className="h-8 w-8 flex-shrink-0"
               onClick={() => setQuery('')}
@@ -245,7 +245,9 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
             <div className="p-4 space-y-4">
               {/* 快速操作 */}
               <div>
-                <p className="text-xs font-medium text-muted-foreground mb-2">{t('quickActions')}</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2">
+                  {t('quickActions')}
+                </p>
                 <div className="space-y-1">
                   {quickActions.map((action, index) => {
                     const Icon = typeIcons[action.type];
@@ -255,12 +257,15 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
                         onClick={() => handleSelect(action as any)}
                         className={cn(
                           'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors',
-                          selectedIndex === index
-                            ? 'bg-primary/10 text-primary'
-                            : 'hover:bg-muted'
+                          selectedIndex === index ? 'bg-primary/10 text-primary' : 'hover:bg-muted'
                         )}
                       >
-                        <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', typeColors[action.type])}>
+                        <div
+                          className={cn(
+                            'w-8 h-8 rounded-lg flex items-center justify-center',
+                            typeColors[action.type]
+                          )}
+                        >
                           <Icon className="w-4 h-4" />
                         </div>
                         <span className="text-sm font-medium">{action.label}</span>
@@ -274,7 +279,9 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
               {/* 最近搜索 */}
               {recentSearches.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-2">{t('recentSearches')}</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-2">
+                    {t('recentSearches')}
+                  </p>
                   <div className="flex flex-wrap gap-2">
                     {recentSearches.map((term) => (
                       <Badge
@@ -316,9 +323,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
               {results.length === 0 && !loading ? (
                 <div className="py-12 text-center">
                   <Search className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
-                  <p className="text-sm text-muted-foreground">
-                    {t('noResults', { query })}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{t('noResults', { query })}</p>
                 </div>
               ) : (
                 <AnimatePresence mode="popLayout">
@@ -334,19 +339,20 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
                         onClick={() => handleSelect(result)}
                         className={cn(
                           'w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left transition-colors',
-                          selectedIndex === index
-                            ? 'bg-primary/10'
-                            : 'hover:bg-muted'
+                          selectedIndex === index ? 'bg-primary/10' : 'hover:bg-muted'
                         )}
                       >
-                        <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center', typeColors[result.type])}>
+                        <div
+                          className={cn(
+                            'w-10 h-10 rounded-lg flex items-center justify-center',
+                            typeColors[result.type]
+                          )}
+                        >
                           <Icon className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium truncate">
-                              {result.title}
-                            </span>
+                            <span className="text-sm font-medium truncate">{result.title}</span>
                             {result.metadata?.rank && (
                               <Badge variant="secondary" className="text-xs">
                                 {result.metadata.rank}
@@ -375,15 +381,15 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
         <div className="flex items-center justify-between px-4 py-2 border-t bg-muted/30">
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px]">↑↓</kbd>
+              <kbd className="px-1.5 py-0.5 bg-muted rounded text-2xs">↑↓</kbd>
               {t('navigate')}
             </span>
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px]">Enter</kbd>
+              <kbd className="px-1.5 py-0.5 bg-muted rounded text-2xs">Enter</kbd>
               {t('select')}
             </span>
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px]">Esc</kbd>
+              <kbd className="px-1.5 py-0.5 bg-muted rounded text-2xs">Esc</kbd>
               {t('close')}
             </span>
           </div>
@@ -408,12 +414,9 @@ export function SearchTrigger({ onClick }: { onClick: () => void }) {
       <Search className="mr-2 h-4 w-4" />
       <span className="hidden sm:inline-flex">{t('searchButton')}</span>
       <span className="inline-flex sm:hidden">{t('searchButtonShort')}</span>
-      <kbd className="pointer-events-none absolute right-1.5 top-1.5 hidden h-6 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+      <kbd className="pointer-events-none absolute right-1.5 top-1.5 hidden h-6 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-2xs font-medium opacity-100 sm:flex">
         <span className="text-xs">⌘</span>K
       </kbd>
     </Button>
   );
 }
-
-
-

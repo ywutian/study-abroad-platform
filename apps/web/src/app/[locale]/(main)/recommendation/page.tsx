@@ -1,25 +1,23 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useFormatter } from 'next-intl';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { motion } from 'framer-motion';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 import {
   Loader2,
   Sparkles,
@@ -66,42 +64,46 @@ interface RecommendationResult {
   createdAt: string;
 }
 
-const TIER_CONFIG = {
+const TIER_STYLES = {
   reach: {
     icon: Rocket,
-    label: '冲刺校',
-    labelEn: 'Reach',
     color: 'text-red-600',
     bgColor: 'bg-red-50',
     borderColor: 'border-red-200',
   },
   match: {
     icon: Target,
-    label: '匹配校',
-    labelEn: 'Match',
     color: 'text-yellow-600',
     bgColor: 'bg-yellow-50',
     borderColor: 'border-yellow-200',
   },
   safety: {
     icon: Shield,
-    label: '保底校',
-    labelEn: 'Safety',
     color: 'text-green-600',
     bgColor: 'bg-green-50',
     borderColor: 'border-green-200',
   },
 };
 
-const BUDGET_OPTIONS = [
-  { value: 'low', label: '< $30,000/年', labelEn: '< $30k/year' },
-  { value: 'medium', label: '$30,000 - $60,000/年', labelEn: '$30k - $60k/year' },
-  { value: 'high', label: '$60,000 - $80,000/年', labelEn: '$60k - $80k/year' },
-  { value: 'unlimited', label: '不限预算', labelEn: 'Unlimited' },
-];
-
 export default function RecommendationPage() {
   const t = useTranslations('recommendation');
+  const format = useFormatter();
+
+  const getTierLabel = (tier: string) => {
+    const labels: Record<string, string> = {
+      reach: t('tiers.reach'),
+      match: t('tiers.match'),
+      safety: t('tiers.safety'),
+    };
+    return labels[tier] || tier;
+  };
+
+  const BUDGET_OPTIONS = [
+    { value: 'low', label: t('budgetOptions.low') },
+    { value: 'medium', label: t('budgetOptions.medium') },
+    { value: 'high', label: t('budgetOptions.high') },
+    { value: 'unlimited', label: t('budgetOptions.unlimited') },
+  ];
   const [activeTab, setActiveTab] = useState('generate');
   const [result, setResult] = useState<RecommendationResult | null>(null);
 
@@ -121,8 +123,12 @@ export default function RecommendationPage() {
   const generateMutation = useMutation({
     mutationFn: async () => {
       const response = await apiClient.post<RecommendationResult>('/recommendation', {
-        preferredRegions: preferredRegions ? preferredRegions.split(',').map((s) => s.trim()) : undefined,
-        preferredMajors: preferredMajors ? preferredMajors.split(',').map((s) => s.trim()) : undefined,
+        preferredRegions: preferredRegions
+          ? preferredRegions.split(',').map((s) => s.trim())
+          : undefined,
+        preferredMajors: preferredMajors
+          ? preferredMajors.split(',').map((s) => s.trim())
+          : undefined,
         budget: budget || undefined,
         additionalPreferences: additionalPreferences || undefined,
       });
@@ -145,8 +151,8 @@ export default function RecommendationPage() {
   };
 
   const renderSchoolCard = (school: RecommendedSchool, index: number) => {
-    const config = TIER_CONFIG[school.tier];
-    const TierIcon = config.icon;
+    const tierStyle = TIER_STYLES[school.tier as keyof typeof TIER_STYLES];
+    const TierIcon = tierStyle.icon;
 
     return (
       <motion.div
@@ -155,22 +161,30 @@ export default function RecommendationPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.05 }}
       >
-        <Card className={cn('hover:shadow-md transition-shadow', config.borderColor)}>
+        <Card className={cn('hover:shadow-md transition-shadow', tierStyle.borderColor)}>
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <div className={cn('p-2 rounded-lg', config.bgColor)}>
-                  <TierIcon className={cn('h-5 w-5', config.color)} />
+                <div className={cn('p-2 rounded-lg', tierStyle.bgColor)}>
+                  <TierIcon className={cn('h-5 w-5', tierStyle.color)} />
                 </div>
                 <div>
                   <CardTitle className="text-base">{school.schoolName}</CardTitle>
-                  <Badge variant="outline" className={cn('mt-1', config.color, config.borderColor)}>
-                    {config.label}
+                  <Badge
+                    variant="outline"
+                    className={cn('mt-1', tierStyle.color, tierStyle.borderColor)}
+                  >
+                    {getTierLabel(school.tier)}
                   </Badge>
                 </div>
               </div>
               <div className="text-right">
-                <p className={cn('text-2xl font-bold', getProbabilityColor(school.estimatedProbability))}>
+                <p
+                  className={cn(
+                    'text-2xl font-bold',
+                    getProbabilityColor(school.estimatedProbability)
+                  )}
+                >
                   {school.estimatedProbability}%
                 </p>
                 <p className="text-xs text-muted-foreground">{t('probability')}</p>
@@ -203,7 +217,9 @@ export default function RecommendationPage() {
             {/* Concerns */}
             {school.concerns && school.concerns.length > 0 && (
               <div className="pt-2 border-t">
-                <p className="text-xs text-amber-600">{t('concerns')}: {school.concerns[0]}</p>
+                <p className="text-xs text-amber-600">
+                  {t('concerns')}: {school.concerns[0]}
+                </p>
               </div>
             )}
           </CardContent>
@@ -216,11 +232,11 @@ export default function RecommendationPage() {
     <div className="container mx-auto py-8 px-4 max-w-6xl">
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
-        <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5">
+        <div className="p-3 rounded-xl bg-primary/10">
           <GraduationCap className="h-8 w-8 text-primary" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold">{t('title')}</h1>
+          <h1 className="text-title">{t('title')}</h1>
           <p className="text-muted-foreground">{t('description')}</p>
         </div>
       </div>
@@ -322,7 +338,7 @@ export default function RecommendationPage() {
               </Card>
 
               {/* Info Card */}
-              <Card className="bg-gradient-to-br from-primary/5 to-transparent">
+              <Card className="bg-primary/5">
                 <CardHeader>
                   <CardTitle className="text-lg">{t('howItWorks')}</CardTitle>
                 </CardHeader>
@@ -361,14 +377,14 @@ export default function RecommendationPage() {
             <div className="space-y-6">
               {/* Action Bar */}
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">{t('result')}</h2>
+                <h2 className="text-body-lg font-semibold">{t('result')}</h2>
                 <Button variant="outline" onClick={() => setResult(null)}>
                   {t('newRecommendation')}
                 </Button>
               </div>
 
               {/* Summary */}
-              <Card className="bg-gradient-to-br from-primary/5 to-transparent">
+              <Card className="bg-primary/5">
                 <CardContent className="pt-6">
                   <p className="text-sm leading-relaxed">{result.summary}</p>
                 </CardContent>
@@ -497,25 +513,32 @@ export default function RecommendationPage() {
           {history && history.length > 0 ? (
             <div className="space-y-4">
               {history.map((item) => (
-                <Card key={item.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => {
-                  setResult(item);
-                  setActiveTab('generate');
-                }}>
+                <Card
+                  key={item.id}
+                  className="hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => {
+                    setResult(item);
+                    setActiveTab('generate');
+                  }}
+                >
                   <CardContent className="pt-6">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-4">
                         <Badge variant="outline" className="text-red-600 border-red-200">
-                          {t('reach')}: {item.recommendations.filter((r) => r.tier === 'reach').length}
+                          {t('reach')}:{' '}
+                          {item.recommendations.filter((r) => r.tier === 'reach').length}
                         </Badge>
                         <Badge variant="outline" className="text-yellow-600 border-yellow-200">
-                          {t('match')}: {item.recommendations.filter((r) => r.tier === 'match').length}
+                          {t('match')}:{' '}
+                          {item.recommendations.filter((r) => r.tier === 'match').length}
                         </Badge>
                         <Badge variant="outline" className="text-green-600 border-green-200">
-                          {t('safety')}: {item.recommendations.filter((r) => r.tier === 'safety').length}
+                          {t('safety')}:{' '}
+                          {item.recommendations.filter((r) => r.tier === 'safety').length}
                         </Badge>
                       </div>
                       <span className="text-sm text-muted-foreground">
-                        {new Date(item.createdAt).toLocaleDateString()}
+                        {format.dateTime(new Date(item.createdAt), 'medium')}
                       </span>
                     </div>
                     <p className="text-sm text-muted-foreground line-clamp-2">{item.summary}</p>
@@ -536,6 +559,3 @@ export default function RecommendationPage() {
     </div>
   );
 }
-
-
-

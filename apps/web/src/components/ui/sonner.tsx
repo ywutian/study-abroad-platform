@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Toast 通知组件 - 自定义样式
+ * Toast 通知组件 - 精美动画与视觉效果
  */
 
 import {
@@ -10,8 +10,8 @@ import {
   Loader2Icon,
   OctagonXIcon,
   TriangleAlertIcon,
-  XIcon,
   Sparkles,
+  PartyPopper,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Toaster as Sonner, type ToasterProps, toast as sonnerToast } from 'sonner';
@@ -27,46 +27,41 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast:
-            'group toast group-[.toaster]:bg-card group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-xl group-[.toaster]:rounded-xl group-[.toaster]:backdrop-blur-sm',
-          description: 'group-[.toast]:text-muted-foreground',
+            'group toast group-[.toaster]:bg-card/95 group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-2xl group-[.toaster]:rounded-2xl group-[.toaster]:backdrop-blur-xl group-[.toaster]:animate-toast-slide-in',
+          description: 'group-[.toast]:text-muted-foreground group-[.toast]:text-sm',
           actionButton:
-            'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground group-[.toast]:rounded-lg group-[.toast]:font-medium',
+            'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground group-[.toast]:rounded-lg group-[.toast]:font-medium group-[.toast]:transition-all group-[.toast]:hover:scale-105',
           cancelButton:
             'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground group-[.toast]:rounded-lg',
           closeButton:
-            'group-[.toast]:bg-transparent group-[.toast]:border-none group-[.toast]:text-muted-foreground group-[.toast]:hover:text-foreground',
+            'group-[.toast]:bg-transparent group-[.toast]:border-none group-[.toast]:text-muted-foreground group-[.toast]:hover:text-foreground group-[.toast]:transition-colors',
           success:
-            'group-[.toaster]:border-success/30 group-[.toaster]:bg-success/5 [&>div>svg]:text-success',
+            'group-[.toaster]:border-success/40 group-[.toaster]:bg-success/8 [&>div>svg]:text-success group-[.toaster]:shadow-success/10',
           error:
-            'group-[.toaster]:border-destructive/30 group-[.toaster]:bg-destructive/5 [&>div>svg]:text-destructive',
+            'group-[.toaster]:border-destructive/40 group-[.toaster]:bg-destructive/8 [&>div>svg]:text-destructive group-[.toaster]:shadow-destructive/10',
           warning:
-            'group-[.toaster]:border-warning/30 group-[.toaster]:bg-warning/5 [&>div>svg]:text-warning',
-          info: 'group-[.toaster]:border-primary/30 group-[.toaster]:bg-primary/5 [&>div>svg]:text-primary',
+            'group-[.toaster]:border-warning/40 group-[.toaster]:bg-warning/8 [&>div>svg]:text-warning group-[.toaster]:shadow-warning/10',
+          info: 'group-[.toaster]:border-primary/40 group-[.toaster]:bg-primary/8 [&>div>svg]:text-primary group-[.toaster]:shadow-primary/10',
         },
-        duration: 4000,
+        duration: 3500,
       }}
       icons={{
-        success: <CircleCheckIcon className="size-5" />,
-        info: <InfoIcon className="size-5" />,
-        warning: <TriangleAlertIcon className="size-5" />,
-        error: <OctagonXIcon className="size-5" />,
+        success: <CircleCheckIcon className="size-5 animate-scale-in" />,
+        info: <InfoIcon className="size-5 animate-scale-in" />,
+        warning: <TriangleAlertIcon className="size-5 animate-scale-in" />,
+        error: <OctagonXIcon className="size-5 animate-scale-in" />,
         loading: <Loader2Icon className="size-5 animate-spin" />,
       }}
       closeButton
       richColors
       expand
+      gap={10}
       style={
         {
-          '--normal-bg': 'hsl(var(--card))',
-          '--normal-text': 'hsl(var(--card-foreground))',
-          '--normal-border': 'hsl(var(--border))',
-          '--border-radius': 'var(--radius)',
-          '--success-bg': 'hsl(var(--success) / 0.1)',
-          '--success-text': 'hsl(var(--success))',
-          '--success-border': 'hsl(var(--success) / 0.3)',
-          '--error-bg': 'hsl(var(--destructive) / 0.1)',
-          '--error-text': 'hsl(var(--destructive))',
-          '--error-border': 'hsl(var(--destructive) / 0.3)',
+          '--normal-bg': 'var(--card)',
+          '--normal-text': 'var(--card-foreground)',
+          '--normal-border': 'var(--border)',
+          '--border-radius': '1rem',
         } as React.CSSProperties
       }
       {...props}
@@ -204,9 +199,21 @@ export function toastCustom(
 export function toastAIComplete(message: string, description?: string) {
   return sonnerToast(message, {
     description,
-    icon: <Sparkles className="size-5 text-primary" />,
+    icon: <Sparkles className="size-5 text-primary animate-scale-in" />,
     className: 'border-primary/30 bg-primary/5',
     duration: 5000,
+  });
+}
+
+/**
+ * 登录成功提示 - 特殊欢迎样式
+ */
+export function toastLoginSuccess(message: string, description?: string) {
+  return sonnerToast(message, {
+    description,
+    icon: <PartyPopper className="size-5 text-success animate-scale-in" />,
+    className: 'border-success/40 bg-success/8 shadow-lg shadow-success/10',
+    duration: 2500,
   });
 }
 

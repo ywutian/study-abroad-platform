@@ -26,12 +26,12 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006';
 
 /**
  * 安全认证 Store
- * 
+ *
  * 安全设计：
  * - AccessToken 仅存储在内存中，不持久化到 localStorage
  * - RefreshToken 通过 httpOnly cookie 管理，JavaScript 无法访问
  * - 页面刷新后通过 Cookie 自动恢复会话
- * 
+ *
  * 这样即使存在 XSS 漏洞，攻击者也无法窃取 Token
  */
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -53,7 +53,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
    */
   initialize: async () => {
     const { isInitialized, refreshAccessToken } = get();
-    
+
     if (isInitialized) {
       return;
     }
@@ -63,12 +63,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       // 尝试使用 cookie 中的 refreshToken 获取新的 accessToken
       const success = await refreshAccessToken();
-      
+
       if (success) {
         // 获取用户信息
         const userResponse = await fetch(`${API_BASE_URL}/api/v1/users/me`, {
           headers: {
-            'Authorization': `Bearer ${get().accessToken}`,
+            Authorization: `Bearer ${get().accessToken}`,
           },
           credentials: 'include',
         });
@@ -98,7 +98,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {}),
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         },
         credentials: 'include', // 发送 httpOnly cookie
       });
@@ -164,12 +164,15 @@ export function startTokenRefreshInterval() {
     clearInterval(refreshInterval);
   }
 
-  refreshInterval = setInterval(() => {
-    const { accessToken, refreshAccessToken } = useAuthStore.getState();
-    if (accessToken) {
-      refreshAccessToken();
-    }
-  }, 14 * 60 * 1000);
+  refreshInterval = setInterval(
+    () => {
+      const { accessToken, refreshAccessToken } = useAuthStore.getState();
+      if (accessToken) {
+        refreshAccessToken();
+      }
+    },
+    14 * 60 * 1000
+  );
 }
 
 export function stopTokenRefreshInterval() {
@@ -183,9 +186,9 @@ export function stopTokenRefreshInterval() {
  * 用于登录成功后设置状态的辅助函数
  */
 export function setAuthFromLogin(user: User, accessToken: string) {
-  useAuthStore.setState({ 
-    user, 
-    accessToken, 
+  useAuthStore.setState({
+    user,
+    accessToken,
     isLoading: false,
     isInitialized: true,
   });

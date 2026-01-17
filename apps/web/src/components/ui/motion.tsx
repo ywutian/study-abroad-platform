@@ -5,14 +5,16 @@
  */
 
 import { forwardRef, ReactNode } from 'react';
-import { 
-  motion, 
-  HTMLMotionProps, 
+import {
+  motion,
+  HTMLMotionProps,
   AnimatePresence,
   useInView,
   useReducedMotion,
   MotionProps,
 } from 'framer-motion';
+import { useFormatter, useLocale } from 'next-intl';
+import { toBcp47 } from '@/lib/i18n/locale-utils';
 import { cn } from '@/lib/utils';
 import {
   fadeIn,
@@ -109,7 +111,11 @@ export function FadeInView({
   };
 
   if (prefersReducedMotion) {
-    return <div ref={ref} className={className}>{children}</div>;
+    return (
+      <div ref={ref} className={className}>
+        {children}
+      </div>
+    );
   }
 
   return (
@@ -179,12 +185,7 @@ interface StaggerItemProps extends MotionDivProps {
   variant?: 'fade' | 'scale' | 'slide';
 }
 
-export function StaggerItem({
-  children,
-  variant = 'fade',
-  className,
-  ...props
-}: StaggerItemProps) {
+export function StaggerItem({ children, variant = 'fade', className, ...props }: StaggerItemProps) {
   const prefersReducedMotion = useReducedMotion();
 
   const variants = {
@@ -256,7 +257,7 @@ export const Card3D = forwardRef<HTMLDivElement, Card3DProps>(
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
       if (prefersReducedMotion) return;
-      
+
       const card = e.currentTarget;
       const rect = card.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -265,9 +266,9 @@ export const Card3D = forwardRef<HTMLDivElement, Card3DProps>(
       const centerY = rect.height / 2;
       const rotateX = ((y - centerY) / centerY) * -intensity;
       const rotateY = ((x - centerX) / centerX) * intensity;
-      
+
       card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
-      
+
       if (glare) {
         const glareEl = card.querySelector('.card-glare') as HTMLElement;
         if (glareEl) {
@@ -281,7 +282,7 @@ export const Card3D = forwardRef<HTMLDivElement, Card3DProps>(
     const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
       const card = e.currentTarget;
       card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
-      
+
       if (glare) {
         const glareEl = card.querySelector('.card-glare') as HTMLElement;
         if (glareEl) {
@@ -425,13 +426,15 @@ export function AnimatedNumber({
   formatOptions,
 }: AnimatedNumberProps) {
   const prefersReducedMotion = useReducedMotion();
+  const format = useFormatter();
+  const locale = useLocale();
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
 
   if (prefersReducedMotion) {
     return (
       <span ref={ref} className={className}>
-        {new Intl.NumberFormat('en-US', formatOptions).format(value)}
+        {format.number(value, formatOptions)}
       </span>
     );
   }
@@ -443,15 +446,13 @@ export function AnimatedNumber({
       initial={{ opacity: 0 }}
       animate={isInView ? { opacity: 1 } : { opacity: 0 }}
     >
-      <motion.span
-        initial={{ opacity: 0 }}
-        animate={isInView ? { opacity: 1 } : { opacity: 0 }}
-      >
+      <motion.span initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : { opacity: 0 }}>
         {isInView && (
           <CountUpAnimation
             target={value}
             duration={duration}
             formatOptions={formatOptions}
+            numberLocale={toBcp47(locale)}
           />
         )}
       </motion.span>
@@ -463,15 +464,17 @@ function CountUpAnimation({
   target,
   duration,
   formatOptions,
+  numberLocale,
 }: {
   target: number;
   duration: number;
   formatOptions?: Intl.NumberFormatOptions;
+  numberLocale: string;
 }) {
   const nodeRef = useRef<HTMLSpanElement>(null);
 
-  // Use framer-motion's useAnimationFrame for smooth counting
-  const formatter = new Intl.NumberFormat('en-US', formatOptions);
+  // 动画回调中无法使用 hook，因此直接使用 Intl.NumberFormat + toBcp47()
+  const formatter = new Intl.NumberFormat(numberLocale, formatOptions);
 
   return (
     <motion.span
@@ -510,7 +513,9 @@ export function AnimatedProgress({ value, className, barClassName }: AnimatedPro
       <motion.div
         className={cn('h-full rounded-full bg-primary', barClassName)}
         initial={{ width: 0 }}
-        animate={isInView && !prefersReducedMotion ? { width: `${value}%` } : { width: `${value}%` }}
+        animate={
+          isInView && !prefersReducedMotion ? { width: `${value}%` } : { width: `${value}%` }
+        }
         transition={{
           type: 'spring',
           stiffness: 100,
@@ -537,10 +542,7 @@ export function Pulse({ children, className, pulseClassName }: PulseProps) {
     <span className={cn('relative inline-flex', className)}>
       {children}
       <motion.span
-        className={cn(
-          'absolute inset-0 rounded-full bg-primary/40',
-          pulseClassName
-        )}
+        className={cn('absolute inset-0 rounded-full bg-primary/40', pulseClassName)}
         animate={{
           scale: [1, 1.5],
           opacity: [0.5, 0],
@@ -580,12 +582,3 @@ export function SkeletonShimmer({ className }: { className?: string }) {
 // ============================================
 
 export { AnimatePresence };
-
-
-
-
-
-
-
-
-

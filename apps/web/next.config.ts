@@ -6,8 +6,20 @@ import withPWA from '@ducanh2912/next-pwa';
 const withNextIntl = createNextIntlPlugin('./src/lib/i18n/request.ts');
 
 const nextConfig: NextConfig = {
-  transpilePackages: ['@study-abroad/shared'],
+  transpilePackages: ['@study-abroad/shared', 'geist'],
   // output: 'standalone', // 仅用于 Docker/VPS 部署，Vercel 不需要
+  experimental: {
+    // 优化大型包的 barrel exports，显著减少编译和打包时间
+    optimizePackageImports: [
+      'lucide-react',
+      'framer-motion',
+      '@radix-ui/react-icons',
+      '@sentry/nextjs',
+      'date-fns',
+      'recharts',
+      '@tanstack/react-query',
+    ],
+  },
 };
 
 // PWA 配置
@@ -19,14 +31,6 @@ const pwaConfig = withPWA({
     skipWaiting: true,
     disableDevLogs: true,
     runtimeCaching: [
-      {
-        urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
-        handler: 'CacheFirst',
-        options: {
-          cacheName: 'google-fonts',
-          expiration: { maxEntries: 10, maxAgeSeconds: 365 * 24 * 60 * 60 },
-        },
-      },
       {
         urlPattern: /\.(?:jpg|jpeg|gif|png|svg|ico|webp)$/i,
         handler: 'StaleWhileRevalidate',

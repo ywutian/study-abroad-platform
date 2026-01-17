@@ -5,4 +5,3 @@ export const { Link, redirect, usePathname, useRouter, getPathname } = createNav
   locales,
   defaultLocale,
 });
-

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
+import { useHydrated } from '@/hooks/use-hydration';
 import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -17,13 +18,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import {
   Accordion,
   AccordionContent,
@@ -46,7 +41,12 @@ interface FAQItem {
 const faqDataKeys: FAQItem[] = [
   { id: '1', questionKey: 'howToStart', answerKey: 'howToStart', categoryKey: 'gettingStarted' },
   { id: '2', questionKey: 'whatCanAIDo', answerKey: 'whatCanAIDo', categoryKey: 'aiFeatures' },
-  { id: '3', questionKey: 'predictionAccuracy', answerKey: 'predictionAccuracy', categoryKey: 'aiFeatures' },
+  {
+    id: '3',
+    questionKey: 'predictionAccuracy',
+    answerKey: 'predictionAccuracy',
+    categoryKey: 'aiFeatures',
+  },
   { id: '4', questionKey: 'viewCases', answerKey: 'viewCases', categoryKey: 'usage' },
   { id: '5', questionKey: 'dataSecure', answerKey: 'dataSecure', categoryKey: 'privacySecurity' },
   { id: '6', questionKey: 'exportData', answerKey: 'exportData', categoryKey: 'usage' },
@@ -66,49 +66,63 @@ export function HelpCenter() {
   const t = useTranslations('helpCenter');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
-
-  // 仅在客户端渲染后显示，避免 hydration mismatch
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const isHydrated = useHydrated();
 
   // Get translated FAQ data
-  const faqData = useMemo(() => faqDataKeys.map(faq => ({
-    id: faq.id,
-    question: t(`faqItems.${faq.questionKey}.question`),
-    answer: t(`faqItems.${faq.answerKey}.answer`),
-    category: t(`categories.${faq.categoryKey}`),
-    categoryKey: faq.categoryKey,
-  })), [t]);
+  const faqData = useMemo(
+    () =>
+      faqDataKeys.map((faq) => ({
+        id: faq.id,
+        question: t(`faqItems.${faq.questionKey}.question`),
+        answer: t(`faqItems.${faq.answerKey}.answer`),
+        category: t(`categories.${faq.categoryKey}`),
+        categoryKey: faq.categoryKey,
+      })),
+    [t]
+  );
 
   // Get translated categories
-  const categories = useMemo(() => categoryKeys.map(key => ({
-    key,
-    label: t(`categories.${key}`),
-  })), [t]);
+  const categories = useMemo(
+    () =>
+      categoryKeys.map((key) => ({
+        key,
+        label: t(`categories.${key}`),
+      })),
+    [t]
+  );
 
   // Get translated help resources
-  const helpResources = useMemo(() => helpResourcesConfig.map(res => ({
-    ...res,
-    title: t(`resources.${res.id}.title`),
-    description: t(`resources.${res.id}.description`),
-  })), [t]);
+  const helpResources = useMemo(
+    () =>
+      helpResourcesConfig.map((res) => ({
+        ...res,
+        title: t(`resources.${res.id}.title`),
+        description: t(`resources.${res.id}.description`),
+      })),
+    [t]
+  );
 
   // 过滤 FAQ
-  const filteredFAQs = faqData.filter(faq => {
-    const matchesSearch = searchQuery.trim() === '' || 
+  const filteredFAQs = faqData.filter((faq) => {
+    const matchesSearch =
+      searchQuery.trim() === '' ||
       faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
       faq.answer.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     const matchesCategory = !selectedCategory || faq.categoryKey === selectedCategory;
-    
+
     return matchesSearch && matchesCategory;
   });
 
-  if (!mounted) {
+  if (!isHydrated) {
     return (
-      <Button variant="ghost" size="icon" className="relative" data-tour="help">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="relative"
+        data-tour="help"
+        suppressHydrationWarning
+      >
         <HelpCircle className="h-5 w-5" />
       </Button>
     );
@@ -117,12 +131,7 @@ export function HelpCenter() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="icon"
-          className="relative"
-          data-tour="help"
-        >
+        <Button variant="ghost" size="icon" className="relative" data-tour="help">
           <HelpCircle className="h-5 w-5" />
         </Button>
       </SheetTrigger>
@@ -200,18 +209,12 @@ export function HelpCenter() {
               {filteredFAQs.length === 0 ? (
                 <div className="text-center py-8">
                   <HelpCircle className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">
-                    {t('noResults')}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{t('noResults')}</p>
                 </div>
               ) : (
                 <Accordion type="single" collapsible className="w-full space-y-2">
                   {filteredFAQs.map((faq) => (
-                    <AccordionItem 
-                      key={faq.id} 
-                      value={faq.id}
-                      className="border rounded-lg px-4"
-                    >
+                    <AccordionItem key={faq.id} value={faq.id} className="border rounded-lg px-4">
                       <AccordionTrigger className="text-sm text-left hover:no-underline py-3">
                         {faq.question}
                       </AccordionTrigger>
@@ -227,9 +230,7 @@ export function HelpCenter() {
             {/* 联系支持 */}
             <div className="rounded-xl border bg-muted/30 p-4">
               <h3 className="text-sm font-semibold mb-2">{t('otherQuestions')}</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                {t('contactSupport')}
-              </p>
+              <p className="text-sm text-muted-foreground mb-4">{t('contactSupport')}</p>
               <div className="flex flex-col gap-2 sm:flex-row">
                 <Button variant="outline" className="flex-1" asChild>
                   <a href="mailto:support@studyabroad.com">
@@ -249,6 +250,3 @@ export function HelpCenter() {
     </Sheet>
   );
 }
-
-
-

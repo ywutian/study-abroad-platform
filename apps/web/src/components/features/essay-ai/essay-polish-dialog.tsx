@@ -13,14 +13,18 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Sparkles, ArrowRight, Check, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
-import { cn } from '@/lib/utils';
 
 interface EssayPolishDialogProps {
   open: boolean;
@@ -131,7 +135,9 @@ export const EssayPolishDialog: React.FC<EssayPolishDialogProps> = ({
 
             <div className="flex items-center justify-between text-sm text-muted-foreground">
               <span>{t('polish.cost', { points: 20 })}</span>
-              <span>{essayContent.length} {t('characters')}</span>
+              <span>
+                {essayContent.length} {t('characters')}
+              </span>
             </div>
           </div>
         ) : (
@@ -144,16 +150,24 @@ export const EssayPolishDialog: React.FC<EssayPolishDialogProps> = ({
                   {result.changes.map((change, idx) => (
                     <div key={idx} className="rounded-lg border p-3 space-y-2">
                       <div className="flex items-start gap-2">
-                        <Badge variant="outline" className="shrink-0 bg-red-50 text-red-700 border-red-200">
+                        <Badge
+                          variant="outline"
+                          className="shrink-0 bg-red-50 text-red-700 border-red-200"
+                        >
                           {t('polish.original')}
                         </Badge>
-                        <p className="text-sm line-through text-muted-foreground">{change.original}</p>
+                        <p className="text-sm line-through text-muted-foreground">
+                          {change.original}
+                        </p>
                       </div>
                       <div className="flex items-center justify-center">
                         <ArrowRight className="h-4 w-4 text-muted-foreground" />
                       </div>
                       <div className="flex items-start gap-2">
-                        <Badge variant="outline" className="shrink-0 bg-green-50 text-green-700 border-green-200">
+                        <Badge
+                          variant="outline"
+                          className="shrink-0 bg-green-50 text-green-700 border-green-200"
+                        >
                           {t('polish.revised')}
                         </Badge>
                         <p className="text-sm">{change.revised}</p>
@@ -217,6 +231,3 @@ export const EssayPolishDialog: React.FC<EssayPolishDialogProps> = ({
     </Dialog>
   );
 };
-
-
-

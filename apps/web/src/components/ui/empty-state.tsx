@@ -3,12 +3,12 @@
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { 
-  FileQuestion, 
-  Search, 
-  Inbox, 
-  FolderOpen, 
-  Wifi, 
+import {
+  FileQuestion,
+  Search,
+  Inbox,
+  FolderOpen,
+  Wifi,
   AlertCircle,
   Plus,
   RefreshCw,
@@ -20,15 +20,16 @@ import {
   Rocket,
 } from 'lucide-react';
 
-type EmptyStateType = 
-  | 'empty' 
-  | 'no-results' 
-  | 'no-data' 
-  | 'error' 
-  | 'offline' 
+type EmptyStateType =
+  | 'empty'
+  | 'no-results'
+  | 'no-data'
+  | 'error'
+  | 'offline'
   | 'first-time'
   | 'schools'
   | 'cases'
+  | 'essays'
   | 'loading'
   | 'custom';
 
@@ -59,78 +60,82 @@ interface EmptyStateProps {
   size?: 'sm' | 'md' | 'lg';
   /** 是否紧凑 */
   compact?: boolean;
-  /** 是否显示装饰 */
-  showDecoration?: boolean;
 }
 
-// 预设配置
-const presetConfig: Record<EmptyStateType, { 
-  icon: React.ReactNode; 
-  iconBg: string;
-  iconColor: string;
-  buttonGradient?: string;
-  decorationColor?: string;
-}> = {
-  empty: { 
-    icon: <Inbox className="h-8 w-8" />, 
-    iconBg: 'bg-muted',
+// 学术严肃风预设配置：简化配色，使用边框而非渐变
+const presetConfig: Record<
+  EmptyStateType,
+  {
+    icon: React.ReactNode;
+    iconBg: string;
+    iconBorder: string;
+    iconColor: string;
+  }
+> = {
+  empty: {
+    icon: <Inbox className="h-8 w-8" />,
+    iconBg: 'bg-muted/50',
+    iconBorder: 'border-border',
     iconColor: 'text-muted-foreground',
   },
-  'no-results': { 
-    icon: <Search className="h-8 w-8" />, 
-    iconBg: 'bg-blue-500/10',
-    iconColor: 'text-blue-500',
-    buttonGradient: 'from-blue-500 to-cyan-500',
-    decorationColor: 'from-blue-500/20 to-cyan-500/20',
+  'no-results': {
+    icon: <Search className="h-8 w-8" />,
+    iconBg: 'bg-primary/5',
+    iconBorder: 'border-primary/20',
+    iconColor: 'text-primary',
   },
-  'no-data': { 
-    icon: <FolderOpen className="h-8 w-8" />, 
-    iconBg: 'bg-violet-500/10',
-    iconColor: 'text-violet-500',
-    buttonGradient: 'from-violet-500 to-purple-500',
-    decorationColor: 'from-violet-500/20 to-purple-500/20',
+  'no-data': {
+    icon: <FolderOpen className="h-8 w-8" />,
+    iconBg: 'bg-primary/5',
+    iconBorder: 'border-violet-700/20',
+    iconColor: 'text-violet-700 dark:text-violet-400',
   },
-  error: { 
-    icon: <AlertCircle className="h-8 w-8" />, 
-    iconBg: 'bg-destructive/10',
+  error: {
+    icon: <AlertCircle className="h-8 w-8" />,
+    iconBg: 'bg-destructive/5',
+    iconBorder: 'border-destructive/20',
     iconColor: 'text-destructive',
-    buttonGradient: 'from-destructive to-destructive/80',
   },
-  offline: { 
-    icon: <Wifi className="h-8 w-8" />, 
-    iconBg: 'bg-amber-500/10',
-    iconColor: 'text-amber-500',
-    buttonGradient: 'from-amber-500 to-orange-500',
+  offline: {
+    icon: <Wifi className="h-8 w-8" />,
+    iconBg: 'bg-warning/5',
+    iconBorder: 'border-warning/20',
+    iconColor: 'text-warning',
   },
   'first-time': {
     icon: <Rocket className="h-8 w-8" />,
-    iconBg: 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20',
-    iconColor: 'text-blue-500',
-    buttonGradient: 'from-blue-500 to-cyan-500',
-    decorationColor: 'from-blue-500/10 to-cyan-500/10',
+    iconBg: 'bg-primary/5',
+    iconBorder: 'border-primary/20',
+    iconColor: 'text-primary',
   },
   schools: {
     icon: <GraduationCap className="h-8 w-8" />,
-    iconBg: 'bg-gradient-to-br from-violet-500/20 to-purple-500/20',
-    iconColor: 'text-violet-500',
-    buttonGradient: 'from-violet-500 to-purple-500',
-    decorationColor: 'from-violet-500/10 to-purple-500/10',
+    iconBg: 'bg-primary/5',
+    iconBorder: 'border-violet-700/20',
+    iconColor: 'text-violet-700 dark:text-violet-400',
   },
   cases: {
     icon: <BookOpen className="h-8 w-8" />,
-    iconBg: 'bg-gradient-to-br from-emerald-500/20 to-teal-500/20',
-    iconColor: 'text-emerald-500',
-    buttonGradient: 'from-emerald-500 to-teal-500',
-    decorationColor: 'from-emerald-500/10 to-teal-500/10',
+    iconBg: 'bg-success/5',
+    iconBorder: 'border-success/20',
+    iconColor: 'text-success',
+  },
+  essays: {
+    icon: <FileQuestion className="h-8 w-8" />,
+    iconBg: 'bg-destructive/5',
+    iconBorder: 'border-destructive/20',
+    iconColor: 'text-destructive',
   },
   loading: {
     icon: <Sparkles className="h-8 w-8 animate-pulse" />,
-    iconBg: 'bg-primary/10',
+    iconBg: 'bg-primary/5',
+    iconBorder: 'border-primary/20',
     iconColor: 'text-primary',
   },
-  custom: { 
-    icon: <FileQuestion className="h-8 w-8" />, 
-    iconBg: 'bg-muted',
+  custom: {
+    icon: <FileQuestion className="h-8 w-8" />,
+    iconBg: 'bg-muted/50',
+    iconBorder: 'border-border',
     iconColor: 'text-muted-foreground',
   },
 };
@@ -145,6 +150,7 @@ const presetTextKeys: Record<EmptyStateType, { title: string; description: strin
   'first-time': { title: 'firstTime', description: 'firstTimeDesc' },
   schools: { title: 'noSchools', description: 'noSchoolsDesc' },
   cases: { title: 'noCases', description: 'noCasesDesc' },
+  essays: { title: 'noEssays', description: 'noEssaysDesc' },
   loading: { title: 'loading', description: 'loadingDesc' },
   custom: { title: '', description: '' },
 };
@@ -156,9 +162,9 @@ const sizeClasses = {
 };
 
 const iconContainerClasses = {
-  sm: 'h-12 w-12 rounded-xl',
-  md: 'h-16 w-16 rounded-2xl',
-  lg: 'h-20 w-20 rounded-2xl',
+  sm: 'h-12 w-12 rounded-lg',
+  md: 'h-16 w-16 rounded-lg',
+  lg: 'h-20 w-20 rounded-xl',
 };
 
 const iconSizeClasses = {
@@ -177,7 +183,6 @@ export function EmptyState({
   className,
   size = 'md',
   compact = false,
-  showDecoration = true,
 }: EmptyStateProps) {
   const t = useTranslations('ui.empty');
   const config = presetConfig[type];
@@ -188,33 +193,20 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        'relative flex flex-col items-center justify-center text-center overflow-hidden',
+        'relative flex flex-col items-center justify-center text-center',
         compact ? 'py-6' : sizeClasses[size],
         className
       )}
     >
-      {/* 装饰背景 */}
-      {showDecoration && config.decorationColor && (
-        <>
-          <div className={cn(
-            'absolute -right-12 -top-12 h-32 w-32 rounded-full blur-3xl opacity-50',
-            `bg-gradient-to-br ${config.decorationColor}`
-          )} />
-          <div className={cn(
-            'absolute -left-12 -bottom-12 h-32 w-32 rounded-full blur-3xl opacity-50',
-            `bg-gradient-to-br ${config.decorationColor}`
-          )} />
-        </>
-      )}
-
-      {/* 图标容器 */}
-      <div 
+      {/* 学术风图标容器：方形 + 边框 */}
+      <div
         className={cn(
-          'relative flex items-center justify-center mb-4 transition-transform hover:scale-105',
+          'relative flex items-center justify-center mb-4 border-2',
           iconContainerClasses[size],
           iconSizeClasses[size],
           config.iconBg,
-          config.iconColor,
+          config.iconBorder,
+          config.iconColor
         )}
       >
         {icon || config.icon}
@@ -224,7 +216,7 @@ export function EmptyState({
       {(title || presetTitle) && (
         <h3
           className={cn(
-            'relative font-semibold text-foreground',
+            'font-semibold text-foreground',
             size === 'sm' ? 'text-sm' : size === 'lg' ? 'text-xl' : 'text-base'
           )}
         >
@@ -236,7 +228,7 @@ export function EmptyState({
       {(description || presetDescription) && (
         <p
           className={cn(
-            'relative mt-2 max-w-md text-muted-foreground leading-relaxed',
+            'mt-2 max-w-md text-muted-foreground leading-relaxed',
             size === 'sm' ? 'text-xs' : 'text-sm'
           )}
         >
@@ -244,21 +236,19 @@ export function EmptyState({
         </p>
       )}
 
-      {/* 操作按钮 */}
+      {/* 操作按钮 - 学术风：使用默认按钮样式 */}
       {(action || secondaryAction) && (
-        <div className="relative mt-6 flex flex-col gap-3 sm:flex-row">
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           {action && (
             <Button
               variant={action.variant || 'default'}
               onClick={action.onClick}
               size={size === 'sm' ? 'sm' : 'default'}
-              className={cn(
-                'gap-2 shadow-lg',
-                action.variant !== 'outline' && action.variant !== 'ghost' && config.buttonGradient && 
-                `bg-gradient-to-r ${config.buttonGradient} hover:opacity-90 text-white shadow-${config.buttonGradient?.split(' ')[0]?.replace('from-', '')}/25`
-              )}
+              className="gap-2"
             >
-              {action.icon ? action.icon : type === 'error' ? (
+              {action.icon ? (
+                action.icon
+              ) : type === 'error' ? (
                 <RefreshCw className="h-4 w-4" />
               ) : (
                 <Plus className="h-4 w-4" />
@@ -299,7 +289,9 @@ export function NoResults({
       type="no-results"
       title={t('noResults')}
       description={query ? t('noResultsQuery', { query }) : t('noResultsDesc')}
-      action={onClear ? { label: t('clearFilter'), onClick: onClear, variant: 'outline' } : undefined}
+      action={
+        onClear ? { label: t('clearFilter'), onClick: onClear, variant: 'outline' } : undefined
+      }
       className={className}
     />
   );

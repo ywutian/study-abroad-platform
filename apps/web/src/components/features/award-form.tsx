@@ -39,6 +39,7 @@ interface Award {
   level: string;
   year?: number;
   description?: string;
+  competitionId?: string;
 }
 
 interface AwardFormProps {
