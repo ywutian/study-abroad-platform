@@ -28,19 +28,12 @@ export function EmptyState({
 
   return (
     <View style={[styles.container, style]}>
-      <Ionicons
-        name={icon}
-        size={64}
-        color={colors.foregroundMuted}
-        style={styles.icon}
-      />
+      <Ionicons name={icon} size={64} color={colors.foregroundMuted} style={styles.icon} />
       <Text style={[styles.title, { color: colors.foreground }]}>
         {title || t('common.noData')}
       </Text>
       {description && (
-        <Text style={[styles.description, { color: colors.foregroundMuted }]}>
-          {description}
-        </Text>
+        <Text style={[styles.description, { color: colors.foregroundMuted }]}>{description}</Text>
       )}
       {action && (
         <Button onPress={action.onPress} style={styles.button}>
@@ -59,30 +52,16 @@ interface ErrorStateProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export function ErrorState({
-  title,
-  description,
-  onRetry,
-  style,
-}: ErrorStateProps) {
+export function ErrorState({ title, description, onRetry, style }: ErrorStateProps) {
   const { t } = useTranslation();
   const colors = useColors();
 
   return (
     <View style={[styles.container, style]}>
-      <Ionicons
-        name="alert-circle-outline"
-        size={64}
-        color={colors.error}
-        style={styles.icon}
-      />
-      <Text style={[styles.title, { color: colors.foreground }]}>
-        {title || t('common.error')}
-      </Text>
+      <Ionicons name="alert-circle-outline" size={64} color={colors.error} style={styles.icon} />
+      <Text style={[styles.title, { color: colors.foreground }]}>{title || t('common.error')}</Text>
       {description && (
-        <Text style={[styles.description, { color: colors.foregroundMuted }]}>
-          {description}
-        </Text>
+        <Text style={[styles.description, { color: colors.foregroundMuted }]}>{description}</Text>
       )}
       {onRetry && (
         <Button onPress={onRetry} style={styles.button}>
@@ -118,12 +97,3 @@ const styles = StyleSheet.create({
     marginTop: spacing.xl,
   },
 });
-
-
-
-
-
-
-
-
-

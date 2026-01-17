@@ -28,6 +28,10 @@
     "loadMore": "Load More",
     "pullToRefresh": "Pull to refresh",
     "releaseToRefresh": "Release to refresh",
+    "unknownSchool": "Unknown School",
+    "required": "Required",
+    "words": "words",
+    "points": "points",
     "reload": "Reload App"
   },
   "ui": {
@@ -243,6 +247,7 @@
   },
   "cases": {
     "title": "Case Library",
+    "detail": "Case Detail",
     "submitCase": "Submit Case",
     "filters": {
       "school": "Target School",
@@ -541,6 +546,8 @@
     "notification": "Notifications",
     "privacy": "Privacy Settings",
     "language": "Language",
+    "languageZh": "简体中文",
+    "languageEn": "English",
     "theme": "Theme",
     "darkMode": "Dark Mode",
     "lightMode": "Light Mode",
@@ -653,7 +660,3 @@
     "unknown": "Unknown error"
   }
 }
-
-
-
-

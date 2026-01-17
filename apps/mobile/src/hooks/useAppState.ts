@@ -1,6 +1,6 @@
 /**
  * 应用状态 Hook
- * 
+ *
  * 监听应用前后台切换
  */
 
@@ -34,10 +34,7 @@ export function useOnAppForeground(callback: () => void) {
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState) => {
-      if (
-        appState.current.match(/inactive|background/) &&
-        nextAppState === 'active'
-      ) {
+      if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
         callback();
       }
       appState.current = nextAppState;
@@ -57,10 +54,7 @@ export function useOnAppBackground(callback: () => void) {
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState) => {
-      if (
-        appState.current === 'active' &&
-        nextAppState.match(/inactive|background/)
-      ) {
+      if (appState.current === 'active' && nextAppState.match(/inactive|background/)) {
         callback();
       }
       appState.current = nextAppState;
@@ -71,10 +65,3 @@ export function useOnAppBackground(callback: () => void) {
     };
   }, [callback]);
 }
-
-
-
-
-
-
-

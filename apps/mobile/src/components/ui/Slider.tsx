@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ViewStyle,
-  StyleProp,
-} from 'react-native';
+import { View, Text, StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import RNSlider from '@react-native-community/slider';
 import { useColors, spacing, fontSize, fontWeight } from '@/utils/theme';
 
@@ -42,15 +36,9 @@ export function Slider({
     <View style={[styles.container, style]}>
       {(label || showValue) && (
         <View style={styles.header}>
-          {label && (
-            <Text style={[styles.label, { color: colors.foreground }]}>
-              {label}
-            </Text>
-          )}
+          {label && <Text style={[styles.label, { color: colors.foreground }]}>{label}</Text>}
           {showValue && (
-            <Text style={[styles.value, { color: colors.primary }]}>
-              {displayValue}
-            </Text>
+            <Text style={[styles.value, { color: colors.primary }]}>{displayValue}</Text>
           )}
         </View>
       )}
@@ -96,12 +84,3 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
 });
-
-
-
-
-
-
-
-
-

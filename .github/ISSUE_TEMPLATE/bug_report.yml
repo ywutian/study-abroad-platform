@@ -1,0 +1,83 @@
+name: Bug Report
+description: Report a bug or unexpected behavior
+title: '[Bug]: '
+labels: ['bug', 'triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting this bug. Please fill out the sections below.
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module
+      description: Which module is affected?
+      options:
+        - Web Frontend
+        - API Backend
+        - Mobile App
+        - AI Agent
+        - Database/Prisma
+        - CI/CD
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - 'P0: Critical (service down)'
+        - 'P1: High (feature broken)'
+        - 'P2: Medium (degraded experience)'
+        - 'P3: Low (cosmetic/minor)'
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Clearly describe the bug
+      placeholder: What happened? What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce the issue?
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Provide relevant environment details
+      placeholder: |
+        - OS: macOS 15 / Windows 11
+        - Browser: Chrome 120
+        - Node.js: 20.x
+        - Branch: feature/xxx
+      render: markdown
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Screenshots
+      description: Paste any relevant logs or attach screenshots
+      render: shell
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other context about the problem

@@ -20,7 +20,13 @@ jest.mock('@/lib/api/client', () => ({
   },
 }));
 
-import { saveTokens, clearAuthData, saveUser, getUser, getAccessToken } from '@/lib/storage/secure-store';
+import {
+  saveTokens,
+  clearAuthData,
+  saveUser,
+  getUser,
+  getAccessToken,
+} from '@/lib/storage/secure-store';
 import { apiClient } from '@/lib/api/client';
 
 describe('Auth Store', () => {
@@ -31,13 +37,13 @@ describe('Auth Store', () => {
       isLoading: true,
       isAuthenticated: false,
     });
-    
+
     jest.clearAllMocks();
   });
 
   it('has correct initial state', () => {
     const state = useAuthStore.getState();
-    
+
     expect(state.user).toBeNull();
     expect(state.isLoading).toBe(true);
     expect(state.isAuthenticated).toBe(false);
@@ -51,7 +57,7 @@ describe('Auth Store', () => {
       emailVerified: true,
       locale: 'en',
     };
-    
+
     const mockResponse = {
       accessToken: 'access-token',
       refreshToken: 'refresh-token',
@@ -68,7 +74,7 @@ describe('Auth Store', () => {
     });
 
     const state = useAuthStore.getState();
-    
+
     expect(state.user).toEqual(mockUser);
     expect(state.isAuthenticated).toBe(true);
     expect(state.isLoading).toBe(false);
@@ -89,7 +95,7 @@ describe('Auth Store', () => {
     });
 
     const state = useAuthStore.getState();
-    
+
     expect(state.user).toBeNull();
     expect(state.isAuthenticated).toBe(false);
     expect(clearAuthData).toHaveBeenCalled();
@@ -113,7 +119,7 @@ describe('Auth Store', () => {
     });
 
     const state = useAuthStore.getState();
-    
+
     expect(state.user).toEqual(mockUser);
     expect(state.isAuthenticated).toBe(true);
     expect(state.isLoading).toBe(false);
@@ -128,7 +134,7 @@ describe('Auth Store', () => {
     });
 
     const state = useAuthStore.getState();
-    
+
     expect(state.user).toBeNull();
     expect(state.isAuthenticated).toBe(false);
     expect(state.isLoading).toBe(false);
@@ -148,7 +154,7 @@ describe('Auth Store', () => {
     });
 
     const state = useAuthStore.getState();
-    
+
     expect(state.user).toEqual(mockUser);
     expect(state.isAuthenticated).toBe(true);
   });
@@ -165,17 +171,8 @@ describe('Auth Store', () => {
     });
 
     const state = useAuthStore.getState();
-    
+
     expect(state.user).toBeNull();
     expect(state.isAuthenticated).toBe(false);
   });
 });
-
-
-
-
-
-
-
-
-

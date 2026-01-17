@@ -85,6 +85,7 @@ export default function AIScreen() {
         message: text,
         agentMode,
         conversationId: null, // Start new conversation
+        stream: true, // 必须传递此参数启用 SSE
       })) {
         try {
           const event: StreamEvent = JSON.parse(chunk);
@@ -98,14 +99,14 @@ export default function AIScreen() {
               }
               return newMessages;
             });
-          } else if (event.type === 'tool_call' && event.toolCall) {
+          } else if (event.type === 'tool_start' && event.tool) {
             setMessages((prev) => {
               const newMessages = [...prev];
               const lastMessage = newMessages[newMessages.length - 1];
               if (lastMessage.role === 'assistant') {
                 lastMessage.toolCalls = [
                   ...(lastMessage.toolCalls || []),
-                  event.toolCall!,
+                  { name: event.tool!, status: 'running' },
                 ];
               }
               return newMessages;

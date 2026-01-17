@@ -2,9 +2,13 @@ name: Deploy
 
 on:
   workflow_run:
-    workflows: ["CI"]
+    workflows: ['CI']
     branches: [main]
     types: [completed]
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false # Never cancel in-progress deployments
 
 env:
   NODE_VERSION: '20'
@@ -16,6 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     environment: staging
+    outputs:
+      api_url: ${{ steps.deploy-api.outputs.url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,11 +50,16 @@ jobs:
 
       # Deploy API (example using Railway/Render/Fly.io)
       - name: Deploy API
+        id: deploy-api
         run: |
           echo "Deploying API to staging..."
           # Add your deployment commands here
           # Example for Fly.io:
           # flyctl deploy --config apps/api/fly.toml --remote-only
+          echo "url=${{ vars.STAGING_API_URL || 'https://staging-api.study-abroad-platform.com' }}" >> $GITHUB_OUTPUT
+        env:
+          GIT_COMMIT_SHA: ${{ github.sha }}
+          BUILD_TIME: ${{ github.event.workflow_run.created_at }}
 
       # Deploy Web (example using Vercel)
       - name: Deploy Web to Vercel
@@ -60,40 +71,99 @@ jobs:
           working-directory: apps/web
           vercel-args: '--prod'
 
-      - name: Notify Slack on Success
-        if: success()
-        uses: slackapi/slack-github-action@v1.25.0
-        with:
-          payload: |
-            {
-              "text": "✅ Staging deployment successful!",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*✅ Staging Deployment Successful*\n\nCommit: `${{ github.sha }}`\nBranch: `${{ github.ref_name }}`\nActor: ${{ github.actor }}"
-                  }
-                }
-              ]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+  smoke-test:
+    name: Staging Smoke Tests
+    runs-on: ubuntu-latest
+    needs: [deploy-staging]
+    steps:
+      - name: Wait for deployment to stabilize
+        run: sleep 15
 
-      - name: Notify Slack on Failure
-        if: failure()
+      - name: Health check
+        run: |
+          API_URL="${{ needs.deploy-staging.outputs.api_url || vars.STAGING_API_URL || 'https://staging-api.study-abroad-platform.com' }}"
+          echo "Testing health endpoint: ${API_URL}/health"
+
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "${API_URL}/health" || echo "000")
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::Health check failed with status $STATUS"
+            exit 1
+          fi
+          echo "Health check passed (HTTP $STATUS)"
+
+      - name: Detailed health check
+        run: |
+          API_URL="${{ needs.deploy-staging.outputs.api_url || vars.STAGING_API_URL || 'https://staging-api.study-abroad-platform.com' }}"
+          RESPONSE=$(curl -s --max-time 30 "${API_URL}/health/detailed" || echo '{}')
+          echo "Detailed health: $RESPONSE"
+
+          # Verify database connectivity
+          DB_STATUS=$(echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('checks',{}).get('database',{}).get('status','unknown'))" 2>/dev/null || echo "unknown")
+          if [ "$DB_STATUS" != "ok" ]; then
+            echo "::error::Database health check failed: $DB_STATUS"
+            exit 1
+          fi
+          echo "Database connectivity verified"
+
+      - name: API readiness check
+        run: |
+          API_URL="${{ needs.deploy-staging.outputs.api_url || vars.STAGING_API_URL || 'https://staging-api.study-abroad-platform.com' }}"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "${API_URL}/health/ready" || echo "000")
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::Readiness check failed with status $STATUS"
+            exit 1
+          fi
+          echo "Readiness check passed"
+
+      - name: Public endpoint smoke test
+        run: |
+          API_URL="${{ needs.deploy-staging.outputs.api_url || vars.STAGING_API_URL || 'https://staging-api.study-abroad-platform.com' }}"
+
+          # Test public schools endpoint
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "${API_URL}/api/v1/schools?page=1&limit=1" || echo "000")
+          if [ "$STATUS" != "200" ]; then
+            echo "::warning::Schools endpoint returned $STATUS (may need seeded data)"
+          else
+            echo "Schools endpoint passed"
+          fi
+
+          # Test auth endpoint reachability
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 -X POST "${API_URL}/api/v1/auth/login" -H "Content-Type: application/json" -d '{}' || echo "000")
+          if [ "$STATUS" == "000" ]; then
+            echo "::error::Auth endpoint unreachable"
+            exit 1
+          fi
+          echo "Auth endpoint reachable (expected 400 for empty body, got $STATUS)"
+
+      - name: Verify security headers
+        run: |
+          API_URL="${{ needs.deploy-staging.outputs.api_url || vars.STAGING_API_URL || 'https://staging-api.study-abroad-platform.com' }}"
+          HEADERS=$(curl -sI --max-time 30 "${API_URL}/health" || echo "")
+
+          # Check for critical security headers
+          echo "$HEADERS" | grep -qi "x-content-type-options" && echo "x-content-type-options: present" || echo "::warning::Missing x-content-type-options header"
+          echo "$HEADERS" | grep -qi "x-frame-options" && echo "x-frame-options: present" || echo "::warning::Missing x-frame-options header"
+          echo "$HEADERS" | grep -qi "x-correlation-id" && echo "x-correlation-id: present" || echo "::warning::Missing x-correlation-id header"
+
+  notify-staging:
+    name: Notify Staging Result
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, smoke-test]
+    if: always()
+    steps:
+      - name: Notify Slack
+        if: ${{ secrets.SLACK_WEBHOOK_URL }}
         uses: slackapi/slack-github-action@v1.25.0
         with:
           payload: |
             {
-              "text": "❌ Staging deployment failed!",
+              "text": "${{ needs.smoke-test.result == 'success' && 'Staging deployment successful' || 'Staging deployment failed' }}",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*❌ Staging Deployment Failed*\n\nCommit: `${{ github.sha }}`\nBranch: `${{ github.ref_name }}`\nActor: ${{ github.actor }}\n\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>"
+                    "text": "*${{ needs.smoke-test.result == 'success' && 'Staging Deployment Successful' || 'Staging Deployment FAILED' }}*\n\nCommit: `${{ github.sha }}`\nBranch: `${{ github.ref_name }}`\nSmoke Tests: ${{ needs.smoke-test.result }}\n\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>"
                   }
                 }
               ]
@@ -105,8 +175,8 @@ jobs:
   deploy-production:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: [deploy-staging]
-    environment: production
+    needs: [smoke-test]
+    environment: production # Requires manual approval via GitHub Environment Protection Rules
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -137,6 +207,9 @@ jobs:
         run: |
           echo "Deploying API to production..."
           # Add your production deployment commands
+        env:
+          GIT_COMMIT_SHA: ${{ github.sha }}
+          BUILD_TIME: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
       - name: Deploy Web to Vercel Production
         uses: amondnet/vercel-action@v25
@@ -155,13 +228,36 @@ jobs:
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         with:
           environment: production
-          version: ${{ github.sha }}
+          version: api@${{ github.sha }}
 
+      - name: Production health check
+        run: |
+          PROD_URL="${{ vars.PRODUCTION_API_URL || 'https://api.study-abroad-platform.com' }}"
+          sleep 15
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "${PROD_URL}/health" || echo "000")
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::Production health check failed with status $STATUS — consider rollback"
+            exit 1
+          fi
+          echo "Production health check passed"
 
-
-
-
-
-
-
-
+      - name: Notify Slack on Production Deploy
+        if: always() && secrets.SLACK_WEBHOOK_URL
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "${{ job.status == 'success' && 'Production deployment successful' || 'PRODUCTION DEPLOYMENT FAILED' }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*${{ job.status == 'success' && 'Production Deployment Successful' || 'PRODUCTION DEPLOYMENT FAILED' }}*\n\nCommit: `${{ github.sha }}`\nSentry Release: `api@${{ github.sha }}`\n\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK

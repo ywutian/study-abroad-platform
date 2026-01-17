@@ -34,10 +34,7 @@ async function deleteSecureItem(key: string): Promise<void> {
 }
 
 // Token management
-export async function saveTokens(
-  accessToken: string,
-  refreshToken: string
-): Promise<void> {
+export async function saveTokens(accessToken: string, refreshToken: string): Promise<void> {
   await Promise.all([
     setSecureItem(ACCESS_TOKEN_KEY, accessToken),
     setSecureItem(REFRESH_TOKEN_KEY, refreshToken),
@@ -53,10 +50,7 @@ export async function getRefreshToken(): Promise<string | null> {
 }
 
 export async function clearTokens(): Promise<void> {
-  await Promise.all([
-    deleteSecureItem(ACCESS_TOKEN_KEY),
-    deleteSecureItem(REFRESH_TOKEN_KEY),
-  ]);
+  await Promise.all([deleteSecureItem(ACCESS_TOKEN_KEY), deleteSecureItem(REFRESH_TOKEN_KEY)]);
 }
 
 // User management
@@ -108,12 +102,3 @@ export const storage = {
     await AsyncStorage.clear();
   },
 };
-
-
-
-
-
-
-
-
-

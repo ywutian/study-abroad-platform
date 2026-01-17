@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ViewStyle,
-  StyleProp,
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, fontSize, fontWeight } from '@/utils/theme';
 
@@ -43,27 +36,19 @@ export function ListItem({
         <View style={styles.leftContainer}>
           {leftElement || (
             <View style={[styles.iconContainer, { backgroundColor: colors.muted }]}>
-              <Ionicons
-                name={leftIcon!}
-                size={20}
-                color={colors.foreground}
-              />
+              <Ionicons name={leftIcon!} size={20} color={colors.foreground} />
             </View>
           )}
         </View>
       )}
-      
+
       <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.foreground }]}>
-          {title}
-        </Text>
+        <Text style={[styles.title, { color: colors.foreground }]}>{title}</Text>
         {subtitle && (
-          <Text style={[styles.subtitle, { color: colors.foregroundMuted }]}>
-            {subtitle}
-          </Text>
+          <Text style={[styles.subtitle, { color: colors.foregroundMuted }]}>{subtitle}</Text>
         )}
       </View>
-      
+
       {(rightElement || rightIcon || (onPress && showChevron)) && (
         <View style={styles.rightContainer}>
           {rightElement || (
@@ -121,9 +106,7 @@ export function SectionHeader({ title, style }: SectionHeaderProps) {
 
   return (
     <View style={[styles.sectionHeader, style]}>
-      <Text style={[styles.sectionTitle, { color: colors.foregroundMuted }]}>
-        {title}
-      </Text>
+      <Text style={[styles.sectionTitle, { color: colors.foregroundMuted }]}>{title}</Text>
     </View>
   );
 }
@@ -216,12 +199,3 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
 });
-
-
-
-
-
-
-
-
-

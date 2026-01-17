@@ -189,18 +189,18 @@ function fillTextField(input: HTMLInputElement, value: string): boolean {
 
   // 清除现有值
   input.value = '';
-  
+
   // 设置新值
   input.value = value;
-  
+
   // 触发事件以通知表单验证
   input.dispatchEvent(new Event('input', { bubbles: true }));
   input.dispatchEvent(new Event('change', { bubbles: true }));
   input.dispatchEvent(new Event('blur', { bubbles: true }));
-  
+
   // 添加高亮效果
   highlightField(input);
-  
+
   return true;
 }
 
@@ -215,7 +215,7 @@ function fillSelectField(select: HTMLSelectElement, value: string): boolean {
   // 查找匹配的选项
   const options = Array.from(select.options);
   const matchingOption = options.find(
-    (opt) => 
+    (opt) =>
       opt.value.toLowerCase() === value.toLowerCase() ||
       opt.text.toLowerCase() === value.toLowerCase() ||
       opt.text.toLowerCase().includes(value.toLowerCase())
@@ -241,7 +241,7 @@ function fillRadioField(input: HTMLInputElement, value: string): boolean {
 
   const name = input.name;
   const radios = document.querySelectorAll<HTMLInputElement>(`input[type="radio"][name="${name}"]`);
-  
+
   for (const radio of radios) {
     if (radio.value.toLowerCase() === value.toLowerCase()) {
       radio.checked = true;
@@ -287,7 +287,7 @@ function fillDateField(input: HTMLInputElement, value: string): boolean {
   input.value = formattedDate;
   input.dispatchEvent(new Event('input', { bubbles: true }));
   input.dispatchEvent(new Event('change', { bubbles: true }));
-  
+
   highlightField(input);
   return true;
 }
@@ -298,10 +298,10 @@ function fillDateField(input: HTMLInputElement, value: string): boolean {
 function highlightField(element: HTMLElement): void {
   const originalBackground = element.style.backgroundColor;
   const originalTransition = element.style.transition;
-  
+
   element.style.transition = 'background-color 0.3s ease';
   element.style.backgroundColor = '#d4edda'; // 浅绿色高亮
-  
+
   setTimeout(() => {
     element.style.backgroundColor = originalBackground;
     setTimeout(() => {
@@ -319,7 +319,7 @@ export function autoFillForm(profile: UserProfile): { filled: number; skipped: n
 
   for (const mapping of COMMONAPP_FIELD_MAPPINGS) {
     const elements = document.querySelectorAll<HTMLElement>(mapping.selector);
-    
+
     if (elements.length === 0) {
       continue;
     }
@@ -342,13 +342,14 @@ export function autoFillForm(profile: UserProfile): { filled: number; skipped: n
 /**
  * 获取当前页面可填充的字段
  */
-export function getAvailableFields(): { selector: string; profilePath: string; hasElement: boolean }[] {
+export function getAvailableFields(): {
+  selector: string;
+  profilePath: string;
+  hasElement: boolean;
+}[] {
   return COMMONAPP_FIELD_MAPPINGS.map((mapping) => ({
     selector: mapping.selector,
     profilePath: mapping.profilePath,
     hasElement: document.querySelector(mapping.selector) !== null,
   }));
 }
-
-
-

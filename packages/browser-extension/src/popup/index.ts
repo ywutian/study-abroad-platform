@@ -12,7 +12,7 @@ let profile: UserProfile | null = null;
 async function initialize(): Promise<void> {
   // 绑定事件
   bindEvents();
-  
+
   // 检查登录状态
   await checkLoginStatus();
 }
@@ -35,7 +35,7 @@ async function checkLoginStatus(): Promise<void> {
   showLoading(true);
 
   const response = await sendMessage({ type: 'LOGIN_STATUS' });
-  
+
   if (response.success && response.data?.isLoggedIn) {
     await loadProfile();
     showLoggedInView();
@@ -51,7 +51,7 @@ async function checkLoginStatus(): Promise<void> {
  */
 async function loadProfile(): Promise<void> {
   const response = await sendMessage({ type: 'GET_PROFILE' });
-  
+
   if (response.success && response.data) {
     profile = response.data;
     updateProfileDisplay();
@@ -69,9 +69,10 @@ function updateProfileDisplay(): void {
   const statsEl = document.getElementById('profile-stats');
 
   if (nameEl) {
-    nameEl.textContent = `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || '未设置姓名';
+    nameEl.textContent =
+      `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || '未设置姓名';
   }
-  
+
   if (emailEl) {
     emailEl.textContent = profile.email || '';
   }
@@ -84,7 +85,10 @@ function updateProfileDisplay(): void {
     ];
 
     statsEl.innerHTML = stats
-      .map((s) => `<div class="stat"><span class="stat-value">${s.value}</span><span class="stat-label">${s.label}</span></div>`)
+      .map(
+        (s) =>
+          `<div class="stat"><span class="stat-value">${s.value}</span><span class="stat-label">${s.label}</span></div>`
+      )
       .join('');
   }
 }
@@ -140,9 +144,9 @@ async function handleLogout(): Promise<void> {
  */
 async function handleSync(): Promise<void> {
   showStatus('正在同步...', 'info');
-  
+
   const response = await sendMessage({ type: 'SYNC_PROFILE' });
-  
+
   if (response.success && response.data) {
     profile = response.data;
     updateProfileDisplay();
@@ -157,7 +161,7 @@ async function handleSync(): Promise<void> {
  */
 async function handleFillCurrentPage(): Promise<void> {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  
+
   if (!tab.id) {
     showStatus('无法获取当前标签页', 'error');
     return;
@@ -172,7 +176,7 @@ async function handleFillCurrentPage(): Promise<void> {
 
   try {
     const response = await chrome.tabs.sendMessage(tab.id, { type: 'FILL_ALL' });
-    
+
     if (response?.success) {
       showStatus(`已填充 ${response.filled || 0} 个字段`, 'success');
     } else {
@@ -187,14 +191,20 @@ async function handleFillCurrentPage(): Promise<void> {
  * 打开设置
  */
 function handleOpenSettings(): void {
-  chrome.runtime.openOptionsPage?.() || 
-  chrome.tabs.create({ url: chrome.runtime.getURL('options.html') });
+  if (chrome.runtime.openOptionsPage) {
+    chrome.runtime.openOptionsPage();
+  } else {
+    chrome.tabs.create({ url: chrome.runtime.getURL('options.html') });
+  }
 }
 
 /**
  * 显示状态消息
  */
-function showStatus(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info'): void {
+function showStatus(
+  message: string,
+  type: 'success' | 'error' | 'warning' | 'info' = 'info'
+): void {
   const statusEl = document.getElementById('status-message');
   if (statusEl) {
     statusEl.textContent = message;
@@ -220,6 +230,3 @@ function sendMessage(message: Message): Promise<MessageResponse> {
 
 // 页面加载后初始化
 document.addEventListener('DOMContentLoaded', initialize);
-
-
-

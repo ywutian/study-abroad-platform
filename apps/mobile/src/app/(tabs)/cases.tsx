@@ -1,19 +1,21 @@
 import React, { useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  RefreshControl,
-} from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import debounce from 'lodash.debounce';
 
-import { Card, CardContent, SearchBar, Badge, Button, Loading, EmptyState, Skeleton } from '@/components/ui';
+import {
+  Card,
+  CardContent,
+  SearchBar,
+  Badge,
+  Button,
+  Loading,
+  EmptyState,
+  Skeleton,
+} from '@/components/ui';
 import { BottomSheet } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { apiClient } from '@/lib/api/client';
@@ -25,7 +27,7 @@ export default function CasesScreen() {
   const { t } = useTranslation();
   const colors = useColors();
   const { isAuthenticated } = useAuthStore();
-  
+
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filterVisible, setFilterVisible] = useState(false);
@@ -43,35 +45,28 @@ export default function CasesScreen() {
     debouncedSetSearch(value);
   };
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    refetch,
-    isRefetching,
-  } = useInfiniteQuery({
-    queryKey: ['cases', debouncedSearch, resultFilter, yearFilter],
-    queryFn: async ({ pageParam = 1 }) => {
-      return apiClient.get<PaginatedResponse<Case>>('/cases', {
-        params: {
-          page: pageParam,
-          limit: 20,
-          search: debouncedSearch || undefined,
-          result: resultFilter || undefined,
-          year: yearFilter || undefined,
-        },
-      });
-    },
-    getNextPageParam: (lastPage) => {
-      if (lastPage.meta.page < lastPage.meta.totalPages) {
-        return lastPage.meta.page + 1;
-      }
-      return undefined;
-    },
-    initialPageParam: 1,
-  });
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, refetch, isRefetching } =
+    useInfiniteQuery({
+      queryKey: ['cases', debouncedSearch, resultFilter, yearFilter],
+      queryFn: async ({ pageParam = 1 }) => {
+        return apiClient.get<PaginatedResponse<Case>>('/cases', {
+          params: {
+            page: pageParam,
+            limit: 20,
+            search: debouncedSearch || undefined,
+            result: resultFilter || undefined,
+            year: yearFilter || undefined,
+          },
+        });
+      },
+      getNextPageParam: (lastPage) => {
+        if (lastPage.meta.page < lastPage.meta.totalPages) {
+          return lastPage.meta.page + 1;
+        }
+        return undefined;
+      },
+      initialPageParam: 1,
+    });
 
   const cases = data?.pages.flatMap((page) => page.data) || [];
 
@@ -105,19 +100,13 @@ export default function CasesScreen() {
   };
 
   const renderCaseItem = ({ item }: { item: Case }) => (
-    <TouchableOpacity
-      onPress={() => router.push(`/case/${item.id}`)}
-      style={styles.cardWrapper}
-    >
+    <TouchableOpacity onPress={() => router.push(`/case/${item.id}`)} style={styles.cardWrapper}>
       <Card>
         <CardContent>
           <View style={styles.caseHeader}>
             <View style={styles.caseInfo}>
-              <Text
-                style={[styles.schoolName, { color: colors.foreground }]}
-                numberOfLines={1}
-              >
-                {item.school?.name || 'Unknown School'}
+              <Text style={[styles.schoolName, { color: colors.foreground }]} numberOfLines={1}>
+                {item.school?.name || t('common.unknownSchool')}
               </Text>
               <Text style={[styles.caseMeta, { color: colors.foregroundMuted }]}>
                 {item.major} · {item.year} · {item.round || 'RD'}
@@ -132,9 +121,7 @@ export default function CasesScreen() {
           <View style={styles.statsRow}>
             {item.gpa && (
               <View style={styles.statItem}>
-                <Text style={[styles.statLabel, { color: colors.foregroundMuted }]}>
-                  GPA
-                </Text>
+                <Text style={[styles.statLabel, { color: colors.foregroundMuted }]}>GPA</Text>
                 <Text style={[styles.statValue, { color: colors.foreground }]}>
                   {item.gpa.toFixed(2)}
                 </Text>
@@ -142,9 +129,7 @@ export default function CasesScreen() {
             )}
             {item.satScore && (
               <View style={styles.statItem}>
-                <Text style={[styles.statLabel, { color: colors.foregroundMuted }]}>
-                  SAT
-                </Text>
+                <Text style={[styles.statLabel, { color: colors.foregroundMuted }]}>SAT</Text>
                 <Text style={[styles.statValue, { color: colors.foreground }]}>
                   {item.satScore}
                 </Text>
@@ -152,9 +137,7 @@ export default function CasesScreen() {
             )}
             {item.toeflScore && (
               <View style={styles.statItem}>
-                <Text style={[styles.statLabel, { color: colors.foregroundMuted }]}>
-                  TOEFL
-                </Text>
+                <Text style={[styles.statLabel, { color: colors.foregroundMuted }]}>TOEFL</Text>
                 <Text style={[styles.statValue, { color: colors.foreground }]}>
                   {item.toeflScore}
                 </Text>
@@ -224,7 +207,9 @@ export default function CasesScreen() {
           isAuthenticated
             ? {
                 label: t('cases.submitCase'),
-                onPress: () => {/* TODO: Open submit case modal */},
+                onPress: () => {
+                  /* TODO: Open submit case modal */
+                },
               }
             : undefined
         }
@@ -264,7 +249,9 @@ export default function CasesScreen() {
             variant="outline"
             size="sm"
             leftIcon={<Ionicons name="add" size={18} color={colors.primary} />}
-            onPress={() => {/* TODO: Open submit case modal */}}
+            onPress={() => {
+              /* TODO: Open submit case modal */
+            }}
           >
             {t('cases.submitCase')}
           </Button>
@@ -285,9 +272,7 @@ export default function CasesScreen() {
         onEndReachedThreshold={0.5}
         ListFooterComponent={renderFooter}
         ListEmptyComponent={renderEmpty}
-        refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
-        }
+        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
         showsVerticalScrollIndicator={false}
       />
 
@@ -321,10 +306,7 @@ export default function CasesScreen() {
             >
               {t('common.cancel')}
             </Button>
-            <Button
-              onPress={() => setFilterVisible(false)}
-              style={styles.filterAction}
-            >
+            <Button onPress={() => setFilterVisible(false)} style={styles.filterAction}>
               {t('common.confirm')}
             </Button>
           </View>
@@ -446,12 +428,3 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
-
-
-
-
-
-
-
-
-

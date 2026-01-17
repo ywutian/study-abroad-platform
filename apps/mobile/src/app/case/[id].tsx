@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, router, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -30,7 +24,11 @@ export default function CaseDetailScreen() {
   const { t } = useTranslation();
   const colors = useColors();
 
-  const { data: caseData, isLoading, error } = useQuery({
+  const {
+    data: caseData,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['case', id],
     queryFn: () => apiClient.get<Case>(`/cases/${id}`),
     enabled: !!id,
@@ -41,12 +39,7 @@ export default function CaseDetailScreen() {
   }
 
   if (error || !caseData) {
-    return (
-      <ErrorState
-        title={t('errors.notFound')}
-        onRetry={() => router.back()}
-      />
-    );
+    return <ErrorState title={t('errors.notFound')} onRetry={() => router.back()} />;
   }
 
   const getResultColor = () => {
@@ -72,7 +65,7 @@ export default function CaseDetailScreen() {
     <>
       <Stack.Screen
         options={{
-          title: caseData.school?.name || 'Case Detail',
+          title: caseData.school?.name || t('cases.detail'),
         }}
       />
       <ScrollView
@@ -86,8 +79,8 @@ export default function CaseDetailScreen() {
               caseData.result === 'ADMITTED'
                 ? 'success'
                 : caseData.result === 'REJECTED'
-                ? 'error'
-                : 'warning'
+                  ? 'error'
+                  : 'warning'
             }
             style={styles.resultBadge}
           >
@@ -101,14 +94,10 @@ export default function CaseDetailScreen() {
             onPress={() => caseData.schoolId && router.push(`/school/${caseData.schoolId}`)}
             style={styles.schoolRow}
           >
-            <Avatar
-              source={caseData.school?.logoUrl}
-              name={caseData.school?.name}
-              size="lg"
-            />
+            <Avatar source={caseData.school?.logoUrl} name={caseData.school?.name} size="lg" />
             <View style={styles.schoolInfo}>
               <Text style={[styles.schoolName, { color: colors.foreground }]}>
-                {caseData.school?.name || 'Unknown School'}
+                {caseData.school?.name || t('common.unknownSchool')}
               </Text>
               <Text style={[styles.schoolMeta, { color: colors.foregroundMuted }]}>
                 {caseData.major} · {caseData.year} · {caseData.round || 'RD'}
@@ -150,9 +139,7 @@ export default function CaseDetailScreen() {
                     </Text>
                     <Text style={[styles.statValue, { color: colors.foreground }]}>
                       {stat.value}
-                      {stat.scale && (
-                        <Text style={styles.statScale}>/{stat.scale}</Text>
-                      )}
+                      {stat.scale && <Text style={styles.statScale}>/{stat.scale}</Text>}
                     </Text>
                   </View>
                 ))}
@@ -337,12 +324,3 @@ const styles = StyleSheet.create({
     height: spacing['2xl'],
   },
 });
-
-
-
-
-
-
-
-
-

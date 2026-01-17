@@ -1,11 +1,11 @@
 import { create } from 'zustand';
-import { 
-  saveTokens, 
-  clearAuthData, 
-  saveUser, 
-  getUser, 
+import {
+  saveTokens,
+  clearAuthData,
+  saveUser,
+  getUser,
   getAccessToken,
-  getRefreshToken 
+  getRefreshToken,
 } from '@/lib/storage/secure-store';
 import { apiClient } from '@/lib/api/client';
 import type { User, AuthResponse, LoginDto, RegisterDto } from '@/types';
@@ -14,7 +14,7 @@ interface AuthState {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  
+
   // Actions
   login: (dto: LoginDto) => Promise<void>;
   register: (dto: RegisterDto) => Promise<void>;
@@ -30,33 +30,33 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   login: async (dto: LoginDto) => {
     const response = await apiClient.post<AuthResponse>('/auth/login', dto, { skipAuth: true });
-    
+
     await saveTokens(response.accessToken, response.refreshToken);
     await saveUser(response.user);
-    
-    set({ 
-      user: response.user, 
+
+    set({
+      user: response.user,
       isAuthenticated: true,
-      isLoading: false 
+      isLoading: false,
     });
   },
 
   register: async (dto: RegisterDto) => {
     const response = await apiClient.post<AuthResponse>('/auth/register', dto, { skipAuth: true });
-    
+
     await saveTokens(response.accessToken, response.refreshToken);
     await saveUser(response.user);
-    
-    set({ 
-      user: response.user, 
+
+    set({
+      user: response.user,
       isAuthenticated: true,
-      isLoading: false 
+      isLoading: false,
     });
   },
 
   logout: async () => {
     const refreshToken = await getRefreshToken();
-    
+
     // Call logout API
     if (refreshToken) {
       try {
@@ -65,20 +65,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         // Ignore logout API errors
       }
     }
-    
+
     await clearAuthData();
     set({ user: null, isAuthenticated: false, isLoading: false });
   },
 
   loadAuth: async () => {
     set({ isLoading: true });
-    
+
     try {
-      const [token, user] = await Promise.all([
-        getAccessToken(),
-        getUser<User>()
-      ]);
-      
+      const [token, user] = await Promise.all([getAccessToken(), getUser<User>()]);
+
       if (token && user) {
         // Verify token is still valid
         try {
@@ -106,12 +103,3 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 apiClient.setOnRefreshFailed(() => {
   useAuthStore.getState().logout();
 });
-
-
-
-
-
-
-
-
-

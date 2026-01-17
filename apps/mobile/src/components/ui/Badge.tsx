@@ -37,10 +37,10 @@ export function Badge({ children, variant = 'default', style }: BadgeProps) {
         };
       case 'outline':
         return {
-          container: { 
-            backgroundColor: 'transparent', 
-            borderWidth: 1, 
-            borderColor: colors.border 
+          container: {
+            backgroundColor: 'transparent',
+            borderWidth: 1,
+            borderColor: colors.border,
           },
           text: { color: colors.foreground },
         };
@@ -56,9 +56,7 @@ export function Badge({ children, variant = 'default', style }: BadgeProps) {
 
   return (
     <View style={[styles.container, variantStyles.container, style]}>
-      <Text style={[styles.text, variantStyles.text]}>
-        {children}
-      </Text>
+      <Text style={[styles.text, variantStyles.text]}>{children}</Text>
     </View>
   );
 }
@@ -75,12 +73,3 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.medium,
   },
 });
-
-
-
-
-
-
-
-
-

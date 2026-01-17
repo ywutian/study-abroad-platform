@@ -3,6 +3,7 @@
 ## 概述
 
 本项目的数据分为两类：
+
 1. **学校数据** - 来自官方数据源
 2. **案例数据** - 用户生成内容 (UGC)
 
@@ -11,21 +12,33 @@
 ## 1. 学校数据 - College Scorecard API
 
 ### 数据源
+
 - **来源**: 美国教育部 (U.S. Department of Education)
 - **API**: https://collegescorecard.ed.gov/data/documentation/
 - **授权**: 完全免费，支持商用
 - **获取 API Key**: https://api.data.gov/signup/
 
-### 包含数据
-| 数据字段 | 说明 |
-|---------|------|
-| 学校名称、地址 | 基本信息 |
-| 录取率 | 每年更新 |
-| SAT/ACT 平均分 | 入学学生成绩 |
-| 学费 | 州内/州外 |
-| 毕业率 | 4年/6年 |
-| 毕业后薪资 | 10年后中位数 |
-| 学生人数 | 在校生规模 |
+### 包含数据（完整字段映射）
+
+| API 字段                                                        | DB 字段 (School) | DB 字段 (SchoolMetric key) | 说明               |
+| --------------------------------------------------------------- | ---------------- | -------------------------- | ------------------ |
+| `latest.admissions.admission_rate.overall`                      | `acceptanceRate` | `acceptance_rate`          | 录取率 (×100)      |
+| `latest.admissions.sat_scores.average.overall`                  | `satAvg`         | `avg_sat`                  | SAT 总分平均       |
+| `latest.admissions.sat_scores.25th_percentile.critical_reading` | `satReading25`   | `sat_reading_25`           | SAT 阅读 25th      |
+| `latest.admissions.sat_scores.75th_percentile.critical_reading` | `satReading75`   | `sat_reading_75`           | SAT 阅读 75th      |
+| `latest.admissions.sat_scores.25th_percentile.math`             | `satMath25`      | `sat_math_25`              | SAT 数学 25th      |
+| `latest.admissions.sat_scores.75th_percentile.math`             | `satMath75`      | `sat_math_75`              | SAT 数学 75th      |
+| `latest.admissions.act_scores.midpoint.cumulative`              | `actAvg`         | `avg_act`                  | ACT 综合中位数     |
+| `latest.admissions.act_scores.25th_percentile.cumulative`       | `act25`          | `act_25`                   | ACT 25th           |
+| `latest.admissions.act_scores.75th_percentile.cumulative`       | `act75`          | `act_75`                   | ACT 75th           |
+| `latest.cost.tuition.out_of_state`                              | `tuition`        | —                          | 州外学费 (USD)     |
+| `latest.student.size`                                           | `studentCount`   | —                          | 在校生规模         |
+| `latest.completion.completion_rate_4yr_150nt`                   | `graduationRate` | —                          | 4年毕业率 (×100)   |
+| `latest.earnings.10_yrs_after_entry.median`                     | `avgSalary`      | —                          | 毕业10年后中位薪资 |
+| _(计算)_ satReading25 + satMath25                               | `sat25`          | `sat_25`                   | SAT 综合 25th      |
+| _(计算)_ satReading75 + satMath75                               | `sat75`          | `sat_75`                   | SAT 综合 75th      |
+
+> **双写策略**: 最新值写入 School 模型字段（用于实时评分），年度快照写入 SchoolMetric 表（用于趋势分析）。
 
 ### 使用方式
 
@@ -113,18 +126,41 @@ export class SchoolDataService {
 ## 3. 其他数据源 (可选扩展)
 
 ### US News 排名
+
 - **方式**: 手动更新或购买数据授权
 - **频率**: 每年更新一次
 - **用途**: 学校排名展示
 
 ### QS 排名
+
 - **方式**: 同上
 - **用途**: 国际排名参考
 
-### Common Data Set
-- **来源**: 各学校官网公布
-- **数据**: 更详细的录取数据
-- **方式**: 定期手动收集或众包
+### Common Data Set (CDS)
+
+- **来源**: 各学校官网的 Institutional Research 页面
+- **数据**: 比 Scorecard 更详细 — GPA 分布、班级排名、录取因素权重（"Very Important" / "Important" / "Considered" / "Not Considered"）
+- **合规性**: CDS 是学校自愿公开的事实性数据，可商业使用
+- **与 Scorecard 对比**:
+
+| 数据维度       | College Scorecard | Common Data Set                   |
+| -------------- | ----------------- | --------------------------------- |
+| SAT/ACT 百分位 | ✅ 25th/75th      | ✅ 25th/75th                      |
+| GPA 分布       | ❌                | ✅ (4.0+/3.75-3.99/3.5-3.74/...)  |
+| 班级排名       | ❌                | ✅ (Top 10%/25%/50%)              |
+| 录取因素权重   | ❌                | ✅ (16+ 因素，含活动/推荐信/面试) |
+| API 可用性     | ✅ RESTful API    | ❌ PDF/HTML 需手动收集或爬取      |
+| 数据粒度       | 学校级            | 学校+专业级                       |
+
+- **状态**: 计划未来集成，优先使用 College Scorecard 已有数据
+
+### 竞赛数据库
+
+- **来源**: 专家策划清单 + 用户提交
+- **数据**: 90+ 高中学术竞赛，含名称（中英文）、分类（12 大类）、等级、声望层级（1-5）
+- **模型**: `Competition` 表（见 `prisma/schema.prisma`）
+- **种子脚本**: `prisma/seed-competitions.ts`
+- **更新策略**: 每年审查层级分配，接受社区贡献
 
 ---
 
@@ -167,12 +203,12 @@ export class SchoolDataService {
 
 ## 6. 法律合规
 
-| 数据类型 | 来源 | 合规性 |
-|---------|-----|--------|
-| College Scorecard | 美国政府公开数据 | ✅ 完全合规 |
-| 用户案例 | 用户自愿提交 | ✅ 需用户协议 |
-| US News 排名 | 手动/授权 | ⚠️ 需注明来源 |
-| 爬虫数据 | 第三方网站 | ❌ 法律风险 |
+| 数据类型          | 来源             | 合规性        |
+| ----------------- | ---------------- | ------------- |
+| College Scorecard | 美国政府公开数据 | ✅ 完全合规   |
+| 用户案例          | 用户自愿提交     | ✅ 需用户协议 |
+| US News 排名      | 手动/授权        | ⚠️ 需注明来源 |
+| 爬虫数据          | 第三方网站       | ❌ 法律风险   |
 
 ### 用户协议要点
 
@@ -201,7 +237,3 @@ pnpm --filter api cli sync:schools
 # 5. 启动服务
 pnpm dev
 ```
-
-
-
-

@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  RefreshControl,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -39,19 +33,29 @@ export default function HomeScreen() {
   const { user, isAuthenticated } = useAuthStore();
 
   // Fetch recent cases
-  const { data: casesData, isLoading: casesLoading, refetch: refetchCases } = useQuery({
+  const {
+    data: casesData,
+    isLoading: casesLoading,
+    refetch: refetchCases,
+  } = useQuery({
     queryKey: ['recentCases'],
-    queryFn: () => apiClient.get<PaginatedResponse<Case>>('/cases', {
-      params: { limit: 5, sort: 'createdAt', order: 'desc' },
-    }),
+    queryFn: () =>
+      apiClient.get<PaginatedResponse<Case>>('/cases', {
+        params: { limit: 5, sort: 'createdAt', order: 'desc' },
+      }),
   });
 
   // Fetch top schools
-  const { data: schoolsData, isLoading: schoolsLoading, refetch: refetchSchools } = useQuery({
+  const {
+    data: schoolsData,
+    isLoading: schoolsLoading,
+    refetch: refetchSchools,
+  } = useQuery({
     queryKey: ['topSchools'],
-    queryFn: () => apiClient.get<PaginatedResponse<School>>('/schools', {
-      params: { limit: 5, sort: 'usnewsRank', order: 'asc' },
-    }),
+    queryFn: () =>
+      apiClient.get<PaginatedResponse<School>>('/schools', {
+        params: { limit: 5, sort: 'usnewsRank', order: 'asc' },
+      }),
   });
 
   const [refreshing, setRefreshing] = React.useState(false);
@@ -97,9 +101,7 @@ export default function HomeScreen() {
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xl }}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       showsVerticalScrollIndicator={false}
     >
       {/* Hero Section */}
@@ -164,17 +166,19 @@ export default function HomeScreen() {
         </FadeInView>
         <View style={styles.actionsGrid}>
           {quickActions.map((action, index) => (
-            <StaggeredItem key={index} index={index} staggerDelay={80} style={styles.actionCardWrapper}>
+            <StaggeredItem
+              key={index}
+              index={index}
+              staggerDelay={80}
+              style={styles.actionCardWrapper}
+            >
               <AnimatedCard
                 onPress={() => router.push(action.route as any)}
                 style={styles.actionCard}
               >
                 <CardContent style={styles.actionCardContent}>
                   <View
-                    style={[
-                      styles.actionIconContainer,
-                      { backgroundColor: action.color + '20' },
-                    ]}
+                    style={[styles.actionIconContainer, { backgroundColor: action.color + '20' }]}
                   >
                     <Ionicons name={action.icon} size={24} color={action.color} />
                   </View>
@@ -222,9 +226,18 @@ export default function HomeScreen() {
           >
             {[1, 2, 3].map((i) => (
               <View key={i} style={styles.schoolCard}>
-                <AnimatedSkeleton variant="circle" height={64} style={{ alignSelf: 'center', marginBottom: 8 }} />
+                <AnimatedSkeleton
+                  variant="circle"
+                  height={64}
+                  style={{ alignSelf: 'center', marginBottom: 8 }}
+                />
                 <AnimatedSkeleton height={14} style={{ marginBottom: 8 }} />
-                <AnimatedSkeleton width={80} height={24} borderRadius={12} style={{ alignSelf: 'center' }} />
+                <AnimatedSkeleton
+                  width={80}
+                  height={24}
+                  borderRadius={12}
+                  style={{ alignSelf: 'center' }}
+                />
               </View>
             ))}
           </ScrollView>
@@ -254,9 +267,7 @@ export default function HomeScreen() {
                       {school.name}
                     </Text>
                     {school.usnewsRank && (
-                      <Badge variant="secondary">
-                        #{school.usnewsRank} US News
-                      </Badge>
+                      <Badge variant="secondary">#{school.usnewsRank} US News</Badge>
                     )}
                   </CardContent>
                 </AnimatedCard>
@@ -265,10 +276,7 @@ export default function HomeScreen() {
           </ScrollView>
         ) : (
           <FadeInView animation="zoom">
-            <EmptyState
-              icon="school-outline"
-              title={t('schools.noResults')}
-            />
+            <EmptyState icon="school-outline" title={t('schools.noResults')} />
           </FadeInView>
         )}
       </View>
@@ -280,11 +288,7 @@ export default function HomeScreen() {
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
               {t('home.recentCases')}
             </Text>
-            <AnimatedButton
-              variant="ghost"
-              size="sm"
-              onPress={() => router.push('/(tabs)/cases')}
-            >
+            <AnimatedButton variant="ghost" size="sm" onPress={() => router.push('/(tabs)/cases')}>
               {t('home.viewAll')}
             </AnimatedButton>
           </View>
@@ -309,7 +313,7 @@ export default function HomeScreen() {
                       style={[styles.caseSchool, { color: colors.foreground }]}
                       numberOfLines={1}
                     >
-                      {caseItem.school?.name || 'Unknown School'}
+                      {caseItem.school?.name || t('common.unknownSchool')}
                     </Text>
                     <Text
                       style={[styles.caseMajor, { color: colors.foregroundMuted }]}
@@ -323,8 +327,8 @@ export default function HomeScreen() {
                       caseItem.result === 'ADMITTED'
                         ? 'success'
                         : caseItem.result === 'REJECTED'
-                        ? 'error'
-                        : 'warning'
+                          ? 'error'
+                          : 'warning'
                     }
                   >
                     {t(`cases.result.${caseItem.result.toLowerCase()}`)}
@@ -335,10 +339,7 @@ export default function HomeScreen() {
           ))
         ) : (
           <FadeInView animation="zoom">
-            <EmptyState
-              icon="folder-open-outline"
-              title={t('cases.noCases')}
-            />
+            <EmptyState icon="folder-open-outline" title={t('cases.noCases')} />
           </FadeInView>
         )}
       </View>
@@ -502,4 +503,3 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
   },
 });
-

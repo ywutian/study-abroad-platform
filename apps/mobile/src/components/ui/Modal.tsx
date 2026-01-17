@@ -41,15 +41,8 @@ export function Modal({
   const insets = useSafeAreaInsets();
 
   return (
-    <RNModal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}
-    >
-      <TouchableWithoutFeedback 
-        onPress={closeOnBackdrop ? onClose : undefined}
-      >
+    <RNModal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <TouchableWithoutFeedback onPress={closeOnBackdrop ? onClose : undefined}>
         <View style={[styles.overlay, { backgroundColor: colors.overlay }]}>
           <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -75,27 +68,15 @@ export function Modal({
                 {/* Header */}
                 <View style={styles.header}>
                   {title && (
-                    <Text style={[styles.title, { color: colors.foreground }]}>
-                      {title}
-                    </Text>
+                    <Text style={[styles.title, { color: colors.foreground }]}>{title}</Text>
                   )}
-                  <TouchableOpacity 
-                    onPress={onClose} 
-                    style={styles.closeButton}
-                  >
-                    <Ionicons
-                      name="close"
-                      size={24}
-                      color={colors.foregroundMuted}
-                    />
+                  <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                    <Ionicons name="close" size={24} color={colors.foregroundMuted} />
                   </TouchableOpacity>
                 </View>
 
                 {/* Content */}
-                <ScrollView 
-                  style={styles.content}
-                  showsVerticalScrollIndicator={false}
-                >
+                <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                   {children}
                 </ScrollView>
 
@@ -119,22 +100,12 @@ interface BottomSheetProps {
   snapPoints?: number[];
 }
 
-export function BottomSheet({
-  visible,
-  onClose,
-  title,
-  children,
-}: BottomSheetProps) {
+export function BottomSheet({ visible, onClose, title, children }: BottomSheetProps) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
 
   return (
-    <RNModal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
-    >
+    <RNModal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={[styles.overlay, { backgroundColor: colors.overlay }]}>
           <TouchableWithoutFeedback>
@@ -149,19 +120,12 @@ export function BottomSheet({
             >
               {/* Handle */}
               <View style={styles.handleContainer}>
-                <View 
-                  style={[
-                    styles.handle, 
-                    { backgroundColor: colors.border }
-                  ]} 
-                />
+                <View style={[styles.handle, { backgroundColor: colors.border }]} />
               </View>
 
               {/* Title */}
               {title && (
-                <Text style={[styles.sheetTitle, { color: colors.foreground }]}>
-                  {title}
-                </Text>
+                <Text style={[styles.sheetTitle, { color: colors.foreground }]}>{title}</Text>
               )}
 
               {/* Content */}
@@ -245,12 +209,3 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.md,
   },
 });
-
-
-
-
-
-
-
-
-

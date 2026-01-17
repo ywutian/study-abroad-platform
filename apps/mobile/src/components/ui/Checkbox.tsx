@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ViewStyle,
-  StyleProp,
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 
@@ -45,21 +38,11 @@ export function Checkbox({
           },
         ]}
       >
-        {checked && (
-          <Ionicons
-            name="checkmark"
-            size={16}
-            color={colors.primaryForeground}
-          />
-        )}
+        {checked && <Ionicons name="checkmark" size={16} color={colors.primaryForeground} />}
       </View>
       {(label || description) && (
         <View style={styles.textContainer}>
-          {label && (
-            <Text style={[styles.label, { color: colors.foreground }]}>
-              {label}
-            </Text>
-          )}
+          {label && <Text style={[styles.label, { color: colors.foreground }]}>{label}</Text>}
           {description && (
             <Text style={[styles.description, { color: colors.foregroundMuted }]}>
               {description}
@@ -105,22 +88,11 @@ export function Radio({
           },
         ]}
       >
-        {selected && (
-          <View
-            style={[
-              styles.radioInner,
-              { backgroundColor: colors.primary },
-            ]}
-          />
-        )}
+        {selected && <View style={[styles.radioInner, { backgroundColor: colors.primary }]} />}
       </View>
       {(label || description) && (
         <View style={styles.textContainer}>
-          {label && (
-            <Text style={[styles.label, { color: colors.foreground }]}>
-              {label}
-            </Text>
-          )}
+          {label && <Text style={[styles.label, { color: colors.foreground }]}>{label}</Text>}
           {description && (
             <Text style={[styles.description, { color: colors.foregroundMuted }]}>
               {description}
@@ -148,22 +120,12 @@ interface RadioGroupProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export function RadioGroup({
-  options,
-  value,
-  onChange,
-  label,
-  style,
-}: RadioGroupProps) {
+export function RadioGroup({ options, value, onChange, label, style }: RadioGroupProps) {
   const colors = useColors();
 
   return (
     <View style={style}>
-      {label && (
-        <Text style={[styles.groupLabel, { color: colors.foreground }]}>
-          {label}
-        </Text>
-      )}
+      {label && <Text style={[styles.groupLabel, { color: colors.foreground }]}>{label}</Text>}
       {options.map((option) => (
         <Radio
           key={option.value}
@@ -230,12 +192,3 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
 });
-
-
-
-
-
-
-
-
-

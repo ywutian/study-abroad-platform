@@ -76,10 +76,7 @@ export function AnimatedListItem({
     .onUpdate((event) => {
       // 限制滑动范围
       const maxTranslate = 100;
-      translateX.value = Math.max(
-        -maxTranslate,
-        Math.min(maxTranslate, event.translationX)
-      );
+      translateX.value = Math.max(-maxTranslate, Math.min(maxTranslate, event.translationX));
     })
     .onEnd((event) => {
       const threshold = 60;
@@ -97,10 +94,7 @@ export function AnimatedListItem({
   const composedGesture = Gesture.Simultaneous(tapGesture, panGesture);
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { scale: scale.value },
-      { translateX: translateX.value },
-    ],
+    transform: [{ scale: scale.value }, { translateX: translateX.value }],
     opacity: opacity.value,
   }));
 
@@ -125,9 +119,7 @@ export function AnimatedListItem({
       >
         {/* 左侧操作区 */}
         {leftAction && swipeable && (
-          <View style={[styles.actionContainer, styles.leftAction]}>
-            {leftAction}
-          </View>
+          <View style={[styles.actionContainer, styles.leftAction]}>{leftAction}</View>
         )}
 
         {/* 内容区 */}
@@ -135,9 +127,7 @@ export function AnimatedListItem({
 
         {/* 右侧操作区 */}
         {rightAction && swipeable && (
-          <View style={[styles.actionContainer, styles.rightAction]}>
-            {rightAction}
-          </View>
+          <View style={[styles.actionContainer, styles.rightAction]}>{rightAction}</View>
         )}
       </Animated.View>
     </GestureDetector>
@@ -152,22 +142,13 @@ interface StaggeredItemProps {
   staggerDelay?: number;
 }
 
-export function StaggeredItem({
-  children,
-  index,
-  style,
-  staggerDelay = 50,
-}: StaggeredItemProps) {
+export function StaggeredItem({ children, index, style, staggerDelay = 50 }: StaggeredItemProps) {
   const enteringAnimation = FadeInRight.delay(index * staggerDelay)
     .duration(300)
     .springify();
 
   return (
-    <Animated.View
-      entering={enteringAnimation}
-      layout={Layout.springify()}
-      style={style}
-    >
+    <Animated.View entering={enteringAnimation} layout={Layout.springify()} style={style}>
       {children}
     </Animated.View>
   );
@@ -195,12 +176,3 @@ const styles = StyleSheet.create({
     left: '100%',
   },
 });
-
-
-
-
-
-
-
-
-

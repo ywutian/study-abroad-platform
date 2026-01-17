@@ -6,8 +6,24 @@
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
+      "inputs": ["src/**", "test/**", "**/*.spec.ts", "**/*.test.ts", "**/*.test.tsx"]
+    },
+    "test:watch": {
+      "cache": false,
+      "persistent": true
+    },
     "lint": {
-      "dependsOn": ["^lint"]
+      "outputs": []
+    },
+    "lint:i18n": {
+      "outputs": []
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "outputs": []
     },
     "dev": {
       "cache": false,
@@ -21,4 +37,3 @@
     }
   }
 }
-

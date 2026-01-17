@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Linking,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
 import { useLocalSearchParams, router, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -33,7 +26,11 @@ export default function SchoolDetailScreen() {
   const { t } = useTranslation();
   const colors = useColors();
 
-  const { data: school, isLoading, error } = useQuery({
+  const {
+    data: school,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['school', id],
     queryFn: () => apiClient.get<School>(`/schools/${id}`),
     enabled: !!id,
@@ -41,9 +38,10 @@ export default function SchoolDetailScreen() {
 
   const { data: casesData } = useQuery({
     queryKey: ['schoolCases', id],
-    queryFn: () => apiClient.get<PaginatedResponse<Case>>('/cases', {
-      params: { schoolId: id, limit: 10 },
-    }),
+    queryFn: () =>
+      apiClient.get<PaginatedResponse<Case>>('/cases', {
+        params: { schoolId: id, limit: 10 },
+      }),
     enabled: !!id,
   });
 
@@ -52,12 +50,7 @@ export default function SchoolDetailScreen() {
   }
 
   if (error || !school) {
-    return (
-      <ErrorState
-        title={t('errors.notFound')}
-        onRetry={() => router.back()}
-      />
-    );
+    return <ErrorState title={t('errors.notFound')} onRetry={() => router.back()} />;
   }
 
   const formatCurrency = (value?: number) => {
@@ -183,12 +176,8 @@ export default function SchoolDetailScreen() {
                     {prompt.prompt}
                   </Text>
                   <View style={styles.essayMeta}>
-                    {prompt.wordLimit && (
-                      <Badge variant="outline">{prompt.wordLimit} words</Badge>
-                    )}
-                    {prompt.required && (
-                      <Badge variant="error">Required</Badge>
-                    )}
+                    {prompt.wordLimit && <Badge variant="outline">{prompt.wordLimit} words</Badge>}
+                    {prompt.required && <Badge variant="error">Required</Badge>}
                   </View>
                 </CardContent>
               </Card>
@@ -227,8 +216,8 @@ export default function SchoolDetailScreen() {
                         caseItem.result === 'ADMITTED'
                           ? 'success'
                           : caseItem.result === 'REJECTED'
-                          ? 'error'
-                          : 'warning'
+                            ? 'error'
+                            : 'warning'
                       }
                     >
                       {t(`cases.result.${caseItem.result.toLowerCase()}`)}
@@ -256,19 +245,10 @@ export default function SchoolDetailScreen() {
       >
         {/* Header */}
         <View style={[styles.header, { backgroundColor: colors.card }]}>
-          <Avatar
-            source={school.logoUrl}
-            name={school.name}
-            size="xl"
-            style={styles.logo}
-          />
-          <Text style={[styles.name, { color: colors.foreground }]}>
-            {school.name}
-          </Text>
+          <Avatar source={school.logoUrl} name={school.name} size="xl" style={styles.logo} />
+          <Text style={[styles.name, { color: colors.foreground }]}>{school.name}</Text>
           {school.nameZh && (
-            <Text style={[styles.nameZh, { color: colors.foregroundMuted }]}>
-              {school.nameZh}
-            </Text>
+            <Text style={[styles.nameZh, { color: colors.foregroundMuted }]}>{school.nameZh}</Text>
           )}
           <View style={styles.locationRow}>
             <Ionicons name="location-outline" size={16} color={colors.foregroundMuted} />
@@ -288,9 +268,7 @@ export default function SchoolDetailScreen() {
                 { backgroundColor: colors.card, borderColor: colors.border },
               ]}
             >
-              <Text style={[styles.statValue, { color: colors.foreground }]}>
-                {stat.value}
-              </Text>
+              <Text style={[styles.statValue, { color: colors.foreground }]}>{stat.value}</Text>
               <Text style={[styles.statLabel, { color: colors.foregroundMuted }]}>
                 {stat.label}
               </Text>
@@ -439,12 +417,3 @@ const styles = StyleSheet.create({
     fontSize: fontSize.base,
   },
 });
-
-
-
-
-
-
-
-
-

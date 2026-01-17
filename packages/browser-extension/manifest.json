@@ -9,25 +9,15 @@
   "description_locales": {
     "zh_CN": "从留学助手平台自动填充 CommonApp 表单"
   },
-  "permissions": [
-    "storage",
-    "activeTab",
-    "tabs"
-  ],
-  "host_permissions": [
-    "https://apply.commonapp.org/*",
-    "https://www.commonapp.org/*"
-  ],
+  "permissions": ["storage", "activeTab", "tabs"],
+  "host_permissions": ["https://apply.commonapp.org/*", "https://www.commonapp.org/*"],
   "background": {
     "service_worker": "dist/background.js",
     "type": "module"
   },
   "content_scripts": [
     {
-      "matches": [
-        "https://apply.commonapp.org/*",
-        "https://www.commonapp.org/*"
-      ],
+      "matches": ["https://apply.commonapp.org/*", "https://www.commonapp.org/*"],
       "js": ["dist/content.js"],
       "css": ["dist/content.css"],
       "run_at": "document_idle"
@@ -56,6 +46,3 @@
     }
   ]
 }
-
-
-

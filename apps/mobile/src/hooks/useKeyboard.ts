@@ -1,6 +1,6 @@
 /**
  * 键盘状态 Hook
- * 
+ *
  * 监听键盘显示/隐藏状态
  */
 
@@ -50,16 +50,9 @@ export function useKeyboard() {
 
 /**
  * 键盘关闭 Hook
- * 
+ *
  * 返回一个函数用于关闭键盘
  */
 export function useDismissKeyboard() {
   return () => Keyboard.dismiss();
 }
-
-
-
-
-
-
-

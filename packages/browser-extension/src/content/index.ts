@@ -2,7 +2,13 @@
  * Content Script - 在 CommonApp 页面注入填充功能
  */
 
-import { autoFillForm, getAvailableFields, fillField, getNestedValue, COMMONAPP_FIELD_MAPPINGS } from '../utils/field-mapper';
+import {
+  autoFillForm,
+  getAvailableFields,
+  fillField,
+  getNestedValue,
+  COMMONAPP_FIELD_MAPPINGS,
+} from '../utils/field-mapper';
 import type { UserProfile, Message, MessageResponse } from '../utils/types';
 import './styles.css';
 
@@ -13,10 +19,10 @@ let cachedProfile: UserProfile | null = null;
  */
 function initialize(): void {
   console.log('[StudyAbroad Extension] Content script loaded on CommonApp');
-  
+
   // 注入浮动按钮
   injectFloatingButton();
-  
+
   // 监听来自 background 的消息
   chrome.runtime.onMessage.addListener((message: any, _sender, sendResponse) => {
     if (message.type === 'FILL_CURRENT_FIELD') {
@@ -158,7 +164,7 @@ async function loadProfile(): Promise<void> {
   updateStatus('正在加载档案...');
 
   const response = await sendMessage({ type: 'GET_PROFILE' });
-  
+
   if (response.success && response.data) {
     cachedProfile = response.data;
     updateStatus('档案已加载 ✓');
@@ -181,9 +187,9 @@ async function handleFillAll(): Promise<{ success: boolean; filled: number; skip
   }
 
   updateStatus('正在填充...');
-  
+
   const result = autoFillForm(cachedProfile);
-  
+
   if (result.filled > 0) {
     updateStatus(`已填充 ${result.filled} 个字段`, 'success');
   } else {
@@ -198,9 +204,9 @@ async function handleFillAll(): Promise<{ success: boolean; filled: number; skip
  */
 async function handleSync(): Promise<void> {
   updateStatus('正在同步...');
-  
+
   const response = await sendMessage({ type: 'SYNC_PROFILE' });
-  
+
   if (response.success && response.data) {
     cachedProfile = response.data;
     updateStatus('同步成功 ✓', 'success');
@@ -228,7 +234,7 @@ function renderFieldsList(): void {
     .map((field) => {
       const value = cachedProfile ? getNestedValue(cachedProfile, field.profilePath) : undefined;
       const hasValue = value !== undefined && value !== null && value !== '';
-      
+
       return `
         <label class="studyabroad-field-item ${hasValue ? '' : 'disabled'}">
           <input type="checkbox" data-path="${field.profilePath}" ${hasValue ? 'checked' : 'disabled'}>
@@ -311,7 +317,10 @@ function sendMessage(message: Message): Promise<MessageResponse> {
 /**
  * 更新状态显示
  */
-function updateStatus(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info'): void {
+function updateStatus(
+  message: string,
+  type: 'success' | 'error' | 'warning' | 'info' = 'info'
+): void {
   const status = document.getElementById('studyabroad-status');
   if (status) {
     status.textContent = message;
@@ -324,13 +333,13 @@ function updateStatus(message: string, type: 'success' | 'error' | 'warning' | '
  */
 function getFieldLabel(path: string): string {
   const labels: Record<string, string> = {
-    'firstName': '名',
-    'lastName': '姓',
-    'middleName': '中间名',
-    'preferredName': '昵称',
-    'email': '邮箱',
-    'phone': '电话',
-    'dateOfBirth': '出生日期',
+    firstName: '名',
+    lastName: '姓',
+    middleName: '中间名',
+    preferredName: '昵称',
+    email: '邮箱',
+    phone: '电话',
+    dateOfBirth: '出生日期',
     'address.street': '街道地址',
     'address.city': '城市',
     'address.state': '州/省',
@@ -366,6 +375,3 @@ if (document.readyState === 'loading') {
 } else {
   initialize();
 }
-
-
-

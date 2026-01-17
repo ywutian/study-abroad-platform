@@ -86,11 +86,7 @@ export function SkeletonCard({ style }: SkeletonCardProps) {
 
   return (
     <View
-      style={[
-        styles.card,
-        { backgroundColor: colors.card, borderColor: colors.border },
-        style,
-      ]}
+      style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }, style]}
     >
       <View style={styles.cardHeader}>
         <AnimatedSkeleton variant="circle" height={40} />
@@ -119,11 +115,7 @@ export function SkeletonListItem({ style, hasAvatar = true }: SkeletonListItemPr
 
   return (
     <View
-      style={[
-        styles.listItem,
-        { backgroundColor: colors.card, borderColor: colors.border },
-        style,
-      ]}
+      style={[styles.listItem, { backgroundColor: colors.card, borderColor: colors.border }, style]}
     >
       {hasAvatar && <AnimatedSkeleton variant="circle" height={48} />}
       <View style={[styles.listItemContent, !hasAvatar && { marginLeft: 0 }]}>
@@ -168,12 +160,3 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
 });
-
-
-
-
-
-
-
-
-

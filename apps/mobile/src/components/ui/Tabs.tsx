@@ -34,9 +34,7 @@ export function Tabs({ tabs, defaultTab, onChange, style, scrollable = false }: 
   };
 
   const TabBar = scrollable ? ScrollView : View;
-  const tabBarProps = scrollable
-    ? { horizontal: true, showsHorizontalScrollIndicator: false }
-    : {};
+  const tabBarProps = scrollable ? { horizontal: true, showsHorizontalScrollIndicator: false } : {};
 
   return (
     <View style={style}>
@@ -44,7 +42,7 @@ export function Tabs({ tabs, defaultTab, onChange, style, scrollable = false }: 
         {...tabBarProps}
         style={[
           styles.tabBar,
-          { 
+          {
             backgroundColor: colors.muted,
             borderColor: colors.border,
           },
@@ -66,10 +64,7 @@ export function Tabs({ tabs, defaultTab, onChange, style, scrollable = false }: 
               style={[
                 styles.tabText,
                 {
-                  color:
-                    activeTab === tab.key
-                      ? colors.foreground
-                      : colors.foregroundMuted,
+                  color: activeTab === tab.key ? colors.foreground : colors.foregroundMuted,
                 },
               ]}
             >
@@ -78,9 +73,7 @@ export function Tabs({ tabs, defaultTab, onChange, style, scrollable = false }: 
           </TouchableOpacity>
         ))}
       </TabBar>
-      <View style={styles.content}>
-        {tabs.find((tab) => tab.key === activeTab)?.content}
-      </View>
+      <View style={styles.content}>{tabs.find((tab) => tab.key === activeTab)?.content}</View>
     </View>
   );
 }
@@ -97,13 +90,7 @@ export function Segment({ segments, value, onChange, style }: SegmentProps) {
   const colors = useColors();
 
   return (
-    <View
-      style={[
-        styles.segmentContainer,
-        { backgroundColor: colors.muted },
-        style,
-      ]}
-    >
+    <View style={[styles.segmentContainer, { backgroundColor: colors.muted }, style]}>
       {segments.map((segment) => (
         <TouchableOpacity
           key={segment.key}
@@ -119,10 +106,7 @@ export function Segment({ segments, value, onChange, style }: SegmentProps) {
             style={[
               styles.segmentText,
               {
-                color:
-                  value === segment.key
-                    ? colors.foreground
-                    : colors.foregroundMuted,
+                color: value === segment.key ? colors.foreground : colors.foregroundMuted,
               },
             ]}
           >
@@ -175,12 +159,3 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.medium,
   },
 });
-
-
-
-
-
-
-
-
-

@@ -91,10 +91,14 @@ export function AvatarGroup({ children, max = 3, size = 'default' }: AvatarGroup
 
   const getSizeOffset = () => {
     switch (size) {
-      case 'sm': return -12;
-      case 'lg': return -20;
-      case 'xl': return -24;
-      default: return -16;
+      case 'sm':
+        return -12;
+      case 'lg':
+        return -20;
+      case 'xl':
+        return -24;
+      default:
+        return -16;
     }
   };
 
@@ -105,7 +109,7 @@ export function AvatarGroup({ children, max = 3, size = 'default' }: AvatarGroup
           key={index}
           style={[
             styles.groupItem,
-            { 
+            {
               marginLeft: index > 0 ? getSizeOffset() : 0,
               zIndex: visibleChildren.length - index,
               borderWidth: 2,
@@ -157,12 +161,3 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
 });
-
-
-
-
-
-
-
-
-

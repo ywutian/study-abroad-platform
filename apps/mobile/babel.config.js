@@ -24,12 +24,3 @@ module.exports = function (api) {
     ],
   };
 };
-
-
-
-
-
-
-
-
-

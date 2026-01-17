@@ -1,12 +1,5 @@
 import React, { useState } from 'react';
-import {
-  View,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ViewStyle,
-  StyleProp,
-} from 'react-native';
+import { View, TextInput, TouchableOpacity, StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useColors, spacing, fontSize, borderRadius } from '@/utils/theme';
@@ -50,12 +43,7 @@ export function SearchBar({
         style,
       ]}
     >
-      <Ionicons
-        name="search"
-        size={20}
-        color={colors.foregroundMuted}
-        style={styles.searchIcon}
-      />
+      <Ionicons name="search" size={20} color={colors.foregroundMuted} style={styles.searchIcon} />
       <TextInput
         value={value}
         onChangeText={onChangeText}
@@ -66,18 +54,11 @@ export function SearchBar({
         onBlur={() => setIsFocused(false)}
         onSubmitEditing={onSubmit}
         returnKeyType="search"
-        style={[
-          styles.input,
-          { color: colors.foreground },
-        ]}
+        style={[styles.input, { color: colors.foreground }]}
       />
       {value.length > 0 && (
         <TouchableOpacity onPress={handleClear} style={styles.clearButton}>
-          <Ionicons
-            name="close-circle"
-            size={20}
-            color={colors.foregroundMuted}
-          />
+          <Ionicons name="close-circle" size={20} color={colors.foregroundMuted} />
         </TouchableOpacity>
       )}
     </View>
@@ -127,24 +108,15 @@ export function SearchWithFilters({
               style={[
                 styles.filterChip,
                 {
-                  backgroundColor:
-                    activeFilter === filter.key
-                      ? colors.primary
-                      : colors.muted,
+                  backgroundColor: activeFilter === filter.key ? colors.primary : colors.muted,
                 },
               ]}
             >
               <Ionicons
-                name={
-                  activeFilter === filter.key
-                    ? 'checkmark-circle'
-                    : 'ellipse-outline'
-                }
+                name={activeFilter === filter.key ? 'checkmark-circle' : 'ellipse-outline'}
                 size={16}
                 color={
-                  activeFilter === filter.key
-                    ? colors.primaryForeground
-                    : colors.foregroundMuted
+                  activeFilter === filter.key ? colors.primaryForeground : colors.foregroundMuted
                 }
                 style={styles.filterIcon}
               />
@@ -152,11 +124,7 @@ export function SearchWithFilters({
                 <Ionicons
                   name="text"
                   size={0}
-                  color={
-                    activeFilter === filter.key
-                      ? colors.primaryForeground
-                      : colors.foreground
-                  }
+                  color={activeFilter === filter.key ? colors.primaryForeground : colors.foreground}
                 />
               </View>
             </TouchableOpacity>
@@ -204,12 +172,3 @@ const styles = StyleSheet.create({
     marginRight: spacing.xs,
   },
 });
-
-
-
-
-
-
-
-
-

@@ -12,7 +12,7 @@ export interface UserProfile {
   gender?: 'male' | 'female' | 'other';
   email: string;
   phone?: string;
-  
+
   // 地址
   address?: {
     street?: string;
@@ -21,13 +21,13 @@ export interface UserProfile {
     zipCode?: string;
     country?: string;
   };
-  
+
   // 公民身份
   citizenship?: {
     country?: string;
     status?: string;
   };
-  
+
   // 教育背景
   education?: {
     currentSchool?: string;
@@ -39,7 +39,7 @@ export interface UserProfile {
     classRank?: number;
     classSize?: number;
   };
-  
+
   // 标化成绩
   testScores?: {
     SAT?: {
@@ -65,13 +65,13 @@ export interface UserProfile {
       overall?: number;
     };
   };
-  
+
   // 活动
   activities?: Activity[];
-  
+
   // 荣誉
   awards?: Award[];
-  
+
   // 文书
   essays?: Essay[];
 }
@@ -141,6 +141,3 @@ export interface FieldMapping {
   type: 'text' | 'select' | 'radio' | 'checkbox' | 'date';
   transform?: (value: any) => any;
 }
-
-
-

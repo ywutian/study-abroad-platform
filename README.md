@@ -38,6 +38,7 @@ pnpm dev
 ```
 
 访问：
+
 - 前端: http://localhost:3000
 - API: http://localhost:3001
 - API 文档: http://localhost:3001/api/docs
@@ -111,9 +112,10 @@ NEXT_PUBLIC_SITE_URL="http://localhost:3000"
 
 ```bash
 # 开发
-pnpm dev                    # 启动所有服务
+pnpm dev                    # 启动所有服务 (前端默认 Webpack 模式)
 pnpm --filter api dev       # 仅启动 API
-pnpm --filter web dev       # 仅启动前端
+pnpm --filter web dev       # 仅启动前端 (Webpack 模式，推荐)
+pnpm --filter web dev:turbo # 仅启动前端 (Turbopack 模式，实验性)
 pnpm --filter mobile start  # 启动移动端 (Expo)
 
 # 构建
@@ -155,17 +157,20 @@ docker compose logs -f api
 ### 手动部署
 
 1. 构建项目
+
 ```bash
 pnpm build
 ```
 
 2. 启动 API
+
 ```bash
 cd apps/api
 NODE_ENV=production node dist/main.js
 ```
 
 3. 启动前端 (可选: 使用 Vercel/Cloudflare Pages)
+
 ```bash
 cd apps/web
 pnpm start
@@ -184,6 +189,7 @@ pnpm start
 ## 📖 API 文档
 
 启动服务后访问 Swagger 文档：
+
 - 开发环境: http://localhost:3001/api/docs
 - 生产环境: https://api.your-domain.com/api/docs
 

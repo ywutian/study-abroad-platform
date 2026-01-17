@@ -1,19 +1,21 @@
 import React, { useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  RefreshControl,
-} from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import debounce from 'lodash.debounce';
 
-import { Card, CardContent, SearchBar, Badge, Avatar, Loading, EmptyState, Skeleton } from '@/components/ui';
+import {
+  Card,
+  CardContent,
+  SearchBar,
+  Badge,
+  Avatar,
+  Loading,
+  EmptyState,
+  Skeleton,
+} from '@/components/ui';
 import { BottomSheet } from '@/components/ui/Modal';
 import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight } from '@/utils/theme';
@@ -24,7 +26,7 @@ type SortOption = 'usnewsRank' | 'acceptanceRate' | 'tuition' | 'name';
 export default function SchoolsScreen() {
   const { t } = useTranslation();
   const colors = useColors();
-  
+
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('usnewsRank');
@@ -41,35 +43,28 @@ export default function SchoolsScreen() {
     debouncedSetSearch(value);
   };
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    refetch,
-    isRefetching,
-  } = useInfiniteQuery({
-    queryKey: ['schools', debouncedSearch, sortBy],
-    queryFn: async ({ pageParam = 1 }) => {
-      return apiClient.get<PaginatedResponse<School>>('/schools', {
-        params: {
-          page: pageParam,
-          limit: 20,
-          search: debouncedSearch || undefined,
-          sort: sortBy,
-          order: sortBy === 'name' ? 'asc' : 'asc',
-        },
-      });
-    },
-    getNextPageParam: (lastPage) => {
-      if (lastPage.meta.page < lastPage.meta.totalPages) {
-        return lastPage.meta.page + 1;
-      }
-      return undefined;
-    },
-    initialPageParam: 1,
-  });
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, refetch, isRefetching } =
+    useInfiniteQuery({
+      queryKey: ['schools', debouncedSearch, sortBy],
+      queryFn: async ({ pageParam = 1 }) => {
+        return apiClient.get<PaginatedResponse<School>>('/schools', {
+          params: {
+            page: pageParam,
+            limit: 20,
+            search: debouncedSearch || undefined,
+            sort: sortBy,
+            order: sortBy === 'name' ? 'asc' : 'asc',
+          },
+        });
+      },
+      getNextPageParam: (lastPage) => {
+        if (lastPage.meta.page < lastPage.meta.totalPages) {
+          return lastPage.meta.page + 1;
+        }
+        return undefined;
+      },
+      initialPageParam: 1,
+    });
 
   const schools = data?.pages.flatMap((page) => page.data) || [];
 
@@ -81,43 +76,25 @@ export default function SchoolsScreen() {
   ];
 
   const renderSchoolItem = ({ item }: { item: School }) => (
-    <TouchableOpacity
-      onPress={() => router.push(`/school/${item.id}`)}
-      style={styles.cardWrapper}
-    >
+    <TouchableOpacity onPress={() => router.push(`/school/${item.id}`)} style={styles.cardWrapper}>
       <Card>
         <CardContent style={styles.cardContent}>
-          <Avatar
-            source={item.logoUrl}
-            name={item.name}
-            size="lg"
-          />
+          <Avatar source={item.logoUrl} name={item.name} size="lg" />
           <View style={styles.schoolInfo}>
-            <Text
-              style={[styles.schoolName, { color: colors.foreground }]}
-              numberOfLines={2}
-            >
+            <Text style={[styles.schoolName, { color: colors.foreground }]} numberOfLines={2}>
               {item.name}
             </Text>
             <Text style={[styles.schoolLocation, { color: colors.foregroundMuted }]}>
               {item.city}, {item.state}
             </Text>
             <View style={styles.badges}>
-              {item.usnewsRank && (
-                <Badge variant="secondary">#{item.usnewsRank}</Badge>
-              )}
+              {item.usnewsRank && <Badge variant="secondary">#{item.usnewsRank}</Badge>}
               {item.acceptanceRate && (
-                <Badge variant="outline">
-                  {(item.acceptanceRate * 100).toFixed(0)}%
-                </Badge>
+                <Badge variant="outline">{(item.acceptanceRate * 100).toFixed(0)}%</Badge>
               )}
             </View>
           </View>
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color={colors.foregroundMuted}
-          />
+          <Ionicons name="chevron-forward" size={20} color={colors.foregroundMuted} />
         </CardContent>
       </Card>
     </TouchableOpacity>
@@ -203,9 +180,7 @@ export default function SchoolsScreen() {
         onEndReachedThreshold={0.5}
         ListFooterComponent={renderFooter}
         ListEmptyComponent={renderEmpty}
-        refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
-        }
+        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
         showsVerticalScrollIndicator={false}
       />
 
@@ -322,12 +297,3 @@ const styles = StyleSheet.create({
     fontSize: fontSize.base,
   },
 });
-
-
-
-
-
-
-
-
-

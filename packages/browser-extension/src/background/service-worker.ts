@@ -8,7 +8,7 @@ import type { Message, MessageResponse } from '../utils/types';
 // 监听扩展安装/更新
 chrome.runtime.onInstalled.addListener((details) => {
   console.log('[StudyAbroad Extension] Installed:', details.reason);
-  
+
   if (details.reason === 'install') {
     // 首次安装，显示欢迎页面
     chrome.tabs.create({
@@ -28,7 +28,7 @@ chrome.runtime.onMessage.addListener(
           error: error.message || 'Unknown error',
         });
       });
-    
+
     // 返回 true 以支持异步响应
     return true;
   }
@@ -42,22 +42,22 @@ async function handleMessage(message: Message): Promise<MessageResponse> {
     case 'GET_PROFILE': {
       // 优先使用缓存
       let profile = await getCachedProfile();
-      
+
       if (!profile) {
         profile = await fetchProfile();
       }
-      
+
       if (profile) {
         return { success: true, data: profile };
       }
       return { success: false, error: 'Profile not available' };
     }
-    
+
     case 'LOGIN_STATUS': {
       const isLoggedIn = await checkLoginStatus();
       return { success: true, data: { isLoggedIn } };
     }
-    
+
     case 'SYNC_PROFILE': {
       const profile = await fetchProfile();
       if (profile) {
@@ -65,7 +65,7 @@ async function handleMessage(message: Message): Promise<MessageResponse> {
       }
       return { success: false, error: 'Failed to sync profile' };
     }
-    
+
     default:
       return { success: false, error: 'Unknown message type' };
   }
@@ -78,7 +78,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   }
 
   const isCommonApp = tab.url.includes('commonapp.org');
-  
+
   if (isCommonApp) {
     // 设置徽章显示
     await chrome.action.setBadgeText({ tabId, text: 'CA' });
@@ -112,6 +112,3 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 });
 
 console.log('[StudyAbroad Extension] Background service worker initialized');
-
-
-

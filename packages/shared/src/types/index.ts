@@ -211,10 +211,18 @@ export interface Review {
   reviewerId: string;
   profileId: string;
   academicScore: number;
+  testScore: number;
   activityScore: number;
-  essayScore: number;
+  awardScore: number;
   overallScore: number;
   comment?: string;
+  academicComment?: string;
+  testComment?: string;
+  activityComment?: string;
+  awardComment?: string;
+  status: 'DRAFT' | 'PUBLISHED' | 'HIDDEN';
+  tags: string[];
+  helpfulCount: number;
   createdAt: Date;
 }
 
@@ -267,24 +275,19 @@ export interface LoginRequest {
   email: string;
   password: string;
 }
-
 export interface RegisterRequest {
   email: string;
   password: string;
   locale?: string;
 }
-
 export interface LoginResponse {
   user: User;
   tokens: AuthTokens;
 }
-
 export interface RegisterResponse {
   user: User;
   message: string;
-}
-
-// Health Check
+} // Health Check
 export interface HealthStatus {
   status: 'ok' | 'error';
   timestamp: string;
@@ -293,4 +296,3 @@ export interface HealthStatus {
     database: 'ok' | 'error';
   };
 }
-

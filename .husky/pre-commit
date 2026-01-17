@@ -1,0 +1,44 @@
+pnpm exec lint-staged
+
+# ── i18n 自动校验 ──────────────────────────────────────────
+# 当 web 应用的源码或翻译文件有变动时，自动运行 i18n 检查
+STAGED_FILES=$(git diff --cached --name-only)
+
+# 检查是否有 apps/web 的源码或翻译文件变动
+WEB_SRC_CHANGED=$(echo "$STAGED_FILES" | grep -c "^apps/web/src/" || true)
+
+if [ "$WEB_SRC_CHANGED" -gt "0" ]; then
+  echo ""
+  echo "🌐 Running i18n checks (source or translation files changed)..."
+  echo ""
+
+  # 1. 检查源码中使用的 key 是否在 zh.json 中存在
+  if ! pnpm --filter web exec npx tsx scripts/check-missing-keys.ts; then
+    echo ""
+    echo "❌ i18n check failed: missing translation keys detected."
+    echo "   Run 'pnpm --filter web exec npx tsx scripts/check-missing-keys.ts --fix'"
+    echo "   to auto-generate placeholder translations, then replace [TODO] values."
+    echo ""
+    exit 1
+  fi
+
+  # 2. 检查 zh.json 和 en.json 的 key 一致性
+  if ! pnpm --filter web exec npx tsx scripts/check-translation-keys.ts; then
+    echo ""
+    echo "❌ i18n check failed: zh.json and en.json keys are inconsistent."
+    echo ""
+    exit 1
+  fi
+
+  # 3. 检查翻译值的语言是否正确
+  if ! pnpm --filter web exec npx tsx scripts/check-wrong-language.ts; then
+    echo ""
+    echo "❌ i18n check failed: wrong-language translations detected."
+    echo ""
+    exit 1
+  fi
+
+  echo ""
+  echo "✅ i18n checks passed!"
+  echo ""
+fi

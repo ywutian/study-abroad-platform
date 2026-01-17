@@ -19,7 +19,7 @@ async function getInitialLanguage(): Promise<string> {
   if (savedLanguage && ['zh', 'en'].includes(savedLanguage)) {
     return savedLanguage;
   }
-  
+
   // Use system language
   const systemLanguage = Localization.getLocales()[0]?.languageCode || 'zh';
   return systemLanguage === 'zh' ? 'zh' : 'en';
@@ -53,12 +53,3 @@ export function getCurrentLanguage(): string {
 }
 
 export { i18n };
-
-
-
-
-
-
-
-
-

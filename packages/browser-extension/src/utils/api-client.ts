@@ -64,12 +64,15 @@ export async function getCachedProfile(): Promise<UserProfile | null> {
  */
 export async function cacheProfile(profile: UserProfile): Promise<void> {
   return new Promise((resolve) => {
-    chrome.storage.local.set({ 
-      profile, 
-      lastSync: Date.now() 
-    }, () => {
-      resolve();
-    });
+    chrome.storage.local.set(
+      {
+        profile,
+        lastSync: Date.now(),
+      },
+      () => {
+        resolve();
+      }
+    );
   });
 }
 
@@ -86,7 +89,7 @@ export async function fetchProfile(): Promise<UserProfile | null> {
     const response = await fetch(`${API_BASE_URL}/profile/me`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     });
@@ -121,7 +124,7 @@ export async function checkLoginStatus(): Promise<boolean> {
     const response = await fetch(`${API_BASE_URL}/auth/me`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -147,20 +150,24 @@ function transformApiResponse(data: any): UserProfile {
     gender: profile.gender,
     email: user.email || '',
     phone: profile.phone,
-    
-    address: profile.address ? {
-      street: profile.address.street,
-      city: profile.address.city,
-      state: profile.address.state,
-      zipCode: profile.address.zipCode,
-      country: profile.address.country,
-    } : undefined,
-    
-    citizenship: profile.citizenship ? {
-      country: profile.citizenship.country,
-      status: profile.citizenship.status,
-    } : undefined,
-    
+
+    address: profile.address
+      ? {
+          street: profile.address.street,
+          city: profile.address.city,
+          state: profile.address.state,
+          zipCode: profile.address.zipCode,
+          country: profile.address.country,
+        }
+      : undefined,
+
+    citizenship: profile.citizenship
+      ? {
+          country: profile.citizenship.country,
+          status: profile.citizenship.status,
+        }
+      : undefined,
+
     education: {
       currentSchool: profile.currentSchool,
       schoolCity: profile.schoolCity,
@@ -171,9 +178,9 @@ function transformApiResponse(data: any): UserProfile {
       classRank: profile.classRank,
       classSize: profile.classSize,
     },
-    
+
     testScores: transformTestScores(data.testScores || []),
-    
+
     activities: (data.activities || []).map((a: any) => ({
       name: a.name,
       type: a.type,
@@ -186,14 +193,14 @@ function transformApiResponse(data: any): UserProfile {
       hoursPerWeek: a.hoursPerWeek || 0,
       weeksPerYear: a.weeksPerYear || 0,
     })),
-    
+
     awards: (data.awards || []).map((a: any) => ({
       name: a.name,
       level: a.level || 'school',
       year: a.year,
       description: a.description,
     })),
-    
+
     essays: (data.essays || []).map((e: any) => ({
       prompt: e.prompt || '',
       content: e.content || '',
@@ -245,6 +252,3 @@ function transformTestScores(scores: any[]): UserProfile['testScores'] {
 
   return result;
 }
-
-
-

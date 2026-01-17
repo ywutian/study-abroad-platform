@@ -178,6 +178,7 @@ eas build --profile production --platform android
 - 无障碍访问
 
 组件列表:
+
 - `Button` - 按钮 (6种变体, 4种尺寸)
 - `Input` - 输入框 (支持密码切换/错误提示)
 - `Card` - 卡片 (Header/Content/Footer)
@@ -226,12 +227,3 @@ pnpm test:coverage
 2. 新功能需要添加测试
 3. 提交前运行 lint 和 test
 4. 使用语义化提交信息
-
-
-
-
-
-
-
-
-

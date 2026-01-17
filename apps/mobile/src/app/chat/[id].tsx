@@ -32,7 +32,11 @@ export default function ChatScreen() {
   const [input, setInput] = useState('');
 
   // Fetch conversation
-  const { data: conversation, isLoading, error } = useQuery({
+  const {
+    data: conversation,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['conversation', id],
     queryFn: () => apiClient.get<Conversation>(`/chat/conversations/${id}`),
     enabled: !!id,
@@ -65,9 +69,7 @@ export default function ChatScreen() {
   };
 
   // Get other participant
-  const otherParticipant = conversation?.participants.find(
-    (p) => p.userId !== user?.id
-  )?.user;
+  const otherParticipant = conversation?.participants.find((p) => p.userId !== user?.id)?.user;
 
   if (isLoading) {
     return <Loading fullScreen />;
@@ -81,12 +83,7 @@ export default function ChatScreen() {
     const isMe = item.senderId === user?.id;
 
     return (
-      <View
-        style={[
-          styles.messageContainer,
-          isMe ? styles.myMessage : styles.theirMessage,
-        ]}
-      >
+      <View style={[styles.messageContainer, isMe ? styles.myMessage : styles.theirMessage]}>
         {!isMe && (
           <Avatar
             source={null}
@@ -115,9 +112,7 @@ export default function ChatScreen() {
             style={[
               styles.messageTime,
               {
-                color: isMe
-                  ? 'rgba(255,255,255,0.7)'
-                  : colors.foregroundMuted,
+                color: isMe ? 'rgba(255,255,255,0.7)' : colors.foregroundMuted,
               },
             ]}
           >
@@ -282,12 +277,3 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
-
-
-
-
-
-
-
-
-

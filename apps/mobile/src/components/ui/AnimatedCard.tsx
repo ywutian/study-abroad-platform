@@ -132,19 +132,13 @@ export function CardHeader({ children, style }: CardHeaderProps) {
 
 export function CardTitle({ children, style }: CardTitleProps) {
   const colors = useColors();
-  return (
-    <Text style={[styles.title, { color: colors.cardForeground }, style]}>
-      {children}
-    </Text>
-  );
+  return <Text style={[styles.title, { color: colors.cardForeground }, style]}>{children}</Text>;
 }
 
 export function CardDescription({ children, style }: CardDescriptionProps) {
   const colors = useColors();
   return (
-    <Text style={[styles.description, { color: colors.foregroundMuted }, style]}>
-      {children}
-    </Text>
+    <Text style={[styles.description, { color: colors.foregroundMuted }, style]}>{children}</Text>
   );
 }
 
@@ -190,12 +184,3 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
 });
-
-
-
-
-
-
-
-
-

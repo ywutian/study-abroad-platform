@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  Switch as RNSwitch,
-  StyleSheet,
-  ViewStyle,
-  StyleProp,
-} from 'react-native';
+import { View, Text, Switch as RNSwitch, StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import { useColors, spacing, fontSize, fontWeight } from '@/utils/theme';
 
 interface SwitchProps {
@@ -31,15 +24,9 @@ export function Switch({
   return (
     <View style={[styles.container, disabled && styles.disabled, style]}>
       <View style={styles.textContainer}>
-        {label && (
-          <Text style={[styles.label, { color: colors.foreground }]}>
-            {label}
-          </Text>
-        )}
+        {label && <Text style={[styles.label, { color: colors.foreground }]}>{label}</Text>}
         {description && (
-          <Text style={[styles.description, { color: colors.foregroundMuted }]}>
-            {description}
-          </Text>
+          <Text style={[styles.description, { color: colors.foregroundMuted }]}>{description}</Text>
         )}
       </View>
       <RNSwitch
@@ -80,12 +67,3 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
 });
-
-
-
-
-
-
-
-
-

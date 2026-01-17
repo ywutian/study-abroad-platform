@@ -80,6 +80,37 @@ export interface Award {
   level: string;
   date?: string;
   description?: string;
+  competitionId?: string;
+  competition?: Competition;
+}
+
+// Competition Reference Data
+export type CompetitionCategory =
+  | 'MATH'
+  | 'BIOLOGY'
+  | 'PHYSICS'
+  | 'CHEMISTRY'
+  | 'COMPUTER_SCIENCE'
+  | 'ENGINEERING_RESEARCH'
+  | 'ECONOMICS_BUSINESS'
+  | 'DEBATE_SPEECH'
+  | 'WRITING_ESSAY'
+  | 'GENERAL_ACADEMIC'
+  | 'ARTS_MUSIC'
+  | 'OTHER';
+
+export interface Competition {
+  id: string;
+  name: string;
+  abbreviation: string;
+  nameZh?: string;
+  category: CompetitionCategory;
+  level: string;
+  tier: number;
+  description?: string;
+  descriptionZh?: string;
+  website?: string;
+  isActive: boolean;
 }
 
 export interface Education {
@@ -117,11 +148,31 @@ export interface School {
   city?: string;
   type?: string;
   acceptanceRate?: number;
-  usnewsRank?: number;
+  usNewsRank?: number;
   qsRank?: number;
   tuition?: number;
   avgSalary?: number;
-  totalStudents?: number;
+  totalEnrollment?: number;
+  // Test Score Statistics
+  satAvg?: number;
+  sat25?: number;
+  sat75?: number;
+  satMath25?: number;
+  satMath75?: number;
+  satReading25?: number;
+  satReading75?: number;
+  actAvg?: number;
+  act25?: number;
+  act75?: number;
+  studentCount?: number;
+  graduationRate?: number;
+  // School Type & Niche
+  isPrivate?: boolean;
+  nicheSafetyGrade?: string;
+  nicheLifeGrade?: string;
+  nicheFoodGrade?: string;
+  nicheOverallGrade?: string;
+  // Additional Info
   website?: string;
   logoUrl?: string;
   description?: string;
@@ -149,7 +200,7 @@ export interface SchoolMetric {
   id: string;
   schoolId: string;
   year: number;
-  metricType: string;
+  metricKey: string;
   value: number;
 }
 
@@ -274,7 +325,7 @@ export interface PredictionResult {
 
 // ============== Ranking ==============
 export interface RankingWeight {
-  usnewsRank: number;
+  usNewsRank: number;
   acceptanceRate: number;
   tuition: number;
   avgSalary: number;
@@ -303,9 +354,12 @@ export interface ToolCall {
 }
 
 export interface StreamEvent {
-  type: 'thinking' | 'tool_call' | 'tool_result' | 'content' | 'done' | 'error';
+  type: 'start' | 'content' | 'tool_start' | 'tool_end' | 'agent_switch' | 'done' | 'error';
+  agent?: string;
   content?: string;
-  toolCall?: ToolCall;
+  tool?: string;
+  toolResult?: unknown;
+  response?: { message: string; agentType: string };
   error?: string;
 }
 
@@ -325,12 +379,3 @@ export interface ApiError {
   statusCode?: number;
   error?: string;
 }
-
-
-
-
-
-
-
-
-

@@ -1,6 +1,6 @@
 /**
  * 减少动画 Hook
- * 
+ *
  * 检测用户是否开启了减少动画设置
  */
 
@@ -17,12 +17,9 @@ export function useReducedMotion() {
     });
 
     // 监听变化
-    const subscription = AccessibilityInfo.addEventListener(
-      'reduceMotionChanged',
-      (enabled) => {
-        setReducedMotion(enabled);
-      }
-    );
+    const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', (enabled) => {
+      setReducedMotion(enabled);
+    });
 
     return () => {
       subscription.remove();
@@ -31,10 +28,3 @@ export function useReducedMotion() {
 
   return reducedMotion;
 }
-
-
-
-
-
-
-

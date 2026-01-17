@@ -1,4 +1,9 @@
-import { getAccessToken, getRefreshToken, saveTokens, clearAuthData } from '../storage/secure-store';
+import {
+  getAccessToken,
+  getRefreshToken,
+  saveTokens,
+  clearAuthData,
+} from '../storage/secure-store';
 import type { ApiError } from '@/types';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3002';
@@ -48,7 +53,7 @@ class ApiClient {
     if (!refreshToken) return false;
 
     try {
-      const response = await fetch(`${this.baseUrl}/auth/refresh`, {
+      const response = await fetch(`${this.baseUrl}${API_VERSION}/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refreshToken }),
@@ -74,10 +79,8 @@ class ApiClient {
   private async request<T>(endpoint: string, config: RequestConfig = {}): Promise<T> {
     const { params, retries = 1, timeout = 15000, skipAuth = false, ...init } = config;
 
-    // Auth endpoints don't need API version prefix
-    const isAuthEndpoint = endpoint.startsWith('/auth');
-    const versionPrefix = isAuthEndpoint ? '' : API_VERSION;
-    let url = `${this.baseUrl}${versionPrefix}${endpoint}`;
+    // All endpoints use API version prefix
+    let url = `${this.baseUrl}${API_VERSION}${endpoint}`;
     if (params) {
       const searchParams = new URLSearchParams();
       Object.entries(params).forEach(([key, value]) => {
@@ -199,14 +202,14 @@ class ApiClient {
     const token = await getAccessToken();
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
-      'Accept': 'text/event-stream',
+      Accept: 'text/event-stream',
     };
 
     if (token) {
       (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+    const response = await fetch(`${this.baseUrl}${API_VERSION}${endpoint}`, {
       method: 'POST',
       headers,
       body: data ? JSON.stringify(data) : undefined,
@@ -249,6 +252,3 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);
-
-
-

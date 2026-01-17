@@ -1,6 +1,6 @@
 /**
  * BlurImage 组件
- * 
+ *
  * 带模糊占位符的图片组件，使用 expo-image 实现
  * 支持 BlurHash 占位符、渐进式加载
  */
@@ -8,11 +8,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import { Image, ImageContentFit, ImageSource, ImageStyle as ExpoImageStyle } from 'expo-image';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { useColors, borderRadius as themeRadius } from '@/utils/theme';
 
@@ -62,9 +58,7 @@ export function BlurImage({
   const opacity = useSharedValue(0);
 
   // 处理图片源
-  const imageSource: ImageSource = typeof source === 'string' 
-    ? { uri: source } 
-    : source;
+  const imageSource: ImageSource = typeof source === 'string' ? { uri: source } : source;
 
   const handleLoad = () => {
     setIsLoaded(true);
@@ -118,7 +112,13 @@ export function BlurImage({
 
       {/* 错误状态 */}
       {hasError && (
-        <View style={[StyleSheet.absoluteFill, styles.errorContainer, { backgroundColor: colors.muted }]}>
+        <View
+          style={[
+            StyleSheet.absoluteFill,
+            styles.errorContainer,
+            { backgroundColor: colors.muted },
+          ]}
+        >
           <Image
             style={styles.errorIcon}
             source={require('@expo/vector-icons')}
@@ -137,18 +137,8 @@ interface AvatarImageProps extends Omit<BlurImageProps, 'borderRadius'> {
   size?: number;
 }
 
-export function AvatarImage({
-  size = 48,
-  ...props
-}: AvatarImageProps) {
-  return (
-    <BlurImage
-      width={size}
-      height={size}
-      borderRadius={size / 2}
-      {...props}
-    />
-  );
+export function AvatarImage({ size = 48, ...props }: AvatarImageProps) {
+  return <BlurImage width={size} height={size} borderRadius={size / 2} {...props} />;
 }
 
 /**
@@ -156,12 +146,7 @@ export function AvatarImage({
  */
 export function CardImage(props: BlurImageProps) {
   return (
-    <BlurImage
-      aspectRatio={16 / 9}
-      borderRadius={themeRadius.lg}
-      contentFit="cover"
-      {...props}
-    />
+    <BlurImage aspectRatio={16 / 9} borderRadius={themeRadius.lg} contentFit="cover" {...props} />
   );
 }
 
@@ -178,18 +163,10 @@ const thumbnailSizes = {
   lg: 128,
 };
 
-export function ThumbnailImage({
-  size = 'md',
-  ...props
-}: ThumbnailImageProps) {
+export function ThumbnailImage({ size = 'md', ...props }: ThumbnailImageProps) {
   const dimension = thumbnailSizes[size];
   return (
-    <BlurImage
-      width={dimension}
-      height={dimension}
-      borderRadius={themeRadius.md}
-      {...props}
-    />
+    <BlurImage width={dimension} height={dimension} borderRadius={themeRadius.md} {...props} />
   );
 }
 
@@ -204,10 +181,3 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
 });
-
-
-
-
-
-
-

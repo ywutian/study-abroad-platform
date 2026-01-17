@@ -37,10 +37,7 @@ function AnimatedTabIcon({ name, focused, color, size }: TabIconProps) {
   }, [focused]);
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { scale: scale.value },
-      { translateY: translateY.value },
-    ],
+    transform: [{ scale: scale.value }, { translateY: translateY.value }],
   }));
 
   return (
@@ -91,9 +88,7 @@ function AnimatedTabBarButton({
 
   const labelStyle = useAnimatedStyle(() => ({
     opacity: interpolate(focused.value, [0, 1], [0.6, 1]),
-    transform: [
-      { scale: interpolate(focused.value, [0, 1], [0.9, 1]) },
-    ],
+    transform: [{ scale: interpolate(focused.value, [0, 1], [0.9, 1]) }],
   }));
 
   const handlePress = () => {
@@ -123,22 +118,14 @@ function AnimatedTabBarButton({
           size={24}
         />
         <Animated.Text
-          style={[
-            styles.label,
-            { color: isFocused ? activeColor : inactiveColor },
-            labelStyle,
-          ]}
+          style={[styles.label, { color: isFocused ? activeColor : inactiveColor }, labelStyle]}
           numberOfLines={1}
         >
           {label}
         </Animated.Text>
         {/* 活动指示器 */}
         <Animated.View
-          style={[
-            styles.indicator,
-            { backgroundColor: activeColor },
-            indicatorStyle,
-          ]}
+          style={[styles.indicator, { backgroundColor: activeColor }, indicatorStyle]}
         />
       </Animated.View>
     </Pressable>
@@ -154,11 +141,7 @@ const TAB_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   profile: 'person',
 };
 
-export function AnimatedTabBar({
-  state,
-  descriptors,
-  navigation,
-}: BottomTabBarProps) {
+export function AnimatedTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
 
@@ -179,8 +162,8 @@ export function AnimatedTabBar({
           typeof options.tabBarLabel === 'string'
             ? options.tabBarLabel
             : options.title !== undefined
-            ? options.title
-            : route.name;
+              ? options.title
+              : route.name;
 
         const isFocused = state.index === index;
         const iconName = TAB_ICONS[route.name] || 'ellipse';
@@ -251,12 +234,3 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
 });
-
-
-
-
-
-
-
-
-

@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  RefreshControl,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -50,7 +43,7 @@ export default function ProfileScreen() {
   const calculateCompletion = () => {
     if (!profile) return 0;
     let completed = 0;
-    let total = 7;
+    const total = 7;
 
     if (profile.grade) completed++;
     if (profile.targetMajor) completed++;
@@ -158,30 +151,17 @@ export default function ProfileScreen() {
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
-      refreshControl={
-        <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
-      }
+      refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
       showsVerticalScrollIndicator={false}
     >
       {/* Profile Header */}
       <View style={[styles.header, { backgroundColor: colors.card }]}>
-        <Avatar
-          source={null}
-          name={user?.email}
-          size="xl"
-          style={styles.avatar}
-        />
-        <Text style={[styles.email, { color: colors.foreground }]}>
-          {user?.email}
-        </Text>
+        <Avatar source={null} name={user?.email} size="xl" style={styles.avatar} />
+        <Text style={[styles.email, { color: colors.foreground }]}>{user?.email}</Text>
         <View style={styles.roleBadge}>
           <Badge
             variant={
-              user?.role === 'ADMIN'
-                ? 'error'
-                : user?.role === 'VERIFIED'
-                ? 'success'
-                : 'secondary'
+              user?.role === 'ADMIN' ? 'error' : user?.role === 'VERIFIED' ? 'success' : 'secondary'
             }
           >
             {user?.role}
@@ -245,9 +225,7 @@ export default function ProfileScreen() {
               leftIcon={item.icon}
               rightElement={
                 item.value ? (
-                  <Text style={{ color: colors.foregroundMuted }}>
-                    {item.value}
-                  </Text>
+                  <Text style={{ color: colors.foregroundMuted }}>{item.value}</Text>
                 ) : undefined
               }
               onPress={item.route ? () => router.push(item.route as any) : undefined}
@@ -342,12 +320,3 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
   },
 });
-
-
-
-
-
-
-
-
-

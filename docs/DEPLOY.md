@@ -53,6 +53,7 @@ pnpm dev
 ```
 
 访问:
+
 - 前端: http://localhost:3000
 - API: http://localhost:3001
 - API 文档: http://localhost:3001/api/docs
@@ -125,13 +126,13 @@ docker compose exec api npx prisma db seed
 
 ### 服务说明
 
-| 服务 | 端口 | 说明 |
-|-----|------|------|
-| db | 5432 | PostgreSQL 数据库 |
-| redis | 6379 | Redis 缓存 |
-| api | 3001 | NestJS API |
-| web | 3000 | Next.js 前端 |
-| nginx | 80/443 | 反向代理 (生产) |
+| 服务  | 端口   | 说明              |
+| ----- | ------ | ----------------- |
+| db    | 5432   | PostgreSQL 数据库 |
+| redis | 6379   | Redis 缓存        |
+| api   | 3001   | NestJS API        |
+| web   | 3000   | Next.js 前端      |
+| nginx | 80/443 | 反向代理 (生产)   |
 
 ---
 
@@ -154,6 +155,7 @@ docker compose exec api npx prisma db seed
 ### API 部署
 
 API 建议使用以下方式部署:
+
 - **Railway** / **Render**: 一键部署
 - **AWS ECS** / **GCP Cloud Run**: 容器部署
 - **自建服务器**: Docker Compose
@@ -224,11 +226,7 @@ docker compose exec -T db psql -U postgres study_abroad < backup.sql
 
 ## 默认账号
 
-| 角色 | 邮箱 | 密码 |
-|-----|------|------|
-| 管理员 | admin@test.com | Admin123! |
-| 测试用户 | demo@test.com | Demo123! |
-
-
-
-
+| 角色     | 邮箱           | 密码      |
+| -------- | -------------- | --------- |
+| 管理员   | admin@test.com | Admin123! |
+| 测试用户 | demo@test.com  | Demo123!  |

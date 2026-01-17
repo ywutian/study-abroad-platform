@@ -3,15 +3,7 @@
  */
 
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-  Linking,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -20,14 +12,7 @@ import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import Constants from 'expo-constants';
 
-import {
-  AnimatedCard,
-  CardContent,
-  Switch,
-  Avatar,
-  Badge,
-  AnimatedButton,
-} from '@/components/ui';
+import { AnimatedCard, CardContent, Switch, Avatar, Badge, AnimatedButton } from '@/components/ui';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import { useAuthStore } from '@/stores';
 import { useThemeStore } from '@/stores/theme';
@@ -59,40 +44,32 @@ export default function SettingsScreen() {
   const [biometrics, setBiometrics] = useState(false);
 
   const handleLogout = () => {
-    Alert.alert(
-      t('common.logout'),
-      t('settings.logoutConfirm'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('common.logout'),
-          style: 'destructive',
-          onPress: () => {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            logout();
-            router.replace('/(auth)/login');
-          },
+    Alert.alert(t('common.logout'), t('settings.logoutConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('common.logout'),
+        style: 'destructive',
+        onPress: () => {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          logout();
+          router.replace('/(auth)/login');
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const handleDeleteAccount = () => {
-    Alert.alert(
-      t('settings.deleteAccount'),
-      t('settings.deleteAccountConfirm'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('common.delete'),
-          style: 'destructive',
-          onPress: () => {
-            // TODO: Call delete account API
-            Alert.alert(t('settings.featureInDev'), t('settings.contactSupport'));
-          },
+    Alert.alert(t('settings.deleteAccount'), t('settings.deleteAccountConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('common.delete'),
+        style: 'destructive',
+        onPress: () => {
+          // TODO: Call delete account API
+          Alert.alert(t('settings.featureInDev'), t('settings.contactSupport'));
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const handleLanguageChange = () => {
@@ -142,7 +119,7 @@ export default function SettingsScreen() {
         {
           icon: 'language-outline',
           label: t('settings.language'),
-          value: i18n.language === 'zh' ? '简体中文' : 'English',
+          value: i18n.language === 'zh' ? t('settings.languageZh') : t('settings.languageEn'),
           type: 'navigate',
           onPress: handleLanguageChange,
         },
@@ -250,17 +227,10 @@ export default function SettingsScreen() {
       {/* User Profile Card */}
       {isAuthenticated && user && (
         <Animated.View entering={FadeInDown.duration(400)}>
-          <TouchableOpacity
-            onPress={() => router.push('/profile/edit')}
-            activeOpacity={0.7}
-          >
+          <TouchableOpacity onPress={() => router.push('/profile/edit')} activeOpacity={0.7}>
             <AnimatedCard style={styles.profileCard}>
               <CardContent style={styles.profileContent}>
-                <Avatar
-                  source={user.avatar}
-                  name={user.email}
-                  size="lg"
-                />
+                <Avatar source={user.avatar} name={user.email} size="lg" />
                 <View style={styles.profileInfo}>
                   <Text style={[styles.profileName, { color: colors.foreground }]}>
                     {user.email.split('@')[0]}
@@ -299,10 +269,7 @@ export default function SettingsScreen() {
                   {itemIndex > 0 && (
                     <View style={[styles.divider, { backgroundColor: colors.border }]} />
                   )}
-                  <SettingRow
-                    item={item}
-                    colors={colors}
-                  />
+                  <SettingRow item={item} colors={colors} />
                 </React.Fragment>
               ))}
             </CardContent>
@@ -319,20 +286,20 @@ function SettingRow({ item, colors }: { item: SettingItem; colors: any }) {
 
   const content = (
     <View style={styles.settingRow}>
-      <View style={[styles.settingIcon, { backgroundColor: item.danger ? colors.error + '15' : colors.muted }]}>
+      <View
+        style={[
+          styles.settingIcon,
+          { backgroundColor: item.danger ? colors.error + '15' : colors.muted },
+        ]}
+      >
         <Ionicons name={item.icon} size={20} color={item.danger ? colors.error : colors.primary} />
       </View>
       <Text style={[styles.settingLabel, { color: textColor }]}>{item.label}</Text>
-      
+
       {item.type === 'toggle' ? (
-        <Switch
-          value={item.toggleValue || false}
-          onValueChange={item.onToggle}
-        />
+        <Switch value={item.toggleValue || false} onValueChange={item.onToggle} />
       ) : item.type === 'info' ? (
-        <Text style={[styles.settingValue, { color: colors.foregroundMuted }]}>
-          {item.value}
-        </Text>
+        <Text style={[styles.settingValue, { color: colors.foregroundMuted }]}>{item.value}</Text>
       ) : (
         <View style={styles.settingRight}>
           {item.value && (
@@ -443,5 +410,3 @@ const styles = StyleSheet.create({
     marginLeft: 60,
   },
 });
-
-

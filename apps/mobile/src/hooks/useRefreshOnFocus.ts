@@ -15,12 +15,3 @@ export function useRefreshOnFocus<T>(refetch: () => Promise<T>) {
     }, [refetch])
   );
 }
-
-
-
-
-
-
-
-
-

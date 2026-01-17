@@ -1,6 +1,6 @@
 /**
  * Sentry 错误追踪配置
- * 
+ *
  * 初始化 Sentry SDK，配置错误采集和性能监控
  */
 
@@ -17,49 +17,49 @@ export function initSentry() {
 
   Sentry.init({
     dsn: SENTRY_DSN,
-    
+
     // 环境配置
     environment: __DEV__ ? 'development' : 'production',
-    
+
     // 版本信息
     release: Constants.expoConfig?.version,
     dist: Constants.expoConfig?.runtimeVersion?.toString(),
-    
+
     // 采样率配置
     tracesSampleRate: __DEV__ ? 1.0 : 0.2, // 生产环境采样 20%
     profilesSampleRate: __DEV__ ? 1.0 : 0.1, // 性能分析采样 10%
-    
+
     // 错误过滤
     beforeSend(event, hint) {
       // 过滤开发环境的某些错误
       if (__DEV__) {
         return event;
       }
-      
+
       // 过滤网络错误（通常是用户网络问题）
       const error = hint.originalException as Error | undefined;
       if (error?.message?.includes('Network request failed')) {
         return null;
       }
-      
+
       return event;
     },
-    
+
     // 启用原生错误捕获
     enableNative: true,
     enableNativeNagger: false, // 禁用原生警告
-    
+
     // 会话追踪
     enableAutoSessionTracking: true,
     sessionTrackingIntervalMillis: 30000,
-    
+
     // 面包屑配置
     maxBreadcrumbs: 50,
-    
+
     // 附加上下文
     attachScreenshot: true,
     attachViewHierarchy: true,
-    
+
     // 调试模式（仅开发环境）
     debug: __DEV__,
   });
@@ -128,10 +128,3 @@ export const withErrorBoundary = Sentry.withErrorBoundary;
 export const withSentryNavigationContainer = Sentry.withSentryNavigationContainer;
 
 export { Sentry };
-
-
-
-
-
-
-

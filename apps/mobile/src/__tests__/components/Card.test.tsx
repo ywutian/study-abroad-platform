@@ -34,7 +34,7 @@ describe('Card Component', () => {
         <Text>Pressable Card</Text>
       </Card>
     );
-    
+
     fireEvent.press(getByText('Pressable Card'));
     expect(onPress).toHaveBeenCalledTimes(1);
   });
@@ -54,9 +54,7 @@ describe('Card Component', () => {
   });
 
   it('renders CardDescription correctly', () => {
-    const { getByText } = render(
-      <CardDescription>Card Description</CardDescription>
-    );
+    const { getByText } = render(<CardDescription>Card Description</CardDescription>);
     expect(getByText('Card Description')).toBeTruthy();
   });
 
@@ -100,12 +98,3 @@ describe('Card Component', () => {
     expect(getByText('Footer content')).toBeTruthy();
   });
 });
-
-
-
-
-
-
-
-
-
