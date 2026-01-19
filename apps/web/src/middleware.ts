@@ -45,7 +45,10 @@ export default function middleware(request: NextRequest) {
 
   // Auth check for protected routes (cookie-based, no JWT verification in edge)
   if (isProtectedRoute(pathname) || isAdminRoute(pathname)) {
-    const token = request.cookies.get('access_token')?.value || request.cookies.get('token')?.value;
+    const token =
+      request.cookies.get('access_token')?.value ||
+      request.cookies.get('auth_check')?.value ||
+      request.cookies.get('token')?.value;
 
     if (!token) {
       const loginUrl = new URL(getLoginUrl(request), request.url);

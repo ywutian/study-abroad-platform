@@ -24,6 +24,7 @@ import {
   BatchDeleteResponseDto,
   ClearDataDto,
   ClearDataResponseDto,
+  MemoryTypeEnum,
 } from '../dto';
 import { RawMemoryRow } from './prisma-types';
 import { SanitizerService, SanitizeLevel } from './sanitizer.service';
@@ -52,7 +53,7 @@ export class UserDataService {
     const where: Prisma.MemoryWhereInput = { userId };
 
     if (types?.length) {
-      where.type = { in: types };
+      where.type = { in: types as MemoryType[] };
     }
 
     if (category) {
@@ -103,7 +104,7 @@ export class UserDataService {
       where: { id: memoryId, userId },
     });
 
-    return memory ? this.toMemoryItem(memory) : null;
+    return memory ? this.toMemoryItem(memory as unknown as RawMemoryRow) : null;
   }
 
   /**
@@ -270,7 +271,7 @@ export class UserDataService {
     const where: Prisma.EntityWhereInput = { userId };
 
     if (types?.length) {
-      where.type = { in: types };
+      where.type = { in: types as EntityType[] };
     }
 
     if (search) {
@@ -375,13 +376,23 @@ export class UserDataService {
     userId: string,
     data: AIPreferencesDto,
   ): Promise<AIPreferencesResponseDto> {
+    const prismaData = {
+      ...data,
+      schoolPreferences: data.schoolPreferences
+        ? (data.schoolPreferences as unknown as Prisma.InputJsonValue)
+        : undefined,
+      essayPreferences: data.essayPreferences
+        ? (data.essayPreferences as unknown as Prisma.InputJsonValue)
+        : undefined,
+    };
+
     const prefs = await this.prisma.userAIPreference.upsert({
       where: { userId },
       create: {
         userId,
-        ...data,
+        ...prismaData,
       },
-      update: data,
+      update: prismaData,
     });
 
     return {
@@ -415,8 +426,8 @@ export class UserDataService {
         communicationStyle: 'friendly',
         responseLength: 'moderate',
         language: 'zh',
-        schoolPreferences: null,
-        essayPreferences: null,
+        schoolPreferences: Prisma.JsonNull,
+        essayPreferences: Prisma.JsonNull,
         enableMemory: true,
         enableSuggestions: true,
       },
@@ -516,7 +527,7 @@ export class UserDataService {
 
       result.entities = entities.map((e) => ({
         id: e.id,
-        type: e.type,
+        type: e.type as any,
         name: e.name,
         // 脱敏实体描述
         description: e.description
@@ -649,7 +660,7 @@ export class UserDataService {
   private toMemoryItem(memory: RawMemoryRow): MemoryItemDto {
     return {
       id: memory.id,
-      type: memory.type,
+      type: memory.type as unknown as MemoryTypeEnum,
       category: memory.category ?? undefined,
       content: memory.content,
       importance: memory.importance,

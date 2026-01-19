@@ -96,12 +96,12 @@ export class PersistentMemoryService {
         category: input.category,
         content: input.content,
         importance: input.importance ?? 0.5,
-        metadata: input.metadata,
+        metadata: input.metadata as Prisma.InputJsonValue | undefined,
         expiresAt: input.expiresAt,
       },
     });
 
-    return this.toMemoryRecord(memory);
+    return this.toMemoryRecord(memory as unknown as RawMemoryRow);
   }
 
   private generateId(): string {
@@ -160,11 +160,11 @@ export class PersistentMemoryService {
             category: input.category,
             content: input.content,
             importance: input.importance ?? 0.5,
-            metadata: input.metadata,
+            metadata: input.metadata as Prisma.InputJsonValue | undefined,
             expiresAt: input.expiresAt,
           },
         });
-        results.push(this.toMemoryRecord(memory));
+        results.push(this.toMemoryRecord(memory as unknown as RawMemoryRow));
       }
     }
 
@@ -196,11 +196,17 @@ export class PersistentMemoryService {
     }
 
     if (query.timeRange?.start) {
-      where.createdAt = { ...where.createdAt, gte: query.timeRange.start };
+      where.createdAt = {
+        ...((where.createdAt as Record<string, unknown>) ?? {}),
+        gte: query.timeRange.start,
+      };
     }
 
     if (query.timeRange?.end) {
-      where.createdAt = { ...where.createdAt, lte: query.timeRange.end };
+      where.createdAt = {
+        ...((where.createdAt as Record<string, unknown>) ?? {}),
+        lte: query.timeRange.end,
+      };
     }
 
     const memories = await this.prisma.memory.findMany({
@@ -209,7 +215,9 @@ export class PersistentMemoryService {
       take: query.limit ?? 20,
     });
 
-    return memories.map((m) => this.toMemoryRecord(m));
+    return memories.map((m) =>
+      this.toMemoryRecord(m as unknown as RawMemoryRow),
+    );
   }
 
   /**
@@ -239,7 +247,7 @@ export class PersistentMemoryService {
         take: limit,
       });
       return memories.map((m) => ({
-        ...this.toMemoryRecord(m),
+        ...this.toMemoryRecord(m as unknown as RawMemoryRow),
         similarity: 0.5,
       }));
     }
@@ -307,16 +315,18 @@ export class PersistentMemoryService {
     const updated = await this.prisma.memory.update({
       where: { id: memoryId },
       data: {
-        ...(data.content && { content: data.content }),
-        ...(data.importance !== undefined && {
-          importance: Math.max(0, Math.min(1, data.importance)),
-        }),
-        ...(data.metadata && { metadata: data.metadata }),
-        ...(data.category && { category: data.category }),
+        ...(data.content ? { content: data.content } : {}),
+        ...(data.importance !== undefined
+          ? { importance: Math.max(0, Math.min(1, data.importance)) }
+          : {}),
+        ...(data.metadata
+          ? { metadata: data.metadata as Prisma.InputJsonValue }
+          : {}),
+        ...(data.category ? { category: data.category } : {}),
       },
     });
 
-    return this.toMemoryRecord(updated);
+    return this.toMemoryRecord(updated as unknown as RawMemoryRow);
   }
 
   /**
@@ -372,7 +382,6 @@ export class PersistentMemoryService {
   ): Promise<ConversationRecord> {
     const conversation = await this.prisma.agentConversation.create({
       data: { userId, title },
-      include: { _count: { select: { messages: true } } },
     });
 
     return {
@@ -381,7 +390,7 @@ export class PersistentMemoryService {
       title: conversation.title || undefined,
       summary: conversation.summary || undefined,
       agentType: conversation.agentType || undefined,
-      messageCount: conversation._count.messages,
+      messageCount: 0,
       createdAt: conversation.createdAt,
       updatedAt: conversation.updatedAt,
     };
@@ -395,7 +404,7 @@ export class PersistentMemoryService {
   ): Promise<ConversationRecord | null> {
     const conversation = await this.prisma.agentConversation.findUnique({
       where: { id: conversationId },
-      include: { _count: { select: { messages: true } } },
+      include: { messages: { select: { id: true } } },
     });
 
     if (!conversation) return null;
@@ -406,7 +415,7 @@ export class PersistentMemoryService {
       title: conversation.title || undefined,
       summary: conversation.summary || undefined,
       agentType: conversation.agentType || undefined,
-      messageCount: conversation._count.messages,
+      messageCount: conversation.messages.length,
       createdAt: conversation.createdAt,
       updatedAt: conversation.updatedAt,
     };
@@ -420,10 +429,10 @@ export class PersistentMemoryService {
     limit: number = 10,
   ): Promise<ConversationRecord[]> {
     const conversations = await this.prisma.agentConversation.findMany({
-      where: { userId, isArchived: false },
+      where: { userId },
       orderBy: { updatedAt: 'desc' },
       take: limit,
-      include: { _count: { select: { messages: true } } },
+      include: { messages: { select: { id: true } } },
     });
 
     return conversations.map((c) => ({
@@ -432,7 +441,7 @@ export class PersistentMemoryService {
       title: c.title || undefined,
       summary: c.summary || undefined,
       agentType: c.agentType || undefined,
-      messageCount: c._count.messages,
+      messageCount: c.messages.length,
       createdAt: c.createdAt,
       updatedAt: c.updatedAt,
     }));
@@ -455,9 +464,16 @@ export class PersistentMemoryService {
    * 归档对话
    */
   async archiveConversation(conversationId: string): Promise<void> {
+    // Note: AgentConversation model lacks isArchived/archivedAt columns;
+    // storing archive state in the metadata JSON field as a workaround.
     await this.prisma.agentConversation.update({
       where: { id: conversationId },
-      data: { isArchived: true, archivedAt: new Date() },
+      data: {
+        metadata: {
+          archived: true,
+          archivedAt: new Date().toISOString(),
+        } as Prisma.InputJsonValue,
+      },
     });
   }
 
@@ -530,20 +546,28 @@ export class PersistentMemoryService {
       },
       update: {
         description: input.description,
-        attributes: input.attributes,
-        relations: input.relations as any,
+        attributes: input.attributes as unknown as
+          | Prisma.InputJsonValue
+          | undefined,
+        relations: input.relations as unknown as
+          | Prisma.InputJsonValue
+          | undefined,
       },
       create: {
         userId,
         type: input.type,
         name: input.name,
         description: input.description,
-        attributes: input.attributes,
-        relations: input.relations as any,
+        attributes: input.attributes as unknown as
+          | Prisma.InputJsonValue
+          | undefined,
+        relations: input.relations as unknown as
+          | Prisma.InputJsonValue
+          | undefined,
       },
     });
 
-    return this.toEntityRecord(entity);
+    return this.toEntityRecord(entity as unknown as RawEntityRow);
   }
 
   /**
@@ -564,7 +588,9 @@ export class PersistentMemoryService {
       take: limit,
     });
 
-    return entities.map((e) => this.toEntityRecord(e));
+    return entities.map((e) =>
+      this.toEntityRecord(e as unknown as RawEntityRow),
+    );
   }
 
   /**
@@ -594,7 +620,7 @@ export class PersistentMemoryService {
     });
 
     return entities.map((e) => ({
-      ...this.toEntityRecord(e),
+      ...this.toEntityRecord(e as unknown as RawEntityRow),
       similarity: 0.5, // 关键词匹配固定相似度
     }));
   }
@@ -638,31 +664,41 @@ export class PersistentMemoryService {
         communicationStyle: updates.communicationStyle || 'friendly',
         responseLength: updates.responseLength || 'moderate',
         language: updates.language || 'zh-CN',
-        schoolPreferences: updates.schoolPreferences,
-        essayPreferences: updates.essayPreferences,
+        schoolPreferences: updates.schoolPreferences as
+          | Prisma.InputJsonValue
+          | undefined,
+        essayPreferences: updates.essayPreferences as
+          | Prisma.InputJsonValue
+          | undefined,
         enableMemory: updates.enableMemory ?? true,
         enableSuggestions: updates.enableSuggestions ?? true,
       },
       update: {
-        ...(updates.communicationStyle && {
-          communicationStyle: updates.communicationStyle,
-        }),
-        ...(updates.responseLength && {
-          responseLength: updates.responseLength,
-        }),
-        ...(updates.language && { language: updates.language }),
-        ...(updates.schoolPreferences && {
-          schoolPreferences: updates.schoolPreferences,
-        }),
-        ...(updates.essayPreferences && {
-          essayPreferences: updates.essayPreferences,
-        }),
-        ...(updates.enableMemory !== undefined && {
-          enableMemory: updates.enableMemory,
-        }),
-        ...(updates.enableSuggestions !== undefined && {
-          enableSuggestions: updates.enableSuggestions,
-        }),
+        ...(updates.communicationStyle
+          ? { communicationStyle: updates.communicationStyle }
+          : {}),
+        ...(updates.responseLength
+          ? { responseLength: updates.responseLength }
+          : {}),
+        ...(updates.language ? { language: updates.language } : {}),
+        ...(updates.schoolPreferences
+          ? {
+              schoolPreferences:
+                updates.schoolPreferences as Prisma.InputJsonValue,
+            }
+          : {}),
+        ...(updates.essayPreferences
+          ? {
+              essayPreferences:
+                updates.essayPreferences as Prisma.InputJsonValue,
+            }
+          : {}),
+        ...(updates.enableMemory !== undefined
+          ? { enableMemory: updates.enableMemory }
+          : {}),
+        ...(updates.enableSuggestions !== undefined
+          ? { enableSuggestions: updates.enableSuggestions }
+          : {}),
       },
     });
 

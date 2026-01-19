@@ -127,9 +127,9 @@ export class AuditService {
     this.auditBuffer.push({
       entry,
       userId: ctx?.userId || getCurrentUserId(),
-      sessionId: ctx?.sessionId,
+      sessionId: ctx?.conversationId,
       traceId: ctx?.requestId || getRequestId(),
-      ipAddress: ctx?.ipAddress,
+      ipAddress: ctx?.ip,
       userAgent: ctx?.userAgent,
       timestamp: new Date(),
     });
@@ -157,11 +157,11 @@ export class AuditService {
       const record = await this.prisma.agentSecurityEvent.create({
         data: {
           userId: ctx?.userId || null,
-          sessionId: ctx?.sessionId || null,
+          sessionId: ctx?.conversationId || null,
           eventType: event.type,
           severity: event.severity,
           description: event.description,
-          payload: event.payload || {},
+          payload: (event.payload || {}) as Record<string, any>,
           mitigationAction: event.mitigationAction || null,
         },
         select: { id: true },
@@ -388,7 +388,7 @@ export class AuditService {
         resourceId: item.entry.resourceId || null,
         operation: item.entry.operation,
         status: item.entry.status,
-        details: item.entry.details || null,
+        details: (item.entry.details as Record<string, any>) || null,
         ipAddress: item.ipAddress || null,
         userAgent: item.userAgent || null,
         duration: item.entry.duration || null,

@@ -37,10 +37,13 @@ import { ResetPasswordDto, ChangePasswordDto } from './dto/reset-password.dto';
  * - maxAge: Token 有效期
  */
 const REFRESH_TOKEN_COOKIE_NAME = 'refreshToken';
+const COOKIE_SAME_SITE: 'strict' | 'lax' =
+  process.env.NODE_ENV === 'production' ? 'strict' : 'lax';
+
 const REFRESH_TOKEN_COOKIE_OPTIONS = {
   httpOnly: true, // 防止 XSS
   secure: process.env.NODE_ENV === 'production', // 生产环境强制 HTTPS
-  sameSite: (process.env.NODE_ENV === 'production' ? 'strict' : 'lax') as const, // CSRF 防护
+  sameSite: COOKIE_SAME_SITE, // CSRF 防护
   path: '/api/v1/auth', // 限制到认证路径
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天
 };
@@ -49,7 +52,7 @@ const REFRESH_TOKEN_COOKIE_OPTIONS = {
 const CLEAR_COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: (process.env.NODE_ENV === 'production' ? 'strict' : 'lax') as const,
+  sameSite: COOKIE_SAME_SITE,
   path: '/api/v1/auth',
 };
 
@@ -65,7 +68,7 @@ const ACCESS_TOKEN_COOKIE_NAME = 'access_token';
 const ACCESS_TOKEN_COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: (process.env.NODE_ENV === 'production' ? 'strict' : 'lax') as const,
+  sameSite: COOKIE_SAME_SITE,
   path: '/',
   maxAge: 15 * 60 * 1000, // 15 分钟，与 JWT 过期时间一致
 };
@@ -73,7 +76,7 @@ const ACCESS_TOKEN_COOKIE_OPTIONS = {
 const CLEAR_ACCESS_TOKEN_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: (process.env.NODE_ENV === 'production' ? 'strict' : 'lax') as const,
+  sameSite: COOKIE_SAME_SITE,
   path: '/',
 };
 

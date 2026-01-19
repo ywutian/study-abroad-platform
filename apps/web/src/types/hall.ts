@@ -1,13 +1,15 @@
 // Hall 模块类型定义 — 与后端 DTO 对齐
 // 集中管理所有 Hall 页面相关的接口和类型
 
-import type { SwipeCaseData, SwipeBadge } from '@/components/features/hall/SwipeCard';
-import type { SwipeBadge as BadgeType } from '@/components/features/hall/BadgeDisplay';
+import type { SwipeCaseData } from '@/components/features/hall/SwipeCard';
+import type { SwipeBadge } from '@/components/features/hall/BadgeDisplay';
+
+type BadgeType = SwipeBadge;
 
 // ============================================
 // Re-export component types
 // ============================================
-export type { SwipeCaseData, SwipeBadge };
+export type { SwipeCaseData, SwipeBadge, BadgeType };
 
 // ============================================
 // Public Profile (Review Mode)

@@ -205,7 +205,7 @@ export class CaseService {
       actRange?: string;
       toeflRange?: string;
       tags?: string[];
-      visibility?: 'PRIVATE' | 'ANONYMOUS' | 'VERIFIED_ONLY';
+      visibility?: 'PRIVATE' | 'PUBLIC' | 'ANONYMOUS' | 'VERIFIED_ONLY';
       // Essay fields
       essayType?: 'COMMON_APP' | 'UC' | 'SUPPLEMENTAL' | 'WHY_SCHOOL' | 'OTHER';
       essayPrompt?: string;
@@ -249,7 +249,7 @@ export class CaseService {
       actRange: string;
       toeflRange: string;
       tags: string[];
-      visibility: 'PRIVATE' | 'ANONYMOUS' | 'VERIFIED_ONLY';
+      visibility: 'PRIVATE' | 'PUBLIC' | 'ANONYMOUS' | 'VERIFIED_ONLY';
       // Essay fields
       essayType: 'COMMON_APP' | 'UC' | 'SUPPLEMENTAL' | 'WHY_SCHOOL' | 'OTHER';
       essayPrompt: string;

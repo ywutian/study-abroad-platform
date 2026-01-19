@@ -1,12 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsNotEmpty, IsOptional, IsEnum } from 'class-validator';
+import { SchoolTier } from '@prisma/client';
 
-// Define locally until Prisma client is regenerated
-export enum SchoolTier {
-  SAFETY = 'SAFETY',
-  TARGET = 'TARGET',
-  REACH = 'REACH',
-}
+export { SchoolTier };
 
 export class CreateSchoolListItemDto {
   @ApiProperty({ description: 'School ID to add to list' })

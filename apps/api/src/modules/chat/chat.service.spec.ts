@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ChatService } from './chat.service';
+import { MessageFilterService } from './message-filter.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ForbiddenException, BadRequestException } from '@nestjs/common';
 
@@ -32,6 +33,14 @@ describe('ChatService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ChatService,
+        {
+          provide: MessageFilterService,
+          useValue: {
+            filterMessage: jest.fn().mockImplementation((content) => content),
+            validate: jest.fn().mockResolvedValue({ allowed: true }),
+            isSpam: jest.fn().mockReturnValue(false),
+          },
+        },
         {
           provide: PrismaService,
           useValue: {
@@ -66,6 +75,9 @@ describe('ChatService', () => {
             },
             report: {
               create: jest.fn(),
+            },
+            user: {
+              findUnique: jest.fn().mockResolvedValue({ role: 'VERIFIED' }),
             },
           },
         },

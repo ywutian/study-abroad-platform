@@ -233,19 +233,25 @@ export class MemoryExtractorService {
     try {
       const result = await this.summarizer.extractFromMessage({
         id: 'temp',
+        conversationId: '',
         role: 'user',
         content,
-        timestamp: new Date(),
+        createdAt: new Date(),
       });
 
       return {
         memories: result.memories.map((m) => ({
           ...m,
+          importance: m.importance ?? 0.5,
           confidence: 0.7, // LLM 提取中等置信度
           source: 'llm' as const,
         })),
         entities: result.entities.map((e) => ({
-          ...e,
+          type: e.type,
+          name: e.name,
+          description: e.description,
+          attributes: e.attributes,
+          relations: e.relations?.map((r) => r.targetName),
           source: 'llm' as const,
         })),
       };

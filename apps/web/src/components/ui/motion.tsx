@@ -416,7 +416,7 @@ interface AnimatedNumberProps {
   value: number;
   className?: string;
   duration?: number;
-  formatOptions?: Intl.NumberFormatOptions;
+  formatOptions?: Record<string, unknown>;
 }
 
 export function AnimatedNumber({
@@ -434,7 +434,7 @@ export function AnimatedNumber({
   if (prefersReducedMotion) {
     return (
       <span ref={ref} className={className}>
-        {format.number(value, formatOptions)}
+        {format.number(value, formatOptions as Parameters<typeof format.number>[1])}
       </span>
     );
   }
@@ -468,13 +468,13 @@ function CountUpAnimation({
 }: {
   target: number;
   duration: number;
-  formatOptions?: Intl.NumberFormatOptions;
+  formatOptions?: Record<string, unknown>;
   numberLocale: string;
 }) {
   const nodeRef = useRef<HTMLSpanElement>(null);
 
   // 动画回调中无法使用 hook，因此直接使用 Intl.NumberFormat + toBcp47()
-  const formatter = new Intl.NumberFormat(numberLocale, formatOptions);
+  const formatter = new Intl.NumberFormat(numberLocale, formatOptions as Intl.NumberFormatOptions);
 
   return (
     <motion.span

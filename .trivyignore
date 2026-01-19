@@ -1,0 +1,17 @@
+# Trivy vulnerability ignore list
+# Format: CVE-ID or vulnerability ID, one per line
+# Add comments with # to explain why each vulnerability is ignored
+
+# ===================================================================
+# cos-nodejs-sdk-v5 依赖了已废弃的 `request` 库，其间接依赖
+# (form-data, qs) 存在漏洞。已通过 pnpm overrides 修复。
+# 如果 Trivy 仍然通过 lock 文件检测到旧版本，可忽略以下 CVE。
+# ===================================================================
+
+# form-data unsafe random boundary (cos-nodejs-sdk-v5 > request > form-data)
+# 已通过 pnpm overrides 强制升级到 >=4.0.0
+GHSA-fjxv-7rqg-78g4
+
+# qs arrayLimit bypass DoS (cos-nodejs-sdk-v5 > request > qs)
+# 已通过 pnpm overrides 强制升级到 >=6.14.1
+GHSA-6rw7-vpxm-498p

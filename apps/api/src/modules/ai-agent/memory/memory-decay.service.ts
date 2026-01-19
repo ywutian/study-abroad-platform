@@ -233,7 +233,7 @@ export class MemoryDecayService implements OnModuleInit {
           createdAt: { lt: archiveDate },
           metadata: {
             path: ['archived'],
-            equals: null,
+            equals: Prisma.DbNull,
           },
         },
         data: {

@@ -65,7 +65,7 @@ export class CaseController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: CreateCaseDto,
   ) {
-    return this.caseService.create(user.id, data);
+    return this.caseService.create(user.id, data as any);
   }
 
   @Put(':id')
@@ -75,7 +75,7 @@ export class CaseController {
     @Param('id') id: string,
     @Body() data: UpdateCaseDto,
   ) {
-    return this.caseService.update(id, user.id, data);
+    return this.caseService.update(id, user.id, data as any);
   }
 
   @Delete(':id')

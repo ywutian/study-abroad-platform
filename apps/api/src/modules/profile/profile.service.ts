@@ -791,7 +791,7 @@ export class ProfileService {
     this.recordTargetSchoolAddToMemory(
       userId,
       schoolId,
-      result.school?.nameEn || result.school?.nameCn,
+      result.school?.name || result.school?.nameZh,
     ).catch((err) => {
       this.logger.warn('Failed to record target school add to memory', err);
     });
@@ -826,10 +826,10 @@ export class ProfileService {
     if (!this.memoryManager) return;
 
     const updates: string[] = [];
-    if (data.intendedMajor) updates.push(`意向专业: ${data.intendedMajor}`);
+    if (data.targetMajor) updates.push(`意向专业: ${data.targetMajor}`);
     if (data.gpa) updates.push(`GPA: ${data.gpa}`);
-    if (data.targetCountry) updates.push(`目标国家: ${data.targetCountry}`);
-    if (data.targetDegree) updates.push(`目标学位: ${data.targetDegree}`);
+    if (data.regionPref)
+      updates.push(`地区偏好: ${data.regionPref.join(', ')}`);
 
     if (updates.length === 0) return;
 
@@ -935,7 +935,6 @@ export class ProfileService {
         degree: data.degree,
         major: data.major,
         gpa: data.gpa,
-        isCurrentSchool: data.isCurrentSchool,
       },
     });
   }
@@ -1029,7 +1028,7 @@ export class ProfileService {
 
     const schoolNames = targetSchools
       .slice(0, 5)
-      .map((ts) => ts.school?.nameEn || ts.school?.nameCn || ts.schoolId)
+      .map((ts) => ts.school?.name || ts.school?.nameZh || ts.schoolId)
       .join('、');
 
     await this.memoryManager.remember(userId, {
@@ -1046,7 +1045,7 @@ export class ProfileService {
 
     // 记录学校实体
     for (const ts of targetSchools) {
-      const schoolName = ts.school?.nameEn || ts.school?.nameCn;
+      const schoolName = ts.school?.name || ts.school?.nameZh;
       if (schoolName) {
         await this.memoryManager.recordEntity(userId, {
           type: EntityType.SCHOOL,

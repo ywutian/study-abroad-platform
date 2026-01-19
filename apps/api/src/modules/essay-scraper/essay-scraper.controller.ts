@@ -2,7 +2,8 @@ import { Controller, Post, Get, Query, Body } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { EssayScraperService } from './essay-scraper.service';
 import { Roles } from '../../common/decorators';
-import { Role, SourceType } from '@prisma/client';
+import { Role } from '@prisma/client';
+import { SourceType } from '../../common/types/enums';
 
 @ApiTags('admin/essay-scraper')
 @ApiBearerAuth()

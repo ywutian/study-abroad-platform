@@ -4,7 +4,7 @@
 FROM node:20-alpine AS builder
 
 # Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10.22.0 --activate
 
 WORKDIR /app
 
@@ -18,10 +18,9 @@ RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY apps/api/ ./apps/api/
-COPY tsconfig.json ./
 
-# Generate Prisma client
-RUN cd apps/api && pnpm prisma generate
+# Generate Prisma client (dummy URL for generation only)
+RUN cd apps/api && DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" pnpm prisma generate
 
 # Build
 RUN pnpm --filter api build

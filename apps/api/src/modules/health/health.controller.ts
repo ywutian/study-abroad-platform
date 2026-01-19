@@ -183,19 +183,19 @@ export class HealthController {
 
   private async checkRedis(): Promise<ComponentCheck> {
     if (!this.redisService) {
-      return { status: 'error', message: 'Redis service not configured' };
+      return { status: 'degraded', message: 'Redis service not configured' };
     }
 
     try {
       const result = await this.redisService.healthCheck();
       return {
-        status: result.status,
+        status: result.status === 'error' ? 'degraded' : result.status,
         latencyMs: result.latencyMs,
         message: result.message,
       };
     } catch (error) {
       return {
-        status: 'error',
+        status: 'degraded',
         message: error instanceof Error ? error.message : 'Redis check failed',
       };
     }

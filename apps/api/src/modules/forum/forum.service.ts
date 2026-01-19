@@ -349,7 +349,7 @@ export class ForumService {
         teamApplications:
           userId === null
             ? false
-            : {
+            : ({
                 where: {
                   OR: [{ applicantId: userId }, { post: { authorId: userId } }],
                 },
@@ -362,13 +362,15 @@ export class ForumService {
                     },
                   },
                 },
-              },
+              } as any),
       },
     });
 
     if (!post) {
       throw new NotFoundException('Post not found');
     }
+    // Conditional includes (likes, teamApplications) prevent TS from inferring relation types
+    const postData = post as any;
 
     // 增加浏览量
     await this.prisma.forumPost.update({
@@ -404,21 +406,22 @@ export class ForumService {
       id: post.id,
       categoryId: post.categoryId,
       category: {
-        id: post.category.id,
-        name: post.category.name,
-        nameZh: post.category.nameZh,
-        description: post.category.description || undefined,
-        descriptionZh: post.category.descriptionZh || undefined,
-        icon: post.category.icon || undefined,
-        color: post.category.color || undefined,
+        id: postData.category.id,
+        name: postData.category.name,
+        nameZh: postData.category.nameZh,
+        description: postData.category.description || undefined,
+        descriptionZh: postData.category.descriptionZh || undefined,
+        icon: postData.category.icon || undefined,
+        color: postData.category.color || undefined,
         postCount: 0,
       },
       author: {
-        id: post.author.id,
-        name: post.author.profile?.realName || undefined,
+        id: postData.author.id,
+        name: postData.author.profile?.realName || undefined,
         avatar: undefined,
         isVerified:
-          post.author.role === Role.VERIFIED || post.author.role === Role.ADMIN,
+          postData.author.role === Role.VERIFIED ||
+          postData.author.role === Role.ADMIN,
       },
       title: post.title,
       content: post.content,
@@ -431,14 +434,14 @@ export class ForumService {
       teamStatus: post.teamStatus || undefined,
       viewCount: post.viewCount + 1,
       likeCount: post.likeCount,
-      commentCount: post.comments.length,
+      commentCount: postData.comments.length,
       isPinned: post.isPinned,
       isLocked: post.isLocked,
-      isLiked: userId ? (post.likes as any[]).length > 0 : false,
+      isLiked: userId ? postData.likes?.length > 0 : false,
       createdAt: post.createdAt,
       updatedAt: post.updatedAt,
-      comments: post.comments.map(formatComment),
-      teamMembers: post.teamMembers?.map((tm) => ({
+      comments: postData.comments.map(formatComment),
+      teamMembers: postData.teamMembers?.map((tm: any) => ({
         id: tm.id,
         user: {
           id: tm.user.id,
@@ -450,7 +453,7 @@ export class ForumService {
         role: tm.role,
         joinedAt: tm.joinedAt,
       })),
-      teamApplications: (post.teamApplications as any[])?.map((ta) => ({
+      teamApplications: postData.teamApplications?.map((ta: any) => ({
         id: ta.id,
         applicant: {
           id: ta.applicant.id,

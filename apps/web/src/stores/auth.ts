@@ -22,7 +22,8 @@ interface AuthState {
   initialize: () => Promise<void>;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006';
+// API 请求通过 Next.js rewrites 代理（同源），避免跨域 cookie 问题
+const API_BASE_URL = '';
 
 /**
  * 安全认证 Store
@@ -108,6 +109,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
 
     set({ user: null, accessToken: null });
+    clearAuthCheckCookie();
   },
 
   /**
@@ -145,6 +147,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         accessToken: newAccessToken,
         isRefreshing: false,
       });
+      setAuthCheckCookie();
 
       return true;
     } catch (error) {
@@ -183,6 +186,23 @@ export function stopTokenRefreshInterval() {
 }
 
 /**
+ * 设置/清除 auth_check cookie
+ * 供 Next.js 中间件判断用户是否已登录（路由保护）
+ * 真正的身份验证由后端 JWT 保障，此 cookie 仅为路由提示
+ */
+function setAuthCheckCookie() {
+  if (typeof document !== 'undefined') {
+    document.cookie = 'auth_check=1; path=/; max-age=900; samesite=lax';
+  }
+}
+
+function clearAuthCheckCookie() {
+  if (typeof document !== 'undefined') {
+    document.cookie = 'auth_check=; path=/; max-age=0';
+  }
+}
+
+/**
  * 用于登录成功后设置状态的辅助函数
  */
 export function setAuthFromLogin(user: User, accessToken: string) {
@@ -192,5 +212,6 @@ export function setAuthFromLogin(user: User, accessToken: string) {
     isLoading: false,
     isInitialized: true,
   });
+  setAuthCheckCookie();
   startTokenRefreshInterval();
 }

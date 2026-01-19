@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthorizationService } from '../../common/services/authorization.service';
 import { EncryptionService } from './encryption.service';
-import { VaultItemType, Prisma } from '@prisma/client';
+import { Prisma, VaultItemType } from '@prisma/client';
 import {
   CreateVaultItemDto,
   UpdateVaultItemDto,
@@ -177,25 +177,23 @@ export class VaultService {
       }),
     ]);
 
-    const countMap: Record<VaultItemType, number> = {
-      CREDENTIAL: 0,
-      DOCUMENT: 0,
-      NOTE: 0,
-      CERTIFICATE: 0,
-    };
+    const countMap: Partial<Record<VaultItemType, number>> = {};
 
     counts.forEach((c) => {
       countMap[c.type] = c._count;
     });
 
-    const totalItems = Object.values(countMap).reduce((a, b) => a + b, 0);
+    const totalItems = Object.values(countMap).reduce(
+      (a, b) => (a ?? 0) + (b ?? 0),
+      0,
+    );
 
     return {
       totalItems,
-      credentialCount: countMap.CREDENTIAL,
-      documentCount: countMap.DOCUMENT,
-      noteCount: countMap.NOTE,
-      certificateCount: countMap.CERTIFICATE,
+      credentialCount: countMap.CREDENTIAL ?? 0,
+      documentCount: countMap.DOCUMENT ?? 0,
+      noteCount: countMap.NOTE ?? 0,
+      certificateCount: countMap.API_KEY ?? 0,
       categories: categories.map((c) => c.category).filter(Boolean) as string[],
     };
   }
@@ -288,11 +286,13 @@ export class VaultService {
    * Parse string to VaultItemType enum
    */
   private parseVaultItemType(type: string): VaultItemType | null {
-    const validTypes: VaultItemType[] = [
+    const validTypes: string[] = [
+      'PASSWORD',
       'CREDENTIAL',
       'DOCUMENT',
       'NOTE',
-      'CERTIFICATE',
+      'API_KEY',
+      'OTHER',
     ];
     const upperType = type.toUpperCase() as VaultItemType;
     return validTypes.includes(upperType) ? upperType : null;
@@ -325,7 +325,7 @@ export class VaultService {
   }): VaultItemDto {
     return {
       id: item.id,
-      type: item.type,
+      type: item.type as any,
       title: item.title,
       category: item.category || undefined,
       tags: item.tags,

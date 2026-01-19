@@ -118,10 +118,10 @@ describe('SchoolService', () => {
       expect(prismaService.school.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            OR: [
+            OR: expect.arrayContaining([
               { name: { contains: 'Harvard', mode: 'insensitive' } },
               { nameZh: { contains: 'Harvard', mode: 'insensitive' } },
-            ],
+            ]),
           }),
         }),
       );

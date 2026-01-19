@@ -112,8 +112,8 @@ export class SchoolController {
       nameZh: s.nameZh || undefined,
       usNewsRank: s.usNewsRank || undefined,
       acceptanceRate: s.acceptanceRate ? Number(s.acceptanceRate) : undefined,
-      satRange: s.satRange || undefined,
-      actRange: s.actRange || undefined,
+      satRange: s.sat25 && s.sat75 ? `${s.sat25}-${s.sat75}` : undefined,
+      actRange: s.act25 && s.act75 ? `${s.act25}-${s.act75}` : undefined,
     }));
 
     // 构建档案请求

@@ -194,6 +194,96 @@ category 说明: competition=竞赛, summer_program=夏校/暑期项目, interns
     return false;
   }
 
+  // ==================== 文本摘要方法 ====================
+
+  /**
+   * 合并多段文本为一条摘要
+   */
+  async summarizeTexts(texts: string[]): Promise<string> {
+    if (texts.length === 0) return '';
+    if (texts.length === 1) return texts[0];
+
+    const combined = texts.join('\n- ');
+
+    if (!this.apiKey) {
+      // 无 API key 时简单拼接
+      return texts.slice(0, 3).join('; ');
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: this.model,
+          messages: [
+            {
+              role: 'system',
+              content:
+                '将以下多条记忆合并为一条简洁的摘要，保留关键信息。直接输出合并后的文本，不要加前缀。',
+            },
+            { role: 'user', content: `- ${combined}` },
+          ],
+          temperature: 0.3,
+          max_tokens: 300,
+        }),
+      });
+
+      if (!response.ok) {
+        return texts.slice(0, 3).join('; ');
+      }
+
+      const data = await response.json();
+      return data.choices?.[0]?.message?.content || texts[0];
+    } catch {
+      return texts.slice(0, 3).join('; ');
+    }
+  }
+
+  /**
+   * 压缩单段文本到指定 token 数量
+   */
+  async summarizeText(text: string, maxTokens: number): Promise<string> {
+    if (!this.apiKey) {
+      // 无 API key 时简单截断
+      return text.slice(0, maxTokens * 4);
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: this.model,
+          messages: [
+            {
+              role: 'system',
+              content: `将以下文本压缩为更简短的版本，保留关键信息，目标约 ${maxTokens} 个 token。直接输出压缩后的文本。`,
+            },
+            { role: 'user', content: text },
+          ],
+          temperature: 0.2,
+          max_tokens: maxTokens * 2,
+        }),
+      });
+
+      if (!response.ok) {
+        return text.slice(0, maxTokens * 4);
+      }
+
+      const data = await response.json();
+      return data.choices?.[0]?.message?.content || text;
+    } catch {
+      return text.slice(0, maxTokens * 4);
+    }
+  }
+
   // ==================== 私有方法 ====================
 
   private buildSummaryPrompt(messages: MessageRecord[]): string {

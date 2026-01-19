@@ -236,10 +236,12 @@ export class EssayPromptService {
   ) {
     const results = await Promise.all(
       ids.map((id) =>
-        this.verify(id, { status, reason }, operatorId).catch((e) => ({
-          id,
-          error: e.message,
-        })),
+        this.verify(id, { status: status as any, reason }, operatorId).catch(
+          (e) => ({
+            id,
+            error: e.message,
+          }),
+        ),
       ),
     );
 

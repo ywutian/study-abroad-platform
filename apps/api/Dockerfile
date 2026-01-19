@@ -4,14 +4,16 @@
 FROM node:20-alpine AS builder
 
 # Install pnpm and openssl
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10.22.0 --activate
 RUN apk add --no-cache openssl
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files for all workspace packages (needed for frozen-lockfile)
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json ./apps/api/
+COPY apps/web/package.json ./apps/web/
+COPY apps/mobile/package.json ./apps/mobile/
 COPY packages/ ./packages/
 
 # Install all dependencies
@@ -49,11 +51,15 @@ COPY --from=builder /prod ./
 # Copy built application
 COPY --from=builder /app/apps/api/dist ./dist
 
+# Copy Prisma schema and migrations for migrate deploy
+COPY --from=builder /app/apps/api/prisma ./prisma
+
+# Copy entrypoint script
+COPY --from=builder /app/apps/api/entrypoint.sh ./entrypoint.sh
+RUN chmod +x entrypoint.sh
+
 # Railway will set PORT env var
 EXPOSE 8080
 
-# Disable Docker healthcheck - let Railway handle it
-# HEALTHCHECK NONE
-
-# Start application (skip migrations for now - run manually if needed)
-CMD ["node", "dist/src/main.js"]
+# Run migrations on startup, then start application
+CMD ["./entrypoint.sh"]

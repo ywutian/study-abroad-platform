@@ -39,7 +39,7 @@ export class PeerReviewService {
         select: {
           id: true,
           role: true,
-          profile: { select: { realName: true, avatar: true } },
+          profile: { select: { realName: true } },
         },
       }),
       this.prisma.user.findUnique({
@@ -47,7 +47,7 @@ export class PeerReviewService {
         select: {
           id: true,
           role: true,
-          profile: { select: { realName: true, avatar: true } },
+          profile: { select: { realName: true } },
         },
       }),
     ]);
@@ -101,14 +101,14 @@ export class PeerReviewService {
           select: {
             id: true,
             role: true,
-            profile: { select: { realName: true, avatar: true } },
+            profile: { select: { realName: true } },
           },
         },
         reviewee: {
           select: {
             id: true,
             role: true,
-            profile: { select: { realName: true, avatar: true } },
+            profile: { select: { realName: true } },
           },
         },
       },
@@ -132,14 +132,14 @@ export class PeerReviewService {
           select: {
             id: true,
             role: true,
-            profile: { select: { realName: true, avatar: true } },
+            profile: { select: { realName: true } },
           },
         },
         reviewee: {
           select: {
             id: true,
             role: true,
-            profile: { select: { realName: true, avatar: true } },
+            profile: { select: { realName: true } },
           },
         },
       },
@@ -213,14 +213,14 @@ export class PeerReviewService {
           select: {
             id: true,
             role: true,
-            profile: { select: { realName: true, avatar: true } },
+            profile: { select: { realName: true } },
           },
         },
         reviewee: {
           select: {
             id: true,
             role: true,
-            profile: { select: { realName: true, avatar: true } },
+            profile: { select: { realName: true } },
           },
         },
       },
@@ -250,14 +250,14 @@ export class PeerReviewService {
           select: {
             id: true,
             role: true,
-            profile: { select: { realName: true, avatar: true } },
+            profile: { select: { realName: true } },
           },
         },
         reviewee: {
           select: {
             id: true,
             role: true,
-            profile: { select: { realName: true, avatar: true } },
+            profile: { select: { realName: true } },
           },
         },
       },
@@ -363,14 +363,14 @@ export class PeerReviewService {
           select: {
             id: true,
             role: true,
-            profile: { select: { realName: true, avatar: true } },
+            profile: { select: { realName: true } },
           },
         },
         reviewee: {
           select: {
             id: true,
             role: true,
-            profile: { select: { realName: true, avatar: true } },
+            profile: { select: { realName: true } },
           },
         },
       },

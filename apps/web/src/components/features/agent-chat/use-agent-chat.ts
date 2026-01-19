@@ -10,7 +10,8 @@ import { useAuth } from '@/hooks/use-auth';
 import { useAuthStore } from '@/stores/auth';
 import { ChatMessage, StreamEvent, AgentType } from './types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006';
+// API 请求通过 Next.js rewrites 代理（同源），避免跨域 cookie 问题
+const API_BASE_URL = '';
 
 interface UseAgentChatOptions {
   conversationId?: string;

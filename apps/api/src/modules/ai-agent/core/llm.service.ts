@@ -6,7 +6,7 @@
 
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Message, ToolCall, ToolDefinition } from '../types';
+import { AgentType, Message, ToolCall, ToolDefinition } from '../types';
 import { toOpenAIFormat } from '../config/tools.config';
 import {
   ResilienceService,
@@ -155,7 +155,7 @@ export class LLMService {
 
         await this.tokenTracker.trackUsage(options.userId, usage, {
           conversationId: options.conversationId,
-          agentType: options.agentType,
+          agentType: options.agentType as AgentType | undefined,
         });
       }
 

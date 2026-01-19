@@ -229,14 +229,16 @@ export class MemoryManagerService {
   ): Promise<MemoryRecord | null> {
     // 1. 冲突检测
     if (this.conflict && !options?.skipConflictCheck) {
-      const detection = await this.conflict.detectConflict({
+      const memoryWithUser = {
         userId,
         ...input,
-      });
+        importance: input.importance ?? 0.5,
+      };
+      const detection = await this.conflict.detectConflict(memoryWithUser);
 
       if (detection.hasConflict) {
         const resolution = await this.conflict.resolveConflict(
-          { userId, ...input },
+          memoryWithUser,
           detection,
           options?.strategyOverride,
         );

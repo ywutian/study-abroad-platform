@@ -19,7 +19,7 @@ import {
   Res,
   Header,
 } from '@nestjs/common';
-import { Response } from 'express';
+import type { Response } from 'express';
 import {
   ApiTags,
   ApiOperation,
@@ -28,10 +28,8 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import {
-  CurrentUser,
-  CurrentUserPayload,
-} from '../../common/decorators/current-user.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import type { CurrentUserPayload } from '../../common/decorators/current-user.decorator';
 import { UserDataService } from './memory/user-data.service';
 import {
   QueryMemoriesDto,
@@ -69,7 +67,7 @@ export class UserDataController {
     @CurrentUser() user: CurrentUserPayload,
     @Query() query: QueryMemoriesDto,
   ): Promise<MemoryListResponseDto> {
-    return this.userDataService.getMemories(user.userId, query);
+    return this.userDataService.getMemories(user.id, query);
   }
 
   @Get('memories/:id')
@@ -80,7 +78,7 @@ export class UserDataController {
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
   ): Promise<MemoryItemDto | null> {
-    return this.userDataService.getMemory(user.userId, id);
+    return this.userDataService.getMemory(user.id, id);
   }
 
   @Delete('memories/:id')
@@ -91,7 +89,7 @@ export class UserDataController {
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
   ): Promise<void> {
-    await this.userDataService.deleteMemory(user.userId, id);
+    await this.userDataService.deleteMemory(user.id, id);
   }
 
   @Post('memories/batch-delete')
@@ -101,7 +99,7 @@ export class UserDataController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() body: BatchDeleteMemoriesDto,
   ): Promise<BatchDeleteResponseDto> {
-    return this.userDataService.deleteMemories(user.userId, body.ids);
+    return this.userDataService.deleteMemories(user.id, body.ids);
   }
 
   @Delete('memories')
@@ -110,7 +108,7 @@ export class UserDataController {
   async clearAllMemories(
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<{ deleted: number }> {
-    const deleted = await this.userDataService.clearAllMemories(user.userId);
+    const deleted = await this.userDataService.clearAllMemories(user.id);
     return { deleted };
   }
 
@@ -123,7 +121,7 @@ export class UserDataController {
     @CurrentUser() user: CurrentUserPayload,
     @Query() query: QueryConversationsDto,
   ): Promise<ConversationListResponseDto> {
-    return this.userDataService.getConversations(user.userId, query);
+    return this.userDataService.getConversations(user.id, query);
   }
 
   @Get('conversations/:id')
@@ -134,7 +132,7 @@ export class UserDataController {
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
   ): Promise<ConversationDetailDto | null> {
-    return this.userDataService.getConversation(user.userId, id);
+    return this.userDataService.getConversation(user.id, id);
   }
 
   @Delete('conversations/:id')
@@ -145,7 +143,7 @@ export class UserDataController {
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
   ): Promise<void> {
-    await this.userDataService.deleteConversation(user.userId, id);
+    await this.userDataService.deleteConversation(user.id, id);
   }
 
   @Delete('conversations')
@@ -154,9 +152,7 @@ export class UserDataController {
   async clearAllConversations(
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<{ deleted: number }> {
-    const deleted = await this.userDataService.clearAllConversations(
-      user.userId,
-    );
+    const deleted = await this.userDataService.clearAllConversations(user.id);
     return { deleted };
   }
 
@@ -169,7 +165,7 @@ export class UserDataController {
     @CurrentUser() user: CurrentUserPayload,
     @Query() query: QueryEntitiesDto,
   ): Promise<EntityListResponseDto> {
-    return this.userDataService.getEntities(user.userId, query);
+    return this.userDataService.getEntities(user.id, query);
   }
 
   @Delete('entities/:id')
@@ -180,7 +176,7 @@ export class UserDataController {
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
   ): Promise<void> {
-    await this.userDataService.deleteEntity(user.userId, id);
+    await this.userDataService.deleteEntity(user.id, id);
   }
 
   @Delete('entities')
@@ -189,7 +185,7 @@ export class UserDataController {
   async clearAllEntities(
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<{ deleted: number }> {
-    const deleted = await this.userDataService.clearAllEntities(user.userId);
+    const deleted = await this.userDataService.clearAllEntities(user.id);
     return { deleted };
   }
 
@@ -201,7 +197,7 @@ export class UserDataController {
   async getPreferences(
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<AIPreferencesResponseDto> {
-    return this.userDataService.getPreferences(user.userId);
+    return this.userDataService.getPreferences(user.id);
   }
 
   @Put('preferences')
@@ -211,7 +207,7 @@ export class UserDataController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() body: AIPreferencesDto,
   ): Promise<AIPreferencesResponseDto> {
-    return this.userDataService.updatePreferences(user.userId, body);
+    return this.userDataService.updatePreferences(user.id, body);
   }
 
   @Post('preferences/reset')
@@ -220,8 +216,8 @@ export class UserDataController {
   async resetPreferences(
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<AIPreferencesResponseDto> {
-    await this.userDataService.resetPreferences(user.userId);
-    return this.userDataService.getPreferences(user.userId);
+    await this.userDataService.resetPreferences(user.id);
+    return this.userDataService.getPreferences(user.id);
   }
 
   // ==================== 数据导出 ====================
@@ -233,7 +229,7 @@ export class UserDataController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() body: DataExportRequestDto,
   ): Promise<DataExportResponseDto> {
-    return this.userDataService.exportData(user.userId, body);
+    return this.userDataService.exportData(user.id, body);
   }
 
   @Get('export/download')
@@ -243,14 +239,14 @@ export class UserDataController {
     @CurrentUser() user: CurrentUserPayload,
     @Res() res: Response,
   ): Promise<void> {
-    const data = await this.userDataService.exportData(user.userId, {
+    const data = await this.userDataService.exportData(user.id, {
       includeMemories: true,
       includeConversations: true,
       includeEntities: true,
       includePreferences: true,
     });
 
-    const filename = `ai-data-export-${user.userId}-${Date.now()}.json`;
+    const filename = `ai-data-export-${user.id}-${Date.now()}.json`;
 
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(JSON.stringify(data, null, 2));
@@ -264,7 +260,7 @@ export class UserDataController {
   async getStats(
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<MemoryStatsDto> {
-    return this.userDataService.getStats(user.userId);
+    return this.userDataService.getStats(user.id);
   }
 
   // ==================== 批量清除 ====================
@@ -276,7 +272,7 @@ export class UserDataController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() body: ClearDataDto,
   ): Promise<ClearDataResponseDto> {
-    return this.userDataService.clearData(user.userId, body);
+    return this.userDataService.clearData(user.id, body);
   }
 
   @Delete('all')
@@ -285,7 +281,7 @@ export class UserDataController {
   async clearAllData(
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<ClearDataResponseDto> {
-    return this.userDataService.clearData(user.userId, {
+    return this.userDataService.clearData(user.id, {
       clearMemories: true,
       clearConversations: true,
       clearEntities: true,

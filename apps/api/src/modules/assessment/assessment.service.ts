@@ -8,8 +8,7 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { AssessmentType } from '../../common/types/enums';
-import { MemoryType } from '@prisma/client';
+import { AssessmentType, MemoryType } from '@prisma/client';
 import {
   AssessmentTypeEnum,
   AssessmentDto,
@@ -119,7 +118,7 @@ export class AssessmentService {
 
     // 查找或创建 Assessment 记录
     let assessment = await this.prisma.assessment.findFirst({
-      where: { type: dto.type as AssessmentType },
+      where: { type: dto.type as unknown as AssessmentType },
     });
 
     if (!assessment) {
@@ -131,7 +130,7 @@ export class AssessmentService {
 
       assessment = await this.prisma.assessment.create({
         data: {
-          type: dto.type as AssessmentType,
+          type: dto.type as unknown as AssessmentType,
           title:
             dto.type === AssessmentTypeEnum.MBTI
               ? 'Jungian Type Personality Test'

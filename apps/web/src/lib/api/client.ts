@@ -26,14 +26,8 @@ function getApiLocale(): 'zh' | 'en' {
   return 'en';
 }
 
-// API URL 验证
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-if (!API_BASE_URL && typeof window !== 'undefined') {
-  console.error(
-    '[API Client] NEXT_PUBLIC_API_URL 环境变量未设置，使用默认值 http://localhost:3006'
-  );
-}
-const RESOLVED_API_URL = API_BASE_URL || 'http://localhost:3006';
+// API 请求通过 Next.js rewrites 代理（同源），避免跨域 cookie 问题
+const RESOLVED_API_URL = '';
 const API_VERSION = '/api/v1';
 
 interface RequestConfig extends RequestInit {

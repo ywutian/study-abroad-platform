@@ -21,7 +21,7 @@ export interface RawMemoryRow {
   importance: number;
   accessCount: number;
   lastAccessedAt: Date | null;
-  embedding: number[] | null;
+  embedding?: number[] | null;
   metadata: MemoryMetadata | null;
   expiresAt: Date | null;
   createdAt: Date;
@@ -41,7 +41,7 @@ export interface RawEntityRow {
   description: string | null;
   attributes: EntityAttributes | null;
   relations: EntityRelation[] | null;
-  embedding: number[] | null;
+  embedding?: number[] | null;
   createdAt: Date;
   updatedAt: Date;
   // 仅 vector 搜索返回
@@ -73,8 +73,6 @@ export interface RawConversationRow {
   summary: string | null;
   agentType: string | null;
   metadata: Record<string, unknown> | null;
-  isArchived: boolean;
-  archivedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
