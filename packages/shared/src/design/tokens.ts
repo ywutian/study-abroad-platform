@@ -205,7 +205,7 @@ export const cssVars = {
   '--spacing-3xl': '2rem',
   '--spacing-4xl': '2.5rem',
   '--spacing-5xl': '3rem',
-  
+
   // 圆角
   '--radius-sm': '0.25rem',
   '--radius-md': '0.5rem',
@@ -213,7 +213,7 @@ export const cssVars = {
   '--radius-xl': '1rem',
   '--radius-2xl': '1.25rem',
   '--radius-full': '9999px',
-  
+
   // 阴影
   '--shadow-sm': '0 1px 2px 0 rgb(0 0 0 / 0.05)',
   '--shadow-md': '0 4px 6px -1px rgb(0 0 0 / 0.1)',
@@ -222,8 +222,8 @@ export const cssVars = {
 } as const;
 
 // 工具函数：将 spacing token 转换为 rem
-export function spacingToRem(spacing: keyof typeof spacing): string {
-  return `${spacing / 16}rem`;
+export function spacingToRem(key: keyof typeof spacing): string {
+  return `${spacing[key] / 16}rem`;
 }
 
 // 工具函数：根据主题获取颜色

@@ -7,6 +7,7 @@ export enum Role {
 
 export enum Visibility {
   PRIVATE = 'PRIVATE',
+  PUBLIC = 'PUBLIC',
   ANONYMOUS = 'ANONYMOUS',
   VERIFIED_ONLY = 'VERIFIED_ONLY',
 }
@@ -287,7 +288,56 @@ export interface LoginResponse {
 export interface RegisterResponse {
   user: User;
   message: string;
-} // Health Check
+} // Recommendation
+export interface SchoolMeta {
+  nameZh?: string;
+  usNewsRank?: number;
+  acceptanceRate?: number;
+  city?: string;
+  state?: string;
+  tuition?: number;
+  isPrivate?: boolean;
+}
+
+export interface RecommendedSchool {
+  schoolId?: string;
+  schoolName: string;
+  tier: 'reach' | 'match' | 'safety';
+  estimatedProbability: number;
+  fitScore: number;
+  reasons: string[];
+  concerns?: string[];
+  schoolMeta?: SchoolMeta;
+}
+
+export interface RecommendationAnalysis {
+  strengths: string[];
+  weaknesses: string[];
+  improvementTips: string[];
+}
+
+export interface RecommendationResult {
+  id: string;
+  recommendations: RecommendedSchool[];
+  analysis: RecommendationAnalysis;
+  summary: string;
+  tokenUsed: number;
+  createdAt: string;
+}
+
+export interface RecommendationPreflight {
+  canGenerate: boolean;
+  points: number;
+  profileComplete: boolean;
+  missingFields: string[];
+  profileSummary?: {
+    gpa?: number;
+    testCount: number;
+    activityCount: number;
+  };
+}
+
+// Health Check
 export interface HealthStatus {
   status: 'ok' | 'error';
   timestamp: string;
@@ -296,3 +346,190 @@ export interface HealthStatus {
     database: 'ok' | 'error';
   };
 }
+
+// Competition
+export enum CompetitionCategory {
+  MATH = 'MATH',
+  BIOLOGY = 'BIOLOGY',
+  PHYSICS = 'PHYSICS',
+  CHEMISTRY = 'CHEMISTRY',
+  COMPUTER_SCIENCE = 'COMPUTER_SCIENCE',
+  ENGINEERING_RESEARCH = 'ENGINEERING_RESEARCH',
+  ECONOMICS_BUSINESS = 'ECONOMICS_BUSINESS',
+  DEBATE_SPEECH = 'DEBATE_SPEECH',
+  WRITING_ESSAY = 'WRITING_ESSAY',
+  GENERAL_ACADEMIC = 'GENERAL_ACADEMIC',
+  ARTS_MUSIC = 'ARTS_MUSIC',
+  OTHER = 'OTHER',
+}
+
+export interface Competition {
+  id: string;
+  name: string;
+  abbreviation: string;
+  nameZh?: string;
+  category: CompetitionCategory;
+  level: string;
+  tier: number;
+  description?: string;
+  descriptionZh?: string;
+  website?: string;
+  isActive: boolean;
+}
+
+// Education
+export interface Education {
+  id: string;
+  profileId: string;
+  schoolName: string;
+  degree?: string;
+  major?: string;
+  startDate?: string;
+  endDate?: string;
+  gpa?: number;
+  gpaScale?: number;
+}
+
+// Essay
+export enum EssayType {
+  COMMON_APP = 'COMMON_APP',
+  UC = 'UC',
+  MAIN = 'MAIN',
+  SUPPLEMENTAL = 'SUPPLEMENTAL',
+  SUPPLEMENT = 'SUPPLEMENT',
+  WHY_SCHOOL = 'WHY_SCHOOL',
+  WHY_US = 'WHY_US',
+  SHORT_ANSWER = 'SHORT_ANSWER',
+  ACTIVITY = 'ACTIVITY',
+  OPTIONAL = 'OPTIONAL',
+  OTHER = 'OTHER',
+}
+
+export interface Essay {
+  id: string;
+  profileId: string;
+  title: string;
+  content: string;
+  wordCount?: number;
+  schoolId?: string;
+  promptType?: string;
+  status: 'DRAFT' | 'IN_REVIEW' | 'FINAL';
+  createdAt: string;
+  updatedAt: string;
+}
+
+// School extended fields
+export interface SchoolDeadline {
+  type: string;
+  date: string;
+  notes?: string;
+}
+
+export interface SchoolMetric {
+  id: string;
+  schoolId: string;
+  year: number;
+  metricKey: string;
+  value: number;
+}
+
+export interface EssayPrompt {
+  prompt: string;
+  wordLimit?: number;
+  required?: boolean;
+}
+
+// Social
+export interface Follow {
+  id: string;
+  followerId: string;
+  followingId: string;
+  follower?: User;
+  following?: User;
+  createdAt: string;
+}
+
+export interface Block {
+  id: string;
+  blockerId: string;
+  blockedId: string;
+  createdAt: string;
+}
+
+// Chat extended
+export interface ConversationParticipant {
+  id: string;
+  conversationId: string;
+  userId: string;
+  user?: User;
+}
+
+// AI Agent
+export interface AiChatMessage {
+  id: string;
+  role: 'user' | 'assistant' | 'tool';
+  content: string;
+  toolCalls?: ToolCall[];
+  toolCallId?: string;
+  timestamp: Date;
+}
+
+export interface ToolCall {
+  id?: string;
+  name: string;
+  arguments?: Record<string, unknown>;
+  result?: unknown;
+  status?: string;
+}
+
+export interface StreamEvent {
+  type: 'start' | 'content' | 'tool_start' | 'tool_end' | 'agent_switch' | 'done' | 'error';
+  agent?: string;
+  content?: string;
+  tool?: string;
+  toolResult?: unknown;
+  response?: { message: string; agentType: string };
+  error?: string;
+}
+
+// API Error
+export interface ApiError {
+  message: string;
+  statusCode?: number;
+  error?: string;
+}
+
+// Additional enums from Prisma schema
+export enum PaymentStatus {
+  PENDING = 'PENDING',
+  SUCCESS = 'SUCCESS',
+  FAILED = 'FAILED',
+  REFUNDED = 'REFUNDED',
+}
+
+export enum VerificationStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+}
+
+export enum ApplicationStatus {
+  NOT_STARTED = 'NOT_STARTED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  SUBMITTED = 'SUBMITTED',
+  ACCEPTED = 'ACCEPTED',
+  REJECTED = 'REJECTED',
+  WAITLISTED = 'WAITLISTED',
+  WITHDRAWN = 'WITHDRAWN',
+}
+
+export enum MemoryType {
+  FACT = 'FACT',
+  PREFERENCE = 'PREFERENCE',
+  DECISION = 'DECISION',
+  SUMMARY = 'SUMMARY',
+  FEEDBACK = 'FEEDBACK',
+}
+
+// Type alias for backward compatibility
+export type CaseResult = 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED';

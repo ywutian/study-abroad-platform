@@ -139,6 +139,15 @@ export const SUPPORTED_LOCALES = ['en', 'zh'] as const;
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 export const DEFAULT_LOCALE: SupportedLocale = 'zh';
 
+// 积分系统开关 — 测试期间设为 false，上线时改为 true
+export const POINTS_ENABLED = false;
+
 // 分页默认值
 export const DEFAULT_PAGE_SIZE = 20;
 export const MAX_PAGE_SIZE = 100;
+
+// 订阅计划
+export * from './subscription';
+
+// 推荐功能
+export * from './recommendation';

@@ -42,6 +42,9 @@ prisma/*.db-journal
 tmp
 temp
 
+# Claude Code
+.claude/
+
 .vercel
 .env*.local
 apps/api/.env.backup
