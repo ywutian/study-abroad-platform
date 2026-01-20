@@ -8,13 +8,26 @@
  */
 
 import { Module, Global } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { PromptGuardService } from './prompt-guard.service';
 import { ContentModerationService } from './content-moderation.service';
 import { AuditService } from './audit.service';
+import { AlertChannelService } from '../infrastructure/alerting/alert-channel.service';
 
 @Global()
 @Module({
-  providers: [PromptGuardService, ContentModerationService, AuditService],
-  exports: [PromptGuardService, ContentModerationService, AuditService],
+  imports: [ConfigModule],
+  providers: [
+    PromptGuardService,
+    ContentModerationService,
+    AuditService,
+    AlertChannelService,
+  ],
+  exports: [
+    PromptGuardService,
+    ContentModerationService,
+    AuditService,
+    AlertChannelService,
+  ],
 })
 export class AgentSecurityModule {}

@@ -1,6 +1,7 @@
 import {
   Injectable,
   NotFoundException,
+  ForbiddenException,
   Logger,
   ConflictException,
 } from '@nestjs/common';
@@ -217,6 +218,10 @@ export class AdminService {
   }
 
   async updateUserRole(adminId: string, userId: string, role: Role) {
+    if (adminId === userId) {
+      throw new ForbiddenException('Cannot modify your own role');
+    }
+
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { id: true, email: true, role: true },
@@ -250,6 +255,10 @@ export class AdminService {
   }
 
   async deleteUser(adminId: string, userId: string) {
+    if (adminId === userId) {
+      throw new ForbiddenException('Cannot delete your own account');
+    }
+
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { id: true, email: true, role: true },

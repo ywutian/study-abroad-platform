@@ -34,19 +34,24 @@ export class TransformInterceptor<T> implements NestInterceptor<
 
     return next.handle().pipe(
       tap(() => {
-        // Set response time header
+        // Skip if response already sent (SSE/streaming endpoints)
+        if (response.headersSent) return;
         const responseTimeMs = Date.now() - startTime;
         response.setHeader('X-Response-Time', `${responseTimeMs}ms`);
       }),
-      map((data) => ({
-        success: true,
-        data,
-        meta: {
-          timestamp: new Date().toISOString(),
-          ...(correlationId && { correlationId }),
-          responseTimeMs: Date.now() - startTime,
-        },
-      })),
+      map((data) => {
+        // Skip wrapping for SSE/streaming endpoints
+        if (response.headersSent) return data;
+        return {
+          success: true,
+          data,
+          meta: {
+            timestamp: new Date().toISOString(),
+            ...(correlationId && { correlationId }),
+            responseTimeMs: Date.now() - startTime,
+          },
+        };
+      }),
     );
   }
 }

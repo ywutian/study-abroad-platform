@@ -67,6 +67,17 @@ export class RecommendedSchoolDto {
 
   @ApiProperty({ type: [String], description: '需要注意的点', required: false })
   concerns?: string[];
+
+  @ApiPropertyOptional({ description: '匹配到的学校元数据' })
+  schoolMeta?: {
+    nameZh?: string;
+    usNewsRank?: number;
+    acceptanceRate?: number;
+    city?: string;
+    state?: string;
+    tuition?: number;
+    isPrivate?: boolean;
+  };
 }
 
 export class RecommendationAnalysisDto {

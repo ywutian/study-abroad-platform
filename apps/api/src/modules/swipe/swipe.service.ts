@@ -21,6 +21,7 @@ import {
   SwipeBadge,
 } from './dto';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
+import { POINTS_ENABLED } from '@study-abroad/shared';
 
 // 徽章升级阈值
 const BADGE_THRESHOLDS = {
@@ -208,7 +209,7 @@ export class SwipeService {
           },
         }),
         // 更新用户积分
-        ...(pointsEarned > 0
+        ...(POINTS_ENABLED && pointsEarned > 0
           ? [
               this.prisma.user.update({
                 where: { id: userId },

@@ -22,6 +22,19 @@ import {
   PaginatedResponseDto,
 } from '../../common/dto/pagination.dto';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
+import {
+  BatchImportCaseDto,
+  ReviewCaseEssayDto,
+  BatchVerifyCaseDto,
+} from './dto/batch-import-case.dto';
+import {
+  resolveSchoolId,
+  normalizeResult,
+  normalizeRound,
+  normalizeEssayType,
+  parseTags,
+  type BatchImportResult,
+} from '../../common/utils/import-normalizers';
 
 interface CaseFilters {
   schoolId?: string;
@@ -49,6 +62,14 @@ export class CaseService {
     private memoryManager?: MemoryManagerService,
   ) {}
 
+  /**
+   * Retrieve a paginated list of admission cases with optional filters and visibility enforcement
+   * @param pagination - Pagination options including page number and page size
+   * @param filters - Filter criteria such as schoolId, year, result, search text, and visibility
+   * @param requesterId - ID of the requesting user, or null/undefined for unauthenticated requests
+   * @param requesterRole - Role of the requesting user, used to determine visibility access
+   * @returns Paginated response containing admission cases and aggregated result statistics
+   */
   async findAll(
     pagination: PaginationDto,
     filters: CaseFilters,
@@ -144,6 +165,15 @@ export class CaseService {
     });
   }
 
+  /**
+   * Find a single admission case by ID with visibility checks
+   * @param id - The unique identifier of the admission case
+   * @param requesterId - ID of the requesting user, or null for unauthenticated requests
+   * @param requesterRole - Role of the requesting user, used for visibility enforcement
+   * @throws {NotFoundException} When the case with the given ID does not exist
+   * @throws {ForbiddenException} When the case is private or restricted to verified users only
+   * @returns The admission case including associated school information
+   */
   async findById(
     id: string,
     requesterId: string | null,
@@ -192,6 +222,12 @@ export class CaseService {
     return caseItem;
   }
 
+  /**
+   * Create a new admission case for a user, including optional essay data
+   * @param userId - The ID of the user creating the case
+   * @param data - Case creation payload including school, scores, essay, and visibility settings
+   * @returns The newly created admission case with associated school information
+   */
   async create(
     userId: string,
     data: {
@@ -235,6 +271,14 @@ export class CaseService {
     return admissionCase;
   }
 
+  /**
+   * Update an existing admission case owned by the specified user
+   * @param id - The unique identifier of the case to update
+   * @param userId - The ID of the user requesting the update (must be the case owner)
+   * @param data - Partial case data to update, including school, scores, essay, and visibility fields
+   * @throws {NotFoundException} When the case does not exist or is not owned by the user
+   * @returns The updated admission case
+   */
   async update(
     id: string,
     userId: string,
@@ -278,6 +322,13 @@ export class CaseService {
     });
   }
 
+  /**
+   * Delete an admission case owned by the specified user
+   * @param id - The unique identifier of the case to delete
+   * @param userId - The ID of the user requesting the deletion (must be the case owner)
+   * @throws {NotFoundException} When the case does not exist or is not owned by the user
+   * @returns void
+   */
   async delete(id: string, userId: string): Promise<void> {
     const caseItem = await this.prisma.admissionCase.findUnique({
       where: { id },
@@ -292,6 +343,11 @@ export class CaseService {
     });
   }
 
+  /**
+   * Retrieve all admission cases belonging to a specific user, ordered by creation date descending
+   * @param userId - The ID of the user whose cases to retrieve
+   * @returns Array of admission cases with associated school information
+   */
   async getMyCases(userId: string): Promise<AdmissionCase[]> {
     return this.prisma.admissionCase.findMany({
       where: { userId },
@@ -300,6 +356,217 @@ export class CaseService {
       },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  // ============ Admin Methods ============
+
+  /**
+   * Retrieve aggregated admin statistics for admission cases
+   * @returns An object containing counts for total cases, cases with essays, verified cases, and pending essay reviews
+   */
+  async getAdminStats() {
+    const [total, withEssay, verified, pendingEssays] = await Promise.all([
+      this.prisma.admissionCase.count(),
+      this.prisma.admissionCase.count({
+        where: { essayContent: { not: null } },
+      }),
+      this.prisma.admissionCase.count({
+        where: { isVerified: true },
+      }),
+      this.prisma.admissionCase.count({
+        where: {
+          essayContent: { not: null },
+          isVerified: false,
+          visibility: { not: Visibility.PRIVATE },
+        },
+      }),
+    ]);
+
+    return { total, withEssay, verified, pendingEssays };
+  }
+
+  /**
+   * Retrieve a paginated list of user-submitted essays pending review
+   * @param page - The page number to retrieve (defaults to 1)
+   * @param pageSize - The number of items per page (defaults to 20)
+   * @returns Paginated result containing pending essay cases, total count, page, and pageSize
+   */
+  async getPendingEssays(page = 1, pageSize = 20) {
+    const skip = (page - 1) * pageSize;
+    const where: Prisma.AdmissionCaseWhereInput = {
+      essayContent: { not: null },
+      isVerified: false,
+      visibility: { not: Visibility.PRIVATE },
+    };
+
+    const [data, total] = await Promise.all([
+      this.prisma.admissionCase.findMany({
+        where,
+        skip,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          school: { select: { id: true, name: true, nameZh: true } },
+        },
+      }),
+      this.prisma.admissionCase.count({ where }),
+    ]);
+
+    return { data, total, page, pageSize };
+  }
+
+  /**
+   * Batch import admission cases from an external data source
+   * @param dto - The batch import payload containing case items, visibility settings, and auto-verify flag
+   * @param operatorId - The ID of the admin operator performing the import
+   * @returns Import result summary including counts of imported, skipped, and per-row error details
+   */
+  async batchImport(
+    dto: BatchImportCaseDto,
+    operatorId: string,
+  ): Promise<BatchImportResult> {
+    const result: BatchImportResult = { imported: 0, skipped: 0, errors: [] };
+
+    // 获取或创建系统导入用户
+    let importUser = await this.prisma.user.findFirst({
+      where: { email: 'import@system.local' },
+    });
+    if (!importUser) {
+      importUser = await this.prisma.user.create({
+        data: {
+          email: 'import@system.local',
+          passwordHash: 'imported',
+          role: 'USER',
+        },
+      });
+    }
+
+    const defaultVisibility = dto.visibility || Visibility.ANONYMOUS;
+
+    for (let i = 0; i < dto.items.length; i++) {
+      const item = dto.items[i];
+      try {
+        // 解析学校名
+        const school = await resolveSchoolId(this.prisma, item.school);
+        if (!school) {
+          result.skipped++;
+          result.errors.push({
+            row: i + 1,
+            school: item.school,
+            message: `学校未找到: ${item.school}`,
+          });
+          continue;
+        }
+
+        // 处理标签
+        const tags = parseTags(item.tags || '');
+        if (item.toefl && !tags.includes('international')) {
+          tags.push('international');
+        }
+
+        // 标准化文书类型
+        const essayType = normalizeEssayType(item.essayType || '');
+
+        // 创建案例
+        await this.prisma.admissionCase.create({
+          data: {
+            userId: importUser.id,
+            schoolId: school.id,
+            year: item.year,
+            round: normalizeRound(item.round || ''),
+            result: normalizeResult(item.result) as any,
+            major: item.major || null,
+            gpaRange: item.gpa || null,
+            satRange: item.sat || null,
+            actRange: item.act || null,
+            toeflRange: item.toefl || null,
+            tags,
+            visibility: defaultVisibility,
+            isVerified: dto.autoVerify || false,
+            ...(dto.autoVerify && { verifiedAt: new Date() }),
+            ...(essayType && { essayType: essayType as any }),
+            ...(item.essayPrompt && { essayPrompt: item.essayPrompt }),
+            ...(item.essayContent && { essayContent: item.essayContent }),
+          },
+        });
+
+        result.imported++;
+      } catch (e: any) {
+        result.skipped++;
+        result.errors.push({
+          row: i + 1,
+          school: item.school,
+          message: e.message,
+        });
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Review a user-submitted case essay by approving or rejecting it
+   * @param id - The unique identifier of the case to review
+   * @param dto - Review action payload containing the action (APPROVE or REJECT) and optional reason
+   * @throws {NotFoundException} When the case with the given ID does not exist
+   * @returns The updated admission case with associated school information
+   */
+  async reviewCaseEssay(id: string, dto: ReviewCaseEssayDto) {
+    const caseItem = await this.prisma.admissionCase.findUnique({
+      where: { id },
+    });
+
+    if (!caseItem) {
+      throw new NotFoundException('Case not found');
+    }
+
+    if (dto.action === 'APPROVE') {
+      return this.prisma.admissionCase.update({
+        where: { id },
+        data: {
+          isVerified: true,
+          verifiedAt: new Date(),
+        },
+        include: {
+          school: { select: { id: true, name: true, nameZh: true } },
+        },
+      });
+    } else {
+      // REJECT: 将可见性设为 PRIVATE，从 gallery 隐藏
+      return this.prisma.admissionCase.update({
+        where: { id },
+        data: {
+          visibility: Visibility.PRIVATE,
+        },
+        include: {
+          school: { select: { id: true, name: true, nameZh: true } },
+        },
+      });
+    }
+  }
+
+  /**
+   * Batch verify or reject multiple admission cases in a single operation
+   * @param dto - Batch verification payload containing case IDs, action (APPROVE or REJECT), and optional reason
+   * @returns Summary with the count of successfully processed cases and an array of failed cases with error details
+   */
+  async batchVerifyCases(dto: BatchVerifyCaseDto) {
+    const results = await Promise.all(
+      dto.ids.map((id) =>
+        this.reviewCaseEssay(id, {
+          action: dto.action,
+          reason: dto.reason,
+        }).catch((e) => ({
+          id,
+          error: e.message,
+        })),
+      ),
+    );
+
+    const success = results.filter((r) => !('error' in r));
+    const failed = results.filter((r) => 'error' in r);
+
+    return { success: success.length, failed };
   }
 
   // ============ Memory Integration ============

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { POINTS_ENABLED } from '@study-abroad/shared';
 
 /**
  * 案例提交激励系统
@@ -58,6 +59,10 @@ export class CaseIncentiveService {
     action: PointAction,
     metadata?: Record<string, unknown>,
   ): Promise<{ success: boolean; newBalance: number; message?: string }> {
+    if (!POINTS_ENABLED) {
+      return { success: true, newBalance: 0 };
+    }
+
     const pointValue = POINT_VALUES[action];
     const currentPoints = await this.getUserPoints(userId);
 
@@ -104,6 +109,8 @@ export class CaseIncentiveService {
     userId: string,
     action: PointAction,
   ): Promise<boolean> {
+    if (!POINTS_ENABLED) return true;
+
     const pointValue = POINT_VALUES[action];
 
     // 获取积分的操作总是可以

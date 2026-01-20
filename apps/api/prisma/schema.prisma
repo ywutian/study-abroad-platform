@@ -198,6 +198,7 @@ model User {
   points       Int            @default(0)
   swipeStats   SwipeStats?
   pointHistory PointHistory[]
+  payments     Payment[]
 
   // Peer review system (互评)
   peerReviewsGiven    PeerReview[] @relation("ReviewsGiven")
@@ -484,6 +485,7 @@ model School {
   schoolLists   SchoolListItem[]
   essayExamples EssayExample[]
   essayPrompts  EssayPrompt[]
+  essaySources  SchoolEssaySource[]
   deadlines     SchoolDeadline[]
   timelines     ApplicationTimeline[]
 
@@ -746,6 +748,7 @@ model ConversationParticipant {
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   lastReadAt DateTime?
+  isPinned   Boolean   @default(false)
 
   createdAt DateTime @default(now())
 
@@ -762,6 +765,8 @@ model Message {
 
   content   String  @db.Text
   isDeleted Boolean @default(false)
+  mediaUrl  String?
+  mediaType String?
 
   createdAt DateTime @default(now())
 
@@ -1441,6 +1446,47 @@ model PointHistory {
 }
 
 // ============================================
+// Payment Records (支付记录)
+// ============================================
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+model Payment {
+  id             String        @id @default(cuid())
+  userId         String
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // 支付信息
+  transactionId  String        @unique
+  plan           String // FREE, PRO, PREMIUM
+  period         String // monthly, yearly
+  amount         Decimal       @db.Decimal(12, 2)
+  currency       String        @default("CNY")
+  status         PaymentStatus @default(PENDING)
+  paymentMethod  String? // stripe, alipay, wechat_pay
+  idempotencyKey String?       @unique // 防重复扣费
+
+  // 描述与元数据
+  description   String?
+  metadata      Json? // webhook payload 等审计信息
+  failureReason String?
+
+  // 时间
+  createdAt   DateTime  @default(now())
+  processedAt DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ============================================
 // Peer Review System (互评系统)
 // ============================================
 
@@ -1700,6 +1746,10 @@ model EssayPrompt {
   verifiedAt   DateTime?
   rejectReason String?   @db.Text
 
+  // 年度变化追踪
+  previousYearPromptId String?  // 关联去年同一题目
+  changeType           String?  // NEW, UNCHANGED, MODIFIED
+
   // 来源
   sources    EssayPromptSource[]
   auditLogs  EssayPromptAudit[]
@@ -1712,6 +1762,7 @@ model EssayPrompt {
   @@index([status])
   @@index([type])
   @@index([year])
+  @@index([changeType])
 }
 
 model EssayPromptSource {
@@ -1719,13 +1770,68 @@ model EssayPromptSource {
   essayPromptId String
   essayPrompt   EssayPrompt @relation(fields: [essayPromptId], references: [id], onDelete: Cascade)
 
-  sourceType String
-  sourceUrl  String?
-  scrapedAt  DateTime?
+  sourceType  String
+  sourceUrl   String?
+  rawContent  String?   @db.Text  // 原始 HTML 片段用于审计
+  confidence  Float?              // AI 置信度 0.0-1.0
+  scrapedAt   DateTime?
 
   createdAt DateTime @default(now())
 
   @@index([essayPromptId])
+}
+
+// ============================================
+// Essay Pipeline (文书采集管道)
+// ============================================
+
+model SchoolEssaySource {
+  id       String @id @default(cuid())
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  sourceType    String   // OFFICIAL, COLLEGEVINE, COMMON_APP
+  url           String
+  slug          String?  // CollegeVine-style slug
+  scrapeGroup   String   @default("GENERIC") // COMMON_APP, UC, COALITION, GENERIC
+  isActive      Boolean  @default(true)
+  priority      Int      @default(0)
+  lastScrapedAt DateTime?
+  lastStatus    String?  // SUCCESS, FAILED, PARTIAL
+  lastError     String?
+
+  // 针对性采集配置（单校覆盖）
+  scrapeConfig Json? // { cssSelectors, removeSelectors, llmHint, maxContentLength }
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([schoolId, sourceType])
+  @@index([schoolId])
+  @@index([isActive])
+  @@index([scrapeGroup])
+}
+
+model EssayPipelineRun {
+  id             String   @id @default(cuid())
+  trigger        String   // SCHEDULED, MANUAL
+  year           Int
+  status         String   @default("RUNNING") // RUNNING, COMPLETED, FAILED
+  totalSchools   Int      @default(0)
+  successCount   Int      @default(0)
+  failedCount    Int      @default(0)
+  newPrompts     Int      @default(0)
+  changedPrompts Int      @default(0)
+  details        Json?    // Per-school results array
+  startedAt      DateTime @default(now())
+  completedAt    DateTime?
+  operatorId     String?
+
+  createdAt DateTime @default(now())
+
+  @@index([status])
+  @@index([year])
+  @@index([startedAt])
 }
 
 // ============================================

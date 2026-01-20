@@ -6,40 +6,18 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
 import { RedisService } from '../../../common/redis/redis.service';
-
-interface RateLimitConfig {
-  windowMs: number; // 时间窗口 (毫秒)
-  maxRequests: number; // 窗口内最大请求数
-}
+import {
+  RateLimitConfig,
+  DEFAULT_RATE_LIMITS,
+  VIP_RATE_LIMITS,
+} from '../constants';
 
 interface WindowEntry {
   timestamp: number;
   count: number;
 }
-
-// 默认限流配置
-const DEFAULT_LIMITS: Record<string, RateLimitConfig> = {
-  // 用户级别 - 每分钟 10 次
-  user: { windowMs: 60000, maxRequests: 10 },
-  // 对话级别 - 每分钟 20 次
-  conversation: { windowMs: 60000, maxRequests: 20 },
-  // IP 级别 - 每分钟 30 次
-  ip: { windowMs: 60000, maxRequests: 30 },
-  // Agent 调用 - 每分钟 50 次
-  agent: { windowMs: 60000, maxRequests: 50 },
-  // Tool 调用 - 每分钟 100 次
-  tool: { windowMs: 60000, maxRequests: 100 },
-};
-
-// VIP 用户限流配置
-const VIP_LIMITS: Record<string, RateLimitConfig> = {
-  user: { windowMs: 60000, maxRequests: 30 },
-  conversation: { windowMs: 60000, maxRequests: 60 },
-  ip: { windowMs: 60000, maxRequests: 100 },
-  agent: { windowMs: 60000, maxRequests: 150 },
-  tool: { windowMs: 60000, maxRequests: 300 },
-};
 
 export interface RateLimitResult {
   allowed: boolean;
@@ -66,7 +44,7 @@ export class RateLimiterService {
    */
   async checkLimit(
     key: string,
-    type: keyof typeof DEFAULT_LIMITS = 'user',
+    type: keyof typeof DEFAULT_RATE_LIMITS = 'user',
     isVip: boolean = false,
   ): Promise<RateLimitResult> {
     const config = this.getConfig(type, isVip);
@@ -202,7 +180,7 @@ export class RateLimiterService {
    * 批量检查多个限流条件
    */
   async checkMultipleLimits(
-    checks: Array<{ key: string; type: keyof typeof DEFAULT_LIMITS }>,
+    checks: Array<{ key: string; type: keyof typeof DEFAULT_RATE_LIMITS }>,
     isVip: boolean = false,
   ): Promise<{
     allowed: boolean;
@@ -232,7 +210,7 @@ export class RateLimiterService {
    */
   async getStatus(
     key: string,
-    type: keyof typeof DEFAULT_LIMITS = 'user',
+    type: keyof typeof DEFAULT_RATE_LIMITS = 'user',
     isVip: boolean = false,
   ): Promise<RateLimitResult> {
     const config = this.getConfig(type, isVip);
@@ -286,7 +264,7 @@ export class RateLimiterService {
    */
   async reset(
     key: string,
-    type: keyof typeof DEFAULT_LIMITS = 'user',
+    type: keyof typeof DEFAULT_RATE_LIMITS = 'user',
   ): Promise<void> {
     const fullKey = `ratelimit:${type}:${key}`;
 
@@ -313,8 +291,9 @@ export class RateLimiterService {
   }
 
   /**
-   * 清理过期内存窗口（定期调用）
+   * 清理过期内存窗口（每分钟自动执行）
    */
+  @Cron('*/1 * * * *')
   cleanup(): void {
     const now = Date.now();
     let cleaned = 0;
@@ -341,11 +320,11 @@ export class RateLimiterService {
   // ==================== 私有方法 ====================
 
   private getConfig(
-    type: keyof typeof DEFAULT_LIMITS,
+    type: keyof typeof DEFAULT_RATE_LIMITS,
     isVip: boolean,
   ): RateLimitConfig {
-    const limits = isVip ? VIP_LIMITS : DEFAULT_LIMITS;
-    return limits[type] || DEFAULT_LIMITS.user;
+    const limits = isVip ? VIP_RATE_LIMITS : DEFAULT_RATE_LIMITS;
+    return limits[type] || DEFAULT_RATE_LIMITS.user;
   }
 
   private getConfigForKey(fullKey: string): RateLimitConfig {
@@ -354,7 +333,7 @@ export class RateLimiterService {
     if (this.customLimits.has(fullKey)) {
       return this.customLimits.get(fullKey)!;
     }
-    return DEFAULT_LIMITS[type] || DEFAULT_LIMITS.user;
+    return DEFAULT_RATE_LIMITS[type] || DEFAULT_RATE_LIMITS.user;
   }
 }
 

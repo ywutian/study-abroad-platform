@@ -20,6 +20,7 @@ import {
   EssayBrainstormResponseDto,
 } from './dto';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
+import { POINTS_ENABLED } from '@study-abroad/shared';
 
 const POINTS_COST = {
   polish: 20,
@@ -47,7 +48,8 @@ export class EssayAiService {
     dto: EssayPolishRequestDto,
   ): Promise<EssayPolishResponseDto> {
     // 检查积分
-    await this.checkAndDeductPoints(userId, POINTS_COST.polish);
+    if (POINTS_ENABLED)
+      await this.checkAndDeductPoints(userId, POINTS_COST.polish);
 
     // 获取文书
     const essay = await this.prisma.essay.findUnique({
@@ -102,7 +104,7 @@ export class EssayAiService {
       return response;
     } catch (error) {
       // 退还积分
-      await this.refundPoints(userId, POINTS_COST.polish);
+      if (POINTS_ENABLED) await this.refundPoints(userId, POINTS_COST.polish);
       throw error;
     }
   }
@@ -114,7 +116,8 @@ export class EssayAiService {
     userId: string,
     dto: EssayReviewRequestDto,
   ): Promise<EssayReviewResponseDto> {
-    await this.checkAndDeductPoints(userId, POINTS_COST.review);
+    if (POINTS_ENABLED)
+      await this.checkAndDeductPoints(userId, POINTS_COST.review);
 
     const essay = await this.prisma.essay.findUnique({
       where: { id: dto.essayId },
@@ -203,7 +206,7 @@ ${dto.major ? `目标专业：${dto.major}` : ''}
 
       return response;
     } catch (error) {
-      await this.refundPoints(userId, POINTS_COST.review);
+      if (POINTS_ENABLED) await this.refundPoints(userId, POINTS_COST.review);
       this.logger.error('Essay review failed', error);
       throw new BadRequestException('Failed to review essay');
     }
@@ -346,7 +349,8 @@ ${dto.major ? `目标专业：${dto.major}` : ''}
     userId: string,
     dto: EssayBrainstormRequestDto,
   ): Promise<EssayBrainstormResponseDto> {
-    await this.checkAndDeductPoints(userId, POINTS_COST.brainstorm);
+    if (POINTS_ENABLED)
+      await this.checkAndDeductPoints(userId, POINTS_COST.brainstorm);
 
     const systemPrompt = `你是一位资深留学文书顾问，擅长帮助学生挖掘独特的故事和角度。
 
@@ -402,7 +406,8 @@ ${dto.background ? `\n学生背景：${dto.background}` : ''}`;
 
       return response;
     } catch (error) {
-      await this.refundPoints(userId, POINTS_COST.brainstorm);
+      if (POINTS_ENABLED)
+        await this.refundPoints(userId, POINTS_COST.brainstorm);
       this.logger.error('Brainstorm failed', error);
       throw new BadRequestException('Failed to generate ideas');
     }
@@ -749,13 +754,14 @@ ${dto.background ? `\n学生背景：${dto.background}` : ''}`;
     caseId: string,
     schoolName?: string,
   ) {
-    const POINTS_COST = 20;
-    await this.checkAndDeductPoints(userId, POINTS_COST);
+    const GALLERY_POINTS_COST = 20;
+    if (POINTS_ENABLED)
+      await this.checkAndDeductPoints(userId, GALLERY_POINTS_COST);
 
     const essay = await this.getGalleryEssayDetail(caseId);
 
     if (!essay.content) {
-      await this.refundPoints(userId, POINTS_COST);
+      if (POINTS_ENABLED) await this.refundPoints(userId, GALLERY_POINTS_COST);
       throw new BadRequestException('Essay content is empty');
     }
 
@@ -772,7 +778,7 @@ ${dto.background ? `\n学生背景：${dto.background}` : ''}`;
         tokenUsed: this.estimateTokens(essay.content),
       };
     } catch (error) {
-      await this.refundPoints(userId, POINTS_COST);
+      if (POINTS_ENABLED) await this.refundPoints(userId, GALLERY_POINTS_COST);
       this.logger.error('Gallery essay analysis failed', error);
       throw new BadRequestException('Failed to analyze essay');
     }

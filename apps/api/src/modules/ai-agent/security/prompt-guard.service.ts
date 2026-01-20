@@ -38,6 +38,7 @@ export enum ThreatType {
   ENCODING_ATTACK = 'ENCODING_ATTACK',
   DELIMITER_ATTACK = 'DELIMITER_ATTACK',
   INDIRECT_INJECTION = 'INDIRECT_INJECTION',
+  INPUT_TOO_LONG = 'INPUT_TOO_LONG',
 }
 
 interface PatternRule {
@@ -270,6 +271,26 @@ export class PromptGuardService {
   ): Promise<PromptGuardResult> {
     const threats: ThreatDetection[] = [];
     let riskScore = 0;
+
+    // 0. 超长输入直接标记高风险，跳过正则（防 ReDoS）
+    if (input.length > 10000) {
+      return {
+        safe: false,
+        riskScore: 0.8,
+        threats: [
+          {
+            type: ThreatType.INPUT_TOO_LONG,
+            severity: 'HIGH',
+            pattern: `Input length: ${input.length}`,
+            position: { start: 10000, end: input.length },
+            confidence: 1.0,
+          },
+        ],
+        sanitizedInput: input.slice(0, 10000),
+        blocked: true,
+        reason: '输入过长，可能为攻击尝试',
+      };
+    }
 
     // 1. 规则匹配检测
     const patternThreats = this.detectPatternThreats(input);

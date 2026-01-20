@@ -165,27 +165,38 @@ class RedisCircuitStorage implements CircuitBreakerStorage {
 // ==================== 内存存储实现 ====================
 
 class MemoryCircuitStorage implements CircuitBreakerStorage {
-  private circuits: Map<string, CircuitBreakerState> = new Map();
+  private circuits: Map<
+    string,
+    { state: CircuitBreakerState; expiresAt: number }
+  > = new Map();
 
   async getState(key: string): Promise<CircuitBreakerState | null> {
-    return this.circuits.get(key) || null;
+    const entry = this.circuits.get(key);
+    if (!entry) return null;
+    if (Date.now() > entry.expiresAt) {
+      this.circuits.delete(key);
+      return null;
+    }
+    return entry.state;
   }
 
   async setState(
     key: string,
     state: CircuitBreakerState,
-    _ttl: number,
+    ttl: number,
   ): Promise<void> {
-    // 内存存储不使用 TTL，依赖 Map 自动管理
-    this.circuits.set(key, state);
+    this.circuits.set(key, {
+      state,
+      expiresAt: Date.now() + ttl,
+    });
   }
 
   async incrementFailures(key: string): Promise<number> {
-    const state = this.circuits.get(key);
-    if (!state) return 0;
-    state.failures++;
-    state.lastFailureTime = Date.now();
-    return state.failures;
+    const entry = this.circuits.get(key);
+    if (!entry || Date.now() > entry.expiresAt) return 0;
+    entry.state.failures++;
+    entry.state.lastFailureTime = Date.now();
+    return entry.state.failures;
   }
 
   async resetFailures(key: string): Promise<void> {

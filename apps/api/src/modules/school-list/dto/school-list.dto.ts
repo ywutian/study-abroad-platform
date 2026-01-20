@@ -1,5 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsOptional, IsEnum } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsEnum,
+  IsBoolean,
+} from 'class-validator';
 import { SchoolTier } from '@prisma/client';
 
 export { SchoolTier };
@@ -24,6 +30,11 @@ export class CreateSchoolListItemDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @ApiPropertyOptional({ description: '是否为 AI 推荐' })
+  @IsOptional()
+  @IsBoolean()
+  isAIRecommended?: boolean;
 }
 
 export class UpdateSchoolListItemDto {

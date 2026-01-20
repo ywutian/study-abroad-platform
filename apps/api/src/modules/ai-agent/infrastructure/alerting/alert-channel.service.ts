@@ -23,6 +23,7 @@ export enum AlertChannel {
   EMAIL = 'email',
   WECHAT = 'wechat',
   DINGTALK = 'dingtalk',
+  PAGERDUTY = 'pagerduty',
   REDIS_QUEUE = 'redis_queue',
 }
 
@@ -58,6 +59,8 @@ interface AlertConfig {
   wechatWebhook?: string;
   /** 钉钉 Webhook URL */
   dingtalkWebhook?: string;
+  /** PagerDuty Events API v2 routing key */
+  pagerdutyRoutingKey?: string;
   /** 告警聚合窗口（秒） */
   aggregationWindow: number;
   /** 最大告警频率（每分钟） */
@@ -92,6 +95,9 @@ export class AlertChannelService implements OnModuleInit {
         .filter(Boolean),
       wechatWebhook: this.configService.get('ALERT_WECHAT_WEBHOOK'),
       dingtalkWebhook: this.configService.get('ALERT_DINGTALK_WEBHOOK'),
+      pagerdutyRoutingKey: this.configService.get(
+        'ALERT_PAGERDUTY_ROUTING_KEY',
+      ),
       aggregationWindow: parseInt(
         this.configService.get('ALERT_AGGREGATION_WINDOW', '60'),
         10,
@@ -170,33 +176,99 @@ export class AlertChannelService implements OnModuleInit {
   }
 
   /**
-   * 发送到指定渠道
+   * 发送到指定渠道（含投递日志记录）
    */
   private async sendToChannel(
     channel: AlertChannel,
     payload: AlertPayload,
   ): Promise<void> {
+    const alertId =
+      payload.alertId ||
+      this.generateAlertId(payload.title, payload.source || '');
+    const startTime = Date.now();
+
     try {
       switch (channel) {
         case AlertChannel.SLACK:
-          await this.sendToSlack(payload);
+          await this.sendWithRetry(() => this.sendToSlack(payload));
           break;
         case AlertChannel.EMAIL:
           await this.sendToEmail(payload);
           break;
         case AlertChannel.WECHAT:
-          await this.sendToWechat(payload);
+          await this.sendWithRetry(() => this.sendToWechat(payload));
           break;
         case AlertChannel.DINGTALK:
-          await this.sendToDingtalk(payload);
+          await this.sendWithRetry(() => this.sendToDingtalk(payload));
+          break;
+        case AlertChannel.PAGERDUTY:
+          await this.sendWithRetry(() => this.sendToPagerDuty(payload));
           break;
         case AlertChannel.REDIS_QUEUE:
           await this.sendToRedisQueue(payload);
           break;
       }
+
+      // 投递成功日志
+      await this.recordDelivery(
+        alertId,
+        channel,
+        'success',
+        Date.now() - startTime,
+      );
     } catch (error) {
       this.logger.error(`Failed to send alert to ${channel}`, error);
+
+      // 投递失败日志
+      await this.recordDelivery(
+        alertId,
+        channel,
+        'failed',
+        Date.now() - startTime,
+        error instanceof Error ? error.message : String(error),
+      );
+
+      // 记录失败到 Redis 队列供后续审计
+      await this.redis
+        .lpush(
+          'alerts:failed',
+          JSON.stringify({
+            alertId,
+            channel,
+            error: error instanceof Error ? error.message : String(error),
+            payload: { title: payload.title, severity: payload.severity },
+            timestamp: new Date().toISOString(),
+          }),
+        )
+        .catch(() => {});
     }
+  }
+
+  /**
+   * Webhook 重试（指数退避，最多 3 次）
+   */
+  private async sendWithRetry(
+    fn: () => Promise<void>,
+    maxRetries = 3,
+    baseDelayMs = 1000,
+  ): Promise<void> {
+    let lastError: Error | null = null;
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        await fn();
+        return;
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+
+        if (attempt < maxRetries - 1) {
+          const delay = baseDelayMs * Math.pow(2, attempt);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+      }
+    }
+
+    throw lastError;
   }
 
   /**
@@ -311,6 +383,52 @@ ${payload.message}${payload.traceId ? `\n\n**Trace ID**: ${payload.traceId}` : '
   }
 
   /**
+   * 发送到 PagerDuty（Events API v2）
+   */
+  private async sendToPagerDuty(payload: AlertPayload): Promise<void> {
+    if (!this.config.pagerdutyRoutingKey) return;
+
+    const severityMap: Record<string, string> = {
+      [AlertSeverity.CRITICAL]: 'critical',
+      [AlertSeverity.WARNING]: 'warning',
+      [AlertSeverity.INFO]: 'info',
+    };
+
+    const pdPayload = {
+      routing_key: this.config.pagerdutyRoutingKey,
+      event_action: 'trigger',
+      payload: {
+        summary: `[${payload.severity.toUpperCase()}] ${payload.title}: ${payload.message.slice(0, 200)}`,
+        severity: severityMap[payload.severity] || 'warning',
+        source: payload.source || 'study-abroad-platform',
+        component: 'ai-agent',
+        group: 'security',
+        class: payload.metadata?.eventType || 'alert',
+        timestamp: (payload.timestamp || new Date()).toISOString(),
+        custom_details: {
+          title: payload.title,
+          message: payload.message,
+          userId: payload.userId,
+          traceId: payload.traceId,
+          ...payload.metadata,
+        },
+      },
+    };
+
+    const response = await fetch('https://events.pagerduty.com/v2/enqueue', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(pdPayload),
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `PagerDuty API error: ${response.status} ${response.statusText}`,
+      );
+    }
+  }
+
+  /**
    * 发送到 Redis 队列（供其他服务消费）
    */
   private async sendToRedisQueue(payload: AlertPayload): Promise<void> {
@@ -361,6 +479,8 @@ ${payload.message}${payload.traceId ? `\n\n**Trace ID**: ${payload.traceId}` : '
         if (this.config.emailEnabled) channels.push(AlertChannel.EMAIL);
         if (this.config.wechatWebhook) channels.push(AlertChannel.WECHAT);
         if (this.config.dingtalkWebhook) channels.push(AlertChannel.DINGTALK);
+        if (this.config.pagerdutyRoutingKey)
+          channels.push(AlertChannel.PAGERDUTY);
         break;
       case AlertSeverity.WARNING:
         // WARNING: Slack + Redis
@@ -468,7 +588,121 @@ ${payload.metadata ? `\nMetadata:\n${JSON.stringify(payload.metadata, null, 2)}`
     if (this.config.emailEnabled) channels.push('email');
     if (this.config.wechatWebhook) channels.push('wechat');
     if (this.config.dingtalkWebhook) channels.push('dingtalk');
+    if (this.config.pagerdutyRoutingKey) channels.push('pagerduty');
 
     return channels;
+  }
+
+  // ==================== 投递日志 ====================
+
+  /**
+   * 记录告警投递结果（Redis hash，TTL 7 天）
+   */
+  private async recordDelivery(
+    alertId: string,
+    channel: string,
+    status: 'success' | 'failed',
+    durationMs: number,
+    error?: string,
+  ): Promise<void> {
+    try {
+      const key = `alert:delivery:${alertId}`;
+      // 使用 list 存储投递日志（RedisService 不暴露 hset）
+      await this.redis.lpush(
+        key,
+        JSON.stringify({
+          channel,
+          status,
+          durationMs,
+          error,
+          timestamp: new Date().toISOString(),
+        }),
+      );
+      await this.redis.expire(key, 7 * 24 * 60 * 60); // 7 天 TTL
+    } catch {
+      // 不因日志记录失败影响告警发送
+    }
+  }
+
+  /**
+   * 获取告警投递日志
+   */
+  async getDeliveryLog(alertId: string): Promise<Record<string, any>[]> {
+    const key = `alert:delivery:${alertId}`;
+    const entries = await this.redis.lrange(key, 0, -1);
+
+    if (!entries || entries.length === 0) return [];
+
+    return entries.map((v) => {
+      try {
+        return JSON.parse(v);
+      } catch {
+        return { raw: v };
+      }
+    });
+  }
+
+  // ==================== 告警确认 ====================
+
+  /**
+   * 确认（acknowledge）一个告警
+   */
+  async acknowledgeAlert(
+    alertId: string,
+    acknowledgedBy: string,
+    notes?: string,
+  ): Promise<void> {
+    const key = `alert:ack:${alertId}`;
+    await this.redis.set(
+      key,
+      JSON.stringify({
+        acknowledgedBy,
+        acknowledgedAt: new Date().toISOString(),
+        notes,
+      }),
+      30 * 24 * 60 * 60, // 30 天 TTL
+    );
+
+    // 如果配置了 PagerDuty，发送 resolve 事件
+    if (this.config.pagerdutyRoutingKey) {
+      try {
+        await fetch('https://events.pagerduty.com/v2/enqueue', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            routing_key: this.config.pagerdutyRoutingKey,
+            event_action: 'resolve',
+            dedup_key: alertId,
+          }),
+        });
+      } catch (err) {
+        this.logger.error('Failed to resolve PagerDuty alert', err);
+      }
+    }
+  }
+
+  /**
+   * 获取未确认的活跃告警列表
+   */
+  async getActiveAlerts(limit = 50): Promise<any[]> {
+    const raw = await this.redis.lrange('alerts:queue', 0, limit - 1);
+
+    if (!raw || raw.length === 0) return [];
+
+    const alerts: any[] = [];
+    for (const item of raw) {
+      try {
+        const alert = JSON.parse(item);
+        const ackKey = `alert:ack:${alert.alertId || this.generateAlertId(alert.title, alert.source || '')}`;
+        const ack = await this.redis.get(ackKey);
+        if (!ack) {
+          alerts.push(alert);
+        }
+      } catch {
+        // skip malformed entries
+      }
+    }
+
+    return alerts;
   }
 }

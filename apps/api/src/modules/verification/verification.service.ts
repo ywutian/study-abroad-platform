@@ -20,6 +20,7 @@ import {
   ReviewVerificationDto,
   ReviewAction,
 } from './dto/review-verification.dto';
+import { POINTS_ENABLED } from '@study-abroad/shared';
 
 @Injectable()
 export class VerificationService {
@@ -241,19 +242,21 @@ export class VerificationService {
         });
 
         // 奖励积分
-        await tx.user.update({
-          where: { id: request.userId },
-          data: { points: { increment: 100 } },
-        });
+        if (POINTS_ENABLED) {
+          await tx.user.update({
+            where: { id: request.userId },
+            data: { points: { increment: 100 } },
+          });
 
-        await tx.pointHistory.create({
-          data: {
-            userId: request.userId,
-            action: 'VERIFICATION_APPROVED',
-            points: 100,
-            metadata: { caseId: request.caseId },
-          },
-        });
+          await tx.pointHistory.create({
+            data: {
+              userId: request.userId,
+              action: 'VERIFICATION_APPROVED',
+              points: 100,
+              metadata: { caseId: request.caseId },
+            },
+          });
+        }
       }
 
       return updatedRequest;

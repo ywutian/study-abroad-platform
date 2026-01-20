@@ -24,7 +24,8 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { Roles } from '../../../common/decorators/roles.decorator';
-import { Role } from '@prisma/client';
+import { Role, MemoryType, EntityType } from '@prisma/client';
+import { PrismaService } from '../../../prisma/prisma.service';
 import { AgentConfigService } from '../infrastructure/config/config.service';
 import { MetricsService } from '../infrastructure/observability/metrics.service';
 import { TracingService } from '../infrastructure/observability/tracing.service';
@@ -32,6 +33,9 @@ import { TokenTrackerService } from '../core/token-tracker.service';
 import { RateLimiterService } from '../core/rate-limiter.service';
 import { ResilienceService } from '../core/resilience.service';
 import { LLMService } from '../core/llm.service';
+import { MemoryManagerService } from '../memory/memory-manager.service';
+import { MemoryDecayService } from '../memory/memory-decay.service';
+import { MemoryConflictService } from '../memory/memory-conflict.service';
 import { AgentType } from '../types';
 import {
   IsString,
@@ -39,6 +43,7 @@ import {
   IsBoolean,
   IsOptional,
   IsObject,
+  IsEnum,
   Min,
   Max,
 } from 'class-validator';
@@ -77,6 +82,10 @@ class UpdateRateLimitDto {
 class UpdateAgentConfigDto {
   @IsString()
   @IsOptional()
+  model?: string;
+
+  @IsString()
+  @IsOptional()
   systemPrompt?: string;
 
   @IsNumber()
@@ -100,6 +109,28 @@ class UpdateAgentConfigDto {
   tools?: string[];
 }
 
+class UpdateLlmConfigDto {
+  @IsString()
+  @IsOptional()
+  defaultModel?: string;
+
+  @IsString()
+  @IsOptional()
+  fallbackModel?: string;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(1)
+  @Max(10)
+  maxRetries?: number;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(5000)
+  @Max(120000)
+  timeoutMs?: number;
+}
+
 class UpdateFeatureDto {
   @IsBoolean()
   enabled: boolean;
@@ -118,6 +149,54 @@ class SetUserQuotaDto {
   monthlyTokens: number;
 }
 
+class UpdateDecayConfigDto {
+  @IsBoolean()
+  @IsOptional()
+  enabled?: boolean;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(0.1)
+  decayRate?: number;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(1)
+  minImportance?: number;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(0.5)
+  accessBoost?: number;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(1)
+  maxAccessBoost?: number;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(1)
+  archiveThreshold?: number;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(1)
+  @Max(365)
+  archiveAfterDays?: number;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(30)
+  @Max(3650)
+  deleteAfterDays?: number;
+}
+
 // ==================== Controller ====================
 
 @ApiTags('ai-agent-admin')
@@ -133,6 +212,10 @@ export class AgentAdminController {
     private rateLimiter: RateLimiterService,
     private resilience: ResilienceService,
     private llm: LLMService,
+    private prisma: PrismaService,
+    private memoryManager: MemoryManagerService,
+    private memoryDecay: MemoryDecayService,
+    private memoryConflict: MemoryConflictService,
   ) {}
 
   // ==================== 配置管理 ====================
@@ -156,6 +239,24 @@ export class AgentAdminController {
   @ApiOperation({ summary: '获取系统配置' })
   getSystemConfig() {
     return this.configService.getSystemConfig();
+  }
+
+  /**
+   * 更新 LLM 配置（模型、回退模型、重试、超时）
+   */
+  @Put('config/llm')
+  @ApiOperation({ summary: '更新 LLM 配置' })
+  updateLlmConfig(@Body() dto: UpdateLlmConfigDto) {
+    const current = this.configService.getSystemConfig();
+
+    return this.configService.updateSystemConfig({
+      llm: {
+        defaultModel: dto.defaultModel ?? current.llm.defaultModel,
+        fallbackModel: dto.fallbackModel ?? current.llm.fallbackModel,
+        maxRetries: dto.maxRetries ?? current.llm.maxRetries,
+        timeoutMs: dto.timeoutMs ?? current.llm.timeoutMs,
+      },
+    });
   }
 
   /**
@@ -429,6 +530,265 @@ export class AgentAdminController {
       },
       timestamp: new Date().toISOString(),
     };
+  }
+
+  // ==================== 记忆管理 ====================
+
+  /**
+   * 全局记忆统计
+   */
+  @Get('memory/stats')
+  @ApiOperation({ summary: '获取全局记忆统计' })
+  async getMemoryStats() {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const [
+      totalMemories,
+      totalConversations,
+      totalMessages,
+      totalEntities,
+      memoryByType,
+      entityByType,
+      recentMemories,
+      recentConversations,
+      recentMessages,
+      compactionCount,
+      compactionAvg,
+    ] = await Promise.all([
+      this.prisma.memory.count(),
+      this.prisma.agentConversation.count(),
+      this.prisma.agentMessage.count(),
+      this.prisma.entity.count(),
+      this.prisma.memory.groupBy({ by: ['type'], _count: true }),
+      this.prisma.entity.groupBy({ by: ['type'], _count: true }),
+      this.prisma.memory.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
+      this.prisma.agentConversation.count({
+        where: { createdAt: { gte: sevenDaysAgo } },
+      }),
+      this.prisma.agentMessage.count({
+        where: { createdAt: { gte: sevenDaysAgo } },
+      }),
+      this.prisma.memoryCompaction.count(),
+      this.prisma.memoryCompaction.aggregate({
+        _avg: { compressionRatio: true },
+      }),
+    ]);
+
+    return {
+      totalMemories,
+      totalConversations,
+      totalMessages,
+      totalEntities,
+      memoryByType: Object.fromEntries(
+        memoryByType.map((m) => [m.type, m._count]),
+      ),
+      entityByType: Object.fromEntries(
+        entityByType.map((e) => [e.type, e._count]),
+      ),
+      recentActivity: {
+        memoriesLast7Days: recentMemories,
+        conversationsLast7Days: recentConversations,
+        messagesLast7Days: recentMessages,
+      },
+      compaction: {
+        totalCompactions: compactionCount,
+        averageCompressionRatio: compactionAvg._avg.compressionRatio
+          ? Number(compactionAvg._avg.compressionRatio)
+          : 0,
+      },
+    };
+  }
+
+  /**
+   * 用户记忆详情
+   */
+  @Get('memory/users/:userId/stats')
+  @ApiOperation({ summary: '获取用户记忆详情统计' })
+  async getUserMemoryStats(@Param('userId') userId: string) {
+    return this.memoryManager.getEnhancedStats(userId);
+  }
+
+  /**
+   * 浏览记忆
+   */
+  @Get('memory/browse')
+  @ApiOperation({ summary: '浏览记忆列表' })
+  async browseMemories(
+    @Query('userId') userId?: string,
+    @Query('type') type?: MemoryType,
+    @Query('category') category?: string,
+    @Query('minImportance') minImportance?: number,
+    @Query('page') page: number = 1,
+    @Query('pageSize') pageSize: number = 20,
+  ) {
+    const where: any = {};
+    if (userId) where.userId = userId;
+    if (type) where.type = type;
+    if (category) where.category = category;
+    if (minImportance !== undefined)
+      where.importance = { gte: Number(minImportance) };
+
+    const [data, total] = await Promise.all([
+      this.prisma.memory.findMany({
+        where,
+        orderBy: [{ importance: 'desc' }, { createdAt: 'desc' }],
+        skip: (Number(page) - 1) * Number(pageSize),
+        take: Number(pageSize),
+        select: {
+          id: true,
+          userId: true,
+          type: true,
+          category: true,
+          content: true,
+          importance: true,
+          accessCount: true,
+          lastAccessedAt: true,
+          metadata: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      }),
+      this.prisma.memory.count({ where }),
+    ]);
+
+    return { data, total, page: Number(page), pageSize: Number(pageSize) };
+  }
+
+  /**
+   * 删除记忆
+   */
+  @Delete('memory/:memoryId')
+  @ApiOperation({ summary: '删除单条记忆' })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteMemory(@Param('memoryId') memoryId: string) {
+    await this.memoryManager.forget(memoryId);
+  }
+
+  /**
+   * 浏览对话
+   */
+  @Get('memory/conversations')
+  @ApiOperation({ summary: '浏览对话列表' })
+  async browseConversations(
+    @Query('userId') userId?: string,
+    @Query('page') page: number = 1,
+    @Query('pageSize') pageSize: number = 20,
+  ) {
+    const where: any = {};
+    if (userId) where.userId = userId;
+
+    const [data, total] = await Promise.all([
+      this.prisma.agentConversation.findMany({
+        where,
+        orderBy: { updatedAt: 'desc' },
+        skip: (Number(page) - 1) * Number(pageSize),
+        take: Number(pageSize),
+        include: { messages: { select: { id: true } } },
+      }),
+      this.prisma.agentConversation.count({ where }),
+    ]);
+
+    return {
+      data: data.map((c) => ({
+        id: c.id,
+        userId: c.userId,
+        title: c.title,
+        summary: c.summary,
+        agentType: c.agentType,
+        messageCount: c.messages.length,
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
+      })),
+      total,
+      page: Number(page),
+      pageSize: Number(pageSize),
+    };
+  }
+
+  /**
+   * 获取对话消息
+   */
+  @Get('memory/conversations/:conversationId/messages')
+  @ApiOperation({ summary: '获取对话消息详情' })
+  async getConversationMessages(
+    @Param('conversationId') conversationId: string,
+  ) {
+    return this.memoryManager.getMessages(conversationId, 100);
+  }
+
+  /**
+   * 浏览实体
+   */
+  @Get('memory/entities')
+  @ApiOperation({ summary: '浏览实体列表' })
+  async browseEntities(
+    @Query('userId') userId?: string,
+    @Query('type') type?: EntityType,
+    @Query('page') page: number = 1,
+    @Query('pageSize') pageSize: number = 20,
+  ) {
+    const where: any = {};
+    if (userId) where.userId = userId;
+    if (type) where.type = type;
+
+    const [data, total] = await Promise.all([
+      this.prisma.entity.findMany({
+        where,
+        orderBy: { updatedAt: 'desc' },
+        skip: (Number(page) - 1) * Number(pageSize),
+        take: Number(pageSize),
+      }),
+      this.prisma.entity.count({ where }),
+    ]);
+
+    return { data, total, page: Number(page), pageSize: Number(pageSize) };
+  }
+
+  /**
+   * 获取衰减配置
+   */
+  @Get('memory/decay/config')
+  @ApiOperation({ summary: '获取记忆衰减配置' })
+  getDecayConfig() {
+    return this.memoryDecay.getConfig();
+  }
+
+  /**
+   * 更新衰减配置
+   */
+  @Put('memory/decay/config')
+  @ApiOperation({ summary: '更新记忆衰减配置' })
+  updateDecayConfig(@Body() dto: UpdateDecayConfigDto) {
+    this.memoryDecay.updateConfig(dto);
+    return this.memoryDecay.getConfig();
+  }
+
+  /**
+   * 获取衰减统计
+   */
+  @Get('memory/decay/stats')
+  @ApiOperation({ summary: '获取记忆衰减统计' })
+  async getDecayStats() {
+    return this.memoryDecay.getDecayStats();
+  }
+
+  /**
+   * 手动触发衰减
+   */
+  @Post('memory/decay/trigger')
+  @ApiOperation({ summary: '手动触发记忆衰减' })
+  async triggerDecay() {
+    return this.memoryManager.triggerDecay();
+  }
+
+  /**
+   * 获取待确认冲突
+   */
+  @Get('memory/conflicts')
+  @ApiOperation({ summary: '获取待确认的记忆冲突' })
+  async getMemoryConflicts(@Query('userId') userId: string) {
+    return this.memoryConflict.getPendingConflicts(userId);
   }
 
   // ==================== 私有方法 ====================

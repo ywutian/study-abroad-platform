@@ -10,7 +10,12 @@ import {
   UpdateEssayPromptDto,
   QueryEssayPromptDto,
   VerifyEssayPromptDto,
+  BatchImportEssayPromptDto,
 } from './dto';
+import {
+  resolveSchoolId,
+  type BatchImportResult,
+} from '../../common/utils/import-normalizers';
 
 @Injectable()
 export class EssayPromptService {
@@ -314,6 +319,107 @@ export class EssayPromptService {
         {} as Record<string, number>,
       ),
     };
+  }
+
+  /**
+   * 批量导入文书题目
+   */
+  async batchImport(
+    dto: BatchImportEssayPromptDto,
+    operatorId: string,
+  ): Promise<BatchImportResult> {
+    const result: BatchImportResult = { imported: 0, skipped: 0, errors: [] };
+
+    for (let i = 0; i < dto.items.length; i++) {
+      const item = dto.items[i];
+      try {
+        // 解析学校名 → schoolId
+        const school = await resolveSchoolId(this.prisma, item.school);
+        if (!school) {
+          result.skipped++;
+          result.errors.push({
+            row: i + 1,
+            school: item.school,
+            message: `学校未找到: ${item.school}`,
+          });
+          continue;
+        }
+
+        // 去重检查：同学校 + 同年份 + 相同 prompt 前50字
+        const promptPrefix = item.prompt.substring(0, 50);
+        const existing = await this.prisma.essayPrompt.findFirst({
+          where: {
+            schoolId: school.id,
+            year: item.year,
+            prompt: { startsWith: promptPrefix },
+            isActive: true,
+          },
+        });
+
+        if (existing) {
+          result.skipped++;
+          result.errors.push({
+            row: i + 1,
+            school: item.school,
+            message: '重复数据，已跳过',
+          });
+          continue;
+        }
+
+        // 创建 EssayPrompt
+        const status = dto.autoVerify
+          ? EssayStatus.VERIFIED
+          : EssayStatus.PENDING;
+
+        const essayPrompt = await this.prisma.essayPrompt.create({
+          data: {
+            schoolId: school.id,
+            year: item.year,
+            type: item.type as any,
+            prompt: item.prompt,
+            promptZh: item.promptZh,
+            wordLimit: item.wordLimit,
+            isRequired: item.isRequired ?? true,
+            sortOrder: item.sortOrder ?? 0,
+            status,
+            ...(dto.autoVerify && {
+              verifiedBy: operatorId,
+              verifiedAt: new Date(),
+            }),
+            sources: item.sourceUrl
+              ? {
+                  create: {
+                    sourceType: 'OFFICIAL',
+                    sourceUrl: item.sourceUrl,
+                  },
+                }
+              : undefined,
+          },
+        });
+
+        // 审计日志
+        await this.createAuditLog(
+          essayPrompt.id,
+          'CREATE',
+          null,
+          status,
+          operatorId,
+          'ADMIN',
+          { changes: { batchImport: true, school: item.school } },
+        );
+
+        result.imported++;
+      } catch (e: any) {
+        result.skipped++;
+        result.errors.push({
+          row: i + 1,
+          school: item.school,
+          message: e.message,
+        });
+      }
+    }
+
+    return result;
   }
 
   /**

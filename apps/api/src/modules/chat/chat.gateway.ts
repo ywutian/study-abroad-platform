@@ -161,8 +161,44 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     if (!client.userId) return;
 
+    // 安全校验：验证用户是会话参与者
+    const participant = await this.chatService[
+      'prisma'
+    ].conversationParticipant.findUnique({
+      where: {
+        conversationId_userId: {
+          conversationId: data.conversationId,
+          userId: client.userId,
+        },
+      },
+    });
+    if (!participant) {
+      return { success: false, error: 'Not a participant' };
+    }
+
     client.join(`conversation:${data.conversationId}`);
-    await this.chatService.markAsRead(data.conversationId, client.userId);
+
+    return { success: true };
+  }
+
+  @SubscribeMessage('markRead')
+  async handleMarkRead(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() data: { conversationId: string },
+  ) {
+    if (!client.userId) return;
+
+    const result = await this.chatService.markAsRead(
+      data.conversationId,
+      client.userId,
+    );
+
+    // 广播给会话内其他人
+    client.to(`conversation:${data.conversationId}`).emit('messagesRead', {
+      conversationId: data.conversationId,
+      userId: client.userId,
+      readAt: result.lastReadAt,
+    });
 
     return { success: true };
   }
@@ -194,6 +230,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   sendToUser(userId: string, event: string, data: unknown) {
     this.server.to(`user:${userId}`).emit(event, data);
+  }
+
+  broadcastToConversation(
+    conversationId: string,
+    event: string,
+    data: unknown,
+  ) {
+    this.server.to(`conversation:${conversationId}`).emit(event, data);
   }
 
   // ============================================

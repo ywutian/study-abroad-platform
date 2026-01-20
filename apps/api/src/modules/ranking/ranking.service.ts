@@ -66,6 +66,14 @@ export class RankingService {
       rank: 0,
     }));
 
+    // Rescale scores to 0-100 (top school = 100)
+    const maxScore = Math.max(...scoredSchools.map((s) => s.score));
+    if (maxScore > 0) {
+      scoredSchools.forEach((school) => {
+        school.score = (school.score / maxScore) * 100;
+      });
+    }
+
     // Sort by score (higher is better)
     scoredSchools.sort((a, b) => b.score - a.score);
 

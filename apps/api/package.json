@@ -84,6 +84,7 @@
     "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
+    "@types/multer": "^2.0.0",
     "@types/node": "^22.10.7",
     "@types/nodemailer": "^7.0.5",
     "@types/passport-jwt": "^4.0.1",
@@ -126,10 +127,10 @@
     "testEnvironment": "node",
     "coverageThreshold": {
       "global": {
-        "statements": 15,
-        "branches": 10,
-        "functions": 10,
-        "lines": 15
+        "statements": 60,
+        "branches": 50,
+        "functions": 50,
+        "lines": 60
       }
     },
     "coveragePathIgnorePatterns": [

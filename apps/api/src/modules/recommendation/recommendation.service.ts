@@ -15,6 +15,7 @@ import {
   RecommendedSchoolDto,
   RecommendationAnalysisDto,
 } from './dto';
+import { POINTS_ENABLED } from '@study-abroad/shared';
 
 const POINTS_COST = 25;
 
@@ -36,7 +37,7 @@ export class RecommendationService {
     dto: SchoolRecommendationRequestDto,
   ): Promise<SchoolRecommendationResponseDto> {
     // 检查积分
-    await this.checkAndDeductPoints(userId, POINTS_COST);
+    if (POINTS_ENABLED) await this.checkAndDeductPoints(userId, POINTS_COST);
 
     // 获取用户档案
     const profile = await this.prisma.profile.findFirst({
@@ -50,7 +51,7 @@ export class RecommendationService {
     });
 
     if (!profile) {
-      await this.refundPoints(userId, POINTS_COST);
+      if (POINTS_ENABLED) await this.refundPoints(userId, POINTS_COST);
       throw new NotFoundException('请先完善个人档案');
     }
 
@@ -105,9 +106,38 @@ export class RecommendationService {
       }
 
       const parsed = JSON.parse(jsonMatch[0]);
+
+      // 校验 AI 响应结构
+      if (!Array.isArray(parsed.recommendations)) {
+        throw new Error('Invalid AI response: missing recommendations');
+      }
+      parsed.recommendations = parsed.recommendations
+        .filter((r: any) => r.schoolName && typeof r.schoolName === 'string')
+        .map((r: any) => ({
+          ...r,
+          tier: ['reach', 'match', 'safety'].includes(r.tier)
+            ? r.tier
+            : 'match',
+          estimatedProbability: Math.min(
+            100,
+            Math.max(0, Number(r.estimatedProbability) || 50),
+          ),
+          fitScore: Math.min(100, Math.max(0, Number(r.fitScore) || 50)),
+          reasons: Array.isArray(r.reasons) ? r.reasons : [],
+          concerns: Array.isArray(r.concerns) ? r.concerns : [],
+        }));
+
+      if (!parsed.analysis) {
+        parsed.analysis = {
+          strengths: [],
+          weaknesses: [],
+          improvementTips: [],
+        };
+      }
+
       const tokenUsed = this.estimateTokens(userPrompt + result);
 
-      // 尝试匹配数据库中的学校
+      // 模糊匹配数据库中的学校
       const recommendations = await this.matchSchoolIds(parsed.recommendations);
 
       // 保存结果
@@ -146,7 +176,7 @@ export class RecommendationService {
 
       return response;
     } catch (error) {
-      await this.refundPoints(userId, POINTS_COST);
+      if (POINTS_ENABLED) await this.refundPoints(userId, POINTS_COST);
       this.logger.error('School recommendation failed', error);
       throw new BadRequestException('生成选校建议失败，请重试');
     }
@@ -289,24 +319,104 @@ export class RecommendationService {
   private async matchSchoolIds(
     recommendations: any[],
   ): Promise<RecommendedSchoolDto[]> {
-    // 尝试从数据库中匹配学校
-    const schoolNames = recommendations.map((r) => r.schoolName);
+    const schoolNames = recommendations.map((r: any) => r.schoolName);
+
+    // 三层匹配：精确 + 别名 + 模糊
     const schools = await this.prisma.school.findMany({
       where: {
-        OR: [{ name: { in: schoolNames } }, { nameZh: { in: schoolNames } }],
+        OR: [
+          { name: { in: schoolNames } },
+          { nameZh: { in: schoolNames } },
+          {
+            aliases: {
+              hasSome: schoolNames.flatMap((n: string) => [
+                n,
+                n.toUpperCase(),
+                n.toLowerCase(),
+              ]),
+            },
+          },
+          ...schoolNames.map((n: string) => ({
+            name: { contains: n, mode: 'insensitive' as const },
+          })),
+        ],
+      },
+      select: {
+        id: true,
+        name: true,
+        nameZh: true,
+        aliases: true,
+        usNewsRank: true,
+        acceptanceRate: true,
+        city: true,
+        state: true,
+        tuition: true,
+        isPrivate: true,
       },
     });
 
-    const schoolMap = new Map<string, string>();
-    schools.forEach((s) => {
-      schoolMap.set(s.name.toLowerCase(), s.id);
-      if (s.nameZh) schoolMap.set(s.nameZh.toLowerCase(), s.id);
+    return recommendations.map((r: any) => {
+      const matched = this.findBestMatch(r.schoolName, schools);
+      return {
+        ...r,
+        schoolId: matched?.id || undefined,
+        schoolMeta: matched
+          ? {
+              nameZh: matched.nameZh,
+              usNewsRank: matched.usNewsRank,
+              acceptanceRate: matched.acceptanceRate
+                ? Number(matched.acceptanceRate)
+                : undefined,
+              city: matched.city,
+              state: matched.state,
+              tuition: matched.tuition,
+              isPrivate: matched.isPrivate,
+            }
+          : undefined,
+      };
     });
+  }
 
-    return recommendations.map((r) => ({
-      ...r,
-      schoolId: schoolMap.get(r.schoolName.toLowerCase()) || undefined,
-    }));
+  private findBestMatch(
+    name: string,
+    candidates: Array<{
+      id: string;
+      name: string;
+      nameZh: string | null;
+      aliases: string[];
+      usNewsRank: number | null;
+      acceptanceRate: any;
+      city: string | null;
+      state: string | null;
+      tuition: number | null;
+      isPrivate: boolean;
+    }>,
+  ) {
+    let best: (typeof candidates)[0] | undefined;
+    let bestScore = 0;
+    const lower = name.toLowerCase();
+
+    for (const s of candidates) {
+      let score = 0;
+      if (s.name.toLowerCase() === lower || s.nameZh?.toLowerCase() === lower) {
+        score = 100;
+      } else if (s.aliases?.some((a) => a.toLowerCase() === lower)) {
+        score = 90;
+      } else if (s.name.toLowerCase().startsWith(lower)) {
+        score = 80;
+      } else if (
+        s.name.toLowerCase().includes(lower) ||
+        lower.includes(s.name.toLowerCase())
+      ) {
+        score = 60;
+      }
+      if (score > bestScore) {
+        best = s;
+        bestScore = score;
+      }
+    }
+
+    return bestScore >= 60 ? best : undefined;
   }
 
   private async checkAndDeductPoints(
@@ -355,6 +465,63 @@ export class RecommendationService {
 
   private estimateTokens(text: string): number {
     return Math.ceil(text.length / 3);
+  }
+
+  /**
+   * 预检查：用户是否可以生成推荐
+   */
+  async checkPreflight(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { points: true },
+    });
+
+    const profile = await this.prisma.profile.findFirst({
+      where: { userId },
+      include: {
+        testScores: { select: { id: true } },
+        activities: { select: { id: true } },
+      },
+    });
+
+    const missingFields: string[] = [];
+    if (!profile) {
+      missingFields.push('profile');
+    } else {
+      if (!profile.gpa) missingFields.push('gpa');
+      if (!profile.testScores?.length) missingFields.push('testScores');
+      if (!profile.activities?.length) missingFields.push('activities');
+      if (!profile.targetMajor) missingFields.push('targetMajor');
+    }
+
+    return {
+      canGenerate: POINTS_ENABLED
+        ? (user?.points || 0) >= POINTS_COST && missingFields.length === 0
+        : missingFields.length === 0,
+      points: user?.points || 0,
+      profileComplete: missingFields.length === 0,
+      missingFields,
+      profileSummary: profile
+        ? {
+            gpa: profile.gpa ? Number(profile.gpa) : undefined,
+            testCount: profile.testScores?.length || 0,
+            activityCount: profile.activities?.length || 0,
+          }
+        : undefined,
+    };
+  }
+
+  /**
+   * 删除推荐记录
+   */
+  async deleteRecommendation(userId: string, id: string): Promise<void> {
+    const rec = await this.prisma.schoolRecommendation.findFirst({
+      where: { id, userId },
+    });
+    if (!rec) {
+      throw new NotFoundException('推荐记录不存在');
+    }
+    await this.prisma.schoolRecommendation.delete({ where: { id } });
   }
 
   // ============ Memory Integration ============

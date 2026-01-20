@@ -42,6 +42,12 @@ export class AuthService {
     private emailService: EmailService,
   ) {}
 
+  /**
+   * Register a new user account with email and password
+   * @param data - Registration data containing email, password, and optional locale
+   * @throws {ConflictException} When the email is already registered
+   * @returns The created user (without password hash) and a success message
+   */
   async register(
     data: RegisterDto,
   ): Promise<{ user: Omit<User, 'passwordHash'>; message: string }> {
@@ -52,7 +58,7 @@ export class AuthService {
     }
 
     // Hash password
-    const passwordHash = await bcrypt.hash(data.password, 10);
+    const passwordHash = await bcrypt.hash(data.password, 12);
 
     // Generate email verification token
     const emailVerifyToken = randomBytes(32).toString('hex');
@@ -83,6 +89,12 @@ export class AuthService {
     };
   }
 
+  /**
+   * Authenticate a user with email and password and issue JWT tokens
+   * @param data - Login credentials containing email and password
+   * @throws {UnauthorizedException} When the credentials are invalid or the user is deleted
+   * @returns The authenticated user (without password hash) and access/refresh tokens
+   */
   async login(
     data: LoginDto,
   ): Promise<{ user: Omit<User, 'passwordHash'>; tokens: AuthTokens }> {
@@ -107,6 +119,12 @@ export class AuthService {
     return { user: result, tokens };
   }
 
+  /**
+   * Rotate a refresh token by invalidating the old one and issuing a new token pair
+   * @param refreshToken - The current refresh token to be rotated
+   * @throws {UnauthorizedException} When the refresh token is invalid, expired, or the user is not found
+   * @returns A new pair of access and refresh tokens
+   */
   async refreshToken(refreshToken: string): Promise<AuthTokens> {
     // Verify refresh token
     const storedToken = await this.prisma.refreshToken.findUnique({
@@ -131,6 +149,12 @@ export class AuthService {
     return this.generateTokens(user);
   }
 
+  /**
+   * Log out a user by revoking their refresh token(s)
+   * @param userId - The ID of the user to log out
+   * @param refreshToken - Optional specific refresh token to revoke; if omitted, all tokens for the user are revoked
+   * @returns void
+   */
   async logout(userId: string, refreshToken?: string): Promise<void> {
     if (refreshToken) {
       await this.prisma.refreshToken.deleteMany({
@@ -144,6 +168,12 @@ export class AuthService {
     }
   }
 
+  /**
+   * Verify a user's email address using the verification token sent via email
+   * @param token - The email verification token
+   * @throws {BadRequestException} When the verification token is invalid
+   * @returns A success message confirming the email was verified
+   */
   async verifyEmail(token: string): Promise<{ message: string }> {
     const user = await this.prisma.user.findFirst({
       where: { emailVerifyToken: token },
@@ -169,6 +199,12 @@ export class AuthService {
     return { message: 'Email verified successfully' };
   }
 
+  /**
+   * Resend the email verification link to a user's email address
+   * @param email - The email address to resend the verification link to
+   * @throws {BadRequestException} When the email is already verified
+   * @returns A generic message that does not reveal whether the email exists
+   */
   async resendVerificationEmail(email: string): Promise<{ message: string }> {
     const user = await this.userService.findByEmail(email);
 
@@ -206,6 +242,11 @@ export class AuthService {
     };
   }
 
+  /**
+   * Initiate a password reset by generating a reset token and sending a reset email
+   * @param email - The email address of the account to reset
+   * @returns A generic message that does not reveal whether the email exists
+   */
   async requestPasswordReset(email: string): Promise<{ message: string }> {
     const user = await this.userService.findByEmail(email);
 
@@ -238,6 +279,13 @@ export class AuthService {
     return { message: 'If the email exists, a reset link has been sent' };
   }
 
+  /**
+   * Reset a user's password using a valid reset token, and invalidate all existing sessions
+   * @param token - The password reset token received via email
+   * @param newPassword - The new password to set
+   * @throws {BadRequestException} When the reset token is invalid or expired
+   * @returns A success message confirming the password was reset
+   */
   async resetPassword(
     token: string,
     newPassword: string,
@@ -253,7 +301,7 @@ export class AuthService {
       throw new BadRequestException('Invalid or expired reset token');
     }
 
-    const passwordHash = await bcrypt.hash(newPassword, 10);
+    const passwordHash = await bcrypt.hash(newPassword, 12);
 
     await this.prisma.user.update({
       where: { id: user.id },
@@ -272,6 +320,14 @@ export class AuthService {
     return { message: 'Password reset successful' };
   }
 
+  /**
+   * Change an authenticated user's password after verifying their current password
+   * @param userId - The ID of the user changing their password
+   * @param currentPassword - The user's current password for verification
+   * @param newPassword - The new password to set
+   * @throws {UnauthorizedException} When the current password is incorrect
+   * @returns A success message confirming the password was changed
+   */
   async changePassword(
     userId: string,
     currentPassword: string,
@@ -287,7 +343,7 @@ export class AuthService {
       throw new UnauthorizedException('Current password is incorrect');
     }
 
-    const passwordHash = await bcrypt.hash(newPassword, 10);
+    const passwordHash = await bcrypt.hash(newPassword, 12);
 
     await this.prisma.user.update({
       where: { id: userId },

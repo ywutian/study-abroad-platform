@@ -97,6 +97,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
       },
     };
 
+    if (response.headersSent) {
+      this.logger.warn(
+        `Response already sent, cannot send error response for ${request.url}`,
+      );
+      return;
+    }
+
     response.status(status).json(body);
   }
 

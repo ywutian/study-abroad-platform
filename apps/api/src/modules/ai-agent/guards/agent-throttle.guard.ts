@@ -154,7 +154,7 @@ export class AgentThrottleGuard implements CanActivate {
     request.rateLimit = {
       remaining: limitResult.remaining,
       limit: limitResult.limit,
-      resetIn: limitResult.resetIn,
+      resetIn: Math.ceil(limitResult.resetIn / 1000),
       concurrent: currentRequests + 1,
       maxConcurrent,
     };

@@ -9,12 +9,24 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
 
-  const app = await NestFactory.create(AppModule, {
-    logger:
-      process.env.NODE_ENV === 'production'
-        ? ['error', 'warn', 'log']
-        : ['error', 'warn', 'log', 'debug', 'verbose'],
-  });
+  // Log level defaults: production=log, development=verbose
+  const logLevelMap: Record<
+    string,
+    ('error' | 'warn' | 'log' | 'debug' | 'verbose')[]
+  > = {
+    error: ['error'],
+    warn: ['error', 'warn'],
+    log: ['error', 'warn', 'log'],
+    debug: ['error', 'warn', 'log', 'debug'],
+    verbose: ['error', 'warn', 'log', 'debug', 'verbose'],
+  };
+  const envLogLevel = process.env.LOG_LEVEL;
+  const defaultLevel =
+    process.env.NODE_ENV === 'production' ? 'log' : 'verbose';
+  const logLevel =
+    logLevelMap[envLogLevel || defaultLevel] || logLevelMap[defaultLevel];
+
+  const app = await NestFactory.create(AppModule, { logger: logLevel });
 
   // CORS configuration - restrict origins in production via CORS_ORIGINS env var
   const corsOrigins = process.env.CORS_ORIGINS;

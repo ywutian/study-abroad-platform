@@ -286,7 +286,11 @@ describe('PromptGuardService', () => {
     it('should flag input >10000 characters', async () => {
       const longInput = 'a'.repeat(15000);
       const result = await service.analyze(longInput);
-      expect(result.threats.some((t) => t.pattern.includes('过长'))).toBe(true);
+      expect(result.safe).toBe(false);
+      expect(result.blocked).toBe(true);
+      expect(result.threats.some((t) => t.type === 'INPUT_TOO_LONG')).toBe(
+        true,
+      );
     });
   });
 
@@ -431,7 +435,11 @@ describe('PromptGuardService', () => {
       const longInput = 'x'.repeat(100 * 1024);
       const result = await service.analyze(longInput);
       expect(result).toBeDefined();
-      expect(result.threats.some((t) => t.pattern.includes('过长'))).toBe(true);
+      expect(result.safe).toBe(false);
+      expect(result.blocked).toBe(true);
+      expect(result.threats.some((t) => t.type === 'INPUT_TOO_LONG')).toBe(
+        true,
+      );
     });
 
     it('should handle unicode edge cases', async () => {

@@ -6,14 +6,21 @@ import {
   Param,
   Query,
   Delete,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  MaxFileSizeValidator,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiTags,
   ApiBearerAuth,
   ApiOperation,
   ApiQuery,
+  ApiConsumes,
 } from '@nestjs/swagger';
 import { ChatService } from './chat.service';
+import { ChatGateway } from './chat.gateway';
 import { CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { StartConversationDto, CreateReportDto } from './dto';
@@ -22,7 +29,10 @@ import { StartConversationDto, CreateReportDto } from './dto';
 @ApiBearerAuth()
 @Controller('chat')
 export class ChatController {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly chatService: ChatService,
+    private readonly chatGateway: ChatGateway,
+  ) {}
 
   // ============================================
   // 会话
@@ -69,6 +79,74 @@ export class ChatController {
   ) {
     await this.chatService.markAsRead(conversationId, user.id);
     return { success: true };
+  }
+
+  @Post('conversations/:id/pin')
+  @ApiOperation({ summary: '切换会话置顶' })
+  async togglePin(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') conversationId: string,
+  ) {
+    return this.chatService.togglePin(conversationId, user.id);
+  }
+
+  // ============================================
+  // 消息操作
+  // ============================================
+
+  @Delete('messages/:id')
+  @ApiOperation({ summary: '删除消息（软删除）' })
+  async deleteMessage(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') messageId: string,
+  ) {
+    const result = await this.chatService.deleteMessage(messageId, user.id);
+    // 广播给会话内的其他参与者
+    this.chatGateway.broadcastToConversation(
+      result.conversationId,
+      'messageDeleted',
+      { messageId: result.messageId, conversationId: result.conversationId },
+    );
+    return { success: true };
+  }
+
+  @Get('unread-count')
+  @ApiOperation({ summary: '获取总未读消息数' })
+  async getUnreadCount(@CurrentUser() user: CurrentUserPayload) {
+    return this.chatService.getTotalUnreadCount(user.id);
+  }
+
+  @Post('conversations/:id/upload')
+  @ApiOperation({ summary: '上传聊天文件/图片' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadFile(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') conversationId: string,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 })],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    const message = await this.chatService.sendMediaMessage(
+      conversationId,
+      user.id,
+      {
+        buffer: file.buffer,
+        mimetype: file.mimetype,
+        originalname: file.originalname,
+      },
+    );
+
+    // 广播新消息
+    this.chatGateway.broadcastToConversation(conversationId, 'newMessage', {
+      conversationId,
+      message,
+    });
+
+    return message;
   }
 
   // ============================================

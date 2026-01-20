@@ -16,6 +16,7 @@ import {
   QueryEssayPromptDto,
   VerifyEssayPromptDto,
   BatchVerifyDto,
+  BatchImportEssayPromptDto,
 } from './dto';
 import { Roles, CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
@@ -73,6 +74,15 @@ export class EssayPromptAdminController {
     @Body() dto: VerifyEssayPromptDto,
   ) {
     return this.essayPromptService.verify(id, dto, user.id);
+  }
+
+  @Post('batch-import')
+  @ApiOperation({ summary: '批量导入文书题目' })
+  async batchImport(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: BatchImportEssayPromptDto,
+  ) {
+    return this.essayPromptService.batchImport(dto, user.id);
   }
 
   @Post('batch-verify')

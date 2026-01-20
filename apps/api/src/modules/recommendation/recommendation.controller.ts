@@ -1,4 +1,14 @@
-import { Controller, Post, Get, Body, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -31,6 +41,12 @@ export class RecommendationController {
     return this.recommendationService.generateRecommendation(user.id, dto);
   }
 
+  @Get('preflight')
+  @ApiOperation({ summary: '预检查用户是否可以生成选校建议' })
+  async preflight(@CurrentUser() user: CurrentUserPayload) {
+    return this.recommendationService.checkPreflight(user.id);
+  }
+
   @Get('history')
   @ApiOperation({ summary: '获取选校建议历史' })
   @ApiResponse({ status: 200, type: [SchoolRecommendationResponseDto] })
@@ -48,5 +64,16 @@ export class RecommendationController {
     @Param('id') id: string,
   ): Promise<SchoolRecommendationResponseDto> {
     return this.recommendationService.getRecommendationById(user.id, id);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: '删除选校建议记录' })
+  @ApiResponse({ status: 204 })
+  async deleteRecommendation(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+  ): Promise<void> {
+    return this.recommendationService.deleteRecommendation(user.id, id);
   }
 }

@@ -22,9 +22,10 @@ export class ResetPasswordDto {
   @IsString()
   @MinLength(8, { message: '密码至少8位' })
   @MaxLength(32, { message: '密码最多32位' })
-  @Matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/, {
-    message: '密码必须包含字母和数字',
-  })
+  @Matches(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/,
+    { message: '密码必须包含大小写字母、数字和特殊字符' },
+  )
   newPassword: string;
 }
 
@@ -38,8 +39,9 @@ export class ChangePasswordDto {
   @IsString()
   @MinLength(8, { message: '密码至少8位' })
   @MaxLength(32, { message: '密码最多32位' })
-  @Matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/, {
-    message: '密码必须包含字母和数字',
-  })
+  @Matches(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/,
+    { message: '密码必须包含大小写字母、数字和特殊字符' },
+  )
   newPassword: string;
 }

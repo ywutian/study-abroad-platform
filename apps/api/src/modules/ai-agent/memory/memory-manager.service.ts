@@ -10,6 +10,7 @@
  */
 
 import { Injectable, Logger, Optional } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
 import { MemoryType, EntityType } from '@prisma/client';
 import { RedisCacheService } from './redis-cache.service';
 import { PersistentMemoryService } from './persistent-memory.service';
@@ -572,8 +573,9 @@ export class MemoryManagerService {
   }
 
   /**
-   * 清理过期记忆
+   * 清理过期记忆（每小时自动执行）
    */
+  @Cron('0 * * * *')
   async cleanup(): Promise<{ expiredMemories: number }> {
     const expiredMemories = await this.persistent.cleanupExpiredMemories();
     return { expiredMemories };

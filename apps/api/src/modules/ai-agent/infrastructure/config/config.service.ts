@@ -15,6 +15,11 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { AgentType } from '../../types';
+import {
+  DEFAULT_RATE_LIMITS,
+  VIP_RATE_LIMITS,
+  DEFAULT_TOKEN_QUOTAS,
+} from '../../constants';
 
 // ==================== Agent 配置类型 ====================
 
@@ -673,12 +678,18 @@ export class AgentConfigService implements OnModuleInit {
         timeoutMs: 30000,
       },
       rateLimit: {
-        user: { windowMs: 60000, maxRequests: 10 },
-        vip: { windowMs: 60000, maxRequests: 30 },
+        user: DEFAULT_RATE_LIMITS.user,
+        vip: VIP_RATE_LIMITS.user,
       },
       quota: {
-        daily: { tokens: 100000, cost: 5.0 },
-        monthly: { tokens: 2000000, cost: 100.0 },
+        daily: {
+          tokens: DEFAULT_TOKEN_QUOTAS.dailyTokens,
+          cost: DEFAULT_TOKEN_QUOTAS.dailyCost,
+        },
+        monthly: {
+          tokens: DEFAULT_TOKEN_QUOTAS.monthlyTokens,
+          cost: DEFAULT_TOKEN_QUOTAS.monthlyCost,
+        },
       },
       memory: {
         maxConversationLength: 50,

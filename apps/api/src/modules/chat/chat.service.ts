@@ -5,6 +5,10 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MessageFilterService } from './message-filter.service';
+import {
+  StorageService,
+  StorageFile,
+} from '../../common/storage/storage.service';
 import { Prisma } from '@prisma/client';
 
 /** 用户信息的标准 select（复用） */
@@ -31,6 +35,7 @@ export class ChatService {
   constructor(
     private prisma: PrismaService,
     private messageFilter: MessageFilterService,
+    private storageService: StorageService,
   ) {}
 
   // ============================================
@@ -190,6 +195,55 @@ export class ChatService {
   }
 
   /**
+   * 上传聊天文件并创建消息
+   */
+  async sendMediaMessage(
+    conversationId: string,
+    senderId: string,
+    file: StorageFile,
+    content?: string,
+  ) {
+    // 验证参与者
+    const participant = await this.prisma.conversationParticipant.findUnique({
+      where: { conversationId_userId: { conversationId, userId: senderId } },
+    });
+    if (!participant) {
+      throw new ForbiddenException('Not a participant of this conversation');
+    }
+
+    // 上传文件
+    const ext = file.originalname.split('.').pop()?.toLowerCase() || '';
+    const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+    const mediaType = imageExts.includes(ext) ? 'image' : 'file';
+
+    const uploadResult = await this.storageService.uploadVerificationFile(
+      `chat/${conversationId}`,
+      file,
+    );
+
+    // 创建消息
+    const message = await this.prisma.message.create({
+      data: {
+        conversationId,
+        senderId,
+        content: content || file.originalname,
+        mediaUrl: uploadResult.url,
+        mediaType,
+      },
+      include: {
+        sender: { select: SENDER_SELECT },
+      },
+    });
+
+    await this.prisma.conversation.update({
+      where: { id: conversationId },
+      data: { updatedAt: new Date() },
+    });
+
+    return message;
+  }
+
+  /**
    * 获取用户的会话列表（含未读数）
    */
   async getConversations(userId: string) {
@@ -251,6 +305,7 @@ export class ChatService {
         lastMessage: p.conversation.messages[0] || null,
         unreadCount: unreadMap.get(p.conversationId) || 0,
         updatedAt: p.conversation.updatedAt,
+        isPinned: p.isPinned,
       };
     });
   }
@@ -293,13 +348,67 @@ export class ChatService {
   }
 
   /**
-   * 标记已读
+   * 标记已读，返回 lastReadAt
    */
   async markAsRead(conversationId: string, userId: string) {
+    const now = new Date();
     await this.prisma.conversationParticipant.update({
       where: { conversationId_userId: { conversationId, userId } },
-      data: { lastReadAt: new Date() },
+      data: { lastReadAt: now },
     });
+    return { lastReadAt: now };
+  }
+
+  /**
+   * 软删除消息（仅发送者可操作）
+   */
+  async deleteMessage(messageId: string, userId: string) {
+    const message = await this.prisma.message.findUnique({
+      where: { id: messageId },
+    });
+    if (!message) {
+      throw new BadRequestException('Message not found');
+    }
+    if (message.senderId !== userId) {
+      throw new ForbiddenException('Can only delete your own messages');
+    }
+    await this.prisma.message.update({
+      where: { id: messageId },
+      data: { isDeleted: true },
+    });
+    return { messageId, conversationId: message.conversationId };
+  }
+
+  /**
+   * 获取用户所有会话的总未读数
+   */
+  async getTotalUnreadCount(userId: string) {
+    const result = await this.prisma.$queryRaw<{ count: bigint }[]>`
+      SELECT COUNT(*) as count
+      FROM "Message" m
+      INNER JOIN "ConversationParticipant" cp
+        ON cp."conversationId" = m."conversationId" AND cp."userId" = ${userId}
+      WHERE m."senderId" != ${userId}
+        AND m."createdAt" > COALESCE(cp."lastReadAt", '1970-01-01'::timestamp)
+    `;
+    return { count: Number(result[0]?.count ?? 0) };
+  }
+
+  /**
+   * 切换会话置顶
+   */
+  async togglePin(conversationId: string, userId: string) {
+    const participant = await this.prisma.conversationParticipant.findUnique({
+      where: { conversationId_userId: { conversationId, userId } },
+    });
+    if (!participant) {
+      throw new ForbiddenException('Not a participant of this conversation');
+    }
+    const updated = await this.prisma.conversationParticipant.update({
+      where: { conversationId_userId: { conversationId, userId } },
+      data: { isPinned: !participant.isPinned },
+    });
+    return { isPinned: updated.isPinned };
   }
 
   // ============================================

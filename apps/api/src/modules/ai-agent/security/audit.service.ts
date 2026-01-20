@@ -7,9 +7,13 @@
  * 3. 安全事件管理
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { RedisService } from '../../../common/redis/redis.service';
+import {
+  AlertChannelService,
+  AlertSeverity,
+} from '../infrastructure/alerting/alert-channel.service';
 import {
   getRequestId,
   getCurrentUserId,
@@ -113,6 +117,7 @@ export class AuditService {
   constructor(
     private prisma: PrismaService,
     private redis: RedisService,
+    @Optional() private alertChannelService?: AlertChannelService,
   ) {
     // 启动定时刷新
     this.flushTimer = setInterval(() => this.flush(), 5000);
@@ -402,8 +407,15 @@ export class AuditService {
       });
     } catch (err) {
       this.logger.error(`Failed to flush audit logs: ${err}`);
-      // 失败的日志放回缓冲区
+      // 失败的日志放回缓冲区，但限制总量防止内存泄漏
       this.auditBuffer.unshift(...batch);
+      if (this.auditBuffer.length > 5000) {
+        const dropped = this.auditBuffer.length - 2500;
+        this.auditBuffer.splice(2500);
+        this.logger.error(
+          `Audit buffer overflow, dropped ${dropped} oldest entries`,
+        );
+      }
     }
   }
 
@@ -417,13 +429,35 @@ export class AuditService {
   }
 
   private async sendSecurityAlert(event: SecurityEvent): Promise<void> {
-    // TODO: 集成告警系统（Slack、PagerDuty 等）
-    this.logger.error(`🚨 SECURITY ALERT: ${event.type}`, {
+    this.logger.error(`SECURITY ALERT: ${event.type}`, {
       severity: event.severity,
       description: event.description,
     });
 
-    // 写入 Redis 告警队列
+    // 通过 AlertChannelService 发送多渠道告警（Slack、PagerDuty、邮件、企微、钉钉）
+    if (this.alertChannelService) {
+      const ctx = requestContext.get();
+      try {
+        await this.alertChannelService.send({
+          title: `Security Alert: ${event.type}`,
+          message: event.description,
+          severity: this.mapSecuritySeverityToAlertSeverity(event.severity),
+          source: 'AuditService',
+          userId: ctx?.userId || getCurrentUserId() || undefined,
+          traceId: ctx?.requestId || getRequestId() || undefined,
+          metadata: {
+            eventType: event.type,
+            originalSeverity: event.severity,
+            mitigationAction: event.mitigationAction,
+            ...event.payload,
+          },
+        });
+      } catch (err) {
+        this.logger.error('Failed to send alert via AlertChannelService', err);
+      }
+    }
+
+    // Fallback: 直写 Redis 告警队列
     const client = this.redis.getClient();
     if (client && this.redis.connected) {
       try {
@@ -438,6 +472,19 @@ export class AuditService {
       } catch {
         // 忽略 Redis 错误
       }
+    }
+  }
+
+  private mapSecuritySeverityToAlertSeverity(
+    severity: SecuritySeverity,
+  ): AlertSeverity {
+    switch (severity) {
+      case SecuritySeverity.CRITICAL:
+        return AlertSeverity.CRITICAL;
+      case SecuritySeverity.HIGH:
+        return AlertSeverity.WARNING;
+      default:
+        return AlertSeverity.INFO;
     }
   }
 

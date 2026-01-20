@@ -8,18 +8,34 @@ export class UserService {
 
   constructor(private prisma: PrismaService) {}
 
+  /**
+   * Find a user by their unique ID, excluding soft-deleted users
+   * @param id - The unique identifier of the user
+   * @returns The user if found, or null if not found or soft-deleted
+   */
   async findById(id: string): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: { id, deletedAt: null },
     });
   }
 
+  /**
+   * Find a user by their email address
+   * @param email - The email address to search for
+   * @returns The user if found, or null if no user matches the email
+   */
   async findByEmail(email: string): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: { email },
     });
   }
 
+  /**
+   * Find a user by their unique ID, throwing if not found
+   * @param id - The unique identifier of the user
+   * @throws {NotFoundException} When no user exists with the given ID
+   * @returns The user matching the given ID
+   */
   async findByIdOrThrow(id: string): Promise<User> {
     const user = await this.findById(id);
     if (!user) {
@@ -28,10 +44,21 @@ export class UserService {
     return user;
   }
 
+  /**
+   * Create a new user record in the database
+   * @param data - The user creation input data
+   * @returns The newly created user
+   */
   async create(data: Prisma.UserCreateInput): Promise<User> {
     return this.prisma.user.create({ data });
   }
 
+  /**
+   * Update an existing user's data
+   * @param id - The unique identifier of the user to update
+   * @param data - The fields to update on the user record
+   * @returns The updated user
+   */
   async update(id: string, data: Prisma.UserUpdateInput): Promise<User> {
     return this.prisma.user.update({
       where: { id },
@@ -40,8 +67,9 @@ export class UserService {
   }
 
   /**
-   * 软删除用户账号
-   * 保留数据但标记为已删除，符合 GDPR 要求
+   * Soft-delete a user account by anonymizing sensitive data and marking the record as deleted (GDPR-compliant)
+   * @param id - The unique identifier of the user to soft-delete
+   * @returns The updated user record with anonymized data and a deletedAt timestamp
    */
   async softDelete(id: string): Promise<User> {
     this.logger.log(`Soft deleting user: ${id}`);
@@ -109,8 +137,9 @@ export class UserService {
   }
 
   /**
-   * 永久删除用户及所有数据
-   * 注意：此操作不可逆！
+   * Permanently delete a user and all associated data (irreversible operation)
+   * @param id - The unique identifier of the user to permanently delete
+   * @returns void
    */
   async hardDelete(id: string): Promise<void> {
     this.logger.warn(`Hard deleting user: ${id}`);
@@ -150,7 +179,10 @@ export class UserService {
   }
 
   /**
-   * 导出用户数据（GDPR 合规）
+   * Export all user data for GDPR compliance, excluding sensitive fields like passwordHash
+   * @param id - The unique identifier of the user whose data to export
+   * @throws {NotFoundException} When no user exists with the given ID
+   * @returns An object containing the export date and the user's data (profile, cases, followers, following)
    */
   async exportUserData(id: string): Promise<Record<string, any>> {
     const user = await this.prisma.user.findUnique({

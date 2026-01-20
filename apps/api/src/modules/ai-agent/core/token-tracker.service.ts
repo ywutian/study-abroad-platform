@@ -52,22 +52,12 @@ const CHAT_MESSAGE_OVERHEAD: Record<
   default: { perMessage: 3, perName: 1, reply: 3 },
 };
 
-// Token 价格 (USD per 1K tokens) - GPT-4o-mini 为例
-const TOKEN_PRICES = {
-  'gpt-4o': { input: 0.005, output: 0.015 },
-  'gpt-4o-mini': { input: 0.00015, output: 0.0006 },
-  'gpt-4-turbo': { input: 0.01, output: 0.03 },
-  'gpt-3.5-turbo': { input: 0.0005, output: 0.0015 },
-  default: { input: 0.001, output: 0.002 },
-};
-
-// 默认配额
-const DEFAULT_QUOTAS = {
-  dailyTokens: 100000, // 日 Token 限额
-  monthlyTokens: 2000000, // 月 Token 限额
-  dailyCost: 5.0, // 日成本限额 (USD)
-  monthlyCost: 100.0, // 月成本限额 (USD)
-};
+import {
+  DEFAULT_TOKEN_QUOTAS,
+  PRO_TOKEN_QUOTAS,
+  PREMIUM_TOKEN_QUOTAS,
+  TOKEN_PRICES,
+} from '../constants';
 
 export interface TokenUsage {
   promptTokens: number;
@@ -112,7 +102,7 @@ interface UsageCacheEntry {
 const USAGE_CACHE_CONFIG = {
   max: 1000, // 最多 1000 个用户
   ttl: 60 * 60 * 1000, // 1 小时 TTL
-  updateAgeOnGet: true, // 访问时更新年龄
+  updateAgeOnGet: false, // 不更新年龄，确保 TTL 后真正过期
   updateAgeOnHas: false,
   allowStale: false,
 };
@@ -351,7 +341,7 @@ export class TokenTrackerService implements OnModuleInit {
    */
   private getUsageStatsFallback(
     userId: string,
-    quota: typeof DEFAULT_QUOTAS,
+    quota: typeof DEFAULT_TOKEN_QUOTAS,
   ): UsageStats {
     const now = new Date();
     const dateKey = now.toISOString().split('T')[0];
@@ -600,11 +590,20 @@ export class TokenTrackerService implements OnModuleInit {
     };
   }
 
-  private async getUserQuota(userId: string): Promise<typeof DEFAULT_QUOTAS> {
-    // TODO: 从数据库获取用户自定义配额
-    // const userSettings = await this.prisma.userSettings.findUnique({ where: { userId } });
-    // return userSettings?.aiQuota || DEFAULT_QUOTAS;
-    return DEFAULT_QUOTAS;
+  private async getUserQuota(
+    userId: string,
+  ): Promise<typeof DEFAULT_TOKEN_QUOTAS> {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { role: true },
+      });
+      if (user?.role === 'ADMIN') return PREMIUM_TOKEN_QUOTAS;
+      if (user?.role === 'VERIFIED') return PRO_TOKEN_QUOTAS;
+    } catch {
+      // 查询失败时用默认配额，不阻塞主流程
+    }
+    return DEFAULT_TOKEN_QUOTAS;
   }
 
   private async persistUsage(
@@ -637,7 +636,7 @@ export class TokenTrackerService implements OnModuleInit {
       `;
     } catch (err) {
       // 数据库写入失败不影响主流程
-      this.logger.debug(`Failed to persist usage to DB: ${err}`);
+      this.logger.error(`Failed to persist usage to DB: ${err}`);
     }
 
     this.logger.debug(
@@ -648,7 +647,7 @@ export class TokenTrackerService implements OnModuleInit {
   private async checkQuotaWarningAsync(userId: string): Promise<void> {
     try {
       const stats = await this.getUsageStats(userId);
-      const quota = DEFAULT_QUOTAS;
+      const quota = DEFAULT_TOKEN_QUOTAS;
 
       // 80% 警告
       if (stats.today.tokens > quota.dailyTokens * 0.8) {

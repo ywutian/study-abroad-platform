@@ -1,8 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SubscriptionService, SubscriptionPlan } from './subscription.service';
+import { SubscriptionService } from './subscription.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
+import { EmailService } from '../../common/email/email.service';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { SubscriptionPlan, SUBSCRIPTION_PLANS } from '@study-abroad/shared';
 
 describe('SubscriptionService', () => {
   let service: SubscriptionService;
@@ -17,6 +19,30 @@ describe('SubscriptionService', () => {
     createdAt: new Date('2026-01-01'),
   };
 
+  const mockPayment = {
+    id: 'pay-1',
+    userId: mockUserId,
+    transactionId: 'txn_123',
+    plan: 'PRO',
+    period: 'monthly',
+    amount: 99,
+    currency: 'CNY',
+    status: 'SUCCESS',
+    paymentMethod: null,
+    idempotencyKey: 'sub_user-123_PRO_1234567890',
+    description: '专业版 (月付)',
+    metadata: null,
+    failureReason: null,
+    createdAt: new Date('2026-02-01'),
+    processedAt: new Date('2026-02-01'),
+    updatedAt: new Date('2026-02-01'),
+  };
+
+  // Mock $transaction to execute the callback with prismaService as tx
+  const mockTransaction = jest.fn((cb: (tx: any) => Promise<any>) =>
+    cb(prismaService),
+  );
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -28,12 +54,27 @@ describe('SubscriptionService', () => {
               findUnique: jest.fn(),
               update: jest.fn(),
             },
+            payment: {
+              create: jest.fn(),
+              findMany: jest.fn(),
+              findFirst: jest.fn(),
+              update: jest.fn(),
+            },
+            $transaction: mockTransaction,
           },
         },
         {
           provide: ConfigService,
           useValue: {
             get: jest.fn().mockReturnValue('test-value'),
+          },
+        },
+        {
+          provide: EmailService,
+          useValue: {
+            sendSubscriptionConfirmationEmail: jest
+              .fn()
+              .mockResolvedValue(true),
           },
         },
       ],
@@ -67,8 +108,12 @@ describe('SubscriptionService', () => {
       const plans = service.getPlans();
       const freePlan = plans.find((p) => p.id === SubscriptionPlan.FREE);
 
-      expect(freePlan?.price).toBe(0);
-      expect(freePlan?.period).toBe('lifetime');
+      expect(freePlan?.price).toBe(
+        SUBSCRIPTION_PLANS[SubscriptionPlan.FREE].price,
+      );
+      expect(freePlan?.period).toBe(
+        SUBSCRIPTION_PLANS[SubscriptionPlan.FREE].period,
+      );
       expect(freePlan?.features.length).toBeGreaterThan(0);
     });
 
@@ -76,9 +121,15 @@ describe('SubscriptionService', () => {
       const plans = service.getPlans();
       const proPlan = plans.find((p) => p.id === SubscriptionPlan.PRO);
 
-      expect(proPlan?.price).toBe(99);
-      expect(proPlan?.currency).toBe('CNY');
-      expect(proPlan?.period).toBe('monthly');
+      expect(proPlan?.price).toBe(
+        SUBSCRIPTION_PLANS[SubscriptionPlan.PRO].price,
+      );
+      expect(proPlan?.currency).toBe(
+        SUBSCRIPTION_PLANS[SubscriptionPlan.PRO].currency,
+      );
+      expect(proPlan?.period).toBe(
+        SUBSCRIPTION_PLANS[SubscriptionPlan.PRO].period,
+      );
     });
   });
 
@@ -104,6 +155,7 @@ describe('SubscriptionService', () => {
   describe('getUserSubscription', () => {
     it('should return free plan for regular user', async () => {
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
+      (prismaService.payment.findFirst as jest.Mock).mockResolvedValue(null);
 
       const result = await service.getUserSubscription(mockUserId);
 
@@ -116,6 +168,7 @@ describe('SubscriptionService', () => {
         ...mockUser,
         role: 'VERIFIED',
       });
+      (prismaService.payment.findFirst as jest.Mock).mockResolvedValue(null);
 
       const result = await service.getUserSubscription(mockUserId);
 
@@ -127,10 +180,26 @@ describe('SubscriptionService', () => {
         ...mockUser,
         role: 'ADMIN',
       });
+      (prismaService.payment.findFirst as jest.Mock).mockResolvedValue(null);
 
       const result = await service.getUserSubscription(mockUserId);
 
       expect(result.plan).toBe(SubscriptionPlan.PREMIUM);
+    });
+
+    it('should use last payment date as startDate', async () => {
+      const paymentDate = new Date('2026-02-01');
+      (prismaService.user.findUnique as jest.Mock).mockResolvedValue({
+        ...mockUser,
+        role: 'VERIFIED',
+      });
+      (prismaService.payment.findFirst as jest.Mock).mockResolvedValue({
+        processedAt: paymentDate,
+      });
+
+      const result = await service.getUserSubscription(mockUserId);
+
+      expect(result.startDate).toEqual(paymentDate);
     });
 
     it('should throw NotFoundException if user not found', async () => {
@@ -147,10 +216,18 @@ describe('SubscriptionService', () => {
   // ============================================
 
   describe('createSubscription', () => {
-    it('should create subscription and update user role', async () => {
+    it('should create PENDING payment, then SUCCESS on payment success', async () => {
+      (prismaService.payment.create as jest.Mock).mockResolvedValue(
+        mockPayment,
+      );
+      (prismaService.payment.update as jest.Mock).mockResolvedValue({
+        ...mockPayment,
+        status: 'SUCCESS',
+      });
       (prismaService.user.update as jest.Mock).mockResolvedValue({
         ...mockUser,
         role: 'VERIFIED',
+        email: 'test@example.com',
       });
 
       const result = await service.createSubscription(mockUserId, {
@@ -160,21 +237,40 @@ describe('SubscriptionService', () => {
 
       expect(result.success).toBe(true);
       expect(result.transactionId).toBeDefined();
-      expect(prismaService.user.update).toHaveBeenCalledWith({
-        where: { id: mockUserId },
-        data: { role: 'VERIFIED' },
-      });
+
+      // Verify PENDING payment was created first
+      expect(prismaService.payment.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            userId: mockUserId,
+            plan: SubscriptionPlan.PRO,
+            period: 'monthly',
+            status: 'PENDING',
+          }),
+        }),
+      );
+
+      // Verify transaction was called to update payment + user
+      expect(mockTransaction).toHaveBeenCalled();
     });
 
     it('should apply yearly discount', async () => {
-      (prismaService.user.update as jest.Mock).mockResolvedValue(mockUser);
+      (prismaService.payment.create as jest.Mock).mockResolvedValue(
+        mockPayment,
+      );
+      (prismaService.payment.update as jest.Mock).mockResolvedValue(
+        mockPayment,
+      );
+      (prismaService.user.update as jest.Mock).mockResolvedValue({
+        ...mockUser,
+        email: 'test@example.com',
+      });
 
       const result = await service.createSubscription(mockUserId, {
         plan: SubscriptionPlan.PRO,
         period: 'yearly',
       });
 
-      // 99 * 10 = 990 (yearly price with discount)
       expect(result.success).toBe(true);
     });
 
@@ -185,6 +281,32 @@ describe('SubscriptionService', () => {
           period: 'monthly',
         }),
       ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should include idempotencyKey in payment creation', async () => {
+      (prismaService.payment.create as jest.Mock).mockResolvedValue(
+        mockPayment,
+      );
+      (prismaService.payment.update as jest.Mock).mockResolvedValue(
+        mockPayment,
+      );
+      (prismaService.user.update as jest.Mock).mockResolvedValue({
+        ...mockUser,
+        email: 'test@example.com',
+      });
+
+      await service.createSubscription(mockUserId, {
+        plan: SubscriptionPlan.PRO,
+        period: 'monthly',
+      });
+
+      expect(prismaService.payment.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            idempotencyKey: expect.stringContaining(`sub_${mockUserId}_PRO_`),
+          }),
+        }),
+      );
     });
   });
 
@@ -198,6 +320,7 @@ describe('SubscriptionService', () => {
         ...mockUser,
         role: 'VERIFIED',
       });
+      (prismaService.payment.findFirst as jest.Mock).mockResolvedValue(null);
       (prismaService.user.update as jest.Mock).mockResolvedValue({
         ...mockUser,
         role: 'USER',
@@ -214,6 +337,7 @@ describe('SubscriptionService', () => {
 
     it('should throw BadRequestException if already on free plan', async () => {
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
+      (prismaService.payment.findFirst as jest.Mock).mockResolvedValue(null);
 
       await expect(service.cancelSubscription(mockUserId)).rejects.toThrow(
         BadRequestException,
@@ -226,14 +350,82 @@ describe('SubscriptionService', () => {
   // ============================================
 
   describe('getBillingHistory', () => {
-    it('should return billing history', async () => {
+    it('should return formatted billing history', async () => {
+      const mockPayments = [
+        {
+          id: 'pay-1',
+          transactionId: 'txn_123',
+          plan: 'PRO',
+          period: 'monthly',
+          amount: 99,
+          currency: 'CNY',
+          status: 'SUCCESS',
+          paymentMethod: null,
+          description: '专业版 (月付)',
+          failureReason: null,
+          createdAt: new Date('2026-02-01'),
+          processedAt: new Date('2026-02-01'),
+        },
+        {
+          id: 'pay-2',
+          transactionId: 'txn_456',
+          plan: 'PREMIUM',
+          period: 'yearly',
+          amount: 2990,
+          currency: 'CNY',
+          status: 'SUCCESS',
+          paymentMethod: 'alipay',
+          description: '尊享版 (年付)',
+          failureReason: null,
+          createdAt: new Date('2026-01-15'),
+          processedAt: new Date('2026-01-15'),
+        },
+      ];
+
+      (prismaService.payment.findMany as jest.Mock).mockResolvedValue(
+        mockPayments,
+      );
+
+      const result = await service.getBillingHistory(mockUserId);
+
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual({
+        id: 'pay-1',
+        transactionId: 'txn_123',
+        plan: 'PRO',
+        period: 'monthly',
+        amount: 99,
+        currency: 'CNY',
+        status: 'SUCCESS',
+        paymentMethod: null,
+        description: '专业版 (月付)',
+        failureReason: null,
+        date: new Date('2026-02-01'),
+        processedAt: new Date('2026-02-01'),
+      });
+    });
+
+    it('should return empty array for user with no payments', async () => {
+      (prismaService.payment.findMany as jest.Mock).mockResolvedValue([]);
+
       const result = await service.getBillingHistory(mockUserId);
 
       expect(result).toBeInstanceOf(Array);
-      expect(result.length).toBeGreaterThan(0);
-      expect(result[0]).toHaveProperty('id');
-      expect(result[0]).toHaveProperty('amount');
-      expect(result[0]).toHaveProperty('status');
+      expect(result).toHaveLength(0);
+    });
+
+    it('should query with correct parameters', async () => {
+      (prismaService.payment.findMany as jest.Mock).mockResolvedValue([]);
+
+      await service.getBillingHistory(mockUserId);
+
+      expect(prismaService.payment.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { userId: mockUserId },
+          orderBy: { createdAt: 'desc' },
+          take: 50,
+        }),
+      );
     });
   });
 
@@ -243,21 +435,102 @@ describe('SubscriptionService', () => {
 
   describe('handlePaymentWebhook', () => {
     it('should handle payment success event', async () => {
+      const pendingPayment = { ...mockPayment, status: 'PENDING' };
+      (prismaService.payment.findFirst as jest.Mock)
+        .mockResolvedValueOnce(null) // idempotency check
+        .mockResolvedValueOnce(pendingPayment); // find pending payment
+      (prismaService.payment.update as jest.Mock).mockResolvedValue({
+        ...pendingPayment,
+        status: 'SUCCESS',
+      });
+      (prismaService.user.update as jest.Mock).mockResolvedValue(mockUser);
+
       await expect(
-        service.handlePaymentWebhook({ type: 'payment.success' }, 'signature'),
+        service.handlePaymentWebhook(
+          { type: 'payment.success', id: 'evt-1', transactionId: 'txn_123' },
+          'signature',
+        ),
       ).resolves.not.toThrow();
+
+      expect(mockTransaction).toHaveBeenCalled();
     });
 
     it('should handle payment failed event', async () => {
+      const pendingPayment = { ...mockPayment, status: 'PENDING' };
+      (prismaService.payment.findFirst as jest.Mock)
+        .mockResolvedValueOnce(null) // idempotency check
+        .mockResolvedValueOnce(pendingPayment); // find pending payment
+      (prismaService.payment.update as jest.Mock).mockResolvedValue({
+        ...pendingPayment,
+        status: 'FAILED',
+      });
+
       await expect(
-        service.handlePaymentWebhook({ type: 'payment.failed' }, 'signature'),
+        service.handlePaymentWebhook(
+          {
+            type: 'payment.failed',
+            id: 'evt-2',
+            transactionId: 'txn_123',
+            reason: 'Insufficient funds',
+          },
+          'signature',
+        ),
       ).resolves.not.toThrow();
+
+      expect(prismaService.payment.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: 'FAILED',
+            failureReason: 'Insufficient funds',
+          }),
+        }),
+      );
+    });
+
+    it('should skip already processed webhooks (idempotency)', async () => {
+      (prismaService.payment.findFirst as jest.Mock).mockResolvedValueOnce({
+        id: 'existing-payment',
+      });
+
+      await service.handlePaymentWebhook(
+        {
+          type: 'payment.success',
+          id: 'evt-duplicate',
+          transactionId: 'txn_123',
+        },
+        'signature',
+      );
+
+      // Should only call findFirst once (idempotency check) and not proceed
+      expect(prismaService.payment.findFirst).toHaveBeenCalledTimes(1);
+      expect(mockTransaction).not.toHaveBeenCalled();
     });
 
     it('should handle unknown event types', async () => {
+      (prismaService.payment.findFirst as jest.Mock).mockResolvedValue(null);
+
       await expect(
         service.handlePaymentWebhook({ type: 'unknown.event' }, 'signature'),
       ).resolves.not.toThrow();
+    });
+
+    it('should handle payment refund event', async () => {
+      const successPayment = { ...mockPayment, status: 'SUCCESS' };
+      (prismaService.payment.findFirst as jest.Mock)
+        .mockResolvedValueOnce(null) // idempotency check
+        .mockResolvedValueOnce(successPayment); // find success payment
+      (prismaService.payment.update as jest.Mock).mockResolvedValue({
+        ...successPayment,
+        status: 'REFUNDED',
+      });
+      (prismaService.user.update as jest.Mock).mockResolvedValue(mockUser);
+
+      await service.handlePaymentWebhook(
+        { type: 'payment.refunded', id: 'evt-3', transactionId: 'txn_123' },
+        'signature',
+      );
+
+      expect(mockTransaction).toHaveBeenCalled();
     });
   });
 });
