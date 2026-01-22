@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,17 +8,19 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 
-import { Avatar, Loading, ErrorState } from '@/components/ui';
+import { Avatar, Loading } from '@/components/ui';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useChatSocket } from '@/hooks/useChatSocket';
+import { useColors, spacing, fontSize, borderRadius } from '@/utils/theme';
 import type { Conversation, Message } from '@/types';
 
 export default function ChatScreen() {
@@ -30,8 +32,28 @@ export default function ChatScreen() {
   const flatListRef = useRef<FlatList>(null);
 
   const [input, setInput] = useState('');
+  const [isSending, setIsSending] = useState(false);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Fetch conversation
+  // WebSocket connection
+  const {
+    isConnected,
+    sendMessage,
+    joinConversation,
+    markRead,
+    sendTyping,
+    getTypingUsers,
+    isUserOnline,
+  } = useChatSocket({
+    onNewMessage: () => {
+      // Scroll to bottom when a new message arrives
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    },
+  });
+
+  // Fetch conversation (initial load only, no polling)
   const {
     data: conversation,
     isLoading,
@@ -40,18 +62,16 @@ export default function ChatScreen() {
     queryKey: ['conversation', id],
     queryFn: () => apiClient.get<Conversation>(`/chat/conversations/${id}`),
     enabled: !!id,
-    refetchInterval: 5000, // Poll for new messages
+    // No refetchInterval — WebSocket handles real-time updates
   });
 
-  // Send message mutation
-  const sendMessageMutation = useMutation({
-    mutationFn: (content: string) =>
-      apiClient.post<Message>(`/chat/conversations/${id}/messages`, { content }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['conversation', id] });
-      setInput('');
-    },
-  });
+  // Join conversation room and mark as read when entering
+  useEffect(() => {
+    if (id && isConnected) {
+      joinConversation(id);
+      markRead(id);
+    }
+  }, [id, isConnected, joinConversation, markRead]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -62,21 +82,85 @@ export default function ChatScreen() {
     }
   }, [conversation?.messages?.length]);
 
-  const handleSend = () => {
+  // Send typing indicator with debounce
+  const handleInputChange = useCallback(
+    (text: string) => {
+      setInput(text);
+
+      if (id) {
+        sendTyping(id, true);
+
+        // Clear previous timeout
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+        }
+
+        // Stop typing indicator after 2 seconds of inactivity
+        typingTimeoutRef.current = setTimeout(() => {
+          sendTyping(id, false);
+        }, 2000);
+      }
+    },
+    [id, sendTyping]
+  );
+
+  // Clean up typing timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      // Stop typing when leaving the screen
+      if (id) {
+        sendTyping(id, false);
+      }
+    };
+  }, [id, sendTyping]);
+
+  const handleSend = async () => {
     const text = input.trim();
-    if (!text || sendMessageMutation.isPending) return;
-    sendMessageMutation.mutate(text);
+    if (!text || isSending || !id) return;
+
+    setIsSending(true);
+    setInput('');
+
+    // Stop typing indicator
+    sendTyping(id, false);
+
+    if (isConnected) {
+      // Send via WebSocket
+      const msg = await sendMessage(id, text);
+      if (!msg) {
+        // Fallback: send via REST if socket fails
+        await apiClient.post<Message>(`/chat/conversations/${id}/messages`, { content: text });
+        queryClient.invalidateQueries({ queryKey: ['conversation', id] });
+      }
+    } else {
+      // Fallback: send via REST
+      await apiClient.post<Message>(`/chat/conversations/${id}/messages`, { content: text });
+      queryClient.invalidateQueries({ queryKey: ['conversation', id] });
+    }
+
+    setIsSending(false);
   };
 
   // Get other participant
   const otherParticipant = conversation?.participants.find((p) => p.userId !== user?.id)?.user;
+  const otherUserId = otherParticipant?.id;
+  const isOtherOnline = otherUserId ? isUserOnline(otherUserId) : false;
+  const typingUserIds = id ? getTypingUsers(id) : [];
+  const isOtherTyping = otherUserId ? typingUserIds.includes(otherUserId) : false;
 
   if (isLoading) {
     return <Loading fullScreen />;
   }
 
   if (error || !conversation) {
-    return <ErrorState title={t('errors.notFound')} />;
+    return (
+      <View style={[styles.errorContainer, { backgroundColor: colors.background }]}>
+        <Text style={{ color: colors.foregroundMuted }}>{t('errors.notFound')}</Text>
+      </View>
+    );
   }
 
   const renderMessage = ({ item }: { item: Message }) => {
@@ -108,16 +192,26 @@ export default function ChatScreen() {
           >
             {item.content}
           </Text>
-          <Text
-            style={[
-              styles.messageTime,
-              {
-                color: isMe ? 'rgba(255,255,255,0.7)' : colors.foregroundMuted,
-              },
-            ]}
-          >
-            {format(new Date(item.createdAt), 'HH:mm')}
-          </Text>
+          <View style={styles.messageFooter}>
+            <Text
+              style={[
+                styles.messageTime,
+                {
+                  color: isMe ? 'rgba(255,255,255,0.7)' : colors.foregroundMuted,
+                },
+              ]}
+            >
+              {format(new Date(item.createdAt), 'HH:mm')}
+            </Text>
+            {isMe && item.read && (
+              <Ionicons
+                name="checkmark-done"
+                size={14}
+                color="rgba(255,255,255,0.7)"
+                style={styles.readIcon}
+              />
+            )}
+          </View>
         </View>
       </View>
     );
@@ -129,9 +223,20 @@ export default function ChatScreen() {
         options={{
           title: otherParticipant?.email?.split('@')[0] || t('chat.title'),
           headerRight: () => (
-            <TouchableOpacity style={styles.headerButton}>
-              <Ionicons name="ellipsis-vertical" size={20} color={colors.foreground} />
-            </TouchableOpacity>
+            <View style={styles.headerRight}>
+              {/* Online status dot */}
+              <View
+                style={[
+                  styles.onlineDot,
+                  {
+                    backgroundColor: isOtherOnline ? colors.success : colors.foregroundMuted,
+                  },
+                ]}
+              />
+              <TouchableOpacity style={styles.headerButton}>
+                <Ionicons name="ellipsis-vertical" size={20} color={colors.foreground} />
+              </TouchableOpacity>
+            </View>
           ),
         }}
       />
@@ -140,6 +245,16 @@ export default function ChatScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={100}
       >
+        {/* Connection status banner */}
+        {!isConnected && (
+          <View style={[styles.connectionBanner, { backgroundColor: colors.warning }]}>
+            <Ionicons name="cloud-offline-outline" size={14} color={colors.warningForeground} />
+            <Text style={[styles.connectionText, { color: colors.warningForeground }]}>
+              {t('chat.connecting', 'Connecting...')}
+            </Text>
+          </View>
+        )}
+
         {/* Messages List */}
         <FlatList
           ref={flatListRef}
@@ -157,6 +272,15 @@ export default function ChatScreen() {
           }
         />
 
+        {/* Typing indicator */}
+        {isOtherTyping && (
+          <View style={[styles.typingContainer, { backgroundColor: colors.background }]}>
+            <Text style={[styles.typingText, { color: colors.foregroundMuted }]}>
+              {t('chat.typing', 'typing...')}
+            </Text>
+          </View>
+        )}
+
         {/* Input Area */}
         <View
           style={[
@@ -172,7 +296,7 @@ export default function ChatScreen() {
           >
             <TextInput
               value={input}
-              onChangeText={setInput}
+              onChangeText={handleInputChange}
               placeholder={t('chat.typeMessage')}
               placeholderTextColor={colors.placeholder}
               multiline
@@ -181,7 +305,7 @@ export default function ChatScreen() {
             />
             <TouchableOpacity
               onPress={handleSend}
-              disabled={!input.trim() || sendMessageMutation.isPending}
+              disabled={!input.trim() || isSending}
               style={[
                 styles.sendButton,
                 {
@@ -189,11 +313,15 @@ export default function ChatScreen() {
                 },
               ]}
             >
-              <Ionicons
-                name="send"
-                size={20}
-                color={input.trim() ? colors.primaryForeground : colors.foregroundMuted}
-              />
+              {isSending ? (
+                <ActivityIndicator size="small" color={colors.primaryForeground} />
+              ) : (
+                <Ionicons
+                  name="send"
+                  size={20}
+                  color={input.trim() ? colors.primaryForeground : colors.foregroundMuted}
+                />
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -206,8 +334,35 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  errorContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
   headerButton: {
     padding: spacing.sm,
+  },
+  onlineDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  connectionBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
+  },
+  connectionText: {
+    fontSize: fontSize.xs,
+    fontWeight: '500',
   },
   messagesList: {
     padding: spacing.lg,
@@ -245,10 +400,25 @@ const styles = StyleSheet.create({
     fontSize: fontSize.base,
     lineHeight: 22,
   },
+  messageFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    marginTop: spacing.xs,
+  },
   messageTime: {
     fontSize: fontSize.xs,
-    marginTop: spacing.xs,
-    alignSelf: 'flex-end',
+  },
+  readIcon: {
+    marginLeft: 4,
+  },
+  typingContainer: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xs,
+  },
+  typingText: {
+    fontSize: fontSize.xs,
+    fontStyle: 'italic',
   },
   inputContainer: {
     padding: spacing.md,

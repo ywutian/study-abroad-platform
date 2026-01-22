@@ -209,6 +209,69 @@
     "noAwards": "No awards",
     "noEducation": "No education records"
   },
+  "profileEdit": {
+    "saveSuccess": "Saved successfully",
+    "saveFailed": "Failed to save",
+    "deleteConfirmTitle": "Confirm Delete",
+    "noScoresDesc": "Add your test scores to strengthen your profile",
+    "noActivitiesDesc": "Add your extracurricular activities",
+    "noAwardsDesc": "Add your awards and honors",
+    "noEducationDesc": "Add your education history",
+    "testTypeLabel": "Test Type",
+    "selectTestType": "Select test type",
+    "scoreLabel": "Score",
+    "enterScore": "Enter your score",
+    "enterValidScore": "Please enter a valid score",
+    "testDateLabel": "Test Date (optional)",
+    "editScore": "Edit Score",
+    "deleteScoreConfirm": "Are you sure you want to delete this test score?",
+    "activityName": "Activity Name",
+    "enterActivityName": "Enter activity name",
+    "activityRole": "Role / Position",
+    "enterRole": "Enter your role",
+    "organization": "Organization",
+    "enterOrganization": "Enter organization name",
+    "descriptionLabel": "Description",
+    "enterDescription": "Enter a description",
+    "hoursPerWeek": "hrs/week",
+    "weeksPerYear": "weeks/year",
+    "editActivity": "Edit Activity",
+    "deleteActivityConfirm": "Are you sure you want to delete this activity?",
+    "activityCategories": {
+      "academic": "Academic",
+      "sports": "Sports",
+      "arts": "Arts",
+      "community": "Community Service",
+      "leadership": "Leadership",
+      "work": "Work / Internship",
+      "other": "Other"
+    },
+    "awardName": "Award Name",
+    "enterAwardName": "Enter award name",
+    "awardLevel": "Level",
+    "selectAwardLevel": "Select award level",
+    "awardDate": "Date (optional)",
+    "editAward": "Edit Award",
+    "deleteAwardConfirm": "Are you sure you want to delete this award?",
+    "awardLevels": {
+      "school": "School",
+      "regional": "Regional",
+      "national": "National",
+      "international": "International"
+    },
+    "schoolNameLabel": "School Name",
+    "enterSchoolName": "Enter school name",
+    "degreeLabel": "Degree / Level",
+    "enterDegree": "e.g. High School, Bachelor's",
+    "majorLabel": "Major / Field",
+    "enterMajor": "Enter major or field of study",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "gpaScaleLabel": "GPA Scale",
+    "editEducation": "Edit Education",
+    "deleteEducationConfirm": "Are you sure you want to delete this education record?",
+    "present": "Present"
+  },
   "schools": {
     "title": "Schools",
     "search": "Search Schools",
@@ -360,22 +423,217 @@
     "report": "Report",
     "block": "Block",
     "unblock": "Unblock",
-    "startChat": "Start Chat"
+    "startChat": "Start Chat",
+    "connecting": "Connecting...",
+    "typing": "typing...",
+    "socketError": "Connection error",
+    "socketDisconnected": "Not connected",
+    "sendFailed": "Failed to send message"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications yet",
+    "markAllRead": "Mark all as read",
+    "unread": "Unread",
+    "all": "All"
+  },
+  "forum": {
+    "title": "Forum",
+    "search": "Search posts...",
+    "allCategories": "All",
+    "sort": {
+      "latest": "Latest",
+      "popular": "Popular",
+      "comments": "Comments"
+    },
+    "stats": {
+      "posts": "Posts",
+      "comments": "Comments",
+      "users": "Users",
+      "today": "Today"
+    },
+    "post": {
+      "team": "Team",
+      "pinned": "Pinned",
+      "locked": "Locked",
+      "members": "members",
+      "open": "Open",
+      "closed": "Closed",
+      "likes": "likes",
+      "views": "views"
+    },
+    "create": {
+      "title": "New Post",
+      "category": "Category",
+      "postTitle": "Title",
+      "content": "Content",
+      "tags": "Tags",
+      "addTag": "Add tag",
+      "teamPost": "Team Post",
+      "teamSize": "Team Size",
+      "requirements": "Requirements",
+      "publish": "Publish",
+      "publishing": "Publishing..."
+    },
+    "detail": {
+      "like": "Like",
+      "comment": "Comment",
+      "reply": "Reply",
+      "replyTo": "Reply to",
+      "writeComment": "Write a comment...",
+      "send": "Send",
+      "report": "Report",
+      "reportConfirm": "Are you sure you want to report this post?",
+      "delete": "Delete",
+      "deleteConfirm": "Are you sure you want to delete this post?",
+      "applyTeam": "Apply to Join",
+      "applied": "Applied",
+      "deadline": "Deadline",
+      "teamRequirements": "Requirements"
+    },
+    "empty": {
+      "title": "No posts yet",
+      "description": "Be the first to start a discussion!",
+      "action": "Create Post"
+    }
+  },
+  "followers": {
+    "title": "Social",
+    "tabs": {
+      "followers": "Followers",
+      "following": "Following",
+      "blocked": "Blocked"
+    },
+    "search": "Search users...",
+    "recommendations": "Recommended",
+    "follow": "Follow",
+    "unfollow": "Unfollow",
+    "following_label": "Following",
+    "mutual": "Mutual",
+    "block": "Block",
+    "unblock": "Unblock",
+    "blockConfirm": "Are you sure you want to block this user?",
+    "message": "Message",
+    "startChat": "Start Chat",
+    "empty": {
+      "followers": "No followers yet",
+      "following": "You're not following anyone",
+      "blocked": "No blocked users"
+    },
+    "toast": {
+      "followed": "Followed successfully",
+      "unfollowed": "Unfollowed",
+      "blocked": "User blocked",
+      "unblocked": "User unblocked"
+    }
+  },
+  "swipe": {
+    "title": "Swipe Game",
+    "accuracy": "Accuracy",
+    "streak": "Streak",
+    "admit": "Admit",
+    "reject": "Reject",
+    "waitlist": "Waitlist",
+    "correct": "Correct!",
+    "incorrect": "Incorrect",
+    "actualResult": "Actual: {{result}}",
+    "points": "+{{points}} pts",
+    "badgeUpgrade": "Badge Upgraded!",
+    "stats": {
+      "title": "Statistics",
+      "totalSwipes": "Total Swipes",
+      "accuracy": "Accuracy",
+      "currentStreak": "Current Streak",
+      "bestStreak": "Best Streak",
+      "badge": "Badge",
+      "nextBadge": "Next Badge",
+      "dailyChallenge": "Daily Challenge",
+      "completed": "Completed!"
+    },
+    "leaderboard": {
+      "title": "Leaderboard",
+      "rank": "Rank",
+      "you": "You"
+    },
+    "badges": {
+      "BRONZE": "Bronze",
+      "SILVER": "Silver",
+      "GOLD": "Gold",
+      "PLATINUM": "Platinum",
+      "DIAMOND": "Diamond"
+    },
+    "card": {
+      "rank": "Rank #{{rank}}",
+      "gpa": "GPA",
+      "sat": "SAT",
+      "act": "ACT",
+      "toefl": "TOEFL",
+      "ap": "AP",
+      "activities": "Activities",
+      "awards": "Awards",
+      "verified": "Verified"
+    },
+    "empty": {
+      "title": "No more cases",
+      "description": "Check back later for more!"
+    }
   },
   "hallOfFame": {
     "title": "Hall of Fame",
     "subtitle": "Recording every effort and success",
+    "tabs": {
+      "reviews": "Reviews",
+      "ranking": "Ranking",
+      "lists": "Lists",
+      "verified": "Verified"
+    },
     "stats": {
       "totalAdmissions": "Admissions",
       "topSchools": "Top Schools",
       "avgGpa": "Avg GPA",
       "successRate": "Success Rate"
     },
-    "tabs": {
+    "reviews": {
+      "popular": "Popular",
+      "myReviews": "My Reviews",
+      "writeReview": "Write Review",
+      "academic": "Academic",
+      "test": "Test Scores",
+      "activity": "Activities",
+      "award": "Awards",
+      "overall": "Overall",
+      "helpful": "Helpful",
+      "insightful": "Insightful",
+      "comment": "Comment",
+      "tags": "Tags",
+      "submit": "Submit Review",
+      "empty": "No reviews yet"
+    },
+    "ranking": {
+      "rank": "Rank",
+      "score": "Score",
+      "percentile": "Percentile",
+      "applicants": "Applicants",
+      "position": "Position",
+      "empty": "Add schools to your list to see rankings"
+    },
+    "lists": {
+      "create": "Create List",
+      "title": "Title",
+      "description": "Description",
+      "category": "Category",
+      "items": "Items",
+      "votes": "votes",
+      "empty": "No lists yet"
+    },
+    "verified": {
       "all": "All",
+      "admitted": "Admitted",
+      "top20": "Top 20",
       "ivy": "Ivy",
-      "top10": "Top 10",
-      "top30": "Top 30"
+      "totalVerified": "Verified",
+      "admittedCount": "Admitted",
+      "empty": "No verified users yet"
     },
     "empty": {
       "title": "No data yet",
@@ -572,7 +830,13 @@
     "subscription": "Subscription",
     "freeVersion": "Free",
     "pushNotification": "Push Notifications",
-    "biometrics": "Biometrics",
+    "biometrics": "Biometric Login",
+    "biometricVerify": "Verify your identity",
+    "biometricEnabled": "Biometric login enabled",
+    "biometricDisabled": "Biometric login disabled",
+    "biometricFailed": "Biometric verification failed",
+    "enterPasswordToDelete": "Enter your password to confirm",
+    "deleteAccountSuccess": "Account deleted successfully",
     "helpCenter": "Help Center",
     "contactSupport": "Contact Support",
     "termsOfService": "Terms of Service",
@@ -644,6 +908,432 @@
     },
     "errors": {
       "generic": "Error"
+    }
+  },
+  "recommendation": {
+    "title": "AI Recommendation",
+    "generate": "Generate",
+    "history": "History",
+    "profileStatus": "Profile Status",
+    "profileComplete": "Profile Complete",
+    "profileIncomplete": "Profile Incomplete",
+    "missingFields": "Missing: {fields}",
+    "availablePoints": "Available Points",
+    "pointCost": "Cost: 25 points",
+    "preferences": "Preferences",
+    "regions": "Preferred Regions",
+    "majors": "Preferred Majors",
+    "budget": "Budget",
+    "budgetOptions": {
+      "low": "Low (<$30k)",
+      "medium": "Medium ($30k-$50k)",
+      "high": "High ($50k-$70k)",
+      "unlimited": "Unlimited"
+    },
+    "schoolCount": "Number of Schools",
+    "generateButton": "Generate Recommendations",
+    "generating": "Generating...",
+    "generatingSteps": {
+      "analyzing": "Analyzing your profile...",
+      "matching": "Matching with schools...",
+      "scoring": "Calculating fit scores...",
+      "finalizing": "Finalizing recommendations..."
+    },
+    "generateSuccess": "Recommendations generated!",
+    "generateFailed": "Generation failed",
+    "cannotGenerate": "Cannot generate",
+    "insufficientPoints": "Insufficient points",
+    "results": "Results",
+    "summary": "Summary",
+    "analysis": "Analysis",
+    "strengths": "Strengths",
+    "weaknesses": "Areas to Improve",
+    "tips": "Improvement Tips",
+    "fitScore": "Fit Score",
+    "probability": "Admission Probability",
+    "reasons": "Why this school",
+    "concerns": "Potential concerns",
+    "generateAgain": "Generate Again",
+    "noHistory": "No History",
+    "noHistoryDesc": "Generate your first recommendation",
+    "viewDetails": "View Details",
+    "reach": "Reach",
+    "match": "Match",
+    "safety": "Safety",
+    "schools": "{count} schools"
+  },
+  "findCollege": {
+    "title": "Find College",
+    "searchPlaceholder": "Search schools...",
+    "filters": "Filters",
+    "ranking": "Ranking",
+    "tuition": "Tuition",
+    "acceptanceRate": "Acceptance Rate",
+    "state": "State/Region",
+    "schoolType": "School Type",
+    "allTypes": "All Types",
+    "private": "Private",
+    "public": "Public",
+    "minRank": "Min Rank",
+    "maxRank": "Max Rank",
+    "minTuition": "Min Tuition",
+    "maxTuition": "Max Tuition",
+    "minRate": "Min Rate",
+    "maxRate": "Max Rate",
+    "apply": "Apply Filters",
+    "reset": "Reset",
+    "results": "{count} schools found",
+    "noResults": "No Schools Found",
+    "noResultsDesc": "Try adjusting your filters",
+    "addToList": "Add to List",
+    "removeFromList": "Remove from List",
+    "added": "Added to your list",
+    "removed": "Removed from your list",
+    "inList": "In List",
+    "loadMore": "Loading more..."
+  },
+  "essayGallery": {
+    "title": "Essay Gallery",
+    "searchPlaceholder": "Search by school name...",
+    "allYears": "All Years",
+    "allTypes": "All Types",
+    "allResults": "All Results",
+    "essayTypes": {
+      "all": "All Types",
+      "commonApp": "Common App",
+      "uc": "UC PIQ",
+      "supplemental": "Supplemental",
+      "whySchool": "Why School",
+      "other": "Other"
+    },
+    "results": {
+      "admitted": "Admitted",
+      "rejected": "Rejected",
+      "waitlisted": "Waitlisted",
+      "deferred": "Deferred"
+    },
+    "resultsCount": "{{count}} essays found",
+    "wordCount": "{{count}} words",
+    "verified": "Verified",
+    "unknownSchool": "Unknown School",
+    "noResults": "No essays found",
+    "noResultsDesc": "Try adjusting your filters",
+    "noPublicEssays": "No public essays yet",
+    "noPublicEssaysDesc": "Be the first to share your essay",
+    "clearFilters": "Clear Filters",
+    "prevPage": "Previous",
+    "nextPage": "Next",
+    "shareYourEssay": "Share Your Essay",
+    "sortBy": "Sort By",
+    "newest": "Newest",
+    "popular": "Popular",
+    "detail": {
+      "essayPrompt": "Essay Prompt",
+      "words": "Words",
+      "yearLabel": "Year",
+      "notFound": "Essay not found",
+      "tabs": {
+        "original": "Original",
+        "aiReview": "AI Review"
+      },
+      "verified": "Verified",
+      "ai": {
+        "title": "AI Essay Analysis",
+        "description": "Get detailed feedback on structure, clarity, and impact",
+        "analyzing": "Analyzing...",
+        "startAnalysis": "Start Analysis",
+        "analysisError": "Analysis failed",
+        "loginRequired": "Login required for AI analysis",
+        "costHint": "This feature costs 20 credits"
+      },
+      "analysis": {
+        "score": "Score",
+        "overallComment": "Overall Assessment",
+        "structureAnalysis": "Structure Analysis",
+        "hookStrength": "Strong Opening",
+        "themeClarity": "Theme Clarity",
+        "endingImpact": "Ending Impact",
+        "paragraphReview": "Paragraph Review",
+        "highlights": "Highlights",
+        "suggestions": "Suggestions"
+      }
+    },
+    "quality": {
+      "excellent": "Excellent",
+      "good": "Good",
+      "needsWork": "Needs Work"
+    },
+    "stats": {
+      "total": "Total",
+      "admitted": "Admitted",
+      "top20": "Top 20"
+    }
+  },
+  "timeline": {
+    "title": "Timeline",
+    "tabs": {
+      "schools": "Schools",
+      "events": "Events",
+      "overview": "Overview"
+    },
+    "overview": {
+      "totalSchools": "Total Schools",
+      "submitted": "Submitted",
+      "inProgress": "In Progress",
+      "notStarted": "Not Started",
+      "upcomingDeadlines": "Upcoming Deadlines",
+      "overdueTasks": "Overdue Tasks",
+      "personalEvents": "Personal Events",
+      "completed": "Completed"
+    },
+    "status": {
+      "NOT_STARTED": "Not Started",
+      "IN_PROGRESS": "In Progress",
+      "SUBMITTED": "Submitted",
+      "ACCEPTED": "Accepted",
+      "REJECTED": "Rejected",
+      "WAITLISTED": "Waitlisted",
+      "WITHDRAWN": "Withdrawn"
+    },
+    "round": {
+      "ED": "ED",
+      "ED2": "ED II",
+      "EA": "EA",
+      "REA": "REA",
+      "RD": "RD",
+      "Rolling": "Rolling"
+    },
+    "taskType": {
+      "ESSAY": "Essay",
+      "DOCUMENT": "Document",
+      "TEST": "Test",
+      "INTERVIEW": "Interview",
+      "RECOMMENDATION": "Recommendation",
+      "OTHER": "Other"
+    },
+    "daysLeft": "{{count}} days left",
+    "dueToday": "Due Today",
+    "overdue": "Overdue",
+    "tasks": "Tasks",
+    "progress": "Progress",
+    "addSchool": "Add School",
+    "addTask": "Add Task",
+    "addEvent": "Add Event",
+    "editTimeline": "Edit Timeline",
+    "deleteTimeline": "Delete Timeline",
+    "generateTimelines": "Generate Timelines",
+    "selectSchools": "Select Schools",
+    "deadline": "Deadline",
+    "priority": "Priority",
+    "notes": "Notes",
+    "noDeadline": "No deadline",
+    "events": {
+      "personal": "Personal Events",
+      "global": "Global Events",
+      "subscribe": "Subscribe",
+      "subscribed": "Subscribed",
+      "category": "Category",
+      "eventDate": "Event Date",
+      "description": "Description",
+      "url": "URL"
+    },
+    "empty": {
+      "noSchools": "No timelines yet",
+      "noSchoolsDesc": "Add your target schools to start tracking",
+      "noEvents": "No events yet",
+      "noEventsDesc": "Add personal events or subscribe to global ones",
+      "noTasks": "No tasks yet"
+    },
+    "toast": {
+      "created": "Timeline created",
+      "updated": "Timeline updated",
+      "deleted": "Timeline deleted",
+      "taskToggled": "Task updated",
+      "taskCreated": "Task created",
+      "eventCreated": "Event created",
+      "eventDeleted": "Event deleted"
+    }
+  },
+  "assessment": {
+    "title": "Assessment",
+    "selectType": "Choose an Assessment",
+    "selectTypeDesc": "Discover your personality, interests, and ideal majors",
+    "types": {
+      "MBTI": {
+        "title": "MBTI Personality",
+        "description": "Discover your personality type and find your best-fit colleges and majors"
+      },
+      "HOLLAND": {
+        "title": "Career Interest",
+        "description": "Explore your career interests and find matching fields of study"
+      },
+      "MAJOR_MATCH": {
+        "title": "Major Match",
+        "description": "Find the college majors that best match your interests and strengths"
+      }
+    },
+    "start": "Start Assessment",
+    "questions": "questions",
+    "questionOf": "Question {{current}} of {{total}}",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "result": {
+      "title": "Your Results",
+      "yourType": "Your Type",
+      "yourCode": "Your Code",
+      "dimensions": "Dimensions",
+      "strengths": "Strengths",
+      "careers": "Recommended Careers",
+      "majors": "Recommended Majors",
+      "fields": "Recommended Fields",
+      "recommendedMajors": "Best-Fit Majors",
+      "description": "Description",
+      "types": "Types"
+    },
+    "history": {
+      "title": "Assessment History",
+      "empty": "No assessments completed yet",
+      "emptyDesc": "Take an assessment to discover your personality and interests",
+      "viewResult": "View Result",
+      "completedAt": "Completed"
+    },
+    "retake": "Retake Assessment",
+    "viewHistory": "View History",
+    "backToSelection": "Back to Selection"
+  },
+  "uncommonApp": {
+    "title": "Uncommon App",
+    "subtitle": "AI-powered application assistant",
+    "quota": {
+      "title": "AI Usage",
+      "used": "{{used}} / {{total}} requests",
+      "unlimited": "Unlimited"
+    },
+    "agents": {
+      "auto": "Auto",
+      "essay": "Essay",
+      "school": "School",
+      "profile": "Profile",
+      "timeline": "Timeline"
+    },
+    "quickActions": {
+      "analyzeProfile": "Analyze Profile",
+      "analyzeProfileDesc": "Get AI analysis of your application profile",
+      "schoolRec": "School Recommendations",
+      "schoolRecDesc": "Find schools that match your profile",
+      "essayReview": "Essay Review",
+      "essayReviewDesc": "Get feedback on your essays",
+      "timelinePlan": "Timeline Plan",
+      "timelinePlanDesc": "Create your application timeline"
+    },
+    "chat": {
+      "placeholder": "Ask me anything about your application...",
+      "thinking": "Thinking...",
+      "toolCalling": "Using {{tool}}...",
+      "agentSwitch": "Switched to {{agent}} agent",
+      "clearChat": "Clear Chat",
+      "clearConfirm": "Clear all conversation history?",
+      "error": "Something went wrong. Please try again.",
+      "empty": "Start a conversation with your AI assistant"
+    }
+  },
+  "subscription": {
+    "title": "Subscription",
+    "currentPlan": "Current Plan",
+    "active": "Active",
+    "expired": "Expired",
+    "cancelled": "Cancelled",
+    "expiresOn": "Expires on {{date}}",
+    "upgradePrompt": "Upgrade for more features",
+    "period": {
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "yearlyDiscount": "Save ~17%"
+    },
+    "plans": {
+      "free": {
+        "name": "Free",
+        "price": "Free"
+      },
+      "pro": {
+        "name": "Pro",
+        "badge": "Popular"
+      },
+      "premium": {
+        "name": "Premium",
+        "badge": "Best Value"
+      }
+    },
+    "features": {
+      "browseSchools": "Browse schools",
+      "publicCases": "View public cases",
+      "basicAi": "Basic AI (5/day)",
+      "unlimitedAi": "Unlimited AI",
+      "prediction": "Admission prediction",
+      "essayReview": "Essay evaluation",
+      "detailedCases": "Detailed cases",
+      "prioritySupport": "Priority support",
+      "dedicatedAdvisor": "Dedicated advisor",
+      "strategy": "Application strategy",
+      "deepEssay": "Deep essay editing",
+      "vipCommunity": "VIP community"
+    },
+    "subscribe": "Subscribe",
+    "currentLabel": "Current Plan",
+    "upgrade": "Upgrade",
+    "switchPlan": "Switch Plan",
+    "cancel": "Cancel Subscription",
+    "cancelConfirm": "Are you sure you want to cancel? You'll lose access to premium features.",
+    "billing": {
+      "title": "Billing History",
+      "empty": "No billing history",
+      "status": {
+        "SUCCESS": "Paid",
+        "PENDING": "Pending",
+        "FAILED": "Failed",
+        "REFUNDED": "Refunded"
+      }
+    }
+  },
+  "security": {
+    "title": "Security",
+    "changePassword": {
+      "title": "Change Password",
+      "current": "Current Password",
+      "new": "New Password",
+      "confirm": "Confirm New Password",
+      "requirements": "Min 8 characters, include uppercase and number",
+      "submit": "Update Password",
+      "success": "Password updated successfully",
+      "mismatch": "Passwords do not match",
+      "strength": {
+        "weak": "Weak",
+        "fair": "Fair",
+        "good": "Good",
+        "strong": "Strong"
+      }
+    },
+    "biometric": {
+      "title": "Biometric Authentication",
+      "description": "Use Face ID or fingerprint to unlock the app",
+      "unavailable": "Biometric authentication is not available on this device"
+    },
+    "sessions": {
+      "title": "Active Sessions",
+      "description": "You are currently signed in on this device",
+      "signOutAll": "Sign Out of All Devices"
+    },
+    "deleteAccount": {
+      "title": "Delete Account",
+      "warning": "This action is permanent and cannot be undone. All your data will be deleted.",
+      "button": "Delete My Account",
+      "confirmTitle": "Confirm Account Deletion",
+      "confirmMessage": "Enter your password to confirm",
+      "password": "Password",
+      "confirm": "Delete Account",
+      "cancel": "Cancel"
     }
   },
   "errors": {

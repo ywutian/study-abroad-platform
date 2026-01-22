@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, ViewStyle, StyleProp } from 'react-native';
+import { View, Text, StyleSheet, ViewStyle, StyleProp } from 'react-native';
+import { Image } from 'expo-image';
 import { useColors, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 
 type AvatarSize = 'sm' | 'default' | 'lg' | 'xl';
@@ -51,6 +52,10 @@ export function Avatar({ source, name, size = 'default', style }: AvatarProps) {
       {source ? (
         <Image
           source={{ uri: source }}
+          placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
+          contentFit="cover"
+          cachePolicy="memory-disk"
+          transition={200}
           style={[
             styles.image,
             {
@@ -147,9 +152,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     overflow: 'hidden',
   },
-  image: {
-    resizeMode: 'cover',
-  },
+  image: {},
   initials: {
     fontWeight: fontWeight.medium,
   },

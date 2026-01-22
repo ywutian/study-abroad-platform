@@ -1,6 +1,6 @@
 /**
  * 荣誉殿堂页面
- * 
+ *
  * 展示平台优秀学员和录取案例
  */
 
@@ -79,9 +79,10 @@ export default function HallOfFameScreen() {
   // 获取荣誉殿堂数据
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['hallOfFame', activeTab],
-    queryFn: () => apiClient.get<{ members: HallMember[]; stats: HallStats }>('/hall', {
-      params: { filter: activeTab },
-    }),
+    queryFn: () =>
+      apiClient.get<{ members: HallMember[]; stats: HallStats }>('/hall', {
+        params: { filter: activeTab },
+      }),
   });
 
   const [refreshing, setRefreshing] = useState(false);
@@ -130,9 +131,7 @@ export default function HallOfFameScreen() {
               <Ionicons name="trophy" size={48} color="#fff" />
             </View>
             <Text style={styles.headerTitle}>{t('hallOfFame.title')}</Text>
-            <Text style={styles.headerSubtitle}>
-              {t('hallOfFame.subtitle')}
-            </Text>
+            <Text style={styles.headerSubtitle}>{t('hallOfFame.subtitle')}</Text>
           </View>
 
           {/* Stats Row */}
@@ -207,9 +206,7 @@ export default function HallOfFameScreen() {
         onScroll={scrollHandler}
         scrollEventThrottle={16}
         contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xl }}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.listContainer}>
@@ -217,10 +214,7 @@ export default function HallOfFameScreen() {
             <Loading />
           ) : members.length > 0 ? (
             members.map((member, index) => (
-              <Animated.View
-                key={member.id}
-                entering={FadeInUp.delay(index * 80).springify()}
-              >
+              <Animated.View key={member.id} entering={FadeInUp.delay(index * 80).springify()}>
                 <MemberCard
                   member={member}
                   colors={colors}
@@ -259,12 +253,7 @@ function StatItem({
   return (
     <View style={styles.statItem}>
       <Ionicons name={icon as any} size={18} color="rgba(255,255,255,0.8)" />
-      <AnimatedCounter
-        value={value}
-        suffix={suffix}
-        decimals={decimals}
-        style={styles.statValue}
-      />
+      <AnimatedCounter value={value} suffix={suffix} decimals={decimals} style={styles.statValue} />
       <Text style={styles.statLabel}>{label}</Text>
     </View>
   );
@@ -282,6 +271,7 @@ function MemberCard({
   rank: number;
   onPress: () => void;
 }) {
+  const { t } = useTranslation();
   const getRankBadge = () => {
     if (rank === 1) return { color: '#FFD700', icon: 'trophy' };
     if (rank === 2) return { color: '#C0C0C0', icon: 'medal' };
@@ -303,23 +293,15 @@ function MemberCard({
           )}
 
           <View style={styles.memberHeader}>
-            <Avatar
-              source={member.avatar}
-              name={member.name}
-              size="lg"
-            />
+            <Avatar source={member.avatar} name={member.name} size="lg" />
             <View style={styles.memberInfo}>
               <View style={styles.nameRow}>
-                <Text style={[styles.memberName, { color: colors.foreground }]}>
-                  {member.name}
-                </Text>
+                <Text style={[styles.memberName, { color: colors.foreground }]}>{member.name}</Text>
                 {member.verified && (
                   <Ionicons name="checkmark-circle" size={16} color={colors.success} />
                 )}
               </View>
-              <Text style={[styles.schoolName, { color: colors.primary }]}>
-                {member.school}
-              </Text>
+              <Text style={[styles.schoolName, { color: colors.primary }]}>{member.school}</Text>
               <Text style={[styles.majorYear, { color: colors.foregroundMuted }]}>
                 {member.major} · {member.year}
               </Text>
@@ -330,9 +312,7 @@ function MemberCard({
           <View style={styles.memberStats}>
             {member.gpa && (
               <View style={[styles.memberStat, { backgroundColor: colors.muted }]}>
-                <Text style={[styles.memberStatLabel, { color: colors.foregroundMuted }]}>
-                  GPA
-                </Text>
+                <Text style={[styles.memberStatLabel, { color: colors.foregroundMuted }]}>GPA</Text>
                 <Text style={[styles.memberStatValue, { color: colors.foreground }]}>
                   {member.gpa.toFixed(2)}
                 </Text>
@@ -536,5 +516,3 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
-
-

@@ -1,18 +1,19 @@
 /**
  * 网络状态 Provider
- * 
+ *
  * 检测网络连接状态，显示离线提示
  */
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
+import { onlineManager } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
 
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useColors, spacing, fontSize, fontWeight } from '@/utils/theme';
 
 interface NetworkContextType {
   isConnected: boolean;
@@ -38,13 +39,13 @@ export function NetworkProvider({ children }: NetworkProviderProps) {
   const { t } = useTranslation();
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  
+
   const [networkState, setNetworkState] = useState<NetworkContextType>({
     isConnected: true,
     isInternetReachable: true,
     connectionType: null,
   });
-  
+
   const [showBanner, setShowBanner] = useState(false);
   const [wasOffline, setWasOffline] = useState(false);
   const bannerAnim = useState(new Animated.Value(-100))[0];
@@ -68,10 +69,16 @@ export function NetworkProvider({ children }: NetworkProviderProps) {
   }, [bannerAnim]);
 
   useEffect(() => {
+    // Sync React Query's online manager with the real network state so
+    // queries automatically pause when offline and resume when back online.
+    const unsubscribeOnline = NetInfo.addEventListener((s) => {
+      onlineManager.setOnline(s.isConnected === true && s.isInternetReachable !== false);
+    });
+
     const unsubscribe = NetInfo.addEventListener((state: NetInfoState) => {
       const isConnected = state.isConnected ?? false;
       const isInternetReachable = state.isInternetReachable;
-      
+
       setNetworkState({
         isConnected,
         isInternetReachable,
@@ -83,9 +90,9 @@ export function NetworkProvider({ children }: NetworkProviderProps) {
         setWasOffline(true);
         showOfflineBanner();
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      } 
+      }
       // 恢复连接时显示短暂提示然后隐藏
-      else if (wasOffline && isConnected && isInternetReachable !== false) {
+      else if (wasOffline && isConnected) {
         // 显示"已恢复连接"2秒后隐藏
         setTimeout(() => {
           hideOfflineBanner();
@@ -95,7 +102,10 @@ export function NetworkProvider({ children }: NetworkProviderProps) {
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      unsubscribeOnline();
+    };
   }, [wasOffline, showOfflineBanner, hideOfflineBanner]);
 
   const isOffline = !networkState.isConnected || networkState.isInternetReachable === false;
@@ -103,7 +113,7 @@ export function NetworkProvider({ children }: NetworkProviderProps) {
   return (
     <NetworkContext.Provider value={networkState}>
       {children}
-      
+
       {/* Offline Banner */}
       {showBanner && (
         <Animated.View
@@ -153,5 +163,3 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.medium,
   },
 });
-
-

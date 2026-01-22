@@ -1,9 +1,6 @@
 module.exports = {
   preset: 'jest-expo',
-  setupFilesAfterEnv: [
-    '@testing-library/jest-native/extend-expect',
-    '<rootDir>/jest.setup.js',
-  ],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   transformIgnorePatterns: [
     // Handle pnpm node_modules structure (.pnpm)
     'node_modules/(?!(.pnpm|@react-native|react-native|expo|@expo|react-navigation|@react-navigation|@unimodules|unimodules|native-base|react-native-svg|react-native-reanimated|react-native-gesture-handler|react-native-screens|react-native-safe-area-context|react-native-markdown-display|@tanstack|i18next|react-i18next|zustand)/)',
@@ -19,15 +16,8 @@ module.exports = {
     '^@types/(.*)$': '<rootDir>/src/types/$1',
   },
   testMatch: ['**/__tests__/**/*.test.[jt]s?(x)'],
-  testPathIgnorePatterns: [
-    '/node_modules/',
-    '/.expo/',
-  ],
-  collectCoverageFrom: [
-    'src/**/*.{ts,tsx}',
-    '!src/**/*.d.ts',
-    '!src/**/__tests__/**',
-  ],
+  testPathIgnorePatterns: ['/node_modules/', '/.expo/'],
+  collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts', '!src/**/__tests__/**'],
   coverageThreshold: {
     global: {
       branches: 50,

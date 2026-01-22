@@ -11,7 +11,7 @@ const SENTRY_DSN = process.env.EXPO_PUBLIC_SENTRY_DSN;
 
 export function initSentry() {
   if (!SENTRY_DSN) {
-    console.log('Sentry DSN not configured, skipping initialization');
+    console.warn('Sentry DSN not configured, skipping initialization');
     return;
   }
 
@@ -47,7 +47,6 @@ export function initSentry() {
 
     // 启用原生错误捕获
     enableNative: true,
-    enableNativeNagger: false, // 禁用原生警告
 
     // 会话追踪
     enableAutoSessionTracking: true,
@@ -121,10 +120,5 @@ export function addBreadcrumb(breadcrumb: Sentry.Breadcrumb) {
  * 包装组件的错误边界
  */
 export const withErrorBoundary = Sentry.withErrorBoundary;
-
-/**
- * Wrap 导航（用于性能监控）
- */
-export const withSentryNavigationContainer = Sentry.withSentryNavigationContainer;
 
 export { Sentry };

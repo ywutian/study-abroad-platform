@@ -11,7 +11,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColors, spacing, fontSize, fontWeight } from '@/utils/theme';
 
 interface TabIconProps {
@@ -141,9 +140,8 @@ const TAB_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   profile: 'person',
 };
 
-export function AnimatedTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+export function AnimatedTabBar({ state, descriptors, navigation, insets }: BottomTabBarProps) {
   const colors = useColors();
-  const insets = useSafeAreaInsets();
 
   return (
     <View

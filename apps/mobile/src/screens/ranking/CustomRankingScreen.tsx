@@ -3,14 +3,7 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  RefreshControl,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -58,7 +51,7 @@ export default function CustomRankingScreen() {
   const { t } = useTranslation();
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { showToast } = useToast();
+  const toast = useToast();
 
   const [weights, setWeights] = useState<RankingWeights>({
     usNewsRank: 30,
@@ -71,7 +64,11 @@ export default function CustomRankingScreen() {
   const [showResults, setShowResults] = useState(false);
 
   // 计算排名
-  const { data: ranking, isLoading, refetch } = useQuery({
+  const {
+    data: ranking,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ['customRanking', weights],
     queryFn: () => apiClient.post<RankedSchool[]>('/rankings/calculate', weights),
     enabled: false,
@@ -83,11 +80,11 @@ export default function CustomRankingScreen() {
       apiClient.post('/rankings', data),
     onSuccess: () => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      showToast({ type: 'success', message: t('ranking.toast.saved') });
+      toast.show({ type: 'success', message: t('ranking.toast.saved') });
       setRankingName('');
     },
     onError: () => {
-      showToast({ type: 'error', message: t('ranking.toast.saveFailed') });
+      toast.show({ type: 'error', message: t('ranking.toast.saveFailed') });
     },
   });
 
@@ -99,7 +96,7 @@ export default function CustomRankingScreen() {
 
   const handleSave = () => {
     if (!rankingName.trim()) {
-      showToast({ type: 'error', message: t('ranking.toast.enterName') });
+      toast.show({ type: 'error', message: t('ranking.toast.enterName') });
       return;
     }
     saveMutation.mutate({
@@ -110,7 +107,7 @@ export default function CustomRankingScreen() {
   };
 
   const updateWeight = (key: keyof RankingWeights, value: number) => {
-    setWeights(prev => ({ ...prev, [key]: value }));
+    setWeights((prev) => ({ ...prev, [key]: value }));
   };
 
   const totalWeight = Object.values(weights).reduce((sum, w) => sum + w, 0);
@@ -205,7 +202,7 @@ export default function CustomRankingScreen() {
       </Animated.View>
 
       {/* Save Ranking */}
-      {showResults && ranking?.length > 0 && (
+      {showResults && (ranking?.length ?? 0) > 0 && (
         <Animated.View entering={FadeInUp.delay(200).duration(400)}>
           <AnimatedCard style={styles.saveCard}>
             <CardContent>
@@ -273,11 +270,7 @@ export default function CustomRankingScreen() {
 
                           {/* School Info */}
                           <View style={styles.schoolInfo}>
-                            <Avatar
-                              source={school.logoUrl}
-                              name={school.name}
-                              size="sm"
-                            />
+                            <Avatar source={school.logoUrl} name={school.name} size="sm" />
                             <View style={styles.schoolText}>
                               <Text
                                 style={[styles.schoolName, { color: colors.foreground }]}
@@ -321,7 +314,9 @@ export default function CustomRankingScreen() {
               <EmptyState
                 icon="bar-chart-outline"
                 title={t('ranking.emptyTitle', { defaultValue: 'Click Preview to see results' })}
-                description={t('ranking.emptyDesc', { defaultValue: 'Adjust weight parameters and click preview' })}
+                description={t('ranking.emptyDesc', {
+                  defaultValue: 'Adjust weight parameters and click preview',
+                })}
               />
             )}
           </View>
@@ -351,16 +346,8 @@ function WeightSlider({
         <Text style={[styles.sliderLabel, { color: colors.foreground }]}>{label}</Text>
         <Text style={[styles.sliderValue, { color: colors.primary }]}>{value}%</Text>
       </View>
-      <Slider
-        value={value}
-        onValueChange={onChange}
-        minimumValue={0}
-        maximumValue={100}
-        step={5}
-      />
-      {hint && (
-        <Text style={[styles.sliderHint, { color: colors.foregroundMuted }]}>{hint}</Text>
-      )}
+      <Slider value={value} onValueChange={onChange} minimumValue={0} maximumValue={100} step={5} />
+      {hint && <Text style={[styles.sliderHint, { color: colors.foregroundMuted }]}>{hint}</Text>}
     </View>
   );
 }
@@ -485,5 +472,3 @@ const styles = StyleSheet.create({
     marginLeft: 2,
   },
 });
-
-

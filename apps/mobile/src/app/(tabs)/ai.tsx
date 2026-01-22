@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,8 +8,8 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  FlatList,
 } from 'react-native';
+import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -25,13 +25,79 @@ import type { AiChatMessage, StreamEvent } from '@/types';
 
 type AgentMode = 'auto' | 'essay' | 'school' | 'profile' | 'timeline';
 
+interface ChatMessageItemProps {
+  item: AiChatMessage;
+  colors: ReturnType<typeof useColors>;
+  markdownStyles: Record<string, any>;
+  isLoading: boolean;
+  t: (key: string) => string;
+}
+
+const ChatMessageItem = React.memo(function ChatMessageItem({
+  item,
+  colors,
+  markdownStyles,
+  isLoading,
+  t,
+}: ChatMessageItemProps) {
+  const isUser = item.role === 'user';
+
+  return (
+    <View style={[styles.messageContainer, isUser ? styles.userMessage : styles.assistantMessage]}>
+      {!isUser && (
+        <View style={[styles.avatarContainer, { backgroundColor: colors.primary }]}>
+          <Ionicons name="sparkles" size={16} color={colors.primaryForeground} />
+        </View>
+      )}
+      <View
+        style={[
+          styles.messageBubble,
+          isUser
+            ? { backgroundColor: colors.primary }
+            : { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 },
+        ]}
+      >
+        {isUser ? (
+          <Text style={[styles.messageText, { color: colors.primaryForeground }]}>
+            {item.content}
+          </Text>
+        ) : (
+          <>
+            {/* Tool calls */}
+            {item.toolCalls?.map((tc, i) => (
+              <View key={i} style={[styles.toolCall, { backgroundColor: colors.muted }]}>
+                <Ionicons name="build" size={14} color={colors.foregroundMuted} />
+                <Text style={[styles.toolCallText, { color: colors.foregroundMuted }]}>
+                  {tc.name}
+                </Text>
+              </View>
+            ))}
+
+            {/* Content */}
+            {item.content ? (
+              <Markdown style={markdownStyles}>{item.content}</Markdown>
+            ) : isLoading ? (
+              <View style={styles.thinkingContainer}>
+                <Loading size="small" />
+                <Text style={[styles.thinkingText, { color: colors.foregroundMuted }]}>
+                  {t('ai.chat.thinking')}
+                </Text>
+              </View>
+            ) : null}
+          </>
+        )}
+      </View>
+    </View>
+  );
+});
+
 export default function AIScreen() {
   const { t } = useTranslation();
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const toast = useToast();
   const { isAuthenticated, user } = useAuthStore();
-  const scrollRef = useRef<FlatList>(null);
+  const scrollRef = useRef<FlashListRef<AiChatMessage>>(null);
 
   const [messages, setMessages] = useState<AiChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -51,193 +117,164 @@ export default function AIScreen() {
     { text: t('ai.chat.suggestions.checkTimeline'), icon: 'calendar' as const },
   ];
 
-  const sendMessage = useCallback(async (messageText?: string) => {
-    const text = messageText || input.trim();
-    if (!text || isLoading) return;
+  const sendMessage = useCallback(
+    async (messageText?: string) => {
+      const text = messageText || input.trim();
+      if (!text || isLoading) return;
 
-    if (!isAuthenticated) {
-      toast.error(t('errors.unauthorized'));
-      return;
-    }
-
-    const userMessage: AiChatMessage = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: text,
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setInput('');
-    setIsLoading(true);
-
-    const assistantMessage: AiChatMessage = {
-      id: (Date.now() + 1).toString(),
-      role: 'assistant',
-      content: '',
-      timestamp: new Date(),
-    };
-    setMessages((prev) => [...prev, assistantMessage]);
-
-    try {
-      // Use streaming API
-      for await (const chunk of apiClient.stream('/ai-agent/chat', {
-        message: text,
-        agentMode,
-        conversationId: null, // Start new conversation
-        stream: true, // 必须传递此参数启用 SSE
-      })) {
-        try {
-          const event: StreamEvent = JSON.parse(chunk);
-          
-          if (event.type === 'content' && event.content) {
-            setMessages((prev) => {
-              const newMessages = [...prev];
-              const lastMessage = newMessages[newMessages.length - 1];
-              if (lastMessage.role === 'assistant') {
-                lastMessage.content += event.content;
-              }
-              return newMessages;
-            });
-          } else if (event.type === 'tool_start' && event.tool) {
-            setMessages((prev) => {
-              const newMessages = [...prev];
-              const lastMessage = newMessages[newMessages.length - 1];
-              if (lastMessage.role === 'assistant') {
-                lastMessage.toolCalls = [
-                  ...(lastMessage.toolCalls || []),
-                  { name: event.tool!, status: 'running' },
-                ];
-              }
-              return newMessages;
-            });
-          } else if (event.type === 'error') {
-            toast.error(event.error || t('errors.unknown'));
-          }
-        } catch {
-          // Non-JSON chunk, treat as plain text
-          setMessages((prev) => {
-            const newMessages = [...prev];
-            const lastMessage = newMessages[newMessages.length - 1];
-            if (lastMessage.role === 'assistant') {
-              lastMessage.content += chunk;
-            }
-            return newMessages;
-          });
-        }
+      if (!isAuthenticated) {
+        toast.error(t('errors.unauthorized'));
+        return;
       }
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('errors.unknown'));
-      // Remove the empty assistant message
-      setMessages((prev) => prev.slice(0, -1));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [input, isLoading, isAuthenticated, agentMode, toast, t]);
+
+      const userMessage: AiChatMessage = {
+        id: Date.now().toString(),
+        role: 'user',
+        content: text,
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, userMessage]);
+      setInput('');
+      setIsLoading(true);
+
+      const assistantMessage: AiChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: '',
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, assistantMessage]);
+
+      try {
+        // Use streaming API
+        for await (const chunk of apiClient.stream('/ai-agent/chat', {
+          message: text,
+          agentMode,
+          conversationId: null, // Start new conversation
+          stream: true, // 必须传递此参数启用 SSE
+        })) {
+          try {
+            const event: StreamEvent = JSON.parse(chunk);
+
+            if (event.type === 'content' && event.content) {
+              setMessages((prev) => {
+                const newMessages = [...prev];
+                const lastMessage = newMessages[newMessages.length - 1];
+                if (lastMessage.role === 'assistant') {
+                  newMessages[newMessages.length - 1] = {
+                    ...lastMessage,
+                    content: lastMessage.content + event.content,
+                  };
+                }
+                return newMessages;
+              });
+            } else if (event.type === 'tool_start' && event.tool) {
+              setMessages((prev) => {
+                const newMessages = [...prev];
+                const lastMessage = newMessages[newMessages.length - 1];
+                if (lastMessage.role === 'assistant') {
+                  newMessages[newMessages.length - 1] = {
+                    ...lastMessage,
+                    toolCalls: [
+                      ...(lastMessage.toolCalls || []),
+                      { name: event.tool!, status: 'running' },
+                    ],
+                  };
+                }
+                return newMessages;
+              });
+            } else if (event.type === 'error') {
+              toast.error(event.error || t('errors.unknown'));
+            }
+          } catch {
+            // Non-JSON chunk, treat as plain text
+            setMessages((prev) => {
+              const newMessages = [...prev];
+              const lastMessage = newMessages[newMessages.length - 1];
+              if (lastMessage.role === 'assistant') {
+                newMessages[newMessages.length - 1] = {
+                  ...lastMessage,
+                  content: lastMessage.content + chunk,
+                };
+              }
+              return newMessages;
+            });
+          }
+        }
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : t('errors.unknown'));
+        // Remove the empty assistant message
+        setMessages((prev) => prev.slice(0, -1));
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [input, isLoading, isAuthenticated, agentMode, toast, t]
+  );
 
   const handleSuggestionPress = (text: string) => {
     sendMessage(text);
   };
 
-  const markdownStyles = {
-    body: {
-      color: colors.foreground,
-      fontSize: fontSize.base,
-      lineHeight: 24,
-    },
-    heading1: {
-      color: colors.foreground,
-      fontSize: fontSize['2xl'],
-      fontWeight: fontWeight.bold,
-      marginVertical: spacing.md,
-    },
-    heading2: {
-      color: colors.foreground,
-      fontSize: fontSize.xl,
-      fontWeight: fontWeight.semibold,
-      marginVertical: spacing.sm,
-    },
-    paragraph: {
-      color: colors.foreground,
-      marginVertical: spacing.xs,
-    },
-    code_inline: {
-      backgroundColor: colors.muted,
-      color: colors.primary,
-      paddingHorizontal: spacing.xs,
-      borderRadius: 4,
-    },
-    code_block: {
-      backgroundColor: colors.backgroundSecondary,
-      padding: spacing.md,
-      borderRadius: borderRadius.md,
-      marginVertical: spacing.sm,
-    },
-    list_item: {
-      color: colors.foreground,
-      marginVertical: spacing.xs,
-    },
-    link: {
-      color: colors.primary,
-    },
-  };
+  const markdownStyles = useMemo(
+    () => ({
+      body: {
+        color: colors.foreground,
+        fontSize: fontSize.base,
+        lineHeight: 24,
+      },
+      heading1: {
+        color: colors.foreground,
+        fontSize: fontSize['2xl'],
+        fontWeight: fontWeight.bold,
+        marginVertical: spacing.md,
+      },
+      heading2: {
+        color: colors.foreground,
+        fontSize: fontSize.xl,
+        fontWeight: fontWeight.semibold,
+        marginVertical: spacing.sm,
+      },
+      paragraph: {
+        color: colors.foreground,
+        marginVertical: spacing.xs,
+      },
+      code_inline: {
+        backgroundColor: colors.muted,
+        color: colors.primary,
+        paddingHorizontal: spacing.xs,
+        borderRadius: 4,
+      },
+      code_block: {
+        backgroundColor: colors.backgroundSecondary,
+        padding: spacing.md,
+        borderRadius: borderRadius.md,
+        marginVertical: spacing.sm,
+      },
+      list_item: {
+        color: colors.foreground,
+        marginVertical: spacing.xs,
+      },
+      link: {
+        color: colors.primary,
+      },
+    }),
+    [colors]
+  );
 
-  const renderMessage = ({ item }: { item: AiChatMessage }) => {
-    const isUser = item.role === 'user';
-
-    return (
-      <View
-        style={[
-          styles.messageContainer,
-          isUser ? styles.userMessage : styles.assistantMessage,
-        ]}
-      >
-        {!isUser && (
-          <View style={[styles.avatarContainer, { backgroundColor: colors.primary }]}>
-            <Ionicons name="sparkles" size={16} color={colors.primaryForeground} />
-          </View>
-        )}
-        <View
-          style={[
-            styles.messageBubble,
-            isUser
-              ? { backgroundColor: colors.primary }
-              : { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 },
-          ]}
-        >
-          {isUser ? (
-            <Text style={[styles.messageText, { color: colors.primaryForeground }]}>
-              {item.content}
-            </Text>
-          ) : (
-            <>
-              {/* Tool calls */}
-              {item.toolCalls?.map((tc, i) => (
-                <View key={i} style={[styles.toolCall, { backgroundColor: colors.muted }]}>
-                  <Ionicons name="build" size={14} color={colors.foregroundMuted} />
-                  <Text style={[styles.toolCallText, { color: colors.foregroundMuted }]}>
-                    {tc.name}
-                  </Text>
-                </View>
-              ))}
-              
-              {/* Content */}
-              {item.content ? (
-                <Markdown style={markdownStyles}>{item.content}</Markdown>
-              ) : isLoading ? (
-                <View style={styles.thinkingContainer}>
-                  <Loading size="small" />
-                  <Text style={[styles.thinkingText, { color: colors.foregroundMuted }]}>
-                    {t('ai.chat.thinking')}
-                  </Text>
-                </View>
-              ) : null}
-            </>
-          )}
-        </View>
-      </View>
-    );
-  };
+  const renderMessage = useCallback(
+    ({ item }: { item: AiChatMessage }) => (
+      <ChatMessageItem
+        item={item}
+        colors={colors}
+        markdownStyles={markdownStyles}
+        isLoading={isLoading}
+        t={t}
+      />
+    ),
+    [colors, markdownStyles, isLoading, t]
+  );
 
   return (
     <KeyboardAvoidingView
@@ -256,10 +293,7 @@ export default function AIScreen() {
 
       {/* Messages */}
       {messages.length === 0 ? (
-        <ScrollView
-          style={styles.emptyContainer}
-          contentContainerStyle={styles.emptyContent}
-        >
+        <ScrollView style={styles.emptyContainer} contentContainerStyle={styles.emptyContent}>
           <View style={[styles.welcomeIcon, { backgroundColor: colors.primary + '20' }]}>
             <Ionicons name="sparkles" size={48} color={colors.primary} />
           </View>
@@ -276,7 +310,10 @@ export default function AIScreen() {
               <TouchableOpacity
                 key={index}
                 onPress={() => handleSuggestionPress(suggestion.text)}
-                style={[styles.suggestionCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+                style={[
+                  styles.suggestionCard,
+                  { backgroundColor: colors.card, borderColor: colors.border },
+                ]}
               >
                 <Ionicons name={suggestion.icon} size={20} color={colors.primary} />
                 <Text style={[styles.suggestionText, { color: colors.foreground }]}>
@@ -287,7 +324,7 @@ export default function AIScreen() {
           </View>
         </ScrollView>
       ) : (
-        <FlatList
+        <FlashList
           ref={scrollRef}
           data={messages}
           renderItem={renderMessage}
@@ -327,8 +364,7 @@ export default function AIScreen() {
             style={[
               styles.sendButton,
               {
-                backgroundColor:
-                  input.trim() && !isLoading ? colors.primary : colors.muted,
+                backgroundColor: input.trim() && !isLoading ? colors.primary : colors.muted,
               },
             ]}
           >
@@ -482,12 +518,3 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
 });
-
-
-
-
-
-
-
-
-

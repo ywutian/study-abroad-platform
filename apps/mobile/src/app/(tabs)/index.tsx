@@ -241,13 +241,13 @@ export default function HomeScreen() {
               </View>
             ))}
           </ScrollView>
-        ) : schoolsData?.data?.length ? (
+        ) : schoolsData?.items?.length ? (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.horizontalList}
           >
-            {schoolsData.data.map((school, index) => (
+            {schoolsData.items.map((school, index) => (
               <StaggeredItem key={school.id} index={index} staggerDelay={100}>
                 <AnimatedCard
                   onPress={() => router.push(`/school/${school.id}`)}
@@ -266,8 +266,8 @@ export default function HomeScreen() {
                     >
                       {school.name}
                     </Text>
-                    {school.usnewsRank && (
-                      <Badge variant="secondary">#{school.usnewsRank} US News</Badge>
+                    {school.usNewsRank && (
+                      <Badge variant="secondary">#{school.usNewsRank} US News</Badge>
                     )}
                   </CardContent>
                 </AnimatedCard>
@@ -300,8 +300,8 @@ export default function HomeScreen() {
               <SkeletonListItem key={i} hasAvatar={false} />
             ))}
           </View>
-        ) : casesData?.data?.length ? (
-          casesData.data.map((caseItem, index) => (
+        ) : casesData?.items?.length ? (
+          casesData.items.map((caseItem, index) => (
             <StaggeredItem key={caseItem.id} index={index} staggerDelay={80}>
               <AnimatedCard
                 onPress={() => router.push(`/case/${caseItem.id}`)}

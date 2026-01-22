@@ -7,6 +7,7 @@ import { View, Text, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
+  useAnimatedProps,
   withTiming,
   Easing,
 } from 'react-native-reanimated';
@@ -38,7 +39,7 @@ export function Progress({
 }: ProgressProps) {
   const colors = useColors();
   const progress = useSharedValue(0);
-  
+
   const percentage = Math.min(Math.max((value / max) * 100, 0), 100);
   const fillColor = color || colors.primary;
   const bgColor = trackColor || colors.muted;
@@ -115,9 +116,7 @@ export function ProgressBar({
       {(label || showValue) && (
         <View style={styles.progressBarHeader}>
           {label && (
-            <Text style={[styles.progressBarLabel, { color: colors.foreground }]}>
-              {label}
-            </Text>
+            <Text style={[styles.progressBarLabel, { color: colors.foreground }]}>{label}</Text>
           )}
           {showValue && (
             <Text style={[styles.progressBarValue, { color: colors.foregroundMuted }]}>
@@ -167,11 +166,11 @@ export function CircularProgress({
 }: CircularProgressProps) {
   const colors = useColors();
   const progress = useSharedValue(0);
-  
+
   const percentage = Math.min(Math.max((value / max) * 100, 0), 100);
   const fillColor = color || colors.primary;
   const bgColor = trackColor || colors.muted;
-  
+
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
 
@@ -182,9 +181,12 @@ export function CircularProgress({
     });
   }, [percentage]);
 
-  const animatedProps = useAnimatedStyle(() => ({
-    strokeDashoffset: circumference * (1 - progress.value),
-  }));
+  const animatedProps = useAnimatedProps(
+    () =>
+      ({
+        strokeDashoffset: circumference * (1 - progress.value),
+      }) as any
+  );
 
   return (
     <View style={[styles.circularContainer, { width: size, height: size }, style]}>
@@ -222,9 +224,7 @@ export function CircularProgress({
             </Text>
           )}
           {label && (
-            <Text style={[styles.circularLabel, { color: colors.foregroundMuted }]}>
-              {label}
-            </Text>
+            <Text style={[styles.circularLabel, { color: colors.foregroundMuted }]}>{label}</Text>
           )}
         </View>
       )}
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
   fill: {
     height: '100%',
   },
-  
+
   // ProgressBar
   progressBarContainer: {
     width: '100%',
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
   progressBarValue: {
     fontSize: fontSize.sm,
   },
-  
+
   // CircularProgress
   circularContainer: {
     alignItems: 'center',

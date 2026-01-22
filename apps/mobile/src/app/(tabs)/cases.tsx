@@ -1,9 +1,10 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, RefreshControl } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import debounce from 'lodash.debounce';
 
 import {
@@ -18,6 +19,7 @@ import {
 } from '@/components/ui';
 import { BottomSheet } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
+import { SubmitCaseModal } from '@/components/features/SubmitCaseModal';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
 import { useColors, spacing, fontSize, fontWeight } from '@/utils/theme';
@@ -33,6 +35,8 @@ export default function CasesScreen() {
   const [filterVisible, setFilterVisible] = useState(false);
   const [resultFilter, setResultFilter] = useState<CaseResult | ''>('');
   const [yearFilter, setYearFilter] = useState('');
+  const [submitModalVisible, setSubmitModalVisible] = useState(false);
+  const queryClient = useQueryClient();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedSetSearch = useCallback(
@@ -60,15 +64,15 @@ export default function CasesScreen() {
         });
       },
       getNextPageParam: (lastPage) => {
-        if (lastPage.meta.page < lastPage.meta.totalPages) {
-          return lastPage.meta.page + 1;
+        if (lastPage.page < lastPage.totalPages) {
+          return lastPage.page + 1;
         }
         return undefined;
       },
       initialPageParam: 1,
     });
 
-  const cases = data?.pages.flatMap((page) => page.data) || [];
+  const cases = data?.pages.flatMap((page) => page.items) || [];
 
   const resultOptions = [
     { value: '', label: t('common.all') || 'All' },
@@ -207,9 +211,7 @@ export default function CasesScreen() {
           isAuthenticated
             ? {
                 label: t('cases.submitCase'),
-                onPress: () => {
-                  /* TODO: Open submit case modal */
-                },
+                onPress: () => setSubmitModalVisible(true),
               }
             : undefined
         }
@@ -249,9 +251,7 @@ export default function CasesScreen() {
             variant="outline"
             size="sm"
             leftIcon={<Ionicons name="add" size={18} color={colors.primary} />}
-            onPress={() => {
-              /* TODO: Open submit case modal */
-            }}
+            onPress={() => setSubmitModalVisible(true)}
           >
             {t('cases.submitCase')}
           </Button>
@@ -259,7 +259,7 @@ export default function CasesScreen() {
       )}
 
       {/* Cases List */}
-      <FlatList
+      <FlashList
         data={cases}
         renderItem={renderCaseItem}
         keyExtractor={(item) => item.id}
@@ -312,6 +312,15 @@ export default function CasesScreen() {
           </View>
         </View>
       </BottomSheet>
+
+      {/* Submit Case Modal */}
+      <SubmitCaseModal
+        visible={submitModalVisible}
+        onClose={() => setSubmitModalVisible(false)}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ['cases'] });
+        }}
+      />
     </View>
   );
 }

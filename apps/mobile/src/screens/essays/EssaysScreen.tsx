@@ -3,14 +3,7 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  RefreshControl,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -59,7 +52,9 @@ const getEssayTypes = (t: any): { value: EssayType; label: string; icon: string 
   { value: 'other', label: t('essays.types.other'), icon: 'document-text' },
 ];
 
-const getStatusConfig = (t: any): Record<EssayStatus, { label: string; variant: 'warning' | 'info' | 'primary' | 'success' }> => ({
+const getStatusConfig = (
+  t: any
+): Record<EssayStatus, { label: string; variant: 'warning' | 'info' | 'primary' | 'success' }> => ({
   draft: { label: t('essays.status.draft'), variant: 'warning' },
   in_progress: { label: t('essays.status.in_progress'), variant: 'info' },
   review: { label: t('essays.status.review'), variant: 'primary' },
@@ -70,7 +65,7 @@ export default function EssaysScreen() {
   const { t } = useTranslation();
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { showToast } = useToast();
+  const toast = useToast();
   const queryClient = useQueryClient();
   const { isAuthenticated } = useAuthStore();
 
@@ -78,7 +73,11 @@ export default function EssaysScreen() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   // 获取文书列表
-  const { data: essays, isLoading, refetch } = useQuery({
+  const {
+    data: essays,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ['essays'],
     queryFn: () => apiClient.get<Essay[]>('/profile/essays'),
     enabled: isAuthenticated,
@@ -90,10 +89,10 @@ export default function EssaysScreen() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['essays'] });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      showToast({ type: 'success', message: t('essays.toast.deleted') });
+      toast.show({ type: 'success', message: t('essays.toast.deleted') });
     },
     onError: () => {
-      showToast({ type: 'error', message: t('essays.toast.deleteFailed') });
+      toast.show({ type: 'error', message: t('essays.toast.deleteFailed') });
     },
   });
 
@@ -116,16 +115,15 @@ export default function EssaysScreen() {
   };
 
   // 过滤文书
-  const filteredEssays = essays?.filter(essay => 
-    activeTab === 'all' || essay.status === activeTab
-  ) || [];
+  const filteredEssays =
+    essays?.filter((essay) => activeTab === 'all' || essay.status === activeTab) || [];
 
   // 统计
   const stats = {
     total: essays?.length || 0,
-    draft: essays?.filter(e => e.status === 'draft').length || 0,
-    inProgress: essays?.filter(e => e.status === 'in_progress').length || 0,
-    completed: essays?.filter(e => e.status === 'completed').length || 0,
+    draft: essays?.filter((e) => e.status === 'draft').length || 0,
+    inProgress: essays?.filter((e) => e.status === 'in_progress').length || 0,
+    completed: essays?.filter((e) => e.status === 'completed').length || 0,
   };
 
   if (!isAuthenticated) {
@@ -144,9 +142,7 @@ export default function EssaysScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
         contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         showsVerticalScrollIndicator={false}
       >
         {/* Stats */}
@@ -272,7 +268,7 @@ function StatCard({
   onPress: () => void;
 }) {
   const colors = useColors();
-  
+
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -284,12 +280,8 @@ function StatCard({
       ]}
     >
       <Ionicons name={icon as any} size={20} color={active ? color : colors.foregroundMuted} />
-      <Text style={[styles.statValue, { color: active ? color : colors.foreground }]}>
-        {value}
-      </Text>
-      <Text style={[styles.statLabel, { color: colors.foregroundMuted }]}>
-        {label}
-      </Text>
+      <Text style={[styles.statValue, { color: active ? color : colors.foreground }]}>{value}</Text>
+      <Text style={[styles.statLabel, { color: colors.foregroundMuted }]}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -309,7 +301,9 @@ function EssayCard({
   onAIReview: () => void;
 }) {
   const { t } = useTranslation();
-  const typeInfo = essayTypes.find(type => type.value === essay.type);
+  const essayTypes = getEssayTypes(t);
+  const statusConfig = getStatusConfig(t);
+  const typeInfo = essayTypes.find((type) => type.value === essay.type);
   const statusInfo = statusConfig[essay.status];
   const progress = essay.wordLimit ? Math.min((essay.wordCount / essay.wordLimit) * 100, 100) : 0;
 
@@ -319,7 +313,11 @@ function EssayCard({
         <CardContent>
           <View style={styles.essayHeader}>
             <View style={[styles.typeIcon, { backgroundColor: colors.primary + '15' }]}>
-              <Ionicons name={typeInfo?.icon as any || 'document'} size={20} color={colors.primary} />
+              <Ionicons
+                name={(typeInfo?.icon as any) || 'document'}
+                size={20}
+                color={colors.primary}
+              />
             </View>
             <View style={styles.essayInfo}>
               <Text style={[styles.essayTitle, { color: colors.foreground }]} numberOfLines={1}>
@@ -359,7 +357,9 @@ function EssayCard({
               style={[styles.actionButton, { backgroundColor: colors.primary + '15' }]}
             >
               <Ionicons name="sparkles" size={16} color={colors.primary} />
-              <Text style={[styles.actionText, { color: colors.primary }]}>{t('essays.aiReview')}</Text>
+              <Text style={[styles.actionText, { color: colors.primary }]}>
+                {t('essays.aiReview')}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={onDelete}
@@ -479,5 +479,3 @@ const styles = StyleSheet.create({
     width: '100%',
   },
 });
-
-

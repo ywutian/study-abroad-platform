@@ -67,7 +67,7 @@ export default function SchoolDetailScreen() {
     { label: t('schools.detail.acceptanceRate'), value: formatPercent(school.acceptanceRate) },
     { label: t('schools.detail.tuition'), value: formatCurrency(school.tuition) },
     { label: t('schools.detail.avgSalary'), value: formatCurrency(school.avgSalary) },
-    { label: t('schools.detail.students'), value: school.totalStudents?.toLocaleString() || '-' },
+    { label: t('schools.detail.students'), value: school.totalEnrollment?.toLocaleString() || '-' },
   ];
 
   const tabContent = [
@@ -94,10 +94,10 @@ export default function SchoolDetailScreen() {
             </CardHeader>
             <CardContent>
               <View style={styles.rankingsRow}>
-                {school.usnewsRank && (
+                {school.usNewsRank && (
                   <View style={styles.rankItem}>
                     <Text style={[styles.rankValue, { color: colors.primary }]}>
-                      #{school.usnewsRank}
+                      #{school.usNewsRank}
                     </Text>
                     <Text style={[styles.rankLabel, { color: colors.foregroundMuted }]}>
                       {t('schools.detail.usnewsRank')}
@@ -195,8 +195,8 @@ export default function SchoolDetailScreen() {
       label: t('schools.detail.relatedCases'),
       content: (
         <View style={styles.tabContent}>
-          {casesData?.data?.length ? (
-            casesData.data.map((caseItem) => (
+          {casesData?.items?.length ? (
+            casesData.items.map((caseItem) => (
               <TouchableOpacity
                 key={caseItem.id}
                 onPress={() => router.push(`/case/${caseItem.id}`)}

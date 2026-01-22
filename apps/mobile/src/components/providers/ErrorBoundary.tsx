@@ -1,6 +1,6 @@
 /**
  * 全局错误边界
- * 
+ *
  * 捕获 React 渲染错误，显示友好的错误页面
  */
 
@@ -8,7 +8,7 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Updates from 'expo-updates';
-import i18n from '@/lib/i18n';
+import { i18n } from '@/lib/i18n';
 
 import { colors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 
@@ -39,8 +39,13 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({ errorInfo });
-    
-    // TODO: 上报错误到 Sentry 或其他错误追踪服务
+
+    // 上报错误到 Sentry
+    import('@/lib/sentry').then(({ captureException }) => {
+      captureException(error, {
+        componentStack: errorInfo.componentStack ?? undefined,
+      });
+    });
     console.error('ErrorBoundary caught an error:', error, errorInfo);
   }
 
@@ -69,17 +74,13 @@ export class ErrorBoundary extends Component<Props, State> {
             <View style={styles.iconContainer}>
               <Ionicons name="bug-outline" size={64} color={colors.light.error} />
             </View>
-            
+
             <Text style={styles.title}>{i18n.t('ui.error.title')}</Text>
-            <Text style={styles.message}>
-              {i18n.t('ui.error.message')}
-            </Text>
+            <Text style={styles.message}>{i18n.t('ui.error.message')}</Text>
 
             {__DEV__ && this.state.error && (
               <ScrollView style={styles.errorContainer} horizontal>
-                <Text style={styles.errorText}>
-                  {this.state.error.toString()}
-                </Text>
+                <Text style={styles.errorText}>{this.state.error.toString()}</Text>
               </ScrollView>
             )}
 
@@ -186,5 +187,3 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.medium,
   },
 });
-
-

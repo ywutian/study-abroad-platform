@@ -11,7 +11,6 @@
       "resizeMode": "contain",
       "backgroundColor": "#0f172a"
     },
-    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.studyabroad.mobile",
@@ -37,7 +36,10 @@
           "backgroundColor": "#0f172a",
           "imageWidth": 200
         }
-      ]
+      ],
+      "@sentry/react-native",
+      "expo-font",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true

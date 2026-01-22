@@ -2,20 +2,35 @@
  * 设置页面
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import * as StoreReview from 'expo-store-review';
+import * as LocalAuthentication from 'expo-local-authentication';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import Constants from 'expo-constants';
 
-import { AnimatedCard, CardContent, Switch, Avatar, Badge, AnimatedButton } from '@/components/ui';
+import {
+  AnimatedCard,
+  CardContent,
+  Switch,
+  Avatar,
+  Badge,
+  AnimatedButton,
+  Input,
+} from '@/components/ui';
+import { useToast } from '@/components/ui/Toast';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import { useAuthStore } from '@/stores';
 import { useThemeStore } from '@/stores/theme';
+import { apiClient } from '@/lib/api/client';
+
+export const BIOMETRIC_ENABLED_KEY = 'biometric_auth_enabled';
 
 interface SettingItem {
   icon: keyof typeof Ionicons.glyphMap;
@@ -38,10 +53,36 @@ export default function SettingsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { user, logout, isAuthenticated } = useAuthStore();
-  const { colorScheme, setColorScheme } = useThemeStore();
+  const { colorScheme, setMode } = useThemeStore();
+  const toast = useToast();
 
   const [notifications, setNotifications] = useState(true);
   const [biometrics, setBiometrics] = useState(false);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+
+  // Delete account state
+  const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleting, setDeleting] = useState(false);
+
+  // Load biometric state on mount
+  useEffect(() => {
+    async function checkBiometrics() {
+      try {
+        const hasHardware = await LocalAuthentication.hasHardwareAsync();
+        const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+        setBiometricAvailable(hasHardware && isEnrolled);
+
+        if (hasHardware && isEnrolled) {
+          const stored = await AsyncStorage.getItem(BIOMETRIC_ENABLED_KEY);
+          setBiometrics(stored === 'true');
+        }
+      } catch {
+        setBiometricAvailable(false);
+      }
+    }
+    checkBiometrics();
+  }, []);
 
   const handleLogout = () => {
     Alert.alert(t('common.logout'), t('settings.logoutConfirm'), [
@@ -49,33 +90,93 @@ export default function SettingsScreen() {
       {
         text: t('common.logout'),
         style: 'destructive',
-        onPress: () => {
+        onPress: async () => {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          logout();
+          await logout();
           router.replace('/(auth)/login');
         },
       },
     ]);
   };
 
+  // Delete account - show dialog with password input
   const handleDeleteAccount = () => {
-    Alert.alert(t('settings.deleteAccount'), t('settings.deleteAccountConfirm'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('common.delete'),
-        style: 'destructive',
-        onPress: () => {
-          // TODO: Call delete account API
-          Alert.alert(t('settings.featureInDev'), t('settings.contactSupport'));
-        },
-      },
-    ]);
+    setDeletePassword('');
+    setDeleteDialogVisible(true);
+  };
+
+  const handleConfirmDeleteAccount = async () => {
+    if (!deletePassword) {
+      toast.error(t('auth.errors.passwordRequired'));
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      await apiClient.delete('/users/me', {
+        body: JSON.stringify({ password: deletePassword }),
+      });
+
+      setDeleteDialogVisible(false);
+      toast.success(t('settings.deleteAccountSuccess'));
+      await logout();
+      router.replace('/(auth)/login');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : t('errors.unknown');
+      toast.error(message);
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const handleLanguageChange = () => {
     const newLang = i18n.language === 'zh' ? 'en' : 'zh';
     i18n.changeLanguage(newLang);
     Haptics.selectionAsync();
+  };
+
+  // App Store Review
+  const handleRateApp = async () => {
+    try {
+      const isAvailable = await StoreReview.isAvailableAsync();
+      if (isAvailable) {
+        await StoreReview.requestReview();
+      } else {
+        // Fallback: open app store URL or show thank you
+        Alert.alert(t('settings.thankYou'), t('settings.thankYouReview'));
+      }
+    } catch {
+      Alert.alert(t('settings.thankYou'), t('settings.thankYouReview'));
+    }
+  };
+
+  // Biometric toggle handler
+  const handleBiometricToggle = async (value: boolean) => {
+    if (value) {
+      // Verify biometric before enabling
+      try {
+        const result = await LocalAuthentication.authenticateAsync({
+          promptMessage: t('settings.biometricVerify'),
+          fallbackLabel: t('common.cancel'),
+          disableDeviceFallback: false,
+        });
+
+        if (result.success) {
+          await AsyncStorage.setItem(BIOMETRIC_ENABLED_KEY, 'true');
+          setBiometrics(true);
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          toast.success(t('settings.biometricEnabled'));
+        }
+        // If user cancelled, don't change state
+      } catch {
+        toast.error(t('settings.biometricFailed'));
+      }
+    } else {
+      await AsyncStorage.setItem(BIOMETRIC_ENABLED_KEY, 'false');
+      setBiometrics(false);
+      Haptics.selectionAsync();
+      toast.info(t('settings.biometricDisabled'));
+    }
   };
 
   const sections: SettingSection[] = [
@@ -97,7 +198,7 @@ export default function SettingsScreen() {
         {
           icon: 'card-outline',
           label: t('settings.subscription'),
-          value: user?.role === 'VIP' ? 'VIP' : t('settings.freeVersion'),
+          value: user?.role === 'VERIFIED' ? 'VIP' : t('settings.freeVersion'),
           type: 'navigate',
           onPress: () => router.push('/settings/subscription'),
         },
@@ -112,7 +213,7 @@ export default function SettingsScreen() {
           type: 'toggle',
           toggleValue: colorScheme === 'dark',
           onToggle: (value) => {
-            setColorScheme(value ? 'dark' : 'light');
+            setMode(value ? 'dark' : 'light');
             Haptics.selectionAsync();
           },
         },
@@ -133,16 +234,17 @@ export default function SettingsScreen() {
             Haptics.selectionAsync();
           },
         },
-        {
-          icon: 'finger-print-outline',
-          label: t('settings.biometrics'),
-          type: 'toggle',
-          toggleValue: biometrics,
-          onToggle: (value) => {
-            setBiometrics(value);
-            Haptics.selectionAsync();
-          },
-        },
+        ...(biometricAvailable
+          ? [
+              {
+                icon: 'finger-print-outline' as keyof typeof Ionicons.glyphMap,
+                label: t('settings.biometrics'),
+                type: 'toggle' as const,
+                toggleValue: biometrics,
+                onToggle: handleBiometricToggle,
+              },
+            ]
+          : []),
       ],
     },
     {
@@ -164,10 +266,7 @@ export default function SettingsScreen() {
           icon: 'star-outline',
           label: t('settings.rateApp'),
           type: 'navigate',
-          onPress: () => {
-            // TODO: Open app store review
-            Alert.alert(t('settings.thankYou'), t('settings.thankYouReview'));
-          },
+          onPress: handleRateApp,
         },
       ],
     },
@@ -219,64 +318,112 @@ export default function SettingsScreen() {
   }
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xl }}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* User Profile Card */}
-      {isAuthenticated && user && (
-        <Animated.View entering={FadeInDown.duration(400)}>
-          <TouchableOpacity onPress={() => router.push('/profile/edit')} activeOpacity={0.7}>
-            <AnimatedCard style={styles.profileCard}>
-              <CardContent style={styles.profileContent}>
-                <Avatar source={user.avatar} name={user.email} size="lg" />
-                <View style={styles.profileInfo}>
-                  <Text style={[styles.profileName, { color: colors.foreground }]}>
-                    {user.email.split('@')[0]}
-                  </Text>
-                  <Text style={[styles.profileEmail, { color: colors.foregroundMuted }]}>
-                    {user.email}
-                  </Text>
-                  {user.role === 'VIP' && (
-                    <Badge variant="warning" style={styles.vipBadge}>
-                      <Ionicons name="diamond" size={12} color="#fff" />
-                      <Text style={styles.vipText}> VIP</Text>
-                    </Badge>
-                  )}
-                </View>
-                <Ionicons name="chevron-forward" size={20} color={colors.foregroundMuted} />
+    <>
+      <ScrollView
+        style={[styles.container, { backgroundColor: colors.background }]}
+        contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xl }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* User Profile Card */}
+        {isAuthenticated && user && (
+          <Animated.View entering={FadeInDown.duration(400)}>
+            <TouchableOpacity onPress={() => router.push('/profile/edit')} activeOpacity={0.7}>
+              <AnimatedCard style={styles.profileCard}>
+                <CardContent style={styles.profileContent}>
+                  <Avatar source={undefined} name={user.email} size="lg" />
+                  <View style={styles.profileInfo}>
+                    <Text style={[styles.profileName, { color: colors.foreground }]}>
+                      {user.email.split('@')[0]}
+                    </Text>
+                    <Text style={[styles.profileEmail, { color: colors.foregroundMuted }]}>
+                      {user.email}
+                    </Text>
+                    {user.role === 'VERIFIED' && (
+                      <Badge variant="warning" style={styles.vipBadge}>
+                        <Ionicons name="diamond" size={12} color="#fff" />
+                        <Text style={styles.vipText}> VIP</Text>
+                      </Badge>
+                    )}
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={colors.foregroundMuted} />
+                </CardContent>
+              </AnimatedCard>
+            </TouchableOpacity>
+          </Animated.View>
+        )}
+
+        {/* Settings Sections */}
+        {sections.map((section, sectionIndex) => (
+          <Animated.View
+            key={section.title}
+            entering={FadeInDown.delay(100 + sectionIndex * 50).duration(400)}
+            style={styles.section}
+          >
+            <Text style={[styles.sectionTitle, { color: colors.foregroundMuted }]}>
+              {section.title}
+            </Text>
+            <AnimatedCard>
+              <CardContent style={styles.sectionContent}>
+                {section.items.map((item, itemIndex) => (
+                  <React.Fragment key={item.label}>
+                    {itemIndex > 0 && (
+                      <View style={[styles.divider, { backgroundColor: colors.border }]} />
+                    )}
+                    <SettingRow item={item} colors={colors} />
+                  </React.Fragment>
+                ))}
               </CardContent>
             </AnimatedCard>
-          </TouchableOpacity>
-        </Animated.View>
-      )}
+          </Animated.View>
+        ))}
+      </ScrollView>
 
-      {/* Settings Sections */}
-      {sections.map((section, sectionIndex) => (
-        <Animated.View
-          key={section.title}
-          entering={FadeInDown.delay(100 + sectionIndex * 50).duration(400)}
-          style={styles.section}
-        >
-          <Text style={[styles.sectionTitle, { color: colors.foregroundMuted }]}>
-            {section.title}
-          </Text>
-          <AnimatedCard>
-            <CardContent style={styles.sectionContent}>
-              {section.items.map((item, itemIndex) => (
-                <React.Fragment key={item.label}>
-                  {itemIndex > 0 && (
-                    <View style={[styles.divider, { backgroundColor: colors.border }]} />
-                  )}
-                  <SettingRow item={item} colors={colors} />
-                </React.Fragment>
-              ))}
-            </CardContent>
-          </AnimatedCard>
-        </Animated.View>
-      ))}
-    </ScrollView>
+      {/* Delete Account Dialog with password confirmation */}
+      {deleteDialogVisible && (
+        <View style={styles.passwordOverlay}>
+          <View style={[styles.passwordDialog, { backgroundColor: colors.card }]}>
+            <View style={[styles.deleteIconContainer, { backgroundColor: colors.error + '15' }]}>
+              <Ionicons name="trash" size={32} color={colors.error} />
+            </View>
+            <Text style={[styles.deleteTitle, { color: colors.foreground }]}>
+              {t('settings.deleteAccount')}
+            </Text>
+            <Text style={[styles.deleteMessage, { color: colors.foregroundMuted }]}>
+              {t('settings.deleteAccountConfirm')}
+            </Text>
+            <Input
+              label={t('settings.enterPasswordToDelete')}
+              value={deletePassword}
+              onChangeText={setDeletePassword}
+              placeholder={t('auth.login.passwordPlaceholder')}
+              secureTextEntry
+              containerStyle={styles.passwordInput}
+            />
+            <View style={styles.deleteActions}>
+              <AnimatedButton
+                variant="outline"
+                onPress={() => {
+                  setDeleteDialogVisible(false);
+                  setDeletePassword('');
+                }}
+                style={styles.deleteActionButton}
+                disabled={deleting}
+              >
+                {t('common.cancel')}
+              </AnimatedButton>
+              <AnimatedButton
+                variant="destructive"
+                onPress={handleConfirmDeleteAccount}
+                style={styles.deleteActionButton}
+                loading={deleting}
+              >
+                {t('common.delete')}
+              </AnimatedButton>
+            </View>
+          </View>
+        </View>
+      )}
+    </>
   );
 }
 
@@ -297,7 +444,7 @@ function SettingRow({ item, colors }: { item: SettingItem; colors: any }) {
       <Text style={[styles.settingLabel, { color: textColor }]}>{item.label}</Text>
 
       {item.type === 'toggle' ? (
-        <Switch value={item.toggleValue || false} onValueChange={item.onToggle} />
+        <Switch value={item.toggleValue || false} onValueChange={item.onToggle || (() => {})} />
       ) : item.type === 'info' ? (
         <Text style={[styles.settingValue, { color: colors.foregroundMuted }]}>{item.value}</Text>
       ) : (
@@ -408,5 +555,57 @@ const styles = StyleSheet.create({
   divider: {
     height: StyleSheet.hairlineWidth,
     marginLeft: 60,
+  },
+  // Delete account password dialog
+  passwordOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.lg,
+    zIndex: 100,
+  },
+  passwordDialog: {
+    width: '100%',
+    maxWidth: 340,
+    borderRadius: borderRadius.xl,
+    padding: spacing.xl,
+    alignItems: 'center',
+  },
+  deleteIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.lg,
+  },
+  deleteTitle: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.semibold,
+    textAlign: 'center',
+    marginBottom: spacing.sm,
+  },
+  deleteMessage: {
+    fontSize: fontSize.sm,
+    textAlign: 'center',
+    marginBottom: spacing.lg,
+    lineHeight: 20,
+  },
+  passwordInput: {
+    width: '100%',
+    marginBottom: spacing.md,
+  },
+  deleteActions: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    width: '100%',
+  },
+  deleteActionButton: {
+    flex: 1,
   },
 });

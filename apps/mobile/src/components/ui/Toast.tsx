@@ -1,11 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Animated,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
@@ -46,70 +40,85 @@ export function ToastProvider({ children }: ToastProviderProps) {
   const [visible, setVisible] = useState(false);
   const [config, setConfig] = useState<ToastConfig>({ message: '' });
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const show = useCallback((newConfig: ToastConfig) => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+  const show = useCallback(
+    (newConfig: ToastConfig) => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
 
-    setConfig(newConfig);
-    setVisible(true);
+      setConfig(newConfig);
+      setVisible(true);
 
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 200,
-      useNativeDriver: false, // Web doesn't support native driver
-    }).start();
-
-    timeoutRef.current = setTimeout(() => {
       Animated.timing(fadeAnim, {
-        toValue: 0,
+        toValue: 1,
         duration: 200,
         useNativeDriver: false, // Web doesn't support native driver
-      }).start(() => setVisible(false));
-    }, newConfig.duration || 3000);
-  }, [fadeAnim]);
+      }).start();
 
-  const success = useCallback((message: string) => {
-    show({ message, type: 'success' });
-  }, [show]);
+      timeoutRef.current = setTimeout(() => {
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: false, // Web doesn't support native driver
+        }).start(() => setVisible(false));
+      }, newConfig.duration || 3000);
+    },
+    [fadeAnim]
+  );
 
-  const error = useCallback((message: string) => {
-    show({ message, type: 'error' });
-  }, [show]);
+  const success = useCallback(
+    (message: string) => {
+      show({ message, type: 'success' });
+    },
+    [show]
+  );
 
-  const warning = useCallback((message: string) => {
-    show({ message, type: 'warning' });
-  }, [show]);
+  const error = useCallback(
+    (message: string) => {
+      show({ message, type: 'error' });
+    },
+    [show]
+  );
 
-  const info = useCallback((message: string) => {
-    show({ message, type: 'info' });
-  }, [show]);
+  const warning = useCallback(
+    (message: string) => {
+      show({ message, type: 'warning' });
+    },
+    [show]
+  );
+
+  const info = useCallback(
+    (message: string) => {
+      show({ message, type: 'info' });
+    },
+    [show]
+  );
 
   const getTypeConfig = () => {
     switch (config.type) {
       case 'success':
-        return { 
-          icon: 'checkmark-circle' as const, 
+        return {
+          icon: 'checkmark-circle' as const,
           color: colors.success,
           bgColor: colors.success + '15',
         };
       case 'error':
-        return { 
-          icon: 'close-circle' as const, 
+        return {
+          icon: 'close-circle' as const,
           color: colors.error,
           bgColor: colors.error + '15',
         };
       case 'warning':
-        return { 
-          icon: 'warning' as const, 
+        return {
+          icon: 'warning' as const,
           color: colors.warning,
           bgColor: colors.warning + '15',
         };
       default:
-        return { 
-          icon: 'information-circle' as const, 
+        return {
+          icon: 'information-circle' as const,
           color: colors.info,
           bgColor: colors.info + '15',
         };
@@ -154,13 +163,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
               color={typeConfig.color}
               style={styles.icon}
             />
-            <Text
-              style={[
-                styles.message,
-                { color: colors.foreground },
-              ]}
-              numberOfLines={2}
-            >
+            <Text style={[styles.message, { color: colors.foreground }]} numberOfLines={2}>
               {config.message}
             </Text>
             <TouchableOpacity
@@ -172,11 +175,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
                 }).start(() => setVisible(false));
               }}
             >
-              <Ionicons
-                name="close"
-                size={18}
-                color={colors.foregroundMuted}
-              />
+              <Ionicons name="close" size={18} color={colors.foregroundMuted} />
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -186,7 +185,11 @@ export function ToastProvider({ children }: ToastProviderProps) {
 }
 
 // Standalone Toast component for simple use
-export function Toast({ config, visible, onClose }: {
+export function Toast({
+  config,
+  visible,
+  onClose,
+}: {
   config: ToastConfig;
   visible: boolean;
   onClose: () => void;
@@ -247,15 +250,8 @@ export function Toast({ config, visible, onClose }: {
           },
         ]}
       >
-        <Ionicons
-          name={typeConfig.icon}
-          size={20}
-          color={typeConfig.color}
-          style={styles.icon}
-        />
-        <Text style={[styles.message, { color: colors.foreground }]}>
-          {config.message}
-        </Text>
+        <Ionicons name={typeConfig.icon} size={20} color={typeConfig.color} style={styles.icon} />
+        <Text style={[styles.message, { color: colors.foreground }]}>{config.message}</Text>
         <TouchableOpacity onPress={onClose}>
           <Ionicons name="close" size={18} color={colors.foregroundMuted} />
         </TouchableOpacity>
@@ -292,4 +288,3 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.medium,
   },
 });
-

@@ -1,6 +1,6 @@
 /**
  * Admin 管理后台 - Mobile 端
- * 
+ *
  * 功能：用户管理、举报处理、数据统计、学校数据同步
  */
 
@@ -32,9 +32,9 @@ import {
   EmptyState,
   AnimatedSkeleton,
   Modal,
-  Tabs,
   Avatar,
 } from '@/components/ui';
+import { Segment } from '@/components/ui/Tabs';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
@@ -98,30 +98,47 @@ export default function AdminScreen() {
 
   // ==================== Queries ====================
 
-  const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useQuery({
+  const {
+    data: stats,
+    isLoading: statsLoading,
+    refetch: refetchStats,
+  } = useQuery({
     queryKey: ['adminStats'],
     queryFn: () => apiClient.get<AdminStats>('/admin/stats'),
   });
 
-  const { data: reportsData, isLoading: reportsLoading, refetch: refetchReports } = useQuery({
+  const {
+    data: reportsData,
+    isLoading: reportsLoading,
+    refetch: refetchReports,
+  } = useQuery({
     queryKey: ['adminReports'],
-    queryFn: () => apiClient.get<{ data: Report[]; total: number }>('/admin/reports', {
-      params: { status: 'PENDING' },
-    }),
+    queryFn: () =>
+      apiClient.get<{ items: Report[]; total: number }>('/admin/reports', {
+        params: { status: 'PENDING' },
+      }),
   });
 
-  const { data: usersData, isLoading: usersLoading, refetch: refetchUsers } = useQuery({
+  const {
+    data: usersData,
+    isLoading: usersLoading,
+    refetch: refetchUsers,
+  } = useQuery({
     queryKey: ['adminUsers', userSearch],
-    queryFn: () => apiClient.get<{ data: User[]; total: number }>('/admin/users', {
-      params: userSearch ? { search: userSearch } : {},
-    }),
+    queryFn: () =>
+      apiClient.get<{ items: User[]; total: number }>('/admin/users', {
+        params: userSearch ? { search: userSearch } : {},
+      }),
   });
 
   // ==================== Mutations ====================
 
   const updateReportMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
-      apiClient.put(`/admin/reports/${id}`, { status, resolution: t('admin.dialogs.defaultResolution') }),
+      apiClient.put(`/admin/reports/${id}`, {
+        status,
+        resolution: t('admin.dialogs.defaultResolution'),
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminReports'] });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
@@ -168,18 +185,14 @@ export default function AdminScreen() {
   }, [refetchStats, refetchReports, refetchUsers]);
 
   const handleDeleteUser = (userId: string) => {
-    Alert.alert(
-      t('admin.dialogs.deleteConfirmTitle'),
-      t('admin.dialogs.deleteConfirmDesc'),
-      [
-        { text: t('admin.dialogs.cancel'), style: 'cancel' },
-        {
-          text: t('admin.dialogs.delete'),
-          style: 'destructive',
-          onPress: () => deleteUserMutation.mutate(userId),
-        },
-      ]
-    );
+    Alert.alert(t('admin.dialogs.deleteConfirmTitle'), t('admin.dialogs.deleteConfirmDesc'), [
+      { text: t('admin.dialogs.cancel'), style: 'cancel' },
+      {
+        text: t('admin.dialogs.delete'),
+        style: 'destructive',
+        onPress: () => deleteUserMutation.mutate(userId),
+      },
+    ]);
   };
 
   // ==================== Render Helpers ====================
@@ -214,7 +227,11 @@ export default function AdminScreen() {
       REVIEWED: 'secondary',
       RESOLVED: 'success',
     };
-    return <Badge variant={variants[status] || 'default'}>{t(`admin.reports.${status.toLowerCase()}`)}</Badge>;
+    return (
+      <Badge variant={variants[status] || 'default'}>
+        {t(`admin.reports.${status.toLowerCase()}`)}
+      </Badge>
+    );
   };
 
   const renderRoleBadge = (role: string) => {
@@ -240,10 +257,34 @@ export default function AdminScreen() {
         </>
       ) : stats ? (
         <>
-          {renderStatCard(t('admin.stats.totalUsers'), stats.totalUsers, 'people-outline', colors.primary, 0)}
-          {renderStatCard(t('admin.stats.totalCases'), stats.totalCases, 'document-text-outline', colors.info, 1)}
-          {renderStatCard(t('admin.stats.pendingReports'), stats.pendingReports, 'warning-outline', colors.warning, 2)}
-          {renderStatCard(t('admin.stats.totalReviews'), stats.totalReviews, 'star-outline', colors.success, 3)}
+          {renderStatCard(
+            t('admin.stats.totalUsers'),
+            stats.totalUsers,
+            'people-outline',
+            colors.primary,
+            0
+          )}
+          {renderStatCard(
+            t('admin.stats.totalCases'),
+            stats.totalCases,
+            'document-text-outline',
+            colors.info,
+            1
+          )}
+          {renderStatCard(
+            t('admin.stats.pendingReports'),
+            stats.pendingReports,
+            'warning-outline',
+            colors.warning,
+            2
+          )}
+          {renderStatCard(
+            t('admin.stats.totalReviews'),
+            stats.totalReviews,
+            'star-outline',
+            colors.success,
+            3
+          )}
         </>
       ) : null}
     </View>
@@ -257,13 +298,10 @@ export default function AdminScreen() {
             <AnimatedSkeleton key={i} height={100} style={{ marginBottom: spacing.md }} />
           ))}
         </View>
-      ) : reportsData?.data?.length ? (
-        reportsData.data.map((report, index) => (
+      ) : reportsData?.items?.length ? (
+        reportsData.items.map((report, index) => (
           <Animated.View key={report.id} entering={FadeInRight.delay(index * 50)}>
-            <AnimatedCard
-              style={styles.reportCard}
-              onPress={() => setSelectedReport(report)}
-            >
+            <AnimatedCard style={styles.reportCard} onPress={() => setSelectedReport(report)}>
               <CardContent>
                 <View style={styles.reportHeader}>
                   {renderStatusBadge(report.status)}
@@ -273,7 +311,10 @@ export default function AdminScreen() {
                   {report.reason}
                 </Text>
                 {report.detail && (
-                  <Text style={[styles.reportDetail, { color: colors.foregroundMuted }]} numberOfLines={2}>
+                  <Text
+                    style={[styles.reportDetail, { color: colors.foregroundMuted }]}
+                    numberOfLines={2}
+                  >
                     {report.detail}
                   </Text>
                 )}
@@ -297,7 +338,12 @@ export default function AdminScreen() {
   const renderUsers = () => (
     <View>
       {/* Search */}
-      <View style={[styles.searchContainer, { backgroundColor: colors.input, borderColor: colors.inputBorder }]}>
+      <View
+        style={[
+          styles.searchContainer,
+          { backgroundColor: colors.input, borderColor: colors.inputBorder },
+        ]}
+      >
         <Ionicons name="search-outline" size={20} color={colors.placeholder} />
         <TextInput
           style={[styles.searchInput, { color: colors.foreground }]}
@@ -322,15 +368,12 @@ export default function AdminScreen() {
             <AnimatedSkeleton key={i} height={72} style={{ marginBottom: spacing.sm }} />
           ))}
         </View>
-      ) : usersData?.data?.length ? (
-        usersData.data.map((u, index) => (
+      ) : usersData?.items?.length ? (
+        usersData.items.map((u, index) => (
           <Animated.View key={u.id} entering={FadeInRight.delay(index * 30)}>
-            <AnimatedCard
-              style={styles.userCard}
-              onPress={() => setSelectedUser(u)}
-            >
+            <AnimatedCard style={styles.userCard} onPress={() => setSelectedUser(u)}>
               <CardContent style={styles.userCardContent}>
-                <Avatar name={u.email} size="md" />
+                <Avatar name={u.email} size="default" />
                 <View style={styles.userInfo}>
                   <Text style={[styles.userEmail, { color: colors.foreground }]} numberOfLines={1}>
                     {u.email}
@@ -375,18 +418,13 @@ export default function AdminScreen() {
       {/* Tabs */}
       <View style={styles.tabsContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <Tabs
+          <Segment
             value={activeTab}
-            onValueChange={(v) => setActiveTab(v as typeof activeTab)}
-            items={[
-              { value: 'overview', label: t('admin.tabs.overview'), icon: 'stats-chart-outline' },
-              {
-                value: 'reports',
-                label: t('admin.tabs.reports'),
-                icon: 'warning-outline',
-                badge: stats?.pendingReports,
-              },
-              { value: 'users', label: t('admin.tabs.users'), icon: 'people-outline' },
+            onChange={(v) => setActiveTab(v as typeof activeTab)}
+            segments={[
+              { key: 'overview', label: t('admin.tabs.overview') },
+              { key: 'reports', label: t('admin.tabs.reports') },
+              { key: 'users', label: t('admin.tabs.users') },
             ]}
           />
         </ScrollView>
@@ -396,9 +434,7 @@ export default function AdminScreen() {
       <ScrollView
         style={styles.content}
         contentContainerStyle={styles.contentContainer}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         showsVerticalScrollIndicator={false}
       >
         {activeTab === 'overview' && renderOverview()}
@@ -415,22 +451,30 @@ export default function AdminScreen() {
         {selectedReport && (
           <View style={styles.modalContent}>
             <View style={styles.modalRow}>
-              <Text style={[styles.modalLabel, { color: colors.foregroundMuted }]}>{t('admin.reports.statusLabel')}</Text>
+              <Text style={[styles.modalLabel, { color: colors.foregroundMuted }]}>
+                {t('admin.reports.statusLabel')}
+              </Text>
               {renderStatusBadge(selectedReport.status)}
             </View>
             <View style={styles.modalRow}>
-              <Text style={[styles.modalLabel, { color: colors.foregroundMuted }]}>{t('admin.reports.type')}</Text>
+              <Text style={[styles.modalLabel, { color: colors.foregroundMuted }]}>
+                {t('admin.reports.type')}
+              </Text>
               <Badge variant="secondary">{selectedReport.targetType}</Badge>
             </View>
             <View style={styles.modalRow}>
-              <Text style={[styles.modalLabel, { color: colors.foregroundMuted }]}>{t('admin.reports.reason')}</Text>
+              <Text style={[styles.modalLabel, { color: colors.foregroundMuted }]}>
+                {t('admin.reports.reason')}
+              </Text>
               <Text style={[styles.modalValue, { color: colors.foreground }]}>
                 {selectedReport.reason}
               </Text>
             </View>
             {selectedReport.detail && (
               <View style={styles.modalRow}>
-                <Text style={[styles.modalLabel, { color: colors.foregroundMuted }]}>{t('admin.reports.details')}</Text>
+                <Text style={[styles.modalLabel, { color: colors.foregroundMuted }]}>
+                  {t('admin.reports.details')}
+                </Text>
                 <Text style={[styles.modalValue, { color: colors.foreground }]}>
                   {selectedReport.detail}
                 </Text>
@@ -441,14 +485,18 @@ export default function AdminScreen() {
               <View style={styles.modalActions}>
                 <Button
                   variant="outline"
-                  onPress={() => updateReportMutation.mutate({ id: selectedReport.id, status: 'REVIEWED' })}
+                  onPress={() =>
+                    updateReportMutation.mutate({ id: selectedReport.id, status: 'REVIEWED' })
+                  }
                   loading={updateReportMutation.isPending}
                   style={styles.modalButton}
                 >
                   {t('admin.reports.markReviewed')}
                 </Button>
                 <Button
-                  onPress={() => updateReportMutation.mutate({ id: selectedReport.id, status: 'RESOLVED' })}
+                  onPress={() =>
+                    updateReportMutation.mutate({ id: selectedReport.id, status: 'RESOLVED' })
+                  }
                   loading={updateReportMutation.isPending}
                   style={styles.modalButton}
                 >
@@ -508,10 +556,18 @@ export default function AdminScreen() {
                 {selectedUser.role !== 'VERIFIED' && (
                   <Button
                     variant="outline"
-                    onPress={() => updateUserRoleMutation.mutate({ userId: selectedUser.id, role: 'VERIFIED' })}
+                    onPress={() =>
+                      updateUserRoleMutation.mutate({ userId: selectedUser.id, role: 'VERIFIED' })
+                    }
                     loading={updateUserRoleMutation.isPending}
                     style={styles.modalButton}
-                    leftIcon={<Ionicons name="checkmark-circle-outline" size={18} color={colors.foreground} />}
+                    leftIcon={
+                      <Ionicons
+                        name="checkmark-circle-outline"
+                        size={18}
+                        color={colors.foreground}
+                      />
+                    }
                   >
                     {t('admin.users.setVerified')}
                   </Button>
@@ -519,10 +575,14 @@ export default function AdminScreen() {
                 {selectedUser.role === 'VERIFIED' && (
                   <Button
                     variant="outline"
-                    onPress={() => updateUserRoleMutation.mutate({ userId: selectedUser.id, role: 'USER' })}
+                    onPress={() =>
+                      updateUserRoleMutation.mutate({ userId: selectedUser.id, role: 'USER' })
+                    }
                     loading={updateUserRoleMutation.isPending}
                     style={styles.modalButton}
-                    leftIcon={<Ionicons name="person-outline" size={18} color={colors.foreground} />}
+                    leftIcon={
+                      <Ionicons name="person-outline" size={18} color={colors.foreground} />
+                    }
                   >
                     {t('admin.users.setUser')}
                   </Button>
@@ -582,7 +642,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     paddingBottom: spacing['4xl'],
   },
-  
+
   // Stats
   statsGrid: {
     flexDirection: 'row',
@@ -748,5 +808,3 @@ const styles = StyleSheet.create({
     height: 40,
   },
 });
-
-

@@ -1,4 +1,55 @@
-// ============== User & Auth ==============
+// Re-export shared enums as the single source of truth
+export {
+  Role,
+  Visibility,
+  BudgetTier,
+  TestType,
+  ActivityCategory,
+  AwardLevel,
+  AdmissionResult,
+  CompetitionCategory,
+  EssayType,
+  ReportTargetType,
+  ReportStatus,
+  PaymentStatus,
+  VerificationStatus,
+  ApplicationStatus,
+  MemoryType,
+} from '@study-abroad/shared/types';
+
+// Import for local use in interfaces (re-export alone doesn't create local binding)
+import type { ConversationParticipant } from '@study-abroad/shared/types';
+
+// Re-export shared types
+export type {
+  AuthTokens,
+  Competition,
+  Education,
+  Essay,
+  SchoolDeadline,
+  SchoolMetric,
+  EssayPrompt,
+  Follow,
+  Block,
+  ConversationParticipant,
+  AiChatMessage,
+  ToolCall,
+  StreamEvent,
+  ApiError,
+  RankingWeights,
+  PredictionFactor,
+  PredictionResult,
+  Report,
+  Review,
+  RecommendedSchool,
+  RecommendationAnalysis,
+  RecommendationResult,
+  RecommendationPreflight,
+  CaseResult,
+} from '@study-abroad/shared/types';
+
+// ============== User ==============
+// Mobile User uses string dates (from JSON) and string literal roles
 export interface User {
   id: string;
   email: string;
@@ -9,6 +60,7 @@ export interface User {
   updatedAt?: string;
 }
 
+// ============== Auth ==============
 export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
@@ -26,30 +78,8 @@ export interface RegisterDto {
 }
 
 // ============== Profile ==============
-export type Visibility = 'PRIVATE' | 'ANONYMOUS' | 'PUBLIC' | 'VERIFIED_ONLY';
+// Mobile profile includes nested relations from API
 export type SchoolType = 'PUBLIC_SCHOOL' | 'PRIVATE_SCHOOL' | 'INTERNATIONAL';
-export type BudgetTier = 'UNDER_30K' | 'UNDER_50K' | 'UNDER_70K' | 'ABOVE_70K';
-
-export interface Profile {
-  id: string;
-  userId: string;
-  grade?: string;
-  schoolType?: SchoolType;
-  currentSchool?: string;
-  targetMajor?: string;
-  regionPreference?: string[];
-  budgetTier?: BudgetTier;
-  visibility: Visibility;
-  gpa?: number;
-  gpaScale?: number;
-  testScores: TestScore[];
-  activities: Activity[];
-  awards: Award[];
-  education: Education[];
-  essays: Essay[];
-  createdAt: string;
-  updatedAt: string;
-}
 
 export interface TestScore {
   id: string;
@@ -81,59 +111,26 @@ export interface Award {
   date?: string;
   description?: string;
   competitionId?: string;
-  competition?: Competition;
+  competition?: import('@study-abroad/shared/types').Competition;
 }
 
-// Competition Reference Data
-export type CompetitionCategory =
-  | 'MATH'
-  | 'BIOLOGY'
-  | 'PHYSICS'
-  | 'CHEMISTRY'
-  | 'COMPUTER_SCIENCE'
-  | 'ENGINEERING_RESEARCH'
-  | 'ECONOMICS_BUSINESS'
-  | 'DEBATE_SPEECH'
-  | 'WRITING_ESSAY'
-  | 'GENERAL_ACADEMIC'
-  | 'ARTS_MUSIC'
-  | 'OTHER';
-
-export interface Competition {
+export interface Profile {
   id: string;
-  name: string;
-  abbreviation: string;
-  nameZh?: string;
-  category: CompetitionCategory;
-  level: string;
-  tier: number;
-  description?: string;
-  descriptionZh?: string;
-  website?: string;
-  isActive: boolean;
-}
-
-export interface Education {
-  id: string;
-  profileId: string;
-  schoolName: string;
-  degree?: string;
-  major?: string;
-  startDate?: string;
-  endDate?: string;
+  userId: string;
+  grade?: string;
+  schoolType?: SchoolType;
+  currentSchool?: string;
+  targetMajor?: string;
+  regionPreference?: string[];
+  budgetTier?: string;
+  visibility: string;
   gpa?: number;
   gpaScale?: number;
-}
-
-export interface Essay {
-  id: string;
-  profileId: string;
-  title: string;
-  content: string;
-  wordCount?: number;
-  schoolId?: string;
-  promptType?: string;
-  status: 'DRAFT' | 'IN_REVIEW' | 'FINAL';
+  testScores: TestScore[];
+  activities: Activity[];
+  awards: Award[];
+  education: import('@study-abroad/shared/types').Education[];
+  essays: import('@study-abroad/shared/types').Essay[];
   createdAt: string;
   updatedAt: string;
 }
@@ -153,7 +150,6 @@ export interface School {
   tuition?: number;
   avgSalary?: number;
   totalEnrollment?: number;
-  // Test Score Statistics
   satAvg?: number;
   sat25?: number;
   sat75?: number;
@@ -166,47 +162,23 @@ export interface School {
   act75?: number;
   studentCount?: number;
   graduationRate?: number;
-  // School Type & Niche
   isPrivate?: boolean;
   nicheSafetyGrade?: string;
   nicheLifeGrade?: string;
   nicheFoodGrade?: string;
   nicheOverallGrade?: string;
-  // Additional Info
   website?: string;
   logoUrl?: string;
   description?: string;
   descriptionZh?: string;
-  essayPrompts?: EssayPrompt[];
-  deadlines?: SchoolDeadline[];
-  metrics?: SchoolMetric[];
+  essayPrompts?: import('@study-abroad/shared/types').EssayPrompt[];
+  deadlines?: import('@study-abroad/shared/types').SchoolDeadline[];
+  metrics?: import('@study-abroad/shared/types').SchoolMetric[];
   createdAt: string;
   updatedAt: string;
 }
 
-export interface EssayPrompt {
-  prompt: string;
-  wordLimit?: number;
-  required?: boolean;
-}
-
-export interface SchoolDeadline {
-  type: string;
-  date: string;
-  notes?: string;
-}
-
-export interface SchoolMetric {
-  id: string;
-  schoolId: string;
-  year: number;
-  metricKey: string;
-  value: number;
-}
-
 // ============== Case ==============
-export type CaseResult = 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED';
-
 export interface Case {
   id: string;
   userId: string;
@@ -214,7 +186,7 @@ export interface Case {
   school?: School;
   major?: string;
   year: number;
-  result: CaseResult;
+  result: import('@study-abroad/shared/types').CaseResult;
   round?: string;
   gpa?: number;
   gpaScale?: number;
@@ -226,7 +198,7 @@ export interface Case {
   awards?: string;
   essays?: string;
   tips?: string;
-  visibility: Visibility;
+  visibility: string;
   verified: boolean;
   points?: number;
   createdAt: string;
@@ -242,13 +214,6 @@ export interface Conversation {
   createdAt: string;
 }
 
-export interface ConversationParticipant {
-  id: string;
-  conversationId: string;
-  userId: string;
-  user?: User;
-}
-
 export interface Message {
   id: string;
   conversationId: string;
@@ -256,33 +221,6 @@ export interface Message {
   sender?: User;
   content: string;
   read: boolean;
-  createdAt: string;
-}
-
-// ============== Social ==============
-export interface Follow {
-  id: string;
-  followerId: string;
-  followingId: string;
-  follower?: User;
-  following?: User;
-  createdAt: string;
-}
-
-export interface Block {
-  id: string;
-  blockerId: string;
-  blockedId: string;
-  createdAt: string;
-}
-
-export interface Report {
-  id: string;
-  reporterId: string;
-  reportedId: string;
-  reason: string;
-  description?: string;
-  status: 'PENDING' | 'REVIEWED' | 'RESOLVED' | 'DISMISSED';
   createdAt: string;
 }
 
@@ -312,7 +250,7 @@ export interface UserList {
 }
 
 // ============== Prediction ==============
-export interface PredictionResult {
+export interface PredictionResponse {
   schoolId: string;
   school?: School;
   probability: number;
@@ -336,46 +274,12 @@ export interface RankedSchool extends School {
   rank: number;
 }
 
-// ============== AI ==============
-export interface AiChatMessage {
-  id: string;
-  role: 'user' | 'assistant' | 'tool';
-  content: string;
-  toolCalls?: ToolCall[];
-  toolCallId?: string;
-  timestamp: Date;
-}
-
-export interface ToolCall {
-  id: string;
-  name: string;
-  arguments: Record<string, unknown>;
-  result?: unknown;
-}
-
-export interface StreamEvent {
-  type: 'start' | 'content' | 'tool_start' | 'tool_end' | 'agent_switch' | 'done' | 'error';
-  agent?: string;
-  content?: string;
-  tool?: string;
-  toolResult?: unknown;
-  response?: { message: string; agentType: string };
-  error?: string;
-}
-
 // ============== API Response ==============
+// Matches backend PaginatedResponseDto exactly
 export interface PaginatedResponse<T> {
-  data: T[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
-
-export interface ApiError {
-  message: string;
-  statusCode?: number;
-  error?: string;
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }

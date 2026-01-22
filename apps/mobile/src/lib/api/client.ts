@@ -65,7 +65,9 @@ class ApiClient {
         return false;
       }
 
-      const data = await response.json();
+      const json = await response.json();
+      // Unwrap backend standard response format
+      const data = json.data !== undefined ? json.data : json;
       await saveTokens(data.accessToken, data.refreshToken);
       return true;
     } catch (error) {
@@ -137,7 +139,9 @@ class ApiClient {
           return {} as T;
         }
 
-        return JSON.parse(text);
+        const json = JSON.parse(text);
+        // Unwrap backend standard response format: { success: true, data: {...} }
+        return json.data !== undefined ? json.data : json;
       } catch (error: unknown) {
         clearTimeout(timeoutId);
 

@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, RefreshControl } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -58,15 +59,15 @@ export default function SchoolsScreen() {
         });
       },
       getNextPageParam: (lastPage) => {
-        if (lastPage.meta.page < lastPage.meta.totalPages) {
-          return lastPage.meta.page + 1;
+        if (lastPage.page < lastPage.totalPages) {
+          return lastPage.page + 1;
         }
         return undefined;
       },
       initialPageParam: 1,
     });
 
-  const schools = data?.pages.flatMap((page) => page.data) || [];
+  const schools = data?.pages.flatMap((page) => page.items) || [];
 
   const sortOptions: { value: SortOption; label: string }[] = [
     { value: 'usnewsRank', label: t('schools.sort.ranking') },
@@ -88,7 +89,7 @@ export default function SchoolsScreen() {
               {item.city}, {item.state}
             </Text>
             <View style={styles.badges}>
-              {item.usnewsRank && <Badge variant="secondary">#{item.usnewsRank}</Badge>}
+              {item.usNewsRank && <Badge variant="secondary">#{item.usNewsRank}</Badge>}
               {item.acceptanceRate && (
                 <Badge variant="outline">{(item.acceptanceRate * 100).toFixed(0)}%</Badge>
               )}
@@ -167,7 +168,7 @@ export default function SchoolsScreen() {
       </View>
 
       {/* Schools List */}
-      <FlatList
+      <FlashList
         data={schools}
         renderItem={renderSchoolItem}
         keyExtractor={(item) => item.id}
