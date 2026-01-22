@@ -13,6 +13,9 @@ interface Message {
   senderId: string;
   conversationId: string;
   createdAt: string;
+  isDeleted?: boolean;
+  mediaUrl?: string;
+  mediaType?: string;
   sender?: {
     id: string;
     email: string;
@@ -25,16 +28,29 @@ interface Message {
   status?: 'sending' | 'sent' | 'delivered' | 'read';
 }
 
+interface InfiniteMessagesData {
+  pages: Message[][];
+  pageParams: unknown[];
+}
+
 interface TypingUser {
   conversationId: string;
   userId: string;
   isTyping: boolean;
 }
 
+interface ReadReceipt {
+  conversationId: string;
+  userId: string;
+  readAt: string;
+}
+
 interface UseChatSocketOptions {
   onNewMessage?: (message: Message) => void;
   onTyping?: (data: TypingUser) => void;
   onOnlineStatusChange?: (userId: string, isOnline: boolean) => void;
+  onMessagesRead?: (data: ReadReceipt) => void;
+  onMessageDeleted?: (data: { messageId: string; conversationId: string }) => void;
 }
 
 export function useChatSocket(options: UseChatSocketOptions = {}) {
@@ -79,20 +95,25 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
       setIsConnected(false);
     });
 
-    socket.on('connected', (data: { userId: string }) => {
-      console.log('[Chat] Connected as:', data.userId);
+    socket.on('connected', () => {
+      setIsConnected(true);
     });
 
     // 新消息
     socket.on('newMessage', (data: { conversationId: string; message: Message }) => {
-      // 更新消息列表缓存（apiClient 已经解包 data，缓存结构是 Message[]）
+      // 更新消息列表缓存（useInfiniteQuery 结构: { pages: Message[][], pageParams }）
       queryClientRef.current.setQueryData(
         ['messages', data.conversationId],
-        (old: Message[] | undefined) => {
-          if (!old) return [data.message];
+        (old: InfiniteMessagesData | undefined) => {
+          if (!old?.pages) return old;
+          const lastPage = old.pages[0] || [];
           // 防重复
-          if (old.some((m) => m.id === data.message.id)) return old;
-          return [...old, data.message];
+          if (lastPage.some((m) => m.id === data.message.id)) return old;
+          // 新消息添加到第一页开头（第一页是最新的，DESC 排序）
+          return {
+            ...old,
+            pages: [[data.message, ...lastPage], ...old.pages.slice(1)],
+          };
         }
       );
 
@@ -100,6 +121,29 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
       queryClientRef.current.invalidateQueries({ queryKey: ['conversations'] });
 
       optionsRef.current.onNewMessage?.(data.message);
+    });
+
+    // 已读回执
+    socket.on('messagesRead', (data: ReadReceipt) => {
+      optionsRef.current.onMessagesRead?.(data);
+    });
+
+    // 消息删除
+    socket.on('messageDeleted', (data: { messageId: string; conversationId: string }) => {
+      // 更新消息列表缓存（useInfiniteQuery 结构）
+      queryClientRef.current.setQueryData(
+        ['messages', data.conversationId],
+        (old: InfiniteMessagesData | undefined) => {
+          if (!old?.pages) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page) =>
+              page.map((m) => (m.id === data.messageId ? { ...m, isDeleted: true } : m))
+            ),
+          };
+        }
+      );
+      optionsRef.current.onMessageDeleted?.(data);
     });
 
     // 输入状态
@@ -205,6 +249,11 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
     socketRef.current?.emit('joinConversation', { conversationId });
   }, []);
 
+  // 标记已读
+  const markRead = useCallback((conversationId: string) => {
+    socketRef.current?.emit('markRead', { conversationId });
+  }, []);
+
   // 发送 typing 状态
   const sendTyping = useCallback((conversationId: string, isTyping: boolean) => {
     socketRef.current?.emit('typing', { conversationId, isTyping });
@@ -230,6 +279,7 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
     isConnected,
     sendMessage,
     joinConversation,
+    markRead,
     sendTyping,
     getTypingUsers,
     isUserOnline,

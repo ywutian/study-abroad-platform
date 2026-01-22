@@ -295,6 +295,8 @@ export default function CasesPage() {
                   sat={caseItem.satRange}
                   toefl={caseItem.toeflRange}
                   tags={caseItem.tags}
+                  rank={caseItem.school?.usNewsRank}
+                  isVerified={caseItem.isVerified}
                   onClick={() => router.push(`/${locale}/cases/${caseItem.id}`)}
                 />
               </motion.div>

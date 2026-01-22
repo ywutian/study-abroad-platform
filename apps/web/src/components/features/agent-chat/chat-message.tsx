@@ -31,11 +31,8 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { ChatMessage as ChatMessageType, AGENT_INFO, AgentType, ToolCallInfo } from './types';
-import ReactMarkdownOriginal from 'react-markdown';
-
- 
-const ReactMarkdown = ReactMarkdownOriginal as any;
-import remarkGfm from 'remark-gfm';
+import { Streamdown } from 'streamdown';
+import { cjk } from '@streamdown/cjk';
 import { transitions } from '@/lib/motion';
 
 interface ChatMessageProps {
@@ -249,7 +246,7 @@ export const ChatMessage = memo(function ChatMessage({
             )}
           </AnimatePresence>
 
-          {/* Message Content - 流式时用纯文本避免 Markdown 乱码 */}
+          {/* Message Content - Streamdown 处理流式和完成态的 Markdown 渲染 */}
           {message.content ? (
             <div
               className={cn(
@@ -257,27 +254,11 @@ export const ChatMessage = memo(function ChatMessage({
                 isUser ? 'prose-invert' : 'dark:prose-invert'
               )}
             >
-              {message.isStreaming ? (
-                <StreamingContent content={message.content} />
-              ) : (
-                <MarkdownContent content={message.content} />
-              )}
+              <MarkdownContent content={message.content} isStreaming={message.isStreaming} />
             </div>
           ) : message.isStreaming ? (
             <ThinkingIndicator thinkingText={t('thinking')} />
           ) : null}
-
-          {/* Streaming Cursor */}
-          {message.isStreaming && message.content && (
-            <motion.span
-              className={cn(
-                'inline-block w-0.5 h-4 ml-0.5 rounded-full',
-                isUser ? 'bg-primary-foreground' : 'bg-primary'
-              )}
-              animate={{ opacity: [1, 0] }}
-              transition={{ duration: 0.5, repeat: Infinity }}
-            />
-          )}
 
           {/* Copy Button (for assistant messages) */}
           {!isUser && message.content && !message.isStreaming && (
@@ -440,13 +421,6 @@ function ThinkingIndicator({ thinkingText }: { thinkingText: string }) {
   );
 }
 
-// 流式内容组件 - 流式输出时显示纯文本，避免 Markdown 语法被截断导致乱码
-function StreamingContent({ content }: { content: string }) {
-  // 流式输出时直接显示纯文本，不解析 Markdown
-  // 这样 **粗体** 会显示为 **粗体**，但不会乱码
-  return <div className="whitespace-pre-wrap break-words leading-relaxed">{content}</div>;
-}
-
 // 学校推荐数据类型
 interface SchoolRecommendation {
   name: string;
@@ -563,12 +537,75 @@ function tryParseStructuredData(
   return null;
 }
 
-// Markdown 渲染（增强版：支持结构化数据）
-function MarkdownContent({ content }: { content: string }) {
-  // 尝试提取结构化数据
-  const structuredData = useMemo(() => tryParseStructuredData(content), [content]);
+// 共享 Markdown 组件覆盖 — Streamdown components prop
+const markdownComponents = {
+  p: ({ children }: { children?: React.ReactNode }) => (
+    <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>
+  ),
+  ul: ({ children }: { children?: React.ReactNode }) => (
+    <ul className="mb-2 ml-4 list-disc space-y-1">{children}</ul>
+  ),
+  ol: ({ children }: { children?: React.ReactNode }) => (
+    <ol className="mb-2 ml-4 list-decimal space-y-1">{children}</ol>
+  ),
+  li: ({ children }: { children?: React.ReactNode }) => (
+    <li className="leading-relaxed">{children}</li>
+  ),
+  strong: ({ children }: { children?: React.ReactNode }) => (
+    <strong className="font-semibold">{children}</strong>
+  ),
+  code: ({ children, className }: { children?: React.ReactNode; className?: string }) => {
+    const isInline = !className;
+    return isInline ? (
+      <code className="px-1.5 py-0.5 rounded-md bg-black/10 dark:bg-white/10 text-sm font-mono">
+        {children}
+      </code>
+    ) : (
+      <code className="block p-3 rounded-lg bg-black/10 dark:bg-white/10 text-sm font-mono overflow-x-auto">
+        {children}
+      </code>
+    );
+  },
+  pre: ({ children }: { children?: React.ReactNode }) => (
+    <pre className="relative my-2 overflow-hidden rounded-lg">{children}</pre>
+  ),
+  h3: ({ children }: { children?: React.ReactNode }) => (
+    <h3 className="font-semibold text-base mt-4 mb-2">{children}</h3>
+  ),
+  h4: ({ children }: { children?: React.ReactNode }) => (
+    <h4 className="font-medium mt-3 mb-1.5">{children}</h4>
+  ),
+  blockquote: ({ children }: { children?: React.ReactNode }) => (
+    <blockquote className="border-l-2 border-primary/50 pl-3 my-2 italic text-muted-foreground">
+      {children}
+    </blockquote>
+  ),
+  a: ({ href, children }: { href?: string; children?: React.ReactNode }) => (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-primary underline underline-offset-2 hover:text-primary/80"
+    >
+      {children}
+    </a>
+  ),
+};
 
-  // 如果有结构化数据，移除 JSON 代码块部分
+// Markdown 渲染（Streamdown 统一处理流式与完成态）
+function MarkdownContent({
+  content,
+  isStreaming = false,
+}: {
+  content: string;
+  isStreaming?: boolean;
+}) {
+  // 流式输出时跳过结构化数据解析，避免解析不完整的 JSON
+  const structuredData = useMemo(
+    () => (isStreaming ? null : tryParseStructuredData(content)),
+    [content, isStreaming]
+  );
+
   const cleanedContent = useMemo(() => {
     if (structuredData) {
       return content.replace(/```(?:json)?\s*\n?[\s\S]*?\n?```/, '').trim();
@@ -578,64 +615,9 @@ function MarkdownContent({ content }: { content: string }) {
 
   return (
     <>
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        components={{
-          p: ({ children }: { children?: React.ReactNode }) => (
-            <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>
-          ),
-          ul: ({ children }: { children?: React.ReactNode }) => (
-            <ul className="mb-2 ml-4 list-disc space-y-1">{children}</ul>
-          ),
-          ol: ({ children }: { children?: React.ReactNode }) => (
-            <ol className="mb-2 ml-4 list-decimal space-y-1">{children}</ol>
-          ),
-          li: ({ children }: { children?: React.ReactNode }) => (
-            <li className="leading-relaxed">{children}</li>
-          ),
-          strong: ({ children }: { children?: React.ReactNode }) => (
-            <strong className="font-semibold">{children}</strong>
-          ),
-          code: ({ children, className }: { children?: React.ReactNode; className?: string }) => {
-            const isInline = !className;
-            return isInline ? (
-              <code className="px-1.5 py-0.5 rounded-md bg-black/10 dark:bg-white/10 text-sm font-mono">
-                {children}
-              </code>
-            ) : (
-              <code className="block p-3 rounded-lg bg-black/10 dark:bg-white/10 text-sm font-mono overflow-x-auto">
-                {children}
-              </code>
-            );
-          },
-          pre: ({ children }: { children?: React.ReactNode }) => (
-            <pre className="relative my-2 overflow-hidden rounded-lg">{children}</pre>
-          ),
-          h3: ({ children }: { children?: React.ReactNode }) => (
-            <h3 className="font-semibold text-base mt-4 mb-2">{children}</h3>
-          ),
-          h4: ({ children }: { children?: React.ReactNode }) => (
-            <h4 className="font-medium mt-3 mb-1.5">{children}</h4>
-          ),
-          blockquote: ({ children }: { children?: React.ReactNode }) => (
-            <blockquote className="border-l-2 border-primary/50 pl-3 my-2 italic text-muted-foreground">
-              {children}
-            </blockquote>
-          ),
-          a: ({ href, children }: { href?: string; children?: React.ReactNode }) => (
-            <a
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary underline underline-offset-2 hover:text-primary/80"
-            >
-              {children}
-            </a>
-          ),
-        }}
-      >
+      <Streamdown components={markdownComponents} plugins={{ cjk }} isAnimating={isStreaming}>
         {cleanedContent}
-      </ReactMarkdown>
+      </Streamdown>
 
       {/* 渲染结构化数据 */}
       {structuredData?.type === 'schools' && (
@@ -674,7 +656,7 @@ function StaticChatMessage({
             isUser ? 'bg-primary text-primary-foreground rounded-br-sm' : 'bg-muted rounded-bl-sm'
           )}
         >
-          <MarkdownContent content={message.content} />
+          <MarkdownContent content={message.content} isStreaming={false} />
         </div>
         <span className="text-2xs text-muted-foreground px-1">{formatTime(message.timestamp)}</span>
       </div>

@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LoadingState } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
+import { ScoreItem } from '@/components/ui/score-item';
+import { CaseCard } from '@/components/features';
 import {
   ArrowLeft,
   GraduationCap,
@@ -21,17 +23,16 @@ import {
   BadgeCheck,
   Share2,
   Flag,
+  FileText,
+  Trophy,
 } from 'lucide-react';
 import { cn, getSchoolName } from '@/lib/utils';
-
-type CaseResult = 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED';
-
-const resultStyles: Record<CaseResult, { bg: string; text: string }> = {
-  ADMITTED: { bg: 'bg-emerald-500/10', text: 'text-emerald-600' },
-  REJECTED: { bg: 'bg-red-500/10', text: 'text-red-600' },
-  WAITLISTED: { bg: 'bg-amber-500/10', text: 'text-amber-600' },
-  DEFERRED: { bg: 'bg-blue-500/10', text: 'text-blue-600' },
-};
+import {
+  getResultBarColor,
+  getResultBadgeClass,
+  getResultLabel as getResultLabelUtil,
+  VERIFIED_BADGE_CLASS,
+} from '@/lib/utils/admission';
 
 export default function CaseDetailPage() {
   const params = useParams();
@@ -39,16 +40,6 @@ export default function CaseDetailPage() {
   const t = useTranslations();
   const locale = useLocale();
   const caseId = params.id as string;
-
-  const getResultLabel = (result: CaseResult) => {
-    const labels: Record<CaseResult, string> = {
-      ADMITTED: t('cases.result.admitted'),
-      REJECTED: t('cases.result.rejected'),
-      WAITLISTED: t('cases.result.waitlisted'),
-      DEFERRED: t('cases.result.deferred'),
-    };
-    return labels[result] || result;
-  };
 
   const {
     data: caseData,
@@ -60,9 +51,19 @@ export default function CaseDetailPage() {
     enabled: !!caseId,
   });
 
+  // 查询同校相关案例
+  const { data: relatedData } = useQuery({
+    queryKey: ['related-cases', caseData?.schoolId, caseId],
+    queryFn: () =>
+      apiClient.get<any>('/cases', {
+        params: { schoolId: caseData.schoolId, pageSize: '6' },
+      }),
+    enabled: !!caseData?.schoolId,
+  });
+
   if (isLoading) {
     return (
-      <PageContainer maxWidth="4xl">
+      <PageContainer maxWidth="6xl">
         <LoadingState loading>
           <div className="h-96" />
         </LoadingState>
@@ -72,7 +73,7 @@ export default function CaseDetailPage() {
 
   if (error || !caseData) {
     return (
-      <PageContainer maxWidth="4xl">
+      <PageContainer maxWidth="6xl">
         <EmptyState
           type="error"
           title={t('cases.notFound')}
@@ -86,167 +87,251 @@ export default function CaseDetailPage() {
     );
   }
 
-  const result = caseData.result as CaseResult;
-  const styles = resultStyles[result] || resultStyles.ADMITTED;
-  const resultLabel = getResultLabel(result);
+  const resultLabel = getResultLabelUtil(caseData.result, (key: string) => t(`cases.${key}`));
+  const resultBarColor = getResultBarColor(caseData.result);
+  const resultBadgeClass = getResultBadgeClass(caseData.result);
+  const paragraphs =
+    caseData.essayContent?.split(/\n\n+/).filter((p: string) => p.trim().length > 0) || [];
+
+  const relatedCases = relatedData?.items?.filter((c: any) => c.id !== caseId)?.slice(0, 5) || [];
 
   return (
-    <PageContainer maxWidth="4xl">
+    <PageContainer maxWidth="6xl">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="space-y-6"
       >
-        {/* 返回按钮 */}
+        {/* ── 返回按钮 ── */}
         <Button variant="ghost" size="sm" onClick={() => router.back()} className="gap-2">
           <ArrowLeft className="h-4 w-4" />
           {t('cases.detail.backToList')}
         </Button>
 
-        {/* 主要信息卡片 */}
+        {/* ── Hero Header Card ── */}
         <Card className="overflow-hidden">
-          <div className={cn('h-2', styles.bg.replace('/10', ''))} />
-          <CardHeader className="pb-4">
+          <div className={cn('h-1.5', resultBarColor)} />
+          <div className="p-6 lg:p-8">
             <div className="flex items-start justify-between gap-4">
-              <div className="space-y-2">
-                <div className="flex items-center gap-3">
-                  <h1 className="text-title">{getSchoolName(caseData.school, locale)}</h1>
-                  {caseData.isVerified && (
-                    <Badge variant="outline" className="gap-1 bg-emerald-500/10 text-emerald-600">
-                      <BadgeCheck className="h-3 w-3" />
-                      {t('cases.detail.verified')}
-                    </Badge>
+              <div>
+                {caseData.school?.usNewsRank && (
+                  <Badge className="mb-2.5 bg-amber-500 text-white border-0 text-sm px-3 py-1 gap-1">
+                    <Trophy className="h-4 w-4" />
+                    US News #{caseData.school.usNewsRank}
+                  </Badge>
+                )}
+                <h1 className="text-title-lg">{getSchoolName(caseData.school, locale)}</h1>
+                <p className="text-muted-foreground mt-1.5">
+                  {caseData.year} · {caseData.round || 'RD'} ·{' '}
+                  {caseData.major || t('common.notSpecified')}
+                </p>
+                {caseData.isVerified && (
+                  <Badge variant="outline" className={cn('gap-1 mt-2', VERIFIED_BADGE_CLASS)}>
+                    <BadgeCheck className="h-3.5 w-3.5" />
+                    {t('cases.detail.verified')}
+                  </Badge>
+                )}
+              </div>
+              {/* 大号结果标签 */}
+              <div className={cn('px-5 py-3 rounded-xl text-center shrink-0', resultBadgeClass)}>
+                <p className="text-overline text-xs uppercase tracking-wider opacity-70 mb-0.5">
+                  {t('cases.detail.decision')}
+                </p>
+                <p className="text-lg font-bold">{resultLabel}</p>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* ── 两栏布局：左栏内容 + 右栏 Score Dashboard ── */}
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* ── 左栏 ── */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* 申请详情 */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  {t('cases.detail.applicationDetails')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <InfoItem
+                    icon={Calendar}
+                    label={t('cases.detail.applicationYear')}
+                    value={String(caseData.year)}
+                  />
+                  <InfoItem
+                    icon={Target}
+                    label={t('cases.detail.applicationRound')}
+                    value={caseData.round || 'RD'}
+                  />
+                  <InfoItem
+                    icon={BookOpen}
+                    label={t('cases.detail.major')}
+                    value={caseData.major || t('common.notSpecified')}
+                  />
+                  <InfoItem
+                    icon={GraduationCap}
+                    label={t('cases.detail.schoolRanking')}
+                    value={caseData.school?.usNewsRank ? `#${caseData.school.usNewsRank}` : '-'}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 文书内容（如果有） */}
+            {caseData.essayContent && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    {t('cases.detail.essayContent')}
+                  </CardTitle>
+                  {caseData.essayPrompt && (
+                    <div className="flex gap-3 mt-2 p-3 rounded-lg bg-muted/50 border">
+                      <div className="w-0.5 shrink-0 rounded-full bg-amber-500" />
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {caseData.essayPrompt}
+                      </p>
+                    </div>
                   )}
-                </div>
-                <p className="text-muted-foreground">{caseData.school?.name}</p>
-              </div>
-              <Badge className={cn('text-lg px-4 py-2', styles.bg, styles.text)}>
-                {resultLabel}
-              </Badge>
-            </div>
-          </CardHeader>
-
-          <CardContent className="space-y-6">
-            {/* 基本信息 */}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <Calendar className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    {t('cases.detail.applicationYear')}
-                  </p>
-                  <p className="font-semibold">{caseData.year}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <Target className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    {t('cases.detail.applicationRound')}
-                  </p>
-                  <p className="font-semibold">{caseData.round || 'RD'}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <BookOpen className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">{t('cases.detail.major')}</p>
-                  <p className="font-semibold">{caseData.major || t('common.notSpecified')}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <GraduationCap className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">{t('cases.detail.schoolRanking')}</p>
-                  <p className="font-semibold">#{caseData.school?.usNewsRank || '-'}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* 成绩信息 */}
-            <div>
-              <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <Award className="h-4 w-4" />
-                {t('cases.detail.academicBackground')}
-              </h3>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                {caseData.gpaRange && (
-                  <div className="p-4 rounded-xl border bg-card">
-                    <p className="text-sm text-muted-foreground">GPA</p>
-                    <p className="text-2xl font-bold">{caseData.gpaRange}</p>
+                </CardHeader>
+                <CardContent>
+                  <div className="prose dark:prose-invert max-w-[68ch]">
+                    {paragraphs.map((p: string, i: number) => (
+                      <p key={i} className="mb-5 last:mb-0 text-base leading-[1.8]">
+                        {p}
+                      </p>
+                    ))}
                   </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* 标签 */}
+            {caseData.tags && caseData.tags.length > 0 && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">{t('cases.detail.applicantFeatures')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {caseData.tags.map((tag: string, idx: number) => (
+                      <Badge key={idx} variant="secondary" className="text-sm">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* ── 右栏：Score Dashboard + 操作 ── */}
+          <div className="space-y-6">
+            <Card className="lg:sticky lg:top-20">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Award className="h-4 w-4 text-muted-foreground" />
+                  {t('cases.detail.academicBackground')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {caseData.gpaRange && (
+                  <ScoreItem label="GPA" value={caseData.gpaRange} max="4.0" color="emerald" />
                 )}
                 {caseData.satRange && (
-                  <div className="p-4 rounded-xl border bg-card">
-                    <p className="text-sm text-muted-foreground">SAT</p>
-                    <p className="text-2xl font-bold">{caseData.satRange}</p>
-                  </div>
+                  <ScoreItem label="SAT" value={caseData.satRange} max="1600" color="blue" />
                 )}
                 {caseData.actRange && (
-                  <div className="p-4 rounded-xl border bg-card">
-                    <p className="text-sm text-muted-foreground">ACT</p>
-                    <p className="text-2xl font-bold">{caseData.actRange}</p>
-                  </div>
+                  <ScoreItem label="ACT" value={caseData.actRange} max="36" color="purple" />
                 )}
                 {caseData.toeflRange && (
-                  <div className="p-4 rounded-xl border bg-card">
-                    <p className="text-sm text-muted-foreground">TOEFL</p>
-                    <p className="text-2xl font-bold">{caseData.toeflRange}</p>
-                  </div>
+                  <ScoreItem label="TOEFL" value={caseData.toeflRange} max="120" color="amber" />
                 )}
                 {!caseData.gpaRange &&
                   !caseData.satRange &&
                   !caseData.actRange &&
                   !caseData.toeflRange && (
-                    <p className="text-muted-foreground col-span-full">
-                      {t('cases.detail.noScoreInfo')}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t('cases.detail.noScoreInfo')}</p>
                   )}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
-            {/* 标签 */}
-            {caseData.tags && caseData.tags.length > 0 && (
-              <div>
-                <h3 className="font-semibold mb-3">{t('cases.detail.applicantFeatures')}</h3>
-                <div className="flex flex-wrap gap-2">
-                  {caseData.tags.map((tag: string, idx: number) => (
-                    <Badge key={idx} variant="secondary" className="text-sm">
-                      {tag}
-                    </Badge>
-                  ))}
+            {/* 操作 */}
+            <Card>
+              <CardContent className="pt-5 flex flex-col gap-2">
+                <Button variant="outline" size="sm" className="gap-2 w-full justify-start">
+                  <Share2 className="h-4 w-4" />
+                  {t('cases.detail.share')}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 w-full justify-start text-muted-foreground"
+                >
+                  <Flag className="h-4 w-4" />
+                  {t('cases.detail.report')}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* ── 相关案例 ── */}
+        {relatedCases.length > 0 && (
+          <div>
+            <h2 className="text-subtitle mb-4">
+              {t('cases.detail.relatedCases', {
+                school: getSchoolName(caseData.school, locale),
+              })}
+            </h2>
+            <div className="flex gap-4 overflow-x-auto pb-4 -mx-1 px-1">
+              {relatedCases.map((c: any) => (
+                <div key={c.id} className="min-w-[300px] flex-shrink-0">
+                  <CaseCard
+                    schoolName={getSchoolName(c.school, locale) || c.school?.name}
+                    year={c.year}
+                    round={c.round}
+                    major={c.major}
+                    result={c.result}
+                    gpa={c.gpaRange}
+                    sat={c.satRange}
+                    toefl={c.toeflRange}
+                    tags={c.tags}
+                    isVerified={c.isVerified}
+                    onClick={() => router.push(`/${locale}/cases/${c.id}`)}
+                  />
                 </div>
-              </div>
-            )}
-
-            {/* 操作按钮 */}
-            <div className="flex gap-3 pt-4 border-t">
-              <Button variant="outline" size="sm" className="gap-2">
-                <Share2 className="h-4 w-4" />
-                {t('cases.detail.share')}
-              </Button>
-              <Button variant="outline" size="sm" className="gap-2 text-muted-foreground">
-                <Flag className="h-4 w-4" />
-                {t('cases.detail.report')}
-              </Button>
+              ))}
             </div>
-          </CardContent>
-        </Card>
-
-        {/* 相关案例推荐（可选） */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">
-              {t('cases.detail.relatedCases', { school: caseData.school?.name })}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground text-sm">
-              {t('cases.detail.viewMoreCases', { school: caseData.school?.name })}
-            </p>
-          </CardContent>
-        </Card>
+          </div>
+        )}
       </motion.div>
     </PageContainer>
+  );
+}
+
+// ── 信息项小组件 ──────────────────────────────────────────────────────────────
+
+function InfoItem({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+      <Icon className="h-5 w-5 text-muted-foreground shrink-0" />
+      <div className="min-w-0">
+        <p className="text-xs text-muted-foreground">{label}</p>
+        <p className="font-semibold truncate">{value}</p>
+      </div>
+    </div>
   );
 }

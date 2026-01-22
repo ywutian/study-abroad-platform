@@ -806,7 +806,41 @@ function WhyChooseUsSection({
                         </motion.div>
                       ))}
                     </div>
-                    <div className="h-20 sm:h-24 rounded-lg bg-gradient-to-r from-muted/30 to-muted/50" />
+                    {/* Simulated school match list */}
+                    <div className="space-y-2">
+                      {[
+                        { name: 'Stanford University', match: 92 },
+                        { name: 'MIT', match: 85 },
+                        { name: 'UC Berkeley', match: 78 },
+                      ].map((school, i) => (
+                        <motion.div
+                          key={i}
+                          className="flex items-center justify-between rounded-lg bg-muted/40 px-3 py-2"
+                          initial={prefersReducedMotion ? {} : { opacity: 0, y: 8 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: 0.7 + i * 0.1 }}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center">
+                              <GraduationCap className="h-3.5 w-3.5 text-primary" />
+                            </div>
+                            <span className="text-xs font-medium">{school.name}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <div className="h-1.5 w-16 rounded-full bg-muted overflow-hidden">
+                              <div
+                                className="h-full rounded-full bg-primary"
+                                style={{ width: `${school.match}%` }}
+                              />
+                            </div>
+                            <span className="text-xs font-semibold text-primary">
+                              {school.match}%
+                            </span>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
                   </div>
                 </CardContent>
               </Card>

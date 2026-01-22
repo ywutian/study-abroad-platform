@@ -10,6 +10,7 @@ import { Send, Paperclip, Image as ImageIcon, X, Loader2 } from 'lucide-react';
 
 interface MessageInputProps {
   onSend: (content: string) => Promise<void>;
+  onFileUpload?: (file: File) => Promise<void>;
   onTyping?: (isTyping: boolean) => void;
   disabled?: boolean;
   placeholder?: string;
@@ -18,6 +19,7 @@ interface MessageInputProps {
 
 export function MessageInput({
   onSend,
+  onFileUpload,
   onTyping,
   disabled,
   placeholder = '',
@@ -53,12 +55,23 @@ export function MessageInput({
 
   // 发送消息
   const handleSend = useCallback(async () => {
-    const content = message.trim();
-    if (!content || isSending) return;
+    if (isSending) return;
 
     setIsSending(true);
     try {
-      await onSend(content);
+      // 先上传附件
+      if (attachments.length > 0 && onFileUpload) {
+        for (const file of attachments) {
+          await onFileUpload(file);
+        }
+      }
+
+      // 发送文本消息
+      const content = message.trim();
+      if (content) {
+        await onSend(content);
+      }
+
       setMessage('');
       setAttachments([]);
       inputRef.current?.focus();
@@ -68,7 +81,7 @@ export function MessageInput({
         onTyping(false);
       }
     }
-  }, [message, isSending, onSend, onTyping]);
+  }, [message, attachments, isSending, onSend, onFileUpload, onTyping]);
 
   // 键盘事件
   const handleKeyDown = useCallback(
@@ -206,7 +219,7 @@ export function MessageInput({
         {/* 发送按钮 */}
         <Button
           onClick={handleSend}
-          disabled={disabled || isSending || !message.trim()}
+          disabled={disabled || isSending || (!message.trim() && attachments.length === 0)}
           className="shrink-0 h-11 w-11 p-0 bg-primary hover:opacity-90"
         >
           {isSending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}

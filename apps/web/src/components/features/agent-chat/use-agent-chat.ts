@@ -1,7 +1,9 @@
 'use client';
 
 /**
- * Agent 聊天 Hook - 处理流式消息
+ * React hook for AI agent chat with SSE streaming support.
+ * Handles message lifecycle, tool call tracking, agent switching,
+ * token refresh on 401, and per-chunk timeout protection.
  */
 
 import { useState, useCallback, useRef } from 'react';
@@ -10,8 +12,10 @@ import { useAuth } from '@/hooks/use-auth';
 import { useAuthStore } from '@/stores/auth';
 import { ChatMessage, StreamEvent, AgentType } from './types';
 
-// API 请求通过 Next.js rewrites 代理（同源），避免跨域 cookie 问题
+// Regular API requests go through Next.js rewrites proxy (same-origin) to avoid cross-origin cookie issues
 const API_BASE_URL = '';
+// SSE streaming requests connect to the backend directly to bypass Next.js proxy buffering
+const STREAM_API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 interface UseAgentChatOptions {
   conversationId?: string;
@@ -26,17 +30,19 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
   const [currentAgent, setCurrentAgent] = useState<AgentType>('orchestrator');
   const [activeTools, setActiveTools] = useState<string[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
-  // 保存对话 ID，确保上下文连续
+  // Persist conversation ID across renders to maintain context continuity
   const conversationIdRef = useRef<string | undefined>(options.conversationId);
 
   /**
-   * 发送消息
+   * Send a user message and stream the assistant's response via SSE.
+   * Automatically retries once on 401 by refreshing the access token.
+   * @param content - The user's message text
    */
   const sendMessage = useCallback(
     async (content: string) => {
       if (!content.trim() || isLoading) return;
 
-      // 添加用户消息
+      // Append user message to the list
       const userMessage: ChatMessage = {
         id: `user_${Date.now()}`,
         role: 'user',
@@ -45,7 +51,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
       };
       setMessages((prev) => [...prev, userMessage]);
 
-      // 创建 assistant 消息占位
+      // Create a placeholder assistant message for streaming
       const assistantId = `assistant_${Date.now()}`;
       const assistantMessage: ChatMessage = {
         id: assistantId,
@@ -61,13 +67,13 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
       setIsLoading(true);
       setActiveTools([]);
 
-      // 创建 AbortController
+      // Create AbortController for cancellation support
       abortControllerRef.current = new AbortController();
 
       try {
-        // 内部函数：执行实际请求
+        // Inner function: execute the actual fetch request
         const doRequest = async (authToken: string | null) => {
-          return fetch(`${API_BASE_URL}/api/v1/ai-agent/chat`, {
+          return fetch(`${STREAM_API_URL}/api/v1/ai-agent/chat`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -75,22 +81,24 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
             },
             body: JSON.stringify({
               message: content,
-              conversationId: conversationIdRef.current, // 使用保存的对话 ID
+              conversationId: conversationIdRef.current,
               stream: true,
             }),
-            credentials: 'include', // 关键：发送 httpOnly cookie
+            credentials: 'include', // Required: send httpOnly refresh cookie
             signal: abortControllerRef.current?.signal,
           });
         };
 
         let response = await doRequest(token);
 
-        // 401 时尝试刷新 token 并重试
+        // On 401, refresh the access token and retry once
         if (response.status === 401) {
           const refreshed = await refreshAccessToken();
           if (refreshed) {
             const newToken = useAuthStore.getState().accessToken;
             response = await doRequest(newToken);
+          } else {
+            throw new Error('AUTH_EXPIRED');
           }
         }
 
@@ -105,7 +113,12 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         let buffer = '';
 
         while (true) {
-          const { done, value } = await reader.read();
+          // 60s per-chunk timeout to detect stalled streams
+          const readPromise = reader.read();
+          const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('STREAM_TIMEOUT')), 60000)
+          );
+          const { done, value } = await Promise.race([readPromise, timeoutPromise]);
           if (done) break;
 
           buffer += decoder.decode(value, { stream: true });
@@ -122,22 +135,39 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
               const event: StreamEvent = JSON.parse(data);
               handleStreamEvent(event, assistantId);
             } catch {
-              // 忽略解析错误
+              // Ignore malformed SSE data lines
             }
           }
         }
       } catch (error) {
-        if ((error as Error).name === 'AbortError') return;
+        if ((error as Error).name === 'AbortError') {
+          // User-initiated abort: clean up streaming state
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantId && msg.isStreaming ? { ...msg, isStreaming: false } : msg
+            )
+          );
+          return;
+        }
 
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        options.onError?.(errorMessage);
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
 
-        // 更新消息显示错误
+        // Map error types to user-facing messages
+        let displayMessage: string;
+        if (errorMsg === 'AUTH_EXPIRED') {
+          displayMessage = t('loginExpired', { defaultMessage: '登录已过期，请重新登录' });
+        } else if (errorMsg === 'STREAM_TIMEOUT') {
+          displayMessage = t('responseTimeout', { defaultMessage: '响应超时，请重试' });
+        } else {
+          displayMessage = t('errorProcessing');
+        }
+
+        options.onError?.(displayMessage);
+
+        // Update the placeholder message with the error
         setMessages((prev) =>
           prev.map((msg) =>
-            msg.id === assistantId
-              ? { ...msg, content: t('errorProcessing'), isStreaming: false }
-              : msg
+            msg.id === assistantId ? { ...msg, content: displayMessage, isStreaming: false } : msg
           )
         );
       } finally {
@@ -150,20 +180,22 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
   );
 
   /**
-   * 处理流事件
+   * Process a single SSE event and update message/tool state accordingly.
+   * @param event - The parsed SSE event payload
+   * @param messageId - The ID of the assistant message placeholder to update
    */
   const handleStreamEvent = useCallback((event: StreamEvent, messageId: string) => {
     switch (event.type) {
       case 'start':
         if (event.agent) setCurrentAgent(event.agent);
-        // 保存后端返回的 conversationId，用于后续消息保持上下文
+        // Persist the backend-assigned conversationId for subsequent messages
         if (event.conversationId) {
           conversationIdRef.current = event.conversationId;
         }
         break;
 
       case 'content':
-        // 只有当 content 确实存在时才更新
+        // Only append when content is non-empty (skip keep-alive events)
         if (event.content) {
           setMessages((prev) =>
             prev.map((msg) =>
@@ -246,9 +278,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
     }
   }, []);
 
-  /**
-   * 停止生成
-   */
+  /** Abort the in-flight SSE stream and mark all streaming messages as complete. */
   const stopGeneration = useCallback(() => {
     abortControllerRef.current?.abort();
     setIsLoading(false);
@@ -257,13 +287,11 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
     );
   }, []);
 
-  /**
-   * 清除消息
-   */
+  /** Clear all messages locally and delete the conversation on the server. */
   const clearMessages = useCallback(async () => {
     const oldConversationId = conversationIdRef.current;
     setMessages([]);
-    conversationIdRef.current = undefined; // 重置对话 ID，开始新对话
+    conversationIdRef.current = undefined; // Reset to start a new conversation
 
     if (token && oldConversationId) {
       try {
@@ -278,7 +306,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
           }
         );
       } catch {
-        // 忽略错误
+        // Best-effort cleanup; ignore server errors
       }
     }
   }, [token]);
@@ -288,7 +316,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
     isLoading,
     currentAgent,
     activeTools,
-    conversationId: conversationIdRef.current, // 导出当前对话 ID
+    conversationId: conversationIdRef.current,
     sendMessage,
     stopGeneration,
     clearMessages,

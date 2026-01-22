@@ -16,6 +16,7 @@ import {
   Loader2,
   Star,
 } from 'lucide-react';
+import { SUBSCRIPTION_PLAN_LIST } from '@study-abroad/shared';
 
 import { PageContainer, PageHeader } from '@/components/layout';
 import {
@@ -30,25 +31,18 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
-// Plan config (text loaded from i18n)
-const planConfigs = [
-  { id: 'free', price: 0, icon: Gift, color: 'slate', gradient: 'from-slate-500 to-gray-500' },
-  { id: 'pro', price: 99, popular: true, icon: Zap, color: 'blue', gradient: 'bg-primary' },
-  { id: 'premium', price: 299, icon: Crown, color: 'amber', gradient: 'bg-warning' },
-] as const;
+// UI-specific props (icon, color, gradient) stay in frontend
+const PLAN_UI: Record<string, { icon: typeof Gift; color: string; gradient: string }> = {
+  free: { icon: Gift, color: 'slate', gradient: 'from-slate-500 to-gray-500' },
+  pro: { icon: Zap, color: 'blue', gradient: 'bg-primary' },
+  premium: { icon: Crown, color: 'amber', gradient: 'bg-warning' },
+};
 
-interface Invoice {
-  id: string;
-  date: string;
-  amount: string;
-  status: 'paid' | 'pending';
-}
-
-const mockInvoices: Invoice[] = [
-  { id: 'INV-001', date: '2026-01-15', amount: '¥99.00', status: 'paid' },
-  { id: 'INV-002', date: '2025-12-15', amount: '¥99.00', status: 'paid' },
-  { id: 'INV-003', date: '2025-11-15', amount: '¥99.00', status: 'paid' },
-];
+// Merge shared plan data + frontend UI props
+const planConfigs = SUBSCRIPTION_PLAN_LIST.map((plan) => ({
+  ...plan,
+  ...PLAN_UI[plan.key],
+}));
 
 export default function SubscriptionPage() {
   const t = useTranslations('subscription');
@@ -59,6 +53,7 @@ export default function SubscriptionPage() {
   const handleUpgrade = async (planId: string) => {
     setIsUpgrading(planId);
     try {
+      // TODO: 替换为真实支付 API 调用
       await new Promise((resolve) => setTimeout(resolve, 1500));
       toast.success(t('upgradeSuccess'));
     } catch (_error) {
@@ -103,8 +98,8 @@ export default function SubscriptionPage() {
       <div className="grid gap-6 md:grid-cols-3 mb-8">
         {planConfigs.map((plan, index) => {
           const Icon = plan.icon;
-          const isCurrentPlan = currentPlan === plan.id;
-          const planKey = plan.id as 'free' | 'pro' | 'premium';
+          const isCurrentPlan = currentPlan === plan.key;
+          const planKey = plan.key;
           const planName = t(`plans.${planKey}.name`);
           const planDesc = t(`plans.${planKey}.description`);
           const planPeriod = t(`plans.${planKey}.period`);
@@ -112,7 +107,7 @@ export default function SubscriptionPage() {
 
           return (
             <motion.div
-              key={plan.id}
+              key={plan.key}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
@@ -120,14 +115,14 @@ export default function SubscriptionPage() {
               <Card
                 className={cn(
                   'relative h-full flex flex-col overflow-hidden transition-all duration-300',
-                  'popular' in plan && plan.popular && 'border-blue-500/50 border-primary',
+                  plan.popular && 'border-blue-500/50 border-primary',
                   isCurrentPlan && 'ring-2 ring-primary',
                   'hover:shadow-lg'
                 )}
               >
                 <div className={cn('h-1.5 bg-gradient-to-r', plan.gradient)} />
 
-                {'popular' in plan && plan.popular && (
+                {plan.popular && (
                   <div className="absolute -top-0 right-4">
                     <Badge className="rounded-t-none bg-primary text-white shadow-md">
                       <Star className="h-3 w-3 mr-1 fill-current" />
@@ -187,13 +182,13 @@ export default function SubscriptionPage() {
                   <Button
                     className={cn(
                       'w-full gap-2',
-                      'popular' in plan && plan.popular && 'bg-primary hover:opacity-90 text-white '
+                      plan.popular && 'bg-primary hover:opacity-90 text-white '
                     )}
-                    variant={'popular' in plan && plan.popular ? 'default' : 'outline'}
-                    disabled={isCurrentPlan || isUpgrading === plan.id}
-                    onClick={() => handleUpgrade(plan.id)}
+                    variant={plan.popular ? 'default' : 'outline'}
+                    disabled={isCurrentPlan || isUpgrading === plan.key}
+                    onClick={() => handleUpgrade(plan.key)}
                   >
-                    {isUpgrading === plan.id ? (
+                    {isUpgrading === plan.key ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />
                         {tCommon('processing')}
@@ -234,42 +229,13 @@ export default function SubscriptionPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {mockInvoices.length > 0 ? (
-              <div className="space-y-3">
-                {mockInvoices.map((invoice, index) => (
-                  <motion.div
-                    key={invoice.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.4 + index * 0.05 }}
-                    className="flex items-center justify-between p-4 rounded-xl bg-muted/50 hover:bg-muted/70 transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                        <CreditCard className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{invoice.id}</p>
-                        <p className="text-xs text-muted-foreground">{invoice.date}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="font-semibold">{invoice.amount}</span>
-                      <Badge variant={invoice.status === 'paid' ? 'success' : 'warning'}>
-                        {invoice.status === 'paid' ? t('paid') : t('pending')}
-                      </Badge>
-                    </div>
-                  </motion.div>
-                ))}
+            {/* TODO: fetch from GET /subscriptions/billing-history */}
+            <div className="text-center py-12">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted mx-auto mb-4">
+                <ReceiptText className="h-8 w-8 text-muted-foreground" />
               </div>
-            ) : (
-              <div className="text-center py-12">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted mx-auto mb-4">
-                  <ReceiptText className="h-8 w-8 text-muted-foreground" />
-                </div>
-                <p className="text-muted-foreground">{t('noInvoices')}</p>
-              </div>
-            )}
+              <p className="text-muted-foreground">{t('noInvoices')}</p>
+            </div>
           </CardContent>
         </Card>
       </motion.div>

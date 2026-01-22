@@ -32,13 +32,18 @@ import {
   Settings,
   LogOut,
   Check,
+  Shield,
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Logo } from '@/components/ui/logo';
+import { CountBadge } from '@/components/ui/count-badge';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { useAuthStore } from '@/stores';
 import { localeNames, type Locale } from '@/lib/i18n/config';
 import { useRouter } from '@/lib/i18n/navigation';
 import { useParams } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
 export function Header() {
@@ -48,6 +53,15 @@ export function Header() {
   const params = useParams();
   const locale = params.locale as Locale;
   const { user, logout } = useAuthStore();
+
+  // 未读消息数
+  const { data: unreadData } = useQuery({
+    queryKey: ['unread-count'],
+    queryFn: () => apiClient.get<{ count: number }>('/chat/unread-count'),
+    enabled: !!user,
+    refetchInterval: 30000,
+  });
+  const unreadCount = unreadData?.count || 0;
 
   // Primary navigation - core features
   const mainNavItems = [
@@ -155,12 +169,19 @@ export function Header() {
                   variant="ghost"
                   size="sm"
                   className={cn(
-                    'ml-1 gap-1 px-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100/80',
+                    'relative ml-1 gap-1 px-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100/80',
                     'data-[state=open]:bg-slate-100/80 data-[state=open]:text-slate-900'
                   )}
                 >
                   {t('common.more')}
                   <ChevronDown className="h-3.5 w-3.5 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                  <CountBadge
+                    count={unreadCount}
+                    dot
+                    variant="destructive"
+                    size="sm"
+                    className="absolute top-1 right-1"
+                  />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-[420px] p-3" sideOffset={8}>
@@ -220,6 +241,7 @@ export function Header() {
                   {communityNavItems.map((item) => {
                     const Icon = item.icon;
                     const active = isActive(item.href);
+                    const showBadge = item.href === '/chat' && unreadCount > 0;
                     return (
                       <DropdownMenuItem key={item.href} asChild className="p-0">
                         <Link
@@ -231,13 +253,21 @@ export function Header() {
                         >
                           <div
                             className={cn(
-                              'flex h-8 w-8 shrink-0 items-center justify-center rounded-md',
+                              'relative flex h-8 w-8 shrink-0 items-center justify-center rounded-md',
                               active ? 'bg-primary/10' : 'bg-slate-100'
                             )}
                           >
                             <Icon
                               className={cn('h-4 w-4', active ? 'text-primary' : 'text-slate-500')}
                             />
+                            {showBadge && (
+                              <CountBadge
+                                count={unreadCount}
+                                variant="destructive"
+                                size="sm"
+                                absolute
+                              />
+                            )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div
@@ -322,6 +352,9 @@ export function Header() {
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {/* Theme Toggle */}
+          <ThemeToggle className="text-slate-600 hover:text-slate-900 hover:bg-slate-100/80" />
+
           {/* Divider */}
           <div className="mx-1 h-5 w-px bg-slate-200 hidden sm:block" />
 
@@ -358,6 +391,14 @@ export function Header() {
                       <span>{t('common.settings')}</span>
                     </Link>
                   </DropdownMenuItem>
+                  {user.role === 'ADMIN' && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin" className="flex items-center gap-2.5 px-2 py-1.5">
+                        <Shield className="h-4 w-4 text-slate-400" />
+                        <span>{t('nav.adminPanel')}</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuGroup>
 
                 <DropdownMenuSeparator />

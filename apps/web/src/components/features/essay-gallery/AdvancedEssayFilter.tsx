@@ -131,7 +131,7 @@ export function AdvancedEssayFilter({
                   {
                     value: 'WHY_SCHOOL',
                     label: 'Why School',
-                    color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
+                    color: 'bg-teal-500/10 text-teal-600 border-teal-500/20',
                   },
                 ].map((item) => (
                   <Button

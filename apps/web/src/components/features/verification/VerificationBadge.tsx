@@ -198,13 +198,13 @@ export function VerificationIcon({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <motion.div
+          <motion.span
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className={cn('text-blue-500', className)}
+            className={cn('inline-flex text-blue-500', className)}
           >
             <BadgeCheck className={cn(sizeStyles[size], 'fill-current')} />
-          </motion.div>
+          </motion.span>
         </TooltipTrigger>
         <TooltipContent>
           <p>{t('badge.verifiedUserShort')}</p>

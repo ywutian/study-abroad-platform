@@ -27,7 +27,7 @@ interface MegaMenuProps {
 export function MegaMenu({ label, groups, singleColumn }: MegaMenuProps) {
   const [open, setOpen] = React.useState(false);
   const pathname = usePathname();
-  const timeoutRef = React.useRef<NodeJS.Timeout>();
+  const timeoutRef = React.useRef<NodeJS.Timeout | undefined>(undefined);
 
   const isActive = groups.some((group) => group.items.some((item) => pathname === item.href));
 

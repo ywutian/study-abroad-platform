@@ -244,6 +244,34 @@ class ApiClient {
   delete<T>(endpoint: string, config?: RequestConfig): Promise<T> {
     return this.request<T>(endpoint, { ...config, method: 'DELETE' });
   }
+
+  /**
+   * 上传文件（FormData）
+   * 不设置 Content-Type，让浏览器自动设置 multipart/form-data boundary
+   */
+  async upload<T>(endpoint: string, formData: FormData): Promise<T> {
+    const token = this.getAccessToken();
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const url = `${this.baseUrl}${this.apiVersion}${endpoint}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: formData,
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Upload failed' }));
+      throw new Error(error.error?.message || error.message || `HTTP ${response.status}`);
+    }
+
+    const json = await response.json();
+    return json.data !== undefined ? json.data : json;
+  }
 }
 
 export const apiClient = new ApiClient(RESOLVED_API_URL, API_VERSION);

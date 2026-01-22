@@ -75,9 +75,9 @@ export function NativeBlurImage({
     if (!src) return;
 
     const img = document.createElement('img');
-    img.src = src;
+    img.src = src as string;
     img.onload = () => {
-      setCurrentSrc(src);
+      setCurrentSrc(src as string);
       setIsLoading(false);
     };
     img.onerror = () => {

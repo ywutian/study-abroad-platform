@@ -53,6 +53,9 @@ export { ProfileAIAnalysis } from './profile/ProfileAIAnalysis';
 
 // Admin components
 export { EssayPromptManager } from './admin/essay-prompt-manager';
+export { EssayCaseReviewManager } from './admin/essay-case-review-manager';
+export { BulkImportDialog } from './admin/bulk-import-dialog';
+export { EssayPipelineDashboard } from './admin/essay-pipeline-dashboard';
 
 // Schools components
 export { AdvancedSchoolFilter } from './schools/AdvancedSchoolFilter';

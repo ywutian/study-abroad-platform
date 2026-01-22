@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { type ReactNode, type JSX } from 'react';
 import { motion, Variants } from 'framer-motion';
 import { useScrollAnimation, ScrollAnimationOptions } from '@/hooks/use-scroll-animation';
 import { cn } from '@/lib/utils';

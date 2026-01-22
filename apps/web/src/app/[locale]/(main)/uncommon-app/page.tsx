@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   GraduationCap,
   User,
@@ -14,16 +14,14 @@ import {
   Shield,
   Zap,
   TrendingUp,
-  Calendar,
   Download,
   RotateCcw,
-  BookOpen,
-  Award,
-  Activity,
   CheckCircle,
   AlertCircle,
   MessageSquare,
   Brain,
+  Database,
+  RefreshCw,
 } from 'lucide-react';
 
 import ReactMarkdown from 'react-markdown';
@@ -36,8 +34,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Link } from '@/lib/i18n/navigation';
-import { apiClient } from '@/lib/api/client';
+import { AnimatedProgress, PopIn } from '@/components/ui/motion';
+import { Link, useRouter } from '@/lib/i18n/navigation';
+import { apiClient } from '@/lib/api';
 import { cn, getSchoolName } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -118,14 +117,160 @@ async function callAIAgent(
 }
 
 const tierConfig = {
-  SAFETY: { label: 'Safety', color: 'bg-emerald-500', icon: Shield },
-  TARGET: { label: 'Target', color: 'bg-blue-500', icon: Target },
-  REACH: { label: 'Reach', color: 'bg-amber-500', icon: Zap },
+  SAFETY: {
+    color: 'bg-emerald-500',
+    icon: Shield,
+    border: 'border-emerald-200 dark:border-emerald-800',
+    iconBg: 'bg-emerald-100 dark:bg-emerald-900/30',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
+    badgeClass:
+      'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800',
+  },
+  TARGET: {
+    color: 'bg-blue-500',
+    icon: Target,
+    border: 'border-blue-200 dark:border-blue-800',
+    iconBg: 'bg-blue-100 dark:bg-blue-900/30',
+    iconColor: 'text-blue-600 dark:text-blue-400',
+    badgeClass:
+      'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800',
+  },
+  REACH: {
+    color: 'bg-amber-500',
+    icon: Zap,
+    border: 'border-amber-200 dark:border-amber-800',
+    iconBg: 'bg-amber-100 dark:bg-amber-900/30',
+    iconColor: 'text-amber-600 dark:text-amber-400',
+    badgeClass:
+      'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800',
+  },
 };
+
+function MarkdownContent({ content }: { content: string }) {
+  return (
+    <ReactMarkdown
+      components={{
+        h1: ({ children }) => <h1 className="text-xl font-bold mb-3 text-primary">{children}</h1>,
+        h2: ({ children }) => (
+          <h2 className="text-lg font-semibold mb-2 mt-4 text-foreground">{children}</h2>
+        ),
+        h3: ({ children }) => (
+          <h3 className="text-base font-medium mb-2 mt-3 text-foreground flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            {children}
+          </h3>
+        ),
+        h4: ({ children }) => (
+          <h4 className="text-sm font-medium mb-1 mt-2 text-muted-foreground">{children}</h4>
+        ),
+        p: ({ children }) => (
+          <p className="text-sm leading-relaxed mb-2 text-muted-foreground">{children}</p>
+        ),
+        ul: ({ children }) => <ul className="space-y-1.5 mb-3">{children}</ul>,
+        ol: ({ children }) => (
+          <ol className="space-y-1.5 mb-3 list-decimal list-inside">{children}</ol>
+        ),
+        li: ({ children }) => (
+          <li className="text-sm flex items-start gap-2">
+            <CheckCircle className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-0.5" />
+            <span className="flex-1">{children}</span>
+          </li>
+        ),
+        strong: ({ children }) => (
+          <strong className="font-semibold text-foreground">{children}</strong>
+        ),
+        em: ({ children }) => <em className="text-primary">{children}</em>,
+      }}
+    >
+      {content}
+    </ReactMarkdown>
+  );
+}
+
+function RecommendationLoadingState({
+  t,
+}: {
+  t: (key: string, values?: Record<string, any>) => any;
+}) {
+  const [step, setStep] = useState(0);
+  const [progress, setProgress] = useState(0);
+
+  const steps = [
+    { icon: User, labelKey: 'loadingStep1' },
+    { icon: Database, labelKey: 'loadingStep2' },
+    { icon: Sparkles, labelKey: 'loadingStep3' },
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        const target = ((step + 1) / steps.length) * 85;
+        if (prev >= target) return prev;
+        return prev + 0.4;
+      });
+    }, 100);
+
+    const timeout = setTimeout(
+      () => {
+        if (step < steps.length - 1) {
+          setStep((prev) => prev + 1);
+        }
+      },
+      step === 0 ? 8000 : 15000
+    );
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [step, steps.length]);
+
+  const StepIcon = steps[step].icon;
+
+  return (
+    <div className="flex flex-col items-center text-center py-10 space-y-5">
+      <AnimatePresence mode="wait">
+        <PopIn key={step} className="p-4 rounded-2xl bg-primary/10">
+          <StepIcon className="h-8 w-8 text-primary" />
+        </PopIn>
+      </AnimatePresence>
+
+      <div className="space-y-1">
+        <AnimatePresence mode="wait">
+          <PopIn key={`text-${step}`}>
+            <p className="text-sm font-medium">{t(steps[step].labelKey)}</p>
+          </PopIn>
+        </AnimatePresence>
+        <p className="text-xs text-muted-foreground">
+          {t('loadingStepOf', { current: step + 1, total: steps.length })}
+        </p>
+      </div>
+
+      <div className="w-full max-w-[240px] space-y-2">
+        <AnimatedProgress
+          value={progress}
+          barClassName="bg-gradient-to-r from-primary to-violet-500"
+        />
+        <div className="flex justify-center gap-2">
+          {steps.map((_, i) => (
+            <div
+              key={i}
+              className={cn(
+                'h-1.5 w-1.5 rounded-full transition-colors duration-300',
+                i <= step ? 'bg-primary' : 'bg-muted'
+              )}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function UncommonAppPage() {
   const t = useTranslations('uncommonApp');
   const locale = useLocale();
+  const router = useRouter();
   const queryClient = useQueryClient();
 
   const [isFlipped, setIsFlipped] = useState(false);
@@ -137,8 +282,6 @@ export default function UncommonAppPage() {
   } | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [analysis, setAnalysis] = useState<AIAnalysis | null>(null);
-  const [conversationId] = useState<string | undefined>();
-  const [agentThinking, setAgentThinking] = useState<string>('');
 
   // Fetch user's school list
   const { data: schoolList, isLoading: listLoading } = useQuery({
@@ -164,15 +307,9 @@ export default function UncommonAppPage() {
   // 使用 AI Agent 进行档案评估
   const handleGradeProfile = async () => {
     setIsAnalyzing(true);
-    setAgentThinking('');
 
     try {
-      // 调用 Profile Agent 进行档案分析
-      const response = await callAIAgent(
-        AgentType.PROFILE,
-        t('aiPrompts.analyzeProfile'),
-        conversationId
-      );
+      const response = await callAIAgent(AgentType.PROFILE, t('aiPrompts.analyzeProfile'));
 
       // 解析 AI 响应为结构化数据
       const parsedSections = parseMarkdownSections(response.message);
@@ -301,17 +438,9 @@ export default function UncommonAppPage() {
   // 使用 AI Agent 获取选校推荐
   const handleGetAIRecommendations = async () => {
     setAiLoading(true);
-    setAgentThinking('');
 
     try {
-      // 调用 School Agent 进行选校推荐
-      const response = await callAIAgent(
-        AgentType.SCHOOL,
-        t('aiPrompts.recommendSchools'),
-        conversationId
-      );
-
-      console.log('AI Agent response:', response);
+      const response = await callAIAgent(AgentType.SCHOOL, t('aiPrompts.recommendSchools'));
 
       // 优先使用结构化数据
       let recommendations = {
@@ -457,58 +586,25 @@ export default function UncommonAppPage() {
   };
 
   // Group schools by tier
-  const groupedSchools = {
-    REACH: schoolList?.filter((s) => s.tier === 'REACH') || [],
-    TARGET: schoolList?.filter((s) => s.tier === 'TARGET') || [],
-    SAFETY: schoolList?.filter((s) => s.tier === 'SAFETY') || [],
-  };
+  const groupedSchools = useMemo(
+    () => ({
+      REACH: schoolList?.filter((s) => s.tier === 'REACH') || [],
+      TARGET: schoolList?.filter((s) => s.tier === 'TARGET') || [],
+      SAFETY: schoolList?.filter((s) => s.tier === 'SAFETY') || [],
+    }),
+    [schoolList]
+  );
 
   // Calculate profile completeness
-  const profileScore = profile
-    ? (profile.gpa ? 20 : 0) +
-      (profile.testScores?.length ? 30 : 0) +
-      (profile.activities?.length ? 25 : 0) +
-      (profile.awards?.length ? 25 : 0)
-    : 0;
-
-  // Markdown 组件样式
-  const MarkdownContent = ({ content }: { content: string }) => (
-    <ReactMarkdown
-      components={{
-        h1: ({ children }) => <h1 className="text-xl font-bold mb-3 text-primary">{children}</h1>,
-        h2: ({ children }) => (
-          <h2 className="text-lg font-semibold mb-2 mt-4 text-foreground">{children}</h2>
-        ),
-        h3: ({ children }) => (
-          <h3 className="text-base font-medium mb-2 mt-3 text-foreground flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
-            {children}
-          </h3>
-        ),
-        h4: ({ children }) => (
-          <h4 className="text-sm font-medium mb-1 mt-2 text-muted-foreground">{children}</h4>
-        ),
-        p: ({ children }) => (
-          <p className="text-sm leading-relaxed mb-2 text-muted-foreground">{children}</p>
-        ),
-        ul: ({ children }) => <ul className="space-y-1.5 mb-3">{children}</ul>,
-        ol: ({ children }) => (
-          <ol className="space-y-1.5 mb-3 list-decimal list-inside">{children}</ol>
-        ),
-        li: ({ children }) => (
-          <li className="text-sm flex items-start gap-2">
-            <CheckCircle className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-0.5" />
-            <span className="flex-1">{children}</span>
-          </li>
-        ),
-        strong: ({ children }) => (
-          <strong className="font-semibold text-foreground">{children}</strong>
-        ),
-        em: ({ children }) => <em className="text-primary">{children}</em>,
-      }}
-    >
-      {content}
-    </ReactMarkdown>
+  const profileScore = useMemo(
+    () =>
+      profile
+        ? (profile.gpa ? 20 : 0) +
+          (profile.testScores?.length ? 30 : 0) +
+          (profile.activities?.length ? 25 : 0) +
+          (profile.awards?.length ? 25 : 0)
+        : 0,
+    [profile]
   );
 
   // 渲染 AI 分析完整内容（新的 Tab 布局）
@@ -741,8 +837,9 @@ export default function UncommonAppPage() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-8 w-8 opacity-0 group-hover:opacity-100"
+                                  className="h-8 w-8 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
                                   onClick={() => deleteMutation.mutate(item.id)}
+                                  aria-label={`${t('removedFromList')} ${getSchoolName(item.school, locale)}`}
                                 >
                                   <Trash2 className="h-4 w-4 text-muted-foreground" />
                                 </Button>
@@ -761,7 +858,7 @@ export default function UncommonAppPage() {
                   description={t('emptyListDesc')}
                   action={{
                     label: t('startAdding'),
-                    onClick: () => (window.location.href = '/find-college'),
+                    onClick: () => router.push('/find-college'),
                   }}
                   size="sm"
                 />
@@ -769,34 +866,21 @@ export default function UncommonAppPage() {
             </CardContent>
           </Card>
 
-          {/* AI Recommendations - 接入 AI Agent */}
-          <Card>
+          {/* AI Recommendations */}
+          <Card className="overflow-hidden">
+            <div className="h-1 bg-gradient-to-r from-primary via-violet-500 to-primary" />
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-primary" />
+                  <div className="p-1.5 rounded-lg bg-primary/10">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                  </div>
                   {t('aiRecommendations')}
-                  <Badge variant="secondary" className="text-xs bg-primary/10 text-primary">
-                    <Brain className="h-3 w-3 mr-1" />
-                    School Agent
-                  </Badge>
                 </CardTitle>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleGetAIRecommendations}
-                  disabled={aiLoading}
-                  className="gap-1"
-                >
-                  {aiLoading ? (
-                    <>
-                      <Brain className="h-4 w-4 animate-pulse" />
-                      <span className="animate-pulse">{t('analyzing')}</span>
-                    </>
-                  ) : (
-                    t('getRecommendations')
-                  )}
-                </Button>
+                <Badge variant="secondary" className="text-xs bg-primary/10 text-primary">
+                  <Brain className="h-3 w-3 mr-1" />
+                  {t('schoolAgent')}
+                </Badge>
               </div>
               <CardDescription className="flex items-center gap-1">
                 <MessageSquare className="h-3 w-3" />
@@ -804,27 +888,210 @@ export default function UncommonAppPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {aiRecommendations ? (
-                <div className="space-y-3">
-                  {(['safety', 'target', 'reach'] as const).map((tier) => {
-                    const schools = aiRecommendations[tier] || [];
-                    const config = tierConfig[tier.toUpperCase() as keyof typeof tierConfig];
-                    return (
-                      <div key={tier} className="flex items-center gap-2">
-                        <div className={cn('w-2 h-2 rounded-full', config.color)} />
-                        <span className="text-sm font-medium w-16">{config.label}:</span>
-                        <span className="text-sm text-muted-foreground">
-                          {schools.map((s: any) => getSchoolName(s, locale)).join(', ') || '-'}
-                        </span>
+              <AnimatePresence mode="wait">
+                {aiLoading ? (
+                  <motion.div
+                    key="loading"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <RecommendationLoadingState t={t} />
+                  </motion.div>
+                ) : aiRecommendations ? (
+                  <motion.div
+                    key="results"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="space-y-4"
+                  >
+                    {/* Distribution mini-bar */}
+                    {(() => {
+                      const total =
+                        (aiRecommendations.reach?.length || 0) +
+                        (aiRecommendations.target?.length || 0) +
+                        (aiRecommendations.safety?.length || 0);
+                      if (!total) return null;
+                      return (
+                        <div className="flex h-2 rounded-full overflow-hidden">
+                          {aiRecommendations.reach?.length > 0 && (
+                            <div
+                              className="bg-amber-500 transition-all"
+                              style={{
+                                width: `${(aiRecommendations.reach.length / total) * 100}%`,
+                              }}
+                            />
+                          )}
+                          {aiRecommendations.target?.length > 0 && (
+                            <div
+                              className="bg-blue-500 transition-all"
+                              style={{
+                                width: `${(aiRecommendations.target.length / total) * 100}%`,
+                              }}
+                            />
+                          )}
+                          {aiRecommendations.safety?.length > 0 && (
+                            <div
+                              className="bg-emerald-500 transition-all"
+                              style={{
+                                width: `${(aiRecommendations.safety.length / total) * 100}%`,
+                              }}
+                            />
+                          )}
+                        </div>
+                      );
+                    })()}
+
+                    {/* Tier sections */}
+                    {(['reach', 'target', 'safety'] as const).map((tier) => {
+                      const schools = aiRecommendations[tier] || [];
+                      if (!schools.length) return null;
+                      const config = tierConfig[tier.toUpperCase() as keyof typeof tierConfig];
+                      const TierIcon = config.icon;
+
+                      return (
+                        <div key={tier} className={cn('rounded-lg border p-3', config.border)}>
+                          <div className="flex items-center gap-2 mb-2.5">
+                            <div className={cn('p-1 rounded-md', config.iconBg)}>
+                              <TierIcon className={cn('h-3.5 w-3.5', config.iconColor)} />
+                            </div>
+                            <span className="text-sm font-semibold">{t(`tier.${tier}`)}</span>
+                            <Badge
+                              variant="outline"
+                              className={cn('text-xs ml-auto', config.badgeClass)}
+                            >
+                              {schools.length}
+                            </Badge>
+                          </div>
+                          <div className="space-y-2">
+                            {schools.map((school: any, i: number) => (
+                              <div
+                                key={i}
+                                className="flex items-start gap-2.5 p-2 rounded-md bg-background/60 hover:bg-muted/50 transition-colors"
+                              >
+                                <div
+                                  className={cn(
+                                    'w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold',
+                                    config.iconBg,
+                                    config.iconColor
+                                  )}
+                                >
+                                  {i + 1}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-sm font-medium truncate">
+                                    {getSchoolName(school, locale)}
+                                  </p>
+                                  {(school.reason || school.description) && (
+                                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                                      {school.reason || school.description}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* Refresh */}
+                    <div className="flex items-center justify-between pt-2 border-t">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Brain className="h-3 w-3" />
+                        {t('poweredByAI')}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleGetAIRecommendations}
+                        className="text-xs text-muted-foreground hover:text-foreground"
+                      >
+                        <RefreshCw className="h-3 w-3 mr-1" />
+                        {t('reAnalyze')}
+                      </Button>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="empty"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex flex-col items-center text-center py-8 px-4"
+                  >
+                    <div className="relative mb-5">
+                      <div className="w-16 h-16 rounded-2xl bg-primary/10 border-2 border-primary/20 flex items-center justify-center">
+                        <Brain className="h-8 w-8 text-primary" />
                       </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  {t('clickToGetRecommendations')}
-                </p>
-              )}
+                      <motion.div
+                        className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-500"
+                        animate={{ scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      />
+                      <motion.div
+                        className="absolute -bottom-1 -left-1 w-2.5 h-2.5 rounded-full bg-amber-500"
+                        animate={{ scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }}
+                        transition={{ duration: 2, repeat: Infinity, delay: 0.7 }}
+                      />
+                      <motion.div
+                        className="absolute top-0 -left-2 w-2 h-2 rounded-full bg-blue-500"
+                        animate={{ scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }}
+                        transition={{ duration: 2, repeat: Infinity, delay: 1.4 }}
+                      />
+                    </div>
+
+                    <h4 className="text-sm font-semibold mb-1">{t('clickToGetRecommendations')}</h4>
+                    <p className="text-xs text-muted-foreground mb-5 max-w-[240px]">
+                      {t('aiRecommendationsHint')}
+                    </p>
+
+                    <div className="flex items-center gap-2 mb-5">
+                      {[
+                        {
+                          labelKey: 'safety',
+                          colorCls:
+                            'bg-emerald-500/15 text-emerald-700 border-emerald-200 dark:text-emerald-400 dark:border-emerald-800',
+                          icon: Shield,
+                        },
+                        {
+                          labelKey: 'target',
+                          colorCls:
+                            'bg-blue-500/15 text-blue-700 border-blue-200 dark:text-blue-400 dark:border-blue-800',
+                          icon: Target,
+                        },
+                        {
+                          labelKey: 'reach',
+                          colorCls:
+                            'bg-amber-500/15 text-amber-700 border-amber-200 dark:text-amber-400 dark:border-amber-800',
+                          icon: Zap,
+                        },
+                      ].map(({ labelKey, colorCls, icon: Icon }) => (
+                        <span
+                          key={labelKey}
+                          className={cn(
+                            'inline-flex items-center gap-1 px-2 py-1 rounded-md border text-xs',
+                            colorCls
+                          )}
+                        >
+                          <Icon className="h-3 w-3" />
+                          {t(`tier.${labelKey}`)}
+                        </span>
+                      ))}
+                    </div>
+
+                    <Button
+                      size="lg"
+                      onClick={handleGetAIRecommendations}
+                      className="w-full max-w-[280px] bg-gradient-to-r from-primary to-violet-600 hover:from-primary/90 hover:to-violet-600/90 text-white border-0"
+                    >
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      {t('getRecommendations')}
+                    </Button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </CardContent>
           </Card>
         </div>
@@ -906,7 +1173,7 @@ export default function UncommonAppPage() {
                     {/* AI Agent 标识 */}
                     <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
                       <Brain className="h-3 w-3" />
-                      <span>Powered by AI Agent</span>
+                      <span>{t('poweredByAI')}</span>
                     </div>
 
                     <Link href="/profile" className="block">
@@ -922,7 +1189,7 @@ export default function UncommonAppPage() {
                     description={t('noProfileDesc')}
                     action={{
                       label: t('createProfile'),
-                      onClick: () => (window.location.href = '/profile'),
+                      onClick: () => router.push('/profile'),
                     }}
                     size="sm"
                   />
@@ -947,10 +1214,10 @@ export default function UncommonAppPage() {
                     <Brain className="h-5 w-5 text-primary" />
                     {t('aiAnalysis')}
                     <Badge variant="secondary" className="text-xs bg-primary/10 text-primary">
-                      Profile Agent
+                      {t('profileAgent')}
                     </Badge>
                   </CardTitle>
-                  <Button variant="ghost" size="sm" onClick={handleDone}>
+                  <Button variant="ghost" size="sm" onClick={handleDone} aria-label={t('done')}>
                     <RotateCcw className="h-4 w-4" />
                   </Button>
                 </div>

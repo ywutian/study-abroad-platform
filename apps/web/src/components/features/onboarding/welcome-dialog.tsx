@@ -70,9 +70,7 @@ export function WelcomeDialog({ forceShow = false, onClose }: WelcomeDialogProps
     registerTour({
       id: TOURS.WELCOME,
       steps: welcomeTourSteps,
-      onComplete: () => {
-        console.log('Welcome tour completed');
-      },
+      onComplete: () => {},
     });
   }, [registerTour]);
 

@@ -24,9 +24,27 @@ import {
 } from '@/components/ui/dialog';
 import { apiClient } from '@/lib/api';
 import { toast } from 'sonner';
-import { Loader2, Send, GraduationCap } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Loader2, Send, GraduationCap, PenTool } from 'lucide-react';
 import { getSchoolName } from '@/lib/utils';
 import { SchoolSelector } from './school-selector';
+
+const ESSAY_TYPES = [
+  { value: 'COMMON_APP', label: 'Common App' },
+  { value: 'UC', label: 'UC' },
+  { value: 'SUPPLEMENTAL', label: 'Supplemental' },
+  { value: 'WHY_SCHOOL', label: 'Why School' },
+  { value: 'SHORT_ANSWER', label: 'Short Answer' },
+  { value: 'ACTIVITY', label: 'Activity' },
+  { value: 'OPTIONAL', label: 'Optional' },
+  { value: 'OTHER', label: 'Other' },
+];
+
+const VISIBILITY_OPTIONS = [
+  { value: 'ANONYMOUS', labelKey: 'anonymous' },
+  { value: 'PUBLIC', labelKey: 'public' },
+  { value: 'VERIFIED_ONLY', labelKey: 'verifiedOnly' },
+];
 
 const RESULT_KEYS = [
   { value: 'ADMITTED', labelKey: 'admitted' },
@@ -57,9 +75,15 @@ interface SubmitCaseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
+  defaultIncludeEssay?: boolean;
 }
 
-export function SubmitCaseDialog({ open, onOpenChange, onSuccess }: SubmitCaseDialogProps) {
+export function SubmitCaseDialog({
+  open,
+  onOpenChange,
+  onSuccess,
+  defaultIncludeEssay = false,
+}: SubmitCaseDialogProps) {
   const t = useTranslations('submitCase');
   const tCommon = useTranslations('common');
   const locale = useLocale();
@@ -67,6 +91,7 @@ export function SubmitCaseDialog({ open, onOpenChange, onSuccess }: SubmitCaseDi
   const [schoolSelectorOpen, setSchoolSelectorOpen] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
 
+  const [includeEssay, setIncludeEssay] = useState(defaultIncludeEssay);
   const [formData, setFormData] = useState({
     year: new Date().getFullYear().toString(),
     round: '',
@@ -77,6 +102,11 @@ export function SubmitCaseDialog({ open, onOpenChange, onSuccess }: SubmitCaseDi
     toeflRange: '',
     tags: '',
     reflection: '',
+    // Essay fields
+    essayType: '',
+    essayPrompt: '',
+    essayContent: '',
+    visibility: 'ANONYMOUS',
   });
 
   const submitMutation = useMutation({
@@ -104,8 +134,13 @@ export function SubmitCaseDialog({ open, onOpenChange, onSuccess }: SubmitCaseDi
       toeflRange: '',
       tags: '',
       reflection: '',
+      essayType: '',
+      essayPrompt: '',
+      essayContent: '',
+      visibility: 'ANONYMOUS',
     });
     setSelectedSchool(null);
+    setIncludeEssay(defaultIncludeEssay);
   };
 
   const handleSubmit = () => {
@@ -114,7 +149,7 @@ export function SubmitCaseDialog({ open, onOpenChange, onSuccess }: SubmitCaseDi
       return;
     }
 
-    const data = {
+    const data: Record<string, any> = {
       schoolId: selectedSchool.id,
       year: parseInt(formData.year),
       round: formData.round || undefined,
@@ -130,7 +165,15 @@ export function SubmitCaseDialog({ open, onOpenChange, onSuccess }: SubmitCaseDi
             .filter(Boolean)
         : undefined,
       reflection: formData.reflection || undefined,
+      visibility: formData.visibility || 'ANONYMOUS',
     };
+
+    // Add essay fields if included
+    if (includeEssay) {
+      if (formData.essayType) data.essayType = formData.essayType;
+      if (formData.essayPrompt) data.essayPrompt = formData.essayPrompt;
+      if (formData.essayContent) data.essayContent = formData.essayContent;
+    }
 
     submitMutation.mutate(data);
   };
@@ -278,6 +321,85 @@ export function SubmitCaseDialog({ open, onOpenChange, onSuccess }: SubmitCaseDi
                 onChange={(e) => setFormData({ ...formData, reflection: e.target.value })}
                 rows={4}
               />
+            </div>
+
+            {/* Essay Section */}
+            <div className="border-t pt-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <PenTool className="h-4 w-4 text-primary" />
+                  <Label className="font-medium">{t('includeEssay')}</Label>
+                </div>
+                <Switch checked={includeEssay} onCheckedChange={setIncludeEssay} />
+              </div>
+
+              {includeEssay && (
+                <div className="space-y-4 pl-1">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>{t('essayTypeLabel')}</Label>
+                      <Select
+                        value={formData.essayType}
+                        onValueChange={(value) => setFormData({ ...formData, essayType: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('essayTypePlaceholder')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ESSAY_TYPES.map((type) => (
+                            <SelectItem key={type.value} value={type.value}>
+                              {type.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('visibilityLabel')}</Label>
+                      <Select
+                        value={formData.visibility}
+                        onValueChange={(value) => setFormData({ ...formData, visibility: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {VISIBILITY_OPTIONS.map((v) => (
+                            <SelectItem key={v.value} value={v.value}>
+                              {t(`visibility.${v.labelKey}`)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>{t('essayPromptLabel')}</Label>
+                    <Textarea
+                      placeholder={t('essayPromptPlaceholder')}
+                      value={formData.essayPrompt}
+                      onChange={(e) => setFormData({ ...formData, essayPrompt: e.target.value })}
+                      rows={2}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>{t('essayContentLabel')}</Label>
+                    <Textarea
+                      placeholder={t('essayContentPlaceholder')}
+                      value={formData.essayContent}
+                      onChange={(e) => setFormData({ ...formData, essayContent: e.target.value })}
+                      rows={8}
+                    />
+                    {formData.essayContent && (
+                      <p className="text-xs text-muted-foreground">
+                        {formData.essayContent.split(/\s+/).filter(Boolean).length} words
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

@@ -104,12 +104,13 @@ export default function LoginPage() {
         }, 1000);
       }
 
-      // 优先使用 callbackUrl 跳转，否则跳转到 dashboard
+      // 优先使用 callbackUrl 跳转，否则根据角色跳转
       const callbackUrl = searchParams.get('callbackUrl');
+      const defaultPath = response.user.role === 'ADMIN' ? '/admin' : '/dashboard';
       // 提取路径（去掉 locale 前缀），安全校验只允许站内跳转
       const targetPath = callbackUrl
-        ? callbackUrl.replace(/^\/(zh|en)/, '') || '/dashboard'
-        : '/dashboard';
+        ? callbackUrl.replace(/^\/(zh|en)/, '') || defaultPath
+        : defaultPath;
 
       // 延迟跳转，让用户看到欢迎提示
       setTimeout(() => {

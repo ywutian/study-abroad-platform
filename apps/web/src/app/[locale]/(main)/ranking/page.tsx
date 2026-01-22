@@ -344,7 +344,7 @@ export default function RankingPage() {
               ) : ranking?.length ? (
                 <div className="space-y-2">
                   <AnimatePresence>
-                    {ranking.slice(0, 30).map((school: RankedSchool, index: number) => (
+                    {ranking.map((school: RankedSchool, index: number) => (
                       <motion.div
                         key={school.id}
                         initial={{ opacity: 0, y: 10 }}
