@@ -5,12 +5,18 @@
   "license": "UNLICENSED",
   "scripts": {
     "dev": "turbo dev",
+    "dev:all": "./dev.sh",
+    "docker:up": "docker-compose up -d db redis",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f db redis",
     "build": "turbo build",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "db:generate": "turbo db:generate",
     "db:push": "turbo db:push",
-    "prepare": "husky"
+    "prepare": "husky",
+    "sbom:generate": "cdxgen -o sbom/bom.json --deep -t js --spec-version 1.5",
+    "sbom:verify": "node -e \"const s=require('./sbom/bom.json'); if(!s.specVersion||!(s.components||[]).length){process.exit(1)} console.log('SBOM OK — specVersion:', s.specVersion, '| components:', s.components.length);\""
   },
   "devDependencies": {
     "@commitlint/cli": "^20.4.1",
@@ -24,6 +30,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "prettier": "^3.2.5",
+    "@cyclonedx/cdxgen": "^11.3.2",
     "turbo": "^2.3.0",
     "typescript": "^5.3.3",
     "typescript-eslint": "^8.53.1"

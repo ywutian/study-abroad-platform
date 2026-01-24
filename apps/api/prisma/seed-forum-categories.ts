@@ -65,35 +65,51 @@ const FORUM_CATEGORIES = [
 ];
 
 async function main() {
-  console.log('📁 创建论坛分类...\n');
+  console.log('📁 创建/更新论坛分类...\n');
 
   let created = 0;
-  let skipped = 0;
+  let updated = 0;
 
   for (const category of FORUM_CATEGORIES) {
-    const existing = await prisma.forumCategory.findFirst({
-      where: { name: category.name },
-    });
-
-    if (existing) {
-      console.log(`⏭️  ${category.nameZh} (${category.name}) - 已存在`);
-      skipped++;
-      continue;
-    }
-
-    await prisma.forumCategory.create({
-      data: {
+    const result = await prisma.forumCategory.upsert({
+      where: { nameZh: category.nameZh },
+      update: {
+        name: category.name,
+        description: category.description,
+        descriptionZh: category.descriptionZh,
+        icon: category.icon,
+        color: category.color,
+        sortOrder: category.sortOrder,
+        isActive: true,
+      },
+      create: {
         ...category,
         isActive: true,
       },
     });
 
-    console.log(`✅ ${category.nameZh} (${category.name})`);
-    created++;
+    const isNew = result.createdAt.getTime() === result.updatedAt.getTime();
+    if (isNew) {
+      console.log(`✅ ${category.nameZh} (${category.name}) - 新建`);
+      created++;
+    } else {
+      console.log(`🔄 ${category.nameZh} (${category.name}) - 已更新`);
+      updated++;
+    }
   }
 
+  // Deactivate categories not in the seed list
+  const seedNameZhs = FORUM_CATEGORIES.map((c) => c.nameZh);
+  const { count: deactivated } = await prisma.forumCategory.updateMany({
+    where: {
+      nameZh: { notIn: seedNameZhs },
+      isActive: true,
+    },
+    data: { isActive: false },
+  });
+
   console.log('\n' + '='.repeat(50));
-  console.log(`📊 完成: 新建 ${created}, 跳过 ${skipped}`);
+  console.log(`📊 完成: 新建 ${created}, 更新 ${updated}, 停用 ${deactivated}`);
 }
 
 main()

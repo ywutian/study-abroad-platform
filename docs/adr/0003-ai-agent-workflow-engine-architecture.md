@@ -18,21 +18,21 @@ Key pain points:
 
 ## Decision
 
-Introduce a **WorkflowEngineService** as an intermediary layer between `AgentRunnerService` and the low-level services:
+Introduce a **WorkflowEngineService** as an intermediary layer between `AgentRunnerService` and the low-level services, implementing the **ReWOO** (Reason Without Observation) pattern:
 
 ```
 AgentRunnerService
-  └── WorkflowEngineService (NEW)
-        ├── Plan phase    → LLMService (generate plan)
-        ├── Execute phase → ToolExecutorService (run tools)
-        └── Solve phase   → LLMService (synthesize response)
+  └── WorkflowEngineService (NEW — ReWOO pattern)
+        ├── Plan phase    → LLM plans all tool calls upfront (no observation loop)
+        ├── Execute phase → ToolExecutorService (run tools without LLM involvement)
+        └── Solve phase   → LLM synthesizes all tool results into final response
 ```
 
 The `WorkflowEngineService`:
 
 - Accepts a user message and context
 - Returns a `WorkflowResult` with `message`, `plan`, `toolsUsed`, and `timing` metrics
-- Internally manages the Plan → Execute → Solve lifecycle
+- Internally manages the Plan → Execute → Solve lifecycle (ReWOO's three phases)
 - Exposes both `run()` (batch) and `runStream()` (streaming) methods
 
 `AgentRunnerService` becomes a thin orchestration layer that:

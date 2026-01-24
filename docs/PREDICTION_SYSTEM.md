@@ -1,6 +1,6 @@
 # 录取预测系统技术文档 (Prediction System v2)
 
-> 最后更新: 2026-02-09
+> 最后更新: 2026-02-13
 > 模型版本: v2-ensemble
 > 状态: 已实施
 
@@ -99,7 +99,7 @@ apps/api/src/modules/prediction/
 ├── dto/
 │   ├── index.ts
 │   ├── prediction-request.dto.ts
-│   └── prediction-response.dto.ts  # PredictionResultDto + EngineScores
+│   └── prediction-response.dto.ts  # PredictionResultDto + EngineScores + PredictionFactor + PredictionComparison + PredictionResponseDto
 └── utils/
     ├── prompt-builder.ts           # AI Prompt 构建
     └── score-calculator.ts         # → re-exports from common/utils/scoring.ts
@@ -323,7 +323,7 @@ model PredictionResult {
   engineScores    Json?                          // { stats, ai, historical, weights, fusionMethod }
   suggestions     Json?                          // string[]
   comparison      Json?                          // PredictionComparison
-  actualResult    String?                        // ADMITTED / REJECTED / WAITLISTED
+  actualResult    String?                        // ADMITTED / REJECTED / WAITLISTED / UNKNOWN
   reportedAt      DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @default(now()) @updatedAt
@@ -345,7 +345,7 @@ model PredictionResult {
   historical?: number;    // 历史数据概率 (可选)
   memoryAdjustment?: number; // 记忆微调值
   weights: Record<string, number>; // 各引擎权重
-  fusionMethod: string;   // weighted_ensemble_3 | weighted_ensemble_2_ai | ...
+  fusionMethod: string;   // weighted_ensemble_3 | weighted_ensemble_2_ai | weighted_ensemble_2_hist | stats_only
 }
 ```
 

@@ -24,7 +24,6 @@ const PROTECTED_PATTERNS = [
 const ADMIN_PATTERNS = ['/admin'];
 
 function isProtectedRoute(pathname: string): boolean {
-  // Strip locale prefix (e.g., /en/profile -> /profile)
   const pathWithoutLocale = pathname.replace(/^\/(zh|en)/, '') || '/';
   return PROTECTED_PATTERNS.some((p) => pathWithoutLocale.startsWith(p));
 }
@@ -35,7 +34,6 @@ function isAdminRoute(pathname: string): boolean {
 }
 
 function getLoginUrl(request: NextRequest): string {
-  // Detect locale from path or default
   const locale = locales.find((l) => request.nextUrl.pathname.startsWith(`/${l}`)) || defaultLocale;
   return `/${locale}/login`;
 }
@@ -62,7 +60,6 @@ export default function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // 排除式匹配：匹配所有路径（排除静态资源和 API），兼容 Turbopack 和 Webpack
   matcher: [
     '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],

@@ -63,9 +63,10 @@ body:
       label: Environment
       description: Provide relevant environment details
       placeholder: |
-        - OS: macOS 15 / Windows 11
-        - Browser: Chrome 120
-        - Node.js: 20.x
+        - OS: macOS 26 / Windows 11
+        - Browser: Chrome 133
+        - Node.js: 22.x
+        - pnpm: 10.x
         - Branch: feature/xxx
       render: markdown
 

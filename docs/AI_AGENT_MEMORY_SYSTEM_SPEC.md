@@ -1,6 +1,6 @@
 # AI Agent 系统技术规格文档
 
-> 版本: 2.0.0 | 更新日期: 2026-01-26
+> 版本: 2.1.0 | 更新日期: 2026-02-13
 
 ## 目录
 
@@ -66,12 +66,12 @@
                            │        │                   │                   │
                            ▼        ▼                   ▼                   ▼
                   ┌─────────────────────────────────────────────────────────────────┐
-                  │                    AgentRunnerService                           │
+                  │                WorkflowEngineService                             │
                   │   ┌─────────────────────────────────────────────────────────┐  │
-                  │   │  推理循环 (最多8次迭代)                                   │  │
-                  │   │  1. 构建 System Prompt (含记忆上下文)                     │  │
-                  │   │  2. 调用 LLM (gpt-4o-mini)                               │  │
-                  │   │  3. 处理工具调用 / 委派 / 最终响应                        │  │
+                  │   │  ReWOO 三阶段工作流:                                     │  │
+                  │   │  Phase 1: PLAN   — LLM 分析意图，规划所有工具调用        │  │
+                  │   │  Phase 2: EXECUTE — 按计划执行工具（无 LLM 参与）        │  │
+                  │   │  Phase 3: SOLVE   — LLM 综合结果，生成最终回复           │  │
                   │   └─────────────────────────────────────────────────────────┘  │
                   └─────────────────────────────────────────────────────────────────┘
                                                         │
@@ -80,7 +80,7 @@
                            ▼                            ▼                            ▼
                   ┌─────────────────┐        ┌─────────────────┐        ┌─────────────────┐
                   │   LLMService    │        │ToolExecutorService│        │ResilienceService│
-                  │   - OpenAI API  │        │   - 18个工具     │        │   - 重试       │
+                  │   - OpenAI API  │        │   - 32个工具     │        │   - 重试       │
                   │   - 流式支持    │        │   - 超时保护     │        │   - 熔断       │
                   │   - Token追踪   │        │   - Metrics埋点  │        │   - 超时       │
                   └─────────────────┘        └─────────────────┘        └─────────────────┘
@@ -137,11 +137,12 @@ apps/api/src/modules/ai-agent/
 │
 ├── config/                     # 配置层
 │   ├── agents.config.ts        # Agent 配置 (5个Agent)
-│   └── tools.config.ts         # 工具配置 (18个工具)
+│   └── tools.config.ts         # 工具配置 (32个工具)
 │
 ├── core/                       # 核心服务层
 │   ├── orchestrator.service.ts # 协调器 (入口)
-│   ├── agent-runner.service.ts # Agent 执行器
+│   ├── agent-runner.service.ts # Agent 执行器（同步处理）
+│   ├── workflow-engine.service.ts # 工作流引擎（ReWOO 三阶段，流式处理）
 │   ├── llm.service.ts          # LLM 调用
 │   ├── tool-executor.service.ts# 工具执行
 │   ├── fast-router.service.ts  # 快速路由
@@ -189,11 +190,11 @@ enum AgentType {
 
 | Agent        | 模型        | Temperature | MaxTokens | 工具数 | 可委派                           |
 | ------------ | ----------- | ----------- | --------- | ------ | -------------------------------- |
-| ORCHESTRATOR | gpt-4o-mini | 0.3         | 1000      | 1      | ESSAY, SCHOOL, PROFILE, TIMELINE |
+| ORCHESTRATOR | gpt-4o-mini | 0.3         | 2000      | 11     | ESSAY, SCHOOL, PROFILE, TIMELINE |
 | ESSAY        | gpt-4o-mini | 0.7         | 4000      | 6      | ORCHESTRATOR                     |
-| SCHOOL       | gpt-4o-mini | 0.5         | 4000      | 6      | ORCHESTRATOR                     |
-| PROFILE      | gpt-4o-mini | 0.5         | 3000      | 2      | ORCHESTRATOR                     |
-| TIMELINE     | gpt-4o-mini | 0.5         | 3000      | 4      | ORCHESTRATOR                     |
+| SCHOOL       | gpt-4o-mini | 0.5         | 4000      | 7      | ORCHESTRATOR                     |
+| PROFILE      | gpt-4o-mini | 0.5         | 3000      | 5      | ORCHESTRATOR                     |
+| TIMELINE     | gpt-4o-mini | 0.5         | 3000      | 7      | ORCHESTRATOR                     |
 
 ### 2.3 ORCHESTRATOR (协调者)
 
@@ -202,30 +203,46 @@ enum AgentType {
 **System Prompt**:
 
 ```
-留学申请AI协调者。中文回复。
+留学申请AI协调者。你具备联网搜索能力，可以查询实时信息。
 
 委派规则:
 - 文书(写作/修改/润色) → essay
 - 选校(搜索/对比/录取分析) → school
-- 档案(成绩/活动/背景) → profile
+- 档案(成绩/活动/背景/测评) → profile
 - 规划(截止日期/时间线) → timeline
+- 论坛/社区问题 → 直接使用论坛工具
+- 案例分析/预测游戏 → 直接使用案例工具
+- 档案排名/改进建议 → 直接使用排名工具
+- 留学政策/签证/趋势等时效性问题 → 使用 web_search
 - 简单问候 → 直接回复
 
-需委派时调用 delegate_to_agent
+搜索规则:
+- 当用户询问最新留学政策、签证动态等需要实时信息的问题时，使用 web_search
+- 引用搜索结果时注明来源链接
+- 搜索词尽量使用英文以获取更好结果
+
+需委派时调用 delegate_to_agent，或直接使用相关工具
 ```
 
-**工具**: `delegate_to_agent`
+**工具**: `delegate_to_agent`, `search_forum_posts`, `get_popular_discussions`, `answer_forum_question`, `explain_case_result`, `analyze_prediction_accuracy`, `compare_case_with_profile`, `analyze_profile_ranking`, `suggest_profile_improvements`, `compare_with_admitted_profiles`, `web_search`
 
 **路由决策逻辑**:
 
 ```typescript
-// FastRouterService 预判规则
-const ROUTING_RULES = {
-  essay: ['文书', 'essay', 'PS', '个人陈述', '润色', '修改', '写作'],
-  school: ['选校', '学校', '排名', '录取率', '推荐', '对比'],
-  profile: ['档案', '背景', 'GPA', '活动', '竞争力', '分析'],
-  timeline: ['规划', '时间线', 'deadline', '截止', '计划'],
-};
+// FastRouterService 预判规则 — 每条规则包含 patterns(正则) + keywords(关键词)
+// 路由结果: RoutingResult { agent, confidence, matchedKeywords, shouldUseLLM }
+// 评分: 正则匹配 +0.5, 关键词匹配 +0.15, ≥3关键词额外 +0.2
+// 置信度 ≥ 0.7 直接路由，否则交给 LLM (ORCHESTRATOR)
+const ROUTING_RULES: RoutingRule[] = [
+  { agent: 'essay', confidence: 0.9,
+    keywords: ['文书', 'essay', 'ps', '个人陈述', '润色', '修改', '评估', '写作', '大纲', '头脑风暴', '续写', '补充', ...] },
+  { agent: 'school', confidence: 0.9,
+    keywords: ['选校', '学校推荐', '推荐学校', '录取率', '排名', '对比', '比较', '匹配度', '保底', '冲刺', '藤校', ...] },
+  { agent: 'profile', confidence: 0.9,
+    keywords: ['档案', '背景', '竞争力', 'gpa', '成绩', '活动', '提升', '优势', '短板', '科研', '实习', ...] },
+  { agent: 'timeline', confidence: 0.9,
+    keywords: ['时间', '规划', '计划', '截止', 'deadline', 'ed', 'ea', 'rd', '什么时候', '时间线', ...] },
+];
 ```
 
 ### 2.4 ESSAY (文书专家)
@@ -266,9 +283,9 @@ const ROUTING_RULES = {
 **System Prompt**:
 
 ```
-留学选校顾问。中文回复。
+留学选校顾问。
 
-能力: 学校查询|选校推荐|学校对比|录取分析
+能力: 学校查询|选校推荐|学校对比|录取分析|学校官网信息搜索
 
 选校分层:
 - Reach(<30%): 冲刺校
@@ -282,6 +299,13 @@ const ROUTING_RULES = {
 2. 搜索/推荐学校
 3. 数据支撑分析
 
+搜索规则:
+- 优先使用 get_school_details 查询数据库中的学校信息
+- 当需要验证截止日期、获取最新文书题目时，使用 search_school_website
+- search_school_website 的 schoolName 使用英文名，query 使用英文描述
+
+【重要】当用户请求选校推荐列表时，必须在回复末尾附上 JSON 格式的结构化数据
+
 原则: 用数据说话，解释推荐理由
 ```
 
@@ -294,28 +318,36 @@ const ROUTING_RULES = {
 | `compare_schools` | 对比多所学校 |
 | `recommend_schools` | 智能推荐 (Reach/Match/Safety) |
 | `analyze_admission_chance` | 分析录取概率 |
+| `search_school_website` | 搜索学校官网获取最新信息 |
 
 ### 2.6 PROFILE (档案分析师)
 
-**职责**: 用户档案管理和背景分析
+**职责**: 用户档案管理、背景分析和性格测评解读
 
 **System Prompt**:
 
 ```
-留学背景分析师。中文回复。
+留学背景分析师。
 
-能力: 档案审查|优势分析|短板识别|定位建议
+能力: 档案审查|优势分析|短板识别|定位建议|测评解读|活动推荐
 
 分析维度:
 - 学术: GPA、课程难度、趋势
 - 标化: SAT/ACT、TOEFL/IELTS
 - 活动: 深度、持续性、领导力
 - 奖项: 级别、相关性
+- 性格: MBTI类型、职业兴趣
 
 流程:
 1. get_profile 获取档案
-2. 多维度分析
-3. 可执行提升建议
+2. get_assessment_results 获取测评结果
+3. 多维度分析
+4. 可执行提升建议
+
+测评相关:
+- MBTI: 分析性格特点对专业选择的影响
+- Holland: 分析职业兴趣与专业的匹配度
+- 可推荐匹配性格的活动和竞赛
 
 原则: 客观分析，指出优势也不回避不足
 ```
@@ -325,30 +357,44 @@ const ROUTING_RULES = {
 |--------|------|
 | `get_profile` | 获取用户档案 |
 | `update_profile` | 更新档案字段 |
+| `get_assessment_results` | 获取测评结果 |
+| `interpret_assessment` | 解读测评结果 |
+| `suggest_activities_from_assessment` | 基于测评推荐活动 |
 
 ### 2.7 TIMELINE (规划顾问)
 
-**职责**: 申请时间线规划和截止日期管理
+**职责**: 申请时间线规划、竞赛活动跟踪和截止日期管理
 
 **System Prompt**:
 
 ```
-留学规划顾问。中文回复。
+留学规划顾问。
 
-能力: 时间线规划|截止日期管理|任务分解|案例参考
+能力: 时间线规划|截止日期管理|竞赛/考试/活动跟踪|任务分解|案例参考|官网信息搜索
 
-轮次: ED(11月,绑定)|EA(11月)|ED2(1月,绑定)|RD(1月)
+覆盖范围:
+- 学校申请: ED(11月,绑定)|EA(11月)|ED2(1月,绑定)|RD(1月)
+- 竞赛: AMC/USABO/ISEF/Physics Olympiad 等
+- 标化考试: SAT/ACT/TOEFL/IELTS/AP
+- 夏校、课外活动/实习、材料准备
 
 规划原则:
 - 文书提前2-3月准备
 - 标化预留2次考试机会
 - 推荐信提前1月联系
 - 预留1周检查提交
+- 竞赛提前3月开始备赛
+
+搜索规则:
+- 当需要确认竞赛/考试的具体日期时，使用 search_school_website 搜索官方信息
+- 当数据库中的截止日期可能过时时，使用 search_school_website 验证最新信息
 
 流程:
 1. 了解目标和进度
-2. get_deadlines 查询截止日期
-3. 制定详细规划
+2. get_deadlines 查截止日期
+3. get_personal_events 查已有事件
+4. 必要时用 search_school_website 验证最新日期
+5. 制定详细规划或 create_personal_event 创建事件
 
 原则: 给出具体时间节点，按优先级排列
 ```
@@ -359,7 +405,10 @@ const ROUTING_RULES = {
 | `get_profile` | 获取用户档案 |
 | `get_deadlines` | 获取申请截止日期 |
 | `create_timeline` | 创建个性化时间线 |
+| `get_personal_events` | 获取用户个人事件 |
+| `create_personal_event` | 创建个人事件 |
 | `search_cases` | 搜索录取案例 |
+| `search_school_website` | 搜索学校官网获取最新信息 |
 
 ---
 
@@ -377,13 +426,16 @@ const ROUTING_RULES = {
 @Injectable()
 export class OrchestratorService {
   constructor(
-    private readonly agentRunner: AgentRunnerService,
-    private readonly memory: MemoryService, // 内存记忆
-    private readonly llm: LLMService,
-    private readonly toolExecutor: ToolExecutorService,
-    @Optional() private readonly memoryManager?: MemoryManagerService, // 企业级记忆
-    @Optional() private readonly fastRouter?: FastRouterService,
-    @Optional() private readonly fallback?: FallbackService
+    private agentRunner: AgentRunnerService,
+    private memory: MemoryService, // 内存记忆（降级）
+    private llm: LLMService,
+    private toolExecutor: ToolExecutorService,
+    private workflowEngine: WorkflowEngineService, // ReWOO 三阶段工作流
+    private configService: ConfigService,
+    @Optional() private configValidator?: ConfigValidatorService,
+    @Optional() private memoryManager?: MemoryManagerService, // 企业级记忆
+    @Optional() private fastRouter?: FastRouterService,
+    @Optional() private fallback?: FallbackService
   ) {}
 }
 ```
@@ -393,36 +445,39 @@ export class OrchestratorService {
 #### handleMessage (同步处理)
 
 ```typescript
-async handleMessage(userId: string, message: string, conversationId?: string): Promise<AgentResponse> {
-  // 1. 快速路由检查
+async handleMessage(userId: string, message: string, conversationId?: string, locale = 'zh'): Promise<AgentResponse> {
+  // 1. 快速路由检查 (减少 LLM 调用)
   if (this.fastRouter) {
+    // 简单问答直接回复
+    const simpleResponse = this.fastRouter.getSimpleResponse(message);
+    if (simpleResponse) {
+      return { message: simpleResponse, agentType: AgentType.ORCHESTRATOR, data: { fastRoute: true } };
+    }
+
+    // 尝试快速路由到专业 Agent
     const routeResult = this.fastRouter.route(message);
-    if (routeResult.canHandle && routeResult.response) {
-      return routeResult.response;  // 简单问答直接返回
+    if (!routeResult.shouldUseLLM && routeResult.agent) {
+      const conversation = await this.getOrCreateConversation(userId, conversationId);
+      await this.addMessage(conversation, { role: 'user', content: message });
+      return this.agentRunner.run(routeResult.agent, conversation, message);
     }
   }
 
-  // 2. 获取/创建对话
+  // 2. 正常处理流程
   const conversation = await this.getOrCreateConversation(userId, conversationId);
-
-  // 3. 添加用户消息
   await this.addMessage(conversation, { role: 'user', content: message });
 
-  // 4. 确定初始 Agent
-  const initialAgent = this.fastRouter?.route(message).targetAgent ?? AgentType.ORCHESTRATOR;
-
-  // 5. 执行 Agent (含委派循环)
-  let response = await this.agentRunner.run(conversation, initialAgent);
+  // 3. 执行 Agent (含委派循环)
+  let response = await this.agentRunner.run(AgentType.ORCHESTRATOR, conversation, message);
   let delegationDepth = 0;
 
-  while (response.delegatedTo && delegationDepth < 3) {
-    response = await this.agentRunner.run(conversation, response.delegatedTo);
+  while (response.delegatedTo && delegationDepth < this.maxDelegationDepth) {
     delegationDepth++;
+    response = await this.agentRunner.run(response.delegatedTo, conversation, message);
   }
 
-  // 6. 保存响应
+  // 4. 保存响应 & 异步记忆提取
   await this.addMessage(conversation, { role: 'assistant', content: response.message });
-
   return response;
 }
 ```
@@ -461,127 +516,120 @@ private async buildSystemPrompt(conversation: ConversationState, agentType: Agen
 }
 ```
 
-### 3.2 AgentRunnerService (执行器)
+### 3.2 WorkflowEngineService (工作流引擎)
 
-**位置**: `core/agent-runner.service.ts`
+**位置**: `core/workflow-engine.service.ts`
 
-**职责**: 执行单个 Agent 的推理循环
+**职责**: 基于 ReWOO (Reason Without Observation) 模式的三阶段 Agent 执行
 
 **执行流程**:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    AgentRunner.run()                        │
+│              WorkflowEngine.runStream()                      │
+│              (唯一的工作流实现 - 单一事实来源)                  │
 └─────────────────────────────────────────────────────────────┘
                             │
-                            ▼
-              ┌─────────────────────────────┐
-              │  iteration = 0              │
-              │  MAX_ITERATIONS = 8         │
-              └─────────────────────────────┘
-                            │
-         ┌──────────────────┴──────────────────┐
-         │                                      │
-         ▼                                      │
-┌─────────────────────────┐                    │
-│ 1. 构建 System Prompt   │                    │
-│    (含用户上下文)       │                    │
-└─────────────────────────┘                    │
-         │                                      │
-         ▼                                      │
-┌─────────────────────────┐                    │
-│ 2. 获取最近消息         │                    │
-│    memory.getRecent()   │                    │
-└─────────────────────────┘                    │
-         │                                      │
-         ▼                                      │
-┌─────────────────────────┐                    │
-│ 3. 调用 LLM             │                    │
-│    llm.call()           │                    │
-│    - userId             │                    │
-│    - conversationId     │                    │
-│    - agentType          │                    │
-└─────────────────────────┘                    │
-         │                                      │
-         ▼                                      │
-┌─────────────────────────┐                    │
-│ 4. 检查响应             │                    │
-└─────────────────────────┘                    │
-         │                                      │
-    ┌────┴────┐                                │
-    │         │                                │
-    ▼         ▼                                │
-┌───────┐ ┌───────────────────────────────┐   │
-│无工具 │ │ 有工具调用                     │   │
-│调用   │ │                               │   │
-└───┬───┘ │ 5a. 检查是否是委派            │   │
-    │     │     → 是: 返回 delegatedTo    │   │
-    │     │                               │   │
-    │     │ 5b. 执行工具 (带10s超时)      │   │
-    │     │     toolExecutor.execute()   │   │
-    │     │                               │   │
-    │     │ 5c. 记录工具结果              │   │
-    │     │     memory.addMessage()       │   │
-    │     └───────────────────────────────┘   │
-    │                  │                       │
-    │                  │ iteration++           │
-    │                  └───────────────────────┘
-    │
-    ▼
-┌─────────────────────────┐
-│ 返回最终响应            │
-│ { message, agentType,   │
-│   toolsUsed, ... }      │
-└─────────────────────────┘
+                ┌───────────┴───────────┐
+                ▼                       │
+┌───────────────────────────────┐       │
+│  Phase 1: PLAN                │       │
+│  ┌─────────────────────────┐  │       │
+│  │ LLM 分析用户意图        │  │       │
+│  │ 一次性规划所有工具调用  │  │       │
+│  │ tool_choice: 'auto'     │  │       │
+│  │ 按工具名去重            │  │       │
+│  └─────────────────────────┘  │       │
+└───────────────┬───────────────┘       │
+                │                       │
+    ┌───────────┼───────────┐           │
+    ▼           ▼           ▼           │
+┌────────┐ ┌────────┐ ┌────────────┐   │
+│无工具  │ │有委派  │ │有工具调用  │   │
+│调用    │ │调用    │ │           │   │
+│→直接  │ │→返回  │ │→进入     │   │
+│ 返回  │ │ 委派  │ │ Execute  │   │
+└────────┘ └────────┘ └──────┬─────┘   │
+                             ▼         │
+              ┌───────────────────────┐ │
+              │  Phase 2: EXECUTE     │ │
+              │  ┌─────────────────┐  │ │
+              │  │ 依次执行工具    │  │ │
+              │  │ (无 LLM 参与)  │  │ │
+              │  │ 30s 超时保护   │  │ │
+              │  │ 失败标记,继续  │  │ │
+              │  └─────────────────┘  │ │
+              └───────────┬───────────┘ │
+                          ▼             │
+              ┌───────────────────────┐ │
+              │  Phase 3: SOLVE       │ │
+              │  ┌─────────────────┐  │ │
+              │  │ LLM 综合结果   │  │ │
+              │  │ 不传入 tools   │  │ │
+              │  │ (强制文本输出) │  │ │
+              │  │ 空内容 fallback│  │ │
+              │  └─────────────────┘  │ │
+              └───────────┬───────────┘ │
+                          ▼             │
+              ┌───────────────────────┐ │
+              │  返回 WorkflowResult  │ │
+              │  { message, toolsUsed,│ │
+              │    plan, timing }     │ │
+              └───────────────────────┘ │
 ```
 
 **关键代码**:
 
 ```typescript
-async run(conversation: ConversationState, agentType: AgentType): Promise<AgentResponse> {
-  const config = getAgentConfig(agentType);
-  const tools = getTools(config.tools);
-  const toolsUsed: string[] = [];
+async *runStream(agentType, config, conversation, tools): AsyncGenerator<WorkflowStreamEvent> {
+  // ---- Phase 1: PLAN ----
+  yield { type: 'phase_change', phase: WorkflowPhase.PLAN };
+  const plan = await this.planPhase(agentType, config, conversation, tools);
 
-  for (let i = 0; i < MAX_ITERATIONS; i++) {
-    const systemPrompt = this.buildSystemPrompt(conversation, agentType);
-    const messages = this.memory.getRecentMessages(conversation, 20);
-
-    const response = await this.llm.call({
-      model: config.model,
-      temperature: config.temperature,
-      maxTokens: config.maxTokens,
-      messages: [{ role: 'system', content: systemPrompt }, ...messages],
-      tools: toOpenAIFormat(tools),
-    }, { userId: conversation.userId, conversationId: conversation.id, agentType });
-
-    if (!response.toolCalls?.length) {
-      return { message: response.content, agentType, toolsUsed };
-    }
-
-    // 处理工具调用
-    for (const toolCall of response.toolCalls) {
-      if (toolCall.function.name === 'delegate_to_agent') {
-        return this.handleDelegation(toolCall);
-      }
-
-      const result = await this.withTimeout(
-        this.toolExecutor.execute(toolCall, conversation.context),
-        10000  // 10秒超时
-      );
-
-      this.memory.addMessage(conversation, {
-        role: 'tool',
-        content: JSON.stringify(result),
-        toolCallId: toolCall.id
-      });
-      toolsUsed.push(toolCall.function.name);
-    }
+  // 快速路径：不需要工具调用 → 直接把 Plan 内容当最终回复
+  if (plan.steps.length === 0 && !plan.delegation) {
+    yield { type: 'plan_content', content: plan.planningContent };
+    yield { type: 'done', result: ... };
+    return;
   }
 
-  return { message: '达到最大迭代次数', agentType, toolsUsed };
+  // 委派路径 → 不进入 Execute
+  if (plan.delegation) {
+    yield { type: 'done', result: { delegation: plan.delegation, ... } };
+    return;
+  }
+
+  // ---- Phase 2: EXECUTE (无 LLM 参与) ----
+  yield { type: 'phase_change', phase: WorkflowPhase.EXECUTE };
+  for (const step of plan.steps) {
+    yield { type: 'tool_start', tool: step.toolCall.name };
+    await this.executeStep(step, conversation);  // 30s 超时
+    yield { type: 'tool_end', tool: step.toolCall.name, toolResult: step.result };
+  }
+
+  // ---- Phase 3: SOLVE (不传 tools，强制文本输出) ----
+  yield { type: 'phase_change', phase: WorkflowPhase.SOLVE };
+  let finalMessage = '';
+  for await (const chunk of this.solvePhaseCore(agentType, config, conversation)) {
+    finalMessage += chunk;
+    yield { type: 'solve_content', content: chunk };
+  }
+  // 空内容 fallback：自动重试非流式
+  if (!finalMessage.trim()) {
+    const response = await this.llm.call(systemPrompt, messages, llmOpts);
+    finalMessage = response.content;
+  }
+
+  yield { type: 'done', result: { message: finalMessage, toolsUsed, plan, timing } };
 }
 ```
+
+**降级策略**:
+
+- Plan 阶段 LLM 未返回工具调用 → 直接返回文本回复（无需 Solve）
+- Plan 阶段返回 delegate_to_agent → 直接委派，不进入 Execute
+- Execute 阶段某工具失败 → 标记失败，Solve 阶段基于已有结果生成回复
+- Solve 阶段流式输出为空 → 自动 fallback 到非流式重试
 
 ### 3.3 LLMService (LLM 调用)
 
@@ -644,7 +692,7 @@ async call(request: ChatCompletionRequest, context: LLMContext): Promise<LLMResp
 
 **特性**:
 
-- 超时保护 (10秒)
+- 超时保护 (30秒)
 - 重试机制 (非幂等工具除外)
 - Metrics 埋点
 - 特殊处理委派工具
@@ -672,49 +720,64 @@ const RETRY_CONFIG = {
 **路由规则**:
 
 ```typescript
-const SIMPLE_RESPONSES = {
-  你好: '你好！我是留学申请助手，可以帮你处理文书、选校、档案分析和时间规划。有什么需要帮助的？',
-  hello: "Hello! I'm your study abroad assistant...",
-  谢谢: '不客气！还有其他需要帮助的吗？',
-};
+// 简单问答模式（当前为空数组，所有回复由 LLM 生成）
+const SIMPLE_QA_PATTERNS: Array<{ pattern: RegExp; response: string }> = [];
 
-const KEYWORD_RULES: Record<AgentType, string[]> = {
-  essay: ['文书', 'essay', 'PS', '个人陈述', '润色', '修改'],
-  school: ['选校', '学校', '排名', '录取率', '推荐'],
-  profile: ['档案', '背景', 'GPA', '活动', '竞争力'],
-  timeline: ['规划', '时间线', 'deadline', '截止'],
-};
+// 路由规则定义
+interface RoutingRule {
+  patterns: RegExp[];       // 正则匹配 (权重高 +0.5)
+  keywords: string[];       // 关键词匹配 (+0.15/个, ≥3个额外 +0.2)
+  agent: AgentType;
+  confidence: number;       // 0-1, 高于阈值直接路由
+}
+
+// 路由结果
+interface RoutingResult {
+  agent: AgentType | null;
+  confidence: number;
+  matchedKeywords: string[];
+  shouldUseLLM: boolean;
+}
+
+// 4 条路由规则 (ESSAY, SCHOOL, PROFILE, TIMELINE)，每条 confidence = 0.9
+const ROUTING_RULES: RoutingRule[] = [
+  { agent: AgentType.ESSAY, confidence: 0.9,
+    keywords: ['文书', 'essay', 'ps', '个人陈述', '润色', '修改', '评估', '写作', '大纲', ...],
+    patterns: [/帮我(写|修改|润色|评估).*文书/i, /文书.*怎么写/i, ...] },
+  // ... SCHOOL, PROFILE, TIMELINE 类似
+];
+
+const CONFIDENCE_THRESHOLD = 0.7;
 ```
 
 **路由逻辑**:
 
 ```typescript
-route(message: string): RouteResult {
-  // 1. 简单问答检查
-  for (const [keyword, response] of Object.entries(SIMPLE_RESPONSES)) {
-    if (message.includes(keyword)) {
-      return { canHandle: true, response, confidence: 1.0 };
+route(message: string): RoutingResult {
+  // 1. 简单问答检查 (当前 SIMPLE_QA_PATTERNS 为空)
+  const simpleResponse = this.checkSimpleQA(message);
+  if (simpleResponse) {
+    return { agent: null, confidence: 1.0, matchedKeywords: ['simple_qa'], shouldUseLLM: false };
+  }
+
+  // 2. 规则匹配 (正则 +0.5, 关键词 +0.15, ≥3关键词额外 +0.2)
+  let bestMatch = null;
+  for (const rule of ROUTING_RULES) {
+    const { score, matchedKeywords } = this.matchRule(message, rule);
+    const confidence = Math.min(score * rule.confidence, 1.0);
+    if (score > 0 && (!bestMatch || confidence > bestMatch.confidence)) {
+      bestMatch = { agent: rule.agent, confidence, matchedKeywords };
     }
   }
 
-  // 2. 关键词匹配
-  let bestMatch: AgentType | null = null;
-  let maxScore = 0;
-
-  for (const [agent, keywords] of Object.entries(KEYWORD_RULES)) {
-    const score = this.calculateScore(message, keywords);
-    if (score > maxScore) {
-      maxScore = score;
-      bestMatch = agent as AgentType;
-    }
+  // 3. 置信度 ≥ 0.7 直接路由，否则交给 LLM
+  if (bestMatch && bestMatch.confidence >= CONFIDENCE_THRESHOLD) {
+    return { agent: bestMatch.agent, confidence: bestMatch.confidence,
+             matchedKeywords: bestMatch.matchedKeywords, shouldUseLLM: false };
   }
 
-  // 3. 置信度判断
-  if (maxScore >= 0.7) {
-    return { canHandle: true, targetAgent: bestMatch, confidence: maxScore };
-  }
-
-  return { canHandle: false, confidence: maxScore };
+  return { agent: bestMatch?.agent || null, confidence: bestMatch?.confidence || 0,
+           matchedKeywords: bestMatch?.matchedKeywords || [], shouldUseLLM: true };
 }
 ```
 
@@ -724,17 +787,23 @@ route(message: string): RouteResult {
 
 ### 4.1 工具总览
 
-系统定义了 **18 个工具**，分为 7 类：
+系统定义了 **32 个工具**，分为 11 类：
 
-| 类别   | 工具数 | 工具列表                                                                   |
-| ------ | ------ | -------------------------------------------------------------------------- |
-| 委派   | 1      | delegate_to_agent                                                          |
-| 档案   | 2      | get_profile, update_profile                                                |
-| 学校   | 3      | search_schools, get_school_details, compare_schools                        |
-| 文书   | 5      | get_essays, review_essay, polish_essay, generate_outline, brainstorm_ideas |
-| 选校   | 2      | recommend_schools, analyze_admission_chance                                |
-| 案例   | 1      | search_cases                                                               |
-| 时间线 | 2      | get_deadlines, create_timeline                                             |
+| 类别     | 工具数 | 工具列表                                                                              |
+| -------- | ------ | ------------------------------------------------------------------------------------- |
+| 委派     | 1      | delegate_to_agent                                                                     |
+| 档案     | 2      | get_profile, update_profile                                                           |
+| 学校     | 3      | search_schools, get_school_details, compare_schools                                   |
+| 文书     | 5      | get_essays, review_essay, polish_essay, generate_outline, brainstorm_ideas            |
+| 选校     | 2      | recommend_schools, analyze_admission_chance                                           |
+| 案例     | 1      | search_cases                                                                          |
+| 时间线   | 2      | get_deadlines, create_timeline                                                        |
+| 个人事件 | 2      | get_personal_events, create_personal_event                                            |
+| 测评     | 3      | get_assessment_results, interpret_assessment, suggest_activities_from_assessment      |
+| 论坛     | 3      | search_forum_posts, get_popular_discussions, answer_forum_question                    |
+| 案例预测 | 3      | explain_case_result, analyze_prediction_accuracy, compare_case_with_profile           |
+| 排名分析 | 3      | analyze_profile_ranking, suggest_profile_improvements, compare_with_admitted_profiles |
+| 外部搜索 | 2      | web_search, search_school_website                                                     |
 
 ### 4.2 工具定义格式
 
@@ -846,24 +915,40 @@ interface ToolDefinition {
 
 ### 4.4 工具权限矩阵
 
-| 工具                     | ORCHESTRATOR | ESSAY | SCHOOL | PROFILE | TIMELINE |
-| ------------------------ | :----------: | :---: | :----: | :-----: | :------: |
-| delegate_to_agent        |      ✓       |       |        |         |          |
-| get_profile              |              |   ✓   |   ✓    |    ✓    |    ✓     |
-| update_profile           |              |       |        |    ✓    |          |
-| get_essays               |              |   ✓   |        |         |          |
-| review_essay             |              |   ✓   |        |         |          |
-| polish_essay             |              |   ✓   |        |         |          |
-| generate_outline         |              |   ✓   |        |         |          |
-| brainstorm_ideas         |              |   ✓   |        |         |          |
-| search_schools           |              |       |   ✓    |         |          |
-| get_school_details       |              |       |   ✓    |         |          |
-| compare_schools          |              |       |   ✓    |         |          |
-| recommend_schools        |              |       |   ✓    |         |          |
-| analyze_admission_chance |              |       |   ✓    |         |          |
-| search_cases             |              |       |        |         |    ✓     |
-| get_deadlines            |              |       |        |         |    ✓     |
-| create_timeline          |              |       |        |         |    ✓     |
+| 工具                               | ORCHESTRATOR | ESSAY | SCHOOL | PROFILE | TIMELINE |
+| ---------------------------------- | :----------: | :---: | :----: | :-----: | :------: |
+| delegate_to_agent                  |      ✓       |       |        |         |          |
+| get_profile                        |              |   ✓   |   ✓    |    ✓    |    ✓     |
+| update_profile                     |              |       |        |    ✓    |          |
+| get_essays                         |              |   ✓   |        |         |          |
+| review_essay                       |              |   ✓   |        |         |          |
+| polish_essay                       |              |   ✓   |        |         |          |
+| generate_outline                   |              |   ✓   |        |         |          |
+| brainstorm_ideas                   |              |   ✓   |        |         |          |
+| search_schools                     |              |       |   ✓    |         |          |
+| get_school_details                 |              |       |   ✓    |         |          |
+| compare_schools                    |              |       |   ✓    |         |          |
+| recommend_schools                  |              |       |   ✓    |         |          |
+| analyze_admission_chance           |              |       |   ✓    |         |          |
+| search_school_website              |              |       |   ✓    |         |    ✓     |
+| search_cases                       |              |       |        |         |    ✓     |
+| get_deadlines                      |              |       |        |         |    ✓     |
+| create_timeline                    |              |       |        |         |    ✓     |
+| get_personal_events                |              |       |        |         |    ✓     |
+| create_personal_event              |              |       |        |         |    ✓     |
+| get_assessment_results             |              |       |        |    ✓    |          |
+| interpret_assessment               |              |       |        |    ✓    |          |
+| suggest_activities_from_assessment |              |       |        |    ✓    |          |
+| search_forum_posts                 |      ✓       |       |        |         |          |
+| get_popular_discussions            |      ✓       |       |        |         |          |
+| answer_forum_question              |      ✓       |       |        |         |          |
+| explain_case_result                |      ✓       |       |        |         |          |
+| analyze_prediction_accuracy        |      ✓       |       |        |         |          |
+| compare_case_with_profile          |      ✓       |       |        |         |          |
+| analyze_profile_ranking            |      ✓       |       |        |         |          |
+| suggest_profile_improvements       |      ✓       |       |        |         |          |
+| compare_with_admitted_profiles     |      ✓       |       |        |         |          |
+| web_search                         |      ✓       |       |        |         |          |
 
 ---
 
@@ -1028,9 +1113,10 @@ const FALLBACK_RESPONSES: Record<ErrorCategory, FallbackResponse> = {
          │                         │                         │
          ▼                         ▼                         ▼
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│  AgentRunner    │    │   FastRouter    │    │   LLMService    │
-│  - 推理循环      │    │   - 快速路由     │    │   - LLM调用     │
-│  - 工具执行      │    │   - 意图分类     │    │   - Token管理   │
+│WorkflowEngine  │    │   FastRouter    │    │   LLMService    │
+│ - ReWOO三阶段  │    │   - 快速路由     │    │   - LLM调用     │
+│ - Plan/Exec/   │    │   - 意图分类     │    │   - Token管理   │
+│   Solve        │    │                 │    │                 │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
                                    │
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -1058,7 +1144,7 @@ const FALLBACK_RESPONSES: Record<ErrorCategory, FallbackResponse> = {
 │  │   │              MemoryService (内存降级)                │    │ │
 │  │   │   - Map<string, ConversationState>                  │    │ │
 │  │   │   - 最近20条消息                                     │    │ │
-│  │   │   - 用户上下文缓存 (5分钟TTL)                         │    │ │
+│  │   │   - 用户上下文缓存 (内存Map)                           │    │ │
 │  │   └─────────────────────────────────────────────────────┘    │ │
 │  └──────────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────────────┘
@@ -1091,7 +1177,8 @@ apps/api/src/modules/ai-agent/
 ├── core/                           # 核心服务层
 │   ├── memory.service.ts           # 基础记忆服务（降级方案）
 │   ├── orchestrator.service.ts     # 协调器服务
-│   ├── agent-runner.service.ts     # Agent执行器
+│   ├── agent-runner.service.ts     # Agent执行器（同步处理）
+│   ├── workflow-engine.service.ts  # 工作流引擎（ReWOO 三阶段，流式处理）
 │   ├── llm.service.ts              # LLM调用服务
 │   └── fast-router.service.ts      # 快速路由服务
 │
@@ -1161,7 +1248,7 @@ interface ConversationState {
 
 - 内存存储，访问延迟 <1ms
 - 消息上限: 20条（自动清理旧消息）
-- 用户上下文缓存 TTL: 5分钟
+- 用户上下文缓存: 内存 Map（进程内有效）
 - 工具结果自动简化（避免上下文过长）
 - Redis/PostgreSQL 不可用时的降级方案
 
@@ -1182,11 +1269,12 @@ getContextSummary(context: UserContext): string
 
 ```typescript
 // Redis Key 命名规范
+// Redis Key 实际命名格式
 const KEYS = {
-  conversationMessages: (convId: string) => `conv:${convId}:messages`,
-  conversationMeta: (convId: string) => `conv:${convId}:meta`,
-  userContext: (userId: string) => `user:${userId}:context`,
-  activeConversation: (userId: string) => `user:${userId}:active`,
+  conversationMessages: (convId: string) => `conv:msgs:${convId}`,
+  conversationMeta: (convId: string) => `conv:meta:${convId}`,
+  userContext: (userId: string) => `user:ctx:${userId}`,
+  activeConversation: (userId: string) => `user:active:${userId}`,
 };
 
 // 内存降级缓存
@@ -1200,7 +1288,7 @@ interface CacheEntry {
 **特性**:
 
 - 对话消息缓存（最多50条）
-- 用户上下文缓存（TTL: 30分钟）
+- 用户上下文缓存（TTL: 24小时，默认 86400 秒）
 - 活跃会话追踪
 - Redis不可用时自动降级到内存缓存
 - 自动过期清理
@@ -1248,7 +1336,7 @@ model Entity {
   description String?
   attributes  Json?
   relations   Json?
-  embedding   Float[]     @db.Vector(1536)
+  // 注意: Entity 表没有 embedding 列（与 Memory 表不同）
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
@@ -1302,9 +1390,8 @@ async searchMemories(
 
 **触发条件**:
 
-- 重要性低于 0.2
-- 创建时间超过 180 天
-- 访问计数为 0
+- 重要性低于 0.2 (`importance < archiveThreshold`)
+- 创建时间超过 180 天 (`createdAt < archiveDate`)
 - 手动标记归档
 
 **归档策略**:
@@ -1439,7 +1526,7 @@ findMostSimilar<T extends { embedding?: number[] }>(
 
 - 优先使用 Redis 缓存
 - Redis 不可用时降级到内存 LRU 缓存
-- 缓存 Key: `embedding:${hash(text)}`
+- 缓存 Key: `emb:${sha256(text).slice(0,16)}`
 
 ### 8.3 SummarizerService (摘要服务)
 
@@ -1554,11 +1641,12 @@ interface DecayConfig {
   enabled: boolean; // 启用衰减
   decayRate: number; // 每日衰减率: 0.01
   minImportance: number; // 最低重要性: 0.1
-  accessBoost: number; // 访问加成: 0.05
+  accessBoost: number; // 访问加成: 0.02
+  maxAccessBoost: number; // 最大访问加成: 0.3
   archiveThreshold: number; // 归档阈值: 0.2
   archiveAfterDays: number; // 归档天数: 180
   deleteAfterDays: number; // 删除天数: 365
-  batchSize: number; // 批处理大小: 1000
+  batchSize: number; // 批处理大小: 100
 }
 ```
 
@@ -1584,12 +1672,23 @@ async runDailyDecay(): Promise<DecayResult> {
 
 ```typescript
 async recordAccess(memoryId: string): Promise<void> {
+  const memory = await this.prisma.memory.findUnique({
+    where: { id: memoryId },
+    select: { importance: true, accessCount: true },
+  });
+  if (!memory) return;
+
+  // 计算访问加成 (非简单累加，而是基于 accessCount 和 maxAccessBoost 上限)
+  const currentBoost = Math.min(memory.accessCount * this.config.accessBoost, this.config.maxAccessBoost);
+  const newBoost = Math.min((memory.accessCount + 1) * this.config.accessBoost, this.config.maxAccessBoost);
+  const boostDelta = newBoost - currentBoost;
+
   await this.prisma.memory.update({
     where: { id: memoryId },
     data: {
       accessCount: { increment: 1 },
       lastAccessedAt: new Date(),
-      importance: { increment: this.config.accessBoost },
+      importance: Math.min(1, memory.importance + boostDelta * 0.1), // 小幅提升
     },
   });
 }
@@ -1852,7 +1951,7 @@ const SENSITIVE_PATTERNS = {
               ▼                         ▼                         ▼
       ┌───────────────┐       ┌───────────────┐       ┌───────────────┐
       │ 访问增强      │       │ 重要性 < 0.2  │       │ 超过365天     │
-      │ +0.05/次      │       │ → ARCHIVE     │       │ → DELETE      │
+      │ +0.02/次      │       │ → ARCHIVE     │       │ → DELETE      │
       └───────────────┘       └───────────────┘       └───────────────┘
 ```
 
@@ -1893,7 +1992,7 @@ const SENSITIVE_PATTERNS = {
                   ┌──────────────────────────────────────────────────┐
                   │           MemoryDecayService.recordAccess()      │
                   │           更新 accessCount & lastAccessedAt      │
-                  │           重要性 +0.05 (访问强化)                 │
+                  │           重要性 +0.02 (访问强化)                 │
                   └───────────────────┬──────────────────────────────┘
                                       │
                                       ▼
@@ -1981,23 +2080,44 @@ interface MemoryMetadata {
     freshnessScore: number;
     confidenceScore: number;
     accessBonus: number;
-    totalScore: number;
   };
+  score?: number;
+  tier?: string;
   previousContent?: string; // 冲突前的旧内容
+  previousValue?: number;
+  updatedAt?: string;
+  mergedAt?: string;
+  mergeCount?: number;
   accessCount?: number;
   archived?: boolean;
-  archivedAt?: Date;
+  archivedAt?: string; // ISO string, not Date
+  // 工具结果提取
+  eventId?: string;
+  transient?: boolean;
+  // 压缩
+  merged?: boolean;
+  sourceIds?: string[];
+  summarized?: boolean;
+  // 规则提取
+  rawMatch?: string;
+  normalized?: string;
+  // 对话统计
+  messageCount?: number;
 }
 
-// 记忆记录（数据库返回）
-interface MemoryRecord extends MemoryInput {
+// 记忆记录（数据库返回）— 独立接口，不继承 MemoryInput
+interface MemoryRecord {
   id: string;
   userId: string;
+  type: MemoryType;
+  category?: string;
+  content: string;
+  importance: number;
   accessCount: number;
   lastAccessedAt?: Date;
   embedding?: number[]; // 1536维向量
+  metadata?: MemoryMetadata;
   createdAt: Date;
-  updatedAt: Date;
 }
 ```
 
@@ -2006,18 +2126,25 @@ interface MemoryRecord extends MemoryInput {
 ```typescript
 // 消息输入
 interface MessageInput {
-  role: 'user' | 'assistant' | 'system' | 'tool';
+  role: 'user' | 'assistant' | 'tool' | 'system';
   content: string;
-  agentType?: AgentType;
-  toolCalls?: ToolCall[];
-  metadata?: Record<string, unknown>;
+  agentType?: string;
+  toolCalls?: ToolCallRecord[];
+  tokensUsed?: number;
+  latencyMs?: number;
 }
 
-// 消息记录
-interface MessageRecord extends MessageInput {
+// 消息记录 — 独立接口，不继承 MessageInput
+interface MessageRecord {
   id: string;
   conversationId: string;
-  timestamp: Date;
+  role: string;
+  content: string;
+  agentType?: string;
+  toolCalls?: ToolCallRecord[];
+  tokensUsed?: number;
+  latencyMs?: number;
+  createdAt: Date; // 使用 createdAt，非 timestamp
 }
 
 // 对话记录
@@ -2048,10 +2175,11 @@ interface EntityAttributes {
   addedAt?: string;
   priority?: number;
   notes?: string;
-  // 学校特有属性
-  ranking?: number;
-  location?: string;
-  admissionRate?: number;
+  interest?: string;
+  round?: string;
+  decision?: boolean;
+  category?: string;
+  eventId?: string;
 }
 
 interface EntityRelation {
@@ -2060,12 +2188,16 @@ interface EntityRelation {
   targetName: string;
 }
 
-interface EntityRecord extends EntityInput {
+// EntityRecord — 独立接口，不继承 EntityInput，无 embedding 列
+interface EntityRecord {
   id: string;
   userId: string;
-  embedding?: number[];
+  type: EntityType;
+  name: string;
+  description?: string;
+  attributes?: EntityAttributes;
+  relations?: EntityRelation[];
   createdAt: Date;
-  updatedAt: Date;
 }
 ```
 
@@ -2085,13 +2217,20 @@ interface RetrievalContext {
 }
 
 interface UserPreferences {
-  targetCountries?: string[];
-  targetMajors?: string[];
-  budgetRange?: { min: number; max: number };
-  preferredSchoolTypes?: string[];
-  applicationRounds?: string[];
-  communicationStyle?: 'formal' | 'casual';
-  language?: string;
+  communicationStyle: 'friendly' | 'professional' | 'casual';
+  responseLength: 'brief' | 'moderate' | 'detailed';
+  language: string;
+  schoolPreferences?: {
+    regions?: string[];
+    size?: string[];
+    type?: string[];
+  };
+  essayPreferences?: {
+    style?: string;
+    tone?: string;
+  };
+  enableMemory: boolean;
+  enableSuggestions: boolean;
 }
 ```
 
@@ -2257,9 +2396,10 @@ interface DecayStats {
                                   ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │  Step 1: 快速路由检查                                               │
-│  FastRouter.route(message) → { canHandle, response? }              │
-│  - FAQ 直接响应                                                     │
-│  - 简单查询快速处理                                                  │
+│  FastRouter.getSimpleResponse(message) → string | null             │
+│  FastRouter.route(message) → { agent, confidence, shouldUseLLM }   │
+│  - 简单问答直接响应 (当前 SIMPLE_QA_PATTERNS 为空)                   │
+│  - 置信度 ≥ 0.7 直接路由到专业 Agent                                │
 └─────────────────────────────────────────────────────────────────────┘
                                   │
                                   ▼
@@ -2302,8 +2442,9 @@ interface DecayStats {
                                   ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │  Step 5: Agent 执行                                                 │
-│  AgentRunner.run(conversation, systemPrompt)                        │
-│  // 推理循环: LLM调用 → 工具执行 → 结果处理                           │
+│  同步: AgentRunner.run(agentType, conversation, message)            │
+│  流式: WorkflowEngine.runStream() → Plan → Execute → Solve         │
+│  // ReWOO 三阶段: 规划工具调用 → 执行工具 → 综合结果                  │
 │  // 每次工具调用都记录到 MemoryService                               │
 └─────────────────────────────────────────────────────────────────────┘
                                   │
@@ -2329,10 +2470,10 @@ interface DecayStats {
 │  MemoryManager.addMessage() 触发异步提取                            │
 └─────────────────────────────────────────────────────────────────────┘
                                   │
-                                  │ setImmediate() 异步执行
+                                  │ fire-and-forget Promise (extractWithRetry)
                                   ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│  MemoryExtractor.extract(messageContent, context)                   │
+│  summarizer.extractFromMessage() + extractToolResultMemory()        │
 └─────────────────────────────────────────────────────────────────────┘
                                   │
           ┌───────────────────────┼───────────────────────┐
@@ -2499,16 +2640,11 @@ private get useEnterpriseMemory(): boolean {
   return !!this.memoryManager;
 }
 
-// 自动选择记忆系统
-async handleMessage(userId: string, message: string, conversationId?: string) {
-  if (this.useEnterpriseMemory) {
-    // 企业级模式：Redis + PostgreSQL + pgvector
-    return this.handleWithEnterpriseMemory(userId, message, conversationId);
-  } else {
-    // 降级模式：纯内存
-    return this.handleWithBasicMemory(userId, message, conversationId);
-  }
-}
+// handleMessage 中自动根据 useEnterpriseMemory 选择记忆系统
+// 企业级模式：MemoryManagerService (Redis + PostgreSQL + pgvector)
+// 降级模式：MemoryService (纯内存)
+// 注: 没有单独的 handleWithEnterpriseMemory / handleWithBasicMemory 方法
+// 而是在统一的 handleMessage 流程中通过条件判断使用不同的记忆后端
 ```
 
 ### 13.2 可选服务注入
@@ -2606,12 +2742,12 @@ async clearUserData(userId: string, options: ClearOptions): Promise<void> {
 
 #### 13.5.1 缓存策略
 
-| 缓存层     | 存储  | TTL   | 命中率目标 |
-| ---------- | ----- | ----- | ---------- |
-| 向量缓存   | Redis | 24h   | >90%       |
-| 对话缓存   | Redis | 30min | >95%       |
-| 用户上下文 | Redis | 5min  | >99%       |
-| 活跃会话   | Redis | 24h   | 100%       |
+| 缓存层     | 存储  | TTL | 命中率目标 |
+| ---------- | ----- | --- | ---------- |
+| 向量缓存   | Redis | 24h | >90%       |
+| 对话缓存   | Redis | 24h | >95%       |
+| 用户上下文 | Redis | 24h | >99%       |
+| 活跃会话   | Redis | 24h | 100%       |
 
 #### 13.5.2 批量操作
 
@@ -2654,16 +2790,17 @@ async createMemories(userId: string, memories: MemoryInput[]): Promise<MemoryRec
 
 ```typescript
 // 异步记忆提取（不阻塞响应）
-async addMessage(conversationId: string, message: MessageInput) {
-  // 立即返回，不等待提取完成
+async addMessage(conversationId: string, userId: string, message: MessageInput) {
+  // 1. 写入数据库 + Redis 缓存
   const record = await this.persistentMemory.createMessage(conversationId, message);
+  await this.cache.cacheMessage(conversationId, record);
 
-  // 异步提取（使用 setImmediate 避免阻塞事件循环）
-  setImmediate(() => {
-    this.extractAndSaveMemory(conversationId, message).catch(err => {
+  // 2. 异步提取（fire-and-forget Promise with extractWithRetry）
+  if (message.role === 'user' || (message.role === 'tool' && message.content)) {
+    this.extractWithRetry(userId, conversationId, message).catch(err => {
       this.logger.error('Memory extraction failed', err);
     });
-  });
+  }
 
   return record;
 }
@@ -2698,7 +2835,7 @@ WITH (m = 16, ef_construction = 64);
 ```bash
 # Redis 配置
 REDIS_URL=redis://localhost:6379
-REDIS_CACHE_TTL=1800
+REDIS_CACHE_TTL=86400
 
 # PostgreSQL 配置
 DATABASE_URL=postgresql://user:pass@localhost:5432/db
@@ -2733,4 +2870,4 @@ const metrics = {
 
 **文档结束**
 
-> 最后更新: 2026-01-26 | 维护者: AI Team
+> 最后更新: 2026-02-13 | 维护者: AI Team

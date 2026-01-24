@@ -94,6 +94,22 @@ export class LLMService {
   }
 
   /**
+   * Send a non-streaming chat completion request to the OpenAI-compatible API.
+   *
+   * When a {@link ResilienceService} is available, the call is wrapped with
+   * retry (exponential backoff), circuit breaker, and timeout protection.
+   * Token usage is tracked via {@link TokenTrackerService} when a userId is provided.
+   *
+   * @param systemPrompt - The system-level instruction prompt
+   * @param messages - Conversation message history
+   * @param options - LLM call options (model, temperature, maxTokens, tools, timeout, etc.)
+   * @returns Parsed LLM response including content, optional tool calls, finish reason, and token usage
+   * @throws {Error} When the API key is not configured
+   * @throws {Error} When the API returns a non-OK HTTP status
+   * @throws {CircuitOpenError} When the circuit breaker is open for the LLM service
+   * @throws {TimeoutError} When the request exceeds the configured timeout
+   */
+  /**
    * 调用 LLM（带弹性保护）
    */
   async call(
@@ -176,6 +192,11 @@ export class LLMService {
   }
 
   /**
+   * Check the health status of the LLM service, including circuit breaker state.
+   *
+   * @returns Object indicating whether the service is healthy and the current circuit state
+   */
+  /**
    * 获取 LLM 服务状态
    */
   async getServiceStatus(): Promise<{
@@ -192,6 +213,24 @@ export class LLMService {
     return { isHealthy: true };
   }
 
+  /**
+   * Convert internal {@link Message} objects to OpenAI-compatible chat messages.
+   *
+   * Handles the strict ordering requirements of the OpenAI API:
+   * - `tool` messages must immediately follow their parent `assistant` message
+   *   that contains the corresponding `tool_calls`
+   * - The sequence must be: assistant (with tool_calls) -> tool -> tool -> ... -> user/assistant
+   *
+   * Algorithm:
+   * 1. Pre-index all tool messages by their `toolCallId`
+   * 2. Iterate messages in order; when an assistant message with tool_calls is
+   *    encountered, immediately append the corresponding tool result messages
+   * 3. Standalone tool messages are skipped (already inserted above)
+   *
+   * @param systemPrompt - The system prompt to prepend
+   * @param messages - Internal message array
+   * @returns Array of OpenAI-compatible ChatMessage objects
+   */
   /**
    * 转换消息格式
    *
@@ -266,6 +305,16 @@ export class LLMService {
   }
 
   /**
+   * Parse a raw OpenAI chat completion response into a structured {@link LLMResponse}.
+   *
+   * Extracts the message content, finish reason, and tool calls (if any).
+   * Tool calls are deduplicated by name, keeping only the first occurrence
+   * of each tool to prevent redundant executions.
+   *
+   * @param data - The raw API response object
+   * @returns Parsed LLM response with content, tool calls, and finish reason
+   */
+  /**
    * 解析响应
    */
   private parseResponse(data: ChatCompletionResponse): LLMResponse {
@@ -309,6 +358,25 @@ export class LLMService {
     };
   }
 
+  /**
+   * Send a streaming chat completion request to the OpenAI-compatible API.
+   *
+   * Reads the SSE (Server-Sent Events) response stream and yields
+   * {@link StreamChunk} objects:
+   * - `content`: incremental text delta
+   * - `tool_call`: completed tool call (emitted at stream end after argument assembly)
+   * - `done`: stream completed successfully
+   * - `error`: an error occurred
+   *
+   * Tool call arguments are accumulated across multiple SSE chunks and parsed
+   * only when the `[DONE]` sentinel is received. Tool calls are deduplicated
+   * by name, keeping the first occurrence.
+   *
+   * @param systemPrompt - The system-level instruction prompt
+   * @param messages - Conversation message history
+   * @param options - LLM call options (model, temperature, maxTokens, tools, etc.)
+   * @returns An async generator of StreamChunk objects
+   */
   /**
    * 流式调用 LLM
    */

@@ -2,8 +2,13 @@ module.exports = {
   preset: 'jest-expo',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   transformIgnorePatterns: [
-    // Handle pnpm node_modules structure (.pnpm)
-    'node_modules/(?!(.pnpm|@react-native|react-native|expo|@expo|react-navigation|@react-navigation|@unimodules|unimodules|native-base|react-native-svg|react-native-reanimated|react-native-gesture-handler|react-native-screens|react-native-safe-area-context|react-native-markdown-display|@tanstack|i18next|react-i18next|zustand)/)',
+    // In a pnpm monorepo packages live at:
+    //   node_modules/.pnpm/<pkg>@ver/node_modules/<pkg>/...
+    // There are TWO node_modules/ segments in every path.  The regex engine
+    // will try to match at each one, so we must list .pnpm as well as every
+    // RN/Expo family package (using [^/]* suffixes to cover variants like
+    // expo-modules-core, react-native-gesture-handler, etc.).
+    'node_modules/(?!(\\.pnpm|@?react-native[^/]*|@?expo[^/]*|@react-navigation[^/]*|@react-native-community[^/]*|react-navigation[^/]*|@unimodules|unimodules|native-base|@tanstack[^/]*|@sentry[^/]*|i18next|react-i18next|zustand|socket\\.io[^/]*|engine\\.io[^/]*|@study-abroad[^/]*)/)',
   ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',

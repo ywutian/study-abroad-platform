@@ -24,7 +24,10 @@ import { MemoryManagerService } from '../memory';
 import { FastRouterService } from './fast-router.service';
 import { FallbackService } from './fallback.service';
 import { ConfigValidatorService } from '../config/config-validator.service';
-import { AGENT_CONFIGS } from '../config/agents.config';
+import {
+  AGENT_CONFIGS,
+  getLocalizedSystemPrompt,
+} from '../config/agents.config';
 import { TOOLS } from '../config/tools.config';
 import {
   AgentType,
@@ -66,6 +69,8 @@ export interface StreamEvent {
   toolResult?: ToolExecutionResult;
   response?: AgentResponse;
   error?: string;
+  /** 对话标题（新对话时在 start 事件中返回） */
+  title?: string;
   /** 检索到的相关记忆 */
   memoryContext?: {
     recentMemories: number;
@@ -110,6 +115,22 @@ export class OrchestratorService {
   }
 
   /**
+   * Process a user message through the multi-agent orchestration pipeline (non-streaming).
+   *
+   * Execution flow:
+   * 1. Fast-route check (keyword-based, bypasses LLM if confident)
+   * 2. Orchestrator agent determines intent and may delegate to specialist agents
+   * 3. Delegation loop runs up to `maxDelegationDepth` times
+   * 4. Final assistant response is persisted to enterprise memory
+   *
+   * @param userId - Authenticated user ID
+   * @param message - Raw user message text
+   * @param conversationId - Optional existing conversation ID; a new conversation is created if omitted
+   * @param locale - Response locale ('zh' | 'en'), defaults to 'zh'
+   * @returns The agent's response including message text, agent type, and optional suggestions/actions
+   * @throws {Error} Re-thrown if no FallbackService is available and an internal error occurs
+   */
+  /**
    * 处理用户消息（统一入口）
    *
    * 自动选择记忆系统：优先使用企业级 MemoryManagerService
@@ -119,6 +140,7 @@ export class OrchestratorService {
     userId: string,
     message: string,
     conversationId?: string,
+    locale: string = 'zh',
   ): Promise<AgentResponse> {
     try {
       // 1. 快速路由检查 (减少 LLM 调用)
@@ -144,6 +166,7 @@ export class OrchestratorService {
             userId,
             conversationId,
           );
+          conversation.metadata = { ...conversation.metadata, locale };
           await this.addMessage(
             conversation,
             createMsg({ role: 'user', content: message }),
@@ -158,6 +181,7 @@ export class OrchestratorService {
         userId,
         conversationId,
       );
+      conversation.metadata = { ...conversation.metadata, locale };
       await this.addMessage(
         conversation,
         createMsg({ role: 'user', content: message }),
@@ -220,6 +244,17 @@ export class OrchestratorService {
   }
 
   /**
+   * Retrieve an existing conversation or create a new one.
+   *
+   * When enterprise memory is enabled, the conversation is first resolved via
+   * MemoryManagerService (Redis/PostgreSQL) and then synced to the in-memory
+   * MemoryService so that AgentRunnerService can access it.
+   *
+   * @param userId - Owner of the conversation
+   * @param conversationId - Optional ID of an existing conversation
+   * @returns The conversation state object
+   */
+  /**
    * 获取或创建对话（统一方法）
    */
   private async getOrCreateConversation(
@@ -239,6 +274,16 @@ export class OrchestratorService {
   }
 
   /**
+   * Persist a message to both in-memory and enterprise storage.
+   *
+   * The in-memory write always happens (required by AgentRunner).
+   * Enterprise-level persistence (Redis + PostgreSQL) is performed for non-system messages
+   * when MemoryManagerService is available.
+   *
+   * @param conversation - The target conversation state
+   * @param message - The message to append
+   */
+  /**
    * 添加消息（统一方法）
    */
   private async addMessage(
@@ -255,6 +300,19 @@ export class OrchestratorService {
   }
 
   /**
+   * Invoke a specific agent type directly, bypassing the orchestrator's routing logic.
+   *
+   * Useful for scenarios where the caller already knows which specialist agent
+   * should handle the request (e.g., UI-driven agent selection).
+   *
+   * @param userId - Authenticated user ID
+   * @param agentType - The specific agent to invoke
+   * @param message - Raw user message text
+   * @param conversationId - Optional existing conversation ID
+   * @param locale - Response locale ('zh' | 'en'), defaults to 'zh'
+   * @returns The agent's response
+   */
+  /**
    * 直接调用特定 Agent
    */
   async callAgent(
@@ -262,6 +320,7 @@ export class OrchestratorService {
     agentType: AgentType,
     message: string,
     conversationId?: string,
+    locale: string = 'zh',
   ): Promise<AgentResponse> {
     this.logger.log(
       `callAgent started: userId=${userId}, agent=${agentType}, conversationId=${conversationId}`,
@@ -271,6 +330,7 @@ export class OrchestratorService {
       userId,
       conversationId,
     );
+    conversation.metadata = { ...conversation.metadata, locale };
     await this.addMessage(
       conversation,
       createMsg({ role: 'user', content: message }),
@@ -287,6 +347,17 @@ export class OrchestratorService {
     return response;
   }
 
+  /**
+   * Retrieve the message history for a conversation.
+   *
+   * Prefers enterprise memory (MemoryManagerService) when available;
+   * falls back to in-memory MemoryService otherwise. Only user and
+   * assistant messages are returned (system messages are filtered out).
+   *
+   * @param userId - Owner of the conversation
+   * @param conversationId - Optional conversation ID; if omitted, uses the user's default conversation
+   * @returns Array of message objects with role, content, agentType, and timestamp
+   */
   /**
    * 获取对话历史
    */
@@ -311,6 +382,12 @@ export class OrchestratorService {
   }
 
   /**
+   * Clear a conversation from both in-memory and enterprise storage.
+   *
+   * @param userId - Owner of the conversation
+   * @param conversationId - Optional conversation ID to clear; clears the default conversation if omitted
+   */
+  /**
    * 清除对话
    */
   async clearConversation(userId: string, conversationId?: string) {
@@ -322,12 +399,37 @@ export class OrchestratorService {
   }
 
   /**
+   * Refresh the user's context data (profile, preferences, etc.) from the database.
+   *
+   * @param userId - The user whose context should be refreshed
+   * @returns Updated user context
+   */
+  /**
    * 刷新用户上下文
    */
   async refreshContext(userId: string) {
     return this.memory.refreshUserContext(userId);
   }
 
+  /**
+   * Process a user message with streaming output via an async generator.
+   *
+   * Yields a sequence of {@link StreamEvent} objects:
+   * - `start`  : conversation metadata (ID, title, memory context)
+   * - `content` : incremental text chunks
+   * - `tool_start` / `tool_end` : tool execution lifecycle events
+   * - `agent_switch` : delegation to another agent
+   * - `done`   : final aggregated response
+   * - `error`  : error information (with optional fallback)
+   *
+   * The method mirrors `handleMessage` but uses streaming for real-time UX.
+   *
+   * @param userId - Authenticated user ID
+   * @param message - Raw user message text
+   * @param conversationId - Optional existing conversation ID
+   * @param locale - Response locale ('zh' | 'en'), defaults to 'zh'
+   * @returns An async generator of StreamEvent objects
+   */
   /**
    * 流式处理用户消息
    *
@@ -337,6 +439,7 @@ export class OrchestratorService {
     userId: string,
     message: string,
     conversationId?: string,
+    locale: string = 'zh',
   ): AsyncGenerator<StreamEvent> {
     // 1. 快速路由 (减少 LLM 调用)
     if (this.fastRouter) {
@@ -365,13 +468,33 @@ export class OrchestratorService {
           userId,
           conversationId,
         );
+        conversation.metadata = { ...conversation.metadata, locale };
         await this.addMessage(
           conversation,
           createMsg({ role: 'user', content: message }),
         );
 
-        yield { type: 'start', agent: routeResult.agent };
-        yield* this.runAgentStream(routeResult.agent, conversation);
+        // 新对话自动生成标题
+        const isNew = !conversationId;
+        if (isNew && this.useEnterpriseMemory) {
+          const title = message.slice(0, 50).replace(/\n/g, ' ').trim();
+          await this.memoryManager!.updateConversationTitle(
+            conversation.id,
+            title,
+          );
+        }
+
+        yield {
+          type: 'start',
+          agent: routeResult.agent,
+          conversationId: conversation.id,
+          title: isNew
+            ? message.slice(0, 50).replace(/\n/g, ' ').trim()
+            : undefined,
+        };
+
+        // 收集流式内容并持久化 assistant 响应
+        yield* this.collectAndPersistStream(routeResult.agent, conversation);
         return;
       }
     }
@@ -381,10 +504,19 @@ export class OrchestratorService {
       userId,
       conversationId,
     );
+    conversation.metadata = { ...conversation.metadata, locale };
     await this.addMessage(
       conversation,
       createMsg({ role: 'user', content: message }),
     );
+
+    // 新对话自动生成标题
+    const isNewConversation = !conversationId;
+    let title: string | undefined;
+    if (isNewConversation && this.useEnterpriseMemory) {
+      title = message.slice(0, 50).replace(/\n/g, ' ').trim();
+      await this.memoryManager!.updateConversationTitle(conversation.id, title);
+    }
 
     // 获取记忆上下文统计
     let memoryContext: StreamEvent['memoryContext'];
@@ -410,11 +542,13 @@ export class OrchestratorService {
       type: 'start',
       agent: AgentType.ORCHESTRATOR,
       conversationId: conversation.id,
+      title,
       memoryContext,
     };
 
     try {
-      yield* this.runAgentStream(AgentType.ORCHESTRATOR, conversation);
+      // 收集流式内容并持久化 assistant 响应
+      yield* this.collectAndPersistStream(AgentType.ORCHESTRATOR, conversation);
     } catch (error) {
       // 错误降级
       if (this.fallback) {
@@ -432,6 +566,77 @@ export class OrchestratorService {
     }
   }
 
+  /**
+   * Wrap the agent stream to collect the full response text and persist it
+   * to enterprise memory after the stream completes.
+   *
+   * All events from `runAgentStream` are forwarded to the caller unchanged.
+   * After the stream ends, the accumulated content is saved as an assistant
+   * message so that future conversations have access to the response history.
+   *
+   * @param agentType - The agent type that is producing the stream
+   * @param conversation - The current conversation state
+   * @returns An async generator that forwards all stream events
+   */
+  /**
+   * 包装 runAgentStream：收集流式内容并在结束后持久化 assistant 响应
+   */
+  private async *collectAndPersistStream(
+    agentType: AgentType,
+    conversation: ConversationState,
+  ): AsyncGenerator<StreamEvent> {
+    let fullContent = '';
+    let finalAgentType: AgentType = agentType;
+
+    for await (const event of this.runAgentStream(agentType, conversation)) {
+      if (event.type === 'content' && event.content) {
+        fullContent += event.content;
+      }
+      if (event.type === 'done' && event.response) {
+        fullContent = fullContent || event.response.message || '';
+        finalAgentType = event.response.agentType || finalAgentType;
+      }
+      yield event;
+    }
+
+    // 流结束后持久化 assistant 响应到企业级记忆
+    if (fullContent && this.useEnterpriseMemory) {
+      try {
+        await this.addMessage(
+          conversation,
+          createMsg({
+            role: 'assistant',
+            content: fullContent,
+            agentType: finalAgentType,
+          }),
+        );
+      } catch (err) {
+        this.logger.error(
+          'Failed to persist streaming assistant response',
+          err,
+        );
+      }
+    }
+  }
+
+  /**
+   * Stream the execution of a single agent through the three-phase workflow engine.
+   *
+   * Converts {@link WorkflowStreamEvent} from the workflow engine into
+   * {@link StreamEvent} for the client. Handles agent delegation recursively
+   * up to `maxDelegationDepth` to prevent infinite loops.
+   *
+   * Phase mapping:
+   * - Plan phase: `plan_content` events become `content` events
+   * - Execute phase: `tool_start` / `tool_end` events are forwarded
+   * - Solve phase: `solve_content` events become `content` events
+   * - Done: builds the final `AgentResponse` with workflow metadata
+   *
+   * @param agentType - The agent to run
+   * @param conversation - The current conversation state
+   * @param depth - Current delegation depth (guards against infinite recursion)
+   * @returns An async generator of StreamEvent objects
+   */
   /**
    * 流式运行 Agent — 基于三阶段工作流引擎
    *
@@ -594,6 +799,23 @@ export class OrchestratorService {
   }
 
   /**
+   * Build the system prompt for an agent, optionally enriched with enterprise memory.
+   *
+   * When MemoryManagerService is available, the method performs parallel retrieval of:
+   * - Semantic search results relevant to the current message
+   * - High-importance user facts (FACT type, importance >= 0.6)
+   * - User preferences (PREFERENCE type)
+   * - Recent user decisions (DECISION type)
+   *
+   * All retrieved memories are deduplicated and appended to the base prompt.
+   * If retrieval fails, the method gracefully falls back to the basic prompt.
+   *
+   * @param config - The agent configuration containing the base system prompt
+   * @param conversation - Current conversation state (provides userId, locale, context)
+   * @param currentMessage - The user's current message for semantic retrieval
+   * @returns The fully assembled system prompt string
+   */
+  /**
    * 构建 System Prompt（自动选择是否使用记忆增强）
    *
    * 增强版本：检索多类型记忆，包括：
@@ -607,11 +829,13 @@ export class OrchestratorService {
     conversation: ConversationState,
     currentMessage?: string,
   ): Promise<string> {
+    const locale = (conversation.metadata?.locale as string) || 'zh';
+    const localizedPrompt = getLocalizedSystemPrompt(config, locale);
     const baseSummary = this.memory.getContextSummary(conversation.context);
 
     // 如果没有记忆管理器或没有消息，使用基础提示
     if (!this.memoryManager || !currentMessage) {
-      return `${config.systemPrompt}\n\n## 当前用户信息\n${baseSummary}`;
+      return `${localizedPrompt}\n\n## 当前用户信息\n${baseSummary}`;
     }
 
     try {
@@ -680,7 +904,7 @@ export class OrchestratorService {
         }
       }
 
-      return `${config.systemPrompt}
+      return `${localizedPrompt}
 
 ## 当前用户信息
 ${baseSummary}
@@ -689,7 +913,7 @@ ${baseSummary}
 ${parts.join('\n')}`;
     } catch (error) {
       this.logger.error('Failed to build enhanced context', error);
-      return `${config.systemPrompt}\n\n## 当前用户信息\n${baseSummary}`;
+      return `${localizedPrompt}\n\n## 当前用户信息\n${baseSummary}`;
     }
   }
 
@@ -708,6 +932,12 @@ ${parts.join('\n')}`;
   }
 
   /**
+   * Retrieve the full message history of a conversation from enterprise memory.
+   *
+   * @param conversationId - The conversation to retrieve
+   * @returns Array of message records; empty array if enterprise memory is not available
+   */
+  /**
    * 获取对话历史（企业级）
    */
   async getConversationHistory(conversationId: string): Promise<any[]> {
@@ -718,6 +948,29 @@ ${parts.join('\n')}`;
   }
 
   /**
+   * List recent conversations for a user.
+   *
+   * @param userId - The user whose conversations to list
+   * @param limit - Maximum number of conversations to return (default 20)
+   * @returns Array of conversation summaries; empty array if enterprise memory is not available
+   */
+  /**
+   * 获取用户的对话列表
+   */
+  async getConversations(userId: string, limit?: number) {
+    if (this.useEnterpriseMemory) {
+      return this.memoryManager!.getRecentConversations(userId, limit || 20);
+    }
+    return [];
+  }
+
+  /**
+   * Retrieve memory usage statistics for a user (memory count, types, storage).
+   *
+   * @param userId - The user to query
+   * @returns Memory statistics object, or null if enterprise memory is not available
+   */
+  /**
    * 获取用户记忆统计
    */
   async getMemoryStats(userId: string): Promise<any> {
@@ -727,6 +980,15 @@ ${parts.join('\n')}`;
     return null;
   }
 
+  /**
+   * Extract numbered/bulleted suggestions from the agent's response text.
+   *
+   * Parses lines matching list-item patterns (e.g., "1. ...", "- ...") and
+   * returns up to 5 suggestion strings for the client to display as quick actions.
+   *
+   * @param message - The agent's full response text
+   * @returns Array of suggestion strings, or undefined if none found
+   */
   private extractSuggestions(message: string): string[] | undefined {
     const suggestions: string[] = [];
     const lines = message.split('\n');
@@ -737,6 +999,15 @@ ${parts.join('\n')}`;
     return suggestions.length > 0 ? suggestions.slice(0, 5) : undefined;
   }
 
+  /**
+   * Generate contextual navigation actions based on keywords in the response.
+   *
+   * Scans the response for domain-specific keywords (e.g., "档案", "文书", "学校")
+   * and produces corresponding UI navigation suggestions.
+   *
+   * @param message - The agent's full response text
+   * @returns Array of action suggestions with labels and navigation targets, or undefined if none
+   */
   private generateActions(message: string): ActionSuggestion[] | undefined {
     const actions: ActionSuggestion[] = [];
     const lower = message.toLowerCase();

@@ -18,8 +18,8 @@
 
 | 工具             | 版本要求 | 安装方式                         |
 | ---------------- | -------- | -------------------------------- |
-| Node.js          | 20.x LTS | `nvm install 20`                 |
-| pnpm             | 9.x      | `npm install -g pnpm`            |
+| Node.js          | >= 18    | `nvm install --lts`              |
+| pnpm             | >= 10    | `npm install -g pnpm`            |
 | Docker Desktop   | 最新版   | [docker.com](https://docker.com) |
 | Git              | 2.40+    | `brew install git` (macOS)       |
 | VS Code / Cursor | 最新版   | 推荐使用 Cursor                  |
@@ -61,7 +61,7 @@ cp apps/web/.env.example apps/web/.env
 
 ```bash
 # 1. 启动数据库和 Redis
-docker compose up -d postgres redis
+docker compose up -d db redis
 
 # 2. 初始化数据库
 cd apps/api
@@ -69,15 +69,15 @@ npx prisma migrate deploy   # 应用迁移
 npx prisma db seed           # 填充种子数据
 
 # 3. 启动后端
-pnpm --filter api dev        # http://localhost:3006
+pnpm --filter api dev        # http://localhost:3001
 
 # 4. 启动前端（新终端）
-pnpm --filter web dev        # http://localhost:3000 (Webpack 模式)
+pnpm --filter web dev        # http://localhost:3000 (Turbopack 模式)
 ```
 
 ### 1.5 验证
 
-- 访问 `http://localhost:3006/api/v1/health` → 应返回 `{ "status": "ok" }`
+- 访问 `http://localhost:3001/api/v1/health` → 应返回 `{ "status": "ok" }`
 - 访问 `http://localhost:3000` → 应看到登录页面
 - 运行测试：`pnpm --filter api test` → 24/24 套件通过
 
@@ -96,12 +96,12 @@ pnpm --filter web dev        # http://localhost:3000 (Webpack 模式)
 
 ### 2.2 代码结构速览
 
-```
+```text
 study-abroad-platform/
   apps/
     api/               ← NestJS 后端（重点）
       src/
-        modules/       ← 业务模块（29 个）
+        modules/       ← 业务模块（28 个）
           auth/        ← 认证模块（入手推荐）
           profile/     ← 用户档案
           school/      ← 学校数据
@@ -116,8 +116,7 @@ study-abroad-platform/
         hooks/         ← 自定义 Hooks
         lib/           ← 工具函数
   packages/
-    shared-types/      ← 前后端共享类型
-    ui/                ← 共享 UI 组件
+    shared/            ← 前后端共享类型与工具
 ```
 
 ### 2.3 推荐上手路径
@@ -193,11 +192,11 @@ git push -u origin feature/your-task-name
 
 ### Q: `prisma migrate deploy` 报错
 
-确保 PostgreSQL 已启动：`docker compose up -d postgres`，然后检查 `.env` 中的 `DATABASE_URL`。
+确保 PostgreSQL 已启动：`docker compose up -d db`，然后检查 `.env` 中的 `DATABASE_URL`。
 
 ### Q: 前端页面 404
 
-确保使用 Webpack 模式启动：`pnpm --filter web dev`（非 `dev:turbo`），详见 [ADR-0001](adr/0001-use-nextjs-turbopack-webpack-fallback.md)。
+确保使用 Turbopack 模式启动：`pnpm --filter web dev`（Next.js 16 默认使用 Turbopack；如需 Webpack 可使用 `dev:webpack`），详见 [ADR-0001](adr/0001-use-nextjs-turbopack-webpack-fallback.md)。
 
 ### Q: 测试失败
 
@@ -209,4 +208,4 @@ git push -u origin feature/your-task-name
 
 ---
 
-_最后更新: 2026-02-07_
+_最后更新: 2026-02-13_

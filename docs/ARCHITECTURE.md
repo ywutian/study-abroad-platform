@@ -1,6 +1,6 @@
 # Study Abroad Platform — Architecture Document
 
-> Last updated: 2026-02-09
+> Last updated: 2026-02-13
 > Status: Living document — update on every architectural change
 
 ---
@@ -33,8 +33,8 @@
 | ----------------- | ------------------------------ | ------- |
 | Frontend (Web)    | Next.js (App Router)           | 16.x    |
 | Frontend (Mobile) | Expo / React Native            | —       |
-| Backend API       | NestJS                         | 10.x    |
-| ORM               | Prisma                         | 6.x     |
+| Backend API       | NestJS                         | 11.x    |
+| ORM               | Prisma                         | 5.x     |
 | Database          | PostgreSQL + pgvector          | 16      |
 | Cache             | Redis                          | 7       |
 | AI                | OpenAI API (gpt-4o-mini)       | —       |
@@ -48,7 +48,7 @@
 
 ### High-Level Architecture
 
-```
+```text
                         ┌─────────────────┐
                         │    Vercel CDN    │
                         │   (Next.js Web)  │
@@ -83,7 +83,7 @@
 
 ## 2. Monorepo Structure
 
-```
+```text
 study-abroad-platform/
 ├── apps/
 │   ├── api/                    # NestJS backend
@@ -91,7 +91,7 @@ study-abroad-platform/
 │   │   ├── scripts/            # Data scraping & sync scripts
 │   │   └── src/
 │   │       ├── common/         # Shared infrastructure
-│   │       ├── modules/        # Feature modules (29+)
+│   │       ├── modules/        # Feature modules (28)
 │   │       ├── prisma/         # PrismaService
 │   │       └── main.ts         # Bootstrap
 │   ├── web/                    # Next.js frontend
@@ -135,7 +135,7 @@ packages:
 
 ### 3.1 Module Organization
 
-The API has **29 feature modules** and **8 common infrastructure modules**.
+The API has **28 feature modules** and **8 common infrastructure modules**.
 
 #### Global Infrastructure (available to all modules)
 
@@ -184,7 +184,7 @@ Key dependency patterns:
 
 **Execution order for every request:**
 
-```
+```text
 Request
   → CorrelationIdMiddleware (adds x-correlation-id)
     → ThrottlerGuard (rate limiting)
@@ -207,7 +207,9 @@ app.useGlobalPipes(
     whitelist: true, // Strip unknown properties
     forbidNonWhitelisted: true, // Reject unknown properties
     transform: true, // Auto-transform types
-    enableImplicitConversion: true,
+    transformOptions: {
+      enableImplicitConversion: true,
+    },
   })
 );
 ```
@@ -216,12 +218,12 @@ app.useGlobalPipes(
 
 ## 4. Data Models
 
-### 4.1 Enums (25 total)
+### 4.1 Enums (29 total)
 
 | Enum                    | Values                                                                                                                                                           | Used By                     |
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
 | `Role`                  | USER, VERIFIED, ADMIN                                                                                                                                            | User                        |
-| `Visibility`            | PRIVATE, ANONYMOUS, VERIFIED_ONLY                                                                                                                                | Profile, AdmissionCase      |
+| `Visibility`            | PRIVATE, PUBLIC, ANONYMOUS, VERIFIED_ONLY                                                                                                                        | Profile, AdmissionCase      |
 | `BudgetTier`            | LOW, MEDIUM, HIGH, UNLIMITED                                                                                                                                     | Profile                     |
 | `TestType`              | SAT, ACT, TOEFL, IELTS, AP, IB                                                                                                                                   | TestScore                   |
 | `ActivityCategory`      | ACADEMIC, ARTS, ATHLETICS, COMMUNITY_SERVICE, LEADERSHIP, WORK, RESEARCH, OTHER                                                                                  | Activity                    |
@@ -245,8 +247,12 @@ app.useGlobalPipes(
 | `ForumPostTag`          | COMPETITION, ACTIVITY, QUESTION, SHARING, OTHER                                                                                                                  | ForumPost                   |
 | `PeerReviewStatus`      | PENDING, COMPLETED, EXPIRED                                                                                                                                      | PeerReview                  |
 | `ReviewStatus`          | DRAFT, PUBLISHED, HIDDEN                                                                                                                                         | Review                      |
+| `VerificationStatus`    | PENDING, APPROVED, REJECTED                                                                                                                                      | VerificationRequest         |
+| `PaymentStatus`         | PENDING, SUCCESS, FAILED, REFUNDED                                                                                                                               | Payment                     |
+| `EssayStatus`           | PENDING, VERIFIED, REJECTED                                                                                                                                      | EssayPrompt                 |
+| `AssessmentType`        | MBTI, HOLLAND, STRENGTH                                                                                                                                          | Assessment                  |
 
-### 4.2 Models by Domain (56 total)
+### 4.2 Models by Domain (70 total)
 
 #### User & Auth (2 models)
 
@@ -268,7 +274,7 @@ app.useGlobalPipes(
 | reviewCount          | Int           | Default: 0                 |
 | deletedAt            | DateTime?     | Soft delete                |
 
-Relations: Profile (1:1), Follow[], Block[], Message[], ConversationParticipant[], CustomRanking[], Review[] (given/received), ReviewReaction[], Report[], AdmissionCase[], UserList[], UserListVote[], SchoolListItem[], ForumPost[], ForumComment[], TeamMember[], SwipeStats (1:1), PointHistory[], PeerReview[] (given/received), ApplicationTimeline[], PersonalEvent[]
+Relations: Profile (1:1), Follow[], Block[], Message[], ConversationParticipant[], CustomRanking[], Review[] (given/received), ReviewReaction[], Report[], AdmissionCase[], UserList[], UserListVote[], SchoolListItem[], ForumPost[], ForumComment[], TeamMember[], SwipeStats (1:1), PointHistory[], Payment[], PeerReview[] (given/received), AssessmentResult[], VaultItem[], SchoolRecommendation[], CaseView[], ApplicationTimeline[], PersonalEvent[], VerificationRequest[]
 
 **RefreshToken** — JWT refresh tokens
 
@@ -362,7 +368,7 @@ Relations: TestScore[], Activity[], Award[], Education[], Essay[], PredictionRes
 | wordCount | Int?    | Auto-calculated on save |
 | schoolId  | String? | Optional link to School |
 
-#### School Data (4 models)
+#### School Data & Reference (5 models)
 
 **School** — University/college data
 
@@ -486,7 +492,9 @@ Relations: Award[] (Award.competitionId -> Competition.id)
 
 > 详细技术文档: [PREDICTION_SYSTEM.md](PREDICTION_SYSTEM.md) | ADR: [ADR-0008](adr/0008-prediction-multi-engine-ensemble.md)
 
-#### Admission Cases (1 model)
+#### Admission Cases & Verification (2 models)
+
+**VerificationRequest** — Case verification requests (proofType: offer_letter/enrollment_proof/student_id, proofData, proofUrl, status: VerificationStatus, reviewerId, reviewNote)
 
 **AdmissionCase** — Anonymized admission results
 
@@ -519,7 +527,7 @@ Relations: Award[] (Award.competitionId -> Competition.id)
 
 - **Conversation** — Chat conversation container
 - **ConversationParticipant** — User in conversation with `lastReadAt`
-- **Message** — Individual message (`content: Text`, `isDeleted: Boolean`)
+- **Message** — Individual message (`content: Text`, `isDeleted: Boolean`, `isRecalled: Boolean`, `recalledAt: DateTime?`, `mediaUrl: String?`, `mediaType: String?`)
 - **MessageFilterService** — Content moderation (rate limit, repeat detection, sensitive words)
 
 #### Reports & Audit (2 models)
@@ -527,7 +535,7 @@ Relations: Award[] (Award.competitionId -> Competition.id)
 - **Report** — Content reports with `targetType` (USER/MESSAGE/CASE/REVIEW/POST/COMMENT)
 - **AuditLog** — Action audit trail (action, resource, resourceId, metadata, ipAddress)
 
-#### AI Agent Memory System (10 models)
+#### AI Agent Memory System (12 models)
 
 - **AgentConversation** — AI conversation sessions (userId, title, summary, agentType)
 - **AgentMessage** — Messages with role, agentType, toolCalls, tokensUsed, latencyMs
@@ -561,6 +569,10 @@ Relations: Award[] (Award.competitionId -> Competition.id)
 - **SwipeStats** — User stats (totalSwipes, correctCount, streak, badge)
 - **PointHistory** — Points earned (action, points, metadata)
 
+#### Payment (1 model)
+
+- **Payment** — Payment records (transactionId, plan: FREE/PRO/PREMIUM, period: monthly/yearly, amount, currency, status: PaymentStatus, paymentMethod, idempotencyKey, metadata, failureReason)
+
 #### Peer Review (1 model)
 
 - **PeerReview** — Bidirectional review (reviewer scores + reverse scores, 1-5 scale, @db.SmallInt)
@@ -568,6 +580,36 @@ Relations: Award[] (Award.competitionId -> Competition.id)
 #### School Deadlines (1 model)
 
 - **SchoolDeadline** — Structured deadlines (year, round, applicationDeadline, essayPrompts: Json, interviewRequired)
+
+#### Essay Scraper Pipeline (4 models)
+
+- **EssayPrompt** — School essay prompts (schoolId, type: EssayType, status: EssayStatus, year, prompt, promptZh, wordLimit, isRequired, sortOrder, AI-assisted fields)
+- **EssayPromptSource** — Essay prompt data sources (schoolId, year, sourceUrl, sourceType, rawData, status, errorMessage)
+- **SchoolEssaySource** — School essay source configuration (schoolId, sourceUrl, sourceType, lastScrapedAt, scrapingConfig, isActive)
+- **EssayPipelineRun** — Essay pipeline execution records (status, startedAt, completedAt, schoolsProcessed, promptsCreated, errors, config)
+
+#### Essay AI Results (1 model)
+
+- **EssayAIResult** — AI essay analysis results (essayId, type: polish/review, input, output, changes, scores, suggestions, tokenUsed)
+
+#### Assessment System (2 models)
+
+- **Assessment** — Assessment definitions (type: AssessmentType MBTI/HOLLAND/STRENGTH, title, titleZh, questions)
+- **AssessmentResult** — Assessment results (userId, assessmentId, answers, result, majorRecommendations)
+
+#### Audit & System (2 models)
+
+- **EssayPromptAudit** — Essay prompt audit trail (essayPromptId, changes, changedBy)
+- **SystemSetting** — System configuration (key: String PK, value, description, category)
+
+#### Recommendation & Views (2 models)
+
+- **SchoolRecommendation** — AI school recommendation results (userId, profileSnapshot, preferences, recommendations, analysis, summary, tokenUsed)
+- **CaseView** — Case view tracking (userId, caseId; `@@unique([userId, caseId])`)
+
+#### Vault (1 model)
+
+- **VaultItem** — Encrypted credential storage (userId, type: VaultItemType, title, encryptedData, iv, category, tags, icon)
 
 #### Application Timeline (5 models)
 
@@ -789,7 +831,7 @@ All routes prefixed with `/api/v1/`. Health endpoints excluded.
 
 Use SAT/ACT 25th/75th percentile data to calculate where a student falls in the school's admitted student distribution:
 
-```
+```text
 mu = (sat25 + sat75) / 2
 sigma = (sat75 - sat25) / (2 * 0.6745)  // IQR to std dev
 percentile = Phi((studentScore - mu) / sigma)  // Normal CDF
@@ -877,7 +919,7 @@ The swipe game is a Tinder-style prediction game where users predict admission o
 
 ### 7.3 State Management
 
-```
+```text
 ┌──────────────────────────────────────────┐
 │           State Architecture              │
 ├──────────────────────────────────────────┤
@@ -903,7 +945,7 @@ The swipe game is a Tinder-style prediction game where users predict admission o
 
 Location: `apps/web/src/lib/api/client.ts`
 
-- Base URL: `NEXT_PUBLIC_API_URL` (default: `http://localhost:3006`)
+- Base URL: Empty string (API requests proxied via Next.js rewrites to avoid cross-origin cookie issues)
 - Version prefix: `/api/v1`
 - Auth: Bearer token from Zustand store (memory only)
 - Cookies: `credentials: 'include'` for httpOnly refresh token
@@ -939,7 +981,7 @@ const mutation = useMutation({
 
 Three-phase workflow:
 
-```
+```text
 PLAN → EXECUTE → SOLVE
 
 1. PLAN: LLM analyzes intent, generates all tool calls at once
@@ -994,7 +1036,7 @@ SSE events: `start`, `content`, `tool_start`, `tool_end`, `agent_switch`, `done`
 
 ### 9.1 JWT Flow
 
-```
+```text
 Register
   → Server creates user + email verification token
   → Verification email sent (async, non-blocking)
@@ -1187,9 +1229,9 @@ This allows both real-time scoring (from School columns) and historical trend an
 
 ### 12.3 CI/CD Pipeline
 
-```
+```text
 Push to main
-  → CI: Lint → Dependency Audit → Typecheck → Test → E2E (PostgreSQL 16) → Build → Docker → Security Scan (blocks on CRITICAL/HIGH)
+  → CI: Lint → Dependency Audit → Typecheck → Test → E2E (PostgreSQL 16) → Build → Docker → SBOM → Security Scan (blocks on CRITICAL/HIGH)
     → Deploy Staging: Migrate → Deploy Web (Vercel) → Notify Slack
       → Deploy Production: Migrate → Create Sentry Release
 ```
@@ -1211,6 +1253,19 @@ Push to main
 - `COLLEGE_SCORECARD_API_KEY` — School data sync
 - `VAULT_ENCRYPTION_KEY` — 64 hex chars for vault encryption
 - `CORS_ORIGINS` — Comma-separated allowed origins (e.g. `https://app.example.com,https://admin.example.com`)
+
+### 12.5 Software Bill of Materials (SBOM)
+
+An SBOM is automatically generated on every push to `main` using [cdxgen](https://github.com/CycloneDX/cdxgen).
+
+| Setting       | Value                                       |
+| ------------- | ------------------------------------------- |
+| Tool          | `@cyclonedx/cdxgen` (via npx, zero-install) |
+| Format        | CycloneDX JSON v1.5                         |
+| Scope         | All pnpm workspaces (`--deep`)              |
+| Trigger       | CI push to `main` (after successful build)  |
+| Artifact      | `sbom-cyclonedx` (90-day retention)         |
+| Local command | `pnpm sbom:generate`                        |
 
 ---
 
@@ -1295,32 +1350,34 @@ Competition-tier-weighted award scoring requires linking `Award.competitionId` �
 
 ### 14.3 Prisma Model Notes
 
-- `SchoolRecommendation` — This is a TypeScript DTO/interface used in `recommendation.service.ts` for structuring response data; it does not need a corresponding Prisma model in the schema.
-- `VaultItem` — DTOs exist but model may not be in schema (needs verification)
+- `SchoolRecommendation` — Now exists as a Prisma model in `schema.prisma` (userId, profileSnapshot, preferences, recommendations, analysis, summary, tokenUsed). Previously was only a DTO.
+- `VaultItem` — Exists as a Prisma model in `schema.prisma` (userId, type, title, encryptedData, iv, category, tags, icon).
 
 ### 14.4 Frontend Notification Gap
 
 **Status: RESOLVED** (2026-02-09) — ChatGateway now sends NEW_MESSAGE notifications to offline users. Online/offline events are broadcast on connect/disconnect.
 
-### 14.6 Dashboard targetSchoolCount
+### 14.5 Dashboard targetSchoolCount
 
 **Problem:** `dashboard.service.ts` line 154 hardcodes `targetSchoolCount: 0` with a TODO comment.
 
-### 14.7 CORS Configuration — ✅ RESOLVED
+### 14.6 CORS Configuration — RESOLVED
 
 **Problem:** `main.ts` previously set `origin: true` (allows all origins).
 
-**Resolution:** `main.ts` now reads `CORS_ORIGINS` environment variable (comma-separated) for production. Falls back to `origin: true` only in development when `CORS_ORIGINS` is not set.
+**Resolution:** `main.ts` now reads `CORS_ORIGINS` environment variable (comma-separated) for production. Falls back to `origin: true` only in development when `CORS_ORIGINS` is not set. Exposed headers include `X-Correlation-Id`, `X-Response-Time`, and rate limit headers.
 
-### 14.8 DataSyncScheduler Not Registered — ✅ RESOLVED
+### 14.7 DataSyncScheduler Not Registered — RESOLVED
 
 **Problem:** `DataSyncScheduler` was not registered as a provider in any module, meaning its cron jobs did not execute.
 
 **Resolution:** `DataSyncScheduler` is now registered in `SchoolModule.providers`, and `ScheduleModule` is imported in `SchoolModule.imports`.
 
-### 14.9 Swagger Disabled
+### 14.8 Swagger Disabled — RESOLVED
 
-**Problem:** Swagger docs are commented out in `main.ts`. Consider re-enabling for API documentation.
+**Problem:** Swagger docs were previously commented out in `main.ts`.
+
+**Resolution:** Swagger is now enabled for non-production environments (`process.env.NODE_ENV !== 'production'`) with try/catch resilience. Available at `/api/docs` with Bearer JWT auth support.
 
 ---
 
@@ -1397,7 +1454,7 @@ All responses wrapped by `TransformInterceptor`:
 | Redis 7+        | Required for caching, rate limiting, and session management        |
 | pnpm            | Package manager (monorepo workspaces)                              |
 | Next.js 16      | Frontend framework; Webpack mode required (see ADR-0001)           |
-| NestJS 11       | Backend framework; modular architecture mandatory                  |
+| NestJS 11.x     | Backend framework; modular architecture mandatory                  |
 
 ### 16.2 Organizational Constraints
 
@@ -1423,7 +1480,7 @@ All responses wrapped by `TransformInterceptor`:
 
 ### 17.1 Quality Tree
 
-```
+```text
 Quality
   |-- Performance
   |     |-- API response < 500ms (p95)

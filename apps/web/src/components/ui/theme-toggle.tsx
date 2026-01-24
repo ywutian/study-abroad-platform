@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Moon, Sun, Monitor } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useThemeTransition } from '@/hooks/use-theme-transition';
+import { useHydrated } from '@/hooks/use-hydration';
 import { cn } from '@/lib/utils';
 
 interface ThemeToggleProps {
@@ -18,12 +18,7 @@ interface ThemeToggleProps {
 export function ThemeToggle({ className, showLabel = false }: ThemeToggleProps) {
   const t = useTranslations('ui.theme');
   const { toggleTheme, isDark } = useThemeTransition();
-  const [mounted, setMounted] = useState(false);
-
-  // 避免 hydration 不匹配
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useHydrated();
 
   return (
     <button

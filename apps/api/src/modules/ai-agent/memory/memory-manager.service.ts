@@ -39,6 +39,13 @@ import {
   EnhancedMemoryStats,
 } from './types';
 
+/**
+ * Core memory management service for the enterprise-grade AI Agent memory system.
+ *
+ * Integrates short-term memory (Redis), long-term memory (PostgreSQL + pgvector),
+ * and semantic retrieval (Embedding) with optional scoring, decay, and conflict
+ * detection subsystems.
+ */
 @Injectable()
 export class MemoryManagerService {
   private readonly logger = new Logger(MemoryManagerService.name);
@@ -56,8 +63,17 @@ export class MemoryManagerService {
   // ==================== 对话管理 ====================
 
   /**
-   * 获取或创建对话
+   * Retrieve an existing conversation by ID, or create a new one for the user.
+   *
+   * Looks up the conversation in Redis cache first, then falls back to the
+   * database. When no conversationId is provided, a new conversation is always
+   * created to avoid message accumulation in stale sessions.
+   *
+   * @param userId - The ID of the user who owns the conversation
+   * @param conversationId - Optional ID of an existing conversation to retrieve
+   * @returns The retrieved or newly created conversation record
    */
+  // 获取或创建对话
   async getOrCreateConversation(
     userId: string,
     conversationId?: string,
@@ -77,16 +93,8 @@ export class MemoryManagerService {
       }
     }
 
-    // 检查用户是否有活跃对话
-    const activeId = await this.cache.getActiveConversation(userId);
-    if (activeId && !conversationId) {
-      const active = await this.persistent.getConversation(activeId);
-      if (active) {
-        return active;
-      }
-    }
-
-    // 创建新对话
+    // 不提供 conversationId 时始终创建新对话
+    // （之前会复用 Redis 中的活跃对话，导致消息堆积到旧对话中）
     const newConversation = await this.persistent.createConversation(userId);
     await this.cache.cacheConversation(newConversation.id, newConversation);
     await this.cache.setActiveConversation(userId, newConversation.id);
@@ -95,8 +103,17 @@ export class MemoryManagerService {
   }
 
   /**
-   * 添加消息到对话
+   * Add a message to a conversation, persisting it to both the database and cache.
+   *
+   * For user messages, asynchronously extracts and saves memories (facts, entities).
+   * For tool-result messages, asynchronously extracts key decision memories
+   * (e.g., timeline events, school recommendations).
+   *
+   * @param conversationId - The conversation to append the message to
+   * @param input - The message payload including role, content, and optional metadata
+   * @returns The persisted message record with generated ID and timestamp
    */
+  // 添加消息到对话
   async addMessage(
     conversationId: string,
     input: MessageInput,
@@ -109,15 +126,19 @@ export class MemoryManagerService {
 
     // 异步提取记忆（用户消息）
     if (input.role === 'user') {
-      this.extractAndSaveMemory(conversationId, message).catch((err) => {
-        this.logger.error('Failed to extract memory', err);
+      this.extractWithRetry(() =>
+        this.extractAndSaveMemory(conversationId, message),
+      ).catch((err) => {
+        this.logger.error('Memory extraction failed after retries', err);
       });
     }
 
     // 异步提取工具结果中的关键决策记忆
     if (input.role === 'tool' && input.content) {
-      this.extractToolResultMemory(conversationId, message).catch((err) => {
-        this.logger.error('Failed to extract tool result memory', err);
+      this.extractWithRetry(() =>
+        this.extractToolResultMemory(conversationId, message),
+      ).catch((err) => {
+        this.logger.error('Tool result extraction failed after retries', err);
       });
     }
 
@@ -125,8 +146,15 @@ export class MemoryManagerService {
   }
 
   /**
-   * 获取对话历史
+   * Retrieve conversation history, reading from Redis cache first and falling
+   * back to the database. Messages retrieved from the database are backfilled
+   * into the cache for subsequent lookups.
+   *
+   * @param conversationId - The conversation whose history to retrieve
+   * @param limit - Maximum number of most-recent messages to return (default: 20)
+   * @returns An array of message records ordered chronologically
    */
+  // 获取对话历史
   async getConversationHistory(
     conversationId: string,
     limit: number = 20,
@@ -151,8 +179,13 @@ export class MemoryManagerService {
   }
 
   /**
-   * 获取对话消息（Gateway 用）
+   * Retrieve conversation messages directly from the database (used by the Gateway).
+   *
+   * @param conversationId - The conversation whose messages to retrieve
+   * @param limit - Maximum number of messages to return (default: 50)
+   * @returns An array of message records ordered chronologically
    */
+  // 获取对话消息（Gateway 用）
   async getMessages(
     conversationId: string,
     limit: number = 50,
@@ -161,8 +194,13 @@ export class MemoryManagerService {
   }
 
   /**
-   * 获取最近对话列表（Gateway 用）
+   * Retrieve a user's most recent conversations (used by the Gateway).
+   *
+   * @param userId - The user whose conversations to list
+   * @param limit - Maximum number of conversations to return (default: 10)
+   * @returns An array of conversation records ordered by most recently updated
    */
+  // 获取最近对话列表（Gateway 用）
   async getRecentConversations(
     userId: string,
     limit: number = 10,
@@ -171,16 +209,40 @@ export class MemoryManagerService {
   }
 
   /**
-   * 清除对话（Gateway 用）
+   * Update the title of a conversation (e.g., auto-generated after the first exchange).
+   *
+   * @param conversationId - The conversation to update
+   * @param title - The new title string
    */
+  // 更新对话标题（用于新对话时自动生成标题）
+  async updateConversationTitle(
+    conversationId: string,
+    title: string,
+  ): Promise<void> {
+    await this.persistent.updateConversation(conversationId, { title });
+    await this.cache.cacheConversation(conversationId, { title });
+  }
+
+  /**
+   * Clear a conversation by ending it (generating a summary) and removing cached data.
+   * Used by the Gateway for user-initiated conversation clearing.
+   *
+   * @param conversationId - The conversation to clear
+   */
+  // 清除对话（Gateway 用）
   async clearConversation(conversationId: string): Promise<void> {
     // 先结束对话（生成摘要）
     await this.endConversation(conversationId);
   }
 
   /**
-   * 结束对话（生成摘要）
+   * End a conversation by generating a summary of its messages and persisting
+   * extracted facts, entities, and the summary in a single transaction.
+   * Also clears the Redis cache for this conversation.
+   *
+   * @param conversationId - The conversation to end
    */
+  // 结束对话（生成摘要，事务化保存）
   async endConversation(conversationId: string): Promise<void> {
     const messages = await this.persistent.getMessages(conversationId, {
       limit: 100,
@@ -189,25 +251,17 @@ export class MemoryManagerService {
     if (this.summarizer.shouldSummarize(messages)) {
       const summary = await this.summarizer.summarizeConversation(messages);
 
-      // 保存摘要
-      await this.persistent.updateConversation(conversationId, {
-        summary: summary.summary,
-      });
-
-      // 保存提取的记忆
       const conversation =
         await this.persistent.getConversation(conversationId);
       if (conversation) {
-        if (summary.extractedFacts.length > 0) {
-          await this.persistent.createMemories(
-            conversation.userId,
-            summary.extractedFacts,
-          );
-        }
-
-        for (const entity of summary.extractedEntities) {
-          await this.persistent.upsertEntity(conversation.userId, entity);
-        }
+        // 事务化保存：摘要 + 记忆 + 实体（要么全成功，要么全回滚）
+        await this.persistent.saveEndConversationData(
+          conversationId,
+          conversation.userId,
+          summary.summary,
+          summary.extractedFacts,
+          summary.extractedEntities,
+        );
       }
     }
 
@@ -218,8 +272,24 @@ export class MemoryManagerService {
   // ==================== 记忆管理 ====================
 
   /**
-   * 记住信息（增强版：含冲突检测与评分）
+   * Store a new memory with optional conflict detection, scoring, and tiering.
+   *
+   * Processing pipeline:
+   * 1. **Conflict detection** -- checks for duplicate/contradictory memories using
+   *    deduplication keys, exact match, and semantic similarity (>90%). Conflicts
+   *    are resolved via configurable strategies (KEEP_LATEST, MERGE, SKIP, etc.).
+   * 2. **Scoring** -- evaluates importance, freshness, confidence, and access bonus
+   *    to determine the memory's storage tier. Very low-scoring memories are skipped.
+   * 3. **Persistence** -- stores the memory with an embedding vector in PostgreSQL.
+   *
+   * @param userId - The user who owns the memory
+   * @param input - The memory content, type, category, and metadata
+   * @param options - Optional flags to skip conflict checks or override resolution strategy
+   * @param options.skipConflictCheck - When true, bypasses conflict detection entirely
+   * @param options.strategyOverride - Force a specific ConflictStrategy instead of the auto-detected one
+   * @returns The persisted memory record, or null if the memory was skipped (too low score or conflict-resolved to SKIP)
    */
+  // 记住信息（增强版：含冲突检测与评分）
   async remember(
     userId: string,
     input: MemoryInput,
@@ -312,7 +382,7 @@ export class MemoryManagerService {
         type: input.type,
         content: input.content,
         importance: input.importance || 0.5,
-        confidence: (input.metadata?.confidence as number) || 0.8,
+        confidence: input.metadata?.confidence || 0.8,
         createdAt: new Date(),
       };
 
@@ -349,8 +419,21 @@ export class MemoryManagerService {
   }
 
   /**
-   * 回忆相关信息（增强版：记录访问）
+   * Recall memories relevant to a query, using either semantic search (pgvector)
+   * or standard attribute-based filtering. Accessed memories are reinforced
+   * via the decay service to slow their importance degradation.
+   *
+   * @param userId - The user whose memories to search
+   * @param options - Recall configuration: query text, semantic toggle, types filter, etc.
+   * @param options.query - Free-text query for semantic search
+   * @param options.useSemanticSearch - Whether to use vector similarity search (default: true)
+   * @param options.limit - Maximum results to return (default: 10)
+   * @param options.types - Filter by specific MemoryType values
+   * @param options.categories - Filter by category strings
+   * @param options.minImportance - Minimum importance threshold
+   * @returns An array of matching memory records, ordered by relevance or importance
    */
+  // 回忆相关信息（增强版：记录访问）
   async recall(
     userId: string,
     options: RecallOptions = {},
@@ -386,8 +469,11 @@ export class MemoryManagerService {
   }
 
   /**
-   * 遗忘记忆
+   * Permanently delete a memory record from persistent storage.
+   *
+   * @param memoryId - The ID of the memory to delete
    */
+  // 遗忘记忆
   async forget(memoryId: string): Promise<void> {
     await this.persistent.deleteMemory(memoryId);
   }
@@ -395,8 +481,18 @@ export class MemoryManagerService {
   // ==================== 上下文构建 ====================
 
   /**
-   * 获取完整的检索上下文
+   * Build a complete retrieval context for the AI agent's system prompt.
+   *
+   * Concurrently fetches recent conversation history, semantically relevant
+   * memories, user preferences, and related entities, then assembles them
+   * into a unified RetrievalContext object.
+   *
+   * @param userId - The user for whom to build the context
+   * @param currentMessage - The latest user message used as the semantic query
+   * @param conversationId - Optional current conversation ID for history retrieval
+   * @returns A RetrievalContext containing messages, memories, preferences, entities, and metadata
    */
+  // 获取完整的检索上下文
   async getRetrievalContext(
     userId: string,
     currentMessage: string,
@@ -446,8 +542,14 @@ export class MemoryManagerService {
   }
 
   /**
-   * 构建上下文摘要（用于 system prompt）
+   * Serialize a RetrievalContext into a human-readable summary string suitable
+   * for injection into the AI agent's system prompt. Includes user preferences,
+   * relevant memories (top 3), and tracked school entities.
+   *
+   * @param context - The retrieval context to summarize
+   * @returns A formatted multi-line string for the system prompt
    */
+  // 构建上下文摘要（用于 system prompt）
   buildContextSummary(context: RetrievalContext): string {
     const parts: string[] = [];
 
@@ -479,8 +581,14 @@ export class MemoryManagerService {
   // ==================== 实体管理 ====================
 
   /**
-   * 记录实体
+   * Create or update an entity (e.g., a school, person, or event) associated
+   * with a user. Uses upsert semantics keyed on (userId, type, name).
+   *
+   * @param userId - The user who owns the entity
+   * @param input - Entity data including type, name, description, and attributes
+   * @returns The persisted entity record
    */
+  // 记录实体
   async recordEntity(
     userId: string,
     input: EntityInput,
@@ -489,8 +597,13 @@ export class MemoryManagerService {
   }
 
   /**
-   * 获取实体
+   * Retrieve entities belonging to a user, optionally filtered by type.
+   *
+   * @param userId - The user whose entities to retrieve
+   * @param options - Optional filters for entity types and result limit
+   * @returns An array of entity records
    */
+  // 获取实体
   async getEntities(
     userId: string,
     options?: { types?: EntityType[]; limit?: number },
@@ -501,15 +614,25 @@ export class MemoryManagerService {
   // ==================== 用户偏好 ====================
 
   /**
-   * 获取用户偏好
+   * Retrieve the AI communication preferences for a user (e.g., style, language, response length).
+   *
+   * @param userId - The user whose preferences to fetch
+   * @returns The user's preferences, or sensible defaults if none are set
    */
+  // 获取用户偏好
   async getPreferences(userId: string): Promise<UserPreferences> {
     return this.persistent.getPreferences(userId);
   }
 
   /**
-   * 更新用户偏好
+   * Partially update a user's AI communication preferences. Creates the
+   * preference record if it does not yet exist.
+   *
+   * @param userId - The user whose preferences to update
+   * @param updates - A partial map of preference fields to update
+   * @returns The full updated preferences object
    */
+  // 更新用户偏好
   async updatePreferences(
     userId: string,
     updates: Partial<UserPreferences>,
@@ -520,15 +643,26 @@ export class MemoryManagerService {
   // ==================== 统计与维护 ====================
 
   /**
-   * 获取记忆统计
+   * Retrieve basic memory statistics for a user, including counts of memories,
+   * conversations, messages, and entities, plus a breakdown by memory type.
+   *
+   * @param userId - The user whose stats to compute
+   * @returns Aggregated memory statistics
    */
+  // 获取记忆统计
   async getStats(userId: string): Promise<MemoryStats> {
     return this.persistent.getStats(userId);
   }
 
   /**
-   * 获取增强统计（含衰减信息）
+   * Retrieve enhanced memory statistics including decay tier distribution and
+   * scoring averages, in addition to the basic stats. Requires the optional
+   * decay and scorer services to be injected.
+   *
+   * @param userId - The user whose enhanced stats to compute
+   * @returns Enhanced statistics with optional decay and scoring breakdowns
    */
+  // 获取增强统计（含衰减信息）
   async getEnhancedStats(userId: string): Promise<EnhancedMemoryStats> {
     const basic = await this.persistent.getStats(userId);
 
@@ -551,7 +685,7 @@ export class MemoryManagerService {
           importance: m.importance,
           confidence: 0.8,
           createdAt: m.createdAt,
-          accessCount: (m.metadata as any)?.accessCount || 0,
+          accessCount: m.metadata?.accessCount || 0,
         }),
       );
 
@@ -573,8 +707,12 @@ export class MemoryManagerService {
   }
 
   /**
-   * 清理过期记忆（每小时自动执行）
+   * Remove expired memories from persistent storage. Automatically invoked
+   * every hour via a cron schedule.
+   *
+   * @returns An object containing the count of deleted expired memories
    */
+  // 清理过期记忆（每小时自动执行）
   @Cron('0 * * * *')
   async cleanup(): Promise<{ expiredMemories: number }> {
     const expiredMemories = await this.persistent.cleanupExpiredMemories();
@@ -582,8 +720,12 @@ export class MemoryManagerService {
   }
 
   /**
-   * 手动触发记忆衰减
+   * Manually trigger the memory decay process. Returns failure if the
+   * MemoryDecayService is not injected.
+   *
+   * @returns An object indicating success and the optional decay result metrics
    */
+  // 手动触发记忆衰减
   async triggerDecay(): Promise<{ success: boolean; result?: DecayResult }> {
     if (!this.decay) {
       return { success: false };
@@ -594,8 +736,13 @@ export class MemoryManagerService {
   }
 
   /**
-   * 获取待确认的冲突
+   * Retrieve memories with unresolved conflicts that require user confirmation
+   * (i.e., memories flagged with `pendingConflict: true` in metadata).
+   *
+   * @param userId - The user whose pending conflicts to retrieve
+   * @returns An array of memory inputs awaiting conflict resolution
    */
+  // 获取待确认的冲突
   async getPendingConflicts(userId: string): Promise<any[]> {
     if (!this.conflict) {
       return [];
@@ -606,8 +753,42 @@ export class MemoryManagerService {
   // ==================== 私有方法 ====================
 
   /**
-   * 从消息中提取并保存记忆
+   * Execute an async extraction function with exponential backoff retries.
+   * Used in fire-and-forget scenarios (memory/entity extraction from messages)
+   * to increase reliability without blocking the main request flow.
+   *
+   * @param fn - The async extraction function to execute
+   * @param retries - Maximum number of retry attempts (default: 2)
+   * @throws {Error} Re-throws the last error after all retry attempts are exhausted
    */
+  // 带重试的异步提取（fire-and-forget 场景下增加可靠性）
+  private async extractWithRetry(
+    fn: () => Promise<void>,
+    retries = 2,
+  ): Promise<void> {
+    for (let i = 0; i <= retries; i++) {
+      try {
+        await fn();
+        return;
+      } catch (err) {
+        if (i < retries) {
+          this.logger.warn(`Extraction attempt ${i + 1} failed, retrying...`);
+          await new Promise((r) => setTimeout(r, 1000 * (i + 1)));
+        } else {
+          throw err;
+        }
+      }
+    }
+  }
+
+  /**
+   * Extract memories and entities from a user message using the summarizer,
+   * then persist them to the database. Called asynchronously after each user message.
+   *
+   * @param conversationId - The conversation the message belongs to
+   * @param message - The message record to extract memories from
+   */
+  // 从消息中提取并保存记忆
   private async extractAndSaveMemory(
     conversationId: string,
     message: MessageRecord,
@@ -630,8 +811,20 @@ export class MemoryManagerService {
   }
 
   /**
-   * 从工具执行结果中提取记忆（时间线、个人事件等关键决策）
+   * Extract memories and entities from tool execution results (JSON payloads).
+   *
+   * Handles several tool result patterns:
+   * - Personal event creation (timeline events, competitions, tests)
+   * - School recommendation results
+   * - Timeline generation results
+   * - Personal event list queries
+   *
+   * Silently skips non-JSON or unrecognized payloads.
+   *
+   * @param conversationId - The conversation the tool result belongs to
+   * @param message - The tool-result message record to parse
    */
+  // 从工具执行结果中提取记忆（时间线、个人事件等关键决策）
   private async extractToolResultMemory(
     conversationId: string,
     message: MessageRecord,

@@ -17,7 +17,7 @@
 
 ## 系统架构
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                        API Layer                                 │
 │  ┌─────────────────────────────────────────────────────────┐    │
@@ -43,8 +43,8 @@
 │  │  ator    │ │  Agent   │ │  Agent   │ │  Agent   │ │ Agent  ││
 │  │ (路由)   │ │ (文书)   │ │ (选校)   │ │ (档案)   │ │ (规划) ││
 │  └──────────┘ └──────────┘ └──────────┘ └──────────┘ └────────┘│
-│                      AgentRunnerService                          │
-│                     (ReAct Loop 执行器)                          │
+│                   WorkflowEngineService                          │
+│              (ReWOO 三阶段: Plan→Execute→Solve)                  │
 └─────────────────────────────────────────────────────────────────┘
                               │
               ┌───────────────┼───────────────┐
@@ -78,16 +78,21 @@
   3. 委派到专业 Agent
   4. 返回响应
 
-### 2. AgentRunnerService
+### 2. WorkflowEngineService
 
-- **职责**: 执行单个 Agent 的推理循环
-- **实现**: ReAct (Reasoning + Acting) 模式
-- **流程**:
-  1. 构建 System Prompt
-  2. 调用 LLM
-  3. 解析工具调用
-  4. 执行工具
-  5. 循环直到获得最终响应
+- **职责**: 执行 Agent 的三阶段工作流
+- **实现**: ReWOO (Reason Without Observation) 模式
+- **三阶段**:
+  1. **Plan** — LLM 分析用户意图，一次性规划所有需要调用的工具
+  2. **Execute** — 按计划执行所有工具调用（无 LLM 参与，杜绝重复）
+  3. **Solve** — LLM 综合所有工具结果，生成最终回复
+- **降级策略**:
+  - Plan 阶段 LLM 未返回工具调用 → 直接返回文本回复（无需 Solve）
+  - Plan 阶段返回 delegate_to_agent → 直接委派，不进入 Execute
+  - Execute 阶段某工具失败 → 标记失败，Solve 阶段基于已有结果生成回复
+  - Solve 阶段流式输出为空 → 自动 fallback 到非流式重试
+
+> 注: AgentRunnerService 仍存在于代码中用于非流式兼容路径，但主流程由 WorkflowEngineService 驱动。
 
 ### 3. LLMService
 
@@ -101,15 +106,16 @@
 
 - **职责**: 执行工具调用
 - **实现**: 适配层，调用旧架构的 ToolExecutor
-- **工具列表**: 16 个（15 业务 + 1 委派）
+- **工具列表**: 32 个（31 业务 + 1 委派），涵盖文书、选校、档案、规划、论坛、案例预测、档案排名、外部搜索等
 
 ### 5. MemoryManagerService
 
 - **职责**: 管理用户记忆和对话历史
 - **三层架构**:
-  - Redis: 短期缓存（5 分钟 TTL）
+  - Redis: 短期缓存（默认 24 小时 TTL，可配置 `MEMORY_CACHE_TTL`）
   - PostgreSQL: 持久化存储
   - pgvector: 语义搜索
+- **增强服务**: MemoryScorerService（评分）、MemoryDecayService（衰减）、MemoryConflictService（冲突解决）、MemoryCompactionService（压缩）
 
 ---
 
@@ -117,7 +123,7 @@
 
 ### 用户消息处理流程
 
-```
+```text
 用户消息 "帮我选校"
         │
         ▼
@@ -136,18 +142,29 @@
 └────────┬─────────┘
          │
          ▼
-┌──────────────────┐
-│  AgentRunner     │ ──→ 运行 School Agent
-│  (School Agent)  │
-└────────┬─────────┘
+┌──────────────────────┐
+│  WorkflowEngine      │ ──→ 运行 School Agent（三阶段）
+│  (School Agent)      │
+└────────┬─────────────┘
          │
-    ┌────┴────┐
-    ▼         ▼
-┌───────┐ ┌───────┐
-│  LLM  │ │ Tools │ ──→ get_profile, recommend_schools
-└───────┘ └───────┘
-         │
-         ▼
+  Phase 1: PLAN
+    ▼
+┌───────┐
+│  LLM  │ ──→ 规划: 需调用 get_profile, recommend_schools
+└───┬───┘
+    │
+  Phase 2: EXECUTE
+    ▼
+┌───────┐
+│ Tools │ ──→ 执行 get_profile → 执行 recommend_schools
+└───┬───┘
+    │
+  Phase 3: SOLVE
+    ▼
+┌───────┐
+│  LLM  │ ──→ 综合工具结果生成最终回复
+└───┬───┘
+    ▼
 ┌──────────────────┐
 │  返回推荐结果    │
 └──────────────────┘
@@ -155,7 +172,7 @@
 
 ### 记忆检索流程
 
-```
+```text
 用户提问
     │
     ▼
@@ -236,8 +253,9 @@
 
 ### 3. 超时控制
 
-- LLM 调用: 30 秒
-- 工具执行: 10 秒
+- LLM 调用: 30 秒（`LLM_CONFIG.defaultTimeoutMs = 30000`）
+- 工具执行: 30 秒（`TOOL_TIMEOUT_MS = 30000`）
+- Embedding 生成: 15 秒（`EMBEDDING_CONFIG.timeoutMs = 15000`）
 
 ### 4. 限流 (RateLimiterService)
 

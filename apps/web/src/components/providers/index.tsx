@@ -46,8 +46,8 @@ function AuthInitializer({ children }: { children: React.ReactNode }) {
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <ErrorBoundary>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+      <ErrorBoundary>
         <QueryProvider>
           <ProgressProvider>
             <TourProvider>
@@ -58,7 +58,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             </TourProvider>
           </ProgressProvider>
         </QueryProvider>
-      </ThemeProvider>
-    </ErrorBoundary>
+      </ErrorBoundary>
+    </ThemeProvider>
   );
 }

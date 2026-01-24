@@ -49,3 +49,9 @@ temp
 .env*.local
 apps/api/.env.backup
 
+# SBOM (generated, stored as CI artifact)
+sbom/
+
+# Database backups
+backups/
+

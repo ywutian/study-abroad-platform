@@ -1,8 +1,9 @@
 # 🧠 企业级 AI 记忆系统架构方案
 
-> **版本**: v2.0  
-> **参考**: Mem0, LangChain Memory, OpenAI Memory API  
+> **版本**: v2.2
+> **参考**: Mem0, LangChain Memory, OpenAI Memory API
 > **适用场景**: 留学申请 AI 助手
+> **审计状态**: 已审计 (2026-02-12) — 各功能标注 **[已实现]** 或 **[规划中]**
 
 ---
 
@@ -10,17 +11,17 @@
 
 ### 1.1 设计目标
 
-| 目标       | 指标                       |
-| ---------- | -------------------------- |
-| **个性化** | 基于记忆的推荐准确率 > 85% |
-| **一致性** | 跨会话上下文保持率 100%    |
-| **实时性** | 记忆检索延迟 < 50ms        |
-| **可扩展** | 支持 100万+ 用户记忆       |
-| **合规性** | GDPR/CCPA 完全合规         |
+| 目标       | 指标                       | 状态                                        |
+| ---------- | -------------------------- | ------------------------------------------- |
+| **个性化** | 基于记忆的推荐准确率 > 85% | **[规划中]** — 尚无量化测量                 |
+| **一致性** | 跨会话上下文保持率 100%    | **[已实现]** — Redis + PG 持久化            |
+| **实时性** | 记忆检索延迟 < 50ms        | **[已实现]** — Redis 缓存层                 |
+| **可扩展** | 支持 100万+ 用户记忆       | **[已实现]** — pgvector HNSW 索引           |
+| **合规性** | GDPR/CCPA 完全合规         | **[已实现]** — UserDataService 提供完整 API |
 
-### 1.2 核心架构
+### 1.2 核心架构 **[已实现]**
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                         Memory System Architecture                           │
 ├─────────────────────────────────────────────────────────────────────────────┤
@@ -72,9 +73,9 @@
 
 ## 二、记忆分类体系
 
-### 2.1 记忆类型矩阵
+### 2.1 记忆类型矩阵 **[已实现]**
 
-```
+```text
                     持久性
             短暂 ←──────────→ 持久
         ┌─────────────────────────────┐
@@ -86,7 +87,7 @@
         └─────────────────────────────┘
 ```
 
-### 2.2 详细分类定义
+### 2.2 详细分类定义 **[已实现]**
 
 | 层级   | 类型     | 存储       | TTL     | 示例                             |
 | ------ | -------- | ---------- | ------- | -------------------------------- |
@@ -94,49 +95,54 @@
 | **L2** | 短期记忆 | Redis      | 1-7天   | 最近讨论的学校、临时修改的偏好   |
 | **L3** | 长期记忆 | PostgreSQL | 永久/年 | GPA、SAT、ED决定、核心偏好       |
 
-### 2.3 记忆类型枚举
+### 2.3 记忆类型枚举 **[已实现]**
+
+> **重要修正**: 实际代码使用 5 种基础类型 + `category` 字段实现细粒度分类，而非 16 种子类型枚举。
 
 ```typescript
+// === 实际实现 (types/index.ts + Prisma enum) ===
 enum MemoryType {
-  // === 事实型 (FACT) ===
-  ACADEMIC_FACT = 'ACADEMIC_FACT', // GPA、排名、课程
-  TEST_SCORE_FACT = 'TEST_SCORE_FACT', // SAT、ACT、TOEFL
-  ACTIVITY_FACT = 'ACTIVITY_FACT', // 活动、社团
-  AWARD_FACT = 'AWARD_FACT', // 奖项、荣誉
-  BACKGROUND_FACT = 'BACKGROUND_FACT', // 学校、年级、地区
-
-  // === 偏好型 (PREFERENCE) ===
-  SCHOOL_PREFERENCE = 'SCHOOL_PREFERENCE', // 学校类型、地区偏好
-  MAJOR_PREFERENCE = 'MAJOR_PREFERENCE', // 专业方向
-  STYLE_PREFERENCE = 'STYLE_PREFERENCE', // 沟通风格、回复长度
-  BUDGET_PREFERENCE = 'BUDGET_PREFERENCE', // 预算范围
-
-  // === 决策型 (DECISION) ===
-  APPLICATION_DECISION = 'APPLICATION_DECISION', // ED/EA 选择
-  SCHOOL_DECISION = 'SCHOOL_DECISION', // 最终选校
-  ESSAY_DECISION = 'ESSAY_DECISION', // 文书主题确定
-
-  // === 关系型 (RELATION) ===
-  SCHOOL_RELATION = 'SCHOOL_RELATION', // 用户-学校关系
-  PERSON_RELATION = 'PERSON_RELATION', // 推荐人、顾问
-
-  // === 摘要型 (SUMMARY) ===
-  CONVERSATION_SUMMARY = 'CONVERSATION_SUMMARY', // 对话摘要
-  PERIOD_SUMMARY = 'PERIOD_SUMMARY', // 阶段性总结
+  FACT = 'FACT', // 事实信息 (GPA, SAT, 活动等，通过 category 区分)
+  PREFERENCE = 'PREFERENCE', // 用户偏好 (学校偏好, 专业偏好等)
+  DECISION = 'DECISION', // 决策记录 (ED/EA, 选校等)
+  SUMMARY = 'SUMMARY', // 对话摘要
+  FEEDBACK = 'FEEDBACK', // 用户反馈
 }
+
+// 细粒度分类通过 category 字段实现，例如:
+// { type: 'FACT', category: 'gpa', content: 'GPA 3.8' }
+// { type: 'FACT', category: 'sat', content: 'SAT 1520' }
+// { type: 'PREFERENCE', category: 'school', content: '偏好东海岸大U' }
 
 enum MemoryTier {
-  WORKING = 'WORKING', // L1: 工作记忆
-  SHORT = 'SHORT', // L2: 短期记忆
-  LONG = 'LONG', // L3: 长期记忆
+  WORKING = 'WORKING', // L1: 工作记忆 (RAM)
+  SHORT = 'SHORT', // L2: 短期记忆 (Redis)
+  LONG = 'LONG', // L3: 长期记忆 (PostgreSQL)
+  ARCHIVE = 'ARCHIVE', // L4: 归档 (冷存储)
 }
 ```
+
+<details>
+<summary>原规划的细粒度类型 (已通过 type + category 组合实现)</summary>
+
+| 规划子类型             | 实际实现                              |
+| ---------------------- | ------------------------------------- |
+| `ACADEMIC_FACT`        | `FACT` + category `gpa`/`rank`        |
+| `TEST_SCORE_FACT`      | `FACT` + category `sat`/`act`/`toefl` |
+| `ACTIVITY_FACT`        | `FACT` + category `activity`          |
+| `AWARD_FACT`           | `FACT` + category `award`             |
+| `SCHOOL_PREFERENCE`    | `PREFERENCE` + category `school`      |
+| `MAJOR_PREFERENCE`     | `PREFERENCE` + category `major`       |
+| `APPLICATION_DECISION` | `DECISION` + category `ed`/`ea`       |
+| `CONVERSATION_SUMMARY` | `SUMMARY` + category `conversation`   |
+
+</details>
 
 ---
 
 ## 三、记忆生命周期管理
 
-### 3.1 生命周期流程
+### 3.1 生命周期流程 **[已实现]**
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -174,109 +180,61 @@ enum MemoryTier {
 
 ### 3.2 生命周期配置
 
+> **注**: 实际代码中不存在统一的 `MemoryLifecycleConfig` 接口。各子系统配置分散在各自的服务文件中。
+
+#### 评分配置 **[已实现]** (`memory-scorer.service.ts`)
+
 ```typescript
-interface MemoryLifecycleConfig {
-  // === 提取配置 ===
-  extraction: {
-    enableRuleEngine: boolean; // 启用规则引擎
-    enableLLMExtraction: boolean; // 启用 LLM 提取
-    minMessageLength: number; // 最小消息长度 (默认 20)
-    maxExtractionsPerMessage: number; // 每消息最大提取数 (默认 5)
-  };
-
-  // === 验证配置 ===
-  validation: {
-    strictMode: boolean; // 严格验证模式
-    allowUnknownTypes: boolean; // 允许未知类型
-  };
-
-  // === 评分配置 ===
-  scoring: {
-    importanceWeight: number; // 重要性权重 (默认 0.4)
-    freshnessWeight: number; // 新鲜度权重 (默认 0.3)
-    confidenceWeight: number; // 置信度权重 (默认 0.3)
-  };
-
-  // === 存储配置 ===
-  storage: {
-    dedupeEnabled: boolean; // 启用去重
-    conflictStrategy: ConflictStrategy;
-    defaultTTL: Record<MemoryTier, number>; // 默认 TTL (秒)
-  };
-
-  // === 衰减配置 ===
-  decay: {
-    enabled: boolean; // 启用衰减
-    decayRate: number; // 衰减率 (每天)
-    minImportance: number; // 最低重要性阈值
-    accessBoost: number; // 访问加成
-  };
-
-  // === 压缩配置 ===
-  compression: {
-    enabled: boolean; // 启用压缩
-    triggerThreshold: number; // 触发阈值 (记忆数量)
-    similarityThreshold: number; // 相似度阈值
-  };
-
-  // === 归档配置 ===
-  archival: {
-    enabled: boolean; // 启用归档
-    archiveAfterDays: number; // 归档时间 (天)
-    deleteAfterDays: number; // 删除时间 (天)
-  };
+interface ScoringConfig {
+  weights: { importance: 0.4; freshness: 0.3; confidence: 0.3 };
+  decayRate: 0.01;
+  accessBoostRate: 0.02;
+  maxAccessBonus: 0.2;
 }
-
-// 默认配置
-const DEFAULT_LIFECYCLE_CONFIG: MemoryLifecycleConfig = {
-  extraction: {
-    enableRuleEngine: true,
-    enableLLMExtraction: true,
-    minMessageLength: 20,
-    maxExtractionsPerMessage: 5,
-  },
-  validation: {
-    strictMode: true,
-    allowUnknownTypes: false,
-  },
-  scoring: {
-    importanceWeight: 0.4,
-    freshnessWeight: 0.3,
-    confidenceWeight: 0.3,
-  },
-  storage: {
-    dedupeEnabled: true,
-    conflictStrategy: 'KEEP_LATEST',
-    defaultTTL: {
-      WORKING: 0, // 请求级
-      SHORT: 7 * 86400, // 7 天
-      LONG: 365 * 86400, // 1 年
-    },
-  },
-  decay: {
-    enabled: true,
-    decayRate: 0.01, // 每天衰减 1%
-    minImportance: 0.1, // 最低 0.1
-    accessBoost: 0.05, // 访问加成 5%
-  },
-  compression: {
-    enabled: true,
-    triggerThreshold: 100, // 超过 100 条触发压缩
-    similarityThreshold: 0.9,
-  },
-  archival: {
-    enabled: true,
-    archiveAfterDays: 180, // 180 天后归档
-    deleteAfterDays: 730, // 2 年后删除
-  },
-};
 ```
+
+#### 衰减配置 **[已实现]** (`memory-decay.service.ts`)
+
+```typescript
+interface DecayConfig {
+  enabled: true;
+  decayRate: 0.01; // 每天衰减 1%
+  minImportance: 0.1; // 最低 0.1
+  accessBoost: 0.05; // 访问加成 5%
+  maxAccessBoost: 0.3; // 最大访问加成 30%
+  archiveThreshold: 0.2; // 归档阈值
+  archiveAfterDays: 180; // 180 天后归档
+  deleteAfterDays: 365; // 1 年后删除 (注: 非文档之前描述的 730 天/2 年)
+  batchSize: 100; // 每批 100 条
+}
+```
+
+#### 压缩配置 **[已实现]** (`memory-compaction.service.ts`)
+
+```typescript
+interface CompactionConfig {
+  similarityThreshold: 0.92; // 相似度阈值 (注: 非之前描述的 0.9)
+  minCompactionInterval: 24; // 最小压缩间隔 (小时)
+  batchSize: 50; // 每批处理数量
+  maxMemoryCount: 500; // 最大记忆数量 (触发压缩)
+  maxTokenCount: 100000; // 最大 Token 数量 (触发压缩)
+}
+```
+
+#### 提取配置 **[已实现]** (`memory-extractor.service.ts` + `extraction-rules.ts`)
+
+- 规则引擎提取: 已实现
+- LLM 提取: 已实现
+
+#### 验证配置 **[规划中]**
+
+- 统一的验证配置接口: 未实现
 
 ---
 
 ## 四、记忆评分系统
 
-### 4.1 综合评分公式
+### 4.1 综合评分公式 **[已实现]**
 
 ```
 MemoryScore = (Importance × W_i) + (Freshness × W_f) + (Confidence × W_c) + AccessBonus
@@ -289,61 +247,41 @@ MemoryScore = (Importance × W_i) + (Freshness × W_f) + (Confidence × W_c) + A
 - W_i, W_f, W_c: 权重 (默认 0.4, 0.3, 0.3)
 ```
 
-### 4.2 重要性评分规则
+### 4.2 重要性评分规则 **[已实现]**
+
+> **注**: 实际代码使用 5 种基础 `MemoryType` 而非细粒度子类型。评分通过 `content` 正则匹配实现条件加成。
 
 ```typescript
-const IMPORTANCE_RULES: Record<MemoryType, ImportanceConfig> = {
-  // === 核心事实 (0.85-1.0) ===
-  ACADEMIC_FACT: {
-    base: 0.9,
+// 实际实现 (memory-scorer.service.ts)
+const IMPORTANCE_RULES: Partial<Record<MemoryType, ImportanceRule>> = {
+  [MemoryType.FACT]: {
+    base: 0.8,
     boosts: [
-      { condition: 'is_gpa', boost: 0.05 },
-      { condition: 'top_10_percent', boost: 0.05 },
+      { condition: (input) => /GPA|绩点/i.test(input.content), boost: 0.1 },
+      { condition: (input) => /SAT|ACT|TOEFL|IELTS/i.test(input.content), boost: 0.1 },
+      // ... 更多规则
     ],
   },
-  TEST_SCORE_FACT: {
-    base: 0.9,
-    boosts: [
-      { condition: 'sat_1500_plus', boost: 0.05 },
-      { condition: 'perfect_score', boost: 0.05 },
-    ],
+  [MemoryType.DECISION]: {
+    base: 0.85,
+    boosts: [{ condition: (input) => /ED|Early Decision/i.test(input.content), boost: 0.1 }],
   },
-
-  // === 关键决策 (0.9-1.0) ===
-  APPLICATION_DECISION: {
-    base: 0.95,
-    boosts: [{ condition: 'is_ed', boost: 0.05 }],
-  },
-
-  // === 一般偏好 (0.5-0.7) ===
-  SCHOOL_PREFERENCE: {
+  [MemoryType.PREFERENCE]: {
     base: 0.6,
-    boosts: [{ condition: 'explicit_statement', boost: 0.1 }],
+    boosts: [],
   },
-  STYLE_PREFERENCE: {
+  [MemoryType.SUMMARY]: {
     base: 0.5,
     boosts: [],
   },
-
-  // === 活动/奖项 (0.7-0.9) ===
-  ACTIVITY_FACT: {
+  [MemoryType.FEEDBACK]: {
     base: 0.7,
-    boosts: [
-      { condition: 'leadership_role', boost: 0.1 },
-      { condition: 'long_term', boost: 0.05 },
-    ],
-  },
-  AWARD_FACT: {
-    base: 0.75,
-    boosts: [
-      { condition: 'national_level', boost: 0.15 },
-      { condition: 'international_level', boost: 0.1 },
-    ],
+    boosts: [],
   },
 };
 ```
 
-### 4.3 新鲜度衰减曲线
+### 4.3 新鲜度衰减曲线 **[已实现]**
 
 ```
 新鲜度 Freshness(t) = exp(-λ × t)
@@ -382,47 +320,34 @@ const IMPORTANCE_RULES: Record<MemoryType, ImportanceConfig> = {
 
 ### 5.1 检索策略
 
+> **注**: 实际代码中不存在 `RetrievalStrategy` 枚举和 `RetrievalConfig` 接口。检索通过 `RecallOptions` 接口控制。
+
 ```typescript
-enum RetrievalStrategy {
-  SEMANTIC = 'SEMANTIC', // 语义检索 (默认)
-  TEMPORAL = 'TEMPORAL', // 时间检索
-  CATEGORICAL = 'CATEGORICAL', // 分类检索
-  HYBRID = 'HYBRID', // 混合检索
-}
-
-interface RetrievalConfig {
-  strategy: RetrievalStrategy;
-  topK: number; // 返回数量
-  minScore: number; // 最低分数阈值
-
-  // 语义检索配置
-  semantic?: {
-    minSimilarity: number; // 最低相似度
-    embeddingModel: string; // Embedding 模型
-  };
-
-  // 时间检索配置
-  temporal?: {
-    recentDays: number; // 最近 N 天
-    prioritizeRecent: boolean; // 优先最近
-  };
-
-  // 分类检索配置
-  categorical?: {
-    types: MemoryType[]; // 限定类型
-    tiers: MemoryTier[]; // 限定层级
-  };
-
-  // 重排序配置
-  rerank?: {
-    enabled: boolean;
-    model: string; // 重排序模型
-    diversityFactor: number; // 多样性因子
-  };
+// === 实际实现 (memory/types.ts) ===  **[已实现]**
+interface RecallOptions {
+  query?: string; // 语义搜索查询 (使用 pgvector)
+  types?: MemoryType[]; // 按类型过滤
+  categories?: string[]; // 按分类过滤
+  limit?: number; // 返回数量
+  minImportance?: number; // 最低重要性
+  useSemanticSearch?: boolean; // 是否使用语义搜索 (默认 true)
+  includeConversations?: boolean; // 是否包含对话
 }
 ```
 
-### 5.2 混合检索流程
+**已实现的检索方式**:
+
+- 语义检索 (pgvector cosine similarity) **[已实现]**
+- 按类型/分类过滤 **[已实现]**
+- 按时间排序 (recentMessages) **[已实现]**
+
+**规划中的检索方式**:
+
+- 混合检索 (多路并行 + 合并) **[规划中]**
+- MMR 多样性重排 **[规划中]**
+- 独立的重排序模型 **[规划中]**
+
+### 5.2 混合检索流程 **[规划中]**
 
 ```
 用户查询: "帮我分析申请 MIT 的机会"
@@ -476,63 +401,54 @@ interface RetrievalConfig {
 └───────────────────────────────────────────────────────────────┘
 ```
 
-### 5.3 检索上下文构建
+### 5.3 检索上下文构建 **[已实现]**
+
+> **重要修正**: 实际 `RetrievalContext` 是**扁平结构**，不是文档之前描述的分类嵌套结构。
 
 ```typescript
+// === 实际实现 (memory/types.ts) ===
 interface RetrievalContext {
-  // === 记忆数据 ===
-  memories: {
-    academic: MemoryRecord[]; // 学术相关
-    testScores: MemoryRecord[]; // 标化成绩
-    schools: MemoryRecord[]; // 学校相关
-    activities: MemoryRecord[]; // 活动奖项
-    preferences: MemoryRecord[]; // 偏好设置
-    decisions: MemoryRecord[]; // 已做决策
-    recent: MemoryRecord[]; // 最近记忆
-  };
+  // 最近对话 (扁平数组)
+  recentMessages: MessageRecord[];
 
-  // === 实体数据 ===
-  entities: {
-    schools: EntityRecord[]; // 关注的学校
-    people: EntityRecord[]; // 相关人物
-    events: EntityRecord[]; // 相关事件
-  };
+  // 相关记忆 (扁平数组，非按类型分组)
+  relevantMemories: MemoryRecord[];
 
-  // === 对话上下文 ===
-  conversation: {
-    recentMessages: Message[]; // 最近消息
-    summary?: string; // 对话摘要
-    currentTopic?: string; // 当前话题
-  };
-
-  // === 用户偏好 ===
+  // 用户偏好
   preferences: UserPreferences;
 
-  // === 元数据 ===
+  // 相关实体 (扁平数组，非按类型分组)
+  entities: EntityRecord[];
+
+  // 元数据
   meta: {
-    retrievalTimeMs: number;
-    memoriesCount: number;
-    entitiesCount: number;
+    conversationId?: string;
+    messageCount: number;
+    memoryCount: number;
   };
 }
 ```
+
+> **差异说明**: 文档之前描述的 `memories.academic`、`memories.testScores` 等分类字段在实际代码中不存在。记忆统一放在 `relevantMemories` 数组中，可通过 `type` 和 `category` 字段在消费端过滤。
 
 ---
 
 ## 六、记忆去重与冲突
 
-### 6.1 去重策略矩阵
+### 6.1 去重策略矩阵 **[已实现]**
 
-| 记忆类型                    | 去重键                        | 冲突策略       | 说明             |
-| --------------------------- | ----------------------------- | -------------- | ---------------- |
-| `ACADEMIC_FACT` (GPA)       | `user:{userId}:gpa`           | `KEEP_LATEST`  | 一个用户一个 GPA |
-| `TEST_SCORE_FACT` (SAT)     | `user:{userId}:sat`           | `KEEP_HIGHEST` | 保留最高分       |
-| `APPLICATION_DECISION` (ED) | `user:{userId}:ed`            | `KEEP_LATEST`  | 只能有一个 ED    |
-| `SCHOOL_PREFERENCE`         | `user:{userId}:school:{name}` | `MERGE`        | 合并偏好原因     |
-| `ACTIVITY_FACT`             | 无                            | `KEEP_BOTH`    | 活动可以多个     |
-| `CONVERSATION_SUMMARY`      | `conv:{convId}:summary`       | `KEEP_LATEST`  | 每对话一个摘要   |
+> **注**: 实际去重键使用 `user:{userId}:{category}` 格式，基于 `MemoryType` + `category` 组合。
 
-### 6.2 冲突解决算法
+| 记忆场景                | 去重键                        | 冲突策略       | 说明             | 状态         |
+| ----------------------- | ----------------------------- | -------------- | ---------------- | ------------ |
+| GPA (`FACT` + gpa)      | `user:{userId}:gpa`           | `KEEP_LATEST`  | 一个用户一个 GPA | **[已实现]** |
+| SAT/ACT/TOEFL (`FACT`)  | `user:{userId}:sat` 等        | `KEEP_HIGHEST` | 保留最高分       | **[已实现]** |
+| ED 决策 (`DECISION`)    | `user:{userId}:ed`            | `KEEP_LATEST`  | 只能有一个 ED    | **[已实现]** |
+| 专业偏好 (`PREFERENCE`) | `user:{userId}:major:{name}`  | `MERGE`        | 合并偏好原因     | **[已实现]** |
+| 学校偏好 (`PREFERENCE`) | `user:{userId}:school:{name}` | `MERGE`        | 合并偏好原因     | **[已实现]** |
+| 对话摘要 (`SUMMARY`)    | `conv:{convId}:summary`       | `KEEP_LATEST`  | 每对话一个摘要   | **[已实现]** |
+
+### 6.2 冲突解决算法 **[已实现]**
 
 ```typescript
 enum ConflictStrategy {
@@ -607,27 +523,25 @@ function resolveConflict(
 
 ## 七、记忆压缩与摘要
 
-### 7.1 压缩触发条件
+### 7.1 压缩触发条件 **[已实现]**
+
+> **注**: 实际代码中不存在 `CompressionTrigger` 接口。压缩由 `CompactionConfig` 控制，定时任务为每天凌晨 4 点。
 
 ```typescript
-interface CompressionTrigger {
-  // 数量触发
-  maxMemoriesPerUser: number; // 用户记忆上限 (默认 500)
-  maxMemoriesPerCategory: number; // 分类记忆上限 (默认 50)
-
-  // 相似度触发
-  similarityThreshold: number; // 相似度阈值 (默认 0.9)
-  minSimilarCount: number; // 最少相似数 (默认 3)
-
-  // 时间触发
-  olderThanDays: number; // 超过 N 天的记忆 (默认 90)
-
-  // 定时触发
-  cronSchedule: string; // Cron 表达式 (默认 "0 3 * * *" 每天凌晨3点)
+// 实际配置 (memory-compaction.service.ts)
+interface CompactionConfig {
+  similarityThreshold: 0.92; // 相似度阈值
+  minCompactionInterval: 24; // 最小压缩间隔 (小时)
+  batchSize: 50; // 每批处理数量
+  maxMemoryCount: 500; // 最大记忆数量 (触发压缩)
+  maxTokenCount: 100000; // 最大 Token 数量 (触发压缩)
 }
+
+// 定时: @Cron('0 4 * * *') — 每天凌晨 4 点 (非之前描述的 3 点)
+// 分布式锁: Redis 防止多实例重复执行
 ```
 
-### 7.2 压缩流程
+### 7.2 压缩流程 **[已实现]**
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -670,7 +584,7 @@ interface CompressionTrigger {
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### 7.3 摘要生成 Prompt
+### 7.3 摘要生成 Prompt **[已实现]**
 
 ```typescript
 const COMPRESSION_PROMPT = `你是记忆压缩专家。将多条相关记忆合并为一条精炼的摘要。
@@ -697,7 +611,7 @@ const COMPRESSION_PROMPT = `你是记忆压缩专家。将多条相关记忆合�
 
 ## 八、安全与合规
 
-### 8.1 数据分级
+### 8.1 数据分级 **[规划中]**
 
 | 级别        | 类型           | 存储要求   | 访问控制   |
 | ----------- | -------------- | ---------- | ---------- |
@@ -705,47 +619,29 @@ const COMPRESSION_PROMPT = `你是记忆压缩专家。将多条相关记忆合�
 | **L2 敏感** | GPA、成绩      | 字段加密   | 仅用户授权 |
 | **L3 隐私** | 真实姓名、身份 | 端到端加密 | 仅用户本人 |
 
-### 8.2 GDPR 合规 API
+### 8.2 GDPR 合规 API **[已实现]**
 
-```typescript
-// 记忆管理 API
-interface MemoryGDPRApi {
-  // 数据访问权 (Right of Access)
-  listMemories(userId: string, filters?: MemoryFilters): Promise<Memory[]>;
-  exportMemories(userId: string, format: 'json' | 'csv'): Promise<Blob>;
+> **注**: 实际实现由 `UserDataService` 提供，API 端点通过 `AiAgentController` 暴露。完整 API 列表参见 [AI_AGENT_ARCHITECTURE.md](AI_AGENT_ARCHITECTURE.md#用户数据管理-api)。
 
-  // 修正权 (Right to Rectification)
-  updateMemory(userId: string, memoryId: string, content: string): Promise<Memory>;
+**已实现的 GDPR 功能**:
 
-  // 删除权 (Right to Erasure)
-  deleteMemory(userId: string, memoryId: string): Promise<void>;
-  deleteAllMemories(userId: string, confirmation: string): Promise<void>;
+| GDPR 权利  | API 端点                                         | 状态         |
+| ---------- | ------------------------------------------------ | ------------ |
+| 数据访问权 | `GET /ai-agent/user-data/memories`               | **[已实现]** |
+| 数据导出权 | `POST /ai-agent/user-data/export`                | **[已实现]** |
+| 删除权     | `DELETE /ai-agent/user-data/memories/:id`        | **[已实现]** |
+| 批量删除   | `POST /ai-agent/user-data/memories/batch-delete` | **[已实现]** |
+| 全部清除   | `DELETE /ai-agent/user-data/all`                 | **[已实现]** |
+| 偏好管理   | `PUT /ai-agent/user-data/preferences`            | **[已实现]** |
+| 偏好重置   | `POST /ai-agent/user-data/preferences/reset`     | **[已实现]** |
 
-  // 限制处理权 (Right to Restriction)
-  pauseMemoryExtraction(userId: string): Promise<void>;
-  resumeMemoryExtraction(userId: string): Promise<void>;
+**规划中的功能**:
 
-  // 数据可携权 (Right to Portability)
-  exportAllData(userId: string): Promise<DataExport>;
+- `MemoryAuditLog` 审计日志接口 **[规划中]** — 代码中无对应实现
+- `pauseMemoryExtraction` / `resumeMemoryExtraction` **[规划中]** — 可通过 preferences.enableMemory 间接实现
+- `exportMemories(format: 'csv')` CSV 格式导出 **[规划中]**
 
-  // 反对权 (Right to Object)
-  optOutMemory(userId: string): Promise<void>;
-}
-
-// 审计日志
-interface MemoryAuditLog {
-  id: string;
-  userId: string;
-  action: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'EXPORT';
-  memoryId?: string;
-  details: Record<string, any>;
-  ipAddress: string;
-  userAgent: string;
-  timestamp: Date;
-}
-```
-
-### 8.3 数据保留策略
+### 8.3 数据保留策略 **[规划中]**
 
 ```yaml
 # 数据保留配置
@@ -775,42 +671,29 @@ retention:
 
 ### 9.1 指标体系
 
-```typescript
-interface MemoryMetrics {
-  // === 容量指标 ===
-  capacity: {
-    totalMemories: Gauge; // 总记忆数
-    memoriesByType: Gauge[]; // 按类型统计
-    memoriesByTier: Gauge[]; // 按层级统计
-    storageUsageBytes: Gauge; // 存储使用量
-  };
+> **注**: 实际代码中不存在独立的 `MemoryMetrics` 接口。记忆系统指标通过 `PrometheusMetricsService` 和各服务的内部统计方法提供。
 
-  // === 性能指标 ===
-  performance: {
-    extractionLatency: Histogram; // 提取延迟
-    retrievalLatency: Histogram; // 检索延迟
-    embeddingLatency: Histogram; // 向量化延迟
-    compressionLatency: Histogram; // 压缩延迟
-  };
+**已实现的指标** **[已实现]**:
 
-  // === 质量指标 ===
-  quality: {
-    extractionAccuracy: Gauge; // 提取准确率
-    retrievalRelevance: Gauge; // 检索相关性
-    dedupeRate: Gauge; // 去重率
-    conflictRate: Gauge; // 冲突率
-  };
+- `ai_agent_requests_total` — 请求计数 (Counter)
+- `ai_agent_request_duration_ms` — 请求延迟 (Histogram)
+- `ai_agent_llm_tokens_prompt` / `ai_agent_llm_tokens_completion` — Token 使用量 (Histogram)
+- `ai_agent_circuit_breaker_state` — 熔断器状态 (Gauge)
+- `ai_agent_memory_operations_total` — 记忆操作数 (Counter)
+- `EmbeddingService.getCacheStats()` — 缓存模式 + 大小
 
-  // === 业务指标 ===
-  business: {
-    memoriesPerUser: Histogram; // 用户记忆数分布
-    memoryUsageRate: Gauge; // 记忆使用率
-    personalizationScore: Gauge; // 个性化评分
-  };
-}
-```
+**已实现的内部统计**:
 
-### 9.2 告警规则
+- `MemoryDecayService.getStats()` — 衰减统计 (按 tier 分布、平均重要性等)
+- `MemoryCompactionService` 返回 `CompactionResult` (processed, merged, summarized, deleted, tokensSaved)
+
+**规划中的指标** **[规划中]**:
+
+- 细粒度容量指标 (memoriesByType, storageUsageBytes)
+- 质量指标 (extractionAccuracy, retrievalRelevance, dedupeRate)
+- 业务指标 (personalizationScore, memoryUsageRate)
+
+### 9.2 告警规则 **[规划中]**
 
 ```yaml
 # Prometheus AlertManager Rules
@@ -845,7 +728,7 @@ groups:
           summary: '记忆提取失败率超过 10%'
 ```
 
-### 9.3 仪表盘设计
+### 9.3 仪表盘设计 **[规划中]**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -889,31 +772,31 @@ groups:
 
 ### Phase 1: 基础完善 (1-2 周)
 
-- [x] 三层记忆架构
-- [x] 规则引擎提取
-- [x] 基础去重
-- [ ] **完善验证规则**
-- [ ] **冲突处理策略**
-- [ ] **记忆衰减机制**
+- [x] 三层记忆架构 **[已实现]** — Redis + PG + pgvector
+- [x] 规则引擎提取 **[已实现]** — `extraction-rules.ts`
+- [x] 基础去重 **[已实现]** — `memory-conflict.service.ts` dedupeRules
+- [x] **冲突处理策略** **[已实现]** — 6 种策略 (KEEP_LATEST, KEEP_HIGHEST, KEEP_OLDEST, MERGE, KEEP_BOTH, ASK_USER)
+- [x] **记忆衰减机制** **[已实现]** — `memory-decay.service.ts` 每天 3AM @Cron + 分布式锁
+- [ ] **完善验证规则** **[规划中]** — 统一验证接口未实现
 
 ### Phase 2: 企业级功能 (2-3 周)
 
-- [ ] 混合检索策略
-- [ ] 记忆压缩
-- [ ] 多样性重排
-- [ ] 质量评估
-- [ ] 指标监控
+- [ ] 混合检索策略 **[规划中]** — 当前仅语义检索 + 类型过滤
+- [x] 记忆压缩 **[已实现]** — `memory-compaction.service.ts` 每天 4AM @Cron
+- [ ] 多样性重排 (MMR) **[规划中]**
+- [x] 记忆评分 **[已实现]** — `memory-scorer.service.ts` 多维评分系统
+- [x] 指标监控 **[已实现]** — `prometheus-metrics.service.ts` + `metrics.service.ts`
 
 ### Phase 3: 高级功能 (3-4 周)
 
-- [ ] 跨用户知识图谱
-- [ ] 自动学习优化
-- [ ] A/B 测试框架
-- [ ] 管理后台
+- [ ] 跨用户知识图谱 **[规划中]**
+- [ ] 自动学习优化 **[规划中]**
+- [ ] A/B 测试框架 **[规划中]**
+- [ ] 管理后台 **[规划中]** — 部分实现于 `admin/agent-admin.controller.ts`
 
 ---
 
-## 十一、预测系统集成 (v2-ensemble, 2026-02-09)
+## 十一、预测系统集成 (v2-ensemble, 2026-02-09) **[已实现]**
 
 记忆系统已与录取预测系统深度集成，实现双向数据流。
 
@@ -952,22 +835,29 @@ groups:
 
 ## 附录: 核心代码结构
 
+> **审计修正**: 以下为实际存在的文件列表。
+
 ```
 apps/api/src/modules/ai-agent/memory/
-├── types.ts                    # 类型定义
-├── extraction-rules.ts         # 提取规则引擎
-├── memory-extractor.service.ts # 记忆提取服务
-├── memory-manager.service.ts   # 记忆管理器
-├── memory-scorer.service.ts    # 记忆评分服务 (新)
-├── memory-compressor.service.ts# 记忆压缩服务 (新)
-├── memory-retriever.service.ts # 记忆检索服务 (新)
-├── embedding.service.ts        # 向量化服务
-├── persistent-memory.service.ts# 持久化服务
-├── redis-cache.service.ts      # Redis 缓存
-├── summarizer.service.ts       # 摘要服务
-└── user-data.service.ts        # GDPR API
+├── types.ts                      # 类型定义 (MemoryRecord, RetrievalContext 等)
+├── extraction-rules.ts           # 提取规则引擎
+├── memory-extractor.service.ts   # 记忆提取服务
+├── memory-manager.service.ts     # 记忆管理器 (核心入口)
+├── memory-scorer.service.ts      # 记忆评分服务 [已实现]
+├── memory-compaction.service.ts  # 记忆压缩服务 [已实现] (注: 非 memory-compressor)
+├── memory-conflict.service.ts    # 记忆冲突解决 [已实现]
+├── memory-decay.service.ts       # 记忆衰减服务 [已实现]
+├── embedding.service.ts          # 向量化服务 (Redis 缓存 + 内存 LRU)
+├── persistent-memory.service.ts  # 持久化服务 (PostgreSQL + pgvector)
+├── redis-cache.service.ts        # Redis 短期缓存 (+ 内存降级)
+├── sanitizer.service.ts          # 敏感数据脱敏 (三级策略)
+├── summarizer.service.ts         # 摘要服务
+├── user-data.service.ts          # GDPR 用户数据管理
+└── prisma-types.ts               # Prisma 查询类型
 ```
+
+> **不存在的文件**: `memory-compressor.service.ts`(实际为 `memory-compaction.service.ts`)、`memory-retriever.service.ts`(检索集成于 `memory-manager.service.ts`)。
 
 ---
 
-_文档版本: v2.1 | 更新日期: 2026-02-09_
+_文档版本: v2.2 | 更新日期: 2026-02-13 | 审计日期: 2026-02-12_

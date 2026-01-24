@@ -1,5 +1,7 @@
 # 数据获取方案 - 商用级别
 
+> 最后更新: 2026-02-13
+
 ## 概述
 
 本项目的数据分为两类：
@@ -47,7 +49,7 @@
 echo "COLLEGE_SCORECARD_API_KEY=your_key_here" >> .env
 
 # 2. 运行同步 (管理员)
-curl -X POST http://localhost:3000/api/schools/sync/scorecard?limit=500 \
+curl -X POST http://localhost:3000/api/v1/schools/sync/scorecard?limit=500 \
   -H "Authorization: Bearer <admin_token>"
 ```
 
@@ -103,12 +105,12 @@ export class SchoolDataService {
      ↓
   自动标记 "待验证"
      ↓
-  ┌────────────────────────┐
-  │ 验证方式 (任选其一):      │
-  │ 1. 上传 Offer Letter   │
-  │ 2. 学校邮箱验证         │
-  │ 3. 管理员人工审核       │
-  └────────────────────────┘
+  ┌──────────────────────────────┐
+  │ 验证方式 (proofType 三选一):   │
+  │ 1. offer_letter (录取通知书) │
+  │ 2. enrollment_proof (注册证明)│
+  │ 3. student_id (学生证)       │
+  └──────────────────────────────┘
      ↓
   验证通过 → 标记 ✓ 已验证
      ↓
@@ -118,7 +120,7 @@ export class SchoolDataService {
 ### 隐私保护
 
 - **匿名化**: GPA 显示为范围 (3.7-3.9)，不显示具体数值
-- **可见性控制**: 用户可选择 PRIVATE / ANONYMOUS / VERIFIED_ONLY
+- **可见性控制**: 用户可选择 PRIVATE / PUBLIC / ANONYMOUS / VERIFIED_ONLY
 - **数据脱敏**: 敏感信息自动打码
 
 ---
@@ -157,7 +159,7 @@ export class SchoolDataService {
 ### 竞赛数据库
 
 - **来源**: 专家策划清单 + 用户提交
-- **数据**: 90+ 高中学术竞赛，含名称（中英文）、分类（12 大类）、等级、声望层级（1-5）
+- **数据**: 95 条高中学术竞赛，含名称（中英文）、分类（12 大类）、等级、声望层级（1-5）
 - **模型**: `Competition` 表（见 `prisma/schema.prisma`）
 - **种子脚本**: `prisma/seed-competitions.ts`
 - **更新策略**: 每年审查层级分配，接受社区贡献

@@ -7,13 +7,17 @@
  */
 
 import { useState, useCallback, useRef } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/hooks/use-auth';
 import { useAuthStore } from '@/stores/auth';
+import { apiClient } from '@/lib/api';
 import { ChatMessage, StreamEvent, AgentType } from './types';
+import {
+  useInvalidateConversations,
+  useOptimisticAddConversation,
+  useOptimisticUpdateConversation,
+} from './use-chat-history';
 
-// Regular API requests go through Next.js rewrites proxy (same-origin) to avoid cross-origin cookie issues
-const API_BASE_URL = '';
 // SSE streaming requests connect to the backend directly to bypass Next.js proxy buffering
 const STREAM_API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
@@ -24,14 +28,23 @@ interface UseAgentChatOptions {
 
 export function useAgentChat(options: UseAgentChatOptions = {}) {
   const t = useTranslations('agentChat');
+  const locale = useLocale();
   const { accessToken: token, refreshAccessToken } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentAgent, setCurrentAgent] = useState<AgentType>('orchestrator');
   const [activeTools, setActiveTools] = useState<string[]>([]);
+  const [conversationId, setConversationId] = useState<string | undefined>(options.conversationId);
   const abortControllerRef = useRef<AbortController | null>(null);
   // Persist conversation ID across renders to maintain context continuity
   const conversationIdRef = useRef<string | undefined>(options.conversationId);
+  const invalidateConversations = useInvalidateConversations();
+  const optimisticAddConversation = useOptimisticAddConversation();
+  const optimisticUpdateConversation = useOptimisticUpdateConversation();
+  // Use a ref for handleStreamEvent so sendMessage always calls the latest version
+  const handleStreamEventRef = useRef<(event: StreamEvent, messageId: string) => void>(() => {});
+  // Track user message content for optimistic title fallback
+  const lastUserMessageRef = useRef<string>('');
 
   /**
    * Send a user message and stream the assistant's response via SSE.
@@ -41,6 +54,9 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
   const sendMessage = useCallback(
     async (content: string) => {
       if (!content.trim() || isLoading) return;
+
+      // Track user message for optimistic title fallback
+      lastUserMessageRef.current = content.trim();
 
       // Append user message to the list
       const userMessage: ChatMessage = {
@@ -83,6 +99,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
               message: content,
               conversationId: conversationIdRef.current,
               stream: true,
+              locale,
             }),
             credentials: 'include', // Required: send httpOnly refresh cookie
             signal: abortControllerRef.current?.signal,
@@ -114,29 +131,38 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
 
         while (true) {
           // 60s per-chunk timeout to detect stalled streams
+          let timeoutId: ReturnType<typeof setTimeout> | undefined;
           const readPromise = reader.read();
-          const timeoutPromise = new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error('STREAM_TIMEOUT')), 60000)
-          );
-          const { done, value } = await Promise.race([readPromise, timeoutPromise]);
-          if (done) break;
+          const timeoutPromise = new Promise<never>((_, reject) => {
+            timeoutId = setTimeout(() => reject(new Error('STREAM_TIMEOUT')), 60000);
+          });
 
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
+          try {
+            const { done, value } = await Promise.race([readPromise, timeoutPromise]);
+            clearTimeout(timeoutId);
+            if (done) break;
 
-          for (const line of lines) {
-            if (!line.startsWith('data: ')) continue;
-            const data = line.slice(6);
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
 
-            if (data === '[DONE]') continue;
+            for (const line of lines) {
+              if (!line.startsWith('data: ')) continue;
+              const data = line.slice(6);
 
-            try {
-              const event: StreamEvent = JSON.parse(data);
-              handleStreamEvent(event, assistantId);
-            } catch {
-              // Ignore malformed SSE data lines
+              if (data === '[DONE]') continue;
+
+              try {
+                const event: StreamEvent = JSON.parse(data);
+                // Use ref to always call the latest handleStreamEvent
+                handleStreamEventRef.current(event, assistantId);
+              } catch {
+                // Ignore malformed SSE data lines
+              }
             }
+          } catch (e) {
+            clearTimeout(timeoutId);
+            throw e;
           }
         }
       } catch (error) {
@@ -184,99 +210,132 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
    * @param event - The parsed SSE event payload
    * @param messageId - The ID of the assistant message placeholder to update
    */
-  const handleStreamEvent = useCallback((event: StreamEvent, messageId: string) => {
-    switch (event.type) {
-      case 'start':
-        if (event.agent) setCurrentAgent(event.agent);
-        // Persist the backend-assigned conversationId for subsequent messages
-        if (event.conversationId) {
-          conversationIdRef.current = event.conversationId;
-        }
-        break;
+  const handleStreamEvent = useCallback(
+    (event: StreamEvent, messageId: string) => {
+      switch (event.type) {
+        case 'start':
+          if (event.agent) setCurrentAgent(event.agent);
+          // Persist the backend-assigned conversationId for subsequent messages
+          if (event.conversationId) {
+            const isNew = !conversationIdRef.current;
+            conversationIdRef.current = event.conversationId;
+            setConversationId(event.conversationId);
+            // 新对话立即出现在历史列表（乐观更新）
+            if (isNew) {
+              optimisticAddConversation({
+                id: event.conversationId,
+                title: event.title || lastUserMessageRef.current.slice(0, 50),
+                agentType: event.agent,
+                messageCount: 1,
+              });
+            }
+          }
+          break;
 
-      case 'content':
-        // Only append when content is non-empty (skip keep-alive events)
-        if (event.content) {
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === messageId
-                ? { ...msg, content: msg.content + event.content, agent: event.agent || msg.agent }
-                : msg
-            )
-          );
-        }
-        break;
+        case 'content':
+          // Only append when content is non-empty (skip keep-alive events)
+          if (event.content) {
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === messageId
+                  ? {
+                      ...msg,
+                      content: msg.content + event.content,
+                      agent: event.agent || msg.agent,
+                    }
+                  : msg
+              )
+            );
+          }
+          break;
 
-      case 'tool_start':
-        if (event.tool) {
-          setActiveTools((prev) => [...prev, event.tool!]);
+        case 'tool_start':
+          if (event.tool) {
+            setActiveTools((prev) => [...prev, event.tool!]);
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === messageId
+                  ? {
+                      ...msg,
+                      toolCalls: [
+                        ...(msg.toolCalls || []),
+                        { name: event.tool!, status: 'running' },
+                      ],
+                    }
+                  : msg
+              )
+            );
+          }
+          break;
+
+        case 'tool_end':
+          if (event.tool) {
+            setActiveTools((prev) => prev.filter((t) => t !== event.tool));
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === messageId
+                  ? {
+                      ...msg,
+                      toolCalls: msg.toolCalls?.map((tc) =>
+                        tc.name === event.tool
+                          ? { ...tc, status: 'completed', result: event.toolResult }
+                          : tc
+                      ),
+                    }
+                  : msg
+              )
+            );
+          }
+          break;
+
+        case 'agent_switch':
+          if (event.agent) {
+            setCurrentAgent(event.agent);
+            setMessages((prev) =>
+              prev.map((msg) => (msg.id === messageId ? { ...msg, agent: event.agent } : msg))
+            );
+          }
+          break;
+
+        case 'done':
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === messageId
                 ? {
                     ...msg,
-                    toolCalls: [...(msg.toolCalls || []), { name: event.tool!, status: 'running' }],
+                    // Fallback: if no content events were received, use done.response.message
+                    content: msg.content || event.response?.message || msg.content,
+                    isStreaming: false,
+                    agent: event.agent || msg.agent,
                   }
                 : msg
             )
           );
-        }
-        break;
+          // 乐观更新时间戳，然后从服务端同步最新数据
+          if (conversationIdRef.current) {
+            optimisticUpdateConversation(conversationIdRef.current, {
+              updatedAt: new Date().toISOString(),
+            });
+          }
+          invalidateConversations();
+          break;
 
-      case 'tool_end':
-        if (event.tool) {
-          setActiveTools((prev) => prev.filter((t) => t !== event.tool));
+        case 'error':
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === messageId
-                ? {
-                    ...msg,
-                    toolCalls: msg.toolCalls?.map((tc) =>
-                      tc.name === event.tool
-                        ? { ...tc, status: 'completed', result: event.toolResult }
-                        : tc
-                    ),
-                  }
+                ? { ...msg, content: event.error || 'An error occurred', isStreaming: false }
                 : msg
             )
           );
-        }
-        break;
+          break;
+      }
+    },
+    [invalidateConversations, optimisticAddConversation, optimisticUpdateConversation]
+  );
 
-      case 'agent_switch':
-        if (event.agent) {
-          setCurrentAgent(event.agent);
-          setMessages((prev) =>
-            prev.map((msg) => (msg.id === messageId ? { ...msg, agent: event.agent } : msg))
-          );
-        }
-        break;
-
-      case 'done':
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === messageId
-              ? {
-                  ...msg,
-                  isStreaming: false,
-                  agent: event.agent || msg.agent,
-                }
-              : msg
-          )
-        );
-        break;
-
-      case 'error':
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === messageId
-              ? { ...msg, content: event.error || 'An error occurred', isStreaming: false }
-              : msg
-          )
-        );
-        break;
-    }
-  }, []);
+  // Keep ref in sync so sendMessage always uses the latest handleStreamEvent
+  handleStreamEventRef.current = handleStreamEvent;
 
   /** Abort the in-flight SSE stream and mark all streaming messages as complete. */
   const stopGeneration = useCallback(() => {
@@ -291,34 +350,90 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
   const clearMessages = useCallback(async () => {
     const oldConversationId = conversationIdRef.current;
     setMessages([]);
-    conversationIdRef.current = undefined; // Reset to start a new conversation
+    conversationIdRef.current = undefined;
+    setConversationId(undefined);
 
-    if (token && oldConversationId) {
+    if (oldConversationId) {
       try {
-        await fetch(
-          `${API_BASE_URL}/api/v1/ai-agent/conversation?conversationId=${oldConversationId}`,
-          {
-            method: 'DELETE',
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            credentials: 'include',
-          }
-        );
+        await apiClient.delete('/ai-agent/conversation', {
+          params: { conversationId: oldConversationId },
+        });
+        invalidateConversations();
       } catch {
         // Best-effort cleanup; ignore server errors
       }
     }
-  }, [token]);
+  }, [invalidateConversations]);
+
+  /**
+   * Load an existing conversation's messages from the server.
+   * Replaces the current messages state and sets the conversationId.
+   */
+  const loadConversation = useCallback(
+    async (targetConversationId: string) => {
+      setIsLoading(true);
+      try {
+        const res = await apiClient.get<{
+          messages: Array<{
+            id: string;
+            role: string;
+            content: string;
+            agentType?: string;
+            toolCalls?: ChatMessage['toolCalls'];
+            createdAt: string;
+          }>;
+        }>('/ai-agent/history', {
+          params: { conversationId: targetConversationId },
+        });
+
+        const rawMessages = res.messages ?? [];
+
+        const loadedMessages: ChatMessage[] = rawMessages
+          .filter((m) => m.role === 'user' || m.role === 'assistant')
+          .map((m) => ({
+            id: m.id,
+            role: m.role as 'user' | 'assistant',
+            content: m.content,
+            agent: m.agentType as AgentType | undefined,
+            toolCalls: m.toolCalls,
+            isStreaming: false,
+            timestamp: new Date(m.createdAt),
+          }));
+
+        setMessages(loadedMessages);
+        conversationIdRef.current = targetConversationId;
+        setConversationId(targetConversationId);
+      } catch {
+        options.onError?.(t('errorProcessing'));
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [options, t]
+  );
+
+  /**
+   * Start a new conversation without deleting the current one on the server.
+   * Unlike clearMessages(), this preserves the old conversation in history.
+   */
+  const startNewConversation = useCallback(() => {
+    setMessages([]);
+    conversationIdRef.current = undefined;
+    setConversationId(undefined);
+    setCurrentAgent('orchestrator');
+    setActiveTools([]);
+  }, []);
 
   return {
     messages,
     isLoading,
     currentAgent,
     activeTools,
-    conversationId: conversationIdRef.current,
+    conversationId,
     sendMessage,
     stopGeneration,
     clearMessages,
+    loadConversation,
+    startNewConversation,
   };
 }

@@ -1,6 +1,6 @@
 # 评分系统技术文档 (Scoring System)
 
-> 最后更新: 2026-02-09
+> 最后更新: 2026-02-13
 
 ---
 
@@ -34,6 +34,13 @@ export interface ProfileMetrics {
   awardCount: number; // 总奖项数量
   nationalAwardCount: number; // 国家级奖项数量
   internationalAwardCount: number; // 国际级奖项数量
+  awardTierScores?: number[]; // 每个奖项的分值（由 competition.tier 或 level 映射）
+  activityDetails?: Array<{
+    // 活动详情（用于质量评分）
+    category: string;
+    role: string;
+    totalHours: number;
+  }>;
 }
 ```
 
@@ -110,7 +117,7 @@ extractSchoolMetrics(school: {
 
 **GPA 分数 (最高 40 分)**:
 
-```
+```text
 normalizedGpa = normalizeGpa(gpa, scale)  // 归一化到 4.0 制
 gpaScore = (normalizedGpa / 4.0) * 40
 score += gpaScore - 20  // 以 3.0 GPA 为基准
@@ -120,7 +127,7 @@ GPA 归一化支持: 4.0 制（直接）、5.0 制（÷5×4）、100 分制（÷
 
 **SAT 分数 (+/- 15 分) — 四级 Fallback**:
 
-```
+```text
 Level 1: 平台历史数据 ≥ 30 条 → empiricalPercentile(score, sortedValues)
 Level 2: sat25 + sat75 → calculatePercentile(score, sat25, sat75)  // 正态 CDF
 Level 3: satAvg → 差值法: clamp(-15, (diff / 50) * 5, 15)
@@ -133,7 +140,7 @@ Level 4: 默认基准 1400
 
 **TOEFL 分数 (+/- 5 分)**:
 
-```
+```text
 toeflBonus = clamp(-5, (toeflScore - 100) / 4, 5)  // 100 为基准，120 满分
 ```
 
@@ -141,7 +148,7 @@ toeflBonus = clamp(-5, (toeflScore - 100) / 4, 5)  // 100 为基准，120 满分
 
 **新路径（有 activityDetails 时）:**
 
-```
+```text
 score = 20 (基础分)
       + min(30, activityCount * 3)              // 数量分
       + min(15, leadershipCount * 5)             // 领导力分
@@ -151,7 +158,7 @@ score = 20 (基础分)
 
 **Fallback（无 activityDetails）:**
 
-```
+```text
 score = 30 + min(50, activityCount * 5)
 ```
 
@@ -159,14 +166,14 @@ score = 30 + min(50, activityCount * 5)
 
 **新路径（有 awardTierScores 时）:**
 
-```
+```text
 score = sum(TIER_POINTS[competition.tier] or LEVEL_POINTS[award.level])
 score = clamp(0, score, 100)
 ```
 
 **Fallback（无 awardTierScores）:**
 
-```
+```text
 score = 20
 score += min(40, internationalAwardCount * 20)  // 国际级
 score += min(30, nationalAwardCount * 15)        // 国家级
@@ -177,7 +184,7 @@ score += min(20, otherAwardCount * 5)            // 其他
 
 ## 5. 综合分数
 
-```
+```text
 overall = academic * SCORING_WEIGHTS.academic + activity * SCORING_WEIGHTS.activity + award * SCORING_WEIGHTS.award
         = academic * 0.5 + activity * 0.3 + award * 0.2
 ```
@@ -194,7 +201,7 @@ overall = academic * SCORING_WEIGHTS.academic + activity * SCORING_WEIGHTS.activ
 
 ### 6.1 统计引擎概率 (scoring.ts)
 
-```
+```text
 baseRate = school.acceptanceRate / 100 || 0.30
 scoreDiff = (overallScore - 50) / 10
 probability = baseRate * 1.2^scoreDiff
@@ -210,7 +217,7 @@ probability = clamp(0.05, probability, 0.95)
 
 统计引擎仅是三引擎之一。在预测服务中，统计概率将与 AI 引擎和历史数据引擎的结果进行动态加权融合：
 
-```
+```text
 finalProbability = stats × W_stats + ai × W_ai + historical × W_historical + memoryAdjustment
 ```
 
@@ -257,7 +264,7 @@ finalProbability = stats × W_stats + ai × W_ai + historical × W_historical + 
 
 已有的 `sat25` / `sat75` 代表录取学生 SAT 分布的 25th 和 75th 百分位。假设分布近似正态:
 
-```
+```text
 mu = (sat25 + sat75) / 2
 sigma = (sat75 - sat25) / (2 * 0.6745)  // IQR → std dev
 percentile = Phi((studentSAT - mu) / sigma)  // 标准正态 CDF
@@ -307,7 +314,7 @@ percentile = Phi((studentSAT - mu) / sigma)  // 标准正态 CDF
 
 ### 评分公式
 
-```
+```text
 awardScore = sum(TIER_POINTS[competition.tier] for each award with competitionId)
            + sum(LEVEL_POINTS[award.level] for awards without competitionId)
 awardScore = clamp(0, awardScore, 100)
@@ -315,7 +322,7 @@ awardScore = clamp(0, awardScore, 100)
 
 ### 数据链路
 
-```
+```text
 Award.competitionId → Competition.tier → TIER_POINTS 映射 → calculateAwardScore
 Award.level → LEVEL_POINTS 映射 → calculateAwardScore (fallback)
 ```
@@ -334,7 +341,7 @@ Award.level → LEVEL_POINTS 映射 → calculateAwardScore (fallback)
 
 - ✅ Competition 模型已创建
 - ✅ Award 已添加 competitionId FK
-- ✅ 90+ 竞赛种子数据已准备
+- ✅ 95 条竞赛种子数据已准备
 - ✅ `calculateAwardScore` 已迁移 (双路径: tier 评分 + level fallback)
 - ✅ `extractProfileMetrics` 已接入 competition.tier
 - ✅ 所有调用方 Prisma include 已更新 (`awards: { include: { competition: true } }`)
@@ -349,7 +356,7 @@ Award.level → LEVEL_POINTS 映射 → calculateAwardScore (fallback)
 
 ### 评分公式
 
-```
+```text
 score = 20 (基础分)
       + min(30, activityCount * 3)              // 数量分
       + min(15, leadershipCount * 5)             // 领导力分
@@ -396,7 +403,7 @@ score = clamp(0, score, 100)
 
 ### 数据流
 
-```
+```text
 AdmissionCase (isVerified, ADMITTED) → parseRange → sort → empiricalPercentile → calculateAcademicScore
 ```
 
@@ -437,10 +444,14 @@ AdmissionCase (isVerified, ADMITTED) → parseRange → sort → empiricalPercen
 ### PercentileBands 计算
 
 ```typescript
-private calcBands(values: number[]): { p25: number; p50: number; p75: number } {
+private calcBands(values: number[]): PercentileBands {
+  if (values.length === 0) return { p25: 0, p50: 0, p75: 0 };
   const sorted = [...values].sort((a, b) => a - b);
-  const at = (p: number) => sorted[Math.floor(sorted.length * p)] ?? sorted[sorted.length - 1];
-  return { p25: round(at(0.25)), p50: round(at(0.5)), p75: round(at(0.75)) };
+  const at = (p: number) =>
+    Math.round(
+      (sorted[Math.floor(sorted.length * p)] ?? sorted[sorted.length - 1]) * 10,
+    ) / 10;
+  return { p25: at(0.25), p50: at(0.5), p75: at(0.75) };
 }
 ```
 
@@ -469,7 +480,7 @@ private calcBands(values: number[]): { p25: number; p50: number; p75: number } {
 
 ### 综合分数计算
 
-```
+```text
 overallScore = academicScore * 0.3 + testScore * 0.3 + activityScore * 0.2 + awardScore * 0.2
 ```
 

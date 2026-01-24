@@ -12,6 +12,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { MemoryType } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { EmbeddingService } from './embedding.service';
+import { MemoryMetadata } from './types';
 
 // ==================== 类型定义 ====================
 
@@ -48,7 +49,7 @@ export interface MemoryInput {
   category?: string;
   content: string;
   importance: number;
-  metadata?: Record<string, any>;
+  metadata?: MemoryMetadata;
   createdAt?: Date;
 }
 
@@ -249,7 +250,7 @@ export class MemoryConflictService {
           category: existing.category || undefined,
           content: existing.content,
           importance: existing.importance,
-          metadata: existing.metadata as Record<string, any>,
+          metadata: existing.metadata as MemoryMetadata | undefined,
           createdAt: existing.createdAt,
         },
         conflictType: 'key',
@@ -289,7 +290,7 @@ export class MemoryConflictService {
           category: existing.category || undefined,
           content: existing.content,
           importance: existing.importance,
-          metadata: existing.metadata as Record<string, any>,
+          metadata: existing.metadata as MemoryMetadata | undefined,
           createdAt: existing.createdAt,
         },
         conflictType: 'exact',
@@ -313,6 +314,9 @@ export class MemoryConflictService {
     // 获取新记忆的向量
     const newEmbedding = await this.embedding.embed(memory.content);
     if (newEmbedding.length === 0) {
+      this.logger.warn(
+        `checkSemanticSimilarity: embedding unavailable, skipping semantic conflict check`,
+      );
       return {
         hasConflict: false,
         suggestedStrategy: ConflictStrategy.KEEP_BOTH,
@@ -534,8 +538,7 @@ export class MemoryConflictService {
           ...newMemory.metadata,
           dedupeKey,
           mergedAt: new Date().toISOString(),
-          mergeCount:
-            ((existingMemory.metadata?.mergeCount as number) || 0) + 1,
+          mergeCount: (existingMemory.metadata?.mergeCount || 0) + 1,
         },
       },
       reason: '合并两条记忆内容',
@@ -645,7 +648,7 @@ export class MemoryConflictService {
       category: m.category || undefined,
       content: m.content,
       importance: m.importance,
-      metadata: m.metadata as Record<string, any>,
+      metadata: m.metadata as MemoryMetadata | undefined,
       createdAt: m.createdAt,
     }));
   }

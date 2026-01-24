@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { EmojiPicker } from './EmojiPicker';
 import { cn } from '@/lib/utils';
 import { Send, Paperclip, Image as ImageIcon, X, Loader2 } from 'lucide-react';
@@ -28,7 +28,7 @@ export function MessageInput({
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [attachments, setAttachments] = useState<File[]>([]);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -202,14 +202,15 @@ export function MessageInput({
 
         {/* 输入框 */}
         <div className="relative flex-1">
-          <Input
+          <Textarea
             ref={inputRef}
             value={message}
             onChange={(e) => handleChange(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             disabled={disabled || isSending}
-            className="pr-12 h-11"
+            rows={1}
+            className="min-h-[44px] max-h-[160px] resize-none pr-12 py-2.5"
           />
           <div className="absolute right-2 top-1/2 -translate-y-1/2">
             <EmojiPicker onEmojiSelect={handleEmojiSelect} />

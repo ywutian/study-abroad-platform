@@ -216,7 +216,7 @@ import { PageHeader } from '@/components/layout/page-header';
 Typography 规范通过 CI 脚本 `scripts/check-typography.ts` 自动检测：
 
 ```bash
-npm run lint:typography
+pnpm --filter web lint:typography
 ```
 
 检测规则：
@@ -248,3 +248,7 @@ Hint/Timestamp  → text-caption / Text variant="caption"
 Category Tag    → text-overline / Text variant="overline"
 Badge/Mini      → text-2xs
 ```
+
+---
+
+_最后更新: 2026-02-13_

@@ -1,12 +1,9 @@
 # ADR-0006: Prisma Exception Handling in Global Filter
 
-## Status
-
-Accepted
-
-## Date
-
-2026-02-07
+- Status: accepted
+- Date: 2026-02-07
+- Decision-makers: Core Team
+- Tags: backend, error-handling, prisma
 
 ## Context
 
@@ -49,3 +46,8 @@ Additional measures:
 
 - New Prisma error codes may need manual mapping as Prisma evolves
 - Tests must account for the new error response format
+
+### Neutral
+
+- Prisma 5.x error codes are used; mappings may need review on major Prisma upgrades
+- The filter is registered globally via `APP_FILTER`; no per-module configuration needed

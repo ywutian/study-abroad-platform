@@ -224,7 +224,7 @@ export class WebSearchService {
   // ==================== 通用搜索 ====================
 
   /**
-   * 通用 Web 搜索（主引擎：Google，降级：Tavily）
+   * 通用 Web 搜索（主引擎：Tavily，降级：Google）
    */
   async search(
     query: string,
@@ -233,7 +233,7 @@ export class WebSearchService {
     if (!this.isAvailable()) {
       return {
         results: [],
-        source: 'google',
+        source: 'tavily',
         query,
         cached: false,
       };
@@ -248,45 +248,45 @@ export class WebSearchService {
       return { ...cached, cached: true, source: 'cache' };
     }
 
-    // 2. 调用搜索引擎（带降级）
+    // 2. 调用搜索引擎（主引擎 Tavily，降级 Google）
     let response: SearchResponse;
 
     try {
-      if (this.googleEnabled) {
-        // 主路径：Google
-        response = await this.executeWithResilience('google-search', () =>
-          this.googleSearch(query, maxResults, topic),
-        );
-      } else if (this.tavilyEnabled) {
-        // Google 未配置，直接用 Tavily
+      if (this.tavilyEnabled) {
+        // 主路径：Tavily
         response = await this.executeWithResilience('tavily-search', () =>
           this.tavilySearch(query, maxResults, topic),
         );
+      } else if (this.googleEnabled) {
+        // Tavily 未配置，直接用 Google
+        response = await this.executeWithResilience('google-search', () =>
+          this.googleSearch(query, maxResults, topic),
+        );
       } else {
-        return { results: [], source: 'google', query, cached: false };
+        return { results: [], source: 'tavily', query, cached: false };
       }
-    } catch (googleError) {
-      // Google 失败，降级到 Tavily
+    } catch (primaryError) {
+      // Tavily 失败，降级到 Google
       this.logger.warn(
-        `Primary search failed, trying fallback: ${googleError}`,
+        `Primary search (Tavily) failed, trying Google fallback: ${primaryError}`,
       );
 
-      if (this.tavilyEnabled && this.googleEnabled) {
+      if (this.googleEnabled && this.tavilyEnabled) {
         try {
-          response = await this.executeWithResilience('tavily-search', () =>
-            this.tavilySearch(query, maxResults, topic),
+          response = await this.executeWithResilience('google-search', () =>
+            this.googleSearch(query, maxResults, topic),
           );
-        } catch (tavilyError) {
-          this.logger.error(`All search engines failed: ${tavilyError}`);
+        } catch (googleError) {
+          this.logger.error(`All search engines failed: ${googleError}`);
           return {
             results: [],
-            source: 'google',
+            source: 'tavily',
             query,
             cached: false,
           };
         }
       } else {
-        return { results: [], source: 'google', query, cached: false };
+        return { results: [], source: 'tavily', query, cached: false };
       }
     }
 

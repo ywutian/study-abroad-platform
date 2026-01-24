@@ -14,6 +14,8 @@ interface Message {
   conversationId: string;
   createdAt: string;
   isDeleted?: boolean;
+  isRecalled?: boolean;
+  recalledAt?: string;
   mediaUrl?: string;
   mediaType?: string;
   sender?: {
@@ -51,6 +53,7 @@ interface UseChatSocketOptions {
   onOnlineStatusChange?: (userId: string, isOnline: boolean) => void;
   onMessagesRead?: (data: ReadReceipt) => void;
   onMessageDeleted?: (data: { messageId: string; conversationId: string }) => void;
+  onMessageRecalled?: (data: { messageId: string; conversationId: string }) => void;
 }
 
 export function useChatSocket(options: UseChatSocketOptions = {}) {
@@ -117,10 +120,13 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
         }
       );
 
-      // 刷新会话列表
-      queryClientRef.current.invalidateQueries({ queryKey: ['conversations'] });
-
+      // 先执行回调（让页面有机会 markRead + 乐观更新）
       optionsRef.current.onNewMessage?.(data.message);
+
+      // 延迟刷新会话列表，给 markRead 足够时间处理
+      setTimeout(() => {
+        queryClientRef.current.invalidateQueries({ queryKey: ['conversations'] });
+      }, 300);
     });
 
     // 已读回执
@@ -144,6 +150,33 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
         }
       );
       optionsRef.current.onMessageDeleted?.(data);
+    });
+
+    // 消息撤回
+    socket.on('messageRecalled', (data: { messageId: string; conversationId: string }) => {
+      queryClientRef.current.setQueryData(
+        ['messages', data.conversationId],
+        (old: InfiniteMessagesData | undefined) => {
+          if (!old?.pages) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page) =>
+              page.map((m) =>
+                m.id === data.messageId
+                  ? {
+                      ...m,
+                      isRecalled: true,
+                      content: '',
+                      mediaUrl: undefined,
+                      mediaType: undefined,
+                    }
+                  : m
+              )
+            ),
+          };
+        }
+      );
+      optionsRef.current.onMessageRecalled?.(data);
     });
 
     // 输入状态
@@ -249,9 +282,12 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
     socketRef.current?.emit('joinConversation', { conversationId });
   }, []);
 
-  // 标记已读
-  const markRead = useCallback((conversationId: string) => {
-    socketRef.current?.emit('markRead', { conversationId });
+  // 标记已读（返回 Promise，等待服务端确认后再刷新）
+  const markRead = useCallback((conversationId: string): Promise<void> => {
+    return new Promise((resolve) => {
+      if (!socketRef.current) return resolve();
+      socketRef.current.emit('markRead', { conversationId }, () => resolve());
+    });
   }, []);
 
   // 发送 typing 状态

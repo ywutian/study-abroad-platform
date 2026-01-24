@@ -4,10 +4,34 @@
  * Redis 缓存 + 内存LRU降级
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash } from 'crypto';
 import { RedisService } from '../../../common/redis/redis.service';
+import { ResilienceService } from '../core/resilience.service';
+
+const EMBEDDING_CONFIG = {
+  timeoutMs: 15000,
+  retryConfig: {
+    maxAttempts: 3,
+    baseDelayMs: 500,
+    maxDelayMs: 5000,
+    retryableErrors: [
+      '429',
+      '500',
+      '502',
+      '503',
+      '504',
+      'ECONNRESET',
+      'ETIMEDOUT',
+    ],
+  },
+  circuitConfig: {
+    failureThreshold: 5,
+    resetTimeoutMs: 30000,
+    halfOpenRequests: 2,
+  },
+};
 
 @Injectable()
 export class EmbeddingService {
@@ -26,6 +50,7 @@ export class EmbeddingService {
   constructor(
     private redis: RedisService,
     private config: ConfigService,
+    @Optional() private resilience?: ResilienceService,
   ) {
     this.apiKey = this.config.get('OPENAI_API_KEY', '');
     this.baseUrl = this.config.get(
@@ -33,6 +58,17 @@ export class EmbeddingService {
       'https://api.openai.com/v1',
     );
     this.model = this.config.get('EMBEDDING_MODEL', 'text-embedding-3-small');
+  }
+
+  private async executeWithResilience<T>(fn: () => Promise<T>): Promise<T> {
+    if (this.resilience) {
+      return this.resilience.execute('embedding', fn, {
+        retry: EMBEDDING_CONFIG.retryConfig,
+        circuit: EMBEDDING_CONFIG.circuitConfig,
+        timeoutMs: EMBEDDING_CONFIG.timeoutMs,
+      });
+    }
+    return fn();
   }
 
   /**
@@ -47,39 +83,51 @@ export class EmbeddingService {
     }
 
     const cacheKey = this.hashText(text);
-
-    // 尝试从 Redis 获取
     const cached = await this.getCachedEmbedding(cacheKey);
-    if (cached) {
-      return cached;
-    }
+    if (cached) return cached;
 
     try {
-      const response = await fetch(`${this.baseUrl}/embeddings`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: this.model,
-          input: text.slice(0, 8000), // 限制长度
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Embedding API error: ${response.status}`);
+      if (text.length > 8000) {
+        this.logger.warn(
+          `Embedding text truncated: ${text.length} → 8000 chars`,
+        );
       }
 
-      const data = await response.json();
-      const embedding = data.data?.[0]?.embedding || [];
+      const embedding = await this.executeWithResilience(async () => {
+        const response = await fetch(`${this.baseUrl}/embeddings`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.apiKey}`,
+          },
+          body: JSON.stringify({
+            model: this.model,
+            input: text.slice(0, 8000),
+          }),
+        });
 
-      // 缓存结果
-      await this.cacheEmbedding(cacheKey, embedding);
+        if (!response.ok) {
+          const errorBody = await response.text();
+          this.logger.error(
+            `Embedding API error: ${response.status} - ${errorBody}`,
+          );
+          throw new Error(
+            `Embedding API error: ${response.status} - ${errorBody}`,
+          );
+        }
 
+        const data = await response.json();
+        return data.data?.[0]?.embedding || [];
+      });
+
+      if (embedding.length > 0) {
+        await this.cacheEmbedding(cacheKey, embedding);
+      }
       return embedding;
     } catch (error) {
-      this.logger.error('Failed to generate embedding', error);
+      this.logger.warn(
+        `Embedding generation failed, degrading to empty vector: ${error instanceof Error ? error.message : error}`,
+      );
       return [];
     }
   }
@@ -92,15 +140,12 @@ export class EmbeddingService {
       return texts.map(() => []);
     }
 
-    // 检查缓存命中
     const cacheKeys = texts.map((t) => this.hashText(t));
     const cachedResults = await Promise.all(
       cacheKeys.map((key) => this.getCachedEmbedding(key)),
     );
 
     const results: (number[] | null)[] = cachedResults;
-
-    // 找出需要请求的
     const toFetch: { index: number; text: string }[] = [];
     results.forEach((r, i) => {
       if (!r) {
@@ -113,39 +158,54 @@ export class EmbeddingService {
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/embeddings`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: this.model,
-          input: toFetch.map((t) => t.text.slice(0, 8000)),
-        }),
+      const apiEmbeddings = await this.executeWithResilience(async () => {
+        const response = await fetch(`${this.baseUrl}/embeddings`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.apiKey}`,
+          },
+          body: JSON.stringify({
+            model: this.model,
+            input: toFetch.map((t) => t.text.slice(0, 8000)),
+          }),
+        });
+
+        if (!response.ok) {
+          const errorBody = await response.text();
+          this.logger.error(
+            `Embedding batch API error: ${response.status} - ${errorBody}`,
+          );
+          throw new Error(
+            `Embedding API error: ${response.status} - ${errorBody}`,
+          );
+        }
+
+        const data = (await response.json()) as {
+          data?: Array<{ index: number; embedding: number[] }>;
+        };
+        return data.data || [];
       });
 
-      if (!response.ok) {
-        throw new Error(`Embedding API error: ${response.status}`);
-      }
-
-      const data = (await response.json()) as {
-        data?: Array<{ embedding: number[] }>;
-      };
-      const embeddings = data.data?.map((d) => d.embedding) || [];
-
-      // 填充结果并缓存
       await Promise.all(
-        embeddings.map(async (emb: number[], i: number) => {
-          const { index, text } = toFetch[i];
-          results[index] = emb;
-          await this.cacheEmbedding(this.hashText(text), emb);
+        apiEmbeddings.map(async (item) => {
+          if (item.index < 0 || item.index >= toFetch.length) {
+            this.logger.warn(
+              `Embedding batch: unexpected index ${item.index} (expected 0-${toFetch.length - 1})`,
+            );
+            return;
+          }
+          const { index: originalIndex, text } = toFetch[item.index];
+          results[originalIndex] = item.embedding;
+          await this.cacheEmbedding(this.hashText(text), item.embedding);
         }),
       );
 
-      return results as number[][];
+      return results.map((r) => r || []) as number[][];
     } catch (error) {
-      this.logger.error('Failed to generate batch embeddings', error);
+      this.logger.warn(
+        `Batch embedding failed, degrading to empty vectors: ${error instanceof Error ? error.message : error}`,
+      );
       return texts.map(() => []);
     }
   }
@@ -281,5 +341,22 @@ export class EmbeddingService {
       mode: 'memory',
       fallbackSize: this.fallbackCache.size,
     };
+  }
+
+  async getServiceStatus(): Promise<{
+    isHealthy: boolean;
+    circuitState?: string;
+    cacheMode: 'redis' | 'memory';
+  }> {
+    const cacheStats = await this.getCacheStats();
+    if (this.resilience) {
+      const status = await this.resilience.getCircuitStatus('embedding');
+      return {
+        isHealthy: !status.isOpen,
+        circuitState: status.state,
+        cacheMode: cacheStats.mode,
+      };
+    }
+    return { isHealthy: true, cacheMode: cacheStats.mode };
   }
 }

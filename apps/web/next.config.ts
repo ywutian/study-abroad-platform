@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
   },
   // 代理 API 请求到后端，避免跨域 cookie 问题
   async rewrites() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3010';
     return [
       {
         source: '/api/:path*',

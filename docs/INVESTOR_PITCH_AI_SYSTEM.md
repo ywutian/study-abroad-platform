@@ -8,10 +8,10 @@
 
 | 指标           | 数据                                    |
 | -------------- | --------------------------------------- |
-| **架构类型**   | 自研多 Agent + 三层记忆系统             |
+| **架构类型**   | 自研多 Agent + ReWOO 工作流 + 三层记忆  |
 | **技术栈**     | NestJS + PostgreSQL + pgvector + Redis  |
 | **Agent 数量** | 5个专业 Agent（可扩展）                 |
-| **工具数量**   | 16个业务工具                            |
+| **工具数量**   | 32个业务工具（12个分类）                |
 | **依赖框架**   | 无（不依赖 LangChain 等第三方 AI 框架） |
 | **合规性**     | GDPR 兼容（完整数据导出/删除 API）      |
 
@@ -19,7 +19,7 @@
 
 ## 一、系统架构全景
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                              用户层 (Web / Mobile / Extension)                │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -57,7 +57,7 @@
 │  ┌────────────┐                                          ┌────────────┐     │
 │  │  Timeline  │                                          │   Agent    │     │
 │  │   规划     │◀─────────────────────────────────────────│   Runner   │     │
-│  │ (时间线)   │                                          │  ReAct Loop│     │
+│  │ (时间线)   │                                          │ReWOO工作流 │     │
 │  └────────────┘                                          └────────────┘     │
 └─────────────────────────────────────────────────────────────────────────────┘
                                         │
@@ -68,9 +68,9 @@
 │                                                                              │
 │  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐          │
 │  │    LLM 服务      │  │    工具执行器     │  │   记忆管理器      │          │
-│  │  (OpenAI API)    │  │  (16个业务工具)   │  │  (三层架构)       │          │
-│  │  • 流式输出       │  │  • 档案/学校/文书 │  │  • Redis 短期     │          │
-│  │  • Token追踪      │  │  • 案例/时间线    │  │  • PostgreSQL长期 │          │
+│  │  (OpenAI API)    │  │  (32个业务工具)   │  │  (三层架构)       │          │
+│  │  • 流式输出       │  │  • 12个工具分类   │  │  • Redis 短期     │          │
+│  │  • Token追踪      │  │  • 含联网搜索     │  │  • PostgreSQL长期 │          │
 │  │  • 重试/熔断      │  │  • 超时保护       │  │  • pgvector语义   │          │
 │  └──────────────────┘  └──────────────────┘  └──────────────────┘          │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -82,7 +82,7 @@
 
 ### 2.1 Agent 协作模型
 
-```
+```text
 用户: "帮我选校，我 GPA 3.8，目标 CS"
                 │
                 ▼
@@ -111,34 +111,33 @@
 
 ### 2.2 五大专业 Agent
 
-| Agent                 | 职责                 | 核心工具                                                          | 典型场景               |
-| --------------------- | -------------------- | ----------------------------------------------------------------- | ---------------------- |
-| **🎯 Orchestrator**   | 智能路由、任务协调   | `delegate_to_agent`                                               | 理解用户意图，分发任务 |
-| **📝 Essay Agent**    | 文书写作、修改、评估 | `review_essay`, `polish_essay`, `brainstorm_ideas`                | "帮我看看这篇文书"     |
-| **🏫 School Agent**   | 选校推荐、录取分析   | `search_schools`, `recommend_schools`, `analyze_admission_chance` | "帮我选10所学校"       |
-| **👤 Profile Agent**  | 档案管理、背景分析   | `get_profile`, `update_profile`                                   | "分析我的竞争力"       |
-| **📅 Timeline Agent** | 时间规划、截止日期   | `get_deadlines`, `create_timeline`, `search_cases`                | "帮我做申请规划"       |
+| Agent                 | 职责                 | 核心工具                                                                                   | 典型场景               |
+| --------------------- | -------------------- | ------------------------------------------------------------------------------------------ | ---------------------- |
+| **🎯 Orchestrator**   | 智能路由、任务协调   | `delegate_to_agent`, 论坛工具, 案例预测工具, 档案排名工具, `web_search`                    | 理解用户意图，分发任务 |
+| **📝 Essay Agent**    | 文书写作、修改、评估 | `review_essay`, `polish_essay`, `brainstorm_ideas`, `generate_outline`, `get_essays`       | "帮我看看这篇文书"     |
+| **🏫 School Agent**   | 选校推荐、录取分析   | `search_schools`, `recommend_schools`, `analyze_admission_chance`, `search_school_website` | "帮我选10所学校"       |
+| **👤 Profile Agent**  | 档案管理、背景分析   | `get_profile`, `update_profile`, 测评工具 (3个)                                            | "分析我的竞争力"       |
+| **📅 Timeline Agent** | 时间规划、截止日期   | `get_deadlines`, `create_timeline`, 个人事件工具, `search_cases`, `search_school_website`  | "帮我做申请规划"       |
 
 ### 2.3 Agent 配置示例
 
 ```typescript
-// School Agent 配置
+// School Agent 配置 (摘自 agents.config.ts)
 {
   type: AgentType.SCHOOL,
   name: '选校专家',
   description: '专注于学校搜索、对比、推荐和录取分析',
-  systemPrompt: `你是一位专业的留学选校顾问，精通美国大学申请策略。
+  systemPrompt: `留学选校顾问。
 
-## 你的专长：
-1. 学校信息查询 - 排名、录取率、学费、地理位置
-2. 选校推荐 - 根据学生背景推荐冲刺/匹配/保底校
-3. 学校对比 - 多维度对比帮助决策
-4. 录取分析 - 评估申请某校的录取概率
+能力: 学校查询|选校推荐|学校对比|录取分析|学校官网信息搜索
 
-## 选校原则：
-- 冲刺校 (Reach): 录取概率 < 30%
-- 匹配校 (Match): 录取概率 30-70%
-- 保底校 (Safety): 录取概率 > 70%`,
+选校分层:
+- Reach(<30%): 冲刺校
+- Match(30-70%): 匹配校
+- Safety(>70%): 保底校
+
+考虑因素: GPA/标化匹配度、专业排名、地理位置、学费奖学金、校园规模
+...`,
 
   tools: [
     'get_profile',
@@ -147,6 +146,7 @@
     'compare_schools',
     'recommend_schools',
     'analyze_admission_chance',
+    'search_school_website',   // 联网搜索学校官网
   ],
 
   canDelegate: [AgentType.ORCHESTRATOR],
@@ -156,30 +156,35 @@
 }
 ```
 
-### 2.4 ReAct 推理循环
+### 2.4 ReWOO 三阶段工作流
 
-```
+> 基于 ReWOO (Reason Without Observation) 模式，而非 ReAct 循环。
+> 一次规划 → 批量执行 → 统一总结，杜绝重复 LLM 调用。
+
+```text
 ┌─────────────────────────────────────────────────────────────┐
-│                    Agent Runner (ReAct Loop)                │
+│            WorkflowEngineService (ReWOO 三阶段)              │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│   1. 构建 System Prompt (+ 记忆上下文)                       │
-│                     ↓                                       │
-│   2. 调用 LLM                                               │
-│                     ↓                                       │
-│   3. 解析响应                                               │
-│         │                                                   │
-│    ┌────┴────┐                                              │
-│    ▼         ▼                                              │
-│  有工具调用?  无工具调用?                                    │
-│    │             │                                          │
-│    ▼             ▼                                          │
-│  执行工具     返回最终响应                                   │
-│    │                                                        │
-│    ▼                                                        │
-│  记录工具结果                                                │
-│    │                                                        │
-│    └────→ 循环 (最多 8 次迭代)                              │
+│   Phase 1: PLAN (规划)                                      │
+│   ┌───────────────────────────────────────────────────────┐ │
+│   │  LLM 分析用户意图 → 一次性规划所有需要的工具调用       │ │
+│   │  快速路径: 不需要工具 → 直接返回文本回复               │ │
+│   │  委派路径: delegate_to_agent → 直接委派，不执行工具    │ │
+│   └───────────────────────────────────────────────────────┘ │
+│                         ↓                                   │
+│   Phase 2: EXECUTE (执行)                                   │
+│   ┌───────────────────────────────────────────────────────┐ │
+│   │  按计划依次执行所有工具（无 LLM 参与，杜绝重复）       │ │
+│   │  每个工具有 30s 超时保护                               │ │
+│   │  失败标记 → Solve 阶段基于已有结果生成回复             │ │
+│   └───────────────────────────────────────────────────────┘ │
+│                         ↓                                   │
+│   Phase 3: SOLVE (总结)                                     │
+│   ┌───────────────────────────────────────────────────────┐ │
+│   │  LLM 综合所有工具结果 → 生成最终回复（流式输出）       │ │
+│   │  空内容 fallback: 流式失败 → 自动重试非流式            │ │
+│   └───────────────────────────────────────────────────────┘ │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -190,7 +195,7 @@
 
 ### 3.1 三层记忆架构
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                           🧠 Memory Manager Service                          │
 │                                                                              │
@@ -260,7 +265,7 @@ enum EntityType {
 
 ### 3.4 记忆检索流程 (RAG)
 
-```
+```text
 用户提问: "MIT 的 CS 录取率是多少？"
                 │
                 ▼
@@ -387,7 +392,7 @@ async summarizeConversation(messages: MessageRecord[]): Promise<ConversationSumm
 // 超时控制
 {
   llmTimeout: 30000,        // LLM调用 30s
-  toolTimeout: 10000        // 工具执行 10s
+  toolTimeout: 30000        // 工具执行 30s
 }
 ```
 
@@ -494,26 +499,42 @@ CREATE TABLE "UserAIPreference" (
 
 ## 六、工具系统
 
-### 6.1 工具列表 (16个)
+### 6.1 工具列表 (32个，12个分类)
 
-| 类别       | 工具名                     | 功能                 |
-| ---------- | -------------------------- | -------------------- |
-| **协调**   | `delegate_to_agent`        | 委派任务给专业 Agent |
-| **档案**   | `get_profile`              | 获取用户完整档案     |
-|            | `update_profile`           | 更新档案字段         |
-| **学校**   | `search_schools`           | 多条件搜索学校       |
-|            | `get_school_details`       | 获取学校详情         |
-|            | `compare_schools`          | 多校对比             |
-|            | `recommend_schools`        | AI 智能选校推荐      |
-|            | `analyze_admission_chance` | 录取概率分析         |
-| **文书**   | `get_essays`               | 获取用户文书列表     |
-|            | `review_essay`             | 文书评估打分         |
-|            | `polish_essay`             | 文书润色             |
-|            | `generate_outline`         | 生成文书大纲         |
-|            | `brainstorm_ideas`         | 头脑风暴创意         |
-| **案例**   | `search_cases`             | 搜索录取案例         |
-| **时间线** | `get_deadlines`            | 获取截止日期         |
-|            | `create_timeline`          | 创建申请时间线       |
+| 分类         | 工具名                               | 功能                       |
+| ------------ | ------------------------------------ | -------------------------- |
+| **委派**     | `delegate_to_agent`                  | 委派任务给专业 Agent       |
+| **档案**     | `get_profile`                        | 获取用户完整档案           |
+|              | `update_profile`                     | 更新档案字段               |
+| **学校**     | `search_schools`                     | 多条件搜索学校             |
+|              | `get_school_details`                 | 获取学校详情               |
+|              | `compare_schools`                    | 多校对比                   |
+| **文书**     | `get_essays`                         | 获取用户文书列表           |
+|              | `review_essay`                       | 文书评估打分               |
+|              | `polish_essay`                       | 文书润色                   |
+|              | `generate_outline`                   | 生成文书大纲               |
+|              | `brainstorm_ideas`                   | 头脑风暴创意               |
+| **选校**     | `recommend_schools`                  | AI 智能选校推荐            |
+|              | `analyze_admission_chance`           | 录取概率分析               |
+| **案例**     | `search_cases`                       | 搜索录取案例               |
+| **时间线**   | `get_deadlines`                      | 获取截止日期               |
+|              | `create_timeline`                    | 创建申请时间线             |
+|              | `get_personal_events`                | 获取个人事件列表           |
+|              | `create_personal_event`              | 创建个人事件               |
+| **测评**     | `get_assessment_results`             | 获取 MBTI/Holland 测评结果 |
+|              | `interpret_assessment`               | 深度解读测评结果           |
+|              | `suggest_activities_from_assessment` | 基于测评推荐活动           |
+| **论坛**     | `search_forum_posts`                 | 搜索论坛帖子               |
+|              | `get_popular_discussions`            | 获取热门讨论               |
+|              | `answer_forum_question`              | 回答留学问题               |
+| **案例预测** | `explain_case_result`                | 解释录取案例结果           |
+|              | `analyze_prediction_accuracy`        | 分析预测准确率             |
+|              | `compare_case_with_profile`          | 案例与档案对比             |
+| **档案排名** | `analyze_profile_ranking`            | 档案竞争力排名             |
+|              | `suggest_profile_improvements`       | 档案改进建议               |
+|              | `compare_with_admitted_profiles`     | 与已录取档案对比           |
+| **外部搜索** | `web_search`                         | 搜索互联网获取实时信息     |
+|              | `search_school_website`              | 搜索学校官网权威信息       |
 
 ### 6.2 工具定义格式
 
@@ -555,7 +576,7 @@ CREATE TABLE "UserAIPreference" (
 
 ### 7.2 数据护城河
 
-```
+```text
 用户使用量 ↑
      │
      ▼
@@ -596,16 +617,20 @@ interface UserDataStats {
 
 ### Phase 1: 当前 (2026 Q1) ✅
 
-- [x] 多 Agent 协作架构
+- [x] 多 Agent 协作架构（ReWOO 三阶段工作流）
 - [x] 三层记忆系统
-- [x] 16 个业务工具
-- [x] 流式输出
+- [x] 32 个业务工具（12 个分类）
+- [x] 流式输出 (SSE)
 - [x] GDPR 合规 API
+- [x] 记忆重要性衰减算法（memory-decay.service.ts）
+- [x] 记忆压缩与冲突解决
+- [x] 联网搜索（web_search + search_school_website）
+- [x] 测评集成（MBTI / Holland）
+- [x] 论坛与案例预测工具集成
 
 ### Phase 2: 近期 (2026 Q2)
 
 - [ ] Agent 自主学习（从用户反馈优化）
-- [ ] 记忆重要性衰减算法
 - [ ] 多模态支持（图片/文档解析）
 - [ ] Agent 对话可视化
 
@@ -622,7 +647,7 @@ interface UserDataStats {
 
 ### 场景1: 首次对话（记忆建立）
 
-```
+```text
 用户: 你好，我 GPA 3.8，想申 CS
 AI: 了解！你的 GPA 3.8 属于竞争力较强的水平。
     我帮你记下了这些信息，以后不用重复说。
@@ -633,7 +658,7 @@ AI: 了解！你的 GPA 3.8 属于竞争力较强的水平。
 
 ### 场景2: 后续对话（记忆检索）
 
-```
+```text
 用户: 帮我选校
 AI: 根据你之前提到的 GPA 3.8 和 CS 方向，我为你推荐：
 
@@ -648,7 +673,7 @@ AI: 根据你之前提到的 GPA 3.8 和 CS 方向，我为你推荐：
 
 ### 场景3: 跨会话记忆
 
-```
+```text
 （新对话）
 用户: 我上次说想 ED MIT，现在改想 ED Stanford 了
 AI: 了解！我帮你更新了 ED 目标校。
@@ -677,18 +702,22 @@ AI: 了解！我帮你更新了 ED 目标校。
 
 ## 附录: 核心代码位置
 
-| 组件           | 路径                                                             |
-| -------------- | ---------------------------------------------------------------- |
-| Agent 配置     | `apps/api/src/modules/ai-agent/config/agents.config.ts`          |
-| 工具配置       | `apps/api/src/modules/ai-agent/config/tools.config.ts`           |
-| 协调器         | `apps/api/src/modules/ai-agent/core/orchestrator.service.ts`     |
-| Agent 运行器   | `apps/api/src/modules/ai-agent/core/agent-runner.service.ts`     |
-| 记忆管理器     | `apps/api/src/modules/ai-agent/memory/memory-manager.service.ts` |
-| Embedding 服务 | `apps/api/src/modules/ai-agent/memory/embedding.service.ts`      |
-| 摘要服务       | `apps/api/src/modules/ai-agent/memory/summarizer.service.ts`     |
-| 数据库模型     | `apps/api/prisma/schema.prisma`                                  |
-| 架构文档       | `docs/AI_AGENT_ARCHITECTURE.md`                                  |
+| 组件             | 路径                                                                |
+| ---------------- | ------------------------------------------------------------------- |
+| Agent 配置       | `apps/api/src/modules/ai-agent/config/agents.config.ts`             |
+| 工具配置 (32个)  | `apps/api/src/modules/ai-agent/config/tools.config.ts`              |
+| 协调器           | `apps/api/src/modules/ai-agent/core/orchestrator.service.ts`        |
+| Agent 运行器     | `apps/api/src/modules/ai-agent/core/agent-runner.service.ts`        |
+| ReWOO 工作流引擎 | `apps/api/src/modules/ai-agent/core/workflow-engine.service.ts`     |
+| 快速路由         | `apps/api/src/modules/ai-agent/core/fast-router.service.ts`         |
+| 记忆管理器       | `apps/api/src/modules/ai-agent/memory/memory-manager.service.ts`    |
+| 记忆衰减         | `apps/api/src/modules/ai-agent/memory/memory-decay.service.ts`      |
+| 记忆压缩         | `apps/api/src/modules/ai-agent/memory/memory-compaction.service.ts` |
+| Embedding 服务   | `apps/api/src/modules/ai-agent/memory/embedding.service.ts`         |
+| 摘要服务         | `apps/api/src/modules/ai-agent/memory/summarizer.service.ts`        |
+| 数据库模型       | `apps/api/prisma/schema.prisma`                                     |
+| 架构文档         | `docs/AI_AGENT_ARCHITECTURE.md`                                     |
 
 ---
 
-_文档版本: v1.0 | 更新日期: 2026-01-26_
+_文档版本: v2.0 | 最后更新: 2026-02-13_

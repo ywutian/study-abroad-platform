@@ -601,6 +601,17 @@
   to { transform: rotate(360deg); }
 }
 
+/* 聊天消息入场动画 */
+@keyframes message-in-left {
+  from { opacity: 0; transform: translateX(-12px) scale(0.97); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes message-in-right {
+  from { opacity: 0; transform: translateX(12px) scale(0.97); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
 /* ========================================
    🛠️ 工具类
    ======================================== */
@@ -617,6 +628,8 @@
   .animate-float { animation: float 3s ease-in-out infinite; }
   .animate-gradient { animation: gradient-x 3s ease infinite; background-size: 200% 200%; }
   .animate-spin-slow { animation: spin-slow 8s linear infinite; }
+  .animate-message-in-left { animation: message-in-left 0.25s ease-out forwards; }
+  .animate-message-in-right { animation: message-in-right 0.25s ease-out forwards; }
   
   .animate-shimmer {
     background: linear-gradient(90deg, transparent 0%, oklch(0.95 0.01 260 / 60%) 50%, transparent 100%);

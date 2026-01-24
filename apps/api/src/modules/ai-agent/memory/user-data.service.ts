@@ -165,7 +165,11 @@ export class UserDataService {
         take: limit,
         orderBy: { updatedAt: 'desc' },
         include: {
-          _count: { select: { messages: true } },
+          _count: {
+            select: {
+              messages: { where: { role: { in: ['user', 'assistant'] } } },
+            },
+          },
         },
       }),
       this.prisma.agentConversation.count({ where: { userId } }),
@@ -199,6 +203,7 @@ export class UserDataService {
       where: { id: conversationId, userId },
       include: {
         messages: {
+          where: { role: { in: ['user', 'assistant'] } },
           orderBy: { createdAt: 'asc' },
           select: {
             id: true,

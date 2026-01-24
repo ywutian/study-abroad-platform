@@ -19,18 +19,18 @@
 
 ## 1. 服务架构概览
 
-```
+```text
 用户请求 → Nginx/CloudFlare → Next.js (Web) → NestJS API → PostgreSQL
                                                         → Redis
                                                         → OpenAI API
 ```
 
-| 服务        | 端口 | 健康检查             |
-| ----------- | ---- | -------------------- |
-| NestJS API  | 3006 | `GET /api/v1/health` |
-| Next.js Web | 3000 | `GET /`              |
-| PostgreSQL  | 5432 | `pg_isready`         |
-| Redis       | 6379 | `redis-cli ping`     |
+| 服务        | 端口 | 健康检查         |
+| ----------- | ---- | ---------------- |
+| NestJS API  | 3001 | `GET /health`    |
+| Next.js Web | 3000 | `GET /`          |
+| PostgreSQL  | 5432 | `pg_isready`     |
+| Redis       | 6379 | `redis-cli ping` |
 
 ---
 
@@ -40,15 +40,15 @@
 
 ```bash
 # API 基础健康
-curl http://localhost:3006/api/v1/health
+curl http://localhost:3001/health
 
 # 详细健康（含 DB/Redis 延迟）
-curl http://localhost:3006/api/v1/health/detailed
+curl http://localhost:3001/health/detailed
 
 # Kubernetes 探针
-curl http://localhost:3006/api/v1/health/live    # 存活
-curl http://localhost:3006/api/v1/health/ready   # 就绪
-curl http://localhost:3006/api/v1/health/startup  # 启动
+curl http://localhost:3001/health/live    # 存活
+curl http://localhost:3001/health/ready   # 就绪
+curl http://localhost:3001/health/startup  # 启动
 ```
 
 ### 2.2 预期响应
@@ -94,7 +94,7 @@ curl http://localhost:3006/api/v1/health/startup  # 启动
 2. 检查端口是否被占用
 
    ```bash
-   lsof -i :3006
+   lsof -i :3001
    ```
 
 3. 查看最近日志
@@ -105,7 +105,7 @@ curl http://localhost:3006/api/v1/health/startup  # 启动
 
 4. 检查数据库连接
    ```bash
-   docker exec -it study-abroad-postgres pg_isready
+   docker exec -it study-abroad-db pg_isready
    ```
 
 **恢复**: 重启 API 服务
@@ -199,13 +199,13 @@ docker compose restart redis
 
    ```bash
    curl -H "Authorization: Bearer <admin_token>" \
-     http://localhost:3006/api/v1/ai-agent/health
+     http://localhost:3001/api/v1/ai-agent/health
    ```
 
 2. 检查熔断器状态
    ```bash
    curl -H "Authorization: Bearer <admin_token>" \
-     http://localhost:3006/api/v1/admin/ai-agent/circuit-breakers
+     http://localhost:3001/api/v1/admin/ai-agent/circuit-breakers
    ```
 
 **恢复**:
@@ -213,13 +213,13 @@ docker compose restart redis
 ```bash
 # 重置熔断器
 curl -X DELETE -H "Authorization: Bearer <admin_token>" \
-  http://localhost:3006/api/v1/admin/ai-agent/circuit-breakers/openai
+  http://localhost:3001/api/v1/admin/ai-agent/circuit-breakers/openai
 
 # 调整速率限制
 curl -X PUT -H "Authorization: Bearer <admin_token>" \
   -H "Content-Type: application/json" \
   -d '{"maxRequestsPerMinute": 20}' \
-  http://localhost:3006/api/v1/admin/ai-agent/config/rate-limit/global
+  http://localhost:3001/api/v1/admin/ai-agent/config/rate-limit/global
 ```
 
 ### 3.5 前端页面 404
@@ -231,10 +231,10 @@ curl -X PUT -H "Authorization: Bearer <admin_token>" \
 1. 确认使用 Webpack 模式启动（Turbopack 存在路由组兼容问题，见 ADR-0001）
 
    ```bash
-   # 正确
-   pnpm --filter web dev        # 使用 --webpack
-   # 错误
-   pnpm --filter web dev:turbo  # Turbopack 可能导致 404
+   # 默认 (Turbopack)
+   pnpm --filter web dev
+   # Webpack 模式 (如遇 Turbopack 路由组兼容问题)
+   pnpm --filter web dev:webpack
    ```
 
 2. 检查中间件匹配
@@ -325,15 +325,15 @@ redis-cli --memkeys --samples 100
 ```bash
 # Prometheus 格式指标
 curl -H "Authorization: Bearer <admin_token>" \
-  http://localhost:3006/api/v1/admin/ai-agent/metrics/prometheus
+  http://localhost:3001/api/v1/admin/ai-agent/metrics/prometheus
 
 # 慢请求追踪
 curl -H "Authorization: Bearer <admin_token>" \
-  http://localhost:3006/api/v1/admin/ai-agent/traces/slow
+  http://localhost:3001/api/v1/admin/ai-agent/traces/slow
 
 # 错误追踪
 curl -H "Authorization: Bearer <admin_token>" \
-  http://localhost:3006/api/v1/admin/ai-agent/traces/errors
+  http://localhost:3001/api/v1/admin/ai-agent/traces/errors
 ```
 
 ### 6.2 Token 配额管理
@@ -341,11 +341,11 @@ curl -H "Authorization: Bearer <admin_token>" \
 ```bash
 # 查看用户使用量
 curl -H "Authorization: Bearer <admin_token>" \
-  http://localhost:3006/api/v1/admin/ai-agent/users/<userId>/usage
+  http://localhost:3001/api/v1/admin/ai-agent/users/<userId>/usage
 
 # 重置用户限流
 curl -X DELETE -H "Authorization: Bearer <admin_token>" \
-  http://localhost:3006/api/v1/admin/ai-agent/users/<userId>/rate-limit
+  http://localhost:3001/api/v1/admin/ai-agent/users/<userId>/rate-limit
 ```
 
 ---
@@ -548,4 +548,4 @@ PRISMA_SLOW_QUERY_MS=500  # 慢查询阈值（默认 200ms）
 
 ---
 
-_最后更新: 2026-02-07_
+_最后更新: 2026-02-13_

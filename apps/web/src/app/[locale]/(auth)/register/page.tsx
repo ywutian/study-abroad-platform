@@ -155,10 +155,14 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterForm) => {
     setIsLoading(true);
     try {
-      await apiClient.post('/auth/register', {
-        email: data.email,
-        password: data.password,
-      });
+      await apiClient.post(
+        '/auth/register',
+        {
+          email: data.email,
+          password: data.password,
+        },
+        { skipAuth: true }
+      );
 
       const birthday =
         data.birthYear && data.birthMonth && data.birthDay

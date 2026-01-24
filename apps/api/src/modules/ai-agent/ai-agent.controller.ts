@@ -48,6 +48,10 @@ class ChatDto {
   @IsOptional()
   @IsBoolean()
   stream?: boolean;
+
+  @IsOptional()
+  @IsString()
+  locale?: string;
 }
 
 class DirectAgentDto {
@@ -60,6 +64,10 @@ class DirectAgentDto {
   @IsOptional()
   @IsString()
   conversationId?: string;
+
+  @IsOptional()
+  @IsString()
+  locale?: string;
 }
 
 @ApiTags('ai-agent')
@@ -99,6 +107,7 @@ export class AiAgentController {
           user.id,
           data.message,
           data.conversationId,
+          data.locale,
         )) {
           res.write(`data: ${JSON.stringify(event)}\n\n`);
         }
@@ -118,6 +127,7 @@ export class AiAgentController {
       user.id,
       data.message,
       data.conversationId,
+      data.locale,
     );
     res.json(result);
   }
@@ -145,7 +155,25 @@ export class AiAgentController {
       data.agent,
       data.message,
       data.conversationId,
+      data.locale,
     );
+  }
+
+  /**
+   * 获取对话列表
+   */
+  @Get('conversations')
+  @ApiOperation({ summary: '获取对话列表' })
+  async getConversations(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query('limit') limit?: number,
+  ) {
+    return {
+      conversations: await this.orchestrator.getConversations(
+        user.id,
+        limit ? Number(limit) : undefined,
+      ),
+    };
   }
 
   /**

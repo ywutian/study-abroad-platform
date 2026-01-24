@@ -75,7 +75,7 @@ export default function LoginPage() {
           locale: string;
         };
         accessToken: string;
-      }>('/auth/login', data);
+      }>('/auth/login', data, { skipAuth: true });
 
       // 使用 setAuthFromLogin 设置认证状态并启动自动刷新
       setAuthFromLogin(response.user, response.accessToken);

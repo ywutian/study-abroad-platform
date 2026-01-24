@@ -684,7 +684,12 @@ export class AgentAdminController {
         orderBy: { updatedAt: 'desc' },
         skip: (Number(page) - 1) * Number(pageSize),
         take: Number(pageSize),
-        include: { messages: { select: { id: true } } },
+        include: {
+          messages: {
+            select: { id: true },
+            where: { role: { in: ['user', 'assistant'] } },
+          },
+        },
       }),
       this.prisma.agentConversation.count({ where }),
     ]);

@@ -1,12 +1,9 @@
 # ADR-0007: API Response Metadata Injection
 
-## Status
-
-Accepted
-
-## Date
-
-2026-02-07
+- Status: accepted
+- Date: 2026-02-07
+- Decision-makers: Core Team
+- Tags: backend, api, observability
 
 ## Context
 
@@ -53,3 +50,8 @@ Additionally:
 
 - Response payload slightly larger (~100 bytes per response)
 - Frontend code that destructures `{ success, data }` must handle the new `meta` field gracefully
+
+### Neutral
+
+- Error responses from the global exception filter also include `correlationId` for consistency
+- The `meta` object is always present on success responses; no feature flag required

@@ -77,17 +77,16 @@ jest.mock('expo-secure-store', () => ({
   deleteItemAsync: jest.fn(),
 }));
 
-// Mock AppState
-jest.mock('react-native', () => {
-  const RN = jest.requireActual('react-native');
-  return {
-    ...RN,
-    AppState: {
-      currentState: 'active',
-      addEventListener: jest.fn(() => ({ remove: jest.fn() })),
-    },
-  };
-});
+// Mock react-native — provide only the APIs used by useChatSocket.
+// Do NOT use jest.requireActual('react-native') because spreading the full
+// RN module triggers TurboModule initialisation which crashes in Jest.
+jest.mock('react-native', () => ({
+  AppState: {
+    currentState: 'active',
+    addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+  },
+  Platform: { OS: 'ios', select: jest.fn((obj: Record<string, unknown>) => obj.ios) },
+}));
 
 import { io } from 'socket.io-client';
 import { getAccessToken } from '@/lib/storage/secure-store';

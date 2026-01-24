@@ -1,19 +1,28 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations, useLocale, useFormatter } from 'next-intl';
+import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { PageContainer } from '@/components/layout';
 import { LoadingState } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import { apiClient } from '@/lib/api';
 import { useRouter } from '@/lib/i18n/navigation';
+import { useAuthStore } from '@/stores/auth';
 import { motion } from 'framer-motion';
 import { cn, getSchoolName, getSchoolSubName } from '@/lib/utils';
 import {
@@ -29,6 +38,7 @@ import {
   ArrowLeft,
   Bookmark,
   Share2,
+  Link2,
   Target,
   Sparkles,
   Globe,
@@ -104,6 +114,13 @@ export default function SchoolDetailPage() {
   const locale = useLocale();
   const format = useFormatter();
   const schoolId = params.id as string;
+  const queryClient = useQueryClient();
+  const { accessToken, isInitialized } = useAuthStore();
+  const [canShare, setCanShare] = useState(false);
+
+  useEffect(() => {
+    setCanShare(!!navigator?.share);
+  }, []);
 
   const {
     data: school,
@@ -138,6 +155,73 @@ export default function SchoolDetailPage() {
     enabled: !!schoolId,
     retry: false,
   });
+
+  // Fetch user's school list to check bookmark state
+  const { data: schoolListData } = useQuery({
+    queryKey: ['school-lists'],
+    queryFn: () => apiClient.get<any[]>('/school-lists'),
+    enabled: isInitialized && !!accessToken,
+  });
+
+  const bookmarkItem = schoolListData?.find((item: any) => item.schoolId === schoolId);
+  const isBookmarked = !!bookmarkItem;
+
+  const addBookmarkMutation = useMutation({
+    mutationFn: (sid: string) => apiClient.post('/school-lists', { schoolId: sid, tier: 'TARGET' }),
+    onSuccess: () => {
+      toast.success(t('school.bookmarkAdded'));
+      queryClient.invalidateQueries({ queryKey: ['school-lists'] });
+    },
+    onError: (error: any) => {
+      if (error.message?.includes('already exists')) {
+        toast.info(t('school.alreadyBookmarked'));
+      } else {
+        toast.error(error.message);
+      }
+    },
+  });
+
+  const removeBookmarkMutation = useMutation({
+    mutationFn: (listItemId: string) => apiClient.delete(`/school-lists/${listItemId}`),
+    onSuccess: () => {
+      toast.success(t('school.bookmarkRemoved'));
+      queryClient.invalidateQueries({ queryKey: ['school-lists'] });
+    },
+    onError: (error: any) => toast.error(error.message),
+  });
+
+  const handleBookmarkToggle = () => {
+    if (!accessToken) {
+      toast.error(t('school.loginToBookmark'));
+      router.push('/login');
+      return;
+    }
+    if (isBookmarked && bookmarkItem) {
+      removeBookmarkMutation.mutate(bookmarkItem.id);
+    } else {
+      addBookmarkMutation.mutate(schoolId);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast.success(t('school.linkCopied'));
+    } catch {
+      toast.error('Failed to copy');
+    }
+  };
+
+  const handleNativeShare = async () => {
+    try {
+      await navigator.share({
+        title: getSchoolName(school!, locale),
+        url: window.location.href,
+      });
+    } catch (err: any) {
+      if (err.name !== 'AbortError') toast.error(err.message);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -253,17 +337,42 @@ export default function SchoolDetailPage() {
 
           <div className="flex gap-2">
             <Button
-              variant="outline"
+              variant={isBookmarked ? 'secondary' : 'outline'}
               size="sm"
-              className="gap-2 hover:bg-amber-500/10 hover:text-amber-600 hover:border-amber-500/30"
+              className={cn(
+                'gap-2 transition-all',
+                isBookmarked
+                  ? 'bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20'
+                  : 'hover:bg-amber-500/10 hover:text-amber-600 hover:border-amber-500/30'
+              )}
+              onClick={handleBookmarkToggle}
+              disabled={addBookmarkMutation.isPending || removeBookmarkMutation.isPending}
             >
-              <Bookmark className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('school.bookmark')}</span>
+              <Bookmark className={cn('h-4 w-4', isBookmarked && 'fill-current')} />
+              <span className="hidden sm:inline">
+                {isBookmarked ? t('school.bookmarked') : t('school.bookmark')}
+              </span>
             </Button>
-            <Button variant="outline" size="sm" className="gap-2">
-              <Share2 className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('school.share')}</span>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Share2 className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t('school.share')}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleCopyLink}>
+                  <Link2 className="mr-2 h-4 w-4" />
+                  {t('school.copyLink')}
+                </DropdownMenuItem>
+                {canShare && (
+                  <DropdownMenuItem onClick={handleNativeShare}>
+                    <Share2 className="mr-2 h-4 w-4" />
+                    {t('school.shareNative')}
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </motion.div>
@@ -505,14 +614,16 @@ export default function SchoolDetailPage() {
           </div>
 
           {/* Description */}
-          {(school.descriptionZh || school.description) && (
+          {(school.description || school.descriptionZh) && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">{t('school.about')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground leading-relaxed">
-                  {school.descriptionZh || school.description}
+                  {locale === 'zh'
+                    ? school.descriptionZh || school.description
+                    : school.description || school.descriptionZh}
                 </p>
               </CardContent>
             </Card>

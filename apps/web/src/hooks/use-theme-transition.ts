@@ -10,13 +10,9 @@ export function useThemeTransition() {
   const { theme, setTheme, resolvedTheme, themes } = useTheme();
 
   const toggleTheme = useCallback(() => {
-    // 添加过渡类
+    if (typeof document === 'undefined') return;
     document.documentElement.classList.add('theme-transition');
-
-    // 切换主题
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
-
-    // 过渡完成后移除类
     setTimeout(() => {
       document.documentElement.classList.remove('theme-transition');
     }, 300);
@@ -24,6 +20,7 @@ export function useThemeTransition() {
 
   const setThemeWithTransition = useCallback(
     (newTheme: string) => {
+      if (typeof document === 'undefined') return;
       document.documentElement.classList.add('theme-transition');
       setTheme(newTheme);
       setTimeout(() => {

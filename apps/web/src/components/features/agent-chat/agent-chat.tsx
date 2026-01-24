@@ -10,10 +10,11 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Sparkles, RefreshCw, ChevronDown } from 'lucide-react';
+import { Trash2, Sparkles, RefreshCw, ChevronDown, Clock } from 'lucide-react';
 import { useAgentChat } from './use-agent-chat';
 import { ChatMessage } from './chat-message';
 import { ChatInput } from './chat-input';
+import { ConversationList } from './conversation-list';
 import { AGENT_INFO, QUICK_ACTION_KEYS } from './types';
 import { toast } from 'sonner';
 import { transitions } from '@/lib/motion';
@@ -129,13 +130,18 @@ export function AgentChat({
     isLoading,
     currentAgent,
     activeTools,
+    conversationId: activeConversationId,
     sendMessage,
     stopGeneration,
     clearMessages,
+    loadConversation,
+    startNewConversation,
   } = useAgentChat({
     conversationId,
     onError: (error) => toast.error(error),
   });
+
+  const [showHistory, setShowHistory] = useState(false);
 
   const agentInfo = AGENT_INFO[currentAgent];
   const agentName = getLocalizedName(agentInfo.nameZh, agentInfo.name, locale);
@@ -228,18 +234,31 @@ export function AgentChat({
             </div>
           </div>
 
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={clearMessages}
-              disabled={messages.length === 0 || isLoading}
-              className="gap-1.5 text-muted-foreground hover:text-destructive"
-            >
-              <Trash2 className="h-4 w-4" />
-              <span className="hidden sm:inline text-xs">{t('clear')}</span>
-            </Button>
-          </motion.div>
+          <div className="flex items-center gap-1">
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowHistory(true)}
+                className="gap-1.5 text-muted-foreground hover:text-primary"
+              >
+                <Clock className="h-4 w-4" />
+                <span className="hidden sm:inline text-xs">{t('history')}</span>
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearMessages}
+                disabled={messages.length === 0 || isLoading}
+                className="gap-1.5 text-muted-foreground hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+                <span className="hidden sm:inline text-xs">{t('clear')}</span>
+              </Button>
+            </motion.div>
+          </div>
         </motion.div>
       )}
 
@@ -431,6 +450,21 @@ export function AgentChat({
         onStop={stopGeneration}
         isLoading={isLoading}
         placeholder={t('placeholder')}
+      />
+
+      {/* Conversation History Sidebar */}
+      <ConversationList
+        isOpen={showHistory}
+        onOpenChange={setShowHistory}
+        onSelectConversation={(id) => {
+          loadConversation(id);
+          setShowHistory(false);
+        }}
+        onNewConversation={() => {
+          startNewConversation();
+          setShowHistory(false);
+        }}
+        currentConversationId={activeConversationId}
       />
     </div>
   );

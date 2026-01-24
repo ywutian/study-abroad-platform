@@ -10,6 +10,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../../prisma/prisma.service';
+import { RedisService } from '../../../common/redis/redis.service';
 import { EmbeddingService } from './embedding.service';
 import { SummarizerService } from './summarizer.service';
 import { MemoryType } from '@prisma/client';
@@ -76,18 +77,38 @@ export class MemoryCompactionService {
 
   constructor(
     private prisma: PrismaService,
+    private redis: RedisService,
     private embeddingService: EmbeddingService,
     private summarizerService: SummarizerService,
   ) {
     this.config = { ...DEFAULT_CONFIG };
   }
 
+  private static readonly COMPACTION_LOCK_KEY = 'memory:compaction:lock';
+  private static readonly LOCK_TTL = 600; // 10 minutes
+
   /**
    * 定时压缩任务（每天凌晨 4 点）
    */
   @Cron(CronExpression.EVERY_DAY_AT_4AM)
   async scheduledCompaction() {
-    if (this.isRunning) {
+    // 分布式锁（Redis 不可用时降级到内存锁）
+    const client = this.redis.getClient();
+    const useRedisLock = !!(client && this.redis.connected);
+
+    if (useRedisLock) {
+      const locked = await client.set(
+        MemoryCompactionService.COMPACTION_LOCK_KEY,
+        '1',
+        'EX',
+        MemoryCompactionService.LOCK_TTL,
+        'NX',
+      );
+      if (locked !== 'OK') {
+        this.logger.warn('Compaction lock held by another instance, skipping');
+        return;
+      }
+    } else if (this.isRunning) {
       this.logger.warn('Compaction already running, skipping');
       return;
     }
@@ -97,6 +118,11 @@ export class MemoryCompactionService {
       await this.compactAll();
     } finally {
       this.isRunning = false;
+      if (useRedisLock) {
+        await client
+          .del(MemoryCompactionService.COMPACTION_LOCK_KEY)
+          .catch(() => {});
+      }
     }
   }
 

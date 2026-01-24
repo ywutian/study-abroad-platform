@@ -50,16 +50,25 @@ interface RequestConfig extends RequestInit {
 class ApiClient {
   private baseUrl: string;
   private apiVersion: string;
-  private isRefreshing = false;
-  private refreshPromise: Promise<boolean> | null = null;
-  private pendingRequests: Array<{
-    resolve: (value: boolean) => void;
-    reject: (reason?: unknown) => void;
-  }> = [];
+
+  // 认证相关端点：401 表示"凭证错误"而非"会话过期"，不应触发 Token 刷新
+  private static readonly AUTH_ENDPOINTS = [
+    '/auth/login',
+    '/auth/register',
+    '/auth/refresh',
+    '/auth/forgot-password',
+    '/auth/reset-password',
+    '/auth/verify-email',
+    '/auth/resend-verification',
+  ];
 
   constructor(baseUrl: string, apiVersion: string = '') {
     this.baseUrl = baseUrl;
     this.apiVersion = apiVersion;
+  }
+
+  private isAuthEndpoint(endpoint: string): boolean {
+    return ApiClient.AUTH_ENDPOINTS.some((p) => endpoint === p || endpoint.startsWith(p + '?'));
   }
 
   private getAccessToken(): string | null {
@@ -67,37 +76,22 @@ class ApiClient {
     return useAuthStore.getState().accessToken;
   }
 
+  // 委托给 auth store，store 内部已处理并发去重
   private async refreshToken(): Promise<boolean> {
-    // 防止并发刷新：所有等待中的请求共享同一个刷新 Promise
-    if (this.isRefreshing && this.refreshPromise) {
-      return this.refreshPromise;
-    }
-
-    this.isRefreshing = true;
-    this.refreshPromise = this.doRefresh();
-
-    try {
-      const result = await this.refreshPromise;
-      // 通知所有等待的请求
-      this.pendingRequests.forEach(({ resolve }) => resolve(result));
-      this.pendingRequests = [];
-      return result;
-    } catch (error) {
-      this.pendingRequests.forEach(({ reject }) => reject(error));
-      this.pendingRequests = [];
-      throw error;
-    } finally {
-      this.isRefreshing = false;
-      this.refreshPromise = null;
-    }
-  }
-
-  private async doRefresh(): Promise<boolean> {
     return useAuthStore.getState().refreshAccessToken();
   }
 
   private async request<T>(endpoint: string, config: RequestConfig = {}): Promise<T> {
-    const { params, retries = 1, timeout = 15000, signal, skipAuth = false, ...init } = config;
+    const {
+      params,
+      retries = 1,
+      timeout = 15000,
+      signal,
+      skipAuth: explicitSkipAuth,
+      ...init
+    } = config;
+    // 自动为认证端点跳过 Token 逻辑（防御性编程，即使调用者忘记传 skipAuth 也不会出错）
+    const skipAuth = explicitSkipAuth || this.isAuthEndpoint(endpoint);
 
     // 所有 endpoint 使用 API 版本前缀
     const versionPrefix = this.apiVersion;

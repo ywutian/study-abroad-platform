@@ -121,7 +121,7 @@ export function FloatingChat({ defaultOpen = false }: FloatingChatProps) {
           {/* Chat Content */}
           {!isMinimized && (
             <div className="h-[calc(100%-44px)]">
-              <AgentChat showHeader={false} showQuickActions={true} compact={!isFullscreen} />
+              <AgentChat showHeader={true} showQuickActions={true} compact={!isFullscreen} />
             </div>
           )}
         </motion.div>

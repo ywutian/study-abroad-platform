@@ -111,6 +111,7 @@ export interface ConversationMetadata {
   summary?: string;
   agentType?: AgentType;
   messageCount?: number;
+  locale?: string;
   [key: string]: unknown;
 }
 

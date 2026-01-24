@@ -321,12 +321,12 @@ export default function ForumPage() {
         }
       } catch (_error) {
         setCategories([
-          { id: '1', name: 'Experience', nameZh: '经验分享', postCount: 0 },
-          { id: '2', name: 'Question', nameZh: '问答互助', postCount: 0 },
-          { id: '3', name: 'Team', nameZh: '组队找伴', postCount: 0 },
-          { id: '4', name: 'Life', nameZh: '留学生活', postCount: 0 },
-          { id: '5', name: 'Essay', nameZh: '文书讨论', postCount: 0 },
-          { id: '6', name: 'School', nameZh: '选校建议', postCount: 0 },
+          { id: '1', name: 'Application Experience', nameZh: '申请经验', postCount: 0 },
+          { id: '2', name: 'Essay Discussion', nameZh: '文书讨论', postCount: 0 },
+          { id: '3', name: 'School Selection', nameZh: '选校建议', postCount: 0 },
+          { id: '4', name: 'Team Up', nameZh: '组队找伴', postCount: 0 },
+          { id: '5', name: 'Student Life', nameZh: '留学生活', postCount: 0 },
+          { id: '6', name: 'Q&A', nameZh: '问答互助', postCount: 0 },
         ]);
       }
     };

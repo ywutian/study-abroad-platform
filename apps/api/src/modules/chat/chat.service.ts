@@ -42,6 +42,13 @@ export class ChatService {
   // 互关 / 屏蔽检查
   // ============================================
 
+  /**
+   * Check whether two users mutually follow each other (bidirectional).
+   *
+   * @param userId1 - First user ID
+   * @param userId2 - Second user ID
+   * @returns `true` if both users follow each other
+   */
   async checkMutualFollow(userId1: string, userId2: string): Promise<boolean> {
     const [follow1, follow2] = await Promise.all([
       this.prisma.follow.findUnique({
@@ -58,6 +65,13 @@ export class ChatService {
     return !!follow1 && !!follow2;
   }
 
+  /**
+   * Check if a user has blocked another user.
+   *
+   * @param blockerId - ID of the user who may have blocked
+   * @param blockedId - ID of the potentially blocked user
+   * @returns `true` if blockerId has blocked blockedId
+   */
   async checkBlocked(blockerId: string, blockedId: string): Promise<boolean> {
     const block = await this.prisma.block.findUnique({
       where: { blockerId_blockedId: { blockerId, blockedId } },
@@ -380,6 +394,39 @@ export class ChatService {
   }
 
   /**
+   * 撤回消息（仅发送者可操作，2 分钟内）
+   */
+  async recallMessage(messageId: string, userId: string) {
+    const message = await this.prisma.message.findUnique({
+      where: { id: messageId },
+    });
+    if (!message) {
+      throw new BadRequestException('Message not found');
+    }
+    if (message.senderId !== userId) {
+      throw new ForbiddenException('Can only recall your own messages');
+    }
+    if (message.isDeleted || message.isRecalled) {
+      throw new BadRequestException('Message already deleted or recalled');
+    }
+    const diffMs = Date.now() - new Date(message.createdAt).getTime();
+    if (diffMs > 2 * 60 * 1000) {
+      throw new BadRequestException('Recall window expired (2 minutes)');
+    }
+    await this.prisma.message.update({
+      where: { id: messageId },
+      data: {
+        isRecalled: true,
+        recalledAt: new Date(),
+        content: '',
+        mediaUrl: null,
+        mediaType: null,
+      },
+    });
+    return { messageId, conversationId: message.conversationId };
+  }
+
+  /**
    * 获取用户所有会话的总未读数
    */
   async getTotalUnreadCount(userId: string) {
@@ -415,6 +462,15 @@ export class ChatService {
   // 关注 / 屏蔽
   // ============================================
 
+  /**
+   * Follow a user. Idempotent via upsert.
+   *
+   * @param followerId - ID of the user initiating the follow
+   * @param followingId - ID of the user to follow
+   * @returns The created or existing follow record
+   * @throws {BadRequestException} When attempting to follow yourself
+   * @throws {ForbiddenException} When the target user has blocked the follower
+   */
   async followUser(followerId: string, followingId: string) {
     if (followerId === followingId) {
       throw new BadRequestException('Cannot follow yourself');
@@ -430,12 +486,26 @@ export class ChatService {
     });
   }
 
+  /**
+   * Unfollow a user. No-op if the follow does not exist.
+   *
+   * @param followerId - ID of the user removing the follow
+   * @param followingId - ID of the user to unfollow
+   */
   async unfollowUser(followerId: string, followingId: string) {
     await this.prisma.follow.deleteMany({
       where: { followerId, followingId },
     });
   }
 
+  /**
+   * Block a user. Removes any mutual follows first, then upserts the block record.
+   *
+   * @param blockerId - ID of the user initiating the block
+   * @param blockedId - ID of the user to block
+   * @returns The created or existing block record
+   * @throws {BadRequestException} When attempting to block yourself
+   */
   async blockUser(blockerId: string, blockedId: string) {
     if (blockerId === blockedId) {
       throw new BadRequestException('Cannot block yourself');
@@ -455,6 +525,12 @@ export class ChatService {
     });
   }
 
+  /**
+   * Unblock a user. No-op if the block does not exist.
+   *
+   * @param blockerId - ID of the user removing the block
+   * @param blockedId - ID of the user to unblock
+   */
   async unblockUser(blockerId: string, blockedId: string) {
     await this.prisma.block.deleteMany({
       where: { blockerId, blockedId },
@@ -473,6 +549,12 @@ export class ChatService {
     targetMajor: true,
   } as const;
 
+  /**
+   * Get all followers of a user with profile data.
+   *
+   * @param userId - ID of the user whose followers to retrieve
+   * @returns Array of follow records including follower user and profile details
+   */
   async getFollowers(userId: string) {
     return this.prisma.follow.findMany({
       where: { followingId: userId },
@@ -489,6 +571,12 @@ export class ChatService {
     });
   }
 
+  /**
+   * Get all users that a user follows with profile data.
+   *
+   * @param userId - ID of the user whose following list to retrieve
+   * @returns Array of follow records including followed user and profile details
+   */
   async getFollowing(userId: string) {
     return this.prisma.follow.findMany({
       where: { followerId: userId },
@@ -505,6 +593,12 @@ export class ChatService {
     });
   }
 
+  /**
+   * Get all users blocked by a user.
+   *
+   * @param userId - ID of the user whose block list to retrieve
+   * @returns Array of block records including blocked user and profile details
+   */
   async getBlocked(userId: string) {
     return this.prisma.block.findMany({
       where: { blockerId: userId },
@@ -527,6 +621,18 @@ export class ChatService {
   // 举报
   // ============================================
 
+  /**
+   * Create a report for a user, message, case, or review. When targeting a
+   * MESSAGE, the 10 most recent messages from the conversation are attached
+   * as context.
+   *
+   * @param reporterId - ID of the user filing the report
+   * @param targetType - Entity type being reported
+   * @param targetId - ID of the reported entity
+   * @param reason - Short reason for the report
+   * @param detail - Optional additional detail
+   * @returns The newly created report record
+   */
   async report(
     reporterId: string,
     targetType: 'USER' | 'MESSAGE' | 'CASE' | 'REVIEW',
@@ -561,6 +667,15 @@ export class ChatService {
   // 推荐关注
   // ============================================
 
+  /**
+   * Get recommended users to follow, scored by role, major match, profile
+   * completeness, and follower count. Already-followed and blocked users
+   * are excluded.
+   *
+   * @param userId - ID of the user requesting recommendations
+   * @param limit - Maximum number of users to return (default 10)
+   * @returns Scored and ranked list of recommended user profiles
+   */
   async getRecommendedUsers(userId: string, limit = 10) {
     const [following, blocked] = await Promise.all([
       this.prisma.follow.findMany({

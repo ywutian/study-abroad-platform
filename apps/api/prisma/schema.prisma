@@ -763,10 +763,12 @@ model Message {
   senderId       String
   sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
 
-  content   String  @db.Text
-  isDeleted Boolean @default(false)
-  mediaUrl  String?
-  mediaType String?
+  content    String  @db.Text
+  isDeleted  Boolean @default(false)
+  isRecalled Boolean @default(false)
+  recalledAt DateTime?
+  mediaUrl   String?
+  mediaType  String?
 
   createdAt DateTime @default(now())
 
@@ -1203,8 +1205,8 @@ enum ForumPostTag {
 
 model ForumCategory {
   id            String  @id @default(cuid())
-  name          String
-  nameZh        String
+  name          String  @unique
+  nameZh        String  @unique
   description   String?
   descriptionZh String?
   icon          String?

@@ -62,6 +62,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true });
 
     try {
+      // 如果没有 auth_check cookie，说明没有活跃会话，跳过刷新
+      const hasSession =
+        typeof document !== 'undefined' && document.cookie.includes('auth_check=1');
+      if (!hasSession) {
+        set({ isLoading: false, isInitialized: true });
+        return;
+      }
+
       // 尝试使用 cookie 中的 refreshToken 获取新的 accessToken
       const success = await refreshAccessToken();
 
@@ -115,13 +123,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   /**
    * 刷新 AccessToken
    * 使用 httpOnly cookie 中的 refreshToken（由浏览器自动发送）
+   * 并发安全：多个调用者共享同一个 in-flight Promise
    */
   refreshAccessToken: async () => {
     const { isRefreshing } = get();
 
-    // 防止并发刷新
+    // 如果已在刷新中，等待现有刷新完成（而非立即返回 false）
     if (isRefreshing) {
-      return false;
+      return new Promise<boolean>((resolve) => {
+        const unsubscribe = useAuthStore.subscribe((state) => {
+          if (!state.isRefreshing) {
+            unsubscribe();
+            resolve(!!state.accessToken);
+          }
+        });
+      });
     }
 
     set({ isRefreshing: true });
@@ -192,7 +208,9 @@ export function stopTokenRefreshInterval() {
  */
 function setAuthCheckCookie() {
   if (typeof document !== 'undefined') {
-    document.cookie = 'auth_check=1; path=/; max-age=900; samesite=lax';
+    // auth_check 生命周期应与 refreshToken (7天) 一致
+    // 这样在 refreshToken 有效期内，initialize() 都会尝试恢复会话
+    document.cookie = 'auth_check=1; path=/; max-age=604800; samesite=lax';
   }
 }
 

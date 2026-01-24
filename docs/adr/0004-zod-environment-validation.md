@@ -1,12 +1,9 @@
 # ADR-0004: Zod-Based Environment Variable Validation
 
-## Status
-
-Accepted
-
-## Date
-
-2026-02-07
+- Status: accepted
+- Date: 2026-02-07
+- Decision-makers: Core Team
+- Tags: backend, validation, configuration
 
 ## Context
 
@@ -42,7 +39,9 @@ Key aspects:
 
 - Adding new environment variables requires updating the Zod schema
 - Test environments must provide valid-format variables (not just any string)
-
-### Risks
-
 - The schema may be too strict for some deployment environments — use `.optional()` and `.default()` generously
+
+### Neutral
+
+- Default port is 3001 with the `api/v1` prefix; Swagger UI available at `/api/docs`
+- Validation runs once at startup; no runtime overhead

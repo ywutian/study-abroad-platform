@@ -21,6 +21,7 @@ export class RedisCacheService {
 
   // 内存降级缓存（Redis 不可用时使用）
   private readonly fallbackCache = new Map<string, CacheEntry<any>>();
+  private readonly MAX_FALLBACK_SIZE = 1000;
 
   // 配置
   private readonly defaultTTL: number; // 秒
@@ -287,6 +288,22 @@ export class RedisCacheService {
   // ==================== 内存降级方法 ====================
 
   private setFallback<T>(key: string, data: T, ttlSeconds: number): void {
+    if (this.fallbackCache.size >= this.MAX_FALLBACK_SIZE) {
+      // 先清过期条目
+      const now = Date.now();
+      for (const [k, entry] of this.fallbackCache) {
+        if (now > entry.expiresAt) this.fallbackCache.delete(k);
+      }
+      // 仍然超限则淘汰最早插入的 10%
+      if (this.fallbackCache.size >= this.MAX_FALLBACK_SIZE) {
+        const toDelete = Math.floor(this.MAX_FALLBACK_SIZE * 0.1);
+        const keys = this.fallbackCache.keys();
+        for (let i = 0; i < toDelete; i++) {
+          const k = keys.next().value;
+          if (k) this.fallbackCache.delete(k);
+        }
+      }
+    }
     this.fallbackCache.set(key, {
       data,
       expiresAt: Date.now() + ttlSeconds * 1000,

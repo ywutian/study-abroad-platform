@@ -232,6 +232,11 @@ export class ResilienceService {
   }
 
   /**
+   * Get the currently active storage backend for circuit breaker state.
+   *
+   * @returns 'redis' if Redis is connected, 'memory' otherwise
+   */
+  /**
    * 获取当前使用的存储类型
    */
   getStorageType(): 'redis' | 'memory' {
@@ -241,6 +246,19 @@ export class ResilienceService {
     return 'memory';
   }
 
+  /**
+   * Execute a function with automatic retry on transient failures.
+   *
+   * Uses exponential backoff between attempts. Only errors matching the
+   * `retryableErrors` list (checked against error message and name) trigger
+   * a retry; non-retryable errors are thrown immediately.
+   *
+   * @param fn - The async function to execute
+   * @param config - Partial retry configuration (merged with defaults: 3 attempts, 1s base delay, 10s max)
+   * @returns The function's return value on success
+   * @throws {Error} The last error encountered after all retry attempts are exhausted,
+   *                  or immediately for non-retryable errors
+   */
   /**
    * 带重试的执行
    */
@@ -284,6 +302,25 @@ export class ResilienceService {
     throw lastError;
   }
 
+  /**
+   * Execute a function protected by a circuit breaker.
+   *
+   * Circuit breaker states:
+   * - **CLOSED**: Normal operation; failures are counted
+   * - **OPEN**: All calls are rejected with {@link CircuitOpenError}; transitions
+   *   to HALF_OPEN after `resetTimeoutMs`
+   * - **HALF_OPEN**: A limited number of probe requests are allowed; success
+   *   transitions back to CLOSED, failure transitions back to OPEN
+   *
+   * State is persisted to Redis (distributed) with in-memory fallback.
+   *
+   * @param serviceName - Unique identifier for the circuit (e.g., 'llm', 'tool:web_search')
+   * @param fn - The async function to execute
+   * @param config - Partial circuit breaker configuration (merged with defaults)
+   * @returns The function's return value on success
+   * @throws {CircuitOpenError} When the circuit is open and the reset timeout has not elapsed
+   * @throws {Error} Re-thrown from the wrapped function (also triggers failure counting)
+   */
   /**
    * 带熔断的执行
    */

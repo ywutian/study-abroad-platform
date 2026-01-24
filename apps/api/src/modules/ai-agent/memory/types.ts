@@ -19,13 +19,18 @@ export interface MemoryInput {
  * 记忆元数据类型（替代 Record<string, any>）
  */
 export interface MemoryMetadata {
+  // 提取来源
   confidence?: number;
   source?: string;
   conversationId?: string;
   messageId?: string;
+
+  // 去重
   dedupeKey?: string;
   pendingConflict?: boolean;
   conflictWith?: string;
+
+  // 评分
   scoreTier?: string;
   scoreDetails?: {
     importanceScore: number;
@@ -33,15 +38,42 @@ export interface MemoryMetadata {
     confidenceScore: number;
     accessBonus: number;
   };
+  score?: number;
+  tier?: string;
+
+  // 冲突解决
   previousContent?: string;
   previousValue?: number;
   updatedAt?: string;
   mergedAt?: string;
   mergeCount?: number;
+
+  // 归档
   archived?: boolean;
   archivedAt?: string;
+
+  // 访问
   accessCount?: number;
-  [key: string]: unknown; // 允许扩展但需要类型检查
+
+  // 工具结果提取
+  eventId?: string;
+  category?: string;
+  transient?: boolean;
+
+  // 压缩
+  merged?: boolean;
+  sourceIds?: string[];
+  summarized?: boolean;
+
+  // 规则提取
+  rawMatch?: string;
+  normalized?: string;
+
+  // 对话统计
+  messageCount?: number;
+
+  // 其他
+  notes?: string;
 }
 
 export interface MemoryRecord {
@@ -129,7 +161,11 @@ export interface EntityAttributes {
   addedAt?: string;
   priority?: number;
   notes?: string;
-  [key: string]: unknown;
+  interest?: string;
+  round?: string;
+  decision?: boolean;
+  category?: string;
+  eventId?: string;
 }
 
 export interface EntityInput {

@@ -41,6 +41,15 @@ const ENTITY_COLUMNS = `
   id, "userId", type, name, description, attributes, relations, "createdAt", "updatedAt"
 `;
 
+/**
+ * Persistent memory service for long-term storage of memories, conversations,
+ * messages, and entities using PostgreSQL with pgvector for efficient vector
+ * similarity search.
+ *
+ * All memory records include embedding vectors generated via the EmbeddingService.
+ * Raw SQL is used for vector operations since Prisma does not natively support
+ * the pgvector `vector` column type.
+ */
 @Injectable()
 export class PersistentMemoryService {
   private readonly logger = new Logger(PersistentMemoryService.name);
@@ -53,42 +62,32 @@ export class PersistentMemoryService {
   // ==================== 记忆管理 ====================
 
   /**
-   * 创建记忆（使用 pgvector）
+   * Create a single memory record with an embedding vector in PostgreSQL.
+   *
+   * Generates an embedding for the content text via the OpenAI API. If embedding
+   * generation fails or is unavailable, the memory is stored without a vector
+   * (falling back to Prisma ORM).
+   *
+   * @param userId - The user who owns the memory
+   * @param input - Memory content, type, category, importance, and optional metadata/expiry
+   * @returns The created memory record (without the raw embedding vector)
    */
+  // 创建记忆（使用 pgvector）
   async createMemory(
     userId: string,
     input: MemoryInput,
   ): Promise<MemoryRecord> {
-    // 生成向量嵌入
     const embeddingVector = await this.embedding.embed(input.content);
 
-    // 使用原生 SQL 插入向量（RETURNING 中排除 embedding 避免 vector 反序列化错误）
     if (embeddingVector.length > 0) {
-      const result = await this.prisma.$queryRaw<RawMemoryRow[]>(
-        Prisma.sql`
-        INSERT INTO "Memory" (
-          id, "userId", type, category, content, importance, 
-          embedding, metadata, "expiresAt", "createdAt", "updatedAt"
-        ) VALUES (
-          ${this.generateId()},
-          ${userId},
-          ${input.type}::"MemoryType",
-          ${input.category},
-          ${input.content},
-          ${input.importance ?? 0.5},
-          ${embeddingVector}::vector,
-          ${input.metadata ? JSON.stringify(input.metadata) : null}::jsonb,
-          ${input.expiresAt},
-          NOW(),
-          NOW()
-        )
-        RETURNING ${Prisma.raw(MEMORY_COLUMNS)}
-      `,
-      );
-      return this.toMemoryRecord(result[0]);
+      const row = await this.insertMemoryRaw(userId, input, embeddingVector);
+      return this.toMemoryRecord(row);
     }
 
-    // 无向量时使用 Prisma
+    this.logger.warn(
+      `createMemory: embedding unavailable, storing without vector`,
+    );
+    // 无向量时使用 Prisma ORM
     const memory = await this.prisma.memory.create({
       data: {
         userId,
@@ -104,13 +103,105 @@ export class PersistentMemoryService {
     return this.toMemoryRecord(memory as unknown as RawMemoryRow);
   }
 
+  /**
+   * Generate a unique memory ID with a `mem_` prefix and UUID.
+   *
+   * @returns A unique string ID in the format `mem_{uuid}`
+   */
   private generateId(): string {
     return `mem_${randomUUID()}`;
   }
 
   /**
-   * 批量创建记忆（使用 pgvector）
+   * Insert a memory record using raw SQL with a pgvector embedding column.
+   *
+   * The RETURNING clause intentionally excludes the `embedding` column to avoid
+   * Prisma's vector deserialization errors.
+   *
+   * @param userId - The user who owns the memory
+   * @param input - Memory content and metadata
+   * @param embedding - The embedding vector (typically 1536 dimensions for text-embedding-3-small)
+   * @returns The inserted row (without the embedding column)
    */
+  // 原生 SQL 插入记忆（带 pgvector embedding）
+  // RETURNING 中排除 embedding 列以避免反序列化错误
+  private async insertMemoryRaw(
+    userId: string,
+    input: MemoryInput,
+    embedding: number[],
+  ): Promise<RawMemoryRow> {
+    const result = await this.prisma.$queryRaw<RawMemoryRow[]>(
+      Prisma.sql`
+      INSERT INTO "Memory" (
+        id, "userId", type, category, content, importance,
+        embedding, metadata, "expiresAt", "createdAt", "updatedAt"
+      ) VALUES (
+        ${this.generateId()},
+        ${userId},
+        ${input.type}::"MemoryType",
+        ${input.category},
+        ${input.content},
+        ${input.importance ?? 0.5},
+        ${embedding}::vector,
+        ${input.metadata ? JSON.stringify(input.metadata) : null}::jsonb,
+        ${input.expiresAt},
+        NOW(),
+        NOW()
+      )
+      RETURNING ${Prisma.raw(MEMORY_COLUMNS)}
+    `,
+    );
+    return result[0];
+  }
+
+  /**
+   * Update a memory record using raw SQL, including re-generating the pgvector embedding.
+   *
+   * Uses COALESCE to preserve existing values for optional fields not provided in the update.
+   *
+   * @param memoryId - The ID of the memory to update
+   * @param data - Fields to update (content is required; importance, metadata, category are optional)
+   * @param embedding - The new embedding vector for the updated content
+   * @returns The updated row (without the embedding column)
+   */
+  // 原生 SQL 更新记忆（带 pgvector embedding）
+  private async updateMemoryRaw(
+    memoryId: string,
+    data: {
+      content: string;
+      importance?: number;
+      metadata?: Record<string, any>;
+      category?: string;
+    },
+    embedding: number[],
+  ): Promise<RawMemoryRow> {
+    const result = await this.prisma.$queryRaw<RawMemoryRow[]>(
+      Prisma.sql`
+      UPDATE "Memory" SET
+        content = ${data.content},
+        importance = COALESCE(${data.importance}, importance),
+        metadata = COALESCE(${data.metadata ? JSON.stringify(data.metadata) : null}::jsonb, metadata),
+        category = COALESCE(${data.category}, category),
+        embedding = ${embedding}::vector,
+        "updatedAt" = NOW()
+      WHERE id = ${memoryId}
+      RETURNING ${Prisma.raw(MEMORY_COLUMNS)}
+    `,
+    );
+    return result[0];
+  }
+
+  /**
+   * Create multiple memory records in sequence, generating embedding vectors in batch.
+   *
+   * Embedding generation is batched for efficiency, but individual insertions
+   * are performed sequentially to handle per-record fallback logic.
+   *
+   * @param userId - The user who owns the memories
+   * @param inputs - An array of memory inputs to create
+   * @returns An array of created memory records (order matches inputs)
+   */
+  // 批量创建记忆（使用 pgvector）
   async createMemories(
     userId: string,
     inputs: MemoryInput[],
@@ -124,34 +215,13 @@ export class PersistentMemoryService {
 
     const results: MemoryRecord[] = [];
 
-    // 逐个插入（带向量的需要原生 SQL）
     for (let i = 0; i < inputs.length; i++) {
       const input = inputs[i];
       const embedding = embeddings[i];
 
       if (embedding && embedding.length > 0) {
-        const result = await this.prisma.$queryRaw<RawMemoryRow[]>(
-          Prisma.sql`
-          INSERT INTO "Memory" (
-            id, "userId", type, category, content, importance,
-            embedding, metadata, "expiresAt", "createdAt", "updatedAt"
-          ) VALUES (
-            ${this.generateId()},
-            ${userId},
-            ${input.type}::"MemoryType",
-            ${input.category},
-            ${input.content},
-            ${input.importance ?? 0.5},
-            ${embedding}::vector,
-            ${input.metadata ? JSON.stringify(input.metadata) : null}::jsonb,
-            ${input.expiresAt},
-            NOW(),
-            NOW()
-          )
-          RETURNING ${Prisma.raw(MEMORY_COLUMNS)}
-        `,
-        );
-        results.push(this.toMemoryRecord(result[0]));
+        const row = await this.insertMemoryRaw(userId, input, embedding);
+        results.push(this.toMemoryRecord(row));
       } else {
         const memory = await this.prisma.memory.create({
           data: {
@@ -172,8 +242,16 @@ export class PersistentMemoryService {
   }
 
   /**
-   * 检索记忆
+   * Query memories using attribute-based filtering (type, category, importance, time range).
+   *
+   * Results are ordered by importance (desc) then creation date (desc).
+   * Expired memories (past their expiresAt) are automatically excluded.
+   *
+   * @param userId - The user whose memories to query
+   * @param query - Filter criteria including types, categories, minImportance, timeRange, and limit
+   * @returns An array of matching memory records
    */
+  // 检索记忆
   async queryMemories(
     userId: string,
     query: MemoryQuery,
@@ -221,10 +299,24 @@ export class PersistentMemoryService {
   }
 
   /**
-   * 语义检索记忆（使用 pgvector 原生向量搜索）
+   * Perform semantic similarity search on memories using pgvector's native
+   * cosine distance operator (`<=>`).
    *
-   * 性能：O(log n) vs 之前的 O(n)
+   * Generates an embedding vector for the query text, then finds the most
+   * similar memories using an indexed vector search (O(log n) with IVFFlat/HNSW).
+   * Falls back to case-insensitive keyword search if embedding generation fails.
+   *
+   * Similarity is computed as `1 - cosine_distance`, where 1.0 = identical vectors.
+   *
+   * @param userId - The user whose memories to search
+   * @param queryText - Natural language query to find semantically similar memories
+   * @param options - Search configuration
+   * @param options.limit - Maximum number of results (default: 10)
+   * @param options.minSimilarity - Minimum cosine similarity threshold in [0, 1] (default: 0.5)
+   * @returns Matching memories with their similarity scores, ordered by similarity desc
    */
+  // 语义检索记忆（使用 pgvector 原生向量搜索）
+  // 性能：O(log n) vs 之前的 O(n)
   async searchMemories(
     userId: string,
     queryText: string,
@@ -236,6 +328,9 @@ export class PersistentMemoryService {
     const queryEmbedding = await this.embedding.embed(queryText);
 
     if (queryEmbedding.length === 0) {
+      this.logger.warn(
+        `searchMemories: embedding unavailable, falling back to keyword search`,
+      );
       // 回退到关键词搜索
       const memories = await this.prisma.memory.findMany({
         where: {
@@ -279,8 +374,16 @@ export class PersistentMemoryService {
   }
 
   /**
-   * 更新记忆
+   * Update a memory record. If the content is changed, a new embedding vector
+   * is automatically generated and stored alongside the updated content.
+   *
+   * Importance values are clamped to [0, 1].
+   *
+   * @param memoryId - The ID of the memory to update
+   * @param data - Fields to update; all are optional but at least one should be provided
+   * @returns The updated memory record
    */
+  // 更新记忆
   async updateMemory(
     memoryId: string,
     data: {
@@ -295,23 +398,18 @@ export class PersistentMemoryService {
       const embeddingVector = await this.embedding.embed(data.content);
 
       if (embeddingVector.length > 0) {
-        const result = await this.prisma.$queryRaw<RawMemoryRow[]>(
-          Prisma.sql`
-          UPDATE "Memory" SET
-            content = ${data.content},
-            importance = COALESCE(${data.importance}, importance),
-            metadata = COALESCE(${data.metadata ? JSON.stringify(data.metadata) : null}::jsonb, metadata),
-            category = COALESCE(${data.category}, category),
-            embedding = ${embeddingVector}::vector,
-            "updatedAt" = NOW()
-          WHERE id = ${memoryId}
-          RETURNING ${Prisma.raw(MEMORY_COLUMNS)}
-        `,
+        const row = await this.updateMemoryRaw(
+          memoryId,
+          { ...data, content: data.content },
+          embeddingVector,
         );
-        return this.toMemoryRecord(result[0]);
+        return this.toMemoryRecord(row);
       }
     }
 
+    this.logger.warn(
+      `updateMemory: embedding unavailable, updating without vector`,
+    );
     const updated = await this.prisma.memory.update({
       where: { id: memoryId },
       data: {
@@ -330,8 +428,12 @@ export class PersistentMemoryService {
   }
 
   /**
-   * 更新记忆重要性
+   * Update only the importance score of a memory, clamping to [0, 1].
+   *
+   * @param memoryId - The ID of the memory to update
+   * @param importance - The new importance value (will be clamped to [0, 1])
    */
+  // 更新记忆重要性
   async updateImportance(memoryId: string, importance: number): Promise<void> {
     await this.prisma.memory.update({
       where: { id: memoryId },
@@ -340,8 +442,13 @@ export class PersistentMemoryService {
   }
 
   /**
-   * 记录记忆访问
+   * Record a memory access event by incrementing the access counter and
+   * updating the last accessed timestamp. Used to reinforce frequently
+   * accessed memories against decay.
+   *
+   * @param memoryId - The ID of the memory that was accessed
    */
+  // 记录记忆访问
   async recordAccess(memoryId: string): Promise<void> {
     await this.prisma.memory.update({
       where: { id: memoryId },
@@ -353,15 +460,22 @@ export class PersistentMemoryService {
   }
 
   /**
-   * 删除记忆
+   * Permanently delete a memory record and its embedding from the database.
+   *
+   * @param memoryId - The ID of the memory to delete
+   * @throws {Prisma.PrismaClientKnownRequestError} If the memory ID does not exist
    */
+  // 删除记忆
   async deleteMemory(memoryId: string): Promise<void> {
     await this.prisma.memory.delete({ where: { id: memoryId } });
   }
 
   /**
-   * 清理过期记忆
+   * Delete all memories whose `expiresAt` timestamp is in the past.
+   *
+   * @returns The number of expired memories that were deleted
    */
+  // 清理过期记忆
   async cleanupExpiredMemories(): Promise<number> {
     const result = await this.prisma.memory.deleteMany({
       where: {
@@ -374,8 +488,13 @@ export class PersistentMemoryService {
   // ==================== 对话管理 ====================
 
   /**
-   * 创建对话
+   * Create a new agent conversation record for a user.
+   *
+   * @param userId - The user who owns the conversation
+   * @param title - Optional initial title for the conversation
+   * @returns The created conversation record with messageCount initialized to 0
    */
+  // 创建对话
   async createConversation(
     userId: string,
     title?: string,
@@ -397,14 +516,23 @@ export class PersistentMemoryService {
   }
 
   /**
-   * 获取对话
+   * Retrieve a conversation by ID, including a count of user/assistant messages.
+   *
+   * @param conversationId - The ID of the conversation to retrieve
+   * @returns The conversation record, or null if not found
    */
+  // 获取对话
   async getConversation(
     conversationId: string,
   ): Promise<ConversationRecord | null> {
     const conversation = await this.prisma.agentConversation.findUnique({
       where: { id: conversationId },
-      include: { messages: { select: { id: true } } },
+      include: {
+        messages: {
+          select: { id: true },
+          where: { role: { in: ['user', 'assistant'] } },
+        },
+      },
     });
 
     if (!conversation) return null;
@@ -422,8 +550,13 @@ export class PersistentMemoryService {
   }
 
   /**
-   * 获取用户最近对话
+   * Retrieve a user's most recent conversations ordered by last update time.
+   *
+   * @param userId - The user whose conversations to retrieve
+   * @param limit - Maximum number of conversations to return (default: 10)
+   * @returns An array of conversation records with message counts
    */
+  // 获取用户最近对话
   async getRecentConversations(
     userId: string,
     limit: number = 10,
@@ -432,7 +565,12 @@ export class PersistentMemoryService {
       where: { userId },
       orderBy: { updatedAt: 'desc' },
       take: limit,
-      include: { messages: { select: { id: true } } },
+      include: {
+        messages: {
+          select: { id: true },
+          where: { role: { in: ['user', 'assistant'] } },
+        },
+      },
     });
 
     return conversations.map((c) => ({
@@ -448,8 +586,12 @@ export class PersistentMemoryService {
   }
 
   /**
-   * 更新对话
+   * Update conversation metadata (title, summary, or agent type).
+   *
+   * @param conversationId - The ID of the conversation to update
+   * @param data - Fields to update; all are optional
    */
+  // 更新对话
   async updateConversation(
     conversationId: string,
     data: { title?: string; summary?: string; agentType?: string },
@@ -461,8 +603,14 @@ export class PersistentMemoryService {
   }
 
   /**
-   * 归档对话
+   * Archive a conversation by setting `archived: true` in its metadata JSON field.
+   *
+   * Note: The AgentConversation model lacks dedicated isArchived/archivedAt columns,
+   * so archive state is stored in the metadata JSON as a workaround.
+   *
+   * @param conversationId - The ID of the conversation to archive
    */
+  // 归档对话
   async archiveConversation(conversationId: string): Promise<void> {
     // Note: AgentConversation model lacks isArchived/archivedAt columns;
     // storing archive state in the metadata JSON field as a workaround.
@@ -480,8 +628,13 @@ export class PersistentMemoryService {
   // ==================== 消息管理 ====================
 
   /**
-   * 添加消息
+   * Add a message to a conversation in the database.
+   *
+   * @param conversationId - The conversation to append the message to
+   * @param input - Message data including role, content, agent type, tool calls, and metrics
+   * @returns The persisted message record with generated ID and timestamp
    */
+  // 添加消息
   async addMessage(
     conversationId: string,
     input: MessageInput,
@@ -502,8 +655,13 @@ export class PersistentMemoryService {
   }
 
   /**
-   * 获取对话消息
+   * Retrieve messages for a conversation, ordered chronologically (asc).
+   *
+   * @param conversationId - The conversation whose messages to retrieve
+   * @param options - Optional pagination: limit (default: 50) and before (cursor date)
+   * @returns An array of message records in chronological order
    */
+  // 获取对话消息
   async getMessages(
     conversationId: string,
     options: { limit?: number; before?: Date } = {},
@@ -525,12 +683,22 @@ export class PersistentMemoryService {
   // ==================== 实体管理 ====================
 
   /**
-   * 创建或更新实体
+   * Create or update an entity using upsert semantics keyed on (userId, type, name).
    *
-   * 注意: Entity 表没有 embedding 列（与 Memory 不同），
-   * 因此始终使用 Prisma ORM 而非 raw SQL。
-   * 向量嵌入仅生成但不存储，未来可扩展 Entity 表添加 embedding 列。
+   * If the entity already exists, its description, attributes, and relations
+   * are updated; otherwise a new entity record is created.
+   *
+   * Note: The Entity table does not have an embedding column (unlike Memory),
+   * so Prisma ORM is always used instead of raw SQL. Future expansion may add
+   * vector search capabilities to entities.
+   *
+   * @param userId - The user who owns the entity
+   * @param input - Entity data including type, name, description, attributes, and relations
+   * @returns The created or updated entity record
    */
+  // 注意: Entity 表没有 embedding 列（与 Memory 不同），
+  // 因此始终使用 Prisma ORM 而非 raw SQL。
+  // 向量嵌入仅生成但不存储，未来可扩展 Entity 表添加 embedding 列。
   async upsertEntity(
     userId: string,
     input: EntityInput,
@@ -721,6 +889,114 @@ export class PersistentMemoryService {
       enableMemory: true,
       enableSuggestions: true,
     };
+  }
+
+  // ==================== 事务操作 ====================
+
+  /**
+   * 事务化保存对话结束数据（摘要 + 记忆 + 实体）
+   *
+   * 记忆在事务内不含 embedding（避免 raw SQL 复杂性），
+   * 事务成功后异步补充 embedding。
+   */
+  async saveEndConversationData(
+    conversationId: string,
+    userId: string,
+    summary: string,
+    facts: MemoryInput[],
+    entities: EntityInput[],
+  ): Promise<void> {
+    const createdMemoryIds: string[] = [];
+
+    await this.prisma.$transaction(async (tx) => {
+      // 1. 更新对话摘要
+      await tx.agentConversation.update({
+        where: { id: conversationId },
+        data: { summary },
+      });
+
+      // 2. 创建记忆（不含 embedding）
+      for (const fact of facts) {
+        const memory = await tx.memory.create({
+          data: {
+            userId,
+            type: fact.type,
+            category: fact.category,
+            content: fact.content,
+            importance: fact.importance ?? 0.5,
+            metadata: fact.metadata as Prisma.InputJsonValue | undefined,
+            expiresAt: fact.expiresAt,
+          },
+        });
+        createdMemoryIds.push(memory.id);
+      }
+
+      // 3. Upsert 实体
+      for (const entity of entities) {
+        await tx.entity.upsert({
+          where: {
+            userId_type_name: {
+              userId,
+              type: entity.type,
+              name: entity.name,
+            },
+          },
+          update: {
+            description: entity.description,
+            attributes: entity.attributes as unknown as
+              | Prisma.InputJsonValue
+              | undefined,
+            relations: entity.relations as unknown as
+              | Prisma.InputJsonValue
+              | undefined,
+          },
+          create: {
+            userId,
+            type: entity.type,
+            name: entity.name,
+            description: entity.description,
+            attributes: entity.attributes as unknown as
+              | Prisma.InputJsonValue
+              | undefined,
+            relations: entity.relations as unknown as
+              | Prisma.InputJsonValue
+              | undefined,
+          },
+        });
+      }
+    });
+
+    // 事务成功后异步补充 embedding
+    if (createdMemoryIds.length > 0) {
+      this.backfillEmbeddings(createdMemoryIds, facts).catch((err) => {
+        this.logger.warn(
+          'Failed to backfill embeddings for end-conversation memories',
+          err,
+        );
+      });
+    }
+  }
+
+  /**
+   * 为已创建的记忆补充 embedding
+   */
+  private async backfillEmbeddings(
+    memoryIds: string[],
+    facts: MemoryInput[],
+  ): Promise<void> {
+    const contents = facts.map((f) => f.content);
+    const embeddings = await this.embedding.embedBatch(contents);
+
+    for (let i = 0; i < memoryIds.length; i++) {
+      const emb = embeddings[i];
+      if (emb && emb.length > 0) {
+        await this.prisma.$executeRaw`
+          UPDATE "Memory"
+          SET embedding = ${emb}::vector, "updatedAt" = NOW()
+          WHERE id = ${memoryIds[i]}
+        `;
+      }
+    }
   }
 
   // ==================== 统计 ====================

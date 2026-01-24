@@ -6,6 +6,7 @@ import {
   Param,
   Query,
   Delete,
+  Patch,
   UseInterceptors,
   UploadedFile,
   ParseFilePipe,
@@ -105,6 +106,21 @@ export class ChatController {
     this.chatGateway.broadcastToConversation(
       result.conversationId,
       'messageDeleted',
+      { messageId: result.messageId, conversationId: result.conversationId },
+    );
+    return { success: true };
+  }
+
+  @Patch('messages/:id/recall')
+  @ApiOperation({ summary: '撤回消息（2分钟内）' })
+  async recallMessage(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') messageId: string,
+  ) {
+    const result = await this.chatService.recallMessage(messageId, user.id);
+    this.chatGateway.broadcastToConversation(
+      result.conversationId,
+      'messageRecalled',
       { messageId: result.messageId, conversationId: result.conversationId },
     );
     return { success: true };

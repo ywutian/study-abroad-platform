@@ -11,6 +11,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../../prisma/prisma.service';
+import { RedisService } from '../../../common/redis/redis.service';
 import { Prisma } from '@prisma/client';
 import { MemoryScorerService, MemoryTier } from './memory-scorer.service';
 
@@ -62,6 +63,7 @@ export class MemoryDecayService implements OnModuleInit {
   constructor(
     private prisma: PrismaService,
     private scorer: MemoryScorerService,
+    private redis: RedisService,
   ) {
     this.config = this.getDefaultConfig();
   }
@@ -77,6 +79,9 @@ export class MemoryDecayService implements OnModuleInit {
   /**
    * 每天凌晨 3 点执行衰减任务
    */
+  private static readonly DECAY_LOCK_KEY = 'memory:decay:lock';
+  private static readonly LOCK_TTL = 600; // 10 minutes
+
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async runDailyDecay(): Promise<DecayResult> {
     if (!this.config.enabled) {
@@ -84,7 +89,23 @@ export class MemoryDecayService implements OnModuleInit {
       return this.emptyResult();
     }
 
-    if (this.isRunning) {
+    // 分布式锁（Redis 不可用时降级到内存锁）
+    const client = this.redis.getClient();
+    const useRedisLock = !!(client && this.redis.connected);
+
+    if (useRedisLock) {
+      const locked = await client.set(
+        MemoryDecayService.DECAY_LOCK_KEY,
+        '1',
+        'EX',
+        MemoryDecayService.LOCK_TTL,
+        'NX',
+      );
+      if (locked !== 'OK') {
+        this.logger.warn('Decay lock held by another instance, skipping');
+        return this.emptyResult();
+      }
+    } else if (this.isRunning) {
       this.logger.warn('Decay task already running, skipping');
       return this.emptyResult();
     }
@@ -136,6 +157,9 @@ export class MemoryDecayService implements OnModuleInit {
       return result;
     } finally {
       this.isRunning = false;
+      if (useRedisLock) {
+        await client.del(MemoryDecayService.DECAY_LOCK_KEY).catch(() => {});
+      }
     }
   }
 
@@ -226,25 +250,22 @@ export class MemoryDecayService implements OnModuleInit {
     archiveDate.setDate(archiveDate.getDate() - this.config.archiveAfterDays);
 
     try {
-      // 标记为归档（添加 metadata 标记）
-      const result = await this.prisma.memory.updateMany({
-        where: {
-          importance: { lt: this.config.archiveThreshold },
-          createdAt: { lt: archiveDate },
-          metadata: {
-            path: ['archived'],
-            equals: Prisma.DbNull,
-          },
-        },
-        data: {
-          metadata: {
-            archived: true,
-            archivedAt: new Date().toISOString(),
-          },
-        },
+      // 标记为归档（合并到 metadata，不覆盖已有字段）
+      const archiveMetadata = JSON.stringify({
+        archived: true,
+        archivedAt: new Date().toISOString(),
       });
 
-      return { archived: result.count, errors: 0 };
+      const result = await this.prisma.$executeRaw`
+        UPDATE "Memory"
+        SET metadata = COALESCE(metadata, '{}'::jsonb) || ${archiveMetadata}::jsonb,
+            "updatedAt" = NOW()
+        WHERE importance < ${this.config.archiveThreshold}
+          AND "createdAt" < ${archiveDate}
+          AND (metadata IS NULL OR NOT (metadata ? 'archived'))
+      `;
+
+      return { archived: result as number, errors: 0 };
     } catch (error) {
       this.logger.error('Failed to archive memories', error);
       return { archived: 0, errors: 1 };

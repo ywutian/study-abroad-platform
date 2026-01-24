@@ -1,6 +1,6 @@
 # 竞赛数据库文档 (Competition Database)
 
-> 最后更新: 2026-02-06
+> 最后更新: 2026-02-13
 
 ---
 
@@ -59,10 +59,10 @@
 | `PHYSICS`              | 物理竞赛   | 5        |
 | `CHEMISTRY`            | 化学竞赛   | 5        |
 | `COMPUTER_SCIENCE`     | 计算机科学 | 9        |
-| `ENGINEERING_RESEARCH` | 工程与科研 | 11       |
+| `ENGINEERING_RESEARCH` | 工程与科研 | 12       |
 | `ECONOMICS_BUSINESS`   | 经济与商业 | 7        |
 | `DEBATE_SPEECH`        | 辩论与演讲 | 6        |
-| `WRITING_ESSAY`        | 写作与论文 | 6        |
+| `WRITING_ESSAY`        | 写作与论文 | 7        |
 | `GENERAL_ACADEMIC`     | 综合学术   | 6        |
 | `ARTS_MUSIC`           | 艺术与音乐 | 6        |
 | `OTHER`                | 其他       | 9        |

@@ -66,7 +66,7 @@ export default tseslint.config(
       // Sub-projects enforce stricter rules via `turbo lint`
 
       // TypeScript
-      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': [
         'warn',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
@@ -79,7 +79,7 @@ export default tseslint.config(
       '@typescript-eslint/ban-ts-comment': 'off',
 
       // Core JS
-      'no-console': 'off',
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
       'no-undef': 'off',
       'no-empty': 'warn',
       'no-unused-expressions': 'off',

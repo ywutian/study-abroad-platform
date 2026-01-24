@@ -75,6 +75,19 @@ const CONFIDENCE_INTERVAL_WIDTH = {
 // Service
 // ============================================
 
+/**
+ * Multi-engine ensemble prediction service for college admissions.
+ *
+ * Combines three prediction engines (statistical, AI, and historical case-matching)
+ * using dynamic weighted fusion. Integrates with the memory system for context-aware
+ * predictions and records results for calibration feedback loops.
+ *
+ * Engine weight allocation varies by data availability:
+ * - Full data: stats 0.25, AI 0.40, historical 0.35
+ * - No history: stats 0.35, AI 0.65
+ * - No AI: stats 0.45, historical 0.55
+ * - Stats only: stats 1.0
+ */
 @Injectable()
 export class PredictionService {
   private readonly logger = new Logger(PredictionService.name);
@@ -88,10 +101,24 @@ export class PredictionService {
 
   // ==================== 缓存管理 ====================
 
+  /**
+   * Build a composite Redis cache key for a profile-school prediction pair.
+   *
+   * @param profileId - The profile identifier
+   * @param schoolId - The school identifier
+   * @returns Cache key in the format `prediction:{profileId}:{schoolId}`
+   */
   private getCacheKey(profileId: string, schoolId: string): string {
     return `${CACHE_PREFIX}${profileId}:${schoolId}`;
   }
 
+  /**
+   * Retrieve a cached prediction result from Redis.
+   *
+   * @param profileId - The profile identifier
+   * @param schoolId - The school identifier
+   * @returns The cached prediction with `fromCache: true`, or null on miss/error
+   */
   private async getFromCache(
     profileId: string,
     schoolId: string,
@@ -109,6 +136,13 @@ export class PredictionService {
     return null;
   }
 
+  /**
+   * Persist a prediction result to Redis with a 1-hour TTL.
+   *
+   * @param profileId - The profile identifier
+   * @param schoolId - The school identifier
+   * @param result - The prediction result to cache
+   */
   private async saveToCache(
     profileId: string,
     schoolId: string,
@@ -125,6 +159,14 @@ export class PredictionService {
     }
   }
 
+  /**
+   * Invalidate all cached prediction results for a given profile.
+   *
+   * Looks up every school the profile has predictions for and deletes
+   * the corresponding Redis keys. Should be called when profile data changes.
+   *
+   * @param profileId - The profile whose caches should be invalidated
+   */
   async invalidateUserCache(profileId: string): Promise<void> {
     try {
       const predictions = await this.prisma.predictionResult.findMany({
@@ -207,6 +249,18 @@ export class PredictionService {
     return dist;
   }
 
+  /**
+   * Estimate admission probability from historical case matching.
+   *
+   * Uses similarity-weighted voting across verified admission cases for the target
+   * school. Each case is scored by GPA proximity (within 0.2 = +0.3, within 0.5 = +0.15)
+   * and SAT proximity (within 50 = +0.2, within 100 = +0.1) on top of a 0.5 base.
+   * Returns null when fewer than 10 cases exist.
+   *
+   * @param profileMetrics - Normalized metrics extracted from the user's profile
+   * @param schoolId - The target school identifier
+   * @returns Weighted probability, sample count, and confidence level; or null if insufficient data
+   */
   /**
    * 获取历史录取案例统计概率
    * 基于匹配的录取案例直接估算概率
@@ -372,6 +426,18 @@ export class PredictionService {
   }
 
   /**
+   * Write prediction results to the memory system (post-prediction, enhanced).
+   *
+   * Records a DECISION memory summarizing the schools and average probability.
+   * Detects repeat predictions (same schools queried before) and adjusts the
+   * memory importance accordingly (0.8 for repeats vs 0.7 for first-time).
+   * Also upserts SCHOOL entities with latest probability and tier data.
+   *
+   * @param userId - The user identifier
+   * @param results - Array of prediction results to record
+   * @param memoryContext - Prior memory context including previous predictions and preferences
+   */
+  /**
    * 将预测结果写入记忆系统（预测后写入，增强版）
    */
   private async recordPredictionToMemory(
@@ -448,6 +514,13 @@ export class PredictionService {
 
   // ==================== 数据转换 ====================
 
+  /**
+   * Convert a Prisma profile (with relations) to the internal ProfileInput format
+   * used by prediction engines and prompt builders.
+   *
+   * @param profile - Prisma profile with testScores, activities, and awards relations
+   * @returns Normalized ProfileInput for prediction calculations
+   */
   private profileToInput(profile: ProfileWithRelations): ProfileInput {
     return {
       gpa: profile.gpa ? Number(profile.gpa) : undefined,
@@ -473,6 +546,12 @@ export class PredictionService {
     };
   }
 
+  /**
+   * Convert a Prisma School entity to the internal SchoolInput format.
+   *
+   * @param school - Prisma School entity
+   * @returns Normalized SchoolInput for prediction calculations
+   */
   private schoolToInput(school: School): SchoolInput {
     return {
       id: school.id,
@@ -491,6 +570,15 @@ export class PredictionService {
     };
   }
 
+  /**
+   * Extract numeric metrics from a ProfileInput for use in statistical calculations.
+   *
+   * Pulls SAT, ACT, TOEFL scores from testScores array and counts activities/awards
+   * by level (national, international).
+   *
+   * @param profile - The normalized profile input
+   * @returns ProfileMetrics with scores, counts, and award breakdowns
+   */
   private extractProfileMetrics(profile: ProfileInput): ProfileMetrics {
     const satScore = profile.testScores.find((s) => s.type === 'SAT')?.score;
     const actScore = profile.testScores.find((s) => s.type === 'ACT')?.score;
@@ -514,6 +602,12 @@ export class PredictionService {
     };
   }
 
+  /**
+   * Extract numeric metrics from a SchoolInput for use in statistical calculations.
+   *
+   * @param school - The normalized school input
+   * @returns SchoolMetrics including acceptance rate, test score ranges, and ranking
+   */
   private extractSchoolMetrics(school: SchoolInput): SchoolMetrics {
     return {
       acceptanceRate: school.acceptanceRate,
@@ -527,6 +621,17 @@ export class PredictionService {
     };
   }
 
+  /**
+   * Evaluate how complete the available profile and school data is on a 0-100 scale.
+   *
+   * Profile data contributes up to 60 points: GPA (15), SAT/ACT (15), TOEFL (5),
+   * activities (10), awards (10), target major (5). School data contributes up to
+   * 40 points: acceptance rate (10), ranking (10), SAT range (10), ACT range (10).
+   *
+   * @param profile - Normalized profile input
+   * @param school - Normalized school input
+   * @returns Completeness score from 0 to 100
+   */
   /**
    * 评估数据完整度 (0-100)
    */
@@ -557,6 +662,19 @@ export class PredictionService {
 
   // ==================== 引擎 1: 统计算法 ====================
 
+  /**
+   * Engine 1: Statistical prediction algorithm.
+   *
+   * Computes admission probability from a data-driven score combining GPA (weight 0.3),
+   * standardized test scores (0.25), activities (0.25), and awards (0.2). Generates
+   * per-factor impact analysis and applicant-vs-school comparison percentiles.
+   * Optionally incorporates historical distribution data for percentile adjustments.
+   *
+   * @param profile - Normalized profile input
+   * @param school - Normalized school input
+   * @param historicalDistribution - Optional historical admit score distributions for the school
+   * @returns Object containing probability (0-1), detailed factors, and comparison data
+   */
   private predictWithStats(
     profile: ProfileInput,
     school: SchoolInput,
@@ -732,6 +850,20 @@ export class PredictionService {
 
   // ==================== 引擎 2: AI 预测 ====================
 
+  /**
+   * Engine 2: AI-powered prediction using LLM expert consultation.
+   *
+   * Builds a structured prompt with profile and school data, injects the statistical
+   * engine's probability as a calibration anchor, and appends memory-sourced user insights.
+   * The AI response is parsed as JSON and sanity-checked: probability is clamped to [0.05, 0.95]
+   * and must not deviate more than 3x from the statistical baseline.
+   *
+   * @param profile - Normalized profile input
+   * @param school - Normalized school input
+   * @param statsResult - Statistical engine probability (used as calibration anchor)
+   * @param memoryInsights - User context strings from the memory system
+   * @returns Parsed AI prediction with probability, factors, suggestions, and comparison; or null on failure
+   */
   private async predictWithAI(
     profile: ProfileInput,
     school: SchoolInput,
@@ -915,6 +1047,26 @@ export class PredictionService {
   // ==================== 主预测方法 ====================
 
   /**
+   * Run the full multi-engine ensemble prediction pipeline for one or more schools.
+   *
+   * Pipeline stages:
+   * 1. Load Profile (with testScores, activities, awards) and School records from DB
+   * 2. Retrieve user context from the memory system (past predictions, preferences, insights)
+   * 3. For each school: check cache, then run all three engines sequentially
+   *    - Engine 1 (Stats): always succeeds, provides baseline probability
+   *    - Engine 2 (AI): may fail gracefully, returns null
+   *    - Engine 3 (Historical): returns null if < 10 matching cases
+   * 4. Fuse engine outputs via dynamic weighted averaging + memory micro-adjustment
+   * 5. Compute confidence interval based on data completeness
+   * 6. Cache result in Redis (1h TTL), persist to DB via upsert
+   * 7. Asynchronously write results to the memory system
+   *
+   * @param profileId - The profile to predict for
+   * @param schoolIds - Array of school IDs to generate predictions for
+   * @param forceRefresh - When true, bypass the Redis cache and recompute
+   * @returns Array of PredictionResultDto sorted by probability descending
+   */
+  /**
    * 企业级多引擎融合预测
    *
    * 流程:
@@ -1080,6 +1232,21 @@ export class PredictionService {
   // ==================== 辅助方法 ====================
 
   /**
+   * Generate actionable suggestions based on prediction tier, confidence, and profile gaps.
+   *
+   * Priority: AI-generated suggestions (up to 3) are included first, followed by
+   * tier-specific advice (reach: essay/ED tips; match: maintain strengths; safety: show
+   * genuine interest). Low-confidence results trigger a data-completeness reminder.
+   * Missing standardized test scores also produce a suggestion. Maximum 5 suggestions returned.
+   *
+   * @param tier - Admission tier classification ('reach' | 'match' | 'safety')
+   * @param confidence - Data confidence level ('low' | 'medium' | 'high')
+   * @param profile - Normalized profile input for gap detection
+   * @param school - Normalized school input
+   * @param aiSuggestions - Optional suggestions produced by the AI engine
+   * @returns Array of suggestion strings (max 5)
+   */
+  /**
    * 生成智能建议
    */
   private generateSuggestions(
@@ -1136,6 +1303,18 @@ export class PredictionService {
   }
 
   /**
+   * Persist a prediction result to the database using upsert.
+   *
+   * Creates a new PredictionResult row or updates an existing one keyed by
+   * the (profileId, schoolId) compound unique constraint. Stores probability,
+   * confidence interval, engine scores, factors, suggestions, and model version.
+   * Failures are logged but do not propagate.
+   *
+   * @param profileId - The profile identifier
+   * @param schoolId - The school identifier
+   * @param result - The fully computed prediction result
+   */
+  /**
    * 保存预测结果到数据库（增强版，使用 upsert）
    */
   private async savePrediction(
@@ -1181,6 +1360,12 @@ export class PredictionService {
   }
 
   /**
+   * Retrieve the prediction history for a profile, ordered by most recent first.
+   *
+   * @param profileId - The profile identifier
+   * @returns Up to 50 most recent PredictionResult records
+   */
+  /**
    * 获取预测历史
    */
   async getPredictionHistory(profileId: string) {
@@ -1191,6 +1376,17 @@ export class PredictionService {
     });
   }
 
+  /**
+   * Record the actual admission outcome for a previously predicted school.
+   *
+   * Used to close the calibration feedback loop: actual results are stored alongside
+   * predicted probabilities so model accuracy can be measured over time via
+   * {@link getCalibrationData}.
+   *
+   * @param profileId - The profile identifier
+   * @param schoolId - The school identifier
+   * @param actualResult - The real admission outcome ('ADMITTED' | 'REJECTED' | 'WAITLISTED')
+   */
   /**
    * 报告实际录取结果（用于校准闭环）
    */
@@ -1216,6 +1412,16 @@ export class PredictionService {
     }
   }
 
+  /**
+   * Compute model calibration statistics for monitoring and improvement.
+   *
+   * Aggregates all predictions that have actual outcomes reported, grouping them into
+   * five probability buckets (0-20%, 20-40%, 40-60%, 60-80%, 80-100%). For each bucket,
+   * calculates the actual admit rate. A well-calibrated model should have actual rates
+   * close to the predicted range midpoints.
+   *
+   * @returns Total prediction count, count with actual results, and per-bucket calibration data
+   */
   /**
    * 获取模型校准数据（用于监控和改进）
    */

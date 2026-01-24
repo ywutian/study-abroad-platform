@@ -158,18 +158,8 @@ const ROUTING_RULES: RoutingRule[] = [
 ];
 
 // 直接回答的简单问题（不需要 Agent）
-const SIMPLE_QA_PATTERNS = [
-  {
-    pattern: /你好|hello|hi|嗨/i,
-    response: '你好！我是留学申请助手，有什么可以帮你的吗？',
-  },
-  {
-    pattern: /你是谁|你叫什么/i,
-    response: '我是留学申请助手，可以帮你选校、写文书、规划时间线。',
-  },
-  { pattern: /谢谢|感谢|thanks/i, response: '不客气！还有其他问题吗？' },
-  { pattern: /再见|拜拜|bye/i, response: '再见！祝申请顺利！' },
-];
+// 注意：所有回复都应由 LLM 生成，此列表仅保留空数组
+const SIMPLE_QA_PATTERNS: Array<{ pattern: RegExp; response: string }> = [];
 
 // 置信度阈值
 const CONFIDENCE_THRESHOLD = 0.7;
@@ -178,6 +168,21 @@ const CONFIDENCE_THRESHOLD = 0.7;
 export class FastRouterService {
   private readonly logger = new Logger(FastRouterService.name);
 
+  /**
+   * Determine which specialist agent should handle a message using keyword and
+   * regex-based pattern matching, without invoking the LLM.
+   *
+   * Evaluation order:
+   * 1. Check for simple Q&A patterns (no agent needed)
+   * 2. Score each routing rule by regex patterns (weight 0.5) and keywords (weight 0.15)
+   *    with a bonus for 3+ keyword matches
+   * 3. If the best match exceeds the confidence threshold (0.7), route directly
+   * 4. Otherwise, flag the result as needing LLM-based routing
+   *
+   * @param message - The user's raw message text
+   * @returns Routing result with the target agent, confidence score, matched keywords,
+   *          and whether LLM-based routing is still needed
+   */
   /**
    * 快速路由决策
    */
@@ -242,6 +247,16 @@ export class FastRouterService {
   }
 
   /**
+   * Check if a message matches a predefined simple Q&A pattern and return
+   * the canned response if so.
+   *
+   * Currently the pattern list is empty (all responses are LLM-generated),
+   * so this always returns null.
+   *
+   * @param message - The user's raw message text
+   * @returns The canned response string, or null if no match
+   */
+  /**
    * 获取简单问答的回复
    */
   getSimpleResponse(message: string): string | null {
@@ -249,6 +264,15 @@ export class FastRouterService {
     return this.checkSimpleQA(normalizedMessage);
   }
 
+  /**
+   * Extract domain-specific intent keywords from a message for prompt enrichment.
+   *
+   * Scans the message against all routing rule keywords and returns a
+   * deduplicated list of matched terms (e.g., "文书", "选校", "GPA").
+   *
+   * @param message - The user's raw message text
+   * @returns Deduplicated array of matched keyword strings
+   */
   /**
    * 提取用户意图关键词（用于增强 prompt）
    */
@@ -267,6 +291,15 @@ export class FastRouterService {
     return [...new Set(keywords)];
   }
 
+  /**
+   * Heuristically determine whether a message is likely to require tool calls.
+   *
+   * Tests the message against regex indicators for data queries, analysis,
+   * content generation, and comparison operations.
+   *
+   * @param message - The user's raw message text
+   * @returns True if the message likely requires one or more tool invocations
+   */
   /**
    * 判断是否需要工具调用
    */
@@ -290,6 +323,15 @@ export class FastRouterService {
 
   // ==================== 私有方法 ====================
 
+  /**
+   * Test a normalized message against the simple Q&A pattern list.
+   *
+   * Only matches messages shorter than 20 characters to avoid false positives
+   * on longer, more nuanced queries.
+   *
+   * @param message - Lowercase, trimmed message text
+   * @returns The canned response string, or null if no pattern matched
+   */
   private checkSimpleQA(message: string): string | null {
     for (const qa of SIMPLE_QA_PATTERNS) {
       if (qa.pattern.test(message) && message.length < 20) {
@@ -299,6 +341,19 @@ export class FastRouterService {
     return null;
   }
 
+  /**
+   * Score a message against a single routing rule using regex patterns and keywords.
+   *
+   * Scoring algorithm:
+   * - Each regex match adds 0.5 to the score
+   * - Each keyword match adds 0.15
+   * - A bonus of 0.2 is added when 3 or more keywords match
+   * - The final score is capped at 1.0
+   *
+   * @param message - Lowercase, trimmed message text
+   * @param rule - The routing rule to evaluate
+   * @returns Object with the computed score (0-1) and list of matched keywords
+   */
   private matchRule(
     message: string,
     rule: RoutingRule,

@@ -1,15 +1,15 @@
 # API Reference
 
-> Base URL: `http://localhost:3006/api/v1`
+> Base URL: `http://localhost:3001/api/v1`
 > Authentication: JWT Bearer Token (unless marked Public)
-> Interactive docs: `/api/docs` (Swagger UI — currently disabled, see ADR-0001)
+> Interactive docs: `/api/docs` (Swagger UI — 开发环境已启用，生产环境禁用)
 
 ## Overview
 
 | Metric               | Value |
 | -------------------- | ----- |
 | Total Endpoints      | 400+  |
-| Modules              | 29    |
+| Modules              | 28    |
 | Controllers          | 32    |
 | Public Endpoints     | ~30   |
 | Admin-Only Endpoints | ~80   |
@@ -23,6 +23,8 @@ Authorization: Bearer <access_token>
 ```
 
 Tokens are obtained via `POST /auth/login` and refreshed via `POST /auth/refresh`.
+
+> **Note:** The `refreshToken` is stored as an httpOnly cookie (not returned in the response body). The `accessToken` is also set as an httpOnly cookie at path `/` for middleware-based auth detection.
 
 ## Error Codes
 
@@ -76,7 +78,7 @@ Paginated responses:
 
 ## 2. Authentication (`/auth`)
 
-Rate limits: login 3/min, register 5/min
+Rate limits: login 5/min, register 5/min
 
 | Method | Path                        | Auth     | Description                            |
 | ------ | --------------------------- | -------- | -------------------------------------- |
@@ -212,7 +214,7 @@ Rate limits: login 3/min, register 5/min
 | POST   | `/predictions`                  | Required | Run multi-engine ensemble prediction (stats + AI + historical) |
 | GET    | `/predictions/history`          | Required | Get prediction history                                         |
 | PATCH  | `/predictions/:schoolId/result` | Required | Report actual admission result for calibration                 |
-| GET    | `/predictions/calibration`      | Public   | Get aggregated calibration statistics                          |
+| GET    | `/predictions/calibration`      | Required | Get aggregated calibration statistics                          |
 
 **POST `/predictions`** — 核心预测端点 (v2-ensemble)
 
@@ -257,25 +259,26 @@ Response includes: `probability`, `probabilityLow`, `probabilityHigh`, `tier` (r
 
 ## 11. AI Agent (`/ai-agent`)
 
-| Method | Path                        | Auth     | Description          |
-| ------ | --------------------------- | -------- | -------------------- |
-| POST   | `/ai-agent/chat`            | Required | Chat with AI Agent   |
-| POST   | `/ai-agent/agent`           | Required | Call specific agent  |
-| GET    | `/ai-agent/history`         | Required | Get chat history     |
-| DELETE | `/ai-agent/conversation`    | Required | Clear conversation   |
-| POST   | `/ai-agent/refresh-context` | Required | Refresh user context |
-| GET    | `/ai-agent/usage`           | Required | Token usage stats    |
-| GET    | `/ai-agent/rate-limit`      | Required | Rate limit status    |
-| GET    | `/ai-agent/quota`           | Required | Usage quota          |
-| GET    | `/ai-agent/health`          | Required | Agent health status  |
+| Method | Path                        | Auth     | Description              |
+| ------ | --------------------------- | -------- | ------------------------ |
+| POST   | `/ai-agent/chat`            | Required | Chat with AI Agent (SSE) |
+| POST   | `/ai-agent/agent`           | Required | Call specific agent      |
+| GET    | `/ai-agent/conversations`   | Required | List conversations       |
+| GET    | `/ai-agent/history`         | Required | Get chat history         |
+| DELETE | `/ai-agent/conversation`    | Required | Clear conversation       |
+| POST   | `/ai-agent/refresh-context` | Required | Refresh user context     |
+| GET    | `/ai-agent/usage`           | Required | Token usage stats        |
+| GET    | `/ai-agent/rate-limit`      | Required | Rate limit status        |
+| GET    | `/ai-agent/quota`           | Required | Usage quota              |
+| GET    | `/ai-agent/health`          | Required | Agent health status      |
 
 ### User Data (`/ai-agent/user-data`)
 
-Memories, conversations, entities, preferences management — 20 endpoints. See source controllers for full details.
+Memories, conversations, entities, preferences management — 21 endpoints. See source controllers for full details.
 
 ### Admin (`/admin/ai-agent`)
 
-Agent configuration, metrics, tracing, circuit breakers — 25 endpoints. All require ADMIN role.
+Agent configuration, metrics, tracing, circuit breakers, memory management — 35 endpoints. All require ADMIN role.
 
 ## 12. Essay AI (`/essay-ai`)
 
@@ -324,6 +327,11 @@ Agent configuration, metrics, tracing, circuit breakers — 25 endpoints. All re
 | POST   | `/chat/conversations`              | VERIFIED/ADMIN | Start conversation (`{ userId }`)                        |
 | GET    | `/chat/conversations/:id/messages` | Required       | Get messages (paginated, `?limit=50&before=msgId`)       |
 | POST   | `/chat/conversations/:id/read`     | Required       | Mark as read                                             |
+| POST   | `/chat/conversations/:id/pin`      | Required       | Toggle conversation pin                                  |
+| DELETE | `/chat/messages/:id`               | Required       | Delete message (soft delete)                             |
+| PATCH  | `/chat/messages/:id/recall`        | Required       | Recall message (within 2 minutes)                        |
+| GET    | `/chat/unread-count`               | Required       | Get total unread message count                           |
+| POST   | `/chat/conversations/:id/upload`   | Required       | Upload file/image (multipart, max 10MB)                  |
 | POST   | `/chat/follow/:userId`             | Required       | Follow user                                              |
 | DELETE | `/chat/follow/:userId`             | Required       | Unfollow user                                            |
 | GET    | `/chat/followers`                  | Required       | Get followers                                            |
@@ -338,7 +346,7 @@ Agent configuration, metrics, tracing, circuit breakers — 25 endpoints. All re
 
 ## 15. Hall (`/hall`)
 
-Reviews, rankings, lists, swipe, verified ranking — 30+ endpoints. Includes:
+Reviews, rankings, lists, swipe, verified ranking — 35+ endpoints. Includes:
 
 - Profile reviews: 四维评分(学术/标化/活动/奖项) + 分项评语 + 标签 + 反应
 - Target school rankings with AI analysis
@@ -404,7 +412,7 @@ Reviews, rankings, lists, swipe, verified ranking — 30+ endpoints. Includes:
 
 #### GET `/hall/reviews/:profileUserId`
 
-**Query Params:** `page`, `limit`, `sortBy` (createdAt | overallScore | helpfulCount)
+**Query Params:** `page`, `pageSize`, `sortBy` (createdAt | overallScore | helpfulCount), `sortOrder` (asc | desc)
 
 #### POST `/hall/reviews/:reviewId/react`
 
@@ -414,11 +422,12 @@ Reviews, rankings, lists, swipe, verified ranking — 30+ endpoints. Includes:
 
 ### 15.1 排名对比 Endpoints
 
-| Method | Path                     | Description                |
-| ------ | ------------------------ | -------------------------- |
-| POST   | `/hall/ranking`          | 查询指定学校的排名对比     |
-| GET    | `/hall/target-ranking`   | 自动获取用户目标学校的排名 |
-| POST   | `/hall/ranking-analysis` | AI 竞争力分析              |
+| Method | Path                      | Auth     | Description                |
+| ------ | ------------------------- | -------- | -------------------------- |
+| POST   | `/hall/ranking`           | Required | 查询指定学校的排名对比     |
+| GET    | `/hall/target-ranking`    | Required | 自动获取用户目标学校的排名 |
+| GET    | `/hall/ranking/:schoolId` | Required | 获取单个学校的排名详情     |
+| POST   | `/hall/ranking-analysis`  | Required | AI 竞争力分析              |
 
 #### POST `/hall/ranking`
 
@@ -474,58 +483,113 @@ Reviews, rankings, lists, swipe, verified ranking — 30+ endpoints. Includes:
 }
 ```
 
+### 15.2 Public Profiles
+
+| Method | Path                    | Auth     | Description                    |
+| ------ | ----------------------- | -------- | ------------------------------ |
+| GET    | `/hall/public-profiles` | Required | Get public profiles for review |
+
+### 15.3 User Lists
+
+| Method | Path                   | Auth     | Description      |
+| ------ | ---------------------- | -------- | ---------------- |
+| GET    | `/hall/lists`          | Public   | Get public lists |
+| GET    | `/hall/lists/me`       | Required | Get my lists     |
+| GET    | `/hall/lists/:id`      | Public   | Get list by ID   |
+| POST   | `/hall/lists`          | Required | Create list      |
+| PUT    | `/hall/lists/:id`      | Required | Update my list   |
+| DELETE | `/hall/lists/:id`      | Required | Delete my list   |
+| POST   | `/hall/lists/:id/vote` | Required | Vote on a list   |
+| DELETE | `/hall/lists/:id/vote` | Required | Remove vote      |
+
+### 15.4 Verified User Ranking
+
+| Method | Path                           | Auth   | Description               |
+| ------ | ------------------------------ | ------ | ------------------------- |
+| GET    | `/hall/verified-ranking`       | Public | Get verified user ranking |
+| GET    | `/hall/verified-ranking/years` | Public | Get available years       |
+
+### 15.5 Swipe Game
+
+| Method | Path                      | Auth     | Description               |
+| ------ | ------------------------- | -------- | ------------------------- |
+| GET    | `/hall/swipe/batch`       | Required | Batch get cases (preload) |
+| POST   | `/hall/swipe/predict`     | Required | Submit swipe prediction   |
+| GET    | `/hall/swipe/stats`       | Required | Get user swipe stats      |
+| GET    | `/hall/swipe/leaderboard` | Required | Get leaderboard           |
+
 ## 16. Other Modules
 
-| Module         | Path                   | Endpoints | Description                        |
-| -------------- | ---------------------- | --------- | ---------------------------------- |
-| Assessment     | `/assessment`          | 4         | MBTI/Holland personality tests     |
-| Recommendation | `/recommendation`      | 3         | AI school recommendations (25 pts) |
-| Timeline       | `/timeline`            | 18        | Application timeline management    |
-| Swipe          | `/swipe`               | 5         | Case prediction game               |
-| Notification   | `/notifications`       | 6         | Push notifications                 |
-| Subscription   | `/subscriptions`       | 7         | Subscription plans and billing     |
-| Vault          | `/vault`               | 10        | Encrypted credential storage       |
-| Verification   | `/verification`        | 6         | User identity verification         |
-| Peer Review    | `/peer-review`         | 5         | Peer-to-peer profile reviews       |
-| Settings       | `/settings`            | 5         | System settings (ADMIN)            |
-| Essay Prompts  | `/essay-prompts`       | 10        | Essay prompt database              |
-| Essay Scraper  | `/admin/essay-scraper` | 3         | Essay prompt scraping (ADMIN)      |
+| Module         | Path                   | Endpoints | Description                                |
+| -------------- | ---------------------- | --------- | ------------------------------------------ |
+| Assessment     | `/assessment`          | 4         | MBTI/Holland personality tests             |
+| Recommendation | `/recommendation`      | 5         | AI school recommendations (25 pts)         |
+| Timeline       | `/timeline`            | 21        | Application timeline management            |
+| Swipe          | `/hall/swipe`          | 4         | Case prediction game (via Hall controller) |
+| Notification   | `/notifications`       | 6         | Push notifications                         |
+| Subscription   | `/subscriptions`       | 7         | Subscription plans and billing             |
+| Vault          | `/vault`               | 10        | Encrypted credential storage               |
+| Verification   | `/verification`        | 6         | User identity verification                 |
+| Peer Review    | `/peer-review`         | 5         | Peer-to-peer profile reviews               |
+| Settings       | `/settings`            | 5         | System settings (ADMIN)                    |
+| Essay Prompts  | `/essay-prompts`       | 11        | Essay prompt database (2 public + 9 admin) |
+| Essay Scraper  | `/admin/essay-scraper` | 15        | Essay prompt scraping pipeline (ADMIN)     |
+| Case Admin     | `/admin/cases`         | 5         | Case batch import & review (ADMIN)         |
 
 ## 17. Admin (`/admin`)
 
 All admin endpoints require `ADMIN` role.
 
-| Method | Path                      | Description                |
-| ------ | ------------------------- | -------------------------- |
-| GET    | `/admin/stats`            | Platform statistics        |
-| GET    | `/admin/reports`          | Content reports            |
-| PUT    | `/admin/reports/:id`      | Update report status       |
-| DELETE | `/admin/reports/:id`      | Delete report              |
-| GET    | `/admin/users`            | User management            |
-| PUT    | `/admin/users/:id/role`   | Update user role           |
-| DELETE | `/admin/users/:id`        | Delete user                |
-| GET    | `/admin/audit-logs`       | Audit logs                 |
-| CRUD   | `/admin/school-deadlines` | School deadline management |
-| CRUD   | `/admin/global-events`    | Global event management    |
+| Method | Path                          | Description            |
+| ------ | ----------------------------- | ---------------------- |
+| GET    | `/admin/stats`                | Platform statistics    |
+| GET    | `/admin/reports`              | Content reports        |
+| PUT    | `/admin/reports/:id`          | Update report status   |
+| DELETE | `/admin/reports/:id`          | Delete report          |
+| GET    | `/admin/users`                | User management        |
+| PUT    | `/admin/users/:id/role`       | Update user role       |
+| DELETE | `/admin/users/:id`            | Delete user            |
+| GET    | `/admin/audit-logs`           | Audit logs             |
+| GET    | `/admin/school-deadlines`     | List school deadlines  |
+| POST   | `/admin/school-deadlines`     | Create school deadline |
+| PUT    | `/admin/school-deadlines/:id` | Update school deadline |
+| DELETE | `/admin/school-deadlines/:id` | Delete school deadline |
+| GET    | `/admin/global-events`        | List global events     |
+| POST   | `/admin/global-events`        | Create global event    |
+| PUT    | `/admin/global-events/:id`    | Update global event    |
+| DELETE | `/admin/global-events/:id`    | Delete global event    |
 
 ---
 
 ## Swagger / OpenAPI
 
-The project uses `@nestjs/swagger` with 80+ decorated controllers and DTOs. Swagger UI is currently disabled in `main.ts` due to circular dependency issues but can be re-enabled:
+The project uses `@nestjs/swagger` with decorated controllers and DTOs. Swagger UI is **enabled in non-production environments** (line 127 of `main.ts`):
 
 ```typescript
-// apps/api/src/main.ts (lines 75-86, currently commented out)
-const config = new DocumentBuilder()
-  .setTitle('Study Abroad Platform API')
-  .setDescription('API documentation')
-  .setVersion('1.0')
-  .addBearerAuth()
-  .build();
-const document = SwaggerModule.createDocument(app, config);
-SwaggerModule.setup('api/docs', app, document);
+// apps/api/src/main.ts (lines 126-163)
+if (process.env.NODE_ENV !== 'production') {
+  const config = new DocumentBuilder()
+    .setTitle('Study Abroad Platform API')
+    .setDescription(
+      'RESTful API for the Study Abroad Platform — authentication, profiles, schools, AI agent, forum, and more.'
+    )
+    .setVersion('1.0.0')
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'JWT')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+      docExpansion: 'none',
+      filter: true,
+    },
+  });
+}
 ```
+
+Access at: `http://localhost:3001/api/docs`
 
 ---
 
-_Last updated: 2026-02-09_
+_Last updated: 2026-02-13_

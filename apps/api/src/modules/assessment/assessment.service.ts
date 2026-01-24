@@ -27,6 +27,18 @@ import {
 import { HOLLAND_QUESTIONS, HOLLAND_TYPE_INFO } from './data/holland-questions';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
 
+/**
+ * Service for personality and career interest assessments.
+ *
+ * Supports two assessment types:
+ * - MBTI (Jungian Type): 48 questions across 4 dimensions (EI, SN, TF, JP)
+ *   using a 5-point Likert scale with positive/negative direction scoring.
+ * - Holland (Career Interest): Calculates RIASEC scores and returns top-3 career codes
+ *   with matched fields and recommended majors.
+ *
+ * Results are persisted to the database and recorded in the memory system for
+ * downstream use by the AI agent and prediction services.
+ */
 @Injectable()
 export class AssessmentService {
   private readonly logger = new Logger(AssessmentService.name);
@@ -38,6 +50,16 @@ export class AssessmentService {
     private memoryManager?: MemoryManagerService,
   ) {}
 
+  /**
+   * Retrieve the question set for a given assessment type.
+   *
+   * Returns a shuffled list of questions with bilingual text and answer options.
+   * MBTI questions include Likert scale options; Holland questions include their own options.
+   *
+   * @param type - The assessment type to retrieve (MBTI or HOLLAND)
+   * @returns Assessment DTO containing shuffled questions, title, and description
+   * @throws {BadRequestException} When an unsupported assessment type is provided
+   */
   /**
    * 获取测评题目
    */
@@ -96,6 +118,20 @@ export class AssessmentService {
     };
   }
 
+  /**
+   * Submit assessment answers, compute the result, and persist it.
+   *
+   * Workflow:
+   * 1. Calculate the typed result (MBTI type or Holland codes) from raw answers
+   * 2. Find or create the Assessment record in the database
+   * 3. Save the AssessmentResult with answers, computed result, and major recommendations
+   * 4. Asynchronously record the result to the memory system (FACT + PREFERENCE memories)
+   *
+   * @param userId - The user submitting the assessment
+   * @param dto - Submission DTO containing the assessment type and answer array
+   * @returns Formatted assessment result DTO
+   * @throws {BadRequestException} When an unsupported assessment type is provided
+   */
   /**
    * 提交测评答案并计算结果
    */
@@ -167,6 +203,19 @@ export class AssessmentService {
     return this.formatResult(dto.type, savedResult);
   }
 
+  /**
+   * Save assessment results to the memory system for downstream AI agent use.
+   *
+   * For MBTI: records a FACT memory with the type code and personality description,
+   * plus a PREFERENCE memory with recommended majors.
+   * For Holland: records a FACT memory with the career code and dominant types,
+   * plus a PREFERENCE memory with interest fields and recommended majors.
+   * Failures are caught and logged without affecting the main flow.
+   *
+   * @param userId - The user identifier
+   * @param type - The assessment type (MBTI or HOLLAND)
+   * @param result - The computed assessment result object
+   */
   /**
    * 保存测评结果到记忆系统
    */
@@ -243,6 +292,15 @@ export class AssessmentService {
   }
 
   /**
+   * Record a "view assessment history" event to the memory system.
+   *
+   * Stores a low-importance FACT memory noting which assessment types were reviewed
+   * and the total number of results. Skipped if no results or no memory manager.
+   *
+   * @param userId - The user identifier
+   * @param results - The assessment results that were viewed (with assessment relation)
+   */
+  /**
    * 记录查看测评历史的行为
    */
   private async recordViewHistoryToMemory(
@@ -269,6 +327,15 @@ export class AssessmentService {
     }
   }
 
+  /**
+   * Record a "view individual assessment result" event to the memory system.
+   *
+   * Creates a low-importance FACT memory with the specific result type and ID.
+   *
+   * @param userId - The user identifier
+   * @param type - The assessment type (MBTI or HOLLAND)
+   * @param result - The raw assessment result record
+   */
   /**
    * 记录查看单个测评结果的行为
    */
@@ -309,6 +376,15 @@ export class AssessmentService {
   }
 
   /**
+   * Retrieve all assessment results for a user, ordered by most recent first.
+   *
+   * Also asynchronously records the view-history event to the memory system
+   * when results are found.
+   *
+   * @param userId - The user identifier
+   * @returns Array of formatted assessment result DTOs
+   */
+  /**
    * 获取用户的测评历史
    */
   async getHistory(userId: string): Promise<AssessmentResultDto[]> {
@@ -330,6 +406,16 @@ export class AssessmentService {
     );
   }
 
+  /**
+   * Retrieve a single assessment result by ID, scoped to the requesting user.
+   *
+   * Also asynchronously records the view-result event to the memory system.
+   *
+   * @param userId - The user identifier (used for ownership check)
+   * @param resultId - The assessment result identifier
+   * @returns Formatted assessment result DTO
+   * @throws {NotFoundException} When the result does not exist or does not belong to the user
+   */
   /**
    * 获取单个测评结果
    */
@@ -363,6 +449,21 @@ export class AssessmentService {
 
   // ============ Private Methods ============
 
+  /**
+   * Calculate the MBTI personality type from raw answers using a 5-point Likert scale.
+   *
+   * Scoring algorithm:
+   * - 4 dimensions (EI, SN, TF, JP), each with 12 questions (6 positive, 6 negative direction)
+   * - Positive direction (+): raw score contributes to the first letter (E/S/T/J);
+   *   inverse (6 - score) contributes to the second letter (I/N/F/P)
+   * - Negative direction (-): raw score contributes to the second letter;
+   *   inverse contributes to the first letter
+   * - Final percentage = (first-letter score / dimension total) * 100
+   * - Type is determined by whichever letter reaches >= 50% per dimension
+   *
+   * @param answers - Array of question-answer pairs where answer is "1"-"5"
+   * @returns MbtiResultDto with type code, dimension percentages, title, description, strengths, careers, and majors
+   */
   /**
    * 计算 MBTI 结果 (基于 5 点 Likert 量表)
    *
@@ -445,6 +546,18 @@ export class AssessmentService {
     };
   }
 
+  /**
+   * Calculate the Holland career interest profile from raw answers.
+   *
+   * Scoring algorithm:
+   * - Sums answer values per RIASEC type (Realistic, Investigative, Artistic,
+   *   Social, Enterprising, Conventional)
+   * - Selects top-3 types by score to form the Holland code (e.g., "RIA")
+   * - Merges fields and majors from the top-3 types using HOLLAND_TYPE_INFO lookup
+   *
+   * @param answers - Array of question-answer pairs where answer is a numeric string
+   * @returns HollandResultDto with codes, per-type scores, type names, fields, and majors
+   */
   private calculateHollandResult(
     answers: { questionId: string; answer: string }[],
   ): HollandResultDto {
@@ -502,6 +615,16 @@ export class AssessmentService {
     };
   }
 
+  /**
+   * Format a raw database assessment result into the public DTO shape.
+   *
+   * Parses the JSON `result` column and attaches it under `mbtiResult` or
+   * `hollandResult` depending on the assessment type.
+   *
+   * @param type - The assessment type to determine which DTO field to populate
+   * @param result - Raw Prisma record (may have stringified `result` column)
+   * @returns Formatted AssessmentResultDto with type-specific nested result
+   */
   private formatResult(
     type: AssessmentTypeEnum,
     result: any,

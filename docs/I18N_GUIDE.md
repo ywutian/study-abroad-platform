@@ -27,8 +27,8 @@
 ┌──────────────────────────────────────────────────┐
 │                    next-intl                      │
 │  ┌────────────┐  ┌─────────────┐  ┌────────────┐ │
-│  │ request.ts │  │  messages/  │  │ global.d.ts│ │
-│  │ (formats,  │  │  zh.json    │  │ (类型安全)  │ │
+│  │ request.ts │  │  messages/  │  │  i18n.d.ts │ │
+│  │ (formats,  │  │  zh.json    │  │ (类型声明)  │ │
 │  │  timeZone) │  │  en.json    │  │            │ │
 │  └─────┬──────┘  └──────┬──────┘  └────────────┘ │
 │        │                │                         │
@@ -72,7 +72,7 @@ apps/web/src/
 │   ├── zh.json            # 中文翻译
 │   └── en.json            # 英文翻译
 ├── types/
-│   └── global.d.ts        # IntlMessages 类型声明
+│   └── i18n.d.ts          # next-intl 类型声明 (module augmentation)
 └── ...
 ```
 
@@ -316,24 +316,39 @@ import { getLocalizedName } from '@/lib/i18n/locale-utils';
 
 ## 类型安全
 
-### 配置 IntlMessages 类型
+### 当前配置（宽松模式）
+
+当前使用宽松模式，允许动态拼接翻译 key（如 `t(\`prefix.\${variable}.suffix\`)`）：
 
 ```typescript
-// types/global.d.ts
-import zh from '../messages/zh.json';
+// types/i18n.d.ts
+import type { useTranslations } from 'next-intl';
 
-type Messages = typeof zh;
+type LooseMessages = Record<string, any>;
 
-declare global {
-  interface IntlMessages extends Messages {}
+declare module 'next-intl' {
+  interface AppConfig {
+    Messages: LooseMessages;
+  }
 }
 ```
 
-这样做的效果：
+> **注意**: 严格模式（基于 `zh.json` 推断 key 类型）会在 130+ 处动态 key 使用时报 TS2345。待所有动态 key 迁移为类型安全写法后可重新启用。
 
-- `t('nonExistentKey')` 会在 TypeScript 编译时报错
-- IDE 自动补全所有可用的翻译 key
-- 重构翻译 key 时会发现所有引用
+### 严格模式（未来目标）
+
+迁移完成后，可切换为严格模式以获得编译时校验和 IDE 自动补全：
+
+```typescript
+// types/i18n.d.ts (严格模式)
+import zh from '../messages/zh.json';
+
+declare module 'next-intl' {
+  interface AppConfig {
+    Messages: typeof zh;
+  }
+}
+```
 
 ## 编码规范
 
@@ -441,7 +456,7 @@ locale === 'zh' ? '管理员' : 'Admin';
 ### 已完成的基础设施
 
 - [x] `request.ts` — 配置全局 `formats`（`short`/`medium`/`long`/`time`）和 `timeZone`
-- [x] `types/i18n.d.ts` — 翻译 key 类型安全（基于 `zh.json` 自动推导）
+- [x] `types/i18n.d.ts` — next-intl 类型声明（当前为宽松模式，待迁移动态 key 后启用严格模式）
 - [x] `lib/i18n/locale-utils.ts` — 集中式 locale 工具 (`toBcp47`, `getLocalizedName`, `getSecondaryName`)
 - [x] 文档规范 (本文件)
 
@@ -640,3 +655,7 @@ const prompt = t('aiActions.interpretMbtiPrompt', {
 - 构建时 dynamic import 的性能影响
 - 开发体验（需修改 `request.ts` 加载逻辑）
 - 是否需要引入 i18n 管理平台（如 Crowdin/Lokalise）
+
+---
+
+_最后更新: 2026-02-13_

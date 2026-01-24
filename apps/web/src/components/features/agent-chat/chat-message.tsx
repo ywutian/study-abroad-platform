@@ -608,7 +608,11 @@ function MarkdownContent({
 
   const cleanedContent = useMemo(() => {
     if (structuredData) {
-      return content.replace(/```(?:json)?\s*\n?[\s\S]*?\n?```/, '').trim();
+      // Remove the JSON code block and any introductory line about structured data
+      return content
+        .replace(/```(?:json)?\s*\n?[\s\S]*?\n?```/, '')
+        .replace(/.*结构化数据.*\n?/g, '')
+        .trim();
     }
     return content;
   }, [content, structuredData]);

@@ -1,12 +1,9 @@
 # ADR-0005: Production Security Headers (Helmet CSP + HSTS)
 
-## Status
-
-Accepted
-
-## Date
-
-2026-02-07
+- Status: accepted
+- Date: 2026-02-07
+- Decision-makers: Core Team
+- Tags: backend, security, helmet
 
 ## Context
 
@@ -52,3 +49,8 @@ Configure Helmet with environment-aware security headers:
 
 - CSP may block legitimate external resources if not configured correctly
 - HSTS preload is permanent — requires commitment to HTTPS
+
+### Neutral
+
+- Helmet is already a dependency; no new packages required
+- CSP directives will need updating when integrating new third-party services

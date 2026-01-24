@@ -20,7 +20,7 @@
 
 ### 症状
 
-```
+```text
 web:dev: Parsing CSS source code failed
   .text-\[var\(\.\.\.\)\] {
 >     color: var(...);
@@ -98,7 +98,7 @@ Tailwind CSS v4（通过 `@import "tailwindcss"` 使用）在扫描源代码时�
 
 ### 症状
 
-```
+```text
 ERROR [AllExceptionsFilter] GET /api/v1/verification/my - 500
   Cannot read properties of undefined (reading 'findMany')
 TypeError: Cannot read properties of undefined (reading 'findMany')
@@ -168,7 +168,7 @@ pnpm --filter api db:push      # 同步 schema 到数据库
 
 ### 症状
 
-```
+```text
 ENOENT: no such file or directory, open '.../.next/dev/server/app/[locale]/(auth)/login/page/build-manifest.json'
 Persisting failed: Unable to write SST file
 ```
@@ -195,7 +195,7 @@ rm -rf apps/web/.next
 
 ### 症状
 
-```
+```text
 MISSING_MESSAGE: Could not resolve `meta.home.keywords` in messages for locale `zh`.
 MISSING_MESSAGE: Could not resolve `nav.descriptions.ai` in messages for locale `zh`.
 MISSING_MESSAGE: Could not resolve `validation.required` in messages for locale `zh`.

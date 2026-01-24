@@ -24,6 +24,7 @@ export interface StreamEvent {
   type: 'start' | 'content' | 'tool_start' | 'tool_end' | 'agent_switch' | 'done' | 'error';
   agent?: AgentType;
   conversationId?: string; // 对话 ID，用于保持上下文
+  title?: string; // 对话标题（新对话时在 start 事件中返回）
   content?: string;
   tool?: string;
   toolResult?: any;
@@ -61,6 +62,16 @@ export const AGENT_INFO: Record<
   profile: { name: 'Profile Analyst', nameZh: '档案分析', icon: '📊', color: 'text-green-500' },
   timeline: { name: 'Timeline Planner', nameZh: '时间规划', icon: '📅', color: 'text-orange-500' },
 };
+
+export interface ConversationSummary {
+  id: string;
+  title?: string;
+  summary?: string;
+  agentType?: AgentType;
+  messageCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export const QUICK_ACTION_KEYS = [
   { labelKey: 'analyzeProfile', messageKey: 'analyzeProfileMessage' },

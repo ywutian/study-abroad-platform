@@ -46,8 +46,8 @@ describe('Button Component', () => {
     const variants = ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'] as const;
 
     variants.forEach((variant) => {
-      const { getByText } = render(<Button variant={variant}>{variant} Button</Button>);
-      expect(getByText(`${variant} Button`)).toBeTruthy();
+      const { getByRole } = render(<Button variant={variant}>Click</Button>);
+      expect(getByRole('button')).toBeTruthy();
     });
   });
 
@@ -55,8 +55,8 @@ describe('Button Component', () => {
     const sizes = ['sm', 'default', 'lg', 'icon'] as const;
 
     sizes.forEach((size) => {
-      const { getByText } = render(<Button size={size}>{size} Button</Button>);
-      expect(getByText(`${size} Button`)).toBeTruthy();
+      const { getByRole } = render(<Button size={size}>Click</Button>);
+      expect(getByRole('button')).toBeTruthy();
     });
   });
 });

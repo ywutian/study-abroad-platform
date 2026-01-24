@@ -37,7 +37,16 @@ cp apps/web/.env.example apps/web/.env.local
 
 编辑 `.env` 文件，填写必要配置（参考 `ENV_TEMPLATE.md`）
 
-### 4. 初始化数据库
+### 4. 启动数据库和 Redis
+
+```bash
+# 使用 Docker 启动 PostgreSQL 和 Redis（推荐）
+pnpm docker:up
+
+# 或手动安装 PostgreSQL 16 和 Redis 7
+```
+
+### 5. 初始化数据库
 
 ```bash
 cd apps/api
@@ -45,7 +54,7 @@ pnpm prisma migrate dev
 pnpm prisma db seed
 ```
 
-### 5. 启动开发服务器
+### 6. 启动开发服务器
 
 ```bash
 # 在项目根目录
@@ -204,6 +213,23 @@ docker compose exec -T db psql -U postgres study_abroad < backup.sql
 
 ---
 
+## SBOM（Software Bill of Materials）
+
+项目使用 CycloneDX 标准自动生成 SBOM，用于供应链安全审计。
+
+### 自动生成
+
+每次推送到 `main` 分支时，CI 自动生成 SBOM 并存储为 GitHub Actions artifact（保留 90 天）。
+
+### 手动生成
+
+```bash
+pnpm sbom:generate
+# 输出: sbom/bom.json (CycloneDX JSON v1.5)
+```
+
+---
+
 ## 常见问题
 
 ### 数据库连接失败
@@ -226,7 +252,7 @@ docker compose exec -T db psql -U postgres study_abroad < backup.sql
 
 ## 默认账号
 
-| 角色     | 邮箱           | 密码      |
-| -------- | -------------- | --------- |
-| 管理员   | admin@test.com | Admin123! |
-| 测试用户 | demo@test.com  | Demo123!  |
+| 角色     | 邮箱              | 密码      |
+| -------- | ----------------- | --------- |
+| 管理员   | admin@example.com | Admin123! |
+| 测试用户 | demo@example.com  | Demo123!  |

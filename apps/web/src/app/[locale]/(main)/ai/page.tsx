@@ -15,7 +15,7 @@ export default function AIPage() {
 
       <div className="bg-card rounded-xl border shadow-sm overflow-hidden">
         <AgentChat
-          showHeader={false}
+          showHeader={true}
           showQuickActions={true}
           className="h-[calc(100vh-250px)] min-h-[500px]"
         />

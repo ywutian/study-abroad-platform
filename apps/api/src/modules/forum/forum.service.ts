@@ -52,6 +52,11 @@ export class ForumService {
   // Stats
   // ============================================
 
+  /**
+   * Get forum statistics including post count, user count, active team count, and daily active users.
+   *
+   * @returns Forum statistics object
+   */
   async getStats(): Promise<{
     postCount: number;
     userCount: number;
@@ -110,6 +115,11 @@ export class ForumService {
   // Categories
   // ============================================
 
+  /**
+   * Get all active categories with post counts, ordered by sortOrder.
+   *
+   * @returns Array of categories with post counts
+   */
   async getCategories(): Promise<CategoryDto[]> {
     const categories = await this.prisma.forumCategory.findMany({
       where: { isActive: true },
@@ -131,7 +141,26 @@ export class ForumService {
     }));
   }
 
+  /**
+   * Create a new forum category. Checks for name uniqueness.
+   *
+   * @param data - Category creation data
+   * @returns The created category
+   * @throws {BadRequestException} When a category with the same name already exists
+   */
   async createCategory(data: CreateCategoryDto): Promise<CategoryDto> {
+    const existing = await this.prisma.forumCategory.findFirst({
+      where: {
+        OR: [{ name: data.name }, { nameZh: data.nameZh }],
+      },
+    });
+
+    if (existing) {
+      throw new BadRequestException(
+        `Category already exists: ${existing.name} / ${existing.nameZh}`,
+      );
+    }
+
     const category = await this.prisma.forumCategory.create({
       data: {
         name: data.name,
@@ -160,6 +189,13 @@ export class ForumService {
   // Posts
   // ============================================
 
+  /**
+   * Get paginated posts with filtering and sorting. Pinned posts always appear first.
+   *
+   * @param userId - Current user ID, or null for anonymous access
+   * @param query - Filtering (category, team, tag, search) and sorting (latest/popular/comments/recommended) options
+   * @returns Paginated post list with total count and hasMore flag
+   */
   async getPosts(
     userId: string | null,
     query: PostQueryDto,
@@ -294,6 +330,14 @@ export class ForumService {
     };
   }
 
+  /**
+   * Get post detail with comments, team members, and applications. Increments view count.
+   *
+   * @param postId - Post ID
+   * @param userId - Current user ID, or null for anonymous access
+   * @returns Full post detail including comments, team members, and applications
+   * @throws {NotFoundException} When the post does not exist
+   */
   async getPostById(
     postId: string,
     userId: string | null,
@@ -470,6 +514,16 @@ export class ForumService {
     };
   }
 
+  /**
+   * Create a post. Only verified users can create team posts. Runs content moderation
+   * and auto-adds the author as team owner for team posts.
+   *
+   * @param userId - Author's user ID
+   * @param data - Post creation data
+   * @returns The created post
+   * @throws {ForbiddenException} When an unverified user attempts to create a team post
+   * @throws {BadRequestException} When the category is invalid or content fails moderation
+   */
   async createPost(userId: string, data: CreatePostDto): Promise<PostDto> {
     // 获取用户角色
     const user = await this.prisma.user.findUnique({
@@ -746,6 +800,16 @@ export class ForumService {
     }
   }
 
+  /**
+   * Update a post. Verifies ownership and locked status.
+   *
+   * @param postId - Post ID
+   * @param userId - Current user ID
+   * @param data - Fields to update
+   * @returns The updated post
+   * @throws {NotFoundException} When the post does not exist
+   * @throws {ForbiddenException} When the user is not the author or the post is locked
+   */
   async updatePost(
     postId: string,
     userId: string,
@@ -812,6 +876,14 @@ export class ForumService {
     };
   }
 
+  /**
+   * Delete a post. Verifies ownership.
+   *
+   * @param postId - Post ID
+   * @param userId - Current user ID
+   * @throws {NotFoundException} When the post does not exist
+   * @throws {ForbiddenException} When the user is not the author
+   */
   async deletePost(postId: string, userId: string): Promise<void> {
     this.auth.verifyOwnership(
       await this.prisma.forumPost.findUnique({ where: { id: postId } }),
@@ -822,6 +894,13 @@ export class ForumService {
     await this.prisma.forumPost.delete({ where: { id: postId } });
   }
 
+  /**
+   * Toggle like/unlike on a post. Uses a transaction for atomicity.
+   *
+   * @param postId - Post ID
+   * @param userId - Current user ID
+   * @returns Whether the post is now liked
+   */
   async likePost(postId: string, userId: string): Promise<{ liked: boolean }> {
     const existing = await this.prisma.forumLike.findUnique({
       where: { postId_userId: { postId, userId } },
@@ -860,6 +939,17 @@ export class ForumService {
   // Comments
   // ============================================
 
+  /**
+   * Create a comment or reply. Runs content moderation and checks post locked status.
+   *
+   * @param postId - Post ID to comment on
+   * @param userId - Comment author's user ID
+   * @param data - Comment content and optional parentId for replies
+   * @returns The created comment
+   * @throws {NotFoundException} When the post does not exist
+   * @throws {ForbiddenException} When the post is locked
+   * @throws {BadRequestException} When the parent comment is invalid or content fails moderation
+   */
   async createComment(
     postId: string,
     userId: string,
@@ -1006,6 +1096,16 @@ export class ForumService {
   // Team Applications
   // ============================================
 
+  /**
+   * Apply to join a team post. Validates team status, membership, and duplicate applications.
+   *
+   * @param postId - Team post ID
+   * @param userId - Applicant's user ID
+   * @param data - Application message
+   * @returns Whether the application was submitted
+   * @throws {NotFoundException} When the post does not exist
+   * @throws {BadRequestException} When the post is not a team post, team is not recruiting, user is already a member, or already applied
+   */
   async applyToTeam(
     postId: string,
     userId: string,
@@ -1065,6 +1165,17 @@ export class ForumService {
     return { applied: true };
   }
 
+  /**
+   * Accept or reject a team application. Only the post author can review.
+   * If accepted, adds the applicant as a member and checks team capacity.
+   *
+   * @param applicationId - Application ID
+   * @param userId - Reviewer's user ID (must be post author)
+   * @param data - Review decision (accept/reject) and optional note
+   * @throws {NotFoundException} When the application does not exist
+   * @throws {ForbiddenException} When the user is not the team owner
+   * @throws {BadRequestException} When the application is already reviewed
+   */
   async reviewApplication(
     applicationId: string,
     userId: string,
@@ -1133,6 +1244,15 @@ export class ForumService {
     }
   }
 
+  /**
+   * Cancel own pending team application.
+   *
+   * @param applicationId - Application ID
+   * @param userId - Applicant's user ID
+   * @throws {NotFoundException} When the application does not exist
+   * @throws {ForbiddenException} When the user is not the applicant
+   * @throws {BadRequestException} When the application is already reviewed
+   */
   async cancelApplication(
     applicationId: string,
     userId: string,
@@ -1159,6 +1279,14 @@ export class ForumService {
     });
   }
 
+  /**
+   * Leave a team. The owner cannot leave. Re-opens recruitment after departure.
+   *
+   * @param postId - Team post ID
+   * @param userId - User ID of the member leaving
+   * @throws {NotFoundException} When the user is not a team member
+   * @throws {BadRequestException} When the team owner attempts to leave
+   */
   async leaveTeam(postId: string, userId: string): Promise<void> {
     const member = await this.prisma.teamMember.findUnique({
       where: { postId_userId: { postId, userId } },
@@ -1193,6 +1321,12 @@ export class ForumService {
     });
   }
 
+  /**
+   * Get all teams the user is a member of.
+   *
+   * @param userId - User ID
+   * @returns Array of team posts the user belongs to
+   */
   async getMyTeams(userId: string): Promise<PostDto[]> {
     const memberships = await this.prisma.teamMember.findMany({
       where: { userId },
@@ -1246,6 +1380,17 @@ export class ForumService {
   // Reports
   // ============================================
 
+  /**
+   * Report a post. Checks for self-reports and duplicate reports.
+   *
+   * @param reporterId - Reporter's user ID
+   * @param postId - Post ID to report
+   * @param reason - Report reason
+   * @param detail - Optional additional detail
+   * @returns The created report
+   * @throws {NotFoundException} When the post does not exist
+   * @throws {BadRequestException} When reporting own post or duplicate report
+   */
   async reportPost(
     reporterId: string,
     postId: string,
@@ -1297,6 +1442,17 @@ export class ForumService {
     });
   }
 
+  /**
+   * Report a comment. Checks for self-reports and duplicate reports.
+   *
+   * @param reporterId - Reporter's user ID
+   * @param commentId - Comment ID to report
+   * @param reason - Report reason
+   * @param detail - Optional additional detail
+   * @returns The created report
+   * @throws {NotFoundException} When the comment does not exist
+   * @throws {BadRequestException} When reporting own comment or duplicate report
+   */
   async reportComment(
     reporterId: string,
     commentId: string,

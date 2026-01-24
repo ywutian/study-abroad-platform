@@ -16,15 +16,15 @@
 
 <!-- How was this tested? What scenarios were verified? -->
 
-- [ ] Unit tests pass (`pnpm --filter api test`)
+- [ ] Unit tests pass (`pnpm --filter api test` / `pnpm --filter study-abroad-mobile test`)
+- [ ] Lint passes (`pnpm lint`)
 - [ ] Manual testing completed
 - [ ] Edge cases verified
 
 ## Checklist
 
-- [ ] Code follows [development standards](CONTRIBUTING.md)
+- [ ] Code follows [development standards](../CONTRIBUTING.md)
 - [ ] Self-review completed
-- [ ] Lint passes (`pnpm lint`)
 - [ ] Tests added/updated for new functionality
 - [ ] Documentation updated (if applicable)
 - [ ] CHANGELOG.md updated (for user-facing changes)

@@ -10,21 +10,23 @@ export const AGENT_CONFIGS: Record<AgentType, AgentConfig> = {
     type: AgentType.ORCHESTRATOR,
     name: '留学助手',
     description: '智能路由和任务协调，将用户请求分发给专业 Agent',
-    systemPrompt: `留学申请AI协调者。中文回复。
+    systemPrompt: `留学申请AI协调者。你具备联网搜索能力，可以查询实时信息。
 
 委派规则:
 - 文书(写作/修改/润色) → essay
-- 选校(搜索/对比/录取分析) → school  
+- 选校(搜索/对比/录取分析) → school
 - 档案(成绩/活动/背景/测评) → profile
 - 规划(截止日期/时间线) → timeline
 - 论坛/社区问题 → 直接使用论坛工具
 - 案例分析/预测游戏 → 直接使用案例工具
 - 档案排名/改进建议 → 直接使用排名工具
 - 留学政策/签证/趋势等时效性问题 → 使用 web_search 搜索最新信息
+- 日期/时间/天气/新闻等实时问题 → 使用 web_search
 - 简单问候 → 直接回复
 
 搜索规则:
-- 当用户询问最新留学政策、签证动态、申请趋势、标化考试变化等时效性问题时，使用 web_search 获取最新信息
+- 当用户询问最新留学政策、签证动态、申请趋势、标化考试变化、当前日期等需要实时信息的问题时，使用 web_search 获取最新信息
+- 你有能力搜索互联网，不要拒绝搜索请求
 - 引用搜索结果时注明来源链接
 - 搜索词尽量使用英文以获取更好结果
 
@@ -54,7 +56,7 @@ export const AGENT_CONFIGS: Record<AgentType, AgentConfig> = {
     ],
     model: 'gpt-4o-mini',
     temperature: 0.3,
-    maxTokens: 1000,
+    maxTokens: 2000,
   },
 
   // ==================== 文书专家 Agent ====================
@@ -62,7 +64,7 @@ export const AGENT_CONFIGS: Record<AgentType, AgentConfig> = {
     type: AgentType.ESSAY,
     name: '文书专家',
     description: '专注于文书写作、修改、评估和创意生成',
-    systemPrompt: `留学文书专家。中文回复。
+    systemPrompt: `留学文书专家。
 
 能力: 文书评估|润色修改|头脑风暴|大纲规划
 
@@ -93,7 +95,7 @@ export const AGENT_CONFIGS: Record<AgentType, AgentConfig> = {
     type: AgentType.SCHOOL,
     name: '选校专家',
     description: '专注于学校搜索、对比、推荐和录取分析',
-    systemPrompt: `留学选校顾问。中文回复。
+    systemPrompt: `留学选校顾问。
 
 能力: 学校查询|选校推荐|学校对比|录取分析|学校官网信息搜索
 
@@ -124,7 +126,7 @@ export const AGENT_CONFIGS: Record<AgentType, AgentConfig> = {
 }
 \`\`\`
 
-原则: 用数据说话，解释推荐理由，提供结构化数据便于前端展示`,
+原则: 用数据说话，解释推荐理由。注意：JSON 代码块会被前端自动解析为卡片，不要在正文中提及"结构化数据"或"前端展示"等内部术语`,
     tools: [
       'get_profile',
       'search_schools',
@@ -146,7 +148,7 @@ export const AGENT_CONFIGS: Record<AgentType, AgentConfig> = {
     type: AgentType.PROFILE,
     name: '档案分析师',
     description: '专注于用户档案管理、背景分析和性格测评解读',
-    systemPrompt: `留学背景分析师。中文回复。
+    systemPrompt: `留学背景分析师。
 
 能力: 档案审查|优势分析|短板识别|定位建议|测评解读|活动推荐
 
@@ -188,7 +190,7 @@ export const AGENT_CONFIGS: Record<AgentType, AgentConfig> = {
     type: AgentType.TIMELINE,
     name: '规划顾问',
     description: '专注于申请时间线规划、竞赛活动跟踪和截止日期管理',
-    systemPrompt: `留学规划顾问。中文回复。
+    systemPrompt: `留学规划顾问。
 
 能力: 时间线规划|截止日期管理|竞赛/考试/活动跟踪|任务分解|案例参考|官网信息搜索
 
@@ -249,4 +251,23 @@ export function getAgentConfig(type: AgentType): AgentConfig {
  */
 export function getAllAgentTypes(): AgentType[] {
   return Object.keys(AGENT_CONFIGS) as AgentType[];
+}
+
+/**
+ * 语言指令映射
+ */
+const LOCALE_INSTRUCTIONS: Record<string, string> = {
+  zh: '请使用中文回复用户。',
+  en: 'Please respond to the user in English.',
+};
+
+/**
+ * 根据 locale 生成带语言指令的系统提示词
+ */
+export function getLocalizedSystemPrompt(
+  config: AgentConfig,
+  locale: string,
+): string {
+  const langInstruction = LOCALE_INSTRUCTIONS[locale] || LOCALE_INSTRUCTIONS.zh;
+  return `${config.systemPrompt}\n\n## Language Requirement\n${langInstruction}`;
 }

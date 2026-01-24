@@ -4,13 +4,16 @@ React Native 移动端应用，基于 Expo 构建。
 
 ## 技术栈
 
-- **框架**: React Native 0.74 + Expo 51
-- **路由**: Expo Router (基于文件系统的路由)
-- **状态管理**: Zustand
-- **数据获取**: TanStack Query (React Query)
+- **框架**: React Native 0.81.5 + Expo SDK 54
+- **路由**: Expo Router 6 (基于文件系统的路由)
+- **状态管理**: Zustand 5
+- **数据获取**: TanStack Query 5 (React Query)
 - **国际化**: i18next + react-i18next
-- **UI组件**: 自定义组件库 (32个组件)
-- **测试**: Jest + React Native Testing Library
+- **动画**: Reanimated 4 + react-native-worklets
+- **列表**: FlashList v2 (@shopify/flash-list)
+- **UI组件**: 自定义组件库 (26个组件文件)
+- **测试**: Jest 29 + React Native Testing Library
+- **React**: 19.1
 
 ## 项目结构
 
@@ -77,10 +80,11 @@ src/
 - [x] 个人中心 (档案管理/设置)
 - [x] 主题切换 (明亮/暗黑/跟随系统)
 - [x] 国际化 (中文/英文)
+- [x] 实时聊天 (Socket.IO)
+- [x] 生物识别认证
 
 ### 待实现
 
-- [ ] 聊天功能
 - [ ] 关注系统
 - [ ] 功能大厅
 - [ ] 预测功能
@@ -93,14 +97,14 @@ src/
 ### 环境要求
 
 - Node.js 18+
-- pnpm 8+
+- pnpm 10+
 - iOS: Xcode 15+ (macOS)
 - Android: Android Studio / SDK
 
 ### 安装依赖
 
 ```bash
-cd apps/mobile
+# 在项目根目录
 pnpm install
 ```
 
@@ -108,35 +112,35 @@ pnpm install
 
 ```bash
 # 启动 Expo 开发服务器
-pnpm start
+pnpm --filter study-abroad-mobile start
 
 # iOS 模拟器
-pnpm ios
+pnpm --filter study-abroad-mobile ios
 
 # Android 模拟器
-pnpm android
+pnpm --filter study-abroad-mobile android
 
 # Web 预览
-pnpm web
+pnpm --filter study-abroad-mobile web
 ```
 
 ### 运行测试
 
 ```bash
 # 运行所有测试
-pnpm test
+pnpm --filter study-abroad-mobile test
 
 # 监视模式
-pnpm test:watch
+pnpm --filter study-abroad-mobile test:watch
 
 # 覆盖率报告
-pnpm test:coverage
+pnpm --filter study-abroad-mobile test:coverage
 ```
 
 ### 代码检查
 
 ```bash
-pnpm lint
+pnpm --filter study-abroad-mobile lint
 ```
 
 ## 环境变量
@@ -144,7 +148,7 @@ pnpm lint
 创建 `.env` 文件:
 
 ```env
-EXPO_PUBLIC_API_URL=http://your-api-url:3002
+EXPO_PUBLIC_API_URL=http://localhost:3001
 ```
 
 ## 构建
@@ -171,39 +175,42 @@ eas build --profile production --platform android
 
 ## UI组件库
 
-自定义组件库包含32个组件，支持:
+自定义组件库包含26个组件文件，支持:
 
 - 响应式设计
 - 暗黑模式
 - 无障碍访问
 
-组件列表:
+核心组件:
 
 - `Button` - 按钮 (6种变体, 4种尺寸)
 - `Input` - 输入框 (支持密码切换/错误提示)
 - `Card` - 卡片 (Header/Content/Footer)
-- `Badge` - 徽章 (6种变体)
+- `Badge` / `StatusBadge` - 徽章
 - `Avatar` - 头像 (4种尺寸/组合模式)
-- `Loading` - 加载状态 (骨架屏/覆盖层)
-- `EmptyState` - 空状态
-- `ErrorState` - 错误状态
-- `Tabs` - 选项卡
-- `Segment` - 分段控制器
-- `Modal` - 模态框
-- `BottomSheet` - 底部弹出框
-- `Select` - 选择器 (单选/多选)
+- `Loading` / `Skeleton` / `LoadingOverlay` - 加载状态
+- `EmptyState` / `ErrorState` - 空状态/错误状态
+- `Tabs` / `Segment` - 选项卡/分段控制器
+- `Modal` / `BottomSheet` - 模态框/底部弹出框
+- `Select` / `MultiSelect` - 选择器
 - `Slider` - 滑块
 - `Switch` - 开关
-- `Checkbox` - 复选框
-- `Radio` - 单选框
+- `Checkbox` / `Radio` - 复选框/单选框
 - `Toast` - 轻提示
 - `SearchBar` - 搜索栏
-- `ListItem` - 列表项
-- `ListGroup` - 列表组
-- `Separator` - 分隔线
-- `ProgressBar` - 进度条
-- `CircularProgress` - 环形进度
-- `Stat` - 统计数据
+- `ListItem` / `Separator` - 列表项/分隔线
+- `ProgressBar` / `CircularProgress` - 进度条/环形进度
+- `ConfirmDialog` - 确认对话框
+- `BlurImage` - 渐进式图片加载
+
+动画组件:
+
+- `AnimatedButton` - 动画按钮
+- `AnimatedCard` - 动画卡片
+- `AnimatedSkeleton` - 动画骨架屏
+- `AnimatedListItem` - 动画列表项
+- `AnimatedCounter` - 数字动画
+- `FadeInView` - 淡入视图
 
 ## 测试
 
@@ -215,10 +222,10 @@ eas build --profile production --platform android
 
 ```bash
 # 运行测试
-pnpm test
+pnpm --filter study-abroad-mobile test
 
 # 生成覆盖率报告
-pnpm test:coverage
+pnpm --filter study-abroad-mobile test:coverage
 ```
 
 ## 贡献指南
