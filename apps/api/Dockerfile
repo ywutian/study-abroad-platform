@@ -25,7 +25,10 @@ COPY apps/api/ ./apps/api/
 # Generate Prisma client (dummy URL for generation only)
 RUN cd apps/api && DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" pnpm prisma generate
 
-# Build
+# Build shared package first (API depends on it)
+RUN pnpm --filter @study-abroad/shared build
+
+# Build API
 RUN pnpm --filter api build
 
 # Deploy to /prod with all dependencies (pnpm deploy creates standalone package)
@@ -34,6 +37,9 @@ RUN pnpm --filter api deploy /prod --prod --legacy
 # Copy Prisma client to deployed node_modules
 RUN cp -r /app/node_modules/.pnpm/@prisma+client@*/node_modules/@prisma/client /prod/node_modules/@prisma/client && \
     cp -r /app/node_modules/.pnpm/@prisma+client@*/node_modules/.prisma /prod/node_modules/.prisma
+
+# Copy shared package build output
+RUN cp -r /app/packages/shared/dist /prod/node_modules/@study-abroad/shared/dist
 
 # ============================================
 # Stage 2: Production Runner

@@ -22,8 +22,8 @@
 
 | 工具    | 版本要求 | 说明                    |
 | ------- | -------- | ----------------------- |
-| Node.js | >= 20    | 推荐使用 nvm 管理版本   |
-| pnpm    | >= 9     | 包管理器                |
+| Node.js | >= 18    | 推荐使用 nvm 管理版本   |
+| pnpm    | >= 10    | 包管理器                |
 | Docker  | 最新版   | PostgreSQL + Redis 容器 |
 | Git     | >= 2.30  | 版本控制                |
 
@@ -38,7 +38,7 @@ cd study-abroad-platform
 pnpm install
 
 # 3. 启动基础设施
-docker-compose up -d
+docker-compose up -d db redis
 
 # 4. 数据库迁移
 pnpm --filter api db:generate
@@ -254,3 +254,7 @@ pnpm --filter api test -- --coverage
 ## 保密声明
 
 本项目为商业私有项目，所有代码和文档均为公司机密。未经授权，不得向外部人员透露项目代码、架构设计或业务逻辑。
+
+---
+
+_最后更新: 2026-02-13_

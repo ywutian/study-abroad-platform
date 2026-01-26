@@ -74,6 +74,9 @@ export interface MemoryMetadata {
 
   // 其他
   notes?: string;
+
+  // 各模块扩展字段
+  [key: string]: unknown;
 }
 
 export interface MemoryRecord {
@@ -166,6 +169,7 @@ export interface EntityAttributes {
   decision?: boolean;
   category?: string;
   eventId?: string;
+  [key: string]: unknown;
 }
 
 export interface EntityInput {

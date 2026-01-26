@@ -45,7 +45,10 @@ This project implements the following security measures:
 - **XSS Prevention**: Content sanitization on user-generated content
 - **CORS**: Configurable origin whitelist (CORS_ORIGINS env var)
 - **Docker**: Non-root container user in production
+- **Security Headers**: Helmet CSP + HSTS + frameguard (production)
+- **Environment Validation**: Zod schema validation at startup
 - **Data Encryption**: Vault module for sensitive credential storage
+- **PII Protection**: Log sanitization for 15+ sensitive fields
 
 ## Scope
 

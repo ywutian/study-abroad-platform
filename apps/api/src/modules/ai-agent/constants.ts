@@ -34,21 +34,28 @@ export const VIP_RATE_LIMITS: Record<string, RateLimitConfig> = {
 
 // ===== Token Quotas =====
 
-export const DEFAULT_TOKEN_QUOTAS = {
+export interface TokenQuota {
+  readonly dailyTokens: number;
+  readonly monthlyTokens: number;
+  readonly dailyCost: number;
+  readonly monthlyCost: number;
+}
+
+export const DEFAULT_TOKEN_QUOTAS: TokenQuota = {
   dailyTokens: 100_000,
   monthlyTokens: 2_000_000,
   dailyCost: 5.0, // USD
   monthlyCost: 100.0, // USD
 } as const;
 
-export const PRO_TOKEN_QUOTAS = {
+export const PRO_TOKEN_QUOTAS: TokenQuota = {
   dailyTokens: 300_000,
   monthlyTokens: 6_000_000,
   dailyCost: 15.0,
   monthlyCost: 300.0,
 } as const;
 
-export const PREMIUM_TOKEN_QUOTAS = {
+export const PREMIUM_TOKEN_QUOTAS: TokenQuota = {
   dailyTokens: 1_000_000,
   monthlyTokens: 20_000_000,
   dailyCost: 50.0,

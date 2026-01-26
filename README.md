@@ -2,12 +2,14 @@
 
 AI 驱动的智能留学申请辅助平台，提供选校推荐、录取预测、案例分析等功能。
 
+> **📚 完整文档请访问 [docs/](docs/README.md)** — 包含架构设计、API 参考、部署指南、入职手册等 30+ 篇文档。
+
 ## 🚀 快速开始
 
 ### 环境要求
 
-- Node.js >= 20
-- pnpm >= 8
+- Node.js >= 18
+- pnpm >= 10
 - PostgreSQL >= 16
 - Redis >= 7 (可选，用于缓存)
 
@@ -26,7 +28,7 @@ cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env
 
 # 4. 启动数据库 (Docker)
-docker compose up -d postgres redis
+docker compose up -d db redis
 
 # 5. 初始化数据库
 pnpm --filter api db:generate
@@ -42,6 +44,39 @@ pnpm dev
 - 前端: http://localhost:3000
 - API: http://localhost:3001
 - API 文档: http://localhost:3001/api/docs
+
+### 移动端开发 (Expo)
+
+移动端基于 Expo SDK 54 + React Native 0.81 构建，使用 Expo Router 进行文件系统路由。
+
+```bash
+# 1. 启动 Expo 开发服务器 (扫描二维码在手机上打开)
+pnpm --filter mobile start
+
+# 2. 在 iOS 模拟器中运行 (需要 macOS + Xcode)
+pnpm --filter mobile ios
+
+# 3. 在 Android 模拟器中运行 (需要 Android Studio)
+pnpm --filter mobile android
+
+# 4. 在浏览器中预览
+pnpm --filter mobile web
+```
+
+移动端环境变量配置：
+
+```bash
+# apps/mobile/.env
+EXPO_PUBLIC_API_URL="http://your-api-url:3001"
+```
+
+移动端测试：
+
+```bash
+pnpm --filter mobile test            # 运行所有测试
+pnpm --filter mobile test:watch      # 监视模式
+pnpm --filter mobile test:coverage   # 覆盖率报告
+```
 
 ## 📁 项目结构
 
@@ -70,7 +105,8 @@ study-abroad-platform/
 │       │   └── stores/      # 状态管理
 │       └── assets/          # 应用资源
 ├── packages/
-│   └── shared/              # 共享类型定义
+│   ├── shared/              # 共享类型定义
+│   └── browser-extension/   # 浏览器插件 (自动填表)
 └── docker-compose.yml
 ```
 
@@ -112,23 +148,27 @@ NEXT_PUBLIC_SITE_URL="http://localhost:3000"
 
 ```bash
 # 开发
-pnpm dev                    # 启动所有服务 (前端默认 Webpack 模式)
-pnpm --filter api dev       # 仅启动 API
-pnpm --filter web dev       # 仅启动前端 (Webpack 模式，推荐)
-pnpm --filter web dev:turbo # 仅启动前端 (Turbopack 模式，实验性)
-pnpm --filter mobile start  # 启动移动端 (Expo)
+pnpm dev                       # 启动所有服务 (Turbo)
+pnpm --filter api dev          # 仅启动 API
+pnpm --filter web dev          # 仅启动前端 (Turbopack 模式，默认)
+pnpm --filter web dev:webpack  # 仅启动前端 (Webpack 模式)
+pnpm --filter mobile start     # 启动移动端 Expo 开发服务器
 
 # 构建
 pnpm build                  # 构建所有
 pnpm --filter api build     # 构建 API
 pnpm --filter web build     # 构建前端
-pnpm --filter mobile ios    # 移动端 iOS
-pnpm --filter mobile android # 移动端 Android
+pnpm --filter mobile ios       # 移动端 iOS (原生构建)
+pnpm --filter mobile android   # 移动端 Android (原生构建)
 
-# 测试
-pnpm --filter api test      # 单元测试
-pnpm --filter api test:e2e  # E2E 测试
-pnpm --filter api test:cov  # 测试覆盖率
+# 测试 (API)
+pnpm --filter api test         # 单元测试
+pnpm --filter api test:e2e     # E2E 测试
+pnpm --filter api test:cov     # 测试覆盖率
+
+# 测试 (Mobile)
+pnpm --filter mobile test      # 单元测试
+pnpm --filter mobile test:coverage # 覆盖率报告
 
 # 数据库
 pnpm --filter api db:generate  # 生成 Prisma Client

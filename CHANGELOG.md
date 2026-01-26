@@ -5,6 +5,19 @@
 
 ## [Unreleased]
 
+### 文档
+
+- **全量文档审计（6 轮，270+ 修正）** — 48+ 份文档逐一对照源码验证并修正事实性错误
+  - Round 1 (19 fixes): ARCHITECTURE.md、API_REFERENCE.md、根 README、docs/README.md
+  - Round 2 (55+ fixes): AI_AGENT_MEMORY_SYSTEM_SPEC.md、AI_AGENT_ARCHITECTURE.md、ENTERPRISE_AI_SOLUTION.md、ENTERPRISE_MEMORY_SYSTEM.md
+  - Round 3 (67 fixes): PREDICTION_SYSTEM.md、SCORING_SYSTEM.md、COMPETITION_DATABASE.md、DATA_SOURCES.md、DATA_VERIFICATION.md、PRODUCT_ROADMAP.md、INVESTOR_PITCH_AI_SYSTEM.md、GLOSSARY.md (32 新术语)
+  - Round 4 (70+ fixes): CONTRIBUTING.md、ONBOARDING.md、DOCUMENTATION_STANDARDS.md、I18N_GUIDE.md、DESIGN_SYSTEM.md、TYPOGRAPHY_GUIDE.md、DEPLOY.md、RUNBOOK.md、ENV_TEMPLATE.md、TESTING_CHECKLIST.md、QUALITY_CHECK.md、.env.example
+  - Round 5 (56+ fixes): ADR-0001/0003/0004-0007、已知问题与解决方案.md、数据库迁移记录.md、SECURITY.md、CHANGELOG.md；完整重写 apps/api/README.md、apps/web/README.md、apps/mobile/README.md
+  - Round 6: 全局一致性检查、DORA 重评 (37→38/40, 92.5%→95.0%)
+- 新增 [QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md) — 一页速查手册（命令、端口、目录结构等）
+- 新增 [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) — 开发环境常见问题排障指南
+- DORA 文档质量评分提升：37/40 (92.5%) → 38/40 (95.0%)，可理解性维度 4→5
+
 ### 修复
 
 - 邮箱验证流程修复：验证链接正确指向 `/verify-email/callback`，回调页面实际调用后端 API 完成验证
@@ -15,16 +28,21 @@
 
 ### 新增
 
+- **移动端实时聊天**：Socket.IO 聊天、生物识别认证、新屏幕 (feat(mobile))
+- **Web 管理后台**：管理仪表盘、流式 Markdown 渲染、订阅 UI (feat(web))
+- **支付系统**：API 支付模块、文书爬取管道、管理增强 (feat(api))
 - **排名对比增强**：后端返回竞争者分数分布（p25/p50/p75）、汇总统计（均分/中位数/人数）、竞争力定位（strong/moderate/challenging）
 - **排名对比 UI 重构**：汇总统计头部（ProbabilityRing 平均百分位、总竞争者、最佳学校、综合竞争力标签）、维度分布条可视化、排序控制（百分位/得分/人数）
 - **记忆层增强**：排名查询时保存竞争力洞察（最强/最弱维度、竞争力定位）到记忆系统，提升 AI 智能体上下文
 - **排名测试数据**：`seed-ranking-test.ts` 生成 15 个多层次学生档案，覆盖 10 所目标学校，每校 8-12 名竞争者
 - 企业级文档标准化：LICENSE (Proprietary)、SECURITY.md、CONTRIBUTING.md、CHANGELOG.md
-- ADR（架构决策记录）流程：7 条 ADR (0001-0007)
+- ADR（架构决策记录）流程：9 条 ADR (0001-0009)
   - ADR-0004: Zod 环境变量校验策略
   - ADR-0005: 生产环境安全头配置 (Helmet CSP + HSTS)
   - ADR-0006: Prisma 异常处理策略 (错误码映射)
   - ADR-0007: API 响应元数据注入 (correlationId + responseTimeMs)
+  - ADR-0008: 预测多引擎集成策略
+  - ADR-0009: 功能大厅 Swipe UI 重构
 - GitHub Issue/PR 模板
 - API 参考文档、术语表、运维手册、新人指南
 - 文档规范元标准（DORA 8 项指标自评，当前 37/40 = 92.5%）
@@ -54,10 +72,10 @@
 - 环境变量启动验证升级为 Zod Schema（类型校验 + 生产环境警告）
 - API 响应体统一注入 `meta.correlationId` + `meta.responseTimeMs` + `X-Response-Time` 头
 - Sentry 增加 release 追踪、serverName、initialScope tags
-- Jest 测试覆盖率门槛：statements 60%、branches 50%、functions 55%、lines 60%
+- Jest 测试覆盖率门槛：statements 60%、branches 50%、functions 50%、lines 60%
 - 优雅停机：30s 超时强制退出、SIGTERM/SIGINT 处理
 - 部署流程：staging smoke test (health/readiness/security headers 验证) → production 手动审批
-- ENV*TEMPLATE.md 与 Zod Schema 对齐：修正 CORS_ORIGIN→CORS_ORIGINS、SMTP*_→EMAIL\__，补全 STORAGE\_\*、BUILD_TIME 等缺失变量
+- ENV*TEMPLATE.md 与 Zod Schema 对齐：修正 CORS_ORIGIN→CORS_ORIGINS、SMTP*\_→EMAIL\_\_，补全 STORAGE\_\*、BUILD_TIME 等缺失变量
 - RUNBOOK.md 新增 6 类运维场景：请求超时、慢查询、PII 排查、环境校验、Prisma 错误码、CORS 排障
 - ARCHITECTURE.md Section 18 更新：15 项已解决风险、2 项新增技术债务
 - TESTING_CHECKLIST.md 新增覆盖率门槛文档

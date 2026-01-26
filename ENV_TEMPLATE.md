@@ -49,12 +49,13 @@ COLLEGE_SCORECARD_API_KEY=your_scorecard_api_key
 
 # ============================================
 # 邮件服务 [Zod 验证: 可选]
-# 注意：变量名以 EMAIL_ 开头（非 SMTP_）
+# 注意：Zod 验证使用 EMAIL_* 变量名，但 email.service.ts 实际读取 SMTP_* 变量
+# 建议同时配置两套变量名，确保兼容
 # ============================================
-EMAIL_HOST=smtp.example.com
-EMAIL_PORT=587
-EMAIL_USER=your_email_user
-EMAIL_PASS=your_email_password
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=your_email_user
+SMTP_PASS=your_email_password
 EMAIL_FROM=noreply@your-domain.com
 
 # ============================================
@@ -75,7 +76,7 @@ SENTRY_DSN=https://your_dsn@sentry.io/xxx
 # ============================================
 # 限流配置 [Zod 验证: 有默认值]
 # ============================================
-THROTTLE_TTL=60000
+THROTTLE_TTL=60
 THROTTLE_LIMIT=100
 
 # ============================================
@@ -161,7 +162,7 @@ POSTGRES_PASSWORD=你的安全密码_至少16位_使用openssl_rand生成
 # ============================================
 # 数据库 (API 连接) [Zod 验证]
 # ============================================
-DATABASE_URL="postgresql://studyabroad_user:密码@db:5432/studyabroad?connection_limit=10&pool_timeout=20"
+DATABASE_URL="postgresql://studyabroad_user:密码@postgres:5432/studyabroad?connection_limit=10&pool_timeout=20"
 
 # ============================================
 # Redis
@@ -198,12 +199,13 @@ OPENAI_MODEL=gpt-4o-mini
 
 # ============================================
 # 邮件服务 [Zod 验证: 可选]
-# 注意：变量名以 EMAIL_ 开头（非 SMTP_）
+# 注意：Zod 验证使用 EMAIL_* 变量名，但 email.service.ts 实际读取 SMTP_* 变量
+# 建议同时配置两套变量名，确保兼容
 # ============================================
-EMAIL_HOST=smtp.example.com
-EMAIL_PORT=587
-EMAIL_USER=your-email@example.com
-EMAIL_PASS=your-email-password
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=your-email@example.com
+SMTP_PASS=your-email-password
 EMAIL_FROM=noreply@your-domain.com
 
 # ============================================
@@ -228,7 +230,7 @@ SENTRY_DSN=https://xxx@sentry.io/xxx
 # ============================================
 # 限流配置 [Zod 验证]
 # ============================================
-THROTTLE_TTL=60000
+THROTTLE_TTL=60
 THROTTLE_LIMIT=100
 
 # ============================================

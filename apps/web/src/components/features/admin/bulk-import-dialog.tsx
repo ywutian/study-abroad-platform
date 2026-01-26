@@ -147,7 +147,7 @@ export function BulkImportDialog({ open, onOpenChange, importType }: BulkImportD
           setParsedData(results.data as Record<string, string>[]);
         },
         error: (err) => {
-          toast.error(`CSV 解析失败: ${err.message}`);
+          toast.error(t('csvParseFailed', { error: err.message }));
         },
       });
     } else if (file.name.endsWith('.json')) {
@@ -158,12 +158,12 @@ export function BulkImportDialog({ open, onOpenChange, importType }: BulkImportD
           const items = Array.isArray(json) ? json : json.items || [];
           setParsedData(items);
         } catch {
-          toast.error('JSON 解析失败');
+          toast.error(t('jsonParseFailed'));
         }
       };
       reader.readAsText(file);
     } else {
-      toast.error('请上传 .csv 或 .json 文件');
+      toast.error(t('uploadCsvOrJson'));
     }
 
     // Reset input so same file can be re-selected

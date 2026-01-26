@@ -156,45 +156,19 @@ describe('WebSearchService', () => {
   // ==================== 通用搜索测试 ====================
 
   describe('search() - 通用搜索', () => {
-    it('应调用 Google API 并返回统一格式', async () => {
-      fetchMock.mockResolvedValueOnce(
-        mockFetchResponse({
-          items: [
-            {
-              title: 'MIT Admissions',
-              snippet: 'Apply to MIT...',
-              link: 'https://admissions.mit.edu',
-            },
-            {
-              title: 'MIT Requirements',
-              snippet: 'SAT scores...',
-              link: 'https://admissions.mit.edu/requirements',
-            },
-          ],
-        }),
-      );
-
-      const result = await service.search('MIT admissions');
-
-      expect(result.source).toBe('google');
-      expect(result.cached).toBe(false);
-      expect(result.results).toHaveLength(2);
-      expect(result.results[0].title).toBe('MIT Admissions');
-      expect(result.results[0].url).toBe('https://admissions.mit.edu');
-    });
-
-    it('Google 不可用时应降级到 Tavily', async () => {
-      // Google 失败
-      fetchMock.mockRejectedValueOnce(new Error('Google API timeout'));
-
-      // Tavily 成功
+    it('应调用 Tavily API 并返回统一格式（主引擎）', async () => {
       fetchMock.mockResolvedValueOnce(
         mockFetchResponse({
           results: [
             {
-              title: 'MIT Info',
-              content: 'Some content about MIT...',
-              url: 'https://example.com/mit',
+              title: 'MIT Admissions',
+              content: 'Apply to MIT...',
+              url: 'https://admissions.mit.edu',
+            },
+            {
+              title: 'MIT Requirements',
+              content: 'SAT scores...',
+              url: 'https://admissions.mit.edu/requirements',
             },
           ],
         }),
@@ -203,13 +177,39 @@ describe('WebSearchService', () => {
       const result = await service.search('MIT admissions');
 
       expect(result.source).toBe('tavily');
+      expect(result.cached).toBe(false);
+      expect(result.results).toHaveLength(2);
+      expect(result.results[0].title).toBe('MIT Admissions');
+      expect(result.results[0].url).toBe('https://admissions.mit.edu');
+    });
+
+    it('Tavily 不可用时应降级到 Google', async () => {
+      // Tavily 失败
+      fetchMock.mockRejectedValueOnce(new Error('Tavily API timeout'));
+
+      // Google 成功
+      fetchMock.mockResolvedValueOnce(
+        mockFetchResponse({
+          items: [
+            {
+              title: 'MIT Info',
+              snippet: 'Some content about MIT...',
+              link: 'https://example.com/mit',
+            },
+          ],
+        }),
+      );
+
+      const result = await service.search('MIT admissions');
+
+      expect(result.source).toBe('google');
       expect(result.results).toHaveLength(1);
       expect(result.results[0].title).toBe('MIT Info');
     });
 
     it('双引擎都失败时应返回空结果', async () => {
-      fetchMock.mockRejectedValueOnce(new Error('Google failed'));
       fetchMock.mockRejectedValueOnce(new Error('Tavily failed'));
+      fetchMock.mockRejectedValueOnce(new Error('Google failed'));
 
       const result = await service.search('test query');
 
@@ -217,13 +217,12 @@ describe('WebSearchService', () => {
     });
 
     it('应支持 news topic', async () => {
-      fetchMock.mockResolvedValueOnce(mockFetchResponse({ items: [] }));
+      fetchMock.mockResolvedValueOnce(mockFetchResponse({ results: [] }));
 
       await service.search('US visa policy', { topic: 'news' });
 
-      const calledUrl = fetchMock.mock.calls[0][0] as string;
-      expect(calledUrl).toContain('sort=date');
-      expect(calledUrl).toContain('dateRestrict=m1');
+      const requestBody = JSON.parse(fetchMock.mock.calls[0][1].body);
+      expect(requestBody.topic).toBe('news');
     });
   });
 
@@ -314,8 +313,8 @@ describe('WebSearchService', () => {
     it('搜索成功后应写入 Redis 缓存', async () => {
       fetchMock.mockResolvedValueOnce(
         mockFetchResponse({
-          items: [
-            { title: 'Result', snippet: 'test', link: 'https://test.com' },
+          results: [
+            { title: 'Result', content: 'test', url: 'https://test.com' },
           ],
         }),
       );
@@ -345,7 +344,9 @@ describe('WebSearchService', () => {
     it('news topic 应使用 2 小时 TTL', async () => {
       fetchMock.mockResolvedValueOnce(
         mockFetchResponse({
-          items: [{ title: 'News', snippet: 'test', link: 'https://test.com' }],
+          results: [
+            { title: 'News', content: 'test', url: 'https://test.com' },
+          ],
         }),
       );
 
@@ -361,8 +362,8 @@ describe('WebSearchService', () => {
 
       fetchMock.mockResolvedValue(
         mockFetchResponse({
-          items: [
-            { title: 'Result', snippet: 'test', link: 'https://test.com' },
+          results: [
+            { title: 'Result', content: 'test', url: 'https://test.com' },
           ],
         }),
       );
@@ -464,12 +465,12 @@ describe('WebSearchService', () => {
 
   describe('弹性保护', () => {
     it('应通过 ResilienceService 执行搜索', async () => {
-      fetchMock.mockResolvedValueOnce(mockFetchResponse({ items: [] }));
+      fetchMock.mockResolvedValueOnce(mockFetchResponse({ results: [] }));
 
       await service.search('test');
 
       expect(resilienceService.execute).toHaveBeenCalledWith(
-        'google-search',
+        'tavily-search',
         expect.any(Function),
         expect.objectContaining({
           retry: expect.objectContaining({ maxAttempts: 2 }),

@@ -46,6 +46,10 @@ const EXEMPT_LINE_PATTERNS = [
   /device:\s*['"]/, // 设备/会话 mock 数据
   /location:\s*['"]/, // 地理位置 mock 数据
   /lastActive:\s*['"]/, // 最后活跃时间 mock 数据
+  /format\(.*[月日年]/, // date-fns 日期格式字符串
+  /defaultMessage:\s*['"]/, // i18n t() 的 defaultMessage 回退文本
+  /const\s+\w+_TEMPLATE\s*=/, // CSV/数据模板常量
+  /^\w+,\d{4},\w+,/, // CSV 数据行（如学校,年份,类型,...）
 ];
 
 /** 额外检测模式 — 检查对象属性中的硬编码中文（不在 JSX 中） */

@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ChatService } from './chat.service';
 import { MessageFilterService } from './message-filter.service';
+import { StorageService } from '../../common/storage/storage.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ForbiddenException, BadRequestException } from '@nestjs/common';
 
@@ -39,6 +40,16 @@ describe('ChatService', () => {
             filterMessage: jest.fn().mockImplementation((content) => content),
             validate: jest.fn().mockResolvedValue({ allowed: true }),
             isSpam: jest.fn().mockReturnValue(false),
+          },
+        },
+        {
+          provide: StorageService,
+          useValue: {
+            upload: jest.fn().mockResolvedValue({
+              url: 'https://example.com/file.png',
+              key: 'file.png',
+            }),
+            delete: jest.fn().mockResolvedValue(undefined),
           },
         },
         {

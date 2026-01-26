@@ -57,6 +57,7 @@ import {
   PRO_TOKEN_QUOTAS,
   PREMIUM_TOKEN_QUOTAS,
   TOKEN_PRICES,
+  TokenQuota,
 } from '../constants';
 
 export interface TokenUsage {
@@ -339,10 +340,7 @@ export class TokenTrackerService implements OnModuleInit {
   /**
    * 内存降级获取统计
    */
-  private getUsageStatsFallback(
-    userId: string,
-    quota: typeof DEFAULT_TOKEN_QUOTAS,
-  ): UsageStats {
+  private getUsageStatsFallback(userId: string, quota: TokenQuota): UsageStats {
     const now = new Date();
     const dateKey = now.toISOString().split('T')[0];
     const monthKey = dateKey.substring(0, 7);
@@ -530,8 +528,7 @@ export class TokenTrackerService implements OnModuleInit {
     promptTokens: number,
     completionTokens: number,
   ): number {
-    const prices =
-      TOKEN_PRICES[model as keyof typeof TOKEN_PRICES] || TOKEN_PRICES.default;
+    const prices = TOKEN_PRICES[model] || TOKEN_PRICES.default;
     return (
       (promptTokens / 1000) * prices.input +
       (completionTokens / 1000) * prices.output
@@ -590,9 +587,7 @@ export class TokenTrackerService implements OnModuleInit {
     };
   }
 
-  private async getUserQuota(
-    userId: string,
-  ): Promise<typeof DEFAULT_TOKEN_QUOTAS> {
+  private async getUserQuota(userId: string): Promise<TokenQuota> {
     try {
       const user = await this.prisma.user.findUnique({
         where: { id: userId },

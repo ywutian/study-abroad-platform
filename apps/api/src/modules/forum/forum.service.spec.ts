@@ -101,6 +101,7 @@ describe('ForumService', () => {
             forumCategory: {
               findMany: jest.fn(),
               findUnique: jest.fn(),
+              findFirst: jest.fn().mockResolvedValue(null),
               create: jest.fn(),
             },
             forumPost: {

@@ -98,8 +98,14 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   async onModuleInit() {
-    // 启动任务轮询
-    this.start();
+    // 仅在 Redis 可用时启动任务轮询（避免无 Redis 时频繁查询数据库耗尽连接池）
+    if (this.redis.connected) {
+      this.start();
+    } else {
+      this.logger.warn(
+        'Redis not available, task queue disabled (DB polling would exhaust connection pool)',
+      );
+    }
   }
 
   async onModuleDestroy() {
