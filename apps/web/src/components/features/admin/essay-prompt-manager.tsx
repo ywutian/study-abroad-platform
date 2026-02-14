@@ -203,8 +203,8 @@ export function EssayPromptManager() {
   const getTypeBadge = (type: string) => {
     const colors: Record<string, string> = {
       COMMON_APP: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-      SUPPLEMENT: 'bg-primary/10 text-primary border-violet-500/20',
-      WHY_US: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
+      SUPPLEMENTAL: 'bg-primary/10 text-primary border-violet-500/20',
+      WHY_SCHOOL: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
       ACTIVITY: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
       SHORT_ANSWER: 'bg-pink-500/10 text-pink-600 border-pink-500/20',
       OPTIONAL: 'bg-slate-500/10 text-slate-600 border-slate-500/20',
@@ -307,8 +307,8 @@ export function EssayPromptManager() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">{t('type.all')}</SelectItem>
-              <SelectItem value="SUPPLEMENT">SUPPLEMENT</SelectItem>
-              <SelectItem value="WHY_US">WHY_US</SelectItem>
+              <SelectItem value="SUPPLEMENTAL">SUPPLEMENTAL</SelectItem>
+              <SelectItem value="WHY_SCHOOL">WHY_SCHOOL</SelectItem>
               <SelectItem value="SHORT_ANSWER">SHORT_ANSWER</SelectItem>
               <SelectItem value="ACTIVITY">ACTIVITY</SelectItem>
               <SelectItem value="OPTIONAL">OPTIONAL</SelectItem>

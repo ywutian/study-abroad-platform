@@ -44,27 +44,32 @@ import { RolesGuard } from './common/guards/roles.guard';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { SanitizeInterceptor } from './common/interceptors/sanitize.interceptor';
 import { SentryInterceptor } from './common/sentry/sentry.interceptor';
 import { StorageModule } from './common/storage/storage.module';
 import { AuthorizationModule } from './common/services/authorization.module';
+import { AuditLogModule } from './common/services/audit-log.module';
 
 @Module({
   imports: [
     AuthorizationModule,
+    AuditLogModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
       validate: validateEnv,
     }),
-    // Rate Limiting
+    // Rate Limiting [A5-017]
+    // THROTTLE_TTL is validated as seconds in env.validation.ts (default: 60)
+    // Multiply by 1000 to convert to ms for ThrottlerModule
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         throttlers: [
           {
-            ttl: config.get('THROTTLE_TTL', 60) * 1000,
-            limit: config.get('THROTTLE_LIMIT', 100),
+            ttl: (config.get<number>('THROTTLE_TTL') ?? 60) * 1000,
+            limit: config.get<number>('THROTTLE_LIMIT') ?? 100,
           },
         ],
       }),
@@ -121,6 +126,10 @@ import { AuthorizationModule } from './common/services/authorization.module';
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SanitizeInterceptor,
     },
     {
       provide: APP_INTERCEPTOR,

@@ -22,6 +22,13 @@ import {
   Calendar,
   Globe,
   Bot,
+  Ban,
+  DollarSign,
+  TrendingUp,
+  MessageSquare,
+  CreditCard,
+  ShieldCheck,
+  Coins,
 } from 'lucide-react';
 
 interface AdminStats {
@@ -30,6 +37,22 @@ interface AdminStats {
   totalCases: number;
   pendingReports: number;
   totalReviews: number;
+  newUsersToday?: number;
+  activeUsersToday?: number;
+  bannedUsers?: number;
+  totalRevenue?: number;
+  monthlyRevenue?: number;
+  totalPosts?: number;
+  pendingVerifications?: number;
+  subscriptionDistribution?: Record<string, number>;
+}
+
+interface TrendData {
+  date: string;
+  newUsers: number;
+  payments: number;
+  revenue: number;
+  posts: number;
 }
 
 export default function AdminOverviewPage() {
@@ -38,6 +61,11 @@ export default function AdminOverviewPage() {
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['adminStats'],
     queryFn: () => apiClient.get<AdminStats>('/admin/stats'),
+  });
+
+  const { data: trends } = useQuery({
+    queryKey: ['adminTrends'],
+    queryFn: () => apiClient.get<TrendData[]>('/admin/stats/trends'),
   });
 
   const statCards = stats
@@ -71,6 +99,28 @@ export default function AdminOverviewPage() {
           color: 'violet',
           href: null,
         },
+        ...(stats.bannedUsers !== undefined
+          ? [
+              {
+                title: t('dashboard.bannedUsers'),
+                value: stats.bannedUsers,
+                icon: Ban,
+                color: 'red' as const,
+                href: '/admin/users' as const,
+              },
+            ]
+          : []),
+        ...(stats.totalRevenue !== undefined
+          ? [
+              {
+                title: t('dashboard.revenue'),
+                value: `$${((stats.totalRevenue ?? 0) / 100).toFixed(0)}`,
+                icon: DollarSign,
+                color: 'emerald' as const,
+                href: '/admin/payments' as const,
+              },
+            ]
+          : []),
       ]
     : [];
 
@@ -102,6 +152,7 @@ export default function AdminOverviewPage() {
                       'bg-primary': stat.color === 'blue' || stat.color === 'violet',
                       'bg-success': stat.color === 'emerald',
                       'bg-warning': stat.color === 'amber',
+                      'bg-destructive': stat.color === 'red',
                     })}
                   />
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -112,6 +163,7 @@ export default function AdminOverviewPage() {
                         'bg-emerald-500/10 text-emerald-500': stat.color === 'emerald',
                         'bg-amber-500/10 text-amber-500': stat.color === 'amber',
                         'bg-primary/10 text-primary': stat.color === 'violet',
+                        'bg-red-500/10 text-red-500': stat.color === 'red',
                       })}
                     >
                       <StatIcon className="h-4 w-4" />
@@ -124,6 +176,7 @@ export default function AdminOverviewPage() {
                         'text-emerald-600': stat.color === 'emerald',
                         'text-amber-600': stat.color === 'amber',
                         'text-primary': stat.color === 'violet',
+                        'text-red-600': stat.color === 'red',
                       })}
                     >
                       {stat.value}
@@ -279,7 +332,133 @@ export default function AdminOverviewPage() {
                 </CardContent>
               </Card>
             </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.85 }}
+            >
+              <Card>
+                <CardContent className="flex items-center gap-4 p-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10">
+                    <Coins className="h-6 w-6 text-amber-500" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold">{t('sidebar.points')}</p>
+                    <p className="text-xs text-muted-foreground">{t('points.description')}</p>
+                  </div>
+                  <Button size="sm" variant="outline" asChild>
+                    <Link href="/admin/points">{t('overview.manage')}</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9 }}
+            >
+              <Card>
+                <CardContent className="flex items-center gap-4 p-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-teal-500/10">
+                    <ShieldCheck className="h-6 w-6 text-teal-500" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold">{t('sidebar.content')}</p>
+                    <p className="text-xs text-muted-foreground">{t('contentMod.description')}</p>
+                  </div>
+                  <Button size="sm" variant="outline" asChild>
+                    <Link href="/admin/content">{t('overview.manage')}</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.95 }}
+            >
+              <Card>
+                <CardContent className="flex items-center gap-4 p-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/10">
+                    <CreditCard className="h-6 w-6 text-indigo-500" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold">{t('sidebar.payments')}</p>
+                    <p className="text-xs text-muted-foreground">{t('payments.description')}</p>
+                  </div>
+                  <Button size="sm" variant="outline" asChild>
+                    <Link href="/admin/payments">{t('overview.manage')}</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
+
+          {/* Trends */}
+          {trends && trends.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.0 }}
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5" />
+                    {t('dashboard.trends')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <div className="grid grid-cols-3 gap-4 mb-4">
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground">{t('dashboard.newUsers')}</p>
+                        <p className="text-2xl font-bold text-blue-600">
+                          {trends.reduce((sum, d) => sum + d.newUsers, 0)}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground">{t('dashboard.revenue')}</p>
+                        <p className="text-2xl font-bold text-emerald-600">
+                          ${trends.reduce((sum, d) => sum + (Number(d.revenue) || 0), 0).toFixed(0)}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground">{t('dashboard.posts')}</p>
+                        <p className="text-2xl font-bold text-violet-600">
+                          {trends.reduce((sum, d) => sum + d.posts, 0)}
+                        </p>
+                      </div>
+                    </div>
+                    {/* Simple bar chart visualization */}
+                    <div className="flex items-end gap-[2px] h-24 mt-4">
+                      {trends.slice(-30).map((d, i) => {
+                        const max = Math.max(...trends.map((t) => t.newUsers), 1);
+                        const height = (d.newUsers / max) * 100;
+                        return (
+                          <div
+                            key={i}
+                            className="flex-1 bg-blue-500/60 rounded-t-sm hover:bg-blue-500 transition-colors"
+                            style={{ height: `${Math.max(height, 2)}%` }}
+                            title={`${d.date}: ${d.newUsers} ${t('dashboard.newUsers')}`}
+                          />
+                        );
+                      })}
+                    </div>
+                    <div className="flex justify-between mt-1">
+                      <span className="text-[10px] text-muted-foreground">{trends[0]?.date}</span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {trends[trends.length - 1]?.date}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
         </div>
       ) : null}
     </>

@@ -27,6 +27,11 @@ export class RegisterDto {
   @IsOptional()
   @IsString()
   locale?: string;
+
+  @ApiPropertyOptional({ example: 'A1B2C3D4', description: '推荐码（可选）' })
+  @IsOptional()
+  @IsString()
+  referralCode?: string;
 }
 
 export class RefreshTokenDto {

@@ -139,7 +139,9 @@ export const SUPPORTED_LOCALES = ['en', 'zh'] as const;
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 export const DEFAULT_LOCALE: SupportedLocale = 'zh';
 
-// 积分系统开关 — 测试期间设为 false，上线时改为 true
+// 积分系统开关 — 已迁移至 SystemSetting (由管理员在运行时配置)
+// 旧常量保留为向后兼容的默认值，实际控制逻辑在 PointsConfigService
+/** @deprecated Use PointsConfigService.isEnabled() instead */
 export const POINTS_ENABLED = false;
 
 // 分页默认值

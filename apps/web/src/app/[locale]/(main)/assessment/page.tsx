@@ -136,28 +136,28 @@ export default function AssessmentPage() {
   // 获取 MBTI 题目
   const { data: mbtiAssessment, isLoading: mbtiLoading } = useQuery<Assessment>({
     queryKey: ['assessment', 'MBTI'],
-    queryFn: () => apiClient.get('/assessment/MBTI'),
+    queryFn: () => apiClient.get('/assessments/MBTI'),
     enabled: activeTab === 'mbti' && !showResult,
   });
 
   // 获取 Holland 题目
   const { data: hollandAssessment, isLoading: hollandLoading } = useQuery<Assessment>({
     queryKey: ['assessment', 'HOLLAND'],
-    queryFn: () => apiClient.get('/assessment/HOLLAND'),
+    queryFn: () => apiClient.get('/assessments/HOLLAND'),
     enabled: activeTab === 'holland' && !showResult,
   });
 
   // 获取历史记录
   const { data: history, refetch: refetchHistory } = useQuery<AssessmentResult[]>({
     queryKey: ['assessment-history'],
-    queryFn: () => apiClient.get('/assessment/history/me'),
+    queryFn: () => apiClient.get('/assessments/history/me'),
     enabled: activeTab === 'history',
   });
 
   // 提交测评
   const submitMutation = useMutation({
     mutationFn: (data: { type: string; answers: { questionId: string; answer: string }[] }) =>
-      apiClient.post<AssessmentResult>('/assessment', data),
+      apiClient.post<AssessmentResult>('/assessments', data),
     onSuccess: (data) => {
       setCurrentResult(data);
       setShowResult(true);

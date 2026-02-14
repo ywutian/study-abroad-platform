@@ -15,6 +15,11 @@
       "cache": false,
       "persistent": true
     },
+    "test:e2e": {
+      "dependsOn": ["^build"],
+      "outputs": [],
+      "inputs": ["src/**", "test/**", "**/*.e2e-spec.ts", "tests/**"]
+    },
     "lint": {
       "outputs": []
     },

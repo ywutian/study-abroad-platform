@@ -387,6 +387,27 @@ export class ResilienceService {
   }
 
   /**
+   * Execute a function with the full resilience stack: circuit breaker + retry + timeout.
+   *
+   * Composition order (outermost to innermost):
+   * 1. **Circuit breaker** -- fast-fails if the service is known to be down
+   * 2. **Retry** -- retries transient failures with exponential backoff
+   * 3. **Timeout** -- aborts individual attempts that take too long
+   *
+   * This is the recommended entry point for protecting external service calls.
+   *
+   * @param serviceName - Unique identifier for the circuit (e.g., 'llm')
+   * @param fn - The async function to execute
+   * @param options - Configuration for retry, circuit breaker, and timeout (all optional)
+   * @param options.retry - Partial retry configuration
+   * @param options.circuit - Partial circuit breaker configuration
+   * @param options.timeoutMs - Timeout per attempt in milliseconds (default 30000)
+   * @returns The function's return value on success
+   * @throws {CircuitOpenError} When the circuit breaker is open
+   * @throws {TimeoutError} When an attempt exceeds the timeout
+   * @throws {Error} The last error after all retries are exhausted
+   */
+  /**
    * 组合：重试 + 熔断 + 超时
    */
   async execute<T>(
@@ -415,6 +436,12 @@ export class ResilienceService {
   }
 
   /**
+   * Get the current circuit breaker status for a service (for monitoring dashboards).
+   *
+   * @param serviceName - The service identifier to query
+   * @returns Object with the circuit state name, failure count, and whether the circuit is open
+   */
+  /**
    * 获取熔断器状态（用于监控）
    */
   async getCircuitStatus(serviceName: string): Promise<{
@@ -431,6 +458,15 @@ export class ResilienceService {
   }
 
   /**
+   * Manually reset a circuit breaker to the CLOSED state.
+   *
+   * Clears the failure count and state from both primary (Redis) and
+   * fallback (memory) storage. Useful for administrative recovery after
+   * an outage has been resolved.
+   *
+   * @param serviceName - The service identifier whose circuit should be reset
+   */
+  /**
    * 手动重置熔断器
    */
   async resetCircuit(serviceName: string): Promise<void> {
@@ -442,6 +478,11 @@ export class ResilienceService {
   // ==================== 私有方法 ====================
 
   /**
+   * Resolve the active storage backend with automatic Redis-to-memory fallback.
+   *
+   * @returns The primary (Redis) storage if connected, otherwise the in-memory fallback
+   */
+  /**
    * 获取当前可用的存储
    */
   private getStorage(): CircuitBreakerStorage {
@@ -451,6 +492,13 @@ export class ResilienceService {
     return this.fallbackStorage;
   }
 
+  /**
+   * Check whether an error matches any of the retryable error codes.
+   *
+   * @param error - The error to check
+   * @param retryableErrors - List of error code substrings to match against
+   * @returns True if the error message or name contains any retryable code
+   */
   private isRetryable(error: Error, retryableErrors?: string[]): boolean {
     const errorStr = error.message + (error.name || '');
     return (retryableErrors || []).some((code) => errorStr.includes(code));
@@ -518,6 +566,18 @@ export class ResilienceService {
     };
   }
 
+  /**
+   * Transition a circuit breaker to a new state and persist the change.
+   *
+   * Handles state-specific initialization:
+   * - HALF_OPEN: resets success counter and sets allowed probe request quota
+   * - CLOSED: resets both failure and success counters
+   *
+   * @param serviceName - The service identifier
+   * @param newState - The target circuit state
+   * @param config - Circuit breaker configuration
+   * @param state - Current state object (mutated in-place)
+   */
   private async transitionTo(
     serviceName: string,
     newState: CircuitState,
@@ -539,6 +599,16 @@ export class ResilienceService {
     this.logger.log(`Circuit ${serviceName}: ${oldState} -> ${newState}`);
   }
 
+  /**
+   * Handle a successful execution within the circuit breaker.
+   *
+   * In HALF_OPEN state, increments the success counter. If enough successive
+   * successes occur (>= halfOpenRequests), transitions back to CLOSED.
+   *
+   * @param serviceName - The service identifier
+   * @param config - Circuit breaker configuration
+   * @param state - Current state object (mutated in-place)
+   */
   private async onSuccess(
     serviceName: string,
     config: CircuitBreakerConfig,
@@ -559,6 +629,16 @@ export class ResilienceService {
     }
   }
 
+  /**
+   * Handle a failed execution within the circuit breaker.
+   *
+   * Increments the failure counter. In HALF_OPEN state, immediately transitions
+   * to OPEN. In CLOSED state, transitions to OPEN once failures reach the threshold.
+   *
+   * @param serviceName - The service identifier
+   * @param config - Circuit breaker configuration
+   * @param state - Current state object (mutated in-place)
+   */
   private async onFailure(
     serviceName: string,
     config: CircuitBreakerConfig,

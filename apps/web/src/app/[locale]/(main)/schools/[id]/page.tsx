@@ -798,9 +798,9 @@ export default function SchoolDetailPage() {
                           variant="outline"
                           className={cn(
                             'font-medium',
-                            essay.type === 'WHY_US' &&
+                            essay.type === 'WHY_SCHOOL' &&
                               'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
-                            essay.type === 'SUPPLEMENT' &&
+                            essay.type === 'SUPPLEMENTAL' &&
                               'bg-primary/10 text-primary border-violet-500/20',
                             essay.type === 'SHORT_ANSWER' &&
                               'bg-pink-500/10 text-pink-600 border-pink-500/20',
@@ -808,7 +808,7 @@ export default function SchoolDetailPage() {
                               'bg-amber-500/10 text-amber-600 border-amber-500/20'
                           )}
                         >
-                          {essay.type || 'SUPPLEMENT'}
+                          {essay.type || 'SUPPLEMENTAL'}
                         </Badge>
                         {essay.isRequired !== false ? (
                           <Badge

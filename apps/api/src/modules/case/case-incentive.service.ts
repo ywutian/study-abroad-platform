@@ -1,44 +1,25 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { POINTS_ENABLED } from '@study-abroad/shared';
+import { PointsConfigService, PointAction } from './points-config.service';
+
+// Re-export PointAction from the config service for backward compatibility
+export { PointAction } from './points-config.service';
 
 /**
- * 案例提交激励系统
+ * 案例提交激励系统 — 统一积分操作中心
  *
- * 设计理念：用户生成内容(UGC) + 积分激励
- * 这是最合规且可持续的数据获取方式
+ * 所有积分的增加/扣除都应通过此服务进行，
+ * 不允许其他服务直接操作 user.points 或 pointHistory。
+ * 积分值和开关状态从 PointsConfigService 动态读取（管理员可配置）。
  */
-
-export enum PointAction {
-  // 获得积分
-  SUBMIT_CASE = 'SUBMIT_CASE', // 提交案例 +50
-  CASE_VERIFIED = 'CASE_VERIFIED', // 案例被验证 +100
-  CASE_HELPFUL = 'CASE_HELPFUL', // 案例被标记有帮助 +10
-  COMPLETE_PROFILE = 'COMPLETE_PROFILE', // 完善档案 +30
-  REFER_USER = 'REFER_USER', // 推荐新用户 +50
-
-  // 消耗积分
-  VIEW_CASE_DETAIL = 'VIEW_CASE_DETAIL', // 查看案例详情 -20
-  AI_ANALYSIS = 'AI_ANALYSIS', // AI分析 -30
-  MESSAGE_VERIFIED = 'MESSAGE_VERIFIED', // 私信认证用户 -10
-}
-
-const POINT_VALUES: Record<PointAction, number> = {
-  [PointAction.SUBMIT_CASE]: 50,
-  [PointAction.CASE_VERIFIED]: 100,
-  [PointAction.CASE_HELPFUL]: 10,
-  [PointAction.COMPLETE_PROFILE]: 30,
-  [PointAction.REFER_USER]: 50,
-  [PointAction.VIEW_CASE_DETAIL]: -20,
-  [PointAction.AI_ANALYSIS]: -30,
-  [PointAction.MESSAGE_VERIFIED]: -10,
-};
-
 @Injectable()
 export class CaseIncentiveService {
   private readonly logger = new Logger(CaseIncentiveService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private pointsConfig: PointsConfigService,
+  ) {}
 
   /**
    * 获取用户积分
@@ -52,18 +33,30 @@ export class CaseIncentiveService {
   }
 
   /**
-   * 增加/扣除积分
+   * 统一增加/扣除积分（核心方法）
    */
   async adjustPoints(
     userId: string,
-    action: PointAction,
+    action: PointAction | string,
     metadata?: Record<string, unknown>,
+    pointsOverride?: number,
   ): Promise<{ success: boolean; newBalance: number; message?: string }> {
-    if (!POINTS_ENABLED) {
+    const enabled = await this.pointsConfig.isEnabled();
+    if (!enabled) {
       return { success: true, newBalance: 0 };
     }
 
-    const pointValue = POINT_VALUES[action];
+    // Get dynamic point value from config, or use override (for variable-value actions like swipe)
+    const pointValue =
+      pointsOverride ??
+      (Object.values(PointAction).includes(action as PointAction)
+        ? await this.pointsConfig.getPointValue(action as PointAction)
+        : 0);
+
+    if (pointValue === 0) {
+      return { success: true, newBalance: await this.getUserPoints(userId) };
+    }
+
     const currentPoints = await this.getUserPoints(userId);
 
     // 检查是否有足够积分（扣除情况）
@@ -86,7 +79,7 @@ export class CaseIncentiveService {
     await this.prisma.pointHistory.create({
       data: {
         userId,
-        action,
+        action: String(action),
         points: pointValue,
         metadata: (metadata || {}) as any,
       },
@@ -103,15 +96,67 @@ export class CaseIncentiveService {
   }
 
   /**
+   * 通用扣分入口（用于消耗积分的操作）
+   * 如果积分不足，抛出 BadRequestException
+   */
+  async charge(
+    userId: string,
+    action: PointAction,
+    metadata?: Record<string, unknown>,
+  ): Promise<{ newBalance: number }> {
+    const result = await this.adjustPoints(userId, action, metadata);
+    if (!result.success) {
+      const pointValue = await this.pointsConfig.getPointValue(action);
+      throw new BadRequestException(
+        `积分不足，需要 ${Math.abs(pointValue)} 积分`,
+      );
+    }
+    return { newBalance: result.newBalance };
+  }
+
+  /**
+   * 通用加分入口（用于奖励积分的操作）
+   */
+  async reward(
+    userId: string,
+    action: PointAction,
+    metadata?: Record<string, unknown>,
+  ): Promise<{ newBalance: number }> {
+    const result = await this.adjustPoints(userId, action, metadata);
+    return { newBalance: result.newBalance };
+  }
+
+  /**
+   * 退款（返还积分）
+   */
+  async refund(
+    userId: string,
+    action: PointAction,
+    metadata?: Record<string, unknown>,
+  ): Promise<{ newBalance: number }> {
+    // Get the absolute value and make it positive for refund
+    const pointValue = await this.pointsConfig.getPointValue(action);
+    const refundAmount = Math.abs(pointValue);
+    const result = await this.adjustPoints(
+      userId,
+      `${action}_REFUND`,
+      { ...metadata, reason: 'service_error' },
+      refundAmount,
+    );
+    return { newBalance: result.newBalance };
+  }
+
+  /**
    * 检查用户是否可以执行某操作
    */
   async canPerformAction(
     userId: string,
     action: PointAction,
   ): Promise<boolean> {
-    if (!POINTS_ENABLED) return true;
+    const enabled = await this.pointsConfig.isEnabled();
+    if (!enabled) return true;
 
-    const pointValue = POINT_VALUES[action];
+    const pointValue = await this.pointsConfig.getPointValue(action);
 
     // 获取积分的操作总是可以
     if (pointValue > 0) return true;
@@ -143,6 +188,15 @@ export class CaseIncentiveService {
    */
   async rewardCaseVerification(userId: string, caseId: string) {
     return this.adjustPoints(userId, PointAction.CASE_VERIFIED, { caseId });
+  }
+
+  /**
+   * Reward a user for successfully referring a new user
+   */
+  async rewardReferral(referrerId: string, referredUserId: string) {
+    return this.adjustPoints(referrerId, PointAction.REFER_USER, {
+      referredUserId,
+    });
   }
 
   /**

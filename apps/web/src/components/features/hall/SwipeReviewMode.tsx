@@ -91,7 +91,7 @@ export function SwipeReviewMode({ profile, onClose, onComplete }: SwipeReviewMod
       awardScore: number;
       overallScore: number;
       comment?: string;
-    }) => apiClient.post('/hall/reviews', data),
+    }) => apiClient.post('/halls/reviews', data),
     onSuccess: () => {
       toast.success(t('review.submitSuccess'));
       onComplete?.();

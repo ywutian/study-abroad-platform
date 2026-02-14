@@ -12,6 +12,7 @@ import { Logger, Inject, forwardRef } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { PrismaService } from '../../prisma/prisma.service';
 import {
   NotificationService,
   NotificationType,
@@ -43,6 +44,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private chatService: ChatService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private prisma: PrismaService,
     @Inject(forwardRef(() => NotificationService))
     private notificationService: NotificationService,
   ) {}
@@ -66,6 +68,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const userId = client.userId;
 
       if (!userId) {
+        client.disconnect();
+        return;
+      }
+
+      const canConnect = await this.ensureNotBanned(userId);
+      if (!canConnect) {
         client.disconnect();
         return;
       }
@@ -243,6 +251,35 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // ============================================
   // 私有方法
   // ============================================
+
+  /**
+   * Block chat gateway access for banned users.
+   * If a temporary ban has expired, auto-unban and allow connection.
+   */
+  private async ensureNotBanned(userId: string): Promise<boolean> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { isBanned: true, bannedUntil: true },
+    });
+
+    if (!user?.isBanned) return true;
+
+    if (user.bannedUntil && user.bannedUntil.getTime() < Date.now()) {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          isBanned: false,
+          bannedAt: null,
+          bannedUntil: null,
+          banReason: null,
+        },
+      });
+      return true;
+    }
+
+    this.logger.warn(`Blocked banned user connection attempt: ${userId}`);
+    return false;
+  }
 
   /**
    * 给会话中不在线的对方发送消息通知

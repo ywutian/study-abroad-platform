@@ -52,9 +52,9 @@ interface BulkImportDialogProps {
 }
 
 const ESSAY_PROMPT_TEMPLATE = `school,year,type,prompt,promptZh,wordLimit,isRequired,sourceUrl
-Stanford,2025,SUPPLEMENT,"What matters to you and why?","什么对你重要，为什么？",250,true,
+Stanford,2025,SUPPLEMENTAL,"What matters to you and why?","什么对你重要，为什么？",250,true,
 MIT,2025,SHORT_ANSWER,"Tell us about something you do simply for the pleasure of it.","告诉我们一件你纯粹因为快乐而做的事情。",200,true,
-Harvard,2025,SUPPLEMENT,"Harvard has long recognized the importance of enrolling a diverse student body.","哈佛长期以来一直认识到招收多元化学生群体的重要性。",500,false,`;
+Harvard,2025,SUPPLEMENTAL,"Harvard has long recognized the importance of enrolling a diverse student body.","哈佛长期以来一直认识到招收多元化学生群体的重要性。",500,false,`;
 
 const CASE_TEMPLATE = `school,major,year,round,result,gpa,sat,act,toefl,tags,essayType,essayPrompt,essayContent
 MIT,Computer Science,2025,RD,ADMITTED,3.9-4.0,1550-1600,,115,research;olympiad,COMMON_APP,"Some students have a background...","My essay content here..."

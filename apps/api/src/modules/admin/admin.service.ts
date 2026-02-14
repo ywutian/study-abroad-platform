@@ -30,7 +30,8 @@ type AuditAction =
   | 'UPDATE_REPORT_STATUS'
   | 'DELETE_REPORT'
   | 'VERIFY_USER'
-  | 'BAN_USER';
+  | 'BAN_USER'
+  | 'UNBAN_USER';
 
 @Injectable()
 export class AdminService {
@@ -195,6 +196,10 @@ export class AdminService {
           role: true,
           emailVerified: true,
           locale: true,
+          isBanned: true,
+          bannedAt: true,
+          bannedUntil: true,
+          banReason: true,
           createdAt: true,
           updatedAt: true,
           _count: {
@@ -254,6 +259,107 @@ export class AdminService {
     return updated;
   }
 
+  // ============================================
+  // User Ban/Unban
+  // ============================================
+
+  async banUser(
+    adminId: string,
+    userId: string,
+    reason: string,
+    durationHours?: number,
+    permanent?: boolean,
+  ) {
+    if (adminId === userId) {
+      throw new ForbiddenException('Cannot ban your own account');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, role: true, isBanned: true },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.role === Role.ADMIN) {
+      throw new ForbiddenException('Cannot ban an admin user');
+    }
+
+    if (user.isBanned) {
+      throw new ConflictException('User is already banned');
+    }
+
+    const bannedUntil =
+      permanent || !durationHours
+        ? null
+        : new Date(Date.now() + durationHours * 60 * 60 * 1000);
+
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        isBanned: true,
+        bannedAt: new Date(),
+        bannedUntil,
+        banReason: reason,
+      },
+      select: {
+        id: true,
+        email: true,
+        isBanned: true,
+        bannedAt: true,
+        bannedUntil: true,
+        banReason: true,
+      },
+    });
+
+    await this.logAudit(adminId, 'BAN_USER', 'user', userId, {
+      userEmail: user.email,
+      reason,
+      durationHours: durationHours || 'permanent',
+      bannedUntil,
+    });
+
+    return updated;
+  }
+
+  async unbanUser(adminId: string, userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, isBanned: true },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!user.isBanned) {
+      throw new ConflictException('User is not banned');
+    }
+
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        isBanned: false,
+        bannedAt: null,
+        bannedUntil: null,
+        banReason: null,
+      },
+      select: {
+        id: true,
+        email: true,
+        isBanned: true,
+      },
+    });
+
+    await this.logAudit(adminId, 'UNBAN_USER', 'user', userId, {
+      userEmail: user.email,
+    });
+
+    return updated;
+  }
+
   async deleteUser(adminId: string, userId: string) {
     if (adminId === userId) {
       throw new ForbiddenException('Cannot delete your own account');
@@ -282,12 +388,35 @@ export class AdminService {
   }
 
   async getStats() {
+    const now = new Date();
+    const todayStart = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    );
+    const weekAgo = new Date(todayStart.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
     const [
       totalUsers,
       verifiedUsers,
       totalCases,
       pendingReports,
       totalReviews,
+      newUsersToday,
+      newUsersThisWeek,
+      activeUsersToday,
+      bannedUsers,
+      totalForumPosts,
+      totalConversations,
+      totalMessages,
+      pendingVerifications,
+      freeUsers,
+      proUsers,
+      adminUsers,
+      totalRevenueResult,
+      monthlyRevenueResult,
+      pendingPayments,
     ] = await Promise.all([
       this.prisma.user.count({ where: { deletedAt: null } }),
       this.prisma.user.count({
@@ -296,15 +425,143 @@ export class AdminService {
       this.prisma.admissionCase.count(),
       this.prisma.report.count({ where: { status: ReportStatus.PENDING } }),
       this.prisma.review.count(),
+      // New metrics
+      this.prisma.user.count({
+        where: { createdAt: { gte: todayStart }, deletedAt: null },
+      }),
+      this.prisma.user.count({
+        where: { createdAt: { gte: weekAgo }, deletedAt: null },
+      }),
+      this.prisma.user.count({
+        where: { lastLoginAt: { gte: todayStart }, deletedAt: null },
+      }),
+      this.prisma.user.count({
+        where: { isBanned: true, deletedAt: null },
+      }),
+      this.prisma.forumPost.count(),
+      this.prisma.conversation.count(),
+      this.prisma.message.count(),
+      this.prisma.verificationRequest.count({
+        where: { status: 'PENDING' },
+      }),
+      this.prisma.user.count({
+        where: { role: Role.USER, deletedAt: null },
+      }),
+      this.prisma.user.count({
+        where: { role: Role.VERIFIED, deletedAt: null },
+      }),
+      this.prisma.user.count({
+        where: { role: Role.ADMIN, deletedAt: null },
+      }),
+      this.prisma.payment.aggregate({
+        where: { status: 'SUCCESS' },
+        _sum: { amount: true },
+      }),
+      this.prisma.payment.aggregate({
+        where: {
+          status: 'SUCCESS',
+          createdAt: { gte: monthStart },
+        },
+        _sum: { amount: true },
+      }),
+      this.prisma.payment.count({ where: { status: 'PENDING' } }),
     ]);
 
     return {
+      // Existing
       totalUsers,
       verifiedUsers,
       totalCases,
       pendingReports,
       totalReviews,
+      // Users
+      newUsersToday,
+      newUsersThisWeek,
+      activeUsersToday,
+      bannedUsers,
+      // Revenue
+      totalRevenue: totalRevenueResult._sum.amount || 0,
+      monthlyRevenue: monthlyRevenueResult._sum.amount || 0,
+      pendingPayments,
+      // Content
+      totalForumPosts,
+      totalConversations,
+      totalMessages,
+      // Moderation
+      pendingVerifications,
+      // Subscription distribution
+      freeUsers,
+      proUsers,
+      premiumUsers: adminUsers, // ADMIN role maps to premium
     };
+  }
+
+  /**
+   * Get 30-day trends for key metrics
+   */
+  async getTrends() {
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    // Fetch raw data and aggregate by day in-memory
+    const [newUsers, payments, posts] = await Promise.all([
+      this.prisma.user.findMany({
+        where: { createdAt: { gte: thirtyDaysAgo }, deletedAt: null },
+        select: { createdAt: true },
+        orderBy: { createdAt: 'asc' },
+      }),
+      this.prisma.payment.findMany({
+        where: {
+          createdAt: { gte: thirtyDaysAgo },
+          status: 'SUCCESS',
+        },
+        select: { createdAt: true, amount: true },
+        orderBy: { createdAt: 'asc' },
+      }),
+      this.prisma.forumPost.findMany({
+        where: { createdAt: { gte: thirtyDaysAgo } },
+        select: { createdAt: true },
+        orderBy: { createdAt: 'asc' },
+      }),
+    ]);
+
+    // Aggregate by day
+    const days: Record<
+      string,
+      {
+        date: string;
+        newUsers: number;
+        payments: number;
+        revenue: number;
+        posts: number;
+      }
+    > = {};
+
+    for (let i = 0; i < 30; i++) {
+      const date = new Date(now.getTime() - (29 - i) * 24 * 60 * 60 * 1000);
+      const key = date.toISOString().split('T')[0];
+      days[key] = { date: key, newUsers: 0, payments: 0, revenue: 0, posts: 0 };
+    }
+
+    for (const u of newUsers) {
+      const key = u.createdAt.toISOString().split('T')[0];
+      if (days[key]) days[key].newUsers++;
+    }
+
+    for (const p of payments) {
+      const key = p.createdAt.toISOString().split('T')[0];
+      if (days[key]) {
+        days[key].payments++;
+        days[key].revenue += Number(p.amount) || 0;
+      }
+    }
+
+    for (const p of posts) {
+      const key = p.createdAt.toISOString().split('T')[0];
+      if (days[key]) days[key].posts++;
+    }
+
+    return Object.values(days);
   }
 
   /**

@@ -20,7 +20,10 @@ import {
   ReviewVerificationDto,
   ReviewAction,
 } from './dto/review-verification.dto';
-import { POINTS_ENABLED } from '@study-abroad/shared';
+import {
+  CaseIncentiveService,
+  PointAction,
+} from '../case/case-incentive.service';
 
 @Injectable()
 export class VerificationService {
@@ -29,6 +32,7 @@ export class VerificationService {
   constructor(
     private prisma: PrismaService,
     private storage: StorageService,
+    private caseIncentiveService: CaseIncentiveService,
   ) {}
 
   /**
@@ -212,9 +216,9 @@ export class VerificationService {
       : VerificationStatus.REJECTED;
 
     // 使用事务更新
-    return this.prisma.$transaction(async (tx) => {
+    const updatedRequest = await this.prisma.$transaction(async (tx) => {
       // 更新认证请求
-      const updatedRequest = await tx.verificationRequest.update({
+      const updated = await tx.verificationRequest.update({
         where: { id: requestId },
         data: {
           status: newStatus,
@@ -240,27 +244,23 @@ export class VerificationService {
           where: { id: request.userId },
           data: { role: Role.VERIFIED },
         });
-
-        // 奖励积分
-        if (POINTS_ENABLED) {
-          await tx.user.update({
-            where: { id: request.userId },
-            data: { points: { increment: 100 } },
-          });
-
-          await tx.pointHistory.create({
-            data: {
-              userId: request.userId,
-              action: 'VERIFICATION_APPROVED',
-              points: 100,
-              metadata: { caseId: request.caseId },
-            },
-          });
-        }
       }
 
-      return updatedRequest;
+      return updated;
     });
+
+    // 奖励积分 (outside transaction, handled by centralized service)
+    if (dto.action === ReviewAction.APPROVE) {
+      await this.caseIncentiveService
+        .reward(request.userId, PointAction.VERIFICATION_APPROVED, {
+          caseId: request.caseId,
+        })
+        .catch((err) => {
+          this.logger.error('Failed to award verification points', err);
+        });
+    }
+
+    return updatedRequest;
   }
 
   /**

@@ -199,7 +199,7 @@ export class LlmScrapeStrategy extends BaseScrapeStrategy {
 Return a JSON object with an "essays" array. Each essay object must have:
 - prompt: the exact English essay prompt text
 - wordLimit: number or null
-- type: one of COMMON_APP, SUPPLEMENT, WHY_US, SHORT_ANSWER, ACTIVITY, OPTIONAL
+- type: one of COMMON_APP, SUPPLEMENTAL, WHY_SCHOOL, SHORT_ANSWER, ACTIVITY, OPTIONAL
 - isRequired: boolean
 - confidence: 0.0-1.0 how certain this is a real essay prompt
 

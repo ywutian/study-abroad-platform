@@ -1,5 +1,79 @@
-import { Logger } from '@nestjs/common';
+import { Logger, BadRequestException } from '@nestjs/common';
 import { SourceType } from '../../../common/types/enums';
+import * as dns from 'dns';
+import * as net from 'net';
+import { promisify } from 'util';
+
+const dnsLookup = promisify(dns.lookup);
+
+/**
+ * Check if an IP address belongs to a private/reserved network range.
+ * Blocks SSRF attacks by preventing requests to internal infrastructure.
+ */
+function isPrivateIP(ip: string): boolean {
+  // IPv6 loopback
+  if (ip === '::1') return true;
+
+  // IPv6 private (fc00::/7)
+  if (ip.toLowerCase().startsWith('fc') || ip.toLowerCase().startsWith('fd')) {
+    return true;
+  }
+
+  // IPv4 checks
+  if (!net.isIPv4(ip)) return false;
+
+  const parts = ip.split('.').map(Number);
+  const [a, b] = parts;
+
+  // 127.0.0.0/8 — loopback
+  if (a === 127) return true;
+  // 10.0.0.0/8 — private
+  if (a === 10) return true;
+  // 172.16.0.0/12 — private
+  if (a === 172 && b >= 16 && b <= 31) return true;
+  // 192.168.0.0/16 — private
+  if (a === 192 && b === 168) return true;
+  // 169.254.0.0/16 — link-local
+  if (a === 169 && b === 254) return true;
+  // 0.0.0.0
+  if (a === 0) return true;
+
+  return false;
+}
+
+/**
+ * Validate that a URL does not resolve to a private/internal IP address.
+ * Prevents SSRF attacks.
+ */
+async function validateUrlNotPrivate(url: string): Promise<void> {
+  const parsed = new URL(url);
+  const hostname = parsed.hostname;
+
+  // If the hostname is already an IP, check it directly
+  if (net.isIP(hostname)) {
+    if (isPrivateIP(hostname)) {
+      throw new BadRequestException(
+        `SSRF blocked: URL resolves to a private IP address`,
+      );
+    }
+    return;
+  }
+
+  // Resolve hostname to IP and check
+  try {
+    const { address } = await dnsLookup(hostname);
+    if (isPrivateIP(address)) {
+      throw new BadRequestException(
+        `SSRF blocked: URL resolves to a private IP address`,
+      );
+    }
+  } catch (error) {
+    if (error instanceof BadRequestException) throw error;
+    throw new BadRequestException(
+      `SSRF validation failed: unable to resolve hostname "${hostname}"`,
+    );
+  }
+}
 
 export interface ScrapedEssay {
   prompt: string;
@@ -33,6 +107,9 @@ export abstract class BaseScrapeStrategy {
   ): Promise<ScrapeResult | null>;
 
   protected async fetchPage(url: string): Promise<string> {
+    // SSRF protection: block requests to private/internal IPs
+    await validateUrlNotPrivate(url);
+
     const response = await fetch(url, {
       headers: {
         'User-Agent':
@@ -81,7 +158,7 @@ export abstract class BaseScrapeStrategy {
         lowerPrompt.includes('university') ||
         lowerPrompt.includes('school'))
     ) {
-      return 'WHY_US';
+      return 'WHY_SCHOOL';
     }
     if (
       lowerPrompt.includes('activity') ||
@@ -92,6 +169,6 @@ export abstract class BaseScrapeStrategy {
     if (lowerPrompt.length < 200) {
       return 'SHORT_ANSWER';
     }
-    return 'SUPPLEMENT';
+    return 'SUPPLEMENTAL';
   }
 }

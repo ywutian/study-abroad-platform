@@ -602,7 +602,7 @@ export class EssayScraperService {
     switch (type?.toUpperCase()) {
       case 'WHY_US':
       case 'WHY_SCHOOL':
-        return EssayType.WHY_US;
+        return EssayType.WHY_SCHOOL;
       case 'ACTIVITY':
         return EssayType.ACTIVITY;
       case 'SHORT_ANSWER':
@@ -612,7 +612,7 @@ export class EssayScraperService {
       case 'COMMON_APP':
         return EssayType.COMMON_APP;
       default:
-        return EssayType.SUPPLEMENT;
+        return EssayType.SUPPLEMENTAL;
     }
   }
 

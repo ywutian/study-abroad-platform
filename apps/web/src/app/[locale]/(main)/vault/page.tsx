@@ -158,8 +158,8 @@ export default function VaultPage() {
       if (searchQuery) params.append('search', searchQuery);
 
       const [itemsRes, statsRes] = await Promise.all([
-        api.get<ApiResponse<VaultItem[]>>(`/vault?${params.toString()}`),
-        api.get<ApiResponse<VaultStats>>('/vault/stats'),
+        api.get<ApiResponse<VaultItem[]>>(`/vaults?${params.toString()}`),
+        api.get<ApiResponse<VaultStats>>('/vaults/stats'),
       ]);
 
       if (itemsRes.success) {
@@ -225,7 +225,7 @@ export default function VaultPage() {
   const viewItem = async (itemId: string) => {
     setLoadingItem(true);
     try {
-      const res = await api.get<ApiResponse<VaultItemDetail>>(`/vault/${itemId}`);
+      const res = await api.get<ApiResponse<VaultItemDetail>>(`/vaults/${itemId}`);
       if (res.success) {
         setShowViewDialog(res.data);
       }
@@ -287,9 +287,9 @@ export default function VaultPage() {
       };
 
       if (editingItem) {
-        await api.put(`/vault/${editingItem.id}`, payload);
+        await api.put(`/vaults/${editingItem.id}`, payload);
       } else {
-        await api.post('/vault', payload);
+        await api.post('/vaults', payload);
       }
 
       setShowCreateDialog(false);
@@ -305,7 +305,7 @@ export default function VaultPage() {
   // Delete item
   const handleDelete = async (itemId: string) => {
     try {
-      await api.delete(`/vault/${itemId}`);
+      await api.delete(`/vaults/${itemId}`);
       setShowDeleteDialog(null);
       setShowViewDialog(null);
       fetchData();
@@ -318,7 +318,7 @@ export default function VaultPage() {
   const generatePassword = async () => {
     try {
       const res = await api.get<ApiResponse<{ password: string }>>(
-        '/vault/generate-password?length=16'
+        '/vaults/generate-password?length=16'
       );
       if (res.success) {
         setFormPassword(res.data.password);

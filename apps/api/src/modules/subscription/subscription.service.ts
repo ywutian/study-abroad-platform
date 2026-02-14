@@ -3,8 +3,10 @@ import {
   Logger,
   BadRequestException,
   NotFoundException,
+  UnauthorizedException,
   Optional,
 } from '@nestjs/common';
+import * as crypto from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { EmailService } from '../../common/email/email.service';
@@ -14,6 +16,7 @@ import {
   SUBSCRIPTION_PLAN_LIST,
   YEARLY_DISCOUNT_MULTIPLIER,
 } from '@study-abroad/shared';
+import { SettingsService, SETTING_KEYS } from '../settings/settings.service';
 
 // Re-export so existing imports from './subscription.service' still work
 export { SubscriptionPlan } from '@study-abroad/shared';
@@ -88,9 +91,53 @@ export class SubscriptionService {
   constructor(
     private prisma: PrismaService,
     private configService: ConfigService,
+    private settingsService: SettingsService,
     @Optional() private emailService?: EmailService,
   ) {}
 
+  /**
+   * Get dynamic price for a plan from SystemSetting (admin-configurable)
+   */
+  private async getDynamicPrice(planId: SubscriptionPlan): Promise<number> {
+    const plan = SUBSCRIPTION_PLANS[planId];
+    if (planId === SubscriptionPlan.PRO) {
+      return this.settingsService.getTyped(
+        SETTING_KEYS.SUBSCRIPTION_PRO_PRICE,
+        plan.price,
+      );
+    }
+    if (planId === SubscriptionPlan.PREMIUM) {
+      return this.settingsService.getTyped(
+        SETTING_KEYS.SUBSCRIPTION_PREMIUM_PRICE,
+        plan.price,
+      );
+    }
+    return plan.price;
+  }
+
+  private async getDynamicYearlyDiscount(): Promise<number> {
+    return this.settingsService.getTyped(
+      SETTING_KEYS.SUBSCRIPTION_YEARLY_DISCOUNT,
+      YEARLY_DISCOUNT_MULTIPLIER,
+    );
+  }
+
+  private async toPlanDetailsAsync(
+    planId: SubscriptionPlan,
+  ): Promise<PlanDetails> {
+    const plan = SUBSCRIPTION_PLANS[planId];
+    const price = await this.getDynamicPrice(planId);
+    return {
+      id: plan.id,
+      name: PLAN_NAMES_ZH[plan.key] ?? plan.key,
+      price,
+      currency: plan.currency,
+      period: plan.period,
+      features: PLAN_FEATURES_ZH[plan.key] ?? [],
+    };
+  }
+
+  // Keep sync version for internal use (uses static defaults)
   private toPlanDetails(planId: SubscriptionPlan): PlanDetails {
     const plan = SUBSCRIPTION_PLANS[planId];
     return {
@@ -103,18 +150,22 @@ export class SubscriptionService {
     };
   }
 
-  // 获取所有计划
-  getPlans(): PlanDetails[] {
-    return SUBSCRIPTION_PLAN_LIST.map((plan) => this.toPlanDetails(plan.id));
+  // 获取所有计划（动态定价）
+  async getPlans(): Promise<PlanDetails[]> {
+    const plans: PlanDetails[] = [];
+    for (const plan of SUBSCRIPTION_PLAN_LIST) {
+      plans.push(await this.toPlanDetailsAsync(plan.id));
+    }
+    return plans;
   }
 
-  // 获取单个计划详情
-  getPlan(planId: SubscriptionPlan): PlanDetails {
+  // 获取单个计划详情（动态定价）
+  async getPlan(planId: SubscriptionPlan): Promise<PlanDetails> {
     const plan = SUBSCRIPTION_PLANS[planId];
     if (!plan) {
       throw new NotFoundException(`Plan ${planId} not found`);
     }
-    return this.toPlanDetails(planId);
+    return this.toPlanDetailsAsync(planId);
   }
 
   // 获取用户当前订阅
@@ -169,11 +220,11 @@ export class SubscriptionService {
       throw new BadRequestException('Cannot subscribe to free plan');
     }
 
-    // 计算价格
+    // 计算价格（从管理员配置动态读取）
+    const dynamicPrice = await this.getDynamicPrice(dto.plan);
+    const yearlyDiscount = await this.getDynamicYearlyDiscount();
     const price =
-      dto.period === 'yearly'
-        ? planConfig.price * YEARLY_DISCOUNT_MULTIPLIER
-        : planConfig.price;
+      dto.period === 'yearly' ? dynamicPrice * yearlyDiscount : dynamicPrice;
 
     const planName = PLAN_NAMES_ZH[planConfig.key] || planConfig.key;
     const periodLabel = dto.period === 'yearly' ? '年付' : '月付';
@@ -360,9 +411,23 @@ export class SubscriptionService {
 
   // Webhook 处理（用于接收支付网关回调）
   async handlePaymentWebhook(payload: any, signature: string): Promise<void> {
-    // TODO: 验证 webhook 签名
-    // const isValid = this.verifyWebhookSignature(payload, signature);
-    // if (!isValid) throw new UnauthorizedException('Invalid webhook signature');
+    // Verify webhook signature (HMAC-SHA256)
+    const webhookSecret = this.configService.get<string>('WEBHOOK_SECRET');
+    if (webhookSecret) {
+      const expectedSignature = crypto
+        .createHmac('sha256', webhookSecret)
+        .update(JSON.stringify(payload))
+        .digest('hex');
+      if (signature !== expectedSignature) {
+        throw new UnauthorizedException('Invalid webhook signature');
+      }
+    } else if (this.configService.get('NODE_ENV') === 'production') {
+      throw new Error('WEBHOOK_SECRET must be set in production');
+    } else {
+      this.logger.warn(
+        'WEBHOOK_SECRET not set — skipping signature verification (dev only)',
+      );
+    }
 
     this.logger.log('Received payment webhook', { type: payload.type });
 

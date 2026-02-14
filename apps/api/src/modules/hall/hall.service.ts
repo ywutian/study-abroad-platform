@@ -222,27 +222,61 @@ export class HallService {
       return { rankings: [] };
     }
 
+    // Pre-fetch all competitors for all requested schools in a single query
+    // to avoid N+1: previously one query per school
+    const allSchoolListItems = await this.prisma.schoolListItem.findMany({
+      where: {
+        schoolId: { in: schoolIds },
+        user: {
+          profile: {
+            visibility: { not: 'PRIVATE' },
+          },
+        },
+      },
+      select: { schoolId: true, userId: true },
+    });
+
+    // Collect unique competitor user IDs
+    const competitorUserIds = [
+      ...new Set(allSchoolListItems.map((i) => i.userId)),
+    ];
+
+    // Fetch all competitor profiles in a single query
+    const allCompetitorProfiles = await this.prisma.profile.findMany({
+      where: {
+        userId: { in: competitorUserIds },
+        visibility: { not: 'PRIVATE' },
+      },
+      include: {
+        testScores: true,
+        activities: true,
+        awards: { include: { competition: true } },
+      },
+    });
+
+    // Build userId -> profile map
+    const profileByUserId = new Map(
+      allCompetitorProfiles.map((p) => [p.userId, p]),
+    );
+
+    // Build schoolId -> profiles[] map
+    const competitorsBySchool = new Map<string, typeof allCompetitorProfiles>();
+    for (const item of allSchoolListItems) {
+      const profile = profileByUserId.get(item.userId);
+      if (!profile) continue;
+      if (!competitorsBySchool.has(item.schoolId)) {
+        competitorsBySchool.set(item.schoolId, []);
+      }
+      competitorsBySchool.get(item.schoolId)!.push(profile);
+    }
+
     const rankings: RankingResult[] = [];
 
     for (const school of schools) {
       const schoolMetrics = extractSchoolMetrics(school);
 
-      // 查找同校竞争者：选择了该学校的可见用户 (通过 SchoolListItem)
-      const competitors = await this.prisma.profile.findMany({
-        where: {
-          visibility: { not: 'PRIVATE' },
-          user: {
-            schoolListItems: {
-              some: { schoolId: school.id },
-            },
-          },
-        },
-        include: {
-          testScores: true,
-          activities: true,
-          awards: { include: { competition: true } },
-        },
-      });
+      // Use pre-fetched competitors (no per-school query)
+      const competitors = competitorsBySchool.get(school.id) || [];
 
       // 确保包含当前用户
       const allProfiles = competitors.find((p) => p.userId === userId)
@@ -491,7 +525,7 @@ export class HallService {
         importance: 0.3,
         metadata: {
           listTitle,
-          category,
+          category: category ?? undefined,
         },
       });
     } catch (error) {

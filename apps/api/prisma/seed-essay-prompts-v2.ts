@@ -27,7 +27,7 @@ interface EssayData {
 const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
   'Stanford University': [
     {
-      type: EssayType.SUPPLEMENT,
+      type: EssayType.SUPPLEMENTAL,
       prompt:
         'The Stanford community is deeply curious and driven to learn in and out of the classroom. Reflect on an idea or experience that makes you genuinely excited about learning.',
       promptZh:
@@ -38,7 +38,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
       aiCategory: '学术',
     },
     {
-      type: EssayType.SUPPLEMENT,
+      type: EssayType.SUPPLEMENTAL,
       prompt:
         "Virtually all of Stanford's undergraduates live on campus. Write a note to your future roommate that reveals something about you or that will help your roommate—and us—get to know you better.",
       promptZh:
@@ -49,7 +49,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
       aiCategory: '个人成长',
     },
     {
-      type: EssayType.SUPPLEMENT,
+      type: EssayType.SUPPLEMENTAL,
       prompt: 'Tell us about something that is meaningful to you and why.',
       promptZh: '告诉我们对你有意义的事物及其原因。',
       wordLimit: 250,
@@ -60,7 +60,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
   ],
   'Harvard University': [
     {
-      type: EssayType.SUPPLEMENT,
+      type: EssayType.SUPPLEMENTAL,
       prompt:
         'Harvard has long recognized the importance of enrolling a diverse student body. How will the life experiences that shape who you are today enable you to contribute to Harvard?',
       promptZh:
@@ -71,7 +71,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
       aiCategory: '个人成长',
     },
     {
-      type: EssayType.SUPPLEMENT,
+      type: EssayType.SUPPLEMENTAL,
       prompt:
         'Describe a time when you strongly disagreed with someone about an idea or issue. How did you communicate or engage with this person? What did you learn from this experience?',
       promptZh:
@@ -84,7 +84,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
   ],
   'Massachusetts Institute of Technology': [
     {
-      type: EssayType.SUPPLEMENT,
+      type: EssayType.SUPPLEMENTAL,
       prompt:
         'We know you lead a busy life, full of activities, many of which are required of you. Tell us about something you do simply for the pleasure of it.',
       promptZh:
@@ -95,7 +95,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
       aiCategory: '个人成长',
     },
     {
-      type: EssayType.SUPPLEMENT,
+      type: EssayType.SUPPLEMENTAL,
       prompt: 'How has the world you come from shaped who you are today?',
       promptZh: '你来自的世界如何塑造了今天的你？',
       wordLimit: 200,
@@ -104,7 +104,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
       aiCategory: '个人成长',
     },
     {
-      type: EssayType.SUPPLEMENT,
+      type: EssayType.SUPPLEMENTAL,
       prompt:
         "Tell us about a significant challenge you've faced or something that didn't go according to plan. How did you manage the situation?",
       promptZh:
@@ -117,7 +117,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
   ],
   'Yale University': [
     {
-      type: EssayType.WHY_US,
+      type: EssayType.WHY_SCHOOL,
       prompt: 'What is it about Yale that has led you to apply?',
       promptZh: '是什么让你申请耶鲁？',
       wordLimit: 125,
@@ -148,7 +148,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
   ],
   'Princeton University': [
     {
-      type: EssayType.SUPPLEMENT,
+      type: EssayType.SUPPLEMENTAL,
       prompt:
         'Princeton has a longstanding commitment to service and civic engagement. Tell us how your story intersects with these ideals.',
       promptZh:
@@ -159,7 +159,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
       aiCategory: '社会责任',
     },
     {
-      type: EssayType.SUPPLEMENT,
+      type: EssayType.SUPPLEMENTAL,
       prompt:
         'Princeton values intellectual curiosity. Tell us about an idea, question, or topic that excites you.',
       promptZh: '普林斯顿重视求知欲。告诉我们一个让你兴奋的想法、问题或话题。',
@@ -181,7 +181,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
   ],
   'Columbia University': [
     {
-      type: EssayType.WHY_US,
+      type: EssayType.WHY_SCHOOL,
       prompt: 'Why are you interested in attending Columbia University?',
       promptZh: '你为什么有兴趣就读哥伦比亚大学？',
       wordLimit: 200,
@@ -190,7 +190,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
       aiCategory: '学术',
     },
     {
-      type: EssayType.SUPPLEMENT,
+      type: EssayType.SUPPLEMENTAL,
       prompt:
         "Columbia students take an active role in improving their community, whether in their residence hall, move-in neighborhood, or the world. Share one way you've contributed to your community.",
       promptZh: '哥大学生积极参与改善社区。分享你为社区做出贡献的一种方式。',
@@ -212,7 +212,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
   ],
   'University of Pennsylvania': [
     {
-      type: EssayType.WHY_US,
+      type: EssayType.WHY_SCHOOL,
       prompt:
         'How will you explore your intellectual and academic interests at the University of Pennsylvania?',
       promptZh: '你将如何在宾夕法尼亚大学探索你的学术兴趣？',
@@ -222,7 +222,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
       aiCategory: '学术',
     },
     {
-      type: EssayType.SUPPLEMENT,
+      type: EssayType.SUPPLEMENTAL,
       prompt:
         'At Penn, learning and growth happen outside of the classroom, too. How will you explore the community at Penn?',
       promptZh: '在宾大，学习和成长也发生在课堂之外。你将如何探索宾大的社区？',
@@ -234,7 +234,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
   ],
   'Duke University': [
     {
-      type: EssayType.WHY_US,
+      type: EssayType.WHY_SCHOOL,
       prompt:
         'What is your sense of Duke as a university and a community, and why do you consider it a good match for you?',
       promptZh:
@@ -245,7 +245,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
       aiCategory: '学术',
     },
     {
-      type: EssayType.SUPPLEMENT,
+      type: EssayType.SUPPLEMENTAL,
       prompt:
         "Duke's commitment to diversity and inclusion includes sexual orientation, gender identity, and gender expression. If you would like to share with us more about your identity, you can do so here.",
       promptZh:
@@ -258,7 +258,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
   ],
   'Northwestern University': [
     {
-      type: EssayType.WHY_US,
+      type: EssayType.WHY_SCHOOL,
       prompt: 'Why Northwestern?',
       promptZh: '为什么选择西北大学？',
       wordLimit: 300,
@@ -269,7 +269,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
   ],
   'California Institute of Technology': [
     {
-      type: EssayType.SUPPLEMENT,
+      type: EssayType.SUPPLEMENTAL,
       prompt:
         "Caltech's mission is to expand human knowledge and benefit society through research integrated with education. How do you hope to contribute to this mission?",
       promptZh:
@@ -280,7 +280,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
       aiCategory: '学术',
     },
     {
-      type: EssayType.SUPPLEMENT,
+      type: EssayType.SUPPLEMENTAL,
       prompt:
         'Describe three experiences and/or activities that have helped develop your passion for a possible career in a STEM field.',
       promptZh: '描述三个帮助你培养对STEM领域可能职业热情的经历和/或活动。',
@@ -292,7 +292,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
   ],
   'Brown University': [
     {
-      type: EssayType.SUPPLEMENT,
+      type: EssayType.SUPPLEMENTAL,
       prompt:
         "Brown's Open Curriculum allows students to explore broadly while also diving deep into their academic pursuits. Tell us about any academic interests that excite you.",
       promptZh:
@@ -303,7 +303,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
       aiCategory: '学术',
     },
     {
-      type: EssayType.SUPPLEMENT,
+      type: EssayType.SUPPLEMENTAL,
       prompt:
         'Brown students care deeply about their community. What kind of community do you hope to find at Brown?',
       promptZh: '布朗学生非常关心他们的社区。你希望在布朗找到什么样的社区？',
@@ -315,7 +315,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
   ],
   'Cornell University': [
     {
-      type: EssayType.WHY_US,
+      type: EssayType.WHY_SCHOOL,
       prompt:
         'Students in Arts and Sciences embrace the opportunity to delve into multifaceted academic interests. Tell us about the areas of study you are excited to explore.',
       promptZh:
@@ -328,7 +328,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
   ],
   'University of Chicago': [
     {
-      type: EssayType.SUPPLEMENT,
+      type: EssayType.SUPPLEMENTAL,
       prompt:
         'How does the University of Chicago, as you know it now, satisfy your desire for a particular kind of learning, community, and future?',
       promptZh:
@@ -339,7 +339,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
       aiCategory: '学术',
     },
     {
-      type: EssayType.SUPPLEMENT,
+      type: EssayType.SUPPLEMENTAL,
       prompt:
         'Extended Essay: Choose one of the six essay prompts. (Essay prompts change annually and are known for being creative and unconventional.)',
       promptZh:
@@ -352,7 +352,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
   ],
   'Johns Hopkins University': [
     {
-      type: EssayType.SUPPLEMENT,
+      type: EssayType.SUPPLEMENTAL,
       prompt:
         'Tell us about an aspect of your identity (e.g., race, gender, sexuality, religion, community) or a life experience that has shaped you as an individual.',
       promptZh:
@@ -365,7 +365,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
   ],
   'Rice University': [
     {
-      type: EssayType.WHY_US,
+      type: EssayType.WHY_SCHOOL,
       prompt:
         'Please explain why you wish to study in the academic areas you selected.',
       promptZh: '请解释你为什么希望学习你选择的学术领域。',
@@ -375,7 +375,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
       aiCategory: '学术',
     },
     {
-      type: EssayType.SUPPLEMENT,
+      type: EssayType.SUPPLEMENTAL,
       prompt:
         'The Rice/Baylor Medical Scholars program provides a unique opportunity for students interested in medicine. Please share why you are interested in this program.',
       promptZh:
@@ -388,7 +388,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
   ],
   'Vanderbilt University': [
     {
-      type: EssayType.WHY_US,
+      type: EssayType.WHY_SCHOOL,
       prompt:
         'Vanderbilt offers a community where students find balance between their academic and social experiences. Please briefly elaborate on how one of your extracurricular activities or work experiences has influenced you.',
       promptZh:
@@ -401,7 +401,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
   ],
   'University of Notre Dame': [
     {
-      type: EssayType.WHY_US,
+      type: EssayType.WHY_SCHOOL,
       prompt:
         'What excites you about the University of Notre Dame that makes it stand out from other institutions?',
       promptZh: '圣母大学有什么让你兴奋的地方，使它与其他学校不同？',
@@ -413,7 +413,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
   ],
   'Georgetown University': [
     {
-      type: EssayType.WHY_US,
+      type: EssayType.WHY_SCHOOL,
       prompt:
         'Please elaborate on any special talents, experiences, achievements, or personal characteristics you bring to Georgetown.',
       promptZh:
@@ -424,7 +424,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
       aiCategory: '个人成长',
     },
     {
-      type: EssayType.SUPPLEMENT,
+      type: EssayType.SUPPLEMENTAL,
       prompt:
         'Georgetown is a diverse community. Discuss how your own background, identity, skills, or talents might contribute to our community.',
       promptZh:
@@ -437,7 +437,7 @@ const SCHOOL_ESSAYS: Record<string, EssayData[]> = {
   ],
   'Carnegie Mellon University': [
     {
-      type: EssayType.WHY_US,
+      type: EssayType.WHY_SCHOOL,
       prompt:
         "Most students choose their intended major or area of study based on a passion or inspiration that's Search for meaning. Describe your interest in your intended major.",
       promptZh:

@@ -39,7 +39,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 @ApiTags('timeline')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@Controller('timeline')
+@Controller('timelines')
 export class TimelineController {
   constructor(private readonly timelineService: TimelineService) {}
 

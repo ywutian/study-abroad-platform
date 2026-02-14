@@ -161,7 +161,7 @@ export default function AssessmentPage() {
     refetch: refetchQuiz,
   } = useQuery<AssessmentDto>({
     queryKey: ['assessment', selectedType],
-    queryFn: () => apiClient.get(`/assessment/${selectedType}`),
+    queryFn: () => apiClient.get(`/assessments/${selectedType}`),
     enabled: !!selectedType && viewState === 'quiz',
     staleTime: 10 * 60_000,
   });
@@ -172,13 +172,13 @@ export default function AssessmentPage() {
     refetch: refetchHist,
   } = useQuery<AssessmentResultDto[]>({
     queryKey: ['assessment', 'history'],
-    queryFn: () => apiClient.get('/assessment/history/me'),
+    queryFn: () => apiClient.get('/assessments/history/me'),
     enabled: viewState === 'history',
     staleTime: 5 * 60_000,
   });
 
   const submitMut = useMutation<AssessmentResultDto, Error, SubmitAssessmentDto>({
-    mutationFn: (dto) => apiClient.post<AssessmentResultDto>('/assessment', dto),
+    mutationFn: (dto) => apiClient.post<AssessmentResultDto>('/assessments', dto),
     onSuccess: (data) => {
       setResult(data);
       setViewState('result');

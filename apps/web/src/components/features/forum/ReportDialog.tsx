@@ -39,11 +39,11 @@ export function ReportDialog({ open, onOpenChange, targetType, targetId }: Repor
     mutationFn: async () => {
       let endpoint = '';
       if (targetType === 'POST') {
-        endpoint = `/forum/posts/${targetId}/report`;
+        endpoint = `/forums/posts/${targetId}/report`;
       } else if (targetType === 'COMMENT') {
-        endpoint = `/forum/comments/${targetId}/report`;
+        endpoint = `/forums/comments/${targetId}/report`;
       } else {
-        endpoint = '/chat/report';
+        endpoint = '/chats/report';
       }
 
       return apiClient.post(endpoint, {

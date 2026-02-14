@@ -555,6 +555,17 @@ export class ProfileService {
   }
 
   /**
+   * Reorder activities by setting each activity's `order` field to its array index.
+   *
+   * Runs all updates in a Prisma transaction. Validates that every provided ID
+   * belongs to the current user's profile before applying -- rejects the entire
+   * request if any ID is invalid.
+   *
+   * @param userId - The user identifier
+   * @param activityIds - Ordered array of activity IDs defining the new order
+   * @throws {ForbiddenException} When any activity ID does not belong to the user
+   */
+  /**
    * 重新排序活动
    *
    * 安全设计：
@@ -697,6 +708,16 @@ export class ProfileService {
     return profile?.awards || [];
   }
 
+  /**
+   * Reorder awards by setting each award's `order` field to its array index.
+   *
+   * Uses the same ownership validation and transaction pattern as
+   * {@link reorderActivities}.
+   *
+   * @param userId - The user identifier
+   * @param awardIds - Ordered array of award IDs defining the new order
+   * @throws {ForbiddenException} When any award ID does not belong to the user
+   */
   /**
    * 重新排序奖项
    *
@@ -1023,21 +1044,24 @@ export class ProfileService {
   ) {
     const profileId = await this.getProfileId(userId);
 
-    // Delete existing target schools
-    await this.prisma.profileTargetSchool.deleteMany({
-      where: { profileId },
-    });
-
-    // Create new target schools
-    if (schoolIds.length > 0) {
-      await this.prisma.profileTargetSchool.createMany({
-        data: schoolIds.map((schoolId, index) => ({
-          profileId,
-          schoolId,
-          priority: priorities?.[schoolId] ?? index + 1,
-        })),
+    // Wrap delete + create in a transaction for atomicity
+    await this.prisma.$transaction(async (tx) => {
+      // Delete existing target schools
+      await tx.profileTargetSchool.deleteMany({
+        where: { profileId },
       });
-    }
+
+      // Create new target schools
+      if (schoolIds.length > 0) {
+        await tx.profileTargetSchool.createMany({
+          data: schoolIds.map((schoolId, index) => ({
+            profileId,
+            schoolId,
+            priority: priorities?.[schoolId] ?? index + 1,
+          })),
+        });
+      }
+    });
 
     const result = await this.getTargetSchools(userId);
 
@@ -1078,7 +1102,7 @@ export class ProfileService {
     this.recordTargetSchoolAddToMemory(
       userId,
       schoolId,
-      result.school?.name || result.school?.nameZh,
+      result.school?.name ?? result.school?.nameZh ?? undefined,
     ).catch((err) => {
       this.logger.warn('Failed to record target school add to memory', err);
     });
@@ -1110,6 +1134,15 @@ export class ProfileService {
   // ============================================
 
   /**
+   * Record a profile update event to the memory system as a FACT memory.
+   *
+   * Only records when meaningful fields changed (targetMajor, GPA, regionPref).
+   * No-ops if memoryManager is not available or no significant updates exist.
+   *
+   * @param userId - The user identifier
+   * @param data - The profile update DTO (used to detect which fields changed)
+   */
+  /**
    * 记录档案更新到记忆系统
    */
   private async recordProfileUpdateToMemory(
@@ -1139,6 +1172,12 @@ export class ProfileService {
   }
 
   /**
+   * Record a new test score to the memory system as a high-importance FACT memory (0.8).
+   *
+   * @param userId - The user identifier
+   * @param data - The test score creation DTO
+   */
+  /**
    * 记录考试成绩到记忆系统
    */
   private async recordTestScoreToMemory(
@@ -1161,6 +1200,12 @@ export class ProfileService {
     });
   }
 
+  /**
+   * Record a new activity to the memory system as a FACT memory.
+   *
+   * @param userId - The user identifier
+   * @param data - The activity creation DTO
+   */
   /**
    * 记录活动经历到记忆系统
    */
@@ -1187,6 +1232,12 @@ export class ProfileService {
   }
 
   /**
+   * Record a new award to the memory system as a FACT memory.
+   *
+   * @param userId - The user identifier
+   * @param data - The award creation DTO
+   */
+  /**
    * 记录奖项到记忆系统
    */
   private async recordAwardToMemory(
@@ -1208,6 +1259,12 @@ export class ProfileService {
     });
   }
 
+  /**
+   * Record a new education entry to the memory system as a FACT memory.
+   *
+   * @param userId - The user identifier
+   * @param data - The education creation DTO
+   */
   /**
    * 记录教育经历到记忆系统
    */
@@ -1233,6 +1290,13 @@ export class ProfileService {
   }
 
   /**
+   * Record a new essay creation to the memory system as a FACT memory.
+   *
+   * @param userId - The user identifier
+   * @param data - The essay creation DTO
+   * @param wordCount - The computed word count of the essay content
+   */
+  /**
    * 记录文书创建到记忆系统
    */
   private async recordEssayToMemory(
@@ -1256,6 +1320,14 @@ export class ProfileService {
     });
   }
 
+  /**
+   * Record a target school addition to the memory system as a PREFERENCE memory
+   * and upsert a SCHOOL entity in the memory graph.
+   *
+   * @param userId - The user identifier
+   * @param schoolId - The school ID being added
+   * @param schoolName - Optional school display name for the entity record
+   */
   /**
    * 记录添加目标校到记忆系统
    */
@@ -1290,6 +1362,12 @@ export class ProfileService {
   }
 
   /**
+   * Record a target school removal to the memory system as a DECISION memory.
+   *
+   * @param userId - The user identifier
+   * @param schoolId - The school ID being removed
+   */
+  /**
    * 记录移除目标校到记忆系统
    */
   private async recordTargetSchoolRemovalToMemory(
@@ -1310,6 +1388,14 @@ export class ProfileService {
     });
   }
 
+  /**
+   * Record a bulk target-school-list update to the memory system as a DECISION memory.
+   *
+   * Also upserts SCHOOL entities for each target school with priority metadata.
+   *
+   * @param userId - The user identifier
+   * @param targetSchools - The full list of new target school records with school relation
+   */
   /**
    * 记录设置目标校列表到记忆系统
    */
@@ -1350,6 +1436,22 @@ export class ProfileService {
     }
   }
 
+  /**
+   * Calculate a holistic profile grade (0-100) with strengths/weaknesses analysis.
+   *
+   * Scoring breakdown (base 50, max 100):
+   * - GPA: +15 (>=90th percentile) or +10 (>=75th percentile)
+   * - SAT: +10 (>=1400) or +5 (any score)
+   * - TOEFL: +5 (>=100)
+   * - Activities: +10 (>=5 activities) or +2 per activity
+   * - Awards: +10 (>=3 awards) or +3 per award
+   *
+   * Also returns an admission prediction label, improvement suggestions,
+   * recommended activities, a timeline, and projected improvement delta.
+   *
+   * @param userId - The user identifier
+   * @returns Comprehensive grade object with score, strengths, weaknesses, and action items
+   */
   /**
    * Calculate profile grade with scoring logic.
    * Extracted from controller for proper separation of concerns.

@@ -199,32 +199,47 @@ export class MemoryDecayService implements OnModuleInit {
 
       if (memories.length === 0) break;
 
+      // Batch updates to avoid N+1: compute all new importances first,
+      // then apply changed ones in a single transaction
+      const updates: { id: string; importance: number }[] = [];
+
       for (const memory of memories) {
+        processed++;
+
+        // 计算新鲜度
+        const freshness = this.scorer.getFreshness(memory.createdAt);
+
+        // 计算新的重要性 = 原重要性 × (1 - 衰减率 × (1 - 新鲜度))
+        // 新鲜度越低，衰减越快
+        const decayFactor = this.config.decayRate * (1 - freshness);
+        const newImportance = Math.max(
+          this.config.minImportance,
+          memory.importance * (1 - decayFactor),
+        );
+
+        // 只有当重要性变化显著时才更新
+        if (Math.abs(newImportance - memory.importance) > 0.001) {
+          updates.push({ id: memory.id, importance: newImportance });
+        }
+      }
+
+      if (updates.length > 0) {
         try {
-          processed++;
-
-          // 计算新鲜度
-          const freshness = this.scorer.getFreshness(memory.createdAt);
-
-          // 计算新的重要性 = 原重要性 × (1 - 衰减率 × (1 - 新鲜度))
-          // 新鲜度越低，衰减越快
-          const decayFactor = this.config.decayRate * (1 - freshness);
-          const newImportance = Math.max(
-            this.config.minImportance,
-            memory.importance * (1 - decayFactor),
+          await this.prisma.$transaction(
+            updates.map((u) =>
+              this.prisma.memory.update({
+                where: { id: u.id },
+                data: { importance: u.importance },
+              }),
+            ),
           );
-
-          // 只有当重要性变化显著时才更新
-          if (Math.abs(newImportance - memory.importance) > 0.001) {
-            await this.prisma.memory.update({
-              where: { id: memory.id },
-              data: { importance: newImportance },
-            });
-            decayed++;
-          }
+          decayed += updates.length;
         } catch (error) {
-          this.logger.error(`Failed to decay memory ${memory.id}`, error);
-          errors++;
+          this.logger.error(
+            `Failed to batch-decay ${updates.length} memories`,
+            error,
+          );
+          errors += updates.length;
         }
       }
 
@@ -265,7 +280,7 @@ export class MemoryDecayService implements OnModuleInit {
           AND (metadata IS NULL OR NOT (metadata ? 'archived'))
       `;
 
-      return { archived: result as number, errors: 0 };
+      return { archived: result, errors: 0 };
     } catch (error) {
       this.logger.error('Failed to archive memories', error);
       return { archived: 0, errors: 1 };

@@ -1,4 +1,11 @@
-import { Controller, Get, Put, Body, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Put,
+  Body,
+  Param,
+  BadRequestException,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -53,7 +60,19 @@ export class SettingsController {
   @Put()
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: '批量更新设置（管理员）' })
-  async updateMany(@Body() settings: Array<{ key: string; value: string }>) {
+  async updateMany(
+    @Body()
+    body:
+      | Array<{ key: string; value: string }>
+      | { settings: Array<{ key: string; value: string }> },
+  ) {
+    const settings = Array.isArray(body) ? body : body.settings;
+    if (!Array.isArray(settings)) {
+      throw new BadRequestException(
+        'Invalid payload: expected array or { settings: array }',
+      );
+    }
+
     await this.settingsService.setMany(settings);
     return { success: true };
   }

@@ -20,8 +20,11 @@ import {
   BookOpen,
   BarChart,
   Users,
+  Heart,
+  FileText,
   Loader2,
   Shield,
+  ArrowUpDown,
 } from 'lucide-react';
 import { useRouter } from '@/lib/i18n/navigation';
 
@@ -36,6 +39,7 @@ interface UserProfile {
   email: string;
   role: string;
   profile?: {
+    nickname?: string;
     targetMajor?: string;
     grade?: string;
     gpa?: number;
@@ -65,12 +69,10 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
   const { data: user, isLoading } = useQuery({
     queryKey: ['user-preview', userId],
     queryFn: async () => {
-      // 获取用户基本信息和档案
-      // apiClient 已自动解包 { success, data } -> data
       const [userData, following, followers] = await Promise.all([
-        apiClient.get<UserProfile>(`/hall/profiles/${userId}`),
-        apiClient.get<any[]>('/chat/following'),
-        apiClient.get<any[]>('/chat/followers'),
+        apiClient.get<UserProfile>(`/halls/profiles/${userId}`),
+        apiClient.get<any[]>('/chats/following'),
+        apiClient.get<any[]>('/chats/followers'),
       ]);
 
       return {
@@ -83,27 +85,29 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
   });
 
   const followMutation = useMutation({
-    mutationFn: () => apiClient.post(`/chat/follow/${userId}`),
+    mutationFn: () => apiClient.post(`/chats/follow/${userId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-preview', userId] });
       queryClient.invalidateQueries({ queryKey: ['following'] });
       queryClient.invalidateQueries({ queryKey: ['recommended-users'] });
       toast.success(t('followers.toast.followSuccess'));
     },
+    onError: (error: Error) => toast.error(error.message),
   });
 
   const unfollowMutation = useMutation({
-    mutationFn: () => apiClient.delete(`/chat/follow/${userId}`),
+    mutationFn: () => apiClient.delete(`/chats/follow/${userId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-preview', userId] });
       queryClient.invalidateQueries({ queryKey: ['following'] });
       toast.success(t('followers.toast.unfollowSuccess'));
     },
+    onError: (error: Error) => toast.error(error.message),
   });
 
   const isMutualFollow = user?.isFollowing && user?.isFollowedBy;
+  const displayName = user?.profile?.nickname || user?.email?.split('@')[0] || '';
 
-  // 计算档案完整度
   const calculateCompleteness = () => {
     if (!user?.profile) return 0;
     const counts = user.profile._count || {
@@ -127,11 +131,13 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
     router.push('/chat');
   };
 
+  const completeness = calculateCompleteness();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden">
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
+          <div className="flex items-center justify-center py-16">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         ) : user ? (
@@ -140,42 +146,40 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
               <DialogTitle>{t('followers.userProfile')}</DialogTitle>
             </DialogHeader>
 
-            <div className="space-y-6">
-              {/* 头部 - 头像和基本信息 */}
+            {/* Top gradient banner */}
+            <div className="h-20 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent" />
+
+            <div className="px-6 pb-6 -mt-10 space-y-5">
+              {/* Avatar & Name */}
               <div className="text-center space-y-3">
                 <div className="relative mx-auto w-fit">
-                  <Avatar className="h-20 w-20 border-4 border-background shadow-xl">
-                    <AvatarFallback
-                      className={cn(
-                        'text-2xl font-bold text-white',
-                        user.role === 'VERIFIED' ? 'bg-success' : 'bg-primary'
-                      )}
-                    >
-                      {user.email[0].toUpperCase()}
+                  <Avatar className="h-20 w-20 ring-4 ring-background shadow-lg">
+                    <AvatarFallback className="bg-gradient-to-br from-primary/80 to-primary text-2xl font-bold text-white">
+                      {(user.profile?.nickname?.[0] || user.email[0]).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   {user.role === 'VERIFIED' && (
-                    <div className="absolute -bottom-1 -right-1 bg-emerald-500 rounded-full p-1.5 shadow-lg">
+                    <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1 ring-2 ring-background">
                       <BadgeCheck className="h-4 w-4 text-white" />
                     </div>
                   )}
                 </div>
 
                 <div>
-                  <h3 className="text-xl font-bold">{user.email.split('@')[0]}</h3>
-                  <div className="flex items-center justify-center gap-2 mt-1">
+                  <h3 className="text-lg font-bold text-foreground">{displayName}</h3>
+                  <div className="flex items-center justify-center gap-2 mt-1.5">
                     {user.role === 'VERIFIED' && (
-                      <Badge variant="success" className="gap-1">
+                      <Badge variant="success" className="gap-1 text-[10px]">
                         <BadgeCheck className="h-3 w-3" />
                         {t('followers.verified')}
                       </Badge>
                     )}
                     {isMutualFollow && (
                       <Badge
-                        variant="outline"
-                        className="gap-1 text-emerald-600 border-emerald-500/30"
+                        variant="secondary"
+                        className="gap-1 text-[10px] bg-green-500/10 text-green-700 dark:text-green-400 border-0"
                       >
-                        <Users className="h-3 w-3" />
+                        <ArrowUpDown className="h-3 w-3" />
                         {t('followers.mutual')}
                       </Badge>
                     )}
@@ -183,63 +187,70 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
                 </div>
               </div>
 
-              {/* 统计数据 */}
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div className="space-y-1">
-                  <div className="text-2xl font-bold text-blue-600">
-                    {user._count?.followers || 0}
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-1 rounded-xl bg-muted/50 p-3">
+                {[
+                  {
+                    value: user._count?.followers || 0,
+                    label: t('followers.followers'),
+                    icon: Users,
+                    accent: 'text-primary',
+                  },
+                  {
+                    value: user._count?.following || 0,
+                    label: t('followers.following'),
+                    icon: Heart,
+                    accent: 'text-pink-600 dark:text-pink-400',
+                  },
+                  {
+                    value: user._count?.admissionCases || 0,
+                    label: t('followers.cases'),
+                    icon: FileText,
+                    accent: 'text-amber-600 dark:text-amber-400',
+                  },
+                ].map((stat) => (
+                  <div key={stat.label} className="text-center py-1">
+                    <div className={cn('text-xl font-bold', stat.accent)}>{stat.value}</div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5">{stat.label}</div>
                   </div>
-                  <div className="text-xs text-muted-foreground">{t('followers.followers')}</div>
-                </div>
-                <div className="space-y-1">
-                  <div className="text-2xl font-bold text-rose-600">
-                    {user._count?.following || 0}
-                  </div>
-                  <div className="text-xs text-muted-foreground">{t('followers.following')}</div>
-                </div>
-                <div className="space-y-1">
-                  <div className="text-2xl font-bold text-amber-600">
-                    {user._count?.admissionCases || 0}
-                  </div>
-                  <div className="text-xs text-muted-foreground">{t('followers.cases')}</div>
-                </div>
+                ))}
               </div>
 
-              {/* 档案信息 */}
+              {/* Profile details */}
               {user.profile && user.profile.visibility !== 'PRIVATE' && (
-                <div className="space-y-3 rounded-xl bg-muted/50 p-4">
+                <div className="space-y-3 rounded-xl bg-muted/30 border border-border p-4">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">
                       {t('followers.profileCompleteness')}
                     </span>
-                    <span className="font-medium">{calculateCompleteness()}%</span>
+                    <span className="font-medium text-foreground">{completeness}%</span>
                   </div>
-                  <Progress value={calculateCompleteness()} className="h-2" />
+                  <Progress value={completeness} className="h-1.5" />
 
-                  <div className="grid grid-cols-2 gap-3 pt-2">
+                  <div className="grid grid-cols-2 gap-2.5 pt-1">
                     {user.profile.targetMajor && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Target className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex items-center gap-2 text-sm text-foreground">
+                        <Target className="h-4 w-4 text-muted-foreground shrink-0" />
                         <span className="truncate">{user.profile.targetMajor}</span>
                       </div>
                     )}
                     {user.profile.grade && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <GraduationCap className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex items-center gap-2 text-sm text-foreground">
+                        <GraduationCap className="h-4 w-4 text-muted-foreground shrink-0" />
                         <span>{user.profile.grade}</span>
                       </div>
                     )}
                     {user.profile.gpa && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <BarChart className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex items-center gap-2 text-sm text-foreground">
+                        <BarChart className="h-4 w-4 text-muted-foreground shrink-0" />
                         <span>
                           GPA {user.profile.gpa}/{user.profile.gpaScale || 4.0}
                         </span>
                       </div>
                     )}
                     {user.profile._count && user.profile._count.activities > 0 && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <BookOpen className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex items-center gap-2 text-sm text-foreground">
+                        <BookOpen className="h-4 w-4 text-muted-foreground shrink-0" />
                         <span>
                           {t('followers.activities', { count: user.profile._count.activities })}
                         </span>
@@ -249,12 +260,12 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
                 </div>
               )}
 
-              {/* 操作按钮 */}
-              <div className="flex gap-3">
+              {/* Action buttons */}
+              <div className="flex gap-2.5">
                 {user.isFollowing ? (
                   <Button
                     variant="outline"
-                    className="flex-1"
+                    className="flex-1 h-10"
                     onClick={() => unfollowMutation.mutate()}
                     disabled={unfollowMutation.isPending}
                   >
@@ -269,7 +280,7 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
                   </Button>
                 ) : (
                   <Button
-                    className="flex-1 bg-primary hover:opacity-90"
+                    className="flex-1 h-10"
                     onClick={() => followMutation.mutate()}
                     disabled={followMutation.isPending}
                   >
@@ -285,7 +296,7 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
                 )}
 
                 {isMutualFollow && (
-                  <Button variant="outline" className="flex-1" onClick={handleStartChat}>
+                  <Button variant="outline" className="flex-1 h-10" onClick={handleStartChat}>
                     <MessageSquare className="h-4 w-4 mr-2" />
                     {t('followers.actions.sendMessage')}
                   </Button>
@@ -294,8 +305,10 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
             </div>
           </>
         ) : (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Shield className="h-12 w-12 text-muted-foreground mb-3" />
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted mb-3">
+              <Shield className="h-7 w-7 text-muted-foreground" />
+            </div>
             <p className="text-muted-foreground">{t('followers.loadError')}</p>
           </div>
         )}

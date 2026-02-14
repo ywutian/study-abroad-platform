@@ -36,7 +36,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { Role } from '@prisma/client';
 
 @ApiTags('forum')
-@Controller('forum')
+@Controller('forums')
 export class ForumController {
   constructor(private readonly forumService: ForumService) {}
 

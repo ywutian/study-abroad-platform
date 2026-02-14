@@ -51,7 +51,7 @@ export function ProfileSelector({ onSelect, selectedProfileId }: ProfileSelector
   const { data: profilesResponse, isLoading } = useQuery({
     queryKey: ['publicProfiles', search],
     queryFn: () =>
-      apiClient.get<{ data: PublicProfile[] }>('/hall/public-profiles', {
+      apiClient.get<{ data: PublicProfile[] }>('/halls/public-profiles', {
         params: search ? { search } : undefined,
       }),
   });

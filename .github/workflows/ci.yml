@@ -42,6 +42,10 @@ jobs:
       - name: Lint Web
         run: pnpm --filter web lint
 
+      - name: Lint Mobile
+        run: pnpm --filter mobile lint
+        continue-on-error: true
+
       - name: Check i18n (hardcoded text & key consistency)
         run: pnpm --filter web lint:i18n
 
@@ -83,6 +87,30 @@ jobs:
 
       - name: Type check Web
         run: pnpm --filter web exec tsc --noEmit
+
+      - name: Type check Mobile
+        run: pnpm --filter mobile exec tsc --noEmit
+        continue-on-error: true
+
+  mobile-check:
+    name: Mobile Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Type check Mobile
+        run: pnpm --filter mobile exec tsc --noEmit
 
   test:
     name: Unit Tests
@@ -135,6 +163,15 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout
@@ -175,6 +212,7 @@ jobs:
         timeout-minutes: 5
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_test?schema=public
+          REDIS_URL: redis://localhost:6379
           JWT_SECRET: test-secret-key-for-ci-e2e-testing
           JWT_REFRESH_SECRET: test-refresh-secret-key-for-ci
           JWT_EXPIRES_IN: 15m
@@ -262,6 +300,10 @@ jobs:
         run: pnpm --filter web build
         env:
           NEXT_PUBLIC_API_URL: ${{ vars.API_URL || 'http://localhost:3002' }}
+
+      - name: Type check Mobile
+        run: pnpm --filter mobile exec tsc --noEmit
+        continue-on-error: true
 
       - name: Upload API build
         uses: actions/upload-artifact@v4

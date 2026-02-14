@@ -40,7 +40,7 @@ export const hallKeys = {
 export function useSwipeCases(enabled: boolean) {
   return useQuery({
     queryKey: hallKeys.swipeCases(),
-    queryFn: () => apiClient.get<SwipeBatchResponse>('/hall/swipe/batch?count=10'),
+    queryFn: () => apiClient.get<SwipeBatchResponse>('/halls/swipe/batch?count=10'),
     enabled,
   });
 }
@@ -49,7 +49,7 @@ export function useSwipeCases(enabled: boolean) {
 export function useSwipeStats(enabled: boolean) {
   return useQuery({
     queryKey: hallKeys.swipeStats(),
-    queryFn: () => apiClient.get<SwipeStats>('/hall/swipe/stats'),
+    queryFn: () => apiClient.get<SwipeStats>('/halls/swipe/stats'),
     enabled,
   });
 }
@@ -58,7 +58,7 @@ export function useSwipeStats(enabled: boolean) {
 export function useLeaderboard(enabled: boolean) {
   return useQuery({
     queryKey: hallKeys.leaderboard(),
-    queryFn: () => apiClient.get<LeaderboardResponse>('/hall/swipe/leaderboard?limit=20'),
+    queryFn: () => apiClient.get<LeaderboardResponse>('/halls/swipe/leaderboard?limit=20'),
     enabled,
   });
 }
@@ -69,7 +69,7 @@ export function useSwipeMutation() {
 
   return useMutation({
     mutationFn: (data: { caseId: string; prediction: 'admit' | 'reject' | 'waitlist' }) =>
-      apiClient.post<SwipeResult>('/hall/swipe/predict', data),
+      apiClient.post<SwipeResult>('/halls/swipe/predict', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: hallKeys.swipeStats() });
       queryClient.invalidateQueries({ queryKey: hallKeys.leaderboard() });
@@ -87,7 +87,7 @@ export function useTargetRanking(enabled: boolean) {
     queryKey: hallKeys.targetRanking(),
     queryFn: () =>
       apiClient.get<{ rankings: RankingResult[]; totalTargetSchools: number }>(
-        '/hall/target-ranking'
+        '/halls/target-ranking'
       ),
     enabled,
   });
@@ -97,7 +97,7 @@ export function useTargetRanking(enabled: boolean) {
 export function useSchoolRanking(schoolIds: string[]) {
   return useQuery({
     queryKey: hallKeys.ranking(schoolIds),
-    queryFn: () => apiClient.post<{ rankings: RankingResult[] }>('/hall/ranking', { schoolIds }),
+    queryFn: () => apiClient.post<{ rankings: RankingResult[] }>('/halls/ranking', { schoolIds }),
     enabled: false, // 手动触发
   });
 }
@@ -106,7 +106,7 @@ export function useSchoolRanking(schoolIds: string[]) {
 export function useAiAnalysis() {
   return useMutation({
     mutationFn: (schoolId: string) =>
-      apiClient.post<AiAnalysisResult>('/hall/ranking-analysis', { schoolId }),
+      apiClient.post<AiAnalysisResult>('/halls/ranking-analysis', { schoolId }),
   });
 }
 
@@ -139,7 +139,7 @@ export function useSubmitReview() {
       awardComment?: string;
       tags?: string[];
       status?: 'DRAFT' | 'PUBLISHED';
-    }) => apiClient.post('/hall/reviews', data),
+    }) => apiClient.post('/halls/reviews', data),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: hallKeys.publicLists() });
       queryClient.invalidateQueries({ queryKey: reviewKeys.reviews(variables.profileUserId) });
@@ -153,7 +153,7 @@ export function useSubmitReview() {
 export function useReviews(profileUserId: string, enabled = true) {
   return useQuery({
     queryKey: reviewKeys.reviews(profileUserId),
-    queryFn: () => apiClient.get(`/hall/reviews/${profileUserId}`),
+    queryFn: () => apiClient.get(`/halls/reviews/${profileUserId}`),
     enabled: !!profileUserId && enabled,
   });
 }
@@ -162,7 +162,7 @@ export function useReviews(profileUserId: string, enabled = true) {
 export function useReviewStats(profileUserId: string, enabled = true) {
   return useQuery({
     queryKey: reviewKeys.reviewStats(profileUserId),
-    queryFn: () => apiClient.get(`/hall/reviews/${profileUserId}/stats`),
+    queryFn: () => apiClient.get(`/halls/reviews/${profileUserId}/stats`),
     enabled: !!profileUserId && enabled,
   });
 }
@@ -173,7 +173,7 @@ export function useReactToReview() {
 
   return useMutation({
     mutationFn: (data: { reviewId: string; type: 'helpful' | 'insightful' }) =>
-      apiClient.post(`/hall/reviews/${data.reviewId}/react`, { type: data.type }),
+      apiClient.post(`/halls/reviews/${data.reviewId}/react`, { type: data.type }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: hallKeys.all });
     },
@@ -188,7 +188,7 @@ export function useReactToReview() {
 export function usePublicLists(enabled: boolean) {
   return useQuery({
     queryKey: hallKeys.publicLists(),
-    queryFn: () => apiClient.get<{ items: any[] }>('/hall/lists'),
+    queryFn: () => apiClient.get<{ items: any[] }>('/halls/lists'),
     enabled,
   });
 }

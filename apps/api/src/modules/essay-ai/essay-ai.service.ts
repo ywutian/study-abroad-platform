@@ -20,13 +20,10 @@ import {
   EssayBrainstormResponseDto,
 } from './dto';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
-import { POINTS_ENABLED } from '@study-abroad/shared';
-
-const POINTS_COST = {
-  polish: 20,
-  review: 30,
-  brainstorm: 15,
-};
+import {
+  CaseIncentiveService,
+  PointAction,
+} from '../case/case-incentive.service';
 
 @Injectable()
 export class EssayAiService {
@@ -35,6 +32,7 @@ export class EssayAiService {
   constructor(
     private prisma: PrismaService,
     private aiService: AiService,
+    private caseIncentiveService: CaseIncentiveService,
     @Optional()
     @Inject(forwardRef(() => MemoryManagerService))
     private memoryManager?: MemoryManagerService,
@@ -48,8 +46,7 @@ export class EssayAiService {
     dto: EssayPolishRequestDto,
   ): Promise<EssayPolishResponseDto> {
     // 检查积分
-    if (POINTS_ENABLED)
-      await this.checkAndDeductPoints(userId, POINTS_COST.polish);
+    await this.caseIncentiveService.charge(userId, PointAction.AI_ESSAY_POLISH);
 
     // 获取文书
     const essay = await this.prisma.essay.findUnique({
@@ -104,7 +101,9 @@ export class EssayAiService {
       return response;
     } catch (error) {
       // 退还积分
-      if (POINTS_ENABLED) await this.refundPoints(userId, POINTS_COST.polish);
+      await this.caseIncentiveService
+        .refund(userId, PointAction.AI_ESSAY_POLISH)
+        .catch(() => {});
       throw error;
     }
   }
@@ -116,8 +115,7 @@ export class EssayAiService {
     userId: string,
     dto: EssayReviewRequestDto,
   ): Promise<EssayReviewResponseDto> {
-    if (POINTS_ENABLED)
-      await this.checkAndDeductPoints(userId, POINTS_COST.review);
+    await this.caseIncentiveService.charge(userId, PointAction.AI_ESSAY_REVIEW);
 
     const essay = await this.prisma.essay.findUnique({
       where: { id: dto.essayId },
@@ -206,7 +204,9 @@ ${dto.major ? `目标专业：${dto.major}` : ''}
 
       return response;
     } catch (error) {
-      if (POINTS_ENABLED) await this.refundPoints(userId, POINTS_COST.review);
+      await this.caseIncentiveService
+        .refund(userId, PointAction.AI_ESSAY_REVIEW)
+        .catch(() => {});
       this.logger.error('Essay review failed', error);
       throw new BadRequestException('Failed to review essay');
     }
@@ -349,8 +349,10 @@ ${dto.major ? `目标专业：${dto.major}` : ''}
     userId: string,
     dto: EssayBrainstormRequestDto,
   ): Promise<EssayBrainstormResponseDto> {
-    if (POINTS_ENABLED)
-      await this.checkAndDeductPoints(userId, POINTS_COST.brainstorm);
+    await this.caseIncentiveService.charge(
+      userId,
+      PointAction.AI_ESSAY_BRAINSTORM,
+    );
 
     const systemPrompt = `你是一位资深留学文书顾问，擅长帮助学生挖掘独特的故事和角度。
 
@@ -406,8 +408,9 @@ ${dto.background ? `\n学生背景：${dto.background}` : ''}`;
 
       return response;
     } catch (error) {
-      if (POINTS_ENABLED)
-        await this.refundPoints(userId, POINTS_COST.brainstorm);
+      await this.caseIncentiveService
+        .refund(userId, PointAction.AI_ESSAY_BRAINSTORM)
+        .catch(() => {});
       this.logger.error('Brainstorm failed', error);
       throw new BadRequestException('Failed to generate ideas');
     }
@@ -444,50 +447,6 @@ ${dto.background ? `\n学生背景：${dto.background}` : ''}`;
   }
 
   // ============ Helper Methods ============
-
-  private async checkAndDeductPoints(
-    userId: string,
-    points: number,
-  ): Promise<void> {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { points: true },
-    });
-
-    if (!user || user.points < points) {
-      throw new BadRequestException(`积分不足，需要 ${points} 积分`);
-    }
-
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { points: { decrement: points } },
-    });
-
-    await this.prisma.pointHistory.create({
-      data: {
-        userId,
-        action: 'AI_ESSAY_SERVICE',
-        points: -points,
-        metadata: { service: 'essay-ai' },
-      },
-    });
-  }
-
-  private async refundPoints(userId: string, points: number): Promise<void> {
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { points: { increment: points } },
-    });
-
-    await this.prisma.pointHistory.create({
-      data: {
-        userId,
-        action: 'AI_ESSAY_REFUND',
-        points: points,
-        metadata: { reason: 'service_error' },
-      },
-    });
-  }
 
   private estimateTokens(text: string): number {
     // 粗略估算：中文约2字符/token，英文约4字符/token
@@ -754,14 +713,17 @@ ${dto.background ? `\n学生背景：${dto.background}` : ''}`;
     caseId: string,
     schoolName?: string,
   ) {
-    const GALLERY_POINTS_COST = 20;
-    if (POINTS_ENABLED)
-      await this.checkAndDeductPoints(userId, GALLERY_POINTS_COST);
+    await this.caseIncentiveService.charge(
+      userId,
+      PointAction.AI_ESSAY_GALLERY,
+    );
 
     const essay = await this.getGalleryEssayDetail(caseId);
 
     if (!essay.content) {
-      if (POINTS_ENABLED) await this.refundPoints(userId, GALLERY_POINTS_COST);
+      await this.caseIncentiveService
+        .refund(userId, PointAction.AI_ESSAY_GALLERY)
+        .catch(() => {});
       throw new BadRequestException('Essay content is empty');
     }
 
@@ -778,7 +740,9 @@ ${dto.background ? `\n学生背景：${dto.background}` : ''}`;
         tokenUsed: this.estimateTokens(essay.content),
       };
     } catch (error) {
-      if (POINTS_ENABLED) await this.refundPoints(userId, GALLERY_POINTS_COST);
+      await this.caseIncentiveService
+        .refund(userId, PointAction.AI_ESSAY_GALLERY)
+        .catch(() => {});
       this.logger.error('Gallery essay analysis failed', error);
       throw new BadRequestException('Failed to analyze essay');
     }

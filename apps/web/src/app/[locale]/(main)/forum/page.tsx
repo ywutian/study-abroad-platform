@@ -305,13 +305,13 @@ export default function ForumPage() {
     const fetchData = async () => {
       try {
         const [categoriesRes, statsRes] = await Promise.all([
-          api.get<Category[]>('/forum/categories'),
+          api.get<Category[]>('/forums/categories'),
           api.get<{
             postCount: number;
             userCount: number;
             teamingCount: number;
             activeToday: number;
-          }>('/forum/stats'),
+          }>('/forums/stats'),
         ]);
         if (categoriesRes && categoriesRes.length > 0) {
           setCategories(categoriesRes);
@@ -353,7 +353,7 @@ export default function ForumPage() {
         if (postTag) params.append('postTag', postTag);
 
         const res = await api.get<{ posts: Post[]; total: number; hasMore: boolean }>(
-          `/forum/posts?${params.toString()}`
+          `/forums/posts?${params.toString()}`
         );
         if (res && res.posts) {
           setPosts(reset ? res.posts : [...posts, ...res.posts]);
@@ -406,7 +406,7 @@ export default function ForumPage() {
         payload.requirements = formRequirements;
       }
 
-      const res = await api.post<Post>('/forum/posts', payload);
+      const res = await api.post<Post>('/forums/posts', payload);
       if (res && res.id) {
         setShowCreateDialog(false);
         resetForm();
@@ -441,7 +441,7 @@ export default function ForumPage() {
   const handleLike = async (postId: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
     try {
-      const res = await api.post<{ liked: boolean }>(`/forum/posts/${postId}/like`);
+      const res = await api.post<{ liked: boolean }>(`/forums/posts/${postId}/like`);
       if (res) {
         const updatePost = (p: Post) =>
           p.id === postId
@@ -479,7 +479,7 @@ export default function ForumPage() {
     setShowPostDetail(post as PostDetailResponse);
     setLoadingComments(true);
     try {
-      const res = await api.get<PostDetailResponse>(`/forum/posts/${post.id}`);
+      const res = await api.get<PostDetailResponse>(`/forums/posts/${post.id}`);
       if (res && res.id) {
         setShowPostDetail(res);
         setComments(res.comments || []);
@@ -496,7 +496,7 @@ export default function ForumPage() {
   const handlePostComment = async () => {
     if (!commentContent.trim() || !showPostDetail) return;
     try {
-      const res = await api.post<Comment>(`/forum/posts/${showPostDetail.id}/comments`, {
+      const res = await api.post<Comment>(`/forums/posts/${showPostDetail.id}/comments`, {
         content: commentContent,
       });
       if (res && res.id) {
@@ -521,7 +521,7 @@ export default function ForumPage() {
   const handleApply = async (postId: string) => {
     if (!applicationMessage.trim()) return;
     try {
-      await api.post(`/forum/posts/${postId}/apply`, { message: applicationMessage });
+      await api.post(`/forums/posts/${postId}/apply`, { message: applicationMessage });
       setApplicationMessage('');
     } catch (_error) {
       console.error('Failed to apply:', _error);
@@ -530,7 +530,7 @@ export default function ForumPage() {
 
   const handleApplication = async (appId: string, action: 'accept' | 'reject') => {
     try {
-      await api.post(`/forum/applications/${appId}/review`, {
+      await api.post(`/forums/applications/${appId}/review`, {
         status: action === 'accept' ? 'ACCEPTED' : 'REJECTED',
       });
     } catch {}

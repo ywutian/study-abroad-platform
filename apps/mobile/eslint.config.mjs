@@ -40,6 +40,9 @@ export default [
       'react-native': reactNativePlugin,
     },
     rules: {
+      // Disable base rule in TS files; use TS-aware variant below.
+      'no-unused-vars': 'off',
+
       // TypeScript rules
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
@@ -83,7 +86,6 @@ export default [
     ],
   },
 ];
-
 
 
 

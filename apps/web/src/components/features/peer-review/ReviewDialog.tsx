@@ -56,7 +56,7 @@ export function ReviewDialog({
   const requestMutation = useMutation({
     mutationFn: async () => {
       if (!targetUser) throw new Error('No target user');
-      return apiClient.post(`/peer-review/request/${targetUser.id}`, {
+      return apiClient.post(`/peer-reviews/request/${targetUser.id}`, {
         isAnonymous,
       });
     },
@@ -74,7 +74,7 @@ export function ReviewDialog({
   const submitMutation = useMutation({
     mutationFn: async () => {
       if (!reviewId) throw new Error('No review ID');
-      return apiClient.post(`/peer-review/${reviewId}/submit`, {
+      return apiClient.post(`/peer-reviews/${reviewId}/submit`, {
         profileScore,
         helpfulScore,
         responseScore,

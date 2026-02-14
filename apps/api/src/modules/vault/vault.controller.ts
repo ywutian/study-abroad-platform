@@ -8,6 +8,9 @@ import {
   Param,
   Query,
   UseGuards,
+  HttpCode,
+  HttpStatus,
+  UnauthorizedException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -15,6 +18,7 @@ import {
   ApiOperation,
   ApiResponse,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { VaultService } from './vault.service';
 import {
   CreateVaultItemDto,
@@ -28,13 +32,18 @@ import {
 import { CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { UserService } from '../user/user.service';
+import * as bcrypt from 'bcrypt';
 
 @ApiTags('vault')
-@Controller('vault')
+@Controller('vaults')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class VaultController {
-  constructor(private readonly vaultService: VaultService) {}
+  constructor(
+    private readonly vaultService: VaultService,
+    private readonly userService: UserService,
+  ) {}
 
   // ============================================
   // CRUD Operations
@@ -82,6 +91,32 @@ export class VaultController {
         Math.min(Math.max(len, 8), 64),
       ),
     };
+  }
+
+  @Post('export/all')
+  @Throttle({ default: { limit: 1, ttl: 60000 } })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary:
+      'Export all vault items with decrypted data (requires password confirmation)',
+  })
+  @ApiResponse({ status: 200, type: [VaultItemDetailDto] })
+  async exportAll(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: { password: string },
+  ): Promise<VaultItemDetailDto[]> {
+    // Re-confirm password before exporting sensitive data
+    const fullUser = await this.userService.findByIdOrThrow(user.id);
+    const isPasswordValid = await bcrypt.compare(
+      body.password,
+      fullUser.passwordHash,
+    );
+    if (!isPasswordValid) {
+      throw new UnauthorizedException(
+        'Invalid password. Please re-enter your password to export vault data.',
+      );
+    }
+    return this.vaultService.exportAll(user.id);
   }
 
   @Get(':id')
@@ -133,15 +168,6 @@ export class VaultController {
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<{ count: number }> {
     return this.vaultService.deleteAll(user.id);
-  }
-
-  @Get('export/all')
-  @ApiOperation({ summary: 'Export all vault items with decrypted data' })
-  @ApiResponse({ status: 200, type: [VaultItemDetailDto] })
-  async exportAll(
-    @CurrentUser() user: CurrentUserPayload,
-  ): Promise<VaultItemDetailDto[]> {
-    return this.vaultService.exportAll(user.id);
   }
 
   @Post('import')

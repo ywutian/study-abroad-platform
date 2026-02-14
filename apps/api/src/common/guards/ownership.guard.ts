@@ -55,7 +55,7 @@ export class OwnershipGuard implements CanActivate {
       this.logger.warn(
         `OwnershipGuard: param "${idParam}" not found in request`,
       );
-      return true;
+      return false;
     }
 
     const prismaModel = (this.prisma as unknown as Record<string, unknown>)[
@@ -66,7 +66,7 @@ export class OwnershipGuard implements CanActivate {
       typeof (prismaModel as Record<string, unknown>).findUnique !== 'function'
     ) {
       this.logger.error(`OwnershipGuard: model "${model}" not found in Prisma`);
-      return true;
+      return false;
     }
 
     const resource = await (

@@ -3,10 +3,12 @@ import {
   Get,
   Post,
   Delete,
+  Param,
   Body,
   Headers,
   Req,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -36,7 +38,7 @@ export class SubscriptionController {
   @Get('plans/:planId')
   @Public()
   @ApiOperation({ summary: 'Get plan details' })
-  getPlan(planId: SubscriptionPlan) {
+  getPlan(@Param('planId') planId: SubscriptionPlan) {
     return this.subscriptionService.getPlan(planId);
   }
 
@@ -78,6 +80,7 @@ export class SubscriptionController {
 
   @Post('webhook')
   @Public()
+  @Throttle({ default: { limit: 100, ttl: 60000 } })
   @ApiOperation({ summary: 'Payment webhook endpoint' })
   async handleWebhook(
     @Req() req: express.Request & { rawBody?: Buffer },

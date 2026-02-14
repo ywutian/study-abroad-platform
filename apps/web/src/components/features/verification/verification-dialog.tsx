@@ -76,7 +76,7 @@ export function VerificationDialog({
 
   const submitMutation = useMutation({
     mutationFn: async (data: { caseId: string; proofType: string; proofData: string }) => {
-      return apiClient.post('/verification', data);
+      return apiClient.post('/verifications', data);
     },
     onSuccess: () => {
       toast.success(t('verification.submitSuccess'));

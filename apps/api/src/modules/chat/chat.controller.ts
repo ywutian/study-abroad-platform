@@ -28,7 +28,7 @@ import { StartConversationDto, CreateReportDto } from './dto';
 
 @ApiTags('chat')
 @ApiBearerAuth()
-@Controller('chat')
+@Controller('chats')
 export class ChatController {
   constructor(
     private readonly chatService: ChatService,

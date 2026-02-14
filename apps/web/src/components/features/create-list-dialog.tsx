@@ -74,7 +74,7 @@ export function CreateListDialog({ open, onOpenChange }: CreateListDialogProps) 
       category: string;
       isPublic: boolean;
       items: unknown[];
-    }) => apiClient.post('/hall/lists', data),
+    }) => apiClient.post('/halls/lists', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['publicLists'] });
       queryClient.invalidateQueries({ queryKey: ['myLists'] });

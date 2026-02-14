@@ -3,12 +3,15 @@ import { SubscriptionService } from './subscription.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { EmailService } from '../../common/email/email.service';
+import { SettingsService } from '../settings/settings.service';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { SubscriptionPlan, SUBSCRIPTION_PLANS } from '@study-abroad/shared';
+import * as crypto from 'crypto';
 
 describe('SubscriptionService', () => {
   let service: SubscriptionService;
   let prismaService: PrismaService;
+  const webhookSecret = 'test-webhook-secret';
 
   const mockUserId = 'user-123';
 
@@ -66,7 +69,22 @@ describe('SubscriptionService', () => {
         {
           provide: ConfigService,
           useValue: {
-            get: jest.fn().mockReturnValue('test-value'),
+            get: jest.fn((key: string) => {
+              if (key === 'WEBHOOK_SECRET') return webhookSecret;
+              if (key === 'NODE_ENV') return 'test';
+              return 'test-value';
+            }),
+          },
+        },
+        {
+          provide: SettingsService,
+          useValue: {
+            get: jest.fn().mockResolvedValue(null),
+            getTyped: jest
+              .fn()
+              .mockImplementation((_key: string, defaultValue: any) =>
+                Promise.resolve(defaultValue),
+              ),
           },
         },
         {
@@ -88,13 +106,19 @@ describe('SubscriptionService', () => {
     jest.clearAllMocks();
   });
 
+  const signWebhookPayload = (payload: Record<string, any>) =>
+    crypto
+      .createHmac('sha256', webhookSecret)
+      .update(JSON.stringify(payload))
+      .digest('hex');
+
   // ============================================
   // Plans Tests
   // ============================================
 
   describe('getPlans', () => {
-    it('should return all subscription plans', () => {
-      const plans = service.getPlans();
+    it('should return all subscription plans', async () => {
+      const plans = await service.getPlans();
 
       expect(plans).toHaveLength(3);
       expect(plans.map((p) => p.id)).toEqual([
@@ -104,8 +128,8 @@ describe('SubscriptionService', () => {
       ]);
     });
 
-    it('should have correct free plan details', () => {
-      const plans = service.getPlans();
+    it('should have correct free plan details', async () => {
+      const plans = await service.getPlans();
       const freePlan = plans.find((p) => p.id === SubscriptionPlan.FREE);
 
       expect(freePlan?.price).toBe(
@@ -117,8 +141,8 @@ describe('SubscriptionService', () => {
       expect(freePlan?.features.length).toBeGreaterThan(0);
     });
 
-    it('should have correct pro plan details', () => {
-      const plans = service.getPlans();
+    it('should have correct pro plan details', async () => {
+      const plans = await service.getPlans();
       const proPlan = plans.find((p) => p.id === SubscriptionPlan.PRO);
 
       expect(proPlan?.price).toBe(
@@ -134,17 +158,17 @@ describe('SubscriptionService', () => {
   });
 
   describe('getPlan', () => {
-    it('should return specific plan details', () => {
-      const plan = service.getPlan(SubscriptionPlan.PRO);
+    it('should return specific plan details', async () => {
+      const plan = await service.getPlan(SubscriptionPlan.PRO);
 
       expect(plan.id).toBe(SubscriptionPlan.PRO);
       expect(plan.name).toBe('专业版');
     });
 
-    it('should throw NotFoundException for invalid plan', () => {
-      expect(() => service.getPlan('INVALID' as SubscriptionPlan)).toThrow(
-        NotFoundException,
-      );
+    it('should throw NotFoundException for invalid plan', async () => {
+      await expect(
+        service.getPlan('INVALID' as SubscriptionPlan),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -435,6 +459,11 @@ describe('SubscriptionService', () => {
 
   describe('handlePaymentWebhook', () => {
     it('should handle payment success event', async () => {
+      const payload = {
+        type: 'payment.success',
+        id: 'evt-1',
+        transactionId: 'txn_123',
+      };
       const pendingPayment = { ...mockPayment, status: 'PENDING' };
       (prismaService.payment.findFirst as jest.Mock)
         .mockResolvedValueOnce(null) // idempotency check
@@ -446,16 +475,19 @@ describe('SubscriptionService', () => {
       (prismaService.user.update as jest.Mock).mockResolvedValue(mockUser);
 
       await expect(
-        service.handlePaymentWebhook(
-          { type: 'payment.success', id: 'evt-1', transactionId: 'txn_123' },
-          'signature',
-        ),
+        service.handlePaymentWebhook(payload, signWebhookPayload(payload)),
       ).resolves.not.toThrow();
 
       expect(mockTransaction).toHaveBeenCalled();
     });
 
     it('should handle payment failed event', async () => {
+      const payload = {
+        type: 'payment.failed',
+        id: 'evt-2',
+        transactionId: 'txn_123',
+        reason: 'Insufficient funds',
+      };
       const pendingPayment = { ...mockPayment, status: 'PENDING' };
       (prismaService.payment.findFirst as jest.Mock)
         .mockResolvedValueOnce(null) // idempotency check
@@ -466,15 +498,7 @@ describe('SubscriptionService', () => {
       });
 
       await expect(
-        service.handlePaymentWebhook(
-          {
-            type: 'payment.failed',
-            id: 'evt-2',
-            transactionId: 'txn_123',
-            reason: 'Insufficient funds',
-          },
-          'signature',
-        ),
+        service.handlePaymentWebhook(payload, signWebhookPayload(payload)),
       ).resolves.not.toThrow();
 
       expect(prismaService.payment.update).toHaveBeenCalledWith(
@@ -488,18 +512,16 @@ describe('SubscriptionService', () => {
     });
 
     it('should skip already processed webhooks (idempotency)', async () => {
+      const payload = {
+        type: 'payment.success',
+        id: 'evt-duplicate',
+        transactionId: 'txn_123',
+      };
       (prismaService.payment.findFirst as jest.Mock).mockResolvedValueOnce({
         id: 'existing-payment',
       });
 
-      await service.handlePaymentWebhook(
-        {
-          type: 'payment.success',
-          id: 'evt-duplicate',
-          transactionId: 'txn_123',
-        },
-        'signature',
-      );
+      await service.handlePaymentWebhook(payload, signWebhookPayload(payload));
 
       // Should only call findFirst once (idempotency check) and not proceed
       expect(prismaService.payment.findFirst).toHaveBeenCalledTimes(1);
@@ -507,14 +529,20 @@ describe('SubscriptionService', () => {
     });
 
     it('should handle unknown event types', async () => {
+      const payload = { type: 'unknown.event' };
       (prismaService.payment.findFirst as jest.Mock).mockResolvedValue(null);
 
       await expect(
-        service.handlePaymentWebhook({ type: 'unknown.event' }, 'signature'),
+        service.handlePaymentWebhook(payload, signWebhookPayload(payload)),
       ).resolves.not.toThrow();
     });
 
     it('should handle payment refund event', async () => {
+      const payload = {
+        type: 'payment.refunded',
+        id: 'evt-3',
+        transactionId: 'txn_123',
+      };
       const successPayment = { ...mockPayment, status: 'SUCCESS' };
       (prismaService.payment.findFirst as jest.Mock)
         .mockResolvedValueOnce(null) // idempotency check
@@ -525,10 +553,7 @@ describe('SubscriptionService', () => {
       });
       (prismaService.user.update as jest.Mock).mockResolvedValue(mockUser);
 
-      await service.handlePaymentWebhook(
-        { type: 'payment.refunded', id: 'evt-3', transactionId: 'txn_123' },
-        'signature',
-      );
+      await service.handlePaymentWebhook(payload, signWebhookPayload(payload));
 
       expect(mockTransaction).toHaveBeenCalled();
     });

@@ -28,10 +28,24 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule, { logger: logLevel });
 
-  // CORS configuration - restrict origins in production via CORS_ORIGINS env var
+  // CORS configuration [A5-004]
+  // Production REQUIRES CORS_ORIGINS to be set; development falls back to allow-all
   const corsOrigins = process.env.CORS_ORIGINS;
+  const isProductionEnv = process.env.NODE_ENV === 'production';
+
+  if (!corsOrigins && isProductionEnv) {
+    throw new Error(
+      'FATAL: CORS_ORIGINS must be set in production. ' +
+        'Example: CORS_ORIGINS=https://app.example.com,https://admin.example.com',
+    );
+  }
+
   app.enableCors({
-    origin: corsOrigins ? corsOrigins.split(',').map((o) => o.trim()) : true,
+    origin: corsOrigins
+      ? corsOrigins.split(',').map((o) => o.trim())
+      : isProductionEnv
+        ? false
+        : true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: [

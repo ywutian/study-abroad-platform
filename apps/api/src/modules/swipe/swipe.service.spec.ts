@@ -2,6 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SwipeService } from './swipe.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
+import { CaseIncentiveService } from '../case/case-incentive.service';
+import { PointsConfigService } from '../case/points-config.service';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { Prisma, Visibility } from '@prisma/client';
 import { SwipePrediction } from './dto';
@@ -111,6 +113,21 @@ describe('SwipeService', () => {
           provide: MemoryManagerService,
           useValue: {
             remember: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: CaseIncentiveService,
+          useValue: {
+            adjustPoints: jest.fn().mockResolvedValue({
+              success: true,
+              newBalance: 0,
+            }),
+          },
+        },
+        {
+          provide: PointsConfigService,
+          useValue: {
+            getPointValue: jest.fn().mockResolvedValue(5),
           },
         },
       ],

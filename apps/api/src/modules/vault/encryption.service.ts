@@ -21,16 +21,17 @@ export class EncryptionService {
     const nodeEnv = this.configService.get<string>('NODE_ENV');
 
     if (!envKey) {
-      // In production, warn but use a derived key (allow deployment to proceed)
+      // [A5-005] Production MUST have VAULT_ENCRYPTION_KEY — fail fast
       if (nodeEnv === 'production') {
-        this.logger.error(
-          'VAULT_ENCRYPTION_KEY not set in production! Using fallback key - please set this variable!',
-        );
-      } else {
-        this.logger.warn(
-          'VAULT_ENCRYPTION_KEY not set! Using insecure default key for development only.',
+        throw new Error(
+          'FATAL: VAULT_ENCRYPTION_KEY is not set in production. ' +
+            'Vault encryption cannot use a fallback key in production. ' +
+            'Generate with: openssl rand -hex 32',
         );
       }
+      this.logger.warn(
+        'VAULT_ENCRYPTION_KEY not set! Using insecure default key for development only.',
+      );
       this.masterKey = crypto.scryptSync(
         'fallback-key-please-set-env',
         'vault-salt-v1',

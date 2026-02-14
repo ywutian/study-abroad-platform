@@ -241,7 +241,7 @@ export default function FindCollegePage() {
 
       // 自动生成时间线
       try {
-        await apiClient.post('/timeline/generate', { schoolIds });
+        await apiClient.post('/timelines/generate', { schoolIds });
         queryClient.invalidateQueries({ queryKey: ['timelines'] });
         toast.success(t('batchAddSuccess', { count: successCount }), {
           description: t('timelineGenerated'),

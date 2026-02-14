@@ -127,6 +127,7 @@ export class AuthController {
     return {
       user: result.user,
       accessToken: result.tokens.accessToken,
+      isNewUser: result.isNewUser,
       // 安全：不在响应体中返回 refreshToken
     };
   }
@@ -211,6 +212,7 @@ export class AuthController {
 
   @Get('verify-email')
   @Public()
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @ApiOperation({ summary: 'Verify email' })
   async verifyEmail(@Query('token') token: string) {
     return this.authService.verifyEmail(token);
@@ -218,6 +220,7 @@ export class AuthController {
 
   @Post('resend-verification')
   @Public()
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Resend verification email' })
   async resendVerification(@Body() data: ResendVerificationDto) {
@@ -226,6 +229,7 @@ export class AuthController {
 
   @Post('forgot-password')
   @Public()
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Request password reset' })
   async forgotPassword(@Body() data: ForgotPasswordDto) {

@@ -55,7 +55,20 @@ import {
   UserCheck,
   Trash2,
   Loader2,
+  Ban,
+  ShieldOff,
 } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 
 interface User {
   id: string;
@@ -64,6 +77,9 @@ interface User {
   emailVerified: boolean;
   locale: string;
   createdAt: string;
+  isBanned?: boolean;
+  bannedUntil?: string | null;
+  banReason?: string | null;
   _count: {
     admissionCases: number;
     reviewsGiven: number;
@@ -80,6 +96,11 @@ export default function AdminUsersPage() {
   const [page, setPage] = useState(1);
   const pageSize = 20;
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
+  const [userToBan, setUserToBan] = useState<User | null>(null);
+  const [banReason, setBanReason] = useState('');
+  const [banDuration, setBanDuration] = useState(24);
+  const [banPermanent, setBanPermanent] = useState(false);
+  const [userToUnban, setUserToUnban] = useState<string | null>(null);
 
   const { data: usersData, isLoading } = useQuery({
     queryKey: ['adminUsers', userSearch, userRoleFilter, page],
@@ -112,6 +133,43 @@ export default function AdminUsersPage() {
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
       setUserToDelete(null);
       toast.success(t('toast.userDeleted'));
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const banUserMutation = useMutation({
+    mutationFn: ({
+      userId,
+      reason,
+      durationHours,
+      permanent,
+    }: {
+      userId: string;
+      reason: string;
+      durationHours?: number;
+      permanent?: boolean;
+    }) => apiClient.post(`/admin/users/${userId}/ban`, { reason, durationHours, permanent }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+      setUserToBan(null);
+      setBanReason('');
+      setBanDuration(24);
+      setBanPermanent(false);
+      toast.success(t('ban.userBanned'));
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const unbanUserMutation = useMutation({
+    mutationFn: (userId: string) => apiClient.post(`/admin/users/${userId}/unban`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+      setUserToUnban(null);
+      toast.success(t('ban.userUnbanned'));
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -183,6 +241,7 @@ export default function AdminUsersPage() {
                       <TableHead>{t('users.email')}</TableHead>
                       <TableHead>{t('users.role')}</TableHead>
                       <TableHead>{t('users.status')}</TableHead>
+                      <TableHead>{t('ban.banUser')}</TableHead>
                       <TableHead>
                         {t('users.cases')}/{t('users.reviews')}
                       </TableHead>
@@ -212,6 +271,18 @@ export default function AdminUsersPage() {
                             <Badge variant="outline" className="gap-1">
                               <XCircle className="h-3 w-3 text-amber-500" />
                               {t('users.notVerified')}
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {u.isBanned ? (
+                            <Badge variant="destructive" className="gap-1">
+                              <Ban className="h-3 w-3" />
+                              {t('ban.banned')}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-muted-foreground">
+                              —
                             </Badge>
                           )}
                         </TableCell>
@@ -247,6 +318,24 @@ export default function AdminUsersPage() {
                                 <Users className="mr-2 h-4 w-4" />
                                 {t('users.setUser')}
                               </DropdownMenuItem>
+                              {u.isBanned ? (
+                                <DropdownMenuItem
+                                  onClick={() => setUserToUnban(u.id)}
+                                  disabled={u.role === 'ADMIN'}
+                                >
+                                  <ShieldOff className="mr-2 h-4 w-4" />
+                                  {t('ban.unbanUser')}
+                                </DropdownMenuItem>
+                              ) : (
+                                <DropdownMenuItem
+                                  onClick={() => setUserToBan(u)}
+                                  className="text-destructive focus:text-destructive"
+                                  disabled={u.role === 'ADMIN'}
+                                >
+                                  <Ban className="mr-2 h-4 w-4" />
+                                  {t('ban.banUser')}
+                                </DropdownMenuItem>
+                              )}
                               <DropdownMenuItem
                                 onClick={() => setUserToDelete(u.id)}
                                 className="text-destructive focus:text-destructive"
@@ -296,6 +385,82 @@ export default function AdminUsersPage() {
             >
               {deleteUserMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t('dialogs.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Ban User Dialog */}
+      <Dialog open={!!userToBan} onOpenChange={() => setUserToBan(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('ban.banUser')}</DialogTitle>
+            <DialogDescription>{t('ban.banDesc')}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>{t('ban.reason')}</Label>
+              <Textarea
+                placeholder={t('ban.reasonPlaceholder')}
+                value={banReason}
+                onChange={(e) => setBanReason(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label>{t('ban.permanent')}</Label>
+              <Switch checked={banPermanent} onCheckedChange={setBanPermanent} />
+            </div>
+            {!banPermanent && (
+              <div className="space-y-2">
+                <Label>
+                  {t('ban.duration')} ({t('ban.hours')})
+                </Label>
+                <Input
+                  type="number"
+                  min={1}
+                  value={banDuration}
+                  onChange={(e) => setBanDuration(Number(e.target.value))}
+                />
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setUserToBan(null)}>
+              {t('dialogs.cancel')}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (userToBan) {
+                  banUserMutation.mutate({
+                    userId: userToBan.id,
+                    reason: banReason,
+                    durationHours: banPermanent ? undefined : banDuration,
+                    permanent: banPermanent,
+                  });
+                }
+              }}
+              disabled={banUserMutation.isPending}
+            >
+              {banUserMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {t('ban.banConfirm')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Unban User Dialog */}
+      <AlertDialog open={!!userToUnban} onOpenChange={() => setUserToUnban(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('ban.unbanUser')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('ban.unbanDesc')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('dialogs.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={() => userToUnban && unbanUserMutation.mutate(userToUnban)}>
+              {unbanUserMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {t('ban.unbanConfirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

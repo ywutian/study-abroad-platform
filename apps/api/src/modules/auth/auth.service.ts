@@ -11,6 +11,9 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserService } from '../user/user.service';
 import { EmailService } from '../../common/email/email.service';
+import { SessionManager } from './session-manager.service';
+import { BruteForceService } from './brute-force.service';
+import { CaseIncentiveService } from '../case/case-incentive.service';
 import { User } from '@prisma/client';
 import { randomBytes } from 'crypto';
 
@@ -23,6 +26,7 @@ interface RegisterDto {
   email: string;
   password: string;
   locale?: string;
+  referralCode?: string;
 }
 
 interface LoginDto {
@@ -40,6 +44,9 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private emailService: EmailService,
+    private sessionManager: SessionManager,
+    private bruteForceService: BruteForceService,
+    private caseIncentiveService: CaseIncentiveService,
   ) {}
 
   /**
@@ -63,13 +70,45 @@ export class AuthService {
     // Generate email verification token
     const emailVerifyToken = randomBytes(32).toString('hex');
 
+    // Validate referral code if provided
+    let referredById: string | undefined;
+    if (data.referralCode) {
+      referredById =
+        (await this.userService.validateReferralCode(data.referralCode)) ??
+        undefined;
+      if (!referredById) {
+        this.logger.warn(
+          `Invalid referral code used during registration: ${data.referralCode}`,
+        );
+        // Don't block registration for invalid referral code, just ignore it
+      }
+    }
+
     // Create user
-    const user = await this.userService.create({
+    const createData: any = {
       email: data.email,
       passwordHash,
       emailVerifyToken,
       locale: data.locale || 'zh',
-    });
+    };
+
+    if (referredById) {
+      createData.referredBy = { connect: { id: referredById } };
+    }
+
+    const user = await this.userService.create(createData);
+
+    // Award referral points to the referrer (async, non-blocking)
+    if (referredById) {
+      this.caseIncentiveService
+        .rewardReferral(referredById, user.id)
+        .catch((err) => {
+          this.logger.error(
+            `Failed to award referral points for referrer ${referredById}`,
+            err,
+          );
+        });
+    }
 
     // 发送验证邮件 (异步，不阻塞注册流程)
     this.emailService
@@ -95,12 +134,24 @@ export class AuthService {
    * @throws {UnauthorizedException} When the credentials are invalid or the user is deleted
    * @returns The authenticated user (without password hash) and access/refresh tokens
    */
-  async login(
-    data: LoginDto,
-  ): Promise<{ user: Omit<User, 'passwordHash'>; tokens: AuthTokens }> {
+  async login(data: LoginDto): Promise<{
+    user: Omit<User, 'passwordHash'>;
+    tokens: AuthTokens;
+    isNewUser: boolean;
+  }> {
+    // [A5-002] Check brute-force lockout before processing credentials
+    const locked = await this.bruteForceService.isLocked(data.email);
+    if (locked) {
+      throw new UnauthorizedException(
+        'Too many login attempts. Please try again later.',
+      );
+    }
+
     const user = await this.userService.findByEmail(data.email);
 
     if (!user || user.deletedAt) {
+      // Record failed attempt even for non-existent users (consistent timing)
+      await this.bruteForceService.recordFailedAttempt(data.email);
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -109,14 +160,34 @@ export class AuthService {
       user.passwordHash,
     );
     if (!isPasswordValid) {
+      await this.bruteForceService.recordFailedAttempt(data.email);
       throw new UnauthorizedException('Invalid credentials');
     }
+
+    // Successful login — reset brute-force counter
+    await this.bruteForceService.resetAttempts(data.email);
+
+    // [A5-014] Block login for unverified email accounts
+    if (!user.emailVerified) {
+      throw new UnauthorizedException(
+        'Please verify your email before logging in. Check your inbox for a verification link.',
+      );
+    }
+
+    // Detect first login (isNewUser) before updating lastLoginAt
+    const isNewUser = user.lastLoginAt === null;
 
     // Generate tokens
     const tokens = await this.generateTokens(user);
 
+    // Update lastLoginAt
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() },
+    });
+
     const { passwordHash: _, ...result } = user;
-    return { user: result, tokens };
+    return { user: result, tokens, isNewUser };
   }
 
   /**
@@ -157,14 +228,10 @@ export class AuthService {
    */
   async logout(userId: string, refreshToken?: string): Promise<void> {
     if (refreshToken) {
-      await this.prisma.refreshToken.deleteMany({
-        where: { token: refreshToken },
-      });
+      await this.sessionManager.invalidateToken(refreshToken);
     } else {
-      // Delete all refresh tokens for user
-      await this.prisma.refreshToken.deleteMany({
-        where: { userId },
-      });
+      // Revoke all sessions for the user
+      await this.sessionManager.invalidateAllSessions(userId);
     }
   }
 
@@ -312,10 +379,8 @@ export class AuthService {
       },
     });
 
-    // Invalidate all refresh tokens
-    await this.prisma.refreshToken.deleteMany({
-      where: { userId: user.id },
-    });
+    // Invalidate all sessions after credential change
+    await this.sessionManager.invalidateAllSessions(user.id);
 
     return { message: 'Password reset successful' };
   }
@@ -349,6 +414,9 @@ export class AuthService {
       where: { id: userId },
       data: { passwordHash },
     });
+
+    // Invalidate all sessions after credential change [A5-001]
+    await this.sessionManager.invalidateAllSessions(userId);
 
     return { message: 'Password changed successfully' };
   }
@@ -385,6 +453,19 @@ export class AuthService {
       }
     } else {
       expiresAt.setDate(expiresAt.getDate() + 7); // Default 7 days
+    }
+
+    // Enforce session limit (max 5 concurrent sessions) [CV9-G03]
+    const existingTokens = await this.prisma.refreshToken.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: 'asc' },
+    });
+    if (existingTokens.length >= 5) {
+      // Remove oldest sessions to make room
+      const tokensToDelete = existingTokens.slice(0, existingTokens.length - 4);
+      await this.prisma.refreshToken.deleteMany({
+        where: { id: { in: tokensToDelete.map((t) => t.id) } },
+      });
     }
 
     // Store refresh token

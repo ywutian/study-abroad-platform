@@ -40,7 +40,7 @@ export interface GenerateRecommendationDto {
 export function useRecommendationPreflight() {
   return useQuery<RecommendationPreflight>({
     queryKey: recommendationKeys.preflight(),
-    queryFn: () => apiClient.get('/recommendation/preflight'),
+    queryFn: () => apiClient.get('/recommendations/preflight'),
     staleTime: 60 * 1000,
   });
 }
@@ -50,7 +50,7 @@ export function useGenerateRecommendation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (dto: GenerateRecommendationDto) =>
-      apiClient.post<RecommendationResult>('/recommendation', dto),
+      apiClient.post<RecommendationResult>('/recommendations', dto),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: recommendationKeys.history(),
@@ -66,7 +66,7 @@ export function useGenerateRecommendation() {
 export function useRecommendationHistory(enabled: boolean) {
   return useQuery<RecommendationResult[]>({
     queryKey: recommendationKeys.history(),
-    queryFn: () => apiClient.get('/recommendation/history'),
+    queryFn: () => apiClient.get('/recommendations/history'),
     enabled,
     staleTime: 5 * 60 * 1000,
   });
@@ -76,7 +76,7 @@ export function useRecommendationHistory(enabled: boolean) {
 export function useDeleteRecommendation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/recommendation/${id}`),
+    mutationFn: (id: string) => apiClient.delete(`/recommendations/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: recommendationKeys.history(),

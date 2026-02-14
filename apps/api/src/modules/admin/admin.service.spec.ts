@@ -37,6 +37,22 @@ describe('AdminService', () => {
             review: {
               count: jest.fn(),
             },
+            forumPost: {
+              count: jest.fn(),
+            },
+            conversation: {
+              count: jest.fn(),
+            },
+            message: {
+              count: jest.fn(),
+            },
+            verificationRequest: {
+              count: jest.fn(),
+            },
+            payment: {
+              aggregate: jest.fn(),
+              count: jest.fn(),
+            },
             auditLog: {
               create: jest.fn(),
               findMany: jest.fn(),
@@ -82,10 +98,25 @@ describe('AdminService', () => {
     it('should return correct stats', async () => {
       (prisma.user.count as jest.Mock)
         .mockResolvedValueOnce(100) // totalUsers
-        .mockResolvedValueOnce(50); // verifiedUsers
+        .mockResolvedValueOnce(50) // verifiedUsers
+        .mockResolvedValueOnce(8) // newUsersToday
+        .mockResolvedValueOnce(21) // newUsersThisWeek
+        .mockResolvedValueOnce(17) // activeUsersToday
+        .mockResolvedValueOnce(3) // bannedUsers
+        .mockResolvedValueOnce(40) // freeUsers
+        .mockResolvedValueOnce(50) // proUsers
+        .mockResolvedValueOnce(10); // adminUsers
       (prisma.admissionCase.count as jest.Mock).mockResolvedValue(30);
       (prisma.report.count as jest.Mock).mockResolvedValue(5);
       (prisma.review.count as jest.Mock).mockResolvedValue(200);
+      (prisma.forumPost.count as jest.Mock).mockResolvedValue(120);
+      (prisma.conversation.count as jest.Mock).mockResolvedValue(45);
+      (prisma.message.count as jest.Mock).mockResolvedValue(560);
+      (prisma.verificationRequest.count as jest.Mock).mockResolvedValue(7);
+      (prisma.payment.aggregate as jest.Mock)
+        .mockResolvedValueOnce({ _sum: { amount: 10000 } })
+        .mockResolvedValueOnce({ _sum: { amount: 2500 } });
+      (prisma.payment.count as jest.Mock).mockResolvedValue(2);
 
       const result = await service.getStats();
 
@@ -95,6 +126,20 @@ describe('AdminService', () => {
         totalCases: 30,
         pendingReports: 5,
         totalReviews: 200,
+        newUsersToday: 8,
+        newUsersThisWeek: 21,
+        activeUsersToday: 17,
+        bannedUsers: 3,
+        totalRevenue: 10000,
+        monthlyRevenue: 2500,
+        pendingPayments: 2,
+        totalForumPosts: 120,
+        totalConversations: 45,
+        totalMessages: 560,
+        pendingVerifications: 7,
+        freeUsers: 40,
+        proUsers: 50,
+        premiumUsers: 10,
       });
     });
   });

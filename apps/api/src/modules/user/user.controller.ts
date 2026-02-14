@@ -13,78 +13,9 @@ import {
   CaseIncentiveService,
   PointAction,
 } from '../case/case-incentive.service';
+import { PointsConfigService } from '../case/points-config.service';
 import { CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
-
-// 积分规则说明
-const POINT_RULES = [
-  {
-    action: 'SUBMIT_CASE',
-    points: 50,
-    description: '提交录取案例',
-    type: 'earn',
-  },
-  {
-    action: 'CASE_VERIFIED',
-    points: 100,
-    description: '案例通过验证',
-    type: 'earn',
-  },
-  {
-    action: 'CASE_HELPFUL',
-    points: 10,
-    description: '案例被标记有帮助',
-    type: 'earn',
-  },
-  {
-    action: 'COMPLETE_PROFILE',
-    points: 30,
-    description: '完善个人档案',
-    type: 'earn',
-  },
-  {
-    action: 'REFER_USER',
-    points: 50,
-    description: '成功邀请新用户',
-    type: 'earn',
-  },
-  {
-    action: 'VERIFICATION_APPROVED',
-    points: 100,
-    description: '身份认证通过',
-    type: 'earn',
-  },
-  {
-    action: 'VIEW_CASE_DETAIL',
-    points: -20,
-    description: '查看案例详情',
-    type: 'spend',
-  },
-  {
-    action: 'AI_ANALYSIS',
-    points: -30,
-    description: 'AI智能分析',
-    type: 'spend',
-  },
-  {
-    action: 'MESSAGE_VERIFIED',
-    points: -10,
-    description: '私信认证用户',
-    type: 'spend',
-  },
-  {
-    action: 'ESSAY_POLISH',
-    points: -20,
-    description: '文书润色服务',
-    type: 'spend',
-  },
-  {
-    action: 'ESSAY_REVIEW',
-    points: -30,
-    description: '文书评审服务',
-    type: 'spend',
-  },
-];
 
 @ApiTags('users')
 @ApiBearerAuth()
@@ -94,6 +25,7 @@ export class UserController {
     private readonly userService: UserService,
     private readonly dashboardService: DashboardService,
     private readonly caseIncentiveService: CaseIncentiveService,
+    private readonly pointsConfigService: PointsConfigService,
   ) {}
 
   @Get('me/dashboard')
@@ -166,9 +98,10 @@ export class UserController {
       limit ? parseInt(limit, 10) : 20,
     );
 
-    // 为每条记录添加中文描述
+    // 为每条记录添加中文描述（从动态配置读取）
+    const rules = await this.pointsConfigService.getAllRules();
     const enrichedHistory = history.map((item) => {
-      const rule = POINT_RULES.find((r) => r.action === item.action);
+      const rule = rules.find((r) => r.action === item.action);
       return {
         ...item,
         description: rule?.description || item.action,
@@ -182,10 +115,38 @@ export class UserController {
   @Get('me/points/rules')
   @ApiOperation({ summary: '获取积分规则说明' })
   async getPointRules() {
+    const rules = await this.pointsConfigService.getAllRules();
     return {
-      earn: POINT_RULES.filter((r) => r.type === 'earn'),
-      spend: POINT_RULES.filter((r) => r.type === 'spend'),
+      earn: rules.filter((r) => r.type === 'earn'),
+      spend: rules.filter((r) => r.type === 'spend'),
     };
+  }
+
+  // ============ Referral System API ============
+
+  @Get('me/referral')
+  @ApiOperation({ summary: 'Get or generate referral code and stats' })
+  @ApiResponse({ status: 200, description: 'Referral code and statistics' })
+  async getReferral(@CurrentUser() user: CurrentUserPayload) {
+    const [referralCode, stats] = await Promise.all([
+      this.userService.getOrCreateReferralCode(user.id),
+      this.userService.getReferralStats(user.id),
+    ]);
+
+    const baseUrl = process.env.WEB_URL || 'https://studyabroad.example.com';
+    return {
+      referralCode,
+      referralLink: `${baseUrl}/register?ref=${referralCode}`,
+      referralCount: stats.referralCount,
+      totalPointsEarned: stats.totalPointsEarned,
+    };
+  }
+
+  @Get('me/referrals')
+  @ApiOperation({ summary: 'List users referred by current user' })
+  @ApiResponse({ status: 200, description: 'List of referred users' })
+  async getReferralList(@CurrentUser() user: CurrentUserPayload) {
+    return this.userService.getReferralList(user.id);
   }
 
   @Get('me/points/summary')

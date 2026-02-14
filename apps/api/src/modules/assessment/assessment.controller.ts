@@ -27,7 +27,7 @@ import type { CurrentUserPayload } from '../../common/decorators';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 
 @ApiTags('assessment')
-@Controller('assessment')
+@Controller('assessments')
 export class AssessmentController {
   constructor(private readonly assessmentService: AssessmentService) {}
 

@@ -160,42 +160,42 @@ export default function TimelinePage() {
 
   const { data: overview, isLoading: overviewLoading } = useQuery<TimelineOverview>({
     queryKey: ['timeline-overview'],
-    queryFn: () => apiClient.get('/timeline/overview'),
+    queryFn: () => apiClient.get('/timelines/overview'),
   });
 
   const { data: timelines = [], isLoading: timelinesLoading } = useQuery<TimelineResponse[]>({
     queryKey: ['timelines'],
-    queryFn: () => apiClient.get('/timeline'),
+    queryFn: () => apiClient.get('/timelines'),
   });
 
   const { data: globalEvents = [] } = useQuery<GlobalEvent[]>({
     queryKey: ['global-events'],
-    queryFn: () => apiClient.get('/timeline/global-events'),
+    queryFn: () => apiClient.get('/timelines/global-events'),
   });
 
   const { data: personalEvents = [], isLoading: personalLoading } = useQuery<
     PersonalEventResponse[]
   >({
     queryKey: ['personal-events'],
-    queryFn: () => apiClient.get('/timeline/personal-events'),
+    queryFn: () => apiClient.get('/timelines/personal-events'),
   });
 
   const { data: timelineDetail } = useQuery<TimelineDetail>({
     queryKey: ['timeline-detail', expandedTimeline],
-    queryFn: () => apiClient.get(`/timeline/${expandedTimeline}`),
+    queryFn: () => apiClient.get(`/timelines/${expandedTimeline}`),
     enabled: !!expandedTimeline,
   });
 
   const { data: personalEventDetail } = useQuery<PersonalEventDetail>({
     queryKey: ['personal-event-detail', expandedPersonalEvent],
-    queryFn: () => apiClient.get(`/timeline/personal-events/${expandedPersonalEvent}`),
+    queryFn: () => apiClient.get(`/timelines/personal-events/${expandedPersonalEvent}`),
     enabled: !!expandedPersonalEvent,
   });
 
   // ============ Mutations ============
 
   const toggleTaskMutation = useMutation({
-    mutationFn: (taskId: string) => apiClient.post(`/timeline/tasks/${taskId}/toggle`),
+    mutationFn: (taskId: string) => apiClient.post(`/timelines/tasks/${taskId}/toggle`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['timeline-detail', expandedTimeline] });
       queryClient.invalidateQueries({ queryKey: ['timelines'] });
@@ -204,7 +204,7 @@ export default function TimelinePage() {
   });
 
   const deleteTimelineMutation = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/timeline/${id}`),
+    mutationFn: (id: string) => apiClient.delete(`/timelines/${id}`),
     onSuccess: () => {
       toast.success(t('deleteSuccess'));
       queryClient.invalidateQueries({ queryKey: ['timelines'] });
@@ -214,7 +214,7 @@ export default function TimelinePage() {
   });
 
   const togglePersonalTaskMutation = useMutation({
-    mutationFn: (taskId: string) => apiClient.post(`/timeline/personal-tasks/${taskId}/toggle`),
+    mutationFn: (taskId: string) => apiClient.post(`/timelines/personal-tasks/${taskId}/toggle`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['personal-event-detail', expandedPersonalEvent] });
       queryClient.invalidateQueries({ queryKey: ['personal-events'] });
@@ -223,7 +223,7 @@ export default function TimelinePage() {
   });
 
   const createPersonalEventMutation = useMutation({
-    mutationFn: (data: typeof newEvent) => apiClient.post('/timeline/personal-events', data),
+    mutationFn: (data: typeof newEvent) => apiClient.post('/timelines/personal-events', data),
     onSuccess: () => {
       toast.success(t('personalEvents.createSuccess'));
       queryClient.invalidateQueries({ queryKey: ['personal-events'] });
@@ -241,7 +241,7 @@ export default function TimelinePage() {
 
   const subscribeGlobalEventMutation = useMutation({
     mutationFn: (globalEventId: string) =>
-      apiClient.post('/timeline/personal-events/subscribe', { globalEventId }),
+      apiClient.post('/timelines/personal-events/subscribe', { globalEventId }),
     onSuccess: () => {
       toast.success(t('personalEvents.subscribed'));
       queryClient.invalidateQueries({ queryKey: ['personal-events'] });
@@ -253,7 +253,7 @@ export default function TimelinePage() {
   });
 
   const deletePersonalEventMutation = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/timeline/personal-events/${id}`),
+    mutationFn: (id: string) => apiClient.delete(`/timelines/personal-events/${id}`),
     onSuccess: () => {
       toast.success(t('deleteSuccess'));
       queryClient.invalidateQueries({ queryKey: ['personal-events'] });

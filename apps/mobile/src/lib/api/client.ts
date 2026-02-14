@@ -6,7 +6,7 @@ import {
 } from '../storage/secure-store';
 import type { ApiError } from '@/types';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3002';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3001';
 const API_VERSION = '/api/v1';
 
 interface RequestConfig extends RequestInit {

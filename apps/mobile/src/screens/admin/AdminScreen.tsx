@@ -4,7 +4,7 @@
  * 功能：用户管理、举报处理、数据统计、学校数据同步
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -83,6 +83,7 @@ export default function AdminScreen() {
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
+  const isAdmin = user?.role === 'ADMIN';
 
   const [activeTab, setActiveTab] = useState<'overview' | 'reports' | 'users'>('overview');
   const [refreshing, setRefreshing] = useState(false);
@@ -90,11 +91,11 @@ export default function AdminScreen() {
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  // Redirect if not admin
-  if (user?.role !== 'ADMIN') {
-    router.replace('/(tabs)/profile');
-    return null;
-  }
+  useEffect(() => {
+    if (!isAdmin) {
+      router.replace('/(tabs)/profile');
+    }
+  }, [isAdmin]);
 
   // ==================== Queries ====================
 
@@ -105,6 +106,7 @@ export default function AdminScreen() {
   } = useQuery({
     queryKey: ['adminStats'],
     queryFn: () => apiClient.get<AdminStats>('/admin/stats'),
+    enabled: isAdmin,
   });
 
   const {
@@ -117,6 +119,7 @@ export default function AdminScreen() {
       apiClient.get<{ items: Report[]; total: number }>('/admin/reports', {
         params: { status: 'PENDING' },
       }),
+    enabled: isAdmin,
   });
 
   const {
@@ -129,6 +132,7 @@ export default function AdminScreen() {
       apiClient.get<{ items: User[]; total: number }>('/admin/users', {
         params: userSearch ? { search: userSearch } : {},
       }),
+    enabled: isAdmin,
   });
 
   // ==================== Mutations ====================
@@ -179,10 +183,17 @@ export default function AdminScreen() {
   // ==================== Handlers ====================
 
   const onRefresh = useCallback(async () => {
+    if (!isAdmin) {
+      return;
+    }
     setRefreshing(true);
     await Promise.all([refetchStats(), refetchReports(), refetchUsers()]);
     setRefreshing(false);
-  }, [refetchStats, refetchReports, refetchUsers]);
+  }, [isAdmin, refetchStats, refetchReports, refetchUsers]);
+
+  if (!isAdmin) {
+    return null;
+  }
 
   const handleDeleteUser = (userId: string) => {
     Alert.alert(t('admin.dialogs.deleteConfirmTitle'), t('admin.dialogs.deleteConfirmDesc'), [

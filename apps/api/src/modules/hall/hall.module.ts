@@ -1,6 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { HallService } from './hall.service';
 import { HallController } from './hall.controller';
+import { HallAdminController } from './hall-admin.controller';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { AiAgentModule } from '../ai-agent/ai-agent.module';
 import { AiModule } from '../ai/ai.module';
@@ -15,7 +16,7 @@ import { SchoolListModule } from '../school-list/school-list.module';
     SwipeModule,
     SchoolListModule,
   ],
-  controllers: [HallController],
+  controllers: [HallController, HallAdminController],
   providers: [HallService],
   exports: [HallService],
 })

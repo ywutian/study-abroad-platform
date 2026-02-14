@@ -210,12 +210,12 @@ export default function ForumPage() {
 
   const { data: categories } = useQuery<CategoryDto[]>({
     queryKey: keys.categories,
-    queryFn: () => apiClient.get<CategoryDto[]>('/forum/categories'),
+    queryFn: () => apiClient.get<CategoryDto[]>('/forums/categories'),
   });
 
   const { data: stats } = useQuery<ForumStats>({
     queryKey: keys.stats,
-    queryFn: () => apiClient.get<ForumStats>('/forum/stats'),
+    queryFn: () => apiClient.get<ForumStats>('/forums/stats'),
   });
 
   const {
@@ -225,13 +225,13 @@ export default function ForumPage() {
     refetch,
   } = useQuery<PostsResponse>({
     queryKey: keys.posts(queryParams),
-    queryFn: () => apiClient.get<PostsResponse>('/forum/posts', { params: queryParams }),
+    queryFn: () => apiClient.get<PostsResponse>('/forums/posts', { params: queryParams }),
   });
 
   // ---- Mutations ----
 
   const createPost = useMutation<PostDto, Error, CreatePostDto>({
-    mutationFn: (dto) => apiClient.post<PostDto>('/forum/posts', dto),
+    mutationFn: (dto) => apiClient.post<PostDto>('/forums/posts', dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forum'] });
       setCreateModalVisible(false);

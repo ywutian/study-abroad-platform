@@ -207,7 +207,7 @@ export default function RecommendationPage() {
     refetch: refetchPreflight,
   } = useQuery<RecommendationPreflight>({
     queryKey: recommendationKeys.preflight(),
-    queryFn: () => apiClient.get('/recommendation/preflight'),
+    queryFn: () => apiClient.get('/recommendations/preflight'),
     staleTime: 60_000,
   });
 
@@ -217,7 +217,7 @@ export default function RecommendationPage() {
     refetch: refetchHistory,
   } = useQuery<RecommendationResult[]>({
     queryKey: recommendationKeys.history(),
-    queryFn: () => apiClient.get('/recommendation/history'),
+    queryFn: () => apiClient.get('/recommendations/history'),
     enabled: activeTab === 'history',
     staleTime: 5 * 60_000,
   });
@@ -225,7 +225,7 @@ export default function RecommendationPage() {
   // ─── Mutation ──────────────────────────────────────────
 
   const generateMutation = useMutation<RecommendationResult, Error, GenerateRecommendationDto>({
-    mutationFn: (dto) => apiClient.post<RecommendationResult>('/recommendation', dto),
+    mutationFn: (dto) => apiClient.post<RecommendationResult>('/recommendations', dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: recommendationKeys.history() });
       queryClient.invalidateQueries({ queryKey: recommendationKeys.preflight() });

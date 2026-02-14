@@ -15,9 +15,10 @@ import {
   RecommendedSchoolDto,
   RecommendationAnalysisDto,
 } from './dto';
-import { POINTS_ENABLED } from '@study-abroad/shared';
-
-const POINTS_COST = 25;
+import {
+  CaseIncentiveService,
+  PointAction,
+} from '../case/case-incentive.service';
 
 @Injectable()
 export class RecommendationService {
@@ -26,6 +27,7 @@ export class RecommendationService {
   constructor(
     private prisma: PrismaService,
     private aiService: AiService,
+    private caseIncentiveService: CaseIncentiveService,
     @Optional() private memoryManager?: MemoryManagerService,
   ) {}
 
@@ -37,7 +39,10 @@ export class RecommendationService {
     dto: SchoolRecommendationRequestDto,
   ): Promise<SchoolRecommendationResponseDto> {
     // 检查积分
-    if (POINTS_ENABLED) await this.checkAndDeductPoints(userId, POINTS_COST);
+    await this.caseIncentiveService.charge(
+      userId,
+      PointAction.AI_SCHOOL_RECOMMENDATION,
+    );
 
     // 获取用户档案
     const profile = await this.prisma.profile.findFirst({
@@ -51,7 +56,9 @@ export class RecommendationService {
     });
 
     if (!profile) {
-      if (POINTS_ENABLED) await this.refundPoints(userId, POINTS_COST);
+      await this.caseIncentiveService
+        .refund(userId, PointAction.AI_SCHOOL_RECOMMENDATION)
+        .catch(() => {});
       throw new NotFoundException('请先完善个人档案');
     }
 
@@ -176,7 +183,9 @@ export class RecommendationService {
 
       return response;
     } catch (error) {
-      if (POINTS_ENABLED) await this.refundPoints(userId, POINTS_COST);
+      await this.caseIncentiveService
+        .refund(userId, PointAction.AI_SCHOOL_RECOMMENDATION)
+        .catch(() => {});
       this.logger.error('School recommendation failed', error);
       throw new BadRequestException('生成选校建议失败，请重试');
     }
@@ -419,50 +428,6 @@ export class RecommendationService {
     return bestScore >= 60 ? best : undefined;
   }
 
-  private async checkAndDeductPoints(
-    userId: string,
-    points: number,
-  ): Promise<void> {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { points: true },
-    });
-
-    if (!user || user.points < points) {
-      throw new BadRequestException(`积分不足，需要 ${points} 积分`);
-    }
-
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { points: { decrement: points } },
-    });
-
-    await this.prisma.pointHistory.create({
-      data: {
-        userId,
-        action: 'AI_SCHOOL_RECOMMENDATION',
-        points: -points,
-        metadata: { service: 'recommendation' },
-      },
-    });
-  }
-
-  private async refundPoints(userId: string, points: number): Promise<void> {
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { points: { increment: points } },
-    });
-
-    await this.prisma.pointHistory.create({
-      data: {
-        userId,
-        action: 'AI_RECOMMENDATION_REFUND',
-        points: points,
-        metadata: { reason: 'service_error' },
-      },
-    });
-  }
-
   private estimateTokens(text: string): number {
     return Math.ceil(text.length / 3);
   }
@@ -494,10 +459,13 @@ export class RecommendationService {
       if (!profile.targetMajor) missingFields.push('targetMajor');
     }
 
+    const canAfford = await this.caseIncentiveService.canPerformAction(
+      userId,
+      PointAction.AI_SCHOOL_RECOMMENDATION,
+    );
+
     return {
-      canGenerate: POINTS_ENABLED
-        ? (user?.points || 0) >= POINTS_COST && missingFields.length === 0
-        : missingFields.length === 0,
+      canGenerate: canAfford && missingFields.length === 0,
       points: user?.points || 0,
       profileComplete: missingFields.length === 0,
       missingFields,

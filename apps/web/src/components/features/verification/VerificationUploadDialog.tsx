@@ -121,7 +121,7 @@ export function VerificationUploadDialog({
       formData.append('file', selectedFile);
 
       const uploadRes = await apiClient.post<{ url: string; key: string }>(
-        '/verification/upload',
+        '/verifications/upload',
         formData,
         {
           headers: { 'Content-Type': 'multipart/form-data' },
@@ -132,7 +132,7 @@ export function VerificationUploadDialog({
       setUploadProgress(100);
 
       // 提交认证申请
-      return apiClient.post('/verification', {
+      return apiClient.post('/verifications', {
         caseId,
         proofType,
         proofUrl: uploadRes.url,

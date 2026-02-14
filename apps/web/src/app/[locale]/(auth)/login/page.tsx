@@ -75,10 +75,16 @@ export default function LoginPage() {
           locale: string;
         };
         accessToken: string;
+        isNewUser: boolean;
       }>('/auth/login', data, { skipAuth: true });
 
       // 使用 setAuthFromLogin 设置认证状态并启动自动刷新
       setAuthFromLogin(response.user, response.accessToken);
+
+      // Mark new users for onboarding quick experience on dashboard
+      if (response.isNewUser) {
+        localStorage.setItem('showQuickExperience', 'true');
+      }
 
       // 提取用户名（邮箱@前的部分）用于欢迎提示
       const userName = response.user.email.split('@')[0];

@@ -41,7 +41,7 @@ import {
 } from '../swipe/dto';
 
 @ApiTags('hall')
-@Controller('hall')
+@Controller('halls')
 export class HallController {
   constructor(
     private readonly hallService: HallService,
@@ -109,6 +109,13 @@ export class HallController {
     return this.hallService.deleteReview(reviewId, user.id);
   }
 
+  @Get('reviews/me')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get reviews I have written' })
+  async getMyReviews(@CurrentUser() user: CurrentUserPayload) {
+    return this.hallService.getMyReviews(user.id);
+  }
+
   @Get('reviews/:profileUserId')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get reviews for a user profile (paginated)' })
@@ -154,13 +161,6 @@ export class HallController {
     @Query('type') type: string,
   ) {
     return this.hallService.removeReaction(reviewId, user.id, type);
-  }
-
-  @Get('reviews/me')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get reviews I have written' })
-  async getMyReviews(@CurrentUser() user: CurrentUserPayload) {
-    return this.hallService.getMyReviews(user.id);
   }
 
   // ============================================

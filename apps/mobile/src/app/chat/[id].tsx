@@ -60,7 +60,7 @@ export default function ChatScreen() {
     error,
   } = useQuery({
     queryKey: ['conversation', id],
-    queryFn: () => apiClient.get<Conversation>(`/chat/conversations/${id}`),
+    queryFn: () => apiClient.get<Conversation>(`/chats/conversations/${id}`),
     enabled: !!id,
     // No refetchInterval — WebSocket handles real-time updates
   });
@@ -132,12 +132,12 @@ export default function ChatScreen() {
       const msg = await sendMessage(id, text);
       if (!msg) {
         // Fallback: send via REST if socket fails
-        await apiClient.post<Message>(`/chat/conversations/${id}/messages`, { content: text });
+        await apiClient.post<Message>(`/chats/conversations/${id}/messages`, { content: text });
         queryClient.invalidateQueries({ queryKey: ['conversation', id] });
       }
     } else {
       // Fallback: send via REST
-      await apiClient.post<Message>(`/chat/conversations/${id}/messages`, { content: text });
+      await apiClient.post<Message>(`/chats/conversations/${id}/messages`, { content: text });
       queryClient.invalidateQueries({ queryKey: ['conversation', id] });
     }
 

@@ -525,9 +525,9 @@ export class PredictionService {
     return {
       gpa: profile.gpa ? Number(profile.gpa) : undefined,
       gpaScale: profile.gpaScale ? Number(profile.gpaScale) : 4.0,
-      grade: profile.grade,
-      currentSchoolType: profile.currentSchoolType,
-      targetMajor: profile.targetMajor,
+      grade: profile.grade ?? undefined,
+      currentSchoolType: profile.currentSchoolType ?? undefined,
+      targetMajor: profile.targetMajor ?? undefined,
       testScores: (profile.testScores || []).map((s) => ({
         type: s.type,
         score: s.score,
@@ -536,8 +536,8 @@ export class PredictionService {
       activities: (profile.activities || []).map((a) => ({
         category: a.category,
         role: a.role,
-        hoursPerWeek: a.hoursPerWeek,
-        weeksPerYear: a.weeksPerYear,
+        hoursPerWeek: a.hoursPerWeek ?? undefined,
+        weeksPerYear: a.weeksPerYear ?? undefined,
       })),
       awards: (profile.awards || []).map((a) => ({
         level: a.level,
@@ -556,17 +556,17 @@ export class PredictionService {
     return {
       id: school.id,
       name: school.name,
-      nameZh: school.nameZh,
+      nameZh: school.nameZh ?? undefined,
       acceptanceRate: school.acceptanceRate
         ? Number(school.acceptanceRate)
         : undefined,
-      satAvg: school.satAvg,
-      sat25: school.sat25,
-      sat75: school.sat75,
-      actAvg: school.actAvg,
-      act25: school.act25,
-      act75: school.act75,
-      usNewsRank: school.usNewsRank,
+      satAvg: school.satAvg ?? undefined,
+      sat25: school.sat25 ?? undefined,
+      sat75: school.sat75 ?? undefined,
+      actAvg: school.actAvg ?? undefined,
+      act25: school.act25 ?? undefined,
+      act75: school.act75 ?? undefined,
+      usNewsRank: school.usNewsRank ?? undefined,
     };
   }
 

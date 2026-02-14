@@ -22,6 +22,7 @@ import {
   UpdateSchoolDeadlineDto,
   CreateGlobalEventDto,
   UpdateGlobalEventDto,
+  BanUserDto,
 } from './dto';
 
 @ApiTags('admin')
@@ -33,9 +34,15 @@ export class AdminController {
 
   // Stats
   @Get('stats')
-  @ApiOperation({ summary: '获取统计数据' })
+  @ApiOperation({ summary: '获取统计数据（增强版）' })
   async getStats() {
     return this.adminService.getStats();
+  }
+
+  @Get('stats/trends')
+  @ApiOperation({ summary: '获取 30 天趋势数据' })
+  async getTrends() {
+    return this.adminService.getTrends();
   }
 
   // Reports
@@ -87,6 +94,31 @@ export class AdminController {
     @Body() data: UpdateUserRoleDto,
   ) {
     return this.adminService.updateUserRole(admin.id, id, data.role);
+  }
+
+  @Post('users/:id/ban')
+  @ApiOperation({ summary: '封禁用户' })
+  async banUser(
+    @CurrentUser() admin: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() data: BanUserDto,
+  ) {
+    return this.adminService.banUser(
+      admin.id,
+      id,
+      data.reason,
+      data.durationHours,
+      data.permanent,
+    );
+  }
+
+  @Post('users/:id/unban')
+  @ApiOperation({ summary: '解除封禁' })
+  async unbanUser(
+    @CurrentUser() admin: CurrentUserPayload,
+    @Param('id') id: string,
+  ) {
+    return this.adminService.unbanUser(admin.id, id);
   }
 
   @Delete('users/:id')

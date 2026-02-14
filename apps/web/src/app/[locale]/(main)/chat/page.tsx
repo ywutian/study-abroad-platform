@@ -94,7 +94,7 @@ export default function ChatPage() {
   // ── Queries ───────────────────────────────────────────────
   const { data: conversationsData, isLoading } = useQuery({
     queryKey: ['conversations'],
-    queryFn: () => apiClient.get<Conversation[]>('/chat/conversations'),
+    queryFn: () => apiClient.get<Conversation[]>('/chats/conversations'),
   });
   const conversations = conversationsData || [];
   const totalUnread = useMemo(
@@ -112,7 +112,7 @@ export default function ChatPage() {
     queryKey: ['messages', selectedConversation],
     queryFn: ({ pageParam }: { pageParam: string | undefined }) =>
       apiClient.get<Message[]>(
-        `/chat/conversations/${selectedConversation}/messages${pageParam ? `?before=${pageParam}` : ''}`
+        `/chats/conversations/${selectedConversation}/messages${pageParam ? `?before=${pageParam}` : ''}`
       ),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage: Message[]) =>
@@ -128,7 +128,7 @@ export default function ChatPage() {
 
   // ── Mutations ─────────────────────────────────────────────
   const blockMutation = useMutation({
-    mutationFn: (userId: string) => apiClient.post(`/chat/block/${userId}`),
+    mutationFn: (userId: string) => apiClient.post(`/chats/block/${userId}`),
     onSuccess: () => {
       toast.success(t('chat.blockSuccess'));
       setBlockDialogOpen(false);
@@ -140,7 +140,7 @@ export default function ChatPage() {
 
   const reportMutation = useMutation({
     mutationFn: (data: { targetType: string; targetId: string; reason: string; detail?: string }) =>
-      apiClient.post('/chat/report', data),
+      apiClient.post('/chats/report', data),
     onSuccess: () => {
       toast.success(t('chat.reportSuccess'));
       setReportDialogOpen(false);
@@ -149,7 +149,7 @@ export default function ChatPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (messageId: string) => apiClient.delete(`/chat/messages/${messageId}`),
+    mutationFn: (messageId: string) => apiClient.delete(`/chats/messages/${messageId}`),
     onSuccess: (_data, messageId) => {
       queryClient.setQueryData<InfiniteData<Message[], string | undefined>>(
         ['messages', selectedConversation],
@@ -167,7 +167,7 @@ export default function ChatPage() {
   });
 
   const recallMutation = useMutation({
-    mutationFn: (messageId: string) => apiClient.patch(`/chat/messages/${messageId}/recall`),
+    mutationFn: (messageId: string) => apiClient.patch(`/chats/messages/${messageId}/recall`),
     onSuccess: (_data, messageId) => {
       queryClient.setQueryData<InfiniteData<Message[], string | undefined>>(
         ['messages', selectedConversation],
@@ -190,7 +190,7 @@ export default function ChatPage() {
 
   const pinMutation = useMutation({
     mutationFn: (conversationId: string) =>
-      apiClient.post<{ isPinned: boolean }>(`/chat/conversations/${conversationId}/pin`),
+      apiClient.post<{ isPinned: boolean }>(`/chats/conversations/${conversationId}/pin`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
@@ -286,7 +286,7 @@ export default function ChatPage() {
       if (!selectedConversation) return;
       const formData = new FormData();
       formData.append('file', file);
-      await apiClient.upload(`/chat/conversations/${selectedConversation}/upload`, formData);
+      await apiClient.upload(`/chats/conversations/${selectedConversation}/upload`, formData);
       scrollToBottom();
     },
     [selectedConversation, scrollToBottom]

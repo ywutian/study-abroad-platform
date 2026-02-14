@@ -62,7 +62,7 @@ export function VerificationStatusCard({
 
   const { data: verifications, isLoading } = useQuery<VerificationRequest[]>({
     queryKey: ['myVerifications', userId],
-    queryFn: () => apiClient.get('/verification/my'),
+    queryFn: () => apiClient.get('/verifications/my'),
     enabled: !!userId,
   });
 

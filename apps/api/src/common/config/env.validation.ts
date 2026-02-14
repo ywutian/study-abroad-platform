@@ -54,12 +54,22 @@ const envSchema = z.object({
   STORAGE_ACCESS_KEY: z.string().optional(),
   STORAGE_SECRET_KEY: z.string().optional(),
 
+  // --- Vault Encryption [A5-005 + A5-019] ---
+  VAULT_ENCRYPTION_KEY: z
+    .string()
+    .min(32, 'VAULT_ENCRYPTION_KEY must be at least 32 characters')
+    .optional(),
+
   // --- Sentry (Optional — recommended in production) ---
   SENTRY_DSN: z.string().url().optional(),
 
-  // --- Rate Limiting ---
-  THROTTLE_TTL: z.coerce.number().int().positive().default(60000),
+  // --- Rate Limiting [A5-017] ---
+  // THROTTLE_TTL is in SECONDS (not ms). The app.module multiplies by 1000.
+  THROTTLE_TTL: z.coerce.number().int().positive().default(60),
   THROTTLE_LIMIT: z.coerce.number().int().positive().default(100),
+
+  // --- Webhook Signature [A5-020] ---
+  WEBHOOK_SECRET: z.string().min(32).optional(),
 
   // --- Build metadata ---
   GIT_COMMIT_SHA: z.string().optional(),
@@ -103,8 +113,24 @@ export function validateEnv(
     throw new Error(errorMessage);
   }
 
-  // Production warnings for recommended but optional variables
+  // Production checks — errors for security-critical, warnings for recommended
   if (result.data.NODE_ENV === 'production') {
+    // Security-critical: MUST be set in production [A5-005]
+    if (!result.data.VAULT_ENCRYPTION_KEY) {
+      throw new Error(
+        'FATAL: VAULT_ENCRYPTION_KEY must be set in production. ' +
+          'Generate with: openssl rand -hex 32',
+      );
+    }
+    // CORS check is also enforced in main.ts bootstrap [A5-004]
+    if (!result.data.CORS_ORIGINS) {
+      throw new Error(
+        'FATAL: CORS_ORIGINS must be set in production. ' +
+          'Example: CORS_ORIGINS=https://app.example.com',
+      );
+    }
+
+    // Recommended but non-fatal
     if (!result.data.SENTRY_DSN) {
       logger.warn(
         'SENTRY_DSN is not set — error tracking disabled in production',
@@ -113,11 +139,6 @@ export function validateEnv(
     if (!result.data.REDIS_URL) {
       logger.warn(
         'REDIS_URL is not set — caching and rate limiting will use in-memory fallback',
-      );
-    }
-    if (!result.data.CORS_ORIGINS) {
-      logger.warn(
-        'CORS_ORIGINS is not set — CORS open to all origins in production (unsafe)',
       );
     }
   }

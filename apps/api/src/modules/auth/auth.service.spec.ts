@@ -5,6 +5,9 @@ import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { EmailService } from '../../common/email/email.service';
+import { SessionManager } from './session-manager.service';
+import { BruteForceService } from './brute-force.service';
+import { CaseIncentiveService } from '../case/case-incentive.service';
 import {
   UnauthorizedException,
   ConflictException,
@@ -24,13 +27,15 @@ describe('AuthService', () => {
   let userService: UserService;
   let jwtService: JwtService;
   let emailService: EmailService;
+  let sessionManager: SessionManager;
 
   const mockUser = {
     id: 'user-123',
     email: 'test@example.com',
     passwordHash: 'hashed_password',
     role: 'USER',
-    emailVerified: false,
+    emailVerified: true,
+    lastLoginAt: null,
     locale: 'zh',
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -46,6 +51,7 @@ describe('AuthService', () => {
           useValue: {
             refreshToken: {
               findUnique: jest.fn(),
+              findMany: jest.fn().mockResolvedValue([]),
               create: jest.fn(),
               delete: jest.fn(),
               deleteMany: jest.fn(),
@@ -62,6 +68,7 @@ describe('AuthService', () => {
             findByEmail: jest.fn(),
             findById: jest.fn(),
             findByIdOrThrow: jest.fn(),
+            validateReferralCode: jest.fn().mockResolvedValue(null),
             create: jest.fn(),
           },
         },
@@ -85,6 +92,33 @@ describe('AuthService', () => {
             sendWelcomeEmail: jest.fn().mockResolvedValue(undefined),
           },
         },
+        {
+          provide: SessionManager,
+          useValue: {
+            createSession: jest.fn().mockResolvedValue(undefined),
+            invalidateToken: jest.fn().mockResolvedValue(undefined),
+            invalidateAllSessions: jest.fn().mockResolvedValue(undefined),
+            getSessionStats: jest.fn().mockResolvedValue({
+              totalSessions: 0,
+              activeSessions: 0,
+              expiredSessions: 0,
+            }),
+          },
+        },
+        {
+          provide: BruteForceService,
+          useValue: {
+            isLocked: jest.fn().mockResolvedValue(false),
+            recordFailedAttempt: jest.fn().mockResolvedValue(undefined),
+            resetAttempts: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: CaseIncentiveService,
+          useValue: {
+            rewardReferral: jest.fn().mockResolvedValue(undefined),
+          },
+        },
       ],
     }).compile();
 
@@ -93,6 +127,7 @@ describe('AuthService', () => {
     userService = module.get<UserService>(UserService);
     jwtService = module.get<JwtService>(JwtService);
     emailService = module.get<EmailService>(EmailService);
+    sessionManager = module.get<SessionManager>(SessionManager);
   });
 
   afterEach(() => {
@@ -258,21 +293,22 @@ describe('AuthService', () => {
   });
 
   describe('logout', () => {
-    it('should delete specific refresh token (hashed)', async () => {
+    it('should invalidate specific refresh token', async () => {
       await service.logout('user-123', 'refresh_token');
 
-      // Token is now hashed before querying
-      expect(prismaService.refreshToken.deleteMany).toHaveBeenCalledWith({
-        where: { token: expect.any(String) },
-      });
+      expect(sessionManager.invalidateToken).toHaveBeenCalledWith(
+        'refresh_token',
+      );
+      expect(sessionManager.invalidateAllSessions).not.toHaveBeenCalled();
     });
 
-    it('should delete all refresh tokens if no token provided', async () => {
+    it('should invalidate all sessions if no token provided', async () => {
       await service.logout('user-123');
 
-      expect(prismaService.refreshToken.deleteMany).toHaveBeenCalledWith({
-        where: { userId: 'user-123' },
-      });
+      expect(sessionManager.invalidateAllSessions).toHaveBeenCalledWith(
+        'user-123',
+      );
+      expect(sessionManager.invalidateToken).not.toHaveBeenCalled();
     });
   });
 });

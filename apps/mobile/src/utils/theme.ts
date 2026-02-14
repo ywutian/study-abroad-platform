@@ -221,12 +221,8 @@ export const shadows = {
  * 获取当前主题颜色
  */
 export function useColors() {
-  try {
-    const { colorScheme } = useThemeStore();
-    return colorScheme === 'dark' ? colors.dark : colors.light;
-  } catch {
-    return colors.light;
-  }
+  const colorScheme = useThemeStore((state) => state.colorScheme);
+  return colorScheme === 'dark' ? colors.dark : colors.light;
 }
 
 /**

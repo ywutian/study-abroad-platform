@@ -18,6 +18,10 @@ import {
   ScrollText,
   Bot,
   Brain,
+  Coins,
+  ShieldCheck,
+  CreditCard,
+  Settings,
 } from 'lucide-react';
 
 interface AdminStats {
@@ -51,9 +55,13 @@ export function AdminSidebar() {
     { href: '/admin/deadlines', icon: Calendar, label: t('sidebar.deadlines') },
     { href: '/admin/events', icon: Globe, label: t('sidebar.events') },
     { href: '/admin/essays', icon: PenTool, label: t('sidebar.essays') },
+    { href: '/admin/points', icon: Coins, label: t('sidebar.points') },
+    { href: '/admin/content', icon: ShieldCheck, label: t('sidebar.content') },
+    { href: '/admin/payments', icon: CreditCard, label: t('sidebar.payments') },
     { href: '/admin/audit-logs', icon: ScrollText, label: t('sidebar.auditLogs') },
     { href: '/admin/ai-agent', icon: Bot, label: t('sidebar.aiAgent') },
     { href: '/admin/memory', icon: Brain, label: t('sidebar.memory') },
+    { href: '/admin/settings', icon: Settings, label: t('sidebar.settings') },
   ];
 
   const isActive = (href: string, exact?: boolean) => {

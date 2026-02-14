@@ -104,14 +104,14 @@ export default function VerifiedRankingPage() {
   // 获取可用年份
   const { data: years } = useQuery<number[]>({
     queryKey: ['verified-ranking-years'],
-    queryFn: () => apiClient.get('/hall/verified-ranking/years'),
+    queryFn: () => apiClient.get('/halls/verified-ranking/years'),
   });
 
   // 获取排行榜数据
   const { data, isLoading, isFetching } = useQuery<VerifiedRankingResponse>({
     queryKey: ['verified-ranking', filter, year, offset],
     queryFn: () =>
-      apiClient.get('/hall/verified-ranking', {
+      apiClient.get('/halls/verified-ranking', {
         params: {
           filter,
           ...(year && { year }),

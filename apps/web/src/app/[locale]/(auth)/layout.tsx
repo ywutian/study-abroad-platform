@@ -1,19 +1,22 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { Link, useRouter } from '@/lib/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { GraduationCap, Sparkles, TrendingUp, Users, Globe, Star } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth';
 
-export default function AuthLayout({ children }: { children: React.ReactNode }) {
-  const t = useTranslations();
+/**
+ * Redirect authenticated users — isolated in its own component
+ * so that useSearchParams() doesn't force the entire layout to
+ * bail out of static rendering.
+ */
+function AuthRedirect() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isLoading, isInitialized } = useAuthStore();
 
-  // 已登录用户重定向到 callbackUrl 或 dashboard
   useEffect(() => {
     if (isInitialized && !isLoading && user) {
       const callbackUrl = searchParams.get('callbackUrl');
@@ -23,6 +26,12 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       router.replace(targetPath);
     }
   }, [user, isLoading, isInitialized, router, searchParams]);
+
+  return null;
+}
+
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
+  const t = useTranslations();
 
   const features = [
     { icon: Sparkles, key: 'ai' },
@@ -39,6 +48,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <div className="relative min-h-screen flex bg-background overflow-hidden">
+      <Suspense fallback={null}>
+        <AuthRedirect />
+      </Suspense>
       {/* 简洁网格背景 */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-[linear-gradient(var(--border)_1px,transparent_1px),linear-gradient(90deg,var(--border)_1px,transparent_1px)] bg-[size:80px_80px] opacity-30" />

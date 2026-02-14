@@ -151,7 +151,7 @@ export default function ForumPostDetailPage() {
     refetch: refetchPost,
   } = useQuery<PostDto>({
     queryKey: ['forum', 'post', id],
-    queryFn: () => apiClient.get<PostDto>(`/forum/posts/${id}`),
+    queryFn: () => apiClient.get<PostDto>(`/forums/posts/${id}`),
     enabled: !!id,
   });
 
@@ -161,14 +161,14 @@ export default function ForumPostDetailPage() {
     refetch: refetchComments,
   } = useQuery<CommentDto[]>({
     queryKey: ['forum', 'comments', id],
-    queryFn: () => apiClient.get<CommentDto[]>(`/forum/posts/${id}/comments`),
+    queryFn: () => apiClient.get<CommentDto[]>(`/forums/posts/${id}/comments`),
     enabled: !!id,
   });
 
   // ---- Mutations ----
 
   const likeMutation = useMutation<{ liked: boolean; likeCount: number }, Error, void>({
-    mutationFn: () => apiClient.post(`/forum/posts/${id}/like`),
+    mutationFn: () => apiClient.post(`/forums/posts/${id}/like`),
     onSuccess: (data) => {
       queryClient.setQueryData(['forum', 'post', id], (prev: PostDto | undefined) => {
         if (!prev) return prev;
@@ -180,7 +180,7 @@ export default function ForumPostDetailPage() {
   });
 
   const commentMutation = useMutation<CommentDto, Error, { content: string; parentId?: string }>({
-    mutationFn: (dto) => apiClient.post<CommentDto>(`/forum/posts/${id}/comments`, dto),
+    mutationFn: (dto) => apiClient.post<CommentDto>(`/forums/posts/${id}/comments`, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forum', 'comments', id] });
       queryClient.invalidateQueries({ queryKey: ['forum', 'post', id] });
@@ -192,7 +192,7 @@ export default function ForumPostDetailPage() {
   });
 
   const applyMutation = useMutation<void, Error, void>({
-    mutationFn: () => apiClient.post(`/forum/posts/${id}/apply`),
+    mutationFn: () => apiClient.post(`/forums/posts/${id}/apply`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forum', 'post', id] });
       toast.success(t('forum.applied'));
@@ -202,7 +202,7 @@ export default function ForumPostDetailPage() {
   });
 
   const reportMutation = useMutation<void, Error, void>({
-    mutationFn: () => apiClient.post(`/forum/posts/${id}/report`),
+    mutationFn: () => apiClient.post(`/forums/posts/${id}/report`),
     onSuccess: () => {
       toast.success(t('forum.reported'));
     },
@@ -210,7 +210,7 @@ export default function ForumPostDetailPage() {
   });
 
   const deleteMutation = useMutation<void, Error, void>({
-    mutationFn: () => apiClient.delete(`/forum/posts/${id}`),
+    mutationFn: () => apiClient.delete(`/forums/posts/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forum'] });
       toast.success(t('forum.postDeleted'));

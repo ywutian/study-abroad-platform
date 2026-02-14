@@ -80,7 +80,7 @@ export default function HallOfFameScreen() {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['hallOfFame', activeTab],
     queryFn: () =>
-      apiClient.get<{ members: HallMember[]; stats: HallStats }>('/hall', {
+      apiClient.get<{ members: HallMember[]; stats: HallStats }>('/halls', {
         params: { filter: activeTab },
       }),
   });

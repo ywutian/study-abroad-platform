@@ -22,7 +22,7 @@ import { Role } from '@prisma/client';
 
 @ApiTags('verification')
 @ApiBearerAuth()
-@Controller('verification')
+@Controller('verifications')
 export class VerificationController {
   constructor(private readonly verificationService: VerificationService) {}
 

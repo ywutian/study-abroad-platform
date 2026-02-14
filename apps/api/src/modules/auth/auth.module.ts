@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -7,11 +7,15 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { TokenCleanupScheduler } from './token-cleanup.scheduler';
+import { SessionManager } from './session-manager.service';
+import { BruteForceService } from './brute-force.service';
 import { UserModule } from '../user/user.module';
+import { CaseModule } from '../case/case.module';
 
 @Module({
   imports: [
     UserModule,
+    forwardRef(() => CaseModule),
     ScheduleModule.forRoot(),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
@@ -32,7 +36,13 @@ import { UserModule } from '../user/user.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, TokenCleanupScheduler],
-  exports: [AuthService, JwtModule],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    TokenCleanupScheduler,
+    SessionManager,
+    BruteForceService,
+  ],
+  exports: [AuthService, JwtModule, SessionManager],
 })
 export class AuthModule {}

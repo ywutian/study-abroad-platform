@@ -125,9 +125,7 @@ export function normalizeEssayType(type: string): string | null {
     'UC',
     'MAIN',
     'SUPPLEMENTAL',
-    'SUPPLEMENT',
     'WHY_SCHOOL',
-    'WHY_US',
     'SHORT_ANSWER',
     'ACTIVITY',
     'OPTIONAL',
@@ -141,7 +139,9 @@ export function normalizeEssayType(type: string): string | null {
     'COMMON APP': 'COMMON_APP',
     SUP: 'SUPPLEMENTAL',
     SUPP: 'SUPPLEMENTAL',
-    WHY: 'WHY_US',
+    WHY: 'WHY_SCHOOL',
+    SUPPLEMENT: 'SUPPLEMENTAL',
+    WHY_US: 'WHY_SCHOOL',
     SHORT: 'SHORT_ANSWER',
   };
   return aliases[t] || 'OTHER';

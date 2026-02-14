@@ -282,13 +282,13 @@ export default function HallOfFamePage() {
     queryKey: ['hall-reviews', reviewMode],
     queryFn: () =>
       reviewMode === 'mine'
-        ? apiClient.get<ReviewsResponse>('/hall/reviews/me')
-        : apiClient.get<ReviewsResponse>('/hall/reviews/popular'),
+        ? apiClient.get<ReviewsResponse>('/halls/reviews/me')
+        : apiClient.get<ReviewsResponse>('/halls/reviews/popular'),
     staleTime: 2 * 60_000,
   });
 
   const createReviewMutation = useMutation<Review, Error, CreateReviewDto>({
-    mutationFn: (dto) => apiClient.post<Review>('/hall/reviews', dto),
+    mutationFn: (dto) => apiClient.post<Review>('/halls/reviews', dto),
     onSuccess: () => {
       toast.show({
         type: 'success',
@@ -307,7 +307,8 @@ export default function HallOfFamePage() {
     Error,
     { reviewId: string; type: 'helpful' | 'insightful' }
   >({
-    mutationFn: ({ reviewId, type }) => apiClient.post(`/hall/reviews/${reviewId}/react`, { type }),
+    mutationFn: ({ reviewId, type }) =>
+      apiClient.post(`/halls/reviews/${reviewId}/react`, { type }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['hall-reviews'] });
     },
@@ -325,7 +326,7 @@ export default function HallOfFamePage() {
     refetch: refetchRanking,
   } = useQuery<RankingResult[]>({
     queryKey: ['hall-target-ranking'],
-    queryFn: () => apiClient.get<RankingResult[]>('/hall/target-ranking'),
+    queryFn: () => apiClient.get<RankingResult[]>('/halls/target-ranking'),
     enabled: activeTab === 'ranking',
     staleTime: 5 * 60_000,
   });
@@ -339,19 +340,19 @@ export default function HallOfFamePage() {
     refetch: refetchLists,
   } = useQuery<HallList[]>({
     queryKey: ['hall-lists'],
-    queryFn: () => apiClient.get<HallList[]>('/hall/lists'),
+    queryFn: () => apiClient.get<HallList[]>('/halls/lists'),
     enabled: activeTab === 'lists',
     staleTime: 2 * 60_000,
   });
 
   const { data: listDetail, isLoading: listDetailLoading } = useQuery<HallListDetail>({
     queryKey: ['hall-list-detail', listDetailId],
-    queryFn: () => apiClient.get<HallListDetail>(`/hall/lists/${listDetailId}`),
+    queryFn: () => apiClient.get<HallListDetail>(`/halls/lists/${listDetailId}`),
     enabled: !!listDetailId,
   });
 
   const createListMutation = useMutation<HallList, Error, CreateListDto>({
-    mutationFn: (dto) => apiClient.post<HallList>('/hall/lists', dto),
+    mutationFn: (dto) => apiClient.post<HallList>('/halls/lists', dto),
     onSuccess: () => {
       toast.show({ type: 'success', message: t('hallOfFame.lists.created', 'List created!') });
       queryClient.invalidateQueries({ queryKey: ['hall-lists'] });
@@ -364,7 +365,7 @@ export default function HallOfFamePage() {
 
   const voteMutation = useMutation<void, Error, { listId: string; direction: 'up' | 'down' }>({
     mutationFn: ({ listId, direction }) =>
-      apiClient.post(`/hall/lists/${listId}/vote`, { direction }),
+      apiClient.post(`/halls/lists/${listId}/vote`, { direction }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['hall-lists'] });
     },
@@ -383,7 +384,7 @@ export default function HallOfFamePage() {
   } = useQuery<VerifiedRankingResponse>({
     queryKey: ['hall-verified', verifiedFilter],
     queryFn: () =>
-      apiClient.get<VerifiedRankingResponse>('/hall/verified-ranking', {
+      apiClient.get<VerifiedRankingResponse>('/halls/verified-ranking', {
         params: { filter: verifiedFilter, limit: 50 },
       }),
     enabled: activeTab === 'verified',

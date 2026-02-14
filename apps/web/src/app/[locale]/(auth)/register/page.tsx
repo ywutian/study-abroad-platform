@@ -28,7 +28,9 @@ import {
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
 import { cn } from '@/lib/utils';
-import { ChevronRight, ChevronLeft, Check, Loader2 } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Check, Loader2, Gift, ChevronDown } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 // 年份选项
 const currentYear = new Date().getFullYear();
@@ -68,6 +70,7 @@ const createRegisterSchema = (t: ReturnType<typeof useTranslations>) =>
       ieltsScore: z.string().optional(),
       satScore: z.string().optional(),
       actScore: z.string().optional(),
+      referralCode: z.string().optional(),
     })
     .refine((data) => data.password === data.confirmPassword, {
       message: t('validation.passwordMismatch'),
@@ -80,6 +83,8 @@ export default function RegisterPage() {
   const t = useTranslations();
   const ta = useTranslations('auth.register');
   const registerSchema = createRegisterSchema(t);
+  const searchParams = useSearchParams();
+  const refCode = (searchParams.get('ref') || '').toUpperCase();
 
   const steps = [
     { key: 'account', label: ta('steps.account.title') },
@@ -89,6 +94,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [referralOpen, setReferralOpen] = useState(!!refCode);
 
   const form = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
@@ -107,6 +113,7 @@ export default function RegisterPage() {
       ieltsScore: '',
       satScore: '',
       actScore: '',
+      referralCode: refCode,
     },
     mode: 'onChange',
   });
@@ -160,6 +167,7 @@ export default function RegisterPage() {
         {
           email: data.email,
           password: data.password,
+          ...(data.referralCode ? { referralCode: data.referralCode } : {}),
         },
         { skipAuth: true }
       );
@@ -252,6 +260,41 @@ export default function RegisterPage() {
                 </FormItem>
               )}
             />
+
+            {/* Referral Code (collapsible) */}
+            <Collapsible open={referralOpen} onOpenChange={setReferralOpen}>
+              <CollapsibleTrigger asChild>
+                <button
+                  type="button"
+                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors pt-2"
+                >
+                  <Gift className="h-4 w-4" />
+                  <span>{t('referral.yourCode', { defaultValue: 'Have a referral code?' })}</span>
+                  <ChevronDown
+                    className={cn('h-3 w-3 transition-transform', referralOpen && 'rotate-180')}
+                  />
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <FormField
+                  control={form.control}
+                  name="referralCode"
+                  render={({ field }) => (
+                    <FormItem className="pt-2">
+                      <FormControl>
+                        <Input
+                          placeholder="A1B2C3D4"
+                          className="font-mono uppercase tracking-wider"
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CollapsibleContent>
+            </Collapsible>
           </div>
         );
 

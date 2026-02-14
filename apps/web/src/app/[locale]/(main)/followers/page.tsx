@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,11 +20,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { apiClient } from '@/lib/api';
-import { PageContainer, PageHeader } from '@/components/layout';
+import { PageContainer } from '@/components/layout';
 import { LoadingState } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import { RecommendedUsers, UserProfilePreview } from '@/components/features';
+import { useAuthStore } from '@/stores';
 import { toast } from 'sonner';
 import {
   Users,
@@ -37,9 +39,15 @@ import {
   UserCheck,
   Heart,
   Eye,
+  X,
+  ArrowUpDown,
 } from 'lucide-react';
 import { useRouter } from '@/lib/i18n/navigation';
 import { cn } from '@/lib/utils';
+
+// ============================================================================
+// Types
+// ============================================================================
 
 interface UserProfile {
   nickname?: string;
@@ -72,6 +80,225 @@ interface BlockRelation {
   blocked?: User;
 }
 
+// ============================================================================
+// User Card Component
+// ============================================================================
+
+function UserCard({
+  user,
+  relation,
+  variant,
+  isMutual,
+  isFollowingUser,
+  onPreview,
+  onFollow,
+  onUnfollow,
+  onMessage,
+  onUnblock,
+  followPending,
+  t,
+}: {
+  user?: User;
+  relation: { id: string; createdAt: string };
+  variant: 'follower' | 'following' | 'blocked';
+  isMutual: boolean;
+  isFollowingUser: boolean;
+  onPreview: () => void;
+  onFollow?: () => void;
+  onUnfollow?: () => void;
+  onMessage?: () => void;
+  onUnblock?: () => void;
+  followPending?: boolean;
+  t: ReturnType<typeof useTranslations>;
+}) {
+  const displayName = user?.profile?.nickname || user?.email?.split('@')[0] || '';
+  const avatarLetter = (user?.profile?.nickname?.[0] || user?.email?.[0] || '?').toUpperCase();
+  const isBlocked = variant === 'blocked';
+
+  const getRoleBadge = (role: string) => {
+    if (role === 'ADMIN') return <Badge variant="purple">{t('common.administrator')}</Badge>;
+    if (role === 'VERIFIED') return <Badge variant="success">{t('common.verified')}</Badge>;
+    return null;
+  };
+
+  return (
+    <Card
+      className={cn(
+        'group overflow-hidden border-border transition-all duration-200',
+        !isBlocked && 'hover:shadow-md hover:border-primary/20',
+        isBlocked && 'opacity-75'
+      )}
+    >
+      <CardContent className="p-0">
+        {/* Card body */}
+        <div className="flex items-center gap-4 p-4">
+          {/* Avatar - clickable for preview */}
+          <button onClick={onPreview} className="shrink-0 focus:outline-none">
+            <Avatar
+              className={cn(
+                'h-12 w-12 ring-2 ring-offset-2 ring-offset-background transition-all',
+                variant === 'follower' && 'ring-primary/20 group-hover:ring-primary/40',
+                variant === 'following' && 'ring-primary/20 group-hover:ring-primary/40',
+                isBlocked && 'ring-muted grayscale'
+              )}
+            >
+              {user?.profile?.avatar ? (
+                <AvatarImage src={user.profile.avatar} className={cn(isBlocked && 'grayscale')} />
+              ) : (
+                <AvatarFallback
+                  className={cn(
+                    'font-semibold text-white',
+                    !isBlocked && 'bg-gradient-to-br from-primary/80 to-primary',
+                    isBlocked && 'bg-muted text-muted-foreground'
+                  )}
+                >
+                  {avatarLetter}
+                </AvatarFallback>
+              )}
+            </Avatar>
+          </button>
+
+          {/* User info */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={onPreview}
+                className={cn(
+                  'font-semibold truncate text-left hover:underline',
+                  isBlocked ? 'text-muted-foreground' : 'text-foreground'
+                )}
+              >
+                {displayName}
+              </button>
+              {isMutual && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <ArrowUpDown className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                    </TooltipTrigger>
+                    <TooltipContent>{t('followers.mutualFollow')}</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </div>
+
+            {!isBlocked && user?.profile?.bio && (
+              <p className="text-xs text-muted-foreground truncate mt-0.5">{user.profile.bio}</p>
+            )}
+
+            <div className="flex items-center gap-1.5 flex-wrap mt-1.5">
+              {!isBlocked && getRoleBadge(user?.role || '')}
+              {isMutual && (
+                <Badge
+                  variant="secondary"
+                  className="gap-1 bg-green-500/10 text-green-700 dark:text-green-400 border-0 text-[10px] px-1.5 py-0"
+                >
+                  <UserCheck className="h-2.5 w-2.5" />
+                  {t('followers.mutualFollow')}
+                </Badge>
+              )}
+              {isBlocked && (
+                <Badge variant="destructive" className="gap-1 text-[10px]">
+                  <Shield className="h-2.5 w-2.5" />
+                  {t('followers.blocked')}
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {!isBlocked && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                      onClick={onPreview}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{t('followers.userProfile')}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+
+            {/* Follow back button (for followers tab) */}
+            {variant === 'follower' && !isFollowingUser && onFollow && (
+              <Button
+                size="sm"
+                variant="default"
+                className="h-8 gap-1.5 text-xs"
+                onClick={onFollow}
+                disabled={followPending}
+              >
+                {followPending ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <UserPlus className="h-3.5 w-3.5" />
+                )}
+                {t('followers.actions.follow')}
+              </Button>
+            )}
+
+            {/* Message button (mutual follows) */}
+            {!isBlocked && isMutual && onMessage && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className="h-8 w-8 text-muted-foreground hover:text-primary hover:border-primary/30"
+                      onClick={onMessage}
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{t('followers.actions.sendMessage')}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+
+            {/* Unfollow button (for following tab) */}
+            {variant === 'following' && onUnfollow && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      onClick={onUnfollow}
+                    >
+                      <UserMinus className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{t('followers.actions.unfollow')}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+
+            {/* Unblock button */}
+            {isBlocked && onUnblock && (
+              <Button size="sm" variant="outline" className="h-8 text-xs" onClick={onUnblock}>
+                {t('followers.unblock')}
+              </Button>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ============================================================================
+// Main Page
+// ============================================================================
+
 export default function FollowersPage() {
   const t = useTranslations();
   const router = useRouter();
@@ -81,186 +308,185 @@ export default function FollowersPage() {
   const [userToUnfollow, setUserToUnfollow] = useState<string | null>(null);
   const [userToUnblock, setUserToUnblock] = useState<string | null>(null);
   const [previewUserId, setPreviewUserId] = useState<string | null>(null);
+  const { user } = useAuthStore();
 
-  // Fetch followers
-  // apiClient 已自动解包 { success, data } -> data
+  // ---- Data fetching ----
   const { data: followers = [], isLoading: followersLoading } = useQuery({
     queryKey: ['followers'],
-    queryFn: () => apiClient.get<FollowRelation[]>('/chat/followers'),
+    queryFn: () => apiClient.get<FollowRelation[]>('/chats/followers'),
+    enabled: !!user,
   });
 
-  // Fetch following
   const { data: following = [], isLoading: followingLoading } = useQuery({
     queryKey: ['following'],
-    queryFn: () => apiClient.get<FollowRelation[]>('/chat/following'),
+    queryFn: () => apiClient.get<FollowRelation[]>('/chats/following'),
+    enabled: !!user,
   });
 
-  // Fetch blocked users
   const { data: blocked = [], isLoading: blockedLoading } = useQuery({
     queryKey: ['blocked'],
-    queryFn: () => apiClient.get<BlockRelation[]>('/chat/blocked'),
+    queryFn: () => apiClient.get<BlockRelation[]>('/chats/blocked'),
+    enabled: !!user,
   });
 
-  // Follow user mutation
+  // ---- Mutations ----
   const followMutation = useMutation({
-    mutationFn: (userId: string) => apiClient.post(`/chat/follow/${userId}`),
+    mutationFn: (userId: string) => apiClient.post(`/chats/follow/${userId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['followers'] });
       queryClient.invalidateQueries({ queryKey: ['following'] });
       toast.success(t('followers.toast.followSuccess'));
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
+    onError: (error: Error) => toast.error(error.message),
   });
 
-  // Unfollow user mutation
   const unfollowMutation = useMutation({
-    mutationFn: (userId: string) => apiClient.delete(`/chat/follow/${userId}`),
+    mutationFn: (userId: string) => apiClient.delete(`/chats/follow/${userId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['following'] });
       setUserToUnfollow(null);
       toast.success(t('followers.toast.unfollowSuccess'));
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
+    onError: (error: Error) => toast.error(error.message),
   });
 
-  // Block user mutation
   const _blockMutation = useMutation({
-    mutationFn: (userId: string) => apiClient.post(`/chat/block/${userId}`),
+    mutationFn: (userId: string) => apiClient.post(`/chats/block/${userId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['blocked'] });
       queryClient.invalidateQueries({ queryKey: ['followers'] });
       queryClient.invalidateQueries({ queryKey: ['following'] });
       toast.success(t('followers.toast.blockSuccess'));
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
+    onError: (error: Error) => toast.error(error.message),
   });
 
-  // Unblock user mutation
   const unblockMutation = useMutation({
-    mutationFn: (userId: string) => apiClient.delete(`/chat/block/${userId}`),
+    mutationFn: (userId: string) => apiClient.delete(`/chats/block/${userId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['blocked'] });
       setUserToUnblock(null);
       toast.success(t('followers.toast.unblockSuccess'));
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
+    onError: (error: Error) => toast.error(error.message),
   });
 
-  // Check if user is being followed
-  const isFollowing = (userId: string) => {
-    return following?.some((f) => f.following?.id === userId);
-  };
+  // ---- Helpers ----
+  const isFollowing = (userId: string) => following?.some((f) => f.following?.id === userId);
 
-  // Check if user is mutual follow
   const isMutualFollow = (userId: string) => {
     const userFollowsMe = followers?.some((f) => f.follower?.id === userId);
     const iFollowUser = following?.some((f) => f.following?.id === userId);
-    return userFollowsMe && iFollowUser;
-  };
-
-  const getRoleBadge = (role: string) => {
-    switch (role) {
-      case 'ADMIN':
-        return <Badge variant="purple">{t('common.administrator')}</Badge>;
-      case 'VERIFIED':
-        return <Badge variant="success">{t('common.verified')}</Badge>;
-      default:
-        return null;
-    }
+    return !!userFollowsMe && !!iFollowUser;
   };
 
   const filterBySearch = (user?: User) => {
     if (!searchQuery || !user) return true;
-    const query = searchQuery.toLowerCase();
-    const nickname = user.profile?.nickname?.toLowerCase() || '';
-    const email = user.email?.toLowerCase() || '';
-    return nickname.includes(query) || email.includes(query);
+    const q = searchQuery.toLowerCase();
+    return (
+      (user.profile?.nickname?.toLowerCase() || '').includes(q) ||
+      (user.email?.toLowerCase() || '').includes(q)
+    );
   };
 
-  const getDisplayName = (user?: User) => {
-    return user?.profile?.nickname || user?.email?.split('@')[0] || '';
-  };
+  // ---- Derived data ----
+  const mutualCount = useMemo(
+    () => followers?.filter((f) => isMutualFollow(f.follower?.id || '')).length || 0,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [followers, following]
+  );
 
-  const getAvatarFallback = (user?: User) => {
-    return (user?.profile?.nickname?.[0] || user?.email?.[0] || '?').toUpperCase();
-  };
+  const filteredFollowers = followers?.filter((f) => filterBySearch(f.follower)) || [];
+  const filteredFollowing = following?.filter((f) => filterBySearch(f.following)) || [];
+  const filteredBlocked = blocked?.filter((b) => filterBySearch(b.blocked)) || [];
 
-  const tabConfig = [
-    { value: 'followers', icon: Users, color: 'blue' },
-    { value: 'following', icon: Heart, color: 'rose' },
-    { value: 'blocked', icon: Shield, color: 'slate' },
-  ];
+  // ---- Tab counts ----
+  const tabCounts: Record<string, number> = {
+    followers: followers?.length || 0,
+    following: following?.length || 0,
+    blocked: blocked?.length || 0,
+  };
 
   return (
     <PageContainer maxWidth="5xl">
-      <PageHeader
-        title={t('followers.title')}
-        description={t('followers.description')}
-        icon={Users}
-        color="indigo"
-        stats={[
-          {
-            label: t('followers.tabs.followers'),
-            value: followers?.length || 0,
-            icon: Users,
-            color: 'text-blue-500',
-          },
-          {
-            label: t('followers.tabs.following'),
-            value: following?.length || 0,
-            icon: Heart,
-            color: 'text-rose-500',
-          },
-          {
-            label: t('followers.mutualFollow'),
-            value: followers?.filter((f) => isMutualFollow(f.follower?.id || '')).length || 0,
-            icon: UserCheck,
-            color: 'text-emerald-500',
-          },
-        ]}
-      />
+      {/* Page Header */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-violet-600 text-white">
+            <Users className="h-5 w-5" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">{t('followers.title')}</h1>
+            <p className="text-sm text-muted-foreground">{t('followers.description')}</p>
+          </div>
+        </div>
 
-      {/* 推荐关注 */}
+        {/* Stats row */}
+        <div className="grid grid-cols-3 gap-3 mt-5">
+          {[
+            {
+              label: t('followers.tabs.followers'),
+              value: followers?.length || 0,
+              icon: Users,
+              accent: 'text-primary',
+              bg: 'bg-primary/10',
+            },
+            {
+              label: t('followers.tabs.following'),
+              value: following?.length || 0,
+              icon: Heart,
+              accent: 'text-pink-600 dark:text-pink-400',
+              bg: 'bg-pink-500/10',
+            },
+            {
+              label: t('followers.mutualFollow'),
+              value: mutualCount,
+              icon: UserCheck,
+              accent: 'text-green-600 dark:text-green-400',
+              bg: 'bg-green-500/10',
+            },
+          ].map((stat) => (
+            <Card key={stat.label} className="border-border">
+              <CardContent className="flex items-center gap-3 p-4">
+                <div
+                  className={cn('flex h-10 w-10 items-center justify-center rounded-lg', stat.bg)}
+                >
+                  <stat.icon className={cn('h-5 w-5', stat.accent)} />
+                </div>
+                <div>
+                  <p className="text-xl font-bold text-foreground">{stat.value}</p>
+                  <p className="text-xs text-muted-foreground">{stat.label}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Recommended Users */}
       <RecommendedUsers className="mb-6" />
 
+      {/* Tabs + Search */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
-          <TabsList className="bg-muted/50">
-            {tabConfig.map((tab) => {
-              const TabIcon = tab.icon;
-              const count =
-                tab.value === 'followers'
-                  ? followers?.length
-                  : tab.value === 'following'
-                    ? following?.length
-                    : blocked?.length;
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
+          <TabsList className="bg-muted/50 h-10">
+            {(['followers', 'following', 'blocked'] as const).map((tab) => {
+              const icons = { followers: Users, following: Heart, blocked: Shield };
+              const Icon = icons[tab];
               return (
                 <TabsTrigger
-                  key={tab.value}
-                  value={tab.value}
-                  className={cn(
-                    'gap-2 data-[state=active]:shadow-sm',
-                    tab.value === 'followers' &&
-                      'data-[state=active]:bg-blue-500/10 data-[state=active]:text-blue-600',
-                    tab.value === 'following' &&
-                      'data-[state=active]:bg-rose-500/10 data-[state=active]:text-rose-600',
-                    tab.value === 'blocked' &&
-                      'data-[state=active]:bg-muted data-[state=active]:text-muted-foreground'
-                  )}
+                  key={tab}
+                  value={tab}
+                  className="gap-2 h-8 data-[state=active]:shadow-sm data-[state=active]:bg-background"
                 >
-                  <TabIcon className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t(`followers.tabs.${tab.value}`)}</span>
-                  {count !== undefined && count > 0 && (
-                    <Badge variant="secondary" className="h-5 px-1.5 text-xs">
-                      {count}
+                  <Icon className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t(`followers.tabs.${tab}`)}</span>
+                  {tabCounts[tab] > 0 && (
+                    <Badge
+                      variant="secondary"
+                      className="h-5 min-w-[20px] px-1.5 text-[10px] font-semibold"
+                    >
+                      {tabCounts[tab]}
                     </Badge>
                   )}
                 </TabsTrigger>
@@ -268,99 +494,57 @@ export default function FollowersPage() {
             })}
           </TabsList>
 
-          {/* Search */}
+          {/* Search bar */}
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             <Input
               placeholder={t('followers.search')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 pr-8 h-10"
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Followers Tab */}
+        {/* ---- Followers Tab ---- */}
         <TabsContent value="followers" className="mt-0">
           {followersLoading ? (
             <LoadingState variant="card" count={6} />
-          ) : followers && followers.filter((f) => filterBySearch(f.follower)).length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {followers
-                .filter((f) => filterBySearch(f.follower))
-                .map((relation, index) => (
+          ) : filteredFollowers.length > 0 ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <AnimatePresence mode="popLayout">
+                {filteredFollowers.map((relation, index) => (
                   <motion.div
                     key={relation.id}
-                    initial={{ opacity: 0, y: 20 }}
+                    layout
+                    initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ delay: index * 0.03 }}
                   >
-                    <Card className="overflow-hidden hover:shadow-md transition-shadow">
-                      <div className="h-1 bg-primary" />
-                      <CardContent className="flex items-center gap-4 p-4">
-                        <Avatar className="h-12 w-12 border-2 border-blue-500/20">
-                          {relation.follower?.profile?.avatar ? (
-                            <AvatarImage src={relation.follower.profile.avatar} />
-                          ) : (
-                            <AvatarFallback className="bg-primary text-white font-semibold">
-                              {getAvatarFallback(relation.follower)}
-                            </AvatarFallback>
-                          )}
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold truncate">
-                            {getDisplayName(relation.follower)}
-                          </p>
-                          {relation.follower?.profile?.bio && (
-                            <p className="text-xs text-muted-foreground truncate">
-                              {relation.follower.profile.bio}
-                            </p>
-                          )}
-                          <div className="flex items-center gap-2 flex-wrap mt-1">
-                            {getRoleBadge(relation.follower?.role || '')}
-                            {isMutualFollow(relation.follower?.id || '') && (
-                              <Badge variant="success" className="gap-1">
-                                <UserCheck className="h-3 w-3" />
-                                {t('followers.mutualFollow')}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex gap-1.5">
-                          <Button
-                            size="icon-sm"
-                            variant="ghost"
-                            onClick={() => setPreviewUserId(relation.follower?.id || '')}
-                            className="hover:bg-muted"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          {!isFollowing(relation.follower?.id || '') && (
-                            <Button
-                              size="icon-sm"
-                              variant="outline"
-                              onClick={() => followMutation.mutate(relation.follower?.id || '')}
-                              disabled={followMutation.isPending}
-                              className="hover:bg-blue-500/10 hover:text-blue-600 hover:border-blue-500/30"
-                            >
-                              <UserPlus className="h-4 w-4" />
-                            </Button>
-                          )}
-                          {isMutualFollow(relation.follower?.id || '') && (
-                            <Button
-                              size="icon-sm"
-                              variant="outline"
-                              onClick={() => router.push('/chat')}
-                              className="hover:bg-emerald-500/10 hover:text-emerald-600 hover:border-emerald-500/30"
-                            >
-                              <MessageSquare className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <UserCard
+                      user={relation.follower}
+                      relation={relation}
+                      variant="follower"
+                      isMutual={isMutualFollow(relation.follower?.id || '')}
+                      isFollowingUser={isFollowing(relation.follower?.id || '')}
+                      onPreview={() => setPreviewUserId(relation.follower?.id || '')}
+                      onFollow={() => followMutation.mutate(relation.follower?.id || '')}
+                      onMessage={() => router.push('/chat')}
+                      followPending={followMutation.isPending}
+                      t={t}
+                    />
                   </motion.div>
                 ))}
+              </AnimatePresence>
             </div>
           ) : (
             <EmptyState
@@ -371,84 +555,36 @@ export default function FollowersPage() {
           )}
         </TabsContent>
 
-        {/* Following Tab */}
+        {/* ---- Following Tab ---- */}
         <TabsContent value="following" className="mt-0">
           {followingLoading ? (
             <LoadingState variant="card" count={6} />
-          ) : following && following.filter((f) => filterBySearch(f.following)).length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {following
-                .filter((f) => filterBySearch(f.following))
-                .map((relation, index) => (
+          ) : filteredFollowing.length > 0 ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <AnimatePresence mode="popLayout">
+                {filteredFollowing.map((relation, index) => (
                   <motion.div
                     key={relation.id}
-                    initial={{ opacity: 0, y: 20 }}
+                    layout
+                    initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ delay: index * 0.03 }}
                   >
-                    <Card className="overflow-hidden hover:shadow-md transition-shadow">
-                      <div className="h-1 bg-destructive" />
-                      <CardContent className="flex items-center gap-4 p-4">
-                        <Avatar className="h-12 w-12 border-2 border-rose-500/20">
-                          {relation.following?.profile?.avatar ? (
-                            <AvatarImage src={relation.following.profile.avatar} />
-                          ) : (
-                            <AvatarFallback className="bg-destructive text-white font-semibold">
-                              {getAvatarFallback(relation.following)}
-                            </AvatarFallback>
-                          )}
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold truncate">
-                            {getDisplayName(relation.following)}
-                          </p>
-                          {relation.following?.profile?.bio && (
-                            <p className="text-xs text-muted-foreground truncate">
-                              {relation.following.profile.bio}
-                            </p>
-                          )}
-                          <div className="flex items-center gap-2 flex-wrap mt-1">
-                            {getRoleBadge(relation.following?.role || '')}
-                            {isMutualFollow(relation.following?.id || '') && (
-                              <Badge variant="success" className="gap-1">
-                                <UserCheck className="h-3 w-3" />
-                                {t('followers.mutualFollow')}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex gap-1.5">
-                          <Button
-                            size="icon-sm"
-                            variant="ghost"
-                            onClick={() => setPreviewUserId(relation.following?.id || '')}
-                            className="hover:bg-muted"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          {isMutualFollow(relation.following?.id || '') && (
-                            <Button
-                              size="icon-sm"
-                              variant="outline"
-                              onClick={() => router.push('/chat')}
-                              className="hover:bg-emerald-500/10 hover:text-emerald-600 hover:border-emerald-500/30"
-                            >
-                              <MessageSquare className="h-4 w-4" />
-                            </Button>
-                          )}
-                          <Button
-                            size="icon-sm"
-                            variant="outline"
-                            className="text-destructive hover:bg-destructive/10 hover:border-destructive/30"
-                            onClick={() => setUserToUnfollow(relation.following?.id || '')}
-                          >
-                            <UserMinus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <UserCard
+                      user={relation.following}
+                      relation={relation}
+                      variant="following"
+                      isMutual={isMutualFollow(relation.following?.id || '')}
+                      isFollowingUser={true}
+                      onPreview={() => setPreviewUserId(relation.following?.id || '')}
+                      onUnfollow={() => setUserToUnfollow(relation.following?.id || '')}
+                      onMessage={() => router.push('/chat')}
+                      t={t}
+                    />
                   </motion.div>
                 ))}
+              </AnimatePresence>
             </div>
           ) : (
             <EmptyState
@@ -459,56 +595,35 @@ export default function FollowersPage() {
           )}
         </TabsContent>
 
-        {/* Blocked Tab */}
+        {/* ---- Blocked Tab ---- */}
         <TabsContent value="blocked" className="mt-0">
           {blockedLoading ? (
             <LoadingState variant="card" count={3} />
-          ) : blocked && blocked.filter((b) => filterBySearch(b.blocked)).length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {blocked
-                .filter((b) => filterBySearch(b.blocked))
-                .map((relation, index) => (
+          ) : filteredBlocked.length > 0 ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <AnimatePresence mode="popLayout">
+                {filteredBlocked.map((relation, index) => (
                   <motion.div
                     key={relation.id}
-                    initial={{ opacity: 0, y: 20 }}
+                    layout
+                    initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ delay: index * 0.03 }}
                   >
-                    <Card className="overflow-hidden hover:shadow-md transition-shadow">
-                      <div className="h-1 bg-slate-500" />
-                      <CardContent className="flex items-center gap-4 p-4">
-                        <Avatar className="h-12 w-12 opacity-60">
-                          {relation.blocked?.profile?.avatar ? (
-                            <AvatarImage
-                              src={relation.blocked.profile.avatar}
-                              className="grayscale"
-                            />
-                          ) : (
-                            <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
-                              {getAvatarFallback(relation.blocked)}
-                            </AvatarFallback>
-                          )}
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold truncate text-muted-foreground">
-                            {getDisplayName(relation.blocked)}
-                          </p>
-                          <Badge variant="destructive" className="mt-1">
-                            <Shield className="h-3 w-3 mr-1" />
-                            {t('followers.blocked')}
-                          </Badge>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setUserToUnblock(relation.blocked?.id || '')}
-                        >
-                          {t('followers.unblock')}
-                        </Button>
-                      </CardContent>
-                    </Card>
+                    <UserCard
+                      user={relation.blocked}
+                      relation={relation}
+                      variant="blocked"
+                      isMutual={false}
+                      isFollowingUser={false}
+                      onPreview={() => setPreviewUserId(relation.blocked?.id || '')}
+                      onUnblock={() => setUserToUnblock(relation.blocked?.id || '')}
+                      t={t}
+                    />
                   </motion.div>
                 ))}
+              </AnimatePresence>
             </div>
           ) : (
             <EmptyState
@@ -520,7 +635,7 @@ export default function FollowersPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Unfollow Confirmation */}
+      {/* ---- Dialogs ---- */}
       <AlertDialog open={!!userToUnfollow} onOpenChange={() => setUserToUnfollow(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -540,7 +655,6 @@ export default function FollowersPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Unblock Confirmation */}
       <AlertDialog open={!!userToUnblock} onOpenChange={() => setUserToUnblock(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>

@@ -33,6 +33,16 @@ const EMBEDDING_CONFIG = {
   },
 };
 
+/**
+ * Service for generating text embedding vectors using the OpenAI Embeddings API.
+ *
+ * Features:
+ * - Two-tier caching: Redis (primary, 24h TTL) with in-memory LRU fallback (500 entries)
+ * - Resilience: configurable retry with exponential backoff and circuit breaker
+ * - Graceful degradation: returns empty vectors when the API key is missing or calls fail
+ * - Default model: `text-embedding-3-small` (1536 dimensions)
+ * - Input text is truncated to 8000 characters before embedding
+ */
 @Injectable()
 export class EmbeddingService {
   private readonly logger = new Logger(EmbeddingService.name);
@@ -60,6 +70,14 @@ export class EmbeddingService {
     this.model = this.config.get('EMBEDDING_MODEL', 'text-embedding-3-small');
   }
 
+  /**
+   * Wrap an async operation with the resilience layer (retry + circuit breaker + timeout).
+   * Falls back to direct execution if the ResilienceService is not injected.
+   *
+   * @param fn - The async function to execute with resilience protection
+   * @returns The result of the function
+   * @throws {Error} Propagated from fn after retries are exhausted or circuit is open
+   */
   private async executeWithResilience<T>(fn: () => Promise<T>): Promise<T> {
     if (this.resilience) {
       return this.resilience.execute('embedding', fn, {
@@ -72,8 +90,16 @@ export class EmbeddingService {
   }
 
   /**
-   * 生成文本的向量嵌入
+   * Generate an embedding vector for a single text string.
+   *
+   * Checks the two-tier cache (Redis then in-memory) before calling the API.
+   * Text longer than 8000 characters is truncated with a warning.
+   * Returns an empty array if the API key is not configured or the API call fails.
+   *
+   * @param text - The text to embed (max ~8000 chars; longer text is truncated)
+   * @returns A numeric vector (typically 1536 dimensions), or empty array on failure
    */
+  // 生成文本的向量嵌入
   async embed(text: string): Promise<number[]> {
     if (!this.apiKey) {
       this.logger.warn(
@@ -133,8 +159,16 @@ export class EmbeddingService {
   }
 
   /**
-   * 批量生成向量嵌入
+   * Generate embedding vectors for multiple texts in a single API call.
+   *
+   * Cached embeddings are returned from cache; only uncached texts are sent
+   * to the API. The API response indices are mapped back to the original
+   * input positions. Returns empty vectors for any texts that fail.
+   *
+   * @param texts - Array of texts to embed (each truncated to 8000 chars)
+   * @returns Array of embedding vectors matching the input order; empty arrays for failures
    */
+  // 批量生成向量嵌入
   async embedBatch(texts: string[]): Promise<number[][]> {
     if (!this.apiKey || texts.length === 0) {
       return texts.map(() => []);
@@ -201,7 +235,7 @@ export class EmbeddingService {
         }),
       );
 
-      return results.map((r) => r || []) as number[][];
+      return results.map((r) => r || []);
     } catch (error) {
       this.logger.warn(
         `Batch embedding failed, degrading to empty vectors: ${error instanceof Error ? error.message : error}`,

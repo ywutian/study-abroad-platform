@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { User, Prisma } from '@prisma/client';
+import { safeDelete } from '../../common/utils/safe-delete';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class UserService {
@@ -74,64 +76,59 @@ export class UserService {
   async softDelete(id: string): Promise<User> {
     this.logger.log(`Soft deleting user: ${id}`);
 
-    // 使用事务确保数据一致性
+    // [A4-008] Use safeDelete utility instead of silent .catch(() => {})
+    const ctx = (entity: string) => ({
+      entity,
+      userId: id,
+      operation: 'softDelete' as const,
+    });
+
     return this.prisma.$transaction(async (tx) => {
-      // 1. 匿名化用户敏感数据
       const anonymizedEmail = `deleted_${id}@deleted.local`;
 
-      // 2. 清理用户 refresh tokens
-      await tx.refreshToken
-        .deleteMany({
-          where: { userId: id },
-        })
-        .catch(() => {
-          // 可能不存在
-        });
-
-      // 3. 清理用户的聊天消息（保留结构但删除内容）
-      await tx.message
-        .updateMany({
+      // Clean up related data (non-critical: continue on failure)
+      await safeDelete(
+        tx.refreshToken.deleteMany({ where: { userId: id } }),
+        ctx('refreshToken'),
+      );
+      await safeDelete(
+        tx.message.updateMany({
           where: { senderId: id },
           data: { content: '[已删除]' },
-        })
-        .catch(() => {});
-
-      // 4. 匿名化用户的案例分享（设置 visibility 为 PRIVATE）
-      await tx.admissionCase
-        .updateMany({
+        }),
+        ctx('message'),
+      );
+      await safeDelete(
+        tx.admissionCase.updateMany({
           where: { userId: id },
-          data: {
-            visibility: 'PRIVATE',
-          },
-        })
-        .catch(() => {});
-
-      // 5. 删除用户的收藏和关注关系
-      await tx.follow
-        .deleteMany({
+          data: { visibility: 'PRIVATE' },
+        }),
+        ctx('admissionCase'),
+      );
+      await safeDelete(
+        tx.follow.deleteMany({
           where: { OR: [{ followerId: id }, { followingId: id }] },
-        })
-        .catch(() => {});
-
-      await tx.block
-        .deleteMany({
+        }),
+        ctx('follow'),
+      );
+      await safeDelete(
+        tx.block.deleteMany({
           where: { OR: [{ blockerId: id }, { blockedId: id }] },
-        })
-        .catch(() => {});
+        }),
+        ctx('block'),
+      );
 
-      // 6. 更新用户记录
+      // Update user record (this is the critical operation)
       const deletedUser = await tx.user.update({
         where: { id },
         data: {
           email: anonymizedEmail,
           passwordHash: 'DELETED',
           deletedAt: new Date(),
-          // 保留基本结构用于数据完整性
         },
       });
 
       this.logger.log(`User ${id} soft deleted successfully`);
-
       return deletedUser;
     });
   }
@@ -144,34 +141,47 @@ export class UserService {
   async hardDelete(id: string): Promise<void> {
     this.logger.warn(`Hard deleting user: ${id}`);
 
-    await this.prisma.$transaction(async (tx) => {
-      // 删除所有关联数据
-      await tx.refreshToken
-        .deleteMany({ where: { userId: id } })
-        .catch(() => {});
-      await tx.message.deleteMany({ where: { senderId: id } }).catch(() => {});
-      // 删除用户参与的会话
-      await tx.conversationParticipant
-        .deleteMany({
-          where: { userId: id },
-        })
-        .catch(() => {});
-      await tx.follow
-        .deleteMany({
-          where: { OR: [{ followerId: id }, { followingId: id }] },
-        })
-        .catch(() => {});
-      await tx.block
-        .deleteMany({
-          where: { OR: [{ blockerId: id }, { blockedId: id }] },
-        })
-        .catch(() => {});
-      await tx.admissionCase
-        .deleteMany({ where: { userId: id } })
-        .catch(() => {});
-      await tx.profile.deleteMany({ where: { userId: id } }).catch(() => {});
+    // [A4-008] hardDelete uses critical=true — errors roll back the transaction
+    const ctx = (entity: string) => ({
+      entity,
+      userId: id,
+      operation: 'hardDelete' as const,
+    });
 
-      // 最后删除用户
+    await this.prisma.$transaction(async (tx) => {
+      await safeDelete(
+        tx.refreshToken.deleteMany({ where: { userId: id } }),
+        ctx('refreshToken'),
+      );
+      await safeDelete(
+        tx.message.deleteMany({ where: { senderId: id } }),
+        ctx('message'),
+      );
+      await safeDelete(
+        tx.conversationParticipant.deleteMany({ where: { userId: id } }),
+        ctx('conversationParticipant'),
+      );
+      await safeDelete(
+        tx.follow.deleteMany({
+          where: { OR: [{ followerId: id }, { followingId: id }] },
+        }),
+        ctx('follow'),
+      );
+      await safeDelete(
+        tx.block.deleteMany({
+          where: { OR: [{ blockerId: id }, { blockedId: id }] },
+        }),
+        ctx('block'),
+      );
+      await safeDelete(
+        tx.admissionCase.deleteMany({ where: { userId: id } }),
+        ctx('admissionCase'),
+      );
+      await safeDelete(
+        tx.profile.deleteMany({ where: { userId: id } }),
+        ctx('profile'),
+      );
+
       await tx.user.delete({ where: { id } });
     });
 
@@ -210,5 +220,142 @@ export class UserService {
       exportDate: new Date().toISOString(),
       user: userData,
     };
+  }
+
+  // ============ Referral System ============
+
+  /**
+   * Get or create a unique referral code for a user
+   * @param userId - The unique identifier of the user
+   * @returns The user's referral code (8-char hex string)
+   */
+  async getOrCreateReferralCode(userId: string): Promise<string> {
+    const user = await this.findByIdOrThrow(userId);
+
+    if (user.referralCode) {
+      return user.referralCode;
+    }
+
+    // Generate a unique 8-char code
+    let code: string;
+    let attempts = 0;
+    do {
+      code = randomBytes(4).toString('hex').toUpperCase();
+      const existing = await this.prisma.user.findUnique({
+        where: { referralCode: code },
+      });
+      if (!existing) break;
+      attempts++;
+    } while (attempts < 10);
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { referralCode: code },
+    });
+
+    return code;
+  }
+
+  /**
+   * Get referral statistics for a user
+   * @param userId - The unique identifier of the referrer
+   * @returns Object with referral count and total points earned from referrals
+   */
+  async getReferralStats(userId: string): Promise<{
+    referralCount: number;
+    totalPointsEarned: number;
+  }> {
+    const referralCount = await this.prisma.user.count({
+      where: { referredById: userId },
+    });
+
+    // Count points earned from referral actions
+    const pointHistory = await this.prisma.pointHistory.findMany({
+      where: {
+        userId,
+        action: 'REFER_USER',
+      },
+      select: { points: true },
+    });
+
+    const totalPointsEarned = pointHistory.reduce(
+      (sum, h) => sum + h.points,
+      0,
+    );
+
+    return { referralCount, totalPointsEarned };
+  }
+
+  /**
+   * Get list of users referred by this user
+   * @param userId - The unique identifier of the referrer
+   * @returns Array of referred user objects with basic info
+   */
+  async getReferralList(userId: string): Promise<{
+    referrals: Array<{
+      id: string;
+      email: string;
+      joinedAt: Date;
+      pointsEarned: number;
+    }>;
+    total: number;
+  }> {
+    const [referrals, referralRewards] = await Promise.all([
+      this.prisma.user.findMany({
+        where: { referredById: userId },
+        select: {
+          id: true,
+          email: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.pointHistory.findMany({
+        where: {
+          userId,
+          action: 'REFER_USER',
+        },
+        select: {
+          points: true,
+          metadata: true,
+        },
+      }),
+    ]);
+
+    const pointsByReferredId = new Map<string, number>();
+    for (const reward of referralRewards) {
+      const metadata = reward.metadata as { referredUserId?: string } | null;
+      const referredUserId = metadata?.referredUserId;
+      if (!referredUserId) continue;
+
+      const current = pointsByReferredId.get(referredUserId) ?? 0;
+      pointsByReferredId.set(referredUserId, current + reward.points);
+    }
+
+    return {
+      referrals: referrals.map((r) => ({
+        id: r.id,
+        email: r.email,
+        joinedAt: r.createdAt,
+        pointsEarned: pointsByReferredId.get(r.id) ?? 0,
+      })),
+      total: referrals.length,
+    };
+  }
+
+  /**
+   * Validate a referral code and return the referrer user ID
+   * @param referralCode - The referral code to validate
+   * @returns The referrer's user ID if valid, null otherwise
+   */
+  async validateReferralCode(referralCode: string): Promise<string | null> {
+    const normalizedCode = referralCode.trim().toUpperCase();
+    if (!normalizedCode) return null;
+
+    const referrer = await this.prisma.user.findUnique({
+      where: { referralCode: normalizedCode },
+      select: { id: true },
+    });
+    return referrer?.id ?? null;
   }
 }

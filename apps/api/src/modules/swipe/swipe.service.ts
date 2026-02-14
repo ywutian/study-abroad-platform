@@ -21,7 +21,11 @@ import {
   SwipeBadge,
 } from './dto';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
-import { POINTS_ENABLED } from '@study-abroad/shared';
+import {
+  CaseIncentiveService,
+  PointAction,
+} from '../case/case-incentive.service';
+import { PointsConfigService } from '../case/points-config.service';
 
 // 徽章升级阈值
 const BADGE_THRESHOLDS = {
@@ -35,9 +39,8 @@ const BADGE_THRESHOLDS = {
 // 每日挑战目标
 const DAILY_CHALLENGE_TARGET = 10;
 
-// 积分奖励
-const POINTS_CORRECT = 5;
-const POINTS_STREAK_BONUS = 2; // 每连胜额外奖励
+// Streak bonus multiplier
+const POINTS_STREAK_BONUS = 2;
 const MAX_POINTS_PER_SWIPE = 20;
 
 // Prisma include 类型定义 — 含学校 + 用户档案 (活动、奖项、成绩)
@@ -74,6 +77,10 @@ export class SwipeService {
 
   constructor(
     private prisma: PrismaService,
+    @Inject(forwardRef(() => CaseIncentiveService))
+    private caseIncentiveService: CaseIncentiveService,
+    @Inject(forwardRef(() => PointsConfigService))
+    private pointsConfig: PointsConfigService,
     @Optional()
     @Inject(forwardRef(() => MemoryManagerService))
     private memoryManager?: MemoryManagerService,
@@ -173,11 +180,14 @@ export class SwipeService {
     const newBadge = this.calculateBadge(newCorrectCount);
     const badgeUpgraded = newBadge !== stats.badge;
 
-    // 计算积分
+    // 计算积分 (base value from config)
+    const baseSwipePoints = await this.pointsConfig.getPointValue(
+      PointAction.SWIPE_CORRECT,
+    );
     let pointsEarned = 0;
     if (isCorrect) {
       pointsEarned =
-        POINTS_CORRECT +
+        baseSwipePoints +
         (newStreak > 1 ? POINTS_STREAK_BONUS * (newStreak - 1) : 0);
       pointsEarned = Math.min(pointsEarned, MAX_POINTS_PER_SWIPE);
     }
@@ -208,24 +218,24 @@ export class SwipeService {
             dailyChallengeCount: isNewDay ? 1 : { increment: 1 },
           },
         }),
-        // 更新用户积分
-        ...(POINTS_ENABLED && pointsEarned > 0
-          ? [
-              this.prisma.user.update({
-                where: { id: userId },
-                data: { points: { increment: pointsEarned } },
-              }),
-              this.prisma.pointHistory.create({
-                data: {
-                  userId,
-                  action: 'SWIPE_CORRECT',
-                  points: pointsEarned,
-                  metadata: { caseId: dto.caseId, streak: newStreak },
-                },
-              }),
-            ]
-          : []),
       ]);
+
+      // Award points outside transaction via centralized service
+      if (pointsEarned > 0) {
+        await this.caseIncentiveService
+          .adjustPoints(
+            userId,
+            PointAction.SWIPE_CORRECT,
+            {
+              caseId: dto.caseId,
+              streak: newStreak,
+            },
+            pointsEarned,
+          )
+          .catch((err) => {
+            this.logger.error('Failed to award swipe points', err);
+          });
+      }
     } catch (error) {
       // P2002: 唯一约束冲突 — 用户已对此案例提交过预测
       if (

@@ -739,8 +739,13 @@ export class PersistentMemoryService {
   }
 
   /**
-   * 获取用户实体
+   * Retrieve entities belonging to a user, optionally filtered by entity type.
+   *
+   * @param userId - The user whose entities to retrieve
+   * @param options - Optional filters: entity types to include and result limit (default: 50)
+   * @returns An array of entity records ordered by most recently updated
    */
+  // 获取用户实体
   async getEntities(
     userId: string,
     options: { types?: EntityType[]; limit?: number } = {},
@@ -762,10 +767,18 @@ export class PersistentMemoryService {
   }
 
   /**
-   * 搜索实体
+   * Search entities by keyword matching on name and description fields.
    *
-   * 注意: Entity 表没有 embedding 列，使用关键词匹配（name + description）
+   * Since the Entity table lacks an embedding column, this uses case-insensitive
+   * substring matching instead of vector similarity. All results are assigned
+   * a fixed similarity score of 0.5.
+   *
+   * @param userId - The user whose entities to search
+   * @param query - The search string to match against entity names and descriptions
+   * @param options - Optional filters: entity types and result limit (default: 10)
+   * @returns Matching entities with a fixed similarity of 0.5
    */
+  // 注意: Entity 表没有 embedding 列，使用关键词匹配（name + description）
   async searchEntities(
     userId: string,
     query: string,
@@ -796,8 +809,12 @@ export class PersistentMemoryService {
   // ==================== 用户偏好 ====================
 
   /**
-   * 获取用户偏好
+   * Retrieve user AI preferences, returning sensible defaults if no record exists.
+   *
+   * @param userId - The user whose preferences to fetch
+   * @returns The user's AI preferences including communication style, language, and feature toggles
    */
+  // 获取用户偏好
   async getPreferences(userId: string): Promise<UserPreferences> {
     const prefs = await this.prisma.userAIPreference.findUnique({
       where: { userId },
@@ -819,8 +836,13 @@ export class PersistentMemoryService {
   }
 
   /**
-   * 更新用户偏好
+   * Create or update user AI preferences using upsert semantics.
+   *
+   * @param userId - The user whose preferences to update
+   * @param updates - Partial preference fields to merge with existing values
+   * @returns The full updated preferences object
    */
+  // 更新用户偏好
   async updatePreferences(
     userId: string,
     updates: Partial<UserPreferences>,
@@ -881,6 +903,11 @@ export class PersistentMemoryService {
     };
   }
 
+  /**
+   * Return default AI preferences for users without an existing preference record.
+   *
+   * @returns Default preferences: friendly style, moderate length, zh-CN language, memory and suggestions enabled
+   */
   private getDefaultPreferences(): UserPreferences {
     return {
       communicationStyle: 'friendly',
@@ -894,11 +921,25 @@ export class PersistentMemoryService {
   // ==================== 事务操作 ====================
 
   /**
-   * 事务化保存对话结束数据（摘要 + 记忆 + 实体）
+   * Atomically save end-of-conversation data within a single database transaction.
    *
-   * 记忆在事务内不含 embedding（避免 raw SQL 复杂性），
-   * 事务成功后异步补充 embedding。
+   * The transaction includes:
+   * 1. Updating the conversation summary
+   * 2. Creating extracted fact memories (without embeddings to avoid raw SQL complexity)
+   * 3. Upserting extracted entities
+   *
+   * After the transaction commits successfully, embeddings are backfilled
+   * asynchronously for the created memories (fire-and-forget).
+   *
+   * @param conversationId - The conversation being ended
+   * @param userId - The user who owns the conversation
+   * @param summary - The generated conversation summary text
+   * @param facts - Extracted fact memories to persist
+   * @param entities - Extracted entities to upsert
    */
+  // 事务化保存对话结束数据（摘要 + 记忆 + 实体）
+  // 记忆在事务内不含 embedding（避免 raw SQL 复杂性），
+  // 事务成功后异步补充 embedding。
   async saveEndConversationData(
     conversationId: string,
     userId: string,
@@ -978,8 +1019,14 @@ export class PersistentMemoryService {
   }
 
   /**
-   * 为已创建的记忆补充 embedding
+   * Asynchronously generate and store embedding vectors for memories that were
+   * created without them (e.g., during a transaction). Uses batch embedding
+   * generation and raw SQL UPDATE to set the vector column.
+   *
+   * @param memoryIds - IDs of the memories to backfill
+   * @param facts - The original memory inputs (used to retrieve content text)
    */
+  // 为已创建的记忆补充 embedding
   private async backfillEmbeddings(
     memoryIds: string[],
     facts: MemoryInput[],
@@ -1002,8 +1049,13 @@ export class PersistentMemoryService {
   // ==================== 统计 ====================
 
   /**
-   * 获取记忆统计
+   * Compute aggregate memory statistics for a user, including total counts,
+   * breakdown by memory type, and recent activity metrics (last 7 days).
+   *
+   * @param userId - The user whose statistics to compute
+   * @returns Aggregated memory statistics
    */
+  // 获取记忆统计
   async getStats(userId: string): Promise<MemoryStats> {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -1056,6 +1108,12 @@ export class PersistentMemoryService {
 
   // ==================== 辅助方法 ====================
 
+  /**
+   * Convert a raw database row into a typed MemoryRecord, mapping null values to undefined.
+   *
+   * @param m - The raw memory row from Prisma or $queryRaw
+   * @returns A normalized MemoryRecord
+   */
   private toMemoryRecord(m: RawMemoryRow): MemoryRecord {
     return {
       id: m.id,
@@ -1072,6 +1130,12 @@ export class PersistentMemoryService {
     };
   }
 
+  /**
+   * Convert a raw message row into a typed MessageRecord.
+   *
+   * @param m - The raw message row from Prisma
+   * @returns A normalized MessageRecord
+   */
   private toMessageRecord(m: RawMessageRow): MessageRecord {
     return {
       id: m.id,
@@ -1086,6 +1150,12 @@ export class PersistentMemoryService {
     };
   }
 
+  /**
+   * Convert a raw entity row into a typed EntityRecord.
+   *
+   * @param e - The raw entity row from Prisma
+   * @returns A normalized EntityRecord
+   */
   private toEntityRecord(e: RawEntityRow): EntityRecord {
     return {
       id: e.id,

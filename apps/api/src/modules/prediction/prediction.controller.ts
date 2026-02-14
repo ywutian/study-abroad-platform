@@ -7,8 +7,9 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { PredictionService } from './prediction.service';
-import { CurrentUser } from '../../common/decorators';
+import { CurrentUser, Roles } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
+import { Role } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PredictionRequestDto, PredictionResponseDto } from './dto';
 
@@ -95,6 +96,7 @@ export class PredictionController {
   }
 
   @Get('calibration')
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: '获取模型校准数据（管理员）' })
   async getCalibration() {
     return this.predictionService.getCalibrationData();

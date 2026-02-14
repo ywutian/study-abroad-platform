@@ -173,6 +173,7 @@ model User {
 
   // Relations
   profile         Profile?
+  refreshTokens   RefreshToken[]
   followers       Follow[]                  @relation("Following")
   following       Follow[]                  @relation("Followers")
   blockedUsers    Block[]                   @relation("Blocker")
@@ -225,19 +226,34 @@ model User {
   // Verification
   verificationRequests VerificationRequest[]
 
+  // Referral system
+  referralCode    String?   @unique
+  referredById    String?
+  referredBy      User?     @relation("UserReferrals", fields: [referredById], references: [id])
+  referrals       User[]    @relation("UserReferrals")
+
+  // Ban system
+  isBanned      Boolean   @default(false)
+  bannedAt      DateTime?
+  bannedUntil   DateTime? // null = permanent ban
+  banReason     String?
+
   // Timestamps
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  lastLoginAt DateTime?
 
   @@index([email])
   @@index([deletedAt])
+  @@index([isBanned])
 }
 
 model RefreshToken {
   id        String   @id @default(cuid())
   token     String   @unique
   userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
   createdAt DateTime @default(now())
 
@@ -1347,9 +1363,7 @@ enum EssayType {
   UC
   MAIN
   SUPPLEMENTAL
-  SUPPLEMENT
   WHY_SCHOOL
-  WHY_US
   SHORT_ANSWER
   ACTIVITY
   OPTIONAL

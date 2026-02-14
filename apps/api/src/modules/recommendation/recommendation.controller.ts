@@ -27,7 +27,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 @ApiTags('recommendation')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@Controller('recommendation')
+@Controller('recommendations')
 export class RecommendationController {
   constructor(private readonly recommendationService: RecommendationService) {}
 

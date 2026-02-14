@@ -25,6 +25,7 @@ import {
   Zap,
   AlertCircle,
 } from 'lucide-react';
+import { QuickExperience } from '@/components/features/onboarding/quick-experience';
 
 interface DashboardData {
   user: {
@@ -152,6 +153,8 @@ export default function DashboardPage() {
 
   return (
     <PageContainer>
+      {/* Onboarding Quick Experience — auto-shows on first login */}
+      <QuickExperience />
       <div className="space-y-8">
         {/* Welcome Header */}
         <motion.div
