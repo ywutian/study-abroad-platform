@@ -9,6 +9,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import { Image, ImageContentFit, ImageSource, ImageStyle as ExpoImageStyle } from 'expo-image';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { Ionicons } from '@expo/vector-icons';
 
 import { useColors, borderRadius as themeRadius } from '@/utils/theme';
 
@@ -66,9 +67,9 @@ export function BlurImage({
     onLoad?.();
   };
 
-  const handleError = (error: any) => {
+  const handleError = (error: unknown) => {
     setHasError(true);
-    onError?.(error);
+    onError?.(error instanceof Error ? error : new Error(String(error)));
   };
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -119,10 +120,11 @@ export function BlurImage({
             { backgroundColor: colors.muted },
           ]}
         >
-          <Image
-            style={styles.errorIcon}
-            source={require('@expo/vector-icons')}
-            contentFit="contain"
+          <Ionicons
+            name="image-outline"
+            size={24}
+            color={colors.foregroundMuted}
+            style={{ opacity: 0.5 }}
           />
         </View>
       )}
@@ -174,10 +176,5 @@ const styles = StyleSheet.create({
   errorContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  errorIcon: {
-    width: 24,
-    height: 24,
-    opacity: 0.5,
   },
 });

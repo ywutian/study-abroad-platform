@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
@@ -206,7 +206,7 @@ export default function ProfileScreen() {
                   <Badge variant="secondary">{item.badge}</Badge>
                 ) : undefined
               }
-              onPress={() => router.push(item.route as any)}
+              onPress={() => router.push(item.route as Href)}
             />
           ))}
         </ListGroup>
@@ -228,7 +228,7 @@ export default function ProfileScreen() {
                   <Text style={{ color: colors.foregroundMuted }}>{item.value}</Text>
                 ) : undefined
               }
-              onPress={item.route ? () => router.push(item.route as any) : undefined}
+              onPress={item.route ? () => router.push(item.route as Href) : undefined}
               showChevron={!!item.route}
             />
           ))}

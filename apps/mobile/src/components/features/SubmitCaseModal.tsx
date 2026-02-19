@@ -2,7 +2,7 @@
  * Submit Case Modal - Multi-step form for submitting admission cases
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -94,9 +94,8 @@ export function SubmitCaseModal({ visible, onClose, onSuccess }: SubmitCaseModal
     }
   };
 
-  // School autocomplete search
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedSchoolSearch = useCallback(
+  // School autocomplete search — debounce stored in ref to avoid re-creation
+  const debouncedSchoolSearchRef = useRef(
     debounce(async (query: string) => {
       if (query.length < 2) {
         setSchoolResults([]);
@@ -116,9 +115,16 @@ export function SubmitCaseModal({ visible, onClose, onSuccess }: SubmitCaseModal
       } finally {
         setSearchingSchools(false);
       }
-    }, 300),
-    []
+    }, 300)
   );
+
+  // Cancel pending debounce on unmount
+  useEffect(() => {
+    const cancel = debouncedSchoolSearchRef.current;
+    return () => {
+      cancel.cancel();
+    };
+  }, []);
 
   const handleSchoolSearchChange = (text: string) => {
     setSchoolSearch(text);
@@ -126,7 +132,7 @@ export function SubmitCaseModal({ visible, onClose, onSuccess }: SubmitCaseModal
       updateField('schoolId', '');
       updateField('schoolName', '');
     }
-    debouncedSchoolSearch(text);
+    debouncedSchoolSearchRef.current(text);
   };
 
   const selectSchool = (school: School) => {
@@ -137,28 +143,37 @@ export function SubmitCaseModal({ visible, onClose, onSuccess }: SubmitCaseModal
     setSchoolResults([]);
   };
 
-  const yearOptions = [
-    { value: '2026', label: '2026' },
-    { value: '2025', label: '2025' },
-    { value: '2024', label: '2024' },
-    { value: '2023', label: '2023' },
-    { value: '2022', label: '2022' },
-  ];
+  const yearOptions = useMemo(
+    () => [
+      { value: '2026', label: '2026' },
+      { value: '2025', label: '2025' },
+      { value: '2024', label: '2024' },
+      { value: '2023', label: '2023' },
+      { value: '2022', label: '2022' },
+    ],
+    []
+  );
 
-  const resultOptions = [
-    { value: 'ADMITTED', label: t('cases.result.admitted') },
-    { value: 'REJECTED', label: t('cases.result.rejected') },
-    { value: 'WAITLISTED', label: t('cases.result.waitlisted') },
-    { value: 'DEFERRED', label: t('cases.result.deferred') },
-  ];
+  const resultOptions = useMemo(
+    () => [
+      { value: 'ADMITTED', label: t('cases.result.admitted') },
+      { value: 'REJECTED', label: t('cases.result.rejected') },
+      { value: 'WAITLISTED', label: t('cases.result.waitlisted') },
+      { value: 'DEFERRED', label: t('cases.result.deferred') },
+    ],
+    [t]
+  );
 
-  const roundOptions = [
-    { value: 'ED', label: 'ED' },
-    { value: 'ED2', label: 'ED2' },
-    { value: 'EA', label: 'EA' },
-    { value: 'REA', label: 'REA' },
-    { value: 'RD', label: 'RD' },
-  ];
+  const roundOptions = useMemo(
+    () => [
+      { value: 'ED', label: 'ED' },
+      { value: 'ED2', label: 'ED2' },
+      { value: 'EA', label: 'EA' },
+      { value: 'REA', label: 'REA' },
+      { value: 'RD', label: 'RD' },
+    ],
+    []
+  );
 
   // Validation
   const validateStep1 = (): boolean => {
@@ -173,19 +188,19 @@ export function SubmitCaseModal({ visible, onClose, onSuccess }: SubmitCaseModal
   const validateStep2 = (): boolean => {
     const newErrors: Partial<Record<keyof CaseFormData, string>> = {};
     if (form.gpa && (isNaN(Number(form.gpa)) || Number(form.gpa) < 0 || Number(form.gpa) > 5)) {
-      newErrors.gpa = 'GPA must be 0-5';
+      newErrors.gpa = t('cases.submit.gpaRange');
     }
     if (
       form.satScore &&
       (isNaN(Number(form.satScore)) || Number(form.satScore) < 400 || Number(form.satScore) > 1600)
     ) {
-      newErrors.satScore = 'SAT must be 400-1600';
+      newErrors.satScore = t('cases.submit.satRange');
     }
     if (
       form.actScore &&
       (isNaN(Number(form.actScore)) || Number(form.actScore) < 1 || Number(form.actScore) > 36)
     ) {
-      newErrors.actScore = 'ACT must be 1-36';
+      newErrors.actScore = t('cases.submit.actRange');
     }
     if (
       form.toeflScore &&
@@ -193,13 +208,13 @@ export function SubmitCaseModal({ visible, onClose, onSuccess }: SubmitCaseModal
         Number(form.toeflScore) < 0 ||
         Number(form.toeflScore) > 120)
     ) {
-      newErrors.toeflScore = 'TOEFL must be 0-120';
+      newErrors.toeflScore = t('cases.submit.toeflRange');
     }
     if (
       form.ieltsScore &&
       (isNaN(Number(form.ieltsScore)) || Number(form.ieltsScore) < 0 || Number(form.ieltsScore) > 9)
     ) {
-      newErrors.ieltsScore = 'IELTS must be 0-9';
+      newErrors.ieltsScore = t('cases.submit.ieltsRange');
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -267,7 +282,11 @@ export function SubmitCaseModal({ visible, onClose, onSuccess }: SubmitCaseModal
 
   // Step indicators
   const renderStepIndicator = () => (
-    <View style={styles.stepIndicator}>
+    <View
+      style={styles.stepIndicator}
+      accessibilityRole="tablist"
+      accessibilityLabel={t('cases.submit.stepProgress', { step, total: TOTAL_STEPS })}
+    >
       {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
         <View
           key={i}
@@ -278,6 +297,8 @@ export function SubmitCaseModal({ visible, onClose, onSuccess }: SubmitCaseModal
             },
             i + 1 === step && styles.stepDotActive,
           ]}
+          accessibilityLabel={t('cases.submit.stepN', { n: i + 1 })}
+          accessibilityState={{ selected: i + 1 === step }}
         />
       ))}
     </View>
@@ -313,7 +334,11 @@ export function SubmitCaseModal({ visible, onClose, onSuccess }: SubmitCaseModal
           <View
             style={[
               styles.schoolDropdown,
-              { backgroundColor: colors.card, borderColor: colors.border },
+              {
+                backgroundColor: colors.card,
+                borderColor: colors.border,
+                shadowColor: colors.shadow,
+              },
             ]}
           >
             {schoolResults.map((school) => (
@@ -346,7 +371,7 @@ export function SubmitCaseModal({ visible, onClose, onSuccess }: SubmitCaseModal
         label={t('cases.submit.selectMajor')}
         value={form.major}
         onChangeText={(text) => updateField('major', text)}
-        placeholder="e.g., Computer Science"
+        placeholder={t('cases.submit.majorPlaceholder')}
       />
 
       <Select
@@ -390,17 +415,17 @@ export function SubmitCaseModal({ visible, onClose, onSuccess }: SubmitCaseModal
             label={t('cases.submit.enterGpa')}
             value={form.gpa}
             onChangeText={(text) => updateField('gpa', text)}
-            placeholder="e.g., 3.85"
+            placeholder={t('cases.submit.gpaPlaceholder')}
             keyboardType="decimal-pad"
             error={errors.gpa}
           />
         </View>
         <View style={styles.halfInput}>
           <Input
-            label="GPA Scale"
+            label={t('cases.submit.gpaScale')}
             value={form.gpaScale}
             onChangeText={(text) => updateField('gpaScale', text)}
-            placeholder="e.g., 4.0"
+            placeholder={t('cases.submit.gpaScalePlaceholder')}
             keyboardType="decimal-pad"
           />
         </View>
@@ -412,7 +437,7 @@ export function SubmitCaseModal({ visible, onClose, onSuccess }: SubmitCaseModal
             label="SAT"
             value={form.satScore}
             onChangeText={(text) => updateField('satScore', text)}
-            placeholder="400-1600"
+            placeholder={t('cases.submit.satPlaceholder')}
             keyboardType="number-pad"
             error={errors.satScore}
           />
@@ -422,7 +447,7 @@ export function SubmitCaseModal({ visible, onClose, onSuccess }: SubmitCaseModal
             label="ACT"
             value={form.actScore}
             onChangeText={(text) => updateField('actScore', text)}
-            placeholder="1-36"
+            placeholder={t('cases.submit.actPlaceholder')}
             keyboardType="number-pad"
             error={errors.actScore}
           />
@@ -435,7 +460,7 @@ export function SubmitCaseModal({ visible, onClose, onSuccess }: SubmitCaseModal
             label="TOEFL"
             value={form.toeflScore}
             onChangeText={(text) => updateField('toeflScore', text)}
-            placeholder="0-120"
+            placeholder={t('cases.submit.toeflPlaceholder')}
             keyboardType="number-pad"
             error={errors.toeflScore}
           />
@@ -445,7 +470,7 @@ export function SubmitCaseModal({ visible, onClose, onSuccess }: SubmitCaseModal
             label="IELTS"
             value={form.ieltsScore}
             onChangeText={(text) => updateField('ieltsScore', text)}
-            placeholder="0-9"
+            placeholder={t('cases.submit.ieltsPlaceholder')}
             keyboardType="decimal-pad"
             error={errors.ieltsScore}
           />
@@ -593,7 +618,6 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.md,
     maxHeight: 200,
     zIndex: 20,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,

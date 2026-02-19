@@ -55,7 +55,11 @@ export function Badge({ children, variant = 'default', style }: BadgeProps) {
   const variantStyles = getVariantStyles();
 
   return (
-    <View style={[styles.container, variantStyles.container, style]}>
+    <View
+      style={[styles.container, variantStyles.container, style]}
+      accessible={true}
+      accessibilityRole="text"
+    >
       <Text style={[styles.text, variantStyles.text]}>{children}</Text>
     </View>
   );

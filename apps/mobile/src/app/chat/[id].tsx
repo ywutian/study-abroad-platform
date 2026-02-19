@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
 import {
   View,
   Text,
@@ -22,6 +22,63 @@ import { useAuthStore } from '@/stores';
 import { useChatSocket } from '@/hooks/useChatSocket';
 import { useColors, spacing, fontSize, borderRadius } from '@/utils/theme';
 import type { Conversation, Message } from '@/types';
+
+interface MessageBubbleProps {
+  item: Message;
+  isMe: boolean;
+  otherEmail: string | undefined;
+  colors: ReturnType<typeof useColors>;
+}
+
+const MessageBubble = memo(function MessageBubble({
+  item,
+  isMe,
+  otherEmail,
+  colors,
+}: MessageBubbleProps) {
+  return (
+    <View style={[styles.messageContainer, isMe ? styles.myMessage : styles.theirMessage]}>
+      {!isMe && <Avatar source={null} name={otherEmail} size="sm" style={styles.messageAvatar} />}
+      <View
+        style={[
+          styles.messageBubble,
+          {
+            backgroundColor: isMe ? colors.primary : colors.muted,
+          },
+        ]}
+      >
+        <Text
+          style={[
+            styles.messageText,
+            { color: isMe ? colors.primaryForeground : colors.foreground },
+          ]}
+        >
+          {item.content}
+        </Text>
+        <View style={styles.messageFooter}>
+          <Text
+            style={[
+              styles.messageTime,
+              {
+                color: isMe ? colors.onGradientMuted : colors.foregroundMuted,
+              },
+            ]}
+          >
+            {format(new Date(item.createdAt), 'HH:mm')}
+          </Text>
+          {isMe && item.read && (
+            <Ionicons
+              name="checkmark-done"
+              size={14}
+              color={colors.onGradientMuted}
+              style={styles.readIcon}
+            />
+          )}
+        </View>
+      </View>
+    </View>
+  );
+});
 
 export default function ChatScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -151,6 +208,15 @@ export default function ChatScreen() {
   const typingUserIds = id ? getTypingUsers(id) : [];
   const isOtherTyping = otherUserId ? typingUserIds.includes(otherUserId) : false;
 
+  const renderMessage = ({ item }: { item: Message }) => (
+    <MessageBubble
+      item={item}
+      isMe={item.senderId === user?.id}
+      otherEmail={otherParticipant?.email}
+      colors={colors}
+    />
+  );
+
   if (isLoading) {
     return <Loading fullScreen />;
   }
@@ -162,60 +228,6 @@ export default function ChatScreen() {
       </View>
     );
   }
-
-  const renderMessage = ({ item }: { item: Message }) => {
-    const isMe = item.senderId === user?.id;
-
-    return (
-      <View style={[styles.messageContainer, isMe ? styles.myMessage : styles.theirMessage]}>
-        {!isMe && (
-          <Avatar
-            source={null}
-            name={otherParticipant?.email}
-            size="sm"
-            style={styles.messageAvatar}
-          />
-        )}
-        <View
-          style={[
-            styles.messageBubble,
-            {
-              backgroundColor: isMe ? colors.primary : colors.muted,
-            },
-          ]}
-        >
-          <Text
-            style={[
-              styles.messageText,
-              { color: isMe ? colors.primaryForeground : colors.foreground },
-            ]}
-          >
-            {item.content}
-          </Text>
-          <View style={styles.messageFooter}>
-            <Text
-              style={[
-                styles.messageTime,
-                {
-                  color: isMe ? 'rgba(255,255,255,0.7)' : colors.foregroundMuted,
-                },
-              ]}
-            >
-              {format(new Date(item.createdAt), 'HH:mm')}
-            </Text>
-            {isMe && item.read && (
-              <Ionicons
-                name="checkmark-done"
-                size={14}
-                color="rgba(255,255,255,0.7)"
-                style={styles.readIcon}
-              />
-            )}
-          </View>
-        </View>
-      </View>
-    );
-  };
 
   return (
     <>

@@ -51,15 +51,15 @@ export function Select({
 
   return (
     <View style={[styles.container, style]}>
-      {label && (
-        <Text style={[styles.label, { color: colors.foreground }]}>
-          {label}
-        </Text>
-      )}
-      
+      {label && <Text style={[styles.label, { color: colors.foreground }]}>{label}</Text>}
+
       <TouchableOpacity
         onPress={() => !disabled && setIsOpen(true)}
         disabled={disabled}
+        accessible={true}
+        accessibilityRole="combobox"
+        accessibilityLabel={label || placeholder}
+        accessibilityState={{ expanded: isOpen, disabled }}
         style={[
           styles.trigger,
           {
@@ -73,31 +73,19 @@ export function Select({
           style={[
             styles.triggerText,
             {
-              color: selectedOption
-                ? colors.foreground
-                : colors.placeholder,
+              color: selectedOption ? colors.foreground : colors.placeholder,
             },
           ]}
           numberOfLines={1}
         >
           {selectedOption?.label || placeholder}
         </Text>
-        <Ionicons
-          name="chevron-down"
-          size={20}
-          color={colors.foregroundMuted}
-        />
+        <Ionicons name="chevron-down" size={20} color={colors.foregroundMuted} />
       </TouchableOpacity>
 
-      {error && (
-        <Text style={[styles.error, { color: colors.error }]}>{error}</Text>
-      )}
+      {error && <Text style={[styles.error, { color: colors.error }]}>{error}</Text>}
 
-      <BottomSheet
-        visible={isOpen}
-        onClose={() => setIsOpen(false)}
-        title={label || placeholder}
-      >
+      <BottomSheet visible={isOpen} onClose={() => setIsOpen(false)} title={label || placeholder}>
         <FlatList
           data={options}
           keyExtractor={(item) => item.value}
@@ -117,9 +105,7 @@ export function Select({
                 style={[
                   styles.optionText,
                   {
-                    color: item.disabled
-                      ? colors.foregroundMuted
-                      : colors.foreground,
+                    color: item.disabled ? colors.foregroundMuted : colors.foreground,
                   },
                   item.value === value && { color: colors.primary },
                 ]}
@@ -127,11 +113,7 @@ export function Select({
                 {item.label}
               </Text>
               {item.value === value && (
-                <Ionicons
-                  name="checkmark"
-                  size={20}
-                  color={colors.primary}
-                />
+                <Ionicons name="checkmark" size={20} color={colors.primary} />
               )}
             </TouchableOpacity>
           )}
@@ -185,12 +167,8 @@ export function MultiSelect({
 
   return (
     <View style={[styles.container, style]}>
-      {label && (
-        <Text style={[styles.label, { color: colors.foreground }]}>
-          {label}
-        </Text>
-      )}
-      
+      {label && <Text style={[styles.label, { color: colors.foreground }]}>{label}</Text>}
+
       <TouchableOpacity
         onPress={() => !disabled && setIsOpen(true)}
         disabled={disabled}
@@ -207,38 +185,26 @@ export function MultiSelect({
           style={[
             styles.triggerText,
             {
-              color: selectedLabels
-                ? colors.foreground
-                : colors.placeholder,
+              color: selectedLabels ? colors.foreground : colors.placeholder,
             },
           ]}
           numberOfLines={1}
         >
           {selectedLabels || placeholder}
         </Text>
-        <Ionicons
-          name="chevron-down"
-          size={20}
-          color={colors.foregroundMuted}
-        />
+        <Ionicons name="chevron-down" size={20} color={colors.foregroundMuted} />
       </TouchableOpacity>
 
-      {error && (
-        <Text style={[styles.error, { color: colors.error }]}>{error}</Text>
-      )}
+      {error && <Text style={[styles.error, { color: colors.error }]}>{error}</Text>}
 
-      <BottomSheet
-        visible={isOpen}
-        onClose={() => setIsOpen(false)}
-        title={label || placeholder}
-      >
+      <BottomSheet visible={isOpen} onClose={() => setIsOpen(false)} title={label || placeholder}>
         <FlatList
           data={options}
           keyExtractor={(item) => item.value}
           renderItem={({ item }) => {
             const isSelected = value.includes(item.value);
             const isDisabledByMax = !isSelected && max !== undefined && value.length >= max;
-            
+
             return (
               <TouchableOpacity
                 onPress={() => handleToggle(item.value)}
@@ -255,30 +221,23 @@ export function MultiSelect({
                   style={[
                     styles.checkbox,
                     {
-                      borderColor: isSelected
-                        ? colors.primary
-                        : colors.border,
-                      backgroundColor: isSelected
-                        ? colors.primary
-                        : 'transparent',
+                      borderColor: isSelected ? colors.primary : colors.border,
+                      backgroundColor: isSelected ? colors.primary : 'transparent',
                     },
                   ]}
                 >
                   {isSelected && (
-                    <Ionicons
-                      name="checkmark"
-                      size={14}
-                      color={colors.primaryForeground}
-                    />
+                    <Ionicons name="checkmark" size={14} color={colors.primaryForeground} />
                   )}
                 </View>
                 <Text
                   style={[
                     styles.optionText,
                     {
-                      color: item.disabled || isDisabledByMax
-                        ? colors.foregroundMuted
-                        : colors.foreground,
+                      color:
+                        item.disabled || isDisabledByMax
+                          ? colors.foregroundMuted
+                          : colors.foreground,
                     },
                   ]}
                 >
@@ -349,4 +308,3 @@ const styles = StyleSheet.create({
     marginRight: spacing.md,
   },
 });
-

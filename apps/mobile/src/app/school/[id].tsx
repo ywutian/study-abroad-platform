@@ -176,8 +176,12 @@ export default function SchoolDetailScreen() {
                     {prompt.prompt}
                   </Text>
                   <View style={styles.essayMeta}>
-                    {prompt.wordLimit && <Badge variant="outline">{prompt.wordLimit} words</Badge>}
-                    {prompt.required && <Badge variant="error">Required</Badge>}
+                    {prompt.wordLimit && (
+                      <Badge variant="outline">
+                        {prompt.wordLimit} {t('common.words')}
+                      </Badge>
+                    )}
+                    {prompt.required && <Badge variant="error">{t('common.required')}</Badge>}
                   </View>
                 </CardContent>
               </Card>

@@ -418,9 +418,15 @@ export interface Essay {
 
 // School extended fields
 export interface SchoolDeadline {
-  type: string;
-  date: string;
+  id: string;
+  schoolId: string;
+  year: number;
+  round: string;
+  applicationDeadline: string;
+  financialAidDeadline?: string;
+  decisionDate?: string;
   notes?: string;
+  applicationFee?: number;
 }
 
 export interface SchoolMetric {
@@ -432,9 +438,16 @@ export interface SchoolMetric {
 }
 
 export interface EssayPrompt {
+  id: string;
+  schoolId?: string;
+  type?: string;
+  status?: string;
+  year?: number;
   prompt: string;
+  promptZh?: string;
   wordLimit?: number;
-  required?: boolean;
+  isRequired?: boolean;
+  sortOrder?: number;
 }
 
 // Social

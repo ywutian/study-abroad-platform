@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient, QueryCache, MutationCache } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as SplashScreen from 'expo-splash-screen';
@@ -11,18 +11,18 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 
-import { initI18n } from '@/lib/i18n';
-import { initSentry, setUser as setSentryUser } from '@/lib/sentry';
+import { initI18n, i18n } from '@/lib/i18n';
+import { initSentry, setUser as setSentryUser, captureException } from '@/lib/sentry';
 import { useAuthStore } from '@/stores';
 import { useThemeStore } from '@/stores/theme';
 import { useChatSocket } from '@/hooks/useChatSocket';
 import { useNotifications, type Notification as AppNotification } from '@/hooks/useNotifications';
 import { useNotificationStore } from '@/stores/notification';
-import { ToastProvider } from '@/components/ui/Toast';
+import { ToastProvider, useToast } from '@/components/ui/Toast';
 import { Loading } from '@/components/ui/Loading';
 import { Button } from '@/components/ui/Button';
 import { NetworkProvider, ErrorBoundary } from '@/components/providers';
-import { useColors } from '@/utils/theme';
+import { useColors, colors as themeColors, withOpacity } from '@/utils/theme';
 import { createAsyncStoragePersister, MAX_CACHE_AGE_MS } from '@/lib/query-persister';
 import { BIOMETRIC_ENABLED_KEY } from '@/screens/settings/SettingsScreen';
 
@@ -33,17 +33,58 @@ initSentry();
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (error) => {
+      captureException(error instanceof Error ? error : new Error(String(error)), {
+        source: 'react-query',
+      });
+    },
+  }),
+  mutationCache: new MutationCache({
+    onError: (error) => {
+      captureException(error instanceof Error ? error : new Error(String(error)), {
+        source: 'react-query-mutation',
+      });
+    },
+  }),
   defaultOptions: {
     queries: {
       retry: 2,
       staleTime: 1000 * 60 * 5, // 5 minutes
       gcTime: 1000 * 60 * 30, // 30 minutes
     },
+    mutations: {
+      retry: 1,
+    },
   },
 });
 
 const persister = createAsyncStoragePersister();
 const persistOptions = { persister, maxAge: MAX_CACHE_AGE_MS };
+
+/**
+ * Watches for session expiry and shows a toast to inform the user before
+ * clearing auth state. This prevents silent data loss.
+ */
+function SessionExpiredHandler() {
+  const sessionExpired = useAuthStore((s) => s.sessionExpired);
+  const clearSessionExpired = useAuthStore((s) => s.clearSessionExpired);
+  const logout = useAuthStore((s) => s.logout);
+  const toast = useToast();
+
+  useEffect(() => {
+    if (sessionExpired) {
+      toast.show({
+        type: 'error',
+        message: i18n.t('auth.sessionExpired'),
+        duration: 5000,
+      });
+      logout().finally(clearSessionExpired);
+    }
+  }, [sessionExpired, clearSessionExpired, logout, toast]);
+
+  return null;
+}
 
 /**
  * Bridges WebSocket events to local push notifications and maintains
@@ -69,6 +110,30 @@ function RealtimeProvider({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+const DETAIL_SCREENS = [
+  'school/[id]',
+  'case/[id]',
+  'chat/[id]',
+  'ranking',
+  'prediction',
+  'recommendation',
+  'find-college',
+  'essays',
+  'essay-gallery',
+  'timeline',
+  'assessment',
+  'forum',
+  'forum/[id]',
+  'followers',
+  'hall',
+  'swipe',
+  'uncommon-app',
+  'subscription',
+  'security',
+] as const;
+
+const DETAIL_SCREEN_OPTIONS = { title: '', headerBackTitle: '' } as const;
+
 function RootLayoutNav() {
   const colors = useColors();
   const { colorScheme } = useThemeStore();
@@ -93,139 +158,9 @@ function RootLayoutNav() {
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="school/[id]"
-          options={{
-            title: '',
-            headerBackTitle: '',
-          }}
-        />
-        <Stack.Screen
-          name="case/[id]"
-          options={{
-            title: '',
-            headerBackTitle: '',
-          }}
-        />
-        <Stack.Screen
-          name="chat/[id]"
-          options={{
-            title: '',
-            headerBackTitle: '',
-          }}
-        />
-        <Stack.Screen
-          name="ranking"
-          options={{
-            title: '',
-            headerBackTitle: '',
-          }}
-        />
-        <Stack.Screen
-          name="prediction"
-          options={{
-            title: '',
-            headerBackTitle: '',
-          }}
-        />
-        <Stack.Screen
-          name="recommendation"
-          options={{
-            title: '',
-            headerBackTitle: '',
-          }}
-        />
-        <Stack.Screen
-          name="find-college"
-          options={{
-            title: '',
-            headerBackTitle: '',
-          }}
-        />
-        <Stack.Screen
-          name="essays"
-          options={{
-            title: '',
-            headerBackTitle: '',
-          }}
-        />
-        <Stack.Screen
-          name="essay-gallery"
-          options={{
-            title: '',
-            headerBackTitle: '',
-          }}
-        />
-        <Stack.Screen
-          name="timeline"
-          options={{
-            title: '',
-            headerBackTitle: '',
-          }}
-        />
-        <Stack.Screen
-          name="assessment"
-          options={{
-            title: '',
-            headerBackTitle: '',
-          }}
-        />
-        <Stack.Screen
-          name="forum"
-          options={{
-            title: '',
-            headerBackTitle: '',
-          }}
-        />
-        <Stack.Screen
-          name="forum/[id]"
-          options={{
-            title: '',
-            headerBackTitle: '',
-          }}
-        />
-        <Stack.Screen
-          name="followers"
-          options={{
-            title: '',
-            headerBackTitle: '',
-          }}
-        />
-        <Stack.Screen
-          name="hall"
-          options={{
-            title: '',
-            headerBackTitle: '',
-          }}
-        />
-        <Stack.Screen
-          name="swipe"
-          options={{
-            title: '',
-            headerBackTitle: '',
-          }}
-        />
-        <Stack.Screen
-          name="uncommon-app"
-          options={{
-            title: '',
-            headerBackTitle: '',
-          }}
-        />
-        <Stack.Screen
-          name="subscription"
-          options={{
-            title: '',
-            headerBackTitle: '',
-          }}
-        />
-        <Stack.Screen
-          name="security"
-          options={{
-            title: '',
-            headerBackTitle: '',
-          }}
-        />
+        {DETAIL_SCREENS.map((name) => (
+          <Stack.Screen key={name} name={name} options={DETAIL_SCREEN_OPTIONS} />
+        ))}
         <Stack.Screen
           name="profile"
           options={{
@@ -253,8 +188,8 @@ function BiometricLockScreen({ onUnlock }: { onUnlock: () => void }) {
   const handleAuthenticate = async () => {
     try {
       const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: 'Authenticate to continue',
-        fallbackLabel: 'Use passcode',
+        promptMessage: i18n.t('security.biometric.promptMessage'),
+        fallbackLabel: i18n.t('security.biometric.fallbackLabel'),
         disableDeviceFallback: false,
       });
 
@@ -274,17 +209,22 @@ function BiometricLockScreen({ onUnlock }: { onUnlock: () => void }) {
   return (
     <View style={[styles.biometricContainer, { backgroundColor: colors.background }]}>
       <View style={styles.biometricContent}>
-        <View style={[styles.biometricIconContainer, { backgroundColor: colors.primary + '15' }]}>
+        <View
+          style={[
+            styles.biometricIconContainer,
+            { backgroundColor: withOpacity(colors.primary, 0.08) },
+          ]}
+        >
           <Ionicons name="finger-print" size={48} color={colors.primary} />
         </View>
         <Text style={[styles.biometricTitle, { color: colors.foreground }]}>
-          Authentication Required
+          {i18n.t('security.biometric.lockTitle')}
         </Text>
         <Text style={[styles.biometricSubtitle, { color: colors.foregroundMuted }]}>
-          Please verify your identity to continue
+          {i18n.t('security.biometric.lockSubtitle')}
         </Text>
         <Button onPress={handleAuthenticate} style={styles.biometricButton}>
-          Authenticate
+          {i18n.t('security.biometric.lockButton')}
         </Button>
       </View>
     </View>
@@ -357,6 +297,7 @@ export default function RootLayout() {
           <ErrorBoundary>
             <NetworkProvider>
               <ToastProvider>
+                <SessionExpiredHandler />
                 <RealtimeProvider>
                   <RootLayoutNav />
                 </RealtimeProvider>
@@ -375,7 +316,7 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: themeColors.dark.background,
   },
   // Biometric lock screen styles
   biometricContainer: {

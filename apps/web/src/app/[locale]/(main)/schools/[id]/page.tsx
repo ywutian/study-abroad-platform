@@ -20,6 +20,7 @@ import {
 import { PageContainer } from '@/components/layout';
 import { LoadingState } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
+import { SchoolJsonLd } from '@/components/seo';
 import { apiClient } from '@/lib/api';
 import { useRouter } from '@/lib/i18n/navigation';
 import { useAuthStore } from '@/stores/auth';
@@ -268,6 +269,22 @@ export default function SchoolDetailPage() {
 
   return (
     <PageContainer maxWidth="6xl">
+      {school && (
+        <SchoolJsonLd
+          name={school.name}
+          url={school.website}
+          description={locale === 'zh' ? school.descriptionZh : school.description}
+          address={
+            school.city || school.state
+              ? {
+                  addressLocality: school.city,
+                  addressRegion: school.state,
+                  addressCountry: school.country || 'US',
+                }
+              : undefined
+          }
+        />
+      )}
       {/* Back Button */}
       <Button variant="ghost" size="sm" onClick={() => router.back()} className="mb-4 gap-2">
         <ArrowLeft className="h-4 w-4" />

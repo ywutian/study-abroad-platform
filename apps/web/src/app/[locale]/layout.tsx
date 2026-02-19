@@ -6,6 +6,8 @@ import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import { locales } from '@/lib/i18n/config';
 import { Providers } from '@/components/providers';
+import { OrganizationJsonLd, WebSiteJsonLd } from '@/components/seo';
+import { env } from '@/lib/env';
 import '../globals.css';
 
 export async function generateMetadata({
@@ -65,6 +67,20 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('theme');var d=document.documentElement;if(t==='dark'||((!t||t==='system')&&matchMedia('(prefers-color-scheme:dark)').matches)){d.classList.add('dark')}else{d.classList.remove('dark')}}catch(e){}})()`,
+          }}
+        />
+        <OrganizationJsonLd
+          name="Study Abroad Platform"
+          url={env.NEXT_PUBLIC_APP_URL}
+          description="AI-driven study abroad planning platform"
+        />
+        <WebSiteJsonLd
+          name="Study Abroad Platform"
+          url={env.NEXT_PUBLIC_APP_URL}
+          potentialAction={{
+            type: 'SearchAction',
+            target: `${env.NEXT_PUBLIC_APP_URL}/schools?q={search_term_string}`,
+            'query-input': 'required name=search_term_string',
           }}
         />
       </head>

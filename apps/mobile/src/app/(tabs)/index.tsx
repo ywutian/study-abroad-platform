@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -23,7 +23,14 @@ import {
 } from '@/components/ui';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import {
+  useColors,
+  colors as themeColors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+} from '@/utils/theme';
 import type { School, Case, PaginatedResponse } from '@/types';
 
 export default function HomeScreen() {
@@ -66,36 +73,39 @@ export default function HomeScreen() {
     setRefreshing(false);
   };
 
-  const quickActions = [
-    {
-      icon: 'person-outline' as const,
-      title: t('home.features.profile'),
-      desc: t('home.features.profileDesc'),
-      route: '/(tabs)/profile',
-      color: colors.primary,
-    },
-    {
-      icon: 'analytics-outline' as const,
-      title: t('home.features.prediction'),
-      desc: t('home.features.predictionDesc'),
-      route: '/(tabs)/ai',
-      color: colors.success,
-    },
-    {
-      icon: 'list-outline' as const,
-      title: t('home.features.ranking'),
-      desc: t('home.features.rankingDesc'),
-      route: '/(tabs)/schools',
-      color: colors.warning,
-    },
-    {
-      icon: 'document-text-outline' as const,
-      title: t('home.features.essay'),
-      desc: t('home.features.essayDesc'),
-      route: '/(tabs)/ai',
-      color: colors.info,
-    },
-  ];
+  const quickActions = useMemo(
+    () => [
+      {
+        icon: 'person-outline' as const,
+        title: t('home.features.profile'),
+        desc: t('home.features.profileDesc'),
+        route: '/(tabs)/profile',
+        color: colors.primary,
+      },
+      {
+        icon: 'analytics-outline' as const,
+        title: t('home.features.prediction'),
+        desc: t('home.features.predictionDesc'),
+        route: '/(tabs)/ai',
+        color: colors.success,
+      },
+      {
+        icon: 'list-outline' as const,
+        title: t('home.features.ranking'),
+        desc: t('home.features.rankingDesc'),
+        route: '/(tabs)/schools',
+        color: colors.warning,
+      },
+      {
+        icon: 'document-text-outline' as const,
+        title: t('home.features.essay'),
+        desc: t('home.features.essayDesc'),
+        route: '/(tabs)/ai',
+        color: colors.info,
+      },
+    ],
+    [t, colors.primary, colors.success, colors.warning, colors.info]
+  );
 
   return (
     <ScrollView
@@ -173,7 +183,7 @@ export default function HomeScreen() {
               style={styles.actionCardWrapper}
             >
               <AnimatedCard
-                onPress={() => router.push(action.route as any)}
+                onPress={() => router.push(action.route as Href)}
                 style={styles.actionCard}
               >
                 <CardContent style={styles.actionCardContent}>
@@ -363,33 +373,33 @@ const styles = StyleSheet.create({
   },
   heroWelcome: {
     fontSize: fontSize.base,
-    color: 'rgba(255,255,255,0.8)',
+    color: themeColors.light.onGradientMuted,
     marginBottom: spacing.xs,
   },
   heroName: {
     fontSize: fontSize['2xl'],
     fontWeight: fontWeight.bold,
-    color: '#ffffff',
+    color: themeColors.light.onGradient,
   },
   heroSubtitle: {
     fontSize: fontSize.sm,
-    color: 'rgba(255,255,255,0.8)',
+    color: themeColors.light.onGradientMuted,
     marginBottom: spacing.lg,
   },
   heroButton: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: themeColors.light.onGradientOverlay,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.lg,
     borderRadius: borderRadius.md,
     alignSelf: 'flex-start',
   },
   heroButtonText: {
-    color: '#ffffff',
+    color: themeColors.light.onGradient,
     fontWeight: fontWeight.semibold,
   },
   statsRow: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: themeColors.light.onGradientOverlay,
     borderRadius: borderRadius.lg,
     padding: spacing.lg,
   },
@@ -400,16 +410,16 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: fontSize.xl,
     fontWeight: fontWeight.bold,
-    color: '#ffffff',
+    color: themeColors.light.onGradient,
   },
   statLabel: {
     fontSize: fontSize.xs,
-    color: 'rgba(255,255,255,0.8)',
+    color: themeColors.light.onGradientMuted,
     marginTop: spacing.xs,
   },
   statDivider: {
     width: 1,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: themeColors.light.onGradientOverlay,
     marginHorizontal: spacing.md,
   },
   section: {

@@ -3,6 +3,7 @@
  */
 
 import React, { useState, useCallback } from 'react';
+import type { ComponentProps } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,7 +25,7 @@ import {
   Avatar,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useColors, type Colors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import { apiClient } from '@/lib/api/client';
 
 interface RankingWeights {
@@ -257,7 +258,7 @@ export default function CustomRankingScreen() {
                           <View style={styles.rankContainer}>
                             {rankIcon ? (
                               <Ionicons
-                                name={rankIcon.icon as any}
+                                name={rankIcon.icon as ComponentProps<typeof Ionicons>['name']}
                                 size={24}
                                 color={rankIcon.color}
                               />
@@ -338,7 +339,7 @@ function WeightSlider({
   value: number;
   onChange: (v: number) => void;
   hint?: string;
-  colors: any;
+  colors: Colors;
 }) {
   return (
     <View style={styles.sliderContainer}>

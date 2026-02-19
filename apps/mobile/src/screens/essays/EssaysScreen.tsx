@@ -2,11 +2,13 @@
  * 文书管理页面
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
+import type { ComponentProps } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import Animated, { FadeInDown, FadeInUp, Layout } from 'react-native-reanimated';
@@ -24,7 +26,7 @@ import {
   StatusBadge,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useColors, type Colors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
 
@@ -44,7 +46,7 @@ interface Essay {
   createdAt: string;
 }
 
-const getEssayTypes = (t: any): { value: EssayType; label: string; icon: string }[] => [
+const getEssayTypes = (t: TFunction): { value: EssayType; label: string; icon: string }[] => [
   { value: 'personal_statement', label: t('essays.types.personal_statement'), icon: 'person' },
   { value: 'supplemental', label: t('essays.types.supplemental'), icon: 'add-circle' },
   { value: 'why_school', label: t('essays.types.why_school'), icon: 'school' },
@@ -53,7 +55,7 @@ const getEssayTypes = (t: any): { value: EssayType; label: string; icon: string 
 ];
 
 const getStatusConfig = (
-  t: any
+  t: TFunction
 ): Record<EssayStatus, { label: string; variant: 'warning' | 'info' | 'primary' | 'success' }> => ({
   draft: { label: t('essays.status.draft'), variant: 'warning' },
   in_progress: { label: t('essays.status.in_progress'), variant: 'info' },
@@ -77,6 +79,7 @@ export default function EssaysScreen() {
     data: essays,
     isLoading,
     refetch,
+    isRefetching,
   } = useQuery({
     queryKey: ['essays'],
     queryFn: () => apiClient.get<Essay[]>('/profile/essays'),
@@ -90,18 +93,12 @@ export default function EssaysScreen() {
       queryClient.invalidateQueries({ queryKey: ['essays'] });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.show({ type: 'success', message: t('essays.toast.deleted') });
+      setDeleteId(null);
     },
     onError: () => {
       toast.show({ type: 'error', message: t('essays.toast.deleteFailed') });
     },
   });
-
-  const [refreshing, setRefreshing] = useState(false);
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await refetch();
-    setRefreshing(false);
-  }, [refetch]);
 
   const handleDelete = (id: string) => {
     setDeleteId(id);
@@ -110,7 +107,6 @@ export default function EssaysScreen() {
   const confirmDelete = () => {
     if (deleteId) {
       deleteMutation.mutate(deleteId);
-      setDeleteId(null);
     }
   };
 
@@ -119,12 +115,15 @@ export default function EssaysScreen() {
     essays?.filter((essay) => activeTab === 'all' || essay.status === activeTab) || [];
 
   // 统计
-  const stats = {
-    total: essays?.length || 0,
-    draft: essays?.filter((e) => e.status === 'draft').length || 0,
-    inProgress: essays?.filter((e) => e.status === 'in_progress').length || 0,
-    completed: essays?.filter((e) => e.status === 'completed').length || 0,
-  };
+  const stats = useMemo(
+    () => ({
+      total: essays?.length || 0,
+      draft: essays?.filter((e) => e.status === 'draft').length || 0,
+      inProgress: essays?.filter((e) => e.status === 'in_progress').length || 0,
+      completed: essays?.filter((e) => e.status === 'completed').length || 0,
+    }),
+    [essays]
+  );
 
   if (!isAuthenticated) {
     return (
@@ -142,7 +141,7 @@ export default function EssaysScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
         contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={() => refetch()} />}
         showsVerticalScrollIndicator={false}
       >
         {/* Stats */}
@@ -279,7 +278,11 @@ function StatCard({
         active && { borderColor: color, borderWidth: 2 },
       ]}
     >
-      <Ionicons name={icon as any} size={20} color={active ? color : colors.foregroundMuted} />
+      <Ionicons
+        name={icon as ComponentProps<typeof Ionicons>['name']}
+        size={20}
+        color={active ? color : colors.foregroundMuted}
+      />
       <Text style={[styles.statValue, { color: active ? color : colors.foreground }]}>{value}</Text>
       <Text style={[styles.statLabel, { color: colors.foregroundMuted }]}>{label}</Text>
     </TouchableOpacity>
@@ -295,7 +298,7 @@ function EssayCard({
   onAIReview,
 }: {
   essay: Essay;
-  colors: any;
+  colors: Colors;
   onPress: () => void;
   onDelete: () => void;
   onAIReview: () => void;
@@ -314,7 +317,7 @@ function EssayCard({
           <View style={styles.essayHeader}>
             <View style={[styles.typeIcon, { backgroundColor: colors.primary + '15' }]}>
               <Ionicons
-                name={(typeInfo?.icon as any) || 'document'}
+                name={(typeInfo?.icon || 'document') as ComponentProps<typeof Ionicons>['name']}
                 size={20}
                 color={colors.primary}
               />
@@ -327,7 +330,7 @@ function EssayCard({
                 {typeInfo?.label} {essay.schoolName && `· ${essay.schoolName}`}
               </Text>
             </View>
-            <StatusBadge status={essay.status as any} size="sm" />
+            <StatusBadge status={essay.status} size="sm" />
           </View>
 
           {/* Word Count Progress */}

@@ -2,6 +2,7 @@ import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 import { withSentryConfig } from '@sentry/nextjs';
 import withPWA from '@ducanh2912/next-pwa';
+import withBundleAnalyzer from '@next/bundle-analyzer';
 
 const withNextIntl = createNextIntlPlugin('./src/lib/i18n/request.ts');
 
@@ -19,6 +20,45 @@ const nextConfig: NextConfig = {
       'recharts',
       '@tanstack/react-query',
     ],
+  },
+  // 安全头 — 与 API 端 Helmet 配置保持一致
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          { key: 'X-DNS-Prefetch-Control', value: 'on' },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains; preload',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: https:",
+              "connect-src 'self' https://*.sentry.io wss:",
+              "font-src 'self'",
+              "frame-ancestors 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+            ].join('; '),
+          },
+        ],
+      },
+    ];
   },
   // 代理 API 请求到后端，避免跨域 cookie 问题
   async rewrites() {
@@ -85,10 +125,14 @@ const sentryConfig = {
   },
 };
 
-// 组合配置：Intl -> PWA -> Sentry
+// Bundle 分析：ANALYZE=true pnpm --filter web build
+const analyzeBundles = withBundleAnalyzer({ enabled: process.env.ANALYZE === 'true' });
+
+// 组合配置：Intl -> PWA -> BundleAnalyzer -> Sentry
 const configWithIntl = withNextIntl(nextConfig);
 const configWithPWA = pwaConfig(configWithIntl);
+const configWithAnalyzer = analyzeBundles(configWithPWA);
 
 export default process.env.SENTRY_DSN
-  ? withSentryConfig(configWithPWA, sentryConfig)
-  : configWithPWA;
+  ? withSentryConfig(configWithAnalyzer, sentryConfig)
+  : configWithAnalyzer;

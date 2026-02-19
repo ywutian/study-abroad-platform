@@ -20,7 +20,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { AnimatedButton, AnimatedCard, CardContent, Input } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import {
+  useColors,
+  colors as themeColors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+} from '@/utils/theme';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
 import { BIOMETRIC_ENABLED_KEY } from '@/screens/settings/SettingsScreen';
@@ -503,7 +510,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: themeColors.light.overlay,
     justifyContent: 'center',
     alignItems: 'center',
     padding: spacing.lg,

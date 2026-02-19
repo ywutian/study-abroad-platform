@@ -26,6 +26,7 @@ import {
   FileText,
   Trophy,
 } from 'lucide-react';
+import { ArticleJsonLd } from '@/components/seo';
 import { cn, getSchoolName } from '@/lib/utils';
 import {
   getResultBarColor,
@@ -97,6 +98,12 @@ export default function CaseDetailPage() {
 
   return (
     <PageContainer maxWidth="6xl">
+      <ArticleJsonLd
+        headline={`${getSchoolName(caseData, locale)} - ${resultLabel}`}
+        description={caseData.essayContent?.slice(0, 200)}
+        datePublished={caseData.createdAt}
+        dateModified={caseData.updatedAt}
+      />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

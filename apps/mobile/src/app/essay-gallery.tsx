@@ -374,6 +374,9 @@ export default function EssayGalleryPage() {
               setSelectedYear(y);
               setPage(1);
             }}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: active }}
+            accessibilityLabel={yearLabel(y)}
             style={[
               styles.filterPill,
               {
@@ -412,6 +415,9 @@ export default function EssayGalleryPage() {
               setSelectedType(type);
               setPage(1);
             }}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: active }}
+            accessibilityLabel={typeLabel(type)}
             style={[
               styles.filterPill,
               {
@@ -451,6 +457,11 @@ export default function EssayGalleryPage() {
               setSelectedResult(result);
               setPage(1);
             }}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: active }}
+            accessibilityLabel={
+              result === 'ALL' ? t('essayGallery.results.all') : resultLabel(result)
+            }
             style={[
               styles.filterPill,
               {
@@ -462,7 +473,7 @@ export default function EssayGalleryPage() {
               style={[
                 styles.filterPillText,
                 {
-                  color: active ? '#ffffff' : c.foreground,
+                  color: active ? c.onGradient : c.foreground,
                 },
               ]}
             >
@@ -488,79 +499,95 @@ export default function EssayGalleryPage() {
   };
 
   // Essay card
-  const renderEssayCard = ({ item, index }: { item: GalleryEssay; index: number }) => {
-    const resultColor = RESULT_COLORS[item.result] || c.foregroundMuted;
+  const renderEssayCard = useCallback(
+    ({ item, index }: { item: GalleryEssay; index: number }) => {
+      const resultColor = RESULT_COLORS[item.result] || c.foregroundMuted;
 
-    return (
-      <Animated.View entering={FadeInUp.delay(index * 50).springify()}>
-        <AnimatedCard onPress={() => openDetail(item.id)} style={styles.essayCard}>
-          <View style={styles.essayCardInner}>
-            {/* Left color indicator bar */}
-            <View style={[styles.resultBar, { backgroundColor: resultColor }]} />
+      return (
+        <Animated.View entering={FadeInUp.delay(index * 50).springify()}>
+          <AnimatedCard onPress={() => openDetail(item.id)} style={styles.essayCard}>
+            <View style={styles.essayCardInner}>
+              {/* Left color indicator bar */}
+              <View style={[styles.resultBar, { backgroundColor: resultColor }]} />
 
-            <View style={styles.essayCardBody}>
-              {/* Top row: school + rank */}
-              <View style={styles.essayCardTopRow}>
-                <View style={styles.schoolInfo}>
-                  <Text style={[styles.schoolName, { color: c.foreground }]} numberOfLines={1}>
-                    {item.school?.name || t('essayGallery.unknownSchool')}
-                  </Text>
-                  {item.school?.usNewsRank && (
-                    <View style={[styles.rankBadge, { backgroundColor: c.info + '20' }]}>
-                      <Text style={[styles.rankText, { color: c.info }]}>
-                        #{item.school.usNewsRank}
+              <View style={styles.essayCardBody}>
+                {/* Top row: school + rank */}
+                <View style={styles.essayCardTopRow}>
+                  <View style={styles.schoolInfo}>
+                    <Text style={[styles.schoolName, { color: c.foreground }]} numberOfLines={1}>
+                      {item.school?.name || t('essayGallery.unknownSchool')}
+                    </Text>
+                    {item.school?.usNewsRank && (
+                      <View style={[styles.rankBadge, { backgroundColor: c.info + '20' }]}>
+                        <Text style={[styles.rankText, { color: c.info }]}>
+                          #{item.school.usNewsRank}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                  {item.isVerified && (
+                    <View style={styles.verifiedBadge}>
+                      <Ionicons name="checkmark-circle" size={16} color={RESULT_COLORS.ADMITTED} />
+                      <Text style={[styles.verifiedText, { color: RESULT_COLORS.ADMITTED }]}>
+                        {t('essayGallery.verified')}
                       </Text>
                     </View>
                   )}
                 </View>
-                {item.isVerified && (
-                  <View style={styles.verifiedBadge}>
-                    <Ionicons name="checkmark-circle" size={16} color={RESULT_COLORS.ADMITTED} />
-                    <Text style={[styles.verifiedText, { color: RESULT_COLORS.ADMITTED }]}>
-                      {t('essayGallery.verified')}
-                    </Text>
-                  </View>
+
+                {/* Badges row */}
+                <View style={styles.badgeRow}>
+                  {item.essayType && <Badge variant="secondary">{typeLabel(item.essayType)}</Badge>}
+                  <Badge variant={resultBadgeVariant(item.result)}>
+                    {resultLabel(item.result)}
+                  </Badge>
+                  <Text style={[styles.yearText, { color: c.foregroundMuted }]}>{item.year}</Text>
+                </View>
+
+                {/* Preview */}
+                {item.preview && (
+                  <Text
+                    style={[styles.previewText, { color: c.foregroundSecondary }]}
+                    numberOfLines={3}
+                  >
+                    {item.preview}
+                  </Text>
                 )}
-              </View>
 
-              {/* Badges row */}
-              <View style={styles.badgeRow}>
-                {item.essayType && <Badge variant="secondary">{typeLabel(item.essayType)}</Badge>}
-                <Badge variant={resultBadgeVariant(item.result)}>{resultLabel(item.result)}</Badge>
-                <Text style={[styles.yearText, { color: c.foregroundMuted }]}>{item.year}</Text>
-              </View>
-
-              {/* Preview */}
-              {item.preview && (
-                <Text
-                  style={[styles.previewText, { color: c.foregroundSecondary }]}
-                  numberOfLines={3}
-                >
-                  {item.preview}
-                </Text>
-              )}
-
-              {/* Footer: word count + tags */}
-              <View style={styles.essayCardFooter}>
-                <Text style={[styles.wordCount, { color: c.foregroundMuted }]}>
-                  {t('essayGallery.wordCount', { count: item.wordCount })}
-                </Text>
-                {item.tags.length > 0 && (
-                  <View style={styles.tagsRow}>
-                    {item.tags.slice(0, 3).map((tag) => (
-                      <View key={tag} style={[styles.tagChip, { backgroundColor: c.muted }]}>
-                        <Text style={[styles.tagText, { color: c.foregroundMuted }]}>{tag}</Text>
-                      </View>
-                    ))}
-                  </View>
-                )}
+                {/* Footer: word count + tags */}
+                <View style={styles.essayCardFooter}>
+                  <Text style={[styles.wordCount, { color: c.foregroundMuted }]}>
+                    {t('essayGallery.wordCount', { count: item.wordCount })}
+                  </Text>
+                  {item.tags.length > 0 && (
+                    <View style={styles.tagsRow}>
+                      {item.tags.slice(0, 3).map((tag) => (
+                        <View key={tag} style={[styles.tagChip, { backgroundColor: c.muted }]}>
+                          <Text style={[styles.tagText, { color: c.foregroundMuted }]}>{tag}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </View>
               </View>
             </View>
-          </View>
-        </AnimatedCard>
-      </Animated.View>
-    );
-  };
+          </AnimatedCard>
+        </Animated.View>
+      );
+    },
+    [
+      c.foreground,
+      c.foregroundMuted,
+      c.foregroundSecondary,
+      c.info,
+      c.muted,
+      t,
+      openDetail,
+      typeLabel,
+      resultBadgeVariant,
+      resultLabel,
+    ]
+  );
 
   // Pagination
   const renderPagination = () => {
@@ -986,7 +1013,7 @@ export default function EssayGalleryPage() {
 // Helper Components (inline, not separate files)
 // ---------------------------------------------------------------------------
 
-function StructureCheckItem({
+const StructureCheckItem = React.memo(function StructureCheckItem({
   label,
   checked,
   colors: c,
@@ -1005,9 +1032,9 @@ function StructureCheckItem({
       <Text style={[styles.structureCheckLabel, { color: c.foreground }]}>{label}</Text>
     </View>
   );
-}
+});
 
-function ParagraphReviewCard({
+const ParagraphReviewCard = React.memo(function ParagraphReviewCard({
   paragraph,
   expanded,
   onToggle,
@@ -1101,7 +1128,7 @@ function ParagraphReviewCard({
       )}
     </View>
   );
-}
+});
 
 // ---------------------------------------------------------------------------
 // Styles

@@ -380,7 +380,7 @@ export default function SettingsScreen() {
 
       {/* Delete Account Dialog with password confirmation */}
       {deleteDialogVisible && (
-        <View style={styles.passwordOverlay}>
+        <View style={[styles.passwordOverlay, { backgroundColor: colors.overlay }]}>
           <View style={[styles.passwordDialog, { backgroundColor: colors.card }]}>
             <View style={[styles.deleteIconContainer, { backgroundColor: colors.error + '15' }]}>
               <Ionicons name="trash" size={32} color={colors.error} />
@@ -563,7 +563,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: spacing.lg,

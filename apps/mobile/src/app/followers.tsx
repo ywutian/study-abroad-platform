@@ -340,43 +340,46 @@ export default function FollowersPage() {
     );
   };
 
-  const renderUserCard = ({ item, index }: { item: UserWithProfile; index: number }) => {
-    if (activeTab === 'blocked') {
+  const renderUserCard = useCallback(
+    ({ item, index }: { item: UserWithProfile; index: number }) => {
+      if (activeTab === 'blocked') {
+        return (
+          <Animated.View entering={FadeInUp.delay(index * 60).duration(300)}>
+            <BlockedUserCard
+              user={item}
+              colors={colors}
+              onUnblock={() => setUnblockTarget(item)}
+              getDisplayName={getDisplayName}
+              getSubtitle={getSubtitle}
+              t={t}
+              loading={unblockMutation.isPending}
+            />
+          </Animated.View>
+        );
+      }
+
       return (
         <Animated.View entering={FadeInUp.delay(index * 60).duration(300)}>
-          <BlockedUserCard
+          <UserCard
             user={item}
             colors={colors}
-            onUnblock={() => setUnblockTarget(item)}
+            isFollowing={isFollowing(item.id)}
+            showFollowStatus={activeTab === 'followers'}
+            onFollow={() => followMutation.mutate(item.id)}
+            onUnfollow={() => unfollowMutation.mutate(item.id)}
+            onBlock={() => setBlockTarget(item)}
+            onPress={() => handleUserPress(item)}
             getDisplayName={getDisplayName}
             getSubtitle={getSubtitle}
             t={t}
-            loading={unblockMutation.isPending}
+            followLoading={followMutation.isPending}
+            unfollowLoading={unfollowMutation.isPending}
           />
         </Animated.View>
       );
-    }
-
-    return (
-      <Animated.View entering={FadeInUp.delay(index * 60).duration(300)}>
-        <UserCard
-          user={item}
-          colors={colors}
-          isFollowing={isFollowing(item.id)}
-          showFollowStatus={activeTab === 'followers'}
-          onFollow={() => followMutation.mutate(item.id)}
-          onUnfollow={() => unfollowMutation.mutate(item.id)}
-          onBlock={() => setBlockTarget(item)}
-          onPress={() => handleUserPress(item)}
-          getDisplayName={getDisplayName}
-          getSubtitle={getSubtitle}
-          t={t}
-          followLoading={followMutation.isPending}
-          unfollowLoading={unfollowMutation.isPending}
-        />
-      </Animated.View>
-    );
-  };
+    },
+    [activeTab, colors, isFollowing, followMutation, unfollowMutation, unblockMutation, t]
+  );
 
   // ==================== Render ====================
 
@@ -465,7 +468,7 @@ export default function FollowersPage() {
 
 // ==================== Sub-components ====================
 
-function RecommendationCard({
+const RecommendationCard = React.memo(function RecommendationCard({
   user,
   colors,
   isFollowing: alreadyFollowing,
@@ -518,9 +521,9 @@ function RecommendationCard({
       </View>
     </AnimatedCard>
   );
-}
+});
 
-function UserCard({
+const UserCard = React.memo(function UserCard({
   user,
   colors,
   isFollowing: alreadyFollowing,
@@ -591,9 +594,9 @@ function UserCard({
       </View>
     </AnimatedCard>
   );
-}
+});
 
-function BlockedUserCard({
+const BlockedUserCard = React.memo(function BlockedUserCard({
   user,
   colors,
   onUnblock,
@@ -638,7 +641,7 @@ function BlockedUserCard({
       </View>
     </AnimatedCard>
   );
-}
+});
 
 // ==================== Styles ====================
 

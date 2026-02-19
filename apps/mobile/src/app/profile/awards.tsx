@@ -275,7 +275,7 @@ export default function AwardsScreen() {
       {/* Floating Add Button */}
       {awards.length > 0 && (
         <TouchableOpacity
-          style={[styles.fab, { backgroundColor: colors.primary }]}
+          style={[styles.fab, { backgroundColor: colors.primary, shadowColor: colors.shadow }]}
           onPress={openAddModal}
           activeOpacity={0.8}
         >
@@ -442,7 +442,6 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,

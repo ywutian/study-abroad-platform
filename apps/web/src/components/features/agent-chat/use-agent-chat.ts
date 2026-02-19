@@ -17,9 +17,10 @@ import {
   useOptimisticAddConversation,
   useOptimisticUpdateConversation,
 } from './use-chat-history';
+import { env } from '@/lib/env';
 
 // SSE streaming requests connect to the backend directly to bypass Next.js proxy buffering
-const STREAM_API_URL = process.env.NEXT_PUBLIC_API_URL || '';
+const STREAM_API_URL = env.NEXT_PUBLIC_API_URL;
 
 interface UseAgentChatOptions {
   conversationId?: string;

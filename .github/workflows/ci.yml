@@ -139,12 +139,15 @@ jobs:
       - name: Run API tests
         run: pnpm --filter api exec jest --coverage --passWithNoTests --forceExit
 
-      - name: Upload coverage
+      - name: Upload API coverage
         uses: codecov/codecov-action@v4
         with:
           files: ./apps/api/coverage/lcov.info
           flags: api
           fail_ci_if_error: false
+
+      - name: Run Web tests
+        run: pnpm --filter web test
 
   e2e:
     name: E2E Tests

@@ -108,6 +108,9 @@ function AnimatedTabBarButton({
         pressed.value = withTiming(0, { duration: 100 });
       }}
       style={styles.tabButton}
+      accessibilityRole="tab"
+      accessibilityState={{ selected: isFocused }}
+      accessibilityLabel={label}
     >
       <Animated.View style={[styles.tabButtonInner, containerStyle]}>
         <AnimatedTabIcon

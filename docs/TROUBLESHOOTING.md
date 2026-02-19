@@ -309,6 +309,35 @@ cp apps/api/.env.example apps/api/.env
 # 最少需要：DATABASE_URL 和 JWT_SECRET
 ```
 
+### 2.7 登录/刷新 Token 请求超时 (408)
+
+**症状**：
+
+- 日志出现 `[TimeoutMiddleware] Request timeout after 30000ms: POST /api/v1/auth/login` 或 `POST /api/v1/auth/refresh`
+- 前端登录或刷新会话时一直转圈，最终报超时或 408
+
+**原因**：常见为以下之一：
+
+1. **数据库连接池耗尽**：Prisma 默认 `connection_limit=10`、`pool_timeout=30`。若连接被占满（长事务、慢查询、连接未释放），新请求会等待至多 30 秒后超时。
+2. **Redis 无响应**：登录会先查 Redis（暴力破解防护）。若 Redis 连接异常或命令挂起，请求会一直等待（现已为 Redis 增加命令超时 5s，超时后按“未锁定”放行）。
+3. **数据库或网络异常**：数据库不可达或极慢，导致 Prisma 查询挂起。
+
+**解决方案**：
+
+```bash
+# 1. 检查数据库是否可达、连接数
+docker exec -it study-abroad-db psql -U postgres -c "SELECT count(*) FROM pg_stat_activity WHERE datname = current_database();"
+
+# 2. 检查 Redis 是否正常（登录会先访问 Redis）
+docker exec -it study-abroad-redis redis-cli -a redis_dev_password ping
+
+# 3. 环境变量（可选）
+# 为 auth 单独设置更长超时（默认已改为 60s）：AUTH_REQUEST_TIMEOUT_MS=60000
+# Redis 命令超时（默认 5s）：REDIS_COMMAND_TIMEOUT_MS=5000
+
+# 4. 若为生产环境，检查是否有慢查询、连接泄漏，或适当增大 connection_limit / pool_timeout（需在 DATABASE_URL 中配置）
+```
+
 ---
 
 ## 3. Web 前端问题

@@ -1,7 +1,8 @@
 import type { MetadataRoute } from 'next';
 import { locales } from '@/lib/i18n/config';
+import { env } from '@/lib/env';
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://studyabroad.app';
+const baseUrl = env.NEXT_PUBLIC_APP_URL;
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();

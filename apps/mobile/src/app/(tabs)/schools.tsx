@@ -1,11 +1,9 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, memo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, RefreshControl } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { useInfiniteQuery } from '@tanstack/react-query';
-import debounce from 'lodash.debounce';
 
 import {
   Card,
@@ -18,65 +16,17 @@ import {
   Skeleton,
 } from '@/components/ui';
 import { BottomSheet } from '@/components/ui/Modal';
-import { apiClient } from '@/lib/api/client';
+import { useDebouncedSearch, usePaginatedQuery } from '@/hooks/api';
 import { useColors, spacing, fontSize, fontWeight } from '@/utils/theme';
-import type { School, PaginatedResponse } from '@/types';
+import type { School } from '@/types';
 
-type SortOption = 'usnewsRank' | 'acceptanceRate' | 'tuition' | 'name';
+interface SchoolListItemProps {
+  item: School;
+  colors: ReturnType<typeof useColors>;
+}
 
-export default function SchoolsScreen() {
-  const { t } = useTranslation();
-  const colors = useColors();
-
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [sortBy, setSortBy] = useState<SortOption>('usnewsRank');
-  const [filterVisible, setFilterVisible] = useState(false);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedSetSearch = useCallback(
-    debounce((value: string) => setDebouncedSearch(value), 300),
-    []
-  );
-
-  const handleSearchChange = (value: string) => {
-    setSearch(value);
-    debouncedSetSearch(value);
-  };
-
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, refetch, isRefetching } =
-    useInfiniteQuery({
-      queryKey: ['schools', debouncedSearch, sortBy],
-      queryFn: async ({ pageParam = 1 }) => {
-        return apiClient.get<PaginatedResponse<School>>('/schools', {
-          params: {
-            page: pageParam,
-            limit: 20,
-            search: debouncedSearch || undefined,
-            sort: sortBy,
-            order: sortBy === 'name' ? 'asc' : 'asc',
-          },
-        });
-      },
-      getNextPageParam: (lastPage) => {
-        if (lastPage.page < lastPage.totalPages) {
-          return lastPage.page + 1;
-        }
-        return undefined;
-      },
-      initialPageParam: 1,
-    });
-
-  const schools = data?.pages.flatMap((page) => page.items) || [];
-
-  const sortOptions: { value: SortOption; label: string }[] = [
-    { value: 'usnewsRank', label: t('schools.sort.ranking') },
-    { value: 'acceptanceRate', label: t('schools.sort.acceptanceRate') },
-    { value: 'tuition', label: t('schools.sort.tuition') },
-    { value: 'name', label: t('schools.sort.name') },
-  ];
-
-  const renderSchoolItem = ({ item }: { item: School }) => (
+const SchoolListItem = memo(function SchoolListItem({ item, colors }: SchoolListItemProps) {
+  return (
     <TouchableOpacity onPress={() => router.push(`/school/${item.id}`)} style={styles.cardWrapper}>
       <Card>
         <CardContent style={styles.cardContent}>
@@ -99,6 +49,46 @@ export default function SchoolsScreen() {
         </CardContent>
       </Card>
     </TouchableOpacity>
+  );
+});
+
+type SortOption = 'usnewsRank' | 'acceptanceRate' | 'tuition' | 'name';
+
+export default function SchoolsScreen() {
+  const { t } = useTranslation();
+  const colors = useColors();
+
+  const { search, debouncedSearch, handleSearchChange } = useDebouncedSearch();
+  const [sortBy, setSortBy] = useState<SortOption>('usnewsRank');
+  const [filterVisible, setFilterVisible] = useState(false);
+
+  const {
+    items: schools,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    refetch,
+    isRefetching,
+  } = usePaginatedQuery<School>({
+    queryKey: ['schools', debouncedSearch, sortBy],
+    endpoint: '/schools',
+    params: {
+      search: debouncedSearch || undefined,
+      sort: sortBy,
+      order: sortBy === 'name' ? 'asc' : 'asc',
+    },
+  });
+
+  const sortOptions: { value: SortOption; label: string }[] = [
+    { value: 'usnewsRank', label: t('schools.sort.ranking') },
+    { value: 'acceptanceRate', label: t('schools.sort.acceptanceRate') },
+    { value: 'tuition', label: t('schools.sort.tuition') },
+    { value: 'name', label: t('schools.sort.name') },
+  ];
+
+  const renderSchoolItem = ({ item }: { item: School }) => (
+    <SchoolListItem item={item} colors={colors} />
   );
 
   const renderFooter = () => {

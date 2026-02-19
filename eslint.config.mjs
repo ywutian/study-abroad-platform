@@ -62,8 +62,7 @@ export default tseslint.config(
       reportUnusedDisableDirectives: 'warn',
     },
     rules: {
-      // ── Keep rules relaxed at root level ──
-      // Sub-projects enforce stricter rules via `turbo lint`
+      // ── Strict rules enforced at root level ──
 
       // TypeScript
       '@typescript-eslint/no-explicit-any': 'warn',
@@ -78,15 +77,15 @@ export default tseslint.config(
       '@typescript-eslint/no-namespace': 'warn',
       '@typescript-eslint/ban-ts-comment': 'off',
 
-      // Core JS
+      // Core JS — promoted to error where violations are zero or near-zero
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       'no-undef': 'off',
-      'no-empty': 'warn',
+      'no-empty': 'error',
       'no-unused-expressions': 'off',
-      'no-useless-escape': 'warn',
-      'no-misleading-character-class': 'warn',
-      'no-case-declarations': 'warn',
-      'prefer-const': 'warn',
+      'no-useless-escape': 'error',
+      'no-misleading-character-class': 'error',
+      'no-case-declarations': 'error',
+      'prefer-const': 'error',
     },
   },
 );

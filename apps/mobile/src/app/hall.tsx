@@ -572,138 +572,149 @@ export default function HallOfFamePage() {
     return '#ef4444';
   };
 
-  const renderReviewCard = ({ item, index }: { item: Review; index: number }) => {
-    const avg = averageScore(item);
-    const avgColor = getScoreColor(avg);
+  const renderReviewCard = useCallback(
+    ({ item, index }: { item: Review; index: number }) => {
+      const avg = averageScore(item);
+      const avgColor = getScoreColor(avg);
 
-    return (
-      <Animated.View entering={FadeInUp.delay(index * 60).springify()}>
-        <AnimatedCard style={S.reviewCard}>
-          <CardContent>
-            {/* Header: reviewer avatar + name + avg score */}
-            <View style={S.reviewHeader}>
-              <View style={S.reviewerRow}>
-                <Avatar source={item.reviewer.avatarUrl} name={item.reviewer.nickname} size="sm" />
-                <View style={{ marginLeft: spacing.sm, flex: 1 }}>
-                  <Text style={[S.reviewerName, { color: c.foreground }]}>
-                    {item.reviewer.nickname}
-                  </Text>
-                  <Text style={[S.reviewDate, { color: c.foregroundMuted }]}>
-                    {new Date(item.createdAt).toLocaleDateString()}
-                  </Text>
+      return (
+        <Animated.View entering={FadeInUp.delay(index * 60).springify()}>
+          <AnimatedCard style={S.reviewCard}>
+            <CardContent>
+              {/* Header: reviewer avatar + name + avg score */}
+              <View style={S.reviewHeader}>
+                <View style={S.reviewerRow}>
+                  <Avatar
+                    source={item.reviewer.avatarUrl}
+                    name={item.reviewer.nickname}
+                    size="sm"
+                  />
+                  <View style={{ marginLeft: spacing.sm, flex: 1 }}>
+                    <Text style={[S.reviewerName, { color: c.foreground }]}>
+                      {item.reviewer.nickname}
+                    </Text>
+                    <Text style={[S.reviewDate, { color: c.foregroundMuted }]}>
+                      {new Date(item.createdAt).toLocaleDateString()}
+                    </Text>
+                  </View>
+                </View>
+                <View style={[S.avgBadge, { backgroundColor: avgColor + '18' }]}>
+                  <Text style={[S.avgBadgeText, { color: avgColor }]}>{avg}</Text>
                 </View>
               </View>
-              <View style={[S.avgBadge, { backgroundColor: avgColor + '18' }]}>
-                <Text style={[S.avgBadgeText, { color: avgColor }]}>{avg}</Text>
-              </View>
-            </View>
 
-            {/* Reviewing label */}
-            <View style={S.reviewForRow}>
-              <Ionicons name="person-outline" size={14} color={c.foregroundMuted} />
-              <Text style={[S.reviewForText, { color: c.foregroundMuted }]}>
-                {t('hallOfFame.reviews.reviewFor', 'Review for')}{' '}
-                <Text style={{ color: c.primary, fontWeight: fontWeight.semibold }}>
-                  {item.profileUser.nickname}
+              {/* Reviewing label */}
+              <View style={S.reviewForRow}>
+                <Ionicons name="person-outline" size={14} color={c.foregroundMuted} />
+                <Text style={[S.reviewForText, { color: c.foregroundMuted }]}>
+                  {t('hallOfFame.reviews.reviewFor', 'Review for')}{' '}
+                  <Text style={{ color: c.primary, fontWeight: fontWeight.semibold }}>
+                    {item.profileUser.nickname}
+                  </Text>
                 </Text>
-              </Text>
-            </View>
-
-            {/* Score bars */}
-            <View style={S.scoreBarsContainer}>
-              {renderScoreBar(
-                scoreLabel('academic'),
-                item.academicScore,
-                getScoreColor(item.academicScore)
-              )}
-              {renderScoreBar(scoreLabel('test'), item.testScore, getScoreColor(item.testScore))}
-              {renderScoreBar(
-                scoreLabel('activity'),
-                item.activityScore,
-                getScoreColor(item.activityScore)
-              )}
-              {renderScoreBar(scoreLabel('award'), item.awardScore, getScoreColor(item.awardScore))}
-              {renderScoreBar(
-                scoreLabel('overall'),
-                item.overallScore,
-                getScoreColor(item.overallScore)
-              )}
-            </View>
-
-            {/* Comment */}
-            {item.comment ? (
-              <Text style={[S.reviewComment, { color: c.foregroundSecondary }]} numberOfLines={4}>
-                {item.comment}
-              </Text>
-            ) : null}
-
-            {/* Tags */}
-            {item.tags && item.tags.length > 0 && (
-              <View style={S.tagsRow}>
-                {item.tags.map((tag) => (
-                  <View key={tag} style={[S.tagChip, { backgroundColor: c.muted }]}>
-                    <Text style={[S.tagChipText, { color: c.foregroundMuted }]}>{tag}</Text>
-                  </View>
-                ))}
               </View>
-            )}
 
-            {/* Reactions */}
-            <View style={S.reactionsRow}>
-              <TouchableOpacity
-                onPress={() => handleReact(item.id, 'helpful')}
-                style={[
-                  S.reactionBtn,
-                  {
-                    backgroundColor: item.myReaction === 'helpful' ? c.primary + '15' : c.muted,
-                  },
-                ]}
-              >
-                <Ionicons
-                  name="thumbs-up-outline"
-                  size={14}
-                  color={item.myReaction === 'helpful' ? c.primary : c.foregroundMuted}
-                />
-                <Text
+              {/* Score bars */}
+              <View style={S.scoreBarsContainer}>
+                {renderScoreBar(
+                  scoreLabel('academic'),
+                  item.academicScore,
+                  getScoreColor(item.academicScore)
+                )}
+                {renderScoreBar(scoreLabel('test'), item.testScore, getScoreColor(item.testScore))}
+                {renderScoreBar(
+                  scoreLabel('activity'),
+                  item.activityScore,
+                  getScoreColor(item.activityScore)
+                )}
+                {renderScoreBar(
+                  scoreLabel('award'),
+                  item.awardScore,
+                  getScoreColor(item.awardScore)
+                )}
+                {renderScoreBar(
+                  scoreLabel('overall'),
+                  item.overallScore,
+                  getScoreColor(item.overallScore)
+                )}
+              </View>
+
+              {/* Comment */}
+              {item.comment ? (
+                <Text style={[S.reviewComment, { color: c.foregroundSecondary }]} numberOfLines={4}>
+                  {item.comment}
+                </Text>
+              ) : null}
+
+              {/* Tags */}
+              {item.tags && item.tags.length > 0 && (
+                <View style={S.tagsRow}>
+                  {item.tags.map((tag) => (
+                    <View key={tag} style={[S.tagChip, { backgroundColor: c.muted }]}>
+                      <Text style={[S.tagChipText, { color: c.foregroundMuted }]}>{tag}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+
+              {/* Reactions */}
+              <View style={S.reactionsRow}>
+                <TouchableOpacity
+                  onPress={() => handleReact(item.id, 'helpful')}
                   style={[
-                    S.reactionText,
-                    { color: item.myReaction === 'helpful' ? c.primary : c.foregroundMuted },
+                    S.reactionBtn,
+                    {
+                      backgroundColor: item.myReaction === 'helpful' ? c.primary + '15' : c.muted,
+                    },
                   ]}
                 >
-                  {t('hallOfFame.reviews.helpful', 'Helpful')}{' '}
-                  {item.helpfulCount > 0 ? item.helpfulCount : ''}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => handleReact(item.id, 'insightful')}
-                style={[
-                  S.reactionBtn,
-                  {
-                    backgroundColor: item.myReaction === 'insightful' ? c.info + '15' : c.muted,
-                  },
-                ]}
-              >
-                <Ionicons
-                  name="bulb-outline"
-                  size={14}
-                  color={item.myReaction === 'insightful' ? c.info : c.foregroundMuted}
-                />
-                <Text
+                  <Ionicons
+                    name="thumbs-up-outline"
+                    size={14}
+                    color={item.myReaction === 'helpful' ? c.primary : c.foregroundMuted}
+                  />
+                  <Text
+                    style={[
+                      S.reactionText,
+                      { color: item.myReaction === 'helpful' ? c.primary : c.foregroundMuted },
+                    ]}
+                  >
+                    {t('hallOfFame.reviews.helpful', 'Helpful')}{' '}
+                    {item.helpfulCount > 0 ? item.helpfulCount : ''}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => handleReact(item.id, 'insightful')}
                   style={[
-                    S.reactionText,
-                    { color: item.myReaction === 'insightful' ? c.info : c.foregroundMuted },
+                    S.reactionBtn,
+                    {
+                      backgroundColor: item.myReaction === 'insightful' ? c.info + '15' : c.muted,
+                    },
                   ]}
                 >
-                  {t('hallOfFame.reviews.insightful', 'Insightful')}{' '}
-                  {item.insightfulCount > 0 ? item.insightfulCount : ''}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </CardContent>
-        </AnimatedCard>
-      </Animated.View>
-    );
-  };
+                  <Ionicons
+                    name="bulb-outline"
+                    size={14}
+                    color={item.myReaction === 'insightful' ? c.info : c.foregroundMuted}
+                  />
+                  <Text
+                    style={[
+                      S.reactionText,
+                      { color: item.myReaction === 'insightful' ? c.info : c.foregroundMuted },
+                    ]}
+                  >
+                    {t('hallOfFame.reviews.insightful', 'Insightful')}{' '}
+                    {item.insightfulCount > 0 ? item.insightfulCount : ''}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </CardContent>
+          </AnimatedCard>
+        </Animated.View>
+      );
+    },
+    [c, t, scoreLabel, renderScoreBar, handleReact]
+  );
 
   const renderReviewsTab = () => {
     if (reviewsLoading) return <Loading text={t('hallOfFame.loading', 'Loading...')} />;
@@ -755,81 +766,86 @@ export default function HallOfFamePage() {
   //  TAB 2: Ranking
   // =======================================================================
 
-  const renderRankingCard = ({ item, index }: { item: RankingResult; index: number }) => {
-    const pColor = getPercentileColor(item.percentile);
-    const breakdownKeys = item.breakdown ? Object.keys(item.breakdown) : [];
+  const renderRankingCard = useCallback(
+    ({ item, index }: { item: RankingResult; index: number }) => {
+      const pColor = getPercentileColor(item.percentile);
+      const breakdownKeys = item.breakdown ? Object.keys(item.breakdown) : [];
 
-    return (
-      <Animated.View entering={FadeInUp.delay(index * 60).springify()}>
-        <AnimatedCard style={S.rankingCard}>
-          <CardContent>
-            {/* Header: school name + percentile badge */}
-            <View style={S.rankingHeader}>
-              <View style={{ flex: 1 }}>
-                <Text style={[S.rankingSchoolName, { color: c.foreground }]} numberOfLines={1}>
-                  {item.schoolName}
-                </Text>
-                <Text style={[S.rankingApplicants, { color: c.foregroundMuted }]}>
-                  {t('hallOfFame.ranking.applicants', '{{count}} applicants', {
-                    count: item.totalApplicants,
-                  })}
-                </Text>
+      return (
+        <Animated.View entering={FadeInUp.delay(index * 60).springify()}>
+          <AnimatedCard style={S.rankingCard}>
+            <CardContent>
+              {/* Header: school name + percentile badge */}
+              <View style={S.rankingHeader}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[S.rankingSchoolName, { color: c.foreground }]} numberOfLines={1}>
+                    {item.schoolName}
+                  </Text>
+                  <Text style={[S.rankingApplicants, { color: c.foregroundMuted }]}>
+                    {t('hallOfFame.ranking.applicants', '{{count}} applicants', {
+                      count: item.totalApplicants,
+                    })}
+                  </Text>
+                </View>
+                <View style={[S.percentileBadge, { backgroundColor: pColor + '15' }]}>
+                  <Text style={[S.percentileText, { color: pColor }]}>
+                    {t('hallOfFame.ranking.top', 'Top')} {Math.round(100 - item.percentile)}%
+                  </Text>
+                </View>
               </View>
-              <View style={[S.percentileBadge, { backgroundColor: pColor + '15' }]}>
-                <Text style={[S.percentileText, { color: pColor }]}>
-                  {t('hallOfFame.ranking.top', 'Top')} {Math.round(100 - item.percentile)}%
-                </Text>
-              </View>
-            </View>
 
-            {/* Rank + Score row */}
-            <View style={S.rankScoreRow}>
-              <View style={S.rankBox}>
-                <Text style={[S.rankLabel, { color: c.foregroundMuted }]}>
-                  {t('hallOfFame.ranking.yourRank', 'Your Rank')}
-                </Text>
-                <Text style={[S.rankValue, { color: pColor }]}>#{item.yourRank}</Text>
+              {/* Rank + Score row */}
+              <View style={S.rankScoreRow}>
+                <View style={S.rankBox}>
+                  <Text style={[S.rankLabel, { color: c.foregroundMuted }]}>
+                    {t('hallOfFame.ranking.yourRank', 'Your Rank')}
+                  </Text>
+                  <Text style={[S.rankValue, { color: pColor }]}>#{item.yourRank}</Text>
+                </View>
+                <View style={[S.rankDivider, { backgroundColor: c.border }]} />
+                <View style={S.rankBox}>
+                  <Text style={[S.rankLabel, { color: c.foregroundMuted }]}>
+                    {t('hallOfFame.ranking.score', 'Score')}
+                  </Text>
+                  <Text style={[S.rankValue, { color: c.foreground }]}>{item.yourScore}</Text>
+                </View>
+                <View style={[S.rankDivider, { backgroundColor: c.border }]} />
+                <View style={S.rankBox}>
+                  <Text style={[S.rankLabel, { color: c.foregroundMuted }]}>
+                    {t('hallOfFame.ranking.position', 'Position')}
+                  </Text>
+                  <Text style={[S.positionText, { color: pColor }]}>
+                    {item.competitivePosition}
+                  </Text>
+                </View>
               </View>
-              <View style={[S.rankDivider, { backgroundColor: c.border }]} />
-              <View style={S.rankBox}>
-                <Text style={[S.rankLabel, { color: c.foregroundMuted }]}>
-                  {t('hallOfFame.ranking.score', 'Score')}
-                </Text>
-                <Text style={[S.rankValue, { color: c.foreground }]}>{item.yourScore}</Text>
-              </View>
-              <View style={[S.rankDivider, { backgroundColor: c.border }]} />
-              <View style={S.rankBox}>
-                <Text style={[S.rankLabel, { color: c.foregroundMuted }]}>
-                  {t('hallOfFame.ranking.position', 'Position')}
-                </Text>
-                <Text style={[S.positionText, { color: pColor }]}>{item.competitivePosition}</Text>
-              </View>
-            </View>
 
-            {/* Breakdown bars */}
-            {breakdownKeys.length > 0 && (
-              <View style={S.breakdownContainer}>
-                <Text style={[S.breakdownTitle, { color: c.foregroundMuted }]}>
-                  {t('hallOfFame.ranking.breakdown', 'Score Breakdown')}
-                </Text>
-                {breakdownKeys.map((key) => (
-                  <ProgressBar
-                    key={key}
-                    label={key}
-                    value={item.breakdown[key]}
-                    max={100}
-                    size="sm"
-                    color={pColor}
-                    style={{ marginBottom: spacing.xs }}
-                  />
-                ))}
-              </View>
-            )}
-          </CardContent>
-        </AnimatedCard>
-      </Animated.View>
-    );
-  };
+              {/* Breakdown bars */}
+              {breakdownKeys.length > 0 && (
+                <View style={[S.breakdownContainer, { borderTopColor: c.border }]}>
+                  <Text style={[S.breakdownTitle, { color: c.foregroundMuted }]}>
+                    {t('hallOfFame.ranking.breakdown', 'Score Breakdown')}
+                  </Text>
+                  {breakdownKeys.map((key) => (
+                    <ProgressBar
+                      key={key}
+                      label={key}
+                      value={item.breakdown[key]}
+                      max={100}
+                      size="sm"
+                      color={pColor}
+                      style={{ marginBottom: spacing.xs }}
+                    />
+                  ))}
+                </View>
+              )}
+            </CardContent>
+          </AnimatedCard>
+        </Animated.View>
+      );
+    },
+    [c, t]
+  );
 
   const renderRankingTab = () => {
     if (rankingLoading) return <Loading text={t('hallOfFame.loading', 'Loading...')} />;
@@ -864,87 +880,90 @@ export default function HallOfFamePage() {
   //  TAB 3: Lists
   // =======================================================================
 
-  const renderListCard = ({ item, index }: { item: HallList; index: number }) => (
-    <Animated.View entering={FadeInUp.delay(index * 60).springify()}>
-      <AnimatedCard style={S.listCard} onPress={() => openListDetail(item.id)}>
-        <CardContent>
-          <View style={S.listCardHeader}>
-            <View style={{ flex: 1 }}>
-              <Text style={[S.listTitle, { color: c.foreground }]} numberOfLines={1}>
-                {item.title}
-              </Text>
-              {item.description ? (
-                <Text style={[S.listDesc, { color: c.foregroundMuted }]} numberOfLines={2}>
-                  {item.description}
+  const renderListCard = useCallback(
+    ({ item, index }: { item: HallList; index: number }) => (
+      <Animated.View entering={FadeInUp.delay(index * 60).springify()}>
+        <AnimatedCard style={S.listCard} onPress={() => openListDetail(item.id)}>
+          <CardContent>
+            <View style={S.listCardHeader}>
+              <View style={{ flex: 1 }}>
+                <Text style={[S.listTitle, { color: c.foreground }]} numberOfLines={1}>
+                  {item.title}
                 </Text>
-              ) : null}
-            </View>
-            <Badge variant="secondary">{categoryLabel(item.category)}</Badge>
-          </View>
-
-          <View style={S.listCardFooter}>
-            {/* Creator */}
-            <View style={S.listCreator}>
-              <Avatar source={item.creator.avatarUrl} name={item.creator.nickname} size="sm" />
-              <Text style={[S.listCreatorName, { color: c.foregroundMuted }]}>
-                {item.creator.nickname}
-              </Text>
+                {item.description ? (
+                  <Text style={[S.listDesc, { color: c.foregroundMuted }]} numberOfLines={2}>
+                    {item.description}
+                  </Text>
+                ) : null}
+              </View>
+              <Badge variant="secondary">{categoryLabel(item.category)}</Badge>
             </View>
 
-            {/* Items count */}
-            <View style={S.listMeta}>
-              <Ionicons name="list-outline" size={14} color={c.foregroundMuted} />
-              <Text style={[S.listMetaText, { color: c.foregroundMuted }]}>{item.itemCount}</Text>
-            </View>
+            <View style={S.listCardFooter}>
+              {/* Creator */}
+              <View style={S.listCreator}>
+                <Avatar source={item.creator.avatarUrl} name={item.creator.nickname} size="sm" />
+                <Text style={[S.listCreatorName, { color: c.foregroundMuted }]}>
+                  {item.creator.nickname}
+                </Text>
+              </View>
 
-            {/* Vote */}
-            <View style={S.voteContainer}>
-              <TouchableOpacity
-                onPress={() => handleVote(item.id, 'up')}
-                style={[
-                  S.voteBtn,
-                  { backgroundColor: item.myVote === 'up' ? c.success + '15' : 'transparent' },
-                ]}
-              >
-                <Ionicons
-                  name={item.myVote === 'up' ? 'caret-up' : 'caret-up-outline'}
-                  size={18}
-                  color={item.myVote === 'up' ? c.success : c.foregroundMuted}
-                />
-              </TouchableOpacity>
-              <Text
-                style={[
-                  S.voteCount,
-                  {
-                    color:
-                      item.voteCount > 0
-                        ? c.success
-                        : item.voteCount < 0
-                          ? c.error
-                          : c.foregroundMuted,
-                  },
-                ]}
-              >
-                {item.voteCount}
-              </Text>
-              <TouchableOpacity
-                onPress={() => handleVote(item.id, 'down')}
-                style={[
-                  S.voteBtn,
-                  { backgroundColor: item.myVote === 'down' ? c.error + '15' : 'transparent' },
-                ]}
-              >
-                <Ionicons
-                  name={item.myVote === 'down' ? 'caret-down' : 'caret-down-outline'}
-                  size={18}
-                  color={item.myVote === 'down' ? c.error : c.foregroundMuted}
-                />
-              </TouchableOpacity>
+              {/* Items count */}
+              <View style={S.listMeta}>
+                <Ionicons name="list-outline" size={14} color={c.foregroundMuted} />
+                <Text style={[S.listMetaText, { color: c.foregroundMuted }]}>{item.itemCount}</Text>
+              </View>
+
+              {/* Vote */}
+              <View style={S.voteContainer}>
+                <TouchableOpacity
+                  onPress={() => handleVote(item.id, 'up')}
+                  style={[
+                    S.voteBtn,
+                    { backgroundColor: item.myVote === 'up' ? c.success + '15' : 'transparent' },
+                  ]}
+                >
+                  <Ionicons
+                    name={item.myVote === 'up' ? 'caret-up' : 'caret-up-outline'}
+                    size={18}
+                    color={item.myVote === 'up' ? c.success : c.foregroundMuted}
+                  />
+                </TouchableOpacity>
+                <Text
+                  style={[
+                    S.voteCount,
+                    {
+                      color:
+                        item.voteCount > 0
+                          ? c.success
+                          : item.voteCount < 0
+                            ? c.error
+                            : c.foregroundMuted,
+                    },
+                  ]}
+                >
+                  {item.voteCount}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => handleVote(item.id, 'down')}
+                  style={[
+                    S.voteBtn,
+                    { backgroundColor: item.myVote === 'down' ? c.error + '15' : 'transparent' },
+                  ]}
+                >
+                  <Ionicons
+                    name={item.myVote === 'down' ? 'caret-down' : 'caret-down-outline'}
+                    size={18}
+                    color={item.myVote === 'down' ? c.error : c.foregroundMuted}
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        </CardContent>
-      </AnimatedCard>
-    </Animated.View>
+          </CardContent>
+        </AnimatedCard>
+      </Animated.View>
+    ),
+    [c, openListDetail, categoryLabel, handleVote]
   );
 
   const renderListsTab = () => {
@@ -1024,69 +1043,72 @@ export default function HallOfFamePage() {
     );
   };
 
-  const renderVerifiedUserCard = ({ item, index }: { item: VerifiedUserDto; index: number }) => {
-    const isTop3 = item.rank <= 3;
-    const medalColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
-    const medalColor = isTop3 ? medalColors[item.rank - 1] : undefined;
-    const resultVariant = RESULT_BADGE_VARIANT[item.result] || ('secondary' as const);
+  const renderVerifiedUserCard = useCallback(
+    ({ item, index }: { item: VerifiedUserDto; index: number }) => {
+      const isTop3 = item.rank <= 3;
+      const medalColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
+      const medalColor = isTop3 ? medalColors[item.rank - 1] : undefined;
+      const resultVariant = RESULT_BADGE_VARIANT[item.result] || ('secondary' as const);
 
-    return (
-      <Animated.View entering={FadeInUp.delay(index * 50).springify()}>
-        <AnimatedCard style={S.verifiedCard}>
-          <CardContent>
-            <View style={S.verifiedRow}>
-              {/* Rank */}
-              <View style={[S.verifiedRank, isTop3 && { backgroundColor: medalColor + '20' }]}>
-                {isTop3 ? (
-                  <Ionicons name="trophy" size={18} color={medalColor} />
-                ) : (
-                  <Text style={[S.verifiedRankText, { color: c.foregroundMuted }]}>
-                    {item.rank}
-                  </Text>
-                )}
-              </View>
-
-              {/* User info */}
-              <Avatar source={item.avatarUrl} name={item.nickname} size="default" />
-              <View style={S.verifiedInfo}>
-                <View style={S.verifiedNameRow}>
-                  <Text style={[S.verifiedName, { color: c.foreground }]} numberOfLines={1}>
-                    {item.nickname}
-                  </Text>
-                  <Ionicons name="checkmark-circle" size={16} color={c.success} />
-                </View>
-                <Text style={[S.verifiedSchool, { color: c.foregroundMuted }]} numberOfLines={1}>
-                  {item.schoolNameZh || item.school}
-                  {item.major ? ` - ${item.major}` : ''}
-                </Text>
-                <View style={S.verifiedBadges}>
-                  <Badge variant={resultVariant}>{item.result}</Badge>
-                  {item.gpa != null && (
-                    <View style={[S.gpaBadge, { backgroundColor: c.info + '15' }]}>
-                      <Text style={[S.gpaBadgeText, { color: c.info }]}>GPA {item.gpa}</Text>
-                    </View>
-                  )}
-                  {item.sat != null && (
-                    <View style={[S.gpaBadge, { backgroundColor: c.warning + '15' }]}>
-                      <Text style={[S.gpaBadgeText, { color: c.warning }]}>SAT {item.sat}</Text>
-                    </View>
+      return (
+        <Animated.View entering={FadeInUp.delay(index * 50).springify()}>
+          <AnimatedCard style={S.verifiedCard}>
+            <CardContent>
+              <View style={S.verifiedRow}>
+                {/* Rank */}
+                <View style={[S.verifiedRank, isTop3 && { backgroundColor: medalColor + '20' }]}>
+                  {isTop3 ? (
+                    <Ionicons name="trophy" size={18} color={medalColor} />
+                  ) : (
+                    <Text style={[S.verifiedRankText, { color: c.foregroundMuted }]}>
+                      {item.rank}
+                    </Text>
                   )}
                 </View>
-              </View>
 
-              {/* Points */}
-              <View style={S.pointsBox}>
-                <Text style={[S.pointsValue, { color: c.primary }]}>{item.pointsTotal}</Text>
-                <Text style={[S.pointsLabel, { color: c.foregroundMuted }]}>
-                  {t('hallOfFame.verified.points', 'pts')}
-                </Text>
+                {/* User info */}
+                <Avatar source={item.avatarUrl} name={item.nickname} size="default" />
+                <View style={S.verifiedInfo}>
+                  <View style={S.verifiedNameRow}>
+                    <Text style={[S.verifiedName, { color: c.foreground }]} numberOfLines={1}>
+                      {item.nickname}
+                    </Text>
+                    <Ionicons name="checkmark-circle" size={16} color={c.success} />
+                  </View>
+                  <Text style={[S.verifiedSchool, { color: c.foregroundMuted }]} numberOfLines={1}>
+                    {item.schoolNameZh || item.school}
+                    {item.major ? ` - ${item.major}` : ''}
+                  </Text>
+                  <View style={S.verifiedBadges}>
+                    <Badge variant={resultVariant}>{item.result}</Badge>
+                    {item.gpa != null && (
+                      <View style={[S.gpaBadge, { backgroundColor: c.info + '15' }]}>
+                        <Text style={[S.gpaBadgeText, { color: c.info }]}>GPA {item.gpa}</Text>
+                      </View>
+                    )}
+                    {item.sat != null && (
+                      <View style={[S.gpaBadge, { backgroundColor: c.warning + '15' }]}>
+                        <Text style={[S.gpaBadgeText, { color: c.warning }]}>SAT {item.sat}</Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+
+                {/* Points */}
+                <View style={S.pointsBox}>
+                  <Text style={[S.pointsValue, { color: c.primary }]}>{item.pointsTotal}</Text>
+                  <Text style={[S.pointsLabel, { color: c.foregroundMuted }]}>
+                    {t('hallOfFame.verified.points', 'pts')}
+                  </Text>
+                </View>
               </View>
-            </View>
-          </CardContent>
-        </AnimatedCard>
-      </Animated.View>
-    );
-  };
+            </CardContent>
+          </AnimatedCard>
+        </Animated.View>
+      );
+    },
+    [c, t]
+  );
 
   const renderVerifiedTab = () => {
     if (verifiedLoading) return <Loading text={t('hallOfFame.loading', 'Loading...')} />;
@@ -1619,7 +1641,6 @@ const S = StyleSheet.create({
   },
   breakdownContainer: {
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.05)',
     paddingTop: spacing.md,
   },
   breakdownTitle: {

@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, fontSize, borderRadius, fontWeight } from '@/utils/theme';
+import { useTranslation } from 'react-i18next';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -37,6 +38,7 @@ export function Input({
   ...props
 }: InputProps) {
   const colors = useColors();
+  const { t } = useTranslation();
   const [isFocused, setIsFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -60,6 +62,9 @@ export function Input({
 
         <TextInput
           ref={ref}
+          accessible={true}
+          accessibilityLabel={label || props.placeholder}
+          accessibilityHint={error || hint}
           style={[
             styles.input,
             {
@@ -77,7 +82,13 @@ export function Input({
         />
 
         {isPasswordInput && (
-          <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.iconRight}>
+          <TouchableOpacity
+            onPress={() => setShowPassword(!showPassword)}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel={showPassword ? t('common.hidePassword') : t('common.showPassword')}
+            style={styles.iconRight}
+          >
             <Ionicons
               name={showPassword ? 'eye-off-outline' : 'eye-outline'}
               size={20}

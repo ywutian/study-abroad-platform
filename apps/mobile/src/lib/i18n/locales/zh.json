@@ -32,7 +32,17 @@
     "required": "必填",
     "words": "词",
     "points": "积分",
-    "reload": "重新加载应用"
+    "reload": "重新加载应用",
+    "clearSearch": "清除搜索",
+    "showPassword": "显示密码",
+    "hidePassword": "隐藏密码",
+    "time": {
+      "justNow": "刚刚",
+      "minutesShort": "{{count}}分钟",
+      "hoursShort": "{{count}}小时",
+      "daysShort": "{{count}}天",
+      "monthsShort": "{{count}}月"
+    }
   },
   "ui": {
     "dialog": {
@@ -146,7 +156,8 @@
       "passwordMismatch": "两次密码不一致",
       "emailRequired": "请输入邮箱",
       "passwordRequired": "请输入密码"
-    }
+    },
+    "sessionExpired": "登录已过期，请重新登录"
   },
   "profile": {
     "title": "我的档案",
@@ -348,9 +359,24 @@
       "enterActivities": "活动经历（可选）",
       "enterAwards": "奖项荣誉（可选）",
       "enterTips": "申请建议（可选）",
+      "majorPlaceholder": "例如：计算机科学",
+      "gpaScale": "GPA 满分",
+      "gpaPlaceholder": "例如：3.85",
+      "gpaScalePlaceholder": "例如：4.0",
+      "satPlaceholder": "400-1600",
+      "actPlaceholder": "1-36",
+      "toeflPlaceholder": "0-120",
+      "ieltsPlaceholder": "0-9",
+      "gpaRange": "GPA 须在 0-5 之间",
+      "satRange": "SAT 须在 400-1600 之间",
+      "actRange": "ACT 须在 1-36 之间",
+      "toeflRange": "TOEFL 须在 0-120 之间",
+      "ieltsRange": "IELTS 须在 0-9 之间",
       "privacySetting": "隐私设置",
       "submitSuccess": "案例提交成功，审核通过后将获得积分",
-      "submitFailed": "提交失败"
+      "submitFailed": "提交失败",
+      "stepProgress": "第 {{step}} 步，共 {{total}} 步",
+      "stepN": "第 {{n}} 步"
     },
     "noCases": "暂无案例"
   },
@@ -1318,7 +1344,12 @@
     "biometric": {
       "title": "生物识别",
       "description": "使用面容 ID 或指纹解锁应用",
-      "unavailable": "此设备不支持生物识别认证"
+      "unavailable": "此设备不支持生物识别认证",
+      "lockTitle": "需要认证",
+      "lockSubtitle": "请验证您的身份以继续",
+      "lockButton": "认证",
+      "promptMessage": "验证身份以继续",
+      "fallbackLabel": "使用密码"
     },
     "sessions": {
       "title": "活跃会话",

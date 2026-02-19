@@ -15,7 +15,6 @@ import { useTranslation } from 'react-i18next';
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import debounce from 'lodash.debounce';
 
 import {
   AnimatedCard,
@@ -31,6 +30,7 @@ import {
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { useToast } from '@/components/ui/Toast';
+import { useDebouncedSearch } from '@/hooks/api';
 import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import type { School, PaginatedResponse } from '@/types';
@@ -331,24 +331,12 @@ export default function FindCollegePage() {
   const queryClient = useQueryClient();
 
   // Search state
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const { search, debouncedSearch, handleSearchChange } = useDebouncedSearch();
 
   // Filter state
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [appliedFilters, setAppliedFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedSetSearch = useCallback(
-    debounce((value: string) => setDebouncedSearch(value), 300),
-    []
-  );
-
-  const handleSearchChange = (value: string) => {
-    setSearch(value);
-    debouncedSetSearch(value);
-  };
 
   // Count active filters for badge
   const activeFilterCount = useMemo(() => {

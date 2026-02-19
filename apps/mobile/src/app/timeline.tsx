@@ -16,6 +16,7 @@ import { Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
@@ -94,7 +95,7 @@ interface TimelineOverview {
   totalPersonalEvents: number;
   personalInProgress: number;
   personalCompleted: number;
-  upcomingPersonalEvents: any[];
+  upcomingPersonalEvents: PersonalEventResponse[];
 }
 interface TaskResponse {
   id: string;
@@ -1093,7 +1094,7 @@ function InlineTaskList({
 }: {
   timelineId: string;
   colors: ReturnType<typeof useColors>;
-  t: any;
+  t: TFunction;
   onToggle: (id: string) => void;
   onAdd: () => void;
 }) {

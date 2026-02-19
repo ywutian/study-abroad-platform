@@ -65,7 +65,15 @@ export function ListItem({
 
   if (onPress) {
     return (
-      <TouchableOpacity onPress={onPress} disabled={disabled} activeOpacity={0.7}>
+      <TouchableOpacity
+        onPress={onPress}
+        disabled={disabled}
+        activeOpacity={0.7}
+        accessible={true}
+        accessibilityRole="button"
+        accessibilityLabel={title}
+        accessibilityState={{ disabled }}
+      >
         {content}
       </TouchableOpacity>
     );

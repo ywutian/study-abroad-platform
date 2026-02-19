@@ -32,7 +32,17 @@
     "required": "Required",
     "words": "words",
     "points": "points",
-    "reload": "Reload App"
+    "reload": "Reload App",
+    "clearSearch": "Clear search",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "time": {
+      "justNow": "just now",
+      "minutesShort": "{{count}}m",
+      "hoursShort": "{{count}}h",
+      "daysShort": "{{count}}d",
+      "monthsShort": "{{count}}mo"
+    }
   },
   "ui": {
     "dialog": {
@@ -146,7 +156,8 @@
       "passwordMismatch": "Passwords do not match",
       "emailRequired": "Email is required",
       "passwordRequired": "Password is required"
-    }
+    },
+    "sessionExpired": "Your session has expired. Please log in again."
   },
   "profile": {
     "title": "My Profile",
@@ -348,9 +359,24 @@
       "enterActivities": "Activities (optional)",
       "enterAwards": "Awards (optional)",
       "enterTips": "Application Tips (optional)",
+      "majorPlaceholder": "e.g., Computer Science",
+      "gpaScale": "GPA Scale",
+      "gpaPlaceholder": "e.g., 3.85",
+      "gpaScalePlaceholder": "e.g., 4.0",
+      "satPlaceholder": "400-1600",
+      "actPlaceholder": "1-36",
+      "toeflPlaceholder": "0-120",
+      "ieltsPlaceholder": "0-9",
+      "gpaRange": "GPA must be between 0-5",
+      "satRange": "SAT must be between 400-1600",
+      "actRange": "ACT must be between 1-36",
+      "toeflRange": "TOEFL must be between 0-120",
+      "ieltsRange": "IELTS must be between 0-9",
       "privacySetting": "Privacy Setting",
       "submitSuccess": "Case submitted, you'll earn points once approved",
-      "submitFailed": "Submission failed"
+      "submitFailed": "Submission failed",
+      "stepProgress": "Step {{step}} of {{total}}",
+      "stepN": "Step {{n}}"
     },
     "noCases": "No cases yet"
   },
@@ -1318,7 +1344,12 @@
     "biometric": {
       "title": "Biometric Authentication",
       "description": "Use Face ID or fingerprint to unlock the app",
-      "unavailable": "Biometric authentication is not available on this device"
+      "unavailable": "Biometric authentication is not available on this device",
+      "lockTitle": "Authentication Required",
+      "lockSubtitle": "Please verify your identity to continue",
+      "lockButton": "Authenticate",
+      "promptMessage": "Authenticate to continue",
+      "fallbackLabel": "Use passcode"
     },
     "sessions": {
       "title": "Active Sessions",

@@ -42,6 +42,7 @@ export function SearchBar({
         },
         style,
       ]}
+      accessibilityRole="search"
     >
       <Ionicons name="search" size={20} color={colors.foregroundMuted} style={styles.searchIcon} />
       <TextInput
@@ -57,7 +58,12 @@ export function SearchBar({
         style={[styles.input, { color: colors.foreground }]}
       />
       {value.length > 0 && (
-        <TouchableOpacity onPress={handleClear} style={styles.clearButton}>
+        <TouchableOpacity
+          onPress={handleClear}
+          style={styles.clearButton}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.clearSearch')}
+        >
           <Ionicons name="close-circle" size={20} color={colors.foregroundMuted} />
         </TouchableOpacity>
       )}

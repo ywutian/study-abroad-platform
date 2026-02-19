@@ -12,6 +12,8 @@ build
 .env
 .env.local
 .env.*.local
+neon-backup-*.sql
+.gcp-db-password.txt
 
 # IDE
 .idea
@@ -30,6 +32,9 @@ pnpm-debug.log*
 
 # Testing
 coverage
+
+# Expo
+.expo/
 
 # Turbo
 .turbo

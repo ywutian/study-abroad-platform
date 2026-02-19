@@ -6,6 +6,7 @@ import { io, Socket } from 'socket.io-client';
 import { useAuthStore } from '@/stores/auth';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { env } from '@/lib/env';
 
 interface Message {
   id: string;
@@ -77,8 +78,7 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
   useEffect(() => {
     if (!accessToken) return;
 
-    const socketUrl =
-      process.env.NEXT_PUBLIC_WS_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const socketUrl = env.NEXT_PUBLIC_WS_URL || env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
     socketRef.current = io(`${socketUrl}/chat`, {
       auth: { token: accessToken },

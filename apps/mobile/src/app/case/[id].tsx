@@ -216,7 +216,7 @@ export default function CaseDetailScreen() {
           <View style={styles.pointsContainer}>
             <Ionicons name="star" size={16} color={colors.warning} />
             <Text style={[styles.pointsText, { color: colors.foregroundMuted }]}>
-              +{caseData.points} points
+              +{caseData.points} {t('common.points')}
             </Text>
           </View>
         )}

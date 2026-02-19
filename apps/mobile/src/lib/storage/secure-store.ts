@@ -7,7 +7,11 @@ const ACCESS_TOKEN_KEY = 'access_token';
 const REFRESH_TOKEN_KEY = 'refresh_token';
 const USER_KEY = 'user';
 
-// For web fallback
+// For web fallback.
+// SECURITY NOTE: On web, tokens are stored in AsyncStorage (localStorage) which
+// is NOT encrypted. For production web deployments, consider using httpOnly
+// cookies or a server-side session approach instead. This is acceptable for
+// mobile-first apps where web is used only for development.
 const isWeb = Platform.OS === 'web';
 
 async function setSecureItem(key: string, value: string): Promise<void> {
@@ -34,11 +38,15 @@ async function deleteSecureItem(key: string): Promise<void> {
 }
 
 // Token management
-export async function saveTokens(accessToken: string, refreshToken: string): Promise<void> {
-  await Promise.all([
-    setSecureItem(ACCESS_TOKEN_KEY, accessToken),
-    setSecureItem(REFRESH_TOKEN_KEY, refreshToken),
-  ]);
+export async function saveTokens(accessToken: string, refreshToken?: string): Promise<void> {
+  if (typeof accessToken !== 'string') {
+    throw new Error('saveTokens: accessToken must be a string');
+  }
+  const ops: Promise<void>[] = [setSecureItem(ACCESS_TOKEN_KEY, accessToken)];
+  if (typeof refreshToken === 'string') {
+    ops.push(setSecureItem(REFRESH_TOKEN_KEY, refreshToken));
+  }
+  await Promise.all(ops);
 }
 
 export async function getAccessToken(): Promise<string | null> {

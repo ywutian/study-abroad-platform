@@ -3,7 +3,7 @@ import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/client';
 import { useNotificationStore } from '@/stores/notification';
@@ -132,6 +132,24 @@ async function registerTokenWithBackend(token: string): Promise<void> {
 }
 
 /**
+ * Register with exponential backoff retry (max 3 attempts).
+ */
+async function registerTokenWithRetry(token: string, maxRetries = 3): Promise<void> {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      await registerTokenWithBackend(token);
+      return;
+    } catch (error) {
+      if (i === maxRetries - 1) {
+        console.error('useNotifications: failed to register push token after retries', error);
+        return; // Don't throw — push registration failure is non-fatal
+      }
+      await new Promise((r) => setTimeout(r, 1000 * Math.pow(2, i)));
+    }
+  }
+}
+
+/**
  * Navigate the user to the appropriate screen based on notification type.
  */
 function navigateToNotification(notification: Notification): void {
@@ -140,30 +158,30 @@ function navigateToNotification(notification: Notification): void {
   switch (type) {
     case 'NEW_MESSAGE':
       if (relatedId) {
-        router.push(`/chat/${relatedId}` as any);
+        router.push(`/chat/${relatedId}` as Href);
       }
       break;
 
     case 'NEW_FOLLOWER':
     case 'FOLLOW_ACCEPTED':
-      router.push('/followers' as any);
+      router.push('/followers' as Href);
       break;
 
     case 'CASE_HELPFUL':
-      router.push('/cases' as any);
+      router.push('/cases' as Href);
       break;
 
     case 'ESSAY_COMMENT':
-      router.push('/essay-gallery' as any);
+      router.push('/essay-gallery' as Href);
       break;
 
     case 'POST_REPLY':
     case 'POST_LIKE':
-      router.push('/forum' as any);
+      router.push('/forum' as Href);
       break;
 
     case 'DEADLINE_REMINDER':
-      router.push('/timeline' as any);
+      router.push('/timeline' as Href);
       break;
 
     // For all other types (VERIFICATION_*, POINTS_EARNED, LEVEL_UP,
@@ -276,9 +294,7 @@ export function useNotifications() {
       .then((token) => {
         if (token) {
           setExpoPushToken(token);
-          registerTokenWithBackend(token).catch((error) => {
-            console.error('useNotifications: failed to register push token with backend', error);
-          });
+          registerTokenWithRetry(token);
         }
       })
       .catch((error) => {

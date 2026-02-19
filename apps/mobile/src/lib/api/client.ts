@@ -4,10 +4,14 @@ import {
   saveTokens,
   clearAuthData,
 } from '../storage/secure-store';
+import { addBreadcrumb } from '@/lib/sentry';
 import type { ApiError } from '@/types';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3001';
 const API_VERSION = '/api/v1';
+
+/** HTTP status codes that are safe to retry on */
+const RETRYABLE_STATUS_CODES = new Set([429, 502, 503, 504]);
 
 interface RequestConfig extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>;
@@ -16,11 +20,34 @@ interface RequestConfig extends RequestInit {
   skipAuth?: boolean;
 }
 
+/** Custom error that carries the HTTP status code for retry decisions */
+class HttpError extends Error {
+  constructor(
+    message: string,
+    public readonly status?: number
+  ) {
+    super(message);
+    this.name = 'HttpError';
+  }
+}
+
+function isRetryableError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  // Network failures
+  if (error.message.includes('Network')) return true;
+  // Timeout (AbortError is already re-thrown as a timeout message)
+  if (error.message.startsWith('Request timeout')) return true;
+  // Retryable HTTP status codes
+  if (error instanceof HttpError && error.status && RETRYABLE_STATUS_CODES.has(error.status)) {
+    return true;
+  }
+  return false;
+}
+
 type RefreshCallback = () => void;
 
 class ApiClient {
   private baseUrl: string;
-  private isRefreshing = false;
   private refreshPromise: Promise<boolean> | null = null;
   private onRefreshFailed: RefreshCallback | null = null;
 
@@ -33,19 +60,18 @@ class ApiClient {
   }
 
   private async refreshToken(): Promise<boolean> {
-    if (this.isRefreshing && this.refreshPromise) {
+    // If a refresh is already in-flight, all callers share the same promise.
+    // The promise clears itself in .finally(), so the next caller after
+    // settlement will start a fresh refresh.
+    if (this.refreshPromise) {
       return this.refreshPromise;
     }
 
-    this.isRefreshing = true;
-    this.refreshPromise = this.doRefresh();
-
-    try {
-      return await this.refreshPromise;
-    } finally {
-      this.isRefreshing = false;
+    this.refreshPromise = this.doRefresh().finally(() => {
       this.refreshPromise = null;
-    }
+    });
+
+    return this.refreshPromise;
   }
 
   private async doRefresh(): Promise<boolean> {
@@ -68,7 +94,20 @@ class ApiClient {
       const json = await response.json();
       // Unwrap backend standard response format
       const data = json.data !== undefined ? json.data : json;
-      await saveTokens(data.accessToken, data.refreshToken);
+
+      if (!data.accessToken) {
+        await clearAuthData();
+        this.onRefreshFailed?.();
+        return false;
+      }
+
+      try {
+        await saveTokens(data.accessToken, data.refreshToken);
+      } catch (storageError) {
+        console.error('Failed to persist refreshed tokens:', storageError);
+        return false;
+      }
+
       return true;
     } catch (error) {
       console.error('Token refresh failed:', error);
@@ -80,6 +119,7 @@ class ApiClient {
 
   private async request<T>(endpoint: string, config: RequestConfig = {}): Promise<T> {
     const { params, retries = 1, timeout = 15000, skipAuth = false, ...init } = config;
+    const method = (init.method || 'GET').toUpperCase();
 
     // All endpoints use API version prefix
     let url = `${this.baseUrl}${API_VERSION}${endpoint}`;
@@ -131,7 +171,7 @@ class ApiClient {
           const error: ApiError = await response.json().catch(() => ({
             message: `HTTP ${response.status}`,
           }));
-          throw new Error(error.message || `HTTP ${response.status}`);
+          throw new HttpError(error.message || `HTTP ${response.status}`, response.status);
         }
 
         const text = await response.text();
@@ -146,7 +186,7 @@ class ApiClient {
         clearTimeout(timeoutId);
 
         if (error instanceof Error && error.name === 'AbortError') {
-          throw new Error(`Request timeout (${timeout / 1000}s)`);
+          throw new HttpError(`Request timeout (${timeout / 1000}s)`);
         }
 
         throw error;
@@ -158,10 +198,25 @@ class ApiClient {
       try {
         return await makeRequest();
       } catch (error: unknown) {
-        if (i < retries && error instanceof Error && error.message.includes('Network')) {
+        if (i < retries && isRetryableError(error)) {
           await new Promise((resolve) => setTimeout(resolve, 1000 * (i + 1)));
           continue;
         }
+
+        // Record Sentry breadcrumb for failed API requests
+        if (error instanceof Error) {
+          addBreadcrumb({
+            category: 'api',
+            message: `${method} ${endpoint} failed: ${error.message}`,
+            level: 'error',
+            data: {
+              url: endpoint,
+              method,
+              status: error instanceof HttpError ? error.status : undefined,
+            },
+          });
+        }
+
         throw error;
       }
     }

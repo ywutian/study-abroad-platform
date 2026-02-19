@@ -138,18 +138,21 @@ const keys = {
 // Helpers
 // ---------------------------------------------------------------------------
 
-const timeAgo = (dateStr: string): string => {
+const timeAgo = (
+  dateStr: string,
+  t: (key: string, opts?: Record<string, unknown>) => string
+): string => {
   const now = Date.now();
   const diff = now - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m`;
+  if (mins < 1) return t('common.time.justNow');
+  if (mins < 60) return t('common.time.minutesShort', { count: mins });
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h`;
+  if (hours < 24) return t('common.time.hoursShort', { count: hours });
   const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d`;
+  if (days < 30) return t('common.time.daysShort', { count: days });
   const months = Math.floor(days / 30);
-  return `${months}mo`;
+  return t('common.time.monthsShort', { count: months });
 };
 
 // ---------------------------------------------------------------------------
@@ -339,6 +342,9 @@ export default function ForumPage() {
             setSelectedCategoryId(null);
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           }}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: selectedCategoryId === null }}
+          accessibilityLabel={t('forum.allCategories')}
           style={[
             styles.categoryChip,
             {
@@ -364,6 +370,9 @@ export default function ForumPage() {
                 setSelectedCategoryId(isActive ? null : cat.id);
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               }}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: isActive }}
+              accessibilityLabel={categoryLabel(cat)}
               style={[
                 styles.categoryChip,
                 {
@@ -373,7 +382,7 @@ export default function ForumPage() {
             >
               {cat.icon ? <Text style={styles.categoryIcon}>{cat.icon}</Text> : null}
               <Text
-                style={[styles.categoryChipText, { color: isActive ? '#ffffff' : c.foreground }]}
+                style={[styles.categoryChipText, { color: isActive ? c.onGradient : c.foreground }]}
               >
                 {categoryLabel(cat)}
               </Text>
@@ -413,133 +422,151 @@ export default function ForumPage() {
   };
 
   // Post card
-  const renderPostCard = ({ item }: { item: PostDto }) => {
-    const authorName = item.author.profile?.nickname || item.author.email.split('@')[0];
-    const catLabel = item.category ? categoryLabel(item.category) : '';
+  const renderPostCard = useCallback(
+    ({ item }: { item: PostDto }) => {
+      const authorName = item.author.profile?.nickname || item.author.email.split('@')[0];
+      const catLabel = item.category ? categoryLabel(item.category) : '';
 
-    return (
-      <Animated.View entering={FadeInUp.springify()}>
-        <AnimatedCard
-          onPress={() => {
-            router.push(`/forum/${item.id}`);
-          }}
-          style={[
-            styles.postCard,
-            item.isPinned && { borderLeftWidth: 3, borderLeftColor: c.warning },
-          ]}
-        >
-          <CardContent>
-            {/* Pinned indicator */}
-            {item.isPinned && (
-              <View style={styles.pinnedRow}>
-                <Ionicons name="pin" size={12} color={c.warning} />
-                <Text style={[styles.pinnedText, { color: c.warning }]}>{t('forum.pinned')}</Text>
+      return (
+        <Animated.View entering={FadeInUp.springify()}>
+          <AnimatedCard
+            onPress={() => {
+              router.push(`/forum/${item.id}`);
+            }}
+            style={[
+              styles.postCard,
+              item.isPinned && { borderLeftWidth: 3, borderLeftColor: c.warning },
+            ]}
+          >
+            <CardContent>
+              {/* Pinned indicator */}
+              {item.isPinned && (
+                <View style={styles.pinnedRow}>
+                  <Ionicons name="pin" size={12} color={c.warning} />
+                  <Text style={[styles.pinnedText, { color: c.warning }]}>{t('forum.pinned')}</Text>
+                </View>
+              )}
+
+              {/* Title */}
+              <Text style={[styles.postTitle, { color: c.foreground }]} numberOfLines={2}>
+                {item.title}
+              </Text>
+
+              {/* Badges row: category + team + tags */}
+              <View style={styles.badgeRow}>
+                {catLabel ? (
+                  <Badge
+                    variant="secondary"
+                    style={
+                      item.category?.color
+                        ? { backgroundColor: item.category.color + '20' }
+                        : undefined
+                    }
+                  >
+                    {catLabel}
+                  </Badge>
+                ) : null}
+                {item.isTeamPost && (
+                  <Badge variant="default">
+                    <View style={styles.teamBadgeContent}>
+                      <Ionicons name="people" size={10} color={c.primaryForeground} />
+                      <Text
+                        style={{ color: c.primaryForeground, fontSize: fontSize.xs, marginLeft: 2 }}
+                      >
+                        {t('forum.team')}
+                      </Text>
+                    </View>
+                  </Badge>
+                )}
+                {item.tags.slice(0, 2).map((tag) => (
+                  <View key={tag} style={[styles.tagChip, { backgroundColor: c.muted }]}>
+                    <Text style={[styles.tagText, { color: c.foregroundMuted }]}>#{tag}</Text>
+                  </View>
+                ))}
               </View>
-            )}
 
-            {/* Title */}
-            <Text style={[styles.postTitle, { color: c.foreground }]} numberOfLines={2}>
-              {item.title}
-            </Text>
+              {/* Team info snippet */}
+              {item.isTeamPost && item.teamSize && (
+                <View style={[styles.teamInfoRow, { backgroundColor: c.primary + '08' }]}>
+                  <Ionicons name="people-outline" size={14} color={c.primary} />
+                  <Text style={[styles.teamInfoText, { color: c.primary }]}>
+                    {item.currentSize ?? 0}/{item.teamSize} {t('forum.members')}
+                  </Text>
+                  {item.teamStatus === 'OPEN' && (
+                    <Badge variant="success">{t('forum.teamOpen')}</Badge>
+                  )}
+                  {item.teamStatus === 'CLOSED' && (
+                    <Badge variant="error">{t('forum.teamClosed')}</Badge>
+                  )}
+                </View>
+              )}
 
-            {/* Badges row: category + team + tags */}
-            <View style={styles.badgeRow}>
-              {catLabel ? (
-                <Badge
-                  variant="secondary"
-                  style={
-                    item.category?.color
-                      ? { backgroundColor: item.category.color + '20' }
-                      : undefined
-                  }
-                >
-                  {catLabel}
-                </Badge>
-              ) : null}
-              {item.isTeamPost && (
-                <Badge variant="default">
-                  <View style={styles.teamBadgeContent}>
-                    <Ionicons name="people" size={10} color={c.primaryForeground} />
-                    <Text
-                      style={{ color: c.primaryForeground, fontSize: fontSize.xs, marginLeft: 2 }}
-                    >
-                      {t('forum.team')}
+              {/* Footer: author, time, stats */}
+              <View style={styles.postFooter}>
+                <View style={styles.authorRow}>
+                  <View style={[styles.avatarPlaceholder, { backgroundColor: c.primary + '20' }]}>
+                    <Text style={[styles.avatarInitial, { color: c.primary }]}>
+                      {authorName.charAt(0).toUpperCase()}
                     </Text>
                   </View>
-                </Badge>
-              )}
-              {item.tags.slice(0, 2).map((tag) => (
-                <View key={tag} style={[styles.tagChip, { backgroundColor: c.muted }]}>
-                  <Text style={[styles.tagText, { color: c.foregroundMuted }]}>#{tag}</Text>
-                </View>
-              ))}
-            </View>
-
-            {/* Team info snippet */}
-            {item.isTeamPost && item.teamSize && (
-              <View style={[styles.teamInfoRow, { backgroundColor: c.primary + '08' }]}>
-                <Ionicons name="people-outline" size={14} color={c.primary} />
-                <Text style={[styles.teamInfoText, { color: c.primary }]}>
-                  {item.currentSize ?? 0}/{item.teamSize} {t('forum.members')}
-                </Text>
-                {item.teamStatus === 'OPEN' && (
-                  <Badge variant="success">{t('forum.teamOpen')}</Badge>
-                )}
-                {item.teamStatus === 'CLOSED' && (
-                  <Badge variant="error">{t('forum.teamClosed')}</Badge>
-                )}
-              </View>
-            )}
-
-            {/* Footer: author, time, stats */}
-            <View style={styles.postFooter}>
-              <View style={styles.authorRow}>
-                <View style={[styles.avatarPlaceholder, { backgroundColor: c.primary + '20' }]}>
-                  <Text style={[styles.avatarInitial, { color: c.primary }]}>
-                    {authorName.charAt(0).toUpperCase()}
+                  <Text
+                    style={[styles.authorName, { color: c.foregroundSecondary }]}
+                    numberOfLines={1}
+                  >
+                    {authorName}
+                  </Text>
+                  <Text style={[styles.timeSeparator, { color: c.foregroundMuted }]}>
+                    {' '}
+                    &middot;{' '}
+                  </Text>
+                  <Text style={[styles.timeText, { color: c.foregroundMuted }]}>
+                    {timeAgo(item.createdAt, t)}
                   </Text>
                 </View>
-                <Text
-                  style={[styles.authorName, { color: c.foregroundSecondary }]}
-                  numberOfLines={1}
-                >
-                  {authorName}
-                </Text>
-                <Text style={[styles.timeSeparator, { color: c.foregroundMuted }]}> &middot; </Text>
-                <Text style={[styles.timeText, { color: c.foregroundMuted }]}>
-                  {timeAgo(item.createdAt)}
-                </Text>
-              </View>
-              <View style={styles.statsRow2}>
-                <View style={styles.statIconRow}>
-                  <Ionicons
-                    name={item.isLiked ? 'heart' : 'heart-outline'}
-                    size={14}
-                    color={item.isLiked ? c.error : c.foregroundMuted}
-                  />
-                  <Text style={[styles.statText, { color: c.foregroundMuted }]}>
-                    {item.likeCount}
-                  </Text>
-                </View>
-                <View style={styles.statIconRow}>
-                  <Ionicons name="chatbubble-outline" size={14} color={c.foregroundMuted} />
-                  <Text style={[styles.statText, { color: c.foregroundMuted }]}>
-                    {item.commentCount}
-                  </Text>
-                </View>
-                <View style={styles.statIconRow}>
-                  <Ionicons name="eye-outline" size={14} color={c.foregroundMuted} />
-                  <Text style={[styles.statText, { color: c.foregroundMuted }]}>
-                    {item.viewCount}
-                  </Text>
+                <View style={styles.statsRow2}>
+                  <View style={styles.statIconRow}>
+                    <Ionicons
+                      name={item.isLiked ? 'heart' : 'heart-outline'}
+                      size={14}
+                      color={item.isLiked ? c.error : c.foregroundMuted}
+                    />
+                    <Text style={[styles.statText, { color: c.foregroundMuted }]}>
+                      {item.likeCount}
+                    </Text>
+                  </View>
+                  <View style={styles.statIconRow}>
+                    <Ionicons name="chatbubble-outline" size={14} color={c.foregroundMuted} />
+                    <Text style={[styles.statText, { color: c.foregroundMuted }]}>
+                      {item.commentCount}
+                    </Text>
+                  </View>
+                  <View style={styles.statIconRow}>
+                    <Ionicons name="eye-outline" size={14} color={c.foregroundMuted} />
+                    <Text style={[styles.statText, { color: c.foregroundMuted }]}>
+                      {item.viewCount}
+                    </Text>
+                  </View>
                 </View>
               </View>
-            </View>
-          </CardContent>
-        </AnimatedCard>
-      </Animated.View>
-    );
-  };
+            </CardContent>
+          </AnimatedCard>
+        </Animated.View>
+      );
+    },
+    [
+      c.foreground,
+      c.foregroundMuted,
+      c.foregroundSecondary,
+      c.warning,
+      c.primary,
+      c.primaryForeground,
+      c.muted,
+      c.error,
+      c.onGradient,
+      t,
+      categoryLabel,
+    ]
+  );
 
   // List header (assembled)
   const listHeader = useMemo(

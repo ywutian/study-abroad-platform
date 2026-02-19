@@ -25,6 +25,7 @@ interface AnimatedListItemProps {
   leftAction?: React.ReactNode;
   rightAction?: React.ReactNode;
   staggerDelay?: number;
+  accessibilityLabel?: string;
 }
 
 export function AnimatedListItem({
@@ -38,6 +39,7 @@ export function AnimatedListItem({
   leftAction,
   rightAction,
   staggerDelay = 50,
+  accessibilityLabel,
 }: AnimatedListItemProps) {
   const colors = useColors();
   const scale = useSharedValue(1);
@@ -105,6 +107,9 @@ export function AnimatedListItem({
   return (
     <GestureDetector gesture={composedGesture}>
       <Animated.View
+        accessible={true}
+        accessibilityRole={onPress ? 'button' : undefined}
+        accessibilityLabel={accessibilityLabel}
         entering={enteringAnimation}
         layout={Layout.springify()}
         style={[

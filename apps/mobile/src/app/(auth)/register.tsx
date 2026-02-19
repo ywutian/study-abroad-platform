@@ -39,13 +39,13 @@ export default function RegisterScreen() {
 
   const validate = () => {
     const newErrors: typeof errors = {};
-    
+
     if (!email) {
       newErrors.email = t('auth.errors.emailRequired');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       newErrors.email = t('auth.errors.invalidEmail');
     }
-    
+
     if (!password) {
       newErrors.password = t('auth.errors.passwordRequired');
     } else if (password.length < 8) {
@@ -71,7 +71,7 @@ export default function RegisterScreen() {
     try {
       await register({ email, password });
       toast.success(t('auth.register.registerSuccess'));
-      router.replace('/(tabs)');
+      router.replace('/(auth)/login');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t('auth.register.registerFailed'));
     } finally {
@@ -85,10 +85,7 @@ export default function RegisterScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          { paddingTop: insets.top + spacing['2xl'] },
-        ]}
+        contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing['2xl'] }]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -119,9 +116,7 @@ export default function RegisterScreen() {
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
-            leftIcon={
-              <Ionicons name="mail-outline" size={20} color={colors.foregroundMuted} />
-            }
+            leftIcon={<Ionicons name="mail-outline" size={20} color={colors.foregroundMuted} />}
           />
 
           <Input
@@ -165,9 +160,7 @@ export default function RegisterScreen() {
             label={t('auth.register.agreeTerms')}
           />
           {errors.terms && (
-            <Text style={[styles.errorText, { color: colors.error }]}>
-              {errors.terms}
-            </Text>
+            <Text style={[styles.errorText, { color: colors.error }]}>{errors.terms}</Text>
           )}
 
           <Button
@@ -249,4 +242,3 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.semibold,
   },
 });
-

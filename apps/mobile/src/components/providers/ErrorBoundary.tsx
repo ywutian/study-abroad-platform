@@ -9,8 +9,72 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { Ionicons } from '@expo/vector-icons';
 import * as Updates from 'expo-updates';
 import { i18n } from '@/lib/i18n';
+import { captureException } from '@/lib/sentry';
 
-import { colors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useColors, withOpacity, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+
+// ==================== ErrorFallback Function Component ====================
+
+interface ErrorFallbackProps {
+  error: Error | null;
+  errorInfo: ErrorInfo | null;
+  onRetry: () => void;
+  onReload: () => void;
+}
+
+function ErrorFallback({ error, errorInfo, onRetry, onReload }: ErrorFallbackProps) {
+  const themeColors = useColors();
+
+  return (
+    <View style={[styles.container, { backgroundColor: themeColors.background }]}>
+      <View style={styles.content}>
+        <View
+          style={[styles.iconContainer, { backgroundColor: withOpacity(themeColors.error, 0.08) }]}
+        >
+          <Ionicons name="bug-outline" size={64} color={themeColors.error} />
+        </View>
+
+        <Text style={[styles.title, { color: themeColors.foreground }]}>
+          {i18n.t('ui.error.title')}
+        </Text>
+        <Text style={[styles.message, { color: themeColors.foregroundMuted }]}>
+          {i18n.t('ui.error.message')}
+        </Text>
+
+        {__DEV__ && error && (
+          <ScrollView
+            style={[styles.errorContainer, { backgroundColor: themeColors.muted }]}
+            horizontal
+          >
+            <Text style={[styles.errorText, { color: themeColors.error }]}>{error.toString()}</Text>
+          </ScrollView>
+        )}
+
+        <View style={styles.actions}>
+          <TouchableOpacity
+            style={[styles.retryButton, { backgroundColor: themeColors.primary }]}
+            onPress={onRetry}
+          >
+            <Ionicons name="refresh-outline" size={20} color="#fff" />
+            <Text style={styles.retryButtonText}>{i18n.t('common.retry')}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.reloadButton, { backgroundColor: themeColors.muted }]}
+            onPress={onReload}
+          >
+            <Ionicons name="reload-outline" size={20} color={themeColors.foreground} />
+            <Text style={[styles.reloadButtonText, { color: themeColors.foreground }]}>
+              {i18n.t('common.reload')}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+// ==================== ErrorBoundary Class Component ====================
 
 interface Props {
   children: ReactNode;
@@ -41,10 +105,8 @@ export class ErrorBoundary extends Component<Props, State> {
     this.setState({ errorInfo });
 
     // 上报错误到 Sentry
-    import('@/lib/sentry').then(({ captureException }) => {
-      captureException(error, {
-        componentStack: errorInfo.componentStack ?? undefined,
-      });
+    captureException(error, {
+      componentStack: errorInfo.componentStack ?? undefined,
     });
     console.error('ErrorBoundary caught an error:', error, errorInfo);
   }
@@ -69,34 +131,12 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <View style={styles.container}>
-          <View style={styles.content}>
-            <View style={styles.iconContainer}>
-              <Ionicons name="bug-outline" size={64} color={colors.light.error} />
-            </View>
-
-            <Text style={styles.title}>{i18n.t('ui.error.title')}</Text>
-            <Text style={styles.message}>{i18n.t('ui.error.message')}</Text>
-
-            {__DEV__ && this.state.error && (
-              <ScrollView style={styles.errorContainer} horizontal>
-                <Text style={styles.errorText}>{this.state.error.toString()}</Text>
-              </ScrollView>
-            )}
-
-            <View style={styles.actions}>
-              <TouchableOpacity style={styles.retryButton} onPress={this.handleRetry}>
-                <Ionicons name="refresh-outline" size={20} color="#fff" />
-                <Text style={styles.retryButtonText}>{i18n.t('common.retry')}</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.reloadButton} onPress={this.handleReload}>
-                <Ionicons name="reload-outline" size={20} color={colors.light.foreground} />
-                <Text style={styles.reloadButtonText}>{i18n.t('common.reload')}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
+        <ErrorFallback
+          error={this.state.error}
+          errorInfo={this.state.errorInfo}
+          onRetry={this.handleRetry}
+          onReload={this.handleReload}
+        />
       );
     }
 
@@ -104,10 +144,11 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 }
 
+// ==================== Static Styles (layout-only, no colors) ====================
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.light.background,
     justifyContent: 'center',
     alignItems: 'center',
     padding: spacing.xl,
@@ -120,7 +161,6 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: colors.light.error + '15',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.xl,
@@ -128,19 +168,16 @@ const styles = StyleSheet.create({
   title: {
     fontSize: fontSize['2xl'],
     fontWeight: fontWeight.bold,
-    color: colors.light.foreground,
     marginBottom: spacing.md,
-    textAlign: 'center',
+    textAlign: 'center' as const,
   },
   message: {
     fontSize: fontSize.base,
-    color: colors.light.foregroundMuted,
-    textAlign: 'center',
+    textAlign: 'center' as const,
     lineHeight: 24,
     marginBottom: spacing.xl,
   },
   errorContainer: {
-    backgroundColor: colors.light.muted,
     padding: spacing.md,
     borderRadius: borderRadius.md,
     marginBottom: spacing.xl,
@@ -150,18 +187,16 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: fontSize.xs,
     fontFamily: 'monospace',
-    color: colors.light.error,
   },
   actions: {
     gap: spacing.md,
     width: '100%',
   },
   retryButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
     gap: spacing.sm,
-    backgroundColor: colors.light.primary,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xl,
     borderRadius: borderRadius.lg,
@@ -172,17 +207,15 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.semibold,
   },
   reloadButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
     gap: spacing.sm,
-    backgroundColor: colors.light.muted,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xl,
     borderRadius: borderRadius.lg,
   },
   reloadButtonText: {
-    color: colors.light.foreground,
     fontSize: fontSize.base,
     fontWeight: fontWeight.medium,
   },

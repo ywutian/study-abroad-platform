@@ -1,11 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, memo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, RefreshControl } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-import debounce from 'lodash.debounce';
+import { useQueryClient } from '@tanstack/react-query';
 
 import {
   Card,
@@ -20,90 +19,33 @@ import {
 import { BottomSheet } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { SubmitCaseModal } from '@/components/features/SubmitCaseModal';
-import { apiClient } from '@/lib/api/client';
+import { useDebouncedSearch, usePaginatedQuery } from '@/hooks/api';
 import { useAuthStore } from '@/stores';
-import { useColors, spacing, fontSize, fontWeight } from '@/utils/theme';
-import type { Case, PaginatedResponse, CaseResult } from '@/types';
+import { useColors, colors as themeColors, spacing, fontSize, fontWeight } from '@/utils/theme';
+import type { Case, CaseResult } from '@/types';
 
-export default function CasesScreen() {
-  const { t } = useTranslation();
-  const colors = useColors();
-  const { isAuthenticated } = useAuthStore();
+const getResultBadgeVariant = (result: CaseResult) => {
+  switch (result) {
+    case 'ADMITTED':
+      return 'success';
+    case 'REJECTED':
+      return 'error';
+    case 'WAITLISTED':
+    case 'DEFERRED':
+      return 'warning';
+    default:
+      return 'secondary';
+  }
+};
 
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [filterVisible, setFilterVisible] = useState(false);
-  const [resultFilter, setResultFilter] = useState<CaseResult | ''>('');
-  const [yearFilter, setYearFilter] = useState('');
-  const [submitModalVisible, setSubmitModalVisible] = useState(false);
-  const queryClient = useQueryClient();
+interface CaseListItemProps {
+  item: Case;
+  colors: ReturnType<typeof useColors>;
+  t: ReturnType<typeof useTranslation>['t'];
+}
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedSetSearch = useCallback(
-    debounce((value: string) => setDebouncedSearch(value), 300),
-    []
-  );
-
-  const handleSearchChange = (value: string) => {
-    setSearch(value);
-    debouncedSetSearch(value);
-  };
-
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, refetch, isRefetching } =
-    useInfiniteQuery({
-      queryKey: ['cases', debouncedSearch, resultFilter, yearFilter],
-      queryFn: async ({ pageParam = 1 }) => {
-        return apiClient.get<PaginatedResponse<Case>>('/cases', {
-          params: {
-            page: pageParam,
-            limit: 20,
-            search: debouncedSearch || undefined,
-            result: resultFilter || undefined,
-            year: yearFilter || undefined,
-          },
-        });
-      },
-      getNextPageParam: (lastPage) => {
-        if (lastPage.page < lastPage.totalPages) {
-          return lastPage.page + 1;
-        }
-        return undefined;
-      },
-      initialPageParam: 1,
-    });
-
-  const cases = data?.pages.flatMap((page) => page.items) || [];
-
-  const resultOptions = [
-    { value: '', label: t('common.all') || 'All' },
-    { value: 'ADMITTED', label: t('cases.result.admitted') },
-    { value: 'REJECTED', label: t('cases.result.rejected') },
-    { value: 'WAITLISTED', label: t('cases.result.waitlisted') },
-  ];
-
-  const yearOptions = [
-    { value: '', label: t('common.all') || 'All' },
-    { value: '2025', label: '2025' },
-    { value: '2024', label: '2024' },
-    { value: '2023', label: '2023' },
-    { value: '2022', label: '2022' },
-  ];
-
-  const getResultBadgeVariant = (result: CaseResult) => {
-    switch (result) {
-      case 'ADMITTED':
-        return 'success';
-      case 'REJECTED':
-        return 'error';
-      case 'WAITLISTED':
-      case 'DEFERRED':
-        return 'warning';
-      default:
-        return 'secondary';
-    }
-  };
-
-  const renderCaseItem = ({ item }: { item: Case }) => (
+const CaseListItem = memo(function CaseListItem({ item, colors, t }: CaseListItemProps) {
+  return (
     <TouchableOpacity onPress={() => router.push(`/case/${item.id}`)} style={styles.cardWrapper}>
       <Card>
         <CardContent>
@@ -166,6 +108,56 @@ export default function CasesScreen() {
         </CardContent>
       </Card>
     </TouchableOpacity>
+  );
+});
+
+export default function CasesScreen() {
+  const { t } = useTranslation();
+  const colors = useColors();
+  const { isAuthenticated } = useAuthStore();
+
+  const { search, debouncedSearch, handleSearchChange } = useDebouncedSearch();
+  const [filterVisible, setFilterVisible] = useState(false);
+  const [resultFilter, setResultFilter] = useState<CaseResult | ''>('');
+  const [yearFilter, setYearFilter] = useState('');
+  const [submitModalVisible, setSubmitModalVisible] = useState(false);
+  const queryClient = useQueryClient();
+
+  const {
+    items: cases,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    refetch,
+    isRefetching,
+  } = usePaginatedQuery<Case>({
+    queryKey: ['cases', debouncedSearch, resultFilter, yearFilter],
+    endpoint: '/cases',
+    params: {
+      search: debouncedSearch || undefined,
+      result: resultFilter || undefined,
+      year: yearFilter || undefined,
+    },
+  });
+
+  const resultOptions = [
+    { value: '', label: t('common.all') || 'All' },
+    { value: 'ADMITTED', label: t('cases.result.admitted') },
+    { value: 'REJECTED', label: t('cases.result.rejected') },
+    { value: 'WAITLISTED', label: t('cases.result.waitlisted') },
+  ];
+
+  const yearOptions = [
+    { value: '', label: t('common.all') || 'All' },
+    { value: '2025', label: '2025' },
+    { value: '2024', label: '2024' },
+    { value: '2023', label: '2023' },
+    { value: '2022', label: '2022' },
+  ];
+
+  const renderCaseItem = ({ item }: { item: Case }) => (
+    <CaseListItem item={item} colors={colors} t={t} />
   );
 
   const renderFooter = () => {
@@ -360,7 +352,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   filterBadgeText: {
-    color: '#fff',
+    color: themeColors.light.onGradient,
     fontSize: 10,
     fontWeight: fontWeight.bold,
   },

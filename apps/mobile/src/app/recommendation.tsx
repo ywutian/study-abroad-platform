@@ -43,7 +43,14 @@ import {
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { apiClient } from '@/lib/api/client';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import {
+  useColors,
+  colors as themeColors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+} from '@/utils/theme';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -283,10 +290,14 @@ export default function RecommendationPage() {
       setGenerationState('done');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.success(t('recommendation.generateSuccess', 'Recommendations generated!'));
-    } catch (error: any) {
+    } catch (error: unknown) {
       setGenerationState('idle');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      toast.error(error.message || t('recommendation.generateFailed', 'Generation failed'));
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : t('recommendation.generateFailed', 'Generation failed')
+      );
     }
   }, [preflight, schoolCount, budget, selectedRegions, selectedMajors, generateMutation, t, toast]);
 
@@ -342,13 +353,15 @@ export default function RecommendationPage() {
     return labels[tier] || tier;
   };
 
-  const getTierBadgeVariant = (tier: 'reach' | 'match' | 'safety') => {
+  const getTierBadgeVariant = (
+    tier: 'reach' | 'match' | 'safety'
+  ): 'error' | 'warning' | 'success' | 'secondary' => {
     const map: Record<string, 'error' | 'warning' | 'success'> = {
       reach: 'error',
       match: 'warning',
       safety: 'success',
     };
-    return map[tier] || ('secondary' as any);
+    return map[tier] || 'secondary';
   };
 
   // ─── Format Helpers ────────────────────────────────────
@@ -467,6 +480,9 @@ export default function RecommendationPage() {
             <TouchableOpacity
               key={option}
               onPress={() => onToggle(option)}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: isSelected }}
+              accessibilityLabel={option}
               activeOpacity={0.7}
               style={[
                 styles.chip,
@@ -536,6 +552,9 @@ export default function RecommendationPage() {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   setBudget(opt.key);
                 }}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: isSelected }}
+                accessibilityLabel={opt.label}
                 activeOpacity={0.7}
                 style={[
                   styles.budgetOption,
@@ -579,6 +598,9 @@ export default function RecommendationPage() {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   setSchoolCount(count);
                 }}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: isSelected }}
+                accessibilityLabel={`${count}`}
                 activeOpacity={0.7}
                 style={[
                   styles.countOption,
@@ -676,128 +698,142 @@ export default function RecommendationPage() {
   // Render: School Card
   // ============================================================
 
-  const renderSchoolCard = (school: RecommendedSchool, index: number) => {
-    const tierConfig = TIER_CONFIG[school.tier];
+  const renderSchoolCard = useCallback(
+    (school: RecommendedSchool, index: number) => {
+      const tierConfig = TIER_CONFIG[school.tier];
 
-    return (
-      <Animated.View
-        key={`${school.schoolName}-${index}`}
-        entering={FadeInUp.delay(200 + index * 80).springify()}
-      >
-        <AnimatedCard
-          style={[styles.schoolCard, { borderLeftColor: tierConfig.color, borderLeftWidth: 3 }]}
+      return (
+        <Animated.View
+          key={`${school.schoolName}-${index}`}
+          entering={FadeInUp.delay(200 + index * 80).springify()}
         >
-          <CardContent>
-            {/* Header */}
-            <View style={styles.schoolCardHeader}>
-              <View style={styles.schoolCardInfo}>
-                <Text style={[styles.schoolName, { color: colors.foreground }]} numberOfLines={2}>
-                  {school.schoolName}
-                </Text>
-                <View style={styles.schoolMetaRow}>
-                  <Badge variant={getTierBadgeVariant(school.tier)}>
-                    {getTierLabel(school.tier)}
-                  </Badge>
-                  {school.schoolMeta?.usNewsRank && (
-                    <Text style={[styles.rankText, { color: colors.foregroundMuted }]}>
-                      #{school.schoolMeta.usNewsRank} US News
-                    </Text>
-                  )}
+          <AnimatedCard
+            style={[styles.schoolCard, { borderLeftColor: tierConfig.color, borderLeftWidth: 3 }]}
+          >
+            <CardContent>
+              {/* Header */}
+              <View style={styles.schoolCardHeader}>
+                <View style={styles.schoolCardInfo}>
+                  <Text style={[styles.schoolName, { color: colors.foreground }]} numberOfLines={2}>
+                    {school.schoolName}
+                  </Text>
+                  <View style={styles.schoolMetaRow}>
+                    <Badge variant={getTierBadgeVariant(school.tier)}>
+                      {getTierLabel(school.tier)}
+                    </Badge>
+                    {school.schoolMeta?.usNewsRank && (
+                      <Text style={[styles.rankText, { color: colors.foregroundMuted }]}>
+                        #{school.schoolMeta.usNewsRank} US News
+                      </Text>
+                    )}
+                  </View>
+                </View>
+                <View style={styles.fitScoreContainer}>
+                  <AnimatedCounter
+                    value={school.fitScore}
+                    style={[styles.fitScoreValue, { color: tierConfig.color }]}
+                  />
+                  <Text style={[styles.fitScoreLabel, { color: colors.foregroundMuted }]}>
+                    {t('recommendation.fitScore', 'Fit')}
+                  </Text>
                 </View>
               </View>
-              <View style={styles.fitScoreContainer}>
-                <AnimatedCounter
-                  value={school.fitScore}
-                  style={[styles.fitScoreValue, { color: tierConfig.color }]}
+
+              {/* Probability Bar */}
+              <View style={styles.probabilitySection}>
+                <View style={styles.probabilityHeader}>
+                  <Text style={[styles.probabilityLabel, { color: colors.foregroundMuted }]}>
+                    {t('recommendation.probability', 'Admission Probability')}
+                  </Text>
+                  <Text style={[styles.probabilityValue, { color: tierConfig.color }]}>
+                    {Math.round(school.estimatedProbability)}%
+                  </Text>
+                </View>
+                <Progress
+                  value={school.estimatedProbability}
+                  max={100}
+                  height={6}
+                  color={tierConfig.color}
+                  trackColor={colors.muted}
                 />
-                <Text style={[styles.fitScoreLabel, { color: colors.foregroundMuted }]}>
-                  {t('recommendation.fitScore', 'Fit')}
-                </Text>
               </View>
-            </View>
 
-            {/* Probability Bar */}
-            <View style={styles.probabilitySection}>
-              <View style={styles.probabilityHeader}>
-                <Text style={[styles.probabilityLabel, { color: colors.foregroundMuted }]}>
-                  {t('recommendation.probability', 'Admission Probability')}
-                </Text>
-                <Text style={[styles.probabilityValue, { color: tierConfig.color }]}>
-                  {Math.round(school.estimatedProbability)}%
-                </Text>
-              </View>
-              <Progress
-                value={school.estimatedProbability}
-                max={100}
-                height={6}
-                color={tierConfig.color}
-                trackColor={colors.muted}
-              />
-            </View>
+              {/* School Meta */}
+              {school.schoolMeta && (
+                <View style={styles.schoolMetaDetails}>
+                  {school.schoolMeta.location && (
+                    <View style={styles.metaItem}>
+                      <Ionicons name="location-outline" size={14} color={colors.foregroundMuted} />
+                      <Text style={[styles.metaText, { color: colors.foregroundMuted }]}>
+                        {school.schoolMeta.location}
+                      </Text>
+                    </View>
+                  )}
+                  {school.schoolMeta.acceptanceRate != null && (
+                    <View style={styles.metaItem}>
+                      <Ionicons name="people-outline" size={14} color={colors.foregroundMuted} />
+                      <Text style={[styles.metaText, { color: colors.foregroundMuted }]}>
+                        {school.schoolMeta.acceptanceRate}%{' '}
+                        {t('recommendation.acceptRate', 'accept rate')}
+                      </Text>
+                    </View>
+                  )}
+                  {school.schoolMeta.tuition != null && (
+                    <View style={styles.metaItem}>
+                      <Ionicons name="cash-outline" size={14} color={colors.foregroundMuted} />
+                      <Text style={[styles.metaText, { color: colors.foregroundMuted }]}>
+                        {formatCurrency(school.schoolMeta.tuition)}/yr
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              )}
 
-            {/* School Meta */}
-            {school.schoolMeta && (
-              <View style={styles.schoolMetaDetails}>
-                {school.schoolMeta.location && (
-                  <View style={styles.metaItem}>
-                    <Ionicons name="location-outline" size={14} color={colors.foregroundMuted} />
-                    <Text style={[styles.metaText, { color: colors.foregroundMuted }]}>
-                      {school.schoolMeta.location}
-                    </Text>
-                  </View>
-                )}
-                {school.schoolMeta.acceptanceRate != null && (
-                  <View style={styles.metaItem}>
-                    <Ionicons name="people-outline" size={14} color={colors.foregroundMuted} />
-                    <Text style={[styles.metaText, { color: colors.foregroundMuted }]}>
-                      {school.schoolMeta.acceptanceRate}%{' '}
-                      {t('recommendation.acceptRate', 'accept rate')}
-                    </Text>
-                  </View>
-                )}
-                {school.schoolMeta.tuition != null && (
-                  <View style={styles.metaItem}>
-                    <Ionicons name="cash-outline" size={14} color={colors.foregroundMuted} />
-                    <Text style={[styles.metaText, { color: colors.foregroundMuted }]}>
-                      {formatCurrency(school.schoolMeta.tuition)}/yr
-                    </Text>
-                  </View>
-                )}
-              </View>
-            )}
+              {/* Reasons */}
+              {school.reasons.length > 0 && (
+                <View style={styles.reasonsSection}>
+                  {school.reasons.map((reason, i) => (
+                    <View key={i} style={styles.reasonRow}>
+                      <Ionicons name="checkmark-circle" size={16} color={colors.success} />
+                      <Text style={[styles.reasonText, { color: colors.foregroundSecondary }]}>
+                        {reason}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              )}
 
-            {/* Reasons */}
-            {school.reasons.length > 0 && (
-              <View style={styles.reasonsSection}>
-                {school.reasons.map((reason, i) => (
-                  <View key={i} style={styles.reasonRow}>
-                    <Ionicons name="checkmark-circle" size={16} color={colors.success} />
-                    <Text style={[styles.reasonText, { color: colors.foregroundSecondary }]}>
-                      {reason}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            )}
-
-            {/* Concerns */}
-            {school.concerns && school.concerns.length > 0 && (
-              <View style={styles.concernsSection}>
-                {school.concerns.map((concern, i) => (
-                  <View key={i} style={styles.reasonRow}>
-                    <Ionicons name="alert-circle" size={16} color={colors.warning} />
-                    <Text style={[styles.reasonText, { color: colors.foregroundSecondary }]}>
-                      {concern}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            )}
-          </CardContent>
-        </AnimatedCard>
-      </Animated.View>
-    );
-  };
+              {/* Concerns */}
+              {school.concerns && school.concerns.length > 0 && (
+                <View style={styles.concernsSection}>
+                  {school.concerns.map((concern, i) => (
+                    <View key={i} style={styles.reasonRow}>
+                      <Ionicons name="alert-circle" size={16} color={colors.warning} />
+                      <Text style={[styles.reasonText, { color: colors.foregroundSecondary }]}>
+                        {concern}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </CardContent>
+          </AnimatedCard>
+        </Animated.View>
+      );
+    },
+    [
+      colors.foreground,
+      colors.foregroundMuted,
+      colors.foregroundSecondary,
+      colors.muted,
+      colors.success,
+      colors.warning,
+      t,
+      getTierBadgeVariant,
+      getTierLabel,
+      formatCurrency,
+    ]
+  );
 
   // ============================================================
   // Render: Results
@@ -821,7 +857,7 @@ export default function RecommendationPage() {
             style={styles.summaryCard}
           >
             <View style={styles.summaryHeader}>
-              <Ionicons name="sparkles" size={24} color="#fff" />
+              <Ionicons name="sparkles" size={24} color={colors.onGradient} />
               <Text style={styles.summaryTitle}>
                 {t('recommendation.resultSummary', 'AI Recommendation Summary')}
               </Text>
@@ -830,17 +866,17 @@ export default function RecommendationPage() {
 
             {/* Tier Counts */}
             <View style={styles.tierCountsRow}>
-              <View style={[styles.tierCount, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
+              <View style={[styles.tierCount, { backgroundColor: colors.onGradientOverlay }]}>
                 <View style={[styles.tierDot, { backgroundColor: TIER_CONFIG.reach.color }]} />
                 <Text style={styles.tierCountLabel}>{t('recommendation.tierReach', 'Reach')}</Text>
                 <Text style={styles.tierCountValue}>{reachCount}</Text>
               </View>
-              <View style={[styles.tierCount, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
+              <View style={[styles.tierCount, { backgroundColor: colors.onGradientOverlay }]}>
                 <View style={[styles.tierDot, { backgroundColor: TIER_CONFIG.match.color }]} />
                 <Text style={styles.tierCountLabel}>{t('recommendation.tierMatch', 'Match')}</Text>
                 <Text style={styles.tierCountValue}>{matchCount}</Text>
               </View>
-              <View style={[styles.tierCount, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
+              <View style={[styles.tierCount, { backgroundColor: colors.onGradientOverlay }]}>
                 <View style={[styles.tierDot, { backgroundColor: TIER_CONFIG.safety.color }]} />
                 <Text style={styles.tierCountLabel}>
                   {t('recommendation.tierSafety', 'Safety')}
@@ -1126,7 +1162,7 @@ export default function RecommendationPage() {
           >
             <View style={styles.heroContent}>
               <View style={styles.heroIcon}>
-                <Ionicons name="school" size={28} color="#fff" />
+                <Ionicons name="school" size={28} color={colors.onGradient} />
               </View>
               <View style={styles.heroTextContainer}>
                 <Text style={styles.heroTitle}>
@@ -1200,7 +1236,7 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: themeColors.light.onGradientOverlay,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
@@ -1211,12 +1247,12 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: fontSize.xl,
     fontWeight: fontWeight.bold,
-    color: '#ffffff',
+    color: themeColors.light.onGradient,
     marginBottom: spacing.xs,
   },
   heroSubtitle: {
     fontSize: fontSize.sm,
-    color: 'rgba(255,255,255,0.85)',
+    color: themeColors.light.onGradientMuted,
     lineHeight: fontSize.sm * 1.4,
   },
 
@@ -1438,11 +1474,11 @@ const styles = StyleSheet.create({
   summaryTitle: {
     fontSize: fontSize.lg,
     fontWeight: fontWeight.bold,
-    color: '#ffffff',
+    color: themeColors.light.onGradient,
   },
   summaryText: {
     fontSize: fontSize.sm,
-    color: 'rgba(255,255,255,0.9)',
+    color: themeColors.light.onGradientMuted,
     lineHeight: fontSize.sm * 1.6,
     marginBottom: spacing.lg,
   },
@@ -1466,12 +1502,12 @@ const styles = StyleSheet.create({
   },
   tierCountLabel: {
     fontSize: fontSize.xs,
-    color: 'rgba(255,255,255,0.9)',
+    color: themeColors.light.onGradientMuted,
   },
   tierCountValue: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.bold,
-    color: '#ffffff',
+    color: themeColors.light.onGradient,
   },
 
   // School List Section
@@ -1656,12 +1692,12 @@ const styles = StyleSheet.create({
   historyTierDotText: {
     fontSize: fontSize.xs,
     fontWeight: fontWeight.bold,
-    color: '#ffffff',
+    color: themeColors.light.onGradient,
   },
   historyExpandedContent: {
     marginTop: spacing.lg,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.06)',
+    borderTopColor: themeColors.light.border,
     paddingTop: spacing.lg,
   },
   historySummary: {

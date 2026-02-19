@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslations, useLocale, useFormatter } from 'next-intl';
 import { getLocalizedName } from '@/lib/i18n/locale-utils';
+import { BreadcrumbJsonLd } from '@/components/seo';
+import { env } from '@/lib/env';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MessageSquare,
@@ -533,7 +535,9 @@ export default function ForumPage() {
       await api.post(`/forums/applications/${appId}/review`, {
         status: action === 'accept' ? 'ACCEPTED' : 'REJECTED',
       });
-    } catch {}
+    } catch {
+      // Optimistic update continues below regardless of API failure
+    }
     setApplications(
       applications.map((a) =>
         a.id === appId ? { ...a, status: action === 'accept' ? 'ACCEPTED' : 'REJECTED' } : a
@@ -564,6 +568,12 @@ export default function ForumPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: env.NEXT_PUBLIC_APP_URL },
+          { name: 'Forum', url: `${env.NEXT_PUBLIC_APP_URL}/forum` },
+        ]}
+      />
       {/* Compact Header */}
       <div className="bg-white border-b sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -5,6 +5,7 @@
  */
 
 import React, { useState, useCallback } from 'react';
+import type { ComponentProps } from 'react';
 import {
   View,
   Text,
@@ -40,7 +41,7 @@ import {
   Tabs,
   AnimatedCounter,
 } from '@/components/ui';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useColors, type Colors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import { apiClient } from '@/lib/api/client';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -173,14 +174,14 @@ export default function HallOfFameScreen() {
           contentContainerStyle={styles.tabs}
         >
           {[
-            { key: 'all', label: t('hallOfFame.tabs.all') },
-            { key: 'ivy', label: t('hallOfFame.tabs.ivy') },
-            { key: 'top10', label: t('hallOfFame.tabs.top10') },
-            { key: 'top30', label: t('hallOfFame.tabs.top30') },
+            { key: 'all' as const, label: t('hallOfFame.tabs.all') },
+            { key: 'ivy' as const, label: t('hallOfFame.tabs.ivy') },
+            { key: 'top10' as const, label: t('hallOfFame.tabs.top10') },
+            { key: 'top30' as const, label: t('hallOfFame.tabs.top30') },
           ].map((tab) => (
             <TouchableOpacity
               key={tab.key}
-              onPress={() => setActiveTab(tab.key as any)}
+              onPress={() => setActiveTab(tab.key)}
               style={[
                 styles.tab,
                 {
@@ -252,7 +253,11 @@ function StatItem({
 }) {
   return (
     <View style={styles.statItem}>
-      <Ionicons name={icon as any} size={18} color="rgba(255,255,255,0.8)" />
+      <Ionicons
+        name={icon as ComponentProps<typeof Ionicons>['name']}
+        size={18}
+        color="rgba(255,255,255,0.8)"
+      />
       <AnimatedCounter value={value} suffix={suffix} decimals={decimals} style={styles.statValue} />
       <Text style={styles.statLabel}>{label}</Text>
     </View>
@@ -267,7 +272,7 @@ function MemberCard({
   onPress,
 }: {
   member: HallMember;
-  colors: any;
+  colors: Colors;
   rank: number;
   onPress: () => void;
 }) {
@@ -288,7 +293,11 @@ function MemberCard({
           {/* Rank Badge */}
           {rankBadge && (
             <View style={[styles.rankBadge, { backgroundColor: rankBadge.color }]}>
-              <Ionicons name={rankBadge.icon as any} size={16} color="#fff" />
+              <Ionicons
+                name={rankBadge.icon as ComponentProps<typeof Ionicons>['name']}
+                size={16}
+                color="#fff"
+              />
             </View>
           )}
 

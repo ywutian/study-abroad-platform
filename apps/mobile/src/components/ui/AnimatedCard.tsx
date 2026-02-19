@@ -17,6 +17,7 @@ interface AnimatedCardProps {
   onPress?: () => void;
   hapticFeedback?: boolean;
   scaleOnPress?: boolean;
+  accessibilityLabel?: string;
 }
 
 interface CardHeaderProps {
@@ -50,6 +51,7 @@ export function AnimatedCard({
   onPress,
   hapticFeedback = true,
   scaleOnPress = true,
+  accessibilityLabel,
 }: AnimatedCardProps) {
   const colors = useColors();
   const scale = useSharedValue(1);
@@ -92,6 +94,9 @@ export function AnimatedCard({
     return (
       <GestureDetector gesture={gesture}>
         <Animated.View
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel={accessibilityLabel}
           style={[
             styles.card,
             {

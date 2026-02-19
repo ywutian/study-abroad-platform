@@ -4,6 +4,7 @@
  * 注：颜色值与 packages/shared/src/design/tokens.ts 保持同步
  * Web 使用 oklch，Mobile 使用对应的 Hex 值
  */
+import { useReducedMotion } from 'react-native-reanimated';
 import { useThemeStore } from '@/stores/theme';
 
 // ==================== 颜色系统 ====================
@@ -60,6 +61,11 @@ export const colors = {
     // Overlay & Shadow
     overlay: 'rgba(0, 0, 0, 0.5)',
     shadow: 'rgba(0, 0, 0, 0.1)',
+
+    // On-Gradient (text/elements on colored gradient backgrounds, always white)
+    onGradient: '#ffffff',
+    onGradientMuted: 'rgba(255, 255, 255, 0.8)',
+    onGradientOverlay: 'rgba(255, 255, 255, 0.2)',
   },
   dark: {
     // Brand
@@ -109,6 +115,11 @@ export const colors = {
     // Overlay & Shadow
     overlay: 'rgba(0, 0, 0, 0.7)',
     shadow: 'rgba(0, 0, 0, 0.3)',
+
+    // On-Gradient (text/elements on colored gradient backgrounds, always white)
+    onGradient: '#ffffff',
+    onGradientMuted: 'rgba(255, 255, 255, 0.8)',
+    onGradientOverlay: 'rgba(255, 255, 255, 0.2)',
   },
 } as const;
 
@@ -215,6 +226,20 @@ export const shadows = {
   },
 } as const;
 
+// ==================== Utilities ====================
+
+/**
+ * Append an alpha hex suffix to a #RRGGBB color string.
+ * @param color  Hex color, e.g. '#6366f1'
+ * @param opacity Value between 0 and 1
+ */
+export function withOpacity(color: string, opacity: number): string {
+  const hex = Math.round(Math.min(Math.max(opacity, 0), 1) * 255)
+    .toString(16)
+    .padStart(2, '0');
+  return `${color}${hex}`;
+}
+
 // ==================== Hooks ====================
 
 /**
@@ -240,6 +265,26 @@ export function createStyles<T extends Record<string, any>>(stylesCreator: (them
     const theme: Colors = isDark ? colors.dark : colors.light;
     return stylesCreator(theme);
   };
+}
+
+/**
+ * Returns animation config that respects the user's reduced-motion preference.
+ * When reduced motion is enabled, all durations are set to 0.
+ */
+export function useAnimationConfig() {
+  const reducedMotion = useReducedMotion();
+  if (reducedMotion) {
+    return {
+      duration: { instant: 0, fast: 0, normal: 0, slow: 0, slower: 0 },
+      spring: {
+        gentle: { damping: 20, stiffness: 400 },
+        snappy: { damping: 20, stiffness: 400 },
+        bouncy: { damping: 20, stiffness: 400 },
+      },
+      stagger: { fast: 0, normal: 0, slow: 0 },
+    } as const;
+  }
+  return animation;
 }
 
 // ==================== 类型导出 ====================

@@ -63,7 +63,7 @@ export interface UseChatSocketReturn {
 // Constants
 // ---------------------------------------------------------------------------
 
-const SOCKET_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3002';
+const SOCKET_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api-production-18f2.up.railway.app';
 const TYPING_TIMEOUT_MS = 3000;
 
 // ---------------------------------------------------------------------------
@@ -123,10 +123,6 @@ export function useChatSocket(options: UseChatSocketOptions = {}): UseChatSocket
       socket.on('disconnect', () => {
         if (!mountedRef.current) return;
         setIsConnected(false);
-      });
-
-      socket.on('connected', () => {
-        setIsConnected(true);
       });
 
       socket.on('connect_error', (err: Error) => {

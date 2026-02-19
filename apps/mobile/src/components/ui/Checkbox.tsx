@@ -26,6 +26,10 @@ export function Checkbox({
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled}
+      accessible={true}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked, disabled }}
+      accessibilityLabel={label}
       style={[styles.container, disabled && styles.disabled, style]}
       activeOpacity={0.7}
     >
@@ -77,6 +81,10 @@ export function Radio({
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled}
+      accessible={true}
+      accessibilityRole="radio"
+      accessibilityState={{ selected, disabled }}
+      accessibilityLabel={label}
       style={[styles.container, disabled && styles.disabled, style]}
       activeOpacity={0.7}
     >
@@ -124,7 +132,7 @@ export function RadioGroup({ options, value, onChange, label, style }: RadioGrou
   const colors = useColors();
 
   return (
-    <View style={style}>
+    <View style={style} accessibilityRole="radiogroup" accessibilityLabel={label}>
       {label && <Text style={[styles.groupLabel, { color: colors.foreground }]}>{label}</Text>}
       {options.map((option) => (
         <Radio

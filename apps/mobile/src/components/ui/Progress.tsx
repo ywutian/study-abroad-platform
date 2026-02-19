@@ -185,7 +185,7 @@ export function CircularProgress({
     () =>
       ({
         strokeDashoffset: circumference * (1 - progress.value),
-      }) as any
+      }) as object
   );
 
   return (

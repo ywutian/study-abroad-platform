@@ -145,11 +145,16 @@ pnpm --filter study-abroad-mobile lint
 
 ## 环境变量
 
-创建 `.env` 文件:
+创建 `.env` 文件（可复制 `.env.example`）:
 
 ```env
+# 真机或模拟器必须用可访问的地址，不能用 localhost
+# 本机调试：填电脑局域网 IP，如 http://192.168.1.100:3001
+# 线上环境：填后端 API 地址，如 https://api.yourdomain.com
 EXPO_PUBLIC_API_URL=http://localhost:3001
 ```
+
+**重要**：在真机上安装的 App 若未配置 `EXPO_PUBLIC_API_URL`，会默认请求 `http://localhost:3001`。真机上的 localhost 指手机本身，连不到你电脑上的后端，登录会提示「网络错误」。请在本机用 `ifconfig`（Mac/Linux）或 `ipconfig`（Windows）查看局域网 IP，在 `.env` 中设为 `http://<你的IP>:3001` 后重新构建 APK 再安装。
 
 ## 构建
 
