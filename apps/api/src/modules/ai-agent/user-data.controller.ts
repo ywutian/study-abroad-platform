@@ -30,6 +30,7 @@ import {
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { CurrentUserPayload } from '../../common/decorators/current-user.decorator';
+import { ThrottleSensitive } from '../../common/decorators/throttle.decorator';
 import { UserDataService } from './memory/user-data.service';
 import {
   QueryMemoriesDto,
@@ -53,6 +54,7 @@ import {
 
 @ApiTags('AI Agent - 用户数据管理')
 @ApiBearerAuth()
+@ThrottleSensitive()
 @Controller('ai-agent/user-data')
 @UseGuards(JwtAuthGuard)
 export class UserDataController {

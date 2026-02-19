@@ -33,6 +33,7 @@ import { RateLimiterService } from './core/rate-limiter.service';
 import { LLMService } from './core/llm.service';
 import { AgentThrottleGuard, SkipAgentThrottle } from './guards';
 import { CurrentUser } from '../../common/decorators';
+import { ThrottleAI } from '../../common/decorators/throttle.decorator';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { IsString, IsOptional, IsEnum, IsBoolean } from 'class-validator';
 import { AgentType } from './types';
@@ -72,6 +73,7 @@ class DirectAgentDto {
 
 @ApiTags('ai-agent')
 @ApiBearerAuth()
+@ThrottleAI()
 @Controller('ai-agent')
 @UseGuards(AgentThrottleGuard) // 统一在 Guard 层做限流和配额检查
 export class AiAgentController {

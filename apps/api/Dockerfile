@@ -49,20 +49,27 @@ FROM node:20-alpine AS runner
 # Install openssl for Prisma
 RUN apk add --no-cache openssl
 
+# Create non-root user for security
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nestjs
+
 WORKDIR /app
 
 # Copy deployed application with all dependencies
-COPY --from=builder /prod ./
+COPY --from=builder --chown=nestjs:nodejs /prod ./
 
 # Copy built application
-COPY --from=builder /app/apps/api/dist ./dist
+COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./dist
 
 # Copy Prisma schema and migrations for migrate deploy
-COPY --from=builder /app/apps/api/prisma ./prisma
+COPY --from=builder --chown=nestjs:nodejs /app/apps/api/prisma ./prisma
 
 # Copy entrypoint script
-COPY --from=builder /app/apps/api/entrypoint.sh ./entrypoint.sh
+COPY --from=builder --chown=nestjs:nodejs /app/apps/api/entrypoint.sh ./entrypoint.sh
 RUN chmod +x entrypoint.sh
+
+# Run as non-root user
+USER nestjs
 
 # Railway will set PORT env var
 EXPOSE 8080

@@ -13,7 +13,7 @@ export function sanitizeUserContent(dirty: string): string {
       ...sanitizeHtml.defaults.allowedAttributes,
       img: ['src', 'alt', 'width', 'height'],
     },
-    allowedSchemes: ['http', 'https', 'data'],
+    allowedSchemes: ['http', 'https'],
     disallowedTagsMode: 'discard',
   });
 }

@@ -9,6 +9,18 @@ export interface EmailOptions {
   text?: string;
 }
 
+/**
+ * Escape HTML special characters to prevent XSS in email templates.
+ */
+function escapeHtml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
@@ -18,7 +30,7 @@ export class EmailService {
 
   constructor(private configService: ConfigService) {
     this.fromEmail =
-      this.configService.get<string>('EMAIL_FROM') || 'noreply@example.com';
+      this.configService.get<string>('EMAIL_FROM') || 'noreply@studyabroad.com';
     this.fromName =
       this.configService.get<string>('EMAIL_FROM_NAME') || '留学申请平台';
 
@@ -211,7 +223,7 @@ export class EmailService {
               <h1 style="color: #3b82f6; margin: 0;">🎓 留学申请平台</h1>
             </div>
             <div class="content">
-              <h2>欢迎${userName ? `, ${userName}` : ''}！</h2>
+              <h2>欢迎${userName ? `, ${escapeHtml(userName)}` : ''}！</h2>
               <p>感谢您加入留学申请平台，您的留学之旅从这里开始！</p>
               
               <div class="features">
@@ -295,7 +307,7 @@ export class EmailService {
   ): Promise<boolean> {
     return this.sendEmail({
       to,
-      subject: `订阅成功 - ${planName} - 留学申请平台`,
+      subject: `订阅成功 - ${escapeHtml(planName)} - 留学申请平台`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -318,13 +330,13 @@ export class EmailService {
               <h1 style="color: #22c55e; margin: 0;">✅ 订阅成功</h1>
             </div>
             <div class="content">
-              <p>感谢您订阅 <strong>${planName}</strong>！您现在可以享受所有高级功能。</p>
+              <p>感谢您订阅 <strong>${escapeHtml(planName)}</strong>！您现在可以享受所有高级功能。</p>
               
               <div class="receipt">
                 <h3 style="margin-top: 0;">订单详情</h3>
                 <div class="receipt-row">
                   <span>计划：</span>
-                  <strong>${planName}</strong>
+                  <strong>${escapeHtml(planName)}</strong>
                 </div>
                 <div class="receipt-row">
                   <span>金额：</span>
@@ -363,7 +375,7 @@ export class EmailService {
 
     return this.sendEmail({
       to: supportEmail,
-      subject: `[${category}] ${subject}`,
+      subject: `[${escapeHtml(category)}] ${escapeHtml(subject)}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -381,14 +393,14 @@ export class EmailService {
             <h2>用户反馈</h2>
             
             <div class="info">
-              <p><strong>用户邮箱：</strong> ${userEmail}</p>
-              <p><strong>分类：</strong> ${category}</p>
+              <p><strong>用户邮箱：</strong> ${escapeHtml(userEmail)}</p>
+              <p><strong>分类：</strong> ${escapeHtml(category)}</p>
               <p><strong>时间：</strong> ${new Date().toLocaleString('zh-CN')}</p>
             </div>
             
             <div class="message">
               <h3>消息内容：</h3>
-              <p>${message.replace(/\n/g, '<br>')}</p>
+              <p>${escapeHtml(message).replace(/\n/g, '<br>')}</p>
             </div>
           </div>
         </body>

@@ -13,6 +13,7 @@ import { AdminService } from './admin.service';
 import { Roles, CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { Role, GlobalEventCategory } from '@prisma/client';
+import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 import {
   UpdateReportDto,
   UpdateUserRoleDto,
@@ -27,6 +28,7 @@ import {
 
 @ApiTags('admin')
 @ApiBearerAuth()
+@ThrottleRelaxed()
 @Controller('admin')
 @Roles(Role.ADMIN)
 export class AdminController {

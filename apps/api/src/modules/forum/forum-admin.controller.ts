@@ -7,11 +7,13 @@ import {
 } from '@nestjs/swagger';
 import { Roles } from '../../common/decorators';
 import { Role } from '@prisma/client';
+import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 import { ForumService } from './forum.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @ApiTags('admin/forums')
 @ApiBearerAuth()
+@ThrottleRelaxed()
 @Controller('admin/forums')
 @Roles(Role.ADMIN)
 export class ForumAdminController {

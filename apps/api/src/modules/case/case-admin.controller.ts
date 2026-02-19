@@ -9,9 +9,11 @@ import {
 import { Roles, CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { Role } from '@prisma/client';
+import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 
 @ApiTags('admin/cases')
 @ApiBearerAuth()
+@ThrottleRelaxed()
 @Controller('admin/cases')
 @Roles(Role.ADMIN)
 export class CaseAdminController {

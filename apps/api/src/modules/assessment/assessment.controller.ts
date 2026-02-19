@@ -25,8 +25,10 @@ import {
 import { CurrentUser, Public } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { ThrottleAI } from '../../common/decorators/throttle.decorator';
 
 @ApiTags('assessment')
+@ThrottleAI()
 @Controller('assessments')
 export class AssessmentController {
   constructor(private readonly assessmentService: AssessmentService) {}

@@ -12,6 +12,7 @@ import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { CaseService } from './case.service';
 import { CurrentUser, Public } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
+import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 import { CaseQueryDto } from './dto/case-query.dto';
 import { CreateCaseDto } from './dto/create-case.dto';
 import { UpdateCaseDto } from './dto/update-case.dto';
@@ -19,6 +20,7 @@ import { Role } from '@prisma/client';
 
 @ApiTags('cases')
 @ApiBearerAuth()
+@ThrottleRelaxed()
 @Controller('cases')
 export class CaseController {
   constructor(private readonly caseService: CaseService) {}
@@ -65,7 +67,7 @@ export class CaseController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: CreateCaseDto,
   ) {
-    return this.caseService.create(user.id, data as any);
+    return this.caseService.create(user.id, data);
   }
 
   @Put(':id')
@@ -75,7 +77,7 @@ export class CaseController {
     @Param('id') id: string,
     @Body() data: UpdateCaseDto,
   ) {
-    return this.caseService.update(id, user.id, data as any);
+    return this.caseService.update(id, user.id, data);
   }
 
   @Delete(':id')

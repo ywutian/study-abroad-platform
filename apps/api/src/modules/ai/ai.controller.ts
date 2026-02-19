@@ -1,5 +1,6 @@
 import { Controller, Post, Body } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ThrottleAI } from '../../common/decorators/throttle.decorator';
 import {
   AiService,
   ProfileAnalysisRequest,
@@ -173,6 +174,7 @@ class GenerateEndingDto {
 
 @ApiTags('ai')
 @ApiBearerAuth()
+@ThrottleAI()
 @Controller('ai')
 export class AiController {
   constructor(private readonly aiService: AiService) {}

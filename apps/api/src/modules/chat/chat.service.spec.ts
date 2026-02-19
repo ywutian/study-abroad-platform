@@ -82,8 +82,10 @@ describe('ChatService', () => {
               create: jest.fn(),
               findMany: jest.fn(),
               findUnique: jest.fn(),
+              update: jest.fn(),
               count: jest.fn(),
             },
+            $queryRaw: jest.fn().mockResolvedValue([{ count: BigInt(0) }]),
             report: {
               create: jest.fn(),
             },
@@ -364,6 +366,234 @@ describe('ChatService', () => {
           data: { lastReadAt: expect.any(Date) },
         },
       );
+    });
+  });
+
+  // ====== Phase 1.2: Message control + social ======
+
+  describe('deleteMessage', () => {
+    it('should soft-delete message for sender', async () => {
+      (prismaService.message.findUnique as jest.Mock).mockResolvedValue(
+        mockMessage,
+      );
+      (prismaService.message.update as jest.Mock).mockResolvedValue({
+        ...mockMessage,
+        isDeleted: true,
+      });
+
+      const result = await service.deleteMessage('msg-123', 'user-1');
+
+      expect(result.messageId).toBe('msg-123');
+      expect(prismaService.message.update).toHaveBeenCalledWith({
+        where: { id: 'msg-123' },
+        data: { isDeleted: true },
+      });
+    });
+
+    it('should throw ForbiddenException for non-sender', async () => {
+      (prismaService.message.findUnique as jest.Mock).mockResolvedValue(
+        mockMessage,
+      );
+
+      await expect(service.deleteMessage('msg-123', 'user-2')).rejects.toThrow(
+        ForbiddenException,
+      );
+    });
+
+    it('should throw BadRequestException if message not found', async () => {
+      (prismaService.message.findUnique as jest.Mock).mockResolvedValue(null);
+
+      await expect(
+        service.deleteMessage('nonexistent', 'user-1'),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('recallMessage', () => {
+    it('should recall message within 2 minutes', async () => {
+      const recentMessage = {
+        ...mockMessage,
+        createdAt: new Date(Date.now() - 60000), // 1 minute ago
+        isDeleted: false,
+        isRecalled: false,
+      };
+      (prismaService.message.findUnique as jest.Mock).mockResolvedValue(
+        recentMessage,
+      );
+      (prismaService.message.update as jest.Mock).mockResolvedValue({
+        ...recentMessage,
+        isRecalled: true,
+      });
+
+      const result = await service.recallMessage('msg-123', 'user-1');
+
+      expect(result.messageId).toBe('msg-123');
+      expect(prismaService.message.update).toHaveBeenCalledWith({
+        where: { id: 'msg-123' },
+        data: expect.objectContaining({
+          isRecalled: true,
+          content: '',
+          mediaUrl: null,
+          mediaType: null,
+        }),
+      });
+    });
+
+    it('should throw BadRequestException after 2 minutes', async () => {
+      const oldMessage = {
+        ...mockMessage,
+        createdAt: new Date(Date.now() - 3 * 60 * 1000), // 3 minutes ago
+        isDeleted: false,
+        isRecalled: false,
+      };
+      (prismaService.message.findUnique as jest.Mock).mockResolvedValue(
+        oldMessage,
+      );
+
+      await expect(service.recallMessage('msg-123', 'user-1')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should throw ForbiddenException for non-sender', async () => {
+      const recentMessage = {
+        ...mockMessage,
+        createdAt: new Date(),
+        isDeleted: false,
+        isRecalled: false,
+      };
+      (prismaService.message.findUnique as jest.Mock).mockResolvedValue(
+        recentMessage,
+      );
+
+      await expect(service.recallMessage('msg-123', 'user-2')).rejects.toThrow(
+        ForbiddenException,
+      );
+    });
+
+    it('should throw BadRequestException if already recalled', async () => {
+      const recalledMessage = {
+        ...mockMessage,
+        createdAt: new Date(),
+        isDeleted: false,
+        isRecalled: true,
+      };
+      (prismaService.message.findUnique as jest.Mock).mockResolvedValue(
+        recalledMessage,
+      );
+
+      await expect(service.recallMessage('msg-123', 'user-1')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should throw BadRequestException if message not found', async () => {
+      (prismaService.message.findUnique as jest.Mock).mockResolvedValue(null);
+
+      await expect(
+        service.recallMessage('nonexistent', 'user-1'),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('getTotalUnreadCount', () => {
+    it('should return unread count from raw query', async () => {
+      (prismaService.$queryRaw as jest.Mock).mockResolvedValue([
+        { count: BigInt(5) },
+      ]);
+
+      const result = await service.getTotalUnreadCount('user-1');
+
+      expect(result.count).toBe(5);
+    });
+
+    it('should return 0 when no unread messages', async () => {
+      (prismaService.$queryRaw as jest.Mock).mockResolvedValue([
+        { count: BigInt(0) },
+      ]);
+
+      const result = await service.getTotalUnreadCount('user-1');
+
+      expect(result.count).toBe(0);
+    });
+  });
+
+  describe('togglePin', () => {
+    it('should toggle pin from false to true', async () => {
+      (
+        prismaService.conversationParticipant.findUnique as jest.Mock
+      ).mockResolvedValue({
+        conversationId: 'conv-123',
+        userId: 'user-1',
+        isPinned: false,
+      });
+      (
+        prismaService.conversationParticipant.update as jest.Mock
+      ).mockResolvedValue({ isPinned: true });
+
+      const result = await service.togglePin('conv-123', 'user-1');
+
+      expect(result.isPinned).toBe(true);
+      expect(prismaService.conversationParticipant.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { isPinned: true },
+        }),
+      );
+    });
+
+    it('should toggle pin from true to false', async () => {
+      (
+        prismaService.conversationParticipant.findUnique as jest.Mock
+      ).mockResolvedValue({
+        conversationId: 'conv-123',
+        userId: 'user-1',
+        isPinned: true,
+      });
+      (
+        prismaService.conversationParticipant.update as jest.Mock
+      ).mockResolvedValue({ isPinned: false });
+
+      const result = await service.togglePin('conv-123', 'user-1');
+
+      expect(result.isPinned).toBe(false);
+    });
+
+    it('should throw ForbiddenException for non-participant', async () => {
+      (
+        prismaService.conversationParticipant.findUnique as jest.Mock
+      ).mockResolvedValue(null);
+
+      await expect(service.togglePin('conv-123', 'user-3')).rejects.toThrow(
+        ForbiddenException,
+      );
+    });
+  });
+
+  describe('unfollowUser', () => {
+    it('should delete follow relationship', async () => {
+      (prismaService.follow.deleteMany as jest.Mock).mockResolvedValue({
+        count: 1,
+      });
+
+      await service.unfollowUser('user-1', 'user-2');
+
+      expect(prismaService.follow.deleteMany).toHaveBeenCalledWith({
+        where: { followerId: 'user-1', followingId: 'user-2' },
+      });
+    });
+  });
+
+  describe('unblockUser', () => {
+    it('should delete block relationship', async () => {
+      (prismaService.block.deleteMany as jest.Mock).mockResolvedValue({
+        count: 1,
+      });
+
+      await service.unblockUser('user-1', 'user-2');
+
+      expect(prismaService.block.deleteMany).toHaveBeenCalledWith({
+        where: { blockerId: 'user-1', blockedId: 'user-2' },
+      });
     });
   });
 });

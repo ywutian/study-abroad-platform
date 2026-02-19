@@ -19,6 +19,7 @@ import {
 import { Roles, CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { Role, PaymentStatus, Prisma } from '@prisma/client';
+import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SubscriptionPlan } from '@study-abroad/shared';
 import {
@@ -28,6 +29,7 @@ import {
 
 @ApiTags('admin/payments')
 @ApiBearerAuth()
+@ThrottleRelaxed()
 @Controller('admin/payments')
 @Roles(Role.ADMIN)
 export class PaymentAdminController {

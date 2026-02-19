@@ -12,10 +12,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { Public, CurrentUser } from '../../common/decorators';
+import {
+  ThrottleSensitive,
+  ThrottleStrict,
+} from '../../common/decorators/throttle.decorator';
 import type { CurrentUserPayload } from '../../common/decorators';
 import {
   RegisterDto,
@@ -81,6 +84,7 @@ const CLEAR_ACCESS_TOKEN_OPTIONS = {
 };
 
 @ApiTags('auth')
+@ThrottleSensitive()
 @Controller('auth')
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
@@ -89,7 +93,6 @@ export class AuthController {
 
   @Post('register')
   @Public()
-  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @ApiOperation({ summary: 'Register new user' })
   async register(@Body() data: RegisterDto) {
     return this.authService.register(data);
@@ -97,7 +100,6 @@ export class AuthController {
 
   @Post('login')
   @Public()
-  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login' })
   async login(
@@ -127,14 +129,13 @@ export class AuthController {
     return {
       user: result.user,
       accessToken: result.tokens.accessToken,
+      refreshToken: result.tokens.refreshToken,
       isNewUser: result.isNewUser,
-      // 安全：不在响应体中返回 refreshToken
     };
   }
 
   @Post('refresh')
   @Public()
-  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Refresh access token' })
   async refreshToken(
@@ -173,6 +174,7 @@ export class AuthController {
 
       return {
         accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
       };
     } catch (error) {
       // 刷新失败时清除可能无效的 cookie
@@ -212,7 +214,7 @@ export class AuthController {
 
   @Get('verify-email')
   @Public()
-  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  @ThrottleStrict()
   @ApiOperation({ summary: 'Verify email' })
   async verifyEmail(@Query('token') token: string) {
     return this.authService.verifyEmail(token);
@@ -220,7 +222,7 @@ export class AuthController {
 
   @Post('resend-verification')
   @Public()
-  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  @ThrottleStrict()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Resend verification email' })
   async resendVerification(@Body() data: ResendVerificationDto) {
@@ -229,7 +231,7 @@ export class AuthController {
 
   @Post('forgot-password')
   @Public()
-  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  @ThrottleStrict()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Request password reset' })
   async forgotPassword(@Body() data: ForgotPasswordDto) {

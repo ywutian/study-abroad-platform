@@ -11,6 +11,7 @@ import {
   UploadedFile,
   ParseFilePipe,
   MaxFileSizeValidator,
+  FileTypeValidator,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -24,10 +25,12 @@ import { ChatService } from './chat.service';
 import { ChatGateway } from './chat.gateway';
 import { CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
+import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 import { StartConversationDto, CreateReportDto } from './dto';
 
 @ApiTags('chat')
 @ApiBearerAuth()
+@ThrottleRelaxed()
 @Controller('chats')
 export class ChatController {
   constructor(
@@ -141,7 +144,13 @@ export class ChatController {
     @Param('id') conversationId: string,
     @UploadedFile(
       new ParseFilePipe({
-        validators: [new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 })],
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }),
+          new FileTypeValidator({
+            fileType:
+              /^(image\/(jpeg|png|gif|webp)|application\/pdf|audio\/(mpeg|wav|ogg))$/,
+          }),
+        ],
       }),
     )
     file: Express.Multer.File,

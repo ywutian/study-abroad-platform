@@ -1,0 +1,289 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { NotificationService, NotificationType } from './notification.service';
+import { RedisService } from '../../common/redis/redis.service';
+import { ChatGateway } from '../chat/chat.gateway';
+
+describe('NotificationService', () => {
+  let service: NotificationService;
+  let redis: RedisService;
+  let mockChatGateway: { sendToUser: jest.Mock };
+
+  beforeEach(async () => {
+    mockChatGateway = {
+      sendToUser: jest.fn(),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        NotificationService,
+        {
+          provide: RedisService,
+          useValue: {
+            lpush: jest.fn().mockResolvedValue(1),
+            ltrim: jest.fn().mockResolvedValue('OK'),
+            expire: jest.fn().mockResolvedValue(1),
+            incr: jest.fn().mockResolvedValue(1),
+            decr: jest.fn().mockResolvedValue(0),
+            lrange: jest.fn().mockResolvedValue([]),
+            lset: jest.fn().mockResolvedValue('OK'),
+            lrem: jest.fn().mockResolvedValue(1),
+            get: jest.fn().mockResolvedValue('0'),
+            set: jest.fn().mockResolvedValue('OK'),
+            del: jest.fn().mockResolvedValue(1),
+          },
+        },
+        {
+          provide: ChatGateway,
+          useValue: mockChatGateway,
+        },
+      ],
+    }).compile();
+
+    service = module.get<NotificationService>(NotificationService);
+    redis = module.get<RedisService>(RedisService);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('createNotification', () => {
+    it('should create a notification and store in Redis', async () => {
+      const result = await service.createNotification(
+        'user-1',
+        NotificationType.NEW_FOLLOWER,
+        { actorName: 'Alice' },
+      );
+
+      expect(result.id).toBeDefined();
+      expect(result.type).toBe(NotificationType.NEW_FOLLOWER);
+      expect(result.userId).toBe('user-1');
+      expect(result.read).toBe(false);
+      expect(result.content).toContain('Alice');
+      expect(redis.lpush).toHaveBeenCalled();
+      expect(redis.ltrim).toHaveBeenCalled();
+      expect(redis.expire).toHaveBeenCalled();
+      expect(redis.incr).toHaveBeenCalled();
+    });
+
+    it('should push notification via WebSocket', async () => {
+      await service.createNotification(
+        'user-1',
+        NotificationType.VERIFICATION_APPROVED,
+      );
+
+      expect(mockChatGateway.sendToUser).toHaveBeenCalledWith(
+        'user-1',
+        'notification',
+        expect.objectContaining({
+          type: NotificationType.VERIFICATION_APPROVED,
+        }),
+      );
+    });
+
+    it('should replace template variables with data', async () => {
+      const result = await service.createNotification(
+        'user-1',
+        NotificationType.POINTS_EARNED,
+        { data: { points: '50' } },
+      );
+
+      expect(result.content).toContain('50');
+    });
+
+    it('should replace {actor} in template', async () => {
+      const result = await service.createNotification(
+        'user-1',
+        NotificationType.POST_REPLY,
+        { actorName: 'Bob' },
+      );
+
+      expect(result.content).toContain('Bob');
+    });
+
+    it('should use custom title and content when provided', async () => {
+      const result = await service.createNotification(
+        'user-1',
+        NotificationType.NEW_FOLLOWER,
+        {
+          customTitle: 'Custom Title',
+          customContent: 'Custom content here',
+        },
+      );
+
+      expect(result.title).toBe('Custom Title');
+      expect(result.content).toBe('Custom content here');
+    });
+
+    it('should include actorId and relatedId when provided', async () => {
+      const result = await service.createNotification(
+        'user-1',
+        NotificationType.CASE_HELPFUL,
+        {
+          actorId: 'actor-1',
+          relatedId: 'case-1',
+          relatedType: 'case',
+        },
+      );
+
+      expect(result.actorId).toBe('actor-1');
+      expect(result.relatedId).toBe('case-1');
+      expect(result.relatedType).toBe('case');
+    });
+  });
+
+  describe('getNotifications', () => {
+    it('should return parsed notifications from Redis', async () => {
+      const mockNotif = {
+        id: 'notif_1',
+        type: NotificationType.NEW_FOLLOWER,
+        title: '新粉丝',
+        content: 'Test followed you',
+        userId: 'user-1',
+        read: false,
+        createdAt: new Date().toISOString(),
+      };
+
+      (redis.lrange as jest.Mock).mockResolvedValue([
+        JSON.stringify(mockNotif),
+      ]);
+
+      const result = await service.getNotifications('user-1', 20, 0);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('notif_1');
+      expect(redis.lrange).toHaveBeenCalledWith('notifications:user-1', 0, 19);
+    });
+
+    it('should apply offset and limit correctly', async () => {
+      (redis.lrange as jest.Mock).mockResolvedValue([]);
+
+      await service.getNotifications('user-1', 10, 5);
+
+      expect(redis.lrange).toHaveBeenCalledWith('notifications:user-1', 5, 14);
+    });
+  });
+
+  describe('getUnreadCount', () => {
+    it('should return unread count from Redis', async () => {
+      (redis.get as jest.Mock).mockResolvedValue('7');
+
+      const count = await service.getUnreadCount('user-1');
+      expect(count).toBe(7);
+    });
+
+    it('should return 0 when no count exists', async () => {
+      (redis.get as jest.Mock).mockResolvedValue(null);
+
+      const count = await service.getUnreadCount('user-1');
+      expect(count).toBe(0);
+    });
+  });
+
+  describe('markAsRead', () => {
+    it('should mark an unread notification as read', async () => {
+      const unreadNotif = {
+        id: 'notif_1',
+        type: NotificationType.NEW_FOLLOWER,
+        read: false,
+      };
+      (redis.lrange as jest.Mock).mockResolvedValue([
+        JSON.stringify(unreadNotif),
+      ]);
+
+      const result = await service.markAsRead('user-1', 'notif_1');
+
+      expect(result).toBe(true);
+      expect(redis.lset).toHaveBeenCalled();
+      expect(redis.decr).toHaveBeenCalled();
+    });
+
+    it('should return false if notification not found', async () => {
+      (redis.lrange as jest.Mock).mockResolvedValue([]);
+
+      const result = await service.markAsRead('user-1', 'nonexistent');
+      expect(result).toBe(false);
+    });
+
+    it('should not decrement if notification already read', async () => {
+      const readNotif = {
+        id: 'notif_1',
+        type: NotificationType.NEW_FOLLOWER,
+        read: true,
+      };
+      (redis.lrange as jest.Mock).mockResolvedValue([
+        JSON.stringify(readNotif),
+      ]);
+
+      const result = await service.markAsRead('user-1', 'notif_1');
+      expect(result).toBe(false);
+      expect(redis.decr).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('markAllAsRead', () => {
+    it('should mark all unread notifications as read', async () => {
+      const notifications = [
+        JSON.stringify({ id: '1', read: false }),
+        JSON.stringify({ id: '2', read: true }),
+        JSON.stringify({ id: '3', read: false }),
+      ];
+      (redis.lrange as jest.Mock).mockResolvedValue(notifications);
+
+      const count = await service.markAllAsRead('user-1');
+
+      expect(count).toBe(2);
+      expect(redis.lset).toHaveBeenCalledTimes(2);
+      expect(redis.set).toHaveBeenCalledWith('unread_count:user-1', '0');
+    });
+
+    it('should return 0 when all notifications are already read', async () => {
+      const notifications = [JSON.stringify({ id: '1', read: true })];
+      (redis.lrange as jest.Mock).mockResolvedValue(notifications);
+
+      const count = await service.markAllAsRead('user-1');
+      expect(count).toBe(0);
+    });
+  });
+
+  describe('deleteNotification', () => {
+    it('should delete a notification and adjust unread count', async () => {
+      const unreadNotif = { id: 'notif_1', read: false };
+      (redis.lrange as jest.Mock).mockResolvedValue([
+        JSON.stringify(unreadNotif),
+      ]);
+
+      const result = await service.deleteNotification('user-1', 'notif_1');
+
+      expect(result).toBe(true);
+      expect(redis.lrem).toHaveBeenCalled();
+      expect(redis.decr).toHaveBeenCalled();
+    });
+
+    it('should not decrement unread count for already-read notification', async () => {
+      const readNotif = { id: 'notif_1', read: true };
+      (redis.lrange as jest.Mock).mockResolvedValue([
+        JSON.stringify(readNotif),
+      ]);
+
+      await service.deleteNotification('user-1', 'notif_1');
+      expect(redis.decr).not.toHaveBeenCalled();
+    });
+
+    it('should return false if notification not found', async () => {
+      (redis.lrange as jest.Mock).mockResolvedValue([]);
+
+      const result = await service.deleteNotification('user-1', 'nonexistent');
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('clearAll', () => {
+    it('should delete all notifications and reset unread count', async () => {
+      await service.clearAll('user-1');
+
+      expect(redis.del).toHaveBeenCalledWith('notifications:user-1');
+      expect(redis.set).toHaveBeenCalledWith('unread_count:user-1', '0');
+    });
+  });
+});

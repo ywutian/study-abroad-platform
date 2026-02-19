@@ -16,9 +16,11 @@ import {
 import { NotificationService } from './notification.service';
 import { CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
+import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 
 @ApiTags('notifications')
 @ApiBearerAuth()
+@ThrottleRelaxed()
 @Controller('notifications')
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}

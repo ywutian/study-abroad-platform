@@ -14,6 +14,7 @@ import { EssayScraperScheduler } from './essay-scraper.scheduler';
 import { Roles, CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { Role } from '@prisma/client';
+import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 import { SourceType } from '../../common/types/enums';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
@@ -25,6 +26,7 @@ import {
 
 @ApiTags('admin/essay-scraper')
 @ApiBearerAuth()
+@ThrottleRelaxed()
 @Controller('admin/essay-scraper')
 @Roles(Role.ADMIN)
 export class EssayScraperController {

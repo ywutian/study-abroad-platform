@@ -15,7 +15,9 @@ export class SentryModule implements OnModuleInit {
     const isProduction = nodeEnv === 'production';
     const commitSha =
       this.configService.get<string>('GIT_COMMIT_SHA') ||
-      this.configService.get<string>('RAILWAY_GIT_COMMIT_SHA');
+      this.configService.get<string>('RAILWAY_GIT_COMMIT_SHA') ||
+      this.configService.get<string>('RENDER_GIT_COMMIT') ||
+      this.configService.get<string>('VERCEL_GIT_COMMIT_SHA');
 
     if (dsn) {
       Sentry.init({
@@ -31,14 +33,9 @@ export class SentryModule implements OnModuleInit {
         // Performance Monitoring
         tracesSampleRate: isProduction ? 0.1 : 1.0,
 
-        // Filter out noisy errors
-        ignoreErrors: [
-          'NotFoundException',
-          'UnauthorizedException',
-          'BadRequestException',
-          'ThrottlerException',
-          'ForbiddenException',
-        ],
+        // Filter out expected client errors (4xx are already filtered in beforeSend)
+        // Keep ForbiddenException visible — may indicate authorization bypass attempts
+        ignoreErrors: ['ThrottlerException'],
 
         // Custom tags for filtering in Sentry dashboard
         initialScope: {

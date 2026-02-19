@@ -18,7 +18,6 @@ import {
   ApiOperation,
   ApiResponse,
 } from '@nestjs/swagger';
-import { Throttle } from '@nestjs/throttler';
 import { VaultService } from './vault.service';
 import {
   CreateVaultItemDto,
@@ -32,10 +31,15 @@ import {
 import { CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import {
+  ThrottleSensitive,
+  ThrottleStrict,
+} from '../../common/decorators/throttle.decorator';
 import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
 
 @ApiTags('vault')
+@ThrottleSensitive()
 @Controller('vaults')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -94,7 +98,7 @@ export class VaultController {
   }
 
   @Post('export/all')
-  @Throttle({ default: { limit: 1, ttl: 60000 } })
+  @ThrottleStrict()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary:

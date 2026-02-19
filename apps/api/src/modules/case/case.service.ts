@@ -15,6 +15,7 @@ import {
   Role,
   MemoryType,
   EntityType,
+  EssayType,
 } from '@prisma/client';
 import {
   PaginationDto,
@@ -243,7 +244,7 @@ export class CaseService {
       tags?: string[];
       visibility?: 'PRIVATE' | 'PUBLIC' | 'ANONYMOUS' | 'VERIFIED_ONLY';
       // Essay fields
-      essayType?: 'COMMON_APP' | 'UC' | 'SUPPLEMENTAL' | 'WHY_SCHOOL' | 'OTHER';
+      essayType?: EssayType;
       essayPrompt?: string;
       essayContent?: string;
       promptNumber?: number;
@@ -253,8 +254,8 @@ export class CaseService {
     const admissionCase = await this.prisma.admissionCase.create({
       data: {
         ...rest,
-        result: rest.result as any,
-        ...(essayType && { essayType: essayType as any }),
+        result: rest.result as AdmissionCase['result'],
+        ...(essayType && { essayType }),
         user: { connect: { id: userId } },
         school: { connect: { id: schoolId } },
       },
@@ -295,7 +296,7 @@ export class CaseService {
       tags: string[];
       visibility: 'PRIVATE' | 'PUBLIC' | 'ANONYMOUS' | 'VERIFIED_ONLY';
       // Essay fields
-      essayType: 'COMMON_APP' | 'UC' | 'SUPPLEMENTAL' | 'WHY_SCHOOL' | 'OTHER';
+      essayType: EssayType;
       essayPrompt: string;
       essayContent: string;
       promptNumber: number;
@@ -314,9 +315,11 @@ export class CaseService {
       where: { id },
       data: {
         ...rest,
-        ...(result && { result: result as any }),
-        ...(visibility && { visibility: visibility as any }),
-        ...(essayType && { essayType: essayType as any }),
+        ...(result && { result: result as AdmissionCase['result'] }),
+        ...(visibility && {
+          visibility: visibility as AdmissionCase['visibility'],
+        }),
+        ...(essayType && { essayType }),
         ...(schoolId && { school: { connect: { id: schoolId } } }),
       },
     });

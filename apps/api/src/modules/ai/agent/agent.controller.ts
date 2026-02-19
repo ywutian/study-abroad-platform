@@ -14,6 +14,7 @@ import {
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { AgentService } from './agent.service';
 import { CurrentUser } from '../../../common/decorators';
+import { ThrottleAI } from '../../../common/decorators/throttle.decorator';
 import type { CurrentUserPayload } from '../../../common/decorators';
 import { IsString, IsOptional } from 'class-validator';
 
@@ -28,6 +29,7 @@ class AgentChatDto {
 
 @ApiTags('agent')
 @ApiBearerAuth()
+@ThrottleAI()
 @Controller('agent')
 export class AgentController {
   constructor(private readonly agentService: AgentService) {}

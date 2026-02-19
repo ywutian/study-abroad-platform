@@ -11,6 +11,7 @@ import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { RankingService } from './ranking.service';
 import { CurrentUser, Public } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
+import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 
 interface CalculateRankingDto {
   usNewsRank: number;
@@ -25,6 +26,7 @@ interface SaveRankingDto extends CalculateRankingDto {
 }
 
 @ApiTags('rankings')
+@ThrottleRelaxed()
 @Controller('rankings')
 export class RankingController {
   constructor(private readonly rankingService: RankingService) {}

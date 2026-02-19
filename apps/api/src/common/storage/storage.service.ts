@@ -84,18 +84,24 @@ export class StorageService implements OnModuleInit {
 
   async onModuleInit() {
     if (this.storageType === 'local') {
-      // 确保本地存储目录存在
       try {
         await fs.mkdir(this.localBasePath, { recursive: true });
         await fs.mkdir(path.join(this.localBasePath, 'verification'), {
           recursive: true,
         });
-        this.logger.log(`本地存储已初始化: ${this.localBasePath}`);
+        this.logger.log(`Local storage initialized: ${this.localBasePath}`);
       } catch (error) {
-        this.logger.error('创建本地存储目录失败', error);
+        this.logger.error('Failed to create local storage directory', error);
       }
     } else {
-      this.logger.log(`存储类型: ${this.storageType}（需要安装对应 SDK）`);
+      // Validate cloud storage credentials at startup
+      if (!this.isCloudStorageConfigured()) {
+        throw new Error(
+          `Storage type "${this.storageType}" selected but required credentials are missing. ` +
+            'Check environment variables for your storage provider.',
+        );
+      }
+      this.logger.log(`Storage type: ${this.storageType}`);
     }
   }
 
@@ -181,8 +187,8 @@ export class StorageService implements OnModuleInit {
 
       return { key, url, provider: 's3' };
     } catch (error) {
-      this.logger.error('S3 上传失败，降级到本地存储', error);
-      return this.uploadLocal(key, data);
+      this.logger.error('S3 upload failed', error);
+      throw error;
     }
   }
 
@@ -205,8 +211,8 @@ export class StorageService implements OnModuleInit {
 
       return { key, url: result.url, provider: 'oss' };
     } catch (error) {
-      this.logger.error('OSS 上传失败，降级到本地存储', error);
-      return this.uploadLocal(key, data);
+      this.logger.error('OSS upload failed', error);
+      throw error;
     }
   }
 
@@ -245,8 +251,8 @@ export class StorageService implements OnModuleInit {
 
       return { key, url, provider: 'cos' };
     } catch (error) {
-      this.logger.error('COS 上传失败，降级到本地存储', error);
-      return this.uploadLocal(key, data);
+      this.logger.error('COS upload failed', error);
+      throw error;
     }
   }
 

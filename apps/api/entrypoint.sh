@@ -1,9 +1,11 @@
 #!/bin/sh
+set -e
 
 echo "Running Prisma migrations..."
-npx prisma migrate deploy --schema=./prisma/schema.prisma || echo "Warning: Migration failed, continuing startup..."
+if ! npx prisma migrate deploy --schema=./prisma/schema.prisma; then
+  echo "ERROR: Database migration failed. Aborting startup."
+  exit 1
+fi
 
-echo "ENV check: VAULT_ENCRYPTION_KEY length = $(echo -n "$VAULT_ENCRYPTION_KEY" | wc -c)"
-echo "ENV check: NODE_ENV = $NODE_ENV"
-echo "Starting application..."
+echo "Starting application (NODE_ENV=$NODE_ENV)..."
 exec node dist/main.js

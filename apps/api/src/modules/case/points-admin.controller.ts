@@ -7,6 +7,7 @@ import {
 } from '@nestjs/swagger';
 import { Roles } from '../../common/decorators';
 import { Role } from '@prisma/client';
+import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 import { PointsConfigService, PointAction } from './points-config.service';
 import {
   TogglePointsDto,
@@ -16,6 +17,7 @@ import {
 
 @ApiTags('admin/points')
 @ApiBearerAuth()
+@ThrottleRelaxed()
 @Controller('admin/points')
 @Roles(Role.ADMIN)
 export class PointsAdminController {

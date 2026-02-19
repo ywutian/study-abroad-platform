@@ -7,8 +7,8 @@ import {
   Body,
   Headers,
   Req,
+  BadRequestException,
 } from '@nestjs/common';
-import { Throttle } from '@nestjs/throttler';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -20,9 +20,14 @@ import type { CreateSubscriptionDto } from './subscription.service';
 import { CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { Public } from '../../common/decorators/public.decorator';
+import {
+  ThrottleSensitive,
+  ThrottleRelaxed,
+} from '../../common/decorators/throttle.decorator';
 import * as express from 'express';
 
 @ApiTags('subscriptions')
+@ThrottleSensitive()
 @Controller('subscriptions')
 export class SubscriptionController {
   constructor(private readonly subscriptionService: SubscriptionService) {}
@@ -80,12 +85,15 @@ export class SubscriptionController {
 
   @Post('webhook')
   @Public()
-  @Throttle({ default: { limit: 100, ttl: 60000 } })
+  @ThrottleRelaxed()
   @ApiOperation({ summary: 'Payment webhook endpoint' })
   async handleWebhook(
     @Req() req: express.Request & { rawBody?: Buffer },
     @Headers('x-signature') signature: string,
   ) {
+    if (!signature) {
+      throw new BadRequestException('Missing webhook signature');
+    }
     const payload = req.body;
     await this.subscriptionService.handlePaymentWebhook(payload, signature);
     return { received: true };

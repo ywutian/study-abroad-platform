@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { Request } from 'express';
 import * as Sentry from '@sentry/node';
 
 @Injectable()
@@ -17,7 +18,7 @@ export class SentryInterceptor implements NestInterceptor {
         const statusCode = error.status || error.statusCode || 500;
 
         if (statusCode >= 500) {
-          const request = context.switchToHttp().getRequest();
+          const request = context.switchToHttp().getRequest<Request>();
 
           Sentry.withScope((scope) => {
             scope.setTag('type', 'api_error');
@@ -25,11 +26,10 @@ export class SentryInterceptor implements NestInterceptor {
             scope.setExtra('method', request.method);
             scope.setExtra('statusCode', statusCode);
 
-            if (request.user) {
-              scope.setUser({
-                id: request.user.id,
-                email: request.user.email,
-              });
+            const user = (request as Request & { user?: { id?: string } }).user;
+            if (user?.id) {
+              // Only send user ID to Sentry, not PII like email
+              scope.setUser({ id: user.id });
             }
 
             Sentry.captureException(error);

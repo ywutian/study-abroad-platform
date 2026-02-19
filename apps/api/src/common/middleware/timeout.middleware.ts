@@ -5,8 +5,8 @@ import { Request, Response, NextFunction } from 'express';
  * Global request timeout middleware.
  * Returns 408 Request Timeout if a request exceeds the configured threshold.
  *
- * Default: 30s for regular endpoints, 120s for AI endpoints.
- * Configurable via REQUEST_TIMEOUT_MS environment variable.
+ * Default: 30s for regular endpoints, 60s for auth (login/refresh), 120s for AI endpoints.
+ * Configurable via REQUEST_TIMEOUT_MS, AUTH_REQUEST_TIMEOUT_MS, AI_REQUEST_TIMEOUT_MS.
  */
 @Injectable()
 export class TimeoutMiddleware implements NestMiddleware {
@@ -25,11 +25,19 @@ export class TimeoutMiddleware implements NestMiddleware {
       req.path.includes('/prediction') ||
       req.path.includes('/recommendation');
 
-    const timeoutMs = isAiEndpoint ? this.aiTimeoutMs : this.defaultTimeoutMs;
+    const isAuthEndpoint =
+      req.path.includes('/auth/login') || req.path.includes('/auth/refresh');
+    const authTimeoutMs = Number(process.env.AUTH_REQUEST_TIMEOUT_MS || 60_000);
+
+    const timeoutMs = isAiEndpoint
+      ? this.aiTimeoutMs
+      : isAuthEndpoint
+        ? authTimeoutMs
+        : this.defaultTimeoutMs;
 
     const timer = setTimeout(() => {
       if (!res.headersSent) {
-        const correlationId = (req as any).correlationId || 'unknown';
+        const correlationId = req.correlationId || 'unknown';
         this.logger.warn(
           `[${correlationId}] Request timeout after ${timeoutMs}ms: ${req.method} ${req.path}`,
         );

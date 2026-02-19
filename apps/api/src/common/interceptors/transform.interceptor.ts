@@ -29,7 +29,7 @@ export class TransformInterceptor<T> implements NestInterceptor<
   ): Observable<ApiResponse<T>> {
     const request = context.switchToHttp().getRequest<Request>();
     const response = context.switchToHttp().getResponse<ExpressResponse>();
-    const correlationId = (request as any).correlationId as string | undefined;
+    const correlationId = request.correlationId;
     const startTime = Date.now();
 
     return next.handle().pipe(

@@ -18,10 +18,12 @@ import { CreateVerificationDto, ReviewVerificationDto } from './dto';
 import { CurrentUser, Roles } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { RolesGuard } from '../../common/guards/roles.guard';
+import { ThrottleStrict } from '../../common/decorators/throttle.decorator';
 import { Role } from '@prisma/client';
 
 @ApiTags('verification')
 @ApiBearerAuth()
+@ThrottleStrict()
 @Controller('verifications')
 export class VerificationController {
   constructor(private readonly verificationService: VerificationService) {}

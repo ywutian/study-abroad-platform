@@ -15,8 +15,10 @@ import {
 import { SettingsService } from './settings.service';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '@prisma/client';
+import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 
 @ApiTags('settings')
+@ThrottleRelaxed()
 @Controller('settings')
 @ApiBearerAuth()
 export class SettingsController {

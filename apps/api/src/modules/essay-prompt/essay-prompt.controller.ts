@@ -3,8 +3,10 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { EssayPromptService } from './essay-prompt.service';
 import { QueryEssayPromptDto } from './dto';
 import { Public } from '../../common/decorators';
+import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 
 @ApiTags('essay-prompts')
+@ThrottleRelaxed()
 @Controller('essay-prompts')
 export class EssayPromptController {
   constructor(private readonly essayPromptService: EssayPromptService) {}

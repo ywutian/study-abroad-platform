@@ -322,4 +322,204 @@ describe('CaseService', () => {
       });
     });
   });
+
+  // ====== Phase 1.2: Admin methods ======
+
+  describe('findAll (additional)', () => {
+    it('should only show ANONYMOUS cases for unauthenticated users', async () => {
+      (prismaService.admissionCase.findMany as jest.Mock).mockResolvedValue([]);
+      (prismaService.admissionCase.count as jest.Mock).mockResolvedValue(0);
+
+      await service.findAll(
+        { page: 1, pageSize: 20 },
+        {},
+        undefined,
+        undefined,
+      );
+
+      expect(prismaService.admissionCase.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            visibility: Visibility.ANONYMOUS,
+          }),
+        }),
+      );
+    });
+
+    it('should build search OR conditions', async () => {
+      (prismaService.admissionCase.findMany as jest.Mock).mockResolvedValue([]);
+      (prismaService.admissionCase.count as jest.Mock).mockResolvedValue(0);
+
+      await service.findAll(
+        { page: 1, pageSize: 20 },
+        { search: 'MIT' },
+        'admin-id',
+        Role.ADMIN,
+      );
+
+      expect(prismaService.admissionCase.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            OR: expect.arrayContaining([
+              expect.objectContaining({
+                major: { contains: 'MIT', mode: 'insensitive' },
+              }),
+            ]),
+          }),
+        }),
+      );
+    });
+  });
+
+  describe('getAdminStats', () => {
+    it('should return aggregated stats', async () => {
+      (prismaService.admissionCase.count as jest.Mock)
+        .mockResolvedValueOnce(100)
+        .mockResolvedValueOnce(40)
+        .mockResolvedValueOnce(30)
+        .mockResolvedValueOnce(10);
+
+      const result = await service.getAdminStats();
+
+      expect(result).toEqual({
+        total: 100,
+        withEssay: 40,
+        verified: 30,
+        pendingEssays: 10,
+      });
+      expect(prismaService.admissionCase.count).toHaveBeenCalledTimes(4);
+    });
+  });
+
+  describe('getPendingEssays', () => {
+    it('should return paginated pending essays', async () => {
+      (prismaService.admissionCase.findMany as jest.Mock).mockResolvedValue([
+        mockCase,
+      ]);
+      (prismaService.admissionCase.count as jest.Mock).mockResolvedValue(1);
+
+      const result = await service.getPendingEssays(1, 20);
+
+      expect(result).toEqual({
+        data: [mockCase],
+        total: 1,
+        page: 1,
+        pageSize: 20,
+      });
+    });
+
+    it('should apply correct pagination offset', async () => {
+      (prismaService.admissionCase.findMany as jest.Mock).mockResolvedValue([]);
+      (prismaService.admissionCase.count as jest.Mock).mockResolvedValue(0);
+
+      await service.getPendingEssays(3, 10);
+
+      expect(prismaService.admissionCase.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          skip: 20,
+          take: 10,
+        }),
+      );
+    });
+  });
+
+  describe('reviewCaseEssay', () => {
+    it('should approve a case essay', async () => {
+      (prismaService.admissionCase.findUnique as jest.Mock).mockResolvedValue(
+        mockCase,
+      );
+      (prismaService.admissionCase.update as jest.Mock).mockResolvedValue({
+        ...mockCase,
+        isVerified: true,
+        verifiedAt: new Date(),
+      });
+
+      await service.reviewCaseEssay('case-123', {
+        action: 'APPROVE',
+      });
+
+      expect(prismaService.admissionCase.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'case-123' },
+          data: expect.objectContaining({
+            isVerified: true,
+            verifiedAt: expect.any(Date),
+          }),
+        }),
+      );
+    });
+
+    it('should reject a case essay by setting visibility to PRIVATE', async () => {
+      (prismaService.admissionCase.findUnique as jest.Mock).mockResolvedValue(
+        mockCase,
+      );
+      (prismaService.admissionCase.update as jest.Mock).mockResolvedValue({
+        ...mockCase,
+        visibility: Visibility.PRIVATE,
+      });
+
+      await service.reviewCaseEssay('case-123', {
+        action: 'REJECT',
+        reason: 'Inappropriate content',
+      });
+
+      expect(prismaService.admissionCase.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'case-123' },
+          data: expect.objectContaining({
+            visibility: Visibility.PRIVATE,
+          }),
+        }),
+      );
+    });
+
+    it('should throw NotFoundException if case does not exist', async () => {
+      (prismaService.admissionCase.findUnique as jest.Mock).mockResolvedValue(
+        null,
+      );
+
+      await expect(
+        service.reviewCaseEssay('nonexistent', { action: 'APPROVE' }),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('batchVerifyCases', () => {
+    it('should batch approve multiple cases', async () => {
+      (prismaService.admissionCase.findUnique as jest.Mock).mockResolvedValue(
+        mockCase,
+      );
+      (prismaService.admissionCase.update as jest.Mock).mockResolvedValue({
+        ...mockCase,
+        isVerified: true,
+      });
+
+      const result = await service.batchVerifyCases({
+        ids: ['case-1', 'case-2'],
+        action: 'APPROVE',
+      });
+
+      expect(result.success).toBe(2);
+      expect(result.failed).toHaveLength(0);
+    });
+
+    it('should capture failures in batch verify', async () => {
+      (prismaService.admissionCase.findUnique as jest.Mock)
+        .mockResolvedValueOnce(mockCase)
+        .mockResolvedValueOnce(null);
+      (prismaService.admissionCase.update as jest.Mock).mockResolvedValue({
+        ...mockCase,
+        isVerified: true,
+      });
+
+      const result = await service.batchVerifyCases({
+        ids: ['case-1', 'case-not-found'],
+        action: 'APPROVE',
+      });
+
+      expect(result.success).toBe(1);
+      expect(result.failed).toHaveLength(1);
+      expect(result.failed[0]).toHaveProperty('error');
+    });
+  });
 });

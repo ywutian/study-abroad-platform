@@ -32,14 +32,18 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     const redisPort = this.configService.get<number>('REDIS_PORT') || 6379;
     const redisPassword = this.configService.get<string>('REDIS_PASSWORD');
 
+    const commandTimeoutMs =
+      this.configService.get<number>('REDIS_COMMAND_TIMEOUT_MS') ?? 5000;
+
     try {
       if (redisUrl) {
-        this.client = new Redis(redisUrl);
+        this.client = new Redis(redisUrl, { commandTimeout: commandTimeoutMs });
       } else {
         this.client = new Redis({
           host: redisHost,
           port: redisPort,
           password: redisPassword || undefined,
+          commandTimeout: commandTimeoutMs,
           retryStrategy: (times: number) => {
             if (times > 3) {
               this.logger.warn('Redis connection failed after 3 retries');
@@ -69,7 +73,16 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       await this.client.ping();
       this.isConnected = true;
     } catch (error) {
-      this.logger.warn('Redis not available, running without cache');
+      const isProduction =
+        this.configService.get<string>('NODE_ENV') === 'production';
+      if (isProduction) {
+        this.logger.error(
+          'Redis connection failed in production — cache and rate limiting degraded',
+          error instanceof Error ? error.message : error,
+        );
+      } else {
+        this.logger.warn('Redis not available, running without cache');
+      }
       this.client = null;
       this.isConnected = false;
     }
@@ -114,8 +127,8 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
   async set(key: string, value: string, ttlSeconds?: number): Promise<void> {
     if (!this.client) return;
-    if (ttlSeconds) {
-      await this.client.set(key, value, 'EX', ttlSeconds);
+    if (ttlSeconds !== undefined && ttlSeconds > 0) {
+      await this.client.set(key, value, 'EX', Math.floor(ttlSeconds));
     } else {
       await this.client.set(key, value);
     }

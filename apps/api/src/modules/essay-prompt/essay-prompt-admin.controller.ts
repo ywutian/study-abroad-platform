@@ -21,9 +21,11 @@ import {
 import { Roles, CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { Role } from '@prisma/client';
+import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 
 @ApiTags('admin/essay-prompts')
 @ApiBearerAuth()
+@ThrottleRelaxed()
 @Controller('admin/essay-prompts')
 @Roles(Role.ADMIN)
 export class EssayPromptAdminController {

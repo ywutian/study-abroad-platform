@@ -26,8 +26,10 @@ import {
 import { CurrentUser, Public } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { ThrottleAI } from '../../common/decorators/throttle.decorator';
 
 @ApiTags('essay-ai')
+@ThrottleAI()
 @Controller('essay-ai')
 export class EssayAiController {
   constructor(private readonly essayAiService: EssayAiService) {}
@@ -122,18 +124,39 @@ export class EssayAiController {
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
   ) {
+    const validTypes = [
+      'COMMON_APP',
+      'UC',
+      'SUPPLEMENTAL',
+      'WHY_SCHOOL',
+      'OTHER',
+    ] as const;
+    const validResults = [
+      'ADMITTED',
+      'REJECTED',
+      'WAITLISTED',
+      'DEFERRED',
+    ] as const;
+    const validSortBy = ['newest', 'popular'] as const;
+
     return this.essayAiService.getGalleryEssays({
       school,
-      type: type as any,
-      promptNumber: promptNumber ? parseInt(promptNumber) : undefined,
-      year: year ? parseInt(year) : undefined,
-      result: result as any,
-      rankMin: rankMin ? parseInt(rankMin) : undefined,
-      rankMax: rankMax ? parseInt(rankMax) : undefined,
+      type: validTypes.includes(type as (typeof validTypes)[number])
+        ? (type as (typeof validTypes)[number])
+        : undefined,
+      promptNumber: promptNumber ? parseInt(promptNumber, 10) : undefined,
+      year: year ? parseInt(year, 10) : undefined,
+      result: validResults.includes(result as (typeof validResults)[number])
+        ? (result as (typeof validResults)[number])
+        : undefined,
+      rankMin: rankMin ? parseInt(rankMin, 10) : undefined,
+      rankMax: rankMax ? parseInt(rankMax, 10) : undefined,
       isVerified: isVerified === 'true',
-      sortBy: sortBy as any,
-      page: page ? parseInt(page) : 1,
-      pageSize: pageSize ? parseInt(pageSize) : 12,
+      sortBy: validSortBy.includes(sortBy as (typeof validSortBy)[number])
+        ? (sortBy as (typeof validSortBy)[number])
+        : undefined,
+      page: page ? parseInt(page, 10) : 1,
+      pageSize: pageSize ? Math.min(parseInt(pageSize, 10), 50) : 12,
     });
   }
 

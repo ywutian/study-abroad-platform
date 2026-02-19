@@ -28,6 +28,7 @@ describe('AuthService', () => {
   let jwtService: JwtService;
   let emailService: EmailService;
   let sessionManager: SessionManager;
+  let bruteForceService: BruteForceService;
 
   const mockUser = {
     id: 'user-123',
@@ -128,6 +129,7 @@ describe('AuthService', () => {
     jwtService = module.get<JwtService>(JwtService);
     emailService = module.get<EmailService>(EmailService);
     sessionManager = module.get<SessionManager>(SessionManager);
+    bruteForceService = module.get<BruteForceService>(BruteForceService);
   });
 
   afterEach(() => {
@@ -309,6 +311,253 @@ describe('AuthService', () => {
         'user-123',
       );
       expect(sessionManager.invalidateToken).not.toHaveBeenCalled();
+    });
+  });
+
+  // ====== Phase 1.2: New test coverage ======
+
+  describe('login (additional)', () => {
+    it('should throw UnauthorizedException when brute-force locked', async () => {
+      (bruteForceService.isLocked as jest.Mock).mockResolvedValue(true);
+
+      await expect(
+        service.login({ email: 'test@example.com', password: 'password123' }),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should record failed attempt for non-existent user', async () => {
+      (userService.findByEmail as jest.Mock).mockResolvedValue(null);
+
+      await expect(
+        service.login({ email: 'unknown@example.com', password: 'pass' }),
+      ).rejects.toThrow(UnauthorizedException);
+      expect(bruteForceService.recordFailedAttempt).toHaveBeenCalledWith(
+        'unknown@example.com',
+      );
+    });
+
+    it('should record failed attempt for wrong password', async () => {
+      (userService.findByEmail as jest.Mock).mockResolvedValue(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+
+      await expect(
+        service.login({ email: 'test@example.com', password: 'wrong' }),
+      ).rejects.toThrow(UnauthorizedException);
+      expect(bruteForceService.recordFailedAttempt).toHaveBeenCalledWith(
+        'test@example.com',
+      );
+    });
+
+    it('should reset brute-force attempts on successful login', async () => {
+      (userService.findByEmail as jest.Mock).mockResolvedValue(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      (prismaService.refreshToken.create as jest.Mock).mockResolvedValue({
+        token: 'rt',
+      });
+
+      await service.login({ email: 'test@example.com', password: 'pass' });
+
+      expect(bruteForceService.resetAttempts).toHaveBeenCalledWith(
+        'test@example.com',
+      );
+    });
+
+    it('should throw UnauthorizedException for unverified email', async () => {
+      (userService.findByEmail as jest.Mock).mockResolvedValue({
+        ...mockUser,
+        emailVerified: false,
+      });
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+
+      await expect(
+        service.login({ email: 'test@example.com', password: 'password123' }),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
+  describe('resendVerificationEmail', () => {
+    it('should return generic message when user not found', async () => {
+      (userService.findByEmail as jest.Mock).mockResolvedValue(null);
+
+      const result = await service.resendVerificationEmail('unknown@test.com');
+
+      expect(result.message).toContain('If the email exists');
+    });
+
+    it('should throw BadRequestException if email already verified', async () => {
+      (userService.findByEmail as jest.Mock).mockResolvedValue(mockUser);
+
+      await expect(
+        service.resendVerificationEmail('test@example.com'),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should generate new token and send email for unverified user', async () => {
+      (userService.findByEmail as jest.Mock).mockResolvedValue({
+        ...mockUser,
+        emailVerified: false,
+      });
+      (prismaService.user.update as jest.Mock).mockResolvedValue(mockUser);
+
+      const result = await service.resendVerificationEmail('test@example.com');
+
+      expect(result.message).toContain('If the email exists');
+      expect(prismaService.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: mockUser.id },
+          data: { emailVerifyToken: expect.any(String) },
+        }),
+      );
+      expect(emailService.sendVerificationEmail).toHaveBeenCalled();
+    });
+  });
+
+  describe('requestPasswordReset', () => {
+    it('should return generic message when user not found', async () => {
+      (userService.findByEmail as jest.Mock).mockResolvedValue(null);
+
+      const result = await service.requestPasswordReset('unknown@test.com');
+
+      expect(result.message).toContain('If the email exists');
+    });
+
+    it('should set reset token and send email for valid user', async () => {
+      (userService.findByEmail as jest.Mock).mockResolvedValue(mockUser);
+      (prismaService.user.update as jest.Mock).mockResolvedValue(mockUser);
+
+      const result = await service.requestPasswordReset('test@example.com');
+
+      expect(result.message).toContain('If the email exists');
+      expect(prismaService.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: mockUser.id },
+          data: expect.objectContaining({
+            passwordResetToken: expect.any(String),
+            passwordResetExpires: expect.any(Date),
+          }),
+        }),
+      );
+      expect(emailService.sendPasswordResetEmail).toHaveBeenCalledWith(
+        'test@example.com',
+        expect.any(String),
+      );
+    });
+  });
+
+  describe('resetPassword', () => {
+    it('should reset password with valid token', async () => {
+      (prismaService.user.findFirst as jest.Mock).mockResolvedValue(mockUser);
+      (prismaService.user.update as jest.Mock).mockResolvedValue(mockUser);
+
+      const result = await service.resetPassword('valid_token', 'newpass123');
+
+      expect(result.message).toContain('Password reset successful');
+      expect(prismaService.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: mockUser.id },
+          data: expect.objectContaining({
+            passwordHash: 'hashed_password',
+            passwordResetToken: null,
+            passwordResetExpires: null,
+          }),
+        }),
+      );
+      expect(sessionManager.invalidateAllSessions).toHaveBeenCalledWith(
+        mockUser.id,
+      );
+    });
+
+    it('should throw BadRequestException for invalid/expired token', async () => {
+      (prismaService.user.findFirst as jest.Mock).mockResolvedValue(null);
+
+      await expect(
+        service.resetPassword('expired_token', 'newpass123'),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('changePassword', () => {
+    it('should change password with correct current password', async () => {
+      (userService.findByIdOrThrow as jest.Mock).mockResolvedValue(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      (prismaService.user.update as jest.Mock).mockResolvedValue(mockUser);
+
+      const result = await service.changePassword(
+        'user-123',
+        'oldpass',
+        'newpass',
+      );
+
+      expect(result.message).toContain('Password changed successfully');
+      expect(prismaService.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'user-123' },
+          data: { passwordHash: 'hashed_password' },
+        }),
+      );
+      expect(sessionManager.invalidateAllSessions).toHaveBeenCalledWith(
+        'user-123',
+      );
+    });
+
+    it('should throw UnauthorizedException with wrong current password', async () => {
+      (userService.findByIdOrThrow as jest.Mock).mockResolvedValue(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+
+      await expect(
+        service.changePassword('user-123', 'wrong', 'newpass'),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
+  describe('session limit (generateTokens)', () => {
+    it('should delete oldest tokens when session limit (5) is exceeded', async () => {
+      const existingTokens = Array.from({ length: 6 }, (_, i) => ({
+        id: `token-${i}`,
+        token: `rt-${i}`,
+        userId: mockUser.id,
+        createdAt: new Date(Date.now() - (6 - i) * 3600000),
+      }));
+
+      (userService.findByEmail as jest.Mock).mockResolvedValue(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      (prismaService.refreshToken.findMany as jest.Mock).mockResolvedValue(
+        existingTokens,
+      );
+      (prismaService.refreshToken.create as jest.Mock).mockResolvedValue({
+        token: 'new_rt',
+      });
+
+      await service.login({ email: 'test@example.com', password: 'pass' });
+
+      // Should delete oldest 2 tokens (6 - 4 = 2) to keep only 4, making room for the new one
+      expect(prismaService.refreshToken.deleteMany).toHaveBeenCalledWith({
+        where: {
+          id: { in: ['token-0', 'token-1'] },
+        },
+      });
+    });
+
+    it('should not delete tokens when under session limit', async () => {
+      const existingTokens = Array.from({ length: 3 }, (_, i) => ({
+        id: `token-${i}`,
+        token: `rt-${i}`,
+        userId: mockUser.id,
+        createdAt: new Date(),
+      }));
+
+      (userService.findByEmail as jest.Mock).mockResolvedValue(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      (prismaService.refreshToken.findMany as jest.Mock).mockResolvedValue(
+        existingTokens,
+      );
+      (prismaService.refreshToken.create as jest.Mock).mockResolvedValue({
+        token: 'new_rt',
+      });
+
+      await service.login({ email: 'test@example.com', password: 'pass' });
+
+      expect(prismaService.refreshToken.deleteMany).not.toHaveBeenCalled();
     });
   });
 });

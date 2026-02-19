@@ -18,11 +18,13 @@ import { UpdateSchoolDto } from './dto/update-school.dto';
 import { Public, Roles, CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { RolesGuard } from '../../common/guards/roles.guard';
+import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 import { Role } from '@prisma/client';
 import { AiService } from '../ai/ai.service';
 import { ProfileService } from '../profile/profile.service';
 
 @ApiTags('schools')
+@ThrottleRelaxed()
 @Controller('schools')
 export class SchoolController {
   constructor(

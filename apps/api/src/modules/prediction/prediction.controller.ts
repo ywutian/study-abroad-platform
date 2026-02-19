@@ -10,11 +10,13 @@ import { PredictionService } from './prediction.service';
 import { CurrentUser, Roles } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { Role } from '@prisma/client';
+import { ThrottleAI } from '../../common/decorators/throttle.decorator';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PredictionRequestDto, PredictionResponseDto } from './dto';
 
 @ApiTags('predictions')
 @ApiBearerAuth()
+@ThrottleAI()
 @Controller('predictions')
 export class PredictionController {
   constructor(

@@ -20,6 +20,7 @@ import { HallService } from './hall.service';
 import { SwipeService } from '../swipe/swipe.service';
 import { CurrentUser, Public } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
+import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import {
   CreateReviewDto,
@@ -41,6 +42,7 @@ import {
 } from '../swipe/dto';
 
 @ApiTags('hall')
+@ThrottleRelaxed()
 @Controller('halls')
 export class HallController {
   constructor(

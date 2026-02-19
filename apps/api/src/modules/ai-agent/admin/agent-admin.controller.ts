@@ -24,6 +24,7 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { Roles } from '../../../common/decorators/roles.decorator';
+import { ThrottleRelaxed } from '../../../common/decorators/throttle.decorator';
 import { Role, MemoryType, EntityType } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { AgentConfigService } from '../infrastructure/config/config.service';
@@ -201,6 +202,7 @@ class UpdateDecayConfigDto {
 
 @ApiTags('ai-agent-admin')
 @ApiBearerAuth()
+@ThrottleRelaxed()
 @Controller('admin/ai-agent')
 @Roles(Role.ADMIN)
 export class AgentAdminController {

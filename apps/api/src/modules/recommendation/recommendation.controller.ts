@@ -23,10 +23,12 @@ import {
 import { CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { ThrottleAI } from '../../common/decorators/throttle.decorator';
 
 @ApiTags('recommendation')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
+@ThrottleAI()
 @Controller('recommendations')
 export class RecommendationController {
   constructor(private readonly recommendationService: RecommendationService) {}
