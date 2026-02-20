@@ -115,7 +115,6 @@ export class SchoolService {
       where.OR = [
         { name: { contains: searchTerm, mode: 'insensitive' } },
         { nameZh: { contains: searchTerm, mode: 'insensitive' } },
-        { aliases: { has: searchTerm } }, // 精确别名匹配 (case-sensitive)
         {
           aliases: {
             hasSome: [
@@ -124,7 +123,7 @@ export class SchoolService {
               searchTerm.toLowerCase(),
             ],
           },
-        }, // 别名大小写容错
+        }, // 别名大小写容错 (hasSome 已覆盖精确匹配)
       ];
     }
 
@@ -203,15 +202,30 @@ export class SchoolService {
     //   where.hasEarlyDecision = true;
     // }
 
-    const [schools, total] = await Promise.all([
+    // Over-fetch to compensate for potential duplicates removed during dedup
+    const fetchSize = pageSize + 10;
+
+    const [rawSchools, rawTotal] = await Promise.all([
       this.prisma.school.findMany({
         where,
         skip,
-        take: pageSize,
+        take: fetchSize,
         orderBy: { usNewsRank: 'asc' },
       }),
       this.prisma.school.count({ where }),
     ]);
+
+    // Deduplicate by name — keep the record with more complete data
+    // (prefer records that have usNewsRank, then acceptanceRate, then newer)
+    const deduped = this.deduplicateSchools(rawSchools);
+    const schools = deduped.slice(0, pageSize);
+
+    // Approximate unique total (subtract estimated duplicates)
+    const dupCount = rawSchools.length - deduped.length;
+    const total = Math.max(
+      0,
+      rawTotal - Math.round((dupCount / fetchSize) * rawTotal),
+    );
 
     // 当存在搜索词时，按相关性重新排序
     if (filters?.search) {
@@ -310,6 +324,45 @@ export class SchoolService {
       where: { id },
       data,
     });
+  }
+
+  /**
+   * Deduplicate schools by normalized name.
+   * When two records share the same canonical name, keep the one with
+   * more complete data (prefers usNewsRank > acceptanceRate > newer record).
+   */
+  private deduplicateSchools(schools: School[]): School[] {
+    const seen = new Map<string, School>();
+
+    for (const school of schools) {
+      const key = school.name.toLowerCase().trim();
+      const existing = seen.get(key);
+
+      if (!existing) {
+        seen.set(key, school);
+        continue;
+      }
+
+      // Pick the record with more complete data
+      const existingScore = this.completenessScore(existing);
+      const currentScore = this.completenessScore(school);
+      if (currentScore > existingScore) {
+        seen.set(key, school);
+      }
+    }
+
+    return [...seen.values()];
+  }
+
+  /** Score how complete a school record is (higher = more data). */
+  private completenessScore(school: School): number {
+    let score = 0;
+    if (school.usNewsRank) score += 10;
+    if (school.acceptanceRate) score += 5;
+    if (school.nameZh) score += 3;
+    if (school.satAvg) score += 2;
+    if (school.tuition) score += 1;
+    return score;
   }
 
   /**

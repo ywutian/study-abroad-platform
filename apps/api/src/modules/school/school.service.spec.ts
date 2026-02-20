@@ -138,7 +138,7 @@ describe('SchoolService', () => {
       expect(prismaService.school.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           skip: 20,
-          take: 10,
+          take: 20, // over-fetches by 10 to compensate for dedup
         }),
       );
       expect(result.totalPages).toBe(10);
