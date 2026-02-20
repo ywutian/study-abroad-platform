@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { router, type Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -40,8 +40,8 @@ export default function ProfileScreen() {
     enabled: isAuthenticated,
   });
 
-  // Calculate profile completion
-  const calculateCompletion = () => {
+  // Calculate profile completion (memoized to avoid recalculation on every render)
+  const calculateCompletion = useMemo(() => {
     if (!profile) return { percentage: 0, missing: [] as string[] };
     let completed = 0;
     const total = 7;
@@ -63,7 +63,7 @@ export default function ProfileScreen() {
     else missing.push(t('profile.education'));
 
     return { percentage: Math.round((completed / total) * 100), missing };
-  };
+  }, [profile, t]);
 
   const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
 
@@ -97,68 +97,81 @@ export default function ProfileScreen() {
     );
   }
 
-  const { percentage: completion, missing: missingFields } = calculateCompletion();
+  const { percentage: completion, missing: missingFields } = calculateCompletion;
 
-  const menuItems = [
-    {
-      icon: 'person-outline' as const,
-      title: t('profile.basicInfo'),
-      route: '/profile/basic',
-    },
-    {
-      icon: 'school-outline' as const,
-      title: t('profile.testScores'),
-      route: '/profile/scores',
-      badge: profile?.testScores?.length || 0,
-    },
-    {
-      icon: 'trophy-outline' as const,
-      title: t('profile.activities'),
-      route: '/profile/activities',
-      badge: profile?.activities?.length || 0,
-    },
-    {
-      icon: 'medal-outline' as const,
-      title: t('profile.awards'),
-      route: '/profile/awards',
-      badge: profile?.awards?.length || 0,
-    },
-    {
-      icon: 'library-outline' as const,
-      title: t('profile.education'),
-      route: '/profile/education',
-      badge: profile?.education?.length || 0,
-    },
-    {
-      icon: 'document-text-outline' as const,
-      title: t('profile.essays'),
-      route: '/profile/essays',
-      badge: profile?.essays?.length || 0,
-    },
-  ];
+  const menuItems = useMemo(
+    () => [
+      {
+        icon: 'person-outline' as const,
+        title: t('profile.basicInfo'),
+        route: '/profile/basic',
+      },
+      {
+        icon: 'school-outline' as const,
+        title: t('profile.testScores'),
+        route: '/profile/scores',
+        badge: profile?.testScores?.length || 0,
+      },
+      {
+        icon: 'trophy-outline' as const,
+        title: t('profile.activities'),
+        route: '/profile/activities',
+        badge: profile?.activities?.length || 0,
+      },
+      {
+        icon: 'medal-outline' as const,
+        title: t('profile.awards'),
+        route: '/profile/awards',
+        badge: profile?.awards?.length || 0,
+      },
+      {
+        icon: 'library-outline' as const,
+        title: t('profile.education'),
+        route: '/profile/education',
+        badge: profile?.education?.length || 0,
+      },
+      {
+        icon: 'document-text-outline' as const,
+        title: t('profile.essays'),
+        route: '/profile/essays',
+        badge: profile?.essays?.length || 0,
+      },
+    ],
+    [
+      t,
+      profile?.testScores?.length,
+      profile?.activities?.length,
+      profile?.awards?.length,
+      profile?.education?.length,
+      profile?.essays?.length,
+    ]
+  );
 
-  const settingsItems = [
-    {
-      icon: 'eye-outline' as const,
-      title: t('profile.visibility'),
-      value: t(`profile.visibilityOptions.${profile?.visibility?.toLowerCase() || 'private'}`),
-    },
-    {
-      icon: 'language-outline' as const,
-      title: t('settings.language'),
-      route: '/settings/language',
-    },
-    {
-      icon: 'moon-outline' as const,
-      title: t('settings.theme'),
-      route: '/settings/theme',
-    },
-    {
-      icon: 'download-outline' as const,
-      title: t('profile.exportData'),
-      route: '/profile/export',
-    },
-  ];
+  const settingsItems = useMemo(
+    () => [
+      {
+        icon: 'eye-outline' as const,
+        title: t('profile.visibility'),
+        value: t(`profile.visibilityOptions.${profile?.visibility?.toLowerCase() || 'private'}`),
+      },
+      {
+        icon: 'language-outline' as const,
+        title: t('settings.language'),
+        route: '/settings/language',
+      },
+      {
+        icon: 'moon-outline' as const,
+        title: t('settings.theme'),
+        route: '/settings/theme',
+      },
+      {
+        icon: 'download-outline' as const,
+        title: t('profile.exportData'),
+        route: '/profile/export',
+      },
+    ],
+    [t, profile?.visibility]
+  );
 
   return (
     <ScrollView

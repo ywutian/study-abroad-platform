@@ -78,7 +78,10 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
   useEffect(() => {
     if (!accessToken) return;
 
-    const socketUrl = env.NEXT_PUBLIC_WS_URL || env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const socketUrl =
+      env.NEXT_PUBLIC_WS_URL ||
+      env.NEXT_PUBLIC_API_URL ||
+      'https://study-abroad-api-1032896108391.us-central1.run.app';
 
     socketRef.current = io(`${socketUrl}/chat`, {
       auth: { token: accessToken },

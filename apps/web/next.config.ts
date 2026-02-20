@@ -79,7 +79,11 @@ const nextConfig: NextConfig = {
   },
   // 代理 API 请求到后端，避免跨域 cookie 问题
   async rewrites() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const fallback =
+      process.env.NODE_ENV === 'production'
+        ? 'https://study-abroad-api-1032896108391.us-central1.run.app'
+        : 'http://localhost:3001';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || fallback;
     return [
       {
         source: '/api/:path*',

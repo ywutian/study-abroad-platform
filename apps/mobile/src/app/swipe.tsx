@@ -5,7 +5,7 @@
  * outcomes (admit / reject / waitlist). Features gesture-based card interactions,
  * animated overlays, stats tracking, and a leaderboard view.
  */
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect, memo } from 'react';
 import {
   View,
   Text,
@@ -168,6 +168,93 @@ function getNextBadge(badge: string): string {
 }
 
 // ---------------------------------------------------------------------------
+// Memoized leaderboard item
+// ---------------------------------------------------------------------------
+
+interface LeaderboardItemProps {
+  entry: LeaderboardEntryDto;
+  colors: ReturnType<typeof useColors>;
+}
+
+const LeaderboardItem = memo(function LeaderboardItem({ entry, colors: c }: LeaderboardItemProps) {
+  const { t } = useTranslation();
+  const entryBadgeColor = BADGE_COLORS[entry.badge] || BADGE_COLORS.BRONZE;
+  const entryBadgeIcon = BADGE_ICONS[entry.badge] || BADGE_ICONS.BRONZE;
+  const isMe = entry.isCurrentUser;
+
+  return (
+    <View
+      style={[
+        styles.leaderboardEntry,
+        {
+          backgroundColor: isMe ? c.primary + '08' : c.card,
+          borderColor: isMe ? c.primary + '30' : c.border,
+        },
+      ]}
+    >
+      {/* Rank */}
+      <View style={styles.rankCol}>
+        {entry.rank <= 3 ? (
+          <View
+            style={[
+              styles.topRankBadge,
+              {
+                backgroundColor:
+                  entry.rank === 1
+                    ? '#FFD700' + '20'
+                    : entry.rank === 2
+                      ? '#C0C0C0' + '20'
+                      : '#CD7F32' + '20',
+              },
+            ]}
+          >
+            <Ionicons
+              name="trophy"
+              size={16}
+              color={entry.rank === 1 ? '#FFD700' : entry.rank === 2 ? '#C0C0C0' : '#CD7F32'}
+            />
+          </View>
+        ) : (
+          <Text style={[styles.rankNumber, { color: c.foregroundMuted }]}>{entry.rank}</Text>
+        )}
+      </View>
+
+      {/* User info */}
+      <View style={styles.userCol}>
+        <View style={styles.userNameRow}>
+          <Text
+            style={[
+              styles.userName,
+              { color: isMe ? c.primary : c.foreground },
+              isMe && { fontWeight: fontWeight.bold },
+            ]}
+            numberOfLines={1}
+          >
+            {entry.nickname || t('swipe.anonymous')}
+          </Text>
+          {isMe && (
+            <Badge variant="default" style={{ marginLeft: spacing.xs }}>
+              {t('swipe.you')}
+            </Badge>
+          )}
+        </View>
+        <Text style={[styles.userSwipes, { color: c.foregroundMuted }]}>
+          {t('swipe.swipesCount', { count: entry.totalSwipes })}
+        </Text>
+      </View>
+
+      {/* Badge + accuracy */}
+      <View style={styles.entryRight}>
+        <Ionicons name={entryBadgeIcon} size={18} color={entryBadgeColor} />
+        <Text style={[styles.entryAccuracy, { color: c.foreground }]}>
+          {Math.round(entry.accuracy)}%
+        </Text>
+      </View>
+    </View>
+  );
+});
+
+// ---------------------------------------------------------------------------
 // Main Component
 // ---------------------------------------------------------------------------
 
@@ -176,6 +263,8 @@ export default function SwipePage() {
   const c = useColors();
   const insets = useSafeAreaInsets();
   const toast = useToast();
+  const toastRef = useRef(toast);
+  toastRef.current = toast;
   const queryClient = useQueryClient();
   const isZh = i18n.language === 'zh';
 
@@ -212,7 +301,7 @@ export default function SwipePage() {
     staleTime: 60_000,
   });
 
-  // Batch loading
+  // Batch loading (stable — zero deps via toastRef)
   const loadBatch = useCallback(async () => {
     try {
       const batch = await apiClient.get<SwipeCaseDto[]>('/swipe/batch', {
@@ -221,10 +310,10 @@ export default function SwipePage() {
       setCases((prev) => [...prev, ...batch]);
     } catch (err) {
       if (err instanceof Error) {
-        toast.show({ type: 'error', message: err.message });
+        toastRef.current.show({ type: 'error', message: err.message });
       }
     }
-  }, [toast]);
+  }, []);
 
   // Initial load
   useEffect(() => {
@@ -1009,95 +1098,9 @@ export default function SwipePage() {
                 <Loading text={t('swipe.loading')} />
               ) : leaderboard && leaderboard.length > 0 ? (
                 <View style={styles.leaderboardList}>
-                  {leaderboard.map((entry, idx) => {
-                    const entryBadgeColor = BADGE_COLORS[entry.badge] || BADGE_COLORS.BRONZE;
-                    const entryBadgeIcon = BADGE_ICONS[entry.badge] || BADGE_ICONS.BRONZE;
-                    const isMe = entry.isCurrentUser;
-
-                    return (
-                      <Animated.View
-                        key={entry.userId}
-                        entering={FadeInUp.delay(idx * 40).springify()}
-                      >
-                        <View
-                          style={[
-                            styles.leaderboardEntry,
-                            {
-                              backgroundColor: isMe ? c.primary + '08' : c.card,
-                              borderColor: isMe ? c.primary + '30' : c.border,
-                            },
-                          ]}
-                        >
-                          {/* Rank */}
-                          <View style={styles.rankCol}>
-                            {entry.rank <= 3 ? (
-                              <View
-                                style={[
-                                  styles.topRankBadge,
-                                  {
-                                    backgroundColor:
-                                      entry.rank === 1
-                                        ? '#FFD700' + '20'
-                                        : entry.rank === 2
-                                          ? '#C0C0C0' + '20'
-                                          : '#CD7F32' + '20',
-                                  },
-                                ]}
-                              >
-                                <Ionicons
-                                  name="trophy"
-                                  size={16}
-                                  color={
-                                    entry.rank === 1
-                                      ? '#FFD700'
-                                      : entry.rank === 2
-                                        ? '#C0C0C0'
-                                        : '#CD7F32'
-                                  }
-                                />
-                              </View>
-                            ) : (
-                              <Text style={[styles.rankNumber, { color: c.foregroundMuted }]}>
-                                {entry.rank}
-                              </Text>
-                            )}
-                          </View>
-
-                          {/* User info */}
-                          <View style={styles.userCol}>
-                            <View style={styles.userNameRow}>
-                              <Text
-                                style={[
-                                  styles.userName,
-                                  { color: isMe ? c.primary : c.foreground },
-                                  isMe && { fontWeight: fontWeight.bold },
-                                ]}
-                                numberOfLines={1}
-                              >
-                                {entry.nickname || t('swipe.anonymous')}
-                              </Text>
-                              {isMe && (
-                                <Badge variant="default" style={{ marginLeft: spacing.xs }}>
-                                  {t('swipe.you')}
-                                </Badge>
-                              )}
-                            </View>
-                            <Text style={[styles.userSwipes, { color: c.foregroundMuted }]}>
-                              {t('swipe.swipesCount', { count: entry.totalSwipes })}
-                            </Text>
-                          </View>
-
-                          {/* Badge + accuracy */}
-                          <View style={styles.entryRight}>
-                            <Ionicons name={entryBadgeIcon} size={18} color={entryBadgeColor} />
-                            <Text style={[styles.entryAccuracy, { color: c.foreground }]}>
-                              {Math.round(entry.accuracy)}%
-                            </Text>
-                          </View>
-                        </View>
-                      </Animated.View>
-                    );
-                  })}
+                  {leaderboard.map((entry) => (
+                    <LeaderboardItem key={entry.userId} entry={entry} colors={c} />
+                  ))}
                 </View>
               ) : (
                 <View style={styles.emptyLeaderboard}>

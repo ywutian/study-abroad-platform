@@ -63,7 +63,8 @@ export interface UseChatSocketReturn {
 // Constants
 // ---------------------------------------------------------------------------
 
-const SOCKET_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api-production-18f2.up.railway.app';
+const SOCKET_URL =
+  process.env.EXPO_PUBLIC_API_URL || 'https://study-abroad-api-1032896108391.us-central1.run.app';
 const TYPING_TIMEOUT_MS = 3000;
 
 // ---------------------------------------------------------------------------

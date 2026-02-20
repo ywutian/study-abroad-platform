@@ -1,7 +1,7 @@
 /**
  * Forum Page - Community discussion board with categories, search, and post creation.
  */
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, memo } from 'react';
 import {
   View,
   Text,
@@ -156,6 +156,170 @@ const timeAgo = (
 };
 
 // ---------------------------------------------------------------------------
+// Memoized header for FlashList ListHeaderComponent
+// ---------------------------------------------------------------------------
+
+interface ForumHeaderProps {
+  stats: ForumStats | undefined;
+  search: string;
+  onSearchChange: (text: string) => void;
+  categories: CategoryDto[] | undefined;
+  selectedCategoryId: string | null;
+  onSelectCategory: (id: string | null) => void;
+  sortBy: PostSortBy;
+  onSortChange: (key: PostSortBy) => void;
+  postsTotal: number | undefined;
+  isFetching: boolean;
+  isLoading: boolean;
+  colors: ReturnType<typeof useColors>;
+  isZh: boolean;
+}
+
+const ForumHeader = memo(function ForumHeader({
+  stats,
+  search,
+  onSearchChange,
+  categories,
+  selectedCategoryId,
+  onSelectCategory,
+  sortBy,
+  onSortChange,
+  postsTotal,
+  isFetching,
+  isLoading,
+  colors: c,
+  isZh,
+}: ForumHeaderProps) {
+  const { t } = useTranslation();
+
+  const categoryLabel = (cat: CategoryDto) => (isZh ? cat.nameZh || cat.name : cat.name);
+
+  const statItems = useMemo(
+    () =>
+      stats
+        ? [
+            { value: stats.totalPosts, label: t('forum.stats.posts'), color: c.primary },
+            { value: stats.totalComments, label: t('forum.stats.comments'), color: c.info },
+            { value: stats.totalUsers, label: t('forum.stats.users'), color: c.success },
+            { value: stats.todayPosts, label: t('forum.stats.today'), color: c.warning },
+          ]
+        : [],
+    [stats, t, c.primary, c.info, c.success, c.warning]
+  );
+
+  return (
+    <View>
+      {/* Stats */}
+      {stats && (
+        <Animated.View entering={FadeInDown.duration(400).springify()}>
+          <AnimatedCard style={styles.statsCard}>
+            <CardContent>
+              <View style={styles.statsRow}>
+                {statItems.map((stat) => (
+                  <View key={stat.label} style={styles.statItem}>
+                    <AnimatedCounter
+                      value={stat.value}
+                      style={[styles.statValue, { color: stat.color }]}
+                    />
+                    <Text style={[styles.statLabel, { color: c.foregroundMuted }]}>
+                      {stat.label}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </CardContent>
+          </AnimatedCard>
+        </Animated.View>
+      )}
+
+      {/* Search */}
+      <SearchBar
+        value={search}
+        onChangeText={onSearchChange}
+        placeholder={t('forum.searchPlaceholder')}
+        style={styles.searchBar}
+      />
+
+      {/* Category filters */}
+      {categories && categories.length > 0 && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.filterScroll}
+          contentContainerStyle={styles.filterScrollContent}
+        >
+          <TouchableOpacity
+            onPress={() => onSelectCategory(null)}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: selectedCategoryId === null }}
+            accessibilityLabel={t('forum.allCategories')}
+            style={[
+              styles.categoryChip,
+              { backgroundColor: selectedCategoryId === null ? c.primary : c.muted },
+            ]}
+          >
+            <Text
+              style={[
+                styles.categoryChipText,
+                { color: selectedCategoryId === null ? c.primaryForeground : c.foreground },
+              ]}
+            >
+              {t('forum.allCategories')}
+            </Text>
+          </TouchableOpacity>
+          {categories.map((cat) => {
+            const isActive = selectedCategoryId === cat.id;
+            return (
+              <TouchableOpacity
+                key={cat.id}
+                onPress={() => onSelectCategory(isActive ? null : cat.id)}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: isActive }}
+                accessibilityLabel={categoryLabel(cat)}
+                style={[
+                  styles.categoryChip,
+                  { backgroundColor: isActive ? cat.color || c.primary : c.muted },
+                ]}
+              >
+                {cat.icon ? <Text style={styles.categoryIcon}>{cat.icon}</Text> : null}
+                <Text
+                  style={[
+                    styles.categoryChipText,
+                    { color: isActive ? c.onGradient : c.foreground },
+                  ]}
+                >
+                  {categoryLabel(cat)}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      )}
+
+      {/* Sort */}
+      <Segment
+        segments={SORT_OPTIONS.map((opt) => ({ key: opt.key, label: t(opt.labelKey) }))}
+        value={sortBy}
+        onChange={(key) => onSortChange(key as PostSortBy)}
+        style={styles.sortSegment}
+      />
+
+      {/* Results count */}
+      {postsTotal != null && (
+        <View style={styles.resultsRow}>
+          <Text style={[styles.resultsCount, { color: c.foregroundMuted }]}>
+            {t('forum.resultsCount', { count: postsTotal })}
+          </Text>
+          {isFetching && !isLoading && (
+            <ActivityIndicator size="small" color={c.primary} style={{ marginLeft: spacing.sm }} />
+          )}
+        </View>
+      )}
+    </View>
+  );
+});
+
+// ---------------------------------------------------------------------------
 // Main Component
 // ---------------------------------------------------------------------------
 
@@ -296,130 +460,17 @@ export default function ForumPage() {
     [isZh]
   );
 
+  const handleSelectCategory = useCallback((id: string | null) => {
+    setSelectedCategoryId(id);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }, []);
+
+  const handleSortChange = useCallback((sort: PostSortBy) => {
+    setSortBy(sort);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }, []);
+
   // ---- Sub-Renders ----
-
-  // Stats header card
-  const renderStatsHeader = () => {
-    if (!stats) return null;
-    return (
-      <Animated.View entering={FadeInDown.duration(400).springify()}>
-        <AnimatedCard style={styles.statsCard}>
-          <CardContent>
-            <View style={styles.statsRow}>
-              {[
-                { value: stats.totalPosts, label: t('forum.stats.posts'), color: c.primary },
-                { value: stats.totalComments, label: t('forum.stats.comments'), color: c.info },
-                { value: stats.totalUsers, label: t('forum.stats.users'), color: c.success },
-                { value: stats.todayPosts, label: t('forum.stats.today'), color: c.warning },
-              ].map((stat) => (
-                <View key={stat.label} style={styles.statItem}>
-                  <AnimatedCounter
-                    value={stat.value}
-                    style={[styles.statValue, { color: stat.color }]}
-                  />
-                  <Text style={[styles.statLabel, { color: c.foregroundMuted }]}>{stat.label}</Text>
-                </View>
-              ))}
-            </View>
-          </CardContent>
-        </AnimatedCard>
-      </Animated.View>
-    );
-  };
-
-  // Category filter chips
-  const renderCategoryFilters = () => {
-    if (!categories?.length) return null;
-    return (
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.filterScroll}
-        contentContainerStyle={styles.filterScrollContent}
-      >
-        <TouchableOpacity
-          onPress={() => {
-            setSelectedCategoryId(null);
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          }}
-          accessibilityRole="tab"
-          accessibilityState={{ selected: selectedCategoryId === null }}
-          accessibilityLabel={t('forum.allCategories')}
-          style={[
-            styles.categoryChip,
-            {
-              backgroundColor: selectedCategoryId === null ? c.primary : c.muted,
-            },
-          ]}
-        >
-          <Text
-            style={[
-              styles.categoryChipText,
-              { color: selectedCategoryId === null ? c.primaryForeground : c.foreground },
-            ]}
-          >
-            {t('forum.allCategories')}
-          </Text>
-        </TouchableOpacity>
-        {categories.map((cat) => {
-          const isActive = selectedCategoryId === cat.id;
-          return (
-            <TouchableOpacity
-              key={cat.id}
-              onPress={() => {
-                setSelectedCategoryId(isActive ? null : cat.id);
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              }}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: isActive }}
-              accessibilityLabel={categoryLabel(cat)}
-              style={[
-                styles.categoryChip,
-                {
-                  backgroundColor: isActive ? cat.color || c.primary : c.muted,
-                },
-              ]}
-            >
-              {cat.icon ? <Text style={styles.categoryIcon}>{cat.icon}</Text> : null}
-              <Text
-                style={[styles.categoryChipText, { color: isActive ? c.onGradient : c.foreground }]}
-              >
-                {categoryLabel(cat)}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
-    );
-  };
-
-  // Sort segment
-  const renderSortSegment = () => (
-    <Segment
-      segments={SORT_OPTIONS.map((opt) => ({ key: opt.key, label: t(opt.labelKey) }))}
-      value={sortBy}
-      onChange={(key) => {
-        setSortBy(key as PostSortBy);
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      }}
-      style={styles.sortSegment}
-    />
-  );
-
-  // Results count
-  const renderResultsInfo = () => {
-    if (!postsData) return null;
-    return (
-      <View style={styles.resultsRow}>
-        <Text style={[styles.resultsCount, { color: c.foregroundMuted }]}>
-          {t('forum.resultsCount', { count: postsData.total })}
-        </Text>
-        {isFetching && !isLoading && (
-          <ActivityIndicator size="small" color={c.primary} style={{ marginLeft: spacing.sm }} />
-        )}
-      </View>
-    );
-  };
 
   // Post card
   const renderPostCard = useCallback(
@@ -568,23 +619,40 @@ export default function ForumPage() {
     ]
   );
 
-  // List header (assembled)
+  // List header (memoized component — isolates re-renders from the post list)
   const listHeader = useMemo(
     () => (
-      <View>
-        {renderStatsHeader()}
-        <SearchBar
-          value={search}
-          onChangeText={handleSearchChange}
-          placeholder={t('forum.searchPlaceholder')}
-          style={styles.searchBar}
-        />
-        {renderCategoryFilters()}
-        {renderSortSegment()}
-        {renderResultsInfo()}
-      </View>
+      <ForumHeader
+        stats={stats}
+        search={search}
+        onSearchChange={handleSearchChange}
+        categories={categories}
+        selectedCategoryId={selectedCategoryId}
+        onSelectCategory={handleSelectCategory}
+        sortBy={sortBy}
+        onSortChange={handleSortChange}
+        postsTotal={postsData?.total}
+        isFetching={isFetching}
+        isLoading={isLoading}
+        colors={c}
+        isZh={!!isZh}
+      />
     ),
-    [search, selectedCategoryId, sortBy, categories, stats, postsData, isFetching, isLoading, c, t]
+    [
+      stats,
+      search,
+      handleSearchChange,
+      categories,
+      selectedCategoryId,
+      handleSelectCategory,
+      sortBy,
+      handleSortChange,
+      postsData?.total,
+      isFetching,
+      isLoading,
+      c,
+      isZh,
+    ]
   );
 
   // ---- Create Post Modal ----
