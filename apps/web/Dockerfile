@@ -1,9 +1,13 @@
+# Web Docker image for self-hosted / VPS deployment.
+# PREREQUISITE: Uncomment `output: 'standalone'` in apps/web/next.config.ts
+# before building. It is commented out for Vercel (which doesn't need it).
+#
 # ============================================
 # Stage 1: Dependencies
 # ============================================
 FROM node:20-alpine AS deps
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10.22.0 --activate
 
 WORKDIR /app
 
@@ -20,7 +24,7 @@ RUN pnpm install --frozen-lockfile
 # ============================================
 FROM node:20-alpine AS builder
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10.22.0 --activate
 
 WORKDIR /app
 

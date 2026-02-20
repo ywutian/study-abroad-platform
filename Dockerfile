@@ -1,19 +1,29 @@
+# Root Dockerfile — thin wrapper that delegates to apps/api/Dockerfile.
+# This exists because some tools (e.g., docker-compose) expect a Dockerfile at the root.
+#
+# Usage: docker build -f Dockerfile .   (context must be repo root)
+#
+# For the canonical, production-ready Dockerfile see: apps/api/Dockerfile
+
 # ============================================
 # Stage 1: Build
 # ============================================
 FROM node:20-alpine AS builder
 
-# Install pnpm
+# Install pnpm and openssl
 RUN corepack enable && corepack prepare pnpm@10.22.0 --activate
+RUN apk add --no-cache openssl
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files for all workspace packages (needed for frozen-lockfile)
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json ./apps/api/
+COPY apps/web/package.json ./apps/web/
+COPY apps/mobile/package.json ./apps/mobile/
 COPY packages/ ./packages/
 
-# Install dependencies
+# Install all dependencies
 RUN pnpm install --frozen-lockfile
 
 # Copy source code
@@ -22,33 +32,54 @@ COPY apps/api/ ./apps/api/
 # Generate Prisma client (dummy URL for generation only)
 RUN cd apps/api && DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" pnpm prisma generate
 
-# Build
+# Build shared package first (API depends on it)
+RUN pnpm --filter @study-abroad/shared build
+
+# Build API
 RUN pnpm --filter api build
 
+# Deploy to /prod with all dependencies (pnpm deploy creates standalone package)
+RUN pnpm --filter api deploy /prod --prod --legacy
+
+# Copy Prisma client to deployed node_modules
+RUN cp -r /app/node_modules/.pnpm/@prisma+client@*/node_modules/@prisma/client /prod/node_modules/@prisma/client && \
+    cp -r /app/node_modules/.pnpm/@prisma+client@*/node_modules/.prisma /prod/node_modules/.prisma
+
+# Copy shared package build output
+RUN cp -r /app/packages/shared/dist /prod/node_modules/@study-abroad/shared/dist
+
 # ============================================
-# Stage 2: Production
+# Stage 2: Production Runner
 # ============================================
 FROM node:20-alpine AS runner
 
-RUN apk add --no-cache curl
+# Install openssl for Prisma
+RUN apk add --no-cache openssl
+
+# Create non-root user for security
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nestjs
 
 WORKDIR /app
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nestjs
+# Copy deployed application with all dependencies
+COPY --from=builder --chown=nestjs:nodejs /prod ./
 
-COPY --from=builder /app/apps/api/dist ./dist
-COPY --from=builder /app/apps/api/node_modules ./node_modules
-COPY --from=builder /app/apps/api/prisma ./prisma
-COPY --from=builder /app/apps/api/package.json ./
+# Copy built application
+COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./dist
 
-RUN chown -R nestjs:nodejs /app
+# Copy Prisma schema and migrations for migrate deploy
+COPY --from=builder --chown=nestjs:nodejs /app/apps/api/prisma ./prisma
+
+# Copy entrypoint script
+COPY --from=builder --chown=nestjs:nodejs /app/apps/api/entrypoint.sh ./entrypoint.sh
+RUN chmod +x entrypoint.sh
+
+# Run as non-root user
 USER nestjs
 
+# Default port 3001. Cloud providers may override via PORT env var.
 EXPOSE 3001
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3001/health || exit 1
-
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main.js"]
-
+# Run migrations on startup, then start application
+CMD ["./entrypoint.sh"]
