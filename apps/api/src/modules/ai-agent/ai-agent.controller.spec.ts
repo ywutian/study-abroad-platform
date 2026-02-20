@@ -20,6 +20,7 @@ describe('AiAgentController', () => {
     write: jest.fn(),
     end: jest.fn(),
     json: jest.fn(),
+    on: jest.fn(),
   };
 
   beforeEach(async () => {
