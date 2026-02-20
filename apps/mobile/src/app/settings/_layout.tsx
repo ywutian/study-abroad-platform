@@ -3,7 +3,7 @@ import { Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useColors } from '@/utils/theme';
 
-export default function ProfileLayout() {
+export default function SettingsLayout() {
   const { t } = useTranslation();
   const colors = useColors();
 
@@ -24,13 +24,8 @@ export default function ProfileLayout() {
         headerBackTitle: t('common.back'),
       }}
     >
-      <Stack.Screen name="basic" options={{ title: t('profile.basicInfo') }} />
-      <Stack.Screen name="scores" options={{ title: t('profile.testScores') }} />
-      <Stack.Screen name="activities" options={{ title: t('profile.activities') }} />
-      <Stack.Screen name="awards" options={{ title: t('profile.awards') }} />
-      <Stack.Screen name="education" options={{ title: t('profile.education') }} />
-      <Stack.Screen name="essays" options={{ title: t('profile.essays') }} />
-      <Stack.Screen name="export" options={{ title: t('profile.exportData') }} />
+      <Stack.Screen name="language" options={{ title: t('settings.language') }} />
+      <Stack.Screen name="theme" options={{ title: t('settings.theme') }} />
     </Stack>
   );
 }

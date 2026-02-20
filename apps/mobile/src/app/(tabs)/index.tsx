@@ -31,6 +31,7 @@ import {
   fontWeight,
   borderRadius,
 } from '@/utils/theme';
+import { getResultBadgeVariant } from '@/utils/case-helpers';
 import type { School, Case, PaginatedResponse } from '@/types';
 
 export default function HomeScreen() {
@@ -97,14 +98,28 @@ export default function HomeScreen() {
         color: colors.warning,
       },
       {
-        icon: 'document-text-outline' as const,
-        title: t('home.features.essay'),
-        desc: t('home.features.essayDesc'),
-        route: '/(tabs)/ai',
+        icon: 'calendar-outline' as const,
+        title: t('home.features.timeline'),
+        desc: t('home.features.timelineDesc'),
+        route: '/timeline',
         color: colors.info,
       },
+      {
+        icon: 'chatbubbles-outline' as const,
+        title: t('home.features.forum'),
+        desc: t('home.features.forumDesc'),
+        route: '/forum',
+        color: colors.accent,
+      },
+      {
+        icon: 'game-controller-outline' as const,
+        title: t('home.features.swipe'),
+        desc: t('home.features.swipeDesc'),
+        route: '/swipe',
+        color: colors.error,
+      },
     ],
-    [t, colors.primary, colors.success, colors.warning, colors.info]
+    [t, colors.primary, colors.success, colors.warning, colors.info, colors.accent, colors.error]
   );
 
   return (
@@ -150,12 +165,16 @@ export default function HomeScreen() {
             style={styles.statsRow}
           >
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>10,000+</Text>
+              <Text style={styles.statValue}>
+                {casesData?.total ? casesData.total.toLocaleString() : '-'}
+              </Text>
               <Text style={styles.statLabel}>{t('home.stats.cases')}</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>500+</Text>
+              <Text style={styles.statValue}>
+                {schoolsData?.total ? `${schoolsData.total}+` : '-'}
+              </Text>
               <Text style={styles.statLabel}>{t('home.stats.schools')}</Text>
             </View>
             <View style={styles.statDivider} />
@@ -262,6 +281,7 @@ export default function HomeScreen() {
                 <AnimatedCard
                   onPress={() => router.push(`/school/${school.id}`)}
                   style={styles.schoolCard}
+                  accessibilityLabel={`${school.name}${school.usNewsRank ? `, #${school.usNewsRank} US News` : ''}`}
                 >
                   <CardContent>
                     <Avatar
@@ -332,15 +352,7 @@ export default function HomeScreen() {
                       {caseItem.major} · {caseItem.year}
                     </Text>
                   </View>
-                  <Badge
-                    variant={
-                      caseItem.result === 'ADMITTED'
-                        ? 'success'
-                        : caseItem.result === 'REJECTED'
-                          ? 'error'
-                          : 'warning'
-                    }
-                  >
+                  <Badge variant={getResultBadgeVariant(caseItem.result)}>
                     {t(`cases.result.${caseItem.result.toLowerCase()}`)}
                   </Badge>
                 </CardContent>
@@ -446,11 +458,11 @@ const styles = StyleSheet.create({
     marginHorizontal: -spacing.xs,
   },
   actionCardWrapper: {
-    width: '50%',
+    width: '33.33%',
     padding: spacing.xs,
   },
   actionCard: {
-    height: 120,
+    height: 110,
   },
   actionCardContent: {
     alignItems: 'center',

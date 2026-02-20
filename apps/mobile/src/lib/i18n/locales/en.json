@@ -34,6 +34,8 @@
     "points": "points",
     "reload": "Reload App",
     "clearSearch": "Clear search",
+    "showMore": "Show more",
+    "showLess": "Show less",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "time": {
@@ -100,7 +102,13 @@
       "ranking": "School Rankings",
       "rankingDesc": "Custom rankings",
       "essay": "Essay Assistant",
-      "essayDesc": "AI essay help"
+      "essayDesc": "AI essay help",
+      "timeline": "Timeline",
+      "timelineDesc": "Track deadlines",
+      "forum": "Forum",
+      "forumDesc": "Community",
+      "swipe": "Swipe Game",
+      "swipeDesc": "Predict admissions"
     }
   },
   "auth": {
@@ -345,6 +353,8 @@
       "activities": "Activities",
       "awards": "Awards",
       "essays": "Essay Overview",
+      "essay": "Essay",
+      "tags": "Tags",
       "tips": "Application Tips"
     },
     "submit": {
@@ -378,7 +388,10 @@
       "stepProgress": "Step {{step}} of {{total}}",
       "stepN": "Step {{n}}"
     },
-    "noCases": "No cases yet"
+    "noCases": "No cases yet",
+    "a11y": {
+      "searchResults": "{{count}} cases found"
+    }
   },
   "ai": {
     "title": "AI Assistant",
@@ -387,6 +400,7 @@
       "placeholder": "How can I help you?",
       "send": "Send",
       "thinking": "Thinking...",
+      "noResponse": "No response received.",
       "toolCalling": "Calling tools...",
       "quickQuestions": "Quick Questions",
       "suggestions": {

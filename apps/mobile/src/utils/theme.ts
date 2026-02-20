@@ -80,7 +80,7 @@ export const colors = {
     // Foreground
     foreground: '#f8fafc',
     foregroundSecondary: '#cbd5e1',
-    foregroundMuted: '#64748b',
+    foregroundMuted: '#8896ab',
 
     // Cards
     card: '#1e293b',

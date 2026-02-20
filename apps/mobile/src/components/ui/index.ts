@@ -11,7 +11,7 @@ export { Modal, BottomSheet } from './Modal';
 export { Select, MultiSelect } from './Select';
 export { Slider } from './Slider';
 export { Switch } from './Switch';
-export { Checkbox, Radio } from './Checkbox';
+export { Checkbox, Radio, RadioGroup } from './Checkbox';
 export { Toast, useToast } from './Toast';
 export { SearchBar } from './SearchBar';
 export { ListItem, Separator } from './ListItem';
@@ -36,4 +36,3 @@ export { ConfirmDialog } from './ConfirmDialog';
 export { StatusBadge } from './StatusBadge';
 export { AnimatedCounter, formatCompactNumber, formatPercentage } from './AnimatedCounter';
 export { BlurImage, AvatarImage, CardImage, ThumbnailImage } from './BlurImage';
-

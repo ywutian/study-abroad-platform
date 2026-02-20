@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Markdown from 'react-native-markdown-display';
 
+import * as Haptics from 'expo-haptics';
 import { Card, CardContent, Badge, Button, Loading } from '@/components/ui';
 import { Segment } from '@/components/ui/Tabs';
 import { apiClient } from '@/lib/api/client';
@@ -29,6 +30,7 @@ interface ChatMessageItemProps {
   item: AiChatMessage;
   colors: ReturnType<typeof useColors>;
   markdownStyles: Record<string, any>;
+  isLast: boolean;
   isLoading: boolean;
   t: (key: string) => string;
 }
@@ -37,9 +39,11 @@ const ChatMessageItem = React.memo(function ChatMessageItem({
   item,
   colors,
   markdownStyles,
+  isLast,
   isLoading,
   t,
 }: ChatMessageItemProps) {
+  const showThinking = isLast && isLoading;
   const isUser = item.role === 'user';
 
   return (
@@ -76,7 +80,7 @@ const ChatMessageItem = React.memo(function ChatMessageItem({
             {/* Content */}
             {item.content ? (
               <Markdown style={markdownStyles}>{item.content}</Markdown>
-            ) : isLoading ? (
+            ) : showThinking ? (
               <View style={styles.thinkingContainer}>
                 <Loading size="small" />
                 <Text style={[styles.thinkingText, { color: colors.foregroundMuted }]}>
@@ -108,6 +112,8 @@ export default function AIScreen() {
     { key: 'auto', label: t('ai.chat.agentModes.auto') },
     { key: 'essay', label: t('ai.chat.agentModes.essay') },
     { key: 'school', label: t('ai.chat.agentModes.school') },
+    { key: 'profile', label: t('ai.chat.agentModes.profile') },
+    { key: 'timeline', label: t('ai.chat.agentModes.timeline') },
   ];
 
   const quickSuggestions = [
@@ -121,6 +127,7 @@ export default function AIScreen() {
     async (messageText?: string) => {
       const text = messageText || input.trim();
       if (!text || isLoading) return;
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
       if (!isAuthenticated) {
         toast.error(t('errors.unauthorized'));
@@ -147,59 +154,84 @@ export default function AIScreen() {
       setMessages((prev) => [...prev, assistantMessage]);
 
       try {
-        // Use streaming API
-        for await (const chunk of apiClient.stream('/ai-agent/chat', {
-          message: text,
-          agentMode,
-          conversationId: null, // Start new conversation
-          stream: true, // 必须传递此参数启用 SSE
-        })) {
-          try {
-            const event: StreamEvent = JSON.parse(chunk);
-
-            if (event.type === 'content' && event.content) {
-              setMessages((prev) => {
-                const newMessages = [...prev];
-                const lastMessage = newMessages[newMessages.length - 1];
-                if (lastMessage.role === 'assistant') {
-                  newMessages[newMessages.length - 1] = {
-                    ...lastMessage,
-                    content: lastMessage.content + event.content,
-                  };
-                }
-                return newMessages;
-              });
-            } else if (event.type === 'tool_start' && event.tool) {
-              setMessages((prev) => {
-                const newMessages = [...prev];
-                const lastMessage = newMessages[newMessages.length - 1];
-                if (lastMessage.role === 'assistant') {
-                  newMessages[newMessages.length - 1] = {
-                    ...lastMessage,
-                    toolCalls: [
-                      ...(lastMessage.toolCalls || []),
-                      { name: event.tool!, status: 'running' },
-                    ],
-                  };
-                }
-                return newMessages;
-              });
-            } else if (event.type === 'error') {
-              toast.error(event.error || t('errors.unknown'));
+        if (agentMode !== 'auto') {
+          // Direct agent call (non-streaming) for specific agent modes
+          const result = await apiClient.post<{
+            message?: string;
+            response?: { message?: string };
+          }>('/ai-agent/agent', {
+            agent: agentMode,
+            message: text,
+            conversationId: undefined,
+            locale: undefined,
+          });
+          const responseText =
+            result.message || result.response?.message || t('ai.chat.noResponse');
+          setMessages((prev) => {
+            const newMessages = [...prev];
+            const lastMessage = newMessages[newMessages.length - 1];
+            if (lastMessage.role === 'assistant') {
+              newMessages[newMessages.length - 1] = {
+                ...lastMessage,
+                content: responseText,
+              };
             }
-          } catch {
-            // Non-JSON chunk, treat as plain text
-            setMessages((prev) => {
-              const newMessages = [...prev];
-              const lastMessage = newMessages[newMessages.length - 1];
-              if (lastMessage.role === 'assistant') {
-                newMessages[newMessages.length - 1] = {
-                  ...lastMessage,
-                  content: lastMessage.content + chunk,
-                };
+            return newMessages;
+          });
+        } else {
+          // Streaming auto-mode via orchestrator
+          for await (const chunk of apiClient.stream('/ai-agent/chat', {
+            message: text,
+            conversationId: null,
+            stream: true,
+          })) {
+            try {
+              const event: StreamEvent = JSON.parse(chunk);
+
+              if (event.type === 'content' && event.content) {
+                setMessages((prev) => {
+                  const newMessages = [...prev];
+                  const lastMessage = newMessages[newMessages.length - 1];
+                  if (lastMessage.role === 'assistant') {
+                    newMessages[newMessages.length - 1] = {
+                      ...lastMessage,
+                      content: lastMessage.content + event.content,
+                    };
+                  }
+                  return newMessages;
+                });
+              } else if (event.type === 'tool_start' && event.tool) {
+                setMessages((prev) => {
+                  const newMessages = [...prev];
+                  const lastMessage = newMessages[newMessages.length - 1];
+                  if (lastMessage.role === 'assistant') {
+                    newMessages[newMessages.length - 1] = {
+                      ...lastMessage,
+                      toolCalls: [
+                        ...(lastMessage.toolCalls || []),
+                        { name: event.tool!, status: 'running' },
+                      ],
+                    };
+                  }
+                  return newMessages;
+                });
+              } else if (event.type === 'error') {
+                toast.error(event.error || t('errors.unknown'));
               }
-              return newMessages;
-            });
+            } catch {
+              // Non-JSON chunk, treat as plain text
+              setMessages((prev) => {
+                const newMessages = [...prev];
+                const lastMessage = newMessages[newMessages.length - 1];
+                if (lastMessage.role === 'assistant') {
+                  newMessages[newMessages.length - 1] = {
+                    ...lastMessage,
+                    content: lastMessage.content + chunk,
+                  };
+                }
+                return newMessages;
+              });
+            }
           }
         }
       } catch (error) {
@@ -264,16 +296,17 @@ export default function AIScreen() {
   );
 
   const renderMessage = useCallback(
-    ({ item }: { item: AiChatMessage }) => (
+    ({ item, index }: { item: AiChatMessage; index: number }) => (
       <ChatMessageItem
         item={item}
         colors={colors}
         markdownStyles={markdownStyles}
+        isLast={index === messages.length - 1}
         isLoading={isLoading}
         t={t}
       />
     ),
-    [colors, markdownStyles, isLoading, t]
+    [colors, markdownStyles, isLoading, messages.length, t]
   );
 
   return (
@@ -284,11 +317,25 @@ export default function AIScreen() {
     >
       {/* Agent Mode Selector */}
       <View style={[styles.modeSelector, { borderBottomColor: colors.border }]}>
-        <Segment
-          segments={agentModes}
-          value={agentMode}
-          onChange={(value) => setAgentMode(value as AgentMode)}
-        />
+        <View style={styles.modeSelectorRow}>
+          <View style={styles.modeSelectorSegment}>
+            <Segment
+              segments={agentModes}
+              value={agentMode}
+              onChange={(value) => setAgentMode(value as AgentMode)}
+            />
+          </View>
+          {messages.length > 0 && (
+            <TouchableOpacity
+              onPress={() => setMessages([])}
+              style={[styles.newChatButton, { backgroundColor: colors.muted }]}
+              accessibilityLabel={t('uncommonApp.chat.clearChat')}
+              accessibilityRole="button"
+            >
+              <Ionicons name="add-circle-outline" size={22} color={colors.primary} />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       {/* Messages */}
@@ -367,6 +414,9 @@ export default function AIScreen() {
                 backgroundColor: input.trim() && !isLoading ? colors.primary : colors.muted,
               },
             ]}
+            accessibilityRole="button"
+            accessibilityLabel={t('ai.chat.send')}
+            accessibilityState={{ disabled: !input.trim() || isLoading || !isAuthenticated }}
           >
             <Ionicons
               name="send"
@@ -393,6 +443,21 @@ const styles = StyleSheet.create({
   modeSelector: {
     padding: spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  modeSelectorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  modeSelectorSegment: {
+    flex: 1,
+  },
+  newChatButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: spacing.sm,
   },
   emptyContainer: {
     flex: 1,

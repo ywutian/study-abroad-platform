@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, router, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,9 +14,10 @@ import {
   Avatar,
   Loading,
   ErrorState,
+  Skeleton,
 } from '@/components/ui';
 import { apiClient } from '@/lib/api/client';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useColors, withOpacity, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import type { Case } from '@/types';
 
 export default function CaseDetailScreen() {
@@ -28,6 +29,7 @@ export default function CaseDetailScreen() {
     data: caseData,
     isLoading,
     error,
+    refetch,
   } = useQuery({
     queryKey: ['case', id],
     queryFn: () => apiClient.get<Case>(`/cases/${id}`),
@@ -35,11 +37,45 @@ export default function CaseDetailScreen() {
   });
 
   if (isLoading) {
-    return <Loading fullScreen />;
+    return (
+      <>
+        <Stack.Screen options={{ title: '' }} />
+        <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+          <View style={[styles.header, { backgroundColor: colors.muted }]}>
+            <Skeleton
+              width={80}
+              height={28}
+              borderRadius={14}
+              style={{ marginBottom: spacing.xl }}
+            />
+            <View style={[styles.schoolRow, { backgroundColor: withOpacity(colors.card, 0.7) }]}>
+              <Skeleton width={56} height={56} borderRadius={28} />
+              <View style={styles.schoolInfo}>
+                <Skeleton width="70%" height={16} style={{ marginBottom: spacing.xs }} />
+                <Skeleton width="50%" height={14} />
+              </View>
+            </View>
+          </View>
+          <Card style={styles.card}>
+            <CardContent>
+              <Skeleton width="40%" height={18} style={{ marginBottom: spacing.md }} />
+              <View style={styles.statsGrid}>
+                {[1, 2, 3].map((i) => (
+                  <View key={i} style={styles.statItem}>
+                    <Skeleton width={30} height={12} style={{ marginBottom: spacing.xs }} />
+                    <Skeleton width={50} height={20} />
+                  </View>
+                ))}
+              </View>
+            </CardContent>
+          </Card>
+        </ScrollView>
+      </>
+    );
   }
 
   if (error || !caseData) {
-    return <ErrorState title={t('errors.notFound')} onRetry={() => router.back()} />;
+    return <ErrorState title={t('errors.notFound')} onRetry={() => refetch()} />;
   }
 
   const getResultColor = () => {
@@ -54,11 +90,10 @@ export default function CaseDetailScreen() {
   };
 
   const statItems = [
-    { label: 'GPA', value: caseData.gpa?.toFixed(2), scale: caseData.gpaScale },
-    { label: 'SAT', value: caseData.satScore },
-    { label: 'ACT', value: caseData.actScore },
-    { label: 'TOEFL', value: caseData.toeflScore },
-    { label: 'IELTS', value: caseData.ieltsScore },
+    { label: 'GPA', value: caseData.gpaRange },
+    { label: 'SAT', value: caseData.satRange },
+    { label: 'ACT', value: caseData.actRange },
+    { label: 'TOEFL', value: caseData.toeflRange },
   ].filter((item) => item.value);
 
   return (
@@ -92,7 +127,7 @@ export default function CaseDetailScreen() {
           {/* School Info */}
           <TouchableOpacity
             onPress={() => caseData.schoolId && router.push(`/school/${caseData.schoolId}`)}
-            style={styles.schoolRow}
+            style={[styles.schoolRow, { backgroundColor: withOpacity(colors.card, 0.7) }]}
           >
             <Avatar source={caseData.school?.logoUrl} name={caseData.school?.name} size="lg" />
             <View style={styles.schoolInfo}>
@@ -108,7 +143,7 @@ export default function CaseDetailScreen() {
 
           {/* Verification Badge */}
           <View style={styles.badges}>
-            {caseData.verified && (
+            {caseData.isVerified && (
               <Badge variant="success">
                 <View style={styles.badgeContent}>
                   <Ionicons name="checkmark-circle" size={14} color={colors.success} />
@@ -139,7 +174,6 @@ export default function CaseDetailScreen() {
                     </Text>
                     <Text style={[styles.statValue, { color: colors.foreground }]}>
                       {stat.value}
-                      {stat.scale && <Text style={styles.statScale}>/{stat.scale}</Text>}
                     </Text>
                   </View>
                 ))}
@@ -148,82 +182,87 @@ export default function CaseDetailScreen() {
           </Card>
         )}
 
-        {/* Activities */}
-        {caseData.activities && (
+        {/* Tags */}
+        {caseData.tags && caseData.tags.length > 0 && (
           <Card style={styles.card}>
             <CardHeader>
-              <CardTitle>{t('cases.detail.activities')}</CardTitle>
+              <CardTitle>{t('cases.detail.tags')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <Text style={[styles.contentText, { color: colors.foreground }]}>
-                {caseData.activities}
-              </Text>
+              <View style={styles.tagsRow}>
+                {caseData.tags.map((tag, index) => (
+                  <Badge key={index} variant="secondary">
+                    {tag}
+                  </Badge>
+                ))}
+              </View>
             </CardContent>
           </Card>
         )}
 
-        {/* Awards */}
-        {caseData.awards && (
-          <Card style={styles.card}>
-            <CardHeader>
-              <CardTitle>{t('cases.detail.awards')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Text style={[styles.contentText, { color: colors.foreground }]}>
-                {caseData.awards}
-              </Text>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Essays */}
-        {caseData.essays && (
-          <Card style={styles.card}>
-            <CardHeader>
-              <CardTitle>{t('cases.detail.essays')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Text style={[styles.contentText, { color: colors.foreground }]}>
-                {caseData.essays}
-              </Text>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Tips */}
-        {caseData.tips && (
-          <Card style={[styles.card, { backgroundColor: colors.primary + '10' }]}>
-            <CardHeader>
-              <CardTitle>
-                <View style={styles.tipsHeader}>
-                  <Ionicons name="bulb" size={20} color={colors.primary} />
-                  <Text style={[styles.tipsTitle, { color: colors.primary }]}>
-                    {t('cases.detail.tips')}
-                  </Text>
-                </View>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Text style={[styles.contentText, { color: colors.foreground }]}>
-                {caseData.tips}
-              </Text>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Points earned */}
-        {caseData.points && caseData.points > 0 && (
-          <View style={styles.pointsContainer}>
-            <Ionicons name="star" size={16} color={colors.warning} />
-            <Text style={[styles.pointsText, { color: colors.foregroundMuted }]}>
-              +{caseData.points} {t('common.points')}
-            </Text>
-          </View>
+        {/* Essay */}
+        {caseData.essayContent && (
+          <EssayCard
+            essayContent={caseData.essayContent}
+            essayPrompt={caseData.essayPrompt}
+            colors={colors}
+            t={t}
+          />
         )}
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
     </>
+  );
+}
+
+const ESSAY_PREVIEW_LENGTH = 500;
+
+function EssayCard({
+  essayContent,
+  essayPrompt,
+  colors,
+  t,
+}: {
+  essayContent: string;
+  essayPrompt?: string;
+  colors: ReturnType<typeof useColors>;
+  t: (key: string) => string;
+}) {
+  const isLong = essayContent.length > ESSAY_PREVIEW_LENGTH;
+  const [expanded, setExpanded] = useState(!isLong);
+
+  const displayText = expanded ? essayContent : essayContent.slice(0, ESSAY_PREVIEW_LENGTH) + '...';
+
+  return (
+    <Card style={styles.card}>
+      <CardHeader>
+        <CardTitle>{t('cases.detail.essay')}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {essayPrompt && (
+          <Text style={[styles.essayPrompt, { color: colors.foregroundMuted }]}>{essayPrompt}</Text>
+        )}
+        <Text style={[styles.contentText, { color: colors.foreground }]}>{displayText}</Text>
+        {isLong && (
+          <TouchableOpacity
+            onPress={() => setExpanded((prev) => !prev)}
+            style={styles.expandButton}
+            accessibilityRole="button"
+            accessibilityLabel={expanded ? t('common.showLess') : t('common.showMore')}
+          >
+            <Text style={[styles.expandButtonText, { color: colors.primary }]}>
+              {expanded ? t('common.showLess') : t('common.showMore')}
+            </Text>
+            <Ionicons
+              name={expanded ? 'chevron-up' : 'chevron-down'}
+              size={16}
+              color={colors.primary}
+            />
+          </TouchableOpacity>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -247,7 +286,6 @@ const styles = StyleSheet.create({
   schoolRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.5)',
     padding: spacing.md,
     borderRadius: borderRadius.lg,
     width: '100%',
@@ -293,32 +331,31 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xl,
     fontWeight: fontWeight.bold,
   },
-  statScale: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.normal,
-  },
   contentText: {
     fontSize: fontSize.base,
     lineHeight: 24,
   },
-  tipsHeader: {
+  tagsRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
   },
-  tipsTitle: {
-    marginLeft: spacing.sm,
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
+  essayPrompt: {
+    fontSize: fontSize.sm,
+    fontStyle: 'italic',
+    marginBottom: spacing.md,
+    lineHeight: 20,
   },
-  pointsContainer: {
+  expandButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: spacing.lg,
+    paddingTop: spacing.md,
   },
-  pointsText: {
-    marginLeft: spacing.xs,
+  expandButtonText: {
     fontSize: fontSize.sm,
+    fontWeight: fontWeight.medium,
+    marginRight: spacing.xs,
   },
   bottomSpacer: {
     height: spacing['2xl'],

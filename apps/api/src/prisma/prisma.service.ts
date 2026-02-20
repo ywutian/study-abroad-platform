@@ -36,7 +36,7 @@ export class PrismaService
         db: {
           url: process.env.DATABASE_URL?.includes('connection_limit')
             ? process.env.DATABASE_URL
-            : `${process.env.DATABASE_URL}${process.env.DATABASE_URL?.includes('?') ? '&' : '?'}connection_limit=10&pool_timeout=30`,
+            : `${process.env.DATABASE_URL}${process.env.DATABASE_URL?.includes('?') ? '&' : '?'}connection_limit=3&pool_timeout=30`,
         },
       },
     });
@@ -60,8 +60,32 @@ export class PrismaService
       }
     });
 
-    await this.$connect();
-    this.logger.log('Database connected successfully');
+    // Retry connection with exponential backoff (Cloud Run cold starts
+    // may overlap with existing instances draining connections)
+    const maxRetries = 5;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        await this.$connect();
+        this.logger.log('Database connected successfully');
+        return;
+      } catch (error) {
+        this.logger.warn(
+          `Database connection attempt ${attempt}/${maxRetries} failed: ${error.message}`,
+        );
+        if (attempt === maxRetries) {
+          this.logger.error(
+            'All database connection attempts failed. App will start but DB queries may fail.',
+          );
+          // Do NOT throw — let the app start so Cloud Run health check can pass.
+          // Prisma will lazy-connect on the first query.
+          return;
+        }
+        // Exponential backoff: 2s, 4s, 8s, 16s, 32s
+        const delay = Math.pow(2, attempt) * 1000;
+        this.logger.log(`Retrying in ${delay / 1000}s...`);
+        await new Promise((r) => setTimeout(r, delay));
+      }
+    }
   }
 
   async onModuleDestroy() {

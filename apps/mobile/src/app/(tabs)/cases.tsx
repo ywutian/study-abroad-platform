@@ -1,5 +1,13 @@
-import React, { useState, memo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, RefreshControl } from 'react-native';
+import React, { useState, useEffect, memo } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  RefreshControl,
+  AccessibilityInfo,
+} from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,31 +30,24 @@ import { SubmitCaseModal } from '@/components/features/SubmitCaseModal';
 import { useDebouncedSearch, usePaginatedQuery } from '@/hooks/api';
 import { useAuthStore } from '@/stores';
 import { useColors, colors as themeColors, spacing, fontSize, fontWeight } from '@/utils/theme';
+import { getResultBadgeVariant } from '@/utils/case-helpers';
 import type { Case, CaseResult } from '@/types';
-
-const getResultBadgeVariant = (result: CaseResult) => {
-  switch (result) {
-    case 'ADMITTED':
-      return 'success';
-    case 'REJECTED':
-      return 'error';
-    case 'WAITLISTED':
-    case 'DEFERRED':
-      return 'warning';
-    default:
-      return 'secondary';
-  }
-};
 
 interface CaseListItemProps {
   item: Case;
-  colors: ReturnType<typeof useColors>;
-  t: ReturnType<typeof useTranslation>['t'];
 }
 
-const CaseListItem = memo(function CaseListItem({ item, colors, t }: CaseListItemProps) {
+const CaseListItem = memo(function CaseListItem({ item }: CaseListItemProps) {
+  const { t } = useTranslation();
+  const colors = useColors();
+
   return (
-    <TouchableOpacity onPress={() => router.push(`/case/${item.id}`)} style={styles.cardWrapper}>
+    <TouchableOpacity
+      onPress={() => router.push(`/case/${item.id}`)}
+      style={styles.cardWrapper}
+      accessibilityRole="button"
+      accessibilityLabel={`${item.school?.name || t('common.unknownSchool')}, ${item.major}, ${item.year}, ${t(`cases.result.${item.result.toLowerCase()}`)}`}
+    >
       <Card>
         <CardContent>
           <View style={styles.caseHeader}>
@@ -65,27 +66,27 @@ const CaseListItem = memo(function CaseListItem({ item, colors, t }: CaseListIte
 
           {/* Stats */}
           <View style={styles.statsRow}>
-            {item.gpa && (
+            {item.gpaRange && (
               <View style={styles.statItem}>
                 <Text style={[styles.statLabel, { color: colors.foregroundMuted }]}>GPA</Text>
                 <Text style={[styles.statValue, { color: colors.foreground }]}>
-                  {item.gpa.toFixed(2)}
+                  {item.gpaRange}
                 </Text>
               </View>
             )}
-            {item.satScore && (
+            {item.satRange && (
               <View style={styles.statItem}>
                 <Text style={[styles.statLabel, { color: colors.foregroundMuted }]}>SAT</Text>
                 <Text style={[styles.statValue, { color: colors.foreground }]}>
-                  {item.satScore}
+                  {item.satRange}
                 </Text>
               </View>
             )}
-            {item.toeflScore && (
+            {item.toeflRange && (
               <View style={styles.statItem}>
                 <Text style={[styles.statLabel, { color: colors.foregroundMuted }]}>TOEFL</Text>
                 <Text style={[styles.statValue, { color: colors.foreground }]}>
-                  {item.toeflScore}
+                  {item.toeflRange}
                 </Text>
               </View>
             )}
@@ -93,7 +94,7 @@ const CaseListItem = memo(function CaseListItem({ item, colors, t }: CaseListIte
 
           {/* Badges */}
           <View style={styles.footerRow}>
-            {item.verified && (
+            {item.isVerified && (
               <Badge variant="success">
                 <View style={styles.badgeContent}>
                   <Ionicons name="checkmark-circle" size={12} color={colors.success} />
@@ -141,6 +142,15 @@ export default function CasesScreen() {
     },
   });
 
+  // Announce search results for screen readers
+  useEffect(() => {
+    if (!isLoading && debouncedSearch && cases.length >= 0) {
+      AccessibilityInfo.announceForAccessibility(
+        t('cases.a11y.searchResults', { count: cases.length })
+      );
+    }
+  }, [debouncedSearch, cases.length, isLoading, t]);
+
   const resultOptions = [
     { value: '', label: t('common.all') || 'All' },
     { value: 'ADMITTED', label: t('cases.result.admitted') },
@@ -156,9 +166,7 @@ export default function CasesScreen() {
     { value: '2022', label: '2022' },
   ];
 
-  const renderCaseItem = ({ item }: { item: Case }) => (
-    <CaseListItem item={item} colors={colors} t={t} />
-  );
+  const renderCaseItem = ({ item }: { item: Case }) => <CaseListItem item={item} />;
 
   const renderFooter = () => {
     if (!isFetchingNextPage) return null;
@@ -226,6 +234,9 @@ export default function CasesScreen() {
         <TouchableOpacity
           onPress={() => setFilterVisible(true)}
           style={[styles.filterButton, { backgroundColor: colors.muted }]}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.filter')}
+          accessibilityState={{ expanded: filterVisible }}
         >
           <Ionicons name="filter" size={20} color={colors.foreground} />
           {activeFiltersCount > 0 && (
@@ -298,7 +309,13 @@ export default function CasesScreen() {
             >
               {t('common.cancel')}
             </Button>
-            <Button onPress={() => setFilterVisible(false)} style={styles.filterAction}>
+            <Button
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setFilterVisible(false);
+              }}
+              style={styles.filterAction}
+            >
               {t('common.confirm')}
             </Button>
           </View>

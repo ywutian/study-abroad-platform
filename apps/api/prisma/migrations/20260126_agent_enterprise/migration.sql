@@ -103,11 +103,15 @@ CREATE UNIQUE INDEX "AgentConfigVersion_configType_configKey_version_key"
     ON "AgentConfigVersion"("configType", "configKey", "version");
 CREATE INDEX "AgentConfigVersion_isActive_idx" ON "AgentConfigVersion"("isActive");
 
--- 6. 向量索引优化（HNSW）
--- 为 Memory 表的 embedding 字段添加 HNSW 索引
-CREATE INDEX IF NOT EXISTS "Memory_embedding_hnsw_idx" 
-    ON "Memory" USING hnsw (embedding vector_cosine_ops)
-    WITH (m = 16, ef_construction = 64);
+-- 6. 向量索引优化（HNSW）- 仅当 Memory 表已存在时创建（表可能由其他迁移创建）
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'Memory') THEN
+        CREATE INDEX IF NOT EXISTS "Memory_embedding_hnsw_idx" 
+            ON "Memory" USING hnsw (embedding vector_cosine_ops)
+            WITH (m = 16, ef_construction = 64);
+    END IF;
+END $$;
 
 -- 7. 记忆压缩记录表
 CREATE TABLE IF NOT EXISTS "MemoryCompaction" (

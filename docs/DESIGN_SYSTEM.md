@@ -110,18 +110,68 @@ shadow-primary/30
 | 数据展示         | `font-sans` | GPA: 3.8、TOEFL: 110 |
 | 代码/ID          | `font-mono` | #ABC123              |
 
-### 字号规范
+### 排版阶梯（Design Token）
 
-| 名称        | 大小 | 行高 | 用途             |
-| ----------- | ---- | ---- | ---------------- |
-| `text-xs`   | 12px | 1.5  | 辅助信息、时间戳 |
-| `text-sm`   | 14px | 1.5  | 正文、描述       |
-| `text-base` | 16px | 1.6  | 主要正文         |
-| `text-lg`   | 18px | 1.5  | 卡片标题         |
-| `text-xl`   | 20px | 1.4  | 小节标题         |
-| `text-2xl`  | 24px | 1.3  | 页面次标题       |
-| `text-3xl`  | 30px | 1.2  | 页面主标题       |
-| `text-4xl`  | 36px | 1.1  | Hero 标题        |
+基于 `globals.css` 中定义的 CSS 工具类：
+
+| Level    | CSS Class        | Size      | Weight | 适用场景                 |
+| -------- | ---------------- | --------- | ------ | ------------------------ |
+| Display  | `.text-display`  | 38-46px   | 700    | Landing page hero 标题   |
+| Title LG | `.text-title-lg` | 30-38px   | 700    | 营销页面标题             |
+| Title    | `.text-title`    | 24-30px   | 600    | 应用页面标题 (h1)        |
+| Subtitle | `.text-subtitle` | 24px      | 600    | Section heading (h2)     |
+| Body LG  | `.text-body-lg`  | 20px      | 400    | Lead paragraph / h3 标题 |
+| Body     | `.text-body`     | 16px      | 400    | 默认正文                 |
+| Body SM  | `.text-body-sm`  | 14px      | 400    | 次要文本、描述           |
+| Label    | `.text-label`    | 14px      | 500    | 表单标签                 |
+| Caption  | `.text-caption`  | 12px      | 400    | 提示、时间戳             |
+| Overline | `.text-overline` | 12px (UC) | 500    | 分类标签（全大写）       |
+| 2XS      | `text-2xs`       | 10px      | 400    | Badge、迷你标签          |
+
+> `text-2xs` 是 Tailwind 扩展类（`@theme inline`），其余 `.text-*` 是自定义 CSS 类。
+
+### Typography 组件
+
+**Heading** — 语义化标题组件：
+
+```tsx
+<Heading level={1}>Page Title</Heading>     // text-title (24-30px)
+<Heading level={2}>Section</Heading>        // text-subtitle (24px)
+<Heading level={1} display>Hero</Heading>   // text-display (38-46px)
+<Heading level={1} titleLg>Marketing</Heading> // text-title-lg (30-38px)
+<Heading level={1} as="h2">Visually large</Heading> // 覆盖渲染标签
+```
+
+**Text** — 正文文本组件：
+
+```tsx
+<Text>Default body text</Text>                   // text-body (16px)
+<Text variant="lg">Lead paragraph</Text>         // text-body-lg (20px)
+<Text variant="sm" muted>Description</Text>      // text-body-sm + muted
+<Text variant="caption">Timestamp</Text>         // text-caption (12px)
+```
+
+### 排版层级速查
+
+```
+Landing Hero    → text-display / Heading level={1} display
+Landing Section → text-title-lg / Heading level={1} titleLg
+App Page Title  → text-title / PageHeader / Heading level={1}
+Section Heading → text-subtitle / Heading level={2}
+Card Title      → CardTitle (默认 text-lg)
+Body Text       → text-body / Text
+Secondary Text  → text-body-sm / Text variant="sm"
+Form Label      → Label 组件
+Hint/Timestamp  → text-caption / Text variant="caption"
+Badge/Mini      → text-2xs
+```
+
+### 排版禁止事项
+
+- 禁止任意字号值（`text-[10px]`），使用 design token
+- 禁止 h1 裸用 Tailwind 字号，使用 `text-title`
+- CardTitle 默认 `text-lg`，不需要冗余覆盖
+- CI 脚本 `pnpm --filter web lint:typography` 自动检测
 
 ---
 

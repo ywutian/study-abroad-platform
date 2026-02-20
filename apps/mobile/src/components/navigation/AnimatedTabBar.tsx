@@ -12,6 +12,7 @@ import Animated, {
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useColors, spacing, fontSize, fontWeight } from '@/utils/theme';
+import { useNotificationStore } from '@/stores';
 
 interface TabIconProps {
   name: keyof typeof Ionicons.glyphMap;
@@ -55,6 +56,7 @@ interface AnimatedTabBarButtonProps {
   activeColor: string;
   inactiveColor: string;
   backgroundColor: string;
+  badge?: number;
 }
 
 function AnimatedTabBarButton({
@@ -66,6 +68,7 @@ function AnimatedTabBarButton({
   activeColor,
   inactiveColor,
   backgroundColor,
+  badge,
 }: AnimatedTabBarButtonProps) {
   const colors = useColors();
   const pressed = useSharedValue(0);
@@ -113,12 +116,19 @@ function AnimatedTabBarButton({
       accessibilityLabel={label}
     >
       <Animated.View style={[styles.tabButtonInner, containerStyle]}>
-        <AnimatedTabIcon
-          name={iconName}
-          focused={isFocused}
-          color={isFocused ? activeColor : inactiveColor}
-          size={24}
-        />
+        <View>
+          <AnimatedTabIcon
+            name={iconName}
+            focused={isFocused}
+            color={isFocused ? activeColor : inactiveColor}
+            size={24}
+          />
+          {badge != null && badge > 0 && (
+            <View style={[styles.badge, { backgroundColor: colors.error }]}>
+              <Text style={styles.badgeText}>{badge > 99 ? '99+' : badge}</Text>
+            </View>
+          )}
+        </View>
         <Animated.Text
           style={[styles.label, { color: isFocused ? activeColor : inactiveColor }, labelStyle]}
           numberOfLines={1}
@@ -145,6 +155,7 @@ const TAB_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
 
 export function AnimatedTabBar({ state, descriptors, navigation, insets }: BottomTabBarProps) {
   const colors = useColors();
+  const unreadCount = useNotificationStore((s) => s.unreadCount);
 
   return (
     <View
@@ -199,6 +210,7 @@ export function AnimatedTabBar({ state, descriptors, navigation, insets }: Botto
             activeColor={colors.primary}
             inactiveColor={colors.foregroundMuted}
             backgroundColor={colors.card}
+            badge={route.name === 'index' ? unreadCount : undefined}
           />
         );
       })}
@@ -233,5 +245,22 @@ const styles = StyleSheet.create({
     height: 4,
     borderRadius: 2,
     marginTop: spacing.xs,
+  },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -8,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: '#ffffff',
+    fontSize: 10,
+    fontWeight: '700',
+    textAlign: 'center',
   },
 });

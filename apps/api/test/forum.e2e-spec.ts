@@ -72,7 +72,7 @@ describe('Forum (e2e)', () => {
 
     it('GET /forums/posts should support sorting', async () => {
       const res = await request(app.getHttpServer())
-        .get('/forums/posts?sortBy=POPULAR')
+        .get('/forums/posts?sortBy=popular')
         .expect(200);
 
       expect(res.body).toBeDefined();

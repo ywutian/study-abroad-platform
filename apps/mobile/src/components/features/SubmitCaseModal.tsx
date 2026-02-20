@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import debounce from 'lodash.debounce';
 
+import * as Haptics from 'expo-haptics';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -37,12 +38,6 @@ interface CaseFormData {
   satScore: string;
   actScore: string;
   toeflScore: string;
-  ieltsScore: string;
-  // Step 3: Details
-  activities: string;
-  awards: string;
-  essays: string;
-  tips: string;
 }
 
 const INITIAL_FORM: CaseFormData = {
@@ -57,14 +52,9 @@ const INITIAL_FORM: CaseFormData = {
   satScore: '',
   actScore: '',
   toeflScore: '',
-  ieltsScore: '',
-  activities: '',
-  awards: '',
-  essays: '',
-  tips: '',
 };
 
-const TOTAL_STEPS = 3;
+const TOTAL_STEPS = 2;
 
 export function SubmitCaseModal({ visible, onClose, onSuccess }: SubmitCaseModalProps) {
   const { t } = useTranslation();
@@ -210,12 +200,6 @@ export function SubmitCaseModal({ visible, onClose, onSuccess }: SubmitCaseModal
     ) {
       newErrors.toeflScore = t('cases.submit.toeflRange');
     }
-    if (
-      form.ieltsScore &&
-      (isNaN(Number(form.ieltsScore)) || Number(form.ieltsScore) < 0 || Number(form.ieltsScore) > 9)
-    ) {
-      newErrors.ieltsScore = t('cases.submit.ieltsRange');
-    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -242,27 +226,41 @@ export function SubmitCaseModal({ visible, onClose, onSuccess }: SubmitCaseModal
         schoolId: form.schoolId,
         year: Number(form.year),
         result: form.result,
+        visibility: 'ANONYMOUS',
       };
 
       if (form.major) payload.major = form.major;
       if (form.round) payload.round = form.round;
-      if (form.gpa) payload.gpa = Number(form.gpa);
-      if (form.gpaScale) payload.gpaScale = Number(form.gpaScale);
-      if (form.satScore) payload.satScore = Number(form.satScore);
-      if (form.actScore) payload.actScore = Number(form.actScore);
-      if (form.toeflScore) payload.toeflScore = Number(form.toeflScore);
-      if (form.ieltsScore) payload.ieltsScore = Number(form.ieltsScore);
-      if (form.activities) payload.activities = form.activities;
-      if (form.awards) payload.awards = form.awards;
-      if (form.essays) payload.essays = form.essays;
-      if (form.tips) payload.tips = form.tips;
+
+      // Convert individual scores to range strings (backend expects "X.X-X.X" format)
+      if (form.gpa) {
+        const gpa = Number(form.gpa);
+        const scale = Number(form.gpaScale) || 4.0;
+        const lower = Math.max(0, gpa - 0.1).toFixed(1);
+        const upper = Math.min(scale, gpa + 0.1).toFixed(1);
+        payload.gpaRange = `${lower}-${upper}`;
+      }
+      if (form.satScore) {
+        const sat = Number(form.satScore);
+        payload.satRange = `${Math.max(400, sat - 25)}-${Math.min(1600, sat + 25)}`;
+      }
+      if (form.actScore) {
+        const act = Number(form.actScore);
+        payload.actRange = `${Math.max(1, act - 1)}-${Math.min(36, act + 1)}`;
+      }
+      if (form.toeflScore) {
+        const toefl = Number(form.toeflScore);
+        payload.toeflRange = `${Math.max(0, toefl - 3)}-${Math.min(120, toefl + 3)}`;
+      }
 
       await apiClient.post('/cases', payload);
 
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.success(t('cases.submit.submitSuccess'));
       handleClose();
       onSuccess?.();
     } catch (error: unknown) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       const message = error instanceof Error ? error.message : t('cases.submit.submitFailed');
       toast.error(message);
     } finally {
@@ -365,6 +363,16 @@ export function SubmitCaseModal({ visible, onClose, onSuccess }: SubmitCaseModal
             ))}
           </View>
         )}
+        {/* No results message */}
+        {!searchingSchools &&
+          schoolSearch.length >= 2 &&
+          !form.schoolId &&
+          schoolResults.length === 0 &&
+          !showSchoolDropdown && (
+            <Text style={[styles.noSchoolResults, { color: colors.foregroundMuted }]}>
+              {t('schools.noResults')}
+            </Text>
+          )}
       </View>
 
       <Input
@@ -454,76 +462,13 @@ export function SubmitCaseModal({ visible, onClose, onSuccess }: SubmitCaseModal
         </View>
       </View>
 
-      <View style={styles.row}>
-        <View style={styles.halfInput}>
-          <Input
-            label="TOEFL"
-            value={form.toeflScore}
-            onChangeText={(text) => updateField('toeflScore', text)}
-            placeholder={t('cases.submit.toeflPlaceholder')}
-            keyboardType="number-pad"
-            error={errors.toeflScore}
-          />
-        </View>
-        <View style={styles.halfInput}>
-          <Input
-            label="IELTS"
-            value={form.ieltsScore}
-            onChangeText={(text) => updateField('ieltsScore', text)}
-            placeholder={t('cases.submit.ieltsPlaceholder')}
-            keyboardType="decimal-pad"
-            error={errors.ieltsScore}
-          />
-        </View>
-      </View>
-    </View>
-  );
-
-  // Step 3: Details
-  const renderStep3 = () => (
-    <View style={styles.stepContent}>
-      <Text style={[styles.stepTitle, { color: colors.foreground }]}>
-        {t('cases.detail.background')}
-      </Text>
-
       <Input
-        label={t('cases.submit.enterActivities')}
-        value={form.activities}
-        onChangeText={(text) => updateField('activities', text)}
-        placeholder={t('cases.submit.enterActivities')}
-        multiline
-        numberOfLines={3}
-        style={styles.textArea}
-      />
-
-      <Input
-        label={t('cases.submit.enterAwards')}
-        value={form.awards}
-        onChangeText={(text) => updateField('awards', text)}
-        placeholder={t('cases.submit.enterAwards')}
-        multiline
-        numberOfLines={3}
-        style={styles.textArea}
-      />
-
-      <Input
-        label={t('cases.detail.essays')}
-        value={form.essays}
-        onChangeText={(text) => updateField('essays', text)}
-        placeholder={t('cases.detail.essays')}
-        multiline
-        numberOfLines={3}
-        style={styles.textArea}
-      />
-
-      <Input
-        label={t('cases.submit.enterTips')}
-        value={form.tips}
-        onChangeText={(text) => updateField('tips', text)}
-        placeholder={t('cases.submit.enterTips')}
-        multiline
-        numberOfLines={3}
-        style={styles.textArea}
+        label="TOEFL"
+        value={form.toeflScore}
+        onChangeText={(text) => updateField('toeflScore', text)}
+        placeholder={t('cases.submit.toeflPlaceholder')}
+        keyboardType="number-pad"
+        error={errors.toeflScore}
       />
     </View>
   );
@@ -534,8 +479,6 @@ export function SubmitCaseModal({ visible, onClose, onSuccess }: SubmitCaseModal
         return renderStep1();
       case 2:
         return renderStep2();
-      case 3:
-        return renderStep3();
       default:
         return null;
     }
@@ -636,17 +579,17 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     marginTop: spacing.xs,
   },
+  noSchoolResults: {
+    fontSize: fontSize.sm,
+    textAlign: 'center',
+    paddingVertical: spacing.md,
+  },
   row: {
     flexDirection: 'row',
     gap: spacing.md,
   },
   halfInput: {
     flex: 1,
-  },
-  textArea: {
-    minHeight: 80,
-    textAlignVertical: 'top',
-    paddingTop: spacing.md,
   },
   footerRow: {
     flexDirection: 'row',

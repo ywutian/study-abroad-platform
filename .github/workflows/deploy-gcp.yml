@@ -1,0 +1,98 @@
+# 手动部署 API 到 GCP Cloud Run（自动部署已并入 CI workflow 的 Deploy to GCP job）
+# 认证使用 Workload Identity Federation，无需服务账号密钥
+# GitHub Secrets: GCP_PROJECT_ID, GCP_REGION, GCP_WORKLOAD_IDENTITY_PROVIDER
+name: Deploy API to GCP
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy-api-gcp:
+    name: Build and Deploy to Cloud Run
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: github-actions-deploy@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Save previous revision for rollback
+        id: prev
+        run: |
+          REGION="${{ secrets.GCP_REGION }}"
+          PREV=$(gcloud run revisions list --service=study-abroad-api --region=$REGION --format='value(REVISION)' --limit=1 2>/dev/null || echo "")
+          echo "revision=$PREV" >> $GITHUB_OUTPUT
+
+      - name: Build and push image
+        run: |
+          REGION="${{ secrets.GCP_REGION }}"
+          PROJECT="${{ secrets.GCP_PROJECT_ID }}"
+          SHA="${GITHUB_SHA::7}"
+          IMAGE="${REGION}-docker.pkg.dev/${PROJECT}/study-abroad/api"
+          docker build -f apps/api/Dockerfile -t "${IMAGE}:${SHA}" -t "${IMAGE}:latest" .
+          docker push "${IMAGE}:${SHA}"
+          docker push "${IMAGE}:latest"
+          echo "IMAGE=${IMAGE}:${SHA}" >> $GITHUB_ENV
+
+      - name: Deploy to Cloud Run
+        run: |
+          REGION="${{ secrets.GCP_REGION }}"
+          SHA="${GITHUB_SHA::7}"
+          IMAGE="${REGION}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/study-abroad/api:${SHA}"
+          gcloud run deploy study-abroad-api \
+            --image="$IMAGE" \
+            --region="$REGION" \
+            --platform=managed \
+            --max-instances=3 \
+            --min-instances=1 \
+            --timeout=300 \
+            --quiet
+
+      - name: Smoke test
+        id: smoke
+        run: |
+          REGION="${{ secrets.GCP_REGION }}"
+          URL=$(gcloud run services describe study-abroad-api --region=$REGION --format='value(status.url)')
+          echo "url=$URL" >> $GITHUB_OUTPUT
+          sleep 10
+          for i in 1 2 3 4 5; do
+            STATUS=$(curl -s -o /dev/null -w '%{http_code}' "$URL/health" --max-time 15 || echo "000")
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ Health check passed (attempt $i)"
+              echo "::notice title=API deployed::Cloud Run URL: $URL"
+              exit 0
+            fi
+            echo "⏳ Health check attempt $i: HTTP $STATUS"
+            sleep 5
+          done
+          echo "::error::Health check failed after 5 attempts"
+          exit 1
+
+      - name: Rollback on failure
+        if: failure() && steps.prev.outputs.revision != ''
+        run: |
+          REGION="${{ secrets.GCP_REGION }}"
+          PREV="${{ steps.prev.outputs.revision }}"
+          echo "::warning::Rolling back to previous revision: $PREV"
+          gcloud run services update-traffic study-abroad-api \
+            --region="$REGION" \
+            --to-revisions="$PREV=100" \
+            --quiet || echo "Rollback failed — manual intervention required"

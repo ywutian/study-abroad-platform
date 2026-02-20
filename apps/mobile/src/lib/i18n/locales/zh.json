@@ -34,6 +34,8 @@
     "points": "积分",
     "reload": "重新加载应用",
     "clearSearch": "清除搜索",
+    "showMore": "展开全文",
+    "showLess": "收起",
     "showPassword": "显示密码",
     "hidePassword": "隐藏密码",
     "time": {
@@ -100,7 +102,13 @@
       "ranking": "学校榜单",
       "rankingDesc": "自定义排名",
       "essay": "文书助手",
-      "essayDesc": "AI文书辅导"
+      "essayDesc": "AI文书辅导",
+      "timeline": "时间线",
+      "timelineDesc": "跟踪截止日期",
+      "forum": "社区",
+      "forumDesc": "交流讨论",
+      "swipe": "滑动游戏",
+      "swipeDesc": "预测录取"
     }
   },
   "auth": {
@@ -345,6 +353,8 @@
       "activities": "活动经历",
       "awards": "奖项荣誉",
       "essays": "文书概述",
+      "essay": "文书内容",
+      "tags": "标签",
       "tips": "申请建议"
     },
     "submit": {
@@ -378,7 +388,10 @@
       "stepProgress": "第 {{step}} 步，共 {{total}} 步",
       "stepN": "第 {{n}} 步"
     },
-    "noCases": "暂无案例"
+    "noCases": "暂无案例",
+    "a11y": {
+      "searchResults": "找到 {{count}} 个案例"
+    }
   },
   "ai": {
     "title": "AI 助手",
@@ -387,6 +400,7 @@
       "placeholder": "有什么可以帮您的？",
       "send": "发送",
       "thinking": "思考中...",
+      "noResponse": "未收到回复。",
       "toolCalling": "正在调用工具...",
       "quickQuestions": "快捷问题",
       "suggestions": {

@@ -255,6 +255,32 @@ export class SchoolService {
           orderBy: { createdAt: 'desc' },
           take: 10,
         },
+        deadlines: {
+          orderBy: { applicationDeadline: 'asc' },
+          select: {
+            id: true,
+            year: true,
+            round: true,
+            applicationDeadline: true,
+            financialAidDeadline: true,
+            decisionDate: true,
+            notes: true,
+            applicationFee: true,
+          },
+        },
+        essayPrompts: {
+          where: { status: 'VERIFIED' },
+          orderBy: { sortOrder: 'asc' },
+          select: {
+            id: true,
+            prompt: true,
+            promptZh: true,
+            wordLimit: true,
+            isRequired: true,
+            type: true,
+            year: true,
+          },
+        },
       },
     });
 

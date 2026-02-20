@@ -4,6 +4,7 @@ import { useLocalSearchParams, router, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import {
   Card,
@@ -15,10 +16,12 @@ import {
   Button,
   Loading,
   ErrorState,
+  Skeleton,
 } from '@/components/ui';
 import { Tabs } from '@/components/ui/Tabs';
 import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { getResultBadgeVariant } from '@/utils/case-helpers';
 import type { School, Case, PaginatedResponse } from '@/types';
 
 export default function SchoolDetailScreen() {
@@ -30,13 +33,14 @@ export default function SchoolDetailScreen() {
     data: school,
     isLoading,
     error,
+    refetch,
   } = useQuery({
     queryKey: ['school', id],
     queryFn: () => apiClient.get<School>(`/schools/${id}`),
     enabled: !!id,
   });
 
-  const { data: casesData } = useQuery({
+  const { data: casesData, isLoading: casesLoading } = useQuery({
     queryKey: ['schoolCases', id],
     queryFn: () =>
       apiClient.get<PaginatedResponse<Case>>('/cases', {
@@ -46,11 +50,41 @@ export default function SchoolDetailScreen() {
   });
 
   if (isLoading) {
-    return <Loading fullScreen />;
+    return (
+      <>
+        <Stack.Screen options={{ title: '' }} />
+        <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+          <View style={[styles.header, { backgroundColor: colors.card }]}>
+            <Skeleton
+              width={80}
+              height={80}
+              borderRadius={40}
+              style={{ marginBottom: spacing.lg }}
+            />
+            <Skeleton width={200} height={22} style={{ marginBottom: spacing.sm }} />
+            <Skeleton width={140} height={16} />
+          </View>
+          <View style={styles.statsGrid}>
+            {[1, 2, 3, 4].map((i) => (
+              <View
+                key={i}
+                style={[
+                  styles.statCard,
+                  { backgroundColor: colors.card, borderColor: colors.border },
+                ]}
+              >
+                <Skeleton width={60} height={22} style={{ marginBottom: spacing.xs }} />
+                <Skeleton width={80} height={14} />
+              </View>
+            ))}
+          </View>
+        </ScrollView>
+      </>
+    );
   }
 
   if (error || !school) {
-    return <ErrorState title={t('errors.notFound')} onRetry={() => router.back()} />;
+    return <ErrorState title={t('errors.notFound')} onRetry={() => refetch()} />;
   }
 
   const formatCurrency = (value?: number) => {
@@ -139,11 +173,11 @@ export default function SchoolDetailScreen() {
         <View style={styles.tabContent}>
           {school.deadlines?.length ? (
             school.deadlines.map((deadline, index) => (
-              <Card key={index} style={styles.card}>
+              <Card key={deadline.id ?? index} style={styles.card}>
                 <CardContent style={styles.deadlineItem}>
                   <View style={styles.deadlineInfo}>
                     <Text style={[styles.deadlineType, { color: colors.foreground }]}>
-                      {deadline.type}
+                      {deadline.round}
                     </Text>
                     {deadline.notes && (
                       <Text style={[styles.deadlineNotes, { color: colors.foregroundMuted }]}>
@@ -151,7 +185,9 @@ export default function SchoolDetailScreen() {
                       </Text>
                     )}
                   </View>
-                  <Badge variant="secondary">{deadline.date}</Badge>
+                  <Badge variant="secondary">
+                    {new Date(deadline.applicationDeadline).toLocaleDateString()}
+                  </Badge>
                 </CardContent>
               </Card>
             ))
@@ -170,7 +206,7 @@ export default function SchoolDetailScreen() {
         <View style={styles.tabContent}>
           {school.essayPrompts?.length ? (
             school.essayPrompts.map((prompt, index) => (
-              <Card key={index} style={styles.card}>
+              <Card key={prompt.id ?? index} style={styles.card}>
                 <CardContent>
                   <Text style={[styles.essayPrompt, { color: colors.foreground }]}>
                     {prompt.prompt}
@@ -181,7 +217,7 @@ export default function SchoolDetailScreen() {
                         {prompt.wordLimit} {t('common.words')}
                       </Badge>
                     )}
-                    {prompt.required && <Badge variant="error">{t('common.required')}</Badge>}
+                    {prompt.isRequired && <Badge variant="error">{t('common.required')}</Badge>}
                   </View>
                 </CardContent>
               </Card>
@@ -199,7 +235,19 @@ export default function SchoolDetailScreen() {
       label: t('schools.detail.relatedCases'),
       content: (
         <View style={styles.tabContent}>
-          {casesData?.items?.length ? (
+          {casesLoading ? (
+            [1, 2, 3].map((i) => (
+              <Card key={i} style={styles.card}>
+                <CardContent style={styles.caseItem}>
+                  <View style={styles.caseInfo}>
+                    <Skeleton width="60%" height={16} style={{ marginBottom: spacing.xs }} />
+                    <Skeleton width="40%" height={14} />
+                  </View>
+                  <Skeleton width={60} height={24} borderRadius={12} />
+                </CardContent>
+              </Card>
+            ))
+          ) : casesData?.items?.length ? (
             casesData.items.map((caseItem) => (
               <TouchableOpacity
                 key={caseItem.id}
@@ -215,15 +263,7 @@ export default function SchoolDetailScreen() {
                         {caseItem.year} · {caseItem.round || 'RD'}
                       </Text>
                     </View>
-                    <Badge
-                      variant={
-                        caseItem.result === 'ADMITTED'
-                          ? 'success'
-                          : caseItem.result === 'REJECTED'
-                            ? 'error'
-                            : 'warning'
-                      }
-                    >
+                    <Badge variant={getResultBadgeVariant(caseItem.result)}>
                       {t(`cases.result.${caseItem.result.toLowerCase()}`)}
                     </Badge>
                   </CardContent>
@@ -248,7 +288,10 @@ export default function SchoolDetailScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <View style={[styles.header, { backgroundColor: colors.card }]}>
+        <Animated.View
+          entering={FadeInDown.duration(400).springify()}
+          style={[styles.header, { backgroundColor: colors.card }]}
+        >
           <Avatar source={school.logoUrl} name={school.name} size="xl" style={styles.logo} />
           <Text style={[styles.name, { color: colors.foreground }]}>{school.name}</Text>
           {school.nameZh && (
@@ -260,10 +303,13 @@ export default function SchoolDetailScreen() {
               {school.city}, {school.state}, {school.country}
             </Text>
           </View>
-        </View>
+        </Animated.View>
 
         {/* Stats Grid */}
-        <View style={styles.statsGrid}>
+        <Animated.View
+          entering={FadeInDown.delay(200).duration(400).springify()}
+          style={styles.statsGrid}
+        >
           {stats.map((stat, index) => (
             <View
               key={index}
@@ -278,7 +324,7 @@ export default function SchoolDetailScreen() {
               </Text>
             </View>
           ))}
-        </View>
+        </Animated.View>
 
         {/* Tabs */}
         <View style={styles.tabsContainer}>

@@ -47,7 +47,7 @@ const REFRESH_TOKEN_COOKIE_OPTIONS = {
   httpOnly: true, // 防止 XSS
   secure: process.env.NODE_ENV === 'production', // 生产环境强制 HTTPS
   sameSite: COOKIE_SAME_SITE, // CSRF 防护
-  path: '/api/v1/auth', // 限制到认证路径
+  path: '/', // 全路径，避免负载均衡 URL 重写导致 cookie 不匹配
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天
 };
 
@@ -56,7 +56,7 @@ const CLEAR_COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
   sameSite: COOKIE_SAME_SITE,
-  path: '/api/v1/auth',
+  path: '/',
 };
 
 /**

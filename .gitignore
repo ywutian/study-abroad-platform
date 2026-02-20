@@ -60,3 +60,4 @@ sbom/
 # Database backups
 backups/
 
+gcp-sa-key.json

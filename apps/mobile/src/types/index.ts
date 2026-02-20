@@ -188,19 +188,16 @@ export interface Case {
   year: number;
   result: import('@study-abroad/shared/types').CaseResult;
   round?: string;
-  gpa?: number;
-  gpaScale?: number;
-  satScore?: number;
-  actScore?: number;
-  toeflScore?: number;
-  ieltsScore?: number;
-  activities?: string;
-  awards?: string;
-  essays?: string;
-  tips?: string;
+  gpaRange?: string;
+  satRange?: string;
+  actRange?: string;
+  toeflRange?: string;
+  tags?: string[];
+  essayType?: string;
+  essayPrompt?: string;
+  essayContent?: string;
   visibility: string;
-  verified: boolean;
-  points?: number;
+  isVerified: boolean;
   createdAt: string;
   updatedAt: string;
 }

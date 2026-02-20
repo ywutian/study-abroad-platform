@@ -71,8 +71,8 @@ RUN chmod +x entrypoint.sh
 # Run as non-root user
 USER nestjs
 
-# Railway will set PORT env var
-EXPOSE 8080
+# Default port 3001. Cloud providers may override via PORT env var.
+EXPOSE 3001
 
 # Run migrations on startup, then start application
 CMD ["./entrypoint.sh"]

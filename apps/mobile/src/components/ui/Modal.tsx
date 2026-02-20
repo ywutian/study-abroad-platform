@@ -76,7 +76,11 @@ export function Modal({
                 </View>
 
                 {/* Content */}
-                <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+                <ScrollView
+                  style={styles.content}
+                  showsVerticalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                >
                   {children}
                 </ScrollView>
 

@@ -4,6 +4,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import cookieParser from 'cookie-parser';
 import { AppModule } from '../src/app.module';
+import { PrismaService } from '../src/prisma/prisma.service';
 
 /**
  * Helper: extract a named cookie value from the Set-Cookie response header.
@@ -99,6 +100,14 @@ describe('App (e2e)', () => {
         .post('/auth/register')
         .send({ email: 'valid@email.com', password: '123' })
         .expect(400);
+    });
+
+    it('should verify email before login (no SMTP in CI)', async () => {
+      const prisma = app.get(PrismaService);
+      await prisma.user.update({
+        where: { email: testUser.email },
+        data: { emailVerified: true },
+      });
     });
 
     it('/auth/login (POST) should login with valid credentials', async () => {
@@ -263,8 +272,8 @@ describe('App (e2e)', () => {
         });
     });
 
-    it('/hall/lists (GET) should return public lists', () => {
-      return request(app.getHttpServer()).get('/hall/lists').expect(200);
+    it('/halls/lists (GET) should return public lists', () => {
+      return request(app.getHttpServer()).get('/halls/lists').expect(200);
     });
   });
 
@@ -273,9 +282,9 @@ describe('App (e2e)', () => {
       return request(app.getHttpServer()).get('/profiles/me').expect(401);
     });
 
-    it('/chat/conversations (GET) should require authentication', () => {
+    it('/chats/conversations (GET) should require authentication', () => {
       return request(app.getHttpServer())
-        .get('/chat/conversations')
+        .get('/chats/conversations')
         .expect(401);
     });
 

@@ -28,6 +28,14 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule, { logger: logLevel });
 
+  // Trust proxy headers from Cloud Load Balancer / reverse proxies
+  // Ensures request.ip returns real client IP (critical for rate limiting)
+  // 'uniquelocal' covers GCP internal network (fd00::/8, 10.0.0.0/8, etc.)
+  app
+    .getHttpAdapter()
+    .getInstance()
+    .set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
+
   // CORS configuration [A5-004]
   // Production REQUIRES CORS_ORIGINS to be set; development falls back to allow-all
   const corsOrigins = process.env.CORS_ORIGINS;
@@ -87,6 +95,17 @@ async function bootstrap() {
 
   // Security Headers (Helmet)
   const isProduction = process.env.NODE_ENV === 'production';
+
+  // Build CSP connect-src: allow 'self' + CORS origins (https + wss for WebSocket)
+  const cspConnectSrc: string[] = ["'self'"];
+  if (corsOrigins) {
+    const origins = corsOrigins.split(',').map((o) => o.trim());
+    cspConnectSrc.push(...origins);
+    cspConnectSrc.push(
+      ...origins.map((o) => o.replace(/^https:\/\//, 'wss://')),
+    );
+  }
+
   app.use(
     helmet({
       contentSecurityPolicy: isProduction
@@ -96,7 +115,7 @@ async function bootstrap() {
               scriptSrc: ["'self'"],
               styleSrc: ["'self'", "'unsafe-inline'"],
               imgSrc: ["'self'", 'data:', 'https:'],
-              connectSrc: ["'self'"],
+              connectSrc: cspConnectSrc,
               fontSrc: ["'self'"],
               objectSrc: ["'none'"],
               frameSrc: ["'none'"],

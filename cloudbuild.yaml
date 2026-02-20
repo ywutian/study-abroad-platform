@@ -1,0 +1,26 @@
+# GCP Cloud Build: 在项目根目录构建 apps/api Dockerfile，并推送到 Artifact Registry
+# 使用: gcloud builds submit --config=cloudbuild.yaml .
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    id: build
+    args:
+      - 'build'
+      - '-f'
+      - 'apps/api/Dockerfile'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/study-abroad/api:${SHORT_SHA}'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/study-abroad/api:latest'
+      - '.'
+  - name: 'gcr.io/cloud-builders/docker'
+    id: push
+    args:
+      - 'push'
+      - '--all-tags'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/study-abroad/api'
+    waitFor: ['build']
+substitutions:
+  _REGION: us-central1
+images:
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/study-abroad/api:${SHORT_SHA}'
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/study-abroad/api:latest'

@@ -13,7 +13,6 @@ const PROTECTED_PATTERNS = [
   '/profile',
   '/dashboard',
   '/essays',
-  '/school-list',
   '/assessment',
   '/prediction',
   '/chat',

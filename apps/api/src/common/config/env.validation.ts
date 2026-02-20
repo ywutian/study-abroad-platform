@@ -36,16 +36,24 @@ const envSchema = z.object({
   // --- CORS ---
   CORS_ORIGINS: z.string().optional(),
 
-  // --- Email (Optional) ---
-  EMAIL_HOST: z.string().optional(),
-  EMAIL_PORT: z.coerce.number().int().optional(),
-  EMAIL_USER: z.string().optional(),
-  EMAIL_PASS: z.string().optional(),
+  // --- Email / SMTP (Optional) ---
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().int().optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
   EMAIL_FROM: z.string().optional(),
+  EMAIL_FROM_NAME: z.string().optional(),
+
+  // --- Frontend URL (for email links) ---
+  FRONTEND_URL: z.string().url().optional(),
 
   // --- OpenAI (Optional) ---
   OPENAI_API_KEY: z.string().optional(),
   OPENAI_MODEL: z.string().default('gpt-4o-mini'),
+  OPENAI_BASE_URL: z.string().url().default('https://api.openai.com/v1'),
+
+  // --- College Scorecard (Optional) ---
+  COLLEGE_SCORECARD_API_KEY: z.string().optional(),
 
   // --- Storage (Optional) ---
   STORAGE_TYPE: z.enum(['local', 's3', 'oss', 'cos']).default('local'),
@@ -127,6 +135,13 @@ export function validateEnv(
       throw new Error(
         'FATAL: CORS_ORIGINS must be set in production. ' +
           'Example: CORS_ORIGINS=https://app.example.com',
+      );
+    }
+
+    if (!result.data.FRONTEND_URL) {
+      throw new Error(
+        'FATAL: FRONTEND_URL must be set in production for email links. ' +
+          'Example: FRONTEND_URL=https://app.example.com',
       );
     }
 

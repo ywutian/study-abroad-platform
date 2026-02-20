@@ -83,7 +83,7 @@ describe('AuthController', () => {
         'mock_refresh_token',
         expect.objectContaining({
           httpOnly: true,
-          path: '/api/v1/auth',
+          path: '/',
         }),
       );
 
@@ -170,7 +170,7 @@ describe('AuthController', () => {
         'refreshToken',
         expect.objectContaining({
           httpOnly: true,
-          path: '/api/v1/auth',
+          path: '/',
         }),
       );
     });
@@ -229,7 +229,7 @@ describe('AuthController', () => {
 
       expect(mockResponse.clearCookie).toHaveBeenCalledWith(
         'refreshToken',
-        expect.objectContaining({ path: '/api/v1/auth' }),
+        expect.objectContaining({ path: '/' }),
       );
       expect(mockResponse.clearCookie).toHaveBeenCalledWith(
         'access_token',

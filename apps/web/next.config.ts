@@ -17,12 +17,29 @@ const nextConfig: NextConfig = {
       '@radix-ui/react-icons',
       '@sentry/nextjs',
       'date-fns',
-      'recharts',
       '@tanstack/react-query',
     ],
   },
   // 安全头 — 与 API 端 Helmet 配置保持一致
   async headers() {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || '';
+    const apiUrlNorm = apiUrl.replace(/\/$/, '');
+    const apiWsNorm = apiUrl
+      ? apiUrl.replace(/^https?:/, (m) => (m === 'https:' ? 'wss:' : 'ws:')).replace(/\/$/, '')
+      : '';
+    const wsUrlNorm = wsUrl.replace(/\/$/, '');
+    const extra: string[] = [];
+    if (apiUrlNorm) {
+      extra.push(apiUrlNorm);
+      if (apiWsNorm) extra.push(apiWsNorm);
+    }
+    if (wsUrlNorm && wsUrlNorm !== apiWsNorm) {
+      extra.push(wsUrlNorm);
+      const wsHttps = wsUrlNorm.replace(/^wss?:/, (m) => (m === 'wss:' ? 'https:' : 'http:'));
+      if (wsHttps !== apiUrlNorm) extra.push(wsHttps);
+    }
+    const connectSrcParts = ["'self'", 'https://*.sentry.io', 'wss:', ...extra];
     return [
       {
         source: '/(.*)',
@@ -49,7 +66,7 @@ const nextConfig: NextConfig = {
               "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
-              "connect-src 'self' https://*.sentry.io wss:",
+              `connect-src ${connectSrcParts.join(' ')}`,
               "font-src 'self'",
               "frame-ancestors 'none'",
               "base-uri 'self'",

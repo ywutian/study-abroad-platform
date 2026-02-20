@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { router, type Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,6 +15,7 @@ import {
   Badge,
   Loading,
   EmptyState,
+  ConfirmDialog,
 } from '@/components/ui';
 import { ListItem, ListGroup, Separator } from '@/components/ui/ListItem';
 import { CircularProgress } from '@/components/ui/Progress';
@@ -41,22 +42,33 @@ export default function ProfileScreen() {
 
   // Calculate profile completion
   const calculateCompletion = () => {
-    if (!profile) return 0;
+    if (!profile) return { percentage: 0, missing: [] as string[] };
     let completed = 0;
     const total = 7;
+    const missing: string[] = [];
 
     if (profile.grade) completed++;
+    else missing.push(t('profile.fields.grade'));
     if (profile.targetMajor) completed++;
+    else missing.push(t('profile.fields.targetMajor'));
     if (profile.gpa) completed++;
+    else missing.push(t('profile.gpa'));
     if (profile.testScores?.length > 0) completed++;
+    else missing.push(t('profile.testScores'));
     if (profile.activities?.length > 0) completed++;
+    else missing.push(t('profile.activities'));
     if (profile.awards?.length > 0) completed++;
+    else missing.push(t('profile.awards'));
     if (profile.education?.length > 0) completed++;
+    else missing.push(t('profile.education'));
 
-    return Math.round((completed / total) * 100);
+    return { percentage: Math.round((completed / total) * 100), missing };
   };
 
+  const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
+
   const handleLogout = async () => {
+    setLogoutDialogVisible(false);
     await logout();
     router.replace('/(auth)/login');
   };
@@ -85,7 +97,7 @@ export default function ProfileScreen() {
     );
   }
 
-  const completion = calculateCompletion();
+  const { percentage: completion, missing: missingFields } = calculateCompletion();
 
   const menuItems = [
     {
@@ -179,14 +191,21 @@ export default function ProfileScreen() {
         </View>
 
         {completion < 100 && (
-          <Button
-            variant="outline"
-            size="sm"
-            onPress={() => router.push('/profile/basic')}
-            style={styles.completeButton}
-          >
-            {t('profile.completeProfile')}
-          </Button>
+          <>
+            {missingFields.length > 0 && (
+              <Text style={[styles.missingFields, { color: colors.foregroundMuted }]}>
+                {t('recommendation.missingFields', { fields: missingFields.join(', ') })}
+              </Text>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onPress={() => router.push('/profile/basic')}
+              style={styles.completeButton}
+            >
+              {t('profile.completeProfile')}
+            </Button>
+          </>
         )}
       </View>
 
@@ -252,12 +271,23 @@ export default function ProfileScreen() {
       <View style={styles.section}>
         <Button
           variant="destructive"
-          onPress={handleLogout}
+          onPress={() => setLogoutDialogVisible(true)}
           leftIcon={<Ionicons name="log-out-outline" size={20} color="#fff" />}
         >
           {t('common.logout')}
         </Button>
       </View>
+
+      <ConfirmDialog
+        visible={logoutDialogVisible}
+        onClose={() => setLogoutDialogVisible(false)}
+        onConfirm={handleLogout}
+        title={t('common.logout')}
+        message={t('settings.logoutConfirm')}
+        confirmText={t('common.logout')}
+        variant="destructive"
+        icon="log-out-outline"
+      />
 
       {/* Version */}
       <View style={styles.footer}>
@@ -297,6 +327,13 @@ const styles = StyleSheet.create({
   },
   completionContainer: {
     marginBottom: spacing.lg,
+  },
+  missingFields: {
+    fontSize: fontSize.xs,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    lineHeight: 18,
   },
   completeButton: {
     marginTop: spacing.md,

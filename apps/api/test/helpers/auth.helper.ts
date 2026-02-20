@@ -1,6 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
+import { PrismaService } from '../../src/prisma/prisma.service';
 
 /**
  * Extract a named cookie value from the Set-Cookie response header.
@@ -45,6 +46,13 @@ export async function registerAndLogin(
     .post('/auth/register')
     .send({ email, password })
     .expect(201);
+
+  // Directly verify email in DB so login succeeds (no SMTP in CI)
+  const prisma = app.get(PrismaService);
+  await prisma.user.update({
+    where: { email },
+    data: { emailVerified: true },
+  });
 
   const loginRes = await request(app.getHttpServer())
     .post('/auth/login')
