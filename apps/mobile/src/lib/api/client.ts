@@ -257,7 +257,11 @@ class ApiClient {
   }
 
   // SSE stream support for AI chat
-  async *stream(endpoint: string, data?: unknown): AsyncGenerator<string, void, unknown> {
+  async *stream(
+    endpoint: string,
+    data?: unknown,
+    signal?: AbortSignal
+  ): AsyncGenerator<string, void, unknown> {
     const token = await getAccessToken();
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
@@ -272,6 +276,7 @@ class ApiClient {
       method: 'POST',
       headers,
       body: data ? JSON.stringify(data) : undefined,
+      signal,
     });
 
     if (!response.ok) {
@@ -285,10 +290,15 @@ class ApiClient {
 
     const decoder = new TextDecoder();
     let buffer = '';
+    const CHUNK_TIMEOUT_MS = 60_000; // 60s per-chunk timeout
 
     try {
       while (true) {
-        const { done, value } = await reader.read();
+        const readPromise = reader.read();
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Stream chunk timeout')), CHUNK_TIMEOUT_MS)
+        );
+        const { done, value } = await Promise.race([readPromise, timeoutPromise]);
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });

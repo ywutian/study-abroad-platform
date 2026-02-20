@@ -20,12 +20,21 @@ function AuthRedirect() {
   useEffect(() => {
     if (isInitialized && !isLoading && user) {
       const callbackUrl = searchParams.get('callbackUrl');
-      const targetPath = callbackUrl
-        ? callbackUrl.replace(/^\/(zh|en)/, '') || '/dashboard'
-        : '/dashboard';
+      const rawPath = callbackUrl?.replace(/^\/(zh|en)/, '') || '';
+      // Strict validation: only allow internal relative paths
+      const targetPath = rawPath && /^\/[\w\-/]*$/.test(rawPath) ? rawPath : '/dashboard';
       router.replace(targetPath);
     }
   }, [user, isLoading, isInitialized, router, searchParams]);
+
+  // Show loading overlay while redirect is pending to prevent flash of login form
+  if (isInitialized && !isLoading && user) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
   return null;
 }

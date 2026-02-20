@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, useSegments, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient, QueryCache, MutationCache } from '@tanstack/react-query';
@@ -134,9 +134,36 @@ const DETAIL_SCREENS = [
 
 const DETAIL_SCREEN_OPTIONS = { title: '', headerBackTitle: '' } as const;
 
+/**
+ * Redirect unauthenticated users away from protected routes.
+ * When user logs out, navigates back to auth screen regardless of current route.
+ */
+function useProtectedRoute() {
+  const segments = useSegments();
+  const router = useRouter();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isLoading = useAuthStore((s) => s.isLoading);
+
+  useEffect(() => {
+    // Wait until auth state is loaded before making navigation decisions
+    if (isLoading) return;
+
+    const inAuthGroup = segments[0] === '(auth)';
+
+    if (!isAuthenticated && !inAuthGroup) {
+      // Not logged in and not on auth screen → redirect to login
+      router.replace('/(auth)/login');
+    } else if (isAuthenticated && inAuthGroup) {
+      // Logged in but on auth screen → redirect to tabs
+      router.replace('/(tabs)');
+    }
+  }, [isAuthenticated, isLoading, segments, router]);
+}
+
 function RootLayoutNav() {
   const colors = useColors();
   const { colorScheme } = useThemeStore();
+  useProtectedRoute();
 
   return (
     <>

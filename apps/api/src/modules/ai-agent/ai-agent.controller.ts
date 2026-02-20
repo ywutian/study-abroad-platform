@@ -104,6 +104,12 @@ export class AiAgentController {
       res.setHeader('X-Accel-Buffering', 'no');
       res.flushHeaders();
 
+      // Detect client disconnect to stop wasting LLM tokens
+      let clientDisconnected = false;
+      res.on('close', () => {
+        clientDisconnected = true;
+      });
+
       try {
         for await (const event of this.orchestrator.handleMessageStream(
           user.id,
@@ -111,15 +117,25 @@ export class AiAgentController {
           data.conversationId,
           data.locale,
         )) {
+          if (clientDisconnected) {
+            this.logger.debug(
+              `SSE client disconnected mid-stream [user=${user.id}]`,
+            );
+            break;
+          }
           res.write(`data: ${JSON.stringify(event)}\n\n`);
         }
       } catch (error) {
-        res.write(
-          `data: ${JSON.stringify({ type: 'error', error: 'Stream failed' })}\n\n`,
-        );
+        if (!clientDisconnected) {
+          res.write(
+            `data: ${JSON.stringify({ type: 'error', error: 'Stream failed' })}\n\n`,
+          );
+        }
       }
 
-      res.write('data: [DONE]\n\n');
+      if (!clientDisconnected) {
+        res.write('data: [DONE]\n\n');
+      }
       res.end();
       return;
     }

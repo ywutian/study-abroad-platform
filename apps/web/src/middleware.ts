@@ -49,7 +49,11 @@ export default function middleware(request: NextRequest) {
 
     if (!token) {
       const loginUrl = new URL(getLoginUrl(request), request.url);
-      loginUrl.searchParams.set('callbackUrl', pathname);
+      // Only pass internal paths as callbackUrl to prevent open redirect attacks
+      const pathWithoutLocale = pathname.replace(/^\/(zh|en)/, '') || '/';
+      if (/^\/[\w\-/]*$/.test(pathWithoutLocale)) {
+        loginUrl.searchParams.set('callbackUrl', pathname);
+      }
       return NextResponse.redirect(loginUrl);
     }
   }

@@ -140,15 +140,30 @@ export class AgentThrottleGuard implements CanActivate {
     // 增加并发计数
     this.activeRequests.set(userId, currentRequests + 1);
 
-    // 请求完成时减少计数
-    response.on('finish', () => {
-      const count = this.activeRequests.get(userId) || 1;
-      if (count <= 1) {
-        this.activeRequests.delete(userId);
-      } else {
-        this.activeRequests.set(userId, count - 1);
-      }
-    });
+    // 请求完成时减少计数（finish or close, whichever comes first）
+    const decrementOnce = (() => {
+      let done = false;
+      return () => {
+        if (done) return;
+        done = true;
+        const count = this.activeRequests.get(userId) || 1;
+        if (count <= 1) {
+          this.activeRequests.delete(userId);
+        } else {
+          this.activeRequests.set(userId, count - 1);
+        }
+      };
+    })();
+    response.on('finish', decrementOnce);
+    response.on('close', decrementOnce);
+
+    // Safety net: force cleanup after 5 minutes in case events don't fire
+    setTimeout(
+      () => {
+        decrementOnce();
+      },
+      5 * 60 * 1000,
+    ).unref();
 
     // 注入限流信息到请求
     request.rateLimit = {

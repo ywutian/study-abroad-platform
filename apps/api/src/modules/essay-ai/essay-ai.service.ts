@@ -103,7 +103,7 @@ export class EssayAiService {
       // 退还积分
       await this.caseIncentiveService
         .refund(userId, PointAction.AI_ESSAY_POLISH)
-        .catch(() => {});
+        .catch((e) => this.logger.error('Point refund failed', e));
       throw error;
     }
   }
@@ -206,7 +206,7 @@ ${dto.major ? `目标专业：${dto.major}` : ''}
     } catch (error) {
       await this.caseIncentiveService
         .refund(userId, PointAction.AI_ESSAY_REVIEW)
-        .catch(() => {});
+        .catch((e) => this.logger.error('Point refund failed', e));
       this.logger.error('Essay review failed', error);
       throw new BadRequestException('Failed to review essay');
     }
@@ -410,7 +410,7 @@ ${dto.background ? `\n学生背景：${dto.background}` : ''}`;
     } catch (error) {
       await this.caseIncentiveService
         .refund(userId, PointAction.AI_ESSAY_BRAINSTORM)
-        .catch(() => {});
+        .catch((e) => this.logger.error('Point refund failed', e));
       this.logger.error('Brainstorm failed', error);
       throw new BadRequestException('Failed to generate ideas');
     }
@@ -723,7 +723,7 @@ ${dto.background ? `\n学生背景：${dto.background}` : ''}`;
     if (!essay.content) {
       await this.caseIncentiveService
         .refund(userId, PointAction.AI_ESSAY_GALLERY)
-        .catch(() => {});
+        .catch((e) => this.logger.error('Point refund failed', e));
       throw new BadRequestException('Essay content is empty');
     }
 
@@ -742,7 +742,7 @@ ${dto.background ? `\n学生背景：${dto.background}` : ''}`;
     } catch (error) {
       await this.caseIncentiveService
         .refund(userId, PointAction.AI_ESSAY_GALLERY)
-        .catch(() => {});
+        .catch((e) => this.logger.error('Point refund failed', e));
       this.logger.error('Gallery essay analysis failed', error);
       throw new BadRequestException('Failed to analyze essay');
     }

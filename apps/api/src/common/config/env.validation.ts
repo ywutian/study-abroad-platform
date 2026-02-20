@@ -32,6 +32,10 @@ const envSchema = z.object({
 
   // --- Redis (Optional — graceful degradation) ---
   REDIS_URL: z.string().url().optional(),
+  REDIS_HOST: z.string().default('localhost'),
+  REDIS_PORT: z.coerce.number().int().default(6379),
+  REDIS_PASSWORD: z.string().optional(),
+  REDIS_COMMAND_TIMEOUT_MS: z.coerce.number().int().positive().default(5000),
 
   // --- CORS ---
   CORS_ORIGINS: z.string().optional(),
@@ -78,6 +82,14 @@ const envSchema = z.object({
 
   // --- Webhook Signature [A5-020] ---
   WEBHOOK_SECRET: z.string().min(32).optional(),
+
+  // --- Request Timeouts (ms) ---
+  REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(30000),
+  AUTH_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(60000),
+  AI_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(120000),
+
+  // --- Prisma ---
+  PRISMA_SLOW_QUERY_MS: z.coerce.number().int().positive().default(200),
 
   // --- Build metadata ---
   GIT_COMMIT_SHA: z.string().optional(),
@@ -146,6 +158,11 @@ export function validateEnv(
     }
 
     // Recommended but non-fatal
+    if (!result.data.OPENAI_API_KEY) {
+      logger.warn(
+        'OPENAI_API_KEY is not set — AI chat, essay review, and recommendation features disabled',
+      );
+    }
     if (!result.data.SENTRY_DSN) {
       logger.warn(
         'SENTRY_DSN is not set — error tracking disabled in production',

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -107,6 +107,14 @@ export default function AIScreen() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [agentMode, setAgentMode] = useState<AgentMode>('auto');
+  const abortRef = useRef<AbortController | null>(null);
+
+  // Abort in-flight stream on unmount
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, []);
 
   const agentModes = [
     { key: 'auto', label: t('ai.chat.agentModes.auto') },
@@ -144,6 +152,9 @@ export default function AIScreen() {
       setMessages((prev) => [...prev, userMessage]);
       setInput('');
       setIsLoading(true);
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
 
       const assistantMessage: AiChatMessage = {
         id: (Date.now() + 1).toString(),
@@ -180,11 +191,15 @@ export default function AIScreen() {
           });
         } else {
           // Streaming auto-mode via orchestrator
-          for await (const chunk of apiClient.stream('/ai-agent/chat', {
-            message: text,
-            conversationId: null,
-            stream: true,
-          })) {
+          for await (const chunk of apiClient.stream(
+            '/ai-agent/chat',
+            {
+              message: text,
+              conversationId: null,
+              stream: true,
+            },
+            controller.signal
+          )) {
             try {
               const event: StreamEvent = JSON.parse(chunk);
 
@@ -235,9 +250,16 @@ export default function AIScreen() {
           }
         }
       } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          // User cancelled or component unmounted — keep partial content
+          return;
+        }
         toast.error(error instanceof Error ? error.message : t('errors.unknown'));
-        // Remove the empty assistant message
-        setMessages((prev) => prev.slice(0, -1));
+        // Remove the empty assistant message if no content was streamed
+        setMessages((prev) => {
+          const last = prev[prev.length - 1];
+          return last?.role === 'assistant' && !last.content ? prev.slice(0, -1) : prev;
+        });
       } finally {
         setIsLoading(false);
       }
