@@ -209,4 +209,29 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     if (!this.client) return;
     await this.client.expire(key, seconds);
   }
+
+  // Set 操作（用于 tag-based 缓存管理）
+  async sadd(key: string, ...members: string[]): Promise<number> {
+    if (!this.client) return 0;
+    return this.client.sadd(key, ...members);
+  }
+
+  async smembers(key: string): Promise<string[]> {
+    if (!this.client) return [];
+    return this.client.smembers(key);
+  }
+
+  /**
+   * SET if Not eXists — returns true if the key was set, false if it already existed.
+   * Used for distributed idempotency locks.
+   */
+  async setNX(
+    key: string,
+    value: string,
+    ttlSeconds: number,
+  ): Promise<boolean> {
+    if (!this.client) return true; // no Redis = allow through (degrade gracefully)
+    const result = await this.client.set(key, value, 'EX', ttlSeconds, 'NX');
+    return result === 'OK';
+  }
 }

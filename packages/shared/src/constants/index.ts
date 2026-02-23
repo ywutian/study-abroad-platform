@@ -153,3 +153,6 @@ export * from './subscription';
 
 // 推荐功能
 export * from './recommendation';
+
+// 共享枚举
+export * from './enums';
