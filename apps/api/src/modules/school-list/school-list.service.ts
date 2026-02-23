@@ -51,6 +51,55 @@ export class SchoolListService {
       orderBy: [{ tier: 'asc' }, { createdAt: 'desc' }],
     });
 
+    // 批量查询预测数据
+    let predMap = new Map<
+      string,
+      {
+        probability: number;
+        tier?: string;
+        confidence?: string;
+        source?: string;
+        updatedAt: Date;
+      }
+    >();
+
+    if (items.length > 0) {
+      const profile = await this.prisma.profile.findUnique({
+        where: { userId },
+        select: { id: true },
+      });
+
+      if (profile) {
+        const preds = await this.prisma.predictionResult.findMany({
+          where: {
+            profileId: profile.id,
+            schoolId: { in: items.map((i) => i.schoolId) },
+          },
+          select: {
+            schoolId: true,
+            probability: true,
+            tier: true,
+            confidence: true,
+            source: true,
+            updatedAt: true,
+          },
+        });
+
+        predMap = new Map(
+          preds.map((p) => [
+            p.schoolId,
+            {
+              probability: Number(p.probability),
+              tier: p.tier || undefined,
+              confidence: p.confidence || undefined,
+              source: p.source || undefined,
+              updatedAt: p.updatedAt,
+            },
+          ]),
+        );
+      }
+    }
+
     return items.map((item) => ({
       id: item.id,
       schoolId: item.schoolId,
@@ -70,6 +119,7 @@ export class SchoolListService {
       round: item.round || undefined,
       notes: item.notes || undefined,
       isAIRecommended: item.isAIRecommended,
+      prediction: predMap.get(item.schoolId) || undefined,
       createdAt: item.createdAt,
     }));
   }
@@ -299,6 +349,7 @@ export class SchoolListService {
         actAvg: true,
         act25: true,
         act75: true,
+        graduationRate: true,
         tuition: true,
         city: true,
         state: true,
@@ -312,9 +363,10 @@ export class SchoolListService {
 
     for (const school of schools) {
       const schoolMetrics = {
-        acceptanceRate: school.acceptanceRate
-          ? Number(school.acceptanceRate)
-          : undefined,
+        acceptanceRate:
+          school.acceptanceRate != null
+            ? Number(school.acceptanceRate)
+            : undefined,
         satAvg: school.satAvg ?? undefined,
         sat25: school.sat25 ?? undefined,
         sat75: school.sat75 ?? undefined,
@@ -322,6 +374,10 @@ export class SchoolListService {
         act25: school.act25 ?? undefined,
         act75: school.act75 ?? undefined,
         usNewsRank: school.usNewsRank ?? undefined,
+        graduationRate:
+          school.graduationRate != null
+            ? Number(school.graduationRate)
+            : undefined,
       };
 
       const overallScore = calculateOverallScore(profileMetrics, schoolMetrics);
@@ -368,6 +424,115 @@ export class SchoolListService {
       }
     }
 
+    // 桥接：将快速评分结果异步写入 PredictionResult + PredictionSnapshot
+    this.syncQuickMatchToPrediction(profile.id, schools, profileMetrics).catch(
+      (err) => {
+        this.logger.warn('Failed to sync quick-match to predictions', err);
+      },
+    );
+
     return { safety, target, reach };
+  }
+
+  /**
+   * 桥接：将快速评分结果同步到 PredictionResult + PredictionSnapshot
+   */
+  private async syncQuickMatchToPrediction(
+    profileId: string,
+    schools: Array<{
+      id: string;
+      acceptanceRate: any;
+      satAvg: number | null;
+      sat25: number | null;
+      sat75: number | null;
+      actAvg: number | null;
+      act25: number | null;
+      act75: number | null;
+      usNewsRank: number | null;
+      graduationRate?: any;
+    }>,
+    profileMetrics: ReturnType<typeof extractProfileMetrics>,
+  ): Promise<void> {
+    for (const school of schools) {
+      const schoolMetrics = {
+        acceptanceRate:
+          school.acceptanceRate != null
+            ? Number(school.acceptanceRate)
+            : undefined,
+        satAvg: school.satAvg ?? undefined,
+        sat25: school.sat25 ?? undefined,
+        sat75: school.sat75 ?? undefined,
+        actAvg: school.actAvg ?? undefined,
+        act25: school.act25 ?? undefined,
+        act75: school.act75 ?? undefined,
+        usNewsRank: school.usNewsRank ?? undefined,
+        graduationRate:
+          school.graduationRate != null
+            ? Number(school.graduationRate)
+            : undefined,
+      };
+
+      const overallScore = calculateOverallScore(profileMetrics, schoolMetrics);
+      const probability = calculateProbability(overallScore, schoolMetrics);
+      const tier = calculateTier(probability, schoolMetrics);
+
+      try {
+        // 防覆盖高质量结果
+        const existing = await this.prisma.predictionResult.findUnique({
+          where: {
+            profileId_schoolId: { profileId, schoolId: school.id },
+          },
+          select: { modelVersion: true },
+        });
+
+        if (
+          existing?.modelVersion === 'v3-enterprise' ||
+          existing?.modelVersion === 'v2-ensemble' ||
+          existing?.modelVersion === 'v1-recommendation-ai' ||
+          existing?.modelVersion === 'v1-school-ai'
+        )
+          continue;
+
+        await this.prisma.predictionResult.upsert({
+          where: {
+            profileId_schoolId: { profileId, schoolId: school.id },
+          },
+          update: {
+            probability,
+            tier,
+            confidence: 'low',
+            modelVersion: 'v1-stats',
+            source: 'quick-match',
+          },
+          create: {
+            profileId,
+            schoolId: school.id,
+            probability,
+            tier,
+            confidence: 'low',
+            factors: [] as any,
+            modelVersion: 'v1-stats',
+            source: 'quick-match',
+          },
+        });
+
+        await this.prisma.predictionSnapshot.create({
+          data: {
+            profileId,
+            schoolId: school.id,
+            probability,
+            tier,
+            confidence: 'low',
+            source: 'quick-match',
+            modelVersion: 'v1-stats',
+          },
+        });
+      } catch (error) {
+        this.logger.warn(
+          `Failed to sync quick-match for school ${school.id}`,
+          error,
+        );
+      }
+    }
   }
 }

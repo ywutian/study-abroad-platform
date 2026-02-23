@@ -7,7 +7,12 @@ describe('RecommendationController', () => {
   let controller: RecommendationController;
   let service: RecommendationService;
 
-  const mockUser = { id: 'user-1', email: 'test@test.com', role: 'USER' };
+  const mockUser = {
+    id: 'user-1',
+    email: 'test@test.com',
+    role: 'USER',
+    locale: 'zh',
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -48,6 +53,7 @@ describe('RecommendationController', () => {
       expect(service.generateRecommendation).toHaveBeenCalledWith(
         'user-1',
         dto,
+        'zh',
       );
       expect(result).toEqual({ id: 'rec-1', schools: [] });
     });

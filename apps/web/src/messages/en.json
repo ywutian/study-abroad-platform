@@ -13,6 +13,7 @@
     "submit": "Submit",
     "edit": "Edit",
     "delete": "Delete",
+    "remove": "Remove",
     "confirm": "Confirm",
     "back": "Back",
     "notSpecified": "Not specified",
@@ -930,7 +931,7 @@
     "selectedCount": "{count} selected",
     "showMore": "Show More",
     "showLess": "Show Less",
-    "acceptanceRateLabel": "Acceptance Rate",
+    "acceptanceRateLabel": "Acceptance Rate: {rate}%",
     "range": "Prediction Range",
     "weight": "Weight",
     "suggestions": "Suggestions",
@@ -966,17 +967,68 @@
     "aiAssistantDescWithResults": "AI provides detailed analysis based on your results",
     "aiInitialNoResults": "Select schools and start prediction for analysis",
     "aiInitialWithResults": "Prediction complete! Click below for recommendations",
+    "detailedAnalysis": "Detailed Analysis",
+    "detailedAnalysisPrompt": "Please provide a detailed analysis of my admission chance for {schoolName}, including factors, suggestions, and comparison with similar applicants.",
+    "dataCompleteness": "Profile Completeness",
+    "dataCompletenessLow": "Complete your profile for more accurate predictions",
+    "completeProfile": "Complete Profile",
+    "fromCache": "Cached",
+    "expand": "Show Details",
+    "collapse": "Hide Details",
+    "factorsCount": "factors",
+    "suggestionsCount": "suggestions",
+    "impactFactors": "Impact Factors",
+    "engineWeights": "Engine Weight Distribution",
+    "reportResult": "Report Actual Result",
+    "resultReported": "Result reported successfully",
+    "noResultsForFilter": "No results match the current filter",
+    "resultRecordedThankYou": "Thank you! Your result helps calibrate the model",
+    "predictionAccurate": "Prediction Accurate",
+    "outperformedPrediction": "Beat the Odds",
+    "updatedAgo": "Updated {time} ago",
+    "refreshPrediction": "Refresh",
+    "refreshing": "Refreshing...",
+    "historyTrend": "Prediction History",
+    "noHistory": "No prediction history yet",
+    "rank": "#{rank}",
+    "acceptRate": "{rate}% accept",
+    "predictionInProgress": "Prediction in progress, please wait",
+    "resultsAnnouncement": "Showing {count} results, sorted by {sort}",
+    "comparison": {
+      "title": "Comparison with Admitted Students",
+      "gpaPercentile": "GPA Percentile",
+      "testScorePercentile": "Test Score Percentile",
+      "activityStrength": "Activity Strength",
+      "strength": {
+        "weak": "Below Average",
+        "average": "Average",
+        "strong": "Above Average"
+      }
+    },
+    "sort": {
+      "probability": "By Probability",
+      "tier": "By Tier",
+      "confidence": "By Confidence"
+    },
+    "filter": {
+      "all": "All"
+    },
+    "result": {
+      "admitted": "Admitted",
+      "waitlisted": "Waitlisted",
+      "rejected": "Rejected"
+    },
     "aiActions": {
       "analyzeResults": "Analyze Results",
-      "analyzeResultsPrompt": "Please analyze my prediction results",
+      "analyzeResultsPrompt": "Please analyze my prediction results:\n{results}",
       "analyzeSelectedSchools": "Analyze School Selection",
-      "analyzeSelectedSchoolsPrompt": "Please analyze if my school selection is reasonable",
+      "analyzeSelectedSchoolsPrompt": "Please analyze if my school selection is reasonable:\n{schools}",
       "applicationStrategy": "Application Strategy",
-      "applicationStrategyPrompt": "Please create an application strategy based on predictions",
+      "applicationStrategyPrompt": "Please create an application strategy based on my predictions",
       "explainModel": "Explain Model",
       "explainModelPrompt": "Please explain how the prediction model works",
       "improveChances": "Improve Chances",
-      "improveChancesPrompt": "How can I improve my admission chances?",
+      "improveChancesPrompt": "How can I improve my admission chances based on these predictions?\n{results}",
       "recommendSchools": "Recommend Schools",
       "recommendSchoolsPrompt": "Please recommend schools based on my profile"
     }
@@ -1914,7 +1966,16 @@
     "batchAddDesc": "Add the following schools to your list",
     "batchAddSuccess": "Added {count} schools to your list",
     "timelineGenerated": "Application timelines auto-generated",
+    "timelinePartialFail": "{failed} school(s) skipped during timeline generation",
+    "timelineGenerateFailed": "Timeline generation failed, schools added to list",
+    "timelineGenerateFailedHint": "Schools added but timeline generation failed",
     "viewTimeline": "View Timeline",
+    "tierLabel": "Tier",
+    "tiers": {
+      "reach": "Reach",
+      "target": "Target",
+      "safety": "Safety"
+    },
     "advancedFilter": "Advanced Filter"
   },
   "uncommonApp": {
@@ -2966,7 +3027,8 @@
       "followSuccess": "Followed successfully",
       "unfollowSuccess": "Unfollowed successfully",
       "blockSuccess": "User blocked",
-      "unblockSuccess": "User unblocked"
+      "unblockSuccess": "User unblocked",
+      "messageError": "Unable to start conversation, please try again later"
     },
     "dialogs": {
       "unfollowTitle": "Unfollow",
@@ -3003,6 +3065,8 @@
     "copyLink": "Copy Link",
     "shareNative": "Share via...",
     "linkCopied": "Link copied to clipboard",
+    "copyFailed": "Failed to copy",
+    "shareFailed": "Failed to share",
     "difficulty": {
       "veryHigh": "Very Competitive",
       "high": "Competitive",
@@ -3073,7 +3137,56 @@
       "noData": "No admission cases yet",
       "beFirst": "Be the first to share",
       "submitCase": "Submit Case"
+    },
+    "prediction": {
+      "title": "Admission Prediction",
+      "subtitle": "AI-powered probability analysis based on your profile",
+      "safety": "Safety",
+      "match": "Match",
+      "reach": "Reach",
+      "confidenceInterval": "Confidence Interval",
+      "confidence": "Confidence",
+      "source": "Source",
+      "factors": "Key Factors",
+      "trend": "History Trend",
+      "noPrediction": "No prediction available yet",
+      "runPrediction": "Run Prediction",
+      "running": "Running..."
+    },
+    "ai": {
+      "title": "AI Assistant",
+      "description": "Get AI-powered analysis and recommendations",
+      "analyzeChance": "Analyze Admission Chance",
+      "analyzeChancePrompt": "Please analyze my admission chance for {schoolName}, including key factors and suggestions for improvement.",
+      "improveProfile": "How to Improve",
+      "improveProfilePrompt": "Based on my profile, what can I do to improve my chances of getting into {schoolName}?",
+      "compareSchools": "Compare Schools",
+      "compareSchoolsPrompt": "Compare {schoolName} with similar schools on my list and analyze my admission chances for each.",
+      "loginHint": "Log in to get AI-powered admission analysis and personalized recommendations"
     }
+  },
+  "predictionDashboard": {
+    "title": "Prediction Dashboard",
+    "subtitle": "Overview of all your school admission predictions",
+    "totalSchools": "Total Schools",
+    "avgProbability": "Avg Probability",
+    "tierDistribution": "Tier Distribution",
+    "reach": "Reach",
+    "match": "Match",
+    "safety": "Safety",
+    "dataCompleteness": "Data Quality",
+    "probabilityRange": "Probability Range",
+    "improveProfile": "Improve Profile",
+    "completeness": {
+      "good": "Excellent",
+      "fair": "Good",
+      "low": "Needs Work"
+    },
+    "source": "Source",
+    "updated": "Updated",
+    "noData": "No predictions yet",
+    "noDataDesc": "Run predictions on schools to see results here",
+    "viewSchool": "View School"
   },
   "verifiedRanking": {
     "title": "Verified Ranking",
@@ -3231,6 +3344,9 @@
     "errorTitle": "Unable to get recommendations",
     "errorDesc": "Please complete your profile first",
     "retry": "Retry",
+    "cached": "Using cached result",
+    "aiError": "Analysis temporarily unavailable",
+    "aiErrorDesc": "Please try again in a moment",
     "aiSmartMatch": "AI Smart Match",
     "recommendCount": "Recommended {count} schools based on your profile",
     "strategyTitle": "Selection Strategy",
@@ -3310,6 +3426,7 @@
     "deleteConfirm": "Delete this recommendation?",
     "deleteConfirmDesc": "This action cannot be undone.",
     "deleteSuccess": "Recommendation deleted",
+    "deleteFailed": "Failed to delete recommendation",
     "showingRecent": "Showing most recent {count} results",
     "generateFirst": "Generate Your First Recommendation"
   },
@@ -3324,6 +3441,10 @@
     "tomorrow": "Tomorrow",
     "deleteSuccess": "Deleted",
     "deleteConfirm": "Are you sure? All related tasks will also be deleted.",
+    "deleteConfirmTitle": "Confirm Deletion",
+    "deleteConfirmDesc": "Are you sure you want to delete \"{name}\"? All related tasks will also be deleted. This action cannot be undone.",
+    "deleteConfirmAction": "Delete",
+    "cancel": "Cancel",
     "deleteTimeline": "Delete Timeline",
     "tabs": {
       "all": "All",
@@ -3399,7 +3520,16 @@
       "description": "Application progress sorted by deadline",
       "deadline": "Deadline",
       "tasks": "Tasks",
-      "loadingTasks": "Loading tasks..."
+      "loadingTasks": "Loading tasks...",
+      "noTasks": "No tasks yet"
+    },
+    "taskTypes": {
+      "ESSAY": "Essay",
+      "DOCUMENT": "Document",
+      "TEST": "Test",
+      "INTERVIEW": "Interview",
+      "RECOMMENDATION": "Recommendation",
+      "OTHER": "Other"
     },
     "events": {
       "earlyDecision": "Early Decision Deadline",
@@ -3814,7 +3944,16 @@
     "required": "This field is required",
     "awardRequired": "Please fill in the award information",
     "activityRequired": "Please fill in the activity information",
-    "scoreRequired": "Please fill in the score information"
+    "scoreRequired": "Please fill in the score information",
+    "titleRequired": "Title is required",
+    "titleTooLong": "Title must be 200 characters or less",
+    "contentRequired": "Content is required",
+    "categoryRequired": "Please select a category",
+    "typeRequired": "Please select a type",
+    "scoreInvalid": "Please enter a valid score",
+    "scorePositive": "Score must be a positive number",
+    "levelRequired": "Please select an award level",
+    "invalidUrl": "Please enter a valid URL"
   },
   "errors": {
     "required": "This field is required",
@@ -4394,6 +4533,25 @@
       "pendingVerifications": "Pending Verifications",
       "subscriptions": "Subscriptions",
       "noTrends": "No trend data available"
+    },
+    "dataQuality": {
+      "title": "Data Quality",
+      "description": "School data completeness overview",
+      "totalSchools": "Total Schools",
+      "fullyComplete": "Fully Complete",
+      "missingCritical": "Missing Critical",
+      "avgCompleteness": "Avg Completeness",
+      "fieldCoverage": "Field Coverage",
+      "filled": "Filled",
+      "missing": "Missing",
+      "coverage": "Coverage",
+      "worstSchools": "Schools Needing Data",
+      "worstSchoolsDesc": "Schools with the most missing fields",
+      "missingFields": "Missing Fields",
+      "completeness": "Completeness",
+      "noIssues": "All schools have complete data",
+      "refreshing": "Refreshing...",
+      "refresh": "Refresh"
     }
   },
   "essayAdmin": {

@@ -13,6 +13,7 @@
     "submit": "提交",
     "edit": "编辑",
     "delete": "删除",
+    "remove": "移除",
     "confirm": "确认",
     "back": "返回",
     "notSpecified": "未指定",
@@ -930,7 +931,7 @@
     "selectedCount": "已选 {count} 所",
     "showMore": "展开更多",
     "showLess": "收起",
-    "acceptanceRateLabel": "录取率",
+    "acceptanceRateLabel": "录取率：{rate}%",
     "range": "预测范围",
     "weight": "权重",
     "suggestions": "提升建议",
@@ -966,17 +967,68 @@
     "aiAssistantDescWithResults": "基于预测结果，AI 为你提供详细分析",
     "aiInitialNoResults": "选择学校并开始预测，我会为你分析录取概率",
     "aiInitialWithResults": "预测完成！我可以帮你分析结果，点击下方按钮获取建议",
+    "detailedAnalysis": "详细分析",
+    "detailedAnalysisPrompt": "请详细分析我申请{schoolName}的录取概率，包括各项因素、提升建议，以及与类似申请者的对比。",
+    "dataCompleteness": "档案完整度",
+    "dataCompletenessLow": "完善档案以获得更准确的预测结果",
+    "completeProfile": "完善档案",
+    "fromCache": "缓存",
+    "expand": "展开详情",
+    "collapse": "收起详情",
+    "factorsCount": "个因素",
+    "suggestionsCount": "条建议",
+    "impactFactors": "影响因素分析",
+    "engineWeights": "引擎权重分布",
+    "reportResult": "报告实际结果",
+    "resultReported": "结果报告成功",
+    "noResultsForFilter": "没有符合当前筛选条件的结果",
+    "resultRecordedThankYou": "感谢反馈！您的结果有助于优化模型",
+    "predictionAccurate": "预测准确",
+    "outperformedPrediction": "超出预期",
+    "updatedAgo": "{time} 前更新",
+    "refreshPrediction": "刷新",
+    "refreshing": "刷新中...",
+    "historyTrend": "预测历史",
+    "noHistory": "暂无预测历史",
+    "rank": "第{rank}名",
+    "acceptRate": "录取率 {rate}%",
+    "predictionInProgress": "预测进行中，请稍候",
+    "resultsAnnouncement": "显示 {count} 个结果，按{sort}排序",
+    "comparison": {
+      "title": "与已录取学生对比",
+      "gpaPercentile": "GPA 百分位",
+      "testScorePercentile": "考试成绩百分位",
+      "activityStrength": "活动强度",
+      "strength": {
+        "weak": "低于平均",
+        "average": "平均水平",
+        "strong": "高于平均"
+      }
+    },
+    "sort": {
+      "probability": "按概率",
+      "tier": "按分类",
+      "confidence": "按置信度"
+    },
+    "filter": {
+      "all": "全部"
+    },
+    "result": {
+      "admitted": "已录取",
+      "waitlisted": "候补名单",
+      "rejected": "已拒绝"
+    },
     "aiActions": {
       "analyzeResults": "分析预测结果",
-      "analyzeResultsPrompt": "请分析我的预测结果，给出详细建议",
+      "analyzeResultsPrompt": "请分析我的预测结果，给出详细建议：\n{results}",
       "analyzeSelectedSchools": "分析选校策略",
-      "analyzeSelectedSchoolsPrompt": "请分析我选择的学校组合是否合理",
+      "analyzeSelectedSchoolsPrompt": "请分析我选择的学校组合是否合理：\n{schools}",
       "applicationStrategy": "申请策略",
-      "applicationStrategyPrompt": "请根据预测结果制定申请策略",
+      "applicationStrategyPrompt": "请根据我的预测结果制定申请策略",
       "explainModel": "解释预测模型",
       "explainModelPrompt": "请解释预测模型是如何工作的",
       "improveChances": "提升录取概率",
-      "improveChancesPrompt": "我该如何提升录取概率？",
+      "improveChancesPrompt": "根据以下预测结果，我该如何提升录取概率？\n{results}",
       "recommendSchools": "推荐学校",
       "recommendSchoolsPrompt": "请根据我的背景推荐适合的学校"
     }
@@ -1914,7 +1966,16 @@
     "batchAddDesc": "将以下学校批量加入你的选校清单",
     "batchAddSuccess": "已将 {count} 所学校加入清单",
     "timelineGenerated": "已自动生成申请时间线",
+    "timelinePartialFail": "有 {failed} 所学校的时间线生成失败",
+    "timelineGenerateFailed": "时间线生成失败，学校已添加到清单",
+    "timelineGenerateFailedHint": "学校已添加，但时间线生成失败",
     "viewTimeline": "查看时间线",
+    "tierLabel": "分类",
+    "tiers": {
+      "reach": "冲刺",
+      "target": "匹配",
+      "safety": "保底"
+    },
     "advancedFilter": "高级筛选"
   },
   "uncommonApp": {
@@ -2961,7 +3022,8 @@
       "followSuccess": "关注成功",
       "unfollowSuccess": "已取消关注",
       "blockSuccess": "已屏蔽用户",
-      "unblockSuccess": "已取消屏蔽"
+      "unblockSuccess": "已取消屏蔽",
+      "messageError": "无法发起私信，请稍后再试"
     },
     "dialogs": {
       "unfollowTitle": "取消关注",
@@ -2998,6 +3060,8 @@
     "copyLink": "复制链接",
     "shareNative": "分享到...",
     "linkCopied": "链接已复制到剪贴板",
+    "copyFailed": "复制失败",
+    "shareFailed": "分享失败",
     "difficulty": {
       "veryHigh": "竞争激烈",
       "high": "较难",
@@ -3068,7 +3132,56 @@
       "noData": "暂无录取案例",
       "beFirst": "成为第一个分享者",
       "submitCase": "提交案例"
+    },
+    "prediction": {
+      "title": "录取预测",
+      "subtitle": "基于你的档案进行 AI 概率分析",
+      "safety": "保底",
+      "match": "匹配",
+      "reach": "冲刺",
+      "confidenceInterval": "置信区间",
+      "confidence": "置信度",
+      "source": "数据来源",
+      "factors": "关键因素",
+      "trend": "历史趋势",
+      "noPrediction": "暂无预测数据",
+      "runPrediction": "运行预测",
+      "running": "预测中..."
+    },
+    "ai": {
+      "title": "AI 助手",
+      "description": "获取 AI 驱动的分析和推荐",
+      "analyzeChance": "分析录取概率",
+      "analyzeChancePrompt": "请分析我申请{schoolName}的录取概率，包括关键因素和提升建议。",
+      "improveProfile": "如何提升",
+      "improveProfilePrompt": "根据我的档案，我可以做什么来提升被{schoolName}录取的概率？",
+      "compareSchools": "对比学校",
+      "compareSchoolsPrompt": "将{schoolName}与我清单上的类似学校进行对比，分析我对每所学校的录取概率。",
+      "loginHint": "登录后即可获取 AI 驱动的录取分析和个性化推荐"
     }
+  },
+  "predictionDashboard": {
+    "title": "预测仪表盘",
+    "subtitle": "你所有学校录取预测的总览",
+    "totalSchools": "学校总数",
+    "avgProbability": "平均概率",
+    "tierDistribution": "梯度分布",
+    "reach": "冲刺",
+    "match": "匹配",
+    "safety": "保底",
+    "dataCompleteness": "数据完整度",
+    "probabilityRange": "概率范围",
+    "improveProfile": "完善档案",
+    "completeness": {
+      "good": "优秀",
+      "fair": "良好",
+      "low": "待完善"
+    },
+    "source": "来源",
+    "updated": "更新时间",
+    "noData": "暂无预测数据",
+    "noDataDesc": "对学校运行预测后即可在此查看结果",
+    "viewSchool": "查看学校"
   },
   "verifiedRanking": {
     "title": "认证榜单",
@@ -3226,6 +3339,9 @@
     "errorTitle": "暂时无法获取推荐",
     "errorDesc": "请先完善你的个人档案",
     "retry": "重试",
+    "cached": "使用缓存结果",
+    "aiError": "分析暂时不可用",
+    "aiErrorDesc": "请稍后重试",
     "aiSmartMatch": "AI 智能选校",
     "recommendCount": "基于你的背景推荐 {count} 所学校",
     "strategyTitle": "选校策略",
@@ -3305,6 +3421,7 @@
     "deleteConfirm": "删除此推荐记录？",
     "deleteConfirmDesc": "此操作不可撤销。",
     "deleteSuccess": "推荐记录已删除",
+    "deleteFailed": "删除推荐记录失败",
     "showingRecent": "显示最近 {count} 条结果",
     "generateFirst": "生成第一份选校推荐"
   },
@@ -3319,6 +3436,10 @@
     "tomorrow": "明天",
     "deleteSuccess": "已删除",
     "deleteConfirm": "确定要删除吗？所有关联任务也会被删除。",
+    "deleteConfirmTitle": "确认删除",
+    "deleteConfirmDesc": "确定要删除「{name}」吗？所有关联任务也会被删除，此操作不可撤销。",
+    "deleteConfirmAction": "删除",
+    "cancel": "取消",
     "deleteTimeline": "删除时间线",
     "tabs": {
       "all": "全部",
@@ -3394,7 +3515,16 @@
       "description": "按截止日期排序的申请进度",
       "deadline": "截止日期",
       "tasks": "任务",
-      "loadingTasks": "加载任务中..."
+      "loadingTasks": "加载任务中...",
+      "noTasks": "暂无任务"
+    },
+    "taskTypes": {
+      "ESSAY": "文书",
+      "DOCUMENT": "材料",
+      "TEST": "考试",
+      "INTERVIEW": "面试",
+      "RECOMMENDATION": "推荐信",
+      "OTHER": "其他"
     },
     "events": {
       "earlyDecision": "ED 早申截止",
@@ -3809,7 +3939,16 @@
     "required": "此字段为必填项",
     "awardRequired": "请填写奖项信息",
     "activityRequired": "请填写活动信息",
-    "scoreRequired": "请填写成绩信息"
+    "scoreRequired": "请填写成绩信息",
+    "titleRequired": "标题不能为空",
+    "titleTooLong": "标题不能超过200个字符",
+    "contentRequired": "内容不能为空",
+    "categoryRequired": "请选择分类",
+    "typeRequired": "请选择类型",
+    "scoreInvalid": "请输入有效的分数",
+    "scorePositive": "分数必须为正数",
+    "levelRequired": "请选择奖项级别",
+    "invalidUrl": "请输入有效的URL地址"
   },
   "errors": {
     "required": "此字段必填",
@@ -4389,6 +4528,25 @@
       "pendingVerifications": "待认证",
       "subscriptions": "订阅",
       "noTrends": "暂无趋势数据"
+    },
+    "dataQuality": {
+      "title": "数据质量",
+      "description": "学校数据完整度概览",
+      "totalSchools": "学校总数",
+      "fullyComplete": "完整数据",
+      "missingCritical": "缺少关键字段",
+      "avgCompleteness": "平均完整度",
+      "fieldCoverage": "字段覆盖率",
+      "filled": "已填",
+      "missing": "缺失",
+      "coverage": "覆盖率",
+      "worstSchools": "待完善学校",
+      "worstSchoolsDesc": "缺失字段最多的学校",
+      "missingFields": "缺失字段",
+      "completeness": "完整度",
+      "noIssues": "所有学校数据均已完整",
+      "refreshing": "刷新中...",
+      "refresh": "刷新"
     }
   },
   "essayAdmin": {

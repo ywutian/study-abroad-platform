@@ -5,6 +5,10 @@ import {
   IsString,
   IsNumber,
   IsEnum,
+  ArrayMaxSize,
+  MaxLength,
+  Min,
+  Max,
 } from 'class-validator';
 
 export enum BudgetRange {
@@ -22,12 +26,18 @@ export class SchoolRecommendationRequestDto {
   @IsArray()
   @IsOptional()
   @IsString({ each: true })
+  @ArrayMaxSize(10)
   preferredRegions?: string[];
 
-  @ApiPropertyOptional({ type: [String], description: '意向专业' })
+  @ApiPropertyOptional({
+    type: [String],
+    description: '意向专业',
+    maxItems: 10,
+  })
   @IsArray()
   @IsOptional()
   @IsString({ each: true })
+  @ArrayMaxSize(10)
   preferredMajors?: string[];
 
   @ApiPropertyOptional({ enum: BudgetRange, description: '预算范围' })
@@ -35,14 +45,24 @@ export class SchoolRecommendationRequestDto {
   @IsOptional()
   budget?: BudgetRange;
 
-  @ApiPropertyOptional({ description: '目标学校数量（默认15）' })
+  @ApiPropertyOptional({
+    description: '目标学校数量（默认15，最多30）',
+    minimum: 5,
+    maximum: 30,
+  })
   @IsNumber()
   @IsOptional()
+  @Min(5)
+  @Max(30)
   schoolCount?: number;
 
-  @ApiPropertyOptional({ description: '其他偏好说明' })
+  @ApiPropertyOptional({
+    description: '其他偏好说明（最多500字）',
+    maxLength: 500,
+  })
   @IsString()
   @IsOptional()
+  @MaxLength(500)
   additionalPreferences?: string;
 }
 

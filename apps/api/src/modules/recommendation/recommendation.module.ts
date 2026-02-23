@@ -1,17 +1,19 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { RecommendationService } from './recommendation.service';
 import { RecommendationController } from './recommendation.controller';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { AiModule } from '../ai/ai.module';
-import { AiAgentModule } from '../ai-agent/ai-agent.module';
+import { AiAgentMemoryModule } from '../ai-agent/memory/memory.module';
 import { CaseModule } from '../case/case.module';
+import { RedisModule } from '../../common/redis/redis.module';
 
 @Module({
   imports: [
     PrismaModule,
     AiModule,
-    forwardRef(() => AiAgentModule),
+    AiAgentMemoryModule,
     CaseModule,
+    RedisModule,
   ],
   providers: [RecommendationService],
   controllers: [RecommendationController],

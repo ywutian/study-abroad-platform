@@ -5,6 +5,7 @@ import { AiService } from '../ai/ai.service';
 import { CaseIncentiveService } from '../case/case-incentive.service';
 import { MemoryManagerService } from '../ai-agent/memory';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { RedisService } from '../../common/redis/redis.service';
 
 describe('RecommendationService', () => {
   let service: RecommendationService;
@@ -96,6 +97,13 @@ describe('RecommendationService', () => {
             user: {
               findUnique: jest.fn().mockResolvedValue({ points: 100 }),
             },
+            predictionResult: {
+              findUnique: jest.fn().mockResolvedValue(null),
+              upsert: jest.fn().mockResolvedValue({}),
+            },
+            predictionSnapshot: {
+              create: jest.fn().mockResolvedValue({}),
+            },
           },
         },
         {
@@ -116,6 +124,13 @@ describe('RecommendationService', () => {
           useValue: {
             remember: jest.fn().mockResolvedValue(undefined),
             recall: jest.fn().mockResolvedValue([]),
+          },
+        },
+        {
+          provide: RedisService,
+          useValue: {
+            setNX: jest.fn().mockResolvedValue(true),
+            del: jest.fn().mockResolvedValue(undefined),
           },
         },
       ],

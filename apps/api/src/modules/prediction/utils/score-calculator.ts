@@ -23,6 +23,8 @@ export {
   calculateProbability,
   calculateTier,
   calculateConfidence,
+  enforceMonotonicity,
+  calculateSelectivityIndex,
   SCORING_WEIGHTS,
   ACADEMIC_CONFIG,
   TIER_POINTS,

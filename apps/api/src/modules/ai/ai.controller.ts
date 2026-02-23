@@ -185,7 +185,7 @@ export class AiController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: ProfileAnalysisDto,
   ) {
-    return this.aiService.analyzeProfile(data);
+    return this.aiService.analyzeProfile(data, user.locale);
   }
 
   @Post('review-essay')
@@ -194,7 +194,7 @@ export class AiController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: EssayReviewDto,
   ) {
-    return this.aiService.reviewEssay(data);
+    return this.aiService.reviewEssay(data, user.locale);
   }
 
   @Post('generate-ideas')
@@ -206,6 +206,7 @@ export class AiController {
     const ideas = await this.aiService.generateEssayIdeas(
       data.topic,
       data.background,
+      user.locale,
     );
     return { ideas };
   }
@@ -216,19 +217,20 @@ export class AiController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: ProfileAnalysisDto,
   ) {
-    const schools = await this.aiService.schoolMatch(data);
+    const schools = await this.aiService.schoolMatch(data, user.locale);
     return { schools };
   }
 
   @Post('chat')
   @ApiOperation({ summary: '自由对话' })
   async chat(@CurrentUser() user: CurrentUserPayload, @Body() data: ChatDto) {
-    // Add system prompt for study abroad context
+    const isZh = user.locale === 'zh';
     const messagesWithContext = [
       {
         role: 'system' as const,
-        content:
-          '你是一位专业的留学申请顾问,专注于美国本科申请。请用中文回答问题,提供专业、友好的帮助。',
+        content: isZh
+          ? '你是一位专业的留学申请顾问,专注于美国本科申请。请用中文回答问题,提供专业、友好的帮助。'
+          : 'You are a professional college admissions consultant specializing in US undergraduate applications. Please answer in English and provide professional, friendly assistance.',
       },
       ...data.messages,
     ];
@@ -243,7 +245,7 @@ export class AiController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: PolishEssayDto,
   ) {
-    return this.aiService.polishEssay(data.content, data.style);
+    return this.aiService.polishEssay(data.content, data.style, user.locale);
   }
 
   @Post('rewrite-paragraph')
@@ -252,7 +254,11 @@ export class AiController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: RewriteParagraphDto,
   ) {
-    return this.aiService.rewriteParagraph(data.paragraph, data.instruction);
+    return this.aiService.rewriteParagraph(
+      data.paragraph,
+      data.instruction,
+      user.locale,
+    );
   }
 
   @Post('continue-writing')
@@ -265,6 +271,7 @@ export class AiController {
       data.content,
       data.prompt,
       data.direction,
+      user.locale,
     );
   }
 
@@ -274,7 +281,11 @@ export class AiController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: GenerateOpeningDto,
   ) {
-    return this.aiService.generateOpening(data.prompt, data.background);
+    return this.aiService.generateOpening(
+      data.prompt,
+      data.background,
+      user.locale,
+    );
   }
 
   @Post('generate-ending')
@@ -283,6 +294,10 @@ export class AiController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: GenerateEndingDto,
   ) {
-    return this.aiService.generateEnding(data.content, data.prompt);
+    return this.aiService.generateEnding(
+      data.content,
+      data.prompt,
+      user.locale,
+    );
   }
 }

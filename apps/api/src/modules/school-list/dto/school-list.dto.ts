@@ -91,6 +91,15 @@ export class SchoolListItemResponseDto {
   @ApiProperty()
   isAIRecommended: boolean;
 
+  @ApiPropertyOptional({ description: '预测数据（如有）' })
+  prediction?: {
+    probability: number;
+    tier?: string;
+    confidence?: string;
+    source?: string;
+    updatedAt: Date;
+  };
+
   @ApiProperty()
   createdAt: Date;
 }

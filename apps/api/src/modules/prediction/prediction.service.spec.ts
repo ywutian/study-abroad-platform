@@ -85,6 +85,7 @@ describe('PredictionService', () => {
     act25: 34,
     act75: 36,
     usNewsRank: 1,
+    graduationRate: 95,
   };
 
   const mockAIResponse = JSON.stringify({
@@ -134,6 +135,7 @@ describe('PredictionService', () => {
             getJSON: jest.fn().mockResolvedValue(null),
             setJSON: jest.fn().mockResolvedValue(undefined),
             del: jest.fn().mockResolvedValue(1),
+            setNX: jest.fn().mockResolvedValue(true),
           },
         },
         {
@@ -165,19 +167,22 @@ describe('PredictionService', () => {
     });
 
     it('should return prediction results for given schools', async () => {
-      const results = await service.predict('profile-1', ['school-1']);
+      const output = await service.predict('profile-1', ['school-1']);
 
-      expect(results).toHaveLength(1);
-      expect(results[0].schoolId).toBe('school-1');
-      expect(results[0].probability).toBeGreaterThanOrEqual(0.05);
-      expect(results[0].probability).toBeLessThanOrEqual(0.95);
+      expect(output.results).toHaveLength(1);
+      expect(output.results[0].schoolId).toBe('school-1');
+      expect(output.results[0].probability).toBeGreaterThanOrEqual(0.05);
+      expect(output.results[0].probability).toBeLessThanOrEqual(0.95);
+      expect(output.dataCompleteness).toBeGreaterThanOrEqual(0);
+      expect(output.memoryContext).toBeDefined();
     });
 
-    it('should return empty array if profile not found', async () => {
+    it('should return empty results if profile not found', async () => {
       (prisma.profile.findUnique as jest.Mock).mockResolvedValue(null);
 
-      const results = await service.predict('nonexistent', ['school-1']);
-      expect(results).toEqual([]);
+      const output = await service.predict('nonexistent', ['school-1']);
+      expect(output.results).toEqual([]);
+      expect(output.dataCompleteness).toBe(0);
     });
 
     it('should use cached result when available', async () => {
@@ -191,48 +196,48 @@ describe('PredictionService', () => {
       };
       (redis.getJSON as jest.Mock).mockResolvedValue(cachedResult);
 
-      const results = await service.predict('profile-1', ['school-1']);
+      const output = await service.predict('profile-1', ['school-1']);
 
-      expect(results).toHaveLength(1);
-      expect(results[0].fromCache).toBe(true);
+      expect(output.results).toHaveLength(1);
+      expect(output.results[0].fromCache).toBe(true);
       // AI should NOT have been called since we got a cache hit
       expect(aiService.chat).not.toHaveBeenCalled();
     });
 
     it('should bypass prediction cache when forceRefresh is true', async () => {
-      const results = await service.predict('profile-1', ['school-1'], true);
+      const output = await service.predict('profile-1', ['school-1'], true);
 
       // forceRefresh skips the prediction cache lookup, so predict should run engines
-      expect(results).toHaveLength(1);
+      expect(output.results).toHaveLength(1);
       // AI should have been called (not short-circuited by cache)
       expect(aiService.chat).toHaveBeenCalled();
     });
 
     it('should include tier classification (reach/match/safety)', async () => {
-      const results = await service.predict('profile-1', ['school-1']);
+      const output = await service.predict('profile-1', ['school-1']);
 
-      expect(results[0].tier).toBeDefined();
-      expect(['reach', 'match', 'safety']).toContain(results[0].tier);
+      expect(output.results[0].tier).toBeDefined();
+      expect(['reach', 'match', 'safety']).toContain(output.results[0].tier);
     });
 
     it('should include confidence interval', async () => {
-      const results = await service.predict('profile-1', ['school-1']);
+      const output = await service.predict('profile-1', ['school-1']);
 
-      expect(results[0].probabilityLow).toBeDefined();
-      expect(results[0].probabilityHigh).toBeDefined();
-      expect(results[0].probabilityLow).toBeLessThanOrEqual(
-        results[0].probability,
+      expect(output.results[0].probabilityLow).toBeDefined();
+      expect(output.results[0].probabilityHigh).toBeDefined();
+      expect(output.results[0].probabilityLow).toBeLessThanOrEqual(
+        output.results[0].probability,
       );
-      expect(results[0].probabilityHigh).toBeGreaterThanOrEqual(
-        results[0].probability,
+      expect(output.results[0].probabilityHigh).toBeGreaterThanOrEqual(
+        output.results[0].probability,
       );
     });
 
     it('should include factor analysis', async () => {
-      const results = await service.predict('profile-1', ['school-1']);
+      const output = await service.predict('profile-1', ['school-1']);
 
-      expect(results[0].factors).toBeDefined();
-      expect(Array.isArray(results[0].factors)).toBe(true);
+      expect(output.results[0].factors).toBeDefined();
+      expect(Array.isArray(output.results[0].factors)).toBe(true);
     });
 
     it('should cache prediction result in Redis', async () => {
@@ -258,12 +263,12 @@ describe('PredictionService', () => {
         school2,
       ]);
 
-      const results = await service.predict('profile-1', [
+      const output = await service.predict('profile-1', [
         'school-1',
         'school-2',
       ]);
 
-      expect(results).toHaveLength(2);
+      expect(output.results).toHaveLength(2);
     });
 
     it('should gracefully handle AI prediction failure', async () => {
@@ -271,11 +276,11 @@ describe('PredictionService', () => {
         new Error('AI service timeout'),
       );
 
-      const results = await service.predict('profile-1', ['school-1']);
+      const output = await service.predict('profile-1', ['school-1']);
 
       // Should still return results from stats engine
-      expect(results).toHaveLength(1);
-      expect(results[0].probability).toBeDefined();
+      expect(output.results).toHaveLength(1);
+      expect(output.results[0].probability).toBeDefined();
     });
 
     it('should record predictions to memory system', async () => {
@@ -330,20 +335,20 @@ describe('PredictionService', () => {
         [], // Less than 10 cases → no historical
       );
 
-      const results = await service.predict('profile-1', ['school-1']);
+      const output = await service.predict('profile-1', ['school-1']);
 
-      expect(results).toHaveLength(1);
-      expect(results[0].engineScores?.fusionMethod).toBe('stats_only');
+      expect(output.results).toHaveLength(1);
+      expect(output.results[0].engineScores?.fusionMethod).toBe('stats_only');
     });
 
     it('should use 2-engine fusion when AI succeeds but no historical data', async () => {
       (prisma.admissionCase.findMany as jest.Mock).mockResolvedValue([]);
 
-      const results = await service.predict('profile-1', ['school-1']);
+      const output = await service.predict('profile-1', ['school-1']);
 
-      expect(results).toHaveLength(1);
+      expect(output.results).toHaveLength(1);
       // AI succeeded, but historical returned null
-      const method = results[0].engineScores?.fusionMethod;
+      const method = output.results[0].engineScores?.fusionMethod;
       expect(['weighted_ensemble_2_ai', 'stats_only']).toContain(method);
     });
 
@@ -351,9 +356,9 @@ describe('PredictionService', () => {
       const { calculateProbability } = require('./utils/score-calculator');
       (calculateProbability as jest.Mock).mockReturnValue(0.99);
 
-      const results = await service.predict('profile-1', ['school-1']);
+      const output = await service.predict('profile-1', ['school-1']);
 
-      expect(results[0].probability).toBeLessThanOrEqual(0.95);
+      expect(output.results[0].probability).toBeLessThanOrEqual(0.95);
     });
   });
 
@@ -463,6 +468,7 @@ describe('PredictionService', () => {
                 getJSON: jest.fn().mockResolvedValue(null),
                 setJSON: jest.fn(),
                 del: jest.fn(),
+                setNX: jest.fn().mockResolvedValue(true),
               },
             },
           ],
@@ -471,9 +477,9 @@ describe('PredictionService', () => {
 
       const svcNoMem =
         moduleWithoutMemory.get<PredictionService>(PredictionService);
-      const results = await svcNoMem.predict('profile-1', ['school-1']);
+      const output = await svcNoMem.predict('profile-1', ['school-1']);
 
-      expect(results).toHaveLength(1);
+      expect(output.results).toHaveLength(1);
     });
   });
 });

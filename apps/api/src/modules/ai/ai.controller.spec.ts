@@ -6,7 +6,12 @@ describe('AiController', () => {
   let controller: AiController;
   let service: AiService;
 
-  const mockUser = { id: 'user-1', email: 'test@test.com', role: 'USER' };
+  const mockUser = {
+    id: 'user-1',
+    email: 'test@test.com',
+    role: 'USER',
+    locale: 'zh',
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -57,7 +62,7 @@ describe('AiController', () => {
       const data = { gpa: 3.9, targetMajor: 'CS' } as any;
       const result = await controller.analyzeProfile(mockUser as any, data);
 
-      expect(service.analyzeProfile).toHaveBeenCalledWith(data);
+      expect(service.analyzeProfile).toHaveBeenCalledWith(data, 'zh');
       expect(result).toEqual({ strengths: [], weaknesses: [] });
     });
   });
@@ -67,7 +72,7 @@ describe('AiController', () => {
       const data = { prompt: 'Why us?', content: 'My essay content' } as any;
       const result = await controller.reviewEssay(mockUser as any, data);
 
-      expect(service.reviewEssay).toHaveBeenCalledWith(data);
+      expect(service.reviewEssay).toHaveBeenCalledWith(data, 'zh');
       expect(result).toEqual({ score: 85, feedback: 'Good' });
     });
   });
@@ -80,6 +85,7 @@ describe('AiController', () => {
       expect(service.generateEssayIdeas).toHaveBeenCalledWith(
         'leadership',
         'club president',
+        'zh',
       );
       expect(result).toEqual({ ideas: ['idea1', 'idea2'] });
     });
@@ -90,7 +96,7 @@ describe('AiController', () => {
       const data = { gpa: 3.9, targetMajor: 'CS' } as any;
       const result = await controller.schoolMatch(mockUser as any, data);
 
-      expect(service.schoolMatch).toHaveBeenCalledWith(data);
+      expect(service.schoolMatch).toHaveBeenCalledWith(data, 'zh');
       expect(result).toEqual({ schools: [{ name: 'MIT', match: 0.9 }] });
     });
   });
@@ -118,7 +124,11 @@ describe('AiController', () => {
       const data = { content: 'raw text', style: 'formal' } as any;
       const result = await controller.polishEssay(mockUser as any, data);
 
-      expect(service.polishEssay).toHaveBeenCalledWith('raw text', 'formal');
+      expect(service.polishEssay).toHaveBeenCalledWith(
+        'raw text',
+        'formal',
+        'zh',
+      );
       expect(result).toEqual({ polished: 'better text' });
     });
   });
@@ -134,6 +144,7 @@ describe('AiController', () => {
       expect(service.rewriteParagraph).toHaveBeenCalledWith(
         'old paragraph',
         'make it vivid',
+        'zh',
       );
       expect(result).toEqual({ rewritten: 'new paragraph' });
     });
@@ -152,6 +163,7 @@ describe('AiController', () => {
         'existing text',
         'Common App #1',
         'hopeful',
+        'zh',
       );
       expect(result).toEqual({ continuation: 'more text' });
     });
@@ -165,6 +177,7 @@ describe('AiController', () => {
       expect(service.generateOpening).toHaveBeenCalledWith(
         'Why us?',
         'science passion',
+        'zh',
       );
       expect(result).toEqual({ opening: 'It was a dark...' });
     });
@@ -178,6 +191,7 @@ describe('AiController', () => {
       expect(service.generateEnding).toHaveBeenCalledWith(
         'essay body',
         'Common App #1',
+        'zh',
       );
       expect(result).toEqual({ ending: 'In conclusion...' });
     });

@@ -1,4 +1,11 @@
-import { IsArray, IsString, IsOptional, ArrayMaxSize } from 'class-validator';
+import {
+  IsArray,
+  IsString,
+  IsOptional,
+  IsNotEmpty,
+  ArrayMaxSize,
+  ArrayMinSize,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class PredictionRequestDto {
@@ -6,11 +13,14 @@ export class PredictionRequestDto {
     description: '目标学校ID列表',
     example: ['school-id-1', 'school-id-2'],
     type: [String],
+    minItems: 1,
     maxItems: 10,
   })
   @IsArray()
-  @IsString({ each: true })
+  @ArrayMinSize(1)
   @ArrayMaxSize(10)
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
   schoolIds: string[];
 
   @ApiProperty({

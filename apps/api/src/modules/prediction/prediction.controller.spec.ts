@@ -8,7 +8,12 @@ describe('PredictionController', () => {
   let predictionService: PredictionService;
   let prisma: PrismaService;
 
-  const mockUser = { id: 'user-1', email: 'test@test.com', role: 'USER' };
+  const mockUser = {
+    id: 'user-1',
+    email: 'test@test.com',
+    role: 'USER',
+    locale: 'zh',
+  };
 
   const mockProfile = { id: 'profile-1', userId: 'user-1' };
 
@@ -39,7 +44,11 @@ describe('PredictionController', () => {
         {
           provide: PredictionService,
           useValue: {
-            predict: jest.fn().mockResolvedValue(mockPredictionResults),
+            predict: jest.fn().mockResolvedValue({
+              results: mockPredictionResults,
+              dataCompleteness: 0.8,
+              memoryContext: {},
+            }),
             getPredictionHistory: jest.fn().mockResolvedValue(mockHistory),
             reportActualResult: jest.fn().mockResolvedValue(undefined),
             getCalibrationData: jest.fn().mockResolvedValue(mockCalibration),
@@ -77,6 +86,7 @@ describe('PredictionController', () => {
         'profile-1',
         ['school-1', 'school-2'],
         false,
+        'zh',
       );
       expect(result.results).toEqual(mockPredictionResults);
       expect(result.processingTime).toBeGreaterThanOrEqual(0);

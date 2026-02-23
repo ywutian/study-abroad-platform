@@ -110,8 +110,24 @@ export class PredictionResultDto {
   @ApiPropertyOptional({ description: '是否来自缓存' })
   fromCache?: boolean;
 
-  @ApiPropertyOptional({ description: '模型版本', example: 'v2-ensemble' })
+  @ApiPropertyOptional({ description: '缓存时间 (ISO string)' })
+  cachedAt?: string;
+
+  @ApiPropertyOptional({ description: '模型版本', example: 'v3-enterprise' })
   modelVersion?: string;
+
+  @ApiPropertyOptional({ description: '学校元数据' })
+  schoolMeta?: {
+    usNewsRank?: number;
+    acceptanceRate?: number;
+    graduationRate?: number;
+    satAvg?: number;
+    sat25?: number;
+    sat75?: number;
+  };
+
+  @ApiPropertyOptional({ description: '跨引擎一致性 (0-1)' })
+  crossEngineConsistency?: number;
 }
 
 export class PredictionResponseDto {
@@ -129,5 +145,11 @@ export class PredictionResponseDto {
     previousPredictions: number;
     knownPreferences: string[];
     dataPoints: number;
+  };
+
+  @ApiPropertyOptional({ description: '验证摘要' })
+  validationSummary?: {
+    violations: string[];
+    warnings: string[];
   };
 }

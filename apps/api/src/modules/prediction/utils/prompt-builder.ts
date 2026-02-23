@@ -1,5 +1,5 @@
 /**
- * 预测 Prompt 构建器
+ * 预测 Prompt 构建器 (i18n-aware)
  */
 
 export interface ProfileInput {
@@ -37,13 +37,17 @@ export interface SchoolInput {
   act25?: number;
   act75?: number;
   usNewsRank?: number;
+  graduationRate?: number;
 }
 
 /**
  * 格式化标化成绩
  */
-function formatTestScores(scores: ProfileInput['testScores']): string {
-  if (!scores || scores.length === 0) return '未提供';
+function formatTestScores(
+  scores: ProfileInput['testScores'],
+  isZh: boolean,
+): string {
+  if (!scores || scores.length === 0) return isZh ? '未提供' : 'Not provided';
 
   return scores
     .map((s) => {
@@ -62,8 +66,8 @@ function formatTestScores(scores: ProfileInput['testScores']): string {
 /**
  * 格式化获奖情况
  */
-function formatAwards(awards: ProfileInput['awards']): string {
-  if (!awards || awards.length === 0) return '无';
+function formatAwards(awards: ProfileInput['awards'], isZh: boolean): string {
+  if (!awards || awards.length === 0) return isZh ? '无' : 'None';
 
   const levelCounts: Record<string, number> = {};
   awards.forEach((a) => {
@@ -71,15 +75,20 @@ function formatAwards(awards: ProfileInput['awards']): string {
   });
 
   return Object.entries(levelCounts)
-    .map(([level, count]) => `${level}: ${count}项`)
+    .map(([level, count]) =>
+      isZh ? `${level}: ${count}项` : `${level}: ${count}`,
+    )
     .join(', ');
 }
 
 /**
  * 格式化活动情况
  */
-function formatActivities(activities: ProfileInput['activities']): string {
-  if (!activities || activities.length === 0) return '无';
+function formatActivities(
+  activities: ProfileInput['activities'],
+  isZh: boolean,
+): string {
+  if (!activities || activities.length === 0) return isZh ? '无' : 'None';
 
   const categoryCounts: Record<string, number> = {};
   let totalHours = 0;
@@ -92,10 +101,13 @@ function formatActivities(activities: ProfileInput['activities']): string {
   });
 
   const categories = Object.entries(categoryCounts)
-    .map(([cat, count]) => `${cat}: ${count}项`)
+    .map(([cat, count]) => (isZh ? `${cat}: ${count}项` : `${cat}: ${count}`))
     .join(', ');
 
-  return `共${activities.length}项活动 (${categories})${totalHours > 0 ? `，约${totalHours}小时` : ''}`;
+  if (isZh) {
+    return `共${activities.length}项活动 (${categories})${totalHours > 0 ? `，约${totalHours}小时` : ''}`;
+  }
+  return `${activities.length} activities (${categories})${totalHours > 0 ? `, ~${totalHours} hours` : ''}`;
 }
 
 /**
@@ -104,26 +116,37 @@ function formatActivities(activities: ProfileInput['activities']): string {
 export function buildPredictionPrompt(
   profile: ProfileInput,
   school: SchoolInput,
+  locale = 'zh',
 ): string {
+  const isZh = locale === 'zh';
   const gpaText = profile.gpa
     ? `${profile.gpa}/${profile.gpaScale || 4.0}`
-    : '未提供';
+    : isZh
+      ? '未提供'
+      : 'Not provided';
 
-  return `你是一位资深的美国大学招生顾问，拥有20年经验，对各大学录取标准有深入了解。请根据以下学生档案和目标学校数据，进行专业的录取概率预测。
+  const schoolName = isZh
+    ? school.nameZh || school.name
+    : school.name || school.nameZh;
+  const unknown = isZh ? '未知' : 'Unknown';
+
+  if (isZh) {
+    return `你是一位资深的美国大学招生顾问，拥有20年经验，对各大学录取标准有深入了解。请根据以下学生档案和目标学校数据，进行专业的录取概率预测。请用中文回复所有文本字段（factors的name、detail、improvement，suggestions等）。
 
 ## 学生档案
 - GPA: ${gpaText}
-- 年级: ${profile.grade || '未知'}
-- 标化成绩: ${formatTestScores(profile.testScores)}
+- 年级: ${profile.grade || unknown}
+- 标化成绩: ${formatTestScores(profile.testScores, true)}
 - 目标专业: ${profile.targetMajor || '未确定'}
-- 活动经历: ${formatActivities(profile.activities)}
-- 获奖情况: ${formatAwards(profile.awards)}
+- 活动经历: ${formatActivities(profile.activities, true)}
+- 获奖情况: ${formatAwards(profile.awards, true)}
 
-## 目标学校: ${school.nameZh || school.name}
-- US News 排名: ${school.usNewsRank ? `#${school.usNewsRank}` : '未知'}
-- 录取率: ${school.acceptanceRate ? `${school.acceptanceRate}%` : '未知'}
-- 平均 SAT: ${school.satAvg || '未知'}${school.sat25 && school.sat75 ? ` (25th-75th: ${school.sat25}-${school.sat75})` : ''}
-- 平均 ACT: ${school.actAvg || '未知'}${school.act25 && school.act75 ? ` (25th-75th: ${school.act25}-${school.act75})` : ''}
+## 目标学校: ${schoolName}
+- US News 排名: ${school.usNewsRank ? `#${school.usNewsRank}` : unknown}
+- 录取率: ${school.acceptanceRate ? `${school.acceptanceRate}%` : unknown}
+- 毕业率: ${school.graduationRate ? `${school.graduationRate}%` : unknown}
+- 平均 SAT: ${school.satAvg || unknown}${school.sat25 && school.sat75 ? ` (25th-75th: ${school.sat25}-${school.sat75})` : ''}
+- 平均 ACT: ${school.actAvg || unknown}${school.act25 && school.act75 ? ` (25th-75th: ${school.act25}-${school.act75})` : ''}
 
 ## 分析要求
 1. 综合评估学生竞争力与学校录取标准的匹配度
@@ -143,16 +166,16 @@ export function buildPredictionPrompt(
   "tier": "<reach|match|safety>",
   "factors": [
     {
-      "name": "因素名称",
+      "name": "因素名称（中文）",
       "impact": "<positive|neutral|negative>",
       "weight": <0到1之间>,
-      "detail": "具体分析说明",
-      "improvement": "改进建议或null"
+      "detail": "具体分析说明（中文）",
+      "improvement": "改进建议或null（中文）"
     }
   ],
   "suggestions": [
-    "建议1",
-    "建议2"
+    "建议1（中文）",
+    "建议2（中文）"
   ],
   "comparison": {
     "gpaPercentile": <0-100的整数>,
@@ -166,7 +189,71 @@ export function buildPredictionPrompt(
 - confidence: low/medium/high，根据数据完整度判断（缺少标化/活动数据时应为 low）
 - tier: reach(冲刺)/match(匹配)/safety(保底)
 - factors: 3-5个关键因素，weight 之和应接近1。对缺失的数据（如未提供标化成绩）也要作为 negative 因素分析
+- **所有文本字段必须用中文**
 - 只返回 JSON，不要其他内容`;
+  }
+
+  // English prompt
+  return `You are an expert US college admissions consultant with 20 years of experience. Based on the following student profile and target school data, provide a professional admission probability prediction. Respond entirely in English for all text fields.
+
+## Student Profile
+- GPA: ${gpaText}
+- Grade: ${profile.grade || unknown}
+- Test Scores: ${formatTestScores(profile.testScores, false)}
+- Target Major: ${profile.targetMajor || 'Undecided'}
+- Activities: ${formatActivities(profile.activities, false)}
+- Awards: ${formatAwards(profile.awards, false)}
+
+## Target School: ${schoolName}
+- US News Rank: ${school.usNewsRank ? `#${school.usNewsRank}` : unknown}
+- Acceptance Rate: ${school.acceptanceRate ? `${school.acceptanceRate}%` : unknown}
+- Graduation Rate: ${school.graduationRate ? `${school.graduationRate}%` : unknown}
+- Average SAT: ${school.satAvg || unknown}${school.sat25 && school.sat75 ? ` (25th-75th: ${school.sat25}-${school.sat75})` : ''}
+- Average ACT: ${school.actAvg || unknown}${school.act25 && school.act75 ? ` (25th-75th: ${school.act25}-${school.act75})` : ''}
+
+## Analysis Requirements
+1. Evaluate the student's competitiveness against the school's admission standards
+2. Consider test scores, GPA, activities, and awards holistically
+3. Provide specific, actionable improvement suggestions
+4. **CRITICAL**: Probability must reflect the school's acceptance rate and student competitiveness. Different schools must show significant variation:
+   - Top schools with <10% acceptance (e.g., MIT, Stanford): probability typically 0.05-0.25 even for strong students
+   - Selective schools with 10%-30% acceptance: typically 0.15-0.50
+   - Schools with >30% acceptance: typically 0.30-0.80
+   - Missing test scores significantly reduce competitiveness (10-20 percentage points)
+   - Missing extracurriculars and awards also lower competitiveness
+
+## Response Format (strict JSON)
+{
+  "probability": <decimal between 0 and 1>,
+  "confidence": "<low|medium|high>",
+  "tier": "<reach|match|safety>",
+  "factors": [
+    {
+      "name": "Factor name (English)",
+      "impact": "<positive|neutral|negative>",
+      "weight": <decimal between 0 and 1>,
+      "detail": "Detailed analysis (English)",
+      "improvement": "Improvement suggestion or null (English)"
+    }
+  ],
+  "suggestions": [
+    "Suggestion 1 (English)",
+    "Suggestion 2 (English)"
+  ],
+  "comparison": {
+    "gpaPercentile": <integer 0-100>,
+    "testScorePercentile": <integer 0-100>,
+    "activityStrength": "<strong|average|weak>"
+  }
+}
+
+Notes:
+- probability: decimal between 0-1. Must vary significantly based on school acceptance rate
+- confidence: low/medium/high, based on data completeness (low when missing test scores/activities)
+- tier: reach/match/safety
+- factors: 3-5 key factors, weights should sum close to 1. Treat missing data (e.g., no test scores) as a negative factor
+- **All text fields must be in English**
+- Return JSON only, no other content`;
 }
 
 /**
@@ -175,23 +262,37 @@ export function buildPredictionPrompt(
 export function buildBatchPredictionPrompt(
   profile: ProfileInput,
   schools: SchoolInput[],
+  locale = 'zh',
 ): string {
+  const isZh = locale === 'zh';
   const gpaText = profile.gpa
     ? `${profile.gpa}/${profile.gpaScale || 4.0}`
-    : '未提供';
+    : isZh
+      ? '未提供'
+      : 'N/A';
 
   const schoolsList = schools
-    .map(
-      (s) =>
-        `- ${s.nameZh || s.name} (排名: ${s.usNewsRank || '未知'}, 录取率: ${s.acceptanceRate || '未知'}%)`,
-    )
+    .map((s) => {
+      const name = isZh ? s.nameZh || s.name : s.name || s.nameZh;
+      const rank = s.usNewsRank ? `#${s.usNewsRank}` : isZh ? '未知' : 'N/A';
+      const rate =
+        s.acceptanceRate != null
+          ? `${s.acceptanceRate}%`
+          : isZh
+            ? '未知'
+            : 'N/A';
+      return isZh
+        ? `- ${name} (排名: ${rank}, 录取率: ${rate})`
+        : `- ${name} (Rank: ${rank}, Acceptance: ${rate})`;
+    })
     .join('\n');
 
-  return `你是资深美国大学招生顾问。根据学生档案，快速评估多所学校的录取概率。
+  if (isZh) {
+    return `你是资深美国大学招生顾问。根据学生档案，快速评估多所学校的录取概率。请用中文回复。
 
 ## 学生档案
 - GPA: ${gpaText}
-- 标化: ${formatTestScores(profile.testScores)}
+- 标化: ${formatTestScores(profile.testScores, true)}
 - 活动: ${profile.activities?.length || 0}项
 - 奖项: ${profile.awards?.length || 0}项
 
@@ -205,9 +306,102 @@ ${schoolsList}
     "probability": 0.35,
     "tier": "reach",
     "mainFactor": "GPA竞争力强",
-    "suggestion": "一条关键建议"
+    "suggestion": "一条关键建议（中文）"
   }
 ]
 
 只返回JSON数组。`;
+  }
+
+  return `You are an expert US college admissions consultant. Based on the student profile, quickly evaluate admission probability for multiple schools. Respond in English.
+
+## Student Profile
+- GPA: ${gpaText}
+- Test Scores: ${formatTestScores(profile.testScores, false)}
+- Activities: ${profile.activities?.length || 0}
+- Awards: ${profile.awards?.length || 0}
+
+## Target Schools
+${schoolsList}
+
+Return a JSON array for each school:
+[
+  {
+    "schoolId": "xxx",
+    "probability": 0.35,
+    "tier": "reach",
+    "mainFactor": "Strong GPA",
+    "suggestion": "One key suggestion (English)"
+  }
+]
+
+Return JSON array only.`;
+}
+
+/**
+ * 稳定的 system prompt（纯静态，不含用户数据）
+ * 用于与 seed 配合保证确定性输出
+ */
+export function buildStableSystemPrompt(locale = 'zh'): string {
+  if (locale === 'zh') {
+    return `你是一位资深的美国大学招生顾问，拥有20年经验。请根据提供的学生档案和学校数据，进行专业的录取概率预测。请用中文回复所有文本字段。
+
+返回格式（严格 JSON）:
+{
+  "probability": <0到1之间的小数>,
+  "confidence": "<low|medium|high>",
+  "tier": "<reach|match|safety>",
+  "factors": [{ "name": "因素名称", "impact": "<positive|neutral|negative>", "weight": <0-1>, "detail": "分析", "improvement": "建议或null" }],
+  "suggestions": ["建议1", "建议2"],
+  "comparison": { "gpaPercentile": <0-100>, "testScorePercentile": <0-100>, "activityStrength": "<strong|average|weak>" }
+}
+
+关键规则:
+- probability 必须基于学校录取率和学生竞争力综合计算
+- 录取率 < 10%: probability 通常 0.05-0.25
+- 录取率 10%-30%: probability 通常 0.15-0.50
+- 录取率 > 30%: probability 通常 0.30-0.80
+- 缺少标化成绩降低 10-20 个百分点
+- factors 的 weight 之和应接近1
+- 只返回 JSON，不要其他内容`;
+  }
+
+  return `You are an expert US college admissions consultant with 20 years of experience. Based on the provided student profile and school data, provide a professional admission probability prediction. Respond entirely in English.
+
+Response format (strict JSON):
+{
+  "probability": <decimal 0-1>,
+  "confidence": "<low|medium|high>",
+  "tier": "<reach|match|safety>",
+  "factors": [{ "name": "Factor", "impact": "<positive|neutral|negative>", "weight": <0-1>, "detail": "Analysis", "improvement": "Suggestion or null" }],
+  "suggestions": ["Suggestion 1", "Suggestion 2"],
+  "comparison": { "gpaPercentile": <0-100>, "testScorePercentile": <0-100>, "activityStrength": "<strong|average|weak>" }
+}
+
+Key rules:
+- Probability must reflect school acceptance rate and student competitiveness
+- <10% acceptance: probability typically 0.05-0.25
+- 10%-30% acceptance: typically 0.15-0.50
+- >30% acceptance: typically 0.30-0.80
+- Missing test scores reduce by 10-20 percentage points
+- Factor weights should sum close to 1
+- Return JSON only, no other content`;
+}
+
+/**
+ * 易变的用户上下文（记忆洞察等）
+ * 作为 user message 的一部分，不影响 seed 确定性
+ */
+export function buildVolatileUserContext(
+  memoryInsights: string[],
+  locale = 'zh',
+): string {
+  if (!memoryInsights || memoryInsights.length === 0) return '';
+
+  const isZh = locale === 'zh';
+  const header = isZh
+    ? '## 历史记忆上下文（参考）'
+    : '## Historical Memory Context (Reference)';
+  const items = memoryInsights.map((m) => `- ${m}`).join('\n');
+  return `\n\n${header}\n${items}`;
 }

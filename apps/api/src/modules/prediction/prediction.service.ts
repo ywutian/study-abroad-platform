@@ -1,9 +1,18 @@
-import { Injectable, Logger, Optional } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  Optional,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AiService } from '../ai/ai.service';
 import { RedisService } from '../../common/redis/redis.service';
 import { MemoryManagerService } from '../ai-agent/memory';
 import { MemoryType, EntityType, Prisma, School } from '@prisma/client';
+import {
+  AI_PREDICTION_TIMEOUT_MS,
+  PREDICTION_LOCK_TTL,
+} from './prediction-error';
 
 /** Profile with included relations used by prediction logic */
 type ProfileWithRelations = Prisma.ProfileGetPayload<{
@@ -35,18 +44,20 @@ import {
   calculateConfidence,
   normalizeGpa,
   parseRange,
+  enforceMonotonicity,
+  calculateSelectivityIndex,
 } from './utils/score-calculator';
 
 // ============================================
 // Constants
 // ============================================
 
-const CACHE_TTL = 3600; // 1 hour
+const CACHE_TTL = 86400; // 24 hours — profile changes trigger invalidation via invalidateUserCache()
 const CACHE_PREFIX = 'prediction:';
 const DISTRIBUTION_CACHE_TTL = 86400; // 24 hours
 const DISTRIBUTION_CACHE_PREFIX = 'school:distribution:';
 const CALIBRATION_CACHE_PREFIX = 'prediction:calibration:';
-const MODEL_VERSION = 'v2-ensemble';
+const MODEL_VERSION = 'v3-enterprise';
 
 /**
  * 引擎权重配置
@@ -92,12 +103,51 @@ const CONFIDENCE_INTERVAL_WIDTH = {
 export class PredictionService {
   private readonly logger = new Logger(PredictionService.name);
 
+  // AI service circuit breaker state
+  private aiCircuitBreaker = {
+    failures: 0,
+    lastFailureTime: 0,
+    state: 'closed' as 'closed' | 'open' | 'half-open',
+    threshold: 5,
+    resetTimeout: 60_000,
+  };
+
   constructor(
     private prisma: PrismaService,
     private aiService: AiService,
     private redis: RedisService,
     @Optional() private memoryManager?: MemoryManagerService,
   ) {}
+
+  private isAiCircuitOpen(): boolean {
+    if (this.aiCircuitBreaker.state === 'open') {
+      if (
+        Date.now() - this.aiCircuitBreaker.lastFailureTime >
+        this.aiCircuitBreaker.resetTimeout
+      ) {
+        this.aiCircuitBreaker.state = 'half-open';
+        return false;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  private recordAiSuccess(): void {
+    this.aiCircuitBreaker.failures = 0;
+    this.aiCircuitBreaker.state = 'closed';
+  }
+
+  private recordAiFailure(): void {
+    this.aiCircuitBreaker.failures++;
+    this.aiCircuitBreaker.lastFailureTime = Date.now();
+    if (this.aiCircuitBreaker.failures >= this.aiCircuitBreaker.threshold) {
+      this.aiCircuitBreaker.state = 'open';
+      this.logger.warn(
+        `AI circuit breaker OPEN after ${this.aiCircuitBreaker.threshold} consecutive failures`,
+      );
+    }
+  }
 
   // ==================== 缓存管理 ====================
 
@@ -113,6 +163,35 @@ export class PredictionService {
   }
 
   /**
+   * Hash prediction-relevant profile fields for cache key versioning.
+   * Ensures stale cache is not served when profile data changes.
+   */
+  private hashProfileData(profile: {
+    gpa?: any;
+    gpaScale?: any;
+    testScores?: Array<{ type: string; score: number }>;
+    activities?: any[];
+    awards?: Array<{ level?: string }>;
+  }): string {
+    const data = JSON.stringify({
+      gpa: profile.gpa,
+      gpaScale: profile.gpaScale,
+      scores: (profile.testScores || []).map((s) => ({
+        t: s.type,
+        s: s.score,
+      })),
+      actCount: (profile.activities || []).length,
+      awards: (profile.awards || []).map((a) => a.level).sort(),
+    });
+    let hash = 2166136261; // FNV offset basis
+    for (let i = 0; i < data.length; i++) {
+      hash ^= data.charCodeAt(i);
+      hash = (hash * 16777619) >>> 0;
+    }
+    return hash.toString(36);
+  }
+
+  /**
    * Retrieve a cached prediction result from Redis.
    *
    * @param profileId - The profile identifier
@@ -122,13 +201,23 @@ export class PredictionService {
   private async getFromCache(
     profileId: string,
     schoolId: string,
+    profileHash?: string,
   ): Promise<PredictionResultDto | null> {
     try {
-      const cached = await this.redis.getJSON<PredictionResultDto>(
-        this.getCacheKey(profileId, schoolId),
-      );
+      const cached = await this.redis.getJSON<
+        PredictionResultDto & { _profileHash?: string }
+      >(this.getCacheKey(profileId, schoolId));
       if (cached) {
-        return { ...cached, fromCache: true };
+        // Hash-on-read: treat as cache miss if profile data changed
+        if (
+          profileHash &&
+          cached._profileHash &&
+          cached._profileHash !== profileHash
+        ) {
+          return null;
+        }
+        const { _profileHash: _, ...result } = cached;
+        return { ...result, fromCache: true, cachedAt: result.cachedAt };
       }
     } catch (error) {
       this.logger.warn(`Cache read failed`, error);
@@ -137,21 +226,27 @@ export class PredictionService {
   }
 
   /**
-   * Persist a prediction result to Redis with a 1-hour TTL.
+   * Persist a prediction result to Redis with a 24-hour TTL.
    *
    * @param profileId - The profile identifier
    * @param schoolId - The school identifier
    * @param result - The prediction result to cache
+   * @param profileHash - Hash of profile data, stored inside the value for stale-on-read detection
    */
   private async saveToCache(
     profileId: string,
     schoolId: string,
     result: PredictionResultDto,
+    profileHash?: string,
   ): Promise<void> {
     try {
       await this.redis.setJSON(
         this.getCacheKey(profileId, schoolId),
-        result,
+        {
+          ...result,
+          cachedAt: new Date().toISOString(),
+          _profileHash: profileHash,
+        },
         CACHE_TTL,
       );
     } catch (error) {
@@ -512,6 +607,76 @@ export class PredictionService {
     }
   }
 
+  /**
+   * 通用的预测结果记忆写入（供桥接路径使用）。
+   * 写入轻量级 FACT 记忆（重要性 0.5），不覆盖高质量 DECISION 记忆。
+   * 同时更新 SCHOOL 实体的预测属性。
+   */
+  async recordBridgePredictionToMemory(
+    userId: string,
+    schools: Array<{ name: string; probability: number; tier: string }>,
+    source: string,
+  ): Promise<void> {
+    if (!this.memoryManager || schools.length === 0) return;
+
+    const sourceLabel =
+      source === 'quick-match'
+        ? '快速匹配'
+        : source === 'ai-recommend'
+          ? 'AI 推荐'
+          : source === 'recommendation'
+            ? '智能选校'
+            : source;
+
+    const topSchools = schools.slice(0, 5);
+    const summary = topSchools
+      .map(
+        (s) =>
+          `${s.name} ${(s.probability * 100).toFixed(0)}%(${
+            s.tier === 'reach' ? '冲刺' : s.tier === 'match' ? '匹配' : '保底'
+          })`,
+      )
+      .join(', ');
+
+    await this.memoryManager.remember(userId, {
+      type: MemoryType.FACT,
+      category: 'school_prediction',
+      content: `通过${sourceLabel}获得预测: ${summary}`,
+      importance: 0.5,
+      metadata: {
+        source,
+        schoolCount: schools.length,
+        topSchools: topSchools.map((s) => ({
+          name: s.name,
+          probability: s.probability,
+          tier: s.tier,
+        })),
+        timestamp: new Date().toISOString(),
+      },
+    });
+
+    // 更新 SCHOOL 实体
+    for (const school of topSchools) {
+      await this.memoryManager.recordEntity(userId, {
+        type: EntityType.SCHOOL,
+        name: school.name,
+        description: `录取概率${(school.probability * 100).toFixed(0)}%（${
+          school.tier === 'reach'
+            ? '冲刺校'
+            : school.tier === 'match'
+              ? '匹配校'
+              : '保底校'
+        }）`,
+        attributes: {
+          probability: school.probability,
+          tier: school.tier,
+          source,
+          lastPredictedAt: new Date().toISOString(),
+        },
+      });
+    }
+  }
+
   // ==================== 数据转换 ====================
 
   /**
@@ -567,6 +732,9 @@ export class PredictionService {
       act25: school.act25 ?? undefined,
       act75: school.act75 ?? undefined,
       usNewsRank: school.usNewsRank ?? undefined,
+      graduationRate: school.graduationRate
+        ? Number(school.graduationRate)
+        : undefined,
     };
   }
 
@@ -653,7 +821,7 @@ export class PredictionService {
 
     // School 数据 (40 分)
     if (school.acceptanceRate) score += 10;
-    if (school.usNewsRank) score += 10;
+    if (school.graduationRate) score += 10;
     if (school.satAvg || (school.sat25 && school.sat75)) score += 10;
     if (school.actAvg || (school.act25 && school.act75)) score += 10;
 
@@ -679,11 +847,13 @@ export class PredictionService {
     profile: ProfileInput,
     school: SchoolInput,
     historicalDistribution?: HistoricalDistribution,
+    locale = 'zh',
   ): {
     probability: number;
     factors: PredictionFactor[];
     comparison: PredictionComparison;
   } {
+    const isZh = locale === 'zh';
     const profileMetrics = this.extractProfileMetrics(profile);
     const schoolMetrics = this.extractSchoolMetrics(school);
 
@@ -712,10 +882,16 @@ export class PredictionService {
             : 'negative',
         weight: 0.3,
         detail: isGood
-          ? `GPA ${normalizedGpa.toFixed(2)} 具有较强竞争力`
-          : `GPA ${normalizedGpa.toFixed(2)} 需要其他方面弥补`,
+          ? isZh
+            ? `GPA ${normalizedGpa.toFixed(2)} 具有较强竞争力`
+            : `GPA of ${normalizedGpa.toFixed(2)} is competitive for ${school.name || school.nameZh}`
+          : isZh
+            ? `GPA ${normalizedGpa.toFixed(2)} 需要其他方面弥补`
+            : `GPA of ${normalizedGpa.toFixed(2)} needs support from other areas`,
         improvement: !isGood
-          ? '建议在剩余学期提高GPA，选修有把握的课程'
+          ? isZh
+            ? '建议在剩余学期提高GPA，选修有把握的课程'
+            : 'Consider improving GPA in remaining semesters by taking courses you can excel in'
           : undefined,
       });
     } else {
@@ -723,51 +899,78 @@ export class PredictionService {
         name: 'GPA',
         impact: 'negative',
         weight: 0.3,
-        detail: '未提供GPA信息，无法评估学术水平',
-        improvement: '请在个人档案中填写GPA信息以获得更准确的预测',
+        detail: isZh
+          ? '未提供GPA信息，无法评估学术水平'
+          : 'GPA not provided — unable to assess academic standing',
+        improvement: isZh
+          ? '请在个人档案中填写GPA信息以获得更准确的预测'
+          : 'Add your GPA to your profile for a more accurate prediction',
       });
     }
 
     if (profileMetrics.satScore) {
       const isGood = profileMetrics.satScore >= (schoolMetrics.satAvg || 1400);
       factors.push({
-        name: '标化成绩',
+        name: isZh ? '标化成绩' : 'Standardized Test Scores',
         impact: isGood ? 'positive' : 'negative',
         weight: 0.25,
         detail: isGood
-          ? `SAT ${profileMetrics.satScore} 达到或超过学校平均水平`
-          : `SAT ${profileMetrics.satScore} 略低于学校平均水平`,
-        improvement: !isGood ? '建议考虑重考SAT或提交ACT成绩' : undefined,
+          ? isZh
+            ? `SAT ${profileMetrics.satScore} 达到或超过学校平均水平`
+            : `SAT ${profileMetrics.satScore} meets or exceeds the school average`
+          : isZh
+            ? `SAT ${profileMetrics.satScore} 略低于学校平均水平`
+            : `SAT ${profileMetrics.satScore} is below the school average`,
+        improvement: !isGood
+          ? isZh
+            ? '建议考虑重考SAT或提交ACT成绩'
+            : 'Consider retaking the SAT or submitting ACT scores'
+          : undefined,
       });
     } else if (!profileMetrics.actScore) {
       factors.push({
-        name: '标化成绩',
+        name: isZh ? '标化成绩' : 'Standardized Test Scores',
         impact: 'negative',
         weight: 0.25,
-        detail: '未提供标化成绩，可能会影响整体竞争力',
-        improvement:
-          '建议在个人档案中添加SAT/ACT成绩，或说明是否选择test-optional',
+        detail: isZh
+          ? '未提供标化成绩，可能会影响整体竞争力'
+          : 'No standardized test scores provided, which may reduce competitiveness',
+        improvement: isZh
+          ? '建议在个人档案中添加SAT/ACT成绩，或说明是否选择test-optional'
+          : 'Provide SAT or ACT scores to strengthen your application',
       });
     }
 
     if (profileMetrics.activityCount > 0) {
       const isGood = profileMetrics.activityCount >= 5;
       factors.push({
-        name: '活动经历',
+        name: isZh ? '活动经历' : 'Extracurricular Activities',
         impact: isGood ? 'positive' : 'neutral',
         weight: 0.25,
         detail: isGood
-          ? `${profileMetrics.activityCount}项活动展示了多元化兴趣`
-          : `${profileMetrics.activityCount}项活动，建议增加深度参与`,
-        improvement: !isGood ? '建议在现有活动中发挥领导作用' : undefined,
+          ? isZh
+            ? `${profileMetrics.activityCount}项活动展示了多元化兴趣`
+            : `${profileMetrics.activityCount} activities demonstrate diverse interests`
+          : isZh
+            ? `${profileMetrics.activityCount}项活动，建议增加深度参与`
+            : `${profileMetrics.activityCount} activities — consider deepening your involvement`,
+        improvement: !isGood
+          ? isZh
+            ? '建议在现有活动中发挥领导作用'
+            : 'Take on leadership roles in your current activities'
+          : undefined,
       });
     } else {
       factors.push({
-        name: '活动经历',
+        name: isZh ? '活动经历' : 'Extracurricular Activities',
         impact: 'negative',
         weight: 0.25,
-        detail: '缺乏课外活动经历，可能会使申请者在综合评估中处于劣势',
-        improvement: '建议添加课外活动信息，展示学术外的能力和兴趣',
+        detail: isZh
+          ? '缺乏课外活动经历，可能会使申请者在综合评估中处于劣势'
+          : 'No extracurricular activities may weaken the overall application',
+        improvement: isZh
+          ? '建议添加课外活动信息，展示学术外的能力和兴趣'
+          : 'Add extracurricular activities to showcase skills and interests beyond academics',
       });
     }
 
@@ -776,21 +979,33 @@ export class PredictionService {
         profileMetrics.nationalAwardCount > 0 ||
         profileMetrics.internationalAwardCount > 0;
       factors.push({
-        name: '获奖情况',
+        name: isZh ? '获奖情况' : 'Awards & Honors',
         impact: hasTopAwards ? 'positive' : 'neutral',
         weight: 0.2,
         detail: hasTopAwards
-          ? `拥有国家级或国际级奖项，增强竞争力`
-          : `${profileMetrics.awardCount}项奖项，建议争取更高级别奖项`,
-        improvement: !hasTopAwards ? '建议参加含金量较高的学科竞赛' : undefined,
+          ? isZh
+            ? '拥有国家级或国际级奖项，增强竞争力'
+            : 'National or international awards strengthen competitiveness'
+          : isZh
+            ? `${profileMetrics.awardCount}项奖项，建议争取更高级别奖项`
+            : `${profileMetrics.awardCount} awards — aim for higher-level recognition`,
+        improvement: !hasTopAwards
+          ? isZh
+            ? '建议参加含金量较高的学科竞赛'
+            : 'Participate in prestigious academic competitions'
+          : undefined,
       });
     } else {
       factors.push({
-        name: '获奖情况',
+        name: isZh ? '获奖情况' : 'Awards & Honors',
         impact: 'negative',
         weight: 0.2,
-        detail: '没有获奖经历，可能会影响申请的竞争力',
-        improvement: '建议参加学科竞赛或其他有影响力的比赛',
+        detail: isZh
+          ? '没有获奖经历，可能会影响申请的竞争力'
+          : 'No awards may affect application competitiveness',
+        improvement: isZh
+          ? '建议参加学科竞赛或其他有影响力的比赛'
+          : 'Participate in academic competitions or other impactful contests',
       });
     }
 
@@ -811,10 +1026,12 @@ export class PredictionService {
       );
       if (isCompetitive) {
         factors.push({
-          name: '目标专业竞争力',
+          name: isZh ? '目标专业竞争力' : 'Target Major Competitiveness',
           impact: 'neutral',
           weight: 0.0, // 信息因素，不影响权重
-          detail: `${profile.targetMajor}专业竞争激烈，申请者需要在各方面表现突出`,
+          detail: isZh
+            ? `${profile.targetMajor}专业竞争激烈，申请者需要在各方面表现突出`
+            : `${profile.targetMajor} is a highly competitive major — strong performance across all areas is needed`,
         });
       }
     }
@@ -832,9 +1049,12 @@ export class PredictionService {
           )
         : 50,
       testScorePercentile: profileMetrics.satScore
-        ? Math.min(
-            99,
-            Math.round(((profileMetrics.satScore - 1000) / 600) * 100),
+        ? Math.max(
+            1,
+            Math.min(
+              99,
+              Math.round(((profileMetrics.satScore - 1000) / 600) * 100),
+            ),
           )
         : 50,
       activityStrength:
@@ -864,41 +1084,72 @@ export class PredictionService {
    * @param memoryInsights - User context strings from the memory system
    * @returns Parsed AI prediction with probability, factors, suggestions, and comparison; or null on failure
    */
+  /**
+   * 计算确定性 seed (FNV-1a hash)，确保相同 profile+school 输入始终产生相同 AI 输出。
+   */
+  private computeSeed(profileId: string, schoolId: string): number {
+    const input = `${profileId}:${schoolId}`;
+    let hash = 2166136261; // FNV offset basis
+    for (let i = 0; i < input.length; i++) {
+      hash ^= input.charCodeAt(i);
+      hash = (hash * 16777619) >>> 0; // FNV prime, keep uint32
+    }
+    return hash % 2_147_483_647;
+  }
+
   private async predictWithAI(
     profile: ProfileInput,
     school: SchoolInput,
     statsResult: { probability: number },
     memoryInsights: string[],
+    locale = 'zh',
+    profileId?: string,
   ): Promise<{
     probability: number;
     factors: PredictionFactor[];
     suggestions: string[];
     comparison: PredictionComparison;
   } | null> {
-    const prompt = buildPredictionPrompt(profile, school);
+    const prompt = buildPredictionPrompt(profile, school, locale);
 
     // 注入统计校准锚点和记忆洞察
     let enhancedPrompt = prompt;
-    enhancedPrompt += `\n\n## 统计模型参考（仅供校准，请根据专业判断调整）\n- 统计模型计算的录取概率: ${(statsResult.probability * 100).toFixed(0)}%\n- 请在此基础上结合专业经验给出最终判断，可上下浮动但需有合理依据。`;
+    if (locale === 'zh') {
+      enhancedPrompt += `\n\n## 统计模型参考（仅供校准，请根据专业判断调整）\n- 统计模型计算的录取概率: ${(statsResult.probability * 100).toFixed(0)}%\n- 请在此基础上结合专业经验给出最终判断，可上下浮动但需有合理依据。`;
+    } else {
+      enhancedPrompt += `\n\n## Statistical Model Reference (for calibration only)\n- Statistical model probability: ${(statsResult.probability * 100).toFixed(0)}%\n- Adjust based on your professional judgment with reasonable justification.`;
+    }
 
     if (memoryInsights.length > 0) {
-      enhancedPrompt += `\n\n## 用户已知背景信息\n${memoryInsights
+      const insightsText = memoryInsights
         .slice(0, 3)
         .map((i) => `- ${i}`)
-        .join('\n')}\n\n请将这些额外信息纳入分析。`;
+        .join('\n');
+      enhancedPrompt +=
+        locale === 'zh'
+          ? `\n\n## 用户已知背景信息\n${insightsText}\n\n请将这些额外信息纳入分析。`
+          : `\n\n## Known User Background\n${insightsText}\n\nIncorporate this information into your analysis.`;
     }
+
+    const systemPrompt =
+      locale === 'zh'
+        ? '你是一位资深美国大学招生顾问，拥有20年经验。请始终用中文回复，且只返回有效的JSON。关键要求：录取概率必须根据学校选拔性显著变化——录取率3%的顶尖学校应远低于录取率25%的学校（同一学生档案）。绝不给不同选拔性的学校相同概率。'
+        : 'You are an expert college admissions consultant with 20 years of experience. Always respond in English with valid JSON only. CRITICAL: Your probability estimates MUST vary significantly based on school selectivity — a top-5 school with 3% acceptance rate should have MUCH lower probability than a top-50 school with 25% acceptance rate for the same student profile. Never give the same probability for schools with different selectivity levels.';
 
     try {
       const response = await this.aiService.chat(
         [
           {
             role: 'system',
-            content:
-              'You are an expert college admissions consultant with 20 years of experience. Always respond with valid JSON only. CRITICAL: Your probability estimates MUST vary significantly based on school selectivity — a top-5 school with 3% acceptance rate should have MUCH lower probability than a top-50 school with 25% acceptance rate for the same student profile. Never give the same probability for schools with different selectivity levels.',
+            content: systemPrompt,
           },
           { role: 'user', content: enhancedPrompt },
         ],
-        { temperature: 0.3, maxTokens: 1500 },
+        {
+          temperature: 0,
+          maxTokens: 1500,
+          ...(profileId && { seed: this.computeSeed(profileId, school.id) }),
+        },
       );
 
       const jsonMatch = response.match(/\{[\s\S]*\}/);
@@ -913,13 +1164,21 @@ export class PredictionService {
 
       probability = Math.max(0.05, Math.min(0.95, probability));
 
-      // 合理性校验：与统计模型偏差不能超过 3 倍
+      // 合理性校验：与统计模型偏差不能超过 1.8 倍
       const statsProb = statsResult.probability;
-      if (probability > statsProb * 3 && statsProb > 0.05) {
-        probability = Math.min(probability, statsProb * 2.5);
+      if (probability > statsProb * 1.8 && statsProb > 0.05) {
+        probability = Math.min(probability, statsProb * 1.8);
       }
-      if (probability < statsProb / 3 && statsProb < 0.8) {
-        probability = Math.max(probability, statsProb / 2.5);
+      if (probability < statsProb / 1.8 && statsProb < 0.8) {
+        probability = Math.max(probability, statsProb / 1.8);
+      }
+
+      // 高选拔性学校额外 cap — 防止 AI 对顶尖学校给出过高概率
+      const schoolMetrics = this.extractSchoolMetrics(school);
+      const selectivity = calculateSelectivityIndex(schoolMetrics);
+      if (selectivity > 0.8) {
+        const aiCap = 0.4 - (selectivity - 0.8) * 1.0;
+        probability = Math.min(probability, Math.max(0.05, aiCap));
       }
 
       return {
@@ -975,10 +1234,14 @@ export class PredictionService {
     probability: number;
     probabilityLow: number;
     probabilityHigh: number;
+    crossEngineConsistency: number;
     engineScores: EngineScores;
   } {
     let weights: Record<string, number>;
     let fusedProbability: number;
+
+    // 计算跨引擎一致性 (0-1, 1=完全一致)
+    let crossEngineConsistency = 1;
 
     if (aiProbability !== null && historicalResult !== null) {
       // 全引擎可用
@@ -986,6 +1249,19 @@ export class PredictionService {
       // 历史数据权重随样本量调整
       const histConfidence = historicalResult.confidence;
       weights.historical = weights.historical * histConfidence;
+
+      // AI 权重根据跨引擎一致性动态调整
+      crossEngineConsistency = Math.max(
+        0,
+        1 - Math.abs(aiProbability - statsProbability) / 0.4,
+      );
+      const aiScale = 0.5 + 0.5 * crossEngineConsistency;
+      const originalAiWeight = weights.ai;
+      weights.ai *= aiScale;
+      const removedWeight = originalAiWeight - weights.ai;
+      weights.stats += removedWeight * 0.6;
+      weights.historical += removedWeight * 0.4;
+
       // 重新归一化
       const totalWeight = weights.stats + weights.ai + weights.historical;
       weights.stats /= totalWeight;
@@ -998,6 +1274,21 @@ export class PredictionService {
         historicalResult.probability * weights.historical;
     } else if (aiProbability !== null) {
       weights = { ...ENGINE_WEIGHTS.noHistory };
+
+      // AI 权重根据跨引擎一致性动态调整
+      crossEngineConsistency = Math.max(
+        0,
+        1 - Math.abs(aiProbability - statsProbability) / 0.4,
+      );
+      const aiScale = 0.5 + 0.5 * crossEngineConsistency;
+      const originalAiWeight = weights.ai;
+      weights.ai *= aiScale;
+      weights.stats += originalAiWeight - weights.ai;
+      // 重新归一化
+      const totalWeight = weights.stats + weights.ai;
+      weights.stats /= totalWeight;
+      weights.ai /= totalWeight;
+
       fusedProbability =
         statsProbability * weights.stats + aiProbability * weights.ai;
     } else if (historicalResult !== null) {
@@ -1014,8 +1305,9 @@ export class PredictionService {
     fusedProbability += memoryAdjustment;
     fusedProbability = Math.max(0.05, Math.min(0.95, fusedProbability));
 
-    // 计算置信区间
-    const intervalWidth = CONFIDENCE_INTERVAL_WIDTH[confidenceLevel];
+    // 计算置信区间 — 引擎不一致时区间更宽
+    let intervalWidth = CONFIDENCE_INTERVAL_WIDTH[confidenceLevel];
+    intervalWidth *= 1 + (1 - crossEngineConsistency) * 0.5;
     const probabilityLow = Math.max(0.01, fusedProbability - intervalWidth / 2);
     const probabilityHigh = Math.min(
       0.99,
@@ -1026,6 +1318,7 @@ export class PredictionService {
       probability: fusedProbability,
       probabilityLow,
       probabilityHigh,
+      crossEngineConsistency,
       engineScores: {
         stats: statsProbability,
         ai: aiProbability ?? undefined,
@@ -1042,6 +1335,151 @@ export class PredictionService {
                 : 'stats_only',
       },
     };
+  }
+
+  // ==================== 验证 ====================
+
+  /**
+   * 批量预测结果验证：在 enforceMonotonicity 之前检测异常。
+   */
+  private validateBatchResults(results: PredictionResultDto[]): {
+    violations: string[];
+    warnings: string[];
+  } {
+    const violations: string[] = [];
+    const warnings: string[] = [];
+
+    // 为每个结果计算 selectivity index
+    const withSel = results
+      .filter((r) => r.schoolMeta)
+      .map((r) => ({
+        result: r,
+        selectivity: calculateSelectivityIndex(r.schoolMeta as SchoolMetrics),
+      }))
+      .sort((a, b) => a.selectivity - b.selectivity); // ascending selectivity
+
+    // Check 1: 单调性违反 — 更高选拔性的学校不应该有更高的概率
+    for (let i = 0; i < withSel.length - 1; i++) {
+      const easier = withSel[i];
+      const harder = withSel[i + 1];
+      if (
+        harder.selectivity > easier.selectivity + 0.05 &&
+        harder.result.probability > easier.result.probability + 0.02
+      ) {
+        violations.push(
+          `${harder.result.schoolName}(sel=${harder.selectivity.toFixed(2)},P=${harder.result.probability.toFixed(2)}) > ${easier.result.schoolName}(sel=${easier.selectivity.toFixed(2)},P=${easier.result.probability.toFixed(2)})`,
+        );
+      }
+    }
+
+    // Check 2: 高选拔性学校概率异常偏高
+    for (const { result, selectivity } of withSel) {
+      if (selectivity > 0.9 && result.probability > 0.45) {
+        warnings.push(
+          `${result.schoolName}(sel=${selectivity.toFixed(2)}) P=${result.probability.toFixed(2)} unusually high`,
+        );
+      }
+    }
+
+    // Check 3: 概率碰撞 (精度 0.01)
+    const probMap = new Map<string, string[]>();
+    for (const r of results) {
+      const key = r.probability.toFixed(2);
+      if (!probMap.has(key)) probMap.set(key, []);
+      probMap.get(key)!.push(r.schoolName);
+    }
+    for (const [prob, schools] of probMap) {
+      if (schools.length > 1) {
+        warnings.push(`P=${prob} shared by: ${schools.join(', ')}`);
+      }
+    }
+
+    return { violations, warnings };
+  }
+
+  // ==================== 校准 ====================
+
+  /**
+   * 基于历史校准数据的 Platt Scaling 修正。
+   *
+   * 读取已有的 (predicted, actual) 数据点，拟合 sigmoid: calibrated = 1 / (1 + exp(-(a*p + b)))
+   * 当校准数据 < 50 条时返回 null，不做修正。
+   * 结果缓存 24 小时。
+   */
+  private async getPlattCalibration(): Promise<{
+    a: number;
+    b: number;
+  } | null> {
+    const cacheKey = `${CALIBRATION_CACHE_PREFIX}platt`;
+
+    try {
+      const cached = await this.redis.getJSON<{ a: number; b: number }>(
+        cacheKey,
+      );
+      if (cached) return cached;
+    } catch {
+      // ignore cache miss
+    }
+
+    const records = await this.prisma.predictionResult.findMany({
+      where: { actualResult: { not: null } },
+      select: { probability: true, actualResult: true },
+    });
+
+    if (records.length < 50) return null;
+
+    // Platt scaling via gradient descent on log-loss with L2 regularization
+    // y = 1 if ADMITTED, 0 otherwise
+    // model: sigma(a * p + b)
+    let a = 1.0;
+    let b = 0.0;
+    const lr = 0.005; // lower learning rate for stability
+    const iterations = 500; // more iterations to compensate
+    const lambda = 0.01; // L2 regularization
+
+    for (let iter = 0; iter < iterations; iter++) {
+      let gradA = 0;
+      let gradB = 0;
+
+      for (const r of records) {
+        const p = Number(r.probability);
+        const y = r.actualResult === 'ADMITTED' ? 1 : 0;
+        const z = Math.max(-500, Math.min(500, a * p + b)); // clamp for numerical stability
+        const sigma = 1 / (1 + Math.exp(-z));
+        const diff = sigma - y;
+        gradA += diff * p;
+        gradB += diff;
+      }
+
+      // L2 regularization
+      gradA += lambda * a;
+      gradB += lambda * b;
+
+      a -= (lr * gradA) / records.length;
+      b -= (lr * gradB) / records.length;
+    }
+
+    const params = { a, b };
+
+    try {
+      await this.redis.setJSON(cacheKey, params, DISTRIBUTION_CACHE_TTL);
+    } catch {
+      // ignore cache write failure
+    }
+
+    return params;
+  }
+
+  /**
+   * 应用 Platt scaling 校准到融合概率
+   */
+  private applyPlattCalibration(
+    probability: number,
+    params: { a: number; b: number },
+  ): number {
+    const z = params.a * probability + params.b;
+    const calibrated = 1 / (1 + Math.exp(-z));
+    return Math.max(0.05, Math.min(0.95, calibrated));
   }
 
   // ==================== 主预测方法 ====================
@@ -1081,7 +1519,61 @@ export class PredictionService {
     profileId: string,
     schoolIds: string[],
     forceRefresh = false,
-  ): Promise<PredictionResultDto[]> {
+    locale = 'zh',
+  ): Promise<{
+    results: PredictionResultDto[];
+    dataCompleteness: number;
+    memoryContext: {
+      previousPredictions: number;
+      knownPreferences: string[];
+      dataPoints: number;
+    };
+  }> {
+    this.logger.log('Prediction requested', {
+      profileId,
+      schoolCount: schoolIds.length,
+      forceRefresh,
+    });
+
+    // Idempotency lock — prevent concurrent identical requests
+    const lockKey = `prediction:lock:${profileId}`;
+    const acquired = await this.redis.setNX(lockKey, '1', PREDICTION_LOCK_TTL);
+    if (!acquired) {
+      throw new ConflictException('Prediction already in progress');
+    }
+
+    try {
+      return await this.predictInternal(
+        profileId,
+        schoolIds,
+        forceRefresh,
+        locale,
+      );
+    } finally {
+      await this.redis.del(lockKey);
+    }
+  }
+
+  private async predictInternal(
+    profileId: string,
+    schoolIds: string[],
+    forceRefresh: boolean,
+    locale: string,
+  ): Promise<{
+    results: PredictionResultDto[];
+    dataCompleteness: number;
+    memoryContext: {
+      previousPredictions: number;
+      knownPreferences: string[];
+      dataPoints: number;
+    };
+  }> {
+    const emptyMemoryCtx = {
+      previousPredictions: 0,
+      knownPreferences: [] as string[],
+      dataPoints: 0,
+    };
+
     const profile = await this.prisma.profile.findUnique({
       where: { id: profileId },
       include: {
@@ -1091,7 +1583,13 @@ export class PredictionService {
       },
     });
 
-    if (!profile) return [];
+    if (!profile) {
+      return {
+        results: [],
+        dataCompleteness: 0,
+        memoryContext: emptyMemoryCtx,
+      };
+    }
 
     const schools = await this.prisma.school.findMany({
       where: { id: { in: schoolIds } },
@@ -1099,9 +1597,13 @@ export class PredictionService {
 
     const profileInput = this.profileToInput(profile);
     const profileMetrics = this.extractProfileMetrics(profileInput);
+    const profileHash = this.hashProfileData(profile);
+
+    // Phase 1.5: 加载 Platt 校准参数（如果有足够校准数据）
+    const plattParams = await this.getPlattCalibration();
 
     // Phase 2: 从记忆系统获取上下文
-    const memoryContext = profile.userId
+    const rawMemoryCtx = profile.userId
       ? await this.getMemoryContext(profile.userId)
       : {
           previousPredictions: [],
@@ -1110,123 +1612,312 @@ export class PredictionService {
           memoryAdjustments: new Map<string, number>(),
         };
 
-    const results: PredictionResultDto[] = [];
+    // Evaluate data completeness using first school as representative
+    let dataCompleteness = 0;
+    if (schools.length > 0) {
+      const firstSchoolInput = this.schoolToInput(schools[0]);
+      dataCompleteness = this.evaluateDataCompleteness(
+        profileInput,
+        firstSchoolInput,
+      );
+    }
 
-    for (const school of schools) {
-      // 检查缓存
-      if (!forceRefresh) {
-        const cached = await this.getFromCache(profileId, school.id);
+    // Transform memory context to DTO shape
+    const memoryContextDto = {
+      previousPredictions: rawMemoryCtx.previousPredictions.length,
+      knownPreferences: rawMemoryCtx.knownPreferences,
+      dataPoints:
+        rawMemoryCtx.previousPredictions.length +
+        rawMemoryCtx.knownPreferences.length +
+        rawMemoryCtx.profileInsights.length,
+    };
+
+    // 分离缓存命中 vs 需要预测的学校
+    const results: PredictionResultDto[] = [];
+    const schoolsToPredict: typeof schools = [];
+
+    // Build schoolMeta lookup (includes fields needed for selectivity index)
+    const schoolMetaMap = new Map<
+      string,
+      {
+        usNewsRank?: number;
+        acceptanceRate?: number;
+        graduationRate?: number;
+        satAvg?: number;
+        sat25?: number;
+        sat75?: number;
+      }
+    >();
+    for (const s of schools) {
+      schoolMetaMap.set(s.id, {
+        usNewsRank: s.usNewsRank ?? undefined,
+        acceptanceRate:
+          s.acceptanceRate != null ? Number(s.acceptanceRate) : undefined,
+        graduationRate:
+          s.graduationRate != null ? Number(s.graduationRate) : undefined,
+        satAvg: s.satAvg ?? undefined,
+        sat25: s.sat25 ?? undefined,
+        sat75: s.sat75 ?? undefined,
+      });
+    }
+
+    if (!forceRefresh) {
+      for (const school of schools) {
+        const cached = await this.getFromCache(
+          profileId,
+          school.id,
+          profileHash,
+        );
         if (cached) {
+          // Attach schoolMeta to cached results too
+          cached.schoolMeta = schoolMetaMap.get(school.id);
           results.push(cached);
-          continue;
+        } else {
+          schoolsToPredict.push(school);
         }
       }
-
-      const schoolInput = this.schoolToInput(school);
-      const schoolMetrics = this.extractSchoolMetrics(schoolInput);
-
-      // 获取历史分布数据
-      const historicalDist = await this.getSchoolDistribution(school.id);
-
-      // === 引擎 1: 统计算法 (always runs) ===
-      const statsResult = this.predictWithStats(
-        profileInput,
-        schoolInput,
-        historicalDist ?? undefined,
-      );
-
-      // === 引擎 2: AI 预测 (may fail → null) ===
-      const aiResult = await this.predictWithAI(
-        profileInput,
-        schoolInput,
-        { probability: statsResult.probability },
-        memoryContext.profileInsights,
-      );
-
-      // === 引擎 3: 历史案例匹配 ===
-      const historicalResult = await this.getHistoricalProbability(
-        profileMetrics,
-        school.id,
-      );
-
-      // 记忆增强调整
-      const memoryAdjustment =
-        memoryContext.memoryAdjustments.get(school.id) || 0;
-
-      // 计算置信度
-      const confidenceLevel = calculateConfidence(
-        profileMetrics,
-        schoolMetrics,
-      );
-
-      // === 融合 ===
-      const fusedResult = this.fusePredictions(
-        statsResult.probability,
-        aiResult?.probability ?? null,
-        historicalResult,
-        memoryAdjustment,
-        confidenceLevel,
-      );
-
-      // 确定 tier
-      const tier = calculateTier(fusedResult.probability, schoolMetrics);
-
-      // 选择最佳 factors (优先 AI，回退 stats)
-      const factors = aiResult?.factors?.length
-        ? aiResult.factors
-        : statsResult.factors;
-
-      // 合并建议
-      const suggestions = this.generateSuggestions(
-        tier,
-        confidenceLevel,
-        profileInput,
-        schoolInput,
-        aiResult?.suggestions,
-      );
-
-      // 选择最佳 comparison (优先 AI，回退 stats)
-      const comparison = aiResult?.comparison || statsResult.comparison;
-
-      const result: PredictionResultDto = {
-        schoolId: school.id,
-        schoolName: school.nameZh || school.name,
-        probability: fusedResult.probability,
-        probabilityLow: fusedResult.probabilityLow,
-        probabilityHigh: fusedResult.probabilityHigh,
-        confidence: confidenceLevel,
-        tier,
-        factors,
-        suggestions,
-        comparison,
-        engineScores: fusedResult.engineScores,
-        modelVersion: MODEL_VERSION,
-      };
-
-      // 保存到缓存
-      await this.saveToCache(profileId, school.id, result);
-
-      // 保存到数据库
-      await this.savePrediction(profileId, school.id, result);
-
-      results.push(result);
+    } else {
+      schoolsToPredict.push(...schools);
     }
+
+    // 并行预测（控制并发上限为 3）
+    const CONCURRENCY = 3;
+    const freshResults: PredictionResultDto[] = [];
+
+    for (let i = 0; i < schoolsToPredict.length; i += CONCURRENCY) {
+      const batch = schoolsToPredict.slice(i, i + CONCURRENCY);
+      const settled = await Promise.allSettled(
+        batch.map((school) =>
+          this.predictForSchool(
+            profileId,
+            profileInput,
+            profileMetrics,
+            school,
+            rawMemoryCtx,
+            locale,
+            plattParams,
+            profileHash,
+          ),
+        ),
+      );
+
+      for (const outcome of settled) {
+        if (outcome.status === 'fulfilled') {
+          // Attach schoolMeta to fresh results
+          outcome.value.schoolMeta = schoolMetaMap.get(outcome.value.schoolId);
+          freshResults.push(outcome.value);
+        } else {
+          this.logger.warn('Prediction failed for a school', outcome.reason);
+        }
+      }
+    }
+
+    results.push(...freshResults);
+
+    // 验证管道：在单调性约束之前检测异常
+    const validation = this.validateBatchResults(results);
+    if (validation.violations.length > 0) {
+      this.logger.warn(
+        'Monotonicity violations pre-PAV',
+        validation.violations,
+      );
+    }
+
+    // 单调性约束: 保证 selectivity 更高的学校 probability 更低
+    enforceMonotonicity(results);
 
     // 按概率降序排序
     results.sort((a, b) => b.probability - a.probability);
+
+    const cachedCount = results.filter((r) => r.fromCache).length;
+    this.logger.log('Prediction completed', {
+      profileId,
+      totalSchools: results.length,
+      cachedResults: cachedCount,
+      freshResults: results.length - cachedCount,
+      dataCompleteness,
+      avgProbability:
+        results.length > 0
+          ? Math.round(
+              (results.reduce((s, r) => s + r.probability, 0) /
+                results.length) *
+                100,
+            )
+          : 0,
+    });
 
     // 写入记忆系统（增强版，异步非阻塞）
     if (this.memoryManager && profile.userId) {
       this.recordPredictionToMemory(
         profile.userId,
         results,
-        memoryContext,
+        rawMemoryCtx,
       ).catch((err) => {
         this.logger.warn('Failed to record prediction to memory', err);
       });
     }
 
-    return results;
+    return {
+      results,
+      dataCompleteness,
+      memoryContext: memoryContextDto,
+      ...(validation.violations.length > 0 || validation.warnings.length > 0
+        ? { validationSummary: validation }
+        : {}),
+    };
+  }
+
+  /**
+   * 对单个学校执行三引擎融合预测
+   */
+  private async predictForSchool(
+    profileId: string,
+    profileInput: any,
+    profileMetrics: any,
+    school: any,
+    memoryContext: any,
+    locale: string,
+    plattParams?: { a: number; b: number } | null,
+    profileHash?: string,
+  ): Promise<PredictionResultDto> {
+    const schoolInput = this.schoolToInput(school);
+    const schoolMetrics = this.extractSchoolMetrics(schoolInput);
+
+    // 获取历史分布数据
+    const historicalDist = await this.getSchoolDistribution(school.id);
+
+    // === 引擎 1: 统计算法 (always runs) ===
+    const statsResult = this.predictWithStats(
+      profileInput,
+      schoolInput,
+      historicalDist ?? undefined,
+      locale,
+    );
+
+    // === 引擎 2: AI 预测 (may fail → null, with circuit breaker + timeout) ===
+    let aiResult: Awaited<ReturnType<typeof this.predictWithAI>> = null;
+    if (!this.isAiCircuitOpen()) {
+      try {
+        aiResult = await Promise.race([
+          this.predictWithAI(
+            profileInput,
+            schoolInput,
+            { probability: statsResult.probability },
+            memoryContext.profileInsights,
+            locale,
+            profileId,
+          ),
+          new Promise<null>((_, reject) =>
+            setTimeout(
+              () => reject(new Error('AI_PREDICTION_TIMEOUT')),
+              AI_PREDICTION_TIMEOUT_MS,
+            ),
+          ),
+        ]);
+        if (aiResult) this.recordAiSuccess();
+      } catch (err: any) {
+        if (err?.message === 'AI_PREDICTION_TIMEOUT') {
+          this.logger.warn(
+            `AI prediction timed out (${AI_PREDICTION_TIMEOUT_MS}ms) for school ${school.id}`,
+          );
+        }
+        this.recordAiFailure();
+        aiResult = null;
+      }
+    } else {
+      this.logger.debug(
+        `AI circuit breaker open, skipping AI for school ${school.id}`,
+      );
+    }
+
+    // === 引擎 3: 历史案例匹配 ===
+    const historicalResult = await this.getHistoricalProbability(
+      profileMetrics,
+      school.id,
+    );
+
+    // 记忆增强调整
+    const memoryAdjustment =
+      memoryContext.memoryAdjustments.get(school.id) || 0;
+
+    // 计算置信度
+    const confidenceLevel = calculateConfidence(profileMetrics, schoolMetrics);
+
+    // === 融合 ===
+    const fusedResult = this.fusePredictions(
+      statsResult.probability,
+      aiResult?.probability ?? null,
+      historicalResult,
+      memoryAdjustment,
+      confidenceLevel,
+    );
+
+    // Platt scaling 校准（当有足够历史数据时）
+    if (plattParams) {
+      fusedResult.probability = this.applyPlattCalibration(
+        fusedResult.probability,
+        plattParams,
+      );
+      // 重新计算置信区间 — preserve consistency widening
+      let intervalWidth = CONFIDENCE_INTERVAL_WIDTH[confidenceLevel];
+      intervalWidth *= 1 + (1 - fusedResult.crossEngineConsistency) * 0.5;
+      fusedResult.probabilityLow = Math.max(
+        0.01,
+        fusedResult.probability - intervalWidth / 2,
+      );
+      fusedResult.probabilityHigh = Math.min(
+        0.99,
+        fusedResult.probability + intervalWidth / 2,
+      );
+    }
+
+    // 确定 tier
+    const tier = calculateTier(fusedResult.probability, schoolMetrics);
+
+    // 选择最佳 factors (优先 AI，回退 stats)
+    const factors = aiResult?.factors?.length
+      ? aiResult.factors
+      : statsResult.factors;
+
+    // 合并建议
+    const suggestions = this.generateSuggestions(
+      tier,
+      confidenceLevel,
+      profileInput,
+      schoolInput,
+      aiResult?.suggestions,
+      locale,
+    );
+
+    // 选择最佳 comparison (优先 AI，回退 stats)
+    const comparison = aiResult?.comparison || statsResult.comparison;
+
+    const result: PredictionResultDto = {
+      schoolId: school.id,
+      schoolName:
+        locale === 'zh'
+          ? school.nameZh || school.name
+          : school.name || school.nameZh,
+      probability: fusedResult.probability,
+      probabilityLow: fusedResult.probabilityLow,
+      probabilityHigh: fusedResult.probabilityHigh,
+      confidence: confidenceLevel,
+      tier,
+      factors,
+      suggestions,
+      comparison,
+      engineScores: fusedResult.engineScores,
+      crossEngineConsistency: fusedResult.crossEngineConsistency,
+      modelVersion: MODEL_VERSION,
+    };
+
+    // 保存到缓存
+    await this.saveToCache(profileId, school.id, result, profileHash);
+
+    // 保存到数据库
+    await this.savePrediction(profileId, school.id, result);
+
+    return result;
   }
 
   // ==================== 辅助方法 ====================
@@ -1255,7 +1946,9 @@ export class PredictionService {
     profile: ProfileInput,
     school: SchoolInput,
     aiSuggestions?: string[],
+    locale = 'zh',
   ): string[] {
+    const isZh = locale === 'zh';
     const suggestions: string[] = [];
 
     // AI 建议优先
@@ -1265,22 +1958,38 @@ export class PredictionService {
 
     // 补充通用建议
     if (tier === 'reach') {
-      if (!suggestions.some((s) => s.includes('文书'))) {
+      const essayKw = isZh ? '文书' : 'essay';
+      if (!suggestions.some((s) => s.toLowerCase().includes(essayKw))) {
         suggestions.push(
-          '作为冲刺校，建议在文书中充分展示独特性和对该校的了解',
+          isZh
+            ? '作为冲刺校，建议在文书中充分展示独特性和对该校的了解'
+            : 'As a reach school, highlight your uniqueness and knowledge of the school in your essays',
         );
       }
-      if (!suggestions.some((s) => s.includes('早申'))) {
-        suggestions.push('考虑通过ED/EA早申请增加录取机会');
+      const edKw = isZh ? '早申' : 'ED';
+      if (!suggestions.some((s) => s.includes(edKw))) {
+        suggestions.push(
+          isZh
+            ? '考虑通过ED/EA早申请增加录取机会'
+            : 'Consider applying ED/EA to improve your chances',
+        );
       }
     } else if (tier === 'match') {
-      if (!suggestions.some((s) => s.includes('优势'))) {
-        suggestions.push('作为匹配校，保持现有优势的同时完善申请材料');
+      const matchKw = isZh ? '优势' : 'strength';
+      if (!suggestions.some((s) => s.toLowerCase().includes(matchKw))) {
+        suggestions.push(
+          isZh
+            ? '作为匹配校，保持现有优势的同时完善申请材料'
+            : 'As a match school, maintain your strengths while polishing application materials',
+        );
       }
     } else {
-      if (!suggestions.some((s) => s.includes('兴趣'))) {
+      const interestKw = isZh ? '兴趣' : 'interest';
+      if (!suggestions.some((s) => s.toLowerCase().includes(interestKw))) {
         suggestions.push(
-          '作为保底校，确保展示对该校的真诚兴趣（Why School文书）',
+          isZh
+            ? '作为保底校，确保展示对该校的真诚兴趣（Why School文书）'
+            : 'As a safety school, show genuine interest in your Why School essay',
         );
       }
     }
@@ -1288,14 +1997,21 @@ export class PredictionService {
     // 数据不足时的建议
     if (confidence === 'low') {
       suggestions.push(
-        '当前预测数据不足，建议完善个人档案以获得更准确的预测结果',
+        isZh
+          ? '当前预测数据不足，建议完善个人档案以获得更准确的预测结果'
+          : 'Prediction data is limited — complete your profile for more accurate results',
       );
     }
 
     // Profile 缺失项建议
     if (!profile.testScores.some((s) => s.type === 'SAT' || s.type === 'ACT')) {
-      if (!suggestions.some((s) => s.includes('标化'))) {
-        suggestions.push('添加标化成绩（SAT/ACT）可大幅提高预测准确性');
+      const testKw = isZh ? '标化' : 'SAT';
+      if (!suggestions.some((s) => s.includes(testKw))) {
+        suggestions.push(
+          isZh
+            ? '添加标化成绩（SAT/ACT）可大幅提高预测准确性'
+            : 'Adding SAT/ACT scores can significantly improve prediction accuracy',
+        );
       }
     }
 
@@ -1338,6 +2054,7 @@ export class PredictionService {
           suggestions: result.suggestions as any,
           comparison: result.comparison as any,
           modelVersion: MODEL_VERSION,
+          source: 'prediction',
         },
         create: {
           profileId,
@@ -1351,6 +2068,22 @@ export class PredictionService {
           engineScores: result.engineScores as any,
           suggestions: result.suggestions as any,
           comparison: result.comparison as any,
+          modelVersion: MODEL_VERSION,
+          source: 'prediction',
+        },
+      });
+
+      // 写入历史快照（用于趋势追踪）
+      await this.prisma.predictionSnapshot.create({
+        data: {
+          profileId,
+          schoolId,
+          probability: result.probability,
+          probabilityLow: result.probabilityLow,
+          probabilityHigh: result.probabilityHigh,
+          tier: result.tier,
+          confidence: result.confidence,
+          source: 'prediction',
           modelVersion: MODEL_VERSION,
         },
       });

@@ -40,7 +40,11 @@ export class RecommendationController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: SchoolRecommendationRequestDto,
   ): Promise<SchoolRecommendationResponseDto> {
-    return this.recommendationService.generateRecommendation(user.id, dto);
+    return this.recommendationService.generateRecommendation(
+      user.id,
+      dto,
+      user.locale,
+    );
   }
 
   @Get('preflight')
