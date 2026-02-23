@@ -13,6 +13,7 @@ import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { ProfileService } from './profile.service';
 import { AiService } from '../ai/ai.service';
 import { SchoolListService } from '../school-list/school-list.service';
+import { RedisService } from '../../common/redis/redis.service';
 import { CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { Role } from '@prisma/client';
@@ -40,6 +41,7 @@ export class ProfileController {
     private readonly profileService: ProfileService,
     private readonly aiService: AiService,
     private readonly schoolListService: SchoolListService,
+    private readonly redis: RedisService,
   ) {}
 
   // ============================================
@@ -81,10 +83,17 @@ export class ProfileController {
   @Get('me/ai-analysis')
   @ApiOperation({ summary: '获取AI档案分析（红黄绿评分）' })
   async getAIAnalysis(@CurrentUser() user: CurrentUserPayload) {
+    // 检查 Redis 缓存
+    const cacheKey = `ai:profile-analysis:${user.id}`;
+    const cached = await this.redis.getJSON<any>(cacheKey);
+    if (cached) {
+      return { ...cached, status: 'cached' as const };
+    }
+
     const profile = await this.profileService.findByUserId(user.id);
 
     if (!profile) {
-      return this.aiService.analyzeProfileDetailed({});
+      return this.aiService.analyzeProfileDetailed({}, user.locale);
     }
 
     // 构建分析请求
@@ -110,7 +119,15 @@ export class ProfileController {
       targetMajor: profile.targetMajor || undefined,
     };
 
-    return this.aiService.analyzeProfileDetailed(request);
+    const result = await this.aiService.analyzeProfileDetailed(
+      request,
+      user.locale,
+    );
+
+    // 缓存 1 小时，profile 变化时通过 CacheInvalidationService 失效
+    await this.redis.setJSON(cacheKey, result, 3600);
+
+    return { ...result, status: 'fresh' as const };
   }
 
   // ============================================

@@ -6,7 +6,12 @@ describe('CaseController', () => {
   let controller: CaseController;
   let caseService: CaseService;
 
-  const mockUser = { id: 'user-1', email: 'test@test.com', role: 'USER' };
+  const mockUser = {
+    id: 'user-1',
+    email: 'test@test.com',
+    role: 'USER',
+    locale: 'zh',
+  };
 
   const mockCase = {
     id: 'case-1',
@@ -108,6 +113,7 @@ describe('CaseController', () => {
         'case-1',
         'user-1',
         'USER',
+        'zh',
       );
       expect(result).toEqual(mockCase);
     });
@@ -115,7 +121,12 @@ describe('CaseController', () => {
     it('should handle null user for public access', async () => {
       await controller.findById(null, 'case-1');
 
-      expect(caseService.findById).toHaveBeenCalledWith('case-1', null, null);
+      expect(caseService.findById).toHaveBeenCalledWith(
+        'case-1',
+        null,
+        null,
+        'zh',
+      );
     });
   });
 
@@ -129,7 +140,7 @@ describe('CaseController', () => {
 
       const result = await controller.create(mockUser as any, dto);
 
-      expect(caseService.create).toHaveBeenCalledWith('user-1', dto);
+      expect(caseService.create).toHaveBeenCalledWith('user-1', dto, 'zh');
       expect(result).toEqual(mockCase);
     });
   });

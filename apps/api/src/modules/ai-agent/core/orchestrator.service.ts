@@ -236,7 +236,7 @@ export class OrchestratorService {
         return this.fallback.getFallbackResponse(
           error instanceof Error ? error : new Error(String(error)),
           undefined,
-          { userId, conversationId, userMessage: message },
+          { userId, conversationId, userMessage: message, locale },
         );
       }
       throw error;
@@ -551,16 +551,24 @@ export class OrchestratorService {
       yield* this.collectAndPersistStream(AgentType.ORCHESTRATOR, conversation);
     } catch (error) {
       // 错误降级
+      const streamLocale = (conversation.metadata?.locale as string) || 'zh';
       if (this.fallback) {
         const fallbackResponse = this.fallback.getFallbackResponse(
           error instanceof Error ? error : new Error(String(error)),
+          undefined,
+          { userId, locale: streamLocale },
         );
         yield { type: 'error', error: fallbackResponse.message };
         yield { type: 'done', response: fallbackResponse };
       } else {
         yield {
           type: 'error',
-          error: error instanceof Error ? error.message : '处理失败',
+          error:
+            error instanceof Error
+              ? error.message
+              : streamLocale === 'zh'
+                ? '处理失败'
+                : 'Processing failed',
         };
       }
     }
@@ -647,11 +655,17 @@ export class OrchestratorService {
     conversation: ConversationState,
     depth: number = 0,
   ): AsyncGenerator<StreamEvent> {
+    const agentLocale = (conversation.metadata?.locale as string) || 'zh';
+
     if (depth > this.maxDelegationDepth) {
       this.logger.warn(
         `Delegation depth exceeded: ${depth} > ${this.maxDelegationDepth}`,
       );
-      yield { type: 'error', error: '委派层级过深' };
+      yield {
+        type: 'error',
+        error:
+          agentLocale === 'zh' ? '委派层级过深' : 'Delegation depth exceeded',
+      };
       return;
     }
 
@@ -671,11 +685,18 @@ export class OrchestratorService {
         const fallbackResponse = this.fallback.getFallbackResponse(
           new Error(`Agent configuration not found: ${agentType}`),
           agentType,
+          { locale: agentLocale },
         );
         yield { type: 'error', error: fallbackResponse.message };
         yield { type: 'done', response: fallbackResponse };
       } else {
-        yield { type: 'error', error: '服务配置出现问题，请稍后再试' };
+        yield {
+          type: 'error',
+          error:
+            agentLocale === 'zh'
+              ? '服务配置出现问题，请稍后再试'
+              : 'Service configuration error. Please try again later.',
+        };
       }
       return;
     }
@@ -993,7 +1014,7 @@ ${parts.join('\n')}`;
     const suggestions: string[] = [];
     const lines = message.split('\n');
     for (const line of lines) {
-      const match = line.match(/^[\d\-\*]\s*[\.）\)]\s*(.+)$/);
+      const match = line.match(/^[\d\-*]\s*[.）)]\s*(.+)$/);
       if (match) suggestions.push(match[1].trim());
     }
     return suggestions.length > 0 ? suggestions.slice(0, 5) : undefined;

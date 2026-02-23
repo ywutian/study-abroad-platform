@@ -6,6 +6,33 @@ import cookieParser from 'cookie-parser';
 import * as express from 'express';
 import { AppModule } from './app.module';
 
+async function listenWithPortFallback(
+  app: ReturnType<Awaited<typeof NestFactory.create>>,
+  startPort: number,
+  logger: Logger,
+  maxAttempts = 10,
+): Promise<number> {
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const port = startPort + attempt;
+    try {
+      await app.listen(port, '0.0.0.0');
+      if (attempt > 0) {
+        logger.warn(`Port ${startPort} is in use, using port ${port} instead`);
+      }
+      return port;
+    } catch (err: any) {
+      if (err.code === 'EADDRINUSE' && attempt < maxAttempts - 1) {
+        logger.warn(`Port ${port} is in use, trying ${port + 1}...`);
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw new Error(
+    `No available port found in range ${startPort}-${startPort + maxAttempts - 1}`,
+  );
+}
+
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
 
@@ -239,8 +266,8 @@ async function bootstrap() {
     gracefulShutdown('uncaughtException');
   });
 
-  const port = process.env.PORT || 3001;
-  await app.listen(port, '0.0.0.0');
+  const desiredPort = Number(process.env.PORT) || 4101;
+  const port = await listenWithPortFallback(app, desiredPort, logger);
   logger.log(`Application is running on: http://0.0.0.0:${port}`);
   if (!isProduction) {
     logger.log(`Swagger docs: http://localhost:${port}/api/docs`);

@@ -8,7 +8,12 @@ describe('AssessmentController', () => {
   let controller: AssessmentController;
   let assessmentService: jest.Mocked<AssessmentService>;
 
-  const mockUser = { id: 'user-1', email: 'test@test.com', role: 'USER' };
+  const mockUser = {
+    id: 'user-1',
+    email: 'test@test.com',
+    role: 'USER',
+    locale: 'zh',
+  };
 
   const mockAssessment = {
     id: 'assessment-1',

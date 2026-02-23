@@ -7,7 +7,12 @@ describe('UserDataController', () => {
   let controller: UserDataController;
   let userDataService: UserDataService;
 
-  const mockUser = { id: 'user-1', email: 'test@test.com', role: 'USER' };
+  const mockUser = {
+    id: 'user-1',
+    email: 'test@test.com',
+    role: 'USER',
+    locale: 'zh',
+  };
 
   const mockMemory = { id: 'mem-1', content: 'User prefers MIT' };
   const mockConversation = { id: 'conv-1', title: 'School selection' };

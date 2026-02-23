@@ -7,6 +7,7 @@ import {
   Body,
   Param,
   Query,
+  Header,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { CaseService } from './case.service';
@@ -27,6 +28,10 @@ export class CaseController {
 
   @Get()
   @Public()
+  @Header(
+    'Cache-Control',
+    'public, max-age=30, s-maxage=120, stale-while-revalidate=30',
+  )
   @ApiOperation({ summary: 'Get public admission cases' })
   async findAll(
     @CurrentUser() user: CurrentUserPayload | null,
@@ -49,6 +54,10 @@ export class CaseController {
 
   @Get(':id')
   @Public()
+  @Header(
+    'Cache-Control',
+    'public, max-age=30, s-maxage=120, stale-while-revalidate=30',
+  )
   @ApiOperation({ summary: 'Get case by ID' })
   async findById(
     @CurrentUser() user: CurrentUserPayload | null,
@@ -58,6 +67,7 @@ export class CaseController {
       id,
       user?.id || null,
       (user?.role as Role) || null,
+      user?.locale || 'zh',
     );
   }
 
@@ -67,7 +77,7 @@ export class CaseController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: CreateCaseDto,
   ) {
-    return this.caseService.create(user.id, data);
+    return this.caseService.create(user.id, data, user.locale);
   }
 
   @Put(':id')

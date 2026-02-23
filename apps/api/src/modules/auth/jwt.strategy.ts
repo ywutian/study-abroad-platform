@@ -39,6 +39,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       id: payload.sub,
       email: payload.email,
       role: user.role,
+      locale: user.locale || 'zh',
     };
   }
 }

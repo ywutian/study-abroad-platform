@@ -1,4 +1,4 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ChatService } from './chat.service';
@@ -7,7 +7,6 @@ import { ChatGateway } from './chat.gateway';
 import { ChatAdminController } from './chat-admin.controller';
 import { MessageFilterService } from './message-filter.service';
 import { RedisModule } from '../../common/redis/redis.module';
-import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
@@ -20,7 +19,6 @@ import { NotificationModule } from '../notification/notification.module';
       }),
     }),
     RedisModule,
-    forwardRef(() => NotificationModule),
   ],
   controllers: [ChatController, ChatAdminController],
   providers: [ChatService, ChatGateway, MessageFilterService],

@@ -53,6 +53,11 @@ export enum AgentTool {
   SUGGEST_PROFILE_IMPROVEMENTS = 'suggest_profile_improvements',
   COMPARE_WITH_ADMITTED_PROFILES = 'compare_with_admitted_profiles',
 
+  // 预测数据相关
+  GET_PREDICTION_HISTORY = 'get_prediction_history',
+  GET_PREDICTION_DASHBOARD = 'get_prediction_dashboard',
+  GET_SCHOOL_LIST_PREDICTIONS = 'get_school_list_predictions',
+
   // 外部搜索相关
   WEB_SEARCH = 'web_search',
   SEARCH_SCHOOL_WEBSITE = 'search_school_website',
@@ -128,6 +133,7 @@ export interface AgentContext {
   currentTasks?: string[];
   completedTasks?: string[];
   lastUpdated?: Date;
+  locale?: string;
 }
 
 // Agent 计划

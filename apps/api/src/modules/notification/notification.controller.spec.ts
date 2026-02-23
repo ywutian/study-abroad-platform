@@ -6,7 +6,12 @@ describe('NotificationController', () => {
   let controller: NotificationController;
   let notificationService: NotificationService;
 
-  const mockUser = { id: 'user-1', email: 'test@test.com', role: 'USER' };
+  const mockUser = {
+    id: 'user-1',
+    email: 'test@test.com',
+    role: 'USER',
+    locale: 'zh',
+  };
 
   const mockNotification = {
     id: 'notif-1',

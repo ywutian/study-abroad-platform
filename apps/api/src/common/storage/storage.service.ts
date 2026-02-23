@@ -79,7 +79,7 @@ export class StorageService implements OnModuleInit {
       'local') as StorageProvider;
     this.localBasePath =
       this.configService.get('STORAGE_LOCAL_PATH') || './uploads';
-    this.baseUrl = this.configService.get('APP_URL') || 'http://localhost:3001';
+    this.baseUrl = this.configService.get('APP_URL') || 'http://localhost:4101';
   }
 
   async onModuleInit() {

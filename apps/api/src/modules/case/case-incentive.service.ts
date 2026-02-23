@@ -1,6 +1,11 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PointsConfigService, PointAction } from './points-config.service';
+import {
+  USER_REGISTERED,
+  type UserRegisteredPayload,
+} from '../../common/events/notification.events';
 
 // Re-export PointAction from the config service for backward compatibility
 export { PointAction } from './points-config.service';
@@ -197,6 +202,24 @@ export class CaseIncentiveService {
     return this.adjustPoints(referrerId, PointAction.REFER_USER, {
       referredUserId,
     });
+  }
+
+  /**
+   * Listen for user registration events and award referral points
+   */
+  @OnEvent(USER_REGISTERED)
+  async handleUserRegistered(
+    payload: UserRegisteredPayload & { referredById?: string },
+  ) {
+    if (!payload.referredById) return;
+    try {
+      await this.rewardReferral(payload.referredById, payload.userId);
+    } catch (err) {
+      this.logger.error(
+        `Failed to award referral points for referrer ${payload.referredById}`,
+        err,
+      );
+    }
   }
 
   /**

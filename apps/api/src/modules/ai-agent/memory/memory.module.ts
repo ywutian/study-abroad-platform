@@ -12,6 +12,7 @@
 
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { PrismaModule } from '../../../prisma/prisma.module';
 import { RedisModule } from '../../../common/redis/redis.module';
 
@@ -29,7 +30,7 @@ import { MemoryCompactionService } from './memory-compaction.service';
 import { SanitizerService } from './sanitizer.service';
 
 @Module({
-  imports: [ConfigModule, PrismaModule, RedisModule],
+  imports: [ConfigModule, PrismaModule, RedisModule, ScheduleModule],
   providers: [
     // Core
     RedisCacheService,

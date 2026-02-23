@@ -31,7 +31,7 @@ export class UserController {
   @Get('me/dashboard')
   @ApiOperation({ summary: '获取用户仪表盘数据' })
   async getDashboard(@CurrentUser() user: CurrentUserPayload) {
-    return this.dashboardService.getDashboardSummary(user.id);
+    return this.dashboardService.getDashboardSummary(user.id, user.locale);
   }
 
   @Get('me')

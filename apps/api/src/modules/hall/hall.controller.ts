@@ -73,7 +73,11 @@ export class HallController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: BatchRankingDto,
   ) {
-    return this.hallService.getBatchRanking(user.id, data.schoolIds);
+    return this.hallService.getBatchRanking(
+      user.id,
+      data.schoolIds,
+      user.locale,
+    );
   }
 
   // ============================================
@@ -196,7 +200,11 @@ export class HallController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: { schoolId: string },
   ) {
-    return this.hallService.getRankingAnalysis(user.id, data.schoolId);
+    return this.hallService.getRankingAnalysis(
+      user.id,
+      data.schoolId,
+      user.locale,
+    );
   }
 
   // ============================================

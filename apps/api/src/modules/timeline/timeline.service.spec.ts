@@ -202,7 +202,7 @@ describe('TimelineService', () => {
         schoolIds: ['school-1', 'school-2'],
       });
 
-      expect(result.length).toBeGreaterThan(0);
+      expect(result.created.length).toBeGreaterThan(0);
     });
 
     it('should skip existing timelines', async () => {
@@ -217,7 +217,7 @@ describe('TimelineService', () => {
         schoolIds: [mockSchoolId],
       });
 
-      expect(result).toHaveLength(0);
+      expect(result.created).toHaveLength(0);
     });
   });
 

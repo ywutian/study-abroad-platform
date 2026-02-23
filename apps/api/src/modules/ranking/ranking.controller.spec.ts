@@ -6,7 +6,12 @@ describe('RankingController', () => {
   let controller: RankingController;
   let rankingService: RankingService;
 
-  const mockUser = { id: 'user-1', email: 'test@test.com', role: 'USER' };
+  const mockUser = {
+    id: 'user-1',
+    email: 'test@test.com',
+    role: 'USER',
+    locale: 'zh',
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({

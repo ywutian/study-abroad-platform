@@ -9,8 +9,18 @@ describe('ChatService', () => {
   let service: ChatService;
   let prismaService: PrismaService;
 
-  const mockUser1 = { id: 'user-1', email: 'user1@test.com', role: 'USER' };
-  const mockUser2 = { id: 'user-2', email: 'user2@test.com', role: 'USER' };
+  const mockUser1 = {
+    id: 'user-1',
+    email: 'user1@test.com',
+    role: 'USER',
+    locale: 'zh',
+  };
+  const mockUser2 = {
+    id: 'user-2',
+    email: 'user2@test.com',
+    role: 'USER',
+    locale: 'zh',
+  };
 
   const mockConversation = {
     id: 'conv-123',

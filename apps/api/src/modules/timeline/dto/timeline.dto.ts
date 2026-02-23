@@ -7,6 +7,9 @@ import {
   IsInt,
   IsBoolean,
   IsDateString,
+  IsArray,
+  ArrayMinSize,
+  ArrayMaxSize,
   Min,
   Max,
 } from 'class-validator';
@@ -250,8 +253,34 @@ export class TaskResponseDto {
 
 export class GenerateTimelineDto {
   @ApiProperty({ type: [String], description: '学校ID列表' })
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(50)
   @IsString({ each: true })
+  @IsNotEmpty({ each: true })
   schoolIds: string[];
+}
+
+export class GenerateTimelineFailedItemDto {
+  @ApiProperty({ description: '学校ID' })
+  schoolId: string;
+
+  @ApiProperty({
+    description: '失败原因',
+    enum: ['SCHOOL_NOT_FOUND', 'ALREADY_EXISTS', 'INTERNAL_ERROR'],
+  })
+  reason: string;
+}
+
+export class GenerateTimelinesResultDto {
+  @ApiProperty({ type: [TimelineResponseDto], description: '成功创建的时间线' })
+  created: TimelineResponseDto[];
+
+  @ApiProperty({
+    type: [GenerateTimelineFailedItemDto],
+    description: '失败的学校',
+  })
+  failed: GenerateTimelineFailedItemDto[];
 }
 
 export class TimelineOverviewDto {

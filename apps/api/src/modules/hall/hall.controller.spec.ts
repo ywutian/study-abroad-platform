@@ -8,7 +8,12 @@ describe('HallController', () => {
   let hallService: HallService;
   let swipeService: SwipeService;
 
-  const mockUser = { id: 'user-1', email: 'test@test.com', role: 'USER' };
+  const mockUser = {
+    id: 'user-1',
+    email: 'test@test.com',
+    role: 'USER',
+    locale: 'zh',
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -88,10 +93,11 @@ describe('HallController', () => {
 
     const result = await controller.getBatchRanking(mockUser as any, data);
 
-    expect(hallService.getBatchRanking).toHaveBeenCalledWith('user-1', [
-      's-1',
-      's-2',
-    ]);
+    expect(hallService.getBatchRanking).toHaveBeenCalledWith(
+      'user-1',
+      ['s-1', 's-2'],
+      'zh',
+    );
     expect(result).toEqual(expected);
   });
 
@@ -257,6 +263,7 @@ describe('HallController', () => {
     expect(hallService.getRankingAnalysis).toHaveBeenCalledWith(
       'user-1',
       'school-1',
+      'zh',
     );
     expect(result).toEqual(expected);
   });

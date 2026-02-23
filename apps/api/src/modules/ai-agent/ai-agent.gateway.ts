@@ -42,8 +42,8 @@ interface ClearConversationPayload {
 @WebSocketGateway({
   cors: {
     origin: process.env.CORS_ORIGINS?.split(',') || [
-      'http://localhost:3000',
-      'http://localhost:3001',
+      'http://localhost:4100',
+      'http://localhost:4101',
     ],
     credentials: true,
   },

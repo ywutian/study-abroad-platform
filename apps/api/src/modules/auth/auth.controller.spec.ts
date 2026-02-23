@@ -221,7 +221,12 @@ describe('AuthController', () => {
       };
 
       await controller.logout(
-        { id: 'user-123', email: 'test@example.com', role: 'USER' },
+        {
+          id: 'user-123',
+          email: 'test@example.com',
+          role: 'USER',
+          locale: 'zh',
+        },
         mockReq as any,
         {},
         mockResponse as any,
@@ -243,7 +248,12 @@ describe('AuthController', () => {
       };
 
       await controller.logout(
-        { id: 'user-123', email: 'test@example.com', role: 'USER' },
+        {
+          id: 'user-123',
+          email: 'test@example.com',
+          role: 'USER',
+          locale: 'zh',
+        },
         mockReq as any,
         {},
         mockResponse as any,

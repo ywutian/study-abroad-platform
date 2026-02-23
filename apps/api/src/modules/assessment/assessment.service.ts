@@ -3,9 +3,7 @@ import {
   Logger,
   NotFoundException,
   BadRequestException,
-  Inject,
   Optional,
-  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AssessmentType, MemoryType } from '@prisma/client';
@@ -46,7 +44,6 @@ export class AssessmentService {
   constructor(
     private prisma: PrismaService,
     @Optional()
-    @Inject(forwardRef(() => MemoryManagerService))
     private memoryManager?: MemoryManagerService,
   ) {}
 

@@ -7,8 +7,18 @@ describe('VerificationController', () => {
   let controller: VerificationController;
   let service: VerificationService;
 
-  const mockUser = { id: 'user-1', email: 'test@test.com', role: 'USER' };
-  const mockAdmin = { id: 'admin-1', email: 'admin@test.com', role: 'ADMIN' };
+  const mockUser = {
+    id: 'user-1',
+    email: 'test@test.com',
+    role: 'USER',
+    locale: 'zh',
+  };
+  const mockAdmin = {
+    id: 'admin-1',
+    email: 'admin@test.com',
+    role: 'ADMIN',
+    locale: 'zh',
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({

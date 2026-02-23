@@ -10,7 +10,7 @@ const envSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'production', 'test', 'staging'])
     .default('development'),
-  PORT: z.coerce.number().int().min(1).max(65535).default(3001),
+  PORT: z.coerce.number().int().min(1).max(65535).default(4101),
   LOG_LEVEL: z.enum(['error', 'warn', 'log', 'debug', 'verbose']).optional(),
 
   // --- Database (Required) ---

@@ -4,8 +4,6 @@ import {
   ForbiddenException,
   Logger,
   Optional,
-  Inject,
-  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
@@ -17,6 +15,7 @@ import {
   EntityType,
   EssayType,
 } from '@prisma/client';
+import { getSchoolDisplayName } from '../../common/utils/locale.util';
 import {
   PaginationDto,
   createPaginatedResponse,
@@ -59,7 +58,6 @@ export class CaseService {
   constructor(
     private prisma: PrismaService,
     @Optional()
-    @Inject(forwardRef(() => MemoryManagerService))
     private memoryManager?: MemoryManagerService,
   ) {}
 
@@ -179,6 +177,7 @@ export class CaseService {
     id: string,
     requesterId: string | null,
     requesterRole: Role | null,
+    locale = 'zh',
   ): Promise<AdmissionCase> {
     const caseItem = await this.prisma.admissionCase.findUnique({
       where: { id },
@@ -215,9 +214,11 @@ export class CaseService {
     // ANONYMOUS visibility - allow public access
     // 记录浏览行为到记忆系统
     if (requesterId) {
-      this.recordViewCaseToMemory(requesterId, caseItem).catch((err) => {
-        this.logger.warn('Failed to record view case to memory', err);
-      });
+      this.recordViewCaseToMemory(requesterId, caseItem, locale).catch(
+        (err) => {
+          this.logger.warn('Failed to record view case to memory', err);
+        },
+      );
     }
 
     return caseItem;
@@ -249,6 +250,7 @@ export class CaseService {
       essayContent?: string;
       promptNumber?: number;
     },
+    locale = 'zh',
   ): Promise<AdmissionCase> {
     const { schoolId, essayType, ...rest } = data;
     const admissionCase = await this.prisma.admissionCase.create({
@@ -265,9 +267,11 @@ export class CaseService {
     });
 
     // 记录创建案例到记忆系统
-    this.recordCreateCaseToMemory(userId, admissionCase, data).catch((err) => {
-      this.logger.warn('Failed to record create case to memory', err);
-    });
+    this.recordCreateCaseToMemory(userId, admissionCase, data, locale).catch(
+      (err) => {
+        this.logger.warn('Failed to record create case to memory', err);
+      },
+    );
 
     return admissionCase;
   }
@@ -581,28 +585,34 @@ export class CaseService {
     userId: string,
     admissionCase: any,
     data: any,
+    locale = 'zh',
   ): Promise<void> {
     if (!this.memoryManager) return;
 
     try {
-      const schoolName =
-        admissionCase.school?.nameZh ||
-        admissionCase.school?.name ||
-        '未知学校';
-      const resultText =
-        data.result === 'ADMITTED'
+      const isZh = locale === 'zh';
+      const schoolName = admissionCase.school
+        ? getSchoolDisplayName(admissionCase.school, locale)
+        : isZh
+          ? '未知学校'
+          : 'Unknown school';
+      const resultText = isZh
+        ? data.result === 'ADMITTED'
           ? '录取'
           : data.result === 'REJECTED'
             ? '拒绝'
             : data.result === 'WAITLISTED'
               ? '候补'
-              : data.result;
+              : data.result
+        : data.result.toLowerCase();
 
       // 记录录取决策
       await this.memoryManager.remember(userId, {
         type: MemoryType.DECISION,
         category: 'admission_case',
-        content: `用户分享了${data.year}年${schoolName}的${resultText}案例${data.major ? `，专业：${data.major}` : ''}`,
+        content: isZh
+          ? `用户分享了${data.year}年${schoolName}的${resultText}案例${data.major ? `，专业：${data.major}` : ''}`
+          : `User shared a ${data.year} ${resultText} case for ${schoolName}${data.major ? `, major: ${data.major}` : ''}`,
         importance: 0.8,
         metadata: {
           caseId: admissionCase.id,
@@ -618,7 +628,9 @@ export class CaseService {
       await this.memoryManager.recordEntity(userId, {
         type: EntityType.SCHOOL,
         name: schoolName,
-        description: `${data.year}年申请，结果：${resultText}`,
+        description: isZh
+          ? `${data.year}年申请，结果：${resultText}`
+          : `${data.year} application, result: ${resultText}`,
         attributes: {
           schoolId: data.schoolId,
           result: data.result,
@@ -637,17 +649,24 @@ export class CaseService {
   private async recordViewCaseToMemory(
     userId: string,
     caseItem: any,
+    locale = 'zh',
   ): Promise<void> {
     if (!this.memoryManager) return;
 
     try {
-      const schoolName =
-        caseItem.school?.nameZh || caseItem.school?.name || '未知学校';
+      const isZh = locale === 'zh';
+      const schoolName = caseItem.school
+        ? getSchoolDisplayName(caseItem.school, locale)
+        : isZh
+          ? '未知学校'
+          : 'Unknown school';
 
       await this.memoryManager.remember(userId, {
         type: MemoryType.FACT,
         category: 'case_view',
-        content: `用户查看了${caseItem.year}年${schoolName}的${caseItem.result === 'ADMITTED' ? '录取' : '申请'}案例`,
+        content: isZh
+          ? `用户查看了${caseItem.year}年${schoolName}的${caseItem.result === 'ADMITTED' ? '录取' : '申请'}案例`
+          : `User viewed a ${caseItem.year} ${caseItem.result === 'ADMITTED' ? 'admission' : 'application'} case for ${schoolName}`,
         importance: 0.3,
         metadata: {
           caseId: caseItem.id,

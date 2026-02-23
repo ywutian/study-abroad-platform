@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import * as cheerio from 'cheerio';
 import OpenAI from 'openai';
 import { PrismaService } from '../../../prisma/prisma.service';
+import { normalizeSchoolName } from '../../../common/utils/school-name.util';
 import { SourceType } from '../../../common/types/enums';
 import {
   BaseScrapeStrategy,
@@ -79,13 +80,8 @@ export class LlmScrapeStrategy extends BaseScrapeStrategy {
    */
   async scrape(schoolName: string, year: number): Promise<ScrapeResult | null> {
     // 从 DB 查找该校的 source 配置
-    const school = await this.prisma.school.findFirst({
-      where: {
-        OR: [
-          { name: { equals: schoolName, mode: 'insensitive' } },
-          { name: { contains: schoolName, mode: 'insensitive' } },
-        ],
-      },
+    const school = await this.prisma.school.findUnique({
+      where: { nameNorm: normalizeSchoolName(schoolName) },
       include: {
         essaySources: {
           where: { isActive: true },

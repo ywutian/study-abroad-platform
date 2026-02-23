@@ -12,6 +12,7 @@ import {
   PersonalEventCategory,
 } from '@prisma/client';
 import { TaskType } from '../../common/types/enums';
+import { getSchoolDisplayName } from '../../common/utils/locale.util';
 import {
   CreateTimelineDto,
   UpdateTimelineDto,
@@ -58,6 +59,7 @@ export class TimelineService {
   async createTimeline(
     userId: string,
     dto: CreateTimelineDto,
+    locale = 'zh',
   ): Promise<TimelineResponseDto> {
     // 检查学校是否存在
     const school = await this.prisma.school.findUnique({
@@ -87,7 +89,7 @@ export class TimelineService {
       data: {
         userId,
         schoolId: dto.schoolId,
-        schoolName: school.nameZh || school.name,
+        schoolName: getSchoolDisplayName(school, locale),
         round: dto.round,
         deadline: dto.deadline ? new Date(dto.deadline) : undefined,
         priority: dto.priority || 0,
@@ -116,8 +118,13 @@ export class TimelineService {
   async generateTimelines(
     userId: string,
     dto: GenerateTimelineDto,
-  ): Promise<TimelineResponseDto[]> {
-    const results: TimelineResponseDto[] = [];
+    locale = 'zh',
+  ): Promise<{
+    created: TimelineResponseDto[];
+    failed: Array<{ schoolId: string; reason: string }>;
+  }> {
+    const created: TimelineResponseDto[] = [];
+    const failed: Array<{ schoolId: string; reason: string }> = [];
     const now = new Date();
     const currentMonth = now.getMonth() + 1;
     const applicationYear =
@@ -135,7 +142,10 @@ export class TimelineService {
           },
         });
 
-        if (!school) continue;
+        if (!school) {
+          failed.push({ schoolId, reason: 'SCHOOL_NOT_FOUND' });
+          continue;
+        }
 
         // 检查是否已存在任何时间线
         const existingTimelines =
@@ -159,20 +169,20 @@ export class TimelineService {
               data: {
                 userId,
                 schoolId,
-                schoolName: school.nameZh || school.name,
+                schoolName: getSchoolDisplayName(school, locale),
                 round: dl.round,
                 deadline: dl.applicationDeadline,
                 tasks: { create: tasks },
               },
               include: { tasks: true },
             });
-            results.push(this.mapTimelineToResponse(timeline));
+            created.push(this.mapTimelineToResponse(timeline));
             existingRounds.add(dl.round);
           }
         }
 
         // 2. 兜底: 从 metadata JSON 提取截止日期
-        if (results.filter((r) => r.schoolId === schoolId).length === 0) {
+        if (created.filter((r) => r.schoolId === schoolId).length === 0) {
           const metadata = school.metadata as Record<string, any> | null;
           const deadlines = metadata?.deadlines as
             | Record<string, string>
@@ -183,10 +193,9 @@ export class TimelineService {
               const round = roundKey.toUpperCase();
               if (existingRounds.has(round)) continue;
 
-              const parsedDate = this.parseMetadataDate(
-                dateStr,
-                applicationYear,
-              );
+              const parsedDate =
+                this.parseMetadataDate(dateStr, applicationYear) ??
+                new Date(applicationYear, 0, 1);
               const tasks = this.buildSmartTasks(
                 round,
                 metadata?.essayPrompts,
@@ -196,14 +205,14 @@ export class TimelineService {
                 data: {
                   userId,
                   schoolId,
-                  schoolName: school.nameZh || school.name,
+                  schoolName: getSchoolDisplayName(school, locale),
                   round,
                   deadline: parsedDate,
                   tasks: { create: tasks },
                 },
                 include: { tasks: true },
               });
-              results.push(this.mapTimelineToResponse(timeline));
+              created.push(this.mapTimelineToResponse(timeline));
               existingRounds.add(round);
             }
           }
@@ -211,7 +220,7 @@ export class TimelineService {
 
         // 3. 最终兜底: 创建默认 RD 时间线
         if (
-          results.filter((r) => r.schoolId === schoolId).length === 0 &&
+          created.filter((r) => r.schoolId === schoolId).length === 0 &&
           !existingRounds.has('RD')
         ) {
           const defaultDeadline = new Date(applicationYear, 0, 1); // January 1
@@ -219,7 +228,7 @@ export class TimelineService {
             data: {
               userId,
               schoolId,
-              schoolName: school.nameZh || school.name,
+              schoolName: getSchoolDisplayName(school, locale),
               round: 'RD',
               deadline: defaultDeadline,
               tasks: {
@@ -231,17 +240,18 @@ export class TimelineService {
             },
             include: { tasks: true },
           });
-          results.push(this.mapTimelineToResponse(timeline));
+          created.push(this.mapTimelineToResponse(timeline));
         }
       } catch (error) {
         this.logger.warn(
           `Failed to create timeline for school ${schoolId}`,
           error,
         );
+        failed.push({ schoolId, reason: 'INTERNAL_ERROR' });
       }
     }
 
-    return results;
+    return { created, failed };
   }
 
   /**
@@ -329,9 +339,14 @@ export class TimelineService {
   }
 
   /**
-   * 解析 metadata 中 "November 1" / "Jan 15" 格式的日期
+   * 解析 metadata 中多种日期格式:
+   * "November 1", "Nov 15", "11/1", "11-01", "2026-01-01", "January 1, 2026"
+   * 解析失败返回 null，调用方自行兜底。
    */
-  private parseMetadataDate(dateStr: string, applicationYear: number): Date {
+  private parseMetadataDate(
+    dateStr: string,
+    applicationYear: number,
+  ): Date | null {
     const months: Record<string, number> = {
       january: 0,
       february: 1,
@@ -358,18 +373,45 @@ export class TimelineService {
       dec: 11,
     };
 
-    const match = dateStr.trim().match(/^([A-Za-z]+)\s+(\d{1,2})$/);
-    if (match) {
-      const monthNum = months[match[1].toLowerCase()];
+    const trimmed = dateStr.trim();
+
+    // ISO 格式: "2026-01-01"
+    const isoMatch = trimmed.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (isoMatch) {
+      const d = new Date(+isoMatch[1], +isoMatch[2] - 1, +isoMatch[3]);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    // "Month Day, Year" 格式: "January 1, 2026"
+    const fullMatch = trimmed.match(/^([A-Za-z]+)\s+(\d{1,2}),?\s+(\d{4})$/);
+    if (fullMatch) {
+      const monthNum = months[fullMatch[1].toLowerCase()];
       if (monthNum !== undefined) {
-        const day = parseInt(match[2]);
-        const dateYear = monthNum >= 8 ? applicationYear - 1 : applicationYear;
-        return new Date(dateYear, monthNum, day);
+        return new Date(+fullMatch[3], monthNum, +fullMatch[2]);
       }
     }
 
-    // 无法解析时返回 1 月 1 日
-    return new Date(applicationYear, 0, 1);
+    // "Month Day" 格式: "November 1", "Nov 15"
+    const monthDayMatch = trimmed.match(/^([A-Za-z]+)\s+(\d{1,2})$/);
+    if (monthDayMatch) {
+      const monthNum = months[monthDayMatch[1].toLowerCase()];
+      if (monthNum !== undefined) {
+        const dateYear = monthNum >= 8 ? applicationYear - 1 : applicationYear;
+        return new Date(dateYear, monthNum, +monthDayMatch[2]);
+      }
+    }
+
+    // 数字格式: "11/1", "11-01"
+    const numericMatch = trimmed.match(/^(\d{1,2})[/-](\d{1,2})$/);
+    if (numericMatch) {
+      const monthNum = +numericMatch[1] - 1;
+      if (monthNum >= 0 && monthNum <= 11) {
+        const dateYear = monthNum >= 7 ? applicationYear - 1 : applicationYear;
+        return new Date(dateYear, monthNum, +numericMatch[2]);
+      }
+    }
+
+    return null;
   }
 
   /**
@@ -690,17 +732,32 @@ export class TimelineService {
     const completedCount = tasks.filter((t) => t.completed).length;
     const progress = Math.round((completedCount / tasks.length) * 100);
 
-    // 自动更新状态
-    let status: ApplicationStatus = ApplicationStatus.NOT_STARTED;
-    if (progress === 100) {
-      status = ApplicationStatus.SUBMITTED;
-    } else if (progress > 0) {
-      status = ApplicationStatus.IN_PROGRESS;
+    // 读取当前状态，手动设置的终态不自动覆盖
+    const current = await this.prisma.applicationTimeline.findUnique({
+      where: { id: timelineId },
+      select: { status: true },
+    });
+
+    const manualStatuses: Set<string> = new Set([
+      ApplicationStatus.SUBMITTED,
+      ApplicationStatus.ACCEPTED,
+      ApplicationStatus.REJECTED,
+      ApplicationStatus.WAITLISTED,
+      ApplicationStatus.WITHDRAWN,
+    ]);
+
+    const data: { progress: number; status?: ApplicationStatus } = { progress };
+
+    if (!current || !manualStatuses.has(current.status)) {
+      data.status =
+        progress > 0
+          ? ApplicationStatus.IN_PROGRESS
+          : ApplicationStatus.NOT_STARTED;
     }
 
     await this.prisma.applicationTimeline.update({
       where: { id: timelineId },
-      data: { progress, status },
+      data,
     });
   }
 

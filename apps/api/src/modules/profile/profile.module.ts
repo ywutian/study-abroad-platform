@@ -1,12 +1,12 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { ProfileController } from './profile.controller';
 import { AiModule } from '../ai/ai.module';
-import { AiAgentModule } from '../ai-agent/ai-agent.module';
+import { AiAgentMemoryModule } from '../ai-agent/memory/memory.module';
 import { SchoolListModule } from '../school-list/school-list.module';
 
 @Module({
-  imports: [AiModule, forwardRef(() => AiAgentModule), SchoolListModule],
+  imports: [AiModule, AiAgentMemoryModule, SchoolListModule],
   controllers: [ProfileController],
   providers: [ProfileService],
   exports: [ProfileService],

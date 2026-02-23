@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { normalizeSchoolName } from '../../common/utils/school-name.util';
 import { EssayStatus, EssayType, SourceType } from '../../common/types/enums';
 import { OfficialScrapeStrategy } from './strategies/official.strategy';
 import { CollegeVineScrapeStrategy } from './strategies/collegevine.strategy';
@@ -213,14 +214,8 @@ export class EssayScraperService {
     year: number = this.getCurrentApplicationYear(),
   ): Promise<TestScrapeResult> {
     // 查找学校和 source 配置
-    const school = await this.prisma.school.findFirst({
-      where: {
-        OR: [
-          { name: { equals: schoolName, mode: 'insensitive' } },
-          { name: { contains: schoolName, mode: 'insensitive' } },
-          { aliases: { has: schoolName } },
-        ],
-      },
+    const school = await this.prisma.school.findUnique({
+      where: { nameNorm: normalizeSchoolName(schoolName) },
       include: {
         essaySources: {
           where: { isActive: true },
@@ -317,8 +312,8 @@ export class EssayScraperService {
 
     const school = data.schoolId
       ? await this.prisma.school.findUnique({ where: { id: data.schoolId } })
-      : await this.prisma.school.findFirst({
-          where: { name: { contains: data.school, mode: 'insensitive' } },
+      : await this.prisma.school.findUnique({
+          where: { nameNorm: normalizeSchoolName(data.school) },
         });
 
     if (!school) return 0;
@@ -482,13 +477,8 @@ export class EssayScraperService {
     }>,
     scrapeResults: ScrapeResult[],
   ): Promise<number> {
-    const school = await this.prisma.school.findFirst({
-      where: {
-        OR: [
-          { name: schoolName },
-          { name: { contains: schoolName, mode: 'insensitive' } },
-        ],
-      },
+    const school = await this.prisma.school.findUnique({
+      where: { nameNorm: normalizeSchoolName(schoolName) },
     });
 
     if (!school) {

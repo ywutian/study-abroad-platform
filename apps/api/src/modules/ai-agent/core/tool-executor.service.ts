@@ -61,6 +61,7 @@ export class ToolExecutorService {
     toolCall: ToolCall,
     userId: string,
     context: UserContext,
+    locale: string = 'zh',
   ): Promise<ToolExecutionResult> {
     const startTime = Date.now();
 
@@ -75,8 +76,8 @@ export class ToolExecutorService {
         return this.handleDelegation(toolCall, startTime);
       }
 
-      // 转换上下文格式
-      const legacyContext = this.convertToLegacyContext(context);
+      // 转换上下文格式（含 locale）
+      const legacyContext = this.convertToLegacyContext(context, locale);
 
       // 执行函数
       const executeCall = async () => {
@@ -146,12 +147,13 @@ export class ToolExecutorService {
     toolCalls: ToolCall[],
     userId: string,
     context: UserContext,
+    locale: string = 'zh',
   ): Promise<Map<string, ToolExecutionResult>> {
     const results = new Map<string, ToolExecutionResult>();
 
     // 串行执行，确保顺序和状态一致性
     for (const toolCall of toolCalls) {
-      const result = await this.execute(toolCall, userId, context);
+      const result = await this.execute(toolCall, userId, context, locale);
       results.set(toolCall.id, result);
     }
 
@@ -197,7 +199,7 @@ export class ToolExecutorService {
   /**
    * 转换为旧架构上下文格式
    */
-  private convertToLegacyContext(context: UserContext): any {
+  private convertToLegacyContext(context: UserContext, locale = 'zh'): any {
     return {
       profile: context.profile
         ? {
@@ -216,6 +218,7 @@ export class ToolExecutorService {
             climate: context.preferences.climate,
           }
         : undefined,
+      locale,
     };
   }
 

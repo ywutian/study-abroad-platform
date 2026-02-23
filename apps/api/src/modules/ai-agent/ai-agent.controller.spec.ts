@@ -12,7 +12,12 @@ describe('AiAgentController', () => {
   let rateLimiter: RateLimiterService;
   let llm: LLMService;
 
-  const mockUser = { id: 'user-1', email: 'test@test.com', role: 'USER' };
+  const mockUser = {
+    id: 'user-1',
+    email: 'test@test.com',
+    role: 'USER',
+    locale: 'zh',
+  };
 
   const mockResponse = {
     setHeader: jest.fn(),

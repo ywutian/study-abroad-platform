@@ -7,7 +7,12 @@ describe('ForumController', () => {
   let controller: ForumController;
   let forumService: ForumService;
 
-  const mockUser = { id: 'user-1', email: 'test@test.com', role: 'USER' };
+  const mockUser = {
+    id: 'user-1',
+    email: 'test@test.com',
+    role: 'USER',
+    locale: 'zh',
+  };
 
   const mockCategory = {
     id: 'cat-1',
@@ -181,7 +186,7 @@ describe('ForumController', () => {
 
       const result = await controller.createPost(mockUser as any, dto);
 
-      expect(forumService.createPost).toHaveBeenCalledWith('user-1', dto);
+      expect(forumService.createPost).toHaveBeenCalledWith('user-1', dto, 'zh');
       expect(result).toEqual(mockPost);
     });
   });

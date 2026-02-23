@@ -3,9 +3,7 @@ import {
   Logger,
   NotFoundException,
   BadRequestException,
-  Inject,
   Optional,
-  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma, Visibility, MemoryType } from '@prisma/client';
@@ -77,12 +75,9 @@ export class SwipeService {
 
   constructor(
     private prisma: PrismaService,
-    @Inject(forwardRef(() => CaseIncentiveService))
     private caseIncentiveService: CaseIncentiveService,
-    @Inject(forwardRef(() => PointsConfigService))
     private pointsConfig: PointsConfigService,
     @Optional()
-    @Inject(forwardRef(() => MemoryManagerService))
     private memoryManager?: MemoryManagerService,
   ) {}
 

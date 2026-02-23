@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { getSchoolDisplayName } from '../../common/utils/locale.util';
 
 export interface DashboardSummary {
   // 用户基本信息
@@ -62,7 +63,10 @@ export interface DashboardSummary {
 export class DashboardService {
   constructor(private prisma: PrismaService) {}
 
-  async getDashboardSummary(userId: string): Promise<DashboardSummary> {
+  async getDashboardSummary(
+    userId: string,
+    locale = 'zh',
+  ): Promise<DashboardSummary> {
     // 并行获取所有数据
     const [
       user,
@@ -186,7 +190,9 @@ export class DashboardService {
       .filter((t) => t.deadline !== null)
       .map((t) => ({
         id: t.id,
-        schoolName: t.school?.nameZh || t.school?.name || 'Unknown',
+        schoolName: t.school
+          ? getSchoolDisplayName(t.school, locale)
+          : 'Unknown',
         round: t.round,
         deadline: t.deadline!.toISOString(),
         daysLeft: Math.ceil(

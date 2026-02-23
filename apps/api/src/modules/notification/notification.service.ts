@@ -1,6 +1,13 @@
-import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { OnEvent } from '@nestjs/event-emitter';
 import { RedisService } from '../../common/redis/redis.service';
-import type { ChatGateway } from '../chat/chat.gateway';
+import {
+  CHAT_MESSAGE_OFFLINE,
+  NOTIFICATION_PUSH,
+  type ChatMessageOfflinePayload,
+  type NotificationPushPayload,
+} from '../../common/events/notification.events';
 
 export enum NotificationType {
   // 社交类
@@ -107,8 +114,7 @@ export class NotificationService {
 
   constructor(
     private readonly redis: RedisService,
-    @Inject(forwardRef(() => require('../chat/chat.gateway').ChatGateway))
-    private readonly chatGateway: ChatGateway,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -165,12 +171,32 @@ export class NotificationService {
     // 增加未读计数
     await this.redis.incr(this.getUnreadCountKey(userId));
 
-    // 通过WebSocket推送
-    this.chatGateway.sendToUser(userId, 'notification', notification);
+    // 通过事件推送到 WebSocket（ChatGateway 监听）
+    this.eventEmitter.emit(NOTIFICATION_PUSH, {
+      userId,
+      event: 'notification',
+      data: notification,
+    } satisfies NotificationPushPayload);
 
     this.logger.log(`Notification created: ${type} for user ${userId}`);
 
     return notification;
+  }
+
+  /**
+   * 监听离线消息事件，自动创建通知
+   */
+  @OnEvent(CHAT_MESSAGE_OFFLINE)
+  async handleChatMessageOffline(payload: ChatMessageOfflinePayload) {
+    await this.createNotification(
+      payload.recipientId,
+      NotificationType.NEW_MESSAGE,
+      {
+        actorId: payload.senderId,
+        relatedId: payload.conversationId,
+        relatedType: 'conversation',
+      },
+    );
   }
 
   /**

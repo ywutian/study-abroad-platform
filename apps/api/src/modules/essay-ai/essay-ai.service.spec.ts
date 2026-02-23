@@ -159,6 +159,7 @@ describe('EssayAiService', () => {
       expect(aiService.polishEssay).toHaveBeenCalledWith(
         'Custom content to polish',
         dto.style,
+        'zh',
       );
     });
 

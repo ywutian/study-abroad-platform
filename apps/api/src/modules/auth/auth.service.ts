@@ -7,13 +7,17 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserService } from '../user/user.service';
 import { EmailService } from '../../common/email/email.service';
 import { SessionManager } from './session-manager.service';
 import { BruteForceService } from './brute-force.service';
-import { CaseIncentiveService } from '../case/case-incentive.service';
+import {
+  USER_REGISTERED,
+  type UserRegisteredPayload,
+} from '../../common/events/notification.events';
 import { User } from '@prisma/client';
 import { randomBytes } from 'crypto';
 
@@ -46,7 +50,7 @@ export class AuthService {
     private emailService: EmailService,
     private sessionManager: SessionManager,
     private bruteForceService: BruteForceService,
-    private caseIncentiveService: CaseIncentiveService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -98,17 +102,12 @@ export class AuthService {
 
     const user = await this.userService.create(createData);
 
-    // Award referral points to the referrer (async, non-blocking)
-    if (referredById) {
-      this.caseIncentiveService
-        .rewardReferral(referredById, user.id)
-        .catch((err) => {
-          this.logger.error(
-            `Failed to award referral points for referrer ${referredById}`,
-            err,
-          );
-        });
-    }
+    // Emit registration event (CaseModule listens for referral rewards)
+    this.eventEmitter.emit(USER_REGISTERED, {
+      userId: user.id,
+      email: data.email,
+      referredById,
+    } as UserRegisteredPayload & { referredById?: string });
 
     // 发送验证邮件 (异步，不阻塞注册流程)
     this.emailService

@@ -41,7 +41,7 @@ export class EssayAiController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: EssayPolishRequestDto,
   ): Promise<EssayPolishResponseDto> {
-    return this.essayAiService.polishEssay(user.id, dto);
+    return this.essayAiService.polishEssay(user.id, dto, user.locale);
   }
 
   @Post('review')
@@ -51,7 +51,7 @@ export class EssayAiController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: EssayReviewRequestDto,
   ): Promise<EssayReviewResponseDto> {
-    return this.essayAiService.reviewEssay(user.id, dto);
+    return this.essayAiService.reviewEssay(user.id, dto, user.locale);
   }
 
   @Post('brainstorm')
@@ -61,7 +61,7 @@ export class EssayAiController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: EssayBrainstormRequestDto,
   ): Promise<EssayBrainstormResponseDto> {
-    return this.essayAiService.brainstormIdeas(user.id, dto);
+    return this.essayAiService.brainstormIdeas(user.id, dto, user.locale);
   }
 
   @Get('history/:essayId')
@@ -180,6 +180,7 @@ export class EssayAiController {
       user.id,
       essayId,
       body.schoolName,
+      user.locale,
     );
   }
 }

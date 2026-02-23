@@ -11,7 +11,6 @@
 
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { EventEmitterModule } from '@nestjs/event-emitter';
 import { PrismaModule } from '../../../prisma/prisma.module';
 import { AiAgentMemoryModule } from '../memory/memory.module';
 
@@ -37,7 +36,6 @@ import { AgentConfigService } from './config/config.service';
   imports: [
     ConfigModule,
     PrismaModule,
-    EventEmitterModule.forRoot(),
     AiAgentMemoryModule, // For SanitizerService used by StructuredLoggerService
   ],
   providers: [

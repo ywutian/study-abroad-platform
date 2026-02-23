@@ -4,9 +4,7 @@ import {
   NotFoundException,
   ForbiddenException,
   BadRequestException,
-  Inject,
   Optional,
-  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthorizationService } from '../../common/services/authorization.service';
@@ -44,7 +42,6 @@ export class ForumService {
     private auth: AuthorizationService,
     private moderation: ForumModerationService,
     @Optional()
-    @Inject(forwardRef(() => MemoryManagerService))
     private memoryManager?: MemoryManagerService,
   ) {}
 
@@ -524,7 +521,11 @@ export class ForumService {
    * @throws {ForbiddenException} When an unverified user attempts to create a team post
    * @throws {BadRequestException} When the category is invalid or content fails moderation
    */
-  async createPost(userId: string, data: CreatePostDto): Promise<PostDto> {
+  async createPost(
+    userId: string,
+    data: CreatePostDto,
+    locale = 'zh',
+  ): Promise<PostDto> {
     // 获取用户角色
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -631,7 +632,9 @@ export class ForumService {
     // 记录到记忆系统
     await this.savePostToMemory(
       userId,
-      post.category.nameZh || post.category.name,
+      locale === 'zh'
+        ? post.category.nameZh || post.category.name
+        : post.category.name || post.category.nameZh,
       data,
     );
 

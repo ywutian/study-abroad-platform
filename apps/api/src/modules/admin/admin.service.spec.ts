@@ -270,7 +270,12 @@ describe('AdminService', () => {
 
   describe('updateUserRole', () => {
     it('should update role and create audit log', async () => {
-      const mockUser = { id: mockUserId, email: 'test@test.com', role: 'USER' };
+      const mockUser = {
+        id: mockUserId,
+        email: 'test@test.com',
+        role: 'USER',
+        locale: 'zh',
+      };
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
       (prisma.user.update as jest.Mock).mockResolvedValue({
         ...mockUser,
@@ -307,7 +312,12 @@ describe('AdminService', () => {
 
   describe('deleteUser', () => {
     it('should soft delete user and create audit log', async () => {
-      const mockUser = { id: mockUserId, email: 'test@test.com', role: 'USER' };
+      const mockUser = {
+        id: mockUserId,
+        email: 'test@test.com',
+        role: 'USER',
+        locale: 'zh',
+      };
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
       (prisma.user.update as jest.Mock).mockResolvedValue({
         ...mockUser,

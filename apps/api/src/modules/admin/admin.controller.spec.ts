@@ -7,7 +7,12 @@ describe('AdminController', () => {
   let controller: AdminController;
   let adminService: jest.Mocked<AdminService>;
 
-  const mockAdmin = { id: 'admin-1', email: 'admin@test.com', role: 'ADMIN' };
+  const mockAdmin = {
+    id: 'admin-1',
+    email: 'admin@test.com',
+    role: 'ADMIN',
+    locale: 'zh',
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({

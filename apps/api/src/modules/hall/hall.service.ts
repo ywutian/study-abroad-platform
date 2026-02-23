@@ -3,9 +3,7 @@ import {
   NotFoundException,
   ForbiddenException,
   BadRequestException,
-  Inject,
   Optional,
-  forwardRef,
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -18,6 +16,7 @@ import {
   MemoryType,
   EntityType,
 } from '@prisma/client';
+import { getSchoolDisplayName } from '../../common/utils/locale.util';
 import {
   PaginationDto,
   createPaginatedResponse,
@@ -121,10 +120,8 @@ export class HallService {
   constructor(
     private prisma: PrismaService,
     @Optional()
-    @Inject(forwardRef(() => MemoryManagerService))
     private memoryManager?: MemoryManagerService,
     @Optional()
-    @Inject(forwardRef(() => AiService))
     private aiService?: AiService,
   ) {}
 
@@ -198,6 +195,7 @@ export class HallService {
   async getBatchRanking(
     userId: string,
     schoolIds: string[],
+    locale = 'zh',
   ): Promise<{ rankings: RankingResult[] }> {
     if (!schoolIds.length) {
       return { rankings: [] };
@@ -343,7 +341,7 @@ export class HallService {
 
       rankings.push({
         schoolId: school.id,
-        schoolName: school.nameZh || school.name,
+        schoolName: getSchoolDisplayName(school, locale),
         totalApplicants: allProfiles.length,
         yourRank: userIndex + 1,
         yourScore: Math.round(userBreakdown.overall * 10) / 10,
@@ -370,7 +368,7 @@ export class HallService {
     }
 
     // 记录用户关注的学校到记忆系统
-    await this.saveSchoolInterestToMemory(userId, schools, rankings);
+    await this.saveSchoolInterestToMemory(userId, schools, rankings, locale);
 
     return { rankings };
   }
@@ -387,6 +385,7 @@ export class HallService {
       usNewsRank?: number | null;
     }>,
     rankings: RankingResult[],
+    locale = 'zh',
   ): Promise<void> {
     if (!this.memoryManager || schools.length === 0) return;
 
@@ -395,10 +394,13 @@ export class HallService {
       for (const school of schools.slice(0, 3)) {
         // 最多记录3所
         const ranking = rankings.find((r) => r.schoolId === school.id);
+        const isZh = locale === 'zh';
         await this.memoryManager.recordEntity(userId, {
           type: EntityType.SCHOOL,
-          name: school.nameZh || school.name,
-          description: `US News 排名 #${school.usNewsRank || '未知'}`,
+          name: getSchoolDisplayName(school, locale),
+          description: isZh
+            ? `US News 排名 #${school.usNewsRank || '未知'}`
+            : `US News Rank #${school.usNewsRank || 'N/A'}`,
           attributes: {
             interestLevel: 'high',
             addedAt: new Date().toISOString(),
@@ -414,17 +416,21 @@ export class HallService {
           const weakest = dims.reduce((a, b) =>
             ranking.percentiles[a] <= ranking.percentiles[b] ? a : b,
           );
-          const positionLabel =
-            ranking.competitivePosition === 'strong'
+          const schoolDisplayName = getSchoolDisplayName(school, locale);
+          const positionLabel = isZh
+            ? ranking.competitivePosition === 'strong'
               ? '强'
               : ranking.competitivePosition === 'moderate'
                 ? '中等'
-                : '待提升';
+                : '待提升'
+            : ranking.competitivePosition;
 
           await this.memoryManager.remember(userId, {
             type: MemoryType.FACT,
             category: 'ranking',
-            content: `用户在 ${school.nameZh || school.name} 排名第${ranking.yourRank}/${ranking.totalApplicants}（前${ranking.percentile}%），竞争力${positionLabel}。最强维度: ${strongest}，待提升: ${weakest}`,
+            content: isZh
+              ? `用户在 ${schoolDisplayName} 排名第${ranking.yourRank}/${ranking.totalApplicants}（前${ranking.percentile}%），竞争力${positionLabel}。最强维度: ${strongest}，待提升: ${weakest}`
+              : `User ranked #${ranking.yourRank}/${ranking.totalApplicants} (top ${ranking.percentile}%) at ${schoolDisplayName}. Competitiveness: ${positionLabel}. Strongest: ${strongest}, Weakest: ${weakest}`,
             importance: 0.7,
             metadata: {
               schoolId: school.id,
@@ -967,15 +973,19 @@ export class HallService {
   async getRankingAnalysis(
     userId: string,
     schoolId: string,
+    locale = 'zh',
   ): Promise<{
     analysis: string;
     strengths: string[];
     improvements: string[];
     competitivePosition: string;
   }> {
+    const isZh = locale === 'zh';
     if (!this.aiService) {
       return {
-        analysis: 'AI 分析服务暂时不可用。',
+        analysis: isZh
+          ? 'AI 分析服务暂时不可用。'
+          : 'AI analysis service is temporarily unavailable.',
         strengths: [],
         improvements: [],
         competitivePosition: 'unknown',
@@ -994,7 +1004,9 @@ export class HallService {
 
     if (!profile) {
       return {
-        analysis: '请先完善你的档案信息。',
+        analysis: isZh
+          ? '请先完善你的档案信息。'
+          : 'Please complete your profile first.',
         strengths: [],
         improvements: [],
         competitivePosition: 'unknown',
@@ -1008,7 +1020,7 @@ export class HallService {
 
     if (!school) {
       return {
-        analysis: '未找到该学校信息。',
+        analysis: isZh ? '未找到该学校信息。' : 'School not found.',
         strengths: [],
         improvements: [],
         competitivePosition: 'unknown',
@@ -1023,13 +1035,18 @@ export class HallService {
     const schoolMetrics = extractSchoolMetrics(school);
     const breakdown = calculateScoreBreakdown(metrics, schoolMetrics);
 
-    const prompt = `你是一位资深美本申请顾问。请根据以下数据，用中文分析该学生在 ${school.nameZh || school.name} 的竞争力。
+    const schoolName = isZh ? school.nameZh || school.name : school.name;
+    const unknown = isZh ? '未知' : 'Unknown';
+    const notFilled = isZh ? '未填写' : 'Not provided';
+
+    const prompt = isZh
+      ? `你是一位资深美本申请顾问。请根据以下数据，用中文分析该学生在 ${schoolName} 的竞争力。
 
 ## 学生数据
-- GPA: ${metrics.gpa || '未填写'}${metrics.gpaScale ? `/${metrics.gpaScale}` : ''}
-- SAT: ${metrics.satScore || '未填写'}
-- ACT: ${metrics.actScore || '未填写'}
-- TOEFL: ${metrics.toeflScore || '未填写'}
+- GPA: ${metrics.gpa || notFilled}${metrics.gpaScale ? `/${metrics.gpaScale}` : ''}
+- SAT: ${metrics.satScore || notFilled}
+- ACT: ${metrics.actScore || notFilled}
+- TOEFL: ${metrics.toeflScore || notFilled}
 - 活动数量: ${metrics.activityCount}
 - 奖项数量: ${metrics.awardCount}（国家级${metrics.nationalAwardCount}，国际级${metrics.internationalAwardCount}）
 
@@ -1044,8 +1061,8 @@ export class HallService {
 - 百分位: 前${rankingData.percentile}%
 
 ## 学校信息
-- US News 排名: #${school.usNewsRank || '未知'}
-- 录取率: ${school.acceptanceRate ? Number(school.acceptanceRate) + '%' : '未知'}
+- US News 排名: #${school.usNewsRank || unknown}
+- 录取率: ${school.acceptanceRate ? Number(school.acceptanceRate) + '%' : unknown}
 
 请输出 JSON 格式：
 {
@@ -1055,7 +1072,40 @@ export class HallService {
   "competitivePosition": "strong|moderate|challenging"
 }
 
-只输出 JSON，不要其他内容。`;
+只输出 JSON，不要其他内容。`
+      : `You are a senior US college admissions consultant. Based on the following data, analyze this student's competitiveness at ${schoolName}.
+
+## Student Data
+- GPA: ${metrics.gpa || notFilled}${metrics.gpaScale ? `/${metrics.gpaScale}` : ''}
+- SAT: ${metrics.satScore || notFilled}
+- ACT: ${metrics.actScore || notFilled}
+- TOEFL: ${metrics.toeflScore || notFilled}
+- Activities: ${metrics.activityCount}
+- Awards: ${metrics.awardCount} (National: ${metrics.nationalAwardCount}, International: ${metrics.internationalAwardCount})
+
+## Score Breakdown
+- Academic: ${breakdown.academic.toFixed(1)}/100
+- Activities: ${breakdown.activity.toFixed(1)}/100
+- Awards: ${breakdown.award.toFixed(1)}/100
+- Overall: ${breakdown.overall.toFixed(1)}/100
+
+## Ranking
+- Rank: ${rankingData.rank}/${rankingData.total}
+- Percentile: Top ${rankingData.percentile}%
+
+## School Info
+- US News Rank: #${school.usNewsRank || unknown}
+- Acceptance Rate: ${school.acceptanceRate ? Number(school.acceptanceRate) + '%' : unknown}
+
+Output in JSON format:
+{
+  "analysis": "Comprehensive analysis (2-3 sentences)",
+  "strengths": ["Strength 1", "Strength 2"],
+  "improvements": ["Improvement suggestion 1", "Improvement suggestion 2"],
+  "competitivePosition": "strong|moderate|challenging"
+}
+
+Output only JSON, nothing else.`;
 
     try {
       const response = await this.aiService.chat([
@@ -1078,7 +1128,9 @@ export class HallService {
     }
 
     return {
-      analysis: 'AI 分析暂时不可用，请稍后再试。',
+      analysis: isZh
+        ? 'AI 分析暂时不可用，请稍后再试。'
+        : 'AI analysis is temporarily unavailable. Please try again later.',
       strengths: [],
       improvements: [],
       competitivePosition: 'unknown',

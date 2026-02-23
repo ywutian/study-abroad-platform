@@ -8,7 +8,12 @@ describe('ChatController', () => {
   let chatService: jest.Mocked<ChatService>;
   let chatGateway: jest.Mocked<ChatGateway>;
 
-  const mockUser = { id: 'user-1', email: 'test@test.com', role: 'USER' };
+  const mockUser = {
+    id: 'user-1',
+    email: 'test@test.com',
+    role: 'USER',
+    locale: 'zh',
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({

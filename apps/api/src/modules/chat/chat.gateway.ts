@@ -8,15 +8,19 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Logger, Inject, forwardRef } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { OnEvent } from '@nestjs/event-emitter';
 import { ChatService } from './chat.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
-  NotificationService,
-  NotificationType,
-} from '../notification/notification.service';
+  CHAT_MESSAGE_OFFLINE,
+  NOTIFICATION_PUSH,
+  type ChatMessageOfflinePayload,
+  type NotificationPushPayload,
+} from '../../common/events/notification.events';
 
 interface AuthenticatedSocket extends Socket {
   userId?: string;
@@ -25,8 +29,8 @@ interface AuthenticatedSocket extends Socket {
 @WebSocketGateway({
   cors: {
     origin: process.env.CORS_ORIGINS?.split(',') || [
-      'http://localhost:3000',
-      'http://localhost:3001',
+      'http://localhost:4100',
+      'http://localhost:4101',
     ],
     credentials: true,
   },
@@ -45,8 +49,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private jwtService: JwtService,
     private configService: ConfigService,
     private prisma: PrismaService,
-    @Inject(forwardRef(() => NotificationService))
-    private notificationService: NotificationService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async handleConnection(client: AuthenticatedSocket) {
@@ -282,13 +285,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   /**
-   * 给会话中不在线的对方发送消息通知
+   * 给会话中不在线的对方发送消息通知（通过事件）
    */
   private async sendMessageNotification(
     conversationId: string,
     senderId: string,
   ) {
-    // 找到对方参与者
     const participants = await this.chatService[
       'prisma'
     ].conversationParticipant.findMany({
@@ -298,16 +300,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     for (const p of participants) {
       if (p.userId !== senderId && !this.isUserOnline(p.userId)) {
-        await this.notificationService.createNotification(
-          p.userId,
-          NotificationType.NEW_MESSAGE,
-          {
-            actorId: senderId,
-            relatedId: conversationId,
-            relatedType: 'conversation',
-          },
-        );
+        this.eventEmitter.emit(CHAT_MESSAGE_OFFLINE, {
+          recipientId: p.userId,
+          senderId,
+          conversationId,
+        } satisfies ChatMessageOfflinePayload);
       }
     }
+  }
+
+  /**
+   * 监听通知推送事件，通过 WebSocket 发送给用户
+   */
+  @OnEvent(NOTIFICATION_PUSH)
+  handleNotificationPush(payload: NotificationPushPayload) {
+    this.sendToUser(payload.userId, payload.event, payload.data);
   }
 }

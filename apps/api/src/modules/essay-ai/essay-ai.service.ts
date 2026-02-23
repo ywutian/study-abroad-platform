@@ -3,9 +3,7 @@ import {
   Logger,
   NotFoundException,
   BadRequestException,
-  Inject,
   Optional,
-  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AiService } from '../ai/ai.service';
@@ -34,7 +32,6 @@ export class EssayAiService {
     private aiService: AiService,
     private caseIncentiveService: CaseIncentiveService,
     @Optional()
-    @Inject(forwardRef(() => MemoryManagerService))
     private memoryManager?: MemoryManagerService,
   ) {}
 
@@ -44,6 +41,7 @@ export class EssayAiService {
   async polishEssay(
     userId: string,
     dto: EssayPolishRequestDto,
+    locale = 'zh',
   ): Promise<EssayPolishResponseDto> {
     // 检查积分
     await this.caseIncentiveService.charge(userId, PointAction.AI_ESSAY_POLISH);
@@ -72,7 +70,11 @@ export class EssayAiService {
     const content = dto.content || essay.content;
 
     try {
-      const result = await this.aiService.polishEssay(content, dto.style);
+      const result = await this.aiService.polishEssay(
+        content,
+        dto.style,
+        locale,
+      );
 
       // 保存结果
       const aiResult = await this.prisma.essayAIResult.create({
@@ -114,7 +116,9 @@ export class EssayAiService {
   async reviewEssay(
     userId: string,
     dto: EssayReviewRequestDto,
+    locale = 'zh',
   ): Promise<EssayReviewResponseDto> {
+    const isZh = locale === 'zh';
     await this.caseIncentiveService.charge(userId, PointAction.AI_ESSAY_REVIEW);
 
     const essay = await this.prisma.essay.findUnique({
@@ -135,7 +139,8 @@ export class EssayAiService {
       );
     }
 
-    const systemPrompt = `你是一位顶尖大学招生官，请从招生官视角评估以下文书。
+    const systemPrompt = isZh
+      ? `你是一位顶尖大学招生官，请从招生官视角评估以下文书。
 
 ${dto.schoolName ? `目标学校：${dto.schoolName}` : ''}
 ${dto.major ? `目标专业：${dto.major}` : ''}
@@ -151,11 +156,36 @@ ${dto.major ? `目标专业：${dto.major}` : ''}
 {
   "overallScore": 7.5,
   "scores": { "clarity": 8, "uniqueness": 7, "storytelling": 8, "fit": 7, "language": 8 },
-  "strengths": ["亮点1", "亮点2"],
-  "weaknesses": ["不足1", "不足2"],
-  "suggestions": ["建议1", "建议2"],
-  "verdict": "总体评价（50-100字）"
-}`;
+  "strengths": ["亮点1（中文）", "亮点2（中文）"],
+  "weaknesses": ["不足1（中文）", "不足2（中文）"],
+  "suggestions": ["建议1（中文）", "建议2（中文）"],
+  "verdict": "总体评价（中文，50-100字）"
+}
+
+所有文本字段必须用中文。`
+      : `You are a top university admissions officer. Evaluate the following essay from an admissions perspective.
+
+${dto.schoolName ? `Target school: ${dto.schoolName}` : ''}
+${dto.major ? `Target major: ${dto.major}` : ''}
+
+Score each dimension (1-10) and provide detailed feedback:
+1. clarity: Is the thesis clear? Can the reader quickly understand your message?
+2. uniqueness: Does it showcase unique personal experiences, viewpoints, or perspectives?
+3. storytelling: Is the narrative engaging? Are there memorable details?
+4. fit: Does it demonstrate alignment with the target school's values and culture?
+5. language: Are grammar, word choice, and sentence structure effective?
+
+Return JSON format:
+{
+  "overallScore": 7.5,
+  "scores": { "clarity": 8, "uniqueness": 7, "storytelling": 8, "fit": 7, "language": 8 },
+  "strengths": ["Strength 1 (English)", "Strength 2 (English)"],
+  "weaknesses": ["Weakness 1 (English)", "Weakness 2 (English)"],
+  "suggestions": ["Suggestion 1 (English)", "Suggestion 2 (English)"],
+  "verdict": "Overall verdict (English, 50-100 words)"
+}
+
+All text fields must be in English.`;
 
     try {
       const result = await this.aiService.chat(
@@ -163,7 +193,9 @@ ${dto.major ? `目标专业：${dto.major}` : ''}
           { role: 'system', content: systemPrompt },
           {
             role: 'user',
-            content: `题目：${essay.prompt || '(未提供)'}\n\n文书内容：\n${essay.content}`,
+            content: isZh
+              ? `题目：${essay.prompt || '(未提供)'}\n\n文书内容：\n${essay.content}`
+              : `Prompt: ${essay.prompt || '(not provided)'}\n\nEssay content:\n${essay.content}`,
           },
         ],
         { temperature: 0.5, maxTokens: 2000 },
@@ -348,13 +380,16 @@ ${dto.major ? `目标专业：${dto.major}` : ''}
   async brainstormIdeas(
     userId: string,
     dto: EssayBrainstormRequestDto,
+    locale = 'zh',
   ): Promise<EssayBrainstormResponseDto> {
+    const isZh = locale === 'zh';
     await this.caseIncentiveService.charge(
       userId,
       PointAction.AI_ESSAY_BRAINSTORM,
     );
 
-    const systemPrompt = `你是一位资深留学文书顾问，擅长帮助学生挖掘独特的故事和角度。
+    const systemPrompt = isZh
+      ? `你是一位资深留学文书顾问，擅长帮助学生挖掘独特的故事和角度。
 
 ${dto.school ? `目标学校：${dto.school}` : ''}
 ${dto.major ? `目标专业：${dto.major}` : ''}
@@ -368,17 +403,43 @@ ${dto.major ? `目标专业：${dto.major}` : ''}
 {
   "ideas": [
     {
-      "title": "想法标题（简短有力）",
-      "description": "详细说明这个角度如何展开，包括可以写的具体内容",
-      "suitableFor": "适合什么类型的题目/学校"
+      "title": "想法标题（中文，简短有力）",
+      "description": "详细说明（中文）",
+      "suitableFor": "适合什么类型的题目/学校（中文）"
     }
   ],
-  "overallAdvice": "针对这个题目的整体写作建议（100字内）"
-}`;
+  "overallAdvice": "整体写作建议（中文，100字内）"
+}
+
+所有文本字段必须用中文。`
+      : `You are an expert college essay consultant who excels at helping students discover unique stories and angles.
+
+${dto.school ? `Target school: ${dto.school}` : ''}
+${dto.major ? `Target major: ${dto.major}` : ''}
+
+Based on the prompt and background, generate 5-8 specific, insightful writing angles. Each idea should:
+1. Be specific and actionable, not generic advice
+2. Be unique enough to make the essay stand out
+3. Connect to the student's background
+
+Return JSON format:
+{
+  "ideas": [
+    {
+      "title": "Idea title (English, concise and powerful)",
+      "description": "Detailed explanation (English)",
+      "suitableFor": "What type of prompt/school this suits (English)"
+    }
+  ],
+  "overallAdvice": "Overall writing advice (English, under 100 words)"
+}
+
+All text fields must be in English.`;
 
     try {
-      const userContent = `题目：${dto.prompt}
-${dto.background ? `\n学生背景：${dto.background}` : ''}`;
+      const userContent = isZh
+        ? `题目：${dto.prompt}${dto.background ? `\n学生背景：${dto.background}` : ''}`
+        : `Prompt: ${dto.prompt}${dto.background ? `\nStudent background: ${dto.background}` : ''}`;
 
       const result = await this.aiService.chat(
         [
@@ -712,6 +773,7 @@ ${dto.background ? `\n学生背景：${dto.background}` : ''}`;
     userId: string,
     caseId: string,
     schoolName?: string,
+    locale = 'zh',
   ) {
     await this.caseIncentiveService.charge(
       userId,
@@ -732,6 +794,7 @@ ${dto.background ? `\n学生背景：${dto.background}` : ''}`;
         essay.content,
         essay.prompt || undefined,
         schoolName || essay.school?.name,
+        locale,
       );
 
       return {

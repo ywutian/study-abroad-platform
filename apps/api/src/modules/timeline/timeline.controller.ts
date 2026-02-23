@@ -24,6 +24,7 @@ import {
   UpdateTaskDto,
   TaskResponseDto,
   GenerateTimelineDto,
+  GenerateTimelinesResultDto,
   TimelineOverviewDto,
   CreatePersonalEventDto,
   UpdatePersonalEventDto,
@@ -52,17 +53,17 @@ export class TimelineController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: CreateTimelineDto,
   ): Promise<TimelineResponseDto> {
-    return this.timelineService.createTimeline(user.id, dto);
+    return this.timelineService.createTimeline(user.id, dto, user.locale);
   }
 
   @Post('generate')
   @ApiOperation({ summary: '批量生成时间线' })
-  @ApiResponse({ status: 201, type: [TimelineResponseDto] })
+  @ApiResponse({ status: 201, type: GenerateTimelinesResultDto })
   async generateTimelines(
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: GenerateTimelineDto,
-  ): Promise<TimelineResponseDto[]> {
-    return this.timelineService.generateTimelines(user.id, dto);
+  ): Promise<GenerateTimelinesResultDto> {
+    return this.timelineService.generateTimelines(user.id, dto, user.locale);
   }
 
   @Get()

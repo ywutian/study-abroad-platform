@@ -13,7 +13,12 @@ describe('VaultController', () => {
   let vaultService: VaultService;
   let userService: UserService;
 
-  const mockUser = { id: 'user-1', email: 'test@test.com', role: 'USER' };
+  const mockUser = {
+    id: 'user-1',
+    email: 'test@test.com',
+    role: 'USER',
+    locale: 'zh',
+  };
 
   const mockVaultItem = {
     id: 'vault-1',

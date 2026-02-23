@@ -112,7 +112,7 @@ export class ForumController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: CreatePostDto,
   ): Promise<PostDto> {
-    return this.forumService.createPost(user.id, data);
+    return this.forumService.createPost(user.id, data, user.locale);
   }
 
   @Put('posts/:id')

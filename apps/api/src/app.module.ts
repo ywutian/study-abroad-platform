@@ -1,6 +1,7 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
 import { TimeoutMiddleware } from './common/middleware/timeout.middleware';
@@ -74,6 +75,7 @@ import { AuditLogModule } from './common/services/audit-log.module';
         ],
       }),
     }),
+    EventEmitterModule.forRoot(),
     PrismaModule,
     LoggerModule,
     EmailModule,

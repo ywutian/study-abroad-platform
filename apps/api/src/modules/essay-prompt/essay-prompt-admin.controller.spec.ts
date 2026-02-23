@@ -6,7 +6,12 @@ describe('EssayPromptAdminController', () => {
   let controller: EssayPromptAdminController;
   let essayPromptService: EssayPromptService;
 
-  const mockAdmin = { id: 'admin-1', email: 'admin@test.com', role: 'ADMIN' };
+  const mockAdmin = {
+    id: 'admin-1',
+    email: 'admin@test.com',
+    role: 'ADMIN',
+    locale: 'zh',
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({

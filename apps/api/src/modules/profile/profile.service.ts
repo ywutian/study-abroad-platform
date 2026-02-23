@@ -4,8 +4,6 @@ import {
   ForbiddenException,
   Logger,
   Optional,
-  Inject,
-  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthorizationService } from '../../common/services/authorization.service';
@@ -36,6 +34,8 @@ import {
   UpdateEducationDto,
 } from './dto';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
+import { RedisService } from '../../common/redis/redis.service';
+import { CacheInvalidationService } from '../../common/redis/cache-invalidation.service';
 
 // 嵌套实体类型（通过 profile 关联到 user）
 interface ProfileOwnable {
@@ -60,8 +60,9 @@ export class ProfileService {
   constructor(
     private prisma: PrismaService,
     private auth: AuthorizationService,
+    private redis: RedisService,
+    private cacheInvalidation: CacheInvalidationService,
     @Optional()
-    @Inject(forwardRef(() => MemoryManagerService))
     private memoryManager?: MemoryManagerService,
   ) {}
 
@@ -108,7 +109,11 @@ export class ProfileService {
    * @returns The full profile with relations, or null if not found
    */
   async findByUserId(userId: string): Promise<Profile | null> {
-    return this.prisma.profile.findUnique({
+    const cacheKey = `profile:${userId}`;
+    const cached = await this.redis.getJSON<Profile>(cacheKey);
+    if (cached) return cached;
+
+    const profile = await this.prisma.profile.findUnique({
       where: { userId },
       include: {
         testScores: { orderBy: { createdAt: 'desc' } },
@@ -118,6 +123,12 @@ export class ProfileService {
         essays: true,
       },
     });
+
+    if (profile) {
+      await this.redis.setJSON(cacheKey, profile, 300); // 5 min TTL
+    }
+
+    return profile;
   }
 
   /**
@@ -291,6 +302,9 @@ export class ProfileService {
       },
     });
 
+    // 失效所有依赖 profile 的缓存（含 AI 分析）
+    await this.cacheInvalidation.onProfileChange(userId);
+
     // 记录档案更新到记忆系统
     this.recordProfileUpdateToMemory(userId, data).catch((err) => {
       this.logger.warn('Failed to record profile update to memory', err);
@@ -355,6 +369,8 @@ export class ProfileService {
       },
     });
 
+    await this.cacheInvalidation.onProfileChange(userId);
+
     // 记录成绩到记忆系统
     this.recordTestScoreToMemory(userId, data).catch((err) => {
       this.logger.warn('Failed to record test score to memory', err);
@@ -387,7 +403,7 @@ export class ProfileService {
       'Test score',
     );
 
-    return this.prisma.testScore.update({
+    const result = await this.prisma.testScore.update({
       where: { id: scoreId },
       data: {
         type: data.type as any,
@@ -396,6 +412,8 @@ export class ProfileService {
         testDate: data.testDate ? new Date(data.testDate) : undefined,
       },
     });
+    await this.cacheInvalidation.onProfileChange(userId);
+    return result;
   }
 
   /**
@@ -417,6 +435,7 @@ export class ProfileService {
     );
 
     await this.prisma.testScore.delete({ where: { id: scoreId } });
+    await this.cacheInvalidation.onProfileChange(userId);
   }
 
   /**
@@ -468,6 +487,8 @@ export class ProfileService {
       },
     });
 
+    await this.cacheInvalidation.onProfileChange(userId);
+
     // 记录活动到记忆系统
     this.recordActivityToMemory(userId, data).catch((err) => {
       this.logger.warn('Failed to record activity to memory', err);
@@ -500,7 +521,7 @@ export class ProfileService {
       'Activity',
     );
 
-    return this.prisma.activity.update({
+    const result = await this.prisma.activity.update({
       where: { id: activityId },
       data: {
         name: data.name,
@@ -516,6 +537,8 @@ export class ProfileService {
         order: data.order,
       },
     });
+    await this.cacheInvalidation.onProfileChange(userId);
+    return result;
   }
 
   /**
@@ -537,6 +560,7 @@ export class ProfileService {
     );
 
     await this.prisma.activity.delete({ where: { id: activityId } });
+    await this.cacheInvalidation.onProfileChange(userId);
   }
 
   /**
@@ -601,6 +625,7 @@ export class ProfileService {
         }),
       ),
     );
+    await this.cacheInvalidation.onProfileChange(userId);
   }
 
   // ============================================
@@ -627,6 +652,8 @@ export class ProfileService {
         order: data.order ?? 0,
       },
     });
+
+    await this.cacheInvalidation.onProfileChange(userId);
 
     // 记录奖项到记忆系统
     this.recordAwardToMemory(userId, data).catch((err) => {
@@ -660,7 +687,7 @@ export class ProfileService {
       'Award',
     );
 
-    return this.prisma.award.update({
+    const result = await this.prisma.award.update({
       where: { id: awardId },
       data: {
         name: data.name,
@@ -670,6 +697,8 @@ export class ProfileService {
         order: data.order,
       },
     });
+    await this.cacheInvalidation.onProfileChange(userId);
+    return result;
   }
 
   /**
@@ -691,6 +720,7 @@ export class ProfileService {
     );
 
     await this.prisma.award.delete({ where: { id: awardId } });
+    await this.cacheInvalidation.onProfileChange(userId);
   }
 
   /**
@@ -749,6 +779,7 @@ export class ProfileService {
         }),
       ),
     );
+    await this.cacheInvalidation.onProfileChange(userId);
   }
 
   // ============================================
@@ -777,6 +808,8 @@ export class ProfileService {
         schoolId: data.schoolId,
       },
     });
+
+    await this.cacheInvalidation.onProfileChange(userId);
 
     // 记录文书创建到记忆系统
     this.recordEssayToMemory(userId, data, wordCount).catch((err) => {
@@ -815,7 +848,7 @@ export class ProfileService {
       ? data.content.split(/\s+/).filter(Boolean).length
       : undefined;
 
-    return this.prisma.essay.update({
+    const result = await this.prisma.essay.update({
       where: { id: essayId },
       data: {
         title: data.title,
@@ -825,6 +858,8 @@ export class ProfileService {
         schoolId: data.schoolId,
       },
     });
+    await this.cacheInvalidation.onProfileChange(userId);
+    return result;
   }
 
   /**
@@ -846,6 +881,7 @@ export class ProfileService {
     );
 
     await this.prisma.essay.delete({ where: { id: essayId } });
+    await this.cacheInvalidation.onProfileChange(userId);
   }
 
   /**
@@ -917,6 +953,8 @@ export class ProfileService {
       },
     });
 
+    await this.cacheInvalidation.onProfileChange(userId);
+
     // 记录教育经历到记忆系统
     this.recordEducationToMemory(userId, data).catch((err) => {
       this.logger.warn('Failed to record education to memory', err);
@@ -949,7 +987,7 @@ export class ProfileService {
       'Education',
     );
 
-    return this.prisma.education.update({
+    const updated = await this.prisma.education.update({
       where: { id: educationId },
       data: {
         schoolName: data.schoolName,
@@ -966,6 +1004,10 @@ export class ProfileService {
         description: data.description,
       },
     });
+
+    await this.cacheInvalidation.onProfileChange(userId);
+
+    return updated;
   }
 
   /**
@@ -987,6 +1029,8 @@ export class ProfileService {
     );
 
     await this.prisma.education.delete({ where: { id: educationId } });
+
+    await this.cacheInvalidation.onProfileChange(userId);
   }
 
   /**
@@ -1065,6 +1109,8 @@ export class ProfileService {
 
     const result = await this.getTargetSchools(userId);
 
+    await this.cacheInvalidation.onProfileChange(userId);
+
     // 记录设置目标校列表到记忆系统
     this.recordSetTargetSchoolsToMemory(userId, result).catch((err) => {
       this.logger.warn('Failed to record set target schools to memory', err);
@@ -1098,6 +1144,8 @@ export class ProfileService {
       include: { school: true },
     });
 
+    await this.cacheInvalidation.onProfileChange(userId);
+
     // 记录添加目标校到记忆系统
     this.recordTargetSchoolAddToMemory(
       userId,
@@ -1122,6 +1170,8 @@ export class ProfileService {
     await this.prisma.profileTargetSchool.deleteMany({
       where: { profileId, schoolId },
     });
+
+    await this.cacheInvalidation.onProfileChange(userId);
 
     // 记录移除目标校到记忆系统
     this.recordTargetSchoolRemovalToMemory(userId, schoolId).catch((err) => {

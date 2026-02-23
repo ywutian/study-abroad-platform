@@ -589,11 +589,13 @@ export class WorkflowEngineService {
     const stepStart = Date.now();
 
     try {
+      const stepLocale = (conversation.metadata?.locale as string) || 'zh';
       const executeWithTimeout = async () => {
         return this.toolExecutor.execute(
           step.toolCall,
           conversation.userId,
           conversation.context,
+          stepLocale,
         );
       };
 

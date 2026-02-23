@@ -1,16 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotificationService, NotificationType } from './notification.service';
 import { RedisService } from '../../common/redis/redis.service';
-import { ChatGateway } from '../chat/chat.gateway';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 describe('NotificationService', () => {
   let service: NotificationService;
   let redis: RedisService;
-  let mockChatGateway: { sendToUser: jest.Mock };
+  let mockEventEmitter: { emit: jest.Mock };
 
   beforeEach(async () => {
-    mockChatGateway = {
-      sendToUser: jest.fn(),
+    mockEventEmitter = {
+      emit: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -33,8 +33,8 @@ describe('NotificationService', () => {
           },
         },
         {
-          provide: ChatGateway,
-          useValue: mockChatGateway,
+          provide: EventEmitter2,
+          useValue: mockEventEmitter,
         },
       ],
     }).compile();
@@ -66,17 +66,20 @@ describe('NotificationService', () => {
       expect(redis.incr).toHaveBeenCalled();
     });
 
-    it('should push notification via WebSocket', async () => {
+    it('should push notification via EventEmitter', async () => {
       await service.createNotification(
         'user-1',
         NotificationType.VERIFICATION_APPROVED,
       );
 
-      expect(mockChatGateway.sendToUser).toHaveBeenCalledWith(
-        'user-1',
-        'notification',
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
+        expect.any(String),
         expect.objectContaining({
-          type: NotificationType.VERIFICATION_APPROVED,
+          userId: 'user-1',
+          event: 'notification',
+          data: expect.objectContaining({
+            type: NotificationType.VERIFICATION_APPROVED,
+          }),
         }),
       );
     });

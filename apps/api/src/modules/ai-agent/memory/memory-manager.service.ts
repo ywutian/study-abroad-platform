@@ -917,6 +917,62 @@ export class MemoryManagerService {
         });
       }
 
+      // 预测历史查询结果 (get_prediction_history)
+      if (data.current && data.history && data.school) {
+        const prob = data.current.probability;
+        const probPct =
+          typeof prob === 'number'
+            ? prob < 1
+              ? (prob * 100).toFixed(0)
+              : prob.toFixed(0)
+            : '?';
+        memories.push({
+          type: MemoryType.FACT,
+          category: 'school_prediction',
+          content: `查询了 ${data.school.name ?? '学校'} 的预测历史，当前概率 ${probPct}%（${data.current.tier ?? '未知'}），共 ${data.history.length} 条历史记录`,
+          importance: 0.6,
+          metadata: {
+            source: 'tool_result',
+            toolName: 'get_prediction_history',
+          },
+        });
+      }
+
+      // 预测仪表盘查询结果 (get_prediction_dashboard)
+      if (data.totalSchools !== undefined && data.tierDistribution) {
+        memories.push({
+          type: MemoryType.FACT,
+          category: 'school_prediction',
+          content: `查看了预测概览：共 ${data.totalSchools} 所学校，平均概率 ${data.avgProbability ?? 0}%，冲刺 ${data.tierDistribution.reach} / 匹配 ${data.tierDistribution.match} / 保底 ${data.tierDistribution.safety}`,
+          importance: 0.5,
+          metadata: {
+            source: 'tool_result',
+            toolName: 'get_prediction_dashboard',
+            transient: true,
+          },
+        });
+      }
+
+      // 选校清单预测查询结果 (get_school_list_predictions)
+      if (
+        Array.isArray(data) &&
+        data.length > 0 &&
+        data[0]?.prediction !== undefined
+      ) {
+        const withPrediction = data.filter((i: any) => i.prediction);
+        memories.push({
+          type: MemoryType.FACT,
+          category: 'school_prediction',
+          content: `查看了选校清单预测，${withPrediction.length}/${data.length} 所学校有预测数据`,
+          importance: 0.5,
+          metadata: {
+            source: 'tool_result',
+            toolName: 'get_school_list_predictions',
+            transient: true,
+          },
+        });
+      }
+
       // 保存
       if (memories.length > 0) {
         await this.persistent.createMemories(conversation.userId, memories);

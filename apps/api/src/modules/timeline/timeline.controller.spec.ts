@@ -7,7 +7,12 @@ describe('TimelineController', () => {
   let controller: TimelineController;
   let timelineService: TimelineService;
 
-  const mockUser = { id: 'user-1', email: 'test@test.com', role: 'USER' };
+  const mockUser = {
+    id: 'user-1',
+    email: 'test@test.com',
+    role: 'USER',
+    locale: 'zh',
+  };
 
   const mockTimeline = { id: 'tl-1', userId: 'user-1', name: 'Fall 2025' };
   const mockTask = { id: 'task-1', title: 'Submit TOEFL', completed: false };
@@ -21,7 +26,9 @@ describe('TimelineController', () => {
           provide: TimelineService,
           useValue: {
             createTimeline: jest.fn().mockResolvedValue(mockTimeline),
-            generateTimelines: jest.fn().mockResolvedValue([mockTimeline]),
+            generateTimelines: jest
+              .fn()
+              .mockResolvedValue({ created: [mockTimeline], failed: [] }),
             getTimelines: jest.fn().mockResolvedValue([mockTimeline]),
             getOverview: jest.fn().mockResolvedValue({ total: 1, upcoming: 3 }),
             getGlobalEvents: jest.fn().mockResolvedValue([mockEvent]),
@@ -80,6 +87,7 @@ describe('TimelineController', () => {
       expect(timelineService.createTimeline).toHaveBeenCalledWith(
         'user-1',
         dto,
+        'zh',
       );
       expect(result).toEqual(mockTimeline);
     });
@@ -96,8 +104,9 @@ describe('TimelineController', () => {
       expect(timelineService.generateTimelines).toHaveBeenCalledWith(
         'user-1',
         dto,
+        'zh',
       );
-      expect(result).toEqual([mockTimeline]);
+      expect(result).toEqual({ created: [mockTimeline], failed: [] });
     });
   });
 

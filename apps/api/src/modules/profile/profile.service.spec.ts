@@ -2,6 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ProfileService } from './profile.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthorizationService } from '../../common/services/authorization.service';
+import { RedisService } from '../../common/redis/redis.service';
+import { CacheInvalidationService } from '../../common/redis/cache-invalidation.service';
+import { MemoryManagerService } from '../ai-agent/memory';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
 import { Visibility, Role, Prisma } from '@prisma/client';
 
@@ -153,6 +156,26 @@ describe('ProfileService', () => {
                 }
                 return entity;
               }),
+          },
+        },
+        {
+          provide: RedisService,
+          useValue: {
+            getJSON: jest.fn().mockResolvedValue(null),
+            setJSON: jest.fn().mockResolvedValue(undefined),
+            del: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: CacheInvalidationService,
+          useValue: {
+            onProfileChange: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: MemoryManagerService,
+          useValue: {
+            remember: jest.fn().mockResolvedValue(undefined),
           },
         },
       ],

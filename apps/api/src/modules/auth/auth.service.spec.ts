@@ -7,7 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { EmailService } from '../../common/email/email.service';
 import { SessionManager } from './session-manager.service';
 import { BruteForceService } from './brute-force.service';
-import { CaseIncentiveService } from '../case/case-incentive.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   UnauthorizedException,
   ConflictException,
@@ -115,9 +115,9 @@ describe('AuthService', () => {
           },
         },
         {
-          provide: CaseIncentiveService,
+          provide: EventEmitter2,
           useValue: {
-            rewardReferral: jest.fn().mockResolvedValue(undefined),
+            emit: jest.fn(),
           },
         },
       ],

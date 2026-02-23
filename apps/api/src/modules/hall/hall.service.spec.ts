@@ -4,7 +4,6 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
 import { AiService } from '../ai/ai.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { forwardRef } from '@nestjs/common';
 
 jest.mock('../../common/utils/scoring', () => ({
   extractProfileMetrics: jest.fn().mockReturnValue({

@@ -6,7 +6,12 @@ describe('SubscriptionController', () => {
   let controller: SubscriptionController;
   let subscriptionService: jest.Mocked<SubscriptionService>;
 
-  const mockUser = { id: 'user-1', email: 'test@test.com', role: 'USER' };
+  const mockUser = {
+    id: 'user-1',
+    email: 'test@test.com',
+    role: 'USER',
+    locale: 'zh',
+  };
 
   const mockPlans = [
     { id: 'free', name: 'Free', price: 0 },

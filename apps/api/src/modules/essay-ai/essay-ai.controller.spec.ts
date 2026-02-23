@@ -7,7 +7,12 @@ describe('EssayAiController', () => {
   let controller: EssayAiController;
   let service: EssayAiService;
 
-  const mockUser = { id: 'user-1', email: 'test@test.com', role: 'USER' };
+  const mockUser = {
+    id: 'user-1',
+    email: 'test@test.com',
+    role: 'USER',
+    locale: 'zh',
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -48,7 +53,7 @@ describe('EssayAiController', () => {
       const dto = { content: 'raw essay', style: 'formal' } as any;
       const result = await controller.polishEssay(mockUser as any, dto);
 
-      expect(service.polishEssay).toHaveBeenCalledWith('user-1', dto);
+      expect(service.polishEssay).toHaveBeenCalledWith('user-1', dto, 'zh');
       expect(result).toEqual({ polished: 'text' });
     });
   });
@@ -58,7 +63,7 @@ describe('EssayAiController', () => {
       const dto = { content: 'my essay', prompt: 'Common App #1' } as any;
       const result = await controller.reviewEssay(mockUser as any, dto);
 
-      expect(service.reviewEssay).toHaveBeenCalledWith('user-1', dto);
+      expect(service.reviewEssay).toHaveBeenCalledWith('user-1', dto, 'zh');
       expect(result).toEqual({ review: 'feedback' });
     });
   });
@@ -68,7 +73,7 @@ describe('EssayAiController', () => {
       const dto = { topic: 'leadership' } as any;
       const result = await controller.brainstormIdeas(mockUser as any, dto);
 
-      expect(service.brainstormIdeas).toHaveBeenCalledWith('user-1', dto);
+      expect(service.brainstormIdeas).toHaveBeenCalledWith('user-1', dto, 'zh');
       expect(result).toEqual({ ideas: [] });
     });
   });
@@ -157,6 +162,7 @@ describe('EssayAiController', () => {
         'user-1',
         'essay-1',
         'Stanford',
+        'zh',
       );
       expect(result).toEqual({ analysis: 'done' });
     });

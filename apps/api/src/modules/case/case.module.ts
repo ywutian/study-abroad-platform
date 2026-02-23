@@ -1,14 +1,14 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { CaseService } from './case.service';
 import { CaseController } from './case.controller';
 import { CaseAdminController } from './case-admin.controller';
 import { CaseIncentiveService } from './case-incentive.service';
 import { PointsConfigService } from './points-config.service';
 import { PointsAdminController } from './points-admin.controller';
-import { AiAgentModule } from '../ai-agent/ai-agent.module';
+import { AiAgentMemoryModule } from '../ai-agent/memory/memory.module';
 
 @Module({
-  imports: [forwardRef(() => AiAgentModule)],
+  imports: [AiAgentMemoryModule],
   controllers: [CaseController, CaseAdminController, PointsAdminController],
   providers: [CaseService, CaseIncentiveService, PointsConfigService],
   exports: [CaseService, CaseIncentiveService, PointsConfigService],

@@ -3,6 +3,7 @@ import { ProfileController } from './profile.controller';
 import { ProfileService } from './profile.service';
 import { AiService } from '../ai/ai.service';
 import { SchoolListService } from '../school-list/school-list.service';
+import { RedisService } from '../../common/redis/redis.service';
 
 describe('ProfileController', () => {
   let controller: ProfileController;
@@ -10,7 +11,12 @@ describe('ProfileController', () => {
   let aiService: AiService;
   let schoolListService: SchoolListService;
 
-  const mockUser = { id: 'user-1', email: 'test@test.com', role: 'USER' };
+  const mockUser = {
+    id: 'user-1',
+    email: 'test@test.com',
+    role: 'USER',
+    locale: 'zh',
+  };
 
   const mockProfile = {
     id: 'profile-1',
@@ -97,6 +103,14 @@ describe('ProfileController', () => {
             removeItem: jest.fn().mockResolvedValue(undefined),
           },
         },
+        {
+          provide: RedisService,
+          useValue: {
+            getJSON: jest.fn().mockResolvedValue(null),
+            setJSON: jest.fn().mockResolvedValue(undefined),
+            del: jest.fn().mockResolvedValue(undefined),
+          },
+        },
       ],
     }).compile();
 
@@ -159,7 +173,7 @@ describe('ProfileController', () => {
 
       expect(profileService.findByUserId).toHaveBeenCalledWith('user-1');
       expect(aiService.analyzeProfileDetailed).toHaveBeenCalled();
-      expect(result).toEqual({ overall: 'GREEN' });
+      expect(result).toEqual({ overall: 'GREEN', status: 'fresh' });
     });
 
     it('should call analyzeProfileDetailed with empty object when no profile', async () => {
@@ -167,7 +181,7 @@ describe('ProfileController', () => {
 
       await controller.getAIAnalysis(mockUser as any);
 
-      expect(aiService.analyzeProfileDetailed).toHaveBeenCalledWith({});
+      expect(aiService.analyzeProfileDetailed).toHaveBeenCalledWith({}, 'zh');
     });
   });
 

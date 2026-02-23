@@ -215,6 +215,7 @@ export interface AgentConfig {
   name: string;
   description: string;
   systemPrompt: string;
+  systemPromptEn?: string;
   tools: string[];
   canDelegate: AgentType[];
   model?: string;

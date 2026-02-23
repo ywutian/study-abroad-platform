@@ -61,6 +61,11 @@ export enum ToolName {
   SUGGEST_PROFILE_IMPROVEMENTS = 'suggest_profile_improvements',
   COMPARE_WITH_ADMITTED_PROFILES = 'compare_with_admitted_profiles',
 
+  // 预测数据工具
+  GET_PREDICTION_HISTORY = 'get_prediction_history',
+  GET_PREDICTION_DASHBOARD = 'get_prediction_dashboard',
+  GET_SCHOOL_LIST_PREDICTIONS = 'get_school_list_predictions',
+
   // 外部搜索工具
   WEB_SEARCH = 'web_search',
   SEARCH_SCHOOL_WEBSITE = 'search_school_website',
@@ -760,6 +765,50 @@ export const TOOLS: ToolDefinition[] = [
     },
     handler: 'hall.compareWithAdmitted',
   },
+  // ============== 预测数据工具 ==============
+  {
+    name: ToolName.GET_PREDICTION_HISTORY,
+    description:
+      '获取某所学校的预测历史趋势。当用户询问某校录取概率变化、预测趋势时使用。返回当前预测结果和历史快照列表。不要用于运行新预测（请用 analyze_admission_chance）。',
+    parameters: {
+      type: 'object',
+      properties: {
+        schoolId: {
+          type: 'string',
+          description: '学校ID',
+        },
+        schoolName: {
+          type: 'string',
+          description: '学校名称（如果不知道ID）',
+        },
+      },
+      required: [],
+    },
+    handler: 'prediction.history',
+  },
+  {
+    name: ToolName.GET_PREDICTION_DASHBOARD,
+    description:
+      '获取用户所有预测学校的聚合概览数据。当用户询问整体选校形势、预测汇总、tier 分布时使用。返回总学校数、平均概率、tier 分布和置信度统计。不要用于查看单个学校预测（请用 get_prediction_history）。',
+    parameters: {
+      type: 'object',
+      properties: {},
+      required: [],
+    },
+    handler: 'prediction.dashboard',
+  },
+  {
+    name: ToolName.GET_SCHOOL_LIST_PREDICTIONS,
+    description:
+      '获取选校清单中所有学校的最新预测数据。当用户询问选校清单的录取概率、想对比清单内学校预测时使用。返回每所学校的预测概率、tier 和置信度。不要用于运行新预测（请用 analyze_admission_chance）。',
+    parameters: {
+      type: 'object',
+      properties: {},
+      required: [],
+    },
+    handler: 'prediction.schoolList',
+  },
+
   // ============== 外部搜索工具 ==============
   {
     name: ToolName.WEB_SEARCH,

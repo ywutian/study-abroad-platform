@@ -10,7 +10,12 @@ describe('EssayScraperController', () => {
   let scheduler: EssayScraperScheduler;
   let prisma: PrismaService;
 
-  const mockUser = { id: 'user-1', email: 'test@test.com', role: 'USER' };
+  const mockUser = {
+    id: 'user-1',
+    email: 'test@test.com',
+    role: 'USER',
+    locale: 'zh',
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
