@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
 import { School, Prisma } from '@prisma/client';
@@ -7,6 +11,7 @@ import {
   createPaginatedResponse,
   PaginatedResponseDto,
 } from '../../common/dto/pagination.dto';
+import { normalizeSchoolName } from '../../common/utils/school-name.util';
 
 // Cache TTL in seconds
 const CACHE_TTL = {
@@ -202,30 +207,15 @@ export class SchoolService {
     //   where.hasEarlyDecision = true;
     // }
 
-    // Over-fetch to compensate for potential duplicates removed during dedup
-    const fetchSize = pageSize + 10;
-
-    const [rawSchools, rawTotal] = await Promise.all([
+    const [schools, total] = await Promise.all([
       this.prisma.school.findMany({
         where,
         skip,
-        take: fetchSize,
+        take: pageSize,
         orderBy: { usNewsRank: 'asc' },
       }),
       this.prisma.school.count({ where }),
     ]);
-
-    // Deduplicate by name — keep the record with more complete data
-    // (prefer records that have usNewsRank, then acceptanceRate, then newer)
-    const deduped = this.deduplicateSchools(rawSchools);
-    const schools = deduped.slice(0, pageSize);
-
-    // Approximate unique total (subtract estimated duplicates)
-    const dupCount = rawSchools.length - deduped.length;
-    const total = Math.max(
-      0,
-      rawTotal - Math.round((dupCount / fetchSize) * rawTotal),
-    );
 
     // 当存在搜索词时，按相关性重新排序
     if (filters?.search) {
@@ -315,8 +305,27 @@ export class SchoolService {
     await this.redis.del(`school:detail:${id}`);
   }
 
-  async create(data: Prisma.SchoolCreateInput): Promise<School> {
-    return this.prisma.school.create({ data });
+  async create(
+    data: Omit<Prisma.SchoolCreateInput, 'nameNorm'>,
+  ): Promise<School> {
+    try {
+      return await this.prisma.school.create({
+        data: {
+          ...data,
+          nameNorm: normalizeSchoolName(data.name),
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new ConflictException(
+          `School with name "${data.name}" already exists`,
+        );
+      }
+      throw error;
+    }
   }
 
   async update(id: string, data: Prisma.SchoolUpdateInput): Promise<School> {
@@ -324,45 +333,6 @@ export class SchoolService {
       where: { id },
       data,
     });
-  }
-
-  /**
-   * Deduplicate schools by normalized name.
-   * When two records share the same canonical name, keep the one with
-   * more complete data (prefers usNewsRank > acceptanceRate > newer record).
-   */
-  private deduplicateSchools(schools: School[]): School[] {
-    const seen = new Map<string, School>();
-
-    for (const school of schools) {
-      const key = school.name.toLowerCase().trim();
-      const existing = seen.get(key);
-
-      if (!existing) {
-        seen.set(key, school);
-        continue;
-      }
-
-      // Pick the record with more complete data
-      const existingScore = this.completenessScore(existing);
-      const currentScore = this.completenessScore(school);
-      if (currentScore > existingScore) {
-        seen.set(key, school);
-      }
-    }
-
-    return [...seen.values()];
-  }
-
-  /** Score how complete a school record is (higher = more data). */
-  private completenessScore(school: School): number {
-    let score = 0;
-    if (school.usNewsRank) score += 10;
-    if (school.acceptanceRate) score += 5;
-    if (school.nameZh) score += 3;
-    if (school.satAvg) score += 2;
-    if (school.tuition) score += 1;
-    return score;
   }
 
   /**
@@ -444,5 +414,135 @@ export class SchoolService {
       },
       orderBy: { usNewsRank: 'asc' },
     });
+  }
+
+  /**
+   * 数据质量报告 — 分析学校库各字段的完整度
+   */
+  async getDataQualityReport() {
+    const cacheKey = 'school:data-quality';
+    const cached = await this.redis.getJSON<any>(cacheKey);
+    if (cached) return cached;
+
+    const KEY_FIELDS = [
+      'acceptanceRate',
+      'tuition',
+      'satAvg',
+      'actAvg',
+      'studentCount',
+      'graduationRate',
+      'city',
+      'website',
+      'description',
+      'descriptionZh',
+      'sat25',
+      'sat75',
+      'nameZh',
+      'state',
+      'isPrivate',
+    ] as const;
+
+    const allSchools = await this.prisma.school.findMany({
+      select: {
+        id: true,
+        name: true,
+        nameZh: true,
+        usNewsRank: true,
+        acceptanceRate: true,
+        tuition: true,
+        satAvg: true,
+        actAvg: true,
+        studentCount: true,
+        graduationRate: true,
+        city: true,
+        website: true,
+        description: true,
+        descriptionZh: true,
+        sat25: true,
+        sat75: true,
+        state: true,
+        isPrivate: true,
+      },
+      orderBy: { usNewsRank: 'asc' },
+    });
+
+    // Field coverage stats
+    const fieldCoverage: Record<
+      string,
+      { filled: number; missing: number; percent: number }
+    > = {};
+    for (const field of KEY_FIELDS) {
+      const filled = allSchools.filter(
+        (s) => s[field] != null && s[field] !== '',
+      ).length;
+      const missing = allSchools.length - filled;
+      fieldCoverage[field] = {
+        filled,
+        missing,
+        percent:
+          allSchools.length > 0
+            ? Math.round((filled / allSchools.length) * 1000) / 10
+            : 0,
+      };
+    }
+
+    // Per-school completeness
+    const schoolCompleteness = allSchools.map((school) => {
+      const missingFields = KEY_FIELDS.filter(
+        (f) => school[f] == null || school[f] === '',
+      );
+      return {
+        id: school.id,
+        name: school.name,
+        nameZh: school.nameZh,
+        usNewsRank: school.usNewsRank,
+        missingFields: missingFields as string[],
+        completeness: Math.round(
+          ((KEY_FIELDS.length - missingFields.length) / KEY_FIELDS.length) *
+            100,
+        ),
+      };
+    });
+
+    const fullyComplete = schoolCompleteness.filter(
+      (s) => s.missingFields.length === 0,
+    ).length;
+    const criticalFields = ['acceptanceRate', 'tuition', 'satAvg'];
+    const missingCritical = allSchools.filter((s) =>
+      criticalFields.some((f) => (s as any)[f] == null),
+    ).length;
+
+    // Worst schools — sorted by most missing fields, then by rank
+    const worstSchools = schoolCompleteness
+      .filter((s) => s.missingFields.length > 0)
+      .sort((a, b) => {
+        if (b.missingFields.length !== a.missingFields.length) {
+          return b.missingFields.length - a.missingFields.length;
+        }
+        return (a.usNewsRank ?? 9999) - (b.usNewsRank ?? 9999);
+      })
+      .slice(0, 50);
+
+    const report = {
+      summary: {
+        total: allSchools.length,
+        fullyComplete,
+        missingCritical,
+        averageCompleteness:
+          allSchools.length > 0
+            ? Math.round(
+                schoolCompleteness.reduce((sum, s) => sum + s.completeness, 0) /
+                  allSchools.length,
+              )
+            : 0,
+      },
+      fieldCoverage,
+      worstSchools,
+    };
+
+    // Cache for 1 hour
+    await this.redis.setJSON(cacheKey, report, 3600);
+
+    return report;
   }
 }

@@ -3,8 +3,11 @@ import { SchoolController } from './school.controller';
 import { SchoolService } from './school.service';
 import { SchoolDataService } from './school-data.service';
 import { SchoolScraperService } from './school-scraper.service';
+import { SchoolDataMerger } from './school-data-merger';
 import { AiService } from '../ai/ai.service';
 import { ProfileService } from '../profile/profile.service';
+import { RedisService } from '../../common/redis/redis.service';
+import { PrismaService } from '../../prisma/prisma.service';
 
 describe('SchoolController', () => {
   let controller: SchoolController;
@@ -14,7 +17,12 @@ describe('SchoolController', () => {
   let aiService: AiService;
   let profileService: ProfileService;
 
-  const mockUser = { id: 'user-1', email: 'test@test.com', role: 'USER' };
+  const mockUser = {
+    id: 'user-1',
+    email: 'test@test.com',
+    role: 'USER',
+    locale: 'zh',
+  };
 
   const mockSchool = {
     id: 'school-1',
@@ -46,6 +54,16 @@ describe('SchoolController', () => {
             findById: jest.fn().mockResolvedValue(mockSchool),
             create: jest.fn().mockResolvedValue(mockSchool),
             update: jest.fn().mockResolvedValue(mockSchool),
+            getDataQualityReport: jest.fn().mockResolvedValue({
+              summary: {
+                total: 100,
+                fullyComplete: 50,
+                missingCritical: 10,
+                averageCompleteness: 75,
+              },
+              fieldCoverage: {},
+              worstSchools: [],
+            }),
           },
         },
         {
@@ -63,6 +81,21 @@ describe('SchoolController', () => {
             getConfiguredSchools: jest
               .fn()
               .mockReturnValue(['MIT', 'Stanford']),
+          },
+        },
+        {
+          provide: SchoolDataMerger,
+          useValue: {
+            merge: jest
+              .fn()
+              .mockResolvedValue({ updatedFields: [], skippedFields: [] }),
+            mergeByName: jest
+              .fn()
+              .mockResolvedValue({ updatedFields: [], skippedFields: [] }),
+            getProvenance: jest.fn().mockResolvedValue(null),
+            batchMerge: jest
+              .fn()
+              .mockResolvedValue({ processed: 0, updated: 0, notFound: 0 }),
           },
         },
         {
@@ -84,6 +117,25 @@ describe('SchoolController', () => {
               gpaScale: 4.0,
               targetMajor: 'CS',
             }),
+          },
+        },
+        {
+          provide: RedisService,
+          useValue: {
+            getJSON: jest.fn().mockResolvedValue(null),
+            setJSON: jest.fn().mockResolvedValue(undefined),
+            del: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: PrismaService,
+          useValue: {
+            profile: { findFirst: jest.fn().mockResolvedValue(null) },
+            predictionResult: {
+              findUnique: jest.fn().mockResolvedValue(null),
+              upsert: jest.fn(),
+            },
+            predictionSnapshot: { create: jest.fn() },
           },
         },
       ],

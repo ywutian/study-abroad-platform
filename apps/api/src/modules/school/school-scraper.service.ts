@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { normalizeSchoolName } from '../../common/utils/school-name.util';
 import * as cheerio from 'cheerio';
 
 /**
@@ -360,8 +361,8 @@ export class SchoolScraperService {
     schoolName: string,
     data: ScrapedSchoolData,
   ): Promise<void> {
-    const school = await this.prisma.school.findFirst({
-      where: { name: schoolName },
+    const school = await this.prisma.school.findUnique({
+      where: { nameNorm: normalizeSchoolName(schoolName) },
     });
 
     if (!school) {

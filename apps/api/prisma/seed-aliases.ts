@@ -8,6 +8,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
+import { normalizeSchoolName } from '../src/common/utils/school-name.util';
 
 const prisma = new PrismaClient();
 
@@ -357,8 +358,8 @@ async function seedAliases() {
   let notFound = 0;
 
   for (const [schoolName, aliases] of Object.entries(SCHOOL_ALIASES)) {
-    const school = await prisma.school.findFirst({
-      where: { name: schoolName },
+    const school = await prisma.school.findUnique({
+      where: { nameNorm: normalizeSchoolName(schoolName) },
       select: { id: true, name: true, aliases: true },
     });
 

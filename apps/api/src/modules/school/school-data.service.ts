@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
+import { normalizeSchoolName } from '../../common/utils/school-name.util';
 
 /**
  * College Scorecard API 数据同步服务
@@ -10,6 +11,33 @@ import { PrismaService } from '../../prisma/prisma.service';
  *
  * 免费获取 API Key: https://api.data.gov/signup/
  */
+
+/**
+ * Scorecard 有权写入的字段白名单
+ * 排除 usNewsRank / nameZh / aliases / niche*Grade 等由其他来源管理的字段，
+ * 防止 Scorecard 同步时用 null 覆盖已有数据。
+ */
+const SCORECARD_WRITABLE_FIELDS = new Set([
+  'name',
+  'state',
+  'city',
+  'website',
+  'acceptanceRate',
+  'satAvg',
+  'sat25',
+  'sat75',
+  'satMath25',
+  'satMath75',
+  'satReading25',
+  'satReading75',
+  'actAvg',
+  'act25',
+  'act75',
+  'tuition',
+  'studentCount',
+  'graduationRate',
+  'avgSalary',
+]);
 @Injectable()
 export class SchoolDataService {
   private readonly logger = new Logger(SchoolDataService.name);
@@ -179,25 +207,32 @@ export class SchoolDataService {
         (data['latest.earnings.10_yrs_after_entry.median'] as number) || null,
     };
 
+    const nameNorm = normalizeSchoolName(name);
+
     // Wrap all DB writes in a transaction for atomicity
     await this.prisma.$transaction(async (tx) => {
-      // Upsert by scorecard ID stored in metadata
-      const existing = await tx.school.findFirst({
-        where: {
-          OR: [
-            { name: name },
-            { metadata: { path: ['scorecardId'], equals: scorecardId } },
-          ],
-        },
-      });
+      // Look up by scorecardId (indexed column) first, then by nameNorm (unique)
+      const existing =
+        (await tx.school.findUnique({ where: { scorecardId } })) ??
+        (await tx.school.findUnique({ where: { nameNorm } }));
 
       let schoolId: string;
 
       if (existing) {
+        // Only write Scorecard-owned fields that have non-null values.
+        // This prevents overwriting seed-managed fields (usNewsRank, nameZh, etc.)
+        // and avoids wiping existing data with null when Scorecard lacks a value.
+        const nonNullScorecardData = Object.fromEntries(
+          Object.entries(schoolData).filter(
+            ([k, v]) => v != null && SCORECARD_WRITABLE_FIELDS.has(k),
+          ),
+        );
         await tx.school.update({
           where: { id: existing.id },
           data: {
-            ...schoolData,
+            ...nonNullScorecardData,
+            nameNorm,
+            scorecardId,
             metadata: { scorecardId },
           },
         });
@@ -206,6 +241,8 @@ export class SchoolDataService {
         const created = await tx.school.create({
           data: {
             ...schoolData,
+            nameNorm,
+            scorecardId,
             metadata: { scorecardId },
           },
         });

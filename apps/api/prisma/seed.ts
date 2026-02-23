@@ -1,4 +1,8 @@
 import { PrismaClient } from '@prisma/client';
+import {
+  batchUpsertSchools,
+  SeedSchoolData,
+} from '../scripts/lib/seed-helpers';
 
 const prisma = new PrismaClient();
 
@@ -459,30 +463,12 @@ const schools = [
 async function main() {
   console.log('🌱 Starting database seed...');
 
-  // Check if schools exist, only insert if empty
-  const existingSchoolCount = await prisma.school.count();
-  if (existingSchoolCount === 0) {
-    console.log('🏫 Inserting school data...');
-    for (const school of schools) {
-      await prisma.school.create({
-        data: {
-          name: school.name,
-          nameZh: school.nameZh,
-          country: 'US',
-          state: school.state,
-          usNewsRank: school.usNewsRank,
-          acceptanceRate: school.acceptanceRate,
-          tuition: school.tuition,
-          avgSalary: school.avgSalary,
-        },
-      });
-    }
-    console.log(`✅ Inserted ${schools.length} schools`);
-  } else {
-    console.log(
-      `⏭️  Schools already exist (${existingSchoolCount}), skipping...`,
-    );
-  }
+  // Upsert schools using shared helper (idempotent)
+  await batchUpsertSchools(
+    prisma,
+    schools as SeedSchoolData[],
+    'Top 50 US Universities',
+  );
 
   // Create demo user (optional)
   const demoUserExists = await prisma.user.findUnique({

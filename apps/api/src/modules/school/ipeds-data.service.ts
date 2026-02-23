@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { normalizeSchoolName } from '../../common/utils/school-name.util';
 
 /**
  * IPEDS 数据服务
@@ -39,14 +40,13 @@ export class IpedsDataService {
     this.logger.log(`导入 ${data.length} 条国际生数据`);
 
     for (const item of data) {
-      const school = await this.prisma.school.findFirst({
-        where: {
-          OR: [
-            { name: item.schoolName },
-            { metadata: { path: ['ipedsId'], equals: item.unitId } },
-          ],
-        },
-      });
+      const school =
+        (await this.prisma.school.findUnique({
+          where: { ipedsId: item.unitId },
+        })) ??
+        (await this.prisma.school.findUnique({
+          where: { nameNorm: normalizeSchoolName(item.schoolName) },
+        }));
 
       if (school) {
         await this.prisma.schoolMetric.upsert({
@@ -79,14 +79,13 @@ export class IpedsDataService {
     this.logger.log(`导入 ${data.length} 条申请截止日期`);
 
     for (const item of data) {
-      const school = await this.prisma.school.findFirst({
-        where: {
-          OR: [
-            { name: item.schoolName },
-            { metadata: { path: ['ipedsId'], equals: item.unitId } },
-          ],
-        },
-      });
+      const school =
+        (await this.prisma.school.findUnique({
+          where: { ipedsId: item.unitId },
+        })) ??
+        (await this.prisma.school.findUnique({
+          where: { nameNorm: normalizeSchoolName(item.schoolName) },
+        }));
 
       if (school) {
         await this.prisma.school.update({

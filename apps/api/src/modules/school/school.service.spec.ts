@@ -2,7 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SchoolService } from './school.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, ConflictException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 
 describe('SchoolService', () => {
   let service: SchoolService;
@@ -138,7 +139,7 @@ describe('SchoolService', () => {
       expect(prismaService.school.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           skip: 20,
-          take: 20, // over-fetches by 10 to compensate for dedup
+          take: 10,
         }),
       );
       expect(result.totalPages).toBe(10);
@@ -176,7 +177,7 @@ describe('SchoolService', () => {
   });
 
   describe('create', () => {
-    it('should create a new school', async () => {
+    it('should create a new school with nameNorm', async () => {
       const createData = {
         name: 'New University',
         nameZh: '新大学',
@@ -185,14 +186,36 @@ describe('SchoolService', () => {
       (prismaService.school.create as jest.Mock).mockResolvedValue({
         id: 'new-school',
         ...createData,
+        nameNorm: 'new university',
       });
 
       const result = await service.create(createData);
 
       expect(result.name).toBe('New University');
       expect(prismaService.school.create).toHaveBeenCalledWith({
-        data: createData,
+        data: {
+          ...createData,
+          nameNorm: 'new university',
+        },
       });
+    });
+
+    it('should throw ConflictException on duplicate name', async () => {
+      const createData = {
+        name: 'Harvard University',
+        country: 'USA',
+      };
+      (prismaService.school.create as jest.Mock).mockRejectedValue(
+        new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+          code: 'P2002',
+          clientVersion: '5.0.0',
+          meta: { target: ['nameNorm'] },
+        }),
+      );
+
+      await expect(service.create(createData)).rejects.toThrow(
+        ConflictException,
+      );
     });
   });
 

@@ -446,12 +446,17 @@ model Essay {
 // ============================================
 
 model School {
-  id      String  @id @default(cuid())
-  name    String
-  nameZh  String?
-  country String  @default("US")
-  state   String?
-  city    String?
+  id       String @id @default(cuid())
+  name     String
+  nameNorm String @unique // LOWER(TRIM(name)), maintained by DB trigger
+  nameZh   String?
+  country  String @default("US")
+  state    String?
+  city     String?
+
+  // External IDs (promoted from metadata JSON for indexing)
+  scorecardId String? @unique // College Scorecard ID
+  ipedsId     String? @unique // IPEDS UNITID
 
   // Rankings & Metrics
   usNewsRank      Int?
@@ -617,6 +622,9 @@ model PredictionResult {
   suggestions    Json?   // 改进建议列表
   comparison     Json?   // 对比数据
 
+  // 数据来源
+  source         String? // prediction | recommendation | ai-recommend | quick-match
+
   // 准确率追踪
   actualResult   String? // ADMITTED / REJECTED / WAITLISTED / UNKNOWN
   reportedAt     DateTime? // 用户报告实际结果的时间
@@ -629,6 +637,24 @@ model PredictionResult {
   @@index([schoolId])
   @@index([modelVersion])
   @@index([actualResult])
+}
+
+/// 预测历史快照 — 记录每次预测的概率用于趋势追踪
+model PredictionSnapshot {
+  id              String   @id @default(cuid())
+  profileId       String
+  schoolId        String
+  probability     Decimal  @db.Decimal(5, 4)
+  probabilityLow  Decimal? @db.Decimal(5, 4)
+  probabilityHigh Decimal? @db.Decimal(5, 4)
+  tier            String?
+  confidence      String?
+  source          String   @default("prediction") // prediction | recommendation | ai-recommend | quick-match
+  modelVersion    String   @default("v2")
+  createdAt       DateTime @default(now())
+
+  @@index([profileId, schoolId, createdAt])
+  @@index([profileId, createdAt])
 }
 
 // ============================================
@@ -972,6 +998,7 @@ model AgentConversation {
 
   @@index([userId])
   @@index([createdAt])
+  @@index([userId, updatedAt(sort: Desc)])
 }
 
 // AI Agent 消息
@@ -991,6 +1018,7 @@ model AgentMessage {
 
   @@index([conversationId])
   @@index([createdAt])
+  @@index([conversationId, createdAt(sort: Desc)])
 }
 
 // 用户记忆 - 支持向量搜索
@@ -1014,6 +1042,12 @@ model Memory {
   @@index([type])
   @@index([category])
   @@index([importance])
+  @@index([userId, type])
+  @@index([userId, importance(sort: Desc)])
+  @@index([userId, type, importance(sort: Desc)])
+  @@index([userId, category])
+  @@index([accessCount, lastAccessedAt])
+  @@index([updatedAt(sort: Desc)])
 }
 
 // 实体提取 - 学校、人物、事件、话题
@@ -1113,6 +1147,8 @@ model AgentAuditLog {
   @@index([action])
   @@index([createdAt])
   @@index([status])
+  @@index([userId, action, createdAt(sort: Desc)])
+  @@index([resource, createdAt(sort: Desc)])
 }
 
 // 安全事件
@@ -1135,6 +1171,7 @@ model AgentSecurityEvent {
   @@index([severity])
   @@index([resolved])
   @@index([createdAt])
+  @@index([userId, eventType, createdAt(sort: Desc)])
 }
 
 // 配置版本

@@ -9,7 +9,7 @@ BEGIN
     ANALYZE "Memory";
   END IF;
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'Entity') THEN
-    CREATE INDEX IF NOT EXISTS idx_entity_embedding_hnsw ON "Entity" USING hnsw (embedding vector_cosine_ops) WITH (m = 16, ef_construction = 64);
+    -- Entity 模型没有 embedding 字段，跳过向量索引
     CREATE INDEX IF NOT EXISTS idx_entity_user_type ON "Entity" ("userId", "type");
     ANALYZE "Entity";
   END IF;
