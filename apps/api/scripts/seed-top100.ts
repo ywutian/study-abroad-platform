@@ -5,6 +5,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
+import { batchUpsertSchools, SeedSchoolData } from './lib/seed-helpers';
 
 const prisma = new PrismaClient();
 
@@ -932,69 +933,22 @@ const TOP_100_SCHOOLS = [
 ];
 
 async function main() {
-  console.log('🏫 导入 US News 2025 Top 100 大学数据\n');
-  console.log('='.repeat(60));
+  const schools: SeedSchoolData[] = TOP_100_SCHOOLS.map((s) => ({
+    name: s.name,
+    nameZh: s.nameZh,
+    country: 'US',
+    state: s.state,
+    usNewsRank: s.rank,
+    metadata: {
+      deadlines: s.deadlines,
+      applicationType: s.type,
+      essayCount: s.essays,
+      applicationCycle: '2025-2026',
+      dataUpdated: new Date().toISOString().split('T')[0],
+    },
+  }));
 
-  let created = 0;
-  let updated = 0;
-  let errors = 0;
-
-  for (const school of TOP_100_SCHOOLS) {
-    try {
-      const existing = await prisma.school.findFirst({
-        where: { name: school.name },
-      });
-
-      const schoolData = {
-        name: school.name,
-        nameZh: school.nameZh,
-        country: 'US',
-        state: school.state,
-        usNewsRank: school.rank,
-        metadata: {
-          deadlines: school.deadlines,
-          applicationType: school.type,
-          essayCount: school.essays,
-          applicationCycle: '2025-2026',
-          dataUpdated: new Date().toISOString().split('T')[0],
-        },
-      };
-
-      if (existing) {
-        // 更新现有学校
-        const existingMeta =
-          (existing.metadata as Record<string, unknown>) || {};
-        await prisma.school.update({
-          where: { id: existing.id },
-          data: {
-            nameZh: school.nameZh,
-            usNewsRank: school.rank,
-            metadata: {
-              ...existingMeta,
-              ...schoolData.metadata,
-            },
-          },
-        });
-        updated++;
-      } else {
-        // 创建新学校
-        await prisma.school.create({ data: schoolData });
-        created++;
-      }
-
-      console.log(`✅ #${school.rank} ${school.nameZh} (${school.name})`);
-    } catch (err: any) {
-      console.log(`❌ ${school.name}: ${err.message}`);
-      errors++;
-    }
-  }
-
-  console.log('\n' + '='.repeat(60));
-  console.log(`📊 统计:`);
-  console.log(`   新建: ${created}`);
-  console.log(`   更新: ${updated}`);
-  console.log(`   失败: ${errors}`);
-  console.log(`   总计: ${TOP_100_SCHOOLS.length}`);
+  await batchUpsertSchools(prisma, schools, 'US News 2025 Top 100');
 }
 
 main()

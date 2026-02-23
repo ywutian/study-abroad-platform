@@ -39,11 +39,13 @@ pnpm --filter api db:seed  # 可选：填充示例数据
 pnpm dev
 ```
 
+> 多项目本地开发（例如同时运行 Paaawow / Yungrace）时，可根据 `~/Documents/REDIS_LOCAL_DEV.md` 调整 Redis 端口，例如在 `apps/api/.env` 中将 `REDIS_URL` 改为 `redis://localhost:6381` 并在 `.env` 中设置相应的 `REDIS_PORT`。
+
 访问：
 
-- 前端: http://localhost:3000
-- API: http://localhost:3001
-- API 文档: http://localhost:3001/api/docs
+- 前端: http://localhost:4100
+- API: http://localhost:4101
+- API 文档: http://localhost:4101/api/docs
 
 ### 移动端开发 (Expo)
 
@@ -67,7 +69,7 @@ pnpm --filter mobile web
 
 ```bash
 # apps/mobile/.env
-EXPO_PUBLIC_API_URL="http://your-api-url:3001"
+EXPO_PUBLIC_API_URL="http://your-api-url:4101"
 ```
 
 移动端测试：
@@ -132,7 +134,7 @@ SMTP_PASS="your-password"
 OPENAI_API_KEY="sk-xxx"
 
 # 其他
-CORS_ORIGIN="http://localhost:3000"
+CORS_ORIGIN="http://localhost:4100"
 THROTTLE_TTL=60
 THROTTLE_LIMIT=100
 ```
@@ -140,8 +142,8 @@ THROTTLE_LIMIT=100
 ### Web (.env)
 
 ```env
-NEXT_PUBLIC_API_URL="http://localhost:3001"
-NEXT_PUBLIC_SITE_URL="http://localhost:3000"
+NEXT_PUBLIC_API_URL="http://localhost:4101"
+NEXT_PUBLIC_SITE_URL="http://localhost:4100"
 ```
 
 ## 📦 常用命令
@@ -230,7 +232,7 @@ pnpm start
 
 启动服务后访问 Swagger 文档：
 
-- 开发环境: http://localhost:3001/api/docs
+- 开发环境: http://localhost:4101/api/docs
 - 生产环境: https://api.your-domain.com/api/docs
 
 ## 🤝 贡献指南

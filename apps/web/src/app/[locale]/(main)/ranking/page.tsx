@@ -117,9 +117,6 @@ export default function RankingPage() {
       toast.success(t('ranking.toast.saved'));
       setRankingName('');
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
   });
 
   const handleCalculate = () => {

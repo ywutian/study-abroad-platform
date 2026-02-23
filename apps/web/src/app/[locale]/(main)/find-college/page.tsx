@@ -42,6 +42,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Link } from '@/lib/i18n/navigation';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api/client';
+import { ApiError } from '@/lib/api/api-error';
 import { cn, getSchoolName } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -212,22 +213,21 @@ export default function FindCollegePage() {
       toast.success(t('addedToList'));
       queryClient.invalidateQueries({ queryKey: ['school-lists'] });
     },
-    onError: (error: any) => {
-      if (error.message?.includes('already exists')) {
+    onError: (error: Error) => {
+      if (error instanceof ApiError && error.statusCode === 409) {
         toast.info(t('alreadyInList'));
-      } else {
-        toast.error(error.message || t('addFailed'));
       }
     },
+    meta: { skipGlobalErrorToast: true },
   });
 
   const router = useRouter();
 
   // Batch add schools mutation
   const batchAddMutation = useMutation({
-    mutationFn: async (schoolIds: string[]) => {
+    mutationFn: async ({ schoolIds, tier }: { schoolIds: string[]; tier: string }) => {
       const results = await Promise.allSettled(
-        schoolIds.map((schoolId) => apiClient.post('/school-lists', { schoolId, tier: 'TARGET' }))
+        schoolIds.map((schoolId) => apiClient.post('/school-lists', { schoolId, tier }))
       );
       const successCount = results.filter((r) => r.status === 'fulfilled').length;
       return { successCount, total: schoolIds.length, schoolIds };
@@ -241,18 +241,36 @@ export default function FindCollegePage() {
 
       // 自动生成时间线
       try {
-        await apiClient.post('/timelines/generate', { schoolIds });
+        const tlResult = await apiClient.post<{
+          created: any[];
+          failed: Array<{ schoolId: string; reason: string }>;
+        }>('/timelines/generate', { schoolIds });
         queryClient.invalidateQueries({ queryKey: ['timelines'] });
-        toast.success(t('batchAddSuccess', { count: successCount }), {
-          description: t('timelineGenerated'),
-          action: {
-            label: t('viewTimeline'),
-            onClick: () => router.push('timeline'),
-          },
-        });
+
+        if (tlResult.failed && tlResult.failed.length > 0) {
+          if (tlResult.created.length > 0) {
+            toast.warning(t('timelinePartialFail', { failed: tlResult.failed.length }), {
+              action: {
+                label: t('viewTimeline'),
+                onClick: () => router.push('timeline'),
+              },
+            });
+          } else {
+            toast.warning(t('timelineGenerateFailed'));
+          }
+        } else {
+          toast.success(t('batchAddSuccess', { count: successCount }), {
+            description: t('timelineGenerated'),
+            action: {
+              label: t('viewTimeline'),
+              onClick: () => router.push('timeline'),
+            },
+          });
+        }
       } catch {
-        // 时间线生成失败不影响选校
-        toast.success(t('batchAddSuccess', { count: successCount }));
+        toast.success(t('batchAddSuccess', { count: successCount }), {
+          description: t('timelineGenerateFailedHint'),
+        });
       }
     },
     onError: () => {
@@ -325,8 +343,8 @@ export default function FindCollegePage() {
   );
 
   const handleBatchAdd = useCallback(
-    (schoolIds: string[]) => {
-      batchAddMutation.mutate(schoolIds);
+    (schoolIds: string[], tier: string) => {
+      batchAddMutation.mutate({ schoolIds, tier });
     },
     [batchAddMutation]
   );
@@ -697,7 +715,10 @@ export default function FindCollegePage() {
         </Card>
       )}
 
-      {/* Floating Add Button - 右下角常驻按钮 */}
+      {/* 底部操作栏留白 */}
+      {selectedSchools.length > 0 && <div className="h-16" />}
+
+      {/* 底部操作栏 */}
       <FloatingAddButton
         selectedSchools={selectedSchools}
         onAdd={handleBatchAdd}

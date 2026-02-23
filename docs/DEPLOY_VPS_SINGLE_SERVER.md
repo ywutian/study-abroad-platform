@@ -111,7 +111,7 @@ docker compose up -d api
 确认 API 正常：
 
 ```bash
-curl -s http://localhost:3001/health
+curl -s http://localhost:4101/health
 ```
 
 ### 3.4 用 Nginx + Let's Encrypt 做反向代理与 HTTPS
@@ -130,7 +130,7 @@ server {
     listen 80;
     server_name api.你的域名;
     location / {
-        proxy_pass http://127.0.0.1:3001;
+        proxy_pass http://127.0.0.1:4101;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -162,7 +162,7 @@ ufw allow 443
 ufw enable
 ```
 
-确保 Docker 里 API 只监听 `3001`，不直接暴露 0.0.0.0:3001 到公网（通过 Nginx 代理即可）。
+确保 Docker 里 API 只监听 `4101`，不直接暴露 0.0.0.0:4101 到公网（通过 Nginx 代理即可）。
 
 ---
 

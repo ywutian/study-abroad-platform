@@ -39,7 +39,7 @@ src/
 │   ├── vault/            # 安全保险库
 │   └── ...               # 其他模块
 ├── common/               # 公共模块 (guards, filters, pipes)
-└── main.ts               # 入口文件 (端口 3001, 前缀 api/v1)
+└── main.ts               # 入口文件 (端口 4101, 前缀 api/v1)
 prisma/
 ├── schema.prisma         # 数据模型 (70个 model)
 ├── migrations/           # 数据库迁移
@@ -121,12 +121,12 @@ DATABASE_URL=postgresql://user:password@localhost:5432/study_abroad
 REDIS_URL=redis://localhost:6379
 JWT_SECRET=your-jwt-secret
 OPENAI_API_KEY=your-openai-key
-CORS_ORIGINS=http://localhost:3000
+CORS_ORIGINS=http://localhost:4100
 ```
 
 ## API 端点
 
-服务运行于 `http://localhost:3001`，所有路由前缀 `/api/v1`。
+服务运行于 `http://localhost:4101`，所有路由前缀 `/api/v1`。
 
 开发环境可通过 `/api/docs` 访问 Swagger UI 查看完整 API 文档。
 

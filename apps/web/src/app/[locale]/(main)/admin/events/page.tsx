@@ -145,7 +145,6 @@ export default function AdminEventsPage() {
       resetForm();
       toast.success(t('events.created'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   const updateMutation = useMutation({
@@ -157,7 +156,6 @@ export default function AdminEventsPage() {
       resetForm();
       toast.success(t('events.updated'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   const deleteMutation = useMutation({
@@ -167,7 +165,6 @@ export default function AdminEventsPage() {
       setDeleteId(null);
       toast.success(t('events.deleted'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   const resetForm = () => {

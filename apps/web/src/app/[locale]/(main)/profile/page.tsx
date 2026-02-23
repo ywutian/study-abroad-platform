@@ -192,6 +192,7 @@ export default function ProfilePage() {
     ...item.school,
     _listItemId: item.id,
     tier: item.tier,
+    prediction: item.prediction,
   }));
 
   const addSchoolMutation = useMutation({
@@ -274,9 +275,6 @@ export default function ProfilePage() {
         setShowCelebration(true);
       }
       setPreviousCompleteness(newCompleteness);
-    },
-    onError: (error: Error) => {
-      toast.error(error.message);
     },
   });
 
@@ -1074,7 +1072,28 @@ export default function ProfilePage() {
                                     : getSchoolName(school, locale).charAt(0)}
                                 </div>
                                 <div>
-                                  <p className="font-semibold">{getSchoolName(school, locale)}</p>
+                                  <div className="flex items-center gap-2">
+                                    <p className="font-semibold">{getSchoolName(school, locale)}</p>
+                                    {school.prediction && (
+                                      <span
+                                        className={cn(
+                                          'text-xs font-medium px-1.5 py-0.5 rounded-full',
+                                          {
+                                            'bg-emerald-500/10 text-emerald-600':
+                                              school.prediction.tier === 'safety',
+                                            'bg-blue-500/10 text-blue-600':
+                                              school.prediction.tier === 'match',
+                                            'bg-rose-500/10 text-rose-600':
+                                              school.prediction.tier === 'reach',
+                                            'bg-muted text-muted-foreground':
+                                              !school.prediction.tier,
+                                          }
+                                        )}
+                                      >
+                                        {Math.round(school.prediction.probability * 100)}%
+                                      </span>
+                                    )}
+                                  </div>
                                   {getSchoolSubName(school, locale) && (
                                     <p className="text-sm text-muted-foreground">
                                       {getSchoolSubName(school, locale)}

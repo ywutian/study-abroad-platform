@@ -121,9 +121,6 @@ export default function AdminUsersPage() {
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
       toast.success(t('toast.roleUpdated'));
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
   });
 
   const deleteUserMutation = useMutation({
@@ -133,9 +130,6 @@ export default function AdminUsersPage() {
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
       setUserToDelete(null);
       toast.success(t('toast.userDeleted'));
-    },
-    onError: (error: Error) => {
-      toast.error(error.message);
     },
   });
 
@@ -159,9 +153,6 @@ export default function AdminUsersPage() {
       setBanPermanent(false);
       toast.success(t('ban.userBanned'));
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
   });
 
   const unbanUserMutation = useMutation({
@@ -170,9 +161,6 @@ export default function AdminUsersPage() {
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
       setUserToUnban(null);
       toast.success(t('ban.userUnbanned'));
-    },
-    onError: (error: Error) => {
-      toast.error(error.message);
     },
   });
 

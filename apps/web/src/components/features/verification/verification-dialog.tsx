@@ -85,9 +85,7 @@ export function VerificationDialog({
       onOpenChange(false);
       resetForm();
     },
-    onError: (error: Error) => {
-      toast.error(error.message || t('verification.submitError'));
-    },
+    // Error toast handled by global MutationCache
   });
 
   const resetForm = () => {

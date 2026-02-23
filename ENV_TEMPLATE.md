@@ -9,7 +9,7 @@
 # 核心 [Zod 验证]
 # ============================================
 NODE_ENV=development
-PORT=3001
+PORT=4101
 
 # ============================================
 # 数据库 [Zod 验证] — 必须以 postgresql:// 开头
@@ -33,7 +33,7 @@ JWT_REFRESH_EXPIRES_IN=7d
 # CORS [Zod 验证] — 多个域名用逗号分隔
 # 注意：变量名是 CORS_ORIGINS（复数）
 # ============================================
-CORS_ORIGINS=http://localhost:3000
+CORS_ORIGINS=http://localhost:4100
 
 # ============================================
 # OpenAI (AI 功能) [Zod 验证: OPENAI_API_KEY 可选]
@@ -82,7 +82,7 @@ THROTTLE_LIMIT=100
 # ============================================
 # 前端地址 (用于邮件链接等)
 # ============================================
-FRONTEND_URL=http://localhost:3000
+FRONTEND_URL=http://localhost:4100
 
 # ============================================
 # 性能监控
@@ -131,10 +131,10 @@ TRACING_ENABLED=false
 ## Web 前端 (apps/web/.env.local)
 
 ```bash
-NEXT_PUBLIC_API_URL=http://localhost:3001
+NEXT_PUBLIC_API_URL=http://localhost:4101
 
 # WebSocket URL（默认与 API_URL 相同，仅部署时 WS 域名不同时需要设置）
-# NEXT_PUBLIC_WS_URL=http://localhost:3001
+# NEXT_PUBLIC_WS_URL=http://localhost:4101
 
 NEXT_PUBLIC_SENTRY_DSN=https://your_dsn@sentry.io/xxx
 ```
@@ -150,7 +150,7 @@ NEXT_PUBLIC_SENTRY_DSN=https://your_dsn@sentry.io/xxx
 # 核心 [Zod 验证]
 # ============================================
 NODE_ENV=production
-PORT=3001
+PORT=4101
 
 # ============================================
 # 数据库 (Docker Compose 变量)

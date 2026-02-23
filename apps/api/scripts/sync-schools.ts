@@ -5,12 +5,17 @@
  */
 
 import { PrismaClient } from '@prisma/client';
+import { normalizeSchoolName } from '../src/common/utils/school-name.util';
 
 const prisma = new PrismaClient();
 
-const API_KEY =
-  process.env.COLLEGE_SCORECARD_API_KEY ||
-  'f9BpBv55kCaOiEPPJgmBMdOeC5UlmDItnEnSEP7B';
+const API_KEY = process.env.COLLEGE_SCORECARD_API_KEY;
+if (!API_KEY) {
+  console.error(
+    'COLLEGE_SCORECARD_API_KEY is required. Get one at https://api.data.gov/signup/',
+  );
+  process.exit(1);
+}
 const BASE_URL = 'https://api.data.gov/ed/collegescorecard/v1/schools';
 
 interface ScorecardSchool {
@@ -78,6 +83,7 @@ async function syncSchools(limit = 500): Promise<void> {
       try {
         const schoolData = {
           name,
+          nameNorm: normalizeSchoolName(name),
           country: 'US',
           state: school['school.state'] || null,
           city: school['school.city'] || null,
@@ -110,12 +116,13 @@ async function syncSchools(limit = 500): Promise<void> {
           },
         };
 
-        // Upsert by name
+        // Upsert by nameNorm
+        const existingSchool = await prisma.school.findUnique({
+          where: { nameNorm: normalizeSchoolName(name) },
+        });
         await prisma.school.upsert({
           where: {
-            id:
-              (await prisma.school.findFirst({ where: { name } }))?.id ||
-              'new-' + school.id,
+            id: existingSchool?.id || 'new-' + school.id,
           },
           update: schoolData,
           create: schoolData,

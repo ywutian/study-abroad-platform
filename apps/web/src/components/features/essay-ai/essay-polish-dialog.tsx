@@ -73,9 +73,7 @@ export const EssayPolishDialog: React.FC<EssayPolishDialogProps> = ({
       setResult(data);
       toast.success(t('polish.success'));
     },
-    onError: (error: any) => {
-      toast.error(error.message || t('polish.failed'));
-    },
+    // Error toast handled by global MutationCache
   });
 
   const handleCopy = async () => {

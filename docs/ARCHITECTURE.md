@@ -58,7 +58,7 @@
 ┌────────────────────────────────────────────────────────────┐
 │                     Railway / Docker                        │
 │  ┌──────────────────────────────────────────────────────┐  │
-│  │               NestJS API (port 3001)                  │  │
+│  │               NestJS API (port 4101)                  │  │
 │  │  ┌────────┬─────────┬──────────┬───────────────────┐ │  │
 │  │  │  Auth  │ Profile │  School  │  AI Agent (ReWOO)  │ │  │
 │  │  │  Hall  │  Forum  │  Chat    │  Prediction        │ │  │
@@ -1216,14 +1216,14 @@ This allows both real-time scoring (from School columns) and historical trend an
 
 | Environment | Frontend       | Backend        | Database                   |
 | ----------- | -------------- | -------------- | -------------------------- |
-| Development | localhost:3000 | localhost:3001 | Docker PostgreSQL + Redis  |
+| Development | localhost:4100 | localhost:4101 | Docker PostgreSQL + Redis  |
 | Production  | Vercel         | Railway        | Railway PostgreSQL + Redis |
 
 ### 12.2 Docker
 
 **Standard Dockerfile** (`apps/api/Dockerfile`): Multi-stage pnpm build, port 8080
 
-**Railway Dockerfile** (`apps/api/Dockerfile.railway`): npm-based build with auto-migration, port 3001, runs as non-root `nestjs` user (UID 1001)
+**Railway Dockerfile** (`apps/api/Dockerfile.railway`): npm-based build with auto-migration, port 4101, runs as non-root `nestjs` user (UID 1001)
 
 > **NOTE**: `railway.json` points to the standard Dockerfile, not the Railway one.
 

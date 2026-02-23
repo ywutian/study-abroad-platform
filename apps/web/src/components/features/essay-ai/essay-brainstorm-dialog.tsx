@@ -69,9 +69,7 @@ export const EssayBrainstormDialog: React.FC<EssayBrainstormDialogProps> = ({
       setResult(data);
       toast.success(t('brainstorm.success'));
     },
-    onError: (error: any) => {
-      toast.error(error.message || t('brainstorm.failed'));
-    },
+    // Error toast handled by global MutationCache
   });
 
   const handleCopy = async (text: string, idx: number) => {

@@ -135,7 +135,6 @@ export default function AdminContentPage() {
       const post = postsData?.data.find((p) => p.id === postId);
       toast.success(post?.isPinned ? t('contentMod.postUnpinned') : t('contentMod.postPinned'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   const lockMutation = useMutation({
@@ -145,7 +144,6 @@ export default function AdminContentPage() {
       const post = postsData?.data.find((p) => p.id === postId);
       toast.success(post?.isLocked ? t('contentMod.postUnlocked') : t('contentMod.postLocked'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   // === Chat Queries ===
@@ -194,7 +192,6 @@ export default function AdminContentPage() {
       queryClient.invalidateQueries({ queryKey: ['adminReviews'] });
       toast.success(t('contentMod.reviewHidden'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   const unhideReviewMutation = useMutation({
@@ -203,7 +200,6 @@ export default function AdminContentPage() {
       queryClient.invalidateQueries({ queryKey: ['adminReviews'] });
       toast.success(t('contentMod.reviewShown'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   // === Delete Mutation (generic) ===
@@ -235,7 +231,6 @@ export default function AdminContentPage() {
         toast.success(t('contentMod.reviewDeleted'));
       }
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   return (

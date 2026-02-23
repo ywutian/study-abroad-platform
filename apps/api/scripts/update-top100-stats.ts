@@ -6,9 +6,13 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-const API_KEY =
-  process.env.COLLEGE_SCORECARD_API_KEY ||
-  'f9BpBv55kCaOiEPPJgmBMdOeC5UlmDItnEnSEP7B';
+const API_KEY = process.env.COLLEGE_SCORECARD_API_KEY;
+if (!API_KEY) {
+  console.error(
+    'COLLEGE_SCORECARD_API_KEY is required. Get one at https://api.data.gov/signup/',
+  );
+  process.exit(1);
+}
 const BASE_URL = 'https://api.data.gov/ed/collegescorecard/v1/schools';
 
 async function fetchSchoolStats(schoolName: string) {

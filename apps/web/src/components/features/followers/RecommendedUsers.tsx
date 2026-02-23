@@ -69,9 +69,6 @@ export function RecommendedUsers({ className }: RecommendedUsersProps) {
       queryClient.invalidateQueries({ queryKey: ['following'] });
       toast.success(t('followers.toast.followSuccess'));
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
   });
 
   if (isLoading) {
@@ -131,7 +128,7 @@ export function RecommendedUsers({ className }: RecommendedUsersProps) {
                 className="w-40 shrink-0"
               >
                 <Card className="h-full overflow-hidden border-border hover:border-primary/30 hover:shadow-sm transition-all duration-200">
-                  <CardContent className="p-3.5 text-center space-y-2.5">
+                  <CardContent className="p-3.5 text-center flex flex-col h-full">
                     {/* Avatar */}
                     <div className="relative mx-auto w-fit">
                       <Avatar className="h-14 w-14 ring-2 ring-offset-2 ring-offset-background ring-primary/20">
@@ -147,7 +144,7 @@ export function RecommendedUsers({ className }: RecommendedUsersProps) {
                     </div>
 
                     {/* Name & Badge */}
-                    <div>
+                    <div className="mt-2.5">
                       <p className="font-semibold text-sm truncate text-foreground">
                         {user.email.split('@')[0]}
                       </p>
@@ -158,8 +155,8 @@ export function RecommendedUsers({ className }: RecommendedUsersProps) {
                       )}
                     </div>
 
-                    {/* Info */}
-                    <div className="space-y-1 text-[11px] text-muted-foreground">
+                    {/* Info - flex-1 to push button to bottom */}
+                    <div className="flex-1 flex flex-col justify-center mt-2.5 space-y-1 text-[11px] text-muted-foreground min-h-[2rem]">
                       {user.profile?.targetMajor && (
                         <div className="flex items-center justify-center gap-1">
                           <GraduationCap className="h-3 w-3" />
@@ -182,10 +179,10 @@ export function RecommendedUsers({ className }: RecommendedUsersProps) {
                       </div>
                     </div>
 
-                    {/* Follow Button */}
+                    {/* Follow Button - always at bottom */}
                     <Button
                       size="sm"
-                      className="w-full h-8 text-xs"
+                      className="w-full h-8 text-xs mt-2.5"
                       onClick={() => followMutation.mutate(user.id)}
                       disabled={followMutation.isPending}
                     >

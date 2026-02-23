@@ -5,6 +5,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
+import { batchUpsertSchools, SeedSchoolData } from './lib/seed-helpers';
 
 const prisma = new PrismaClient();
 
@@ -820,103 +821,12 @@ const EXPANDED_SCHOOLS = [
 ];
 
 async function main() {
-  console.log('🏫 扩展学校数据库...\n');
-  console.log('包含: 文理学院、艺术院校、音乐学院、工程学院、更多综合大学\n');
-
-  let created = 0;
-  let updated = 0;
-  const errors: string[] = [];
-
-  for (const school of EXPANDED_SCHOOLS) {
-    try {
-      const existing = await prisma.school.findFirst({
-        where: { name: school.name },
-      });
-
-      if (existing) {
-        await prisma.school.update({
-          where: { id: existing.id },
-          data: {
-            city: school.city,
-            acceptanceRate: school.acceptanceRate,
-            tuition: school.tuition,
-            satAvg: school.satAvg,
-            actAvg: school.actAvg,
-            studentCount: school.studentCount,
-            graduationRate: school.graduationRate,
-            website: school.website,
-            description: school.description,
-            descriptionZh: school.descriptionZh,
-          },
-        });
-        console.log(`📝 更新: ${school.nameZh}`);
-        updated++;
-      } else {
-        await prisma.school.create({
-          data: {
-            name: school.name,
-            nameZh: school.nameZh,
-            country: 'US',
-            state: school.state,
-            city: school.city,
-            usNewsRank: school.usNewsRank,
-            acceptanceRate: school.acceptanceRate,
-            tuition: school.tuition,
-            satAvg: school.satAvg,
-            actAvg: school.actAvg,
-            studentCount: school.studentCount,
-            graduationRate: school.graduationRate,
-            website: school.website,
-            description: school.description,
-            descriptionZh: school.descriptionZh,
-          },
-        });
-        console.log(`✅ 新建: ${school.nameZh}`);
-        created++;
-      }
-    } catch (error: any) {
-      errors.push(`${school.nameZh}: ${error.message}`);
-    }
-  }
-
-  console.log('\n' + '='.repeat(50));
-  console.log(`📊 完成: 新建 ${created}, 更新 ${updated}`);
-
-  if (errors.length > 0) {
-    console.log(`\n❌ 错误 (${errors.length}):`);
-    errors.forEach((e) => console.log('  ' + e));
-  }
-
-  const totalSchools = await prisma.school.count();
-  console.log(`\n🏫 学校总数: ${totalSchools}`);
-
-  // 分类统计
-  console.log('\n📋 学校分类:');
-  const lacCount = EXPANDED_SCHOOLS.filter(
-    (s) =>
-      s.name.includes('College') &&
-      !s.name.includes('University') &&
-      s.studentCount < 3500,
-  ).length;
-  const artCount = EXPANDED_SCHOOLS.filter(
-    (s) =>
-      s.name.includes('Art') ||
-      s.name.includes('Design') ||
-      s.description.includes('art'),
-  ).length;
-  const musicCount = EXPANDED_SCHOOLS.filter(
-    (s) =>
-      s.name.includes('Music') ||
-      s.name.includes('Conservatory') ||
-      s.name.includes('Juilliard') ||
-      s.name.includes('Berklee'),
-  ).length;
-
-  console.log(`   文理学院: ~20 所`);
-  console.log(`   艺术院校: ~8 所`);
-  console.log(`   音乐学院: ~5 所`);
-  console.log(`   工程学院: ~4 所`);
-  console.log(`   综合大学: ~${EXPANDED_SCHOOLS.length - 20 - 8 - 5 - 4} 所`);
+  const schools: SeedSchoolData[] = EXPANDED_SCHOOLS;
+  await batchUpsertSchools(
+    prisma,
+    schools,
+    '扩展学校数据 (文理学院/艺术/工程)',
+  );
 }
 
 main()

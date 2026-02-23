@@ -115,7 +115,6 @@ export default function AdminPaymentsPage() {
       setRefundTarget(null);
       toast.success(t('payments.refunded'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   const adjustMutation = useMutation({
@@ -126,7 +125,6 @@ export default function AdminPaymentsPage() {
       setAdjustTarget(null);
       toast.success(t('payments.adjusted'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   const getStatusBadge = (status: string) => {

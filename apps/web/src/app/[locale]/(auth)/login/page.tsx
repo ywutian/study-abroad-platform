@@ -21,6 +21,7 @@ import {
 import { toastLoginSuccess, toastError, toastSuccess, toastWarning } from '@/components/ui/sonner';
 import { setAuthFromLogin } from '@/stores';
 import { apiClient } from '@/lib/api';
+import { ApiError } from '@/lib/api/api-error';
 import { Loader2 } from 'lucide-react';
 
 type LoginForm = z.infer<ReturnType<typeof createLoginSchema>>;
@@ -122,7 +123,13 @@ export default function LoginPage() {
         router.push(targetPath);
       }, 600);
     } catch (error) {
-      toastError(error instanceof Error ? error.message : t('errors.networkError'));
+      const msg =
+        error instanceof ApiError
+          ? error.displayMessage
+          : error instanceof Error
+            ? error.message
+            : t('errors.networkError');
+      toastError(msg);
       setIsLoading(false);
     }
   };

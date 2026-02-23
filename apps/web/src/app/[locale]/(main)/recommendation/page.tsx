@@ -45,9 +45,9 @@ export default function RecommendationPage() {
       setResult(data);
       setGenerationState('done');
       toast.success(t('success'));
-    } catch (error: any) {
+    } catch {
       setGenerationState('idle');
-      toast.error(error.message || t('failed'));
+      // Error toast handled by global MutationCache
     }
   };
 

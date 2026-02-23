@@ -172,7 +172,7 @@ cd apps/api && pnpm prisma migrate dev && pnpm prisma db seed && cd ..
 
 # 启动开发服务器
 pnpm dev
-# 前端: http://localhost:3000 | API: http://localhost:3001 | Swagger: http://localhost:3001/api/docs
+# 前端: http://localhost:4100 | API: http://localhost:4101 | Swagger: http://localhost:4101/api/docs
 ```
 
 ---
@@ -189,8 +189,8 @@ docker compose exec api npx prisma db seed
 | ----- | ---- | ----------------- |
 | db    | 5432 | PostgreSQL 数据库 |
 | redis | 6379 | Redis 缓存        |
-| api   | 3001 | NestJS API        |
-| web   | 3000 | Next.js 前端      |
+| api   | 4101 | NestJS API        |
+| web   | 4100 | Next.js 前端      |
 
 ---
 

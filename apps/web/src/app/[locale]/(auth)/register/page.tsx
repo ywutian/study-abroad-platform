@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
+import { ApiError } from '@/lib/api/api-error';
 import { cn } from '@/lib/utils';
 import { ChevronRight, ChevronLeft, Check, Loader2, Gift, ChevronDown } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
@@ -196,7 +197,13 @@ export default function RegisterPage() {
       toast.success(t('auth.register.success'));
       router.push('/verify-email?email=' + encodeURIComponent(data.email));
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('errors.networkError'));
+      const msg =
+        error instanceof ApiError
+          ? error.displayMessage
+          : error instanceof Error
+            ? error.message
+            : t('errors.networkError');
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }

@@ -5,7 +5,7 @@
 import type { UserProfile, StorageData } from './types';
 
 // 从环境变量或默认值获取 API 地址
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = 'http://localhost:4101/api';
 
 /**
  * 获取存储的 token

@@ -129,9 +129,7 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
     onSuccess: () => {
       toast.success(t('analysisComplete'));
     },
-    onError: (error: Error) => {
-      toast.error(error.message || t('detail.ai.analysisError'));
-    },
+    // Error toast handled by global MutationCache
   });
 
   const handleCopy = async () => {

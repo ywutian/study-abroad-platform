@@ -6,7 +6,7 @@
  * 使用企业级 Hydration 安全方案
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -30,6 +30,38 @@ export function FloatingChat({ defaultOpen = false }: FloatingChatProps) {
   const [isMinimized, setIsMinimized] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null);
+
+  // Stable refs for event handlers — avoids stale closures and re-registration
+  const isOpenRef = useRef(isOpen);
+  isOpenRef.current = isOpen;
+  const isMinimizedRef = useRef(isMinimized);
+  isMinimizedRef.current = isMinimized;
+
+  // Listen for ai-assistant-action events to open chat with a message.
+  // Uses microtask (queueMicrotask) to let synchronous AgentChat listeners
+  // set _handled first, while remaining in the same event loop turn.
+  useEffect(() => {
+    const handleAction = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (!detail?.message) return;
+
+      if (isOpenRef.current && !isMinimizedRef.current) {
+        // Chat is already open — AgentChat's own listener handles it synchronously
+        return;
+      }
+
+      // Microtask: runs after all synchronous listeners but before setTimeout
+      queueMicrotask(() => {
+        if (detail._handled) return;
+        setIsOpen(true);
+        setIsMinimized(false);
+        setPendingMessage(detail.message);
+      });
+    };
+    window.addEventListener('ai-assistant-action', handleAction);
+    return () => window.removeEventListener('ai-assistant-action', handleAction);
+  }, []); // Stable — no deps, uses refs
 
   // 监听快捷键
   useEffect(() => {
@@ -38,17 +70,17 @@ export function FloatingChat({ defaultOpen = false }: FloatingChatProps) {
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
         e.preventDefault();
         setIsOpen((prev) => !prev);
-        if (!isOpen) setIsMinimized(false);
+        setIsMinimized(false);
       }
       // Escape 关闭
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === 'Escape' && isOpenRef.current) {
         setIsOpen(false);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen]);
+  }, []); // Stable — uses refs for isOpen check
 
   // SSR 时不渲染（避免 createPortal 和 framer-motion 导致 hydration mismatch）
   if (!isHydrated) return null;
@@ -121,7 +153,13 @@ export function FloatingChat({ defaultOpen = false }: FloatingChatProps) {
           {/* Chat Content */}
           {!isMinimized && (
             <div className="h-[calc(100%-44px)]">
-              <AgentChat showHeader={true} showQuickActions={true} compact={!isFullscreen} />
+              <AgentChat
+                showHeader={true}
+                showQuickActions={true}
+                compact={!isFullscreen}
+                pendingMessage={pendingMessage}
+                onPendingMessageConsumed={() => setPendingMessage(null)}
+              />
             </div>
           )}
         </motion.div>

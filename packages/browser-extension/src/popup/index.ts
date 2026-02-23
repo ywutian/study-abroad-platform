@@ -125,7 +125,7 @@ function showLoading(show: boolean): void {
 function handleLogin(): void {
   // 打开主站登录页面
   chrome.tabs.create({
-    url: 'http://localhost:3000/login?redirect=extension',
+    url: 'http://localhost:4100/login?redirect=extension',
   });
 }
 

@@ -26,6 +26,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
+import { normalizeSchoolName as normalizeSchoolNameForDb } from '../src/common/utils/school-name.util';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -195,20 +196,23 @@ async function importCsv(filePath: string) {
     try {
       // 查找学校
       const schoolName = normalizeSchoolName(row.school);
-      let school = await prisma.school.findFirst({
-        where: {
-          OR: [
-            { name: { contains: schoolName, mode: 'insensitive' } },
-            { nameZh: { contains: row.school, mode: 'insensitive' } },
-          ],
-        },
+      let school = await prisma.school.findUnique({
+        where: { nameNorm: normalizeSchoolNameForDb(schoolName) },
       });
+
+      // Fallback: try Chinese name lookup
+      if (!school) {
+        school = await prisma.school.findFirst({
+          where: { nameZh: { contains: row.school, mode: 'insensitive' } },
+        });
+      }
 
       if (!school) {
         // 创建新学校
         school = await prisma.school.create({
           data: {
             name: schoolName,
+            nameNorm: normalizeSchoolNameForDb(schoolName),
             nameZh: row.school !== schoolName ? row.school : null,
             country: 'US',
           },

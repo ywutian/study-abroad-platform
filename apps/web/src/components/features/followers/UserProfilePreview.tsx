@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { apiClient } from '@/lib/api';
+import { ApiError } from '@/lib/api/api-error';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import {
@@ -92,7 +93,6 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
       queryClient.invalidateQueries({ queryKey: ['recommended-users'] });
       toast.success(t('followers.toast.followSuccess'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   const unfollowMutation = useMutation({
@@ -102,7 +102,6 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
       queryClient.invalidateQueries({ queryKey: ['following'] });
       toast.success(t('followers.toast.unfollowSuccess'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   const isMutualFollow = user?.isFollowing && user?.isFollowedBy;
@@ -126,9 +125,16 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
     return score;
   };
 
-  const handleStartChat = () => {
-    onOpenChange(false);
-    router.push('/chat');
+  const handleStartChat = async () => {
+    try {
+      const conversation = await apiClient.post<{ id: string }>('/chats/conversations', { userId });
+      onOpenChange(false);
+      router.push(`/chat?conversation=${conversation.id}`);
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof ApiError ? error.displayMessage : t('followers.toast.messageError')
+      );
+    }
   };
 
   const completeness = calculateCompleteness();

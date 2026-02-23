@@ -75,9 +75,6 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
       onOpenChange(false);
       resetForm();
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
   });
 
   const updateMutation = useMutation({
@@ -87,9 +84,6 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(t('toast.scoreUpdated'));
       onOpenChange(false);
-    },
-    onError: (error: Error) => {
-      toast.error(error.message);
     },
   });
 
@@ -172,12 +166,16 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
           </div>
 
           <div className="space-y-2">
-            <Label>{t('form.score')} * {selectedType && `(Max ${selectedType.maxScore})`}</Label>
+            <Label>
+              {t('form.score')} * {selectedType && `(Max ${selectedType.maxScore})`}
+            </Label>
             <Input
               type="number"
               value={formData.score}
               onChange={(e) => setFormData((p) => ({ ...p, score: e.target.value }))}
-              placeholder={selectedType ? `0 - ${selectedType.maxScore}` : t('form.scorePlaceholder')}
+              placeholder={
+                selectedType ? `0 - ${selectedType.maxScore}` : t('form.scorePlaceholder')
+              }
               max={selectedType?.maxScore}
               min={0}
             />

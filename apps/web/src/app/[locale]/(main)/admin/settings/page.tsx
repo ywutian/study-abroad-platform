@@ -91,7 +91,6 @@ export default function AdminSettingsPage() {
       queryClient.invalidateQueries({ queryKey: ['adminSettings'] });
       toast.success(t('settings.saved'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   const batchUpdateMutation = useMutation({
@@ -102,7 +101,6 @@ export default function AdminSettingsPage() {
       setEditedValues({});
       toast.success(t('settings.batchSaved'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   const handleValueChange = (key: string, value: string) => {

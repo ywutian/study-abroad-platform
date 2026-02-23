@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { apiClient } from '@/lib/api';
+import { apiClient, STALE_TIME, AI_TIMEOUT } from '@/lib/api';
 import {
   Brain,
   Sparkles,
@@ -133,8 +133,9 @@ export function ProfileAIAnalysis({ className, compact = false }: ProfileAIAnaly
 
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['profile-ai-analysis'],
-    queryFn: () => apiClient.get<AIAnalysisResult>('/profiles/me/ai-analysis'),
-    staleTime: 5 * 60 * 1000, // 5分钟缓存
+    queryFn: () =>
+      apiClient.get<AIAnalysisResult>('/profiles/me/ai-analysis', { timeout: AI_TIMEOUT }),
+    staleTime: STALE_TIME.MODERATE,
     gcTime: 10 * 60 * 1000,
   });
 

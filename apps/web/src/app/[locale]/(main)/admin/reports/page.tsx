@@ -79,9 +79,6 @@ export default function AdminReportsPage() {
       setResolutionText('');
       toast.success(t('toast.reportResolved'));
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
   });
 
   const getStatusBadge = (status: string) => {

@@ -4,7 +4,7 @@
  * 运行: pnpm ts-node scripts/check-endpoints.ts
  */
 
-const API_BASE = process.env.API_URL || 'http://localhost:3001';
+const API_BASE = process.env.API_URL || 'http://localhost:4101';
 
 interface EndpointCheck {
   name: string;

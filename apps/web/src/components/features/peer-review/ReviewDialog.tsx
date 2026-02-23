@@ -66,9 +66,7 @@ export function ReviewDialog({
       onOpenChange(false);
       resetForm();
     },
-    onError: (error: any) => {
-      toast.error(error.message || t('requestFailed'));
-    },
+    // Error toast handled by global MutationCache
   });
 
   const submitMutation = useMutation({
@@ -88,9 +86,7 @@ export function ReviewDialog({
       onOpenChange(false);
       resetForm();
     },
-    onError: (error: any) => {
-      toast.error(error.message || t('submitFailed'));
-    },
+    // Error toast handled by global MutationCache
   });
 
   const resetForm = () => {

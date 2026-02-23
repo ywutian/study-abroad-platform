@@ -164,9 +164,7 @@ export default function AssessmentPage() {
       refetchHistory();
       toast.success(t('viewResult'));
     },
-    onError: (error: any) => {
-      toast.error(error.message || t('submitError'));
-    },
+    // Error toast handled by global MutationCache
   });
 
   const currentAssessment = activeTab === 'mbti' ? mbtiAssessment : hollandAssessment;
@@ -322,7 +320,7 @@ export default function AssessmentPage() {
           transition={{ delay: 0.1 }}
         >
           <Card
-            className="overflow-hidden h-full hover:shadow-lg transition-shadow cursor-pointer group"
+            className="overflow-hidden h-full flex flex-col hover:shadow-lg transition-shadow cursor-pointer group"
             onClick={() => handleStartTest('mbti')}
           >
             <div className="h-2 bg-primary dark:bg-primary" />
@@ -337,8 +335,8 @@ export default function AssessmentPage() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+            <CardContent className="flex-1 flex flex-col">
+              <div className="flex-1 space-y-4">
                 <p className="text-sm text-muted-foreground">{t('mbti.intro')}</p>
                 <p className="text-xs text-muted-foreground/70 mt-1">{t('mbti.disclaimer')}</p>
                 <div className="flex flex-wrap gap-2">
@@ -353,11 +351,11 @@ export default function AssessmentPage() {
                   ))}
                   <Badge variant="secondary">+12</Badge>
                 </div>
-                <Button className="w-full group-hover:bg-primary group-hover:text-white transition-colors">
-                  {t('mbti.start')}
-                  <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
               </div>
+              <Button className="w-full mt-4 group-hover:bg-primary group-hover:text-white transition-colors">
+                {t('mbti.start')}
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
             </CardContent>
           </Card>
         </motion.div>
@@ -369,7 +367,7 @@ export default function AssessmentPage() {
           transition={{ delay: 0.2 }}
         >
           <Card
-            className="overflow-hidden h-full hover:shadow-lg transition-shadow cursor-pointer group"
+            className="overflow-hidden h-full flex flex-col hover:shadow-lg transition-shadow cursor-pointer group"
             onClick={() => handleStartTest('holland')}
           >
             <div className="h-2 bg-success" />
@@ -384,8 +382,8 @@ export default function AssessmentPage() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+            <CardContent className="flex-1 flex flex-col">
+              <div className="flex-1 space-y-4">
                 <p className="text-sm text-muted-foreground">{t('holland.intro')}</p>
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(HOLLAND_ICONS).map(([type, Icon]) => (
@@ -399,11 +397,11 @@ export default function AssessmentPage() {
                     </Badge>
                   ))}
                 </div>
-                <Button className="w-full group-hover:bg-emerald-500 group-hover:text-white transition-colors">
-                  {t('holland.start')}
-                  <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
               </div>
+              <Button className="w-full mt-4 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                {t('holland.start')}
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
             </CardContent>
           </Card>
         </motion.div>

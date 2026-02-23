@@ -1,6 +1,6 @@
 # API Reference
 
-> Base URL: `http://localhost:3001/api/v1`
+> Base URL: `http://localhost:4101/api/v1`
 > Authentication: JWT Bearer Token (unless marked Public)
 > Interactive docs: `/api/docs` (Swagger UI — 开发环境已启用，生产环境禁用)
 
@@ -588,7 +588,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 ```
 
-Access at: `http://localhost:3001/api/docs`
+Access at: `http://localhost:4101/api/docs`
 
 ---
 

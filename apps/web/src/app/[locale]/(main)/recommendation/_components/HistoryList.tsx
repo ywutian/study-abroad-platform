@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingState } from '@/components/ui/loading-state';
 import { Trash2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
+import { ApiError } from '@/lib/api/api-error';
 import { useRecommendationHistory, useDeleteRecommendation } from '@/hooks/use-recommendation';
 import type { RecommendationResult } from '@study-abroad/shared';
 import { useState } from 'react';
@@ -37,8 +38,8 @@ export function HistoryList({ enabled, onViewResult, onSwitchToGenerate }: Histo
     try {
       await deleteMutation.mutateAsync(deleteId);
       toast.success(t('deleteSuccess'));
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error: unknown) {
+      toast.error(error instanceof ApiError ? error.displayMessage : t('deleteFailed'));
     }
     setDeleteId(null);
   };

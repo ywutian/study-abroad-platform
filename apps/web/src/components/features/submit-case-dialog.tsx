@@ -118,9 +118,6 @@ export function SubmitCaseDialog({
       toast.success(t('toast.success'));
       onSuccess?.();
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
   });
 
   const resetForm = () => {

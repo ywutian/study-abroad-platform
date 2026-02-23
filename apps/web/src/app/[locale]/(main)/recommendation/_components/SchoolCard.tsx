@@ -83,9 +83,6 @@ export function SchoolCard({ school, existingSchoolIds }: SchoolCardProps) {
         onSuccess: () => {
           toast.success(t('addToListSuccess', { name: school.schoolName }));
         },
-        onError: (error: any) => {
-          toast.error(error.message);
-        },
       }
     );
   };

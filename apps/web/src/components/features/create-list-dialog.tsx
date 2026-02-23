@@ -82,9 +82,6 @@ export function CreateListDialog({ open, onOpenChange }: CreateListDialogProps) 
       onOpenChange(false);
       resetForm();
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
   });
 
   const resetForm = () => {

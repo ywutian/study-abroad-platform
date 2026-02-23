@@ -150,7 +150,6 @@ export default function AdminAiAgentPage() {
       queryClient.invalidateQueries({ queryKey: ['aiAgentFeatures'] });
       toast.success(t('featureUpdated'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   const resetMetricsMutation = useMutation({
@@ -159,7 +158,6 @@ export default function AdminAiAgentPage() {
       queryClient.invalidateQueries({ queryKey: ['aiAgentMetrics'] });
       toast.success(t('metricsReset'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   const resetCircuitMutation = useMutation({
@@ -170,7 +168,6 @@ export default function AdminAiAgentPage() {
       queryClient.invalidateQueries({ queryKey: ['aiAgentHealth'] });
       toast.success(t('circuitReset'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   // Quota form
@@ -187,7 +184,6 @@ export default function AdminAiAgentPage() {
       queryClient.invalidateQueries({ queryKey: ['aiAgentConfig'] });
       toast.success(t('quotaUpdated'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   // LLM config form
@@ -205,7 +201,6 @@ export default function AdminAiAgentPage() {
       queryClient.invalidateQueries({ queryKey: ['aiAgentConfig'] });
       toast.success(t('llmUpdated'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   // Agent toggle & update
@@ -216,7 +211,6 @@ export default function AdminAiAgentPage() {
       queryClient.invalidateQueries({ queryKey: ['aiAgentAgents'] });
       toast.success(t('agentUpdated'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   const updateAgentMutation = useMutation({
@@ -227,7 +221,6 @@ export default function AdminAiAgentPage() {
       toast.success(t('agentUpdated'));
       setEditingAgent(null);
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   // Agent edit dialog state

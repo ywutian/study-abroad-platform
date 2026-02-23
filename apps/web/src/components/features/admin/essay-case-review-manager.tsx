@@ -109,9 +109,6 @@ export function EssayCaseReviewManager() {
       setDetailCase(null);
       setRejectReason('');
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
   });
 
   // 批量审核
@@ -126,9 +123,6 @@ export function EssayCaseReviewManager() {
       queryClient.invalidateQueries({ queryKey: ['adminCaseStats'] });
       toast.success(t('batchVerifySuccess', { count: data.success }));
       setSelectedIds([]);
-    },
-    onError: (error: Error) => {
-      toast.error(error.message);
     },
   });
 

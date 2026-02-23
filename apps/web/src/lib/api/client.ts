@@ -1,5 +1,8 @@
 import { toast } from 'sonner';
 import { useAuthStore } from '@/stores/auth';
+import { ApiError } from './api-error';
+import { mapApiErrorToKey } from './api-error-map';
+import { API_ERROR_MESSAGES } from './api-error-i18n';
 
 // ============================================
 // 非 React 上下文翻译（与 error-boundary / not-found 一致的模式）
@@ -10,12 +13,14 @@ const API_I18N = {
     serverError: '服务器错误，请稍后重试',
     requestTimeout: '请求超时 ({seconds}s)',
     networkError: '网络连接失败，正在重试...',
+    operationFailed: '操作失败，请重试',
   },
   en: {
     forbidden: 'You do not have permission to perform this action',
     serverError: 'Server error, please try again later',
     requestTimeout: 'Request timed out ({seconds}s)',
     networkError: 'Network connection failed, retrying...',
+    operationFailed: 'Operation failed, please try again',
   },
 } as const;
 
@@ -149,7 +154,10 @@ class ApiClient {
           const error = await response.json().catch(() => ({ message: 'Request failed' }));
           const errorMessage = error.error?.message || error.message || `HTTP ${response.status}`;
 
-          const i18n = API_I18N[getApiLocale()];
+          const locale = getApiLocale();
+          const i18n = API_I18N[locale];
+
+          // 403/500 由 API client 直接弹 toast（全局处理器会跳过这些状态码）
           if (response.status === 403) {
             toast.error(i18n.forbidden);
           } else if (response.status === 404) {
@@ -158,7 +166,13 @@ class ApiClient {
             toast.error(i18n.serverError);
           }
 
-          throw new Error(errorMessage);
+          // 翻译错误消息用于用户展示
+          const errorKey = mapApiErrorToKey(errorMessage);
+          const displayMessage = errorKey
+            ? (API_ERROR_MESSAGES[locale][errorKey] ?? i18n.operationFailed)
+            : i18n.operationFailed;
+
+          throw new ApiError(errorMessage, displayMessage, response.status);
         }
 
         // 处理空响应
@@ -260,7 +274,13 @@ class ApiClient {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: 'Upload failed' }));
-      throw new Error(error.error?.message || error.message || `HTTP ${response.status}`);
+      const errorMessage = error.error?.message || error.message || `HTTP ${response.status}`;
+      const locale = getApiLocale();
+      const errorKey = mapApiErrorToKey(errorMessage);
+      const displayMessage = errorKey
+        ? (API_ERROR_MESSAGES[locale][errorKey] ?? API_I18N[locale].operationFailed)
+        : API_I18N[locale].operationFailed;
+      throw new ApiError(errorMessage, displayMessage, response.status);
     }
 
     const json = await response.json();
@@ -269,3 +289,12 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient(RESOLVED_API_URL, API_VERSION);
+
+export const AI_TIMEOUT = 60_000;
+
+export const STALE_TIME = {
+  STATIC: 30 * 60 * 1000, // 30min — school details
+  MODERATE: 5 * 60 * 1000, // 5min  — lists, profile, AI analysis
+  DYNAMIC: 60 * 1000, // 1min  — forum, notifications
+  REALTIME: 0, // 0     — chat
+} as const;

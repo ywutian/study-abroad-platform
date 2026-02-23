@@ -84,9 +84,6 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
       onOpenChange(false);
       resetForm();
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
   });
 
   const updateMutation = useMutation({
@@ -96,9 +93,6 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(t('toast.activityUpdated'));
       onOpenChange(false);
-    },
-    onError: (error: Error) => {
-      toast.error(error.message);
     },
   });
 
@@ -294,7 +288,3 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
     </Dialog>
   );
 }
-
-
-
-

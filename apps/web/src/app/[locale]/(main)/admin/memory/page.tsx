@@ -265,7 +265,6 @@ export default function AdminMemoryPage() {
       toast.success(t('deleteMemory'));
       setDeleteMemoryId(null);
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   // ---- Section 4: Conversations ----
@@ -336,7 +335,6 @@ export default function AdminMemoryPage() {
       queryClient.invalidateQueries({ queryKey: ['memoryDecayConfig'] });
       toast.success(t('configSaved'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   const triggerDecayMutation = useMutation({
@@ -347,7 +345,6 @@ export default function AdminMemoryPage() {
       setDecayResultData(data.result || null);
       setShowTriggerConfirm(false);
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   // ---- Helpers ----

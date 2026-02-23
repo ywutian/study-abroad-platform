@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { cn, getSchoolName, getSchoolSubName } from '@/lib/utils';
-import { apiClient } from '@/lib/api';
+import { apiClient, AI_TIMEOUT, STALE_TIME } from '@/lib/api';
 import {
   Brain,
   Sparkles,
@@ -48,6 +48,7 @@ interface RecommendationResponse {
   target: RecommendationItem[];
   safety: RecommendationItem[];
   summary: string;
+  status?: 'cached' | 'profile_incomplete' | 'ai_error';
 }
 
 const CATEGORY_STYLES = {
@@ -94,10 +95,12 @@ export function SchoolRecommendation({ className }: SchoolRecommendationProps) {
 
   const { data, isLoading, refetch, isFetching, error } = useQuery({
     queryKey: ['school-ai-recommendations'],
-    queryFn: () => apiClient.get<RecommendationResponse>('/schools/ai/recommend'),
-    staleTime: 10 * 60 * 1000, // 10分钟缓存
+    queryFn: () =>
+      apiClient.get<RecommendationResponse>('/schools/ai/recommend', { timeout: AI_TIMEOUT }),
+    staleTime: STALE_TIME.MODERATE,
     gcTime: 30 * 60 * 1000,
-    retry: 1,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
   if (isLoading) {
@@ -120,7 +123,10 @@ export function SchoolRecommendation({ className }: SchoolRecommendationProps) {
     );
   }
 
-  if (error || !data) {
+  if (error || !data || data.status === 'profile_incomplete' || data.status === 'ai_error') {
+    const isProfileIncomplete = data?.status === 'profile_incomplete';
+    const isAiError = data?.status === 'ai_error';
+
     return (
       <Card className={cn('overflow-hidden', className)}>
         <div className="h-1.5 bg-primary" />
@@ -130,13 +136,33 @@ export function SchoolRecommendation({ className }: SchoolRecommendationProps) {
               <Info className="h-8 w-8 text-muted-foreground" />
             </div>
             <div>
-              <p className="font-medium">{t('errorTitle')}</p>
-              <p className="text-sm text-muted-foreground mt-1">{t('errorDesc')}</p>
+              <p className="font-medium">
+                {isProfileIncomplete
+                  ? t('profileIncomplete')
+                  : isAiError
+                    ? t('aiError')
+                    : t('errorTitle')}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {isProfileIncomplete
+                  ? t('profileIncompleteDesc')
+                  : isAiError
+                    ? t('aiErrorDesc')
+                    : t('errorDesc')}
+              </p>
             </div>
-            <Button variant="outline" size="sm" onClick={() => refetch()}>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              {t('retry')}
-            </Button>
+            {isProfileIncomplete ? (
+              <Link href={`/${locale}/profile`}>
+                <Button variant="outline" size="sm">
+                  {t('completeProfile')}
+                </Button>
+              </Link>
+            ) : (
+              <Button variant="outline" size="sm" onClick={() => refetch()}>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                {t('retry')}
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -161,7 +187,14 @@ export function SchoolRecommendation({ className }: SchoolRecommendationProps) {
                 {t('aiSmartMatch')}
                 <Sparkles className="h-4 w-4 text-blue-500" />
               </CardTitle>
-              <CardDescription>{t('recommendCount', { count: totalSchools })}</CardDescription>
+              <CardDescription>
+                {t('recommendCount', { count: totalSchools })}
+                {data.status === 'cached' && (
+                  <Badge variant="secondary" className="ml-2 text-xs">
+                    {t('cached')}
+                  </Badge>
+                )}
+              </CardDescription>
             </div>
           </div>
           <Button

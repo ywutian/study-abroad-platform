@@ -22,12 +22,12 @@
 
 | 服务              | 端口   | 本地 URL                                                     |
 | ----------------- | ------ | ------------------------------------------------------------ |
-| NestJS API        | `3001` | `http://localhost:3001`                                      |
-| Next.js Web       | `3000` | `http://localhost:3000`                                      |
+| NestJS API        | `4101` | `http://localhost:4101`                                      |
+| Next.js Web       | `4100` | `http://localhost:4100`                                      |
 | Expo Mobile       | `8081` | Expo DevTools（终端扫码启动）                                |
-| Swagger UI        | `3001` | `http://localhost:3001/api/docs`                             |
-| Health Check      | `3001` | `http://localhost:3001/health`                               |
-| Health (Detailed) | `3001` | `http://localhost:3001/health/detailed`                      |
+| Swagger UI        | `4101` | `http://localhost:4101/api/docs`                             |
+| Health Check      | `4101` | `http://localhost:4101/health`                               |
+| Health (Detailed) | `4101` | `http://localhost:4101/health/detailed`                      |
 | PostgreSQL        | `5432` | `postgresql://postgres:postgres@localhost:5432/study_abroad` |
 | Redis             | `6379` | `redis://localhost:6379`                                     |
 | Prisma Studio     | `5555` | `http://localhost:5555`                                      |
@@ -206,13 +206,13 @@ git commit -m "docs: update API reference"
 | `OPENAI_API_KEY`         | 否   | OpenAI API 密钥              | `sk-...`（联系 Tech Lead 获取）                              |
 | `OPENAI_BASE_URL`        | 否   | OpenAI 接口地址              | `https://api.openai.com/v1`                                  |
 | `OPENAI_MODEL`           | 否   | 默认 AI 模型                 | `gpt-4o-mini`                                                |
-| `PORT`                   | 否   | API 服务端口                 | `3001`                                                       |
+| `PORT`                   | 否   | API 服务端口                 | `4101`                                                       |
 | `NODE_ENV`               | 否   | 运行环境                     | `development`                                                |
 | `SMTP_HOST`              | 否   | SMTP 邮件服务器              | `smtp.example.com`                                           |
 | `SMTP_PORT`              | 否   | SMTP 端口                    | `587`                                                        |
 | `SMTP_USER`              | 否   | SMTP 用户名                  | —                                                            |
 | `SMTP_PASS`              | 否   | SMTP 密码                    | —                                                            |
-| `FRONTEND_URL`           | 否   | 前端地址（邮件链接用）       | `http://localhost:3000`                                      |
+| `FRONTEND_URL`           | 否   | 前端地址（邮件链接用）       | `http://localhost:4100`                                      |
 | `THROTTLE_TTL`           | 否   | 速率限制窗口（秒）           | `60`                                                         |
 | `THROTTLE_LIMIT`         | 否   | 速率限制最大请求数           | `100`                                                        |
 
@@ -220,16 +220,16 @@ git commit -m "docs: update API reference"
 
 | 变量                   | 必填 | 说明                | 示例值                  |
 | ---------------------- | ---- | ------------------- | ----------------------- |
-| `NEXT_PUBLIC_API_URL`  | 是   | API 服务地址        | `http://localhost:3001` |
+| `NEXT_PUBLIC_API_URL`  | 是   | API 服务地址        | `http://localhost:4101` |
 | `NEXT_PUBLIC_WS_URL`   | 否   | WebSocket 地址      | 默认同 API URL          |
-| `NEXT_PUBLIC_SITE_URL` | 否   | 站点 URL（SSR 用）  | `http://localhost:3000` |
+| `NEXT_PUBLIC_SITE_URL` | 否   | 站点 URL（SSR 用）  | `http://localhost:4100` |
 | `NEXT_PUBLIC_GA_ID`    | 否   | Google Analytics ID | `G-XXXXXXXX`            |
 
 ### Mobile 环境变量（`apps/mobile/.env`）
 
 | 变量                  | 必填 | 说明         | 示例值                  |
 | --------------------- | ---- | ------------ | ----------------------- |
-| `EXPO_PUBLIC_API_URL` | 是   | API 服务地址 | `http://localhost:3001` |
+| `EXPO_PUBLIC_API_URL` | 是   | API 服务地址 | `http://localhost:4101` |
 
 ---
 
@@ -239,27 +239,27 @@ git commit -m "docs: update API reference"
 
 ```bash
 # 基础健康检查
-curl http://localhost:3001/health
+curl http://localhost:4101/health
 
 # 详细健康检查（含 DB/Redis 延迟）
-curl http://localhost:3001/health/detailed
+curl http://localhost:4101/health/detailed
 
 # Kubernetes 探针
-curl http://localhost:3001/health/live     # 存活探针
-curl http://localhost:3001/health/ready    # 就绪探针
-curl http://localhost:3001/health/startup  # 启动探针
+curl http://localhost:4101/health/live     # 存活探针
+curl http://localhost:4101/health/ready    # 就绪探针
+curl http://localhost:4101/health/startup  # 启动探针
 ```
 
 ### 用户注册与登录
 
 ```bash
 # 注册
-curl -X POST http://localhost:3001/api/v1/auth/register \
+curl -X POST http://localhost:4101/api/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{"email": "test@example.com", "password": "Test123456!", "name": "测试用户"}'
 
 # 登录（获取 JWT）
-curl -X POST http://localhost:3001/api/v1/auth/login \
+curl -X POST http://localhost:4101/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email": "test@example.com", "password": "Test123456!"}'
 ```
@@ -271,17 +271,17 @@ curl -X POST http://localhost:3001/api/v1/auth/login \
 TOKEN="eyJhbG..."
 
 # 获取当前用户信息
-curl http://localhost:3001/api/v1/auth/me \
+curl http://localhost:4101/api/v1/auth/me \
   -H "Authorization: Bearer $TOKEN"
 
 # 获取学校列表
-curl "http://localhost:3001/api/v1/schools?page=1&take=10" \
+curl "http://localhost:4101/api/v1/schools?page=1&take=10" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
 ### Swagger UI
 
-浏览器访问 `http://localhost:3001/api/docs`，可交互式测试所有 API 端点。点击 "Authorize" 按钮输入 JWT Token 即可调用受保护接口。
+浏览器访问 `http://localhost:4101/api/docs`，可交互式测试所有 API 端点。点击 "Authorize" 按钮输入 JWT Token 即可调用受保护接口。
 
 ---
 

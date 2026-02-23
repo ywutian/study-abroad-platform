@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { ApiError } from '@/lib/api/api-error';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
@@ -337,7 +338,6 @@ export default function FollowersPage() {
       queryClient.invalidateQueries({ queryKey: ['following'] });
       toast.success(t('followers.toast.followSuccess'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   const unfollowMutation = useMutation({
@@ -347,7 +347,6 @@ export default function FollowersPage() {
       setUserToUnfollow(null);
       toast.success(t('followers.toast.unfollowSuccess'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   const _blockMutation = useMutation({
@@ -358,7 +357,6 @@ export default function FollowersPage() {
       queryClient.invalidateQueries({ queryKey: ['following'] });
       toast.success(t('followers.toast.blockSuccess'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   const unblockMutation = useMutation({
@@ -368,8 +366,18 @@ export default function FollowersPage() {
       setUserToUnblock(null);
       toast.success(t('followers.toast.unblockSuccess'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
+
+  const startConversation = async (userId: string) => {
+    try {
+      const conversation = await apiClient.post<{ id: string }>('/chats/conversations', { userId });
+      router.push(`/chat?conversation=${conversation.id}`);
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof ApiError ? error.displayMessage : t('followers.toast.messageError')
+      );
+    }
+  };
 
   // ---- Helpers ----
   const isFollowing = (userId: string) => following?.some((f) => f.following?.id === userId);
@@ -538,7 +546,7 @@ export default function FollowersPage() {
                       isFollowingUser={isFollowing(relation.follower?.id || '')}
                       onPreview={() => setPreviewUserId(relation.follower?.id || '')}
                       onFollow={() => followMutation.mutate(relation.follower?.id || '')}
-                      onMessage={() => router.push('/chat')}
+                      onMessage={() => startConversation(relation.follower?.id || '')}
                       followPending={followMutation.isPending}
                       t={t}
                     />
@@ -579,7 +587,7 @@ export default function FollowersPage() {
                       isFollowingUser={true}
                       onPreview={() => setPreviewUserId(relation.following?.id || '')}
                       onUnfollow={() => setUserToUnfollow(relation.following?.id || '')}
-                      onMessage={() => router.push('/chat')}
+                      onMessage={() => startConversation(relation.following?.id || '')}
                       t={t}
                     />
                   </motion.div>

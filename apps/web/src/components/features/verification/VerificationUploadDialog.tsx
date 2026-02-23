@@ -144,9 +144,9 @@ export function VerificationUploadDialog({
       queryClient.invalidateQueries({ queryKey: ['myCases'] });
       handleClose();
     },
-    onError: (error: any) => {
-      toast.error(error.message || t('verification.submitError'));
+    onError: () => {
       setUploadProgress(0);
+      // Error toast handled by global MutationCache
     },
   });
 

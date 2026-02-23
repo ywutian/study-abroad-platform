@@ -5,6 +5,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
+import { batchUpsertSchools, SeedSchoolData } from './lib/seed-helpers';
 
 const prisma = new PrismaClient();
 
@@ -999,72 +1000,11 @@ const US_SCHOOLS_141_200 = [
 ];
 
 async function main() {
-  console.log('🏫 补充美国学校 (US News 141-200)...\n');
-
-  let created = 0;
-  let updated = 0;
-  const errors: string[] = [];
-
-  for (const school of US_SCHOOLS_141_200) {
-    try {
-      const existing = await prisma.school.findFirst({
-        where: { name: school.name },
-      });
-
-      if (existing) {
-        await prisma.school.update({
-          where: { id: existing.id },
-          data: {
-            city: school.city,
-            usNewsRank: school.usNewsRank,
-            acceptanceRate: school.acceptanceRate,
-            tuition: school.tuition,
-            satAvg: school.satAvg,
-            actAvg: school.actAvg,
-            studentCount: school.studentCount,
-            graduationRate: school.graduationRate,
-            website: school.website,
-            description: school.description,
-            descriptionZh: school.descriptionZh,
-          },
-        });
-        console.log(`📝 更新: ${school.nameZh}`);
-        updated++;
-      } else {
-        await prisma.school.create({
-          data: {
-            name: school.name,
-            nameZh: school.nameZh,
-            country: 'US',
-            state: school.state,
-            city: school.city,
-            usNewsRank: school.usNewsRank,
-            acceptanceRate: school.acceptanceRate,
-            tuition: school.tuition,
-            satAvg: school.satAvg,
-            actAvg: school.actAvg,
-            studentCount: school.studentCount,
-            graduationRate: school.graduationRate,
-            website: school.website,
-            description: school.description,
-            descriptionZh: school.descriptionZh,
-          },
-        });
-        console.log(`✅ 新建: ${school.nameZh}`);
-        created++;
-      }
-    } catch (error: any) {
-      errors.push(`${school.nameZh}: ${error.message}`);
-    }
-  }
-
-  console.log('\n' + '='.repeat(50));
-  console.log(`📊 完成: 新建 ${created}, 更新 ${updated}`);
-
-  if (errors.length > 0) {
-    console.log(`\n❌ 错误 (${errors.length}):`);
-    errors.forEach((e) => console.log('  ' + e));
-  }
+  await batchUpsertSchools(
+    prisma,
+    US_SCHOOLS_141_200 as SeedSchoolData[],
+    '美国大学 141-200 名',
+  );
 
   const totalSchools = await prisma.school.count();
   console.log(`\n🏫 学校总数: ${totalSchools}`);

@@ -40,7 +40,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { apiClient } from '@/lib/api';
+import { apiClient, AI_TIMEOUT } from '@/lib/api';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { cn } from '@/lib/utils';
 import { LoadingState } from '@/components/ui/loading-state';
@@ -76,43 +76,17 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 // date-fns format removed — using useFormatter() from next-intl instead
-
-interface Essay {
-  id: string;
-  title: string;
-  prompt?: string;
-  content: string;
-  wordCount?: number;
-  schoolId?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface EssayReview {
-  overallScore: number;
-  structure: { score: number; feedback: string };
-  content: { score: number; feedback: string };
-  language: { score: number; feedback: string };
-  suggestions: string[];
-}
-
-interface PolishResult {
-  polished: string;
-  changes: Array<{ original: string; revised: string; reason: string }>;
-}
-
-interface RewriteResult {
-  versions: Array<{ text: string; style: string }>;
-}
-
-interface ContinueResult {
-  continuation: string;
-  suggestions: string[];
-}
-
-interface OpeningResult {
-  openings: Array<{ text: string; style: string }>;
-}
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createEssaySchema, type EssayFormData } from '@/lib/validations/essay';
+import type {
+  Essay,
+  EssayReview,
+  PolishResult,
+  RewriteResult,
+  ContinueResult,
+  OpeningResult,
+} from '@/types/essay';
 
 export default function EssaysPage() {
   const t = useTranslations();
@@ -145,10 +119,9 @@ export default function EssaysPage() {
 
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
-  const [formData, setFormData] = useState({
-    title: '',
-    prompt: '',
-    content: '',
+  const essayForm = useForm<EssayFormData>({
+    resolver: zodResolver(createEssaySchema(t)),
+    defaultValues: { title: '', prompt: '', content: '' },
   });
 
   // Store random offsets in ref so they're computed once on mount
@@ -183,11 +156,8 @@ export default function EssaysPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['essays'] });
       setIsFormOpen(false);
-      resetForm();
+      essayForm.reset();
       toast.success(t('essays.toast.saved'));
-    },
-    onError: (error: Error) => {
-      toast.error(error.message);
     },
   });
 
@@ -204,11 +174,8 @@ export default function EssaysPage() {
       queryClient.invalidateQueries({ queryKey: ['essays'] });
       setIsFormOpen(false);
       setSelectedEssay(null);
-      resetForm();
+      essayForm.reset();
       toast.success(t('essays.toast.updated'));
-    },
-    onError: (error: Error) => {
-      toast.error(error.message);
     },
   });
 
@@ -224,88 +191,66 @@ export default function EssaysPage() {
       }
       toast.success(t('essays.toast.deleted'));
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
   });
 
   // AI Review
   const reviewMutation = useMutation({
     mutationFn: (data: { prompt: string; content: string }) =>
-      apiClient.post<EssayReview>('/ai/review-essay', data),
+      apiClient.post<EssayReview>('/ai/review-essay', data, { timeout: AI_TIMEOUT }),
     onSuccess: (data) => {
       setReviewResult(data);
       setIsReviewOpen(true);
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || t('essays.toast.reviewFailed'));
     },
   });
 
   // AI 润色
   const polishMutation = useMutation({
     mutationFn: (data: { content: string; style?: 'formal' | 'vivid' | 'concise' }) =>
-      apiClient.post<PolishResult>('/ai/polish-essay', data),
+      apiClient.post<PolishResult>('/ai/polish-essay', data, { timeout: AI_TIMEOUT }),
     onSuccess: (data) => {
       setPolishResult(data);
       setIsPolishOpen(true);
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || t('essays.toast.polishFailed'));
     },
   });
 
   // AI 改写
   const rewriteMutation = useMutation({
     mutationFn: (data: { paragraph: string; instruction?: string }) =>
-      apiClient.post<RewriteResult>('/ai/rewrite-paragraph', data),
+      apiClient.post<RewriteResult>('/ai/rewrite-paragraph', data, { timeout: AI_TIMEOUT }),
     onSuccess: (data) => {
       setRewriteResult(data);
       setIsRewriteOpen(true);
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || t('essays.toast.rewriteFailed'));
     },
   });
 
   // AI 续写
   const continueMutation = useMutation({
     mutationFn: (data: { content: string; prompt?: string; direction?: string }) =>
-      apiClient.post<ContinueResult>('/ai/continue-writing', data),
+      apiClient.post<ContinueResult>('/ai/continue-writing', data, { timeout: AI_TIMEOUT }),
     onSuccess: (data) => {
       setContinueResult(data);
       setIsContinueOpen(true);
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || t('essays.toast.continueFailed'));
     },
   });
 
   // AI 生成开头
   const openingMutation = useMutation({
     mutationFn: (data: { prompt: string; background?: string }) =>
-      apiClient.post<OpeningResult>('/ai/generate-opening', data),
+      apiClient.post<OpeningResult>('/ai/generate-opening', data, { timeout: AI_TIMEOUT }),
     onSuccess: (data) => {
       setOpeningResult(data);
       setIsOpeningOpen(true);
     },
-    onError: (error: Error) => {
-      toast.error(error.message || t('essays.toast.openingFailed'));
-    },
   });
 
-  const resetForm = () => {
-    setFormData({ title: '', prompt: '', content: '' });
-  };
-
   const handleCreate = () => {
-    resetForm();
+    essayForm.reset({ title: '', prompt: '', content: '' });
     setSelectedEssay(null);
     setIsFormOpen(true);
   };
 
   const handleEdit = (essay: Essay) => {
-    setFormData({
+    essayForm.reset({
       title: essay.title,
       prompt: essay.prompt || '',
       content: essay.content,
@@ -319,11 +264,11 @@ export default function EssaysPage() {
     setIsDeleteOpen(true);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = essayForm.handleSubmit((values) => {
     const data = {
-      title: formData.title,
-      prompt: formData.prompt || undefined,
-      content: formData.content,
+      title: values.title,
+      prompt: values.prompt || undefined,
+      content: values.content,
     };
 
     if (selectedEssay) {
@@ -331,7 +276,7 @@ export default function EssaysPage() {
     } else {
       createMutation.mutate(data);
     }
-  };
+  });
 
   const handleReview = (essay: Essay) => {
     if (!essay.content) {
@@ -392,7 +337,7 @@ export default function EssaysPage() {
 
   const applyPolishedContent = () => {
     if (polishResult && selectedEssay) {
-      setFormData({
+      essayForm.reset({
         title: selectedEssay.title,
         prompt: selectedEssay.prompt || '',
         content: polishResult.polished,
@@ -654,22 +599,22 @@ export default function EssaysPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label>{t('essays.label.title')}</Label>
-              <Input
-                placeholder={t('essays.placeholder.title')}
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              />
+              <Input placeholder={t('essays.placeholder.title')} {...essayForm.register('title')} />
+              {essayForm.formState.errors.title && (
+                <p className="text-xs text-destructive">
+                  {essayForm.formState.errors.title.message}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
               <Label>{t('essays.label.prompt')}</Label>
               <Textarea
                 placeholder={t('essays.placeholder.prompt')}
-                value={formData.prompt}
-                onChange={(e) => setFormData({ ...formData, prompt: e.target.value })}
+                {...essayForm.register('prompt')}
                 rows={3}
               />
             </div>
@@ -678,39 +623,35 @@ export default function EssaysPage() {
               <div className="flex items-center justify-between">
                 <Label>{t('essays.label.content')}</Label>
                 <span className="text-xs text-muted-foreground">
-                  {t('essays.wordCount', { count: getWordCount(formData.content) })}
+                  {t('essays.wordCount', { count: getWordCount(essayForm.watch('content')) })}
                 </span>
               </div>
               <Textarea
                 placeholder={t('essays.placeholder.content')}
-                value={formData.content}
-                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                {...essayForm.register('content')}
                 rows={12}
                 className="font-mono text-sm"
               />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsFormOpen(false)}>
-              {t('common.cancel')}
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={
-                !formData.title ||
-                !formData.content ||
-                createMutation.isPending ||
-                updateMutation.isPending
-              }
-            >
-              {(createMutation.isPending || updateMutation.isPending) && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {essayForm.formState.errors.content && (
+                <p className="text-xs text-destructive">
+                  {essayForm.formState.errors.content.message}
+                </p>
               )}
-              <Save className="mr-2 h-4 w-4" />
-              {t('common.save')}
-            </Button>
-          </DialogFooter>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" type="button" onClick={() => setIsFormOpen(false)}>
+                {t('common.cancel')}
+              </Button>
+              <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+                {(createMutation.isPending || updateMutation.isPending) && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                <Save className="mr-2 h-4 w-4" />
+                {t('common.save')}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 

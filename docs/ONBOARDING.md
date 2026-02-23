@@ -69,16 +69,16 @@ npx prisma migrate deploy   # 应用迁移
 npx prisma db seed           # 填充种子数据
 
 # 3. 启动后端
-pnpm --filter api dev        # http://localhost:3001
+pnpm --filter api dev        # http://localhost:4101
 
 # 4. 启动前端（新终端）
-pnpm --filter web dev        # http://localhost:3000 (Turbopack 模式)
+pnpm --filter web dev        # http://localhost:4100 (Turbopack 模式)
 ```
 
 ### 1.5 验证
 
-- 访问 `http://localhost:3001/api/v1/health` → 应返回 `{ "status": "ok" }`
-- 访问 `http://localhost:3000` → 应看到登录页面
+- 访问 `http://localhost:4101/api/v1/health` → 应返回 `{ "status": "ok" }`
+- 访问 `http://localhost:4100` → 应看到登录页面
 - 运行测试：`pnpm --filter api test` → 24/24 套件通过
 
 ---

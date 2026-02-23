@@ -2,9 +2,16 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, Check, ListPlus, Trash2 } from 'lucide-react';
+import { Plus, X, Check, ListPlus, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Sheet,
   SheetContent,
@@ -26,7 +33,7 @@ export interface SelectedSchool {
 
 interface FloatingAddButtonProps {
   selectedSchools: SelectedSchool[];
-  onAdd: (schoolIds: string[]) => void;
+  onAdd: (schoolIds: string[], tier: string) => void;
   onRemove: (schoolId: string) => void;
   onClear: () => void;
   isAdding?: boolean;
@@ -34,13 +41,10 @@ interface FloatingAddButtonProps {
 }
 
 /**
- * 右下角常驻浮动按钮
+ * 底部操作栏 — 选校后展示选中数量、分类选择和批量添加按钮
  *
- * 功能：
- * - 显示已选学校数量
- * - 点击展开已选学校列表
- * - 支持批量添加到清单
- * - 支持清除选择
+ * 替代原有的右下角浮动按钮，避免与 AI 聊天助手按钮位置重叠。
+ * 使用 z-40（低于 FloatingChat 的 z-50），右侧留出空间避免遮挡。
  */
 export function FloatingAddButton({
   selectedSchools,
@@ -54,61 +58,103 @@ export function FloatingAddButton({
   const t = useTranslations('findCollege');
   const tc = useTranslations('common');
   const [isOpen, setIsOpen] = useState(false);
+  const [tier, setTier] = useState('TARGET');
   const hasSelected = selectedSchools.length > 0;
 
   const handleAddAll = () => {
     if (selectedSchools.length > 0) {
-      onAdd(selectedSchools.map((s) => s.id));
+      onAdd(
+        selectedSchools.map((s) => s.id),
+        tier
+      );
     }
   };
 
   return (
     <>
-      {/* 浮动按钮 */}
-      <motion.div
-        className={cn('fixed bottom-6 right-6 z-50', className)}
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-      >
-        <Button
-          size="lg"
-          className={cn(
-            'rounded-full shadow-lg h-14 w-14 p-0 relative',
-            'hover:scale-105 active:scale-95 transition-transform',
-            hasSelected
-              ? 'bg-primary hover:bg-primary/90'
-              : 'bg-muted hover:bg-muted/90 text-muted-foreground'
-          )}
-          onClick={() => hasSelected && setIsOpen(true)}
-          disabled={!hasSelected}
-        >
-          <ListPlus className="h-6 w-6" />
-
-          {/* 数量徽章 */}
-          <AnimatePresence>
-            {hasSelected && (
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0 }}
-                className="absolute -top-1 -right-1"
-              >
-                <Badge className="h-6 min-w-6 rounded-full p-0 flex items-center justify-center text-xs font-bold bg-red-500 hover:bg-red-500 border-2 border-background">
-                  {selectedSchools.length}
-                </Badge>
-              </motion.div>
+      {/* 底部操作栏 */}
+      <AnimatePresence>
+        {hasSelected && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className={cn(
+              'fixed bottom-0 inset-x-0 z-40 border-t bg-background/95 backdrop-blur-sm shadow-lg',
+              className
             )}
-          </AnimatePresence>
-        </Button>
+          >
+            <div className="flex items-center gap-3 px-4 py-3 max-w-screen-xl mx-auto pr-20">
+              {/* 选中数量 — 点击展开 Sheet */}
+              <button
+                onClick={() => setIsOpen(true)}
+                className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+              >
+                <ListPlus className="h-4 w-4 text-primary" />
+                <Badge variant="secondary" className="text-sm font-medium">
+                  {t('selectedCount', { count: selectedSchools.length })}
+                </Badge>
+              </button>
 
-        {/* 提示文字 */}
-        {!hasSelected && (
-          <p className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded">
-            {t('selectHint')}
-          </p>
+              {/* 分隔线 */}
+              <div className="h-6 w-px bg-border" />
+
+              {/* Tier 选择器 */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground hidden sm:inline">
+                  {t('tierLabel')}:
+                </span>
+                <Select value={tier} onValueChange={setTier}>
+                  <SelectTrigger className="h-8 w-24 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="REACH">{t('tiers.reach')}</SelectItem>
+                    <SelectItem value="TARGET">{t('tiers.target')}</SelectItem>
+                    <SelectItem value="SAFETY">{t('tiers.safety')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* 弹性空间 */}
+              <div className="flex-1" />
+
+              {/* 清除按钮 */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClear}
+                disabled={isAdding}
+                className="text-muted-foreground"
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                <span className="hidden sm:inline">{tc('clearAll')}</span>
+              </Button>
+
+              {/* 添加按钮 */}
+              <Button
+                size="sm"
+                onClick={handleAddAll}
+                disabled={isAdding || selectedSchools.length === 0}
+                className="gap-1.5"
+              >
+                {isAdding ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {tc('processing')}
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4" />
+                    {t('addAllToList')}
+                  </>
+                )}
+              </Button>
+            </div>
+          </motion.div>
         )}
-      </motion.div>
+      </AnimatePresence>
 
       {/* 已选学校面板 */}
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -186,12 +232,7 @@ export function FloatingAddButton({
             >
               {isAdding ? (
                 <>
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </motion.div>
+                  <Loader2 className="h-4 w-4 animate-spin" />
                   {tc('processing')}
                 </>
               ) : (

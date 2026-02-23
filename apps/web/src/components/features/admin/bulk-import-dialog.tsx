@@ -127,9 +127,6 @@ export function BulkImportDialog({ open, onOpenChange, importType }: BulkImportD
         })
       );
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
   });
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {

@@ -78,9 +78,6 @@ export function TinderTab() {
             }
             setTimeout(() => setSwipeResult(null), 2000);
           },
-          onError: (error: Error) => {
-            toast.error(error.message);
-          },
         }
       );
     },

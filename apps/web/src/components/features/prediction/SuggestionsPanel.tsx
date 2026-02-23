@@ -2,7 +2,6 @@
 
 import { memo } from 'react';
 import { useTranslations } from 'next-intl';
-import { Lightbulb } from 'lucide-react';
 
 interface SuggestionsPanelProps {
   suggestions: string[];

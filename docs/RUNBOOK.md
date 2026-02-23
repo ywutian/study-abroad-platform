@@ -27,8 +27,8 @@
 
 | 服务        | 端口 | 健康检查         |
 | ----------- | ---- | ---------------- |
-| NestJS API  | 3001 | `GET /health`    |
-| Next.js Web | 3000 | `GET /`          |
+| NestJS API  | 4101 | `GET /health`    |
+| Next.js Web | 4100 | `GET /`          |
 | PostgreSQL  | 5432 | `pg_isready`     |
 | Redis       | 6379 | `redis-cli ping` |
 
@@ -40,15 +40,15 @@
 
 ```bash
 # API 基础健康
-curl http://localhost:3001/health
+curl http://localhost:4101/health
 
 # 详细健康（含 DB/Redis 延迟）
-curl http://localhost:3001/health/detailed
+curl http://localhost:4101/health/detailed
 
 # Kubernetes 探针
-curl http://localhost:3001/health/live    # 存活
-curl http://localhost:3001/health/ready   # 就绪
-curl http://localhost:3001/health/startup  # 启动
+curl http://localhost:4101/health/live    # 存活
+curl http://localhost:4101/health/ready   # 就绪
+curl http://localhost:4101/health/startup  # 启动
 ```
 
 ### 2.2 预期响应
@@ -94,7 +94,7 @@ curl http://localhost:3001/health/startup  # 启动
 2. 检查端口是否被占用
 
    ```bash
-   lsof -i :3001
+   lsof -i :4101
    ```
 
 3. 查看最近日志
@@ -199,13 +199,13 @@ docker compose restart redis
 
    ```bash
    curl -H "Authorization: Bearer <admin_token>" \
-     http://localhost:3001/api/v1/ai-agent/health
+     http://localhost:4101/api/v1/ai-agent/health
    ```
 
 2. 检查熔断器状态
    ```bash
    curl -H "Authorization: Bearer <admin_token>" \
-     http://localhost:3001/api/v1/admin/ai-agent/circuit-breakers
+     http://localhost:4101/api/v1/admin/ai-agent/circuit-breakers
    ```
 
 **恢复**:
@@ -213,13 +213,13 @@ docker compose restart redis
 ```bash
 # 重置熔断器
 curl -X DELETE -H "Authorization: Bearer <admin_token>" \
-  http://localhost:3001/api/v1/admin/ai-agent/circuit-breakers/openai
+  http://localhost:4101/api/v1/admin/ai-agent/circuit-breakers/openai
 
 # 调整速率限制
 curl -X PUT -H "Authorization: Bearer <admin_token>" \
   -H "Content-Type: application/json" \
   -d '{"maxRequestsPerMinute": 20}' \
-  http://localhost:3001/api/v1/admin/ai-agent/config/rate-limit/global
+  http://localhost:4101/api/v1/admin/ai-agent/config/rate-limit/global
 ```
 
 ### 3.5 前端页面 404
@@ -325,15 +325,15 @@ redis-cli --memkeys --samples 100
 ```bash
 # Prometheus 格式指标
 curl -H "Authorization: Bearer <admin_token>" \
-  http://localhost:3001/api/v1/admin/ai-agent/metrics/prometheus
+  http://localhost:4101/api/v1/admin/ai-agent/metrics/prometheus
 
 # 慢请求追踪
 curl -H "Authorization: Bearer <admin_token>" \
-  http://localhost:3001/api/v1/admin/ai-agent/traces/slow
+  http://localhost:4101/api/v1/admin/ai-agent/traces/slow
 
 # 错误追踪
 curl -H "Authorization: Bearer <admin_token>" \
-  http://localhost:3001/api/v1/admin/ai-agent/traces/errors
+  http://localhost:4101/api/v1/admin/ai-agent/traces/errors
 ```
 
 ### 6.2 Token 配额管理
@@ -341,11 +341,11 @@ curl -H "Authorization: Bearer <admin_token>" \
 ```bash
 # 查看用户使用量
 curl -H "Authorization: Bearer <admin_token>" \
-  http://localhost:3001/api/v1/admin/ai-agent/users/<userId>/usage
+  http://localhost:4101/api/v1/admin/ai-agent/users/<userId>/usage
 
 # 重置用户限流
 curl -X DELETE -H "Authorization: Bearer <admin_token>" \
-  http://localhost:3001/api/v1/admin/ai-agent/users/<userId>/rate-limit
+  http://localhost:4101/api/v1/admin/ai-agent/users/<userId>/rate-limit
 ```
 
 ---

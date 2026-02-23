@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/lib/i18n/navigation';
 import { apiClient } from '@/lib/api';
+import { ApiError } from '@/lib/api/api-error';
 import { toastSuccess, toastError } from '@/components/ui/sonner';
 import { Mail, ArrowLeft, RefreshCw, Loader2 } from 'lucide-react';
 
@@ -35,7 +36,13 @@ export default function VerifyEmailPage() {
       toastSuccess(t('auth.verifyEmail.resendSuccess'));
       setCooldown(RESEND_COOLDOWN);
     } catch (err) {
-      toastError(err instanceof Error ? err.message : t('errors.networkError'));
+      const msg =
+        err instanceof ApiError
+          ? err.displayMessage
+          : err instanceof Error
+            ? err.message
+            : t('errors.networkError');
+      toastError(msg);
     } finally {
       setIsResending(false);
     }

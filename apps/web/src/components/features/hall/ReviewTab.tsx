@@ -165,9 +165,6 @@ export function ReviewTab() {
           toast.success(t('hall.review.submitSuccess'));
           resetAll();
         },
-        onError: (error: Error) => {
-          toast.error(error.message);
-        },
       }
     );
   }, [

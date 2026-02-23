@@ -3,6 +3,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
+import { batchUpsertSchools, SeedSchoolData } from './lib/seed-helpers';
 
 const prisma = new PrismaClient();
 
@@ -419,60 +420,21 @@ const SCHOOL_DESCRIPTIONS: Record<
 };
 
 async function main() {
-  console.log('🏫 补充学校详细数据...\n');
+  // UC 系列学校数据
+  const ucSchools: SeedSchoolData[] = UC_SCHOOLS;
+  await batchUpsertSchools(prisma, ucSchools, 'UC 系统学校数据');
 
-  let updated = 0;
-
-  // 更新 UC 系列
-  for (const ucSchool of UC_SCHOOLS) {
-    const existing = await prisma.school.findFirst({
-      where: { name: ucSchool.name },
-    });
-
-    if (existing) {
-      await prisma.school.update({
-        where: { id: existing.id },
-        data: {
-          city: ucSchool.city,
-          satAvg: ucSchool.satAvg,
-          actAvg: ucSchool.actAvg,
-          studentCount: ucSchool.studentCount,
-          graduationRate: ucSchool.graduationRate,
-          website: ucSchool.website,
-          description: ucSchool.description,
-          descriptionZh: ucSchool.descriptionZh,
-        },
-      });
-      console.log(`✅ ${ucSchool.nameZh}`);
-      updated++;
-    }
-  }
-
-  // 更新其他学校简介
-  for (const [name, info] of Object.entries(SCHOOL_DESCRIPTIONS)) {
-    const school = await prisma.school.findFirst({
-      where: { name },
-    });
-
-    if (school) {
-      const updateData: any = {
-        description: info.description,
-        descriptionZh: info.descriptionZh,
-      };
-      if (info.website) updateData.website = info.website;
-      if (info.city) updateData.city = info.city;
-
-      await prisma.school.update({
-        where: { id: school.id },
-        data: updateData,
-      });
-      console.log(`✅ ${school.nameZh || name}`);
-      updated++;
-    }
-  }
-
-  console.log('\n' + '='.repeat(50));
-  console.log(`📊 完成: 更新 ${updated} 所学校`);
+  // 其他热门学校简介
+  const descriptionSchools: SeedSchoolData[] = Object.entries(
+    SCHOOL_DESCRIPTIONS,
+  ).map(([name, info]) => ({
+    name,
+    description: info.description,
+    descriptionZh: info.descriptionZh,
+    website: info.website,
+    city: info.city,
+  }));
+  await batchUpsertSchools(prisma, descriptionSchools, '热门学校简介补充');
 }
 
 main()

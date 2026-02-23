@@ -128,9 +128,6 @@ export function EssayPromptManager() {
       setDetailPrompt(null);
       setRejectReason('');
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
   });
 
   // 批量审核
@@ -147,9 +144,6 @@ export function EssayPromptManager() {
       toast.success(t('batchVerifySuccess', { count: data.success }));
       setSelectedIds([]);
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
   });
 
   // 触发爬取
@@ -160,9 +154,6 @@ export function EssayPromptManager() {
       queryClient.invalidateQueries({ queryKey: ['essayPromptStats'] });
       const successCount = data.filter((r: any) => r.success).length;
       toast.success(t('scrapeSuccess', { success: successCount, total: data.length }));
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || t('scrapeFailed'));
     },
   });
 

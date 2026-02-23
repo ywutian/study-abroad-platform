@@ -7,7 +7,7 @@ import {
 import { addBreadcrumb } from '@/lib/sentry';
 import type { ApiError } from '@/types';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:4101';
 const API_VERSION = '/api/v1';
 
 /** HTTP status codes that are safe to retry on */

@@ -8,7 +8,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api';
+import { apiClient, STALE_TIME } from '@/lib/api';
 import type { RecommendationResult, RecommendationPreflight } from '@study-abroad/shared';
 
 // ============================================
@@ -41,7 +41,7 @@ export function useRecommendationPreflight() {
   return useQuery<RecommendationPreflight>({
     queryKey: recommendationKeys.preflight(),
     queryFn: () => apiClient.get('/recommendations/preflight'),
-    staleTime: 60 * 1000,
+    staleTime: STALE_TIME.MODERATE,
   });
 }
 
@@ -68,7 +68,7 @@ export function useRecommendationHistory(enabled: boolean) {
     queryKey: recommendationKeys.history(),
     queryFn: () => apiClient.get('/recommendations/history'),
     enabled,
-    staleTime: 5 * 60 * 1000,
+    staleTime: STALE_TIME.MODERATE,
   });
 }
 

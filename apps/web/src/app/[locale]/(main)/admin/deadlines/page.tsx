@@ -141,7 +141,6 @@ export default function AdminDeadlinesPage() {
       resetForm();
       toast.success(t('deadlines.created'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   const updateMutation = useMutation({
@@ -153,7 +152,6 @@ export default function AdminDeadlinesPage() {
       resetForm();
       toast.success(t('deadlines.updated'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   const deleteMutation = useMutation({
@@ -163,7 +161,6 @@ export default function AdminDeadlinesPage() {
       setDeleteId(null);
       toast.success(t('deadlines.deleted'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   const resetForm = () => {

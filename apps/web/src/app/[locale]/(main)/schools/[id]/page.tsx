@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations, useLocale, useFormatter } from 'next-intl';
@@ -21,9 +21,11 @@ import { PageContainer } from '@/components/layout';
 import { LoadingState } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SchoolJsonLd } from '@/components/seo';
-import { apiClient } from '@/lib/api';
+import { apiClient, STALE_TIME } from '@/lib/api';
+import { ApiError } from '@/lib/api/api-error';
 import { useRouter } from '@/lib/i18n/navigation';
 import { useAuthStore } from '@/stores/auth';
+import { useSchoolPrediction } from '@/hooks/use-prediction';
 import { motion } from 'framer-motion';
 import { cn, getSchoolName, getSchoolSubName } from '@/lib/utils';
 import {
@@ -46,6 +48,7 @@ import {
   Star,
   CheckCircle,
   Clock,
+  BarChart3,
 } from 'lucide-react';
 
 interface SchoolDetail {
@@ -130,6 +133,7 @@ export default function SchoolDetailPage() {
   } = useQuery({
     queryKey: ['school', schoolId],
     queryFn: () => apiClient.get<SchoolDetail>(`/schools/${schoolId}`),
+    staleTime: STALE_TIME.STATIC,
     enabled: !!schoolId,
   });
 
@@ -157,6 +161,36 @@ export default function SchoolDetailPage() {
     retry: false,
   });
 
+  // Fetch prediction data for this school (logged-in users only)
+  const isLoggedIn = isInitialized && !!accessToken;
+  const { data: predictionData } = useSchoolPrediction(schoolId, isLoggedIn);
+
+  // Context actions for inline AI buttons (dispatch to global FloatingChat)
+  const aiActions = useMemo(() => {
+    if (!school) return [];
+    const schoolName = getSchoolName(school, locale);
+    return [
+      {
+        id: 'analyze-chance',
+        icon: <Target className="h-3.5 w-3.5" />,
+        label: t('school.ai.analyzeChance'),
+        message: t('school.ai.analyzeChancePrompt', { schoolName }),
+      },
+      {
+        id: 'improve-profile',
+        icon: <TrendingUp className="h-3.5 w-3.5" />,
+        label: t('school.ai.improveProfile'),
+        message: t('school.ai.improveProfilePrompt', { schoolName }),
+      },
+      {
+        id: 'compare-schools',
+        icon: <BarChart3 className="h-3.5 w-3.5" />,
+        label: t('school.ai.compareSchools'),
+        message: t('school.ai.compareSchoolsPrompt', { schoolName }),
+      },
+    ];
+  }, [school, locale, t]);
+
   // Fetch user's school list to check bookmark state
   const { data: schoolListData } = useQuery({
     queryKey: ['school-lists'],
@@ -173,13 +207,13 @@ export default function SchoolDetailPage() {
       toast.success(t('school.bookmarkAdded'));
       queryClient.invalidateQueries({ queryKey: ['school-lists'] });
     },
-    onError: (error: any) => {
-      if (error.message?.includes('already exists')) {
+    onError: (error: Error) => {
+      if (error instanceof ApiError && error.statusCode === 409) {
         toast.info(t('school.alreadyBookmarked'));
-      } else {
-        toast.error(error.message);
       }
+      // Other errors handled by global MutationCache
     },
+    meta: { skipGlobalErrorToast: true },
   });
 
   const removeBookmarkMutation = useMutation({
@@ -188,7 +222,6 @@ export default function SchoolDetailPage() {
       toast.success(t('school.bookmarkRemoved'));
       queryClient.invalidateQueries({ queryKey: ['school-lists'] });
     },
-    onError: (error: any) => toast.error(error.message),
   });
 
   const handleBookmarkToggle = () => {
@@ -209,7 +242,7 @@ export default function SchoolDetailPage() {
       await navigator.clipboard.writeText(window.location.href);
       toast.success(t('school.linkCopied'));
     } catch {
-      toast.error('Failed to copy');
+      toast.error(t('school.copyFailed'));
     }
   };
 
@@ -219,8 +252,8 @@ export default function SchoolDetailPage() {
         title: getSchoolName(school!, locale),
         url: window.location.href,
       });
-    } catch (err: any) {
-      if (err.name !== 'AbortError') toast.error(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name !== 'AbortError') toast.error(t('school.shareFailed'));
     }
   };
 
@@ -319,6 +352,27 @@ export default function SchoolDetailPage() {
                 )}
                 {school.usNewsRank && school.usNewsRank > 20 && (
                   <Badge variant="info">#{school.usNewsRank} US News</Badge>
+                )}
+                {isLoggedIn && predictionData?.current && (
+                  <Badge
+                    variant="outline"
+                    className={cn('gap-1', {
+                      'bg-emerald-500/10 text-emerald-600 border-emerald-500/30':
+                        predictionData.current.tier === 'safety',
+                      'bg-blue-500/10 text-blue-600 border-blue-500/30':
+                        predictionData.current.tier === 'match',
+                      'bg-rose-500/10 text-rose-600 border-rose-500/30':
+                        predictionData.current.tier === 'reach',
+                    })}
+                  >
+                    <Target className="h-3 w-3" />
+                    {Math.round(predictionData.current.probability * 100)}%{' '}
+                    {predictionData.current.tier === 'safety'
+                      ? t('school.prediction.safety')
+                      : predictionData.current.tier === 'match'
+                        ? t('school.prediction.match')
+                        : t('school.prediction.reach')}
+                  </Badge>
                 )}
               </div>
               {getSchoolSubName(school, locale) && (
@@ -474,6 +528,48 @@ export default function SchoolDetailPage() {
           );
         })}
       </div>
+
+      {/* AI Context Actions — visible early in viewport */}
+      {isLoggedIn && aiActions.length > 0 && (
+        <div className="mb-6 rounded-lg border bg-muted/30 p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium">{t('school.ai.title')}</span>
+            <span className="text-xs text-muted-foreground">{t('school.ai.description')}</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {aiActions.map((action) => (
+              <Button
+                key={action.id}
+                variant="outline"
+                size="sm"
+                className="gap-1.5 text-xs hover:bg-primary/5 hover:border-primary/50 hover:text-primary transition-all"
+                onClick={() => {
+                  window.dispatchEvent(
+                    new CustomEvent('ai-assistant-action', {
+                      detail: { message: action.message },
+                    })
+                  );
+                }}
+              >
+                {action.icon}
+                {action.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+      {!isLoggedIn && (
+        <div className="mb-6 rounded-lg border border-primary/20 bg-primary/5 p-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <span className="text-sm text-muted-foreground">{t('school.ai.loginHint')}</span>
+          </div>
+          <Button size="sm" variant="default" onClick={() => router.push('/login')}>
+            {t('common.login')}
+          </Button>
+        </div>
+      )}
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="overview" className="space-y-6">

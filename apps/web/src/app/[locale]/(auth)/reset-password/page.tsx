@@ -39,9 +39,7 @@ export default function ResetPasswordPage() {
     onSuccess: () => {
       setSuccess(true);
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
+    // Error toast handled by global MutationCache
   });
 
   const handleSubmit = (e: React.FormEvent) => {

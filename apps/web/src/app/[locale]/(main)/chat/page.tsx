@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo, useLayoutEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import {
   useQuery,
   useInfiniteQuery,
@@ -29,6 +30,7 @@ import { BlockDialog } from './_components/BlockDialog';
 export default function ChatPage() {
   const t = useTranslations();
   const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
 
   // ── UI State ──────────────────────────────────────────────
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
@@ -97,6 +99,26 @@ export default function ChatPage() {
     queryFn: () => apiClient.get<Conversation[]>('/chats/conversations'),
   });
   const conversations = conversationsData || [];
+
+  // Auto-select conversation from URL param (e.g. /chat?conversation=xxx)
+  const autoSelectedRef = useRef(false);
+  const refetchedOnceRef = useRef(false);
+  useEffect(() => {
+    const conversationId = searchParams.get('conversation');
+    if (!conversationId || autoSelectedRef.current || isLoading) return;
+
+    const exists = conversations.some((c) => c.id === conversationId);
+    if (exists) {
+      setSelectedConversation(conversationId);
+      setShowConversations(false);
+      autoSelectedRef.current = true;
+    } else if (!refetchedOnceRef.current) {
+      // Conversation was just created, refetch list once
+      refetchedOnceRef.current = true;
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+    }
+  }, [searchParams, conversations, isLoading, queryClient]);
+
   const totalUnread = useMemo(
     () => conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0),
     [conversations]

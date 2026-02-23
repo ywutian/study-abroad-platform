@@ -86,7 +86,7 @@ start() {
     sleep 10
     
     # 检查健康状态
-    if curl -sf http://localhost:3001/health > /dev/null; then
+    if curl -sf http://localhost:4101/health > /dev/null; then
         log_info "API 服务启动成功 ✓"
     else
         log_error "API 服务启动失败"
@@ -169,7 +169,7 @@ status() {
     echo ""
     log_info "健康检查:"
     
-    if curl -sf http://localhost:3001/health > /dev/null; then
+    if curl -sf http://localhost:4101/health > /dev/null; then
         echo -e "  API: ${GREEN}健康${NC}"
     else
         echo -e "  API: ${RED}异常${NC}"

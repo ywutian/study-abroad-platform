@@ -298,8 +298,8 @@ cd apps/api && pnpm test --coverage
 
 | 问题                          | 解决方案                                  |
 | ----------------------------- | ----------------------------------------- |
-| API 端口 3001 被占用          | 杀掉残留进程，重启 API 服务               |
-| WebSocket 连接端口错误 (4000) | 修改 `use-chat-socket.ts` 默认端口为 3001 |
+| API 端口 4101 被占用          | 杀掉残留进程，重启 API 服务               |
+| WebSocket 连接端口错误 (4000) | 修改 `use-chat-socket.ts` 默认端口为 4101 |
 | 导航栏缺少页面入口            | 添加"更多"下拉菜单，包含 9 个功能页面     |
 
 ### 导航栏更新
@@ -495,7 +495,7 @@ Please make sure your database server is running at `localhost:5432`.
 
 ### 仅网络错误 (非 i18n 问题)
 
-所有测试页面的网络错误均为 API 连接问题 (端口 3001 无响应)，这是后端配置问题，不影响前端国际化。
+所有测试页面的网络错误均为 API 连接问题 (端口 4101 无响应)，这是后端配置问题，不影响前端国际化。
 
 ### 翻译文件更新
 
@@ -571,7 +571,7 @@ Please make sure your database server is running at `localhost:5432`.
 
 | 错误类型                                  | 原因                       | 影响             |
 | ----------------------------------------- | -------------------------- | ---------------- |
-| `ERR_CONNECTION_REFUSED` (localhost:3001) | 后端 API 未启动            | ⚪ 无影响 (预期) |
+| `ERR_CONNECTION_REFUSED` (localhost:4101) | 后端 API 未启动            | ⚪ 无影响 (预期) |
 | `Token refresh failed`                    | 后端未启动，无法刷新 token | ⚪ 无影响 (预期) |
 
 ### 国际化验证
@@ -588,8 +588,8 @@ Please make sure your database server is running at `localhost:5432`.
 
 | 服务          | 端口 | 状态                 |
 | ------------- | ---- | -------------------- |
-| Web (Next.js) | 3000 | ✅ 运行中            |
-| API (NestJS)  | 3001 | ✅ 运行中            |
+| Web (Next.js) | 4100 | ✅ 运行中            |
+| API (NestJS)  | 4101 | ✅ 运行中            |
 | PostgreSQL    | 5432 | ✅ 运行中            |
 | Redis         | 6379 | ⚠️ 认证问题 (可忽略) |
 
@@ -682,8 +682,8 @@ docker-compose exec api npx prisma db seed
 
 | 服务          | 端口 | 健康检查                     |
 | ------------- | ---- | ---------------------------- |
-| Web (Next.js) | 3000 | http://localhost:3000        |
-| API (NestJS)  | 3001 | http://localhost:3001/health |
+| Web (Next.js) | 4100 | http://localhost:4100        |
+| API (NestJS)  | 4101 | http://localhost:4101/health |
 | PostgreSQL    | 5432 | -                            |
 | Redis         | 6379 | -                            |
 
@@ -1177,8 +1177,8 @@ cd apps/mobile && pnpm test:coverage
 | 2026-01-21 | API       | TypeScript 编译错误 (import type, userId→id 等)                              | ✅ 已修复   | -                                            |
 | 2026-01-21 | API       | 28 个 TS 类型错误导致 API 无法启动                                           | ✅ 已修复   | -                                            |
 | 2026-01-21 | API       | CORS 预检请求缺少 Access-Control-Allow-Origin 头                             | ✅ 已修复   | -                                            |
-| 2026-01-21 | Web       | API URL 默认端口已统一为 3001                                                | ✅ 已修复   | -                                            |
-| 2026-01-21 | Web       | auth store API URL 默认端口已统一为 3001                                     | ✅ 已修复   | -                                            |
+| 2026-01-21 | Web       | API URL 默认端口已统一为 4101                                                | ✅ 已修复   | -                                            |
+| 2026-01-21 | Web       | auth store API URL 默认端口已统一为 4101                                     | ✅ 已修复   | -                                            |
 | 2026-01-21 | Web       | 登录组件未正确解析 API 响应 (response.data)                                  | ✅ 已修复   | -                                            |
 | 2026-01-21 | Web       | AI Agent API 路径缺少 /api/v1 前缀                                           | ✅ 已修复   | -                                            |
 | 2026-01-21 | Profile   | 保存时需选择年级和预算（必填字段验证）                                       | ⚠️ 预期行为 | -                                            |
@@ -1292,7 +1292,7 @@ cd apps/mobile && pnpm test:coverage
 ### API 端
 
 - ✅ TypeScript 编译通过
-- ✅ 服务启动正常 (端口 3001)
+- ✅ 服务启动正常 (端口 4101)
 - ✅ CORS 配置正确
 - ✅ 认证模块工作正常
 - ✅ AI 功能正常（配置 OPENAI_API_KEY 后）
@@ -1318,7 +1318,7 @@ DATABASE_URL="postgresql://postgres:postgres@localhost:5432/study_abroad" \
 REDIS_URL=redis://localhost:6379 \
 JWT_SECRET=test-secret \
 JWT_REFRESH_SECRET=test-refresh-secret \
-PORT=3001 \
+PORT=4101 \
 OPENAI_API_KEY=your-openai-api-key \
 npx nest start --watch
 
@@ -1623,8 +1623,8 @@ cd apps/web && pnpm dev
 
 | 服务                  | 端口 | 状态               |
 | --------------------- | ---- | ------------------ |
-| Web (Next.js 16)      | 3000 | ✅ 运行中          |
-| API (NestJS 11)       | 3001 | ✅ 运行中          |
+| Web (Next.js 16)      | 4100 | ✅ 运行中          |
+| API (NestJS 11)       | 4101 | ✅ 运行中          |
 | PostgreSQL (pgvector) | 5432 | ✅ 运行中 (Docker) |
 | Redis 7               | 6379 | ✅ 运行中 (Docker) |
 

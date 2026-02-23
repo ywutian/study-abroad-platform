@@ -97,9 +97,7 @@ export function SwipeReviewMode({ profile, onClose, onComplete }: SwipeReviewMod
       onComplete?.();
       onClose();
     },
-    onError: (error: Error) => {
-      toast.error(error.message || t('review.submitError'));
-    },
+    // Error toast handled by global MutationCache
   });
 
   const handleSwipe = useCallback(
@@ -373,7 +371,7 @@ export function SwipeReviewMode({ profile, onClose, onComplete }: SwipeReviewMod
           </div>
         );
 
-      case 'verdict':
+      case 'verdict': {
         const avgScore = Math.round(
           scores.academic * 0.3 + scores.test * 0.2 + scores.activity * 0.3 + scores.award * 0.2
         );
@@ -458,6 +456,7 @@ export function SwipeReviewMode({ profile, onClose, onComplete }: SwipeReviewMod
             </Button>
           </div>
         );
+      }
     }
   };
 

@@ -21,6 +21,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
+import { normalizeSchoolName as normalizeSchoolNameForDb } from '../src/common/utils/school-name.util';
 
 const prisma = new PrismaClient();
 
@@ -352,7 +353,7 @@ function parsePostContent(title: string, content: string): ParsedPost | null {
   const resultPatterns = [
     /^[\s*-]*([^-\n]+?)\s*[-–—:]\s*(accepted|rejected|waitlisted|admitted|denied|deferred)/gim,
     /^[\s*-]*(✅|❌|🟡)\s*([^\n]+)/gm,
-    /^[\s*-]*([^\n]+?)\s*[:\-]\s*(✅|❌|🟡)/gm,
+    /^[\s*-]*([^\n]+?)\s*[:-]\s*(✅|❌|🟡)/gm,
   ];
 
   for (const pattern of resultPatterns) {
@@ -640,25 +641,28 @@ async function main() {
     for (const result of parsed.results) {
       try {
         // 查找学校
-        let school = await prisma.school.findFirst({
-          where: {
-            OR: [
-              { name: { equals: result.school, mode: 'insensitive' } },
-              {
-                name: {
-                  contains: result.school.split(' ')[0],
-                  mode: 'insensitive',
-                },
-              },
-            ],
-          },
+        let school = await prisma.school.findUnique({
+          where: { nameNorm: normalizeSchoolNameForDb(result.school) },
         });
+
+        if (!school) {
+          // Fallback: partial name match
+          school = await prisma.school.findFirst({
+            where: {
+              name: {
+                contains: result.school.split(' ')[0],
+                mode: 'insensitive',
+              },
+            },
+          });
+        }
 
         if (!school) {
           // 创建学校
           school = await prisma.school.create({
             data: {
               name: result.school,
+              nameNorm: normalizeSchoolNameForDb(result.school),
               country: 'US',
             },
           });

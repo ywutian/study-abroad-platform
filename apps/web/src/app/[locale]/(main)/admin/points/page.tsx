@@ -60,7 +60,6 @@ export default function AdminPointsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminPointsConfig'] });
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   const batchUpdateMutation = useMutation({
@@ -71,7 +70,6 @@ export default function AdminPointsPage() {
       setEditedValues({});
       toast.success(t('points.saved'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   const resetMutation = useMutation({
@@ -82,7 +80,6 @@ export default function AdminPointsPage() {
       setShowReset(false);
       toast.success(t('points.resetDone'));
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   const handleValueChange = (action: string, value: number) => {

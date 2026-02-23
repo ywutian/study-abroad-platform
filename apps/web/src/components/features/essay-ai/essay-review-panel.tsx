@@ -69,9 +69,7 @@ export const EssayReviewPanel: React.FC<EssayReviewPanelProps> = ({ essayId, cla
       setResult(data);
       toast.success(t('review.success'));
     },
-    onError: (error: any) => {
-      toast.error(error.message || t('review.failed'));
-    },
+    // Error toast handled by global MutationCache
   });
 
   if (result) {

@@ -146,15 +146,15 @@ docker exec -it study-abroad-redis redis-cli -a redis_dev_password ping
 
 **症状**：
 
-- 启动 API 时报 `Error: listen EADDRINUSE: address already in use :::3001`
+- 启动 API 时报 `Error: listen EADDRINUSE: address already in use :::4101`
 
-**原因**：上一次 API 进程未正常退出；其他服务占用了 3001 端口。
+**原因**：上一次 API 进程未正常退出；其他服务占用了 4101 端口。
 
 **解决方案**：
 
 ```bash
 # 1. 查找占用端口的进程
-lsof -i :3001
+lsof -i :4101
 
 # 2. 终止进程
 kill -9 <PID>
@@ -241,12 +241,12 @@ npx prisma generate
 # JWT_REFRESH_SECRET 必须设置
 
 # 2. 重新登录获取新 Token
-curl -X POST http://localhost:3001/api/v1/auth/login \
+curl -X POST http://localhost:4101/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email": "test@example.com", "password": "Test123456!"}'
 
 # 3. 在 Swagger UI 中测试
-# 访问 http://localhost:3001/api/docs
+# 访问 http://localhost:4101/api/docs
 # 点击 Authorize 按钮，输入 Bearer <token>
 
 # 4. 开发环境建议延长 Token 有效期
@@ -259,7 +259,7 @@ JWT_REFRESH_EXPIRES_IN="30d"
 
 **症状**：
 
-- 访问 `http://localhost:3001/api/docs` 返回 404
+- 访问 `http://localhost:4101/api/docs` 返回 404
 - Swagger 页面空白或 JSON 解析错误
 - 日志出现 `Swagger UI failed to initialize`
 
@@ -274,7 +274,7 @@ echo $NODE_ENV
 # NODE_ENV=development
 
 # 2. 确认 API 已正常启动
-curl http://localhost:3001/health
+curl http://localhost:4101/health
 
 # 3. 查看 API 启动日志中是否有 Swagger 相关警告
 # 正常应看到: "Swagger UI enabled at /api/docs"
@@ -282,7 +282,7 @@ curl http://localhost:3001/health
 # 检查新增的 Controller 是否有 Swagger 装饰器语法错误
 
 # 4. 尝试直接访问 Swagger JSON
-curl http://localhost:3001/api/docs-json
+curl http://localhost:4101/api/docs-json
 ```
 
 ### 2.6 环境变量校验失败
@@ -399,7 +399,7 @@ pnpm --filter web exec npx tsx scripts/check-translation-keys.ts
 pnpm --filter web exec npx tsx scripts/check-wrong-language.ts
 
 # 6. 确认 locale 路由重定向正常
-# 访问 http://localhost:3000/ 应重定向到 /zh/ 或 /en/
+# 访问 http://localhost:4100/ 应重定向到 /zh/ 或 /en/
 # 检查 middleware.ts 中的 locales 配置
 ```
 

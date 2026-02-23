@@ -95,8 +95,8 @@ pnpm --filter web lint:typography
 在 `apps/web` 目录下创建 `.env.local` 文件：
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:3001
-NEXT_PUBLIC_WS_URL=http://localhost:3001
+NEXT_PUBLIC_API_URL=http://localhost:4101
+NEXT_PUBLIC_WS_URL=http://localhost:4101
 ```
 
 ## 部署

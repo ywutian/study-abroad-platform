@@ -3,6 +3,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
+import { batchUpsertSchools, SeedSchoolData } from './lib/seed-helpers';
 
 const prisma = new PrismaClient();
 
@@ -636,63 +637,8 @@ const MORE_US_SCHOOLS = [
 ];
 
 async function main() {
-  console.log('🏫 补充更多美国学校 (101-150)...\n');
-
-  let created = 0;
-  let updated = 0;
-
-  for (const school of MORE_US_SCHOOLS) {
-    const existing = await prisma.school.findFirst({
-      where: { name: school.name },
-    });
-
-    if (existing) {
-      await prisma.school.update({
-        where: { id: existing.id },
-        data: {
-          city: school.city,
-          usNewsRank: school.usNewsRank,
-          satAvg: school.satAvg,
-          actAvg: school.actAvg,
-          studentCount: school.studentCount,
-          graduationRate: school.graduationRate,
-          website: school.website,
-          description: school.description,
-          descriptionZh: school.descriptionZh,
-        },
-      });
-      console.log(`📝 更新: ${school.nameZh}`);
-      updated++;
-    } else {
-      await prisma.school.create({
-        data: {
-          name: school.name,
-          nameZh: school.nameZh,
-          country: 'US',
-          state: school.state,
-          city: school.city,
-          usNewsRank: school.usNewsRank,
-          acceptanceRate: school.acceptanceRate,
-          tuition: school.tuition,
-          satAvg: school.satAvg,
-          actAvg: school.actAvg,
-          studentCount: school.studentCount,
-          graduationRate: school.graduationRate,
-          website: school.website,
-          description: school.description,
-          descriptionZh: school.descriptionZh,
-        },
-      });
-      console.log(`✅ 新建: ${school.nameZh}`);
-      created++;
-    }
-  }
-
-  console.log('\n' + '='.repeat(50));
-  console.log(`📊 完成: 新建 ${created}, 更新 ${updated}`);
-
-  const totalSchools = await prisma.school.count();
-  console.log(`🏫 学校总数: ${totalSchools}`);
+  const schools: SeedSchoolData[] = MORE_US_SCHOOLS;
+  await batchUpsertSchools(prisma, schools, '美国大学 101-150 名');
 }
 
 main()

@@ -3,6 +3,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
+import { batchUpsertSchools, SeedSchoolData } from './lib/seed-helpers';
 
 const prisma = new PrismaClient();
 
@@ -894,61 +895,8 @@ const ADDITIONAL_SCHOOLS = [
 ];
 
 async function main() {
-  console.log('🏫 补充学校数据...\n');
-
-  let created = 0;
-  let updated = 0;
-
-  for (const school of ADDITIONAL_SCHOOLS) {
-    const existing = await prisma.school.findFirst({
-      where: { name: school.name },
-    });
-
-    if (existing) {
-      // 更新已有学校的缺失数据
-      await prisma.school.update({
-        where: { id: existing.id },
-        data: {
-          city: school.city,
-          satAvg: school.satAvg,
-          actAvg: school.actAvg,
-          studentCount: school.studentCount,
-          graduationRate: school.graduationRate,
-          website: school.website,
-          description: school.description,
-          descriptionZh: school.descriptionZh,
-        },
-      });
-      console.log(`📝 更新: ${school.nameZh}`);
-      updated++;
-    } else {
-      // 创建新学校
-      await prisma.school.create({
-        data: {
-          name: school.name,
-          nameZh: school.nameZh,
-          country: 'US',
-          state: school.state,
-          city: school.city,
-          usNewsRank: school.usNewsRank,
-          acceptanceRate: school.acceptanceRate,
-          tuition: school.tuition,
-          satAvg: school.satAvg,
-          actAvg: school.actAvg,
-          studentCount: school.studentCount,
-          graduationRate: school.graduationRate,
-          website: school.website,
-          description: school.description,
-          descriptionZh: school.descriptionZh,
-        },
-      });
-      console.log(`✅ 新建: ${school.nameZh}`);
-      created++;
-    }
-  }
-
-  console.log('\n' + '='.repeat(50));
-  console.log(`📊 完成: 新建 ${created}, 更新 ${updated}`);
+  const schools: SeedSchoolData[] = ADDITIONAL_SCHOOLS;
+  await batchUpsertSchools(prisma, schools, '补充学校数据 (US News 52-100+)');
 }
 
 main()

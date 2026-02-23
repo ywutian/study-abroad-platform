@@ -22,9 +22,12 @@ import {
   Brain,
   Database,
   RefreshCw,
+  Loader2,
 } from 'lucide-react';
 
+import { pdf } from '@react-pdf/renderer';
 import ReactMarkdown from 'react-markdown';
+import { AnalysisReportPDF } from '@/components/features/report/analysis-report-pdf';
 import { PageContainer } from '@/components/layout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -275,6 +278,7 @@ export default function UncommonAppPage() {
 
   const [isFlipped, setIsFlipped] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [aiRecommendations, setAiRecommendations] = useState<{
     safety: any[];
     target: any[];
@@ -497,13 +501,13 @@ export default function UncommonAppPage() {
   // 辅助函数：从文本中提取分数
   function extractScore(text: string): number | null {
     // 匹配 "85/100" 或 "8.5/10" 格式
-    const scoreMatch = text.match(/(\d{1,3}(?:\.\d)?)\s*[\/]\s*(?:100|10)/);
+    const scoreMatch = text.match(/(\d{1,3}(?:\.\d)?)\s*[/]\s*(?:100|10)/);
     if (scoreMatch) {
       const score = parseFloat(scoreMatch[1]);
       return score > 10 ? Math.min(100, Math.round(score)) : Math.min(100, Math.round(score * 10));
     }
     // 匹配 "整体评分为**8.5/10**" 格式
-    const boldMatch = text.match(/\*\*(\d{1,3}(?:\.\d)?)\s*[\/]\s*(?:100|10)\*\*/);
+    const boldMatch = text.match(/\*\*(\d{1,3}(?:\.\d)?)\s*[/]\s*(?:100|10)\*\*/);
     if (boldMatch) {
       const score = parseFloat(boldMatch[1]);
       return score > 10 ? Math.min(100, Math.round(score)) : Math.min(100, Math.round(score * 10));
@@ -576,9 +580,48 @@ export default function UncommonAppPage() {
     };
   }
 
-  const handleExportReport = () => {
-    toast.success(t('reportExported'));
-    // TODO: Implement actual PDF export
+  const handleExportReport = async () => {
+    if (!analysis) {
+      toast.error(t('analysis.noData'));
+      return;
+    }
+
+    setIsExporting(true);
+
+    try {
+      const blob = await pdf(
+        <AnalysisReportPDF
+          data={{
+            overallScore: analysis.overallScore,
+            projectedImprovement: analysis.projectedImprovement,
+            admissionPrediction: analysis.admissionPrediction,
+            strengths: analysis.strengths,
+            weaknesses: analysis.weaknesses,
+            improvements: analysis.improvements,
+            recommendedActivities: analysis.recommendedActivities,
+            timeline: analysis.timeline,
+          }}
+          locale={locale === 'zh' ? 'zh' : 'en'}
+        />
+      ).toBlob();
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `analysis-report-${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setTimeout(() => URL.revokeObjectURL(url), 100);
+
+      toast.success(t('reportExported'));
+    } catch (error) {
+      console.error('PDF export failed:', error);
+      toast.error(t('analysisError'));
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleDone = () => {
@@ -1236,8 +1279,17 @@ export default function UncommonAppPage() {
 
                 {/* Bottom Actions */}
                 <div className="flex items-center justify-end gap-2 mt-4 pt-3 border-t">
-                  <Button variant="outline" size="sm" onClick={handleExportReport}>
-                    <Download className="h-4 w-4 mr-1" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleExportReport}
+                    disabled={isExporting || !analysis}
+                  >
+                    {isExporting ? (
+                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    ) : (
+                      <Download className="h-4 w-4 mr-1" />
+                    )}
                     {t('exportReport')}
                   </Button>
                   <Button size="sm" onClick={handleGradeProfile} disabled={isAnalyzing}>

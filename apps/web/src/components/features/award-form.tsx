@@ -69,9 +69,6 @@ export function AwardForm({ open, onOpenChange, editingAward }: AwardFormProps) 
       onOpenChange(false);
       resetForm();
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
   });
 
   const updateMutation = useMutation({
@@ -80,9 +77,6 @@ export function AwardForm({ open, onOpenChange, editingAward }: AwardFormProps) 
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(t('toast.awardUpdated'));
       onOpenChange(false);
-    },
-    onError: (error: Error) => {
-      toast.error(error.message);
     },
   });
 

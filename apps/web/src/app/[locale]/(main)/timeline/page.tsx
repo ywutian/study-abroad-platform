@@ -7,6 +7,26 @@ import { apiClient } from '@/lib/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   Calendar,
   CheckCircle2,
@@ -28,114 +48,22 @@ import {
   Star,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { toast } from 'sonner';
-
-// ============ Types ============
-
-interface TimelineResponse {
-  id: string;
-  schoolId: string;
-  schoolName: string;
-  round: string;
-  deadline?: string;
-  status: string;
-  progress: number;
-  priority: number;
-  notes?: string;
-  tasksTotal: number;
-  tasksCompleted: number;
-  createdAt: string;
-}
-
-interface TaskResponse {
-  id: string;
-  timelineId: string;
-  title: string;
-  type: string;
-  description?: string;
-  dueDate?: string;
-  completed: boolean;
-  completedAt?: string;
-  essayPrompt?: string;
-  wordLimit?: number;
-  sortOrder: number;
-}
-
-interface TimelineOverview {
-  totalSchools: number;
-  submitted: number;
-  inProgress: number;
-  notStarted: number;
-  upcomingDeadlines: TimelineResponse[];
-  overdueTasks: TaskResponse[];
-  totalPersonalEvents: number;
-  personalInProgress: number;
-  personalCompleted: number;
-  upcomingPersonalEvents: PersonalEventResponse[];
-}
-
-interface GlobalEvent {
-  id: string;
-  title: string;
-  titleZh?: string;
-  category: string;
-  eventDate: string;
-  registrationDeadline?: string;
-  lateDeadline?: string;
-  resultDate?: string;
-  description?: string;
-  descriptionZh?: string;
-  url?: string;
-  year: number;
-}
-
-interface TimelineDetail extends TimelineResponse {
-  tasks?: TaskResponse[];
-}
-
-interface PersonalEventResponse {
-  id: string;
-  category: string;
-  title: string;
-  globalEventId?: string;
-  deadline?: string;
-  eventDate?: string;
-  status: string;
-  progress: number;
-  priority: number;
-  description?: string;
-  url?: string;
-  notes?: string;
-  tasksTotal: number;
-  tasksCompleted: number;
-  createdAt: string;
-}
-
-interface PersonalTaskResponse {
-  id: string;
-  eventId: string;
-  title: string;
-  dueDate?: string;
-  completed: boolean;
-  completedAt?: string;
-  sortOrder: number;
-}
-
-interface PersonalEventDetail extends PersonalEventResponse {
-  tasks?: PersonalTaskResponse[];
-}
-
-type TabType = 'all' | 'school' | 'personal';
-
-const PERSONAL_CATEGORIES = [
-  'COMPETITION',
-  'TEST',
-  'SUMMER_PROGRAM',
-  'INTERNSHIP',
-  'ACTIVITY',
-  'MATERIAL',
-  'OTHER',
-] as const;
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createPersonalEventSchema, type PersonalEventFormData } from '@/lib/validations/timeline';
+import type {
+  TimelineResponse,
+  TaskResponse,
+  TimelineOverview,
+  GlobalEvent,
+  TimelineDetail,
+  PersonalEventResponse,
+  PersonalEventDetail,
+  TabType,
+} from '@/types/timeline';
+import { PERSONAL_CATEGORIES } from '@/types/timeline';
 
 // ============ Page Component ============
 
@@ -148,12 +76,20 @@ export default function TimelinePage() {
   const [expandedTimeline, setExpandedTimeline] = useState<string | null>(null);
   const [expandedPersonalEvent, setExpandedPersonalEvent] = useState<string | null>(null);
   const [showCreateEvent, setShowCreateEvent] = useState(false);
-  const [newEvent, setNewEvent] = useState({
-    title: '',
-    category: 'COMPETITION' as string,
-    deadline: '',
-    eventDate: '',
-    description: '',
+  const [deleteTarget, setDeleteTarget] = useState<{
+    type: string;
+    id: string;
+    name: string;
+  } | null>(null);
+  const eventForm = useForm<PersonalEventFormData>({
+    resolver: zodResolver(createPersonalEventSchema(t)),
+    defaultValues: {
+      title: '',
+      category: 'COMPETITION',
+      deadline: '',
+      eventDate: '',
+      description: '',
+    },
   });
 
   // ============ Queries ============
@@ -180,17 +116,18 @@ export default function TimelinePage() {
     queryFn: () => apiClient.get('/timelines/personal-events'),
   });
 
-  const { data: timelineDetail } = useQuery<TimelineDetail>({
+  const { data: timelineDetail, isLoading: timelineDetailLoading } = useQuery<TimelineDetail>({
     queryKey: ['timeline-detail', expandedTimeline],
     queryFn: () => apiClient.get(`/timelines/${expandedTimeline}`),
     enabled: !!expandedTimeline,
   });
 
-  const { data: personalEventDetail } = useQuery<PersonalEventDetail>({
-    queryKey: ['personal-event-detail', expandedPersonalEvent],
-    queryFn: () => apiClient.get(`/timelines/personal-events/${expandedPersonalEvent}`),
-    enabled: !!expandedPersonalEvent,
-  });
+  const { data: personalEventDetail, isLoading: personalEventDetailLoading } =
+    useQuery<PersonalEventDetail>({
+      queryKey: ['personal-event-detail', expandedPersonalEvent],
+      queryFn: () => apiClient.get(`/timelines/personal-events/${expandedPersonalEvent}`),
+      enabled: !!expandedPersonalEvent,
+    });
 
   // ============ Mutations ============
 
@@ -223,19 +160,13 @@ export default function TimelinePage() {
   });
 
   const createPersonalEventMutation = useMutation({
-    mutationFn: (data: typeof newEvent) => apiClient.post('/timelines/personal-events', data),
+    mutationFn: (data: PersonalEventFormData) => apiClient.post('/timelines/personal-events', data),
     onSuccess: () => {
       toast.success(t('personalEvents.createSuccess'));
       queryClient.invalidateQueries({ queryKey: ['personal-events'] });
       queryClient.invalidateQueries({ queryKey: ['timeline-overview'] });
       setShowCreateEvent(false);
-      setNewEvent({
-        title: '',
-        category: 'COMPETITION',
-        deadline: '',
-        eventDate: '',
-        description: '',
-      });
+      eventForm.reset();
     },
   });
 
@@ -613,84 +544,80 @@ export default function TimelinePage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-base">{t('personalEvents.createTitle')}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium block mb-1.5">
-                  {t('personalEvents.form.title')}
-                </label>
-                <input
-                  className="w-full px-3 py-2 border rounded-md text-sm bg-background"
-                  value={newEvent.title}
-                  onChange={(e) => setNewEvent((v) => ({ ...v, title: e.target.value }))}
-                  placeholder={t('personalEvents.form.titlePlaceholder')}
+          <CardContent>
+            <form
+              onSubmit={eventForm.handleSubmit((data) => createPersonalEventMutation.mutate(data))}
+              className="space-y-4"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="event-title">{t('personalEvents.form.title')}</Label>
+                  <Input
+                    id="event-title"
+                    {...eventForm.register('title')}
+                    placeholder={t('personalEvents.form.titlePlaceholder')}
+                  />
+                  {eventForm.formState.errors.title && (
+                    <p className="text-xs text-destructive">
+                      {eventForm.formState.errors.title.message}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-1.5">
+                  <Label>{t('personalEvents.form.category')}</Label>
+                  <Select
+                    value={eventForm.watch('category')}
+                    onValueChange={(value) =>
+                      eventForm.setValue('category', value as PersonalEventFormData['category'])
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PERSONAL_CATEGORIES.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {getCategoryLabel(cat)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="event-deadline">{t('personalEvents.form.deadline')}</Label>
+                  <Input id="event-deadline" type="date" {...eventForm.register('deadline')} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="event-date">{t('personalEvents.form.eventDate')}</Label>
+                  <Input id="event-date" type="date" {...eventForm.register('eventDate')} />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="event-desc">{t('personalEvents.form.description')}</Label>
+                <Textarea
+                  id="event-desc"
+                  className="min-h-[80px]"
+                  {...eventForm.register('description')}
+                  placeholder={t('personalEvents.form.descriptionPlaceholder')}
                 />
               </div>
-              <div>
-                <label className="text-sm font-medium block mb-1.5">
-                  {t('personalEvents.form.category')}
-                </label>
-                <select
-                  className="w-full px-3 py-2 border rounded-md text-sm bg-background"
-                  value={newEvent.category}
-                  onChange={(e) => setNewEvent((v) => ({ ...v, category: e.target.value }))}
+              <div className="flex gap-2 justify-end">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  type="button"
+                  onClick={() => setShowCreateEvent(false)}
                 >
-                  {PERSONAL_CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {getCategoryLabel(cat)}
-                    </option>
-                  ))}
-                </select>
+                  {t('personalEvents.form.cancel')}
+                </Button>
+                <Button size="sm" type="submit" disabled={createPersonalEventMutation.isPending}>
+                  {createPersonalEventMutation.isPending && (
+                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                  )}
+                  {t('personalEvents.form.submit')}
+                </Button>
               </div>
-              <div>
-                <label className="text-sm font-medium block mb-1.5">
-                  {t('personalEvents.form.deadline')}
-                </label>
-                <input
-                  type="date"
-                  className="w-full px-3 py-2 border rounded-md text-sm bg-background"
-                  value={newEvent.deadline}
-                  onChange={(e) => setNewEvent((v) => ({ ...v, deadline: e.target.value }))}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium block mb-1.5">
-                  {t('personalEvents.form.eventDate')}
-                </label>
-                <input
-                  type="date"
-                  className="w-full px-3 py-2 border rounded-md text-sm bg-background"
-                  value={newEvent.eventDate}
-                  onChange={(e) => setNewEvent((v) => ({ ...v, eventDate: e.target.value }))}
-                />
-              </div>
-            </div>
-            <div>
-              <label className="text-sm font-medium block mb-1.5">
-                {t('personalEvents.form.description')}
-              </label>
-              <textarea
-                className="w-full px-3 py-2 border rounded-md text-sm bg-background min-h-[80px]"
-                value={newEvent.description}
-                onChange={(e) => setNewEvent((v) => ({ ...v, description: e.target.value }))}
-                placeholder={t('personalEvents.form.descriptionPlaceholder')}
-              />
-            </div>
-            <div className="flex gap-2 justify-end">
-              <Button variant="ghost" size="sm" onClick={() => setShowCreateEvent(false)}>
-                {t('personalEvents.form.cancel')}
-              </Button>
-              <Button
-                size="sm"
-                disabled={!newEvent.title || createPersonalEventMutation.isPending}
-                onClick={() => createPersonalEventMutation.mutate(newEvent)}
-              >
-                {createPersonalEventMutation.isPending && (
-                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                )}
-                {t('personalEvents.form.submit')}
-              </Button>
-            </div>
+            </form>
           </CardContent>
         </Card>
       )}
@@ -741,8 +668,16 @@ export default function TimelinePage() {
                               : `${t('personalEvents.eventDate')}: ${formatDate(ev.eventDate)}`}
                           </span>
                         )}
-                        {days !== null && days >= 0 && (
-                          <span className="px-1.5 py-0.5 bg-primary/10 text-primary rounded-full">
+                        {days !== null && (
+                          <span
+                            className={`px-1.5 py-0.5 rounded-full ${
+                              days < 0
+                                ? 'bg-destructive/10 text-destructive'
+                                : days <= 7
+                                  ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                                  : 'bg-primary/10 text-primary'
+                            }`}
+                          >
                             {formatDaysUntil(days)}
                           </span>
                         )}
@@ -757,9 +692,9 @@ export default function TimelinePage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="w-20 h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="w-28 h-2.5 bg-muted rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-primary rounded-full transition-all"
+                          className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
                           style={{ width: `${ev.progress}%` }}
                         />
                       </div>
@@ -774,7 +709,12 @@ export default function TimelinePage() {
 
                   {isExpanded && (
                     <div className="border-t bg-muted/20 p-4">
-                      {tasks.length > 0 ? (
+                      {personalEventDetailLoading ? (
+                        <div className="text-sm text-muted-foreground text-center py-4">
+                          <Loader2 className="h-4 w-4 animate-spin mx-auto mb-2" />
+                          {t('schoolTimelines.loadingTasks')}
+                        </div>
+                      ) : tasks.length > 0 ? (
                         <div className="space-y-2">
                           {tasks.map((task) => (
                             <div
@@ -811,8 +751,7 @@ export default function TimelinePage() {
                         </div>
                       ) : (
                         <div className="text-sm text-muted-foreground text-center py-4">
-                          <Loader2 className="h-4 w-4 animate-spin mx-auto mb-2" />
-                          {t('schoolTimelines.loadingTasks')}
+                          {t('schoolTimelines.noTasks')}
                         </div>
                       )}
 
@@ -821,11 +760,9 @@ export default function TimelinePage() {
                           variant="ghost"
                           size="sm"
                           className="text-destructive hover:text-destructive"
-                          onClick={() => {
-                            if (confirm(t('deleteConfirm'))) {
-                              deletePersonalEventMutation.mutate(ev.id);
-                            }
-                          }}
+                          onClick={() =>
+                            setDeleteTarget({ type: 'personalEvent', id: ev.id, name: ev.title })
+                          }
                         >
                           <Trash2 className="h-4 w-4 mr-1" />
                           {t('personalEvents.delete')}
@@ -861,7 +798,13 @@ export default function TimelinePage() {
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-semibold truncate">{tl.schoolName}</span>
+                        <Link
+                          href={`/schools/${tl.schoolId}`}
+                          className="font-semibold truncate hover:underline hover:text-primary transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {tl.schoolName}
+                        </Link>
                         {getRoundBadge(tl.round)}
                         {getStatusBadge(tl.status)}
                       </div>
@@ -869,8 +812,16 @@ export default function TimelinePage() {
                         <span>
                           {t('schoolTimelines.deadline')}: {formatDate(tl.deadline)}
                         </span>
-                        {days !== null && days >= 0 && (
-                          <span className="px-1.5 py-0.5 bg-primary/10 text-primary rounded-full">
+                        {days !== null && (
+                          <span
+                            className={`px-1.5 py-0.5 rounded-full ${
+                              days < 0
+                                ? 'bg-destructive/10 text-destructive'
+                                : days <= 7
+                                  ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                                  : 'bg-primary/10 text-primary'
+                            }`}
+                          >
                             {formatDaysUntil(days)}
                           </span>
                         )}
@@ -880,9 +831,9 @@ export default function TimelinePage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="w-20 h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="w-28 h-2.5 bg-muted rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-primary rounded-full transition-all"
+                          className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
                           style={{ width: `${tl.progress}%` }}
                         />
                       </div>
@@ -897,7 +848,12 @@ export default function TimelinePage() {
 
                   {isExpanded && (
                     <div className="border-t bg-muted/20 p-4">
-                      {tasks.length > 0 ? (
+                      {timelineDetailLoading ? (
+                        <div className="text-sm text-muted-foreground text-center py-4">
+                          <Loader2 className="h-4 w-4 animate-spin mx-auto mb-2" />
+                          {t('schoolTimelines.loadingTasks')}
+                        </div>
+                      ) : tasks.length > 0 ? (
                         <div className="space-y-2">
                           {tasks.map((task) => (
                             <div
@@ -930,15 +886,14 @@ export default function TimelinePage() {
                                 )}
                               </div>
                               <Badge variant="outline" className="text-xs">
-                                {task.type}
+                                {t(`taskTypes.${task.type}`)}
                               </Badge>
                             </div>
                           ))}
                         </div>
                       ) : (
                         <div className="text-sm text-muted-foreground text-center py-4">
-                          <Loader2 className="h-4 w-4 animate-spin mx-auto mb-2" />
-                          {t('schoolTimelines.loadingTasks')}
+                          {t('schoolTimelines.noTasks')}
                         </div>
                       )}
 
@@ -947,11 +902,9 @@ export default function TimelinePage() {
                           variant="ghost"
                           size="sm"
                           className="text-destructive hover:text-destructive"
-                          onClick={() => {
-                            if (confirm(t('deleteConfirm'))) {
-                              deleteTimelineMutation.mutate(tl.id);
-                            }
-                          }}
+                          onClick={() =>
+                            setDeleteTarget({ type: 'timeline', id: tl.id, name: tl.schoolName })
+                          }
                         >
                           <Trash2 className="h-4 w-4 mr-1" />
                           {t('deleteTimeline')}
@@ -973,6 +926,35 @@ export default function TimelinePage() {
           <span className="text-muted-foreground">{t('dynamicNote')}</span>
         </div>
       )}
+
+      {/* 删除确认对话框 */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('deleteConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('deleteConfirmDesc', { name: deleteTarget?.name || '' })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (!deleteTarget) return;
+                if (deleteTarget.type === 'timeline') {
+                  deleteTimelineMutation.mutate(deleteTarget.id);
+                } else if (deleteTarget.type === 'personalEvent') {
+                  deletePersonalEventMutation.mutate(deleteTarget.id);
+                }
+                setDeleteTarget(null);
+              }}
+            >
+              {t('deleteConfirmAction')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

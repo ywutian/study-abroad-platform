@@ -49,7 +49,7 @@
 echo "COLLEGE_SCORECARD_API_KEY=your_key_here" >> .env
 
 # 2. 运行同步 (管理员)
-curl -X POST http://localhost:3000/api/v1/schools/sync/scorecard?limit=500 \
+curl -X POST http://localhost:4101/api/v1/schools/sync/scorecard?limit=500 \
   -H "Authorization: Bearer <admin_token>"
 ```
 

@@ -82,7 +82,7 @@ const nextConfig: NextConfig = {
     const fallback =
       process.env.NODE_ENV === 'production'
         ? 'https://study-abroad-api-1032896108391.us-central1.run.app'
-        : 'http://localhost:3001';
+        : 'http://localhost:4101';
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || fallback;
     return [
       {
