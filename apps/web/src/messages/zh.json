@@ -3985,6 +3985,7 @@
       "points": "积分管理",
       "content": "内容审核",
       "payments": "支付管理",
+      "analytics": "数据分析",
       "settings": "系统设置"
     },
     "pagination": {
@@ -4036,7 +4037,37 @@
       "setVerified": "设为认证",
       "setUser": "设为普通用户",
       "allRoles": "全部角色",
-      "pageDesc": "管理平台用户和角色"
+      "pageDesc": "管理平台用户和角色",
+      "viewDetail": "查看详情",
+      "exportCsv": "导出 CSV"
+    },
+    "userDetail": {
+      "back": "返回用户列表",
+      "role": "角色",
+      "emailVerified": "邮箱",
+      "verified": "已验证",
+      "unverified": "未验证",
+      "banStatus": "封禁状态",
+      "banned": "已封禁",
+      "active": "正常",
+      "joined": "注册时间",
+      "aiUsage": "AI 使用量",
+      "todayTokens": "今日 Token",
+      "monthTokens": "本月 Token",
+      "todayCost": "今日费用",
+      "monthCost": "本月费用",
+      "remaining": "剩余",
+      "rateLimit": "限流状态",
+      "rateLimited": "已限流",
+      "notLimited": "正常",
+      "resetRateLimit": "重置",
+      "rateLimitReset": "限流已重置",
+      "activity": "用户活动",
+      "cases": "申请案例数",
+      "reviews": "评论数",
+      "locale": "语言",
+      "loadingUsage": "加载使用数据...",
+      "notFound": "用户未找到"
     },
     "reports": {
       "reporter": "举报人",
@@ -4098,11 +4129,12 @@
     },
     "auditLogs": {
       "title": "审计日志",
-      "description": "查看管理员操作记录",
+      "description": "查看管理员操作记录和 AI Agent 审计追踪",
       "filterAction": "操作类型",
       "filterResource": "资源类型",
       "allActions": "全部操作",
       "allResources": "全部资源",
+      "allStatus": "全部状态",
       "timestamp": "时间",
       "action": "操作",
       "resource": "资源",
@@ -4110,9 +4142,18 @@
       "adminId": "管理员",
       "details": "详情",
       "metadata": "详细信息",
+      "status": "状态",
       "resourceReport": "举报",
       "empty": "暂无审计日志",
       "emptyDesc": "还没有管理员操作记录",
+      "adminTab": "管理操作",
+      "agentTab": "AI Agent 日志",
+      "agentOperation": "操作内容",
+      "agentDuration": "耗时",
+      "agentEmpty": "暂无 AI Agent 日志",
+      "agentEmptyDesc": "还没有 AI Agent 审计记录",
+      "startDate": "开始日期",
+      "endDate": "结束日期",
       "actions": {
         "UPDATE_USER_ROLE": "更新角色",
         "DELETE_USER": "删除用户",
@@ -4120,6 +4161,19 @@
         "DELETE_REPORT": "删除举报",
         "VERIFY_USER": "认证用户",
         "BAN_USER": "封禁用户"
+      },
+      "agentActions": {
+        "CHAT_MESSAGE": "聊天消息",
+        "AGENT_DELEGATE": "Agent 委派",
+        "TOOL_CALL": "工具调用",
+        "MEMORY_ACCESS": "记忆访问",
+        "SECURITY_THREAT": "安全威胁",
+        "CONFIG_UPDATE": "配置更新"
+      },
+      "agentStatuses": {
+        "SUCCESS": "成功",
+        "FAILURE": "失败",
+        "DENIED": "拒绝"
       }
     },
     "deadlines": {
@@ -4461,6 +4515,23 @@
       "all": "全部",
       "createdAt": "创建时间"
     },
+    "moderation": {
+      "aiModeration": "AI 审核",
+      "severity": "严重度",
+      "allSeverity": "全部严重度",
+      "allStatus": "全部状态",
+      "unresolved": "未解决",
+      "resolvedStatus": "已解决",
+      "resolved": "事件已解决",
+      "approve": "通过",
+      "reject": "拒绝",
+      "approveTitle": "通过事件",
+      "rejectTitle": "拒绝事件",
+      "reason": "原因",
+      "reasonPlaceholder": "输入原因（可选）...",
+      "action": "操作",
+      "noEvents": "暂无安全事件"
+    },
     "payments": {
       "title": "支付管理",
       "description": "查看支付记录和管理订阅",
@@ -4527,7 +4598,58 @@
       "posts": "帖子",
       "pendingVerifications": "待认证",
       "subscriptions": "订阅",
-      "noTrends": "暂无趋势数据"
+      "noTrends": "暂无趋势数据",
+      "systemHealth": "系统状态",
+      "allOperational": "全部正常",
+      "degraded": "部分降级",
+      "loadingHealth": "加载健康状态...",
+      "recentActivity": "最近操作",
+      "viewAll": "查看全部",
+      "system": "系统",
+      "noActivity": "暂无最近操作"
+    },
+    "analytics": {
+      "title": "数据分析",
+      "description": "系统指标、使用趋势与性能分析",
+      "tabs": {
+        "tokenUsage": "Token 用量",
+        "engagement": "用户参与度",
+        "agentPerformance": "Agent 性能"
+      },
+      "tokenUsage": {
+        "dailyTrend": "每日 Token 用量",
+        "totalTokens": "总 Token 数",
+        "totalCost": "总费用",
+        "totalRequests": "总请求数",
+        "avgTokensPerDay": "日均 Token",
+        "promptTokens": "提示 Token",
+        "completionTokens": "补全 Token",
+        "byModel": "按模型分布",
+        "noData": "暂无 Token 用量数据"
+      },
+      "engagement": {
+        "userTrend": "用户注册趋势",
+        "totalNewUsers": "新增用户总数",
+        "totalPosts": "帖子总数",
+        "totalPayments": "支付总数",
+        "totalRevenue": "总收入",
+        "newUsers": "新用户",
+        "posts": "帖子",
+        "noData": "暂无参与度数据"
+      },
+      "agentPerformance": {
+        "title": "Agent 性能",
+        "agentType": "Agent 类型",
+        "requests": "请求数",
+        "tokens": "Token 数",
+        "cost": "费用",
+        "avgTokens": "平均 Token/请求",
+        "noData": "暂无 Agent 性能数据"
+      },
+      "timeRange": "时间范围",
+      "days7": "7 天",
+      "days30": "30 天",
+      "days90": "90 天"
     },
     "dataQuality": {
       "title": "数据质量",

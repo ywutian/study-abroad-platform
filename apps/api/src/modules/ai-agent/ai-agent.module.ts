@@ -21,9 +21,17 @@ import { PrismaModule } from '../../prisma/prisma.module';
 import { RedisModule } from '../../common/redis/redis.module';
 import { AiModule } from '../ai/ai.module';
 
+// External domain modules (for tool service DI)
+import { PredictionModule } from '../prediction/prediction.module';
+import { AssessmentModule } from '../assessment/assessment.module';
+import { ForumModule } from '../forum/forum.module';
+import { SwipeModule } from '../swipe/swipe.module';
+import { HallModule } from '../hall/hall.module';
+
 // Sub-Modules
 import { AiAgentMemoryModule } from './memory/memory.module';
 import { AiAgentInfraModule } from './infrastructure/infrastructure.module';
+import { LLMProvidersModule } from './providers/provider.module';
 
 // WebSocket Gateway
 import { AiAgentGateway } from './ai-agent.gateway';
@@ -52,6 +60,23 @@ import { TaskQueueService } from './queue/task-queue.service';
 // Web Search
 import { WebSearchService } from './services/web-search.service';
 
+// Tool helpers & domain services
+import {
+  SchoolLookupHelper,
+  ProfileLoaderHelper,
+  ProfileToolsService,
+  SchoolToolsService,
+  EssayToolsService,
+  RecommendationToolsService,
+  PredictionToolsService,
+  CaseToolsService,
+  TimelineToolsService,
+  AssessmentToolsService,
+  ForumToolsService,
+  RankingToolsService,
+  SearchToolsService,
+} from './tools';
+
 // Config validation
 import { ConfigValidatorService } from './config/config-validator.service';
 
@@ -75,6 +100,16 @@ import { AgentSecurityMiddleware } from './middleware/security.middleware';
     RedisModule,
     AiModule,
 
+    // LLM Provider abstraction (global — available to all modules)
+    LLMProvidersModule.forRoot(),
+
+    // External domain modules (for tool service DI — no circular deps)
+    PredictionModule,
+    AssessmentModule,
+    ForumModule,
+    SwipeModule,
+    HallModule,
+
     // Sub-modules (encapsulate memory & infrastructure providers)
     AiAgentMemoryModule,
     AiAgentInfraModule,
@@ -90,6 +125,23 @@ import { AgentSecurityMiddleware } from './middleware/security.middleware';
     TokenTrackerService,
     FallbackService,
     FastRouterService,
+
+    // Tool helpers (shared across domain tool services)
+    SchoolLookupHelper,
+    ProfileLoaderHelper,
+
+    // Domain Tool Services (10 services, replace legacy ToolExecutor)
+    ProfileToolsService,
+    SchoolToolsService,
+    EssayToolsService,
+    RecommendationToolsService,
+    PredictionToolsService,
+    CaseToolsService,
+    TimelineToolsService,
+    AssessmentToolsService,
+    ForumToolsService,
+    RankingToolsService,
+    SearchToolsService,
 
     // Core Agent Services
     LLMService,
@@ -123,9 +175,8 @@ import { AgentSecurityMiddleware } from './middleware/security.middleware';
     RateLimiterService,
     AiAgentGateway,
     WebSearchService,
-    // Re-export sub-modules so consumers can access MemoryManagerService etc.
+    // Re-export MemoryModule (8 external modules import AiAgentMemoryModule directly)
     AiAgentMemoryModule,
-    AiAgentInfraModule,
   ],
 })
 export class AiAgentModule implements OnModuleInit, NestModule {

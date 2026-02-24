@@ -22,6 +22,7 @@ import {
   ShieldCheck,
   CreditCard,
   Settings,
+  TrendingUp,
 } from 'lucide-react';
 
 interface AdminStats {
@@ -30,6 +31,7 @@ interface AdminStats {
   totalCases: number;
   pendingReports: number;
   totalReviews: number;
+  pendingVerifications?: number;
 }
 
 export function AdminSidebar() {
@@ -56,9 +58,15 @@ export function AdminSidebar() {
     { href: '/admin/events', icon: Globe, label: t('sidebar.events') },
     { href: '/admin/essays', icon: PenTool, label: t('sidebar.essays') },
     { href: '/admin/points', icon: Coins, label: t('sidebar.points') },
-    { href: '/admin/content', icon: ShieldCheck, label: t('sidebar.content') },
+    {
+      href: '/admin/content',
+      icon: ShieldCheck,
+      label: t('sidebar.content'),
+      badge: stats?.pendingVerifications,
+    },
     { href: '/admin/payments', icon: CreditCard, label: t('sidebar.payments') },
     { href: '/admin/audit-logs', icon: ScrollText, label: t('sidebar.auditLogs') },
+    { href: '/admin/analytics', icon: TrendingUp, label: t('sidebar.analytics') },
     { href: '/admin/ai-agent', icon: Bot, label: t('sidebar.aiAgent') },
     { href: '/admin/memory', icon: Brain, label: t('sidebar.memory') },
     { href: '/admin/settings', icon: Settings, label: t('sidebar.settings') },

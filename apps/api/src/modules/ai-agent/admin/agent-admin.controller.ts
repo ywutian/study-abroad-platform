@@ -434,6 +434,102 @@ export class AgentAdminController {
   }
 
   /**
+   * 获取每日 Token 使用趋势
+   */
+  @Get('metrics/daily')
+  @ApiOperation({ summary: '获取每日 Token 使用趋势' })
+  async getDailyMetrics(@Query('days') days: number = 30) {
+    const daysCount = Math.min(Math.max(Number(days) || 30, 1), 90);
+    const since = new Date();
+    since.setDate(since.getDate() - daysCount);
+    since.setHours(0, 0, 0, 0);
+
+    const rows = await this.prisma.$queryRaw<
+      Array<{
+        date: string;
+        total_tokens: bigint;
+        prompt_tokens: bigint;
+        completion_tokens: bigint;
+        total_cost: number;
+        request_count: bigint;
+        unique_users: bigint;
+        model: string;
+        agent_type: string | null;
+      }>
+    >`
+      SELECT
+        TO_CHAR("createdAt", 'YYYY-MM-DD') AS date,
+        SUM("totalTokens")::bigint AS total_tokens,
+        SUM("promptTokens")::bigint AS prompt_tokens,
+        SUM("completionTokens")::bigint AS completion_tokens,
+        SUM("cost")::float AS total_cost,
+        COUNT(*)::bigint AS request_count,
+        COUNT(DISTINCT "userId")::bigint AS unique_users,
+        "model",
+        "agentType" AS agent_type
+      FROM "AgentTokenUsage"
+      WHERE "createdAt" >= ${since}
+      GROUP BY date, "model", "agentType"
+      ORDER BY date ASC
+    `;
+
+    // Aggregate into daily summaries
+    const dailyMap = new Map<string, any>();
+    const byModel = new Map<string, number>();
+    const byAgent = new Map<
+      string,
+      { tokens: number; requests: number; cost: number }
+    >();
+
+    for (const row of rows) {
+      const date = row.date;
+      if (!dailyMap.has(date)) {
+        dailyMap.set(date, {
+          date,
+          totalTokens: 0,
+          promptTokens: 0,
+          completionTokens: 0,
+          cost: 0,
+          requests: 0,
+          uniqueUsers: 0,
+        });
+      }
+      const d = dailyMap.get(date);
+      d.totalTokens += Number(row.total_tokens);
+      d.promptTokens += Number(row.prompt_tokens);
+      d.completionTokens += Number(row.completion_tokens);
+      d.cost += row.total_cost;
+      d.requests += Number(row.request_count);
+      d.uniqueUsers = Math.max(d.uniqueUsers, Number(row.unique_users));
+
+      // By model
+      const modelKey = row.model || 'unknown';
+      byModel.set(
+        modelKey,
+        (byModel.get(modelKey) || 0) + Number(row.total_tokens),
+      );
+
+      // By agent type
+      const agentKey = row.agent_type || 'unknown';
+      const existing = byAgent.get(agentKey) || {
+        tokens: 0,
+        requests: 0,
+        cost: 0,
+      };
+      existing.tokens += Number(row.total_tokens);
+      existing.requests += Number(row.request_count);
+      existing.cost += row.total_cost;
+      byAgent.set(agentKey, existing);
+    }
+
+    return {
+      daily: Array.from(dailyMap.values()),
+      byModel: Object.fromEntries(byModel),
+      byAgent: Object.fromEntries(byAgent),
+    };
+  }
+
+  /**
    * 重置指标
    */
   @Delete('metrics')
@@ -532,6 +628,103 @@ export class AgentAdminController {
       },
       timestamp: new Date().toISOString(),
     };
+  }
+
+  // ==================== 安全事件 ====================
+
+  /**
+   * 获取安全事件列表
+   */
+  @Get('security-events')
+  @ApiOperation({ summary: '获取安全事件列表' })
+  async getSecurityEvents(
+    @Query('page') page: number = 1,
+    @Query('pageSize') pageSize: number = 20,
+    @Query('eventType') eventType?: string,
+    @Query('severity') severity?: string,
+    @Query('resolved') resolved?: string,
+  ) {
+    const take = Math.min(Number(pageSize) || 20, 100);
+    const skip = ((Number(page) || 1) - 1) * take;
+
+    const where: any = {};
+    if (eventType) where.eventType = eventType;
+    if (severity) where.severity = severity;
+    if (resolved !== undefined && resolved !== '')
+      where.resolved = resolved === 'true';
+
+    const [data, total] = await Promise.all([
+      this.prisma.agentSecurityEvent.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        take,
+        skip,
+      }),
+      this.prisma.agentSecurityEvent.count({ where }),
+    ]);
+
+    return { data, total, page: Number(page) || 1, pageSize: take };
+  }
+
+  /**
+   * 解决安全事件
+   */
+  @Put('security-events/:id/resolve')
+  @ApiOperation({ summary: '解决安全事件' })
+  async resolveSecurityEvent(
+    @Param('id') id: string,
+    @Body() body: { action: 'approve' | 'reject'; reason?: string },
+  ) {
+    return this.prisma.agentSecurityEvent.update({
+      where: { id },
+      data: {
+        resolved: true,
+        resolvedAt: new Date(),
+        mitigationAction: `${body.action}${body.reason ? `: ${body.reason}` : ''}`,
+      },
+    });
+  }
+
+  // ==================== AI 审计日志 ====================
+
+  /**
+   * 获取 AI Agent 审计日志
+   */
+  @Get('audit-logs')
+  @ApiOperation({ summary: '获取 AI Agent 审计日志' })
+  async getAgentAuditLogs(
+    @Query('page') page: number = 1,
+    @Query('pageSize') pageSize: number = 50,
+    @Query('action') action?: string,
+    @Query('status') status?: string,
+    @Query('userId') userId?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    const take = Math.min(Number(pageSize) || 50, 100);
+    const skip = ((Number(page) || 1) - 1) * take;
+
+    const where: any = {};
+    if (action) where.action = action;
+    if (status) where.status = status;
+    if (userId) where.userId = userId;
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) where.createdAt.gte = new Date(startDate);
+      if (endDate) where.createdAt.lte = new Date(endDate);
+    }
+
+    const [data, total] = await Promise.all([
+      this.prisma.agentAuditLog.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        take,
+        skip,
+      }),
+      this.prisma.agentAuditLog.count({ where }),
+    ]);
+
+    return { data, total, page: Number(page) || 1, pageSize: take };
   }
 
   // ==================== 记忆管理 ====================

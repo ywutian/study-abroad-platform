@@ -1,5 +1,10 @@
 /**
  * Agent 记忆服务 - 管理对话历史和用户上下文
+ *
+ * @deprecated Use MemoryManagerService from the memory sub-module instead.
+ * This service is kept as an in-memory fallback for degradation scenarios
+ * (see OrchestratorService for the fallback pattern). Will be removed once
+ * the enterprise memory system (Redis + PostgreSQL) reaches full reliability.
  */
 
 import { Injectable, Logger } from '@nestjs/common';

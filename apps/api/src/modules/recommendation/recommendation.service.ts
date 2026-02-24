@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AiService } from '../ai/ai.service';
+import { extractJsonFromLlm } from '../ai-agent/tools/helpers/llm-json.helper';
 import { RedisService } from '../../common/redis/redis.service';
 import { MemoryManagerService } from '../ai-agent/memory';
 import { MemoryType, EntityType } from '@prisma/client';
@@ -188,22 +189,7 @@ All text fields must be in English.`;
         { temperature: 0.6, maxTokens: 4000 },
       );
 
-      const jsonMatch = result.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error('Failed to parse AI response: no JSON block found');
-      }
-
-      let parsed: any;
-      try {
-        parsed = JSON.parse(jsonMatch[0]);
-      } catch (parseError) {
-        this.logger.error('AI response JSON parse failed', {
-          userId,
-          rawResponse: result.substring(0, 500),
-          error: parseError instanceof Error ? parseError.message : parseError,
-        });
-        throw new Error('Failed to parse AI response JSON');
-      }
+      const parsed: any = extractJsonFromLlm(result);
 
       // 校验 AI 响应结构
       if (!Array.isArray(parsed.recommendations)) {

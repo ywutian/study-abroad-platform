@@ -29,7 +29,20 @@ import {
   CreditCard,
   ShieldCheck,
   Coins,
+  Activity,
+  CheckCircle2,
+  XCircle,
+  Clock,
 } from 'lucide-react';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 
 interface AdminStats {
   totalUsers: number;
@@ -66,6 +79,31 @@ export default function AdminOverviewPage() {
   const { data: trends } = useQuery({
     queryKey: ['adminTrends'],
     queryFn: () => apiClient.get<TrendData[]>('/admin/stats/trends'),
+  });
+
+  const { data: health } = useQuery({
+    queryKey: ['adminHealth'],
+    queryFn: () =>
+      apiClient.get<{
+        status: string;
+        components: Record<string, { status: string; details?: any }>;
+      }>('/admin/ai-agent/health'),
+    refetchInterval: 30000,
+  });
+
+  const { data: recentActivity } = useQuery({
+    queryKey: ['adminRecentActivity'],
+    queryFn: () =>
+      apiClient.get<{
+        data: Array<{
+          id: string;
+          action: string;
+          resource: string;
+          details?: string;
+          createdAt: string;
+          admin?: { displayName?: string };
+        }>;
+      }>('/admin/audit-logs', { params: { pageSize: '8' } }),
   });
 
   const statCards = stats
@@ -433,32 +471,185 @@ export default function AdminOverviewPage() {
                         </p>
                       </div>
                     </div>
-                    {/* Simple bar chart visualization */}
-                    <div className="flex items-end gap-[2px] h-24 mt-4">
-                      {trends.slice(-30).map((d, i) => {
-                        const max = Math.max(...trends.map((t) => t.newUsers), 1);
-                        const height = (d.newUsers / max) * 100;
-                        return (
-                          <div
-                            key={i}
-                            className="flex-1 bg-blue-500/60 rounded-t-sm hover:bg-blue-500 transition-colors"
-                            style={{ height: `${Math.max(height, 2)}%` }}
-                            title={`${d.date}: ${d.newUsers} ${t('dashboard.newUsers')}`}
+                    <div className="h-[200px] mt-4">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart
+                          data={trends.slice(-30)}
+                          margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
+                        >
+                          <defs>
+                            <linearGradient id="fillUsers" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                              <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                            </linearGradient>
+                            <linearGradient id="fillPosts" x1="0" y1="0" x2="0" y2="1">
+                              <stop
+                                offset="5%"
+                                stopColor="hsl(var(--chart-2, 142 71% 45%))"
+                                stopOpacity={0.3}
+                              />
+                              <stop
+                                offset="95%"
+                                stopColor="hsl(var(--chart-2, 142 71% 45%))"
+                                stopOpacity={0}
+                              />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                          <XAxis
+                            dataKey="date"
+                            tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+                            tickFormatter={(v) => v.slice(5)}
+                            interval="preserveStartEnd"
                           />
-                        );
-                      })}
-                    </div>
-                    <div className="flex justify-between mt-1">
-                      <span className="text-[10px] text-muted-foreground">{trends[0]?.date}</span>
-                      <span className="text-[10px] text-muted-foreground">
-                        {trends[trends.length - 1]?.date}
-                      </span>
+                          <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: 'hsl(var(--popover))',
+                              border: '1px solid hsl(var(--border))',
+                              borderRadius: '8px',
+                              fontSize: 12,
+                              color: 'hsl(var(--popover-foreground))',
+                            }}
+                          />
+                          <Area
+                            type="monotone"
+                            dataKey="newUsers"
+                            name={t('dashboard.newUsers')}
+                            stroke="hsl(var(--primary))"
+                            fill="url(#fillUsers)"
+                            strokeWidth={2}
+                          />
+                          <Area
+                            type="monotone"
+                            dataKey="posts"
+                            name={t('dashboard.posts')}
+                            stroke="hsl(var(--chart-2, 142 71% 45%))"
+                            fill="url(#fillPosts)"
+                            strokeWidth={2}
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </motion.div>
           )}
+
+          {/* Health + Recent Activity */}
+          <div className="grid gap-4 lg:grid-cols-2">
+            {/* System Health */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.05 }}
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Activity className="h-5 w-5" />
+                    {t('dashboard.systemHealth')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {health ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        {health.status === 'healthy' ? (
+                          <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                        ) : (
+                          <XCircle className="h-5 w-5 text-amber-500" />
+                        )}
+                        <span className="font-medium capitalize">{health.status}</span>
+                        <Badge variant={health.status === 'healthy' ? 'success' : 'warning'}>
+                          {health.status === 'healthy'
+                            ? t('dashboard.allOperational')
+                            : t('dashboard.degraded')}
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        {Object.entries(health.components).map(([name, component]) => (
+                          <div
+                            key={name}
+                            className="flex items-center gap-2 rounded-md border px-3 py-2"
+                          >
+                            <div
+                              className={cn(
+                                'h-2 w-2 rounded-full',
+                                component.status === 'healthy' ? 'bg-emerald-500' : 'bg-amber-500'
+                              )}
+                            />
+                            <span className="text-sm capitalize">{name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">{t('dashboard.loadingHealth')}</p>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Recent Activity */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.1 }}
+            >
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Clock className="h-5 w-5" />
+                    {t('dashboard.recentActivity')}
+                  </CardTitle>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link href="/admin/audit-logs">{t('dashboard.viewAll')}</Link>
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  {recentActivity?.data && recentActivity.data.length > 0 ? (
+                    <div className="space-y-2">
+                      {recentActivity.data.slice(0, 6).map((log) => (
+                        <div
+                          key={log.id}
+                          className="flex items-start gap-3 rounded-md border px-3 py-2"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">
+                              <span className="text-muted-foreground">
+                                {log.admin?.displayName || t('dashboard.system')}
+                              </span>{' '}
+                              <Badge variant="outline" className="text-xs mx-1">
+                                {log.action}
+                              </Badge>{' '}
+                              <span className="text-muted-foreground">{log.resource}</span>
+                            </p>
+                            {log.details && (
+                              <p className="text-xs text-muted-foreground truncate mt-0.5">
+                                {log.details}
+                              </p>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                            {new Date(log.createdAt).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      {t('dashboard.noActivity')}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
         </div>
       ) : null}
     </>

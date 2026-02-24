@@ -19,3 +19,6 @@ export * from './fast-router.service';
 
 // 安全管道
 export * from './security-pipeline.service';
+
+// 错误类型
+export * from './errors';

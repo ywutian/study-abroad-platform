@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient, STALE_TIME } from '@/lib/api';
+import { AI_TIMEOUTS } from '@/lib/constants';
 import type { PredictionResponse } from '@/components/features/prediction/types';
 
 // ============================================
@@ -90,7 +91,8 @@ export function usePredictionDashboard() {
 export function useRunPrediction() {
   const queryClient = useQueryClient();
   return useMutation<PredictionResponse, Error, { schoolIds: string[]; forceRefresh?: boolean }>({
-    mutationFn: (dto) => apiClient.post<PredictionResponse>('/predictions', dto),
+    mutationFn: (dto) =>
+      apiClient.post<PredictionResponse>('/predictions', dto, { timeout: AI_TIMEOUTS.AI_REQUEST }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: predictionKeys.all });
     },

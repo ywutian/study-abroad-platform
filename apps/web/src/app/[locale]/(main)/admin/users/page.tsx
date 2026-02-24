@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Link } from '@/lib/i18n/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -57,6 +58,8 @@ import {
   Loader2,
   Ban,
   ShieldOff,
+  Eye,
+  Download,
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -215,6 +218,16 @@ export default function AdminUsersPage() {
               <SelectItem value="ADMIN">{t('roles.admin')}</SelectItem>
             </SelectContent>
           </Select>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              window.open('/api/admin/export/users', '_blank');
+            }}
+          >
+            <Download className="h-4 w-4 mr-1.5" />
+            {t('users.exportCsv')}
+          </Button>
         </div>
 
         {isLoading ? (
@@ -288,6 +301,12 @@ export default function AdminUsersPage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
+                              <DropdownMenuItem asChild>
+                                <Link href={`/admin/users/${u.id}`}>
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  {t('users.viewDetail')}
+                                </Link>
+                              </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() =>
                                   updateUserRoleMutation.mutate({ userId: u.id, role: 'VERIFIED' })

@@ -9,7 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { cn, getSchoolName, getSchoolSubName } from '@/lib/utils';
-import { apiClient, AI_TIMEOUT, STALE_TIME } from '@/lib/api';
+import { apiClient, STALE_TIME } from '@/lib/api';
+import { AI_TIMEOUTS } from '@/lib/constants';
+import { GC_TIME } from '@/lib/constants';
 import {
   Brain,
   Sparkles,
@@ -96,9 +98,11 @@ export function SchoolRecommendation({ className }: SchoolRecommendationProps) {
   const { data, isLoading, refetch, isFetching, error } = useQuery({
     queryKey: ['school-ai-recommendations'],
     queryFn: () =>
-      apiClient.get<RecommendationResponse>('/schools/ai/recommend', { timeout: AI_TIMEOUT }),
+      apiClient.get<RecommendationResponse>('/schools/ai/recommend', {
+        timeout: AI_TIMEOUTS.AI_REQUEST,
+      }),
     staleTime: STALE_TIME.MODERATE,
-    gcTime: 30 * 60 * 1000,
+    gcTime: GC_TIME.SCHOOL_RECOMMENDATION,
     retry: 2,
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });

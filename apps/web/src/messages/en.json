@@ -3990,6 +3990,7 @@
       "points": "Points",
       "content": "Content",
       "payments": "Payments",
+      "analytics": "Analytics",
       "settings": "Settings"
     },
     "pagination": {
@@ -4041,7 +4042,37 @@
       "setVerified": "Set Verified",
       "setUser": "Set User",
       "allRoles": "All Roles",
-      "pageDesc": "Manage platform users and roles"
+      "pageDesc": "Manage platform users and roles",
+      "viewDetail": "View Details",
+      "exportCsv": "Export CSV"
+    },
+    "userDetail": {
+      "back": "Back to Users",
+      "role": "Role",
+      "emailVerified": "Email",
+      "verified": "Verified",
+      "unverified": "Unverified",
+      "banStatus": "Ban Status",
+      "banned": "Banned",
+      "active": "Active",
+      "joined": "Joined",
+      "aiUsage": "AI Usage",
+      "todayTokens": "Today Tokens",
+      "monthTokens": "Month Tokens",
+      "todayCost": "Today Cost",
+      "monthCost": "Month Cost",
+      "remaining": "Remaining",
+      "rateLimit": "Rate Limit",
+      "rateLimited": "Rate Limited",
+      "notLimited": "Normal",
+      "resetRateLimit": "Reset",
+      "rateLimitReset": "Rate limit reset",
+      "activity": "Activity",
+      "cases": "Admission Cases",
+      "reviews": "Reviews Given",
+      "locale": "Language",
+      "loadingUsage": "Loading usage data...",
+      "notFound": "User not found"
     },
     "reports": {
       "reporter": "Reporter",
@@ -4103,11 +4134,12 @@
     },
     "auditLogs": {
       "title": "Audit Logs",
-      "description": "View admin operation logs",
+      "description": "View admin operation logs and AI agent audit trail",
       "filterAction": "Action type",
       "filterResource": "Resource type",
       "allActions": "All Actions",
       "allResources": "All Resources",
+      "allStatus": "All Status",
       "timestamp": "Time",
       "action": "Action",
       "resource": "Resource",
@@ -4115,9 +4147,18 @@
       "adminId": "Admin",
       "details": "Details",
       "metadata": "Details",
+      "status": "Status",
       "resourceReport": "Report",
       "empty": "No Audit Logs",
       "emptyDesc": "No admin operations recorded yet",
+      "adminTab": "Admin Actions",
+      "agentTab": "AI Agent Logs",
+      "agentOperation": "Operation",
+      "agentDuration": "Duration",
+      "agentEmpty": "No AI Agent Logs",
+      "agentEmptyDesc": "No AI agent audit logs recorded yet",
+      "startDate": "Start Date",
+      "endDate": "End Date",
       "actions": {
         "UPDATE_USER_ROLE": "Update Role",
         "DELETE_USER": "Delete User",
@@ -4125,6 +4166,19 @@
         "DELETE_REPORT": "Delete Report",
         "VERIFY_USER": "Verify User",
         "BAN_USER": "Ban User"
+      },
+      "agentActions": {
+        "CHAT_MESSAGE": "Chat Message",
+        "AGENT_DELEGATE": "Agent Delegate",
+        "TOOL_CALL": "Tool Call",
+        "MEMORY_ACCESS": "Memory Access",
+        "SECURITY_THREAT": "Security Threat",
+        "CONFIG_UPDATE": "Config Update"
+      },
+      "agentStatuses": {
+        "SUCCESS": "Success",
+        "FAILURE": "Failure",
+        "DENIED": "Denied"
       }
     },
     "deadlines": {
@@ -4466,6 +4520,23 @@
       "all": "All",
       "createdAt": "Created"
     },
+    "moderation": {
+      "aiModeration": "AI Moderation",
+      "severity": "Severity",
+      "allSeverity": "All Severity",
+      "allStatus": "All Status",
+      "unresolved": "Unresolved",
+      "resolvedStatus": "Resolved",
+      "resolved": "Event resolved",
+      "approve": "Approve",
+      "reject": "Reject",
+      "approveTitle": "Approve Event",
+      "rejectTitle": "Reject Event",
+      "reason": "Reason",
+      "reasonPlaceholder": "Enter reason (optional)...",
+      "action": "Action",
+      "noEvents": "No security events found"
+    },
     "payments": {
       "title": "Payment Management",
       "description": "View payment records and manage subscriptions",
@@ -4532,7 +4603,58 @@
       "posts": "Posts",
       "pendingVerifications": "Pending Verifications",
       "subscriptions": "Subscriptions",
-      "noTrends": "No trend data available"
+      "noTrends": "No trend data available",
+      "systemHealth": "System Health",
+      "allOperational": "All Operational",
+      "degraded": "Degraded",
+      "loadingHealth": "Loading health status...",
+      "recentActivity": "Recent Activity",
+      "viewAll": "View All",
+      "system": "System",
+      "noActivity": "No recent activity"
+    },
+    "analytics": {
+      "title": "Analytics",
+      "description": "System metrics, usage trends, and performance insights",
+      "tabs": {
+        "tokenUsage": "Token Usage",
+        "engagement": "User Engagement",
+        "agentPerformance": "Agent Performance"
+      },
+      "tokenUsage": {
+        "dailyTrend": "Daily Token Usage",
+        "totalTokens": "Total Tokens",
+        "totalCost": "Total Cost",
+        "totalRequests": "Total Requests",
+        "avgTokensPerDay": "Avg Tokens/Day",
+        "promptTokens": "Prompt Tokens",
+        "completionTokens": "Completion Tokens",
+        "byModel": "Token Usage by Model",
+        "noData": "No token usage data available"
+      },
+      "engagement": {
+        "userTrend": "User Registration Trend",
+        "totalNewUsers": "Total New Users",
+        "totalPosts": "Total Posts",
+        "totalPayments": "Total Payments",
+        "totalRevenue": "Total Revenue",
+        "newUsers": "New Users",
+        "posts": "Posts",
+        "noData": "No engagement data available"
+      },
+      "agentPerformance": {
+        "title": "Agent Performance",
+        "agentType": "Agent Type",
+        "requests": "Requests",
+        "tokens": "Tokens",
+        "cost": "Cost",
+        "avgTokens": "Avg Tokens/Req",
+        "noData": "No agent performance data available"
+      },
+      "timeRange": "Time Range",
+      "days7": "7 Days",
+      "days30": "30 Days",
+      "days90": "90 Days"
     },
     "dataQuality": {
       "title": "Data Quality",

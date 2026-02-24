@@ -1,16 +1,18 @@
 /**
- * 工具执行器服务 - 适配层
+ * Tool Executor Service — Registry-based dispatch
  *
- * 封装旧架构的 ToolExecutor，添加：
- * - 统一的错误处理
- * - 执行时间追踪
- * - Metrics 埋点
- * - 超时保护
- * - 重试机制
+ * Collects handlers from all domain tool services on init,
+ * then dispatches tool calls through a Map<string, handler> lookup.
+ *
+ * Features:
+ * - Unified error handling
+ * - Execution time tracking
+ * - Metrics instrumentation
+ * - Resilience (retry for retryable tools)
+ * - Special delegation tool handling
  */
 
-import { Injectable, Logger, Optional } from '@nestjs/common';
-import { ToolExecutor as LegacyToolExecutor } from '../../ai/agent/tools.executor';
+import { Injectable, Logger, Optional, OnModuleInit } from '@nestjs/common';
 import {
   ToolCall,
   UserContext,
@@ -20,8 +22,25 @@ import {
 import { ToolName } from '../config/tools.config';
 import { MetricsService } from '../infrastructure/observability/metrics.service';
 import { ResilienceService } from './resilience.service';
+import {
+  IToolHandlerProvider,
+  ToolHandler,
+} from '../tools/tool-handler.interface';
 
-// 工具重试配置
+// Domain tool services
+import { ProfileToolsService } from '../tools/profile-tools.service';
+import { SchoolToolsService } from '../tools/school-tools.service';
+import { EssayToolsService } from '../tools/essay-tools.service';
+import { RecommendationToolsService } from '../tools/recommendation-tools.service';
+import { PredictionToolsService } from '../tools/prediction-tools.service';
+import { CaseToolsService } from '../tools/case-tools.service';
+import { TimelineToolsService } from '../tools/timeline-tools.service';
+import { AssessmentToolsService } from '../tools/assessment-tools.service';
+import { ForumToolsService } from '../tools/forum-tools.service';
+import { RankingToolsService } from '../tools/ranking-tools.service';
+import { SearchToolsService } from '../tools/search-tools.service';
+
+// Retry config
 const TOOL_RETRY_CONFIG = {
   maxAttempts: 2,
   baseDelayMs: 500,
@@ -37,7 +56,7 @@ const TOOL_RETRY_CONFIG = {
   ],
 };
 
-// 不需要重试的工具（幂等性问题）
+// Non-retryable tools (write operations / non-idempotent)
 const NON_RETRYABLE_TOOLS = new Set([
   ToolName.UPDATE_PROFILE,
   ToolName.POLISH_ESSAY,
@@ -45,17 +64,59 @@ const NON_RETRYABLE_TOOLS = new Set([
 ]);
 
 @Injectable()
-export class ToolExecutorService {
+export class ToolExecutorService implements OnModuleInit {
   private readonly logger = new Logger(ToolExecutorService.name);
+  private readonly handlers = new Map<string, ToolHandler>();
 
   constructor(
-    private legacyExecutor: LegacyToolExecutor,
+    // Domain tool services
+    private profileTools: ProfileToolsService,
+    private schoolTools: SchoolToolsService,
+    private essayTools: EssayToolsService,
+    private recommendationTools: RecommendationToolsService,
+    private predictionTools: PredictionToolsService,
+    private caseTools: CaseToolsService,
+    private timelineTools: TimelineToolsService,
+    private assessmentTools: AssessmentToolsService,
+    private forumTools: ForumToolsService,
+    private rankingTools: RankingToolsService,
+    private searchTools: SearchToolsService,
+    // Infrastructure
     @Optional() private metrics?: MetricsService,
     @Optional() private resilience?: ResilienceService,
   ) {}
 
+  onModuleInit() {
+    const providers: IToolHandlerProvider[] = [
+      this.profileTools,
+      this.schoolTools,
+      this.essayTools,
+      this.recommendationTools,
+      this.predictionTools,
+      this.caseTools,
+      this.timelineTools,
+      this.assessmentTools,
+      this.forumTools,
+      this.rankingTools,
+      this.searchTools,
+    ];
+
+    for (const provider of providers) {
+      for (const [name, handler] of provider.getHandlers()) {
+        if (this.handlers.has(name)) {
+          this.logger.warn(`Duplicate tool handler registration: ${name}`);
+        }
+        this.handlers.set(name, handler);
+      }
+    }
+
+    this.logger.log(
+      `Tool registry initialized: ${this.handlers.size} tools from ${providers.length} providers`,
+    );
+  }
+
   /**
-   * 执行工具调用（带重试）
+   * Execute a tool call with resilience protection.
    */
   async execute(
     toolCall: ToolCall,
@@ -71,55 +132,51 @@ export class ToolExecutorService {
     });
 
     try {
-      // 特殊处理委派工具（无需重试）
+      // Special: delegation tool (no retry)
       if (toolCall.name === ToolName.DELEGATE_TO_AGENT) {
         return this.handleDelegation(toolCall, startTime);
       }
 
-      // 转换上下文格式（含 locale）
+      // Look up handler
+      const handler = this.handlers.get(toolCall.name);
+      if (!handler) {
+        return {
+          success: false,
+          error: `Unknown tool: ${toolCall.name}`,
+          duration: Date.now() - startTime,
+        };
+      }
+
+      // Convert context for tools that use it
       const legacyContext = this.convertToLegacyContext(context, locale);
 
-      // 执行函数
+      // Execute function
       const executeCall = async () => {
-        return this.legacyExecutor.execute(
-          toolCall.name,
-          toolCall.arguments,
-          userId,
-          legacyContext,
-        );
+        return handler(toolCall.arguments, userId, legacyContext, locale);
       };
 
-      // 判断是否需要重试
+      // Retry decision
       const shouldRetry =
         this.resilience && !NON_RETRYABLE_TOOLS.has(toolCall.name as ToolName);
 
-      // 调用执行器（带重试或直接执行）
       const result = shouldRetry
         ? await this.resilience!.withRetry(executeCall, TOOL_RETRY_CONFIG)
         : await executeCall();
 
       const duration = Date.now() - startTime;
 
-      // 记录 Metrics
+      // Record metrics
       this.metrics?.recordToolLatency(toolCall.name, duration);
 
-      // 检查执行结果
-      if (result.error) {
+      // Check for error in result
+      if (result?.error && !result?.success) {
         this.logger.warn(
           `Tool ${toolCall.name} returned error: ${result.error}`,
         );
-        return {
-          success: false,
-          error: result.error,
-          duration,
-        };
+        return { success: false, error: result.error, duration };
       }
 
-      return {
-        success: true,
-        result: result.result,
-        duration,
-      };
+      return { success: true, result, duration };
     } catch (error) {
       const duration = Date.now() - startTime;
       const errorMessage =
@@ -132,16 +189,12 @@ export class ToolExecutorService {
 
       this.metrics?.recordError('tool_execution_failed', toolCall.name);
 
-      return {
-        success: false,
-        error: errorMessage,
-        duration,
-      };
+      return { success: false, error: errorMessage, duration };
     }
   }
 
   /**
-   * 批量执行工具调用
+   * Execute multiple tool calls sequentially.
    */
   async executeAll(
     toolCalls: ToolCall[],
@@ -151,7 +204,6 @@ export class ToolExecutorService {
   ): Promise<Map<string, ToolExecutionResult>> {
     const results = new Map<string, ToolExecutionResult>();
 
-    // 串行执行，确保顺序和状态一致性
     for (const toolCall of toolCalls) {
       const result = await this.execute(toolCall, userId, context, locale);
       results.set(toolCall.id, result);
@@ -161,7 +213,7 @@ export class ToolExecutorService {
   }
 
   /**
-   * 处理委派工具 - 返回特殊结果让 AgentRunner 处理
+   * Handle delegation tool — returns special result for AgentRunner.
    */
   private handleDelegation(
     toolCall: ToolCall,
@@ -174,7 +226,6 @@ export class ToolExecutorService {
     };
     const { agent, task, context: delegationContext } = args;
 
-    // 验证目标 Agent
     const validAgents = ['essay', 'school', 'profile', 'timeline'];
     if (!agent || !validAgents.includes(agent)) {
       return {
@@ -197,7 +248,7 @@ export class ToolExecutorService {
   }
 
   /**
-   * 转换为旧架构上下文格式
+   * Convert UserContext to legacy context format for tool consumption.
    */
   private convertToLegacyContext(context: UserContext, locale = 'zh'): any {
     return {
@@ -223,20 +274,24 @@ export class ToolExecutorService {
   }
 
   /**
-   * 检查工具是否存在
+   * Check if a tool is registered.
    */
   isToolAvailable(toolName: string): boolean {
-    return Object.values(ToolName).includes(toolName as ToolName);
+    return this.handlers.has(toolName);
   }
 
   /**
-   * 获取工具执行统计
+   * Get tool execution statistics.
    */
-  getStats(): { totalCalls: number; avgDuration: number } {
-    // 可以从 MetricsService 获取，这里返回简单统计
+  getStats(): {
+    totalCalls: number;
+    avgDuration: number;
+    registeredTools: number;
+  } {
     return {
       totalCalls: 0,
       avgDuration: 0,
+      registeredTools: this.handlers.size,
     };
   }
 }

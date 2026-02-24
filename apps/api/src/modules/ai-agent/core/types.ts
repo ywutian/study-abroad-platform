@@ -5,6 +5,7 @@
  */
 
 import { AgentType, ToolCall, Message } from '../types';
+import { ActionButton } from '@study-abroad/shared';
 
 // ==================== LLM 相关类型 ====================
 
@@ -167,13 +168,9 @@ export interface StreamEvent {
 }
 
 /**
- * 动作建议
+ * 动作建议 — 使用 shared ActionButton，保留别名以兼容现有引用
  */
-export interface ActionSuggestion {
-  label: string;
-  action: string;
-  variant?: 'default' | 'outline' | 'ghost';
-}
+export type ActionSuggestion = ActionButton;
 
 /**
  * 工具执行结果

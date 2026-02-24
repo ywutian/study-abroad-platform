@@ -40,7 +40,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { apiClient, AI_TIMEOUT } from '@/lib/api';
+import { apiClient } from '@/lib/api';
+import { AI_TIMEOUTS } from '@/lib/constants';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { cn } from '@/lib/utils';
 import { LoadingState } from '@/components/ui/loading-state';
@@ -196,7 +197,7 @@ export default function EssaysPage() {
   // AI Review
   const reviewMutation = useMutation({
     mutationFn: (data: { prompt: string; content: string }) =>
-      apiClient.post<EssayReview>('/ai/review-essay', data, { timeout: AI_TIMEOUT }),
+      apiClient.post<EssayReview>('/ai/review-essay', data, { timeout: AI_TIMEOUTS.AI_REQUEST }),
     onSuccess: (data) => {
       setReviewResult(data);
       setIsReviewOpen(true);
@@ -206,7 +207,7 @@ export default function EssaysPage() {
   // AI 润色
   const polishMutation = useMutation({
     mutationFn: (data: { content: string; style?: 'formal' | 'vivid' | 'concise' }) =>
-      apiClient.post<PolishResult>('/ai/polish-essay', data, { timeout: AI_TIMEOUT }),
+      apiClient.post<PolishResult>('/ai/polish-essay', data, { timeout: AI_TIMEOUTS.AI_REQUEST }),
     onSuccess: (data) => {
       setPolishResult(data);
       setIsPolishOpen(true);
@@ -216,7 +217,9 @@ export default function EssaysPage() {
   // AI 改写
   const rewriteMutation = useMutation({
     mutationFn: (data: { paragraph: string; instruction?: string }) =>
-      apiClient.post<RewriteResult>('/ai/rewrite-paragraph', data, { timeout: AI_TIMEOUT }),
+      apiClient.post<RewriteResult>('/ai/rewrite-paragraph', data, {
+        timeout: AI_TIMEOUTS.AI_REQUEST,
+      }),
     onSuccess: (data) => {
       setRewriteResult(data);
       setIsRewriteOpen(true);
@@ -226,7 +229,9 @@ export default function EssaysPage() {
   // AI 续写
   const continueMutation = useMutation({
     mutationFn: (data: { content: string; prompt?: string; direction?: string }) =>
-      apiClient.post<ContinueResult>('/ai/continue-writing', data, { timeout: AI_TIMEOUT }),
+      apiClient.post<ContinueResult>('/ai/continue-writing', data, {
+        timeout: AI_TIMEOUTS.AI_REQUEST,
+      }),
     onSuccess: (data) => {
       setContinueResult(data);
       setIsContinueOpen(true);
@@ -236,7 +241,9 @@ export default function EssaysPage() {
   // AI 生成开头
   const openingMutation = useMutation({
     mutationFn: (data: { prompt: string; background?: string }) =>
-      apiClient.post<OpeningResult>('/ai/generate-opening', data, { timeout: AI_TIMEOUT }),
+      apiClient.post<OpeningResult>('/ai/generate-opening', data, {
+        timeout: AI_TIMEOUTS.AI_REQUEST,
+      }),
     onSuccess: (data) => {
       setOpeningResult(data);
       setIsOpeningOpen(true);

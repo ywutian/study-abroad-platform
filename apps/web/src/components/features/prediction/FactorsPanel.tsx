@@ -41,7 +41,7 @@ export const FactorsPanel = memo(function FactorsPanel({ factors }: FactorsPanel
                   <span className="font-medium text-sm">{factor.name}</span>
                 </div>
                 <Badge variant="outline" className={cn('text-xs', config.text)}>
-                  {(factor.weight * 100).toFixed(0)}%
+                  {((factor.weight ?? 0) * 100).toFixed(0)}%
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground line-clamp-2">{factor.detail}</p>

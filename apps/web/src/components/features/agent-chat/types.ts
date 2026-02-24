@@ -1,8 +1,13 @@
 /**
  * Agent 聊天类型定义
+ *
+ * 基础类型从 @study-abroad/shared 导入，
+ * 本文件仅保留前端 UI 专用的类型和常量。
  */
 
-export type AgentType = 'orchestrator' | 'essay' | 'school' | 'profile' | 'timeline';
+export { AgentType } from '@study-abroad/shared';
+export type { StreamEvent, ActionButton, AgentResponse } from '@study-abroad/shared';
+import { AgentType } from '@study-abroad/shared';
 
 export interface ChatMessage {
   id: string;
@@ -17,33 +22,7 @@ export interface ChatMessage {
 export interface ToolCallInfo {
   name: string;
   status: 'running' | 'completed' | 'error';
-  result?: any;
-}
-
-export interface StreamEvent {
-  type: 'start' | 'content' | 'tool_start' | 'tool_end' | 'agent_switch' | 'done' | 'error';
-  agent?: AgentType;
-  conversationId?: string; // 对话 ID，用于保持上下文
-  title?: string; // 对话标题（新对话时在 start 事件中返回）
-  content?: string;
-  tool?: string;
-  toolResult?: any;
-  response?: AgentResponse;
-  error?: string;
-}
-
-export interface AgentResponse {
-  message: string;
-  agentType: AgentType;
-  toolsUsed?: string[];
-  suggestions?: string[];
-  actions?: ActionButton[];
-}
-
-export interface ActionButton {
-  label: string;
-  action: string;
-  variant?: 'default' | 'outline' | 'ghost';
+  result?: unknown;
 }
 
 export interface QuickAction {

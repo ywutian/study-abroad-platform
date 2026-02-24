@@ -1,0 +1,399 @@
+/**
+ * OpenAI-compatible LLM provider.
+ *
+ * Wraps the OpenAI Chat Completions API behind the ILLMProvider interface.
+ * Also compatible with Azure OpenAI, DeepSeek, and other OpenAI-format APIs.
+ */
+
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import type { ILLMProvider } from './llm-provider.interface';
+import {
+  LLMChatRequest,
+  LLMChatResponse,
+  LLMStreamChunk,
+  LLMMessage,
+  LLMToolCall,
+  LLMTokenUsage,
+  LLMErrorCode,
+  LLMProviderError,
+} from './llm-provider.types';
+
+// Context windows for known models
+const CONTEXT_WINDOWS: Record<string, number> = {
+  'gpt-4o': 128_000,
+  'gpt-4o-mini': 128_000,
+  'gpt-4-turbo': 128_000,
+  'gpt-4': 8_192,
+  'gpt-3.5-turbo': 16_385,
+  'deepseek-chat': 64_000,
+  'deepseek-reasoner': 64_000,
+};
+
+@Injectable()
+export class OpenAIProvider implements ILLMProvider {
+  readonly providerId = 'openai';
+  private readonly logger = new Logger(OpenAIProvider.name);
+  private readonly apiKey: string;
+  private readonly baseUrl: string;
+
+  constructor(private configService: ConfigService) {
+    this.apiKey = this.configService.get<string>('OPENAI_API_KEY') || '';
+    this.baseUrl =
+      this.configService.get<string>('OPENAI_BASE_URL') ||
+      'https://api.openai.com/v1';
+  }
+
+  supportsModel(model: string): boolean {
+    return (
+      model.startsWith('gpt-') ||
+      model.startsWith('deepseek-') ||
+      model.startsWith('o1') ||
+      model.startsWith('o3') ||
+      model.startsWith('o4')
+    );
+  }
+
+  getContextWindow(model: string): number | undefined {
+    return CONTEXT_WINDOWS[model];
+  }
+
+  async chat(request: LLMChatRequest): Promise<LLMChatResponse> {
+    const body = this.buildRequestBody(request, false);
+
+    const response = await this.doFetch(body);
+    const data = await response.json();
+
+    return this.parseResponse(data);
+  }
+
+  async *chatStream(request: LLMChatRequest): AsyncGenerator<LLMStreamChunk> {
+    const body = this.buildRequestBody(request, true);
+
+    let response: Response;
+    try {
+      response = await this.doFetch(body);
+    } catch (error) {
+      yield {
+        type: 'error',
+        error: error instanceof Error ? error.message : 'Fetch failed',
+      };
+      return;
+    }
+
+    const reader = response.body?.getReader();
+    if (!reader) {
+      yield { type: 'error', error: 'No response body' };
+      return;
+    }
+
+    const decoder = new TextDecoder();
+    let buffer = '';
+    // Accumulate tool call arguments across chunks
+    const toolCalls = new Map<
+      number,
+      { id?: string; name?: string; argumentsStr: string }
+    >();
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const data = line.slice(6);
+
+          if (data === '[DONE]') {
+            // Emit accumulated tool calls (deduplicated by name)
+            const seenNames = new Set<string>();
+            for (const tc of toolCalls.values()) {
+              if (tc.id && tc.name && !seenNames.has(tc.name)) {
+                seenNames.add(tc.name);
+                yield {
+                  type: 'tool_call_end',
+                  toolCall: {
+                    id: tc.id,
+                    name: tc.name,
+                    arguments: safeParseJSON(tc.argumentsStr),
+                  },
+                };
+              }
+            }
+            yield { type: 'done' };
+            return;
+          }
+
+          try {
+            const json = JSON.parse(data);
+            const delta = json.choices?.[0]?.delta;
+
+            if (delta?.content) {
+              yield { type: 'content', content: delta.content };
+            }
+
+            if (delta?.tool_calls) {
+              for (const tc of delta.tool_calls) {
+                const idx = tc.index;
+                const existing = toolCalls.get(idx) || {
+                  argumentsStr: '',
+                };
+                if (tc.id) existing.id = tc.id;
+                if (tc.function?.name) existing.name = tc.function.name;
+                if (tc.function?.arguments) {
+                  existing.argumentsStr += tc.function.arguments;
+                }
+                toolCalls.set(idx, existing);
+              }
+            }
+          } catch {
+            // Skip malformed SSE lines
+          }
+        }
+      }
+    } catch (error) {
+      yield {
+        type: 'error',
+        error: error instanceof Error ? error.message : 'Stream failed',
+      };
+    }
+  }
+
+  // ── Private helpers ──────────────────────────────────────
+
+  private buildRequestBody(
+    request: LLMChatRequest,
+    stream: boolean,
+  ): Record<string, unknown> {
+    const messages = this.convertMessages(request);
+    const body: Record<string, unknown> = {
+      model: request.model,
+      messages,
+      temperature: request.temperature ?? 0.7,
+      max_tokens: request.maxTokens ?? 4000,
+      stream,
+    };
+
+    if (request.tools?.length) {
+      body.tools = request.tools.map((t) => ({
+        type: 'function',
+        function: {
+          name: t.name,
+          description: t.description,
+          parameters: t.parameters,
+        },
+      }));
+      body.tool_choice =
+        typeof request.toolChoice === 'object'
+          ? { type: 'function', function: { name: request.toolChoice.name } }
+          : request.toolChoice || 'auto';
+    }
+
+    // Pass through provider-specific options
+    if (request.providerOptions) {
+      Object.assign(body, request.providerOptions);
+    }
+
+    return body;
+  }
+
+  /**
+   * Convert provider-neutral messages to OpenAI format.
+   * Handles strict ordering: assistant(tool_calls) -> tool -> tool -> ...
+   */
+  private convertMessages(
+    request: LLMChatRequest,
+  ): Array<Record<string, unknown>> {
+    const result: Array<Record<string, unknown>> = [
+      { role: 'system', content: request.systemPrompt },
+    ];
+
+    // Pre-index tool messages by toolCallId
+    const toolMsgByCallId = new Map<string, LLMMessage>();
+    for (const msg of request.messages) {
+      if (msg.role === 'tool' && msg.toolCallId) {
+        toolMsgByCallId.set(msg.toolCallId, msg);
+      }
+    }
+
+    for (const msg of request.messages) {
+      if (msg.role === 'user') {
+        result.push({ role: 'user', content: msg.content });
+      } else if (msg.role === 'assistant') {
+        if (msg.toolCalls?.length) {
+          result.push({
+            role: 'assistant',
+            content: msg.content || null,
+            tool_calls: msg.toolCalls.map((tc) => ({
+              id: tc.id,
+              type: 'function',
+              function: {
+                name: tc.name,
+                arguments: JSON.stringify(tc.arguments),
+              },
+            })),
+          });
+          // Immediately append corresponding tool results
+          for (const tc of msg.toolCalls) {
+            const toolMsg = toolMsgByCallId.get(tc.id);
+            if (toolMsg) {
+              result.push({
+                role: 'tool',
+                content: toolMsg.content,
+                tool_call_id: tc.id,
+              });
+            }
+          }
+        } else {
+          result.push({ role: 'assistant', content: msg.content });
+        }
+      }
+      // Standalone tool messages are already appended above
+    }
+
+    return result;
+  }
+
+  private async doFetch(body: Record<string, unknown>): Promise<Response> {
+    if (!this.apiKey) {
+      throw new LLMProviderError(
+        'OpenAI API key not configured',
+        LLMErrorCode.AUTHENTICATION,
+        false,
+      );
+    }
+
+    const response = await fetch(`${this.baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.apiKey}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      this.logger.error(`OpenAI API error ${response.status}: ${errorText}`);
+      throw this.classifyError(response.status, errorText);
+    }
+
+    return response;
+  }
+
+  private parseResponse(data: Record<string, unknown>): LLMChatResponse {
+    const choices = data.choices as Array<Record<string, unknown>>;
+    const choice = choices?.[0];
+    const message = choice?.message as Record<string, unknown>;
+
+    // Parse tool calls with deduplication
+    let toolCalls: LLMToolCall[] | undefined;
+    const rawToolCalls = message?.tool_calls as
+      | Array<Record<string, unknown>>
+      | undefined;
+    if (rawToolCalls?.length) {
+      const seen = new Set<string>();
+      toolCalls = [];
+      for (const tc of rawToolCalls) {
+        const fn = tc.function as Record<string, string>;
+        if (!seen.has(fn.name)) {
+          seen.add(fn.name);
+          toolCalls.push({
+            id: tc.id as string,
+            name: fn.name,
+            arguments: safeParseJSON(fn.arguments),
+          });
+        }
+      }
+    }
+
+    // Parse usage
+    let usage: LLMTokenUsage | undefined;
+    const rawUsage = data.usage as Record<string, number> | undefined;
+    if (rawUsage) {
+      usage = {
+        promptTokens: rawUsage.prompt_tokens || 0,
+        completionTokens: rawUsage.completion_tokens || 0,
+        totalTokens: rawUsage.total_tokens || 0,
+      };
+    }
+
+    const finishReason = choice?.finish_reason as string;
+
+    return {
+      content: (message?.content as string) || '',
+      toolCalls,
+      finishReason:
+        finishReason === 'tool_calls'
+          ? 'tool_calls'
+          : finishReason === 'length'
+            ? 'length'
+            : finishReason === 'content_filter'
+              ? 'content_filter'
+              : 'stop',
+      usage,
+    };
+  }
+
+  private classifyError(status: number, body: string): LLMProviderError {
+    const isContextLength =
+      body.includes('context_length') ||
+      body.includes('maximum context length');
+
+    if (status === 401 || status === 403) {
+      return new LLMProviderError(
+        `Authentication failed: ${status}`,
+        LLMErrorCode.AUTHENTICATION,
+        false,
+        status,
+      );
+    }
+    if (status === 429) {
+      return new LLMProviderError(
+        'Rate limited',
+        LLMErrorCode.RATE_LIMIT,
+        true,
+        status,
+      );
+    }
+    if (status === 400 && isContextLength) {
+      return new LLMProviderError(
+        'Context length exceeded',
+        LLMErrorCode.CONTEXT_LENGTH,
+        false,
+        status,
+      );
+    }
+    if (status >= 500) {
+      return new LLMProviderError(
+        `Server error: ${status}`,
+        LLMErrorCode.SERVER_ERROR,
+        true,
+        status,
+      );
+    }
+    return new LLMProviderError(
+      `Request failed: ${status}`,
+      LLMErrorCode.INVALID_REQUEST,
+      false,
+      status,
+    );
+  }
+}
+
+// ── Utility ────────────────────────────────────────────────
+
+function safeParseJSON(
+  str: string,
+  fallback: Record<string, unknown> = {},
+): Record<string, unknown> {
+  try {
+    return JSON.parse(str);
+  } catch {
+    return fallback;
+  }
+}

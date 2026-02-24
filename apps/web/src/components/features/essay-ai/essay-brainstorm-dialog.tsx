@@ -21,6 +21,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Lightbulb, Sparkles, ChevronRight, Copy, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
+import { AI_TIMEOUTS } from '@/lib/constants';
+import { AI_POINT_COSTS } from '@/lib/constants';
 
 interface EssayBrainstormDialogProps {
   open: boolean;
@@ -57,12 +59,16 @@ export const EssayBrainstormDialog: React.FC<EssayBrainstormDialogProps> = ({
 
   const brainstormMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiClient.post<BrainstormResult>('/essay-ai/brainstorm', {
-        prompt,
-        background: background || undefined,
-        school: school || undefined,
-        major: major || undefined,
-      });
+      const response = await apiClient.post<BrainstormResult>(
+        '/essay-ai/brainstorm',
+        {
+          prompt,
+          background: background || undefined,
+          school: school || undefined,
+          major: major || undefined,
+        },
+        { timeout: AI_TIMEOUTS.AI_REQUEST }
+      );
       return response;
     },
     onSuccess: (data) => {
@@ -149,7 +155,7 @@ export const EssayBrainstormDialog: React.FC<EssayBrainstormDialogProps> = ({
             </div>
 
             <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <span>{t('brainstorm.cost', { points: 15 })}</span>
+              <span>{t('brainstorm.cost', { points: AI_POINT_COSTS.ESSAY_BRAINSTORM })}</span>
             </div>
           </div>
         ) : (

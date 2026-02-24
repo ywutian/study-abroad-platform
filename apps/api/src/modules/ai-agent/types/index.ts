@@ -6,21 +6,8 @@
 
 // ==================== 核心枚举 ====================
 
-export enum AgentType {
-  ORCHESTRATOR = 'orchestrator', // 协调者
-  ESSAY = 'essay', // 文书专家
-  SCHOOL = 'school', // 选校专家
-  PROFILE = 'profile', // 档案分析
-  TIMELINE = 'timeline', // 时间规划
-}
-
-export enum MemoryType {
-  FACT = 'FACT', // 事实信息
-  PREFERENCE = 'PREFERENCE', // 用户偏好
-  DECISION = 'DECISION', // 决策记录
-  SUMMARY = 'SUMMARY', // 对话摘要
-  FEEDBACK = 'FEEDBACK', // 用户反馈
-}
+// AgentType & MemoryType: single source of truth in @study-abroad/shared
+export { AgentType, MemoryType } from '@study-abroad/shared';
 
 export enum EntityType {
   SCHOOL = 'SCHOOL', // 学校
@@ -202,11 +189,8 @@ export interface AgentResponse {
   data?: AgentResponseData;
 }
 
-export interface ActionButton {
-  label: string;
-  action: string; // 'navigate:/path' | 'agent:command' | 'copy:text'
-  variant?: 'default' | 'outline' | 'ghost';
-}
+// ActionButton: single source of truth in @study-abroad/shared
+export { ActionButton } from '@study-abroad/shared';
 
 // ==================== Agent 配置 ====================
 

@@ -9,6 +9,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient, STALE_TIME } from '@/lib/api';
+import { AI_TIMEOUTS } from '@/lib/constants';
 import type { RecommendationResult, RecommendationPreflight } from '@study-abroad/shared';
 
 // ============================================
@@ -50,7 +51,9 @@ export function useGenerateRecommendation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (dto: GenerateRecommendationDto) =>
-      apiClient.post<RecommendationResult>('/recommendations', dto),
+      apiClient.post<RecommendationResult>('/recommendations', dto, {
+        timeout: AI_TIMEOUTS.AI_REQUEST,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: recommendationKeys.history(),

@@ -136,8 +136,7 @@ export class SchoolDataMerger {
       if (currentValue != null && currentValue !== '') {
         // Field already has a value — check provenance priority
         if (fieldProv) {
-          const existingPriority =
-            SOURCE_PRIORITY[fieldProv.source as DataSource] ?? 99;
+          const existingPriority = SOURCE_PRIORITY[fieldProv.source] ?? 99;
           const incomingPriority = SOURCE_PRIORITY[source];
 
           // Lower-priority source cannot overwrite higher-priority source...

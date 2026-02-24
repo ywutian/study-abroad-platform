@@ -25,6 +25,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Sparkles, ArrowRight, Check, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
+import { AI_TIMEOUTS } from '@/lib/constants';
+import { AI_POINT_COSTS } from '@/lib/constants';
 
 interface EssayPolishDialogProps {
   open: boolean;
@@ -63,10 +65,14 @@ export const EssayPolishDialog: React.FC<EssayPolishDialogProps> = ({
 
   const polishMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiClient.post<PolishResult>('/essay-ai/polish', {
-        essayId,
-        style,
-      });
+      const response = await apiClient.post<PolishResult>(
+        '/essay-ai/polish',
+        {
+          essayId,
+          style,
+        },
+        { timeout: AI_TIMEOUTS.AI_REQUEST }
+      );
       return response;
     },
     onSuccess: (data) => {
@@ -132,7 +138,7 @@ export const EssayPolishDialog: React.FC<EssayPolishDialogProps> = ({
             </div>
 
             <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <span>{t('polish.cost', { points: 20 })}</span>
+              <span>{t('polish.cost', { points: AI_POINT_COSTS.ESSAY_POLISH })}</span>
               <span>
                 {essayContent.length} {t('characters')}
               </span>

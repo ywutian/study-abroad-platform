@@ -53,6 +53,7 @@ import {
   EyeOff,
   ArrowLeft,
 } from 'lucide-react';
+import { AiModerationTab } from './_components/ai-moderation-tab';
 
 // Types
 interface ForumPost {
@@ -247,6 +248,7 @@ export default function AdminContentPage() {
           <TabsTrigger value="forum">{t('contentMod.forum')}</TabsTrigger>
           <TabsTrigger value="chat">{t('contentMod.chat')}</TabsTrigger>
           <TabsTrigger value="reviews">{t('contentMod.reviews')}</TabsTrigger>
+          <TabsTrigger value="aiModeration">{t('moderation.aiModeration')}</TabsTrigger>
         </TabsList>
 
         {/* Forum Tab */}
@@ -641,6 +643,11 @@ export default function AdminContentPage() {
               description={t('contentMod.noReviewsDesc')}
             />
           )}
+        </TabsContent>
+
+        {/* AI Moderation Tab */}
+        <TabsContent value="aiModeration" className="space-y-4">
+          <AiModerationTab />
         </TabsContent>
       </Tabs>
 

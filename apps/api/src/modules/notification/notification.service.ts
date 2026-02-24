@@ -30,6 +30,9 @@ export enum NotificationType {
   // 提醒类
   DEADLINE_REMINDER = 'DEADLINE_REMINDER',
   PROFILE_INCOMPLETE = 'PROFILE_INCOMPLETE',
+
+  // 管理员广播
+  SYSTEM_BROADCAST = 'SYSTEM_BROADCAST',
 }
 
 export interface Notification {

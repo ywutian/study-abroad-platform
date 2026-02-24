@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AiService } from '../ai/ai.service';
+import { extractJsonFromLlm } from '../ai-agent/tools/helpers/llm-json.helper';
 import { MemoryType } from '@prisma/client';
 import {
   EssayPolishRequestDto,
@@ -201,12 +202,7 @@ All text fields must be in English.`;
         { temperature: 0.5, maxTokens: 2000 },
       );
 
-      const jsonMatch = result.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error('Failed to parse AI response');
-      }
-
-      const parsed = JSON.parse(jsonMatch[0]);
+      const parsed = extractJsonFromLlm(result);
 
       const aiResult = await this.prisma.essayAIResult.create({
         data: {
@@ -449,15 +445,10 @@ All text fields must be in English.`;
         { temperature: 0.8, maxTokens: 2000 },
       );
 
-      const jsonMatch = result.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error('Failed to parse AI response');
-      }
-
-      const parsed = JSON.parse(jsonMatch[0]);
+      const parsed = extractJsonFromLlm(result);
 
       const response = {
-        ideas: parsed.ideas || [],
+        ideas: Array.isArray(parsed.ideas) ? parsed.ideas : [],
         overallAdvice: parsed.overallAdvice || '',
         tokenUsed: this.estimateTokens(userContent + result),
       };

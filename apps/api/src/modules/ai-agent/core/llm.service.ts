@@ -1,27 +1,31 @@
 /**
- * LLM 服务 - 封装 OpenAI API 调用（支持流式输出）
+ * LLM 服务 - Provider-neutral LLM access layer
  *
- * 集成弹性服务：重试、熔断、超时、Token 追踪
+ * Delegates to ILLMProvider for vendor-specific API calls.
+ * Adds resilience (retry, circuit breaker, timeout) and token tracking.
  */
 
-import { Injectable, Logger, Optional } from '@nestjs/common';
+import { Injectable, Inject, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { AgentType, Message, ToolCall, ToolDefinition } from '../types';
-import { toOpenAIFormat } from '../config/tools.config';
+import { AgentType, Message, ToolDefinition } from '../types';
+import {
+  ILLMProvider,
+  LLM_PROVIDER_TOKEN,
+} from '../providers/llm-provider.interface';
+import {
+  LLMMessage,
+  LLMToolDefinition,
+  LLMChatRequest,
+  LLMChatResponse,
+  LLMStreamChunk,
+} from '../providers/llm-provider.types';
 import {
   ResilienceService,
   CircuitOpenError,
   TimeoutError,
 } from './resilience.service';
 import { TokenTrackerService, TokenUsage } from './token-tracker.service';
-import {
-  ChatCompletionRequest,
-  ChatCompletionResponse,
-  ChatMessage,
-  OpenAIToolCall,
-  parseToolArguments,
-  safeParseJSON,
-} from './types';
+import { ToolCall } from '../types';
 
 export interface LLMResponse {
   content: string;
@@ -36,10 +40,10 @@ export interface LLMOptions {
   maxTokens?: number;
   tools?: ToolDefinition[];
   stream?: boolean;
-  userId?: string; // 用于 Token 追踪
-  conversationId?: string; // 用于 Token 追踪
-  agentType?: string; // 用于 Token 追踪
-  timeoutMs?: number; // 自定义超时
+  userId?: string;
+  conversationId?: string;
+  agentType?: string;
+  timeoutMs?: number;
 }
 
 export interface StreamChunk {
@@ -76,97 +80,47 @@ const LLM_CONFIG = {
 @Injectable()
 export class LLMService {
   private readonly logger = new Logger(LLMService.name);
-  private readonly apiKey: string;
-  private readonly baseUrl: string;
   private readonly defaultModel: string;
 
   constructor(
     private configService: ConfigService,
+    @Inject(LLM_PROVIDER_TOKEN) private provider: ILLMProvider,
     @Optional() private resilience?: ResilienceService,
     @Optional() private tokenTracker?: TokenTrackerService,
   ) {
-    this.apiKey = this.configService.get<string>('OPENAI_API_KEY') || '';
-    this.baseUrl =
-      this.configService.get<string>('OPENAI_BASE_URL') ||
-      'https://api.openai.com/v1';
     this.defaultModel =
       this.configService.get<string>('OPENAI_MODEL') || 'gpt-4o-mini';
   }
 
   /**
-   * Send a non-streaming chat completion request to the OpenAI-compatible API.
-   *
-   * When a {@link ResilienceService} is available, the call is wrapped with
-   * retry (exponential backoff), circuit breaker, and timeout protection.
-   * Token usage is tracked via {@link TokenTrackerService} when a userId is provided.
-   *
-   * @param systemPrompt - The system-level instruction prompt
-   * @param messages - Conversation message history
-   * @param options - LLM call options (model, temperature, maxTokens, tools, timeout, etc.)
-   * @returns Parsed LLM response including content, optional tool calls, finish reason, and token usage
-   * @throws {Error} When the API key is not configured
-   * @throws {Error} When the API returns a non-OK HTTP status
-   * @throws {CircuitOpenError} When the circuit breaker is open for the LLM service
-   * @throws {TimeoutError} When the request exceeds the configured timeout
-   */
-  /**
-   * 调用 LLM（带弹性保护）
+   * Non-streaming LLM call with resilience protection.
    */
   async call(
     systemPrompt: string,
     messages: Message[],
     options: LLMOptions = {},
   ): Promise<LLMResponse> {
-    if (!this.apiKey) {
-      this.logger.error('OpenAI API key not configured');
-      throw new Error('OpenAI API key not configured');
-    }
-
     const model = options.model || this.defaultModel;
     const timeoutMs = options.timeoutMs || LLM_CONFIG.defaultTimeoutMs;
 
     this.logger.log(
-      `LLM call started: model=${model}, messages=${messages.length}, timeout=${timeoutMs}ms`,
+      `LLM call started: provider=${this.provider.providerId}, model=${model}, messages=${messages.length}, timeout=${timeoutMs}ms`,
     );
 
-    // 使用弹性服务包装调用
     const executeCall = async (): Promise<LLMResponse> => {
-      const openaiMessages = this.convertMessages(systemPrompt, messages);
-      const tools = options.tools ? toOpenAIFormat(options.tools) : undefined;
+      const request = this.buildRequest(systemPrompt, messages, options, model);
+      const response = await this.provider.chat(request);
+      const result = this.toInternalResponse(response);
 
-      const body: ChatCompletionRequest = {
-        model,
-        messages: openaiMessages,
-        temperature: options.temperature ?? 0.7,
-        max_tokens: options.maxTokens ?? 4000,
-      };
-
-      if (tools && tools.length > 0) {
-        body.tools = tools as ChatCompletionRequest['tools'];
-        body.tool_choice = 'auto';
-      }
-
-      const response = await fetch(`${this.baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        const error = await response.text();
-        this.logger.error(`LLM API error: ${error}`);
-        throw new Error(`LLM API error: ${response.status} - ${error}`);
-      }
-
-      const data = await response.json();
-      const result = this.parseResponse(data);
-
-      // Token 追踪
-      if (this.tokenTracker && options.userId) {
-        const usage = this.tokenTracker.parseUsageFromResponse(data, model);
+      // Token tracking
+      if (this.tokenTracker && options.userId && response.usage) {
+        const usage: TokenUsage = {
+          promptTokens: response.usage.promptTokens,
+          completionTokens: response.usage.completionTokens,
+          totalTokens: response.usage.totalTokens,
+          model,
+          estimatedCost: 0,
+        };
         result.usage = usage;
 
         await this.tokenTracker.trackUsage(options.userId, usage, {
@@ -178,7 +132,7 @@ export class LLMService {
       return result;
     };
 
-    // 如果有弹性服务，使用完整保护
+    // With resilience: retry + circuit breaker + timeout
     if (this.resilience) {
       return this.resilience.execute('llm', executeCall, {
         retry: LLM_CONFIG.retryConfig,
@@ -187,17 +141,38 @@ export class LLMService {
       });
     }
 
-    // 无弹性服务，直接调用
     return executeCall();
   }
 
   /**
-   * Check the health status of the LLM service, including circuit breaker state.
+   * Streaming LLM call.
    *
-   * @returns Object indicating whether the service is healthy and the current circuit state
+   * Adapts provider StreamChunk format to internal StreamChunk format
+   * for backward compatibility with OrchestratorService and AgentRunnerService.
    */
+  async *callStream(
+    systemPrompt: string,
+    messages: Message[],
+    options: LLMOptions = {},
+  ): AsyncGenerator<StreamChunk> {
+    const model = options.model || this.defaultModel;
+    const request = this.buildRequest(systemPrompt, messages, options, model);
+
+    try {
+      for await (const chunk of this.provider.chatStream(request)) {
+        yield this.adaptStreamChunk(chunk);
+      }
+    } catch (error) {
+      this.logger.error('LLM stream failed', error);
+      yield {
+        type: 'error',
+        error: error instanceof Error ? error.message : 'Stream failed',
+      };
+    }
+  }
+
   /**
-   * 获取 LLM 服务状态
+   * Get LLM service health status.
    */
   async getServiceStatus(): Promise<{
     isHealthy: boolean;
@@ -213,311 +188,84 @@ export class LLMService {
     return { isHealthy: true };
   }
 
-  /**
-   * Convert internal {@link Message} objects to OpenAI-compatible chat messages.
-   *
-   * Handles the strict ordering requirements of the OpenAI API:
-   * - `tool` messages must immediately follow their parent `assistant` message
-   *   that contains the corresponding `tool_calls`
-   * - The sequence must be: assistant (with tool_calls) -> tool -> tool -> ... -> user/assistant
-   *
-   * Algorithm:
-   * 1. Pre-index all tool messages by their `toolCallId`
-   * 2. Iterate messages in order; when an assistant message with tool_calls is
-   *    encountered, immediately append the corresponding tool result messages
-   * 3. Standalone tool messages are skipped (already inserted above)
-   *
-   * @param systemPrompt - The system prompt to prepend
-   * @param messages - Internal message array
-   * @returns Array of OpenAI-compatible ChatMessage objects
-   */
-  /**
-   * 转换消息格式
-   *
-   * 注意：OpenAI API 要求 tool 消息必须紧跟在包含 tool_calls 的 assistant 消息之后
-   * 顺序必须是：assistant (with tool_calls) -> tool -> tool -> ... -> user/assistant
-   */
-  private convertMessages(
+  // ── Private helpers ──────────────────────────────────────
+
+  private buildRequest(
     systemPrompt: string,
     messages: Message[],
-  ): ChatMessage[] {
-    const result: ChatMessage[] = [{ role: 'system', content: systemPrompt }];
-
-    // 跟踪已经添加的 assistant 消息的 tool_call_ids
-    // 只有在 assistant 消息添加后，对应的 tool 消息才能添加
-    const activatedToolCallIds = new Set<string>();
-
-    // 收集所有 tool 消息，按 tool_call_id 分组
-    const toolMessages = new Map<string, Message>();
-    for (const msg of messages) {
-      if (msg.role === 'tool' && msg.toolCallId) {
-        toolMessages.set(msg.toolCallId, msg);
-      }
-    }
-
-    for (const msg of messages) {
-      if (msg.role === 'user') {
-        result.push({
-          role: 'user',
-          content: msg.content,
-        });
-      } else if (msg.role === 'assistant') {
-        if (msg.toolCalls?.length) {
-          // Assistant 消息带 tool_calls
-          result.push({
-            role: 'assistant',
-            content: msg.content || null,
-            tool_calls: msg.toolCalls.map((tc) => ({
-              id: tc.id,
-              type: 'function',
-              function: {
-                name: tc.name,
-                arguments: JSON.stringify(tc.arguments),
-              },
-            })),
-          });
-
-          // 激活这些 tool_call_ids，并立即添加对应的 tool 消息
-          for (const tc of msg.toolCalls) {
-            activatedToolCallIds.add(tc.id);
-            const toolMsg = toolMessages.get(tc.id);
-            if (toolMsg) {
-              result.push({
-                role: 'tool',
-                content: toolMsg.content,
-                tool_call_id: tc.id,
-              });
-            }
-          }
-        } else {
-          // 普通 assistant 消息
-          result.push({
-            role: 'assistant',
-            content: msg.content,
-          });
-        }
-      }
-      // 跳过独立的 tool 消息（已在 assistant 消息处理时添加）
-      // 跳过 system 消息（已在开头添加）
-    }
-
-    return result;
-  }
-
-  /**
-   * Parse a raw OpenAI chat completion response into a structured {@link LLMResponse}.
-   *
-   * Extracts the message content, finish reason, and tool calls (if any).
-   * Tool calls are deduplicated by name, keeping only the first occurrence
-   * of each tool to prevent redundant executions.
-   *
-   * @param data - The raw API response object
-   * @returns Parsed LLM response with content, tool calls, and finish reason
-   */
-  /**
-   * 解析响应
-   */
-  private parseResponse(data: ChatCompletionResponse): LLMResponse {
-    const choice = data.choices[0];
-    const message = choice.message;
-
-    // 解析工具调用并去重（同名工具只保留第一个）
-    let toolCalls = message.tool_calls?.map((tc: OpenAIToolCall) => ({
-      id: tc.id,
-      name: tc.function.name,
-      arguments: parseToolArguments(tc.function.arguments),
+    options: LLMOptions,
+    model: string,
+  ): LLMChatRequest {
+    const llmMessages: LLMMessage[] = messages.map((msg) => ({
+      role: msg.role,
+      content: msg.content,
+      toolCalls: msg.toolCalls?.map((tc) => ({
+        id: tc.id || '',
+        name: tc.name,
+        arguments: tc.arguments || {},
+      })),
+      toolCallId: msg.toolCallId,
     }));
 
-    // 去重：按工具名去重，保留第一个调用
-    if (toolCalls && toolCalls.length > 1) {
-      const seen = new Set<string>();
-      const originalCount = toolCalls.length;
-      toolCalls = toolCalls.filter((tc) => {
-        if (seen.has(tc.name)) {
-          return false;
-        }
-        seen.add(tc.name);
-        return true;
-      });
-      if (toolCalls.length < originalCount) {
-        this.logger.warn(
-          `Deduplicated tool calls: ${originalCount} -> ${toolCalls.length}`,
-        );
-      }
-    }
+    const tools: LLMToolDefinition[] | undefined = options.tools?.map((t) => ({
+      name: t.name,
+      description: t.description,
+      parameters: t.parameters,
+    }));
 
     return {
-      content: message.content || '',
-      toolCalls,
+      systemPrompt,
+      messages: llmMessages,
+      model,
+      temperature: options.temperature,
+      maxTokens: options.maxTokens,
+      tools,
+      toolChoice: tools?.length ? 'auto' : undefined,
+    };
+  }
+
+  private toInternalResponse(response: LLMChatResponse): LLMResponse {
+    return {
+      content: response.content,
+      toolCalls: response.toolCalls?.map((tc) => ({
+        id: tc.id,
+        name: tc.name,
+        arguments: tc.arguments,
+      })),
       finishReason:
-        choice.finish_reason === 'tool_calls'
+        response.finishReason === 'tool_calls'
           ? 'tool_calls'
-          : choice.finish_reason === 'length'
+          : response.finishReason === 'length'
             ? 'length'
             : 'stop',
     };
   }
 
   /**
-   * Send a streaming chat completion request to the OpenAI-compatible API.
-   *
-   * Reads the SSE (Server-Sent Events) response stream and yields
-   * {@link StreamChunk} objects:
-   * - `content`: incremental text delta
-   * - `tool_call`: completed tool call (emitted at stream end after argument assembly)
-   * - `done`: stream completed successfully
-   * - `error`: an error occurred
-   *
-   * Tool call arguments are accumulated across multiple SSE chunks and parsed
-   * only when the `[DONE]` sentinel is received. Tool calls are deduplicated
-   * by name, keeping the first occurrence.
-   *
-   * @param systemPrompt - The system-level instruction prompt
-   * @param messages - Conversation message history
-   * @param options - LLM call options (model, temperature, maxTokens, tools, etc.)
-   * @returns An async generator of StreamChunk objects
+   * Adapt provider stream chunk format to internal StreamChunk format.
    */
-  /**
-   * 流式调用 LLM
-   */
-  async *callStream(
-    systemPrompt: string,
-    messages: Message[],
-    options: LLMOptions = {},
-  ): AsyncGenerator<StreamChunk> {
-    if (!this.apiKey) {
-      yield { type: 'error', error: 'OpenAI API key not configured' };
-      return;
-    }
-
-    const openaiMessages = this.convertMessages(systemPrompt, messages);
-    const tools = options.tools ? toOpenAIFormat(options.tools) : undefined;
-
-    const body: ChatCompletionRequest = {
-      model: options.model || this.defaultModel,
-      messages: openaiMessages,
-      temperature: options.temperature ?? 0.7,
-      max_tokens: options.maxTokens ?? 4000,
-      stream: true,
-    };
-
-    if (tools && tools.length > 0) {
-      body.tools = tools as ChatCompletionRequest['tools'];
-      body.tool_choice = 'auto';
-    }
-
-    try {
-      const response = await fetch(`${this.baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        const error = await response.text();
-        this.logger.error(`LLM API error: ${error}`);
-        yield { type: 'error', error: `API error: ${response.status}` };
-        return;
-      }
-
-      const reader = response.body?.getReader();
-      if (!reader) {
-        yield { type: 'error', error: 'No response body' };
-        return;
-      }
-
-      const decoder = new TextDecoder();
-      let buffer = '';
-      // 存储工具调用的原始字符串，最后一起解析
-      const toolCalls: Map<
-        number,
-        { id?: string; name?: string; argumentsStr: string }
-      > = new Map();
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue;
-          const data = line.slice(6);
-          if (data === '[DONE]') {
-            // 解析并返回完成的工具调用（按工具名去重，保留第一个）
-            const seenToolNames = new Set<string>();
-            const allToolCalls = Array.from(toolCalls.values());
-            const originalCount = allToolCalls.filter(
-              (tc) => tc.id && tc.name,
-            ).length;
-
-            for (const tc of allToolCalls) {
-              if (tc.id && tc.name) {
-                if (seenToolNames.has(tc.name)) {
-                  continue; // 跳过同名重复调用
-                }
-                seenToolNames.add(tc.name);
-                const parsedArgs = safeParseJSON(tc.argumentsStr, {});
-                yield {
-                  type: 'tool_call',
-                  toolCall: {
-                    id: tc.id,
-                    name: tc.name,
-                    arguments: parsedArgs,
-                  },
-                };
+  private adaptStreamChunk(chunk: LLMStreamChunk): StreamChunk {
+    switch (chunk.type) {
+      case 'content':
+        return { type: 'content', content: chunk.content };
+      case 'tool_call_end':
+        return {
+          type: 'tool_call',
+          toolCall: chunk.toolCall
+            ? {
+                id: chunk.toolCall.id,
+                name: chunk.toolCall.name,
+                arguments: chunk.toolCall.arguments,
               }
-            }
-
-            if (seenToolNames.size < originalCount) {
-              this.logger.warn(
-                `Stream deduplicated tool calls: ${originalCount} -> ${seenToolNames.size}`,
-              );
-            }
-
-            yield { type: 'done' };
-            return;
-          }
-
-          try {
-            const json = JSON.parse(data);
-            const delta = json.choices?.[0]?.delta;
-
-            if (delta?.content) {
-              yield { type: 'content', content: delta.content };
-            }
-
-            if (delta?.tool_calls) {
-              for (const tc of delta.tool_calls) {
-                const idx = tc.index;
-                const existing = toolCalls.get(idx) || { argumentsStr: '' };
-
-                if (tc.id) existing.id = tc.id;
-                if (tc.function?.name) existing.name = tc.function.name;
-                // 累积参数字符串，不立即解析
-                if (tc.function?.arguments) {
-                  existing.argumentsStr += tc.function.arguments;
-                }
-
-                toolCalls.set(idx, existing);
-              }
-            }
-          } catch {
-            // 忽略解析错误
-          }
-        }
-      }
-    } catch (error) {
-      this.logger.error('LLM stream failed', error);
-      yield {
-        type: 'error',
-        error: error instanceof Error ? error.message : 'Stream failed',
-      };
+            : undefined,
+        };
+      case 'done':
+        return { type: 'done' };
+      case 'error':
+        return { type: 'error', error: chunk.error };
+      // tool_call_start and tool_call_delta are internal to provider; skip
+      default:
+        return { type: 'content' };
     }
   }
 }

@@ -203,7 +203,6 @@ class ApiClient {
         return await makeRequest();
       } catch (error: unknown) {
         if (i < retries && error instanceof Error && error.message.includes('fetch')) {
-          console.warn(`Request to ${endpoint} failed, retrying...`);
           await new Promise((resolve) => setTimeout(resolve, 1000 * (i + 1)));
           continue;
         }
@@ -290,11 +289,5 @@ class ApiClient {
 
 export const apiClient = new ApiClient(RESOLVED_API_URL, API_VERSION);
 
-export const AI_TIMEOUT = 60_000;
-
-export const STALE_TIME = {
-  STATIC: 30 * 60 * 1000, // 30min — school details
-  MODERATE: 5 * 60 * 1000, // 5min  — lists, profile, AI analysis
-  DYNAMIC: 60 * 1000, // 1min  — forum, notifications
-  REALTIME: 0, // 0     — chat
-} as const;
+// Re-export from centralized constants for backward compatibility
+export { AI_TIMEOUTS, STALE_TIME } from '@/lib/constants';

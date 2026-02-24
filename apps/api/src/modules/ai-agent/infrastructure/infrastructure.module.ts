@@ -26,9 +26,6 @@ import { PrometheusMetricsService } from './observability/prometheus-metrics.ser
 // Logging
 import { StructuredLoggerService } from './logging/structured-logger.service';
 
-// Alerting
-import { AlertChannelService } from './alerting';
-
 // Config
 import { AgentConfigService } from './config/config.service';
 
@@ -51,11 +48,9 @@ import { AgentConfigService } from './config/config.service';
     // Logging
     StructuredLoggerService,
 
-    // Alerting
-    AlertChannelService,
-
     // Config
     AgentConfigService,
+    // Note: AlertChannelService provided globally by AgentSecurityModule
   ],
   exports: [
     MemoryStorage,
@@ -64,7 +59,6 @@ import { AgentConfigService } from './config/config.service';
     OpenTelemetryService,
     PrometheusMetricsService,
     StructuredLoggerService,
-    AlertChannelService,
     AgentConfigService,
   ],
 })

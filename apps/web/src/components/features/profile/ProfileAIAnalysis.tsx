@@ -9,7 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { apiClient, STALE_TIME, AI_TIMEOUT } from '@/lib/api';
+import { apiClient, STALE_TIME } from '@/lib/api';
+import { AI_TIMEOUTS } from '@/lib/constants';
+import { GC_TIME } from '@/lib/constants';
 import {
   Brain,
   Sparkles,
@@ -28,35 +30,7 @@ import {
   Clock,
   Zap,
 } from 'lucide-react';
-
-type SectionStatus = 'green' | 'yellow' | 'red';
-
-interface SectionAnalysis {
-  status: SectionStatus;
-  score: number;
-  feedback: string;
-  highlights?: string[];
-  improvements?: string[];
-}
-
-interface AIAnalysisResult {
-  sections: {
-    academic: SectionAnalysis;
-    testScores: SectionAnalysis;
-    activities: SectionAnalysis;
-    awards: SectionAnalysis;
-  };
-  overallScore: number;
-  tier: 'top10' | 'top30' | 'top50' | 'top100' | 'other';
-  suggestions: {
-    majors: string[];
-    competitions: string[];
-    activities: string[];
-    summerPrograms: string[];
-    timeline: string[];
-  };
-  summary: string;
-}
+import type { SectionStatus, SectionAnalysis, AIAnalysisResult } from '@study-abroad/shared';
 
 const STATUS_STYLES = {
   green: {
@@ -134,9 +108,11 @@ export function ProfileAIAnalysis({ className, compact = false }: ProfileAIAnaly
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['profile-ai-analysis'],
     queryFn: () =>
-      apiClient.get<AIAnalysisResult>('/profiles/me/ai-analysis', { timeout: AI_TIMEOUT }),
+      apiClient.get<AIAnalysisResult>('/profiles/me/ai-analysis', {
+        timeout: AI_TIMEOUTS.AI_REQUEST,
+      }),
     staleTime: STALE_TIME.MODERATE,
-    gcTime: 10 * 60 * 1000,
+    gcTime: GC_TIME.AI_ANALYSIS,
   });
 
   if (isLoading) {

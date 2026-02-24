@@ -7,6 +7,7 @@ import {
   Body,
   Param,
   Query,
+  Res,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
@@ -14,6 +15,11 @@ import { Roles, CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { Role, GlobalEventCategory } from '@prisma/client';
 import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
+import {
+  NotificationService,
+  NotificationType,
+} from '../notification/notification.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import {
   UpdateReportDto,
   UpdateUserRoleDto,
@@ -25,6 +31,7 @@ import {
   UpdateGlobalEventDto,
   BanUserDto,
 } from './dto';
+import type { Response } from 'express';
 
 @ApiTags('admin')
 @ApiBearerAuth()
@@ -32,7 +39,11 @@ import {
 @Controller('admin')
 @Roles(Role.ADMIN)
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly notificationService: NotificationService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   // Stats
   @Get('stats')
@@ -86,6 +97,32 @@ export class AdminController {
   async getUsers(@Query() query: UserQueryDto) {
     const { search, role, page = 1, pageSize = 20 } = query;
     return this.adminService.getUsers(search, role, page, pageSize);
+  }
+
+  @Get('users/:id')
+  @ApiOperation({ summary: '获取用户详情' })
+  async getUser(@Param('id') id: string) {
+    return this.prisma.user.findUniqueOrThrow({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        displayName: true,
+        role: true,
+        emailVerified: true,
+        isBanned: true,
+        bannedUntil: true,
+        banReason: true,
+        createdAt: true,
+        locale: true,
+        _count: {
+          select: {
+            admissionCases: true,
+            reviewsGiven: true,
+          },
+        },
+      },
+    });
   }
 
   @Put('users/:id/role')
@@ -228,5 +265,150 @@ export class AdminController {
   async deleteGlobalEvent(@Param('id') id: string) {
     await this.adminService.deleteGlobalEvent(id);
     return { message: 'Event deleted' };
+  }
+
+  // ============ Broadcast Notifications ============
+
+  @Post('notifications/broadcast')
+  @ApiOperation({ summary: '广播通知' })
+  async broadcastNotification(
+    @Body()
+    body: {
+      title: string;
+      content: string;
+      audience: 'ALL' | 'VERIFIED' | 'ADMIN';
+    },
+  ) {
+    const roleFilter: any = {};
+    if (body.audience === 'VERIFIED')
+      roleFilter.role = { in: [Role.VERIFIED, Role.ADMIN] };
+    if (body.audience === 'ADMIN') roleFilter.role = Role.ADMIN;
+
+    const users = await this.prisma.user.findMany({
+      where: { ...roleFilter, isBanned: false },
+      select: { id: true },
+    });
+
+    let sent = 0;
+    for (const user of users) {
+      await this.notificationService.createNotification(
+        user.id,
+        NotificationType.SYSTEM_BROADCAST,
+        {
+          customTitle: body.title,
+          customContent: body.content,
+        },
+      );
+      sent++;
+    }
+
+    return { sent, audience: body.audience };
+  }
+
+  // ============ CSV Export ============
+
+  @Get('export/:resource')
+  @ApiOperation({ summary: 'CSV 数据导出' })
+  async exportCsv(@Param('resource') resource: string, @Res() res: Response) {
+    let rows: string[][] = [];
+    let headers: string[] = [];
+
+    switch (resource) {
+      case 'users': {
+        headers = ['ID', 'Email', 'Role', 'Verified', 'Banned', 'Created'];
+        const users = await this.prisma.user.findMany({
+          select: {
+            id: true,
+            email: true,
+            role: true,
+            emailVerified: true,
+            isBanned: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 10000,
+        });
+        rows = users.map((u) => [
+          u.id,
+          u.email,
+          u.role,
+          String(u.emailVerified),
+          String(u.isBanned),
+          u.createdAt.toISOString(),
+        ]);
+        break;
+      }
+      case 'payments': {
+        headers = ['ID', 'User ID', 'Amount', 'Currency', 'Status', 'Created'];
+        const payments = await this.prisma.payment.findMany({
+          select: {
+            id: true,
+            userId: true,
+            amount: true,
+            currency: true,
+            status: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 10000,
+        });
+        rows = payments.map((p) => [
+          p.id,
+          p.userId,
+          String(p.amount),
+          p.currency,
+          p.status,
+          p.createdAt.toISOString(),
+        ]);
+        break;
+      }
+      case 'audit-logs': {
+        headers = [
+          'ID',
+          'Admin ID',
+          'Action',
+          'Resource',
+          'Resource ID',
+          'Created',
+        ];
+        const logs = await this.prisma.adminAuditLog.findMany({
+          select: {
+            id: true,
+            userId: true,
+            action: true,
+            resource: true,
+            resourceId: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 10000,
+        });
+        rows = logs.map((l) => [
+          l.id,
+          l.userId || '',
+          l.action,
+          l.resource,
+          l.resourceId || '',
+          l.createdAt.toISOString(),
+        ]);
+        break;
+      }
+      default:
+        res.status(400).json({ message: `Unknown resource: ${resource}` });
+        return;
+    }
+
+    const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const csv = [
+      headers.join(','),
+      ...rows.map((r) => r.map(escape).join(',')),
+    ].join('\n');
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${resource}-${new Date().toISOString().slice(0, 10)}.csv"`,
+    );
+    res.send(csv);
   }
 }

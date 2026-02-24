@@ -42,7 +42,10 @@ import {
   ActionSuggestion,
   PendingToolCall,
 } from './types';
+import { StreamEvent } from '@study-abroad/shared';
 import { randomUUID } from 'crypto';
+
+export type { StreamEvent };
 
 // 辅助函数：创建完整 Message 对象
 function createMsg(partial: Omit<Message, 'id' | 'timestamp'>): Message {
@@ -50,32 +53,6 @@ function createMsg(partial: Omit<Message, 'id' | 'timestamp'>): Message {
     id: randomUUID(),
     timestamp: new Date(),
     ...partial,
-  };
-}
-
-export interface StreamEvent {
-  type:
-    | 'start'
-    | 'content'
-    | 'tool_start'
-    | 'tool_end'
-    | 'agent_switch'
-    | 'done'
-    | 'error';
-  agent?: AgentType;
-  conversationId?: string;
-  content?: string;
-  tool?: string;
-  toolResult?: ToolExecutionResult;
-  response?: AgentResponse;
-  error?: string;
-  /** 对话标题（新对话时在 start 事件中返回） */
-  title?: string;
-  /** 检索到的相关记忆 */
-  memoryContext?: {
-    recentMemories: number;
-    relevantFacts: number;
-    entities: string[];
   };
 }
 

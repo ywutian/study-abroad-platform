@@ -12,6 +12,8 @@ import { Progress } from '@/components/ui/progress';
 import { Loader2, Star, ThumbsUp, ThumbsDown, Lightbulb, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
+import { AI_TIMEOUTS } from '@/lib/constants';
+import { AI_POINT_COSTS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
 interface EssayReviewPanelProps {
@@ -58,11 +60,15 @@ export const EssayReviewPanel: React.FC<EssayReviewPanelProps> = ({ essayId, cla
 
   const reviewMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiClient.post<ReviewResult>('/essay-ai/review', {
-        essayId,
-        schoolName: schoolName || undefined,
-        major: major || undefined,
-      });
+      const response = await apiClient.post<ReviewResult>(
+        '/essay-ai/review',
+        {
+          essayId,
+          schoolName: schoolName || undefined,
+          major: major || undefined,
+        },
+        { timeout: AI_TIMEOUTS.AI_REQUEST }
+      );
       return response;
     },
     onSuccess: (data) => {
@@ -213,7 +219,7 @@ export const EssayReviewPanel: React.FC<EssayReviewPanelProps> = ({ essayId, cla
         </div>
 
         <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>{t('review.cost', { points: 30 })}</span>
+          <span>{t('review.cost', { points: AI_POINT_COSTS.ESSAY_REVIEW })}</span>
         </div>
 
         <Button

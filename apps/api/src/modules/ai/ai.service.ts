@@ -1,5 +1,15 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  Logger,
+  BadRequestException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import {
+  ILLMProvider,
+  LLM_PROVIDER_TOKEN,
+} from '../ai-agent/providers/llm-provider.interface';
+import { extractJsonFromLlm } from '../ai-agent/tools/helpers/llm-json.helper';
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
@@ -70,54 +80,38 @@ export interface EssayReviewResponse {
 @Injectable()
 export class AiService {
   private readonly logger = new Logger(AiService.name);
-  private readonly apiKey: string | undefined;
-  private readonly baseUrl: string;
   private readonly model: string;
 
-  constructor(private configService: ConfigService) {
-    this.apiKey = this.configService.get<string>('OPENAI_API_KEY');
-    this.baseUrl =
-      this.configService.get<string>('OPENAI_BASE_URL') ||
-      'https://api.openai.com/v1';
+  constructor(
+    private configService: ConfigService,
+    @Inject(LLM_PROVIDER_TOKEN) private provider: ILLMProvider,
+  ) {
     this.model =
       this.configService.get<string>('OPENAI_MODEL') || 'gpt-4o-mini';
   }
 
-  private isConfigured(): boolean {
-    return !!this.apiKey;
-  }
-
+  /**
+   * Chat completion via the provider-neutral LLM abstraction.
+   *
+   * Automatically extracts the system message (if present) and forwards
+   * the rest to the injected ILLMProvider.
+   */
   async chat(
     messages: ChatMessage[],
-    options?: { temperature?: number; maxTokens?: number; seed?: number },
+    options?: { temperature?: number; maxTokens?: number },
   ): Promise<string> {
-    if (!this.isConfigured()) {
-      throw new BadRequestException('AI service not configured');
-    }
+    const systemMsg = messages.find((m) => m.role === 'system');
+    const otherMsgs = messages.filter((m) => m.role !== 'system');
 
-    const response = await fetch(`${this.baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: this.model,
-        messages,
-        temperature: options?.temperature ?? 0.7,
-        max_tokens: options?.maxTokens ?? 2000,
-        ...(options?.seed !== undefined && { seed: options.seed }),
-      }),
+    const response = await this.provider.chat({
+      systemPrompt: systemMsg?.content || '',
+      messages: otherMsgs.map((m) => ({ role: m.role, content: m.content })),
+      model: this.model,
+      temperature: options?.temperature ?? 0.7,
+      maxTokens: options?.maxTokens ?? 2000,
     });
 
-    if (!response.ok) {
-      const error = await response.text();
-      this.logger.error(`OpenAI API error: ${error}`);
-      throw new BadRequestException('AI service error');
-    }
-
-    const data = await response.json();
-    return data.choices[0]?.message?.content || '';
+    return response.content;
   }
 
   async analyzeProfile(
@@ -175,18 +169,14 @@ Target Schools: ${request.targetSchools?.join(', ') || undecided}`;
         { temperature: 0.5 },
       );
 
-      // Parse JSON from response
-      const jsonMatch = result.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
-      }
-
-      // Fallback if JSON parsing fails
+      const parsed = extractJsonFromLlm<ProfileAnalysisResponse>(result);
       return {
-        overall: result,
-        strengths: [],
-        weaknesses: [],
-        suggestions: [],
+        overall: parsed.overall || result,
+        strengths: Array.isArray(parsed.strengths) ? parsed.strengths : [],
+        weaknesses: Array.isArray(parsed.weaknesses) ? parsed.weaknesses : [],
+        suggestions: Array.isArray(parsed.suggestions)
+          ? parsed.suggestions
+          : [],
       };
     } catch (error) {
       this.logger.error('Profile analysis failed', error);
@@ -339,13 +329,8 @@ All text fields must be in English. Return strict JSON only, no other content.`;
         { temperature: 0.4, maxTokens: 2500 },
       );
 
-      const jsonMatch = result.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
-        return this.validateDetailedAnalysis(parsed, locale);
-      }
-
-      return this.getDefaultDetailedAnalysis(locale);
+      const parsed = extractJsonFromLlm(result);
+      return this.validateDetailedAnalysis(parsed, locale);
     } catch (error) {
       this.logger.error('Detailed profile analysis failed', error);
       return this.getDefaultDetailedAnalysis(locale);
@@ -573,17 +558,15 @@ ${request.content}`;
         { temperature: 0.5 },
       );
 
-      const jsonMatch = result.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
-      }
-
+      const parsed = extractJsonFromLlm<EssayReviewResponse>(result);
       return {
-        overallScore: 5,
-        structure: { score: 5, feedback: result },
-        content: { score: 5, feedback: '' },
-        language: { score: 5, feedback: '' },
-        suggestions: [],
+        overallScore: parsed.overallScore ?? 5,
+        structure: parsed.structure ?? { score: 5, feedback: result },
+        content: parsed.content ?? { score: 5, feedback: '' },
+        language: parsed.language ?? { score: 5, feedback: '' },
+        suggestions: Array.isArray(parsed.suggestions)
+          ? parsed.suggestions
+          : [],
       };
     } catch (error) {
       this.logger.error('Essay review failed', error);
@@ -627,12 +610,8 @@ Please provide some writing ideas:`;
         { temperature: 0.8 },
       );
 
-      const jsonMatch = result.match(/\[[\s\S]*\]/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
-      }
-
-      return [result];
+      const parsed = extractJsonFromLlm<string[]>(result);
+      return Array.isArray(parsed) ? parsed : [result];
     } catch (error) {
       this.logger.error('Idea generation failed', error);
       throw new BadRequestException('Failed to generate ideas');
@@ -684,12 +663,11 @@ Please recommend schools:`;
         { temperature: 0.5 },
       );
 
-      const jsonMatch = result.match(/\[[\s\S]*\]/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
-      }
-
-      return [];
+      const parsed =
+        extractJsonFromLlm<
+          Array<{ name: string; fit: string; reason: string }>
+        >(result);
+      return Array.isArray(parsed) ? parsed : [];
     } catch (error) {
       this.logger.error('School matching failed', error);
       throw new BadRequestException('Failed to match schools');
@@ -770,12 +748,14 @@ Only list major changes (5-10), not every small edit. All reason fields must be 
         { temperature: 0.4, maxTokens: 3000 },
       );
 
-      const jsonMatch = result.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
-      }
-
-      return { polished: result, changes: [] };
+      const parsed = extractJsonFromLlm<{
+        polished: string;
+        changes: Array<{ original: string; revised: string; reason: string }>;
+      }>(result);
+      return {
+        polished: parsed.polished || result,
+        changes: Array.isArray(parsed.changes) ? parsed.changes : [],
+      };
     } catch (error) {
       this.logger.error('Essay polish failed', error);
       throw new BadRequestException('Failed to polish essay');
@@ -836,12 +816,14 @@ style field must be in English.`;
         { temperature: 0.8, maxTokens: 2000 },
       );
 
-      const jsonMatch = result.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
-      }
-
-      return { versions: [{ text: result, style: isZh ? '默认' : 'Default' }] };
+      const parsed = extractJsonFromLlm<{
+        versions: Array<{ text: string; style: string }>;
+      }>(result);
+      return {
+        versions: Array.isArray(parsed.versions)
+          ? parsed.versions
+          : [{ text: result, style: isZh ? '默认' : 'Default' }],
+      };
     } catch (error) {
       this.logger.error('Paragraph rewrite failed', error);
       throw new BadRequestException('Failed to rewrite paragraph');
@@ -909,12 +891,16 @@ suggestions field must be in English.`;
         { temperature: 0.7, maxTokens: 1500 },
       );
 
-      const jsonMatch = result.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
-      }
-
-      return { continuation: result, suggestions: [] };
+      const parsed = extractJsonFromLlm<{
+        continuation: string;
+        suggestions: string[];
+      }>(result);
+      return {
+        continuation: parsed.continuation || result,
+        suggestions: Array.isArray(parsed.suggestions)
+          ? parsed.suggestions
+          : [],
+      };
     } catch (error) {
       this.logger.error('Continue writing failed', error);
       throw new BadRequestException('Failed to continue writing');
@@ -988,12 +974,14 @@ Please generate 3 compelling openings:`;
         { temperature: 0.8, maxTokens: 1500 },
       );
 
-      const jsonMatch = result.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
-      }
-
-      return { openings: [{ text: result, style: isZh ? '默认' : 'Default' }] };
+      const parsed = extractJsonFromLlm<{
+        openings: Array<{ text: string; style: string }>;
+      }>(result);
+      return {
+        openings: Array.isArray(parsed.openings)
+          ? parsed.openings
+          : [{ text: result, style: isZh ? '默认' : 'Default' }],
+      };
     } catch (error) {
       this.logger.error('Opening generation failed', error);
       throw new BadRequestException('Failed to generate opening');
@@ -1062,12 +1050,14 @@ style field must be in English.`;
         { temperature: 0.8, maxTokens: 1500 },
       );
 
-      const jsonMatch = result.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
-      }
-
-      return { endings: [{ text: result, style: isZh ? '默认' : 'Default' }] };
+      const parsed = extractJsonFromLlm<{
+        endings: Array<{ text: string; style: string }>;
+      }>(result);
+      return {
+        endings: Array.isArray(parsed.endings)
+          ? parsed.endings
+          : [{ text: result, style: isZh ? '默认' : 'Default' }],
+      };
     } catch (error) {
       this.logger.error('Ending generation failed', error);
       throw new BadRequestException('Failed to generate ending');
@@ -1223,17 +1213,12 @@ Based on the student's profile, recommend suitable schools:`;
         { temperature: 0.4, maxTokens: 2500 },
       );
 
-      const jsonMatch = result.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
-        return this.validateSchoolRecommendation(
-          parsed,
-          availableSchools,
-          locale,
-        );
-      }
-
-      return this.getDefaultSchoolRecommendation(locale);
+      const parsed = extractJsonFromLlm(result);
+      return this.validateSchoolRecommendation(
+        parsed,
+        availableSchools,
+        locale,
+      );
     } catch (error) {
       this.logger.error('School recommendation failed', error);
       return this.getDefaultSchoolRecommendation(locale);
@@ -1394,13 +1379,8 @@ All text fields must be in English.`;
         { temperature: 0.4, maxTokens: 3000 },
       );
 
-      const jsonMatch = result.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
-        return this.validateParagraphAnalysis(parsed, paragraphs, locale);
-      }
-
-      return this.getDefaultParagraphAnalysis(locale);
+      const parsed = extractJsonFromLlm(result);
+      return this.validateParagraphAnalysis(parsed, paragraphs, locale);
     } catch (error) {
       this.logger.error('Paragraph analysis failed', error);
       return this.getDefaultParagraphAnalysis(locale);
