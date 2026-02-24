@@ -489,6 +489,7 @@
     "adminPanel": "管理后台",
     "schools": "学校库",
     "essays": "我的文书",
+    "resume": "简历制作",
     "findCollege": "智能选校",
     "uncommonApp": "申请中心",
     "verifiedRanking": "认证排名",
@@ -512,6 +513,7 @@
       "vault": "安全存储敏感信息与密码",
       "schools": "浏览和对比全球大学信息",
       "essays": "撰写、编辑和AI评审文书",
+      "resume": "25+模板专业简历制作与AI优化",
       "findCollege": "智能权重匹配选校工具",
       "uncommonApp": "AI驱动的申请综合管理",
       "verifiedRanking": "真实认证录取排行榜",
@@ -1814,45 +1816,6 @@
     "createButton": "创建",
     "selectSchools": "选择学校"
   },
-  "resume": {
-    "export": {
-      "title": "导出简历",
-      "description": "选择模板和格式导出你的简历"
-    },
-    "title": "导出简历",
-    "description": "选择模板和格式导出你的简历",
-    "selectTemplate": "选择模板",
-    "selectModules": "选择模块",
-    "language": "语言",
-    "anonymize": "匿名模式",
-    "anonymizeOff": "关闭匿名",
-    "noDataWarning": "请先完善个人资料",
-    "templates": {
-      "basic": "基础模板",
-      "basicDesc": "简洁清晰的简历模板",
-      "professional": "专业模板",
-      "professionalDesc": "详细的专业简历模板"
-    },
-    "modules": {
-      "basic": "基本信息",
-      "academics": "学术背景",
-      "activities": "活动经历",
-      "awards": "获奖情况",
-      "targetSchools": "目标学校"
-    },
-    "exportButton": "导出",
-    "exporting": "导出中...",
-    "anonymizeOn": "匿名模式开启",
-    "toast": {
-      "noData": "请先完善个人资料",
-      "success": "简历导出成功",
-      "failed": "导出失败，请重试"
-    },
-    "languageLabel": {
-      "zh": "中文",
-      "en": "英文"
-    }
-  },
   "stats": {
     "vsLastMonth": "较上月"
   },
@@ -2588,6 +2551,136 @@
       "review": "请评审这篇文书",
       "polish": "请润色这篇文书"
     }
+  },
+  "resume": {
+    "title": "简历制作",
+    "description": "25+专业模板，AI智能优化，打造完美申请简历",
+    "new": "新建简历",
+    "edit": "编辑简历",
+    "back": "返回简历列表",
+    "untitled": "未命名简历",
+    "export": {
+      "title": "导出简历",
+      "description": "选择模板和格式导出你的简历"
+    },
+    "templates": {
+      "basic": "基础模板",
+      "basicDesc": "简洁清晰的简历模板",
+      "professional": "专业模板",
+      "professionalDesc": "详细的专业简历模板"
+    },
+    "modules": {
+      "basic": "基本信息",
+      "academics": "学术背景",
+      "activities": "活动经历",
+      "awards": "获奖情况",
+      "targetSchools": "目标学校"
+    },
+    "types": {
+      "COLLEGE_APPLICATION": "留学申请简历",
+      "INTERNSHIP": "实习/求职简历",
+      "GRADUATE_CV": "研究生CV"
+    },
+    "typeDescriptions": {
+      "COLLEGE_APPLICATION": "一页简历，适用于本科/研究生申请",
+      "INTERNSHIP": "ATS友好的实习求职简历",
+      "GRADUATE_CV": "学术CV，适用于研究生院申请"
+    },
+    "status": {
+      "DRAFT": "草稿",
+      "ACTIVE": "使用中",
+      "ARCHIVED": "已归档"
+    },
+    "sections": {
+      "HEADER": "联系方式",
+      "EDUCATION": "教育经历",
+      "TEST_SCORES": "标化成绩",
+      "RESEARCH": "研究经历",
+      "WORK_EXPERIENCE": "工作经历",
+      "PROJECTS": "项目经历",
+      "ACTIVITIES": "课外活动",
+      "COMMUNITY_SERVICE": "社区服务",
+      "AWARDS": "荣誉与奖项",
+      "SKILLS": "技能",
+      "PUBLICATIONS": "发表论文",
+      "TEACHING": "教学经历",
+      "CERTIFICATIONS": "资格证书",
+      "CUSTOM": "自定义板块"
+    },
+    "editor": {
+      "template": "模板",
+      "settings": "设置",
+      "addSection": "添加板块",
+      "preview": "预览",
+      "export": "导出PDF",
+      "importProfile": "从档案导入",
+      "duplicate": "复制简历",
+      "aiReview": "AI评审",
+      "snapshot": "保存版本",
+      "history": "版本历史",
+      "restore": "恢复",
+      "pageCount": "{count} 页",
+      "pageWarning": "简历超出 {max} 页限制",
+      "zoom": "缩放"
+    },
+    "create": {
+      "title": "创建新简历",
+      "description": "选择简历类型开始制作",
+      "titleLabel": "简历标题",
+      "titlePlaceholder": "例如：MIT申请简历",
+      "typeLabel": "简历类型",
+      "importProfile": "从我的档案导入数据",
+      "importProfileDesc": "预填充已有的教育经历、活动和奖项"
+    },
+    "ai": {
+      "review": "AI评审",
+      "reviewDesc": "获取简历的全面评估",
+      "optimize": "优化Bullet",
+      "optimizeDesc": "使用STAR方法优化要点描述",
+      "suggest": "内容建议",
+      "suggestDesc": "获取AI建议添加的内容",
+      "score": "评分",
+      "dimensions": "评估维度",
+      "bulletQuality": "Bullet质量",
+      "contentGaps": "缺失内容",
+      "actionVerbs": "动词使用率",
+      "quantification": "量化数据率"
+    },
+    "toast": {
+      "created": "简历创建成功",
+      "updated": "简历更新成功",
+      "deleted": "简历删除成功",
+      "duplicated": "简历复制成功",
+      "imported": "档案数据导入成功",
+      "snapshotCreated": "版本保存成功",
+      "snapshotRestored": "版本恢复成功",
+      "exported": "简历已导出为PDF",
+      "saveFailed": "保存失败",
+      "noData": "请先完善个人资料",
+      "success": "简历导出成功",
+      "failed": "导出失败，请重试"
+    },
+    "empty": {
+      "title": "暂无简历",
+      "description": "创建你的第一份简历"
+    },
+    "delete": {
+      "title": "删除简历",
+      "description": "确定要删除这份简历吗？此操作无法撤销。"
+    },
+    "selectTemplate": "选择模板",
+    "selectModules": "选择模块",
+    "language": "语言",
+    "languageLabel": {
+      "zh": "中文",
+      "en": "英文"
+    },
+    "anonymize": "匿名模式",
+    "anonymizeOn": "匿名模式开启",
+    "anonymizeOff": "关闭匿名",
+    "noDataWarning": "请先完善个人资料",
+    "exporting": "导出中...",
+    "exportButton": "导出"
   },
   "essayAi": {
     "review": {

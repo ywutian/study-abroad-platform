@@ -156,6 +156,35 @@ enum VaultItemType {
   OTHER
 }
 
+enum ResumeStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum ResumeType {
+  COLLEGE_APPLICATION
+  INTERNSHIP
+  GRADUATE_CV
+}
+
+enum ResumeSectionType {
+  HEADER
+  EDUCATION
+  TEST_SCORES
+  RESEARCH
+  WORK_EXPERIENCE
+  PROJECTS
+  ACTIVITIES
+  COMMUNITY_SERVICE
+  AWARDS
+  SKILLS
+  PUBLICATIONS
+  TEACHING
+  CERTIFICATIONS
+  CUSTOM
+}
+
 // ============================================
 // User & Auth
 // ============================================
@@ -222,6 +251,9 @@ model User {
   // Application timeline
   applicationTimelines ApplicationTimeline[]
   personalEvents       PersonalEvent[]
+
+  // Resume
+  resumes Resume[]
 
   // Verification
   verificationRequests VerificationRequest[]
@@ -2042,4 +2074,75 @@ model CaseView {
   @@unique([userId, caseId])
   @@index([userId])
   @@index([caseId])
+}
+
+// ============================================
+// Resume System (简历系统)
+// ============================================
+
+model Resume {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title          String       @default("My Resume")
+  status         ResumeStatus @default(DRAFT)
+  type           ResumeType   @default(COLLEGE_APPLICATION)
+  templateId     String       @default("jake-classic")
+  language       String       @default("en")
+  settings       Json         @default("{}")
+  sections       ResumeSection[]
+  snapshots      ResumeSnapshot[]
+  aiReviews      ResumeAIReview[]
+  version        Int          @default(1)
+  lastImportedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, updatedAt(sort: Desc)])
+}
+
+model ResumeSection {
+  id        String            @id @default(cuid())
+  resumeId  String
+  resume    Resume            @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  type      ResumeSectionType
+  title     String
+  content   Json
+  isVisible Boolean           @default(true)
+  order     Int               @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([resumeId])
+}
+
+model ResumeSnapshot {
+  id          String @id @default(cuid())
+  resumeId    String
+  resume      Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  version     Int
+  data        Json
+  description String?
+
+  createdAt DateTime @default(now())
+
+  @@index([resumeId])
+}
+
+model ResumeAIReview {
+  id           String @id @default(cuid())
+  resumeId     String
+  resume       Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  type         String
+  input        Json
+  output       Json
+  overallScore Int?
+  tokenUsed    Int    @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([resumeId])
 }

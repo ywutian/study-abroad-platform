@@ -40,6 +40,7 @@ import { EssayPromptModule } from './modules/essay-prompt/essay-prompt.module';
 import { EssayScraperModule } from './modules/essay-scraper/essay-scraper.module';
 import { SchoolListModule } from './modules/school-list/school-list.module';
 import { PeerReviewModule } from './modules/peer-review/peer-review.module';
+import { ResumeModule } from './modules/resume/resume.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
@@ -111,6 +112,7 @@ import { AuditLogModule } from './common/services/audit-log.module';
     EssayScraperModule,
     SchoolListModule,
     PeerReviewModule,
+    ResumeModule,
   ],
   providers: [
     {

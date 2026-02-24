@@ -1,0 +1,69 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsBoolean,
+  IsObject,
+  IsArray,
+  MaxLength,
+} from 'class-validator';
+
+const SECTION_TYPES = [
+  'HEADER',
+  'EDUCATION',
+  'TEST_SCORES',
+  'RESEARCH',
+  'WORK_EXPERIENCE',
+  'PROJECTS',
+  'ACTIVITIES',
+  'COMMUNITY_SERVICE',
+  'AWARDS',
+  'SKILLS',
+  'PUBLICATIONS',
+  'TEACHING',
+  'CERTIFICATIONS',
+  'CUSTOM',
+] as const;
+
+export class CreateSectionDto {
+  @ApiProperty({ description: 'Section type', enum: SECTION_TYPES })
+  @IsEnum(SECTION_TYPES)
+  type: (typeof SECTION_TYPES)[number];
+
+  @ApiPropertyOptional({ description: 'Custom section title' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  title?: string;
+
+  @ApiPropertyOptional({ description: 'Section content (JSON)' })
+  @IsOptional()
+  @IsObject()
+  content?: Record<string, unknown>;
+}
+
+export class UpdateSectionDto {
+  @ApiPropertyOptional({ description: 'Section title' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  title?: string;
+
+  @ApiPropertyOptional({ description: 'Section content (JSON)' })
+  @IsOptional()
+  @IsObject()
+  content?: Record<string, unknown>;
+
+  @ApiPropertyOptional({ description: 'Section visibility' })
+  @IsOptional()
+  @IsBoolean()
+  isVisible?: boolean;
+}
+
+export class ReorderSectionsDto {
+  @ApiProperty({ description: 'Ordered array of section IDs' })
+  @IsArray()
+  @IsString({ each: true })
+  sectionIds: string[];
+}

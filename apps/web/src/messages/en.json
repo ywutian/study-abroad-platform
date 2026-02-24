@@ -489,6 +489,7 @@
     "adminPanel": "Admin Panel",
     "schools": "Schools",
     "essays": "My Essays",
+    "resume": "Resume Builder",
     "findCollege": "Find College",
     "uncommonApp": "Application Hub",
     "verifiedRanking": "Verified Ranking",
@@ -512,6 +513,7 @@
       "vault": "Securely store sensitive information and passwords",
       "schools": "Browse and compare universities worldwide",
       "essays": "Write, edit and AI-review your essays",
+      "resume": "Build professional resumes with 25+ templates",
       "findCollege": "Smart college matching with custom weights",
       "uncommonApp": "AI-powered application management",
       "verifiedRanking": "Real verified admission results",
@@ -1814,45 +1816,6 @@
     "createButton": "Create",
     "selectSchools": "Select Schools"
   },
-  "resume": {
-    "export": {
-      "title": "Export Resume",
-      "description": "Select template and format to export your resume"
-    },
-    "title": "Export Resume",
-    "description": "Select template and format to export your resume",
-    "selectTemplate": "Select Template",
-    "selectModules": "Select Modules",
-    "language": "Language",
-    "anonymize": "Anonymous Mode",
-    "anonymizeOff": "Disable Anonymous",
-    "noDataWarning": "Please complete your profile first",
-    "templates": {
-      "basic": "Basic Template",
-      "basicDesc": "Clean and simple resume template",
-      "professional": "Professional Template",
-      "professionalDesc": "Detailed professional resume template"
-    },
-    "modules": {
-      "basic": "Basic Info",
-      "academics": "Academic Background",
-      "activities": "Activities",
-      "awards": "Awards",
-      "targetSchools": "Target Schools"
-    },
-    "exportButton": "Export",
-    "exporting": "Exporting...",
-    "anonymizeOn": "Anonymous Mode On",
-    "toast": {
-      "noData": "Please complete your profile first",
-      "success": "Resume exported successfully",
-      "failed": "Export failed, please try again"
-    },
-    "languageLabel": {
-      "zh": "Chinese",
-      "en": "English"
-    }
-  },
   "stats": {
     "vsLastMonth": "vs Last Month"
   },
@@ -2593,6 +2556,136 @@
       "review": "Please review this essay",
       "polish": "Please polish this essay"
     }
+  },
+  "resume": {
+    "title": "Resume Builder",
+    "description": "Create professional resumes with 25+ templates and AI optimization",
+    "new": "New Resume",
+    "edit": "Edit Resume",
+    "back": "Back to Resumes",
+    "untitled": "Untitled Resume",
+    "export": {
+      "title": "Export Resume",
+      "description": "Select template and format to export your resume"
+    },
+    "templates": {
+      "basic": "Basic Template",
+      "basicDesc": "Clean and simple resume template",
+      "professional": "Professional Template",
+      "professionalDesc": "Detailed professional resume template"
+    },
+    "modules": {
+      "basic": "Basic Info",
+      "academics": "Academic Background",
+      "activities": "Activities",
+      "awards": "Awards",
+      "targetSchools": "Target Schools"
+    },
+    "types": {
+      "COLLEGE_APPLICATION": "College Application",
+      "INTERNSHIP": "Internship / Job",
+      "GRADUATE_CV": "Graduate CV"
+    },
+    "typeDescriptions": {
+      "COLLEGE_APPLICATION": "One-page resume for college admissions",
+      "INTERNSHIP": "ATS-friendly resume for internships and jobs",
+      "GRADUATE_CV": "Academic CV for graduate school applications"
+    },
+    "status": {
+      "DRAFT": "Draft",
+      "ACTIVE": "Active",
+      "ARCHIVED": "Archived"
+    },
+    "sections": {
+      "HEADER": "Contact Information",
+      "EDUCATION": "Education",
+      "TEST_SCORES": "Test Scores",
+      "RESEARCH": "Research Experience",
+      "WORK_EXPERIENCE": "Work Experience",
+      "PROJECTS": "Projects",
+      "ACTIVITIES": "Activities",
+      "COMMUNITY_SERVICE": "Community Service",
+      "AWARDS": "Honors & Awards",
+      "SKILLS": "Skills",
+      "PUBLICATIONS": "Publications",
+      "TEACHING": "Teaching Experience",
+      "CERTIFICATIONS": "Certifications",
+      "CUSTOM": "Custom Section"
+    },
+    "editor": {
+      "template": "Template",
+      "settings": "Settings",
+      "addSection": "Add Section",
+      "preview": "Preview",
+      "export": "Export PDF",
+      "importProfile": "Import from Profile",
+      "duplicate": "Duplicate Resume",
+      "aiReview": "AI Review",
+      "snapshot": "Save Version",
+      "history": "Version History",
+      "restore": "Restore",
+      "pageCount": "{count} page",
+      "pageWarning": "Resume exceeds {max} page limit",
+      "zoom": "Zoom"
+    },
+    "create": {
+      "title": "Create New Resume",
+      "description": "Choose a resume type to get started",
+      "titleLabel": "Resume Title",
+      "titlePlaceholder": "e.g., MIT Application Resume",
+      "typeLabel": "Resume Type",
+      "importProfile": "Import data from my profile",
+      "importProfileDesc": "Pre-fill with your existing education, activities, and awards"
+    },
+    "ai": {
+      "review": "AI Review",
+      "reviewDesc": "Get a comprehensive review of your resume",
+      "optimize": "Optimize Bullets",
+      "optimizeDesc": "Improve your bullet points with STAR method",
+      "suggest": "Suggest Content",
+      "suggestDesc": "Get AI suggestions for what to add",
+      "score": "Score",
+      "dimensions": "Evaluation Dimensions",
+      "bulletQuality": "Bullet Quality",
+      "contentGaps": "Missing Content",
+      "actionVerbs": "Action Verb Usage",
+      "quantification": "Quantification Rate"
+    },
+    "toast": {
+      "created": "Resume created successfully",
+      "updated": "Resume updated successfully",
+      "deleted": "Resume deleted successfully",
+      "duplicated": "Resume duplicated successfully",
+      "imported": "Profile data imported successfully",
+      "snapshotCreated": "Version saved successfully",
+      "snapshotRestored": "Version restored successfully",
+      "exported": "Resume exported as PDF",
+      "saveFailed": "Failed to save changes",
+      "noData": "Please complete your profile first",
+      "success": "Resume exported successfully",
+      "failed": "Export failed, please try again"
+    },
+    "empty": {
+      "title": "No Resumes Yet",
+      "description": "Create your first resume to get started"
+    },
+    "delete": {
+      "title": "Delete Resume",
+      "description": "Are you sure you want to delete this resume? This action cannot be undone."
+    },
+    "selectTemplate": "Select Template",
+    "selectModules": "Select Modules",
+    "language": "Language",
+    "languageLabel": {
+      "zh": "Chinese",
+      "en": "English"
+    },
+    "anonymize": "Anonymous Mode",
+    "anonymizeOn": "Anonymous Mode On",
+    "anonymizeOff": "Disable Anonymous",
+    "noDataWarning": "Please complete your profile first",
+    "exporting": "Exporting...",
+    "exportButton": "Export"
   },
   "essayAi": {
     "review": {

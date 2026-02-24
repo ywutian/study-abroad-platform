@@ -427,6 +427,12 @@ export function Header() {
       description: t('nav.descriptions.essays'),
     },
     {
+      href: '/resume',
+      label: t('nav.resume'),
+      icon: FileText,
+      description: t('nav.descriptions.resume'),
+    },
+    {
       href: '/find-college',
       label: t('nav.findCollege'),
       icon: Compass,

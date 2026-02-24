@@ -1459,6 +1459,338 @@ All text fields must be in English.`;
         : 'Essay content is too short or empty for analysis.',
     };
   }
+
+  // ============================================
+  // Resume AI Features
+  // ============================================
+
+  async reviewResume(
+    resumeData: {
+      sections: Array<{ type: string; title: string; content: any }>;
+      templateId: string;
+      resumeType: string;
+    },
+    context: { targetSchool?: string; targetMajor?: string },
+    locale = 'zh',
+  ): Promise<{
+    overallScore: number;
+    dimensions: Array<{
+      name: string;
+      score: number;
+      status: 'green' | 'yellow' | 'red';
+      feedback: string;
+      improvements: string[];
+    }>;
+    bulletQuality: {
+      actionVerbUsage: number;
+      quantificationRate: number;
+      averageLength: number;
+    };
+    contentGaps: string[];
+    summary: string;
+  }> {
+    const isZh = locale === 'zh';
+
+    const systemPrompt = isZh
+      ? `你是一位资深简历审核专家,擅长${resumeData.resumeType === 'COLLEGE_APPLICATION' ? '留学申请' : resumeData.resumeType === 'INTERNSHIP' ? '实习求职' : '研究生CV'}简历评估。
+
+## 评估维度 (0-100分)
+1. **content** (内容质量 30%): Bullet quality, action verbs, quantification, STAR structure
+2. **formatting** (格式规范 20%): 一致性, section 排序, 信息密度
+3. **impact** (影响力 20%): 成就导向, 结果聚焦, 领导力证据
+4. **completeness** (完整性 15%): 必要 section 齐全, 无空白, 足够细节
+5. **relevance** (相关性 15%): 内容匹配简历类型${context.targetSchool ? '和目标学校' : ''}
+
+## Bullet Quality 分析
+- actionVerbUsage: 使用强动词开头的 bullet 百分比 (0-100)
+- quantificationRate: 包含量化数据的 bullet 百分比 (0-100)
+- averageLength: 每条 bullet 平均字数
+
+## 输出格式 (严格JSON)
+{
+  "overallScore": 0-100,
+  "dimensions": [
+    { "name": "content", "score": 0-100, "status": "green|yellow|red", "feedback": "评价（中文）", "improvements": ["改进建议1（中文）"] }
+  ],
+  "bulletQuality": { "actionVerbUsage": 60, "quantificationRate": 40, "averageLength": 15 },
+  "contentGaps": ["缺失的重要内容1（中文）"],
+  "summary": "100字总结（中文）"
+}
+
+所有文本必须用中文。status: green(70+), yellow(40-69), red(<40)`
+      : `You are an expert resume reviewer specializing in ${resumeData.resumeType === 'COLLEGE_APPLICATION' ? 'college application' : resumeData.resumeType === 'INTERNSHIP' ? 'internship/job' : 'graduate CV'} resumes.
+
+## Evaluation Dimensions (0-100)
+1. **content** (30%): Bullet quality, action verbs, quantification, STAR structure
+2. **formatting** (20%): Consistency, section ordering, information density
+3. **impact** (20%): Achievement orientation, results focus, leadership evidence
+4. **completeness** (15%): Required sections present, no gaps, sufficient detail
+5. **relevance** (15%): Content matches resume type${context.targetSchool ? ' and target school' : ''}
+
+## Bullet Quality Analysis
+- actionVerbUsage: % of bullets starting with strong action verbs (0-100)
+- quantificationRate: % of bullets with quantified data (0-100)
+- averageLength: average word count per bullet
+
+## Output Format (strict JSON)
+{
+  "overallScore": 0-100,
+  "dimensions": [
+    { "name": "content", "score": 0-100, "status": "green|yellow|red", "feedback": "Feedback", "improvements": ["Improvement 1"] }
+  ],
+  "bulletQuality": { "actionVerbUsage": 60, "quantificationRate": 40, "averageLength": 15 },
+  "contentGaps": ["Missing important content 1"],
+  "summary": "100-word summary"
+}
+
+status: green(70+), yellow(40-69), red(<40)`;
+
+    const sectionsText = resumeData.sections
+      .map((s) => `[${s.type}] ${s.title}: ${JSON.stringify(s.content)}`)
+      .join('\n');
+
+    const userPrompt = `${context.targetSchool ? `Target: ${context.targetSchool}` : ''}${context.targetMajor ? ` / ${context.targetMajor}` : ''}
+Resume Type: ${resumeData.resumeType}
+
+${sectionsText}`;
+
+    try {
+      const result = await this.chat(
+        [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        { temperature: 0.3, maxTokens: 2500 },
+      );
+
+      const parsed = extractJsonFromLlm<any>(result);
+      return {
+        overallScore: Math.min(100, Math.max(0, parsed.overallScore ?? 50)),
+        dimensions: Array.isArray(parsed.dimensions)
+          ? parsed.dimensions.map((d: any) => ({
+              name: d.name ?? '',
+              score: Math.min(100, Math.max(0, d.score ?? 50)),
+              status: ['green', 'yellow', 'red'].includes(d.status)
+                ? d.status
+                : 'yellow',
+              feedback: d.feedback ?? '',
+              improvements: Array.isArray(d.improvements) ? d.improvements : [],
+            }))
+          : [],
+        bulletQuality: {
+          actionVerbUsage: parsed.bulletQuality?.actionVerbUsage ?? 0,
+          quantificationRate: parsed.bulletQuality?.quantificationRate ?? 0,
+          averageLength: parsed.bulletQuality?.averageLength ?? 0,
+        },
+        contentGaps: Array.isArray(parsed.contentGaps)
+          ? parsed.contentGaps
+          : [],
+        summary: parsed.summary ?? '',
+      };
+    } catch (error) {
+      this.logger.error('Resume review failed', error);
+      throw new BadRequestException('Failed to review resume');
+    }
+  }
+
+  async optimizeResumeBullets(
+    bullets: string[],
+    context: {
+      sectionType: string;
+      role?: string;
+      organization?: string;
+      targetSchool?: string;
+      targetMajor?: string;
+      resumeType?: string;
+    },
+    locale = 'zh',
+  ): Promise<{
+    optimized: Array<{ original: string; improved: string; reason: string }>;
+    newSuggestions?: string[];
+  }> {
+    const isZh = locale === 'zh';
+
+    const systemPrompt = isZh
+      ? `你是简历 bullet point 优化专家。请按照以下规则优化每一条 bullet:
+
+## 优化规则
+1. **强动词开头**: Led, Developed, Conducted, Implemented, Designed, Managed, Organized, Founded, Achieved, Reduced, Increased
+2. **STAR 方法**: Situation → Task → Action → Result
+3. **量化数据**: 尽可能添加数字、百分比、规模
+4. **长度控制**: 每条 1-2 行,不超过 2 行
+5. **不加句号**: bullet point 不以句号结尾
+6. ${context.resumeType === 'INTERNSHIP' ? '**ATS 友好**: 使用标准行业术语' : '**留学风格**: 强调 leadership, impact, initiative'}
+
+## 输出格式 (严格JSON)
+{
+  "optimized": [
+    { "original": "原文", "improved": "优化后", "reason": "优化理由（中文）" }
+  ],
+  "newSuggestions": ["建议新增的 bullet（中文提示+英文示例）"]
+}
+
+所有 reason 和 newSuggestions 必须用中文。improved 保持英文。`
+      : `You are a resume bullet point optimization expert. Optimize each bullet following these rules:
+
+## Rules
+1. **Strong action verbs**: Led, Developed, Conducted, Implemented, Designed, etc.
+2. **STAR method**: Situation → Task → Action → Result
+3. **Quantify**: Add numbers, percentages, scale wherever possible
+4. **Length**: 1-2 lines max per bullet
+5. **No period**: Bullets should not end with a period
+6. ${context.resumeType === 'INTERNSHIP' ? '**ATS-friendly**: Use standard industry terminology' : '**College app style**: Emphasize leadership, impact, initiative'}
+
+## Output Format (strict JSON)
+{
+  "optimized": [
+    { "original": "Original text", "improved": "Optimized text", "reason": "Reason for changes" }
+  ],
+  "newSuggestions": ["Suggested new bullets to add"]
+}`;
+
+    const userPrompt = `Section: ${context.sectionType}${context.role ? ` | Role: ${context.role}` : ''}${context.organization ? ` | Org: ${context.organization}` : ''}
+
+Bullets to optimize:
+${bullets.map((b, i) => `${i + 1}. ${b}`).join('\n')}`;
+
+    try {
+      const result = await this.chat(
+        [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        { temperature: 0.5, maxTokens: 2000 },
+      );
+
+      const parsed = extractJsonFromLlm<any>(result);
+      return {
+        optimized: Array.isArray(parsed.optimized)
+          ? parsed.optimized.map((o: any) => ({
+              original: o.original ?? '',
+              improved: o.improved ?? '',
+              reason: o.reason ?? '',
+            }))
+          : [],
+        newSuggestions: Array.isArray(parsed.newSuggestions)
+          ? parsed.newSuggestions
+          : undefined,
+      };
+    } catch (error) {
+      this.logger.error('Bullet optimization failed', error);
+      throw new BadRequestException('Failed to optimize bullets');
+    }
+  }
+
+  async suggestSectionContent(
+    sectionType: string,
+    context: {
+      existingContent: any;
+      resumeType: string;
+      targetMajor?: string;
+      grade?: string;
+      profileActivities?: any[];
+      profileAwards?: any[];
+    },
+    locale = 'zh',
+  ): Promise<{
+    suggestions: Array<{
+      text: string;
+      category: string;
+      priority: 'high' | 'medium' | 'low';
+    }>;
+    tips: string[];
+    exampleBullets?: string[];
+  }> {
+    const isZh = locale === 'zh';
+
+    const systemPrompt = isZh
+      ? `你是留学简历内容规划顾问。根据学生背景,为 ${sectionType} section 提供内容建议。
+
+## 建议类型
+- 具体可添加的内容条目
+- 现有内容的改进方向
+- 该 section 的最佳实践 tips
+- 示例 bullet points
+
+## 输出格式 (严格JSON)
+{
+  "suggestions": [
+    { "text": "建议内容（中文）", "category": "new_item|improve|missing", "priority": "high|medium|low" }
+  ],
+  "tips": ["Section 编写技巧（中文）"],
+  "exampleBullets": ["示例 bullet（英文）"]
+}
+
+所有 text 和 tips 必须用中文。exampleBullets 用英文。`
+      : `You are a resume content planning consultant. Based on the student's background, suggest content for the ${sectionType} section.
+
+## Suggestion Types
+- Specific items to add
+- Improvements for existing content
+- Best practice tips for this section
+- Example bullet points
+
+## Output Format (strict JSON)
+{
+  "suggestions": [
+    { "text": "Suggestion text", "category": "new_item|improve|missing", "priority": "high|medium|low" }
+  ],
+  "tips": ["Section writing tips"],
+  "exampleBullets": ["Example bullet"]
+}`;
+
+    const userPrompt = `Section: ${sectionType}
+Resume Type: ${context.resumeType}
+${context.targetMajor ? `Target Major: ${context.targetMajor}` : ''}
+${context.grade ? `Grade: ${context.grade}` : ''}
+Existing Content: ${JSON.stringify(context.existingContent)}
+${
+  context.profileActivities?.length
+    ? `Profile Activities: ${context.profileActivities
+        .slice(0, 5)
+        .map((a: any) => a.name)
+        .join(', ')}`
+    : ''
+}
+${
+  context.profileAwards?.length
+    ? `Profile Awards: ${context.profileAwards
+        .slice(0, 5)
+        .map((a: any) => a.name)
+        .join(', ')}`
+    : ''
+}`;
+
+    try {
+      const result = await this.chat(
+        [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        { temperature: 0.7, maxTokens: 2000 },
+      );
+
+      const parsed = extractJsonFromLlm<any>(result);
+      return {
+        suggestions: Array.isArray(parsed.suggestions)
+          ? parsed.suggestions.map((s: any) => ({
+              text: s.text ?? '',
+              category: s.category ?? 'new_item',
+              priority: ['high', 'medium', 'low'].includes(s.priority)
+                ? s.priority
+                : 'medium',
+            }))
+          : [],
+        tips: Array.isArray(parsed.tips) ? parsed.tips : [],
+        exampleBullets: Array.isArray(parsed.exampleBullets)
+          ? parsed.exampleBullets
+          : undefined,
+      };
+    } catch (error) {
+      this.logger.error('Content suggestion failed', error);
+      throw new BadRequestException('Failed to suggest content');
+    }
+  }
 }
 
 // P1: 选校推荐类型定义
