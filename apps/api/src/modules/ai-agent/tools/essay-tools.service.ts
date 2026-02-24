@@ -36,7 +36,11 @@ export class EssayToolsService implements IToolHandlerProvider {
       ],
       [
         'generate_outline',
-        (args, _userId, _ctx, locale) => this.generateOutline(args, locale),
+        (args, _userId, _ctx, locale) =>
+          this.generateOutline(
+            args as { prompt: string; background?: string; wordLimit?: number },
+            locale,
+          ),
       ],
       [
         'brainstorm_ideas',

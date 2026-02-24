@@ -7,9 +7,24 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { MemoryScorerService, MemoryTier } from './memory-scorer.service';
 import { RedisService } from '../../../common/redis/redis.service';
 
+type MockPrismaMemory = {
+  findMany: jest.Mock;
+  findUnique: jest.Mock;
+  update: jest.Mock;
+  updateMany: jest.Mock;
+  deleteMany: jest.Mock;
+  count: jest.Mock;
+  aggregate: jest.Mock;
+};
+
+type MockPrismaService = {
+  memory: MockPrismaMemory;
+  $executeRaw: jest.Mock;
+};
+
 describe('MemoryDecayService', () => {
   let service: MemoryDecayService;
-  let mockPrismaService: jest.Mocked<PrismaService>;
+  let mockPrismaService: MockPrismaService;
   let mockScorerService: jest.Mocked<MemoryScorerService>;
   let mockRedisService: jest.Mocked<RedisService>;
 
@@ -34,7 +49,7 @@ describe('MemoryDecayService', () => {
         aggregate: jest.fn(),
       },
       $executeRaw: jest.fn().mockResolvedValue(0),
-    } as unknown as jest.Mocked<PrismaService>;
+    };
 
     mockScorerService = {
       getFreshness: jest.fn().mockReturnValue(0.7),
@@ -48,7 +63,10 @@ describe('MemoryDecayService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         MemoryDecayService,
-        { provide: PrismaService, useValue: mockPrismaService },
+        {
+          provide: PrismaService,
+          useValue: mockPrismaService as unknown as PrismaService,
+        },
         { provide: MemoryScorerService, useValue: mockScorerService },
         { provide: RedisService, useValue: mockRedisService },
       ],
@@ -159,7 +177,7 @@ describe('MemoryDecayService', () => {
   describe('executeArchive (via runDailyDecay)', () => {
     it('should mark low importance memories as archived via raw SQL', async () => {
       mockPrismaService.memory.findMany.mockResolvedValue([]);
-      (mockPrismaService.$executeRaw as jest.Mock).mockResolvedValue(5);
+      mockPrismaService.$executeRaw.mockResolvedValue(5);
       mockPrismaService.memory.deleteMany.mockResolvedValue({ count: 0 });
 
       const result = await service.triggerDecay();
@@ -170,7 +188,7 @@ describe('MemoryDecayService', () => {
 
     it('should return 0 archived when no memories match', async () => {
       mockPrismaService.memory.findMany.mockResolvedValue([]);
-      (mockPrismaService.$executeRaw as jest.Mock).mockResolvedValue(0);
+      mockPrismaService.$executeRaw.mockResolvedValue(0);
       mockPrismaService.memory.deleteMany.mockResolvedValue({ count: 0 });
 
       const result = await service.triggerDecay();
@@ -330,7 +348,7 @@ describe('MemoryDecayService', () => {
         .mockResolvedValueOnce([mockMemory])
         .mockResolvedValueOnce([]);
       mockPrismaService.memory.update.mockResolvedValue(mockMemory);
-      (mockPrismaService.$executeRaw as jest.Mock).mockResolvedValue(2);
+      mockPrismaService.$executeRaw.mockResolvedValue(2);
       mockPrismaService.memory.deleteMany.mockResolvedValue({ count: 1 });
 
       const result = await service.triggerDecay();

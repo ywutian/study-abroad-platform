@@ -321,14 +321,19 @@ export function useErrorHandler() {
 
 /**
  * 异步错误处理 Hook
+ *
+ * Stores the error in state so React re-renders, then throws during render
+ * to be caught by the nearest ErrorBoundary.
  */
 export function useAsyncError() {
-  const [, setError] = useState();
+  const [error, setError] = useState<Error | null>(null);
 
-  return useCallback((error: Error) => {
-    setError(() => {
-      throw error;
-    });
+  if (error) {
+    throw error;
+  }
+
+  return useCallback((e: Error) => {
+    setError(e);
   }, []);
 }
 

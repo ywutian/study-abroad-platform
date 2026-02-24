@@ -41,21 +41,21 @@ export class SchoolLookupHelper {
       return this.prisma.school.findUnique({
         where: { id: schoolId },
         select: selectFields as any,
-      });
+      }) as Promise<SchoolSelect | null>;
     }
 
     if (schoolName) {
       // Try exact normalized name first (uses UNIQUE index)
       const norm = normalizeSchoolName(schoolName);
-      let school = await this.prisma.school.findUnique({
+      const school = await (this.prisma.school.findUnique({
         where: { nameNorm: norm },
         select: selectFields as any,
-      });
+      }) as Promise<SchoolSelect | null>);
       if (school) return school;
 
       // Fallback: fuzzy search
       const searchTerm = schoolName.trim();
-      school = await this.prisma.school.findFirst({
+      return this.prisma.school.findFirst({
         where: {
           OR: [
             { name: { contains: searchTerm, mode: 'insensitive' } },
@@ -73,8 +73,7 @@ export class SchoolLookupHelper {
           ],
         },
         select: selectFields as any,
-      });
-      return school;
+      }) as Promise<SchoolSelect | null>;
     }
 
     return null;

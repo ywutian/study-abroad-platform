@@ -4,12 +4,7 @@
  * 数据来源: 学校官网公开信息 (2025-2026 申请季)
  */
 
-import {
-  PrismaClient,
-  EssayType,
-  EssayStatus,
-  SourceType,
-} from '@prisma/client';
+import { PrismaClient, EssayType, EssayStatus } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -498,7 +493,7 @@ async function seedEssayPrompts() {
           aiCategory: essay.aiCategory,
           sources: {
             create: {
-              sourceType: SourceType.MANUAL,
+              sourceType: 'MANUAL',
               sourceUrl: 'seed-data',
               confidence: 1.0,
             },

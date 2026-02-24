@@ -220,7 +220,7 @@ export class ConfigValidatorService implements OnModuleInit {
     // 验证委派配置
     if (config.canDelegate) {
       for (const targetAgent of config.canDelegate) {
-        if (!AGENT_CONFIGS[targetAgent]) {
+        if (!(AGENT_CONFIGS as Record<string, AgentConfig>)[targetAgent]) {
           errors.push({
             agentType,
             field: 'canDelegate',

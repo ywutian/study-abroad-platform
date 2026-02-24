@@ -6,7 +6,10 @@ export { ProfileLoaderHelper } from './helpers/profile-loader.helper';
 export { extractJsonFromLlm } from './helpers/llm-json.helper';
 
 // Interface
-export { IToolHandlerProvider, ToolHandler } from './tool-handler.interface';
+export type {
+  IToolHandlerProvider,
+  ToolHandler,
+} from './tool-handler.interface';
 
 // Domain tool services
 export { ProfileToolsService } from './profile-tools.service';

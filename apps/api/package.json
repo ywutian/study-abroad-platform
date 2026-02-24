@@ -67,8 +67,8 @@
     "prisma": "5.22.0",
     "puppeteer": "^24.35.0",
     "reflect-metadata": "^0.2.2",
-    "sanitize-html": "^2.13.0",
     "rxjs": "^7.8.1",
+    "sanitize-html": "^2.13.0",
     "socket.io": "^4.8.3",
     "stripe": "^20.3.1",
     "zod": "3.23.8"
@@ -82,6 +82,7 @@
     "@nestjs/testing": "^11.0.1",
     "@swc/cli": "^0.7.10",
     "@swc/core": "^1.15.10",
+    "@swc/jest": "^0.2.39",
     "@types/ali-oss": "^6.23.1",
     "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.0",
@@ -121,7 +122,21 @@
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.(t|j)s$": [
+        "@swc/jest",
+        {
+          "jsc": {
+            "parser": {
+              "syntax": "typescript",
+              "decorators": true
+            },
+            "transform": {
+              "legacyDecorator": true,
+              "decoratorMetadata": true
+            }
+          }
+        }
+      ]
     },
     "moduleNameMapper": {
       "^@study-abroad/shared(.*)$": "<rootDir>/../../../packages/shared/src$1"

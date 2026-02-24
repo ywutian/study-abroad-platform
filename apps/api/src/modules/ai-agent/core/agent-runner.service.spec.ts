@@ -113,7 +113,7 @@ describe('AgentRunnerService', () => {
           steps: [
             {
               toolCall: { id: 'call_1', name: 'get_profile', arguments: {} },
-              status: 'completed',
+              status: 'success',
               duration: 100,
             },
           ],

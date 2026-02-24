@@ -666,7 +666,7 @@ async function fetchWithSort(sort: string, maxPages: number) {
 
     try {
       const { posts, after: nextAfter } = await fetchRedditPosts(
-        after,
+        after ?? undefined,
         100,
         sort,
       );

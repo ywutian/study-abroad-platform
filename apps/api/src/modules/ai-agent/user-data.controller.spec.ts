@@ -17,7 +17,10 @@ describe('UserDataController', () => {
   const mockMemory = { id: 'mem-1', content: 'User prefers MIT' };
   const mockConversation = { id: 'conv-1', title: 'School selection' };
   const mockEntity = { id: 'ent-1', name: 'MIT', type: 'SCHOOL' };
-  const mockPreferences = { language: 'zh', tone: 'formal' };
+  const mockPreferences = {
+    language: 'zh',
+    essayPreferences: { tone: 'formal' },
+  };
   const mockStats = {
     memoriesCount: 5,
     conversationsCount: 3,
@@ -55,9 +58,10 @@ describe('UserDataController', () => {
             deleteEntity: jest.fn().mockResolvedValue(undefined),
             clearAllEntities: jest.fn().mockResolvedValue(2),
             getPreferences: jest.fn().mockResolvedValue(mockPreferences),
-            updatePreferences: jest
-              .fn()
-              .mockResolvedValue({ ...mockPreferences, tone: 'casual' }),
+            updatePreferences: jest.fn().mockResolvedValue({
+              ...mockPreferences,
+              essayPreferences: { tone: 'casual' },
+            }),
             resetPreferences: jest.fn().mockResolvedValue(undefined),
             exportData: jest
               .fn()
@@ -247,7 +251,7 @@ describe('UserDataController', () => {
 
   describe('PUT /preferences', () => {
     it('should update AI preferences', async () => {
-      const body = { tone: 'casual' };
+      const body = { essayPreferences: { tone: 'casual' } };
       const result = await controller.updatePreferences(
         mockUser as any,
         body as any,
@@ -257,7 +261,7 @@ describe('UserDataController', () => {
         'user-1',
         body,
       );
-      expect(result.tone).toBe('casual');
+      expect(result.essayPreferences?.tone).toBe('casual');
     });
   });
 

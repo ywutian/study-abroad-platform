@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, Logger } from '@nestjs/common';
+import { ValidationPipe, Logger, INestApplication } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -7,7 +7,7 @@ import * as express from 'express';
 import { AppModule } from './app.module';
 
 async function listenWithPortFallback(
-  app: ReturnType<Awaited<typeof NestFactory.create>>,
+  app: INestApplication,
   startPort: number,
   logger: Logger,
   maxAttempts = 10,

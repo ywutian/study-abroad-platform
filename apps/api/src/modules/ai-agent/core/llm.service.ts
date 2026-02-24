@@ -8,10 +8,8 @@
 import { Injectable, Inject, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AgentType, Message, ToolDefinition } from '../types';
-import {
-  ILLMProvider,
-  LLM_PROVIDER_TOKEN,
-} from '../providers/llm-provider.interface';
+import type { ILLMProvider } from '../providers/llm-provider.interface';
+import { LLM_PROVIDER_TOKEN } from '../providers/llm-provider.interface';
 import {
   LLMMessage,
   LLMToolDefinition,

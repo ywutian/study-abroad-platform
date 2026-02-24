@@ -285,7 +285,13 @@ describe('MemoryManagerService', () => {
     it('should build complete retrieval context', async () => {
       // Mock recent messages
       cache.getConversationMessages.mockResolvedValue([
-        { id: 'msg_1', role: 'user', content: '你好', createdAt: new Date() },
+        {
+          id: 'msg_1',
+          conversationId: 'conv_1',
+          role: 'user',
+          content: '你好',
+          createdAt: new Date(),
+        },
       ]);
 
       // Mock relevant memories
@@ -310,7 +316,7 @@ describe('MemoryManagerService', () => {
           type: EntityType.SCHOOL,
           name: 'Stanford',
           createdAt: new Date(),
-          updatedAt: new Date(),
+          similarity: 0.85,
         },
       ]);
 

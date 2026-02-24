@@ -107,7 +107,6 @@ export class AdminController {
       select: {
         id: true,
         email: true,
-        displayName: true,
         role: true,
         emailVerified: true,
         isBanned: true,
@@ -371,7 +370,7 @@ export class AdminController {
           'Resource ID',
           'Created',
         ];
-        const logs = await this.prisma.adminAuditLog.findMany({
+        const logs = await this.prisma.auditLog.findMany({
           select: {
             id: true,
             userId: true,

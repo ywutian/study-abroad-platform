@@ -26,7 +26,7 @@ export class CaseToolsService implements IToolHandlerProvider {
   ) {}
 
   getHandlers(): Map<string, ToolHandler> {
-    return new Map([
+    return new Map<string, ToolHandler>([
       [
         'search_cases',
         (args, _userId, _ctx, locale) => this.searchCases(args, locale),

@@ -25,6 +25,21 @@ export function getLayout(type: LayoutType): LayoutComponent {
 }
 
 export function ResumeDocument({ layout, ...props }: LayoutProps & { layout: LayoutType }) {
-  const Layout = getLayout(layout);
-  return <Layout {...props} />;
+  switch (layout) {
+    case 'sidebar-left':
+      return <SidebarLeftLayout {...props} />;
+    case 'sidebar-right':
+      return <SidebarRightLayout {...props} />;
+    case 'header-banner-single':
+      return <HeaderBannerSingleLayout {...props} />;
+    case 'header-banner-columns':
+      return <HeaderBannerColumnsLayout {...props} />;
+    case 'equal-columns':
+      return <EqualColumnsLayout {...props} />;
+    case 'timeline':
+      return <TimelineLayout {...props} />;
+    case 'single-column':
+    default:
+      return <SingleColumnLayout {...props} />;
+  }
 }

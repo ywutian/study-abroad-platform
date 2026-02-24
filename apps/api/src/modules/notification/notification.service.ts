@@ -105,6 +105,10 @@ const NOTIFICATION_TEMPLATES: Record<
     title: '完善档案',
     content: '完善你的档案可获得 +30 积分',
   },
+  [NotificationType.SYSTEM_BROADCAST]: {
+    title: '系统通知',
+    content: '{message}',
+  },
 };
 
 @Injectable()

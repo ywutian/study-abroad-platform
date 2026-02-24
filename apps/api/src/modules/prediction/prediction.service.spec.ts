@@ -19,6 +19,8 @@ jest.mock('./utils/score-calculator', () => ({
     }
     return null;
   }),
+  calculateSelectivityIndex: jest.fn().mockReturnValue(0.5),
+  enforceMonotonicity: jest.fn().mockImplementation((arr) => arr),
 }));
 
 // Mock prompt-builder

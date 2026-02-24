@@ -11,10 +11,16 @@ import {
 } from './resilience.service';
 import { TokenTrackerService } from './token-tracker.service';
 import { Message } from '../types';
-
-// Mock fetch
-const mockFetch = jest.fn();
-global.fetch = mockFetch;
+import {
+  ILLMProvider,
+  LLM_PROVIDER_TOKEN,
+} from '../providers/llm-provider.interface';
+import {
+  LLMChatRequest,
+  LLMChatResponse,
+  LLMProviderError,
+  LLMErrorCode,
+} from '../providers/llm-provider.types';
 
 // 辅助函数：创建测试用 Message
 function createMessage(
@@ -30,34 +36,21 @@ function createMessage(
 describe('LLMService', () => {
   let service: LLMService;
   let mockConfigService: jest.Mocked<ConfigService>;
+  let mockProvider: jest.Mocked<ILLMProvider>;
   let mockResilienceService: jest.Mocked<ResilienceService>;
   let mockTokenTracker: jest.Mocked<TokenTrackerService>;
 
-  const mockOpenAIResponse = {
-    id: 'chatcmpl-123',
-    object: 'chat.completion',
-    created: 1677652288,
-    model: 'gpt-4o-mini',
-    choices: [
-      {
-        index: 0,
-        message: {
-          role: 'assistant',
-          content: 'Hello! How can I help you?',
-        },
-        finish_reason: 'stop',
-      },
-    ],
+  const mockProviderResponse: LLMChatResponse = {
+    content: 'Hello! How can I help you?',
+    finishReason: 'stop',
     usage: {
-      prompt_tokens: 10,
-      completion_tokens: 20,
-      total_tokens: 30,
+      promptTokens: 10,
+      completionTokens: 20,
+      totalTokens: 30,
     },
   };
 
   beforeEach(async () => {
-    mockFetch.mockReset();
-
     mockConfigService = {
       get: jest.fn((key: string) => {
         switch (key) {
@@ -72,6 +65,14 @@ describe('LLMService', () => {
         }
       }),
     } as unknown as jest.Mocked<ConfigService>;
+
+    mockProvider = {
+      providerId: 'openai',
+      chat: jest.fn().mockResolvedValue(mockProviderResponse),
+      chatStream: jest.fn(),
+      supportsModel: jest.fn().mockReturnValue(true),
+      getContextWindow: jest.fn().mockReturnValue(128000),
+    } as unknown as jest.Mocked<ILLMProvider>;
 
     mockResilienceService = {
       execute: jest.fn((_, fn) => fn()),
@@ -95,6 +96,7 @@ describe('LLMService', () => {
       providers: [
         LLMService,
         { provide: ConfigService, useValue: mockConfigService },
+        { provide: LLM_PROVIDER_TOKEN, useValue: mockProvider },
         { provide: ResilienceService, useValue: mockResilienceService },
         { provide: TokenTrackerService, useValue: mockTokenTracker },
       ],
@@ -109,66 +111,41 @@ describe('LLMService', () => {
 
   // === 基础调用测试 ===
   describe('call', () => {
-    it('should call OpenAI with correct parameters', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockOpenAIResponse),
-      });
-
+    it('should call provider with correct parameters', async () => {
       const messages: Message[] = [
-        createMessage(createMessage({ role: 'user', content: 'Hello' })),
+        createMessage({ role: 'user', content: 'Hello' }),
       ];
       await service.call('You are a helpful assistant', messages);
 
-      expect(mockFetch).toHaveBeenCalledWith(
-        'https://api.openai.com/v1/chat/completions',
+      expect(mockProvider.chat).toHaveBeenCalledWith(
         expect.objectContaining({
-          method: 'POST',
-          headers: expect.objectContaining({
-            'Content-Type': 'application/json',
-            Authorization: 'Bearer test-api-key',
-          }),
+          systemPrompt: 'You are a helpful assistant',
+          model: 'gpt-4o-mini',
         }),
       );
     });
 
-    it('should convert ChatMessage[] to OpenAI format', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockOpenAIResponse),
-      });
-
+    it('should convert ChatMessage[] to LLM message format', async () => {
       const messages: Message[] = [
-        createMessage(createMessage({ role: 'user', content: 'Hello' })),
-        createMessage(
-          createMessage({ role: 'assistant', content: 'Hi there!' }),
-        ),
+        createMessage({ role: 'user', content: 'Hello' }),
+        createMessage({ role: 'assistant', content: 'Hi there!' }),
       ];
 
       await service.call('System prompt', messages);
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(body.messages[0]).toEqual({
-        role: 'system',
-        content: 'System prompt',
-      });
-      // API 请求体只包含 role/content，不包含 id/timestamp
-      expect(body.messages[1]).toMatchObject({
+      const request: LLMChatRequest = mockProvider.chat.mock.calls[0][0];
+      expect(request.systemPrompt).toBe('System prompt');
+      expect(request.messages[0]).toMatchObject({
         role: 'user',
         content: 'Hello',
       });
-      expect(body.messages[2]).toMatchObject({
+      expect(request.messages[1]).toMatchObject({
         role: 'assistant',
         content: 'Hi there!',
       });
     });
 
     it('should include tool definitions when provided', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockOpenAIResponse),
-      });
-
       const tools = [
         {
           name: 'search_schools',
@@ -176,9 +153,11 @@ describe('LLMService', () => {
           parameters: {
             type: 'object' as const,
             properties: {
-              query: { type: 'string' as const },
+              query: { type: 'string' as const, description: 'Search query' },
             },
+            required: ['query'],
           },
+          handler: 'school-tools',
         },
       ];
 
@@ -188,17 +167,13 @@ describe('LLMService', () => {
         { tools },
       );
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(body.tools).toBeDefined();
-      expect(body.tool_choice).toBe('auto');
+      const request: LLMChatRequest = mockProvider.chat.mock.calls[0][0];
+      expect(request.tools).toBeDefined();
+      expect(request.tools![0].name).toBe('search_schools');
+      expect(request.toolChoice).toBe('auto');
     });
 
     it('should return parsed response', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockOpenAIResponse),
-      });
-
       const result = await service.call('System', [
         createMessage({ role: 'user', content: 'Hello' }),
       ]);
@@ -207,17 +182,19 @@ describe('LLMService', () => {
       expect(result.finishReason).toBe('stop');
     });
 
-    it('should throw error when API key not configured', async () => {
-      mockConfigService.get.mockReturnValue(undefined);
-
-      const newService = new LLMService(
-        mockConfigService,
-        mockResilienceService,
-        mockTokenTracker,
+    it('should propagate provider errors (e.g. API key not configured)', async () => {
+      mockProvider.chat.mockRejectedValueOnce(
+        new LLMProviderError(
+          'OpenAI API key not configured',
+          LLMErrorCode.AUTHENTICATION,
+          false,
+        ),
       );
+      // Bypass resilience so the error propagates directly
+      mockResilienceService.execute.mockImplementationOnce((_, fn) => fn());
 
       await expect(
-        newService.call('System', [
+        service.call('System', [
           createMessage({ role: 'user', content: 'Hello' }),
         ]),
       ).rejects.toThrow('OpenAI API key not configured');
@@ -227,11 +204,6 @@ describe('LLMService', () => {
   // === 弹性保护测试 ===
   describe('resilience integration', () => {
     it('should use resilience service when available', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockOpenAIResponse),
-      });
-
       await service.call('System', [
         createMessage({ role: 'user', content: 'Hello' }),
       ]);
@@ -246,13 +218,16 @@ describe('LLMService', () => {
       );
     });
 
-    it('should handle API error responses', async () => {
+    it('should handle provider error responses', async () => {
       mockResilienceService.execute.mockImplementationOnce((_, fn) => fn());
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-        text: () => Promise.resolve('Internal Server Error'),
-      });
+      mockProvider.chat.mockRejectedValueOnce(
+        new LLMProviderError(
+          'LLM API error: 500',
+          LLMErrorCode.SERVER_ERROR,
+          true,
+          500,
+        ),
+      );
 
       await expect(
         service.call('System', [
@@ -264,12 +239,7 @@ describe('LLMService', () => {
 
   // === Token 追踪测试 ===
   describe('token tracking', () => {
-    it('should record prompt tokens', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockOpenAIResponse),
-      });
-
+    it('should track token usage when userId is provided', async () => {
       await service.call(
         'System',
         [createMessage({ role: 'user', content: 'Hello' })],
@@ -278,15 +248,19 @@ describe('LLMService', () => {
         },
       );
 
-      expect(mockTokenTracker.parseUsageFromResponse).toHaveBeenCalled();
+      expect(mockTokenTracker.trackUsage).toHaveBeenCalledWith(
+        'user-123',
+        expect.objectContaining({
+          promptTokens: 10,
+          completionTokens: 20,
+          totalTokens: 30,
+          model: 'gpt-4o-mini',
+        }),
+        expect.any(Object),
+      );
     });
 
     it('should track by model', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockOpenAIResponse),
-      });
-
       await service.call(
         'System',
         [createMessage({ role: 'user', content: 'Hello' })],
@@ -298,7 +272,9 @@ describe('LLMService', () => {
 
       expect(mockTokenTracker.trackUsage).toHaveBeenCalledWith(
         'user-123',
-        expect.any(Object),
+        expect.objectContaining({
+          model: 'gpt-4',
+        }),
         expect.any(Object),
       );
     });
@@ -307,60 +283,39 @@ describe('LLMService', () => {
   // === 消息格式转换 ===
   describe('message conversion', () => {
     it('should convert user message', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockOpenAIResponse),
-      });
-
       await service.call('System', [
         createMessage({ role: 'user', content: 'Hello' }),
       ]);
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      // API 请求体只包含 role/content
-      expect(body.messages[1]).toMatchObject({
+      const request: LLMChatRequest = mockProvider.chat.mock.calls[0][0];
+      expect(request.messages[0]).toMatchObject({
         role: 'user',
         content: 'Hello',
       });
     });
 
     it('should convert assistant message', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockOpenAIResponse),
-      });
-
       await service.call('System', [
         createMessage({ role: 'assistant', content: 'Hi' }),
       ]);
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(body.messages[1]).toEqual({ role: 'assistant', content: 'Hi' });
+      const request: LLMChatRequest = mockProvider.chat.mock.calls[0][0];
+      expect(request.messages[0]).toMatchObject({
+        role: 'assistant',
+        content: 'Hi',
+      });
     });
 
-    it('should convert system message', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockOpenAIResponse),
-      });
-
+    it('should pass system prompt via systemPrompt field', async () => {
       await service.call('Main system prompt', [
         createMessage({ role: 'user', content: 'Hello' }),
       ]);
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(body.messages[0]).toEqual({
-        role: 'system',
-        content: 'Main system prompt',
-      });
+      const request: LLMChatRequest = mockProvider.chat.mock.calls[0][0];
+      expect(request.systemPrompt).toBe('Main system prompt');
     });
 
     it('should convert tool result message', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockOpenAIResponse),
-      });
-
       // Tool messages require a preceding assistant message with tool_calls
       const messages: Message[] = [
         createMessage({
@@ -377,21 +332,16 @@ describe('LLMService', () => {
 
       await service.call('System', messages);
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      // messages[0] = system, messages[1] = assistant with tool_calls, messages[2] = tool result
-      expect(body.messages[2]).toEqual({
+      const request: LLMChatRequest = mockProvider.chat.mock.calls[0][0];
+      // messages[0] = assistant with tool_calls, messages[1] = tool result
+      expect(request.messages[1]).toMatchObject({
         role: 'tool',
         content: '{"result": "data"}',
-        tool_call_id: 'call_123',
+        toolCallId: 'call_123',
       });
     });
 
     it('should preserve tool_calls in assistant message', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockOpenAIResponse),
-      });
-
       const messages: Message[] = [
         createMessage({
           role: 'assistant',
@@ -404,9 +354,9 @@ describe('LLMService', () => {
 
       await service.call('System', messages);
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(body.messages[1].tool_calls).toBeDefined();
-      expect(body.messages[1].tool_calls[0].function.name).toBe('search');
+      const request: LLMChatRequest = mockProvider.chat.mock.calls[0][0];
+      expect(request.messages[0].toolCalls).toBeDefined();
+      expect(request.messages[0].toolCalls![0].name).toBe('search');
     });
   });
 
@@ -442,37 +392,25 @@ describe('LLMService', () => {
   // === Tool calls 响应解析 ===
   describe('tool calls response parsing', () => {
     it('should parse tool calls from response', async () => {
-      const responseWithToolCalls = {
-        ...mockOpenAIResponse,
-        choices: [
+      mockProvider.chat.mockResolvedValueOnce({
+        content: '',
+        toolCalls: [
           {
-            index: 0,
-            message: {
-              role: 'assistant',
-              content: null,
-              tool_calls: [
-                {
-                  id: 'call_abc123',
-                  type: 'function',
-                  function: {
-                    name: 'search_schools',
-                    arguments: '{"query": "MIT"}',
-                  },
-                },
-              ],
-            },
-            finish_reason: 'tool_calls',
+            id: 'call_abc123',
+            name: 'search_schools',
+            arguments: { query: 'MIT' },
           },
         ],
-      };
-
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(responseWithToolCalls),
+        finishReason: 'tool_calls',
+        usage: {
+          promptTokens: 10,
+          completionTokens: 20,
+          totalTokens: 30,
+        },
       });
 
       const result = await service.call('System', [
-        { role: 'user', content: 'Search MIT' },
+        createMessage({ role: 'user', content: 'Search MIT' }),
       ]);
 
       expect(result.toolCalls).toBeDefined();
@@ -485,23 +423,14 @@ describe('LLMService', () => {
   // === 边界条件 ===
   describe('edge cases', () => {
     it('should handle empty messages array', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockOpenAIResponse),
-      });
-
       await service.call('System', []);
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(body.messages).toHaveLength(1); // 只有 system
+      const request: LLMChatRequest = mockProvider.chat.mock.calls[0][0];
+      expect(request.messages).toHaveLength(0);
+      expect(request.systemPrompt).toBe('System');
     });
 
     it('should handle max token limit', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockOpenAIResponse),
-      });
-
       await service.call(
         'System',
         [createMessage({ role: 'user', content: 'Hello' })],
@@ -510,16 +439,11 @@ describe('LLMService', () => {
         },
       );
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(body.max_tokens).toBe(100);
+      const request: LLMChatRequest = mockProvider.chat.mock.calls[0][0];
+      expect(request.maxTokens).toBe(100);
     });
 
     it('should handle custom model', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockOpenAIResponse),
-      });
-
       await service.call(
         'System',
         [createMessage({ role: 'user', content: 'Hello' })],
@@ -528,16 +452,11 @@ describe('LLMService', () => {
         },
       );
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(body.model).toBe('gpt-4');
+      const request: LLMChatRequest = mockProvider.chat.mock.calls[0][0];
+      expect(request.model).toBe('gpt-4');
     });
 
     it('should handle temperature setting', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockOpenAIResponse),
-      });
-
       await service.call(
         'System',
         [createMessage({ role: 'user', content: 'Hello' })],
@@ -546,8 +465,8 @@ describe('LLMService', () => {
         },
       );
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(body.temperature).toBe(0.5);
+      const request: LLMChatRequest = mockProvider.chat.mock.calls[0][0];
+      expect(request.temperature).toBe(0.5);
     });
   });
 });

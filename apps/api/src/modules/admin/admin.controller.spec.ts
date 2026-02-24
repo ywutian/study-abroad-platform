@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
+import { NotificationService } from '../notification/notification.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { Role, GlobalEventCategory } from '@prisma/client';
 
 describe('AdminController', () => {
@@ -18,6 +20,23 @@ describe('AdminController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AdminController],
       providers: [
+        {
+          provide: NotificationService,
+          useValue: {
+            createNotification: jest.fn(),
+          },
+        },
+        {
+          provide: PrismaService,
+          useValue: {
+            user: {
+              findUniqueOrThrow: jest.fn(),
+              findMany: jest.fn().mockResolvedValue([]),
+            },
+            payment: { findMany: jest.fn().mockResolvedValue([]) },
+            auditLog: { findMany: jest.fn().mockResolvedValue([]) },
+          },
+        },
         {
           provide: AdminService,
           useValue: {

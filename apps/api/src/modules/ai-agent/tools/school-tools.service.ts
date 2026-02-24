@@ -19,7 +19,7 @@ export class SchoolToolsService implements IToolHandlerProvider {
   ) {}
 
   getHandlers(): Map<string, ToolHandler> {
-    return new Map([
+    return new Map<string, ToolHandler>([
       ['search_schools', (args) => this.searchSchools(args)],
       [
         'get_school_details',

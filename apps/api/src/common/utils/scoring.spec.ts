@@ -704,9 +704,11 @@ describe('calculateScoreBreakdown', () => {
 // calculateProbability
 // ============================================
 describe('calculateProbability', () => {
-  it('should return base rate for score of 50', () => {
+  it('should return minimum clamp for score of 50 with selective school', () => {
+    // With acceptanceRate=30, selectivity index ~0.807 → threshold ~75.4
+    // Score 50 is well below threshold → sigmoid output < 0.05 → clamped to 0.05
     const prob = calculateProbability(50, { acceptanceRate: 30 });
-    expect(prob).toBeCloseTo(0.3, 2);
+    expect(prob).toBeCloseTo(0.05, 2);
   });
 
   it('should increase with higher scores', () => {

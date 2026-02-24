@@ -93,11 +93,11 @@ export class SchoolLookupService {
 
     return this.prisma.school.create({
       data: {
+        ...(data as Prisma.SchoolCreateInput),
         name: name.trim(),
         nameNorm: norm,
         scorecardId,
         country: 'US',
-        ...(data as Prisma.SchoolCreateInput),
       },
     });
   }

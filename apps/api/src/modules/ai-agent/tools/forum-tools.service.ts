@@ -19,7 +19,7 @@ export class ForumToolsService implements IToolHandlerProvider {
   ) {}
 
   getHandlers(): Map<string, ToolHandler> {
-    return new Map([
+    return new Map<string, ToolHandler>([
       [
         'search_forum_posts',
         (args, _userId, _ctx, locale) =>

@@ -5,10 +5,8 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  ILLMProvider,
-  LLM_PROVIDER_TOKEN,
-} from '../ai-agent/providers/llm-provider.interface';
+import type { ILLMProvider } from '../ai-agent/providers/llm-provider.interface';
+import { LLM_PROVIDER_TOKEN } from '../ai-agent/providers/llm-provider.interface';
 import { extractJsonFromLlm } from '../ai-agent/tools/helpers/llm-json.helper';
 
 export interface ChatMessage {
