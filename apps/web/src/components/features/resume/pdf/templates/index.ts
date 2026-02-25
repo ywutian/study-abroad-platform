@@ -1,6 +1,8 @@
+import type { ResumeSettings } from '@study-abroad/shared';
 import type { TemplateDefinition, TemplateCategory, ResumeTheme, LayoutType } from '../types';
 import { TEMPLATE_DEFINITIONS } from './definitions';
 import { buildTheme } from '../themes';
+import { applyUserSettings } from '../themes/apply-settings';
 
 // ─── Template Registry ───
 
@@ -27,14 +29,21 @@ export function getTemplatesForResumeType(resumeType: string): TemplateDefinitio
 
 /**
  * Resolves a template ID into a full ResumeTheme + LayoutType.
- * Applies any template-level overrides on top of the base theme.
+ * Three-layer cascade: base theme → template overrides → user settings.
  */
-export function resolveTemplate(templateId: string): {
+export function resolveTemplate(
+  templateId: string,
+  userSettings?: ResumeSettings
+): {
   theme: ResumeTheme;
   layout: LayoutType;
   definition: TemplateDefinition;
 } {
   const def = getTemplate(templateId);
   const theme = buildTheme(def.theme, def.fontPairing, def.overrides);
-  return { theme, layout: def.layout, definition: def };
+  return {
+    theme: userSettings ? applyUserSettings(theme, userSettings) : theme,
+    layout: def.layout,
+    definition: def,
+  };
 }
