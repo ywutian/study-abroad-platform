@@ -6,11 +6,10 @@ import { Loader2, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { SectionConfig } from '../pdf/types';
-import { resolveTemplate } from '../pdf/templates';
-import { registerFonts } from '../pdf/fonts/register';
 
-// Dynamic import: @react-pdf/renderer is client-only and heavy
-const PDFViewer = dynamic(() => import('@react-pdf/renderer').then((m) => m.PDFViewer), {
+// Single dynamic import: PDFViewer + PreviewDocument must be in the same chunk
+// so that PDFViewer receives <Document> directly as a child (no next/dynamic wrapper in between).
+const PDFViewerInner = dynamic(() => import('./pdf-viewer-inner'), {
   ssr: false,
   loading: () => (
     <div className="flex h-full items-center justify-center">
@@ -19,22 +18,14 @@ const PDFViewer = dynamic(() => import('@react-pdf/renderer').then((m) => m.PDFV
   ),
 });
 
-const ResumeDocumentDynamic = dynamic(
-  () => import('./preview-renderer').then((m) => ({ default: m.PreviewDocument })),
-  { ssr: false }
-);
-
 interface ResumePreviewProps {
   sections: SectionConfig[];
   templateId: string;
   maxPages?: number;
 }
 
-export function ResumePreview({ sections, templateId, maxPages = 1 }: ResumePreviewProps) {
+export function ResumePreview({ sections, templateId }: ResumePreviewProps) {
   const [zoom, setZoom] = useState(100);
-
-  // Register fonts once
-  useMemo(() => registerFonts(), []);
 
   const visibleSections = useMemo(() => sections.filter((s) => s.isVisible), [sections]);
 
@@ -74,14 +65,12 @@ export function ResumePreview({ sections, templateId, maxPages = 1 }: ResumePrev
             transformOrigin: 'top center',
           }}
         >
-          <PDFViewer
+          <PDFViewerInner
+            sections={visibleSections}
+            templateId={templateId}
             width={612}
             height={792}
-            showToolbar={false}
-            className="rounded border shadow-sm"
-          >
-            <ResumeDocumentDynamic sections={visibleSections} templateId={templateId} />
-          </PDFViewer>
+          />
         </div>
       </div>
     </div>
