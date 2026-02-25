@@ -27,6 +27,7 @@ import { AssessmentModule } from '../assessment/assessment.module';
 import { ForumModule } from '../forum/forum.module';
 import { SwipeModule } from '../swipe/swipe.module';
 import { HallModule } from '../hall/hall.module';
+import { ResumeModule } from '../resume/resume.module';
 
 // Sub-Modules
 import { AiAgentMemoryModule } from './memory/memory.module';
@@ -75,6 +76,7 @@ import {
   ForumToolsService,
   RankingToolsService,
   SearchToolsService,
+  ResumeToolsService,
 } from './tools';
 
 // Config validation
@@ -109,6 +111,7 @@ import { AgentSecurityMiddleware } from './middleware/security.middleware';
     ForumModule,
     SwipeModule,
     HallModule,
+    ResumeModule,
 
     // Sub-modules (encapsulate memory & infrastructure providers)
     AiAgentMemoryModule,
@@ -142,6 +145,7 @@ import { AgentSecurityMiddleware } from './middleware/security.middleware';
     ForumToolsService,
     RankingToolsService,
     SearchToolsService,
+    ResumeToolsService,
 
     // Core Agent Services
     LLMService,

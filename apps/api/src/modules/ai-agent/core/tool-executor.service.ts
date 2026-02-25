@@ -39,6 +39,7 @@ import { AssessmentToolsService } from '../tools/assessment-tools.service';
 import { ForumToolsService } from '../tools/forum-tools.service';
 import { RankingToolsService } from '../tools/ranking-tools.service';
 import { SearchToolsService } from '../tools/search-tools.service';
+import { ResumeToolsService } from '../tools/resume-tools.service';
 
 // Retry config
 const TOOL_RETRY_CONFIG = {
@@ -81,6 +82,7 @@ export class ToolExecutorService implements OnModuleInit {
     private forumTools: ForumToolsService,
     private rankingTools: RankingToolsService,
     private searchTools: SearchToolsService,
+    private resumeTools: ResumeToolsService,
     // Infrastructure
     @Optional() private metrics?: MetricsService,
     @Optional() private resilience?: ResilienceService,
@@ -99,6 +101,7 @@ export class ToolExecutorService implements OnModuleInit {
       this.forumTools,
       this.rankingTools,
       this.searchTools,
+      this.resumeTools,
     ];
 
     for (const provider of providers) {
@@ -226,7 +229,7 @@ export class ToolExecutorService implements OnModuleInit {
     };
     const { agent, task, context: delegationContext } = args;
 
-    const validAgents = ['essay', 'school', 'profile', 'timeline'];
+    const validAgents = ['essay', 'school', 'profile', 'timeline', 'resume'];
     if (!agent || !validAgents.includes(agent)) {
       return {
         success: false,

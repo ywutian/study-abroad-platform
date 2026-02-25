@@ -66,6 +66,13 @@ export enum ToolName {
   GET_PREDICTION_DASHBOARD = 'get_prediction_dashboard',
   GET_SCHOOL_LIST_PREDICTIONS = 'get_school_list_predictions',
 
+  // 简历工具
+  GET_RESUME_LIST = 'get_resume_list',
+  GET_RESUME_DETAILS = 'get_resume_details',
+  REVIEW_RESUME = 'review_resume',
+  OPTIMIZE_RESUME_BULLETS = 'optimize_resume_bullets',
+  SUGGEST_RESUME_CONTENT = 'suggest_resume_content',
+
   // 外部搜索工具
   WEB_SEARCH = 'web_search',
   SEARCH_SCHOOL_WEBSITE = 'search_school_website',
@@ -85,7 +92,7 @@ export const TOOLS: ToolDefinition[] = [
         agent: {
           type: 'string',
           description: '目标 Agent',
-          enum: ['essay', 'school', 'profile', 'timeline'],
+          enum: ['essay', 'school', 'profile', 'timeline', 'resume'],
         },
         task: {
           type: 'string',
@@ -807,6 +814,115 @@ export const TOOLS: ToolDefinition[] = [
       required: [],
     },
     handler: 'prediction.schoolList',
+  },
+
+  // ============== 简历工具 ==============
+  {
+    name: ToolName.GET_RESUME_LIST,
+    description:
+      '获取用户的简历列表。当需要了解用户有哪些简历时使用。返回简历列表（含标题、类型、状态、模板）。不要用于获取简历详细内容（请用 get_resume_details）。',
+    parameters: {
+      type: 'object',
+      properties: {},
+      required: [],
+    },
+    handler: 'resume.list',
+  },
+  {
+    name: ToolName.GET_RESUME_DETAILS,
+    description:
+      '获取指定简历的完整内容。当需要查看简历各板块内容、模板设置时使用。支持通过 resumeId 查询，或不传 ID 自动获取最近编辑的简历。返回简历详情（含所有 sections 和 settings）。不要用于列出所有简历（请用 get_resume_list）。',
+    parameters: {
+      type: 'object',
+      properties: {
+        resumeId: {
+          type: 'string',
+          description: '简历ID（可选，不传则获取最近编辑的简历）',
+        },
+      },
+      required: [],
+    },
+    handler: 'resume.details',
+  },
+  {
+    name: ToolName.REVIEW_RESUME,
+    description:
+      '全面评审简历质量。当用户请求简历评估、打分、诊断问题时使用。支持指定目标学校和专业以获得针对性建议。返回综合评分(0-100)、五维度评估(内容/格式/影响力/完整性/相关性)、Bullet质量分析和缺失内容提示。不要用于优化单个板块（请用 optimize_resume_bullets 或 suggest_resume_content）。',
+    parameters: {
+      type: 'object',
+      properties: {
+        resumeId: {
+          type: 'string',
+          description: '简历ID',
+        },
+        targetSchool: {
+          type: 'string',
+          description: '目标学校（可选）',
+        },
+        targetMajor: {
+          type: 'string',
+          description: '目标专业（可选）',
+        },
+      },
+      required: ['resumeId'],
+    },
+    handler: 'resume.review',
+  },
+  {
+    name: ToolName.OPTIMIZE_RESUME_BULLETS,
+    description:
+      '优化简历指定板块的 bullet points。当用户请求改善某个板块的描述、使用更强的动词、添加量化数据时使用。返回优化前后的对比和改进建议。不要用于整体评审（请用 review_resume）。',
+    parameters: {
+      type: 'object',
+      properties: {
+        resumeId: {
+          type: 'string',
+          description: '简历ID',
+        },
+        sectionId: {
+          type: 'string',
+          description: '板块ID',
+        },
+        itemId: {
+          type: 'string',
+          description: '具体条目ID（可选）',
+        },
+        targetSchool: {
+          type: 'string',
+          description: '目标学校（可选）',
+        },
+        targetMajor: {
+          type: 'string',
+          description: '目标专业（可选）',
+        },
+      },
+      required: ['resumeId', 'sectionId'],
+    },
+    handler: 'resume.optimizeBullets',
+  },
+  {
+    name: ToolName.SUGGEST_RESUME_CONTENT,
+    description:
+      '根据用户档案和简历类型为指定板块建议新内容。当用户不知道某个板块该写什么、需要内容灵感时使用。会参考用户的活动、奖项、教育背景生成建议。返回建议内容列表。不要用于优化已有内容（请用 optimize_resume_bullets）。',
+    parameters: {
+      type: 'object',
+      properties: {
+        resumeId: {
+          type: 'string',
+          description: '简历ID',
+        },
+        sectionType: {
+          type: 'string',
+          description: '板块类型（如 WORK_EXPERIENCE, ACTIVITIES, AWARDS 等）',
+        },
+        targetMajor: {
+          type: 'string',
+          description: '目标专业（可选）',
+        },
+      },
+      required: ['resumeId', 'sectionType'],
+    },
+    handler: 'resume.suggestContent',
   },
 
   // ============== 外部搜索工具 ==============

@@ -40,6 +40,7 @@ export const AGENT_INFO: Record<
   school: { name: 'School Advisor', nameZh: '选校专家', icon: '🎯', color: 'text-blue-500' },
   profile: { name: 'Profile Analyst', nameZh: '档案分析', icon: '📊', color: 'text-green-500' },
   timeline: { name: 'Timeline Planner', nameZh: '时间规划', icon: '📅', color: 'text-orange-500' },
+  resume: { name: 'Resume Expert', nameZh: '简历专家', icon: '📄', color: 'text-teal-500' },
 };
 
 export interface ConversationSummary {

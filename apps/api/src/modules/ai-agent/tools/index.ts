@@ -23,3 +23,4 @@ export { AssessmentToolsService } from './assessment-tools.service';
 export { ForumToolsService } from './forum-tools.service';
 export { RankingToolsService } from './ranking-tools.service';
 export { SearchToolsService } from './search-tools.service';
+export { ResumeToolsService } from './resume-tools.service';

@@ -17,6 +17,7 @@ export const AGENT_CONFIGS: Record<AgentType, AgentConfig> = {
 - 选校(搜索/对比/录取分析) → school
 - 档案(成绩/活动/背景/测评) → profile
 - 规划(截止日期/时间线) → timeline
+- 简历(评审/优化/建议) → resume
 - 论坛/社区问题 → 直接使用论坛工具
 - 案例分析/预测游戏 → 直接使用案例工具
 - 档案排名/改进建议 → 直接使用排名工具
@@ -38,6 +39,7 @@ Delegation rules:
 - School selection (search/compare/admissions analysis) → school
 - Profile (grades/activities/background/assessments) → profile
 - Planning (deadlines/timeline) → timeline
+- Resume (review/optimize/suggest) → resume
 - Forum/community questions → use forum tools directly
 - Case analysis/prediction → use case tools directly
 - Profile ranking/improvement → use ranking tools directly
@@ -74,6 +76,7 @@ Use delegate_to_agent when delegation is needed, or use relevant tools directly`
       AgentType.SCHOOL,
       AgentType.PROFILE,
       AgentType.TIMELINE,
+      AgentType.RESUME,
     ],
     model: 'gpt-4o-mini',
     temperature: 0.3,
@@ -376,6 +379,63 @@ Principle: Provide specific dates, prioritized by importance.`,
     model: 'gpt-4o-mini',
     temperature: 0.5,
     maxTokens: 3000,
+  },
+
+  // ==================== 简历专家 Agent ====================
+  [AgentType.RESUME]: {
+    type: AgentType.RESUME,
+    name: '简历专家',
+    description: '专注于简历评审、内容优化和格式建议',
+    systemPrompt: `留学简历专家。
+
+能力: 简历评审|Bullet优化|内容建议|ATS兼容性分析
+
+评审维度:
+- 内容质量(30%): Bullet质量、动词使用、量化数据、STAR结构
+- 格式规范(20%): 一致性、板块排序、信息密度
+- 影响力(20%): 成就导向、结果聚焦、领导力证据
+- 完整性(15%): 必要板块齐全、无空白、足够细节
+- 相关性(15%): 内容匹配简历类型和目标学校
+
+流程:
+1. get_resume_list 查看用户简历
+2. get_resume_details 获取简历内容
+3. get_profile 了解背景（如需要）
+4. 根据需求使用 review_resume / optimize_resume_bullets / suggest_resume_content
+5. 提供具体可操作的改进建议
+
+原则: 关注ATS友好度，使用强动词，量化成就，保持一页（本科）或两页（研究生CV）`,
+    systemPromptEn: `College admissions resume expert.
+
+Capabilities: Resume review | Bullet optimization | Content suggestions | ATS compatibility analysis
+
+Evaluation dimensions:
+- Content quality (30%): Bullet quality, action verbs, quantification, STAR structure
+- Formatting (20%): Consistency, section ordering, information density
+- Impact (20%): Achievement orientation, results focus, leadership evidence
+- Completeness (15%): Required sections present, no gaps, sufficient detail
+- Relevance (15%): Content matches resume type and target school
+
+Workflow:
+1. get_resume_list to see user's resumes
+2. get_resume_details to get resume content
+3. get_profile to understand background (if needed)
+4. Use review_resume / optimize_resume_bullets / suggest_resume_content as needed
+5. Provide specific, actionable improvement suggestions
+
+Principle: Focus on ATS-friendliness, strong action verbs, quantified achievements, one page (undergrad) or two pages (graduate CV)`,
+    tools: [
+      'get_profile',
+      'get_resume_list',
+      'get_resume_details',
+      'review_resume',
+      'optimize_resume_bullets',
+      'suggest_resume_content',
+    ],
+    canDelegate: [AgentType.ORCHESTRATOR],
+    model: 'gpt-4o-mini',
+    temperature: 0.4,
+    maxTokens: 4000,
   },
 };
 
