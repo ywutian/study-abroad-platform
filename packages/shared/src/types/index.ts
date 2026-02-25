@@ -537,6 +537,7 @@ export enum AgentType {
   SCHOOL = 'school',
   PROFILE = 'profile',
   TIMELINE = 'timeline',
+  RESUME = 'resume',
 }
 
 export interface AiChatMessage {
@@ -699,7 +700,7 @@ export interface Resume {
   type: ResumeType;
   templateId: string;
   language: string;
-  settings: Record<string, unknown>;
+  settings: ResumeSettings;
   sections: ResumeSection[];
   version: number;
   lastImportedAt?: string;
@@ -738,6 +739,58 @@ export interface ResumeSnapshot {
   version: number;
   description?: string;
   createdAt: string;
+}
+
+// ─── Resume Customization Settings ───
+// Stored in Resume.settings JSON field
+// All fields optional — undefined means "use template default"
+
+export interface ResumeColorSettings {
+  primary?: string;
+  text?: string;
+  textLight?: string;
+  background?: string;
+  border?: string;
+  sidebarBg?: string;
+  sidebarText?: string;
+  headerBg?: string;
+  headerText?: string;
+}
+
+export interface ResumeFontSettings {
+  heading?: string;
+  body?: string;
+}
+
+export interface ResumeFontSizeSettings {
+  name?: number;
+  sectionTitle?: number;
+  body?: number;
+  small?: number;
+}
+
+export interface ResumeSpacingSettings {
+  pageMarginX?: number;
+  pageMarginY?: number;
+  sectionGap?: number;
+  itemGap?: number;
+  lineHeight?: number;
+}
+
+export interface ResumeDecorationSettings {
+  sectionDivider?: 'line' | 'double-line' | 'dots' | 'none';
+  headingStyle?: 'underline' | 'background' | 'border-left' | 'uppercase' | 'plain';
+  bulletStyle?: 'disc' | 'dash' | 'arrow' | 'square';
+  pageSize?: 'LETTER' | 'A4';
+  dateFormat?: 'MMM YYYY' | 'MM/YYYY' | 'YYYY';
+}
+
+export interface ResumeSettings {
+  colors?: ResumeColorSettings;
+  fonts?: ResumeFontSettings;
+  fontSize?: ResumeFontSizeSettings;
+  spacing?: ResumeSpacingSettings;
+  decorations?: ResumeDecorationSettings;
 }
 
 // Resume Section Content Types
@@ -844,8 +897,8 @@ export interface CertificationItem {
   url?: string;
 }
 
-// Resume AI Review Types
-export interface ResumeReviewResult {
+// Resume AI Review Types — v1 (legacy, for backward compat with old DB records)
+export interface ResumeReviewResultV1 {
   overallScore: number;
   dimensions: Array<{
     name: string;
@@ -860,6 +913,74 @@ export interface ResumeReviewResult {
     averageLength: number;
   };
   contentGaps: string[];
+  summary: string;
+}
+
+// Resume AI Review Types — v2 (standardized rubric + section-linked feedback)
+export type ReviewIssueType =
+  | 'weak_verb'
+  | 'no_quantification'
+  | 'too_vague'
+  | 'missing_result'
+  | 'too_long'
+  | 'too_short'
+  | 'formatting'
+  | 'relevance'
+  | 'missing_info'
+  | 'tense_inconsistency'
+  | 'generic_claim';
+
+export type ReviewSeverity = 'high' | 'medium' | 'low';
+
+export interface ReviewCriterion {
+  key: string;
+  name: string;
+  score: number;
+  maxScore: number;
+  detail: string;
+}
+
+export interface SectionIssue {
+  type: ReviewIssueType;
+  severity: ReviewSeverity;
+  original: string;
+  suggestion: string;
+  reason: string;
+  bulletIndex?: number;
+}
+
+export interface SectionFeedback {
+  sectionType: string;
+  sectionTitle: string;
+  sectionId?: string;
+  issues: SectionIssue[];
+}
+
+export interface ContentGap {
+  sectionType: string;
+  description: string;
+  priority: ReviewSeverity;
+  example?: string;
+}
+
+export interface ResumeReviewResult {
+  version: 2;
+  overallScore: number;
+  dimensions: Array<{
+    name: string;
+    score: number;
+    status: 'green' | 'yellow' | 'red';
+    feedback: string;
+    criteria: ReviewCriterion[];
+    improvements: string[];
+  }>;
+  sectionFeedback: SectionFeedback[];
+  contentGaps: ContentGap[];
+  bulletQuality: {
+    actionVerbUsage: number;
+    quantificationRate: number;
+    averageLength: number;
+  };
   summary: string;
 }
 
