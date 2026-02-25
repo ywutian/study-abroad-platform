@@ -19,14 +19,18 @@ export class TimeoutMiddleware implements NestMiddleware {
   );
 
   use(req: Request, res: Response, next: NextFunction) {
+    // Use originalUrl which always contains the full path (req.path may be
+    // stripped of the global prefix inside NestJS middleware routing).
+    const url = req.originalUrl || req.path;
+
     const isAiEndpoint =
-      req.path.includes('/ai-agent/') ||
-      req.path.includes('/ai/') ||
-      req.path.includes('/prediction') ||
-      req.path.includes('/recommendation');
+      url.includes('/ai-agent/') ||
+      url.includes('/ai/') ||
+      url.includes('/prediction') ||
+      url.includes('/recommendation');
 
     const isAuthEndpoint =
-      req.path.includes('/auth/login') || req.path.includes('/auth/refresh');
+      url.includes('/auth/login') || url.includes('/auth/refresh');
     const authTimeoutMs = Number(process.env.AUTH_REQUEST_TIMEOUT_MS || 60_000);
 
     const timeoutMs = isAiEndpoint
@@ -39,7 +43,7 @@ export class TimeoutMiddleware implements NestMiddleware {
       if (!res.headersSent) {
         const correlationId = req.correlationId || 'unknown';
         this.logger.warn(
-          `[${correlationId}] Request timeout after ${timeoutMs}ms: ${req.method} ${req.path}`,
+          `[${correlationId}] Request timeout after ${timeoutMs}ms: ${req.method} ${url}`,
         );
 
         res.status(408).json({

@@ -24,6 +24,7 @@ describe('TimeoutMiddleware', () => {
       path,
       method,
       url: path,
+      originalUrl: path,
     } as any;
 
     const res = {
@@ -127,6 +128,20 @@ describe('TimeoutMiddleware', () => {
     middleware.use(req, res, next);
 
     jest.advanceTimersByTime(120_000);
+    expect(res.status).toHaveBeenCalledWith(408);
+  });
+
+  it('should use AI timeout for resume AI review endpoints containing /ai/', () => {
+    const { req, res, next } = createMocks(
+      '/api/v1/resumes/abc123/ai/review',
+      'POST',
+    );
+    middleware.use(req, res, next);
+
+    jest.advanceTimersByTime(30_000);
+    expect(res.status).not.toHaveBeenCalled();
+
+    jest.advanceTimersByTime(90_000); // total 120s
     expect(res.status).toHaveBeenCalledWith(408);
   });
 
