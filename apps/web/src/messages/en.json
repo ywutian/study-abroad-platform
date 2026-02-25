@@ -2621,12 +2621,76 @@
       "importProfile": "Import from Profile",
       "duplicate": "Duplicate Resume",
       "aiReview": "AI Review",
+      "aiReviewing": "Reviewing...",
+      "viewReview": "Last Review",
+      "reReview": "Re-review",
       "snapshot": "Save Version",
       "history": "Version History",
       "restore": "Restore",
       "pageCount": "{count} page",
       "pageWarning": "Resume exceeds {max} page limit",
-      "zoom": "Zoom"
+      "zoom": "Zoom",
+      "sections": "Sections"
+    },
+    "customize": {
+      "title": "Customize",
+      "reset": "Reset to Defaults",
+      "resetConfirm": "This will remove all your customizations. Continue?",
+      "colors": {
+        "title": "Colors",
+        "primary": "Accent Color",
+        "text": "Text Color",
+        "textLight": "Secondary Text",
+        "background": "Page Background",
+        "border": "Divider Color",
+        "sidebarBg": "Sidebar Background",
+        "sidebarText": "Sidebar Text",
+        "headerBg": "Banner Background",
+        "headerText": "Banner Text"
+      },
+      "fonts": {
+        "title": "Fonts",
+        "heading": "Heading Font",
+        "body": "Body Font"
+      },
+      "fontSize": {
+        "title": "Font Sizes",
+        "name": "Name",
+        "sectionTitle": "Section Title",
+        "body": "Body Text",
+        "small": "Small Text"
+      },
+      "spacing": {
+        "title": "Spacing",
+        "pageMarginX": "Horizontal Margin",
+        "pageMarginY": "Vertical Margin",
+        "sectionGap": "Section Gap",
+        "itemGap": "Item Gap",
+        "lineHeight": "Line Height"
+      },
+      "decorations": {
+        "title": "Style",
+        "sectionDivider": "Section Divider",
+        "headingStyle": "Heading Style",
+        "bulletStyle": "Bullet Style",
+        "pageSize": "Page Size",
+        "dateFormat": "Date Format",
+        "options": {
+          "line": "Line",
+          "doubleLine": "Double Line",
+          "dots": "Dots",
+          "none": "None",
+          "underline": "Underline",
+          "background": "Background",
+          "borderLeft": "Left Border",
+          "uppercase": "Uppercase",
+          "plain": "Plain",
+          "disc": "Bullet (•)",
+          "dash": "Dash (–)",
+          "arrow": "Arrow (›)",
+          "square": "Square (▪)"
+        }
+      }
     },
     "create": {
       "title": "Create New Resume",
@@ -2651,6 +2715,80 @@
       "actionVerbs": "Action Verb Usage",
       "quantification": "Quantification Rate"
     },
+    "aiReview": {
+      "title": "AI Resume Review",
+      "tabs": {
+        "overview": "Overview",
+        "sectionFeedback": "Section Feedback",
+        "contentGaps": "Content Gaps"
+      },
+      "dimensions": "Evaluation Dimensions",
+      "bulletQuality": "Bullet Point Quality",
+      "actionVerbs": "Action Verbs",
+      "quantification": "Quantified Data",
+      "avgLength": "Avg. Words/Bullet",
+      "contentGaps": "Missing Content",
+      "dim": {
+        "content": "Content Quality",
+        "formatting": "Formatting",
+        "impact": "Impact",
+        "completeness": "Completeness",
+        "relevance": "Relevance"
+      },
+      "criteriaKeys": {
+        "strong_action_verbs": "Strong Action Verbs",
+        "quantified_results": "Quantified Results",
+        "star_structure": "STAR Structure",
+        "specificity": "Specificity",
+        "bullet_length": "Bullet Length",
+        "consistency": "Consistency",
+        "section_ordering": "Section Ordering",
+        "information_density": "Information Density",
+        "visual_balance": "Visual Balance",
+        "achievement_orientation": "Achievement Orientation",
+        "leadership_evidence": "Leadership Evidence",
+        "scope_scale": "Scope & Scale",
+        "progression": "Progression",
+        "required_sections": "Required Sections",
+        "sufficient_detail": "Sufficient Detail",
+        "contact_info": "Contact Information",
+        "date_coverage": "Date Coverage",
+        "type_match": "Type Match",
+        "target_alignment": "Target Alignment",
+        "keyword_usage": "Keyword Usage",
+        "recency": "Recency"
+      },
+      "issueTypes": {
+        "weak_verb": "Weak Verb",
+        "no_quantification": "No Quantification",
+        "too_vague": "Too Vague",
+        "missing_result": "Missing Result",
+        "too_long": "Too Long",
+        "too_short": "Too Short",
+        "formatting": "Formatting",
+        "relevance": "Relevance",
+        "missing_info": "Missing Info",
+        "tense_inconsistency": "Tense Issue",
+        "generic_claim": "Generic Claim"
+      },
+      "severity": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "apply": "Apply",
+      "applied": "Applied",
+      "cannotApply": "Resume has changed since review, cannot auto-apply",
+      "issues": "issues",
+      "noIssues": "No issues found",
+      "noGaps": "No missing content found",
+      "original": "Original",
+      "suggested": "Suggested",
+      "reason": "Reason",
+      "example": "Example",
+      "reviewedAt": "Reviewed at {time}",
+      "rerun": "Re-review"
+    },
     "toast": {
       "created": "Resume created successfully",
       "updated": "Resume updated successfully",
@@ -2661,6 +2799,8 @@
       "snapshotRestored": "Version restored successfully",
       "exported": "Resume exported as PDF",
       "saveFailed": "Failed to save changes",
+      "aiReviewFailed": "AI review failed, please try again",
+      "aiReviewComplete": "AI review complete!",
       "noData": "Please complete your profile first",
       "success": "Resume exported successfully",
       "failed": "Export failed, please try again"

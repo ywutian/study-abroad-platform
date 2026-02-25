@@ -810,6 +810,48 @@ export class ResumeService {
   // AI Features
   // ============================================
 
+  // ── AI Review Retrieval ──
+
+  async getLatestReview(userId: string, resumeId: string) {
+    const resume = await this.prisma.resume.findUnique({
+      where: { id: resumeId },
+    });
+    this.verifyOwnership(resume, userId);
+
+    return this.prisma.resumeAIReview.findFirst({
+      where: { resumeId, type: 'full_review' },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        output: true,
+        overallScore: true,
+        input: true,
+        createdAt: true,
+      },
+    });
+  }
+
+  async getReviewHistory(userId: string, resumeId: string) {
+    const resume = await this.prisma.resume.findUnique({
+      where: { id: resumeId },
+    });
+    this.verifyOwnership(resume, userId);
+
+    return this.prisma.resumeAIReview.findMany({
+      where: { resumeId, type: 'full_review' },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+      select: {
+        id: true,
+        overallScore: true,
+        input: true,
+        createdAt: true,
+      },
+    });
+  }
+
+  // ── AI Review Execution ──
+
   async aiReview(
     userId: string,
     resumeId: string,
@@ -822,6 +864,7 @@ export class ResumeService {
       sections: resume.sections
         .filter((s) => s.isVisible)
         .map((s) => ({
+          id: s.id,
           type: s.type,
           title: s.title,
           content: s.content,
@@ -835,7 +878,7 @@ export class ResumeService {
       targetMajor,
     });
 
-    await this.prisma.resumeAIReview.create({
+    const record = await this.prisma.resumeAIReview.create({
       data: {
         resumeId,
         type: 'full_review',
@@ -843,9 +886,15 @@ export class ResumeService {
         output: result as any,
         overallScore: result.overallScore,
       },
+      select: {
+        id: true,
+        output: true,
+        overallScore: true,
+        createdAt: true,
+      },
     });
 
-    return result;
+    return record;
   }
 
   async aiOptimizeBullets(

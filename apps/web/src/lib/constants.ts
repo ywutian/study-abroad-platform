@@ -8,8 +8,8 @@
 
 // ── AI Request Timeouts ──────────────────────────────────────
 export const AI_TIMEOUTS = {
-  /** Long-running AI requests (essay review, prediction, recommendation) */
-  AI_REQUEST: 60_000,
+  /** Long-running AI requests (essay review, prediction, recommendation, resume AI review) */
+  AI_REQUEST: 120_000,
   /** SSE stream chunk idle timeout */
   SSE_CHUNK: 60_000,
   /** Default API request timeout */

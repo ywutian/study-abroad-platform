@@ -167,6 +167,24 @@ export class ResumeController {
   // AI Features
   // ============================================
 
+  @Get(':id/ai/reviews/latest')
+  @ApiOperation({ summary: 'Get the latest AI full review for a resume' })
+  getLatestReview(
+    @CurrentUser() user: { id: string },
+    @Param('id') id: string,
+  ) {
+    return this.resumeService.getLatestReview(user.id, id);
+  }
+
+  @Get(':id/ai/reviews')
+  @ApiOperation({ summary: 'List AI review history for a resume' })
+  getReviewHistory(
+    @CurrentUser() user: { id: string },
+    @Param('id') id: string,
+  ) {
+    return this.resumeService.getReviewHistory(user.id, id);
+  }
+
   @Post(':id/ai/review')
   @ApiOperation({ summary: 'AI full resume review' })
   aiReview(

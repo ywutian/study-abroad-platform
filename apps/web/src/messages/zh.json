@@ -2616,12 +2616,76 @@
       "importProfile": "从档案导入",
       "duplicate": "复制简历",
       "aiReview": "AI评审",
+      "aiReviewing": "评审中...",
+      "viewReview": "查看评审",
+      "reReview": "重新评审",
       "snapshot": "保存版本",
       "history": "版本历史",
       "restore": "恢复",
       "pageCount": "{count} 页",
       "pageWarning": "简历超出 {max} 页限制",
-      "zoom": "缩放"
+      "zoom": "缩放",
+      "sections": "板块"
+    },
+    "customize": {
+      "title": "自定义",
+      "reset": "恢复默认",
+      "resetConfirm": "将清除所有自定义设置，确定继续？",
+      "colors": {
+        "title": "颜色",
+        "primary": "主题色",
+        "text": "正文颜色",
+        "textLight": "次要文字",
+        "background": "页面背景",
+        "border": "分割线",
+        "sidebarBg": "侧栏背景",
+        "sidebarText": "侧栏文字",
+        "headerBg": "横幅背景",
+        "headerText": "横幅文字"
+      },
+      "fonts": {
+        "title": "字体",
+        "heading": "标题字体",
+        "body": "正文字体"
+      },
+      "fontSize": {
+        "title": "字号",
+        "name": "姓名",
+        "sectionTitle": "章节标题",
+        "body": "正文",
+        "small": "小字"
+      },
+      "spacing": {
+        "title": "间距",
+        "pageMarginX": "水平页边距",
+        "pageMarginY": "垂直页边距",
+        "sectionGap": "章节间距",
+        "itemGap": "条目间距",
+        "lineHeight": "行高"
+      },
+      "decorations": {
+        "title": "样式",
+        "sectionDivider": "分割线",
+        "headingStyle": "标题样式",
+        "bulletStyle": "列表符号",
+        "pageSize": "纸张大小",
+        "dateFormat": "日期格式",
+        "options": {
+          "line": "单线",
+          "doubleLine": "双线",
+          "dots": "点线",
+          "none": "无",
+          "underline": "下划线",
+          "background": "背景色",
+          "borderLeft": "左边框",
+          "uppercase": "大写",
+          "plain": "无装饰",
+          "disc": "圆点 (•)",
+          "dash": "短横 (–)",
+          "arrow": "箭头 (›)",
+          "square": "方块 (▪)"
+        }
+      }
     },
     "create": {
       "title": "创建新简历",
@@ -2646,6 +2710,80 @@
       "actionVerbs": "动词使用率",
       "quantification": "量化数据率"
     },
+    "aiReview": {
+      "title": "AI简历评审",
+      "tabs": {
+        "overview": "总览",
+        "sectionFeedback": "板块反馈",
+        "contentGaps": "缺失内容"
+      },
+      "dimensions": "评估维度",
+      "bulletQuality": "要点质量",
+      "actionVerbs": "动词使用率",
+      "quantification": "量化数据率",
+      "avgLength": "平均字数/条",
+      "contentGaps": "缺失内容",
+      "dim": {
+        "content": "内容质量",
+        "formatting": "格式规范",
+        "impact": "影响力",
+        "completeness": "完整性",
+        "relevance": "相关性"
+      },
+      "criteriaKeys": {
+        "strong_action_verbs": "强动词使用",
+        "quantified_results": "量化数据",
+        "star_structure": "STAR结构",
+        "specificity": "具体性",
+        "bullet_length": "要点长度",
+        "consistency": "格式一致性",
+        "section_ordering": "板块排序",
+        "information_density": "信息密度",
+        "visual_balance": "视觉平衡",
+        "achievement_orientation": "成就导向",
+        "leadership_evidence": "领导力证据",
+        "scope_scale": "规模与范围",
+        "progression": "成长轨迹",
+        "required_sections": "必要板块",
+        "sufficient_detail": "详细程度",
+        "contact_info": "联系信息",
+        "date_coverage": "时间覆盖",
+        "type_match": "类型匹配",
+        "target_alignment": "目标契合",
+        "keyword_usage": "关键词使用",
+        "recency": "时效性"
+      },
+      "issueTypes": {
+        "weak_verb": "弱动词",
+        "no_quantification": "缺少量化",
+        "too_vague": "过于笼统",
+        "missing_result": "缺少成果",
+        "too_long": "过长",
+        "too_short": "过短",
+        "formatting": "格式问题",
+        "relevance": "相关性不足",
+        "missing_info": "信息缺失",
+        "tense_inconsistency": "时态不一致",
+        "generic_claim": "空泛描述"
+      },
+      "severity": {
+        "high": "严重",
+        "medium": "中等",
+        "low": "轻微"
+      },
+      "apply": "应用",
+      "applied": "已应用",
+      "cannotApply": "简历已变更，无法自动应用",
+      "issues": "个问题",
+      "noIssues": "未发现问题",
+      "noGaps": "未发现缺失内容",
+      "original": "原文",
+      "suggested": "建议",
+      "reason": "原因",
+      "example": "示例",
+      "reviewedAt": "评审时间：{time}",
+      "rerun": "重新评审"
+    },
     "toast": {
       "created": "简历创建成功",
       "updated": "简历更新成功",
@@ -2656,6 +2794,8 @@
       "snapshotRestored": "版本恢复成功",
       "exported": "简历已导出为PDF",
       "saveFailed": "保存失败",
+      "aiReviewFailed": "AI评审失败，请重试",
+      "aiReviewComplete": "AI评审完成！",
       "noData": "请先完善个人资料",
       "success": "简历导出成功",
       "failed": "导出失败，请重试"
