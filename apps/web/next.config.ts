@@ -39,7 +39,13 @@ const nextConfig: NextConfig = {
       const wsHttps = wsUrlNorm.replace(/^wss?:/, (m) => (m === 'wss:' ? 'https:' : 'http:'));
       if (wsHttps !== apiUrlNorm) extra.push(wsHttps);
     }
-    const connectSrcParts = ["'self'", 'https://*.sentry.io', 'wss:', ...extra];
+    const connectSrcParts = [
+      "'self'",
+      'https://*.sentry.io',
+      'https://fonts.gstatic.com',
+      'wss:',
+      ...extra,
+    ];
     return [
       {
         source: '/(.*)',
@@ -66,8 +72,10 @@ const nextConfig: NextConfig = {
               "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
-              `connect-src ${connectSrcParts.join(' ')}`,
-              "font-src 'self'",
+              `connect-src ${connectSrcParts.join(' ')} data:`,
+              "font-src 'self' https://fonts.gstatic.com",
+              "frame-src 'self' blob:",
+              "worker-src 'self' blob:",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",
