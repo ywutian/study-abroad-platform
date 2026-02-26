@@ -186,6 +186,9 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_test?schema=public
 
+      - name: Build shared package
+        run: pnpm --filter @study-abroad/shared build
+
       - name: Seed database
         run: pnpm --filter api exec prisma db seed
         env:
