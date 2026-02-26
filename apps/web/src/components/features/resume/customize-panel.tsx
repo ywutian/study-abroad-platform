@@ -37,7 +37,7 @@ const AVAILABLE_FONTS = [
   { value: 'Times-Roman', label: 'Times New Roman' },
   { value: 'Roboto', label: 'Roboto' },
   { value: 'Lato', label: 'Lato' },
-  { value: 'Noto Sans SC', label: 'Noto Sans SC (中文)' },
+  { value: 'Noto Sans SC', label: 'Noto Sans SC (CJK)' },
   { value: 'Source Sans Pro', label: 'Source Sans Pro' },
   { value: 'Merriweather', label: 'Merriweather' },
 ];

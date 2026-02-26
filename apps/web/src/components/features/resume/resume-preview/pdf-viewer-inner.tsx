@@ -87,5 +87,5 @@ export default function PDFViewerInner({ sections, templateId, settings }: PDFVi
     );
   }
 
-  return <iframe src={url} className="h-full w-full border-0" title="Resume Preview" />;
+  return <iframe src={url} className="h-full w-full border-0" title="PDF" />;
 }
