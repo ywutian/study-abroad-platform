@@ -22,15 +22,40 @@ const requirementTests = [
 
 // 强度级别 - only styles, labels will be translated
 const strengthLevelConfigs = [
-  { labelKey: 'veryWeak', color: 'bg-red-500', textColor: 'text-red-500', min: 0 },
-  { labelKey: 'weak', color: 'bg-orange-500', textColor: 'text-orange-500', min: 1 },
-  { labelKey: 'fair', color: 'bg-yellow-500', textColor: 'text-yellow-500', min: 2 },
-  { labelKey: 'strong', color: 'bg-green-500', textColor: 'text-green-500', min: 3 },
-  { labelKey: 'veryStrong', color: 'bg-emerald-500', textColor: 'text-emerald-500', min: 4 },
+  {
+    labelKey: 'veryWeak',
+    color: 'bg-red-500 dark:bg-red-400',
+    textColor: 'text-red-600 dark:text-red-400',
+    min: 0,
+  },
+  {
+    labelKey: 'weak',
+    color: 'bg-orange-500 dark:bg-orange-400',
+    textColor: 'text-orange-600 dark:text-orange-400',
+    min: 1,
+  },
+  {
+    labelKey: 'fair',
+    color: 'bg-yellow-500 dark:bg-yellow-400',
+    textColor: 'text-yellow-600 dark:text-yellow-400',
+    min: 2,
+  },
+  {
+    labelKey: 'strong',
+    color: 'bg-green-500 dark:bg-green-400',
+    textColor: 'text-green-600 dark:text-green-400',
+    min: 3,
+  },
+  {
+    labelKey: 'veryStrong',
+    color: 'bg-emerald-500 dark:bg-emerald-400',
+    textColor: 'text-emerald-600 dark:text-emerald-400',
+    min: 4,
+  },
 ];
 
-export function PasswordStrength({ 
-  password, 
+export function PasswordStrength({
+  password,
   showRequirements = true,
   className,
 }: PasswordStrengthProps) {
@@ -38,19 +63,19 @@ export function PasswordStrength({
 
   // 计算满足的要求数量
   const { passedCount, passed } = useMemo(() => {
-    const results = requirementTests.map(req => ({
+    const results = requirementTests.map((req) => ({
       ...req,
       passed: req.test(password),
     }));
     return {
-      passedCount: results.filter(r => r.passed).length,
+      passedCount: results.filter((r) => r.passed).length,
       passed: results,
     };
   }, [password]);
 
   // 获取强度级别
   const strength = useMemo(() => {
-    const levelIndex = strengthLevelConfigs.findLastIndex(level => passedCount >= level.min);
+    const levelIndex = strengthLevelConfigs.findLastIndex((level) => passedCount >= level.min);
     return strengthLevelConfigs[levelIndex] || strengthLevelConfigs[0];
   }, [passedCount]);
 
@@ -90,11 +115,7 @@ export function PasswordStrength({
                 req.passed ? 'text-success' : 'text-muted-foreground'
               )}
             >
-              {req.passed ? (
-                <Check className="w-3.5 h-3.5" />
-              ) : (
-                <X className="w-3.5 h-3.5" />
-              )}
+              {req.passed ? <Check className="w-3.5 h-3.5" /> : <X className="w-3.5 h-3.5" />}
               {t(req.labelKey)}
             </li>
           ))}
@@ -107,17 +128,10 @@ export function PasswordStrength({
 // 辅助函数：检查密码是否满足最低要求
 export function isPasswordValid(password: string): boolean {
   // 最低要求：长度+字母+数字
-  return (
-    password.length >= 8 &&
-    /[a-zA-Z]/.test(password) &&
-    /\d/.test(password)
-  );
+  return password.length >= 8 && /[a-zA-Z]/.test(password) && /\d/.test(password);
 }
 
 // 辅助函数：获取密码强度分数 (0-5)
 export function getPasswordScore(password: string): number {
-  return requirementTests.filter(req => req.test(password)).length;
+  return requirementTests.filter((req) => req.test(password)).length;
 }
-
-
-

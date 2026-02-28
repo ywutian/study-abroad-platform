@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { GraduationCap, Sparkles, TrendingUp, Users, Globe, Star } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth';
+import { FadeInView } from '@/components/ui/motion';
 
 /**
  * Redirect authenticated users — isolated in its own component
@@ -126,7 +127,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                   </div>
                 ))}
               </div>
-              <div className="flex items-center gap-1 text-amber-500">
+              <div className="flex items-center gap-1 text-auth-star">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="h-3.5 w-3.5 fill-current" />
                 ))}
@@ -157,7 +158,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
       {/* 右侧表单区 */}
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8 relative z-10">
-        <div className="relative w-full max-w-[420px]">{children}</div>
+        <FadeInView direction="right" delay={0.1}>
+          <div className="relative w-full max-w-[420px]">{children}</div>
+        </FadeInView>
       </div>
     </div>
   );

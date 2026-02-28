@@ -9,7 +9,6 @@ import { useSearchParams } from 'next/navigation';
 import { Link, useRouter } from '@/lib/i18n/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -22,7 +21,7 @@ import { toastLoginSuccess, toastError, toastSuccess, toastWarning } from '@/com
 import { setAuthFromLogin } from '@/stores';
 import { apiClient } from '@/lib/api';
 import { ApiError } from '@/lib/api/api-error';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
 
 type LoginForm = z.infer<ReturnType<typeof createLoginSchema>>;
 
@@ -38,6 +37,7 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const hasShownParamToast = useRef(false);
 
   // 处理 URL 参数提示（邮箱验证成功/失败后跳转）
@@ -135,64 +135,88 @@ export default function LoginPage() {
   };
 
   return (
-    <Card>
-      <CardHeader className="text-center">
-        <CardTitle>{t('auth.login.title')}</CardTitle>
-        <CardDescription>{t('auth.login.subtitle')}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('auth.login.email')}</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="you@example.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('auth.login.password')}</FormLabel>
-                  <FormControl>
-                    <Input type="password" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="flex items-center justify-end">
-              <Link href="/forgot-password" className="text-sm text-blue-600 hover:underline">
-                {t('auth.login.forgotPassword')}
-              </Link>
-            </div>
-            <Button type="submit" className="w-full relative" disabled={isLoading}>
-              {isLoading ? (
-                <span className="flex items-center gap-2">
-                  <Loader2 className="size-4 animate-spin" />
-                  {t('common.loading')}
-                </span>
-              ) : (
-                t('common.login')
-              )}
-            </Button>
-          </form>
-        </Form>
-        <div className="mt-4 text-center text-sm text-slate-500">
-          {t('auth.login.noAccount')}{' '}
-          <Link href="/register" className="text-blue-600 hover:underline">
-            {t('auth.login.signUp')}
-          </Link>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="space-y-6">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold">{t('auth.login.title')}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{t('auth.login.subtitle')}</p>
+      </div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('auth.login.email')}</FormLabel>
+                <FormControl>
+                  <Input
+                    type="email"
+                    placeholder="you@example.com"
+                    autoComplete="email"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('auth.login.password')}</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? 'text' : 'password'}
+                      autoComplete="current-password"
+                      className="pr-10"
+                      {...field}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-0 top-0 bottom-0 w-10 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="flex items-center justify-end">
+            <Link
+              href="/forgot-password"
+              className="text-sm text-[var(--auth-link)] hover:text-[var(--auth-link-hover)] hover:underline transition-colors"
+            >
+              {t('auth.login.forgotPassword')}
+            </Link>
+          </div>
+          <Button type="submit" className="w-full relative" disabled={isLoading}>
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="size-4 animate-spin" />
+                {t('common.loading')}
+              </span>
+            ) : (
+              t('common.login')
+            )}
+          </Button>
+        </form>
+      </Form>
+      <div className="text-center text-sm text-muted-foreground">
+        {t('auth.login.noAccount')}{' '}
+        <Link
+          href="/register"
+          className="text-[var(--auth-link)] hover:text-[var(--auth-link-hover)] hover:underline transition-colors"
+        >
+          {t('auth.login.signUp')}
+        </Link>
+      </div>
+    </div>
   );
 }

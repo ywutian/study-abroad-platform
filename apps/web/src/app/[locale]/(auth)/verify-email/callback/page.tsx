@@ -61,8 +61,8 @@ export default function VerifyEmailCallbackPage() {
     return (
       <div className="space-y-6">
         <div className="text-center">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-lg bg-emerald-500/10 ring-1 ring-emerald-500/20">
-            <CheckCircle className="h-8 w-8 text-emerald-400" />
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-lg bg-success/10 ring-1 ring-success/20">
+            <CheckCircle className="h-8 w-8 text-success" />
           </div>
           <h1 className="text-title text-auth">{t('verifiedTitle')}</h1>
           <p className="mt-2 text-sm text-auth-muted">{t('verifiedDesc')}</p>

@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { Link, useRouter } from '@/lib/i18n/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
+// Card removed for consistency with other auth pages (forgot-password, reset-password, verify-email)
 import {
   Form,
   FormControl,
@@ -29,9 +29,19 @@ import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
 import { ApiError } from '@/lib/api/api-error';
 import { cn } from '@/lib/utils';
-import { ChevronRight, ChevronLeft, Check, Loader2, Gift, ChevronDown } from 'lucide-react';
+import {
+  ChevronRight,
+  ChevronLeft,
+  Check,
+  Loader2,
+  Gift,
+  ChevronDown,
+  Eye,
+  EyeOff,
+} from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { PasswordStrength } from '@/components/ui/password-strength';
 
 // 年份选项
 const currentYear = new Date().getFullYear();
@@ -56,7 +66,12 @@ const createRegisterSchema = (t: ReturnType<typeof useTranslations>) =>
   z
     .object({
       email: z.string().email({ message: t('validation.invalidEmail') }),
-      password: z.string().min(8, { message: t('validation.passwordMin') }),
+      password: z
+        .string()
+        .min(8, { message: t('validation.passwordMin') })
+        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])/, {
+          message: t('validation.passwordStrength'),
+        }),
       confirmPassword: z.string().min(8, { message: t('validation.passwordMin') }),
       agreeTerms: z
         .boolean()
@@ -96,6 +111,8 @@ export default function RegisterPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [referralOpen, setReferralOpen] = useState(!!refCode);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const form = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
@@ -119,12 +136,13 @@ export default function RegisterPage() {
     mode: 'onChange',
   });
 
+  const watchedPassword = form.watch('password');
   const watchBirthYear = form.watch('birthYear');
   const watchBirthMonth = form.watch('birthMonth');
 
   const daysInMonth = useMemo(() => {
     if (watchBirthYear && watchBirthMonth) {
-      return getDaysInMonth(parseInt(watchBirthYear), parseInt(watchBirthMonth));
+      return getDaysInMonth(parseInt(watchBirthYear, 10), parseInt(watchBirthMonth, 10));
     }
     return 31;
   }, [watchBirthYear, watchBirthMonth]);
@@ -144,7 +162,20 @@ export default function RegisterPage() {
       case 2:
         return true;
     }
-    return await form.trigger(fieldsToValidate);
+    const valid = await form.trigger(fieldsToValidate);
+    // Schema-level refine (password match) isn't triggered by field-level trigger,
+    // so check it manually on step 0
+    if (valid && currentStep === 0) {
+      const { password, confirmPassword } = form.getValues();
+      if (password !== confirmPassword) {
+        form.setError('confirmPassword', {
+          type: 'manual',
+          message: t('validation.passwordMismatch'),
+        });
+        return false;
+      }
+    }
+    return valid;
   };
 
   const handleNext = async () => {
@@ -186,10 +217,10 @@ export default function RegisterPage() {
         birthday,
         graduationDate,
         testScores: [
-          ...(data.toeflScore ? [{ type: 'TOEFL', score: parseInt(data.toeflScore) }] : []),
+          ...(data.toeflScore ? [{ type: 'TOEFL', score: parseInt(data.toeflScore, 10) }] : []),
           ...(data.ieltsScore ? [{ type: 'IELTS', score: parseFloat(data.ieltsScore) }] : []),
-          ...(data.satScore ? [{ type: 'SAT', score: parseInt(data.satScore) }] : []),
-          ...(data.actScore ? [{ type: 'ACT', score: parseInt(data.actScore) }] : []),
+          ...(data.satScore ? [{ type: 'SAT', score: parseInt(data.satScore, 10) }] : []),
+          ...(data.actScore ? [{ type: 'ACT', score: parseInt(data.actScore, 10) }] : []),
         ],
       };
       localStorage.setItem('pendingOnboarding', JSON.stringify(onboardingData));
@@ -209,303 +240,9 @@ export default function RegisterPage() {
     }
   };
 
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 0:
-        return (
-          <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{ta('email')}</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="your@email.com" autoFocus {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{ta('password')}</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder={t('validation.passwordMin')} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{ta('confirmPassword')}</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder={ta('confirmPassword')} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="agreeTerms"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 pt-2">
-                  <FormControl>
-                    <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                  </FormControl>
-                  <FormLabel className="text-sm font-normal text-muted-foreground leading-snug cursor-pointer">
-                    {ta('agreeTerms')}
-                  </FormLabel>
-                </FormItem>
-              )}
-            />
-
-            {/* Referral Code (collapsible) */}
-            <Collapsible open={referralOpen} onOpenChange={setReferralOpen}>
-              <CollapsibleTrigger asChild>
-                <button
-                  type="button"
-                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors pt-2"
-                >
-                  <Gift className="h-4 w-4" />
-                  <span>{t('referral.yourCode', { defaultValue: 'Have a referral code?' })}</span>
-                  <ChevronDown
-                    className={cn('h-3 w-3 transition-transform', referralOpen && 'rotate-180')}
-                  />
-                </button>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <FormField
-                  control={form.control}
-                  name="referralCode"
-                  render={({ field }) => (
-                    <FormItem className="pt-2">
-                      <FormControl>
-                        <Input
-                          placeholder="A1B2C3D4"
-                          className="font-mono uppercase tracking-wider"
-                          {...field}
-                          onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CollapsibleContent>
-            </Collapsible>
-          </div>
-        );
-
-      case 1:
-        return (
-          <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="realName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    {ta('realName')} <span className="text-destructive">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder={ta('realNamePlaceholder')} autoFocus {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="space-y-2">
-              <FormLabel className="text-sm">
-                {ta('birthday')}{' '}
-                <span className="text-muted-foreground font-normal text-xs ml-1">
-                  {t('common.optional', { defaultValue: '' })}
-                </span>
-              </FormLabel>
-              <div className="grid grid-cols-3 gap-2">
-                <FormField
-                  control={form.control}
-                  name="birthYear"
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="YYYY" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {birthYears.map((year) => (
-                          <SelectItem key={year} value={year.toString()}>
-                            {year}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="birthMonth"
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="MM" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {months.map((m) => (
-                          <SelectItem key={m.value} value={m.value}>
-                            {m.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="birthDay"
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="DD" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: daysInMonth }, (_, i) => (
-                          <SelectItem key={i + 1} value={(i + 1).toString().padStart(2, '0')}>
-                            {i + 1}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <FormLabel className="text-sm">{ta('graduationDate')}</FormLabel>
-              <div className="grid grid-cols-2 gap-2">
-                <FormField
-                  control={form.control}
-                  name="gradYear"
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="YYYY" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {graduationYears.map((year) => (
-                          <SelectItem key={year} value={year.toString()}>
-                            {year}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="gradMonth"
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="MM" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {months.map((m) => (
-                          <SelectItem key={m.value} value={m.value}>
-                            {m.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-              </div>
-            </div>
-          </div>
-        );
-
-      case 2:
-        return (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-x-4 gap-y-4">
-              <FormField
-                control={form.control}
-                name="toeflScore"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm">
-                      TOEFL <span className="text-muted-foreground font-normal text-xs">/ 120</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="-" min={0} max={120} {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="ieltsScore"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm">
-                      IELTS <span className="text-muted-foreground font-normal text-xs">/ 9.0</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="-" min={0} max={9} step={0.5} {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="satScore"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm">
-                      SAT <span className="text-muted-foreground font-normal text-xs">/ 1600</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="-" min={400} max={1600} {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="actScore"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm">
-                      ACT <span className="text-muted-foreground font-normal text-xs">/ 36</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="-" min={1} max={36} {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground text-center pt-2">{ta('scoresOptional')}</p>
-          </div>
-        );
-
-      default:
-        return null;
-    }
-  };
-
   return (
-    <Card>
-      <CardContent className="pt-6">
+    <div className="space-y-6">
+      <div>
         {/* 步骤指示器 */}
         <div className="flex items-center justify-center mb-8">
           {steps.map((step, index) => (
@@ -564,10 +301,374 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        {/* 表单 */}
+        {/* 表单 — all steps rendered simultaneously, inactive ones hidden via CSS
+             so fields stay mounted and react-hook-form retains their values */}
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <div className="min-h-[260px]">{renderStepContent()}</div>
+          <form
+            noValidate
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (isLastStep) {
+                form.handleSubmit(onSubmit)();
+              } else {
+                handleNext();
+              }
+            }}
+          >
+            <div className="min-h-[260px]">
+              {/* Step 0: Account */}
+              <div className={cn(currentStep !== 0 && 'hidden')}>
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{ta('email')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="your@email.com"
+                            autoComplete="email"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{ta('password')}</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input
+                              type={showPassword ? 'text' : 'password'}
+                              placeholder={t('validation.passwordMin')}
+                              autoComplete="new-password"
+                              className="pr-10"
+                              {...field}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-0 top-0 bottom-0 w-10 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                              tabIndex={-1}
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                        <PasswordStrength password={watchedPassword} />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{ta('confirmPassword')}</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input
+                              type={showConfirmPassword ? 'text' : 'password'}
+                              placeholder={ta('confirmPassword')}
+                              autoComplete="new-password"
+                              className="pr-10"
+                              {...field}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              className="absolute right-0 top-0 bottom-0 w-10 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                              tabIndex={-1}
+                            >
+                              {showConfirmPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="agreeTerms"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 pt-2">
+                        <FormControl>
+                          <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                        </FormControl>
+                        <FormLabel className="text-sm font-normal text-muted-foreground leading-snug cursor-pointer">
+                          {ta('agreeTerms')}
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Referral Code (collapsible) */}
+                  <Collapsible open={referralOpen} onOpenChange={setReferralOpen}>
+                    <CollapsibleTrigger asChild>
+                      <button
+                        type="button"
+                        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors pt-2"
+                      >
+                        <Gift className="h-4 w-4" />
+                        <span>
+                          {t('referral.yourCode', { defaultValue: 'Have a referral code?' })}
+                        </span>
+                        <ChevronDown
+                          className={cn(
+                            'h-3 w-3 transition-transform',
+                            referralOpen && 'rotate-180'
+                          )}
+                        />
+                      </button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <FormField
+                        control={form.control}
+                        name="referralCode"
+                        render={({ field }) => (
+                          <FormItem className="pt-2">
+                            <FormControl>
+                              <Input
+                                placeholder="A1B2C3D4"
+                                className="font-mono uppercase tracking-wider"
+                                {...field}
+                                onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </CollapsibleContent>
+                  </Collapsible>
+                </div>
+              </div>
+
+              {/* Step 1: Profile */}
+              <div className={cn(currentStep !== 1 && 'hidden')}>
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="realName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {ta('realName')} <span className="text-destructive">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input placeholder={ta('realNamePlaceholder')} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="space-y-2">
+                    <FormLabel className="text-sm">
+                      {ta('birthday')}{' '}
+                      <span className="text-muted-foreground font-normal text-xs ml-1">
+                        {t('common.optional', { defaultValue: '' })}
+                      </span>
+                    </FormLabel>
+                    <div className="grid grid-cols-3 gap-2">
+                      <FormField
+                        control={form.control}
+                        name="birthYear"
+                        render={({ field }) => (
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="YYYY" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {birthYears.map((year) => (
+                                <SelectItem key={year} value={year.toString()}>
+                                  {year}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="birthMonth"
+                        render={({ field }) => (
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="MM" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {months.map((m) => (
+                                <SelectItem key={m.value} value={m.value}>
+                                  {m.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="birthDay"
+                        render={({ field }) => (
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="DD" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Array.from({ length: daysInMonth }, (_, i) => (
+                                <SelectItem key={i + 1} value={(i + 1).toString().padStart(2, '0')}>
+                                  {i + 1}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <FormLabel className="text-sm">{ta('graduationDate')}</FormLabel>
+                    <div className="grid grid-cols-2 gap-2">
+                      <FormField
+                        control={form.control}
+                        name="gradYear"
+                        render={({ field }) => (
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="YYYY" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {graduationYears.map((year) => (
+                                <SelectItem key={year} value={year.toString()}>
+                                  {year}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="gradMonth"
+                        render={({ field }) => (
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="MM" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {months.map((m) => (
+                                <SelectItem key={m.value} value={m.value}>
+                                  {m.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 2: Scores */}
+              <div className={cn(currentStep !== 2 && 'hidden')}>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-4">
+                    <FormField
+                      control={form.control}
+                      name="toeflScore"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm">
+                            TOEFL{' '}
+                            <span className="text-muted-foreground font-normal text-xs">/ 120</span>
+                          </FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="-" min={0} max={120} {...field} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="ieltsScore"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm">
+                            IELTS{' '}
+                            <span className="text-muted-foreground font-normal text-xs">/ 9.0</span>
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder="-"
+                              min={0}
+                              max={9}
+                              step={0.5}
+                              {...field}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="satScore"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm">
+                            SAT{' '}
+                            <span className="text-muted-foreground font-normal text-xs">
+                              / 1600
+                            </span>
+                          </FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="-" min={400} max={1600} {...field} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="actScore"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm">
+                            ACT{' '}
+                            <span className="text-muted-foreground font-normal text-xs">/ 36</span>
+                          </FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="-" min={1} max={36} {...field} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground text-center pt-2">
+                    {ta('scoresOptional')}
+                  </p>
+                </div>
+              </div>
+            </div>
 
             {/* 导航按钮 */}
             <div className="flex justify-between items-center pt-6 mt-4 border-t">
@@ -610,7 +711,7 @@ export default function RegisterPage() {
             {ta('signIn')}
           </Link>
         </p>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

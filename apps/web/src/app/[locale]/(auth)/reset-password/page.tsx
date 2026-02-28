@@ -21,6 +21,7 @@ import {
   Lock,
   ShieldCheck,
 } from 'lucide-react';
+import { PasswordStrength } from '@/components/ui/password-strength';
 
 export default function ResetPasswordPage() {
   const t = useTranslations();
@@ -80,7 +81,7 @@ export default function ResetPasswordPage() {
           <p className="mt-2 text-sm text-auth-muted">{t('auth.resetPassword.linkExpiredDesc')}</p>
         </div>
         <Link href="/forgot-password" className="block">
-          <Button className="w-full h-12 bg-primary hover:from-blue-600 hover:to-cyan-600 text-white font-medium rounded-xl ">
+          <Button className="w-full h-12 bg-primary text-white font-medium rounded-xl">
             {t('auth.resetPassword.getNewLink')}
           </Button>
         </Link>
@@ -93,14 +94,14 @@ export default function ResetPasswordPage() {
     return (
       <div className="space-y-6">
         <div className="text-center">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-lg bg-emerald-500/10 ring-1 ring-emerald-500/20">
-            <CheckCircle className="h-8 w-8 text-emerald-400" />
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-lg bg-success/10 ring-1 ring-success/20">
+            <CheckCircle className="h-8 w-8 text-success" />
           </div>
           <h1 className="text-title text-auth">{t('auth.resetPassword.success')}</h1>
           <p className="mt-2 text-sm text-auth-muted">{t('auth.resetPassword.successDesc')}</p>
         </div>
         <Link href="/login" className="block">
-          <Button className="w-full h-12 bg-primary hover:from-blue-600 hover:to-cyan-600 text-white font-medium rounded-xl ">
+          <Button className="w-full h-12 bg-primary text-white font-medium rounded-xl">
             {t('auth.resetPassword.goToLogin')}
           </Button>
         </Link>
@@ -132,6 +133,7 @@ export default function ResetPasswordPage() {
             <Input
               id="password"
               type={showPassword ? 'text' : 'password'}
+              autoComplete="new-password"
               placeholder={t('auth.resetPassword.newPasswordPlaceholder')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -159,6 +161,7 @@ export default function ResetPasswordPage() {
             <Input
               id="confirmPassword"
               type={showConfirmPassword ? 'text' : 'password'}
+              autoComplete="new-password"
               placeholder={t('auth.resetPassword.confirmPlaceholder')}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
@@ -175,48 +178,12 @@ export default function ResetPasswordPage() {
           </div>
         </div>
 
-        {/* 密码要求 */}
-        <div className="space-y-2 p-3 rounded-xl bg-auth-input-bg border border-auth-input-border">
-          <p className="text-xs text-auth-muted mb-2">
-            {t('auth.resetPassword.requirements.title')}
-          </p>
-          <div className="space-y-1.5 text-xs">
-            <p
-              className={`flex items-center gap-2 ${password.length >= 8 ? 'text-emerald-400' : 'text-auth-muted'}`}
-            >
-              <span
-                className={`w-4 h-4 rounded-full flex items-center justify-center text-2xs ${password.length >= 8 ? 'bg-emerald-500/20' : 'bg-auth-input-bg'}`}
-              >
-                {password.length >= 8 ? '✓' : '○'}
-              </span>
-              {t('auth.resetPassword.requirements.minLength')}
-            </p>
-            <p
-              className={`flex items-center gap-2 ${/[A-Za-z]/.test(password) ? 'text-emerald-400' : 'text-auth-muted'}`}
-            >
-              <span
-                className={`w-4 h-4 rounded-full flex items-center justify-center text-2xs ${/[A-Za-z]/.test(password) ? 'bg-emerald-500/20' : 'bg-auth-input-bg'}`}
-              >
-                {/[A-Za-z]/.test(password) ? '✓' : '○'}
-              </span>
-              {t('auth.resetPassword.requirements.hasLetter')}
-            </p>
-            <p
-              className={`flex items-center gap-2 ${/\d/.test(password) ? 'text-emerald-400' : 'text-auth-muted'}`}
-            >
-              <span
-                className={`w-4 h-4 rounded-full flex items-center justify-center text-2xs ${/\d/.test(password) ? 'bg-emerald-500/20' : 'bg-auth-input-bg'}`}
-              >
-                {/\d/.test(password) ? '✓' : '○'}
-              </span>
-              {t('auth.resetPassword.requirements.hasNumber')}
-            </p>
-          </div>
-        </div>
+        {/* 密码强度 */}
+        <PasswordStrength password={password} />
 
         <Button
           type="submit"
-          className="w-full h-12 bg-primary hover:from-blue-600 hover:to-cyan-600 text-white font-medium rounded-xl   transition-all duration-300 disabled:opacity-50"
+          className="w-full h-12 bg-primary text-white font-medium rounded-xl  transition-all duration-300 disabled:opacity-50"
           disabled={mutation.isPending}
         >
           {mutation.isPending ? (
