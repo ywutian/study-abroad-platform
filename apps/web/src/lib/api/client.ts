@@ -114,8 +114,10 @@ class ApiClient {
 
     const makeRequest = async (isRetry = false): Promise<T> => {
       const token = this.getAccessToken();
+      const isFormData = init.body instanceof FormData;
       const headers: HeadersInit = {
-        'Content-Type': 'application/json',
+        // Skip Content-Type for FormData — browser sets multipart boundary automatically
+        ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
         ...init.headers,
       };
 
@@ -152,7 +154,8 @@ class ApiClient {
 
         if (!response.ok) {
           const error = await response.json().catch(() => ({ message: 'Request failed' }));
-          const errorMessage = error.error?.message || error.message || `HTTP ${response.status}`;
+          const rawMsg = error.error?.message || error.message || `HTTP ${response.status}`;
+          const errorMessage = Array.isArray(rawMsg) ? rawMsg.join(', ') : rawMsg;
 
           const locale = getApiLocale();
           const i18n = API_I18N[locale];
@@ -255,35 +258,16 @@ class ApiClient {
   /**
    * 上传文件（FormData）
    * 不设置 Content-Type，让浏览器自动设置 multipart/form-data boundary
+   * Supports 401 token refresh retry, timeout, and consistent error handling.
    */
-  async upload<T>(endpoint: string, formData: FormData): Promise<T> {
-    const token = this.getAccessToken();
-    const headers: Record<string, string> = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const url = `${this.baseUrl}${this.apiVersion}${endpoint}`;
-    const response = await fetch(url, {
+  async upload<T>(endpoint: string, formData: FormData, config?: RequestConfig): Promise<T> {
+    return this.request<T>(endpoint, {
+      ...config,
       method: 'POST',
-      headers,
       body: formData,
-      credentials: 'include',
+      headers: {}, // Let browser set Content-Type for FormData
+      timeout: config?.timeout ?? 60000, // 60s default for uploads
     });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Upload failed' }));
-      const errorMessage = error.error?.message || error.message || `HTTP ${response.status}`;
-      const locale = getApiLocale();
-      const errorKey = mapApiErrorToKey(errorMessage);
-      const displayMessage = errorKey
-        ? (API_ERROR_MESSAGES[locale][errorKey] ?? API_I18N[locale].operationFailed)
-        : API_I18N[locale].operationFailed;
-      throw new ApiError(errorMessage, displayMessage, response.status);
-    }
-
-    const json = await response.json();
-    return json.data !== undefined ? json.data : json;
   }
 }
 

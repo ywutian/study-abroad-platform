@@ -12,6 +12,7 @@ type ErrorPattern = {
 const ERROR_PATTERNS: ErrorPattern[] = [
   // ── Auth ──
   { match: 'Email already registered', key: 'emailAlreadyRegistered' },
+  { match: '密码必须包含大小写字母', key: 'passwordStrength' },
   { match: 'Invalid credentials', key: 'invalidCredentials' },
   { match: 'Current password is incorrect', key: 'currentPasswordIncorrect' },
   { match: 'verify your email', key: 'emailNotVerified' },

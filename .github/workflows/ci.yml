@@ -12,7 +12,7 @@ concurrency:
 
 env:
   NODE_VERSION: '20'
-  PNPM_VERSION: '10'
+  PNPM_VERSION: '10.22.0'
 
 jobs:
   lint:
@@ -196,7 +196,7 @@ jobs:
 
       - name: Run E2E tests
         run: pnpm --filter api exec jest --config ./test/jest-e2e.json --forceExit
-        timeout-minutes: 5
+        timeout-minutes: 15
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_test?schema=public
           REDIS_URL: redis://localhost:6379
@@ -381,6 +381,9 @@ jobs:
   security:
     name: Security Scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4

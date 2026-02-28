@@ -87,8 +87,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           set({ user: userData.data || userData });
         }
       }
-    } catch (error) {
-      console.error('Auth initialization failed:', error);
+    } catch {
       set({ user: null, accessToken: null });
     } finally {
       set({ isLoading: false, isInitialized: true });
@@ -111,9 +110,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         },
         credentials: 'include', // 发送 httpOnly cookie
       });
-    } catch (error) {
+    } catch {
       // 即使 API 调用失败，也要清除本地状态
-      console.error('Logout API call failed:', error);
     }
 
     set({ user: null, accessToken: null });
@@ -131,8 +129,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     // 如果已在刷新中，等待现有刷新完成（而非立即返回 false）
     if (isRefreshing) {
       return new Promise<boolean>((resolve) => {
+        // Timeout prevents infinite hang if refresh never completes
+        const timeoutId = setTimeout(() => {
+          unsubscribe();
+          resolve(false);
+        }, 10000);
         const unsubscribe = useAuthStore.subscribe((state) => {
           if (!state.isRefreshing) {
+            clearTimeout(timeoutId);
             unsubscribe();
             resolve(!!state.accessToken);
           }
@@ -166,8 +170,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       setAuthCheckCookie();
 
       return true;
-    } catch (error) {
-      console.error('Token refresh failed:', error);
+    } catch {
       set({ user: null, accessToken: null, isRefreshing: false });
       return false;
     }
@@ -231,5 +234,7 @@ export function setAuthFromLogin(user: User, accessToken: string) {
     isInitialized: true,
   });
   setAuthCheckCookie();
-  startTokenRefreshInterval();
+  // Note: Do NOT call startTokenRefreshInterval() here.
+  // AuthInitializer in providers/index.tsx is the single owner of the
+  // refresh interval — it starts/stops based on accessToken changes.
 }

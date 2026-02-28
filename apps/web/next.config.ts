@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
   transpilePackages: ['@study-abroad/shared', 'geist'],
   // output: 'standalone', // 仅用于 Docker/VPS 部署，Vercel 不需要
   experimental: {
+    viewTransition: true,
     // 优化大型包的 barrel exports，显著减少编译和打包时间
     optimizePackageImports: [
       'lucide-react',
@@ -39,13 +40,18 @@ const nextConfig: NextConfig = {
       const wsHttps = wsUrlNorm.replace(/^wss?:/, (m) => (m === 'wss:' ? 'https:' : 'http:'));
       if (wsHttps !== apiUrlNorm) extra.push(wsHttps);
     }
+    const isDev = process.env.NODE_ENV !== 'production';
+    // [SECURITY] Only allow wss: to known origins; 'unsafe-inline'/'unsafe-eval' dev-only
+    const wsSources = [apiWsNorm, wsUrlNorm].filter(Boolean);
     const connectSrcParts = [
       "'self'",
       'https://*.sentry.io',
       'https://fonts.gstatic.com',
-      'wss:',
+      ...wsSources,
       ...extra,
     ];
+    // In dev, allow all wss: for convenience; in prod, restrict to known origins
+    if (isDev) connectSrcParts.push('wss:');
     return [
       {
         source: '/(.*)',
@@ -69,8 +75,8 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
-              "style-src 'self' 'unsafe-inline'",
+              `script-src 'self'${isDev ? " 'unsafe-eval' 'unsafe-inline'" : ''}`,
+              `style-src 'self'${isDev ? " 'unsafe-inline'" : ''}`,
               "img-src 'self' data: https:",
               `connect-src ${connectSrcParts.join(' ')} data:`,
               "font-src 'self' https://fonts.gstatic.com",

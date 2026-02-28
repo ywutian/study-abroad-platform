@@ -38,17 +38,22 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
   const [driverInstance, setDriverInstance] = useState<Driver | null>(null);
   const [completedTours, setCompletedTours] = useState<Set<string>>(new Set());
 
-  // 加载已完成的 tours
+  // 加载已完成的 tours (SSR-safe)
   useEffect(() => {
-    const stored = localStorage.getItem(TOUR_STORAGE_KEY);
-    if (stored) {
-      setCompletedTours(new Set(JSON.parse(stored)));
+    if (typeof window === 'undefined') return;
+    try {
+      const stored = localStorage.getItem(TOUR_STORAGE_KEY);
+      if (stored) {
+        setCompletedTours(new Set(JSON.parse(stored)));
+      }
+    } catch {
+      // Ignore localStorage errors (private browsing, quota exceeded, etc.)
     }
   }, []);
 
   // 保存已完成的 tours
   const markTourComplete = useCallback((tourId: string) => {
-    setCompletedTours(prev => {
+    setCompletedTours((prev) => {
       const next = new Set(prev);
       next.add(tourId);
       localStorage.setItem(TOUR_STORAGE_KEY, JSON.stringify([...next]));
@@ -58,17 +63,20 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
 
   // 注册 tour
   const registerTour = useCallback((config: TourConfig) => {
-    setTours(prev => new Map(prev).set(config.id, config));
+    setTours((prev) => new Map(prev).set(config.id, config));
   }, []);
 
   // 检查是否完成
-  const hasCompletedTour = useCallback((tourId: string) => {
-    return completedTours.has(tourId);
-  }, [completedTours]);
+  const hasCompletedTour = useCallback(
+    (tourId: string) => {
+      return completedTours.has(tourId);
+    },
+    [completedTours]
+  );
 
   // 重置 tour
   const resetTour = useCallback((tourId: string) => {
-    setCompletedTours(prev => {
+    setCompletedTours((prev) => {
       const next = new Set(prev);
       next.delete(tourId);
       localStorage.setItem(TOUR_STORAGE_KEY, JSON.stringify([...next]));
@@ -76,47 +84,56 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  // 启动 tour
-  const startTour = useCallback((tourId: string) => {
-    const tour = tours.get(tourId);
-    if (!tour) {
-      console.warn(`Tour "${tourId}" not found`);
-      return;
-    }
-
-    // 清理旧实例
-    if (driverInstance) {
-      driverInstance.destroy();
-    }
-
-    const driverConfig: Config = {
-      showProgress: true,
-      animate: true,
-      smoothScroll: true,
-      allowClose: true,
-      stagePadding: 8,
-      stageRadius: 8,
-      popoverClass: 'tour-popover',
-      progressText: '{{current}} / {{total}}',
-      nextBtnText: 'Next',
-      prevBtnText: 'Previous',
-      doneBtnText: 'Done',
-      steps: tour.steps,
-      onDestroyed: () => {
-        setCurrentTourId(null);
-        markTourComplete(tourId);
-        tour.onComplete?.();
-      },
-      onCloseClick: () => {
-        tour.onSkip?.();
-      },
+  // Cleanup driver instance on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (driverInstance) {
+        driverInstance.destroy();
+      }
     };
+  }, [driverInstance]);
 
-    const newDriver = driver(driverConfig);
-    setDriverInstance(newDriver);
-    setCurrentTourId(tourId);
-    newDriver.drive();
-  }, [tours, driverInstance, markTourComplete]);
+  // 启动 tour
+  const startTour = useCallback(
+    (tourId: string) => {
+      const tour = tours.get(tourId);
+      if (!tour) return;
+
+      // 清理旧实例
+      if (driverInstance) {
+        driverInstance.destroy();
+      }
+
+      const driverConfig: Config = {
+        showProgress: true,
+        animate: true,
+        smoothScroll: true,
+        allowClose: true,
+        stagePadding: 8,
+        stageRadius: 8,
+        popoverClass: 'tour-popover',
+        progressText: '{{current}} / {{total}}',
+        nextBtnText: 'Next',
+        prevBtnText: 'Previous',
+        doneBtnText: 'Done',
+        steps: tour.steps,
+        onDestroyed: () => {
+          setCurrentTourId(null);
+          markTourComplete(tourId);
+          tour.onComplete?.();
+        },
+        onCloseClick: () => {
+          tour.onSkip?.();
+        },
+      };
+
+      const newDriver = driver(driverConfig);
+      setDriverInstance(newDriver);
+      setCurrentTourId(tourId);
+      newDriver.drive();
+    },
+    [tours, driverInstance, markTourComplete]
+  );
 
   return (
     <TourContext.Provider
@@ -137,40 +154,42 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
           color: var(--card-foreground);
           border: 1px solid var(--border);
           border-radius: var(--radius);
-          box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+          box-shadow:
+            0 20px 25px -5px rgb(0 0 0 / 0.1),
+            0 8px 10px -6px rgb(0 0 0 / 0.1);
           max-width: 340px;
         }
-        
+
         .driver-popover.tour-popover .driver-popover-title {
           font-weight: 600;
           font-size: 1rem;
           color: var(--foreground);
           margin-bottom: 0.5rem;
         }
-        
+
         .driver-popover.tour-popover .driver-popover-description {
           color: var(--muted-foreground);
           font-size: 0.875rem;
           line-height: 1.5;
         }
-        
+
         .driver-popover.tour-popover .driver-popover-footer {
           margin-top: 1rem;
           display: flex;
           align-items: center;
           justify-content: space-between;
         }
-        
+
         .driver-popover.tour-popover .driver-popover-progress-text {
           color: var(--muted-foreground);
           font-size: 0.75rem;
         }
-        
+
         .driver-popover.tour-popover .driver-popover-navigation-btns {
           display: flex;
           gap: 0.5rem;
         }
-        
+
         .driver-popover.tour-popover button {
           padding: 0.5rem 1rem;
           border-radius: calc(var(--radius) - 2px);
@@ -179,29 +198,29 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
           transition: all 0.2s;
           cursor: pointer;
         }
-        
+
         .driver-popover.tour-popover .driver-popover-prev-btn {
           background: var(--secondary);
           color: var(--secondary-foreground);
           border: 1px solid var(--border);
         }
-        
+
         .driver-popover.tour-popover .driver-popover-prev-btn:hover {
           background: var(--accent);
         }
-        
+
         .driver-popover.tour-popover .driver-popover-next-btn,
         .driver-popover.tour-popover .driver-popover-done-btn {
           background: var(--primary);
           color: var(--primary-foreground);
           border: none;
         }
-        
+
         .driver-popover.tour-popover .driver-popover-next-btn:hover,
         .driver-popover.tour-popover .driver-popover-done-btn:hover {
           opacity: 0.9;
         }
-        
+
         .driver-popover.tour-popover .driver-popover-close-btn {
           width: 28px;
           height: 28px;
@@ -213,31 +232,31 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
           border: none;
           padding: 0;
         }
-        
+
         .driver-popover.tour-popover .driver-popover-close-btn:hover {
           color: var(--foreground);
         }
-        
+
         .driver-popover.tour-popover .driver-popover-arrow {
           border-color: var(--card);
         }
-        
+
         /* 高亮边框 */
         .driver-overlay {
           background: rgba(0, 0, 0, 0.6);
         }
-        
+
         .driver-active-element {
           box-shadow: 0 0 0 4px oklch(0.55 0.22 265 / 30%) !important;
         }
-        
+
         /* 响应式 */
         @media (max-width: 640px) {
           .driver-popover.tour-popover {
             max-width: calc(100vw - 2rem);
             margin: 0 1rem;
           }
-          
+
           .driver-popover.tour-popover button {
             padding: 0.625rem 1rem;
             min-height: 44px;
@@ -271,7 +290,8 @@ export const welcomeTourSteps: TourStep[] = [
     element: '[data-tour="nav-home"]',
     popover: {
       title: 'Welcome to Study Abroad Platform',
-      description: 'This is your homepage where you can quickly access platform features and latest updates.',
+      description:
+        'This is your homepage where you can quickly access platform features and latest updates.',
       side: 'bottom',
       align: 'start',
     },
@@ -281,7 +301,8 @@ export const welcomeTourSteps: TourStep[] = [
     element: '[data-tour="nav-schools"]',
     popover: {
       title: 'Schools',
-      description: 'Browse information about top universities worldwide, learn about admission requirements and deadlines.',
+      description:
+        'Browse information about top universities worldwide, learn about admission requirements and deadlines.',
       side: 'bottom',
       align: 'center',
     },
@@ -291,7 +312,8 @@ export const welcomeTourSteps: TourStep[] = [
     element: '[data-tour="nav-cases"]',
     popover: {
       title: 'Case Library',
-      description: 'View real application cases to learn from successful applicants\' backgrounds and experiences.',
+      description:
+        "View real application cases to learn from successful applicants' backgrounds and experiences.",
       side: 'bottom',
       align: 'center',
     },
@@ -317,6 +339,3 @@ export const welcomeTourSteps: TourStep[] = [
     },
   },
 ];
-
-
-

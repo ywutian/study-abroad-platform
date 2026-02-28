@@ -6,6 +6,7 @@ export const API_ERROR_MESSAGES: Record<'zh' | 'en', Record<string, string>> = {
   zh: {
     // Auth
     emailAlreadyRegistered: '该邮箱已被注册',
+    passwordStrength: '密码需包含大小写字母、数字和特殊字符(@$!%*#?&)',
     invalidCredentials: '邮箱或密码错误',
     currentPasswordIncorrect: '当前密码不正确',
     emailNotVerified: '请先验证邮箱后再登录',
@@ -110,6 +111,8 @@ export const API_ERROR_MESSAGES: Record<'zh' | 'en', Record<string, string>> = {
   en: {
     // Auth
     emailAlreadyRegistered: 'This email is already registered',
+    passwordStrength:
+      'Password must contain uppercase, lowercase, number and special character (@$!%*#?&)',
     invalidCredentials: 'Invalid email or password',
     currentPasswordIncorrect: 'Current password is incorrect',
     emailNotVerified: 'Please verify your email before logging in',
