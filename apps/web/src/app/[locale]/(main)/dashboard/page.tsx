@@ -220,7 +220,7 @@ export default function DashboardPage() {
                       {schoolTiers.reach > 0 && (
                         <Badge
                           variant="outline"
-                          className="text-[10px] px-1.5 py-0 border-rose-300 text-rose-600 bg-rose-50"
+                          className="text-[10px] px-1.5 py-0 border-rose-300 text-rose-600 bg-rose-50 dark:border-rose-800 dark:text-rose-400 dark:bg-rose-950/30"
                         >
                           {t('dashboard.stats.reach')} {schoolTiers.reach}
                         </Badge>
@@ -228,7 +228,7 @@ export default function DashboardPage() {
                       {schoolTiers.target > 0 && (
                         <Badge
                           variant="outline"
-                          className="text-[10px] px-1.5 py-0 border-blue-300 text-blue-600 bg-blue-50"
+                          className="text-[10px] px-1.5 py-0 border-blue-300 text-blue-600 bg-blue-50 dark:border-blue-800 dark:text-blue-400 dark:bg-blue-950/30"
                         >
                           {t('dashboard.stats.target')} {schoolTiers.target}
                         </Badge>
@@ -236,7 +236,7 @@ export default function DashboardPage() {
                       {schoolTiers.safety > 0 && (
                         <Badge
                           variant="outline"
-                          className="text-[10px] px-1.5 py-0 border-emerald-300 text-emerald-600 bg-emerald-50"
+                          className="text-[10px] px-1.5 py-0 border-emerald-300 text-emerald-600 bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 dark:bg-emerald-950/30"
                         >
                           {t('dashboard.stats.safety')} {schoolTiers.safety}
                         </Badge>

@@ -3,7 +3,7 @@ import { FloatingChat } from '@/components/features/agent-chat';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-page-gradient">
+    <div className="min-h-screen bg-background">
       <Header />
       <PageTransitionWrapper>
         {/* 为底部 Tab Bar 留出空间 */}
