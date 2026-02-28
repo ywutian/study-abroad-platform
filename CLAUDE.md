@@ -274,6 +274,26 @@ Also renders: `<Toaster>` (sonner), `<OfflineIndicator>`, `<FeedbackWidget>`.
 
 `next-intl` with `{en, zh}` locales. Messages in `apps/web/src/messages/{en,zh}.json`. Use `Link`/`useRouter` from `@/lib/i18n/navigation`.
 
+### CSS Design System (`globals.css`)
+
+OKLCH color system with 50+ CSS custom properties per theme (light/dark). Three subsystems: Core (`--primary`, `--success`, etc.), Auth (`--auth-*`, 30 vars), Hero/Landing (`--hero-*`, `--stat-*`, `--cta-*`).
+
+Key utility classes: `zone-tinted`/`zone-dark` (section backgrounds), `glass`/`glass-heavy`/`glass-premium` (backdrop blur), `text-gradient-*` (5 text gradients), `bg-gradient-*` (6 bg gradients), `text-display-hero`/`text-display-section` (display typography), `section-compact`/`normal`/`expansive` (responsive spacing), 16 `animate-*` classes with 7 delay classes.
+
+### Component Patterns
+
+- **PageHeader + PageContainer**: Use on ALL feature pages. `<PageContainer maxWidth="...">` wraps content, `<PageHeader title icon color stats actions />` provides consistent header. Colors: `blue|violet|amber|emerald|rose|slate|indigo`.
+- **Page split**: Pages exceeding ~500 lines should be decomposed: thin `page.tsx` orchestrator + `_components/` directory. Each extracted component is `'use client'` with own state where possible.
+- **Motion components**: Use `FadeInView`, `StaggerContainer`, `AnimatedNumber` from `@/components/ui/motion`. All respect `prefers-reduced-motion`.
+- **PasswordStrength**: Use from `@/components/ui/password-strength` on password fields. Exports: `PasswordStrength` component, `isPasswordValid()`, `getPasswordScore()`.
+
+### UI Conventions
+
+- **Colors**: Use CSS vars (`text-foreground`, `bg-card`, `text-muted-foreground`) or semantic classes (`bg-success`, `bg-destructive`). When using hardcoded Tailwind colors (`bg-emerald-50`), MUST add `dark:` variant.
+- **Auth pages**: Use `--auth-*` CSS vars (auto light/dark) — never hardcode colors.
+- **Typography**: Use utility classes (`text-title`, `text-body-sm`, `text-caption`) from the typography scale, not raw Tailwind `text-xl` etc.
+- **Loading**: Use `Skeleton` component from `@/components/ui/skeleton` in `loading.tsx` files, matching page layout structure.
+
 ## Development Workflow
 
 ### Quick Start
