@@ -487,21 +487,30 @@
   
   /* 中文环境：加大行高，正向字间距，防止溢出 */
   :lang(zh), :lang(zh-CN), :lang(zh-Hans) {
-    letter-spacing: 0.02em;
-    line-height: 1.75;
+    letter-spacing: 0.01em;
+    line-height: 1.7;
     word-break: break-all;
     overflow-wrap: break-word;
   }
   
   :lang(zh) h1, :lang(zh) h2, :lang(zh) h3,
   :lang(zh) h4, :lang(zh) h5, :lang(zh) h6 {
-    letter-spacing: 0;
-    line-height: 1.4;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+  }
+  
+  /* 针对超大展示标题的中文特调（极其重要） */
+  :lang(zh) .text-display-hero,
+  :lang(zh) .text-display-section,
+  :lang(zh) .text-display {
+    font-weight: 700; /* 中文黑体在 800 字重下会糊成一团，700 是最优解 */
+    letter-spacing: -0.02em; /* 稍微放松一点字间距，因为字号变小了 */
+    line-height: 1.2 !important; /* 稍微增加一点行高，让多行标题更有呼吸感 */
   }
   
   :lang(zh) p {
-    line-height: 1.8;
-    letter-spacing: 0.02em;
+    line-height: 1.75;
+    letter-spacing: 0.01em;
   }
   
   /* 主题切换过渡 */
@@ -701,8 +710,8 @@
 
   .text-gradient-animated {
     background: linear-gradient(90deg,
-      oklch(0.58 0.22 255), oklch(0.65 0.20 280),
-      oklch(0.72 0.16 200), oklch(0.58 0.22 255));
+      oklch(0.55 0.24 255), oklch(0.62 0.22 280),
+      oklch(0.68 0.18 200), oklch(0.55 0.24 255));
     background-size: 300% 100%;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -779,8 +788,9 @@
   /* Auth 页面渐变背景 */
   .bg-gradient-hero {
     background:
-      radial-gradient(ellipse 80% 50% at 50% 0%, oklch(0.58 0.22 255 / 0.06), transparent 60%),
-      linear-gradient(160deg, oklch(0.97 0.015 260) 0%, oklch(0.93 0.02 255) 40%, oklch(0.95 0.025 200) 70%, oklch(0.97 0.01 280) 100%);
+      radial-gradient(ellipse 80% 50% at 50% 0%, oklch(0.58 0.22 255 / 0.14), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 20%, oklch(0.65 0.18 200 / 0.08), transparent 50%),
+      linear-gradient(160deg, oklch(0.96 0.025 260) 0%, oklch(0.90 0.04 255) 35%, oklch(0.92 0.045 200) 65%, oklch(0.96 0.03 280) 100%);
   }
 
   .dark .bg-gradient-hero {
@@ -1472,10 +1482,10 @@
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(ellipse 80% 50% at 20% 40%, oklch(0.58 0.22 255 / 0.30), transparent 50%),
-      radial-gradient(ellipse 60% 40% at 80% 60%, oklch(0.65 0.20 280 / 0.25), transparent 50%),
-      radial-gradient(ellipse 70% 60% at 40% 80%, oklch(0.72 0.16 200 / 0.20), transparent 60%),
-      radial-gradient(ellipse 50% 50% at 60% 20%, oklch(0.68 0.18 155 / 0.15), transparent 50%);
+      radial-gradient(ellipse 80% 50% at 20% 40%, oklch(0.58 0.22 255 / 0.35), transparent 50%),
+      radial-gradient(ellipse 60% 40% at 80% 60%, oklch(0.65 0.20 280 / 0.30), transparent 50%),
+      radial-gradient(ellipse 70% 60% at 40% 80%, oklch(0.72 0.16 200 / 0.25), transparent 60%),
+      radial-gradient(ellipse 50% 50% at 60% 20%, oklch(0.68 0.18 155 / 0.20), transparent 50%);
     background-size: 200% 200%;
     animation: aurora-drift 15s ease-in-out infinite;
     filter: blur(60px);
@@ -1502,7 +1512,7 @@
     transform: translate(-50%, -50%);
     width: 120%;
     height: 200%;
-    background: radial-gradient(ellipse 50% 40% at 50% 50%, oklch(0.58 0.22 255 / 0.12), transparent 70%);
+    background: radial-gradient(ellipse 50% 40% at 50% 50%, oklch(0.58 0.22 255 / 0.18), transparent 70%);
     pointer-events: none;
     z-index: -1;
   }
@@ -1520,19 +1530,19 @@
   .hero-orb-1 {
     width: clamp(120px, 24vw, 400px); height: clamp(120px, 24vw, 400px);
     top: 10%; right: -5%;
-    background: oklch(0.65 0.20 280 / 0.20);
+    background: oklch(0.65 0.20 280 / 0.28);
     animation: float 8s ease-in-out infinite;
   }
   .hero-orb-2 {
     width: clamp(80px, 18vw, 250px); height: clamp(80px, 18vw, 250px);
     bottom: 20%; left: -3%;
-    background: oklch(0.72 0.16 200 / 0.15);
+    background: oklch(0.72 0.16 200 / 0.22);
     animation: float 10s ease-in-out infinite reverse;
   }
   .hero-orb-3 {
     width: clamp(60px, 12vw, 180px); height: clamp(60px, 12vw, 180px);
     top: 30%; left: 15%;
-    background: oklch(0.58 0.22 255 / 0.10);
+    background: oklch(0.58 0.22 255 / 0.15);
     animation: float 12s ease-in-out infinite 2s;
   }
   .dark .hero-orb-1 { background: oklch(0.50 0.20 280 / 0.25); }
@@ -1576,7 +1586,8 @@
      🎨 Zone 区域背景系统 (明暗交替节奏)
      ======================================== */
   .zone-tinted {
-    background: oklch(0.955 0.025 260);
+    background: oklch(0.96 0.02 260);
+    background-image: radial-gradient(ellipse 80% 50% at 50% 0%, oklch(0.58 0.22 255 / 0.03), transparent 60%);
   }
   .dark .zone-tinted {
     background: oklch(0.17 0.035 260);
@@ -1616,12 +1627,12 @@
      🔤 展示级字体 (Display Typography)
      ======================================== */
 
-  /* Hero 唯一大标题 — 56→96px 流体缩放 */
+  /* Hero 唯一大标题 — 48→80px 流体缩放 (对中文优化) */
   .text-display-hero {
-    font-size: clamp(3.5rem, 7vw, 6rem);
+    font-size: clamp(3rem, 5.5vw, 5rem);
     font-weight: 800;
-    line-height: 1.05;
-    letter-spacing: -0.035em;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
     text-wrap: balance;
   }
 

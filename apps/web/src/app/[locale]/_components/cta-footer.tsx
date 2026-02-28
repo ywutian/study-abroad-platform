@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Sparkles, CheckCircle } from 'lucide-react';
 import { Link } from '@/lib/i18n/navigation';
 import { Button } from '@/components/ui/button';
 import { LandingFooter } from '@/components/features/landing';
@@ -55,6 +55,12 @@ export function CTAFooter() {
         />
         <div className="container relative mx-auto px-4">
           <FadeInView direction="up" className="mx-auto max-w-2xl text-center">
+            {/* Badge */}
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs sm:text-sm">
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              <span className="font-medium text-primary">{t('home.ctaBadge')}</span>
+            </div>
+
             <h2 className="text-display-section text-gradient-animated">{t('home.ctaTitle')}</h2>
             <p className="mt-4 sm:mt-6 text-base sm:text-lg text-muted-foreground">
               {t('home.ctaSubtitle')}
@@ -96,10 +102,18 @@ export function CTAFooter() {
               </Magnetic>
             </div>
 
-            {/* Subtext */}
-            <p className="mt-4 sm:mt-6 text-xs sm:text-sm text-muted-foreground">
-              {t('home.ctaSubtext')}
-            </p>
+            {/* Feature checkmarks */}
+            <div className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2">
+              {['ctaFeature1', 'ctaFeature2', 'ctaFeature3'].map((key) => (
+                <div
+                  key={key}
+                  className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground"
+                >
+                  <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />
+                  <span>{t(`home.${key}`)}</span>
+                </div>
+              ))}
+            </div>
           </FadeInView>
         </div>
       </section>

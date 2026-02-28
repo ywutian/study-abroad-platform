@@ -13,6 +13,7 @@ import {
   Sparkles,
   Users,
 } from 'lucide-react';
+import { Link } from '@/lib/i18n/navigation';
 import { SectionHeader } from '@/components/features/landing';
 import { AnimatedNumber, ChatMessageMotion } from '@/components/ui/motion';
 import { cn } from '@/lib/utils';
@@ -37,7 +38,7 @@ export function BentoFeatures() {
 
         <div
           ref={ref}
-          className="mx-auto max-w-6xl grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5"
+          className="mx-auto max-w-6xl grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8"
         >
           {/* Large card: School Finder (spans 2 cols, 2 rows on lg) */}
           <BentoCard
@@ -47,6 +48,7 @@ export function BentoFeatures() {
             className="col-span-2 lg:col-span-2 lg:row-span-2"
             gradient="from-violet-500/10 to-purple-600/10"
             borderColor="hover:border-violet-500/30"
+            href="/schools"
           >
             <div className="flex items-start gap-3 mb-4">
               <div className="rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 p-2.5 shadow-lg">
@@ -62,8 +64,8 @@ export function BentoFeatures() {
               </div>
             </div>
             {/* Mini search UI mockup */}
-            <div className="rounded-xl bg-muted/50 border border-border/50 p-3 sm:p-4">
-              <div className="h-8 bg-background rounded-lg flex items-center px-3 gap-2 mb-3 border border-border/50">
+            <div className="rounded-xl bg-muted/30 border border-border/40 p-3 sm:p-5">
+              <div className="h-9 bg-background/80 rounded-lg flex items-center px-3 gap-2 mb-4 shadow-sm">
                 <Target className="w-3.5 h-3.5 text-muted-foreground" />
                 <span className="text-xs text-muted-foreground">
                   {t('home.demoUI.step1.searchPlaceholder')}
@@ -77,7 +79,7 @@ export function BentoFeatures() {
                 ].map((school, i) => (
                   <div
                     key={i}
-                    className="flex items-center gap-3 p-2 rounded-lg bg-background border border-border/50"
+                    className="flex items-center gap-3 p-2.5 rounded-lg bg-background/50 hover:bg-background transition-colors"
                   >
                     <div
                       className={cn(
@@ -113,6 +115,7 @@ export function BentoFeatures() {
             className="col-span-2 lg:col-span-1 lg:row-span-2"
             gradient="from-blue-500/5 to-cyan-500/5"
             borderColor="hover:border-blue-500/30"
+            href="/prediction"
           >
             <div className="flex items-start gap-3 mb-4">
               <div className="rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 p-2.5 shadow-lg">
@@ -136,9 +139,9 @@ export function BentoFeatures() {
                 { label: t('home.demoUI.step2.target'), value: 68, color: 'text-blue-500' },
                 { label: t('home.demoUI.step2.reach'), value: 35, color: 'text-amber-500' },
               ].map((item, i) => (
-                <div key={i} className="text-center p-2 rounded-lg bg-muted/50">
+                <div key={i} className="text-center p-2.5 rounded-lg bg-muted/30">
                   <div className={cn('text-lg font-bold', item.color)}>{item.value}%</div>
-                  <div className="text-2xs text-muted-foreground">{item.label}</div>
+                  <div className="text-2xs text-muted-foreground mt-0.5">{item.label}</div>
                 </div>
               ))}
             </div>
@@ -151,6 +154,7 @@ export function BentoFeatures() {
             reduced={!!prefersReducedMotion}
             gradient="from-emerald-500/5 to-teal-500/5"
             borderColor="hover:border-emerald-500/30"
+            href="/schools"
           >
             <div className="flex items-center gap-3">
               <div className="rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 p-2.5 shadow-lg">
@@ -178,6 +182,7 @@ export function BentoFeatures() {
             reduced={!!prefersReducedMotion}
             gradient="from-amber-500/5 to-orange-500/5"
             borderColor="hover:border-amber-500/30"
+            href="/hall"
           >
             <div className="flex items-start gap-3 mb-3">
               <div className="rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 p-2.5 shadow-lg">
@@ -194,7 +199,7 @@ export function BentoFeatures() {
             <div className="space-y-2">
               <ChatMessageMotion isOwn={true} index={0}>
                 <div className="ml-auto max-w-[80%] rounded-xl rounded-br-sm bg-primary/10 px-3 py-2">
-                  <p className="text-xs">Can you help me improve my MIT essay?</p>
+                  <p className="text-xs">{t('home.bento.chatUser')}</p>
                 </div>
               </ChatMessageMotion>
               <ChatMessageMotion isOwn={false} index={1}>
@@ -203,9 +208,7 @@ export function BentoFeatures() {
                     <Sparkles className="w-3 h-3 text-primary" />
                     <span className="text-2xs font-medium text-primary">AI</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    I've analyzed your essay. Here are 3 key suggestions...
-                  </p>
+                  <p className="text-xs text-muted-foreground">{t('home.bento.chatAi')}</p>
                 </div>
               </ChatMessageMotion>
             </div>
@@ -218,6 +221,7 @@ export function BentoFeatures() {
             reduced={!!prefersReducedMotion}
             gradient="from-violet-500/5 to-indigo-500/5"
             borderColor="hover:border-violet-500/30"
+            href="/forum"
           >
             <div className="flex items-center gap-3">
               <div className="rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 p-2.5 shadow-lg">
@@ -264,6 +268,7 @@ function BentoCard({
   className,
   gradient,
   borderColor,
+  href,
 }: {
   children: React.ReactNode;
   index: number;
@@ -272,6 +277,7 @@ function BentoCard({
   className?: string;
   gradient: string;
   borderColor: string;
+  href?: string;
 }) {
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (reduced) return;
@@ -311,6 +317,9 @@ function BentoCard({
         )}
       />
       <div className="relative">{children}</div>
+      {href && (
+        <Link href={href} className="absolute inset-0 z-10" aria-hidden="true" tabIndex={-1} />
+      )}
     </motion.div>
   );
 }

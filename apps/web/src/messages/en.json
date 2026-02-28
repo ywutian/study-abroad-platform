@@ -142,8 +142,8 @@
       "getStarted": "Get Started"
     },
     "badge": "AI-Powered Study Abroad Platform",
-    "heroTitle": "Smart Application Assistant",
-    "heroSubtitle": "Smart school selection, admission prediction, case sharing — your one-stop study abroad platform",
+    "heroTitle": "Your Dream School, Within Reach",
+    "heroSubtitle": "AI-driven school matching, admission prediction, and essay coaching — everything you need to land your offer",
     "scrollDown": "Scroll Down",
     "heroLeft": {
       "top100": "Covers US Top 100 Schools",
@@ -205,13 +205,13 @@
         "quote": "The AI assistant guided my entire application process, from school selection to essays, every step was clear."
       }
     },
-    "ctaBadge": "Open for Registration",
-    "ctaTitle": "Ready to start your application journey?",
-    "ctaSubtitle": "Register for free and experience all features",
-    "ctaButton": "Get Started",
-    "ctaFeature1": "Free to Use",
-    "ctaFeature2": "No Credit Card",
-    "ctaFeature3": "Cancel Anytime",
+    "ctaBadge": "Join 1,200+ Applicants",
+    "ctaTitle": "Your dream school is closer than you think",
+    "ctaSubtitle": "Get your personalized admission prediction in under 2 minutes — completely free",
+    "ctaButton": "Get My Prediction",
+    "ctaFeature1": "100% Free",
+    "ctaFeature2": "No Credit Card Required",
+    "ctaFeature3": "Results in 2 Minutes",
     "viewCases": "Browse Cases",
     "copyright": "© 2026 Study Abroad Platform. All rights reserved.",
     "aboutUs": "About Us",
@@ -245,21 +245,25 @@
         "desc": "Connect with applicants, share experiences"
       }
     },
+    "bento": {
+      "chatUser": "Can you help me improve my MIT essay?",
+      "chatAi": "I've analyzed your essay. Here are 3 key suggestions..."
+    },
     "demo": {
       "step1": {
-        "title": "Smart School Selection",
+        "title": "Search",
         "desc": "Filter schools based on your background and preferences"
       },
       "step2": {
-        "title": "AI Analysis",
+        "title": "Predict",
         "desc": "Evaluate your profile and predict admission chances"
       },
       "step3": {
-        "title": "Application Planning",
+        "title": "Track",
         "desc": "Get personalized timeline and task checklist"
       },
       "step4": {
-        "title": "Community Interaction",
+        "title": "Connect",
         "desc": "Connect with other applicants for real insights"
       }
     },

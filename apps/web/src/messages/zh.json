@@ -142,8 +142,8 @@
       "getStarted": "开始使用"
     },
     "badge": "AI 驱动的智能留学平台",
-    "heroTitle": "智能留学申请助手",
-    "heroSubtitle": "智能选校、录取预测、案例分享 —— 您的一站式留学申请平台",
+    "heroTitle": "梦校录取，触手可及",
+    "heroSubtitle": "AI 智能选校、录取预测、文书辅导 —— 从申请到拿 Offer，一站搞定",
     "scrollDown": "向下滚动",
     "heroLeft": {
       "top100": "覆盖美国 Top 100 院校",
@@ -205,13 +205,13 @@
         "quote": "AI 助手全程指导我的申请，从选校到文书，每一步都很清晰。"
       }
     },
-    "ctaBadge": "开放注册中",
-    "ctaTitle": "准备开始您的申请之旅？",
-    "ctaSubtitle": "免费注册，立即体验全部功能",
-    "ctaButton": "立即开始",
-    "ctaFeature1": "免费使用",
-    "ctaFeature2": "无需信用卡",
-    "ctaFeature3": "随时取消",
+    "ctaBadge": "已有 1,200+ 申请者加入",
+    "ctaTitle": "梦校，比你想的更近",
+    "ctaSubtitle": "2 分钟内获取你的个性化录取预测 —— 完全免费",
+    "ctaButton": "获取我的预测",
+    "ctaFeature1": "100% 免费",
+    "ctaFeature2": "无需绑定信用卡",
+    "ctaFeature3": "2 分钟出结果",
     "viewCases": "浏览案例",
     "copyright": "© 2026 留学申请平台 保留所有权利",
     "aboutUs": "关于我们",
@@ -245,21 +245,25 @@
         "desc": "与申请者交流，获取真实经验分享"
       }
     },
+    "bento": {
+      "chatUser": "帮我优化一下 MIT 的文书？",
+      "chatAi": "我已分析了你的文书，以下是 3 条关键建议..."
+    },
     "demo": {
       "step1": {
-        "title": "智能选校",
+        "title": "选校",
         "desc": "根据你的背景和偏好，筛选最适合的学校"
       },
       "step2": {
-        "title": "AI 分析",
+        "title": "预测",
         "desc": "智能评估你的申请档案，预测录取概率"
       },
       "step3": {
-        "title": "申请规划",
+        "title": "追踪",
         "desc": "获取个性化的时间表和任务清单"
       },
       "step4": {
-        "title": "社区互动",
+        "title": "社区",
         "desc": "与其他申请者交流，获取真实的申请经验"
       }
     },

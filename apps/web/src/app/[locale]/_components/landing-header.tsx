@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/lib/i18n/navigation';
@@ -26,10 +26,10 @@ const localeCodes: Record<Locale, string> = {
 type ScrollState = 'top' | 'scrolling' | 'scrolled';
 
 const NAV_LINKS = [
-  { key: 'features', href: '#features' },
-  { key: 'howItWorks', href: '#how-it-works' },
-  { key: 'testimonials', href: '#testimonials' },
-  { key: 'getStarted', href: '#cta' },
+  { key: 'schools', href: '/schools' },
+  { key: 'cases', href: '/cases' },
+  { key: 'forum', href: '/forum' },
+  { key: 'ai', href: '/ai' },
 ] as const;
 
 export function LandingHeader() {
@@ -71,15 +71,6 @@ export function LandingHeader() {
     router.replace('/', { locale: newLocale });
   };
 
-  const handleNavClick = useCallback((href: string) => {
-    setMobileMenuOpen(false);
-    const id = href.replace('#', '');
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, []);
-
   return (
     <>
       <header
@@ -106,17 +97,17 @@ export function LandingHeader() {
           {/* Desktop nav links — md+ */}
           <nav className="hidden md:flex items-center gap-1">
             {NAV_LINKS.map(({ key, href }) => (
-              <button
+              <Link
                 key={key}
-                onClick={() => handleNavClick(href)}
+                href={href}
                 className={cn(
                   'px-3 py-1.5 text-sm font-medium rounded-lg',
                   'text-muted-foreground hover:text-foreground',
                   'hover:bg-accent/50 transition-colors duration-200'
                 )}
               >
-                {t(`home.nav.${key}`)}
-              </button>
+                {t(`nav.${key}`)}
+              </Link>
             ))}
           </nav>
 
@@ -200,13 +191,14 @@ export function LandingHeader() {
           >
             <nav className="container mx-auto px-4 py-4 flex flex-col gap-1">
               {NAV_LINKS.map(({ key, href }) => (
-                <button
+                <Link
                   key={key}
-                  onClick={() => handleNavClick(href)}
+                  href={href}
+                  onClick={() => setMobileMenuOpen(false)}
                   className="w-full text-left px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-colors"
                 >
-                  {t(`home.nav.${key}`)}
-                </button>
+                  {t(`nav.${key}`)}
+                </Link>
               ))}
               <div className="mt-2 pt-3 border-t border-border/10 flex flex-col gap-2">
                 <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
