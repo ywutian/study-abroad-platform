@@ -30,7 +30,7 @@ const EXEMPT_KEY_PATTERNS = [
   /\.siteName$/, // 站点名称
   /\.copyright$/, // 版权信息（可能含英文）
   /\.url$/, // URL
-  /\.email$/, // 邮箱
+  /[Ee]mail$/, // 邮箱 (email, contactEmail, etc.)
   /\.code$/, // 代码片段
   /\.format$/, // 日期/数字格式
   /\.unit$/, // 单位

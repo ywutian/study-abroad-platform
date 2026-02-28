@@ -135,6 +135,12 @@
     }
   },
   "home": {
+    "nav": {
+      "features": "Features",
+      "howItWorks": "How It Works",
+      "testimonials": "Testimonials",
+      "getStarted": "Get Started"
+    },
     "badge": "AI-Powered Study Abroad Platform",
     "heroTitle": "Smart Application Assistant",
     "heroSubtitle": "Smart school selection, admission prediction, case sharing — your one-stop study abroad platform",
@@ -317,15 +323,40 @@
       "notAvailable": "N/A",
       "editScores": "Edit Scores"
     },
+    "problem": {
+      "title": "Study Abroad Shouldn't Be This Hard.",
+      "subtitle": "Millions of students face the same challenges every year",
+      "pain1Title": "Information Overload",
+      "pain1Desc": "Thousands of schools, countless rankings, conflicting advice — where do you even start?",
+      "pain2Title": "Deadline Chaos",
+      "pain2Desc": "Different schools, different deadlines, different requirements — missing one can cost you everything.",
+      "pain3Title": "Uncertain Chances",
+      "pain3Desc": "Will I get in? Am I reaching too high or aiming too low? The anxiety of not knowing."
+    },
+    "howItWorks": {
+      "title": "Three Steps to Your Dream School",
+      "subtitle": "From profile to acceptance, we've got you covered",
+      "step1Title": "Build Your Profile",
+      "step1Desc": "Enter your grades, test scores, activities, and preferences — takes just 5 minutes.",
+      "step2Title": "AI Smart Match",
+      "step2Desc": "Our AI analyzes your profile against 10,000+ real cases to find your best-fit schools.",
+      "step3Title": "Apply with Confidence",
+      "step3Desc": "Get personalized timelines, essay guidance, and real-time admission predictions."
+    },
+    "ctaSubtext": "Free to use — no credit card required",
+    "socialProofRating": "2,000+ students helped",
     "footer": {
       "description": "AI-powered study abroad platform with school recommendations, admission predictions, and case library",
       "products": "Products",
       "resources": "Resources",
       "contact": "Contact",
-      "helpCenter": "Help Center"
+      "helpCenter": "Help Center",
+      "contactEmail": "contact@studyabroad.com"
     }
   },
   "auth": {
+    "error": "Something went wrong",
+    "errorProcessing": "An unexpected error occurred while processing your request.",
     "login": {
       "title": "Login",
       "subtitle": "Welcome back",
@@ -1677,7 +1708,19 @@
       "close": "Close"
     },
     "password": {
-      "strength": "Password Strength"
+      "strength": "Password Strength",
+      "length": "At least 8 characters",
+      "lowercase": "Contains lowercase letter",
+      "uppercase": "Contains uppercase letter",
+      "number": "Contains a number",
+      "special": "Contains special character (!@#$%^&*)",
+      "veryWeak": "Very Weak",
+      "weak": "Weak",
+      "fair": "Fair",
+      "strong": "Strong",
+      "veryStrong": "Very Strong",
+      "show": "Show password",
+      "hide": "Hide password"
     },
     "sortable": {
       "dragToSort": "Drag to sort"
@@ -4172,6 +4215,7 @@
   "validation": {
     "invalidEmail": "Please enter a valid email address",
     "passwordMin": "Password must be at least 8 characters",
+    "passwordStrength": "Password must contain uppercase, lowercase, number and special character (@$!%*#?&)",
     "passwordMismatch": "Passwords do not match",
     "agreeRequired": "Please agree to the terms",
     "required": "This field is required",

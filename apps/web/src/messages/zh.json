@@ -135,6 +135,12 @@
     }
   },
   "home": {
+    "nav": {
+      "features": "功能",
+      "howItWorks": "工作原理",
+      "testimonials": "用户评价",
+      "getStarted": "开始使用"
+    },
     "badge": "AI 驱动的智能留学平台",
     "heroTitle": "智能留学申请助手",
     "heroSubtitle": "智能选校、录取预测、案例分享 —— 您的一站式留学申请平台",
@@ -317,15 +323,40 @@
       "notAvailable": "暂无",
       "editScores": "编辑成绩"
     },
+    "problem": {
+      "title": "留学申请，不该这么难。",
+      "subtitle": "每年数百万学生都面临同样的困扰",
+      "pain1Title": "信息过载",
+      "pain1Desc": "成千上万的学校、无数的排名、相互矛盾的建议——你该从何开始？",
+      "pain2Title": "截止日期混乱",
+      "pain2Desc": "不同学校、不同截止日期、不同要求——错过一个可能失去一切。",
+      "pain3Title": "录取机会不确定",
+      "pain3Desc": "我能录取吗？是目标太高还是太保守？这种未知的焦虑令人窒息。"
+    },
+    "howItWorks": {
+      "title": "三步开始你的申请之旅",
+      "subtitle": "从建立档案到收到录取，我们全程陪伴",
+      "step1Title": "建立档案",
+      "step1Desc": "输入你的成绩、标化、活动和偏好——只需 5 分钟。",
+      "step2Title": "AI 智能匹配",
+      "step2Desc": "我们的 AI 基于 10,000+ 真实案例分析你的档案，为你推荐最匹配的学校。",
+      "step3Title": "自信申请",
+      "step3Desc": "获取个性化时间表、文书指导和实时录取预测。"
+    },
+    "ctaSubtext": "免费使用，无需信用卡",
+    "socialProofRating": "已帮助 2,000+ 学生",
     "footer": {
       "description": "智能留学申请平台，为您提供选校推荐、录取预测、案例库等一站式服务",
       "products": "产品服务",
       "resources": "资源",
       "contact": "联系我们",
-      "helpCenter": "帮助中心"
+      "helpCenter": "帮助中心",
+      "contactEmail": "contact@studyabroad.com"
     }
   },
   "auth": {
+    "error": "出现错误",
+    "errorProcessing": "处理您的请求时发生了意外错误。",
     "login": {
       "title": "登录",
       "subtitle": "欢迎回来",
@@ -1677,7 +1708,19 @@
       "close": "关闭"
     },
     "password": {
-      "strength": "密码强度"
+      "strength": "密码强度",
+      "length": "至少 8 个字符",
+      "lowercase": "包含小写字母",
+      "uppercase": "包含大写字母",
+      "number": "包含数字",
+      "special": "包含特殊字符 (!@#$%^&*)",
+      "veryWeak": "非常弱",
+      "weak": "弱",
+      "fair": "一般",
+      "strong": "强",
+      "veryStrong": "非常强",
+      "show": "显示密码",
+      "hide": "隐藏密码"
     },
     "sortable": {
       "dragToSort": "拖拽排序"
@@ -4167,6 +4210,7 @@
   "validation": {
     "invalidEmail": "请输入有效的邮箱地址",
     "passwordMin": "密码至少需要8个字符",
+    "passwordStrength": "密码需包含大小写字母、数字和特殊字符(@$!%*#?&)",
     "passwordMismatch": "两次输入的密码不一致",
     "agreeRequired": "请同意服务条款",
     "required": "此字段为必填项",

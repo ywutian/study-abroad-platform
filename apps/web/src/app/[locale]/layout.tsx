@@ -60,7 +60,6 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
     <html
       lang={locale}
       suppressHydrationWarning
-      data-scroll-behavior="smooth"
       className={`${GeistSans.variable} ${GeistMono.variable}`}
     >
       <head>

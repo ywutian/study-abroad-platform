@@ -10,6 +10,7 @@ interface SectionHeaderProps {
   title: string;
   subtitle?: string;
   align?: 'left' | 'center';
+  size?: 'default' | 'display';
   className?: string;
 }
 
@@ -18,6 +19,7 @@ export function SectionHeader({
   title,
   subtitle,
   align = 'center',
+  size = 'default',
   className,
 }: SectionHeaderProps) {
   const prefersReducedMotion = useReducedMotion();
@@ -39,8 +41,17 @@ export function SectionHeader({
           {badge}
         </Badge>
       )}
-      <h2 className="text-title-lg">{title}</h2>
-      {subtitle && <p className="mt-3 text-body-sm text-muted-foreground">{subtitle}</p>}
+      <h2 className={size === 'display' ? 'text-display-section' : 'text-title-lg'}>{title}</h2>
+      {subtitle && (
+        <p
+          className={cn(
+            'mt-3 text-muted-foreground',
+            size === 'display' ? 'text-base sm:text-lg' : 'text-body-sm'
+          )}
+        >
+          {subtitle}
+        </p>
+      )}
     </motion.div>
   );
 }

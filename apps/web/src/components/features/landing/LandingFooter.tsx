@@ -23,7 +23,7 @@ interface LandingFooterProps {
 
 export function LandingFooter({ description, sections, copyright, className }: LandingFooterProps) {
   return (
-    <footer className={cn('border-t bg-card', className)}>
+    <footer className={cn('border-t zone-tinted', className)}>
       <div className="container mx-auto px-4 py-8 sm:py-12">
         {/* Main Footer Content */}
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
@@ -48,7 +48,7 @@ export function LandingFooter({ description, sections, copyright, className }: L
                   <li key={linkIndex}>
                     <Link
                       href={link.href}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      className="text-sm text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline decoration-border"
                     >
                       {link.label}
                     </Link>
@@ -60,7 +60,7 @@ export function LandingFooter({ description, sections, copyright, className }: L
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t">
+        <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-border/50">
           <p className="text-xs sm:text-sm text-muted-foreground text-center">{copyright}</p>
         </div>
       </div>
