@@ -48,6 +48,7 @@ import {
   Star,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { PageContainer, PageHeader } from '@/components/layout';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
@@ -363,29 +364,25 @@ export default function TimelinePage() {
   }
 
   return (
-    <div className="container mx-auto py-6 px-4 max-w-5xl space-y-6">
-      {/* 页面标题 */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-            <Calendar className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-title">{t('title')}</h1>
-            <p className="text-sm text-muted-foreground">{t('description')}</p>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => setShowCreateEvent(true)}>
-            <Plus className="h-4 w-4 mr-1" />
-            {t('personalEvents.create')}
-          </Button>
-          <Button onClick={() => router.push('find-college')} size="sm">
-            <Plus className="h-4 w-4 mr-1" />
-            {t('addSchool')}
-          </Button>
-        </div>
-      </div>
+    <PageContainer maxWidth="5xl" className="space-y-6">
+      <PageHeader
+        title={t('title')}
+        description={t('description')}
+        icon={Calendar}
+        color="blue"
+        actions={
+          <>
+            <Button variant="outline" size="sm" onClick={() => setShowCreateEvent(true)}>
+              <Plus className="h-4 w-4 mr-1" />
+              {t('personalEvents.create')}
+            </Button>
+            <Button onClick={() => router.push('find-college')} size="sm">
+              <Plus className="h-4 w-4 mr-1" />
+              {t('addSchool')}
+            </Button>
+          </>
+        }
+      />
 
       {/* Tab 切换 */}
       <div className="flex gap-1 p-1 bg-muted rounded-lg w-fit">
@@ -955,6 +952,6 @@ export default function TimelinePage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </PageContainer>
   );
 }

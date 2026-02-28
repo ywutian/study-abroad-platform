@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { apiClient } from '@/lib/api';
 import { useState } from 'react';
-import { PageContainer } from '@/components/layout';
+import { PageContainer, PageHeader } from '@/components/layout';
 import { CaseCard, SubmitCaseDialog } from '@/components/features';
 import { LoadingState } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -73,68 +73,42 @@ export default function CasesPage() {
 
   return (
     <PageContainer maxWidth="7xl">
-      {/* 页面头部 */}
-      <div className="relative mb-8 overflow-hidden rounded-lg bg-success/5 p-6 sm:p-8">
-        {/* 装饰元素 */}
-        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-success/15 blur-3xl" />
-        <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-success/15 blur-3xl" />
-
-        <div className="relative z-10">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-success ">
-                  <BookOpen className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-title">{t('cases.title')}</h1>
-                  <p className="text-muted-foreground">{t('cases.description')}</p>
-                </div>
-              </div>
-            </div>
-
-            <Button
-              onClick={() => setSubmitDialogOpen(true)}
-              className="gap-2 bg-success hover:opacity-90"
-            >
-              <Plus className="h-4 w-4" />
-              {t('cases.shareCase')}
-            </Button>
-          </div>
-
-          {/* 统计卡片 */}
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div className="rounded-xl border bg-card/50 backdrop-blur-sm p-4">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <BarChart3 className="h-4 w-4" />
-                <span className="text-xs">{t('cases.stats.total')}</span>
-              </div>
-              <p className="text-2xl font-bold">{stats.total}</p>
-            </div>
-            <div className="rounded-xl border bg-card/50 backdrop-blur-sm p-4">
-              <div className="flex items-center gap-2 text-emerald-500 mb-1">
-                <CheckCircle className="h-4 w-4" />
-                <span className="text-xs">{t('cases.result.admitted')}</span>
-              </div>
-              <p className="text-2xl font-bold text-emerald-500">{stats.admitted}</p>
-            </div>
-            <div className="rounded-xl border bg-card/50 backdrop-blur-sm p-4">
-              <div className="flex items-center gap-2 text-amber-500 mb-1">
-                <Clock className="h-4 w-4" />
-                <span className="text-xs">{t('cases.result.waitlisted')}</span>
-              </div>
-              <p className="text-2xl font-bold text-amber-500">{stats.waitlisted}</p>
-            </div>
-            <div className="rounded-xl border bg-card/50 backdrop-blur-sm p-4">
-              <div className="flex items-center gap-2 text-blue-500 mb-1">
-                <TrendingUp className="h-4 w-4" />
-                <span className="text-xs">{t('cases.stats.admissionRate')}</span>
-              </div>
-              <p className="text-2xl font-bold text-blue-500">{admissionRate}%</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        title={t('cases.title')}
+        description={t('cases.description')}
+        icon={BookOpen}
+        color="emerald"
+        actions={
+          <Button
+            onClick={() => setSubmitDialogOpen(true)}
+            className="gap-2 bg-success hover:opacity-90"
+          >
+            <Plus className="h-4 w-4" />
+            {t('cases.shareCase')}
+          </Button>
+        }
+        stats={[
+          { label: t('cases.stats.total'), value: stats.total, icon: BarChart3 },
+          {
+            label: t('cases.result.admitted'),
+            value: stats.admitted,
+            icon: CheckCircle,
+            color: 'text-emerald-500',
+          },
+          {
+            label: t('cases.result.waitlisted'),
+            value: stats.waitlisted,
+            icon: Clock,
+            color: 'text-amber-500',
+          },
+          {
+            label: t('cases.stats.admissionRate'),
+            value: `${admissionRate}%`,
+            icon: TrendingUp,
+            color: 'text-blue-500',
+          },
+        ]}
+      />
 
       <SubmitCaseDialog
         open={submitDialogOpen}

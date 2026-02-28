@@ -6,40 +6,24 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import dynamic from 'next/dynamic';
-
-// Code-split heavy AI visualization components
-const AIScoreRadar = dynamic(
-  () => import('@/components/features/essay-ai').then((m) => ({ default: m.AIScoreRadar })),
-  { ssr: false }
-);
-const ScoreDetailList = dynamic(
-  () => import('@/components/features/essay-ai').then((m) => ({ default: m.ScoreDetailList })),
-  { ssr: false }
-);
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  Plus,
+  FileText,
+  Pencil,
+  Trash2,
+  Sparkles,
+  Calendar,
+  Hash,
+  Wand2,
+  RefreshCw,
+  PenTool,
+  ArrowRight,
+  ChevronDown,
+  Lightbulb,
+  HelpCircle,
+} from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { AI_TIMEOUTS } from '@/lib/constants';
 import { PageContainer, PageHeader } from '@/components/layout';
@@ -47,26 +31,6 @@ import { cn } from '@/lib/utils';
 import { LoadingState } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toast } from 'sonner';
-import {
-  Plus,
-  FileText,
-  Pencil,
-  Trash2,
-  Sparkles,
-  Save,
-  Loader2,
-  Calendar,
-  Hash,
-  Wand2,
-  RefreshCw,
-  PenTool,
-  ArrowRight,
-  Copy,
-  Check,
-  ChevronDown,
-  Lightbulb,
-  HelpCircle,
-} from 'lucide-react';
 import { AiAssistantPanel } from '@/components/features/agent-chat';
 import {
   DropdownMenu,
@@ -75,8 +39,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-// date-fns format removed — using useFormatter() from next-intl instead
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createEssaySchema, type EssayFormData } from '@/lib/validations/essay';
@@ -88,6 +50,9 @@ import type {
   ContinueResult,
   OpeningResult,
 } from '@/types/essay';
+
+import { EssayAIDialogs } from './_components/essay-ai-dialogs';
+import { EssayFormDialog, EssayDeleteDialog } from './_components/essay-form-dialog';
 
 export default function EssaysPage() {
   const t = useTranslations();
@@ -101,23 +66,19 @@ export default function EssaysPage() {
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [reviewResult, setReviewResult] = useState<EssayReview | null>(null);
 
-  // AI 增强功能状态
+  // AI state
   const [isPolishOpen, setIsPolishOpen] = useState(false);
   const [polishResult, setPolishResult] = useState<PolishResult | null>(null);
   const [polishStyle] = useState<'formal' | 'vivid' | 'concise'>('formal');
-
   const [isRewriteOpen, setIsRewriteOpen] = useState(false);
   const [rewriteResult, setRewriteResult] = useState<RewriteResult | null>(null);
   const [selectedText, setSelectedText] = useState('');
   const [rewriteInstruction, setRewriteInstruction] = useState('');
-
   const [isContinueOpen, setIsContinueOpen] = useState(false);
   const [continueResult, setContinueResult] = useState<ContinueResult | null>(null);
   const [continueDirection] = useState('');
-
   const [isOpeningOpen, setIsOpeningOpen] = useState(false);
   const [openingResult, setOpeningResult] = useState<OpeningResult | null>(null);
-
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   const essayForm = useForm<EssayFormData>({
@@ -125,14 +86,12 @@ export default function EssaysPage() {
     defaultValues: { title: '', prompt: '', content: '' },
   });
 
-  // Store random offsets in ref so they're computed once on mount
   const randomOffsetsRef = useRef({
     originality: Math.random() * 2,
     impact: Math.random() * 1.5,
     relevance: Math.random() * 1,
   });
 
-  // Memoize derived scores using stable random offsets
   const derivedScores = useMemo(() => {
     if (!reviewResult) return null;
     const offsets = randomOffsetsRef.current;
@@ -143,14 +102,12 @@ export default function EssaysPage() {
     };
   }, [reviewResult]);
 
-  // Fetch essays
-  // apiClient 已自动解包 { success, data } -> data
+  // Queries & Mutations
   const { data: essays, isLoading } = useQuery({
     queryKey: ['essays'],
     queryFn: () => apiClient.get<Essay[]>('/profiles/me/essays'),
   });
 
-  // Create essay
   const createMutation = useMutation({
     mutationFn: (data: { title: string; prompt?: string; content: string }) =>
       apiClient.post<Essay>('/profiles/me/essays', data),
@@ -162,7 +119,6 @@ export default function EssaysPage() {
     },
   });
 
-  // Update essay
   const updateMutation = useMutation({
     mutationFn: ({
       id,
@@ -180,21 +136,17 @@ export default function EssaysPage() {
     },
   });
 
-  // Delete essay
   const deleteMutation = useMutation({
     mutationFn: (id: string) => apiClient.delete(`/profiles/me/essays/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['essays'] });
       setIsDeleteOpen(false);
       setEssayToDelete(null);
-      if (selectedEssay?.id === essayToDelete) {
-        setSelectedEssay(null);
-      }
+      if (selectedEssay?.id === essayToDelete) setSelectedEssay(null);
       toast.success(t('essays.toast.deleted'));
     },
   });
 
-  // AI Review
   const reviewMutation = useMutation({
     mutationFn: (data: { prompt: string; content: string }) =>
       apiClient.post<EssayReview>('/ai/review-essay', data, { timeout: AI_TIMEOUTS.AI_REQUEST }),
@@ -204,7 +156,6 @@ export default function EssaysPage() {
     },
   });
 
-  // AI 润色
   const polishMutation = useMutation({
     mutationFn: (data: { content: string; style?: 'formal' | 'vivid' | 'concise' }) =>
       apiClient.post<PolishResult>('/ai/polish-essay', data, { timeout: AI_TIMEOUTS.AI_REQUEST }),
@@ -214,7 +165,6 @@ export default function EssaysPage() {
     },
   });
 
-  // AI 改写
   const rewriteMutation = useMutation({
     mutationFn: (data: { paragraph: string; instruction?: string }) =>
       apiClient.post<RewriteResult>('/ai/rewrite-paragraph', data, {
@@ -226,7 +176,6 @@ export default function EssaysPage() {
     },
   });
 
-  // AI 续写
   const continueMutation = useMutation({
     mutationFn: (data: { content: string; prompt?: string; direction?: string }) =>
       apiClient.post<ContinueResult>('/ai/continue-writing', data, {
@@ -238,7 +187,6 @@ export default function EssaysPage() {
     },
   });
 
-  // AI 生成开头
   const openingMutation = useMutation({
     mutationFn: (data: { prompt: string; background?: string }) =>
       apiClient.post<OpeningResult>('/ai/generate-opening', data, {
@@ -250,6 +198,9 @@ export default function EssaysPage() {
     },
   });
 
+  // Handlers
+  const getWordCount = (text: string) => text.split(/\s+/).filter(Boolean).length;
+
   const handleCreate = () => {
     essayForm.reset({ title: '', prompt: '', content: '' });
     setSelectedEssay(null);
@@ -257,11 +208,7 @@ export default function EssaysPage() {
   };
 
   const handleEdit = (essay: Essay) => {
-    essayForm.reset({
-      title: essay.title,
-      prompt: essay.prompt || '',
-      content: essay.content,
-    });
+    essayForm.reset({ title: essay.title, prompt: essay.prompt || '', content: essay.content });
     setSelectedEssay(essay);
     setIsFormOpen(true);
   };
@@ -277,7 +224,6 @@ export default function EssaysPage() {
       prompt: values.prompt || undefined,
       content: values.content,
     };
-
     if (selectedEssay) {
       updateMutation.mutate({ id: selectedEssay.id, data });
     } else {
@@ -290,10 +236,7 @@ export default function EssaysPage() {
       toast.error(t('essays.toast.contentRequired'));
       return;
     }
-    reviewMutation.mutate({
-      prompt: essay.prompt || essay.title,
-      content: essay.content,
-    });
+    reviewMutation.mutate({ prompt: essay.prompt || essay.title, content: essay.content });
   };
 
   const handlePolish = (essay: Essay) => {
@@ -375,10 +318,6 @@ export default function EssaysPage() {
     }
   };
 
-  const getWordCount = (text: string) => {
-    return text.split(/\s+/).filter(Boolean).length;
-  };
-
   return (
     <PageContainer>
       <PageHeader
@@ -389,7 +328,7 @@ export default function EssaysPage() {
         actions={
           <Button
             onClick={handleCreate}
-            className="gap-2 bg-destructive hover:opacity-90 text-white shadow-md "
+            className="gap-2 bg-destructive hover:opacity-90 text-white shadow-md"
           >
             <Plus className="h-4 w-4" />
             {t('essays.new')}
@@ -459,7 +398,7 @@ export default function EssaysPage() {
           </Card>
         </div>
 
-        {/* Essay Detail / Editor */}
+        {/* Essay Detail */}
         <div className="lg:col-span-2">
           <Card className="h-full overflow-hidden">
             <div className="h-1 bg-primary dark:bg-primary" />
@@ -480,7 +419,6 @@ export default function EssaysPage() {
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {/* AI 工具下拉菜单 */}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="outline" size="sm">
@@ -538,7 +476,6 @@ export default function EssaysPage() {
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-
                     <Button variant="outline" size="sm" onClick={() => handleEdit(selectedEssay)}>
                       <Pencil className="mr-1 h-4 w-4" />
                       {t('common.edit')}
@@ -596,467 +533,48 @@ export default function EssaysPage() {
         </div>
       </div>
 
-      {/* Create/Edit Dialog */}
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{selectedEssay ? t('essays.edit') : t('essays.create')}</DialogTitle>
-            <DialogDescription>
-              {selectedEssay ? t('essays.editDesc') : t('essays.createDesc')}
-            </DialogDescription>
-          </DialogHeader>
+      <EssayFormDialog
+        isFormOpen={isFormOpen}
+        setIsFormOpen={setIsFormOpen}
+        selectedEssay={selectedEssay}
+        essayForm={essayForm}
+        onSubmit={handleSubmit}
+        isSaving={createMutation.isPending || updateMutation.isPending}
+        getWordCount={getWordCount}
+      />
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t('essays.label.title')}</Label>
-              <Input placeholder={t('essays.placeholder.title')} {...essayForm.register('title')} />
-              {essayForm.formState.errors.title && (
-                <p className="text-xs text-destructive">
-                  {essayForm.formState.errors.title.message}
-                </p>
-              )}
-            </div>
+      <EssayDeleteDialog
+        isDeleteOpen={isDeleteOpen}
+        setIsDeleteOpen={setIsDeleteOpen}
+        onConfirmDelete={() => essayToDelete && deleteMutation.mutate(essayToDelete)}
+        isDeleting={deleteMutation.isPending}
+      />
 
-            <div className="space-y-2">
-              <Label>{t('essays.label.prompt')}</Label>
-              <Textarea
-                placeholder={t('essays.placeholder.prompt')}
-                {...essayForm.register('prompt')}
-                rows={3}
-              />
-            </div>
+      <EssayAIDialogs
+        selectedEssay={selectedEssay}
+        isReviewOpen={isReviewOpen}
+        setIsReviewOpen={setIsReviewOpen}
+        reviewResult={reviewResult}
+        derivedScores={derivedScores}
+        onReReview={() => selectedEssay && handleReview(selectedEssay)}
+        isPolishOpen={isPolishOpen}
+        setIsPolishOpen={setIsPolishOpen}
+        polishResult={polishResult}
+        onApplyPolish={applyPolishedContent}
+        isContinueOpen={isContinueOpen}
+        setIsContinueOpen={setIsContinueOpen}
+        continueResult={continueResult}
+        onAppendContinuation={appendContinuation}
+        isOpeningOpen={isOpeningOpen}
+        setIsOpeningOpen={setIsOpeningOpen}
+        openingResult={openingResult}
+        isRewriteOpen={isRewriteOpen}
+        setIsRewriteOpen={setIsRewriteOpen}
+        rewriteResult={rewriteResult}
+        copiedIndex={copiedIndex}
+        onCopyToClipboard={copyToClipboard}
+      />
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label>{t('essays.label.content')}</Label>
-                <span className="text-xs text-muted-foreground">
-                  {t('essays.wordCount', { count: getWordCount(essayForm.watch('content')) })}
-                </span>
-              </div>
-              <Textarea
-                placeholder={t('essays.placeholder.content')}
-                {...essayForm.register('content')}
-                rows={12}
-                className="font-mono text-sm"
-              />
-              {essayForm.formState.errors.content && (
-                <p className="text-xs text-destructive">
-                  {essayForm.formState.errors.content.message}
-                </p>
-              )}
-            </div>
-
-            <DialogFooter>
-              <Button variant="outline" type="button" onClick={() => setIsFormOpen(false)}>
-                {t('common.cancel')}
-              </Button>
-              <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-                {(createMutation.isPending || updateMutation.isPending) && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                <Save className="mr-2 h-4 w-4" />
-                {t('common.save')}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation */}
-      <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('essays.dialog.deleteTitle')}</AlertDialogTitle>
-            <AlertDialogDescription>{t('essays.dialog.deleteDesc')}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => essayToDelete && deleteMutation.mutate(essayToDelete)}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {deleteMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {t('common.delete')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* AI Review Result Dialog - with Radar Chart */}
-      <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              {t('essays.dialog.reviewTitle')}
-            </DialogTitle>
-            <DialogDescription>{t('essayAi.review.description')}</DialogDescription>
-          </DialogHeader>
-
-          {reviewResult && (
-            <div className="flex-1 overflow-hidden">
-              <Tabs defaultValue="radar" className="h-full flex flex-col">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="radar">{t('essayAi.radar.title')}</TabsTrigger>
-                  <TabsTrigger value="details">{t('essays.tabs.details')}</TabsTrigger>
-                  <TabsTrigger value="suggestions">{t('essayAi.review.suggestions')}</TabsTrigger>
-                </TabsList>
-
-                {/* Radar Chart View */}
-                <TabsContent value="radar" className="flex-1 mt-4">
-                  <div className="flex justify-center py-4">
-                    <AIScoreRadar
-                      scores={[
-                        {
-                          key: 'structure',
-                          label: t('essayAi.radar.dimensions.structure'),
-                          score: reviewResult.structure.score,
-                          maxScore: 10,
-                          feedback: reviewResult.structure.feedback,
-                        },
-                        {
-                          key: 'originality',
-                          label: t('essayAi.radar.dimensions.originality'),
-                          score: derivedScores?.originality ?? 0,
-                          maxScore: 10,
-                        },
-                        {
-                          key: 'language',
-                          label: t('essayAi.radar.dimensions.language'),
-                          score: reviewResult.language.score,
-                          maxScore: 10,
-                          feedback: reviewResult.language.feedback,
-                        },
-                        {
-                          key: 'clarity',
-                          label: t('essayAi.radar.dimensions.clarity'),
-                          score: reviewResult.content.score,
-                          maxScore: 10,
-                          feedback: reviewResult.content.feedback,
-                        },
-                        {
-                          key: 'impact',
-                          label: t('essayAi.radar.dimensions.impact'),
-                          score: derivedScores?.impact ?? 0,
-                          maxScore: 10,
-                        },
-                        {
-                          key: 'relevance',
-                          label: t('essayAi.radar.dimensions.relevance'),
-                          score: derivedScores?.relevance ?? 0,
-                          maxScore: 10,
-                        },
-                      ]}
-                      overallScore={reviewResult.overallScore}
-                      size="md"
-                      animated
-                    />
-                  </div>
-                </TabsContent>
-
-                {/* Detailed Scores View */}
-                <TabsContent value="details" className="flex-1 mt-4">
-                  <ScrollArea className="h-[350px] pr-4">
-                    <ScoreDetailList
-                      scores={[
-                        {
-                          key: 'structure',
-                          label: t('essayAi.radar.dimensions.structure'),
-                          score: reviewResult.structure.score,
-                          maxScore: 10,
-                          feedback: reviewResult.structure.feedback,
-                        },
-                        {
-                          key: 'content',
-                          label: t('essayAi.radar.dimensions.clarity'),
-                          score: reviewResult.content.score,
-                          maxScore: 10,
-                          feedback: reviewResult.content.feedback,
-                        },
-                        {
-                          key: 'language',
-                          label: t('essayAi.radar.dimensions.language'),
-                          score: reviewResult.language.score,
-                          maxScore: 10,
-                          feedback: reviewResult.language.feedback,
-                        },
-                      ]}
-                    />
-                  </ScrollArea>
-                </TabsContent>
-
-                {/* Suggestions View */}
-                <TabsContent value="suggestions" className="flex-1 mt-4">
-                  <ScrollArea className="h-[350px] pr-4">
-                    {reviewResult.suggestions?.length > 0 ? (
-                      <div className="space-y-3">
-                        {reviewResult.suggestions.map((suggestion, i) => (
-                          <motion.div
-                            key={i}
-                            className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: i * 0.1 }}
-                          >
-                            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-                              {i + 1}
-                            </div>
-                            <p className="text-sm text-muted-foreground leading-relaxed">
-                              {suggestion}
-                            </p>
-                          </motion.div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-full text-center py-12">
-                        <Check className="h-12 w-12 text-emerald-500 mb-4" />
-                        <p className="text-lg font-semibold">{t('essays.review.noSuggestions')}</p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {t('essays.review.excellentWork')}
-                        </p>
-                      </div>
-                    )}
-                  </ScrollArea>
-                </TabsContent>
-              </Tabs>
-            </div>
-          )}
-
-          <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => selectedEssay && handleReview(selectedEssay)}>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              {t('essayAi.review.newReview')}
-            </Button>
-            <Button onClick={() => setIsReviewOpen(false)}>{t('common.close')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* AI 润色结果 Dialog */}
-      <Dialog open={isPolishOpen} onOpenChange={setIsPolishOpen}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Wand2 className="h-5 w-5 text-primary" />
-              {t('essays.dialog.polishTitle')}
-            </DialogTitle>
-            <DialogDescription>{t('essays.dialog.polishDesc')}</DialogDescription>
-          </DialogHeader>
-
-          {polishResult && (
-            <div className="flex-1 overflow-hidden">
-              <Tabs defaultValue="result" className="h-full flex flex-col">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="result">{t('essays.tabs.polishedResult')}</TabsTrigger>
-                  <TabsTrigger value="changes">
-                    {t('essays.tabs.changeComparison')} ({polishResult.changes?.length || 0})
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="result" className="flex-1 mt-4">
-                  <ScrollArea className="h-[350px] rounded-md border p-4 bg-muted/30">
-                    <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                      {polishResult.polished}
-                    </p>
-                  </ScrollArea>
-                </TabsContent>
-
-                <TabsContent value="changes" className="flex-1 mt-4">
-                  <ScrollArea className="h-[350px]">
-                    <div className="space-y-4">
-                      {polishResult.changes?.map((change, i) => (
-                        <div key={i} className="rounded-lg border p-3">
-                          <div className="mb-2 flex items-center gap-2">
-                            <Badge variant="outline" className="text-xs">
-                              {t('essays.labels.change')} {i + 1}
-                            </Badge>
-                            <span className="text-xs text-muted-foreground">{change.reason}</span>
-                          </div>
-                          <div className="grid gap-2 text-sm">
-                            <div className="rounded bg-red-50 dark:bg-red-950/30 p-2">
-                              <span className="text-xs text-red-600 dark:text-red-400 font-medium">
-                                {t('essays.labels.original')}
-                              </span>
-                              <p className="mt-1 line-through text-muted-foreground">
-                                {change.original}
-                              </p>
-                            </div>
-                            <div className="rounded bg-green-50 dark:bg-green-950/30 p-2">
-                              <span className="text-xs text-green-600 dark:text-green-400 font-medium">
-                                {t('essays.labels.revised')}
-                              </span>
-                              <p className="mt-1">{change.revised}</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </TabsContent>
-              </Tabs>
-            </div>
-          )}
-
-          <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setIsPolishOpen(false)}>
-              {t('common.cancel')}
-            </Button>
-            <Button onClick={applyPolishedContent}>
-              <Check className="mr-2 h-4 w-4" />
-              {t('essays.actions.applyPolish')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* AI 续写结果 Dialog */}
-      <Dialog open={isContinueOpen} onOpenChange={setIsContinueOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <ArrowRight className="h-5 w-5 text-primary" />
-              {t('essays.dialog.continueTitle')}
-            </DialogTitle>
-            <DialogDescription>{t('essays.dialog.continueDesc')}</DialogDescription>
-          </DialogHeader>
-
-          {continueResult && (
-            <div className="space-y-4">
-              <div className="rounded-lg border bg-muted/30 p-4">
-                <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                  {continueResult.continuation}
-                </p>
-              </div>
-
-              {continueResult.suggestions?.length > 0 && (
-                <div>
-                  <h4 className="mb-2 text-sm font-semibold">{t('essays.labels.nextSteps')}</h4>
-                  <ul className="space-y-1">
-                    {continueResult.suggestions.map((s, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                        <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                        {s}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                if (continueResult) {
-                  copyToClipboard(continueResult.continuation, -1);
-                }
-              }}
-            >
-              <Copy className="mr-2 h-4 w-4" />
-              {t('essays.actions.copyText')}
-            </Button>
-            <Button onClick={appendContinuation}>
-              <Check className="mr-2 h-4 w-4" />
-              {t('essays.actions.addToEssay')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* AI 生成开头 Dialog */}
-      <Dialog open={isOpeningOpen} onOpenChange={setIsOpeningOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <PenTool className="h-5 w-5 text-primary" />
-              {t('essays.dialog.openingTitle')}
-            </DialogTitle>
-            <DialogDescription>{t('essays.dialog.openingDesc')}</DialogDescription>
-          </DialogHeader>
-
-          {openingResult && (
-            <ScrollArea className="h-[400px]">
-              <div className="space-y-4">
-                {openingResult.openings?.map((opening, i) => (
-                  <div
-                    key={i}
-                    className="rounded-lg border p-4 transition-all hover:border-primary/50 hover:bg-muted/50"
-                  >
-                    <div className="mb-2 flex items-center justify-between">
-                      <Badge variant="secondary">{opening.style}</Badge>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => copyToClipboard(opening.text, i)}
-                      >
-                        {copiedIndex === i ? (
-                          <Check className="h-4 w-4 text-green-500" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-                    <p className="text-sm leading-relaxed">{opening.text}</p>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          )}
-
-          <DialogFooter>
-            <Button onClick={() => setIsOpeningOpen(false)}>{t('common.close')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* AI 改写 Dialog */}
-      <Dialog open={isRewriteOpen} onOpenChange={setIsRewriteOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <RefreshCw className="h-5 w-5 text-primary" />
-              {t('essays.dialog.rewriteTitle')}
-            </DialogTitle>
-            <DialogDescription>{t('essays.dialog.rewriteDesc')}</DialogDescription>
-          </DialogHeader>
-
-          {rewriteResult && (
-            <ScrollArea className="h-[400px]">
-              <div className="space-y-4">
-                {rewriteResult.versions?.map((version, i) => (
-                  <div
-                    key={i}
-                    className="rounded-lg border p-4 transition-all hover:border-primary/50 hover:bg-muted/50"
-                  >
-                    <div className="mb-2 flex items-center justify-between">
-                      <Badge variant="secondary">{version.style}</Badge>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => copyToClipboard(version.text, i)}
-                      >
-                        {copiedIndex === i ? (
-                          <Check className="h-4 w-4 text-green-500" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-                    <p className="text-sm leading-relaxed">{version.text}</p>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          )}
-
-          <DialogFooter>
-            <Button onClick={() => setIsRewriteOpen(false)}>{t('common.close')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* AI 助手面板 */}
       <AiAssistantPanel
         contextTitle={
           selectedEssay

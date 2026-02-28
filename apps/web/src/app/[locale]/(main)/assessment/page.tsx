@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
+import { PageContainer, PageHeader } from '@/components/layout';
 import { cn } from '@/lib/utils';
 import { AiAssistantPanel, type ContextAction } from '@/components/features/agent-chat';
 
@@ -1011,22 +1012,8 @@ export default function AssessmentPage() {
   const [showAiPanel, setShowAiPanel] = useState(false);
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-4xl">
-      {/* Header */}
-      <div className="relative mb-8 overflow-hidden rounded-lg bg-primary/5 p-6 sm:p-8">
-        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/15 blur-3xl" />
-        <div className="relative z-10">
-          <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-primary ">
-              <BookOpen className="h-7 w-7 text-white" />
-            </div>
-            <div>
-              <h1 className="text-title">{t('title')}</h1>
-              <p className="text-muted-foreground">{t('description')}</p>
-            </div>
-          </div>
-        </div>
-      </div>
+    <PageContainer maxWidth="4xl">
+      <PageHeader title={t('title')} description={t('description')} icon={Brain} color="blue" />
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
@@ -1110,6 +1097,6 @@ export default function AssessmentPage() {
             : t('aiAssistant.initialNoResult')
         }
       />
-    </div>
+    </PageContainer>
   );
 }
