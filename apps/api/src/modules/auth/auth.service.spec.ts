@@ -49,18 +49,25 @@ describe('AuthService', () => {
         AuthService,
         {
           provide: PrismaService,
-          useValue: {
-            refreshToken: {
-              findUnique: jest.fn(),
-              findMany: jest.fn().mockResolvedValue([]),
-              create: jest.fn(),
-              delete: jest.fn(),
-              deleteMany: jest.fn(),
-            },
-            user: {
-              findFirst: jest.fn(),
-              update: jest.fn(),
-            },
+          useFactory: () => {
+            const prismaValue = {
+              refreshToken: {
+                findUnique: jest.fn(),
+                findMany: jest.fn().mockResolvedValue([]),
+                create: jest.fn(),
+                delete: jest.fn(),
+                deleteMany: jest.fn(),
+              },
+              user: {
+                findFirst: jest.fn(),
+                update: jest.fn(),
+              },
+              // $transaction executes the callback with the prisma mock itself
+              $transaction: jest.fn((fn: (tx: any) => Promise<any>) =>
+                fn(prismaValue),
+              ),
+            };
+            return prismaValue;
           },
         },
         {

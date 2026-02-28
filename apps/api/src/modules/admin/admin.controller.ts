@@ -288,20 +288,28 @@ export class AdminController {
       select: { id: true },
     });
 
+    // Batch notifications to avoid blocking the event loop with large user sets.
+    // Process in chunks of 100 to balance throughput and connection pool usage.
+    const BATCH_SIZE = 100;
     let sent = 0;
-    for (const user of users) {
-      await this.notificationService.createNotification(
-        user.id,
-        NotificationType.SYSTEM_BROADCAST,
-        {
-          customTitle: body.title,
-          customContent: body.content,
-        },
+    for (let i = 0; i < users.length; i += BATCH_SIZE) {
+      const batch = users.slice(i, i + BATCH_SIZE);
+      await Promise.all(
+        batch.map((user) =>
+          this.notificationService.createNotification(
+            user.id,
+            NotificationType.SYSTEM_BROADCAST,
+            {
+              customTitle: body.title,
+              customContent: body.content,
+            },
+          ),
+        ),
       );
-      sent++;
+      sent += batch.length;
     }
 
-    return { sent, audience: body.audience };
+    return { sent, total: users.length, audience: body.audience };
   }
 
   // ============ CSV Export ============
@@ -408,6 +416,9 @@ export class AdminController {
       'Content-Disposition',
       `attachment; filename="${resource}-${new Date().toISOString().slice(0, 10)}.csv"`,
     );
+    // Inform the client about truncation so admins know if data was cut off
+    res.setHeader('X-Exported-Rows', String(rows.length));
+    res.setHeader('X-Max-Rows', '10000');
     res.send(csv);
   }
 }

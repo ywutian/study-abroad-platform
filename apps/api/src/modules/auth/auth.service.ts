@@ -18,7 +18,7 @@ import {
   USER_REGISTERED,
   type UserRegisteredPayload,
 } from '../../common/events/notification.events';
-import { User } from '@prisma/client';
+import { User, Prisma } from '@prisma/client';
 import { randomBytes } from 'crypto';
 
 export interface AuthTokens {
@@ -148,17 +148,15 @@ export class AuthService {
 
     const user = await this.userService.findByEmail(data.email);
 
-    if (!user || user.deletedAt) {
-      // Record failed attempt even for non-existent users (consistent timing)
-      await this.bruteForceService.recordFailedAttempt(data.email);
-      throw new UnauthorizedException('Invalid credentials');
-    }
+    // [SECURITY] Constant-time password verification — always run bcrypt to prevent
+    // timing-based email enumeration (non-existent user ~5ms vs existing ~150ms).
+    const DUMMY_HASH =
+      '$2b$12$LJ3m4ys3Lf2BBFBBIhPgVOBZpSBMRFHpeqnPxtdCfRLwljW7tUCLa';
+    const hashToCompare =
+      user && !user.deletedAt ? user.passwordHash : DUMMY_HASH;
+    const isPasswordValid = await bcrypt.compare(data.password, hashToCompare);
 
-    const isPasswordValid = await bcrypt.compare(
-      data.password,
-      user.passwordHash,
-    );
-    if (!isPasswordValid) {
+    if (!user || user.deletedAt || !isPasswordValid) {
       await this.bruteForceService.recordFailedAttempt(data.email);
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -196,27 +194,30 @@ export class AuthService {
    * @returns A new pair of access and refresh tokens
    */
   async refreshToken(refreshToken: string): Promise<AuthTokens> {
-    // Verify refresh token
-    const storedToken = await this.prisma.refreshToken.findUnique({
-      where: { token: refreshToken },
+    // [SECURITY] Atomic token rotation — prevents race condition where concurrent
+    // requests reuse the same refresh token to obtain multiple valid token pairs.
+    return this.prisma.$transaction(async (tx) => {
+      const storedToken = await tx.refreshToken.findUnique({
+        where: { token: refreshToken },
+      });
+
+      if (!storedToken || storedToken.expiresAt < new Date()) {
+        throw new UnauthorizedException('Invalid or expired refresh token');
+      }
+
+      const user = await this.userService.findById(storedToken.userId);
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      // Delete old refresh token within the same transaction
+      await tx.refreshToken.delete({
+        where: { id: storedToken.id },
+      });
+
+      // Generate new tokens (pass tx so the new refresh token is created atomically)
+      return this.generateTokens(user, tx);
     });
-
-    if (!storedToken || storedToken.expiresAt < new Date()) {
-      throw new UnauthorizedException('Invalid or expired refresh token');
-    }
-
-    const user = await this.userService.findById(storedToken.userId);
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-
-    // Delete old refresh token
-    await this.prisma.refreshToken.delete({
-      where: { id: storedToken.id },
-    });
-
-    // Generate new tokens
-    return this.generateTokens(user);
   }
 
   /**
@@ -420,7 +421,11 @@ export class AuthService {
     return { message: 'Password changed successfully' };
   }
 
-  private async generateTokens(user: User): Promise<AuthTokens> {
+  private async generateTokens(
+    user: User,
+    tx?: Prisma.TransactionClient,
+  ): Promise<AuthTokens> {
+    const db = tx || this.prisma;
     const payload = { sub: user.id, email: user.email, role: user.role };
 
     const accessToken = this.jwtService.sign(payload);
@@ -434,7 +439,7 @@ export class AuthService {
     // Parse expiration
     const match = refreshExpiresIn.match(/^(\d+)([dhms])$/);
     if (match) {
-      const value = parseInt(match[1]);
+      const value = parseInt(match[1], 10);
       const unit = match[2];
       switch (unit) {
         case 'd':
@@ -455,20 +460,20 @@ export class AuthService {
     }
 
     // Enforce session limit (max 5 concurrent sessions) [CV9-G03]
-    const existingTokens = await this.prisma.refreshToken.findMany({
+    const existingTokens = await db.refreshToken.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: 'asc' },
     });
     if (existingTokens.length >= 5) {
       // Remove oldest sessions to make room
       const tokensToDelete = existingTokens.slice(0, existingTokens.length - 4);
-      await this.prisma.refreshToken.deleteMany({
+      await db.refreshToken.deleteMany({
         where: { id: { in: tokensToDelete.map((t) => t.id) } },
       });
     }
 
     // Store refresh token
-    await this.prisma.refreshToken.create({
+    await db.refreshToken.create({
       data: {
         token: refreshToken,
         userId: user.id,

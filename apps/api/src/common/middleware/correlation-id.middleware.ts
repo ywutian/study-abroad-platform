@@ -18,9 +18,17 @@ export const CORRELATION_ID_HEADER = 'x-correlation-id';
  */
 @Injectable()
 export class CorrelationIdMiddleware implements NestMiddleware {
+  private static readonly UUID_REGEX =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
   use(req: Request, res: Response, next: NextFunction) {
+    // [SECURITY] Validate client-supplied correlation ID to prevent log injection
+    // and log inflation attacks. Accept only valid UUID format.
+    const provided = req.headers[CORRELATION_ID_HEADER] as string;
     const correlationId =
-      (req.headers[CORRELATION_ID_HEADER] as string) || randomUUID();
+      provided && CorrelationIdMiddleware.UUID_REGEX.test(provided)
+        ? provided
+        : randomUUID();
 
     req.correlationId = correlationId;
     res.setHeader(CORRELATION_ID_HEADER, correlationId);

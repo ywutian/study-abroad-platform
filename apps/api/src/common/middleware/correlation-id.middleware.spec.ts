@@ -3,6 +3,9 @@ import {
   CORRELATION_ID_HEADER,
 } from './correlation-id.middleware';
 
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 describe('CorrelationIdMiddleware', () => {
   let middleware: CorrelationIdMiddleware;
 
@@ -29,28 +32,46 @@ describe('CorrelationIdMiddleware', () => {
     middleware.use(req as any, res as any, next);
 
     expect(req.correlationId).toBeDefined();
-    // UUID v4 pattern
-    expect(req.correlationId).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-    );
+    expect(req.correlationId).toMatch(UUID_REGEX);
   });
 
-  it('should use the existing header value when x-correlation-id is present', () => {
-    const { req, res, next } = createMocks('existing-id-123');
+  it('should use a valid UUID header value when provided', () => {
+    const validUuid = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+    const { req, res, next } = createMocks(validUuid);
 
     middleware.use(req as any, res as any, next);
 
-    expect(req.correlationId).toBe('existing-id-123');
+    expect(req.correlationId).toBe(validUuid);
   });
 
-  it('should set the correlation-id response header', () => {
-    const { req, res, next } = createMocks('my-trace-id');
+  it('should reject non-UUID header values and generate a new UUID', () => {
+    const { req, res, next } = createMocks('not-a-uuid');
+
+    middleware.use(req as any, res as any, next);
+
+    expect(req.correlationId).not.toBe('not-a-uuid');
+    expect(req.correlationId).toMatch(UUID_REGEX);
+  });
+
+  it('should reject oversized header values (log injection prevention)', () => {
+    const oversizedValue = 'A'.repeat(10000);
+    const { req, res, next } = createMocks(oversizedValue);
+
+    middleware.use(req as any, res as any, next);
+
+    expect(req.correlationId).not.toBe(oversizedValue);
+    expect(req.correlationId).toMatch(UUID_REGEX);
+  });
+
+  it('should set the correlation-id response header with valid UUID', () => {
+    const validUuid = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+    const { req, res, next } = createMocks(validUuid);
 
     middleware.use(req as any, res as any, next);
 
     expect(res.setHeader).toHaveBeenCalledWith(
       CORRELATION_ID_HEADER,
-      'my-trace-id',
+      validUuid,
     );
   });
 

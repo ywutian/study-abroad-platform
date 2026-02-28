@@ -227,7 +227,7 @@ export class UserService {
   /**
    * Get or create a unique referral code for a user
    * @param userId - The unique identifier of the user
-   * @returns The user's referral code (8-char hex string)
+   * @returns The user's referral code (12-char hex string)
    */
   async getOrCreateReferralCode(userId: string): Promise<string> {
     const user = await this.findByIdOrThrow(userId);
@@ -236,17 +236,23 @@ export class UserService {
       return user.referralCode;
     }
 
-    // Generate a unique 8-char code
-    let code: string;
+    // Generate a unique 12-char code (6 bytes = 2^48 combinations)
+    let code: string = '';
     let attempts = 0;
     do {
-      code = randomBytes(4).toString('hex').toUpperCase();
+      code = randomBytes(6).toString('hex').toUpperCase();
       const existing = await this.prisma.user.findUnique({
         where: { referralCode: code },
       });
       if (!existing) break;
       attempts++;
     } while (attempts < 10);
+
+    if (attempts >= 10) {
+      throw new Error(
+        'Failed to generate unique referral code after 10 attempts',
+      );
+    }
 
     await this.prisma.user.update({
       where: { id: userId },

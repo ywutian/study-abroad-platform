@@ -5,6 +5,18 @@ const MAX_ATTEMPTS = 10;
 const LOCKOUT_SECONDS = 15 * 60; // 15 minutes
 const KEY_PREFIX = 'brute_force:';
 
+// Lua script: atomically INCR the key and set TTL only if no TTL exists.
+// Prevents race condition where concurrent requests both see current===1
+// and both try to set TTL, or where a crash between INCR and EXPIRE
+// leaves a key with no TTL (permanent lockout).
+const INCR_WITH_EXPIRE_SCRIPT = `
+  local current = redis.call('INCR', KEYS[1])
+  if current == 1 then
+    redis.call('EXPIRE', KEYS[1], ARGV[1])
+  end
+  return current
+`;
+
 @Injectable()
 export class BruteForceService {
   private readonly logger = new Logger(BruteForceService.name);
@@ -37,22 +49,32 @@ export class BruteForceService {
   /**
    * Record a failed login attempt for the given email.
    * Returns the number of remaining attempts before lockout.
+   * Uses atomic Lua script to prevent INCR/EXPIRE race conditions.
    * Fails open (returns MAX_ATTEMPTS) when Redis is unavailable.
    */
   async recordFailedAttempt(email: string): Promise<number> {
     try {
       const key = this.buildKey(email);
-      const current = await this.redis.incr(key);
+      const client = this.redis.getClient();
 
-      // Set TTL on first failed attempt so the counter auto-expires
-      if (current === 1) {
-        await this.redis.expire(key, LOCKOUT_SECONDS);
+      let current: number;
+      if (client) {
+        // Atomic INCR + conditional EXPIRE via Lua script
+        current = (await client.eval(
+          INCR_WITH_EXPIRE_SCRIPT,
+          1,
+          key,
+          LOCKOUT_SECONDS,
+        )) as number;
+      } else {
+        // No Redis — degrade gracefully
+        return MAX_ATTEMPTS;
       }
 
       const remaining = Math.max(0, MAX_ATTEMPTS - current);
 
       if (current >= MAX_ATTEMPTS) {
-        // Ensure TTL is refreshed when lockout threshold is reached
+        // Refresh TTL when lockout threshold is reached
         await this.redis.expire(key, LOCKOUT_SECONDS);
         this.logger.warn(
           `Account locked for ${email} after ${current} failed attempts`,

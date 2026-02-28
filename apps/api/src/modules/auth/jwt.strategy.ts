@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
@@ -33,6 +37,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     if (!user || user.deletedAt) {
       throw new UnauthorizedException('User not found or deleted');
+    }
+
+    // [SECURITY] Check ban status at the strategy level so WebSocket gateway
+    // auth (which bypasses JwtAuthGuard) also rejects banned users.
+    if (user.isBanned) {
+      if (!user.bannedUntil || new Date() <= user.bannedUntil) {
+        throw new ForbiddenException('Account is banned');
+      }
     }
 
     return {

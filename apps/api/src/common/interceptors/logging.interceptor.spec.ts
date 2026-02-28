@@ -80,13 +80,19 @@ describe('maskSensitiveData', () => {
     // At depth 5 processing e's children, the recursive call for password value will be depth 6 -> returns as-is
     // But the key check happens before recursion, so password key still gets redacted at depth 5
     // The function checks depth > 5, so at depth 6 it returns obj as-is
-    // Let's test with an explicitly deep structure that exceeds the limit
+    // Test with an explicitly deep structure that exceeds the limit (MAX_LOG_DEPTH = 8)
     const veryDeep = {
-      l1: { l2: { l3: { l4: { l5: { l6: { password: 'tooDeep' } } } } } },
+      l1: {
+        l2: {
+          l3: {
+            l4: { l5: { l6: { l7: { l8: { l9: { password: 'tooDeep' } } } } } },
+          },
+        },
+      },
     };
     const veryDeepResult = maskSensitiveData(veryDeep) as any;
-    // At depth 6 (l6 object), depth > 5, so it returns the raw object
-    expect(veryDeepResult.l1.l2.l3.l4.l5.l6.password).toBe('tooDeep');
+    // At depth 9, depth > 8, so it returns the raw object (password not redacted)
+    expect(veryDeepResult.l1.l2.l3.l4.l5.l6.l7.l8.l9.password).toBe('tooDeep');
   });
 
   it('should perform case-insensitive matching on field names', () => {

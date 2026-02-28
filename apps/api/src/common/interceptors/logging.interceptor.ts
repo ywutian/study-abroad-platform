@@ -48,16 +48,26 @@ const SENSITIVE_FIELDS = [
   'emergencyContact',
 ];
 
+const MAX_LOG_DEPTH = 8;
+const MAX_ARRAY_LOG_ITEMS = 100;
+
 /**
- * Recursively mask sensitive fields in an object
+ * Recursively mask sensitive fields in an object.
+ * Enforces depth and array size limits to prevent log inflation
+ * from deeply nested or very large payloads.
  */
 function maskSensitiveData(obj: unknown, depth = 0): unknown {
-  if (depth > 5 || obj === null || obj === undefined) return obj;
+  if (depth > MAX_LOG_DEPTH || obj === null || obj === undefined) return obj;
 
   if (typeof obj === 'string') return obj;
 
   if (Array.isArray(obj)) {
-    return obj.map((item) => maskSensitiveData(item, depth + 1));
+    const truncated = obj.length > MAX_ARRAY_LOG_ITEMS;
+    const items = (truncated ? obj.slice(0, MAX_ARRAY_LOG_ITEMS) : obj).map(
+      (item) => maskSensitiveData(item, depth + 1),
+    );
+    if (truncated) items.push(`[...${obj.length - MAX_ARRAY_LOG_ITEMS} more]`);
+    return items;
   }
 
   if (typeof obj === 'object') {
