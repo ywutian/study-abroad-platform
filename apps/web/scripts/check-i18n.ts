@@ -43,7 +43,7 @@ const EXEMPT_LINE_PATTERNS = [
   /typesZh/, // 数据字段引用（如 hollandResult.typesZh）
   /fieldsZh/, // 数据字段引用（如 hollandResult.fieldsZh）
   /nameZh/, // 数据字段引用（中文名字段）
-  /['"]简体中文['"]/, // 语言名称（语言选择器中故意保留原始语言名称）
+  /['"](?:简体)?中文['"]/, // 语言名称（语言选择器中故意保留原始语言名称）
   /label:\s*['"]English['"]/, // 语言名称
   /device:\s*['"]/, // 设备/会话 mock 数据
   /location:\s*['"]/, // 地理位置 mock 数据
