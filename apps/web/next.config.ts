@@ -21,37 +21,8 @@ const nextConfig: NextConfig = {
       '@tanstack/react-query',
     ],
   },
-  // 安全头 — 与 API 端 Helmet 配置保持一致
+  // Security headers (CSP is set dynamically in middleware.ts with per-request nonce)
   async headers() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || '';
-    const apiUrlNorm = apiUrl.replace(/\/$/, '');
-    const apiWsNorm = apiUrl
-      ? apiUrl.replace(/^https?:/, (m) => (m === 'https:' ? 'wss:' : 'ws:')).replace(/\/$/, '')
-      : '';
-    const wsUrlNorm = wsUrl.replace(/\/$/, '');
-    const extra: string[] = [];
-    if (apiUrlNorm) {
-      extra.push(apiUrlNorm);
-      if (apiWsNorm) extra.push(apiWsNorm);
-    }
-    if (wsUrlNorm && wsUrlNorm !== apiWsNorm) {
-      extra.push(wsUrlNorm);
-      const wsHttps = wsUrlNorm.replace(/^wss?:/, (m) => (m === 'wss:' ? 'https:' : 'http:'));
-      if (wsHttps !== apiUrlNorm) extra.push(wsHttps);
-    }
-    const isDev = process.env.NODE_ENV !== 'production';
-    // [SECURITY] Only allow wss: to known origins; 'unsafe-inline'/'unsafe-eval' dev-only
-    const wsSources = [apiWsNorm, wsUrlNorm].filter(Boolean);
-    const connectSrcParts = [
-      "'self'",
-      'https://*.sentry.io',
-      'https://fonts.gstatic.com',
-      ...wsSources,
-      ...extra,
-    ];
-    // In dev, allow all wss: for convenience; in prod, restrict to known origins
-    if (isDev) connectSrcParts.push('wss:');
     return [
       {
         source: '/(.*)',
@@ -70,22 +41,6 @@ const nextConfig: NextConfig = {
           {
             key: 'Strict-Transport-Security',
             value: 'max-age=31536000; includeSubDomains; preload',
-          },
-          {
-            key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self'",
-              `script-src 'self'${isDev ? " 'unsafe-eval' 'unsafe-inline'" : ''}`,
-              `style-src 'self'${isDev ? " 'unsafe-inline'" : ''}`,
-              "img-src 'self' data: https:",
-              `connect-src ${connectSrcParts.join(' ')} data:`,
-              "font-src 'self' https://fonts.gstatic.com",
-              "frame-src 'self' blob:",
-              "worker-src 'self' blob:",
-              "frame-ancestors 'none'",
-              "base-uri 'self'",
-              "form-action 'self'",
-            ].join('; '),
           },
         ],
       },
