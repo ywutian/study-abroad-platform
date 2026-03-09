@@ -81,7 +81,11 @@ describe('DashboardService', () => {
             predictionResult: { count: jest.fn() },
             applicationTimeline: { findMany: jest.fn() },
             pointHistory: { findMany: jest.fn() },
-            schoolListItem: { count: jest.fn(), groupBy: jest.fn() },
+            schoolListItem: {
+              count: jest.fn(),
+              findMany: jest.fn(),
+              groupBy: jest.fn(),
+            },
             applicationTask: { count: jest.fn(), groupBy: jest.fn() },
             personalEvent: { findMany: jest.fn() },
             $transaction: jest.fn(),
@@ -115,6 +119,7 @@ describe('DashboardService', () => {
       mockPointHistory,
     );
     (prisma.schoolListItem.count as jest.Mock).mockResolvedValue(9);
+    (prisma.schoolListItem.findMany as jest.Mock).mockResolvedValue([]);
     (prisma.schoolListItem.groupBy as jest.Mock).mockResolvedValue(
       mockSchoolTierGroups,
     );

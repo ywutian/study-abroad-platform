@@ -10,6 +10,7 @@ import { RedisService } from '../../common/redis/redis.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../../common/services/audit-log.service';
 import { SchoolLogoService } from './school-logo.service';
+import { SchoolListService } from '../school-list/school-list.service';
 
 describe('SchoolController', () => {
   let controller: SchoolController;
@@ -18,6 +19,7 @@ describe('SchoolController', () => {
   let schoolScraperService: SchoolScraperService;
   let aiService: AiService;
   let profileService: ProfileService;
+  let schoolListService: SchoolListService;
 
   const mockUser = {
     id: 'user-1',
@@ -155,6 +157,15 @@ describe('SchoolController', () => {
               .mockResolvedValue({ filled: 0, failed: 0, skipped: 0 }),
           },
         },
+        {
+          provide: SchoolListService,
+          useValue: {
+            getRecommendedSchools: jest.fn().mockResolvedValue([]),
+            getAIRecommendations: jest
+              .fn()
+              .mockResolvedValue({ reach: [], target: [], safety: [] }),
+          },
+        },
       ],
     }).compile();
 
@@ -165,6 +176,7 @@ describe('SchoolController', () => {
       module.get<SchoolScraperService>(SchoolScraperService);
     aiService = module.get<AiService>(AiService);
     profileService = module.get<ProfileService>(ProfileService);
+    schoolListService = module.get<SchoolListService>(SchoolListService);
   });
 
   afterEach(() => {
@@ -200,19 +212,25 @@ describe('SchoolController', () => {
   });
 
   describe('getAIRecommendations', () => {
-    it('should fetch profile, schools, and return AI recommendations', async () => {
+    it('should delegate to schoolListService and return recommendations', async () => {
+      const mockRecommendation = {
+        reach: [{ schoolId: 'school-1', reason: 'top' }],
+        target: [],
+        safety: [],
+      };
+      (schoolListService.getAIRecommendations as jest.Mock).mockResolvedValue(
+        mockRecommendation,
+      );
+
       const result = await controller.getAIRecommendations(mockUser as any);
 
-      expect(profileService.findByUserId).toHaveBeenCalledWith('user-1');
-      expect(schoolService.findAll).toHaveBeenCalledWith(
-        { page: 1, pageSize: 100 },
-        {},
+      expect(schoolListService.getAIRecommendations).toHaveBeenCalledWith(
+        'user-1',
       );
-      expect(aiService.recommendSchools).toHaveBeenCalled();
       expect(result).toHaveProperty('reach');
       expect(result).toHaveProperty('target');
       expect(result).toHaveProperty('safety');
-      expect(result).toHaveProperty('summary', 'AI summary');
+      expect(result).toHaveProperty('status', 'fresh');
     });
   });
 
