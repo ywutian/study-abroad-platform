@@ -40,6 +40,7 @@ describe('AuthController', () => {
           useValue: {
             register: jest.fn().mockResolvedValue({
               user: mockUser,
+              tokens: mockTokens,
               message: 'Registration successful',
             }),
             login: jest.fn().mockResolvedValue({
@@ -285,10 +286,14 @@ describe('AuthController', () => {
 
   describe('public endpoints', () => {
     it('register should call authService.register', async () => {
-      await controller.register({
-        email: 'new@test.com',
-        password: 'pass123',
-      });
+      const mockRes = { cookie: jest.fn() } as any;
+      await controller.register(
+        {
+          email: 'new@test.com',
+          password: 'pass123',
+        },
+        mockRes,
+      );
 
       expect(authService.register).toHaveBeenCalledWith({
         email: 'new@test.com',
