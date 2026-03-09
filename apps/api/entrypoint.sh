@@ -24,6 +24,7 @@ LEGACY_MIGRATIONS="
   20260222_create_missing_indexes
   20260224_add_resume_tables
   20260309_add_cascade_rules
+  20260309_fix_production_schema
 "
 
 if npx prisma migrate deploy --schema=./prisma/schema.prisma 2>&1; then
