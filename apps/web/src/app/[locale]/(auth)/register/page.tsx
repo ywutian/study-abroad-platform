@@ -203,7 +203,16 @@ export default function RegisterPage() {
           ...(data.referralCode ? { referralCode: data.referralCode } : {}),
         },
         { skipAuth: true }
-      )) as { user: { id: string; email: string; role: string }; accessToken: string };
+      )) as {
+        user: {
+          id: string;
+          email: string;
+          role: 'USER' | 'VERIFIED' | 'ADMIN';
+          emailVerified: boolean;
+          locale: string;
+        };
+        accessToken: string;
+      };
 
       // Auto-login: store auth state from register response
       setAuthFromLogin(res.user, res.accessToken);
