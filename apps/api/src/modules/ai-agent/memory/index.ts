@@ -43,12 +43,6 @@ export type {
   DedupeRule,
 } from './memory-conflict.service';
 
-export { MemoryExtractorService } from './memory-extractor.service';
-export type {
-  ExtractionResult,
-  ExtractionContext,
-} from './memory-extractor.service';
-
 // Services - Enterprise (Phase 2: Compaction)
 export { MemoryCompactionService } from './memory-compaction.service';
 export type {

@@ -62,19 +62,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true });
 
     try {
-      // 如果没有 auth_check cookie，说明没有活跃会话，跳过刷新
-      const hasSession =
-        typeof document !== 'undefined' && document.cookie.includes('auth_check=1');
-      if (!hasSession) {
-        set({ isLoading: false, isInitialized: true });
-        return;
-      }
-
-      // 尝试使用 cookie 中的 refreshToken 获取新的 accessToken
+      // Try to restore session using the httpOnly refreshToken cookie.
+      // The cookie is sent automatically by the browser — no JS-readable
+      // hint cookie needed.
       const success = await refreshAccessToken();
 
       if (success) {
-        // 获取用户信息
         const userResponse = await fetch(`${API_BASE_URL}/api/v1/users/me`, {
           headers: {
             Authorization: `Bearer ${get().accessToken}`,
@@ -115,7 +108,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
 
     set({ user: null, accessToken: null });
-    clearAuthCheckCookie();
   },
 
   /**
@@ -167,7 +159,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         accessToken: newAccessToken,
         isRefreshing: false,
       });
-      setAuthCheckCookie();
 
       return true;
     } catch {
@@ -205,25 +196,6 @@ export function stopTokenRefreshInterval() {
 }
 
 /**
- * 设置/清除 auth_check cookie
- * 供 Next.js 中间件判断用户是否已登录（路由保护）
- * 真正的身份验证由后端 JWT 保障，此 cookie 仅为路由提示
- */
-function setAuthCheckCookie() {
-  if (typeof document !== 'undefined') {
-    // auth_check 生命周期应与 refreshToken (7天) 一致
-    // 这样在 refreshToken 有效期内，initialize() 都会尝试恢复会话
-    document.cookie = 'auth_check=1; path=/; max-age=604800; samesite=lax';
-  }
-}
-
-function clearAuthCheckCookie() {
-  if (typeof document !== 'undefined') {
-    document.cookie = 'auth_check=; path=/; max-age=0';
-  }
-}
-
-/**
  * 用于登录成功后设置状态的辅助函数
  */
 export function setAuthFromLogin(user: User, accessToken: string) {
@@ -233,8 +205,4 @@ export function setAuthFromLogin(user: User, accessToken: string) {
     isLoading: false,
     isInitialized: true,
   });
-  setAuthCheckCookie();
-  // Note: Do NOT call startTokenRefreshInterval() here.
-  // AuthInitializer in providers/index.tsx is the single owner of the
-  // refresh interval — it starts/stops based on accessToken changes.
 }

@@ -105,7 +105,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: ['agent', 'task'],
     },
-    handler: 'delegate',
   },
 
   // ============== 档案工具 ==============
@@ -118,7 +117,6 @@ export const TOOLS: ToolDefinition[] = [
       properties: {},
       required: [],
     },
-    handler: 'profile.get',
   },
   {
     name: ToolName.UPDATE_PROFILE,
@@ -139,7 +137,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: ['field', 'value'],
     },
-    handler: 'profile.update',
   },
 
   // ============== 学校工具 ==============
@@ -169,7 +166,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: [],
     },
-    handler: 'school.search',
   },
   {
     name: ToolName.GET_SCHOOL_DETAILS,
@@ -189,7 +185,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: [],
     },
-    handler: 'school.details',
   },
   {
     name: ToolName.COMPARE_SCHOOLS,
@@ -213,7 +208,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: [],
     },
-    handler: 'school.compare',
   },
 
   // ============== 文书工具 ==============
@@ -226,7 +220,6 @@ export const TOOLS: ToolDefinition[] = [
       properties: {},
       required: [],
     },
-    handler: 'essay.list',
   },
   {
     name: ToolName.REVIEW_ESSAY,
@@ -250,7 +243,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: [],
     },
-    handler: 'essay.review',
   },
   {
     name: ToolName.POLISH_ESSAY,
@@ -271,7 +263,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: ['content'],
     },
-    handler: 'essay.polish',
   },
   {
     name: ToolName.GENERATE_OUTLINE,
@@ -295,7 +286,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: ['prompt'],
     },
-    handler: 'essay.outline',
   },
   {
     name: ToolName.BRAINSTORM_IDEAS,
@@ -315,7 +305,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: ['prompt'],
     },
-    handler: 'essay.brainstorm',
   },
 
   // ============== 选校工具 ==============
@@ -337,7 +326,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: [],
     },
-    handler: 'school.recommend',
   },
   {
     name: ToolName.ANALYZE_ADMISSION_CHANCE,
@@ -357,7 +345,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: [],
     },
-    handler: 'school.admissionChance',
   },
 
   // ============== 案例工具 ==============
@@ -387,7 +374,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: [],
     },
-    handler: 'case.search',
   },
 
   // ============== 时间线工具 ==============
@@ -414,7 +400,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: [],
     },
-    handler: 'timeline.deadlines',
   },
   {
     name: ToolName.CREATE_TIMELINE,
@@ -434,7 +419,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: [],
     },
-    handler: 'timeline.create',
   },
   {
     name: ToolName.GET_PERSONAL_EVENTS,
@@ -459,7 +443,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: [],
     },
-    handler: 'timeline.personalEvents',
   },
   {
     name: ToolName.CREATE_PERSONAL_EVENT,
@@ -500,7 +483,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: ['title', 'category'],
     },
-    handler: 'timeline.createPersonalEvent',
   },
 
   // ============== 测评工具 ==============
@@ -519,7 +501,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: [],
     },
-    handler: 'assessment.results',
   },
   {
     name: ToolName.INTERPRET_ASSESSMENT,
@@ -540,7 +521,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: [],
     },
-    handler: 'assessment.interpret',
   },
   {
     name: ToolName.SUGGEST_ACTIVITIES_FROM_ASSESSMENT,
@@ -565,7 +545,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: [],
     },
-    handler: 'assessment.suggestActivities',
   },
 
   // ============== 论坛工具 ==============
@@ -600,7 +579,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: ['query'],
     },
-    handler: 'forum.search',
   },
   {
     name: ToolName.GET_POPULAR_DISCUSSIONS,
@@ -630,7 +608,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: [],
     },
-    handler: 'forum.popular',
   },
   {
     name: ToolName.ANSWER_FORUM_QUESTION,
@@ -650,7 +627,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: ['question'],
     },
-    handler: 'forum.answer',
   },
 
   // ============== 案例预测游戏工具 ==============
@@ -676,7 +652,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: [],
     },
-    handler: 'swipe.explain',
   },
   {
     name: ToolName.ANALYZE_PREDICTION_ACCURACY,
@@ -687,7 +662,6 @@ export const TOOLS: ToolDefinition[] = [
       properties: {},
       required: [],
     },
-    handler: 'swipe.analyzeAccuracy',
   },
   {
     name: ToolName.COMPARE_CASE_WITH_PROFILE,
@@ -698,20 +672,15 @@ export const TOOLS: ToolDefinition[] = [
       properties: {
         caseId: {
           type: 'string',
-          description: '案例ID',
-        },
-        schoolName: {
-          type: 'string',
-          description: '学校名称（如不知道 caseId，配合 year 查询最近案例）',
+          description: '案例ID（必填，可先通过 search_cases 获取）',
         },
         year: {
           type: 'number',
           description: '申请年份',
         },
       },
-      required: [],
+      required: ['caseId'],
     },
-    handler: 'swipe.compareWithProfile',
   },
 
   // ============== 档案排名工具 ==============
@@ -733,7 +702,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: [],
     },
-    handler: 'hall.ranking',
   },
   {
     name: ToolName.SUGGEST_PROFILE_IMPROVEMENTS,
@@ -750,7 +718,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: [],
     },
-    handler: 'hall.suggestImprovements',
   },
   {
     name: ToolName.COMPARE_WITH_ADMITTED_PROFILES,
@@ -770,7 +737,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: [],
     },
-    handler: 'hall.compareWithAdmitted',
   },
   // ============== 预测数据工具 ==============
   {
@@ -791,7 +757,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: [],
     },
-    handler: 'prediction.history',
   },
   {
     name: ToolName.GET_PREDICTION_DASHBOARD,
@@ -802,7 +767,6 @@ export const TOOLS: ToolDefinition[] = [
       properties: {},
       required: [],
     },
-    handler: 'prediction.dashboard',
   },
   {
     name: ToolName.GET_SCHOOL_LIST_PREDICTIONS,
@@ -813,7 +777,6 @@ export const TOOLS: ToolDefinition[] = [
       properties: {},
       required: [],
     },
-    handler: 'prediction.schoolList',
   },
 
   // ============== 简历工具 ==============
@@ -826,7 +789,6 @@ export const TOOLS: ToolDefinition[] = [
       properties: {},
       required: [],
     },
-    handler: 'resume.list',
   },
   {
     name: ToolName.GET_RESUME_DETAILS,
@@ -842,7 +804,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: [],
     },
-    handler: 'resume.details',
   },
   {
     name: ToolName.REVIEW_RESUME,
@@ -866,7 +827,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: ['resumeId'],
     },
-    handler: 'resume.review',
   },
   {
     name: ToolName.OPTIMIZE_RESUME_BULLETS,
@@ -898,7 +858,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: ['resumeId', 'sectionId'],
     },
-    handler: 'resume.optimizeBullets',
   },
   {
     name: ToolName.SUGGEST_RESUME_CONTENT,
@@ -922,7 +881,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: ['resumeId', 'sectionType'],
     },
-    handler: 'resume.suggestContent',
   },
 
   // ============== 外部搜索工具 ==============
@@ -945,7 +903,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: ['query'],
     },
-    handler: 'search.web',
   },
   {
     name: ToolName.SEARCH_SCHOOL_WEBSITE,
@@ -966,7 +923,6 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: ['schoolName', 'query'],
     },
-    handler: 'search.school',
   },
 ];
 

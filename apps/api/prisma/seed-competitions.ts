@@ -961,6 +961,155 @@ const competitions: CompetitionSeed[] = [
     tier: 4,
     description: 'International philosophy essay competition.',
   },
+
+  // ============================================
+  // CHINESE / INTERNATIONAL ADDITIONS
+  // ============================================
+  {
+    name: 'Yau Science Award',
+    abbreviation: 'Yau Science',
+    nameZh: '丘成桐科学奖',
+    category: 'ENGINEERING_RESEARCH',
+    level: 'INTERNATIONAL',
+    tier: 4,
+    description:
+      'Prestigious international science research competition founded by Shing-Tung Yau.',
+  },
+  {
+    name: 'Chinese Mathematical Olympiad',
+    abbreviation: 'CMO',
+    nameZh: '中国数学奥林匹克',
+    category: 'MATH',
+    level: 'NATIONAL',
+    tier: 4,
+    description: 'National mathematics olympiad in China, selecting IMO team.',
+  },
+  {
+    name: 'Chinese Physics Olympiad',
+    abbreviation: 'CPhO',
+    nameZh: '全国中学生物理竞赛',
+    category: 'PHYSICS',
+    level: 'NATIONAL',
+    tier: 4,
+    description: 'National physics olympiad in China, selecting IPhO team.',
+  },
+  {
+    name: 'Chinese Chemistry Olympiad',
+    abbreviation: 'CChO',
+    nameZh: '中国化学奥林匹克',
+    category: 'CHEMISTRY',
+    level: 'NATIONAL',
+    tier: 4,
+    description: 'National chemistry olympiad in China, selecting IChO team.',
+  },
+  {
+    name: 'National Olympiad in Informatics',
+    abbreviation: 'NOI',
+    nameZh: '全国青少年信息学奥林匹克',
+    category: 'COMPUTER_SCIENCE',
+    level: 'NATIONAL',
+    tier: 4,
+    description: 'National informatics olympiad in China, selecting IOI team.',
+  },
+  {
+    name: 'China Thinks Big',
+    abbreviation: 'CTB',
+    nameZh: 'China Thinks Big 创新研究挑战赛',
+    category: 'GENERAL_ACADEMIC',
+    level: 'NATIONAL',
+    tier: 2,
+    description:
+      'Interdisciplinary research and innovation challenge for Chinese high school students.',
+  },
+  {
+    name: 'National Economics Challenge China',
+    abbreviation: 'NEC China',
+    nameZh: '全美经济学挑战中国赛',
+    category: 'ECONOMICS_BUSINESS',
+    level: 'NATIONAL',
+    tier: 2,
+    description:
+      'China regional competition of the National Economics Challenge.',
+  },
+  {
+    name: 'NSDA China',
+    abbreviation: 'NSDA China',
+    nameZh: 'NSDA中国演讲与辩论',
+    category: 'DEBATE_SPEECH',
+    level: 'NATIONAL',
+    tier: 3,
+    description:
+      'China branch of the National Speech and Debate Association, speech and debate competitions.',
+  },
+  {
+    name: 'Business Professionals of America',
+    abbreviation: 'BPA',
+    nameZh: '美国商业专业协会竞赛',
+    category: 'ECONOMICS_BUSINESS',
+    level: 'NATIONAL',
+    tier: 2,
+    description:
+      'Career and technical student organization with business competitions.',
+  },
+  {
+    name: 'HOSA China',
+    abbreviation: 'HOSA China',
+    nameZh: 'HOSA中国健康科学竞赛',
+    category: 'OTHER',
+    level: 'NATIONAL',
+    tier: 2,
+    description:
+      'China chapter of HOSA-Future Health Professionals, health science competitions.',
+  },
+  {
+    name: 'British Biology Olympiad',
+    abbreviation: 'BBO',
+    nameZh: '英国生物奥林匹克',
+    category: 'BIOLOGY',
+    level: 'INTERNATIONAL',
+    tier: 3,
+    description:
+      'UK-based biology olympiad open to international participants.',
+  },
+  {
+    name: 'Physics Bowl China',
+    abbreviation: 'Physics Bowl China',
+    nameZh: '物理碗中国赛',
+    category: 'PHYSICS',
+    level: 'NATIONAL',
+    tier: 2,
+    description: 'China regional Physics Bowl competition organized by AAPT.',
+  },
+  {
+    name: 'UK Mathematics Trust',
+    abbreviation: 'UKMT',
+    nameZh: '英国数学信托基金会竞赛',
+    category: 'MATH',
+    level: 'NATIONAL',
+    tier: 2,
+    description:
+      'UK-based mathematics competition organization with multiple contests.',
+  },
+  {
+    name: 'Euclid Mathematics Contest',
+    abbreviation: 'Euclid',
+    nameZh: '欧几里得数学竞赛',
+    category: 'MATH',
+    level: 'NATIONAL',
+    tier: 2,
+    description:
+      'Prestigious mathematics contest by the University of Waterloo, popular for Canadian university admissions.',
+  },
+  {
+    name: 'New Concept Essay Competition',
+    abbreviation: '新概念作文',
+    nameZh: '全国新概念作文大赛',
+    category: 'WRITING_ESSAY',
+    level: 'NATIONAL',
+    tier: 2,
+    description:
+      'Influential Chinese creative writing competition for middle and high school students.',
+  },
 ];
 
 async function main() {

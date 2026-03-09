@@ -30,6 +30,7 @@ type EmptyStateType =
   | 'schools'
   | 'cases'
   | 'essays'
+  | 'teams'
   | 'loading'
   | 'custom';
 
@@ -126,6 +127,12 @@ const presetConfig: Record<
     iconBorder: 'border-destructive/20',
     iconColor: 'text-destructive',
   },
+  teams: {
+    icon: <Users className="h-8 w-8" />,
+    iconBg: 'bg-primary/5',
+    iconBorder: 'border-primary/20',
+    iconColor: 'text-primary',
+  },
   loading: {
     icon: <Sparkles className="h-8 w-8 animate-pulse" />,
     iconBg: 'bg-primary/5',
@@ -151,6 +158,7 @@ const presetTextKeys: Record<EmptyStateType, { title: string; description: strin
   schools: { title: 'noSchools', description: 'noSchoolsDesc' },
   cases: { title: 'noCases', description: 'noCasesDesc' },
   essays: { title: 'noEssays', description: 'noEssaysDesc' },
+  teams: { title: '', description: '' },
   loading: { title: 'loading', description: 'loadingDesc' },
   custom: { title: '', description: '' },
 };

@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { apiClient } from '@/lib/api';
 import { Search, GraduationCap, X, Loader2 } from 'lucide-react';
-import { getSchoolName, getSchoolSubName } from '@/lib/utils';
+import { getSchoolName, getSchoolSubName, formatAcceptanceRate } from '@/lib/utils';
 
 interface School {
   id: string;
@@ -185,10 +185,10 @@ export function SchoolSelector({
                       {school.state && ` · ${school.state}`}
                     </p>
                   </div>
-                  {school.acceptanceRate && (
+                  {school.acceptanceRate != null && Number(school.acceptanceRate) > 0 && (
                     <div className="text-right text-sm text-muted-foreground shrink-0">
                       <p>{t('acceptanceRate')}</p>
-                      <p className="font-medium">{school.acceptanceRate}%</p>
+                      <p className="font-medium">{formatAcceptanceRate(school.acceptanceRate)}</p>
                     </div>
                   )}
                 </div>

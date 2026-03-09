@@ -356,4 +356,25 @@ export class HallController {
   ): Promise<LeaderboardDto> {
     return this.swipeService.getLeaderboard(user.id, query.limit ?? 20);
   }
+
+  // ============================================
+  // Community Challenge
+  // ============================================
+
+  @Get('swipe/challenge')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get a community challenge case' })
+  async getChallengeCase(@CurrentUser() user: CurrentUserPayload) {
+    return this.swipeService.getChallengeCase(user.id);
+  }
+
+  @Post('swipe/challenge')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Submit challenge guesses' })
+  async submitChallenge(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: { guesses: Record<string, string> },
+  ) {
+    return this.swipeService.submitChallenge(user.id, body.guesses);
+  }
 }

@@ -77,8 +77,10 @@ export class OfficialScrapeStrategy extends BaseScrapeStrategy {
         sourceUrl: config.essays,
         rawContent: html.substring(0, 5000), // 保存部分原始内容用于校验
       };
-    } catch (error) {
-      this.logger.error(`Failed to scrape ${schoolName}: ${error.message}`);
+    } catch (error: unknown) {
+      this.logger.error(
+        `Failed to scrape ${schoolName}: ${error instanceof Error ? error.message : String(error)}`,
+      );
       return null;
     }
   }

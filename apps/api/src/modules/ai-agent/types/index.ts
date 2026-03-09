@@ -220,7 +220,6 @@ export interface ToolDefinition {
     properties: Record<string, ToolParameter>;
     required: string[];
   };
-  handler: string; // 处理器标识
 }
 
 export interface ToolParameter {

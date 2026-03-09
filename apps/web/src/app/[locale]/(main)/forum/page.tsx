@@ -16,7 +16,7 @@ import {
   HelpCircle,
   Bot,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Badge, Button, Card, CardContent } from '@/components/ui';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { apiClient as api } from '@/lib/api';
 import { ReportDialog } from '@/components/features/forum/ReportDialog';
@@ -169,6 +169,12 @@ export default function ForumPage() {
 
   const aiContextActions: ContextAction[] = [
     {
+      id: 'find-teammates',
+      label: t('aiActions.findTeammates'),
+      prompt: t('aiActions.findTeammatesPrompt'),
+      icon: <Users className="h-4 w-4" />,
+    },
+    {
       id: 'search-posts',
       label: t('aiActions.searchPosts'),
       prompt: t('aiActions.searchPostsPrompt'),
@@ -179,12 +185,6 @@ export default function ForumPage() {
       label: t('aiActions.trendingTopics'),
       prompt: t('aiActions.trendingTopicsPrompt'),
       icon: <Flame className="h-4 w-4" />,
-    },
-    {
-      id: 'find-teammates',
-      label: t('aiActions.findTeammates'),
-      prompt: t('aiActions.findTeammatesPrompt'),
-      icon: <Users className="h-4 w-4" />,
     },
     {
       id: 'ask-question',
@@ -263,29 +263,86 @@ export default function ForumPage() {
           formatNumber={formatNumber}
         />
 
-        <PostList
-          posts={posts}
-          loading={loading}
-          hasMore={hasMore}
-          sortBy={sortBy}
-          onSortChange={setSortBy}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          onSearch={() => fetchPosts(true)}
-          selectedCategoryObj={selectedCategoryObj}
-          showTeamOnly={showTeamOnly}
-          onClearCategory={() => setSelectedCategory(null)}
-          onClearTeamOnly={() => setShowTeamOnly(false)}
-          onClearSearch={() => setSearchQuery('')}
-          onLoadMore={() => {
-            setPage((p) => p + 1);
-            fetchPosts();
-          }}
-          onViewPost={setSelectedPost}
-          onLike={handleLike}
-          onReport={setReportTarget}
-          onCreatePost={() => setShowCreateDialog(true)}
-        />
+        <div className="space-y-4">
+          {/* 组队专区：单独板块 */}
+          <Card className="overflow-hidden border-2 border-amber-500/40 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/20 shadow-md shadow-amber-500/10">
+            <div className="h-1 bg-gradient-to-r from-amber-500 to-orange-500" />
+            <CardContent className="p-5">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="space-y-1">
+                  <h2 className="text-lg font-semibold flex items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/20">
+                      <Users className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                    </div>
+                    {t('teamSectionTitle')}
+                    {forumStats.teamingCount > 0 && (
+                      <Badge className="bg-amber-500 text-white border-0 text-xs animate-pulse">
+                        {formatNumber(forumStats.teamingCount)} {t('activeLabel') || 'active'}
+                      </Badge>
+                    )}
+                  </h2>
+                  <p className="text-sm text-muted-foreground max-w-xl">{t('teamSectionDesc')}</p>
+                </div>
+                <div className="flex flex-wrap gap-2 shrink-0">
+                  <Button
+                    variant={showTeamOnly ? 'default' : 'outline'}
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={() => {
+                      setShowTeamOnly(true);
+                      setSelectedCategory(null);
+                      fetchPosts(true);
+                    }}
+                  >
+                    <Users className="h-4 w-4" />
+                    {t('viewAllTeamPosts')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={() => {
+                      setIsTeamPostCreate(true);
+                      setShowCreateDialog(true);
+                    }}
+                    disabled={!isVerified}
+                  >
+                    <PenLine className="h-4 w-4" />
+                    {t('createTeamPost')}
+                  </Button>
+                  <Button size="sm" className="gap-1.5" onClick={() => setShowAiPanel(true)}>
+                    <Bot className="h-4 w-4" />
+                    {t('openAiToFindTeammates')}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <PostList
+            posts={posts}
+            loading={loading}
+            hasMore={hasMore}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            onSearch={() => fetchPosts(true)}
+            selectedCategoryObj={selectedCategoryObj}
+            showTeamOnly={showTeamOnly}
+            onClearCategory={() => setSelectedCategory(null)}
+            onClearTeamOnly={() => setShowTeamOnly(false)}
+            onClearSearch={() => setSearchQuery('')}
+            onLoadMore={() => {
+              setPage((p) => p + 1);
+              fetchPosts();
+            }}
+            onViewPost={setSelectedPost}
+            onLike={handleLike}
+            onReport={setReportTarget}
+            onCreatePost={() => setShowCreateDialog(true)}
+          />
+        </div>
       </div>
 
       <CreatePostDialog

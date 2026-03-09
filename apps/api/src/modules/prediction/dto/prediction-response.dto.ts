@@ -52,17 +52,39 @@ export class EngineScores {
   @ApiPropertyOptional({ description: '历史数据引擎概率 (0-1)', example: 0.32 })
   historical?: number;
 
+  @ApiPropertyOptional({ description: 'ML 模型引擎概率 (0-1)', example: 0.31 })
+  ml?: number;
+
   @ApiPropertyOptional({ description: '记忆增强调整值 (-0.1 to 0.1)' })
   memoryAdjustment?: number;
 
   @ApiProperty({
     description: '各引擎权重',
-    example: { stats: 0.3, ai: 0.4, historical: 0.3 },
+    example: { stats: 0.1, ai: 0.25, historical: 0.25, ml: 0.4 },
   })
   weights: Record<string, number>;
 
-  @ApiProperty({ description: '最终融合方法', example: 'weighted_average' })
+  @ApiProperty({
+    description: '最终融合方法',
+    example: 'weighted_ensemble_4_stats_ai_hist_ml',
+  })
   fusionMethod: string;
+
+  @ApiPropertyOptional({
+    description: 'ML 模型 Tier (1=Platt, 2=LR-basic, 3=LR-full, 4=GBDT)',
+  })
+  mlModelTier?: number;
+
+  @ApiPropertyOptional({
+    description: 'ML 模型各特征贡献度',
+    type: 'array',
+    items: { type: 'object' },
+  })
+  mlContributions?: Array<{
+    feature: string;
+    contribution: number;
+    direction: 'positive' | 'negative';
+  }>;
 }
 
 export class PredictionResultDto {
@@ -120,10 +142,31 @@ export class PredictionResultDto {
   schoolMeta?: {
     usNewsRank?: number;
     acceptanceRate?: number;
+    intlAcceptanceRate?: number;
+    intlStudentPct?: number;
+    needBlindInternational?: boolean;
     graduationRate?: number;
     satAvg?: number;
     sat25?: number;
     sat75?: number;
+  };
+
+  @ApiPropertyOptional({ description: '专业竞争度分析' })
+  majorBreakdown?: {
+    majorName: string;
+    majorNameZh?: string;
+    cipCode: string;
+    competitiveness: number;
+    acceptanceRateEstimate?: number;
+    modifier: number;
+    adjustedProbability: number;
+  };
+
+  @ApiPropertyOptional({ description: '社区案例数据' })
+  communityInsight?: {
+    majorAdmitRate: number;
+    totalCases: number;
+    major: string;
   };
 
   @ApiPropertyOptional({ description: '跨引擎一致性 (0-1)' })
@@ -152,4 +195,10 @@ export class PredictionResponseDto {
     violations: string[];
     warnings: string[];
   };
+
+  @ApiPropertyOptional({
+    description:
+      '当用户选择了任意 UC 校区时，已自动扩展为全部 9 所 UC 校区比较',
+  })
+  ucComparisonExpanded?: boolean;
 }

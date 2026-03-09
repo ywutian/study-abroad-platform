@@ -10,10 +10,12 @@ import { TokenCleanupScheduler } from './token-cleanup.scheduler';
 import { SessionManager } from './session-manager.service';
 import { BruteForceService } from './brute-force.service';
 import { UserModule } from '../user/user.module';
+import { AuditLogModule } from '../../common/services/audit-log.module';
 
 @Module({
   imports: [
     UserModule,
+    AuditLogModule,
     ScheduleModule.forRoot(),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({

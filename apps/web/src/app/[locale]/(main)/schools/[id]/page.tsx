@@ -27,7 +27,8 @@ import { useRouter } from '@/lib/i18n/navigation';
 import { useAuthStore } from '@/stores/auth';
 import { useSchoolPrediction } from '@/hooks/use-prediction';
 import { motion } from 'framer-motion';
-import { cn, getSchoolName, getSchoolSubName } from '@/lib/utils';
+import { cn, getSchoolName, getSchoolSubName, formatAcceptanceRate } from '@/lib/utils';
+import { SchoolLogo } from '@/components/features';
 import {
   MapPin,
   Trophy,
@@ -202,7 +203,20 @@ export default function SchoolDetailPage() {
   const isBookmarked = !!bookmarkItem;
 
   const addBookmarkMutation = useMutation({
-    mutationFn: (sid: string) => apiClient.post('/school-lists', { schoolId: sid, tier: 'TARGET' }),
+    mutationFn: ({
+      schoolId: sid,
+      tier = 'TARGET',
+      round,
+    }: {
+      schoolId: string;
+      tier?: string;
+      round?: string;
+    }) =>
+      apiClient.post('/school-lists', {
+        schoolId: sid,
+        tier,
+        ...(round && { round }),
+      }),
     onSuccess: () => {
       toast.success(t('school.bookmarkAdded'));
       queryClient.invalidateQueries({ queryKey: ['school-lists'] });
@@ -224,17 +238,17 @@ export default function SchoolDetailPage() {
     },
   });
 
-  const handleBookmarkToggle = () => {
+  const handleAddToList = (round: string) => {
     if (!accessToken) {
       toast.error(t('school.loginToBookmark'));
       router.push('/login');
       return;
     }
-    if (isBookmarked && bookmarkItem) {
-      removeBookmarkMutation.mutate(bookmarkItem.id);
-    } else {
-      addBookmarkMutation.mutate(schoolId);
-    }
+    addBookmarkMutation.mutate({ schoolId, round });
+  };
+
+  const handleBookmarkRemove = () => {
+    if (bookmarkItem) removeBookmarkMutation.mutate(bookmarkItem.id);
   };
 
   const handleCopyLink = async () => {
@@ -336,10 +350,13 @@ export default function SchoolDetailPage() {
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-start md:justify-between gap-6">
           <div className="flex items-start gap-4">
-            {/* School Icon */}
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-primary text-white ">
-              <span className="text-2xl font-bold">{getSchoolName(school, locale).charAt(0)}</span>
-            </div>
+            <SchoolLogo
+              logoUrl={school.logoUrl}
+              name={getSchoolName(school, locale)}
+              size="lg"
+              variant="hero"
+              rounded="lg"
+            />
 
             <div>
               <div className="flex items-center gap-3 mb-2 flex-wrap">
@@ -407,23 +424,43 @@ export default function SchoolDetailPage() {
           </div>
 
           <div className="flex gap-2">
-            <Button
-              variant={isBookmarked ? 'secondary' : 'outline'}
-              size="sm"
-              className={cn(
-                'gap-2 transition-all',
-                isBookmarked
-                  ? 'bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20'
-                  : 'hover:bg-amber-500/10 hover:text-amber-600 hover:border-amber-500/30'
-              )}
-              onClick={handleBookmarkToggle}
-              disabled={addBookmarkMutation.isPending || removeBookmarkMutation.isPending}
-            >
-              <Bookmark className={cn('h-4 w-4', isBookmarked && 'fill-current')} />
-              <span className="hidden sm:inline">
-                {isBookmarked ? t('school.bookmarked') : t('school.bookmark')}
-              </span>
-            </Button>
+            {isBookmarked ? (
+              <Button
+                variant="secondary"
+                size="sm"
+                className="gap-2 bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20"
+                onClick={handleBookmarkRemove}
+                disabled={removeBookmarkMutation.isPending}
+              >
+                <Bookmark className="h-4 w-4 fill-current" />
+                <span className="hidden sm:inline">{t('school.bookmarked')}</span>
+              </Button>
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 hover:bg-amber-500/10 hover:text-amber-600 hover:border-amber-500/30"
+                    disabled={addBookmarkMutation.isPending}
+                  >
+                    <Bookmark className="h-4 w-4" />
+                    <span className="hidden sm:inline">{t('school.bookmark')}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {(['ED', 'ED2', 'EA', 'REA', 'RD', 'ROLLING'] as const).map((round) => (
+                    <DropdownMenuItem
+                      key={round}
+                      onClick={() => handleAddToList(round)}
+                      disabled={addBookmarkMutation.isPending}
+                    >
+                      {t('findCollege.rounds.' + round)}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2">
@@ -455,7 +492,7 @@ export default function SchoolDetailPage() {
             icon: Target,
             label: t('school.stats.acceptanceRate'),
             value: school.acceptanceRate
-              ? `${Number(school.acceptanceRate).toFixed(1)}%`
+              ? formatAcceptanceRate(school.acceptanceRate)
               : tc('notAvailable'),
             color: 'rose',
           },

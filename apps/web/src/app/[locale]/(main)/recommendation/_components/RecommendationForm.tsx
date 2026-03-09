@@ -16,7 +16,19 @@ import {
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { ComboboxTagInput } from '@/components/ui/combobox-tag-input';
 import { PageTransition } from '@/components/ui/motion';
-import { MapPin, BookOpen, DollarSign, Sparkles, Target, GraduationCap } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
+import {
+  MapPin,
+  BookOpen,
+  DollarSign,
+  Sparkles,
+  Target,
+  GraduationCap,
+  Building2,
+  Sun,
+  Users,
+  Trophy as TrophyIcon,
+} from 'lucide-react';
 import { US_REGIONS, US_MAJORS } from '@study-abroad/shared';
 import type { RecommendationPreflight } from '@study-abroad/shared';
 import type { GenerateRecommendationDto } from '@/hooks/use-recommendation';
@@ -38,6 +50,17 @@ export function RecommendationForm({ onGenerate, preflight }: RecommendationForm
   const [schoolCount, setSchoolCount] = useState<number>(15);
   const [additionalPreferences, setAdditionalPreferences] = useState('');
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showQuiz, setShowQuiz] = useState(false);
+
+  // Quiz preferences
+  const [roiImportance, setRoiImportance] = useState(3);
+  const [campusSize, setCampusSize] = useState('');
+  const [locationType, setLocationType] = useState('');
+  const [campusCulture, setCampusCulture] = useState('');
+  const [weatherPref, setWeatherPref] = useState('');
+  const [diversityImportance, setDiversityImportance] = useState(3);
+  const [greekLife, setGreekLife] = useState(3);
+  const [athleticsImportance, setAthleticsImportance] = useState(3);
 
   const canGenerate = preflight?.profileComplete ?? false;
 
@@ -47,12 +70,24 @@ export function RecommendationForm({ onGenerate, preflight }: RecommendationForm
   };
 
   const handleConfirm = () => {
+    const quizParts: string[] = [];
+    if (roiImportance !== 3) quizParts.push(`ROI importance: ${roiImportance}/5`);
+    if (campusSize) quizParts.push(`Campus size preference: ${campusSize}`);
+    if (locationType) quizParts.push(`Location type: ${locationType}`);
+    if (campusCulture) quizParts.push(`Campus culture: ${campusCulture}`);
+    if (weatherPref) quizParts.push(`Weather preference: ${weatherPref}`);
+    if (diversityImportance !== 3) quizParts.push(`Diversity importance: ${diversityImportance}/5`);
+    if (greekLife !== 3) quizParts.push(`Greek life importance: ${greekLife}/5`);
+    if (athleticsImportance !== 3) quizParts.push(`Athletics importance: ${athleticsImportance}/5`);
+
+    const fullPreferences = [additionalPreferences, ...quizParts].filter(Boolean).join('\n');
+
     onGenerate({
       preferredRegions: regions.length > 0 ? regions : undefined,
       preferredMajors: majors.length > 0 ? majors : undefined,
       budget: budget || undefined,
       schoolCount,
-      additionalPreferences: additionalPreferences || undefined,
+      additionalPreferences: fullPreferences || undefined,
     });
   };
 
@@ -155,6 +190,168 @@ export function RecommendationForm({ onGenerate, preflight }: RecommendationForm
               </p>
             )}
           </div>
+
+          {/* Preference Quiz Toggle */}
+          <div className="pt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => setShowQuiz(!showQuiz)}
+            >
+              {showQuiz ? t('quiz.hidePreferences') : t('quiz.showPreferences')}
+            </Button>
+          </div>
+
+          {showQuiz && (
+            <div className="space-y-4 pt-2 border-t">
+              <p className="text-sm font-medium text-muted-foreground">{t('quiz.title')}</p>
+
+              {/* ROI Importance */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-sm">
+                  <DollarSign className="h-4 w-4" />
+                  {t('quiz.roiImportance')}
+                </Label>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground shrink-0">{t('quiz.low')}</span>
+                  <Slider
+                    value={[roiImportance]}
+                    onValueChange={([v]) => setRoiImportance(v)}
+                    min={1}
+                    max={5}
+                    step={1}
+                  />
+                  <span className="text-xs text-muted-foreground shrink-0">{t('quiz.high')}</span>
+                </div>
+              </div>
+
+              {/* Campus Size */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-sm">
+                  <Building2 className="h-4 w-4" />
+                  {t('quiz.campusSize')}
+                </Label>
+                <Select value={campusSize} onValueChange={setCampusSize}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('quiz.selectOne')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="small">{t('quiz.sizeSmall')}</SelectItem>
+                    <SelectItem value="medium">{t('quiz.sizeMedium')}</SelectItem>
+                    <SelectItem value="large">{t('quiz.sizeLarge')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Location Type */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-sm">
+                  <MapPin className="h-4 w-4" />
+                  {t('quiz.locationType')}
+                </Label>
+                <Select value={locationType} onValueChange={setLocationType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('quiz.selectOne')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="urban">{t('quiz.urban')}</SelectItem>
+                    <SelectItem value="suburban">{t('quiz.suburban')}</SelectItem>
+                    <SelectItem value="rural">{t('quiz.rural')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Campus Culture */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-sm">
+                  <Users className="h-4 w-4" />
+                  {t('quiz.campusCulture')}
+                </Label>
+                <Select value={campusCulture} onValueChange={setCampusCulture}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('quiz.selectOne')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="research">{t('quiz.research')}</SelectItem>
+                    <SelectItem value="liberal-arts">{t('quiz.liberalArts')}</SelectItem>
+                    <SelectItem value="pre-professional">{t('quiz.preProfessional')}</SelectItem>
+                    <SelectItem value="balanced">{t('quiz.balanced')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Weather */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-sm">
+                  <Sun className="h-4 w-4" />
+                  {t('quiz.weather')}
+                </Label>
+                <Select value={weatherPref} onValueChange={setWeatherPref}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('quiz.selectOne')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="warm">{t('quiz.warm')}</SelectItem>
+                    <SelectItem value="moderate">{t('quiz.moderate')}</SelectItem>
+                    <SelectItem value="cold">{t('quiz.cold')}</SelectItem>
+                    <SelectItem value="no-preference">{t('quiz.noPreference')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Diversity Importance */}
+              <div className="space-y-2">
+                <Label className="text-sm">{t('quiz.diversityImportance')}</Label>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground shrink-0">{t('quiz.low')}</span>
+                  <Slider
+                    value={[diversityImportance]}
+                    onValueChange={([v]) => setDiversityImportance(v)}
+                    min={1}
+                    max={5}
+                    step={1}
+                  />
+                  <span className="text-xs text-muted-foreground shrink-0">{t('quiz.high')}</span>
+                </div>
+              </div>
+
+              {/* Greek Life */}
+              <div className="space-y-2">
+                <Label className="text-sm">{t('quiz.greekLife')}</Label>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground shrink-0">{t('quiz.low')}</span>
+                  <Slider
+                    value={[greekLife]}
+                    onValueChange={([v]) => setGreekLife(v)}
+                    min={1}
+                    max={5}
+                    step={1}
+                  />
+                  <span className="text-xs text-muted-foreground shrink-0">{t('quiz.high')}</span>
+                </div>
+              </div>
+
+              {/* Athletics */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-sm">
+                  <TrophyIcon className="h-4 w-4" />
+                  {t('quiz.athletics')}
+                </Label>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground shrink-0">{t('quiz.low')}</span>
+                  <Slider
+                    value={[athleticsImportance]}
+                    onValueChange={([v]) => setAthleticsImportance(v)}
+                    min={1}
+                    max={5}
+                    step={1}
+                  />
+                  <span className="text-xs text-muted-foreground shrink-0">{t('quiz.high')}</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Generate Button */}
           <div className="pt-4">

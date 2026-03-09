@@ -3,10 +3,9 @@ import { FloatingChat } from '@/components/features/agent-chat';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh flex flex-col bg-background">
       <Header />
-      <PageTransitionWrapper>
-        {/* 为底部 Tab Bar 留出空间 */}
+      <PageTransitionWrapper className="flex-1">
         <main className="py-6 sm:py-8 pb-20 md:pb-8">{children}</main>
       </PageTransitionWrapper>
       <FloatingChat />

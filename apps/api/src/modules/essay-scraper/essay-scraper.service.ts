@@ -73,9 +73,9 @@ export class EssayScraperService {
         );
         return { schoolName, success: true, essaysFound: savedCount };
       }
-    } catch (error) {
+    } catch (error: unknown) {
       this.logger.warn(
-        `LLM strategy failed for ${schoolName}, falling back: ${error.message}`,
+        `LLM strategy failed for ${schoolName}, falling back: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
 
@@ -100,9 +100,9 @@ export class EssayScraperService {
         }
 
         await this.delay(2000);
-      } catch (error) {
+      } catch (error: unknown) {
         this.logger.error(
-          `Failed to scrape ${source} for ${schoolName}: ${error.message}`,
+          `Failed to scrape ${source} for ${schoolName}: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
     }
@@ -145,8 +145,10 @@ export class EssayScraperService {
     try {
       const commonAppResult = await this.scrapeAndLinkCommonApp(year);
       results.push(commonAppResult);
-    } catch (error) {
-      this.logger.error(`CommonApp scrape failed: ${error.message}`);
+    } catch (error: unknown) {
+      this.logger.error(
+        `CommonApp scrape failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
 
     // 逐校采集 supplement
@@ -361,8 +363,10 @@ export class EssayScraperService {
           },
         });
         savedCount++;
-      } catch (error) {
-        this.logger.error(`Failed to save confirmed essay: ${error.message}`);
+      } catch (error: unknown) {
+        this.logger.error(
+          `Failed to save confirmed essay: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     }
 
@@ -557,8 +561,10 @@ export class EssayScraperService {
         });
 
         savedCount++;
-      } catch (error) {
-        this.logger.error(`Failed to save essay: ${error.message}`);
+      } catch (error: unknown) {
+        this.logger.error(
+          `Failed to save essay: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     }
 

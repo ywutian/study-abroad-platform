@@ -6,7 +6,6 @@ import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ScoreItem } from '@/components/ui/score-item';
 import {
   Shield,
   ChevronDown,
@@ -16,16 +15,15 @@ import {
   Award,
   RefreshCw,
   CheckCircle2,
+  BarChart3,
+  Brain,
+  BookOpen,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { TIER_CONFIG, CONFIDENCE_CONFIG, ENGINE_CONFIG, getProbabilityColor } from './constants';
+import { cn, formatAcceptanceRate } from '@/lib/utils';
+import { TIER_CONFIG, CONFIDENCE_CONFIG, getProbabilityColor } from './constants';
 import type { PredictionResult } from './types';
 
 // Lazy load expanded panels
-const EngineBreakdownPanel = dynamic(
-  () => import('./EngineBreakdownPanel').then((m) => ({ default: m.EngineBreakdownPanel })),
-  { ssr: false }
-);
 const FactorsPanel = dynamic(
   () => import('./FactorsPanel').then((m) => ({ default: m.FactorsPanel })),
   { ssr: false }
@@ -46,6 +44,10 @@ const PredictionHistoryPanel = dynamic(
   () => import('./PredictionHistoryPanel').then((m) => ({ default: m.PredictionHistoryPanel })),
   { ssr: false }
 );
+const RateBreakdownPanel = dynamic(
+  () => import('./RateBreakdownPanel').then((m) => ({ default: m.RateBreakdownPanel })),
+  { ssr: false }
+);
 
 interface PredictionResultCardProps {
   result: PredictionResult;
@@ -54,6 +56,7 @@ interface PredictionResultCardProps {
   onResultReported?: (schoolId: string, result: string) => void;
   onRefresh?: (schoolId: string) => void;
   isRefreshing?: boolean;
+  isInternational?: boolean;
 }
 
 /** Compute relative time string (e.g. "5 min ago") */
@@ -98,6 +101,7 @@ export const PredictionResultCard = memo(
     onResultReported,
     onRefresh,
     isRefreshing,
+    isInternational,
   }: PredictionResultCardProps) {
     const t = useTranslations('prediction');
     const expandedRef = useRef<HTMLDivElement>(null);
@@ -112,15 +116,6 @@ export const PredictionResultCard = memo(
       result.suggestions.length > 0 ||
       result.comparison ||
       result.engineScores;
-
-    // Engine scores for collapsed view
-    const engines = result.engineScores
-      ? [
-          { key: 'stats' as const, value: result.engineScores.stats },
-          { key: 'ai' as const, value: result.engineScores.ai },
-          { key: 'historical' as const, value: result.engineScores.historical },
-        ].filter((e) => e.value !== undefined)
-      : [];
 
     // Accuracy badge
     const accuracyBadge = result.actualResult
@@ -186,7 +181,9 @@ export const PredictionResultCard = memo(
                 )}
                 {result.schoolMeta?.acceptanceRate != null && (
                   <Badge variant="secondary" className="text-xs py-0">
-                    {t('acceptRate', { rate: (result.schoolMeta.acceptanceRate * 100).toFixed(1) })}
+                    {t('schoolAcceptanceRateLabel', {
+                      rate: formatAcceptanceRate(result.schoolMeta.acceptanceRate).replace('%', ''),
+                    })}
                   </Badge>
                 )}
                 {result.modelVersion && (
@@ -231,7 +228,7 @@ export const PredictionResultCard = memo(
                   className="h-16 w-16 -rotate-90"
                   viewBox="0 0 64 64"
                   role="img"
-                  aria-label={`${probPercent}%`}
+                  aria-label={`${t('estimatedProbabilityLabel')} ${probPercent}%`}
                 >
                   <circle
                     cx="32"
@@ -265,25 +262,33 @@ export const PredictionResultCard = memo(
                   {probPercent}%
                 </span>
               </div>
+              <span className="text-xs text-muted-foreground mt-1">
+                {t('estimatedProbabilityLabel')}
+              </span>
             </div>
           </div>
 
-          {/* Row 2: Engine scores (always visible when available) */}
-          {engines.length > 0 && (
-            <div className="mt-4 grid gap-3 grid-cols-1 sm:grid-cols-3">
-              {engines.map((engine) => {
-                const config = ENGINE_CONFIG[engine.key];
-                return (
-                  <ScoreItem
-                    key={engine.key}
-                    label={t(`engine.${engine.key}`)}
-                    value={`${((engine.value ?? 0) * 100).toFixed(0)}%`}
-                    max="100"
-                    color={config.color}
-                    size="sm"
-                  />
-                );
-              })}
+          {/* Row 2: Data source indicators */}
+          {result.engineScores && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {result.engineScores.stats !== undefined && (
+                <Badge variant="secondary" className="text-xs gap-1">
+                  <BarChart3 className="h-3 w-3" />
+                  {t('source.academic')}
+                </Badge>
+              )}
+              {result.engineScores.ai !== undefined && (
+                <Badge variant="secondary" className="text-xs gap-1">
+                  <Brain className="h-3 w-3" />
+                  {t('source.aiAnalysis')}
+                </Badge>
+              )}
+              {result.engineScores.historical !== undefined && (
+                <Badge variant="secondary" className="text-xs gap-1">
+                  <BookOpen className="h-3 w-3" />
+                  {t('source.historicalData')}
+                </Badge>
+              )}
             </div>
           )}
 
@@ -332,9 +337,54 @@ export const PredictionResultCard = memo(
                 className="overflow-hidden outline-none"
               >
                 <div className="space-y-5 pt-3">
-                  {/* Engine weight breakdown */}
-                  {result.engineScores && (
-                    <EngineBreakdownPanel engineScores={result.engineScores} />
+                  {/* School stats overview */}
+                  {result.schoolMeta && (
+                    <div className="space-y-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {result.schoolMeta.acceptanceRate != null && (
+                          <div className="text-center p-2 rounded-lg bg-muted/30">
+                            <p className="text-xs text-muted-foreground">
+                              {t('schoolAcceptanceRateLabel', { rate: '' }).replace(': ', '')}
+                            </p>
+                            <p className="font-semibold text-sm">
+                              {formatAcceptanceRate(result.schoolMeta.acceptanceRate)}
+                            </p>
+                          </div>
+                        )}
+                        {result.schoolMeta.usNewsRank != null && (
+                          <div className="text-center p-2 rounded-lg bg-muted/30">
+                            <p className="text-xs text-muted-foreground">US News</p>
+                            <p className="font-semibold text-sm">#{result.schoolMeta.usNewsRank}</p>
+                          </div>
+                        )}
+                        {result.schoolMeta.satAvg != null && (
+                          <div className="text-center p-2 rounded-lg bg-muted/30">
+                            <p className="text-xs text-muted-foreground">SAT Avg</p>
+                            <p className="font-semibold text-sm">{result.schoolMeta.satAvg}</p>
+                          </div>
+                        )}
+                        <div className="text-center p-2 rounded-lg bg-primary/5 border border-primary/10">
+                          <p className="text-xs text-muted-foreground">
+                            {t('estimatedProbabilityLabel')}
+                          </p>
+                          <p
+                            className={cn(
+                              'font-semibold text-sm',
+                              getProbabilityColor(result.probability)
+                            )}
+                          >
+                            {probPercent}%
+                          </p>
+                        </div>
+                      </div>
+                      <RateBreakdownPanel
+                        schoolMeta={result.schoolMeta}
+                        majorBreakdown={(result as any).majorBreakdown}
+                        communityInsight={(result as any).communityInsight}
+                        probability={result.probability}
+                        isInternational={isInternational ?? false}
+                      />
+                    </div>
                   )}
 
                   {/* Impact factors */}

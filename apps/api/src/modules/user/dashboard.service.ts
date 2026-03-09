@@ -17,6 +17,7 @@ export interface DashboardSummary {
     hasTestScores: boolean;
     hasActivities: boolean;
     hasAwards: boolean;
+    hasEducation: boolean;
     targetSchoolCount: number;
     essayCount: number;
     schoolTiers: {
@@ -50,6 +51,16 @@ export interface DashboardSummary {
     daysLeft: number;
   }[];
 
+  // 即将到期的个人事件（比赛/考试等）
+  upcomingPersonalEvents: {
+    id: string;
+    title: string;
+    category: string;
+    deadline: string | null;
+    eventDate: string | null;
+    daysLeft: number;
+  }[];
+
   // 最近活动
   recentActivity: {
     type: string;
@@ -68,6 +79,7 @@ export class DashboardService {
     locale = 'zh',
   ): Promise<DashboardSummary> {
     // 并行获取所有数据
+    const now = new Date();
     const [
       user,
       profile,
@@ -80,6 +92,8 @@ export class DashboardService {
       schoolTierGroups,
       pendingTaskCount,
       pendingTaskTypes,
+      personalEvents,
+      schoolListWithDeadlines,
     ] = await Promise.all([
       // 用户信息
       this.prisma.user.findUnique({
@@ -94,6 +108,7 @@ export class DashboardService {
           testScores: { select: { id: true } },
           activities: { select: { id: true } },
           awards: { select: { id: true } },
+          education: { select: { id: true } },
           essays: { select: { id: true } },
         },
       }),
@@ -162,6 +177,43 @@ export class DashboardService {
         where: { timeline: { userId }, completed: false },
         _count: { type: true },
       }),
+
+      // 即将到期的个人事件（比赛/考试）：deadline 或 eventDate 在未来
+      this.prisma.personalEvent.findMany({
+        where: {
+          userId,
+          status: { notIn: ['COMPLETED', 'CANCELLED'] },
+          OR: [{ deadline: { gte: now } }, { eventDate: { gte: now } }],
+        },
+        orderBy: [{ deadline: 'asc' }, { eventDate: 'asc' }],
+        take: 5,
+        select: {
+          id: true,
+          title: true,
+          category: true,
+          deadline: true,
+          eventDate: true,
+        },
+      }),
+
+      // 选校清单中学校的截止日期（SchoolDeadline），用于补充没有生成 ApplicationTimeline 的学校
+      this.prisma.schoolListItem.findMany({
+        where: { userId },
+        select: {
+          schoolId: true,
+          round: true,
+          school: {
+            select: {
+              name: true,
+              nameZh: true,
+              deadlines: {
+                where: { applicationDeadline: { gte: now } },
+                orderBy: { applicationDeadline: 'asc' },
+              },
+            },
+          },
+        },
+      }),
     ]);
 
     // 计算档案完成度（传入选校数据用于权重计算）
@@ -185,8 +237,8 @@ export class DashboardService {
       count: row._count.type,
     }));
 
-    // 计算截止日期
-    const upcomingDeadlines = timelines
+    // 计算截止日期：来自已生成的 ApplicationTimeline
+    const timelineDeadlines = timelines
       .filter((t) => t.deadline !== null)
       .map((t) => ({
         id: t.id,
@@ -199,6 +251,51 @@ export class DashboardService {
           (t.deadline!.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
         ),
       }));
+
+    // 补充来自 SchoolDeadline 的截止日期（选校清单中但尚未生成 Timeline 的学校）
+    const timelineSchoolRounds = new Set(
+      timelines.map((t) => `${t.schoolId}:${t.round}`),
+    );
+    const schoolDeadlineItems: typeof timelineDeadlines = [];
+    for (const item of schoolListWithDeadlines) {
+      if (!item.school?.deadlines) continue;
+      for (const dl of item.school.deadlines) {
+        if (timelineSchoolRounds.has(`${item.schoolId}:${dl.round}`)) continue;
+        if (item.round && item.round !== dl.round) continue;
+        schoolDeadlineItems.push({
+          id: dl.id,
+          schoolName: getSchoolDisplayName(item.school, locale),
+          round: dl.round,
+          deadline: dl.applicationDeadline.toISOString(),
+          daysLeft: Math.ceil(
+            (dl.applicationDeadline.getTime() - Date.now()) /
+              (1000 * 60 * 60 * 24),
+          ),
+        });
+      }
+    }
+
+    const upcomingDeadlines = [...timelineDeadlines, ...schoolDeadlineItems]
+      .sort(
+        (a, b) =>
+          new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
+      )
+      .slice(0, 10);
+
+    const upcomingPersonalEvents = personalEvents.map((ev) => {
+      const date = ev.deadline ?? ev.eventDate!;
+      const daysLeft = Math.ceil(
+        (date.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+      );
+      return {
+        id: ev.id,
+        title: ev.title,
+        category: ev.category,
+        deadline: ev.deadline?.toISOString() ?? null,
+        eventDate: ev.eventDate?.toISOString() ?? null,
+        daysLeft,
+      };
+    });
 
     // 构建最近活动
     const recentActivity = this.buildRecentActivity(pointHistory);
@@ -215,6 +312,7 @@ export class DashboardService {
         hasTestScores: (profile?.testScores?.length || 0) > 0,
         hasActivities: (profile?.activities?.length || 0) > 0,
         hasAwards: (profile?.awards?.length || 0) > 0,
+        hasEducation: (profile?.education?.length || 0) > 0,
         targetSchoolCount: schoolListCount,
         essayCount: profile?.essays?.length || 0,
         schoolTiers,
@@ -231,6 +329,7 @@ export class DashboardService {
         profileGaps,
       },
       upcomingDeadlines,
+      upcomingPersonalEvents,
       recentActivity,
     };
   }

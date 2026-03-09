@@ -8,10 +8,20 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../../prisma/prisma.service';
 
+export interface LoadedHighSchool {
+  name: string;
+  tier: number;
+  type: string;
+  country: string;
+  state: string | null;
+}
+
 export interface LoadedProfile {
   gpa: number | null;
   gpaScale: number;
   targetMajor: string | null;
+  intendedMajor: string | null;
+  secondMajor: string | null;
   grade: string | null;
   budgetTier: string | null;
   testScores: Array<{ type: string; score: number; date: Date | null }>;
@@ -19,14 +29,26 @@ export interface LoadedProfile {
     name: string;
     category: string | null;
     role: string | null;
+    description: string | null;
+    hoursPerWeek: number | null;
+    weeksPerYear: number | null;
     duration: string;
   }>;
-  awards: Array<{ name: string; level: string | null; year: number | null }>;
+  awards: Array<{
+    name: string;
+    level: string | null;
+    year: number | null;
+    competitionCategory: string | null;
+  }>;
   education: Array<{
     school: string;
     degree: string | null;
     major: string | null;
+    schoolType: string | null;
+    highSchoolId: string | null;
   }>;
+  /** Convenience: first HIGH_SCHOOL education's linked HighSchool, if any */
+  highSchool: LoadedHighSchool | null;
 }
 
 @Injectable()
@@ -46,9 +68,12 @@ export class ProfileLoaderHelper {
       where: { userId },
       include: {
         testScores: true,
-        activities: true,
-        awards: true,
-        education: true,
+        activities: {
+          orderBy: { order: 'asc' },
+          include: { activityTemplate: true },
+        },
+        awards: { include: { competition: true } },
+        education: { include: { highSchool: true } },
       },
     });
 
@@ -58,6 +83,8 @@ export class ProfileLoaderHelper {
       gpa: profile.gpa ? Number(profile.gpa) : null,
       gpaScale: profile.gpaScale ? Number(profile.gpaScale) : 4.0,
       targetMajor: profile.targetMajor,
+      intendedMajor: profile.intendedMajor,
+      secondMajor: profile.secondMajor,
       grade: profile.grade,
       budgetTier: profile.budgetTier,
       testScores:
@@ -71,20 +98,40 @@ export class ProfileLoaderHelper {
           name: a.name,
           category: a.category,
           role: a.role,
+          description: a.description,
+          hoursPerWeek: a.hoursPerWeek,
+          weeksPerYear: a.weeksPerYear,
           duration: `${a.startDate} - ${a.endDate || (isZh ? '至今' : 'Present')}`,
         })) || [],
       awards:
-        profile.awards?.map((a) => ({
+        profile.awards?.map((a: any) => ({
           name: a.name,
           level: a.level,
           year: a.year,
+          competitionCategory: a.competition?.category ?? null,
         })) || [],
       education:
-        profile.education?.map((e) => ({
+        profile.education?.map((e: any) => ({
           school: e.schoolName,
           degree: e.degree,
           major: e.major,
+          schoolType: e.schoolType,
+          highSchoolId: e.highSchoolId,
         })) || [],
+      highSchool: (() => {
+        const hsEdu = profile.education?.find(
+          (e: any) => e.schoolType === 'HIGH_SCHOOL',
+        ) as any;
+        if (!hsEdu?.highSchool) return null;
+        const hs = hsEdu.highSchool;
+        return {
+          name: hs.name,
+          tier: hs.tier,
+          type: hs.type,
+          country: hs.country,
+          state: hs.state,
+        };
+      })(),
     };
   }
 

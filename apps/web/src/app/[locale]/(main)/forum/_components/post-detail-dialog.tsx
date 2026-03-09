@@ -23,6 +23,13 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { apiClient as api } from '@/lib/api';
 import type { Post, PostDetailResponse, Comment, TeamApplication } from './forum-types';
 import { getCategoryColorStyle, renderMarkdown } from './forum-types';
@@ -46,6 +53,8 @@ export function PostDetailDialog({ post, onClose, onLike, onReport, user }: Post
   const [loadingComments, setLoadingComments] = useState(false);
   const [applications, setApplications] = useState<TeamApplication[]>([]);
   const [applicationMessage, setApplicationMessage] = useState('');
+  const [selectedResumeId, setSelectedResumeId] = useState<string>('');
+  const [userResumes, setUserResumes] = useState<Array<{ id: string; title: string }>>([]);
 
   // Load post detail when post changes
   useEffect(() => {
@@ -74,6 +83,13 @@ export function PostDetailDialog({ post, onClose, onLike, onReport, user }: Post
       .finally(() => {
         setLoadingComments(false);
       });
+
+    if (post.isTeamPost && user) {
+      api
+        .get<Array<{ id: string; title: string }>>('/resumes')
+        .then((res) => setUserResumes(Array.isArray(res) ? res : []))
+        .catch(() => setUserResumes([]));
+    }
   }, [post?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const formatDate = (dateStr: string) => {
@@ -122,8 +138,12 @@ export function PostDetailDialog({ post, onClose, onLike, onReport, user }: Post
   const handleApply = async (postId: string) => {
     if (!applicationMessage.trim()) return;
     try {
-      await api.post(`/forums/posts/${postId}/apply`, { message: applicationMessage });
+      await api.post(`/forums/posts/${postId}/apply`, {
+        message: applicationMessage,
+        ...(selectedResumeId && { resumeId: selectedResumeId }),
+      });
       setApplicationMessage('');
+      setSelectedResumeId('');
     } catch (_error) {
       console.error('Failed to apply:', _error);
     }
@@ -244,21 +264,40 @@ export function PostDetailDialog({ post, onClose, onLike, onReport, user }: Post
                           </div>
                         )}
                       </div>
-                      <div className="flex gap-2">
-                        <Input
-                          value={applicationMessage}
-                          onChange={(e) => setApplicationMessage(e.target.value)}
-                          placeholder={t('joinPlaceholder')}
-                          className="flex-1"
-                        />
-                        <Button
-                          onClick={() => handleApply(showPostDetail.id)}
-                          className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
-                          disabled={!applicationMessage.trim()}
-                        >
-                          <UserPlus className="h-4 w-4 mr-1" />
-                          {t('joinTeam')}
-                        </Button>
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <Input
+                            value={applicationMessage}
+                            onChange={(e) => setApplicationMessage(e.target.value)}
+                            placeholder={t('joinPlaceholder')}
+                            className="flex-1"
+                          />
+                          <Button
+                            onClick={() => handleApply(showPostDetail.id)}
+                            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+                            disabled={!applicationMessage.trim()}
+                          >
+                            <UserPlus className="h-4 w-4 mr-1" />
+                            {t('joinTeam')}
+                          </Button>
+                        </div>
+                        {userResumes.length > 0 && (
+                          <Select value={selectedResumeId} onValueChange={setSelectedResumeId}>
+                            <SelectTrigger className="h-8 text-xs">
+                              <SelectValue
+                                placeholder={t('attachResume') || 'Attach resume (optional)'}
+                              />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">{t('noResume') || 'No resume'}</SelectItem>
+                              {userResumes.map((r) => (
+                                <SelectItem key={r.id} value={r.id}>
+                                  {r.title}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
                       </div>
                     </CardContent>
                   </Card>

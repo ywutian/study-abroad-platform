@@ -19,7 +19,13 @@ export interface ProfileMetrics {
     category: string;
     role: string;
     totalHours: number;
+    tier?: number;
+    yearsActive?: number;
   }>;
+  /** High school tier (1-5) from HighSchool model */
+  highSchoolTier?: number;
+  /** Target major category for spike alignment detection */
+  targetMajorCategory?: string;
 }
 
 /** 历史录取数据分布（用于数据驱动评分） */
@@ -31,6 +37,7 @@ export interface HistoricalDistribution {
 }
 
 export interface SchoolMetrics {
+  /** 0–100 percentage (e.g. 4.0 means 4%). Internally divided by 100 in scoring. */
   acceptanceRate?: number;
   satAvg?: number;
   sat25?: number;
@@ -48,6 +55,21 @@ export interface ScoreBreakdown {
   activity: number;
   award: number;
   overall: number;
+}
+
+/**
+ * Options passed to selectivity / probability functions to customize for
+ * international students and regional competition dynamics.
+ */
+export interface SelectivityOptions {
+  useIntlRate?: boolean;
+  intlAcceptanceRate?: number;
+  /** ISO-3166-1 alpha-2 applicant region code, e.g. 'CN', 'KR', 'IN' */
+  applicantRegion?: string;
+  /** Override multiplier from DB/config — applied to the raw selectivity index */
+  regionCompetitivenessMultiplier?: number;
+  /** Education system code, e.g. 'IB', 'AP', 'A_LEVEL', 'GAOKAO' */
+  educationSystem?: string;
 }
 
 export interface RankingScore {

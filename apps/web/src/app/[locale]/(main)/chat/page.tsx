@@ -386,9 +386,9 @@ export default function ChatPage() {
 
   // ── Render ────────────────────────────────────────────────
   return (
-    <PageContainer maxWidth="6xl">
+    <PageContainer maxWidth="6xl" className="lg:flex lg:flex-col lg:h-[calc(100dvh-7.5rem)]">
       {/* 页面头部 */}
-      <div className="relative mb-6 overflow-hidden rounded-lg bg-primary/5 p-6">
+      <div className="shrink-0 relative mb-6 overflow-hidden rounded-lg bg-primary/5 p-6">
         <div className="absolute -right-20 -top-20 h-48 w-48 rounded-full bg-primary/15 blur-3xl" />
         <div className="relative z-10 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -424,7 +424,7 @@ export default function ChatPage() {
         </div>
       </div>
 
-      <div className="grid h-[calc(100dvh-280px)] min-h-[500px] gap-4 md:grid-cols-3">
+      <div className="grid min-h-[500px] gap-4 md:grid-cols-3 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
         {/* 会话列表 */}
         <ChatConversationList
           conversations={sortedConversations}

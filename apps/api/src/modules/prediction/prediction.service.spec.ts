@@ -21,6 +21,14 @@ jest.mock('./utils/score-calculator', () => ({
   }),
   calculateSelectivityIndex: jest.fn().mockReturnValue(0.5),
   enforceMonotonicity: jest.fn().mockImplementation((arr) => arr),
+  TIER_POINTS: { 5: 25, 4: 15, 3: 8, 2: 4, 1: 2 },
+  LEVEL_POINTS: {
+    INTERNATIONAL: 20,
+    NATIONAL: 15,
+    STATE: 8,
+    REGIONAL: 5,
+    SCHOOL: 2,
+  },
 }));
 
 // Mock prompt-builder
@@ -79,7 +87,7 @@ describe('PredictionService', () => {
     id: 'school-1',
     name: 'MIT',
     nameZh: '麻省理工',
-    acceptanceRate: 0.04,
+    acceptanceRate: 4,
     satAvg: 1540,
     sat25: 1500,
     sat75: 1580,
@@ -117,6 +125,9 @@ describe('PredictionService', () => {
               findMany: jest.fn(),
             },
             admissionCase: {
+              findMany: jest.fn().mockResolvedValue([]),
+            },
+            schoolProgram: {
               findMany: jest.fn().mockResolvedValue([]),
             },
             predictionResult: {
@@ -349,9 +360,9 @@ describe('PredictionService', () => {
       const output = await service.predict('profile-1', ['school-1']);
 
       expect(output.results).toHaveLength(1);
-      // AI succeeded, but historical returned null
+      // AI succeeded, but historical returned null → stats + ai = weighted_ensemble_2_stats_ai
       const method = output.results[0].engineScores?.fusionMethod;
-      expect(['weighted_ensemble_2_ai', 'stats_only']).toContain(method);
+      expect(method).toBe('weighted_ensemble_2_stats_ai');
     });
 
     it('should clamp probability between 0.05 and 0.95', async () => {
@@ -454,6 +465,7 @@ describe('PredictionService', () => {
                 },
                 school: { findMany: jest.fn().mockResolvedValue([mockSchool]) },
                 admissionCase: { findMany: jest.fn().mockResolvedValue([]) },
+                schoolProgram: { findMany: jest.fn().mockResolvedValue([]) },
                 predictionResult: {
                   findMany: jest.fn().mockResolvedValue([]),
                   upsert: jest.fn().mockResolvedValue({ id: 'pred-1' }),

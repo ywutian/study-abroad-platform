@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { School, Search, X, CheckCircle, Loader2, Target } from 'lucide-react';
-import { cn, getSchoolName } from '@/lib/utils';
+import { cn, getSchoolName, formatAcceptanceRate } from '@/lib/utils';
 import { useSchoolSearch } from '@/hooks/use-school-search';
 import type { SchoolSearchItem } from './types';
 
@@ -91,7 +91,7 @@ export function SchoolSelectorCard({
                             <p className="text-xs text-muted-foreground">
                               {school.usNewsRank && `#${school.usNewsRank}`}
                               {school.acceptanceRate &&
-                                ` · ${t('prediction.acceptanceRateLabel', { rate: Number(school.acceptanceRate).toFixed(1) })}`}
+                                ` · ${t('prediction.acceptanceRateLabel', { rate: formatAcceptanceRate(school.acceptanceRate).replace('%', '') })}`}
                             </p>
                           </div>
                           {isSelected && <CheckCircle className="h-4 w-4 text-primary" />}

@@ -8,6 +8,7 @@ import {
   Param,
   Query,
   UseGuards,
+  ForbiddenException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -29,6 +30,7 @@ import {
   PostDto,
   PostDetailResponseDto,
   PostListResponseDto,
+  TeamApplicationResponseDto,
 } from './dto';
 import { CurrentUser, Public, Roles } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
@@ -92,6 +94,20 @@ export class ForumController {
     return this.forumService.getPosts(user?.id || null, query);
   }
 
+  @Get('posts/:id/applications')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'List team applications for a post (author or admin only)',
+  })
+  @ApiResponse({ status: 200, type: [TeamApplicationResponseDto] })
+  async getPostApplications(
+    @Param('id') postId: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ): Promise<TeamApplicationResponseDto[]> {
+    return this.forumService.getApplicationsForPost(postId, user.id, user.role);
+  }
+
   @Get('posts/:id')
   @Public()
   @ApiOperation({ summary: 'Get post details' })
@@ -112,6 +128,15 @@ export class ForumController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: CreatePostDto,
   ): Promise<PostDto> {
+    if (
+      data.isTeamPost &&
+      user.role !== Role.VERIFIED &&
+      user.role !== Role.ADMIN
+    ) {
+      throw new ForbiddenException(
+        'Only verified users can create team posts. Please complete identity verification first.',
+      );
+    }
     return this.forumService.createPost(user.id, data, user.locale);
   }
 

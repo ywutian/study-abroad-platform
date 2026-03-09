@@ -88,11 +88,14 @@ export class AuthService {
       }
     }
 
+    const emailVerifyTokenExp = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
     // Create user
     const createData: any = {
       email: data.email,
       passwordHash,
       emailVerifyToken,
+      emailVerifyTokenExp,
       locale: data.locale || 'zh',
     };
 
@@ -250,11 +253,18 @@ export class AuthService {
       throw new BadRequestException('Invalid verification token');
     }
 
+    if (user.emailVerifyTokenExp && user.emailVerifyTokenExp < new Date()) {
+      throw new BadRequestException(
+        'Verification token has expired. Please request a new one.',
+      );
+    }
+
     await this.prisma.user.update({
       where: { id: user.id },
       data: {
         emailVerified: true,
         emailVerifyToken: null,
+        emailVerifyTokenExp: null,
       },
     });
 
@@ -286,12 +296,12 @@ export class AuthService {
       throw new BadRequestException('Email is already verified');
     }
 
-    // 生成新的验证 token
     const emailVerifyToken = randomBytes(32).toString('hex');
+    const emailVerifyTokenExp = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
     await this.prisma.user.update({
       where: { id: user.id },
-      data: { emailVerifyToken },
+      data: { emailVerifyToken, emailVerifyTokenExp },
     });
 
     // 发送验证邮件
@@ -356,7 +366,7 @@ export class AuthService {
   async resetPassword(
     token: string,
     newPassword: string,
-  ): Promise<{ message: string }> {
+  ): Promise<{ message: string; userId: string }> {
     const user = await this.prisma.user.findFirst({
       where: {
         passwordResetToken: token,
@@ -382,7 +392,7 @@ export class AuthService {
     // Invalidate all sessions after credential change
     await this.sessionManager.invalidateAllSessions(user.id);
 
-    return { message: 'Password reset successful' };
+    return { message: 'Password reset successful', userId: user.id };
   }
 
   /**

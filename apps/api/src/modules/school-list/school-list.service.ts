@@ -19,6 +19,7 @@ import {
   calculateProbability,
   calculateTier,
 } from '../../common/utils/scoring';
+import { clampPercentRate } from '../../common/utils/percent.util';
 
 @Injectable()
 export class SchoolListService {
@@ -109,7 +110,7 @@ export class SchoolListService {
         nameZh: item.school.nameZh || undefined,
         usNewsRank: item.school.usNewsRank || undefined,
         acceptanceRate: item.school.acceptanceRate
-          ? Number(item.school.acceptanceRate)
+          ? clampPercentRate(item.school.acceptanceRate)
           : undefined,
         tuition: item.school.tuition || undefined,
         city: item.school.city || undefined,
@@ -172,6 +173,7 @@ export class SchoolListService {
         tier: dto.tier || SchoolTier.TARGET,
         round: dto.round,
         notes: dto.notes,
+        isAIRecommended: dto.isAIRecommended ?? false,
       },
       include: {
         school: {
@@ -198,7 +200,7 @@ export class SchoolListService {
         nameZh: school.nameZh || undefined,
         usNewsRank: school.usNewsRank || undefined,
         acceptanceRate: school.acceptanceRate
-          ? Number(school.acceptanceRate)
+          ? clampPercentRate(school.acceptanceRate)
           : undefined,
         tuition: school.tuition || undefined,
         city: school.city || undefined,
@@ -274,7 +276,7 @@ export class SchoolListService {
         nameZh: updated.school.nameZh || undefined,
         usNewsRank: updated.school.usNewsRank || undefined,
         acceptanceRate: updated.school.acceptanceRate
-          ? Number(updated.school.acceptanceRate)
+          ? clampPercentRate(updated.school.acceptanceRate)
           : undefined,
         tuition: updated.school.tuition || undefined,
         city: updated.school.city || undefined,
@@ -365,7 +367,7 @@ export class SchoolListService {
       const schoolMetrics = {
         acceptanceRate:
           school.acceptanceRate != null
-            ? Number(school.acceptanceRate)
+            ? clampPercentRate(school.acceptanceRate)
             : undefined,
         satAvg: school.satAvg ?? undefined,
         sat25: school.sat25 ?? undefined,
@@ -400,7 +402,7 @@ export class SchoolListService {
           nameZh: school.nameZh || undefined,
           usNewsRank: school.usNewsRank || undefined,
           acceptanceRate: school.acceptanceRate
-            ? Number(school.acceptanceRate)
+            ? clampPercentRate(school.acceptanceRate)
             : undefined,
           tuition: school.tuition || undefined,
           city: school.city || undefined,
@@ -457,7 +459,7 @@ export class SchoolListService {
       const schoolMetrics = {
         acceptanceRate:
           school.acceptanceRate != null
-            ? Number(school.acceptanceRate)
+            ? clampPercentRate(school.acceptanceRate)
             : undefined,
         satAvg: school.satAvg ?? undefined,
         sat25: school.sat25 ?? undefined,
@@ -488,6 +490,7 @@ export class SchoolListService {
         if (
           existing?.modelVersion === 'v3-enterprise' ||
           existing?.modelVersion === 'v2-ensemble' ||
+          existing?.modelVersion === 'v2-recommendation-anchored' ||
           existing?.modelVersion === 'v1-recommendation-ai' ||
           existing?.modelVersion === 'v1-school-ai'
         )

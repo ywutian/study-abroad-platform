@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { CountBadge } from '@/components/ui/count-badge';
 import { TouchCard } from '@/components/ui/touch-card';
-import { BadgeCheck, Trophy } from 'lucide-react';
+import { BadgeCheck, FileText, Trophy } from 'lucide-react';
 import {
   getResultBarColor,
   getResultBadgeClass,
@@ -27,8 +27,10 @@ interface CaseCardProps {
   tags?: string[];
   rank?: number;
   isVerified?: boolean;
+  hasEssay?: boolean;
   className?: string;
   onClick?: () => void;
+  onEssayClick?: () => void;
 }
 
 const MAX_VISIBLE_TAGS = 3;
@@ -45,8 +47,10 @@ export function CaseCard({
   tags,
   rank,
   isVerified = false,
+  hasEssay = false,
   className,
   onClick,
+  onEssayClick,
 }: CaseCardProps) {
   const t = useTranslations('cases');
   const tc = useTranslations('common');
@@ -124,6 +128,20 @@ export function CaseCard({
               className={cn('gap-0.5 text-xs px-1.5 py-0', VERIFIED_BADGE_CLASS)}
             >
               <BadgeCheck className="h-3 w-3" />
+            </Badge>
+          )}
+          {hasEssay && (
+            <Badge
+              variant="outline"
+              className="gap-0.5 text-xs px-1.5 py-0 text-amber-600 dark:text-amber-400 border-amber-500/20 bg-amber-500/10 cursor-pointer hover:bg-amber-500/20 transition-colors"
+              onClick={(e) => {
+                if (onEssayClick) {
+                  e.stopPropagation();
+                  onEssayClick();
+                }
+              }}
+            >
+              <FileText className="h-3 w-3" />
             </Badge>
           )}
           {visibleTags.map((tag, idx) => (

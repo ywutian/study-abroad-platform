@@ -27,6 +27,7 @@ import {
   Trophy,
 } from 'lucide-react';
 import { ArticleJsonLd } from '@/components/seo';
+import { Link } from '@/lib/i18n/navigation';
 import { cn, getSchoolName } from '@/lib/utils';
 import {
   getResultBarColor,
@@ -191,20 +192,25 @@ export default function CaseDetailPage() {
             {/* 文书内容（如果有） */}
             {caseData.essayContent && (
               <Card>
-                <CardHeader className="pb-3">
+                <CardHeader className="pb-3 flex flex-row items-center justify-between gap-2">
                   <CardTitle className="text-base flex items-center gap-2">
                     <FileText className="h-4 w-4 text-muted-foreground" />
                     {t('cases.detail.essayContent')}
                   </CardTitle>
-                  {caseData.essayPrompt && (
-                    <div className="flex gap-3 mt-2 p-3 rounded-lg bg-muted/50 border">
-                      <div className="w-0.5 shrink-0 rounded-full bg-amber-500" />
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {caseData.essayPrompt}
-                      </p>
-                    </div>
-                  )}
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link href={`/essay-gallery?id=${caseData.id}`}>
+                      {t('cases.detail.viewInEssayGallery')}
+                    </Link>
+                  </Button>
                 </CardHeader>
+                {caseData.essayPrompt && (
+                  <div className="flex gap-3 mx-6 mb-3 p-3 rounded-lg bg-muted/50 border">
+                    <div className="w-0.5 shrink-0 rounded-full bg-amber-500" />
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {caseData.essayPrompt}
+                    </p>
+                  </div>
+                )}
                 <CardContent>
                   <div className="prose dark:prose-invert max-w-[68ch]">
                     {paragraphs.map((p: string, i: number) => (
@@ -217,20 +223,53 @@ export default function CaseDetailPage() {
               </Card>
             )}
 
-            {/* 标签 */}
-            {caseData.tags && caseData.tags.length > 0 && (
+            {/* 活动与亮点：优先展示 activityList，否则展示 tags 列表 */}
+            {(caseData.activityList?.trim() || (caseData.tags && caseData.tags.length > 0)) && (
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base">{t('cases.detail.applicantFeatures')}</CardTitle>
+                  <CardTitle className="text-base">{t('cases.detail.activityListTitle')}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {caseData.tags.map((tag: string, idx: number) => (
-                      <Badge key={idx} variant="secondary" className="text-sm">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
+                  {caseData.activityList?.trim() ? (
+                    <div className="space-y-2">
+                      {caseData.activityList
+                        .split(/\n+/)
+                        .map((line: string) => line.trim())
+                        .filter(Boolean)
+                        .map((line: string, idx: number) => {
+                          const parts = line.split(/\s*[-–—:]\s*/);
+                          const category = parts.length > 1 ? parts[0] : null;
+                          const detail = parts.length > 1 ? parts.slice(1).join(' - ') : line;
+                          return (
+                            <div
+                              key={idx}
+                              className="flex items-start gap-3 p-2.5 rounded-lg border bg-muted/20"
+                            >
+                              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-orange-500/10 text-orange-500 text-xs font-semibold">
+                                {idx + 1}
+                              </div>
+                              <div className="min-w-0">
+                                {category && (
+                                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                                    {category}
+                                  </span>
+                                )}
+                                <p className="text-sm">{detail}</p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  ) : (
+                    <ul className="space-y-2 list-none pl-0">
+                      {caseData.tags.map((tag: string, idx: number) => (
+                        <li key={idx} className="flex items-start gap-2 text-sm">
+                          <span className="text-muted-foreground mt-0.5 shrink-0">•</span>
+                          <span>{tag}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </CardContent>
               </Card>
             )}
@@ -249,6 +288,28 @@ export default function CaseDetailPage() {
                 {caseData.gpaRange && (
                   <ScoreItem label="GPA" value={caseData.gpaRange} max="4.0" color="emerald" />
                 )}
+                {(caseData.gpa9 != null ||
+                  caseData.gpa10 != null ||
+                  caseData.gpa11 != null ||
+                  caseData.gpa12 != null) && (
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      {t('cases.detail.gpaByYear')}
+                    </p>
+                    <div className="flex flex-wrap gap-2 text-sm">
+                      {caseData.gpa9 != null && <span>9: {Number(caseData.gpa9).toFixed(2)}</span>}
+                      {caseData.gpa10 != null && (
+                        <span>10: {Number(caseData.gpa10).toFixed(2)}</span>
+                      )}
+                      {caseData.gpa11 != null && (
+                        <span>11: {Number(caseData.gpa11).toFixed(2)}</span>
+                      )}
+                      {caseData.gpa12 != null && (
+                        <span>12: {Number(caseData.gpa12).toFixed(2)}</span>
+                      )}
+                    </div>
+                  </div>
+                )}
                 {caseData.satRange && (
                   <ScoreItem label="SAT" value={caseData.satRange} max="1600" color="blue" />
                 )}
@@ -259,6 +320,10 @@ export default function CaseDetailPage() {
                   <ScoreItem label="TOEFL" value={caseData.toeflRange} max="120" color="amber" />
                 )}
                 {!caseData.gpaRange &&
+                  caseData.gpa9 == null &&
+                  caseData.gpa10 == null &&
+                  caseData.gpa11 == null &&
+                  caseData.gpa12 == null &&
                   !caseData.satRange &&
                   !caseData.actRange &&
                   !caseData.toeflRange && (

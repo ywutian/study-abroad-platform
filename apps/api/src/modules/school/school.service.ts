@@ -12,6 +12,7 @@ import {
   PaginatedResponseDto,
 } from '../../common/dto/pagination.dto';
 import { normalizeSchoolName } from '../../common/utils/school-name.util';
+import { clampPercentRate } from '../../common/utils/percent.util';
 
 // Cache TTL in seconds
 const CACHE_TTL = {
@@ -19,6 +20,19 @@ const CACHE_TTL = {
   SCHOOL_LIST: 300, // 5 minutes for lists
   SCHOOL_METRICS: 86400, // 24 hours for metrics (rarely change)
 };
+
+/** UC campuses (9) for one-click prediction */
+const UC_SCHOOL_NAMES = [
+  'University of California, Berkeley',
+  'University of California, Los Angeles',
+  'University of California, San Diego',
+  'University of California, Irvine',
+  'University of California, Davis',
+  'University of California, Santa Barbara',
+  'University of California, Santa Cruz',
+  'University of California, Riverside',
+  'University of California, Merced',
+];
 
 /**
  * 高级学校筛选接口
@@ -217,14 +231,34 @@ export class SchoolService {
       this.prisma.school.count({ where }),
     ]);
 
-    // 当存在搜索词时，按相关性重新排序
+    // Clamp acceptanceRate/graduationRate to 0–100 for display (fixes e.g. 2470% from double conversion)
+    const clampRates = <
+      T extends { acceptanceRate?: unknown; graduationRate?: unknown },
+    >(
+      s: T,
+    ): T => ({
+      ...s,
+      acceptanceRate: clampPercentRate(s.acceptanceRate) ?? s.acceptanceRate,
+      graduationRate: clampPercentRate(s.graduationRate) ?? s.graduationRate,
+    });
+
     if (filters?.search) {
       const searchTerm = filters.search.trim();
       const sorted = this.sortByRelevance(schools, searchTerm);
-      return createPaginatedResponse(sorted, total, page, pageSize);
+      return createPaginatedResponse(
+        sorted.map(clampRates),
+        total,
+        page,
+        pageSize,
+      );
     }
 
-    return createPaginatedResponse(schools, total, page, pageSize);
+    return createPaginatedResponse(
+      schools.map(clampRates),
+      total,
+      page,
+      pageSize,
+    );
   }
 
   async findById(id: string) {
@@ -232,7 +266,13 @@ export class SchoolService {
     const cacheKey = `school:detail:${id}`;
     const cached = await this.redis.getJSON<School>(cacheKey);
     if (cached) {
-      return cached;
+      return {
+        ...cached,
+        acceptanceRate:
+          clampPercentRate(cached.acceptanceRate) ?? cached.acceptanceRate,
+        graduationRate:
+          clampPercentRate(cached.graduationRate) ?? cached.graduationRate,
+      };
     }
 
     const school = await this.prisma.school.findUnique({
@@ -295,7 +335,15 @@ export class SchoolService {
     // Cache the result
     await this.redis.setJSON(cacheKey, school, CACHE_TTL.SCHOOL_DETAIL);
 
-    return school;
+    // Clamp rates to 0–100 for display (fixes e.g. 2470% from double conversion)
+    const clamped = {
+      ...school,
+      acceptanceRate:
+        clampPercentRate(school.acceptanceRate) ?? school.acceptanceRate,
+      graduationRate:
+        clampPercentRate(school.graduationRate) ?? school.graduationRate,
+    };
+    return clamped;
   }
 
   /**
@@ -544,5 +592,23 @@ export class SchoolService {
     await this.redis.setJSON(cacheKey, report, 3600);
 
     return report;
+  }
+
+  /**
+   * Return school IDs for the 9 UC campuses (for one-click UC prediction).
+   */
+  async getUcSchoolIds(): Promise<string[]> {
+    const cacheKey = 'schools:uc-ids';
+    const cached = await this.redis.getJSON<string[]>(cacheKey);
+    if (cached?.length) return cached;
+
+    const schools = await this.prisma.school.findMany({
+      where: { name: { in: UC_SCHOOL_NAMES } },
+      select: { id: true },
+      orderBy: { usNewsRank: 'asc' },
+    });
+    const ids = schools.map((s) => s.id);
+    await this.redis.setJSON(cacheKey, ids, 86400); // 24h
+    return ids;
   }
 }

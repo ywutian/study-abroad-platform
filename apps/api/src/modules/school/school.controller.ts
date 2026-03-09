@@ -9,12 +9,15 @@ import {
   Header,
   UseGuards,
   Logger,
+  NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { SchoolService } from './school.service';
 import { SchoolDataService } from './school-data.service';
 import { SchoolScraperService } from './school-scraper.service';
 import { SchoolDataMerger } from './school-data-merger';
+import { SchoolLogoService } from './school-logo.service';
 import { SchoolQueryDto } from './dto/school-query.dto';
 import { CreateSchoolDto } from './dto/create-school.dto';
 import { UpdateSchoolDto } from './dto/update-school.dto';
@@ -23,10 +26,14 @@ import type { CurrentUserPayload } from '../../common/decorators';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 import { Role } from '@prisma/client';
-import { AiService } from '../ai/ai.service';
-import { ProfileService } from '../profile/profile.service';
 import { RedisService } from '../../common/redis/redis.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import {
+  AuditLogService,
+  AuditAction,
+} from '../../common/services/audit-log.service';
+import { SchoolListService } from '../school-list/school-list.service';
+import { clampPercentRate } from '../../common/utils/percent.util';
 
 @ApiTags('schools')
 @ThrottleRelaxed()
@@ -39,11 +46,23 @@ export class SchoolController {
     private readonly schoolDataService: SchoolDataService,
     private readonly schoolScraperService: SchoolScraperService,
     private readonly schoolDataMerger: SchoolDataMerger,
-    private readonly aiService: AiService,
-    private readonly profileService: ProfileService,
     private readonly redis: RedisService,
     private readonly prisma: PrismaService,
+    private readonly auditLogService: AuditLogService,
+    private readonly schoolLogoService: SchoolLogoService,
+    private readonly schoolListService: SchoolListService,
   ) {}
+
+  @Get('uc-ids')
+  @Public()
+  @ApiOperation({
+    summary: 'Get school IDs for UC campuses (one-click prediction)',
+  })
+  async getUcSchoolIds() {
+    return this.schoolService
+      .getUcSchoolIds()
+      .then((schoolIds) => ({ schoolIds }));
+  }
 
   @Get()
   @Public()
@@ -124,7 +143,7 @@ export class SchoolController {
 
   /**
    * P1: AI 个性化选校推荐
-   * 根据用户档案返回 Safety/Target/Reach 分类的学校推荐
+   * Delegates to SchoolListService which uses the stats-based scoring pipeline.
    */
   @Get('ai/recommend')
   @ApiBearerAuth()
@@ -134,185 +153,58 @@ export class SchoolController {
   async getAIRecommendations(@CurrentUser() user: CurrentUserPayload) {
     const emptyResult = { reach: [], target: [], safety: [], summary: '' };
 
-    // 1. 获取用户档案
-    const profile = await this.profileService.findByUserId(user.id);
-    if (!profile) {
-      return { ...emptyResult, status: 'profile_incomplete' as const };
-    }
-
-    // 2. 检查 Redis 缓存
+    // Check Redis cache
     const cacheKey = `ai:recommend:${user.id}`;
     const cached = await this.redis.getJSON<any>(cacheKey);
     if (cached) {
       return { ...cached, status: 'cached' as const };
     }
 
-    // 3. 并行获取学校列表
-    const schoolsResult = await this.schoolService.findAll(
-      { page: 1, pageSize: 100 },
-      {},
-    );
-
-    const schools = (schoolsResult.items || []).map((s) => ({
-      id: s.id,
-      name: s.name,
-      nameZh: s.nameZh || undefined,
-      usNewsRank: s.usNewsRank || undefined,
-      acceptanceRate: s.acceptanceRate ? Number(s.acceptanceRate) : undefined,
-      satRange: s.sat25 && s.sat75 ? `${s.sat25}-${s.sat75}` : undefined,
-      actRange: s.act25 && s.act75 ? `${s.act25}-${s.act75}` : undefined,
-    }));
-
-    // 构建档案请求
-    const profileRequest = {
-      gpa: profile?.gpa ? Number(profile.gpa) : undefined,
-      gpaScale: profile?.gpaScale ? Number(profile.gpaScale) : 4.0,
-      testScores:
-        (profile as any)?.testScores?.map((s: any) => ({
-          type: s.type,
-          score: s.score,
-        })) || [],
-      activities:
-        (profile as any)?.activities?.map((a: any) => ({
-          name: a.name,
-          category: a.category,
-          role: a.role,
-        })) || [],
-      awards:
-        (profile as any)?.awards?.map((a: any) => ({
-          name: a.name,
-          level: a.level,
-        })) || [],
-      targetMajor: profile?.targetMajor || undefined,
-    };
-
-    // 4. 调用 AI 推荐（带 catch 降级）
-    let recommendations;
     try {
-      recommendations = await this.aiService.recommendSchools(
-        profileRequest,
-        schools,
-        user.locale,
-      );
+      const result = await this.schoolListService.getAIRecommendations(user.id);
+
+      const mapped = {
+        reach: result.reach,
+        target: result.target,
+        safety: result.safety,
+        summary: '',
+      };
+
+      await this.redis.setJSON(cacheKey, mapped, 7200);
+      return { ...mapped, status: 'fresh' as const };
     } catch (error) {
       this.logger.error(
         `AI recommendation failed for user ${user.id}: ${error instanceof Error ? error.message : error}`,
       );
       return { ...emptyResult, status: 'ai_error' as const };
     }
-
-    // 关联学校详细信息
-    const schoolMap = new Map(schools.map((s) => [s.id, s]));
-    const enrichRecommendations = (items: any[]) =>
-      items.map((item) => ({
-        ...item,
-        school: schoolMap.get(item.schoolId),
-      }));
-
-    const result = {
-      reach: enrichRecommendations(recommendations.reach),
-      target: enrichRecommendations(recommendations.target),
-      safety: enrichRecommendations(recommendations.safety),
-      summary: recommendations.summary,
-    };
-
-    // 5. 写入 Redis 缓存（TTL 2h）
-    await this.redis.setJSON(cacheKey, result, 7200);
-
-    // 6. 桥接：将 AI 推荐结果同步到 PredictionResult（异步非阻塞）
-    this.syncAIRecommendToPrediction(user.id, result).catch((err) => {
-      this.logger.warn('Failed to sync AI recommend to predictions', err);
-    });
-
-    return { ...result, status: 'fresh' as const };
   }
 
-  /**
-   * 桥接：将 /schools/ai/recommend 结果同步到 PredictionResult
-   */
-  private async syncAIRecommendToPrediction(
-    userId: string,
-    result: { reach: any[]; target: any[]; safety: any[] },
-  ): Promise<void> {
-    const profile = await this.prisma.profile.findFirst({
-      where: { userId },
-      select: { id: true },
-    });
-    if (!profile) return;
-
-    const allSchools = [
-      ...result.reach.map((s: any) => ({ ...s, tier: 'reach' })),
-      ...result.target.map((s: any) => ({ ...s, tier: 'match' })),
-      ...result.safety.map((s: any) => ({ ...s, tier: 'safety' })),
-    ];
-
-    for (const school of allSchools) {
-      if (!school.schoolId) continue;
-
-      const probability = (school.probability || 50) / 100;
-
-      try {
-        // 防覆盖高质量结果
-        const existing = await this.prisma.predictionResult.findUnique({
-          where: {
-            profileId_schoolId: {
-              profileId: profile.id,
-              schoolId: school.schoolId,
-            },
-          },
-          select: { modelVersion: true },
-        });
-
-        if (
-          existing?.modelVersion === 'v2-ensemble' ||
-          existing?.modelVersion === 'v1-recommendation-ai'
-        )
-          continue;
-
-        await this.prisma.predictionResult.upsert({
-          where: {
-            profileId_schoolId: {
-              profileId: profile.id,
-              schoolId: school.schoolId,
-            },
-          },
-          update: {
-            probability,
-            tier: school.tier,
-            confidence: 'medium',
-            modelVersion: 'v1-school-ai',
-            source: 'ai-recommend',
-          },
-          create: {
-            profileId: profile.id,
-            schoolId: school.schoolId,
-            probability,
-            tier: school.tier,
-            confidence: 'medium',
-            factors: [] as any,
-            modelVersion: 'v1-school-ai',
-            source: 'ai-recommend',
-          },
-        });
-
-        await this.prisma.predictionSnapshot.create({
-          data: {
-            profileId: profile.id,
-            schoolId: school.schoolId,
-            probability,
-            tier: school.tier,
-            confidence: 'medium',
-            source: 'ai-recommend',
-            modelVersion: 'v1-school-ai',
-          },
-        });
-      } catch (error) {
-        this.logger.warn(
-          `Failed to sync AI recommend for school ${school.schoolId}`,
-          error,
-        );
-      }
+  @Get(':id/logo-suggestion')
+  @ApiBearerAuth()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({
+    summary: 'Get suggested logo URL from school website domain (admin only)',
+  })
+  async getLogoSuggestion(@Param('id') id: string) {
+    if (!this.schoolLogoService.isConfigured()) {
+      throw new BadRequestException('LOGO_DEV_TOKEN is not configured');
     }
+    const school = await this.schoolService.findById(id);
+    if (!school?.website) {
+      throw new NotFoundException('School has no website');
+    }
+    if (school.logoUrl) {
+      throw new BadRequestException('School already has a logo URL');
+    }
+    const suggested = this.schoolLogoService.getSuggestedLogoUrl(
+      school.website,
+    );
+    if (!suggested) {
+      throw new NotFoundException('Could not derive logo URL from website');
+    }
+    return { suggestedLogoUrl: suggested };
   }
 
   @Get(':id')
@@ -340,8 +232,27 @@ export class SchoolController {
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Update school (admin only)' })
-  async update(@Param('id') id: string, @Body() data: UpdateSchoolDto) {
-    return this.schoolService.update(id, data);
+  async update(
+    @Param('id') id: string,
+    @Body() data: UpdateSchoolDto,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    const school = await this.schoolService.update(id, data);
+    await this.schoolService.invalidateSchoolCache(id);
+    await this.auditLogService.log({
+      userId: user.id,
+      action: AuditAction.ADMIN_ACTION,
+      resource: 'schools',
+      resourceId: id,
+      metadata: { updatedFields: Object.keys(data) },
+    });
+    return {
+      ...school,
+      acceptanceRate:
+        clampPercentRate(school.acceptanceRate) ?? school.acceptanceRate,
+      graduationRate:
+        clampPercentRate(school.graduationRate) ?? school.graduationRate,
+    };
   }
 
   /**
@@ -391,5 +302,38 @@ export class SchoolController {
       schools: this.schoolScraperService.getConfiguredSchools(),
       total: this.schoolScraperService.getConfiguredSchools().length,
     };
+  }
+
+  /**
+   * Check if Logo.dev auto-fill is configured (LOGO_DEV_TOKEN set).
+   */
+  @Get('admin/logo-fill-status')
+  @ApiBearerAuth()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({
+    summary: 'Check if logo fill by domain is available (admin only)',
+  })
+  getLogoFillStatus() {
+    return { configured: this.schoolLogoService.isConfigured() };
+  }
+
+  /**
+   * Fill logoUrl for schools that have website but no logo, using Logo.dev by domain.
+   * Admin only. Requires LOGO_DEV_TOKEN.
+   */
+  @Post('admin/fill-logos-by-domain')
+  @ApiBearerAuth()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({
+    summary: 'Fill school logos by website domain via Logo.dev (admin only)',
+  })
+  async fillLogosByDomain(
+    @Body() body: { limit?: number },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    const limit = Math.min(Math.max(1, body?.limit ?? 100), 500);
+    return this.schoolLogoService.fillLogosByDomain(limit, user.id);
   }
 }

@@ -8,13 +8,17 @@ describe('AuditLogService', () => {
   let logSpy: jest.SpyInstance;
   let errorSpy: jest.SpyInstance;
 
+  const auditLogCreateMock = jest.fn().mockResolvedValue({});
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuditLogService,
         {
           provide: PrismaService,
-          useValue: {},
+          useValue: {
+            auditLog: { create: auditLogCreateMock },
+          },
         },
       ],
     }).compile();
@@ -22,6 +26,7 @@ describe('AuditLogService', () => {
     service = module.get<AuditLogService>(AuditLogService);
     logSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation();
     errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation();
+    auditLogCreateMock.mockClear();
   });
 
   afterEach(() => {
@@ -31,38 +36,49 @@ describe('AuditLogService', () => {
   // -----------------------------------------------------------------------
   // Basic logging
   // -----------------------------------------------------------------------
-  it('should log the action and userId', async () => {
+  it('should persist and log the action and userId', async () => {
     await service.log({
       userId: 'user-1',
       action: AuditAction.LOGIN,
     });
 
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(logSpy).toHaveBeenCalledWith(
-      expect.stringContaining('AUDIT: LOGIN by user user-1'),
-    );
+    expect(auditLogCreateMock).toHaveBeenCalledTimes(1);
+    expect(auditLogCreateMock).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        userId: 'user-1',
+        action: 'LOGIN',
+        resource: 'general',
+      }),
+    });
   });
 
-  it('should include the resource in the log when provided', async () => {
+  it('should include the resource in the persisted log when provided', async () => {
     await service.log({
       userId: 'user-2',
       action: AuditAction.VAULT_ACCESS,
       resource: 'vault-item-42',
     });
 
-    expect(logSpy).toHaveBeenCalledWith(
-      expect.stringContaining('on vault-item-42'),
-    );
+    expect(auditLogCreateMock).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        userId: 'user-2',
+        action: 'VAULT_ACCESS',
+        resource: 'vault-item-42',
+      }),
+    });
   });
 
-  it('should not include resource text when resource is not provided', async () => {
+  it('should use default resource when resource is not provided', async () => {
     await service.log({
       userId: 'user-3',
       action: AuditAction.LOGOUT,
     });
 
-    const logMessage = logSpy.mock.calls[0][0];
-    expect(logMessage).not.toContain(' on ');
+    expect(auditLogCreateMock).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        resource: 'general',
+      }),
+    });
   });
 
   // -----------------------------------------------------------------------
@@ -78,15 +94,18 @@ describe('AuditLogService', () => {
     AuditAction.ADMIN_ACTION,
     AuditAction.DATA_EXPORT,
     AuditAction.ACCOUNT_DELETE,
-  ])('should log the %s action correctly', async (action) => {
+  ])('should persist the %s action correctly', async (action) => {
     await service.log({
       userId: 'user-test',
       action,
     });
 
-    expect(logSpy).toHaveBeenCalledWith(
-      expect.stringContaining(`AUDIT: ${action} by user user-test`),
-    );
+    expect(auditLogCreateMock).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        userId: 'user-test',
+        action: String(action),
+      }),
+    });
   });
 
   // -----------------------------------------------------------------------
@@ -101,7 +120,11 @@ describe('AuditLogService', () => {
       }),
     ).resolves.toBeUndefined();
 
-    expect(logSpy).toHaveBeenCalledTimes(1);
+    expect(auditLogCreateMock).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        metadata: { detail: 'banned user', targetId: 'user-99' },
+      }),
+    });
   });
 
   it('should accept optional ip and userAgent without error', async () => {
@@ -114,7 +137,12 @@ describe('AuditLogService', () => {
       }),
     ).resolves.toBeUndefined();
 
-    expect(logSpy).toHaveBeenCalledTimes(1);
+    expect(auditLogCreateMock).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        ipAddress: '192.168.1.1',
+        userAgent: 'Mozilla/5.0',
+      }),
+    });
   });
 
   it('should accept all optional fields together', async () => {
@@ -128,18 +156,26 @@ describe('AuditLogService', () => {
         userAgent: 'TestAgent/1.0',
       }),
     ).resolves.toBeUndefined();
+
+    expect(auditLogCreateMock).toHaveBeenCalledWith({
+      data: {
+        userId: 'user-6',
+        action: 'DATA_EXPORT',
+        resource: 'profile-data',
+        resourceId: null,
+        metadata: { format: 'csv' },
+        ipAddress: '10.0.0.1',
+        userAgent: 'TestAgent/1.0',
+      },
+    });
   });
 
   // -----------------------------------------------------------------------
   // Error handling
   // -----------------------------------------------------------------------
   it('should catch errors and log them without throwing', async () => {
-    // Force an error inside the try block by making logger.log throw
-    logSpy.mockImplementation(() => {
-      throw new Error('Logging infrastructure down');
-    });
+    auditLogCreateMock.mockRejectedValueOnce(new Error('DB unavailable'));
 
-    // The service should NOT throw even if the internal logger fails
     await expect(
       service.log({
         userId: 'user-7',
@@ -180,8 +216,15 @@ describe('AuditLogService', () => {
         'ADMIN_ACTION',
         'DATA_EXPORT',
         'ACCOUNT_DELETE',
+        'TEAM_CREATE',
+        'TEAM_DISBAND',
+        'TEAM_INVITE',
+        'TEAM_LEAVE',
+        'TEAM_MEMBER_REMOVE',
+        'TEAM_TRANSFER_OWNER',
+        'TEAM_ACCEPT_INVITE',
       ]),
     );
-    expect(Object.values(AuditAction)).toHaveLength(9);
+    expect(Object.values(AuditAction)).toHaveLength(16);
   });
 });

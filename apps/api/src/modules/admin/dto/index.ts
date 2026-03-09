@@ -4,3 +4,5 @@ export * from './admin-query.dto';
 export * from './school-deadline.dto';
 export * from './global-event.dto';
 export * from './ban-user.dto';
+export * from './trigger-data-sync.dto';
+export * from './activity-template.dto';

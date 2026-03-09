@@ -205,9 +205,9 @@ export class CreateSchoolDto {
   @IsUrl()
   website?: string;
 
-  @ApiPropertyOptional({ description: 'School logo URL' })
+  @ApiPropertyOptional({ description: 'School logo URL (HTTPS only)' })
   @IsOptional()
-  @IsUrl()
+  @IsUrl({ protocols: ['https'], require_protocol: true })
   logoUrl?: string;
 
   @ApiPropertyOptional({ description: 'Description in English' })

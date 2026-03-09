@@ -9,14 +9,14 @@ export default function AIPage() {
   const t = useTranslations('agentChat');
 
   return (
-    <PageContainer maxWidth="4xl">
+    <PageContainer maxWidth="4xl" className="lg:flex lg:flex-col lg:h-[calc(100dvh-7.5rem)]">
       <PageHeader title={t('title')} description={t('welcomeDesc')} icon={Bot} color="violet" />
 
-      <div className="bg-card rounded-xl border shadow-sm overflow-hidden">
+      <div className="bg-card rounded-xl border shadow-sm overflow-hidden lg:flex-1 lg:min-h-0 lg:flex lg:flex-col">
         <AgentChat
           showHeader={true}
           showQuickActions={true}
-          className="h-[calc(100vh-250px)] min-h-[500px]"
+          className="min-h-[500px] lg:flex-1 lg:min-h-0"
         />
       </div>
     </PageContainer>

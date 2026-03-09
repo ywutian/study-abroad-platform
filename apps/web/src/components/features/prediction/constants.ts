@@ -117,8 +117,9 @@ export function getConfidenceConfig(confidence: ConfidenceLevel) {
   return CONFIDENCE_CONFIG[confidence];
 }
 
+import { getProbabilityColorClass } from '@/lib/utils';
+
+/** @deprecated Use getProbabilityColorClass from @/lib/utils instead */
 export function getProbabilityColor(prob: number): string {
-  if (prob >= 0.6) return 'text-emerald-600 dark:text-emerald-400';
-  if (prob >= 0.3) return 'text-blue-600 dark:text-blue-400';
-  return 'text-rose-600 dark:text-rose-400';
+  return getProbabilityColorClass(prob, '0-1');
 }

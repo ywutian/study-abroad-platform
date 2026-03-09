@@ -267,7 +267,14 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         }
 
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+          let errorDetail = `HTTP ${response.status}`;
+          try {
+            const body = await response.json();
+            if (body?.error?.message) errorDetail = body.error.message;
+          } catch {
+            // non-JSON body, use status code
+          }
+          throw new Error(errorDetail);
         }
 
         const reader = response.body?.getReader();

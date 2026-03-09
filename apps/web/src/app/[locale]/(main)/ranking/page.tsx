@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
 import { PageContainer } from '@/components/layout';
 import { LoadingState } from '@/components/ui/loading-state';
-import { cn, getSchoolName, getSchoolSubName } from '@/lib/utils';
+import { cn, getSchoolName, getSchoolSubName, formatAcceptanceRate } from '@/lib/utils';
 import {
   BarChart3,
   Save,
@@ -402,7 +402,7 @@ export default function RankingPage() {
                                 {t('ranking.tableHeaders.acceptance')}
                               </p>
                               <p className="font-semibold">
-                                {school.acceptanceRate ? `${school.acceptanceRate}%` : '-'}
+                                {formatAcceptanceRate(school.acceptanceRate)}
                               </p>
                             </div>
                             <div className="text-center px-3 hidden lg:block">

@@ -30,7 +30,12 @@ import {
   CreateGlobalEventDto,
   UpdateGlobalEventDto,
   BanUserDto,
+  TriggerDataSyncDto,
+  CreateActivityTemplateDto,
+  UpdateActivityTemplateDto,
+  ActivityTemplateQueryDto,
 } from './dto';
+import { AdminDataSyncService } from './admin-data-sync.service';
 import type { Response } from 'express';
 
 @ApiTags('admin')
@@ -41,6 +46,7 @@ import type { Response } from 'express';
 export class AdminController {
   constructor(
     private readonly adminService: AdminService,
+    private readonly adminDataSyncService: AdminDataSyncService,
     private readonly notificationService: NotificationService,
     private readonly prisma: PrismaService,
   ) {}
@@ -184,6 +190,27 @@ export class AdminController {
       action,
       resource,
     });
+  }
+
+  // ============ Data Sync (admin update mechanism) ============
+
+  @Get('data-sync/jobs')
+  @ApiOperation({ summary: 'List data-sync jobs with last run status' })
+  async getDataSyncJobs() {
+    return this.adminDataSyncService.getDataSyncJobs();
+  }
+
+  @Post('data-sync/trigger')
+  @ApiOperation({ summary: 'Trigger a data-sync job (e.g. COLLEGE_SCORECARD)' })
+  async triggerDataSync(
+    @CurrentUser() admin: CurrentUserPayload,
+    @Body() dto: TriggerDataSyncDto,
+  ) {
+    return this.adminDataSyncService.triggerDataSync(
+      dto.job,
+      dto.params,
+      admin.id,
+    );
   }
 
   // ============ School Deadlines ============
@@ -420,5 +447,177 @@ export class AdminController {
     res.setHeader('X-Exported-Rows', String(rows.length));
     res.setHeader('X-Max-Rows', '10000');
     res.send(csv);
+  }
+
+  // ============================================
+  // User Profile Viewing
+  // ============================================
+
+  @Get('users/:id/profile')
+  @ApiOperation({
+    summary: 'Get full user profile with activities, awards, education',
+  })
+  async getUserProfile(@Param('id') userId: string) {
+    const profile = await this.prisma.profile.findFirst({
+      where: { userId },
+      include: {
+        testScores: true,
+        activities: {
+          orderBy: { order: 'asc' },
+          include: { activityTemplate: true },
+        },
+        awards: {
+          orderBy: { order: 'asc' },
+          include: { competition: true },
+        },
+        education: { include: { highSchool: true } },
+      },
+    });
+
+    if (!profile) return { profile: null };
+
+    return { profile };
+  }
+
+  // ============================================
+  // Activity Stats
+  // ============================================
+
+  @Get('stats/activities')
+  @ApiOperation({ summary: 'Get activity statistics across all students' })
+  async getActivityStats() {
+    const [totalActivities, categoryDist, avgPerStudent, tierDist] =
+      await Promise.all([
+        this.prisma.activity.count(),
+        this.prisma.activity.groupBy({
+          by: ['category'],
+          _count: true,
+          orderBy: { _count: { category: 'desc' } },
+        }),
+        this.prisma.profile.findMany({
+          select: { _count: { select: { activities: true } } },
+        }),
+        this.prisma.activityTemplate.groupBy({
+          by: ['tier'],
+          _count: true,
+          orderBy: { tier: 'asc' },
+        }),
+      ]);
+
+    const activityCounts = avgPerStudent.map((p) => p._count.activities);
+    const avg =
+      activityCounts.length > 0
+        ? activityCounts.reduce((s, c) => s + c, 0) / activityCounts.length
+        : 0;
+
+    return {
+      totalActivities,
+      categoryDistribution: categoryDist.map((c) => ({
+        category: c.category,
+        count: c._count,
+      })),
+      avgActivitiesPerStudent: Math.round(avg * 10) / 10,
+      templateTierDistribution: tierDist.map((t) => ({
+        tier: t.tier,
+        count: t._count,
+      })),
+    };
+  }
+
+  // ============================================
+  // ActivityTemplate CRUD
+  // ============================================
+
+  @Get('activity-templates')
+  @ApiOperation({
+    summary: 'List activity templates with pagination and filters',
+  })
+  async listActivityTemplates(@Query() query: ActivityTemplateQueryDto) {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+    const where: any = {};
+
+    if (query.tier) where.tier = query.tier;
+    if (query.category) where.category = query.category;
+    if (query.search) {
+      where.OR = [
+        { name: { contains: query.search, mode: 'insensitive' } },
+        { nameZh: { contains: query.search, mode: 'insensitive' } },
+        { aliases: { has: query.search } },
+      ];
+    }
+
+    const [items, total] = await Promise.all([
+      this.prisma.activityTemplate.findMany({
+        where,
+        orderBy: [{ tier: 'asc' }, { sortOrder: 'asc' }, { name: 'asc' }],
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.activityTemplate.count({ where }),
+    ]);
+
+    return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
+  }
+
+  @Get('activity-templates/:id')
+  @ApiOperation({ summary: 'Get single activity template' })
+  async getActivityTemplate(@Param('id') id: string) {
+    return this.prisma.activityTemplate.findUniqueOrThrow({ where: { id } });
+  }
+
+  @Post('activity-templates')
+  @ApiOperation({ summary: 'Create activity template' })
+  async createActivityTemplate(@Body() dto: CreateActivityTemplateDto) {
+    return this.prisma.activityTemplate.create({
+      data: {
+        name: dto.name,
+        nameZh: dto.nameZh,
+        aliases: dto.aliases ?? [],
+        category: dto.category,
+        tier: dto.tier ?? 4,
+        description: dto.description,
+      },
+    });
+  }
+
+  @Put('activity-templates/:id')
+  @ApiOperation({ summary: 'Update activity template' })
+  async updateActivityTemplate(
+    @Param('id') id: string,
+    @Body() dto: UpdateActivityTemplateDto,
+  ) {
+    return this.prisma.activityTemplate.update({
+      where: { id },
+      data: dto,
+    });
+  }
+
+  @Delete('activity-templates/:id')
+  @ApiOperation({ summary: 'Soft-delete activity template' })
+  async deleteActivityTemplate(@Param('id') id: string) {
+    return this.prisma.activityTemplate.update({
+      where: { id },
+      data: { isActive: false },
+    });
+  }
+
+  // ============================================
+  // Competition Management
+  // ============================================
+
+  @Get('competitions')
+  @ApiOperation({ summary: 'List all competitions with tier info' })
+  async listCompetitions(@Query('page') page = 1, @Query('limit') limit = 50) {
+    const [items, total] = await Promise.all([
+      this.prisma.competition.findMany({
+        orderBy: [{ tier: 'desc' }, { name: 'asc' }],
+        skip: (Number(page) - 1) * Number(limit),
+        take: Number(limit),
+      }),
+      this.prisma.competition.count(),
+    ]);
+
+    return { items, total, page: Number(page), limit: Number(limit) };
   }
 }

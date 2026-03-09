@@ -2,6 +2,8 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
+import { useRouter } from '@/lib/i18n/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Search, FileText, X, Trophy, CheckCircle2, BookOpen } from 'lucide-react';
@@ -14,7 +16,6 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { AnimatedCounter } from '@/components/ui/animated-counter';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
@@ -22,10 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { apiClient } from '@/lib/api/client';
 import { cn, getSchoolName } from '@/lib/utils';
-import { EssayDetailPanel } from './EssayDetailPanel';
 import { AdvancedEssayFilter, EssayFilters } from '@/components/features/essay-gallery';
 import { SubmitCaseDialog } from '@/components/features';
 import {
@@ -86,27 +85,24 @@ export default function EssayGalleryPage() {
   const t = useTranslations('essayGallery');
   const tc = useTranslations('cases');
   const locale = useLocale();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Backward-compatible redirect: ?id=xxx → /essay-gallery/[id]
+  useEffect(() => {
+    const deepLinkId = searchParams.get('id');
+    if (deepLinkId) router.replace(`/essay-gallery/${deepLinkId}`);
+  }, [searchParams, router]);
 
   // ── 筛选状态 ──
   const [search, setSearch] = useState('');
   const [yearFilter, setYearFilter] = useState<string>('ALL');
   const [typeFilter, setTypeFilter] = useState<string>('ALL');
   const [resultFilter, setResultFilter] = useState<string>('ALL');
-  const [selectedEssay, setSelectedEssay] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
 
-  // 检测是否桌面端（lg breakpoint = 1024px）
-  const [isDesktop, setIsDesktop] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia('(min-width: 1024px)');
-    setIsDesktop(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
-
-  // 高级筛选（移动端 fallback）
+  // 高级筛选
   const [advancedFilters, setAdvancedFilters] = useState<EssayFilters>({});
 
   const activeAdvancedFilterCount = useMemo(() => {
@@ -182,7 +178,7 @@ export default function EssayGalleryPage() {
   return (
     <PageContainer maxWidth="fluid">
       {/* ══════════════ 紧凑标题栏 ══════════════ */}
-      <div className="flex items-center gap-4 lg:gap-6 mb-4 flex-wrap">
+      <div className="shrink-0 flex items-center gap-4 lg:gap-6 mb-4 flex-wrap">
         <div className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500">
             <BookOpen className="h-4 w-4 text-white" />
@@ -209,7 +205,7 @@ export default function EssayGalleryPage() {
       </div>
 
       {/* ══════════════ 统一筛选栏 ══════════════ */}
-      <div className="flex items-center gap-2 mb-4 flex-wrap">
+      <div className="shrink-0 flex items-center gap-2 mb-4 flex-wrap">
         {/* 搜索框 */}
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -305,7 +301,7 @@ export default function EssayGalleryPage() {
         )}
       </div>
 
-      {/* ══════════════ 主体区域：Master-Detail ══════════════ */}
+      {/* ══════════════ 主体区域：卡片网格 ══════════════ */}
       {isLoading ? (
         <LoadingSkeleton />
       ) : isError ? (
@@ -323,135 +319,47 @@ export default function EssayGalleryPage() {
         </Card>
       ) : essays.length > 0 ? (
         <>
-          {/* ── 桌面端：左列表 + 右详情 ── */}
-          <div className="hidden lg:flex border rounded-xl overflow-hidden bg-card h-[calc(100dvh-200px)]">
-            {/* 左栏：文书列表 */}
-            <div className="w-[420px] shrink-0 border-r flex flex-col">
-              <div className="shrink-0 px-4 py-2.5 border-b bg-muted/30">
-                <p className="text-xs text-muted-foreground">
-                  {t('resultsCount', { count: data?.total || 0 })}
-                </p>
-              </div>
-              <ScrollArea className="flex-1">
-                <div className="divide-y">
-                  {essays.map((essay) => (
-                    <EssayListItem
-                      key={essay.id}
-                      essay={essay}
-                      isActive={selectedEssay === essay.id}
-                      onClick={() => setSelectedEssay(essay.id)}
-                      getResultLabel={getResultLabel}
-                      getTypeLabel={getTypeLabel}
-                      locale={locale}
-                      t={t}
-                    />
-                  ))}
-                </div>
-              </ScrollArea>
-              {/* 分页 */}
-              {data && data.totalPages > 1 && (
-                <div className="shrink-0 flex items-center justify-center gap-2 py-2.5 border-t bg-muted/30">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    disabled={page === 1}
-                    className="h-7 text-xs"
-                  >
-                    {t('prevPage')}
-                  </Button>
-                  <span className="text-xs text-muted-foreground">
-                    {page} / {data.totalPages}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
-                    disabled={page === data.totalPages}
-                    className="h-7 text-xs"
-                  >
-                    {t('nextPage')}
-                  </Button>
-                </div>
-              )}
-            </div>
-
-            {/* 右栏：详情面板 */}
-            <div className="flex-1 min-w-0">
-              {selectedEssay ? (
-                <EssayDetailPanel essayId={selectedEssay} onClose={() => setSelectedEssay(null)} />
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full text-center px-8">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted mb-4">
-                    <FileText className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                  <p className="font-medium text-muted-foreground mb-1">{t('viewDetail')}</p>
-                  <p className="text-sm text-muted-foreground/70">{t('description')}</p>
-                </div>
-              )}
-            </div>
+          <p className="text-sm text-muted-foreground mb-3">
+            {t('resultsCount', { count: data?.total || 0 })}
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {essays.map((essay, index) => (
+              <EssayCard
+                key={essay.id}
+                essay={essay}
+                index={index}
+                onClick={() => router.push(`/essay-gallery/${essay.id}`)}
+                getResultLabel={getResultLabel}
+                getTypeLabel={getTypeLabel}
+                locale={locale}
+                t={t}
+              />
+            ))}
           </div>
 
-          {/* ── 移动端：卡片网格 + Sheet ── */}
-          <div className="lg:hidden">
-            <p className="text-sm text-muted-foreground mb-3">
-              {t('resultsCount', { count: data?.total || 0 })}
-            </p>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {essays.map((essay, index) => (
-                <MobileEssayCard
-                  key={essay.id}
-                  essay={essay}
-                  index={index}
-                  onClick={() => setSelectedEssay(essay.id)}
-                  getResultLabel={getResultLabel}
-                  getTypeLabel={getTypeLabel}
-                  locale={locale}
-                  t={t}
-                />
-              ))}
+          {data && data.totalPages > 1 && (
+            <div className="flex justify-center gap-2 mt-6">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
+                {t('prevPage')}
+              </Button>
+              <span className="flex items-center px-4 text-sm text-muted-foreground">
+                {page} / {data.totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
+                disabled={page === data.totalPages}
+              >
+                {t('nextPage')}
+              </Button>
             </div>
-
-            {/* 移动端分页 */}
-            {data && data.totalPages > 1 && (
-              <div className="flex justify-center gap-2 mt-6">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                >
-                  {t('prevPage')}
-                </Button>
-                <span className="flex items-center px-4 text-sm text-muted-foreground">
-                  {page} / {data.totalPages}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
-                  disabled={page === data.totalPages}
-                >
-                  {t('nextPage')}
-                </Button>
-              </div>
-            )}
-
-            {/* 移动端 Sheet 详情（仅非桌面端渲染，避免 portal 穿透） */}
-            {!isDesktop && (
-              <Sheet open={!!selectedEssay} onOpenChange={() => setSelectedEssay(null)}>
-                <SheetContent side="right" className="w-full sm:max-w-2xl p-0 overflow-hidden">
-                  <SheetTitle className="sr-only">{t('viewDetail')}</SheetTitle>
-                  {selectedEssay && (
-                    <EssayDetailPanel
-                      essayId={selectedEssay}
-                      onClose={() => setSelectedEssay(null)}
-                    />
-                  )}
-                </SheetContent>
-              </Sheet>
-            )}
-          </div>
+          )}
         </>
       ) : (
         <Card className="overflow-hidden">
@@ -493,96 +401,10 @@ export default function EssayGalleryPage() {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// 桌面端列表项 (~72px)
+// 文书卡片
 // ══════════════════════════════════════════════════════════════════════════════
 
-function EssayListItem({
-  essay,
-  isActive,
-  onClick,
-  getResultLabel,
-  getTypeLabel,
-  locale,
-  t,
-}: {
-  essay: GalleryEssay;
-  isActive: boolean;
-  onClick: () => void;
-  getResultLabel: (result: string) => string;
-  getTypeLabel: (type?: string) => string;
-  locale: string;
-  t: any;
-}) {
-  const barColor = getResultBarColor(essay.result);
-  const resultBadgeClass = getResultBadgeClass(essay.result);
-
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        'w-full text-left px-4 py-3 flex gap-3 transition-colors hover:bg-muted/50',
-        isActive && 'bg-primary/5 border-l-[3px] border-l-primary'
-      )}
-    >
-      {/* 左侧颜色指示条（非 active 时） */}
-      {!isActive && <div className={cn('w-[3px] shrink-0 rounded-full self-stretch', barColor)} />}
-
-      {/* 内容 */}
-      <div className="flex-1 min-w-0">
-        {/* 第一行：学校名 + 排名 + 结果 */}
-        <div className="flex items-center justify-between gap-2 mb-0.5">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span className="font-medium text-sm truncate">
-              {getSchoolName(essay.school, locale) || t('unknownSchool')}
-            </span>
-            {essay.school?.usNewsRank && (
-              <span className="text-[11px] text-amber-600 dark:text-amber-400 font-medium shrink-0">
-                #{essay.school.usNewsRank}
-              </span>
-            )}
-          </div>
-          <Badge className={cn('shrink-0 text-[10px] px-1.5 py-0', resultBadgeClass)}>
-            {getResultLabel(essay.result)}
-          </Badge>
-        </div>
-
-        {/* 第二行：类型 · 年份 */}
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          {essay.essayType && (
-            <>
-              <span>{getTypeLabel(essay.essayType)}</span>
-              {essay.promptNumber && <span>#{essay.promptNumber}</span>}
-              <span>·</span>
-            </>
-          )}
-          <span>{essay.year}</span>
-          {essay.isVerified && (
-            <>
-              <span>·</span>
-              <CheckCircle2 className="h-3 w-3 text-sky-500" />
-            </>
-          )}
-        </div>
-
-        {/* 第三行：预览 + 词数 */}
-        <div className="flex items-center justify-between gap-2 mt-0.5">
-          <p className="text-xs text-muted-foreground/70 truncate">
-            {essay.preview || essay.prompt || ''}
-          </p>
-          <span className="text-[10px] text-muted-foreground/50 shrink-0 tabular-nums">
-            {essay.wordCount}w
-          </span>
-        </div>
-      </div>
-    </button>
-  );
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// 移动端卡片（简化版）
-// ══════════════════════════════════════════════════════════════════════════════
-
-function MobileEssayCard({
+function EssayCard({
   essay,
   index,
   onClick,
@@ -681,51 +503,24 @@ function MobileEssayCard({
 
 function LoadingSkeleton() {
   return (
-    <>
-      {/* 桌面端骨架 */}
-      <div className="hidden lg:flex border rounded-xl overflow-hidden bg-card h-[calc(100dvh-200px)]">
-        <div className="w-[420px] shrink-0 border-r">
-          <div className="px-4 py-2.5 border-b">
-            <Skeleton className="h-4 w-24" />
-          </div>
-          <div className="divide-y">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="px-4 py-3 space-y-2">
-                <div className="flex justify-between">
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-4 w-12" />
-                </div>
-                <Skeleton className="h-3 w-24" />
-                <Skeleton className="h-3 w-48" />
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="flex-1 flex items-center justify-center">
-          <Skeleton className="h-8 w-48" />
-        </div>
-      </div>
-
-      {/* 移动端骨架 */}
-      <div className="lg:hidden grid gap-4 sm:grid-cols-2">
-        {[...Array(6)].map((_, i) => (
-          <Card key={i} className="overflow-hidden">
-            <div className="h-1 bg-muted animate-pulse" />
-            <CardContent className="pt-3 space-y-2">
-              <div className="flex justify-between">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-4 w-14" />
-              </div>
-              <Skeleton className="h-3 w-24" />
-              <Skeleton className="h-8 w-full" />
-              <div className="flex justify-between">
-                <Skeleton className="h-3 w-16" />
-                <Skeleton className="h-4 w-14" />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </>
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {[...Array(8)].map((_, i) => (
+        <Card key={i} className="overflow-hidden">
+          <div className="h-1 bg-muted animate-pulse" />
+          <CardContent className="pt-3 space-y-2">
+            <div className="flex justify-between">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-4 w-14" />
+            </div>
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-8 w-full" />
+            <div className="flex justify-between">
+              <Skeleton className="h-3 w-16" />
+              <Skeleton className="h-4 w-14" />
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
   );
 }

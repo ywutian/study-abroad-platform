@@ -285,6 +285,7 @@ export class ToolExecutorService implements OnModuleInit {
 
   /**
    * Get tool execution statistics.
+   * NOTE: totalCalls and avgDuration are not tracked yet — wire MetricsService to enable.
    */
   getStats(): {
     totalCalls: number;

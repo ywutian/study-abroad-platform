@@ -59,9 +59,13 @@ export function WelcomeDialog({ forceShow = false, onClose }: WelcomeDialogProps
       return;
     }
 
-    const hasSeen = localStorage.getItem(WELCOME_STORAGE_KEY);
-    if (!hasSeen) {
-      setOpen(true);
+    try {
+      const hasSeen = localStorage.getItem(WELCOME_STORAGE_KEY);
+      if (!hasSeen) {
+        setOpen(true);
+      }
+    } catch {
+      /* private browsing */
     }
   }, [forceShow]);
 
@@ -76,7 +80,11 @@ export function WelcomeDialog({ forceShow = false, onClose }: WelcomeDialogProps
 
   const handleClose = () => {
     setOpen(false);
-    localStorage.setItem(WELCOME_STORAGE_KEY, 'true');
+    try {
+      localStorage.setItem(WELCOME_STORAGE_KEY, 'true');
+    } catch {
+      /* private browsing */
+    }
     onClose?.();
   };
 
@@ -217,7 +225,11 @@ export function ResetWelcomeButton() {
   const [showWelcome, setShowWelcome] = useState(false);
 
   const handleReset = () => {
-    localStorage.removeItem(WELCOME_STORAGE_KEY);
+    try {
+      localStorage.removeItem(WELCOME_STORAGE_KEY);
+    } catch {
+      /* private browsing */
+    }
     setShowWelcome(true);
   };
 

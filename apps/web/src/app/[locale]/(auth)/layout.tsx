@@ -42,6 +42,7 @@ function AuthRedirect() {
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const t = useTranslations();
+  const { user } = useAuthStore();
 
   const features = [
     { icon: Sparkles, key: 'ai' },
@@ -69,7 +70,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       {/* Logo - 固定在左上角 */}
       <div className="absolute left-6 top-6 z-20 sm:left-8 sm:top-8">
         <Link
-          href="/"
+          href={user ? '/dashboard' : '/'}
           className="group flex items-center gap-2.5 text-xl font-bold text-foreground hover:opacity-80 transition-all"
         >
           <div className="flex h-10 w-10 items-center justify-center rounded-md border-2 border-primary/20 bg-primary">

@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { AI_TIMEOUTS } from '@/lib/constants';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   GraduationCap,
@@ -113,7 +114,7 @@ async function callAIAgent(
       conversationId,
     },
     {
-      timeout: 60000, // 60 秒超时，AI 处理需要更长时间
+      timeout: AI_TIMEOUTS.AI_REQUEST,
     }
   );
   return response;
@@ -823,7 +824,7 @@ export default function UncommonAppPage() {
                   <GraduationCap className="h-5 w-5" />
                   {t('mySchoolList')}
                 </CardTitle>
-                <Link href="/find-college">
+                <Link href="/schools">
                   <Button variant="outline" size="sm">
                     <Plus className="h-4 w-4 mr-1" />
                     {t('addSchool')}
@@ -901,7 +902,7 @@ export default function UncommonAppPage() {
                   description={t('emptyListDesc')}
                   action={{
                     label: t('startAdding'),
-                    onClick: () => router.push('/find-college'),
+                    onClick: () => router.push('/schools'),
                   }}
                   size="sm"
                 />

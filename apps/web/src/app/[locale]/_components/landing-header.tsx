@@ -17,6 +17,7 @@ import {
 import { Globe, Menu, X, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { useAuthStore } from '@/stores';
 
 const localeCodes: Record<Locale, string> = {
   en: 'EN',
@@ -37,6 +38,7 @@ export function LandingHeader() {
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as Locale;
+  const { user } = useAuthStore();
   const prefersReducedMotion = useReducedMotion();
   const [scrollState, setScrollState] = useState<ScrollState>('top');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -89,7 +91,7 @@ export function LandingHeader() {
             whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
             transition={{ type: 'spring', stiffness: 400, damping: 15 }}
           >
-            <Link href="/" className="flex items-center gap-2">
+            <Link href={user ? '/dashboard' : '/'} className="flex items-center gap-2">
               <Logo size="sm" />
             </Link>
           </motion.div>

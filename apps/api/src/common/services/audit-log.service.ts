@@ -11,6 +11,14 @@ export enum AuditAction {
   ADMIN_ACTION = 'ADMIN_ACTION',
   DATA_EXPORT = 'DATA_EXPORT',
   ACCOUNT_DELETE = 'ACCOUNT_DELETE',
+  // Standalone 组队
+  TEAM_CREATE = 'TEAM_CREATE',
+  TEAM_DISBAND = 'TEAM_DISBAND',
+  TEAM_INVITE = 'TEAM_INVITE',
+  TEAM_LEAVE = 'TEAM_LEAVE',
+  TEAM_MEMBER_REMOVE = 'TEAM_MEMBER_REMOVE',
+  TEAM_TRANSFER_OWNER = 'TEAM_TRANSFER_OWNER',
+  TEAM_ACCEPT_INVITE = 'TEAM_ACCEPT_INVITE',
 }
 
 @Injectable()
@@ -23,17 +31,27 @@ export class AuditLogService {
     userId: string;
     action: AuditAction;
     resource?: string;
-    metadata?: Record<string, any>;
+    resourceId?: string;
+    metadata?: Record<string, unknown>;
     ip?: string;
     userAgent?: string;
   }): Promise<void> {
     try {
-      this.logger.log(
+      await this.prisma.auditLog.create({
+        data: {
+          userId: params.userId,
+          action: params.action,
+          resource: params.resource ?? 'general',
+          resourceId: params.resourceId ?? null,
+          metadata: (params.metadata ?? undefined) as any,
+          ipAddress: params.ip ?? null,
+          userAgent: params.userAgent ?? null,
+        },
+      });
+      this.logger.debug(
         `AUDIT: ${params.action} by user ${params.userId}` +
           (params.resource ? ` on ${params.resource}` : ''),
       );
-      // TODO: Store in AuditLog table when schema is ready
-      // For now, structured logging provides the audit trail
     } catch (error) {
       this.logger.error('Failed to write audit log', error);
     }

@@ -56,10 +56,10 @@ export function BentoFeatures() {
               </div>
               <div>
                 <h3 className="text-lg sm:text-xl font-semibold">
-                  {t('home.modules.findCollege.title')}
+                  {t('home.modules.schools.title')}
                 </h3>
                 <p className="text-sm text-muted-foreground mt-0.5">
-                  {t('home.modules.findCollege.desc')}
+                  {t('home.modules.schools.desc')}
                 </p>
               </div>
             </div>

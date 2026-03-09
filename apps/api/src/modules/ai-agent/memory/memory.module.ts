@@ -25,7 +25,6 @@ import { UserDataService } from './user-data.service';
 import { MemoryScorerService } from './memory-scorer.service';
 import { MemoryDecayService } from './memory-decay.service';
 import { MemoryConflictService } from './memory-conflict.service';
-import { MemoryExtractorService } from './memory-extractor.service';
 import { MemoryCompactionService } from './memory-compaction.service';
 import { SanitizerService } from './sanitizer.service';
 
@@ -44,7 +43,6 @@ import { SanitizerService } from './sanitizer.service';
     MemoryScorerService,
     MemoryDecayService,
     MemoryConflictService,
-    MemoryExtractorService,
 
     // Compaction (Phase 2)
     MemoryCompactionService,

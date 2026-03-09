@@ -21,8 +21,14 @@ import {
   Check,
   ExternalLink,
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
+import { cn, formatAcceptanceRate, getProbabilityColorClass } from '@/lib/utils';
 import { expandCollapse } from '@/lib/motion';
 import { useAddToSchoolList } from '@/hooks/use-recommendation';
 import type { RecommendedSchool } from '@study-abroad/shared';
@@ -30,24 +36,24 @@ import type { RecommendedSchool } from '@study-abroad/shared';
 const TIER_STYLES = {
   reach: {
     icon: Rocket,
-    color: 'text-red-600',
-    bgColor: 'bg-red-50 dark:bg-red-950',
-    borderColor: 'border-red-200 dark:border-red-900',
-    barClassName: 'bg-red-500',
+    color: 'text-rose-600 dark:text-rose-400',
+    bgColor: 'bg-rose-500/10',
+    borderColor: 'border-rose-500/30',
+    barClassName: 'bg-rose-500',
   },
   match: {
     icon: Target,
-    color: 'text-yellow-600',
-    bgColor: 'bg-yellow-50 dark:bg-yellow-950',
-    borderColor: 'border-yellow-200 dark:border-yellow-900',
-    barClassName: 'bg-yellow-500',
+    color: 'text-blue-600 dark:text-blue-400',
+    bgColor: 'bg-blue-500/10',
+    borderColor: 'border-blue-500/30',
+    barClassName: 'bg-blue-500',
   },
   safety: {
     icon: Shield,
-    color: 'text-green-600',
-    bgColor: 'bg-green-50 dark:bg-green-950',
-    borderColor: 'border-green-200 dark:border-green-900',
-    barClassName: 'bg-green-500',
+    color: 'text-emerald-600 dark:text-emerald-400',
+    bgColor: 'bg-emerald-500/10',
+    borderColor: 'border-emerald-500/30',
+    barClassName: 'bg-emerald-500',
   },
 };
 
@@ -64,6 +70,7 @@ interface SchoolCardProps {
 
 export function SchoolCard({ school, existingSchoolIds }: SchoolCardProps) {
   const t = useTranslations('recommendation');
+  const tFind = useTranslations('findCollege');
   const [expanded, setExpanded] = useState(false);
   const addToList = useAddToSchoolList();
 
@@ -71,12 +78,13 @@ export function SchoolCard({ school, existingSchoolIds }: SchoolCardProps) {
   const TierIcon = tierStyle.icon;
   const isInList = school.schoolId ? existingSchoolIds.has(school.schoolId) : false;
 
-  const handleAddToList = () => {
+  const handleAddToList = (round: string) => {
     if (!school.schoolId || isInList) return;
     addToList.mutate(
       {
         schoolId: school.schoolId,
         tier: TIER_TO_SCHOOL_TIER[school.tier] || 'TARGET',
+        round,
         isAIRecommended: true,
       },
       {
@@ -87,11 +95,7 @@ export function SchoolCard({ school, existingSchoolIds }: SchoolCardProps) {
     );
   };
 
-  const getProbabilityColor = (prob: number) => {
-    if (prob >= 60) return 'text-green-600';
-    if (prob >= 30) return 'text-yellow-600';
-    return 'text-red-600';
-  };
+  const ROUNDS = ['ED', 'ED2', 'EA', 'REA', 'RD', 'ROLLING'] as const;
 
   const hasExpandableContent =
     school.reasons.length > 2 || (school.concerns && school.concerns.length > 0);
@@ -131,7 +135,8 @@ export function SchoolCard({ school, existingSchoolIds }: SchoolCardProps) {
                   )}
                   {school.schoolMeta.acceptanceRate != null && (
                     <span>
-                      {t('acceptanceRate')}: {(school.schoolMeta.acceptanceRate * 100).toFixed(1)}%
+                      {t('acceptanceRate')}:{' '}
+                      {formatAcceptanceRate(school.schoolMeta.acceptanceRate)}
                     </span>
                   )}
                 </div>
@@ -145,11 +150,11 @@ export function SchoolCard({ school, existingSchoolIds }: SchoolCardProps) {
         {/* Probability Bar */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">{t('probability')}</span>
+            <span className="text-muted-foreground">{t('estimatedProbability')}</span>
             <span
               className={cn(
                 'text-lg font-bold tabular-nums',
-                getProbabilityColor(school.estimatedProbability)
+                getProbabilityColorClass(school.estimatedProbability, '0-100')
               )}
             >
               {school.estimatedProbability}%
@@ -159,6 +164,9 @@ export function SchoolCard({ school, existingSchoolIds }: SchoolCardProps) {
             value={school.estimatedProbability}
             barClassName={tierStyle.barClassName}
           />
+          <Link href="/prediction" className="text-xs text-primary hover:underline">
+            {t('viewDetailedPrediction')}
+          </Link>
         </div>
 
         {/* Fit Score */}
@@ -244,25 +252,37 @@ export function SchoolCard({ school, existingSchoolIds }: SchoolCardProps) {
         {/* Add to List Button */}
         {school.schoolId && (
           <TapScale>
-            <Button
-              variant={isInList ? 'secondary' : 'outline'}
-              size="sm"
-              className={cn('w-full mt-2', isInList && 'text-green-600')}
-              disabled={isInList || addToList.isPending}
-              onClick={handleAddToList}
-            >
-              {isInList ? (
-                <>
-                  <Check className="mr-1.5 h-3.5 w-3.5" />
-                  {t('alreadyInList')}
-                </>
-              ) : (
-                <>
-                  <Plus className="mr-1.5 h-3.5 w-3.5" />
-                  {t('addToList')}
-                </>
-              )}
-            </Button>
+            {isInList ? (
+              <Button variant="secondary" size="sm" className="w-full mt-2 text-green-600" disabled>
+                <Check className="mr-1.5 h-3.5 w-3.5" />
+                {t('alreadyInList')}
+              </Button>
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full mt-2"
+                    disabled={addToList.isPending}
+                  >
+                    <Plus className="mr-1.5 h-3.5 w-3.5" />
+                    {t('addToList')}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  {ROUNDS.map((r) => (
+                    <DropdownMenuItem
+                      key={r}
+                      onClick={() => handleAddToList(r)}
+                      disabled={addToList.isPending}
+                    >
+                      {tFind('rounds.' + r)}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </TapScale>
         )}
       </CardContent>

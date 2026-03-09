@@ -33,6 +33,7 @@ import { useToast } from '@/components/ui/Toast';
 import { useDebouncedSearch } from '@/hooks/api';
 import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { formatAcceptanceRate } from '@/utils/format';
 import type { School, PaginatedResponse } from '@/types';
 
 // ============== Constants ==============
@@ -316,11 +317,7 @@ function formatTuition(tuition: number): string {
   return `$${tuition.toLocaleString()}`;
 }
 
-function formatAcceptanceRate(rate: number): string {
-  // API may return as decimal (0.05) or percentage (5)
-  const pct = rate <= 1 ? rate * 100 : rate;
-  return `${pct.toFixed(1)}%`;
-}
+// formatAcceptanceRate imported from @/utils/format
 
 // ============== Main Page ==============
 

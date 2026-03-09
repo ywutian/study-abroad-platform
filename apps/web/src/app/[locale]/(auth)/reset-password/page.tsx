@@ -21,7 +21,7 @@ import {
   Lock,
   ShieldCheck,
 } from 'lucide-react';
-import { PasswordStrength } from '@/components/ui/password-strength';
+import { PasswordStrength, isPasswordValid } from '@/components/ui/password-strength';
 
 export default function ResetPasswordPage() {
   const t = useTranslations();
@@ -51,18 +51,13 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    if (password.length < 8) {
-      toast.error(t('auth.resetPassword.passwordTooShort'));
+    if (!isPasswordValid(password)) {
+      toast.error(t('auth.resetPassword.passwordTooWeak'));
       return;
     }
 
     if (password !== confirmPassword) {
       toast.error(t('auth.resetPassword.passwordMismatch'));
-      return;
-    }
-
-    if (!/^(?=.*[A-Za-z])(?=.*\d)/.test(password)) {
-      toast.error(t('auth.resetPassword.passwordNeedLetter'));
       return;
     }
 

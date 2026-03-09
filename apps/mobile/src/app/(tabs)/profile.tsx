@@ -73,30 +73,6 @@ export default function ProfileScreen() {
     router.replace('/(auth)/login');
   };
 
-  if (!isAuthenticated) {
-    return (
-      <View style={[styles.container, styles.centered, { backgroundColor: colors.background }]}>
-        <EmptyState
-          icon="person-circle-outline"
-          title={t('errors.unauthorized')}
-          description={t('home.loginPrompt')}
-          action={{
-            label: t('common.login'),
-            onPress: () => router.push('/(auth)/login'),
-          }}
-        />
-      </View>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <View style={[styles.container, styles.centered, { backgroundColor: colors.background }]}>
-        <Loading fullScreen />
-      </View>
-    );
-  }
-
   const { percentage: completion, missing: missingFields } = calculateCompletion;
 
   const menuItems = useMemo(
@@ -172,6 +148,30 @@ export default function ProfileScreen() {
     ],
     [t, profile?.visibility]
   );
+
+  if (!isAuthenticated) {
+    return (
+      <View style={[styles.container, styles.centered, { backgroundColor: colors.background }]}>
+        <EmptyState
+          icon="person-circle-outline"
+          title={t('errors.unauthorized')}
+          description={t('home.loginPrompt')}
+          action={{
+            label: t('common.login'),
+            onPress: () => router.push('/(auth)/login'),
+          }}
+        />
+      </View>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, styles.centered, { backgroundColor: colors.background }]}>
+        <Loading fullScreen />
+      </View>
+    );
+  }
 
   return (
     <ScrollView

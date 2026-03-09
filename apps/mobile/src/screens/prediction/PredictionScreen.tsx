@@ -9,13 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, {
-  FadeInDown,
-  FadeInUp,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 
 import {
@@ -31,20 +25,43 @@ import {
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
-import type { School } from '@/types';
 
-interface PredictionResult {
+interface PredictionResultItem {
   schoolId: string;
   schoolName: string;
-  admissionRate: number;
-  confidence: number;
-  factors: {
-    gpa: number;
-    testScore: number;
-    activities: number;
-    essays: number;
-  };
-  recommendation: 'reach' | 'match' | 'safety';
+  probability: number;
+  confidence: 'low' | 'medium' | 'high';
+  tier: 'reach' | 'match' | 'safety';
+  factors: Array<{ name: string; impact: string; detail: string }>;
+  suggestions: string[];
+  schoolMeta?: { acceptanceRate?: number };
+}
+
+interface DashboardResponse {
+  totalSchools: number;
+  avgProbability: number;
+  predictions: Array<{
+    schoolId: string;
+    school: { name: string; nameZh?: string };
+    probability: number;
+    tier: 'reach' | 'match' | 'safety';
+    confidence: 'low' | 'medium' | 'high';
+  }>;
+}
+
+function mapDashboardToPredictions(
+  dashboard: DashboardResponse | undefined
+): PredictionResultItem[] {
+  if (!dashboard?.predictions) return [];
+  return dashboard.predictions.map((p) => ({
+    schoolId: p.schoolId,
+    schoolName: p.school?.name || p.schoolId,
+    probability: p.probability,
+    confidence: p.confidence || 'medium',
+    tier: p.tier,
+    factors: [],
+    suggestions: [],
+  }));
 }
 
 export default function PredictionScreen() {
@@ -53,8 +70,6 @@ export default function PredictionScreen() {
   const insets = useSafeAreaInsets();
   const { isAuthenticated } = useAuthStore();
 
-  const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
-
   // 获取用户档案完整度
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ['profile'],
@@ -62,21 +77,22 @@ export default function PredictionScreen() {
     enabled: isAuthenticated,
   });
 
-  // 获取已保存的预测
+  // 获取预测仪表盘数据
   const {
-    data: predictions,
+    data: dashboardData,
     isLoading: predictionsLoading,
     refetch,
   } = useQuery({
-    queryKey: ['predictions'],
-    queryFn: () => apiClient.get<PredictionResult[]>('/predictions'),
+    queryKey: ['predictions', 'dashboard'],
+    queryFn: () => apiClient.get<DashboardResponse>('/predictions/dashboard'),
     enabled: isAuthenticated,
   });
 
+  const predictions = mapDashboardToPredictions(dashboardData);
+
   // 运行预测
   const predictMutation = useMutation({
-    mutationFn: (schoolId: string) =>
-      apiClient.post<PredictionResult>('/predictions', { schoolId }),
+    mutationFn: (schoolIds: string[]) => apiClient.post('/predictions', { schoolIds }),
     onSuccess: () => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       refetch();
@@ -185,7 +201,7 @@ export default function PredictionScreen() {
         <View style={[styles.statCard, { backgroundColor: colors.card }]}>
           <Ionicons name="school-outline" size={24} color={colors.primary} />
           <AnimatedCounter
-            value={predictions?.length || 0}
+            value={predictions.length}
             style={[styles.statValue, { color: colors.foreground }]}
           />
           <Text style={[styles.statLabel, { color: colors.foregroundMuted }]}>
@@ -195,7 +211,7 @@ export default function PredictionScreen() {
         <View style={[styles.statCard, { backgroundColor: colors.card }]}>
           <Ionicons name="trending-up-outline" size={24} color={colors.success} />
           <AnimatedCounter
-            value={predictions?.filter((p) => p.recommendation === 'safety').length || 0}
+            value={predictions.filter((p) => p.tier === 'safety').length}
             style={[styles.statValue, { color: colors.foreground }]}
           />
           <Text style={[styles.statLabel, { color: colors.foregroundMuted }]}>
@@ -205,7 +221,7 @@ export default function PredictionScreen() {
         <View style={[styles.statCard, { backgroundColor: colors.card }]}>
           <Ionicons name="rocket-outline" size={24} color={colors.error} />
           <AnimatedCounter
-            value={predictions?.filter((p) => p.recommendation === 'reach').length || 0}
+            value={predictions.filter((p) => p.tier === 'reach').length}
             style={[styles.statValue, { color: colors.foreground }]}
           />
           <Text style={[styles.statLabel, { color: colors.foregroundMuted }]}>
@@ -222,7 +238,7 @@ export default function PredictionScreen() {
 
         {predictionsLoading ? (
           <Loading />
-        ) : predictions?.length ? (
+        ) : predictions.length ? (
           predictions.map((prediction, index) => (
             <Animated.View
               key={prediction.schoolId}
@@ -237,24 +253,21 @@ export default function PredictionScreen() {
                       </Text>
                       <Badge
                         variant={
-                          prediction.recommendation === 'safety'
+                          prediction.tier === 'safety'
                             ? 'success'
-                            : prediction.recommendation === 'match'
+                            : prediction.tier === 'match'
                               ? 'warning'
                               : 'error'
                         }
                       >
-                        {getRecommendationLabel(prediction.recommendation)}
+                        {getRecommendationLabel(prediction.tier)}
                       </Badge>
                     </View>
                     <View style={styles.rateContainer}>
                       <AnimatedCounter
-                        value={prediction.admissionRate}
+                        value={Math.round(prediction.probability * 100)}
                         suffix="%"
-                        style={[
-                          styles.rate,
-                          { color: getRecommendationColor(prediction.recommendation) },
-                        ]}
+                        style={[styles.rate, { color: getRecommendationColor(prediction.tier) }]}
                       />
                       <Text style={[styles.rateLabel, { color: colors.foregroundMuted }]}>
                         {t('prediction.probability')}
@@ -262,29 +275,40 @@ export default function PredictionScreen() {
                     </View>
                   </View>
 
-                  {/* Factor Breakdown */}
-                  <View style={styles.factors}>
-                    <FactorBar
-                      label={t('prediction.factorLabels.gpa')}
-                      value={prediction.factors.gpa}
-                      color={colors.primary}
-                    />
-                    <FactorBar
-                      label={t('prediction.factorLabels.testScore')}
-                      value={prediction.factors.testScore}
-                      color={colors.success}
-                    />
-                    <FactorBar
-                      label={t('prediction.factorLabels.activities')}
-                      value={prediction.factors.activities}
-                      color={colors.warning}
-                    />
-                    <FactorBar
-                      label={t('prediction.factorLabels.essays')}
-                      value={prediction.factors.essays}
-                      color={colors.info}
-                    />
-                  </View>
+                  {/* Factor Summary */}
+                  {prediction.factors.length > 0 && (
+                    <View style={styles.factors}>
+                      {prediction.factors.slice(0, 4).map((factor, i) => (
+                        <View key={i} style={styles.factorRow}>
+                          <Text
+                            style={[styles.factorLabel, { color: colors.foregroundMuted }]}
+                            numberOfLines={1}
+                          >
+                            {factor.name}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.factorValue,
+                              {
+                                color:
+                                  factor.impact === 'positive'
+                                    ? colors.success
+                                    : factor.impact === 'negative'
+                                      ? colors.error
+                                      : colors.foregroundMuted,
+                              },
+                            ]}
+                          >
+                            {factor.impact === 'positive'
+                              ? '↑'
+                              : factor.impact === 'negative'
+                                ? '↓'
+                                : '—'}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
 
                   <Text style={[styles.confidence, { color: colors.foregroundMuted }]}>
                     {t('prediction.confidence', { value: prediction.confidence })}
@@ -317,21 +341,6 @@ export default function PredictionScreen() {
         </AnimatedButton>
       </View>
     </ScrollView>
-  );
-}
-
-// Factor Bar Component
-function FactorBar({ label, value, color }: { label: string; value: number; color: string }) {
-  const colors = useColors();
-
-  return (
-    <View style={styles.factorRow}>
-      <Text style={[styles.factorLabel, { color: colors.foregroundMuted }]}>{label}</Text>
-      <View style={[styles.factorTrack, { backgroundColor: colors.muted }]}>
-        <View style={[styles.factorFill, { width: `${value}%`, backgroundColor: color }]} />
-      </View>
-      <Text style={[styles.factorValue, { color: colors.foreground }]}>{value}</Text>
-    </View>
   );
 }
 
@@ -463,18 +472,8 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   factorLabel: {
-    width: 32,
-    fontSize: fontSize.xs,
-  },
-  factorTrack: {
     flex: 1,
-    height: 6,
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  factorFill: {
-    height: '100%',
-    borderRadius: 3,
+    fontSize: fontSize.xs,
   },
   factorValue: {
     width: 24,

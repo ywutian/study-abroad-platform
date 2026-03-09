@@ -18,7 +18,7 @@ describe('SchoolService', () => {
     city: 'Cambridge',
     usNewsRank: 1,
     qsRank: 5,
-    acceptanceRate: 0.035,
+    acceptanceRate: 3.5,
     createdAt: new Date(),
     updatedAt: new Date(),
   };

@@ -5,12 +5,13 @@ import {
   IsIn,
   IsArray,
   IsEnum,
+  IsBoolean,
   Min,
   Max,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { BudgetTier, Visibility } from '@prisma/client';
+import { BudgetTier, EducationSystem, Visibility } from '@prisma/client';
 
 const GRADES = [
   'FRESHMAN',
@@ -82,4 +83,61 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsEnum(Visibility)
   visibility?: Visibility;
+
+  @ApiPropertyOptional({
+    description: '国籍 (ISO 3166-1 alpha-2)',
+    example: 'CN',
+  })
+  @IsOptional()
+  @IsString()
+  nationality?: string;
+
+  @ApiPropertyOptional({
+    description: '居住国 (ISO 3166-1 alpha-2)',
+    example: 'CN',
+  })
+  @IsOptional()
+  @IsString()
+  countryOfResidence?: string;
+
+  @ApiPropertyOptional({
+    description: '公民身份 (ISO 3166-1 alpha-2)',
+    example: 'CN',
+  })
+  @IsOptional()
+  @IsString()
+  citizenship?: string;
+
+  @ApiPropertyOptional({ enum: EducationSystem, description: '教育体系' })
+  @IsOptional()
+  @IsEnum(EducationSystem)
+  educationSystem?: EducationSystem;
+
+  @ApiPropertyOptional({ description: '是否需要助学金' })
+  @IsOptional()
+  @IsBoolean()
+  @Type(() => Boolean)
+  needsFinancialAid?: boolean;
+
+  @ApiPropertyOptional({ description: '是否第一代大学生' })
+  @IsOptional()
+  @IsBoolean()
+  @Type(() => Boolean)
+  firstGeneration?: boolean;
+
+  @ApiPropertyOptional({ description: 'Legacy 校友子女', type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  legacy?: string[];
+
+  @ApiPropertyOptional({ description: '意向专业' })
+  @IsOptional()
+  @IsString()
+  intendedMajor?: string;
+
+  @ApiPropertyOptional({ description: '第二专业' })
+  @IsOptional()
+  @IsString()
+  secondMajor?: string;
 }

@@ -83,11 +83,11 @@ export class EssayScraperScheduler {
         newPrompts += caResult.essaysFound;
       }
       details.push(caResult);
-    } catch (e) {
+    } catch (e: unknown) {
       details.push({
         schoolName: 'CommonApp',
         success: false,
-        error: e.message,
+        error: e instanceof Error ? e.message : String(e),
       });
     }
 
@@ -102,9 +102,13 @@ export class EssayScraperScheduler {
           failedCount++;
         }
         details.push(result);
-      } catch (e) {
+      } catch (e: unknown) {
         failedCount++;
-        details.push({ schoolName, success: false, error: e.message });
+        details.push({
+          schoolName,
+          success: false,
+          error: e instanceof Error ? e.message : String(e),
+        });
       }
     }
 

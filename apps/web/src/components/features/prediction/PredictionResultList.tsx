@@ -18,6 +18,7 @@ interface PredictionResultListProps {
   onResultReported?: (schoolId: string, result: string) => void;
   onRefresh?: (schoolId: string) => void;
   refreshingSchoolId?: string | null;
+  isInternational?: boolean;
 }
 
 type SortBy = 'probability' | 'tier' | 'confidence';
@@ -35,6 +36,7 @@ export function PredictionResultList({
   onResultReported,
   onRefresh,
   refreshingSchoolId,
+  isInternational,
 }: PredictionResultListProps) {
   const t = useTranslations('prediction');
   const [sortBy, setSortBy] = useState<SortBy>('probability');
@@ -76,6 +78,8 @@ export function PredictionResultList({
 
   return (
     <div className="space-y-4">
+      <p className="text-xs text-muted-foreground">{t('essayDisclaimer')}</p>
+      <p className="text-xs text-muted-foreground">{t('probabilityVsRateDisclaimer')}</p>
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h2 className="text-subtitle flex items-center gap-2">
@@ -155,6 +159,7 @@ export function PredictionResultList({
           onResultReported={onResultReported}
           onRefresh={onRefresh}
           refreshingSchoolId={refreshingSchoolId}
+          isInternational={isInternational}
         />
       ) : (
         <StaggerContainer staggerDelay={0.05} className="space-y-4">
@@ -167,6 +172,7 @@ export function PredictionResultList({
                 onResultReported={onResultReported}
                 onRefresh={onRefresh}
                 isRefreshing={refreshingSchoolId === result.schoolId}
+                isInternational={isInternational}
               />
             </StaggerItem>
           ))}
@@ -188,6 +194,7 @@ function VirtualizedResultList({
   onResultReported,
   onRefresh,
   refreshingSchoolId,
+  isInternational,
 }: {
   items: PredictionResult[];
   expandedId: string | null;
@@ -195,6 +202,7 @@ function VirtualizedResultList({
   onResultReported?: (schoolId: string, result: string) => void;
   onRefresh?: (schoolId: string) => void;
   refreshingSchoolId?: string | null;
+  isInternational?: boolean;
 }) {
   const parentRef = useRef<HTMLDivElement>(null);
 
@@ -240,6 +248,7 @@ function VirtualizedResultList({
                 onResultReported={onResultReported}
                 onRefresh={onRefresh}
                 isRefreshing={refreshingSchoolId === result.schoolId}
+                isInternational={isInternational}
               />
             </div>
           );

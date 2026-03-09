@@ -10,6 +10,10 @@ import { AiService } from '../../ai/ai.service';
 import { PredictionService } from '../../prediction/prediction.service';
 import { ProfileLoaderHelper } from './helpers/profile-loader.helper';
 import { SchoolLookupHelper } from './helpers/school-lookup.helper';
+import {
+  formatHighSchoolContext,
+  extractHighSchoolFromEducation,
+} from './helpers/education-context.helper';
 import { ToolHandler, IToolHandlerProvider } from './tool-handler.interface';
 
 @Injectable()
@@ -58,12 +62,32 @@ export class RecommendationToolsService implements IToolHandlerProvider {
       };
     }
 
+    const hsContext = formatHighSchoolContext(
+      profile.education,
+      profile.highSchool,
+      locale,
+    );
+
     return this.aiService.schoolMatch(
       {
         gpa: profile.gpa ?? undefined,
         gpaScale: profile.gpaScale,
         testScores: profile.testScores,
         targetMajor: profile.targetMajor ?? undefined,
+        intendedMajor: profile.intendedMajor ?? undefined,
+        secondMajor: profile.secondMajor ?? undefined,
+        highSchoolContext: hsContext ?? undefined,
+        activities: profile.activities?.map((a: any) => ({
+          name: a.name,
+          category: a.category ?? '',
+          role: a.role ?? '',
+          description: a.description ?? undefined,
+        })),
+        awards: profile.awards?.map((a: any) => ({
+          name: a.name,
+          level: a.level ?? '',
+          competitionCategory: a.competitionCategory ?? undefined,
+        })),
       },
       locale,
     );
@@ -122,8 +146,8 @@ export class RecommendationToolsService implements IToolHandlerProvider {
             : prediction.tier === 'match'
               ? 'medium'
               : 'low',
-        percentage: `${prediction.probability}%`,
-        confidence: `${prediction.confidence}%`,
+        percentage: `${Math.round(prediction.probability * 100)}%`,
+        confidence: prediction.confidence,
         tier: prediction.tier,
         analysis:
           prediction.factors?.map((f) => `${f.name}: ${f.detail}`).join('\n') ||

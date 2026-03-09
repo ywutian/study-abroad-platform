@@ -18,6 +18,7 @@ const PROTECTED_PATTERNS = [
   '/prediction',
   '/chat',
   '/settings',
+  '/teams/create', // 组队创建页需登录；/teams 和 /teams/[id] 保持公开
 ];
 
 /** Routes that require admin role (additional cookie check) */
@@ -89,14 +90,10 @@ export default function middleware(request: NextRequest) {
 
   // Auth check for protected routes (cookie-based, no JWT verification in edge)
   if (isProtectedRoute(pathname) || isAdminRoute(pathname)) {
-    const token =
-      request.cookies.get('access_token')?.value ||
-      request.cookies.get('auth_check')?.value ||
-      request.cookies.get('token')?.value;
+    const token = request.cookies.get('access_token')?.value;
 
     if (!token) {
       const loginUrl = new URL(getLoginUrl(request), request.url);
-      // Only pass internal paths as callbackUrl to prevent open redirect attacks
       const pathWithoutLocale = pathname.replace(/^\/(zh|en)/, '') || '/';
       if (/^\/[\w\-/]*$/.test(pathWithoutLocale)) {
         loginUrl.searchParams.set('callbackUrl', pathname);
@@ -105,21 +102,46 @@ export default function middleware(request: NextRequest) {
     }
   }
 
+  // Authenticated users hitting locale root (landing) → redirect to dashboard
+  const isLocaleRoot = /^\/(zh|en)\/?$/.test(pathname);
+  if (isLocaleRoot) {
+    const token = request.cookies.get('access_token')?.value;
+    if (token) {
+      const locale = pathname.startsWith('/zh') ? 'zh' : 'en';
+      return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url));
+    }
+  }
+
   // Generate per-request nonce for CSP
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
   const csp = buildCspHeader(nonce);
 
   // Delegate to next-intl middleware for locale handling
-  const response = intlMiddleware(request);
+  const intlResponse = intlMiddleware(request);
 
   // Redirects don't render HTML — no CSP needed
-  if (response.status >= 300 && response.status < 400) {
-    return response;
+  if (intlResponse.status >= 300 && intlResponse.status < 400) {
+    return intlResponse;
   }
 
-  // Forward nonce as request header so server components can read it via headers()
-  // (x-middleware-request-* is Next.js internal convention for request header forwarding)
-  response.headers.set('x-middleware-request-x-nonce', nonce);
+  // Create a new response with nonce in request headers.
+  // NextResponse.next({ request: { headers } }) is the ONLY way to forward
+  // request headers to server components (readable via headers() in layout).
+  // Setting x-middleware-request-* on an existing response does NOT work.
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-nonce', nonce);
+
+  const response = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
+
+  // Preserve intl middleware headers (locale cookies, x-middleware-rewrite, etc.)
+  intlResponse.headers.forEach((value, key) => {
+    // Don't overwrite our request header forwarding (x-middleware-request-*)
+    if (!key.startsWith('x-middleware-request-')) {
+      response.headers.set(key, value);
+    }
+  });
 
   // Set CSP response header (browser enforces this)
   response.headers.set('Content-Security-Policy', csp);

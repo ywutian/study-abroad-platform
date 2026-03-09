@@ -195,8 +195,6 @@ export class AiAgentModule implements OnModuleInit, NestModule {
       .apply(RequestContextMiddleware)
       .forRoutes('ai-agent', 'admin/ai-agent');
 
-    consumer
-      .apply(AgentSecurityMiddleware)
-      .forRoutes('ai-agent/chat', 'ai-agent/stream');
+    consumer.apply(AgentSecurityMiddleware).forRoutes('ai-agent/chat');
   }
 }

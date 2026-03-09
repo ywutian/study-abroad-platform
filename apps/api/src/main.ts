@@ -215,9 +215,9 @@ async function bootstrap() {
         },
       });
       logger.log('📚 Swagger UI enabled at /api/docs');
-    } catch (error) {
+    } catch (error: unknown) {
       logger.warn(
-        `⚠️ Swagger UI failed to initialize: ${error.message}. API will continue without interactive docs.`,
+        `⚠️ Swagger UI failed to initialize: ${error instanceof Error ? error.message : 'unknown error'}. API will continue without interactive docs.`,
       );
     }
   }

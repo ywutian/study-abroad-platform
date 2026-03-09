@@ -17,7 +17,7 @@ export function CTAFooter() {
     {
       title: t('home.footer.products'),
       links: [
-        { label: t('home.modules.findCollege.title'), href: '/find-college' },
+        { label: t('home.modules.schools.title'), href: '/schools' },
         { label: t('home.modules.uncommonApp.title'), href: '/uncommon-app' },
         { label: t('home.modules.featureHall.title'), href: '/hall' },
         { label: t('home.modules.forum.title'), href: '/forum' },

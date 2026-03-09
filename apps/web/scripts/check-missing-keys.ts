@@ -151,8 +151,9 @@ function main() {
         while ((m = re.exec(line)) !== null) {
           const rawKey = m[1];
 
-          // Skip dynamic keys (template literal fragments, backtick usage)
+          // Skip dynamic keys (template literal fragments, backtick usage, string concat)
           if (rawKey.includes('${')) continue;
+          if (rawKey.endsWith('.')) continue; // partial key from string concatenation like t('prefix.' + var)
 
           const fullKey = namespace ? `${namespace}.${rawKey}` : rawKey;
 

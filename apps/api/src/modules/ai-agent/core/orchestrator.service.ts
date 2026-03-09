@@ -10,10 +10,9 @@
 
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { MemoryType } from '@prisma/client';
 import { AgentRunnerService } from './agent-runner.service';
 import { MemoryService } from './memory.service';
-import { LLMService, StreamChunk } from './llm.service';
+import { LLMService } from './llm.service';
 import { ToolExecutorService } from './tool-executor.service';
 import {
   WorkflowEngineService,
@@ -21,13 +20,14 @@ import {
   WorkflowPhase,
 } from './workflow-engine.service';
 import { MemoryManagerService } from '../memory';
+import {
+  ContentModerationService,
+  ModerationAction,
+} from '../security/content-moderation.service';
 import { FastRouterService } from './fast-router.service';
 import { FallbackService } from './fallback.service';
 import { ConfigValidatorService } from '../config/config-validator.service';
-import {
-  AGENT_CONFIGS,
-  getLocalizedSystemPrompt,
-} from '../config/agents.config';
+import { AGENT_CONFIGS } from '../config/agents.config';
 import { TOOLS } from '../config/tools.config';
 import {
   AgentType,
@@ -35,13 +35,8 @@ import {
   ConversationState,
   ToolDefinition,
   Message,
-  AgentConfig,
 } from '../types';
-import {
-  ToolExecutionResult,
-  ActionSuggestion,
-  PendingToolCall,
-} from './types';
+import { ActionSuggestion } from './types';
 import { StreamEvent } from '@study-abroad/shared';
 import { randomUUID } from 'crypto';
 
@@ -75,6 +70,7 @@ export class OrchestratorService {
     @Optional() private memoryManager?: MemoryManagerService,
     @Optional() private fastRouter?: FastRouterService,
     @Optional() private fallback?: FallbackService,
+    @Optional() private contentModeration?: ContentModerationService,
   ) {
     this.maxDelegationDepth = this.configService.get<number>(
       'AGENT_MAX_DELEGATION_DEPTH',
@@ -239,13 +235,37 @@ export class OrchestratorService {
     conversationId?: string,
   ): Promise<ConversationState> {
     if (this.useEnterpriseMemory) {
-      // 企业级：先通过 MemoryManager 获取/创建，再同步到 MemoryService
       const conv = await this.memoryManager!.getOrCreateConversation(
         userId,
         conversationId,
       );
-      // 同步到内存（用于 AgentRunner 兼容）
-      return this.memory.getOrCreateConversation(userId, conv.id);
+      const conversation = await this.memory.getOrCreateConversation(
+        userId,
+        conv.id,
+      );
+
+      // Backfill enterprise memory history into in-memory state so the
+      // workflow engine's Plan/Solve phases see prior conversation turns.
+      if (conversationId && conversation.messages.length === 0) {
+        try {
+          const history = await this.memoryManager!.getConversationHistory(
+            conv.id,
+          );
+          for (const msg of history) {
+            conversation.messages.push({
+              id: msg.id,
+              role: msg.role as Message['role'],
+              content: msg.content,
+              agentType: msg.agentType as AgentType | undefined,
+              timestamp: msg.createdAt,
+            });
+          }
+        } catch (err) {
+          this.logger.warn('Failed to backfill conversation history', err);
+        }
+      }
+
+      return conversation;
     }
     return this.memory.getOrCreateConversation(userId, conversationId);
   }
@@ -584,7 +604,28 @@ export class OrchestratorService {
       yield event;
     }
 
-    // 流结束后持久化 assistant 响应到企业级记忆
+    // Moderate output before sending/persisting
+    if (fullContent && this.contentModeration) {
+      try {
+        const modResult = await this.contentModeration.moderate(fullContent, {
+          context: 'output',
+          sanitize: true,
+        });
+        if (
+          modResult.action === ModerationAction.SANITIZE &&
+          modResult.sanitizedContent
+        ) {
+          fullContent = modResult.sanitizedContent;
+        } else if (modResult.action === ModerationAction.BLOCK) {
+          this.logger.warn(
+            `Output blocked by content moderation: ${modResult.details.map((d) => d.type).join(', ')}`,
+          );
+        }
+      } catch (err) {
+        this.logger.warn('Output moderation check failed', err);
+      }
+    }
+
     if (fullContent && this.useEnterpriseMemory) {
       try {
         await this.addMessage(
@@ -794,139 +835,6 @@ export class OrchestratorService {
           break;
       }
     }
-  }
-
-  /**
-   * Build the system prompt for an agent, optionally enriched with enterprise memory.
-   *
-   * When MemoryManagerService is available, the method performs parallel retrieval of:
-   * - Semantic search results relevant to the current message
-   * - High-importance user facts (FACT type, importance >= 0.6)
-   * - User preferences (PREFERENCE type)
-   * - Recent user decisions (DECISION type)
-   *
-   * All retrieved memories are deduplicated and appended to the base prompt.
-   * If retrieval fails, the method gracefully falls back to the basic prompt.
-   *
-   * @param config - The agent configuration containing the base system prompt
-   * @param conversation - Current conversation state (provides userId, locale, context)
-   * @param currentMessage - The user's current message for semantic retrieval
-   * @returns The fully assembled system prompt string
-   */
-  /**
-   * 构建 System Prompt（自动选择是否使用记忆增强）
-   *
-   * 增强版本：检索多类型记忆，包括：
-   * - FACT: 用户陈述的事实
-   * - PREFERENCE: 用户偏好
-   * - DECISION: 用户决策历史
-   * - FEEDBACK: 系统反馈记录
-   */
-  private async buildSystemPrompt(
-    config: AgentConfig,
-    conversation: ConversationState,
-    currentMessage?: string,
-  ): Promise<string> {
-    const locale = (conversation.metadata?.locale as string) || 'zh';
-    const localizedPrompt = getLocalizedSystemPrompt(config, locale);
-    const baseSummary = this.memory.getContextSummary(conversation.context);
-
-    // 如果没有记忆管理器或没有消息，使用基础提示
-    if (!this.memoryManager || !currentMessage) {
-      return `${localizedPrompt}\n\n## 当前用户信息\n${baseSummary}`;
-    }
-
-    try {
-      // 并行获取多种类型的记忆
-      const [context, facts, preferences, decisions] = await Promise.all([
-        // 语义检索相关记忆
-        this.memoryManager.getRetrievalContext(
-          conversation.userId,
-          currentMessage,
-          conversation.id,
-        ),
-        // 获取用户事实（高重要性）
-        this.memoryManager.recall(conversation.userId, {
-          types: [MemoryType.FACT],
-          minImportance: 0.6,
-          limit: 5,
-        }),
-        // 获取用户偏好
-        this.memoryManager.recall(conversation.userId, {
-          types: [MemoryType.PREFERENCE],
-          limit: 3,
-        }),
-        // 获取近期决策
-        this.memoryManager.recall(conversation.userId, {
-          types: [MemoryType.DECISION],
-          limit: 3,
-        }),
-      ]);
-
-      // 构建增强上下文
-      const parts: string[] = [];
-
-      // 基础上下文摘要
-      const enhancedContext = this.memoryManager.buildContextSummary(context);
-      if (enhancedContext) {
-        parts.push(enhancedContext);
-      }
-
-      // 补充重要事实
-      const additionalFacts = facts.filter(
-        (f) => !context.relevantMemories.some((m) => m.id === f.id),
-      );
-      if (additionalFacts.length > 0) {
-        parts.push('\n## 用户重要信息');
-        for (const fact of additionalFacts) {
-          parts.push(`- ${fact.content}`);
-        }
-      }
-
-      // 补充偏好
-      const additionalPrefs = preferences.filter(
-        (p) => !context.relevantMemories.some((m) => m.id === p.id),
-      );
-      if (additionalPrefs.length > 0) {
-        parts.push('\n## 用户偏好');
-        for (const pref of additionalPrefs) {
-          parts.push(`- ${pref.content}`);
-        }
-      }
-
-      // 补充决策历史
-      if (decisions.length > 0) {
-        parts.push('\n## 近期决策');
-        for (const decision of decisions) {
-          parts.push(`- ${decision.content}`);
-        }
-      }
-
-      return `${localizedPrompt}
-
-## 当前用户信息
-${baseSummary}
-
-## 记忆上下文
-${parts.join('\n')}`;
-    } catch (error) {
-      this.logger.error('Failed to build enhanced context', error);
-      return `${localizedPrompt}\n\n## 当前用户信息\n${baseSummary}`;
-    }
-  }
-
-  /**
-   * 使用企业级记忆系统处理消息
-   *
-   * @deprecated 使用 handleMessage，已自动集成企业级记忆
-   */
-  async handleMessageWithMemory(
-    userId: string,
-    message: string,
-    conversationId?: string,
-  ): Promise<AgentResponse> {
-    // 直接调用统一入口
-    return this.handleMessage(userId, message, conversationId);
   }
 
   /**

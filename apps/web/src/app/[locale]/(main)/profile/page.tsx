@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
@@ -69,6 +70,8 @@ import {
   Sparkles,
   Check,
   Zap,
+  GripVertical,
+  Globe,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth';
 
@@ -108,8 +111,39 @@ const VISIBILITY_OPTIONS = [
   },
 ];
 
+const EDUCATION_SYSTEMS = [
+  { value: 'AP', labelKey: 'profile.demographics.educationSystems.AP' },
+  { value: 'IB', labelKey: 'profile.demographics.educationSystems.IB' },
+  { value: 'A_LEVEL', labelKey: 'profile.demographics.educationSystems.A_LEVEL' },
+  { value: 'GAOKAO', labelKey: 'profile.demographics.educationSystems.GAOKAO' },
+  { value: 'CANADIAN', labelKey: 'profile.demographics.educationSystems.CANADIAN' },
+  { value: 'AUSTRALIAN', labelKey: 'profile.demographics.educationSystems.AUSTRALIAN' },
+  { value: 'OTHER', labelKey: 'profile.demographics.educationSystems.OTHER' },
+];
+
+const COMMON_COUNTRIES = [
+  { value: 'US', labelKey: 'profile.demographics.countries.US' },
+  { value: 'CN', labelKey: 'profile.demographics.countries.CN' },
+  { value: 'IN', labelKey: 'profile.demographics.countries.IN' },
+  { value: 'KR', labelKey: 'profile.demographics.countries.KR' },
+  { value: 'JP', labelKey: 'profile.demographics.countries.JP' },
+  { value: 'TW', labelKey: 'profile.demographics.countries.TW' },
+  { value: 'HK', labelKey: 'profile.demographics.countries.HK' },
+  { value: 'SG', labelKey: 'profile.demographics.countries.SG' },
+  { value: 'GB', labelKey: 'profile.demographics.countries.GB' },
+  { value: 'CA', labelKey: 'profile.demographics.countries.CA' },
+  { value: 'AU', labelKey: 'profile.demographics.countries.AU' },
+  { value: 'OTHER', labelKey: 'profile.demographics.countries.OTHER' },
+];
+
 const TAB_CONFIG = [
   { value: 'basic', labelKey: 'profile.steps.basic', icon: User, color: 'bg-primary' },
+  {
+    value: 'demographics',
+    labelKey: 'profile.steps.demographics',
+    icon: Globe,
+    color: 'from-teal-500 to-cyan-500',
+  },
   { value: 'scores', labelKey: 'profile.steps.scores', icon: BarChart, color: 'bg-primary' },
   { value: 'gpa', labelKey: 'profile.steps.gpa', icon: GraduationCap, color: 'bg-success' },
   {
@@ -141,7 +175,26 @@ const ACTIVITY_CATEGORY_KEYS: Record<string, string> = {
   LEADERSHIP: 'profile.activityCategories.leadership',
   WORK: 'profile.activityCategories.work',
   RESEARCH: 'profile.activityCategories.research',
+  INTERNSHIP: 'profile.activityCategories.internship',
+  CLUB: 'profile.activityCategories.club',
+  HOBBY: 'profile.activityCategories.hobby',
   OTHER: 'profile.activityCategories.other',
+};
+
+const TIER_BADGE_CONFIG: Record<number, { label: string; className: string }> = {
+  1: {
+    label: 'T1',
+    className: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
+  },
+  2: {
+    label: 'T2',
+    className: 'bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-400',
+  },
+  3: {
+    label: 'T3',
+    className: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
+  },
+  4: { label: 'T4', className: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
 };
 
 const AWARD_LEVEL_KEYS: Record<string, string> = {
@@ -166,6 +219,7 @@ export default function ProfilePage() {
   const [activityFormOpen, setActivityFormOpen] = useState(false);
   const [awardFormOpen, setAwardFormOpen] = useState(false);
   const [schoolSelectorOpen, setSchoolSelectorOpen] = useState(false);
+  const [defaultRound, setDefaultRound] = useState('RD');
   const [editingScore, setEditingScore] = useState<any>(null);
   const [editingActivity, setEditingActivity] = useState<any>(null);
   const [editingAward, setEditingAward] = useState<any>(null);
@@ -196,7 +250,8 @@ export default function ProfilePage() {
   }));
 
   const addSchoolMutation = useMutation({
-    mutationFn: (schoolId: string) => apiClient.post('/school-lists', { schoolId, tier: 'TARGET' }),
+    mutationFn: (schoolId: string) =>
+      apiClient.post('/school-lists', { schoolId, tier: 'TARGET', round: defaultRound }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['school-lists'] });
     },
@@ -240,6 +295,15 @@ export default function ProfilePage() {
     targetMajor: '',
     budgetTier: '',
     visibility: 'PRIVATE',
+    nationality: '',
+    countryOfResidence: '',
+    citizenship: '',
+    educationSystem: '',
+    needsFinancialAid: false,
+    firstGeneration: false,
+    legacy: [] as string[],
+    intendedMajor: '',
+    secondMajor: '',
   });
 
   // 计算档案完整度 - moved before updateMutation that uses it
@@ -294,6 +358,14 @@ export default function ProfilePage() {
     },
   });
 
+  const reorderActivitiesMutation = useMutation({
+    mutationFn: (activityIds: string[]) =>
+      apiClient.put('/profiles/me/activities/reorder', { ids: activityIds }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    },
+  });
+
   const deleteAwardMutation = useMutation({
     mutationFn: (id: string) => apiClient.delete(`/profiles/me/awards/${id}`),
     onSuccess: () => {
@@ -313,6 +385,15 @@ export default function ProfilePage() {
         targetMajor: profile.targetMajor || '',
         budgetTier: profile.budgetTier || '',
         visibility: profile.visibility || 'PRIVATE',
+        nationality: profile.nationality || '',
+        countryOfResidence: profile.countryOfResidence || '',
+        citizenship: profile.citizenship || '',
+        educationSystem: profile.educationSystem || '',
+        needsFinancialAid: profile.needsFinancialAid ?? false,
+        firstGeneration: profile.firstGeneration ?? false,
+        legacy: profile.legacy || [],
+        intendedMajor: profile.intendedMajor || '',
+        secondMajor: profile.secondMajor || '',
       }));
       // 初始化档案完成度记录
       if (previousCompleteness === null) {
@@ -326,6 +407,13 @@ export default function ProfilePage() {
       ...formData,
       gpa: formData.gpa ? parseFloat(formData.gpa) : null,
       gpaScale: parseFloat(formData.gpaScale),
+      educationSystem: formData.educationSystem || undefined,
+      nationality: formData.nationality || undefined,
+      countryOfResidence: formData.countryOfResidence || undefined,
+      citizenship: formData.citizenship || undefined,
+      legacy: formData.legacy.length > 0 ? formData.legacy : undefined,
+      intendedMajor: formData.intendedMajor || undefined,
+      secondMajor: formData.secondMajor || undefined,
     });
   };
 
@@ -656,6 +744,188 @@ export default function ProfilePage() {
                 </Card>
               )}
 
+              {/* Demographics & Background */}
+              {activeTab === 'demographics' && (
+                <Card className="overflow-hidden">
+                  <div className="h-1.5 bg-gradient-to-r from-teal-500 to-cyan-500" />
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Globe className="h-5 w-5 text-teal-500" />
+                      {t('profile.demographics.title')}
+                    </CardTitle>
+                    <CardDescription>{t('profile.demographics.desc')}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid gap-6 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">
+                          {t('profile.demographics.nationality')}
+                        </Label>
+                        <Select
+                          value={formData.nationality}
+                          onValueChange={(v) => setFormData((p) => ({ ...p, nationality: v }))}
+                        >
+                          <SelectTrigger className="h-11">
+                            <SelectValue placeholder={t('profile.demographics.selectCountry')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {COMMON_COUNTRIES.map((c) => (
+                              <SelectItem key={`nat-${c.value}`} value={c.value}>
+                                {t(c.labelKey)}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">
+                          {t('profile.demographics.countryOfResidence')}
+                        </Label>
+                        <Select
+                          value={formData.countryOfResidence}
+                          onValueChange={(v) =>
+                            setFormData((p) => ({ ...p, countryOfResidence: v }))
+                          }
+                        >
+                          <SelectTrigger className="h-11">
+                            <SelectValue placeholder={t('profile.demographics.selectCountry')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {COMMON_COUNTRIES.map((c) => (
+                              <SelectItem key={`res-${c.value}`} value={c.value}>
+                                {t(c.labelKey)}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="grid gap-6 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">
+                          {t('profile.demographics.citizenship')}
+                        </Label>
+                        <Select
+                          value={formData.citizenship}
+                          onValueChange={(v) => setFormData((p) => ({ ...p, citizenship: v }))}
+                        >
+                          <SelectTrigger className="h-11">
+                            <SelectValue placeholder={t('profile.demographics.selectCountry')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {COMMON_COUNTRIES.map((c) => (
+                              <SelectItem key={`cit-${c.value}`} value={c.value}>
+                                {t(c.labelKey)}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">
+                          {t('profile.demographics.educationSystem')}
+                        </Label>
+                        <Select
+                          value={formData.educationSystem}
+                          onValueChange={(v) => setFormData((p) => ({ ...p, educationSystem: v }))}
+                        >
+                          <SelectTrigger className="h-11">
+                            <SelectValue
+                              placeholder={t('profile.demographics.selectEducationSystem')}
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {EDUCATION_SYSTEMS.map((es) => (
+                              <SelectItem key={es.value} value={es.value}>
+                                {t(es.labelKey)}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="space-y-4 pt-2">
+                      <div className="flex items-center space-x-3">
+                        <Checkbox
+                          id="needsFinancialAid"
+                          checked={formData.needsFinancialAid}
+                          onCheckedChange={(checked) =>
+                            setFormData((p) => ({ ...p, needsFinancialAid: !!checked }))
+                          }
+                        />
+                        <Label htmlFor="needsFinancialAid" className="text-sm cursor-pointer">
+                          {t('profile.demographics.needsFinancialAid')}
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <Checkbox
+                          id="firstGeneration"
+                          checked={formData.firstGeneration}
+                          onCheckedChange={(checked) =>
+                            setFormData((p) => ({ ...p, firstGeneration: !!checked }))
+                          }
+                        />
+                        <Label htmlFor="firstGeneration" className="text-sm cursor-pointer">
+                          {t('profile.demographics.firstGeneration')}
+                        </Label>
+                      </div>
+                    </div>
+
+                    {/* Legacy */}
+                    <div className="space-y-2 pt-4 border-t">
+                      <Label className="text-sm font-medium">
+                        {t('profile.demographics.legacy')}
+                      </Label>
+                      <Input
+                        placeholder={t('profile.demographics.legacyPlaceholder')}
+                        value={formData.legacy.join(', ')}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const arr = val
+                            ? val
+                                .split(',')
+                                .map((s) => s.trim())
+                                .filter(Boolean)
+                            : [];
+                          setFormData((p) => ({ ...p, legacy: arr }));
+                        }}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        {t('profile.demographics.legacyHint')}
+                      </p>
+                    </div>
+
+                    {/* Intended Major & Second Major */}
+                    <div className="grid gap-6 sm:grid-cols-2 pt-4 border-t">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">
+                          {t('profile.fields.intendedMajor')}
+                        </Label>
+                        <Input
+                          placeholder={t('profile.placeholders.intendedMajor')}
+                          value={formData.intendedMajor}
+                          onChange={(e) =>
+                            setFormData((p) => ({ ...p, intendedMajor: e.target.value }))
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">
+                          {t('profile.fields.secondMajor')}
+                        </Label>
+                        <Input
+                          placeholder={t('profile.placeholders.secondMajor')}
+                          value={formData.secondMajor}
+                          onChange={(e) =>
+                            setFormData((p) => ({ ...p, secondMajor: e.target.value }))
+                          }
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Test Scores */}
               {activeTab === 'scores' && (
                 <Card className="overflow-hidden">
@@ -852,11 +1122,29 @@ export default function ProfilePage() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.05 }}
                             className="group rounded-xl border p-4 hover:shadow-md transition-all"
+                            draggable
+                            onDragStart={(e) => {
+                              (e as any).dataTransfer?.setData('text/plain', String(index));
+                            }}
+                            onDragOver={(e) => (e as any).preventDefault?.()}
+                            onDrop={(e) => {
+                              const fromIndex = parseInt(
+                                (e as any).dataTransfer?.getData('text/plain') ?? '0'
+                              );
+                              if (fromIndex === index || isNaN(fromIndex)) return;
+                              const ids = profile.activities.map((a: any) => a.id);
+                              const [removed] = ids.splice(fromIndex, 1);
+                              ids.splice(index, 0, removed);
+                              reorderActivitiesMutation.mutate(ids);
+                            }}
                           >
                             <div className="flex items-start justify-between">
                               <div className="flex items-start gap-4">
-                                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-warning/10 text-orange-500">
-                                  <BookOpen className="h-5 w-5" />
+                                <div className="flex flex-col items-center gap-1">
+                                  <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab opacity-0 group-hover:opacity-100 transition-opacity" />
+                                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-warning/10 text-orange-500">
+                                    <BookOpen className="h-5 w-5" />
+                                  </div>
                                 </div>
                                 <div className="space-y-1">
                                   <div className="flex items-center gap-2 flex-wrap">
@@ -867,10 +1155,30 @@ export default function ProfilePage() {
                                           'profile.activityCategories.other'
                                       )}
                                     </Badge>
+                                    {activity.activityTemplate?.tier && (
+                                      <Badge
+                                        variant="outline"
+                                        className={`text-xs ${TIER_BADGE_CONFIG[activity.activityTemplate.tier]?.className || ''}`}
+                                      >
+                                        {TIER_BADGE_CONFIG[activity.activityTemplate.tier]?.label}
+                                      </Badge>
+                                    )}
                                     {activity.isOngoing && (
                                       <Badge className="text-xs bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
                                         {t('common.ongoing')}
                                       </Badge>
+                                    )}
+                                    {activity.gradeLevels?.length > 0 && (
+                                      <span className="flex gap-0.5">
+                                        {activity.gradeLevels.map((g: number) => (
+                                          <span
+                                            key={g}
+                                            className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary"
+                                          >
+                                            {g}th
+                                          </span>
+                                        ))}
+                                      </span>
                                     )}
                                   </div>
                                   <p className="text-sm text-muted-foreground">{activity.role}</p>
@@ -1045,13 +1353,27 @@ export default function ProfilePage() {
                       </CardTitle>
                       <CardDescription>{t('profile.targetSchoolsDesc')}</CardDescription>
                     </div>
-                    <Button
-                      onClick={() => setSchoolSelectorOpen(true)}
-                      className="gap-2 bg-gradient-to-r bg-destructive hover:opacity-90"
-                    >
-                      <Plus className="h-4 w-4" />
-                      {t('profile.actions.addSchool')}
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Select value={defaultRound} onValueChange={setDefaultRound}>
+                        <SelectTrigger className="h-9 w-24 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {['ED', 'ED2', 'EA', 'REA', 'RD', 'ROLLING'].map((r) => (
+                            <SelectItem key={r} value={r}>
+                              {r}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        onClick={() => setSchoolSelectorOpen(true)}
+                        className="gap-2 bg-gradient-to-r bg-destructive hover:opacity-90"
+                      >
+                        <Plus className="h-4 w-4" />
+                        {t('profile.actions.addSchool')}
+                      </Button>
+                    </div>
                   </CardHeader>
                   <CardContent>
                     {targetSchools.length > 0 ? (

@@ -241,8 +241,8 @@ describe('calculateAcademicScore', () => {
       };
       const school: SchoolMetrics = { sat25: 1520, sat75: 1580 };
       const score = calculateAcademicScore(profile, school);
-      // midpoint score should get ~0 bonus, so ~50
-      expect(score).toBeCloseTo(50, -1);
+      // midpoint score should get ~0 bonus, so ~baseScore (45)
+      expect(score).toBeCloseTo(45, -1);
     });
 
     it('should give positive bonus for score above midpoint', () => {
@@ -253,7 +253,7 @@ describe('calculateAcademicScore', () => {
       };
       const school: SchoolMetrics = { sat25: 1520, sat75: 1580 };
       const scoreWithPercentile = calculateAcademicScore(profile, school);
-      expect(scoreWithPercentile).toBeGreaterThan(50);
+      expect(scoreWithPercentile).toBeGreaterThan(45);
     });
 
     it('should give negative penalty for score below midpoint', () => {
@@ -264,7 +264,7 @@ describe('calculateAcademicScore', () => {
       };
       const school: SchoolMetrics = { sat25: 1520, sat75: 1580 };
       const score = calculateAcademicScore(profile, school);
-      expect(score).toBeLessThan(50);
+      expect(score).toBeLessThan(45);
     });
 
     it('should fall back to satAvg when sat25/sat75 not available', () => {
@@ -297,7 +297,7 @@ describe('calculateAcademicScore', () => {
       };
       const school: SchoolMetrics = { act25: 32, act75: 36 };
       const score = calculateAcademicScore(profile, school);
-      expect(score).toBeCloseTo(50, -1); // midpoint-ish
+      expect(score).toBeCloseTo(45, -1); // midpoint-ish (baseScore)
     });
 
     it('should not use ACT when SAT is present', () => {
@@ -310,17 +310,17 @@ describe('calculateAcademicScore', () => {
       const school: SchoolMetrics = { satAvg: 1500, act25: 32, act75: 36 };
       // ACT should be ignored, SAT drives the score
       const score = calculateAcademicScore(profile, school);
-      expect(score).toBeCloseTo(50, -1);
+      expect(score).toBeCloseTo(45, -1); // baseScore
     });
   });
 
   // TOEFL scoring tests
   describe('TOEFL scoring', () => {
-    it('should give 0 bonus for TOEFL 100 (baseline)', () => {
+    it('should give 0 bonus for TOEFL at baseline (105)', () => {
       const withToefl: ProfileMetrics = {
         ...baseProfile,
         gpa: undefined,
-        toeflScore: 100,
+        toeflScore: 105,
       };
       const withoutToefl: ProfileMetrics = {
         ...baseProfile,
@@ -331,7 +331,7 @@ describe('calculateAcademicScore', () => {
       expect(scoreWith).toBeCloseTo(scoreWithout, 0);
     });
 
-    it('should give +5 bonus for TOEFL 120', () => {
+    it('should give positive bonus for TOEFL 120', () => {
       const profile: ProfileMetrics = {
         ...baseProfile,
         gpa: undefined,
@@ -345,7 +345,7 @@ describe('calculateAcademicScore', () => {
       expect(scoreWith - scoreBase).toBeCloseTo(5, 0);
     });
 
-    it('should give -5 penalty for TOEFL 80', () => {
+    it('should give hard penalty for TOEFL below 90', () => {
       const profile: ProfileMetrics = {
         ...baseProfile,
         gpa: undefined,
@@ -356,10 +356,12 @@ describe('calculateAcademicScore', () => {
         { ...baseProfile, gpa: undefined },
         {},
       );
-      expect(scoreWith - scoreBase).toBeCloseTo(-5, 0);
+      // Hard penalty (-8) + linear bonus from being below baseline
+      expect(scoreWith).toBeLessThan(scoreBase);
+      expect(scoreWith - scoreBase).toBeLessThan(-8);
     });
 
-    it('should cap TOEFL bonus at ±5', () => {
+    it('should cap TOEFL bonus at ±toeflMaxBonus', () => {
       const high: ProfileMetrics = {
         ...baseProfile,
         gpa: undefined,
@@ -368,18 +370,18 @@ describe('calculateAcademicScore', () => {
       const low: ProfileMetrics = {
         ...baseProfile,
         gpa: undefined,
-        toeflScore: 0,
+        toeflScore: 91, // above hard penalty threshold, just linear penalty
       };
       const baseScore = calculateAcademicScore(
         { ...baseProfile, gpa: undefined },
         {},
       );
       expect(calculateAcademicScore(high, {}) - baseScore).toBeLessThanOrEqual(
-        5,
+        ACADEMIC_CONFIG.toeflMaxBonus,
       );
       expect(
         calculateAcademicScore(low, {}) - baseScore,
-      ).toBeGreaterThanOrEqual(-5);
+      ).toBeGreaterThanOrEqual(-ACADEMIC_CONFIG.toeflMaxBonus);
     });
   });
 
@@ -419,7 +421,7 @@ describe('calculateActivityScore', () => {
       internationalAwardCount: 0,
     };
     const score = calculateActivityScore(profile);
-    expect(score).toBe(55); // 30 + 5*5
+    expect(score).toBe(50); // 25 + Math.min(40, 5*5)
   });
 
   it('should award leadership bonus', () => {
@@ -502,9 +504,9 @@ describe('calculateActivityScore', () => {
     );
   });
 
-  it('should give extra diversity bonus for 5+ categories', () => {
-    const veryDiverse: ProfileMetrics = {
-      activityCount: 5,
+  it('should give breadth bonus for 3+ unique categories vs fewer', () => {
+    const diverse: ProfileMetrics = {
+      activityCount: 3,
       awardCount: 0,
       nationalAwardCount: 0,
       internationalAwardCount: 0,
@@ -512,26 +514,21 @@ describe('calculateActivityScore', () => {
         { category: 'ACADEMIC', role: 'Member', totalHours: 50 },
         { category: 'ATHLETICS', role: 'Member', totalHours: 50 },
         { category: 'COMMUNITY_SERVICE', role: 'Member', totalHours: 50 },
-        { category: 'ARTS', role: 'Member', totalHours: 50 },
-        { category: 'WORK', role: 'Member', totalHours: 50 },
       ],
     };
-    const somewhatDiverse: ProfileMetrics = {
-      activityCount: 5,
+    const narrow: ProfileMetrics = {
+      activityCount: 3,
       awardCount: 0,
       nationalAwardCount: 0,
       internationalAwardCount: 0,
       activityDetails: [
         { category: 'ACADEMIC', role: 'Member', totalHours: 50 },
-        { category: 'ATHLETICS', role: 'Member', totalHours: 50 },
-        { category: 'COMMUNITY_SERVICE', role: 'Member', totalHours: 50 },
-        { category: 'ACADEMIC', role: 'Member', totalHours: 50 },
+        { category: 'ACADEMIC', role: 'Tutor', totalHours: 50 },
         { category: 'ATHLETICS', role: 'Member', totalHours: 50 },
       ],
     };
-    // veryDiverse: 5 categories → +10, somewhatDiverse: 3 categories → +5
-    expect(calculateActivityScore(veryDiverse)).toBeGreaterThan(
-      calculateActivityScore(somewhatDiverse),
+    expect(calculateActivityScore(diverse)).toBeGreaterThan(
+      calculateActivityScore(narrow),
     );
   });
 
@@ -704,11 +701,12 @@ describe('calculateScoreBreakdown', () => {
 // calculateProbability
 // ============================================
 describe('calculateProbability', () => {
-  it('should return minimum clamp for score of 50 with selective school', () => {
-    // With acceptanceRate=30, selectivity index ~0.807 → threshold ~75.4
-    // Score 50 is well below threshold → sigmoid output < 0.05 → clamped to 0.05
+  it('should return low probability for score of 50 with selective school', () => {
+    // With acceptanceRate=30, selectivity ~0.807 → threshold ~66.3, k ~9.35
+    // Score 50 → z=(50-66.3)/9.35 ≈ -1.74 → P ≈ 0.15
     const prob = calculateProbability(50, { acceptanceRate: 30 });
-    expect(prob).toBeCloseTo(0.05, 2);
+    expect(prob).toBeLessThan(0.2);
+    expect(prob).toBeGreaterThanOrEqual(0.05);
   });
 
   it('should increase with higher scores', () => {
@@ -807,9 +805,9 @@ describe('Constants', () => {
   });
 
   it('ACADEMIC_CONFIG should have reasonable values', () => {
-    expect(ACADEMIC_CONFIG.baseScore).toBe(50);
-    expect(ACADEMIC_CONFIG.toeflBaseline).toBe(100);
-    expect(ACADEMIC_CONFIG.satMaxBonus).toBe(15);
+    expect(ACADEMIC_CONFIG.baseScore).toBe(45);
+    expect(ACADEMIC_CONFIG.toeflBaseline).toBe(105);
+    expect(ACADEMIC_CONFIG.satMaxBonus).toBe(18);
   });
 
   it('LEADERSHIP_KEYWORDS should contain key terms', () => {

@@ -19,7 +19,9 @@ import {
   Copy,
   Check,
   Type,
+  ExternalLink,
 } from 'lucide-react';
+import Link from 'next/link';
 
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
@@ -176,7 +178,7 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
   const paragraphs = essay.content?.split(/\n\n+/).filter((p) => p.trim().length > 0) || [];
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-hidden">
       {/* ── 固定头部 ── */}
       <div className="shrink-0 border-b px-6 pt-6 pb-4 space-y-1.5">
         <h2 className="text-xl font-semibold tracking-tight flex items-center gap-2.5">
@@ -199,134 +201,149 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
             </Badge>
           )}
         </div>
+        <Link
+          href={`/cases/${essayId}`}
+          className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-1"
+        >
+          <ExternalLink className="h-3 w-3" />
+          {t('detail.viewFullCase')}
+        </Link>
       </div>
 
-      {/* ── 可滚动内容区 ── */}
-      <ScrollArea className="flex-1">
-        <div className="px-6 py-6">
-          {/* ── 申请者背景指标（上移到文书内容之前） ── */}
-          <div className="flex flex-wrap gap-2.5 mb-5">
-            {essay.gpaRange && <CompactScore label="GPA" value={essay.gpaRange} />}
-            {essay.satRange && <CompactScore label="SAT" value={essay.satRange} />}
-            <CompactScore label={t('detail.words')} value={String(essay.wordCount)} />
-            <CompactScore label={t('detail.yearLabel') || 'Year'} value={String(essay.year)} />
-          </div>
-
-          {/* ── 文书题目 ── */}
-          {essay.prompt && (
-            <div className="flex gap-3 p-4 rounded-xl bg-muted/50 border mb-5">
-              <div className="w-1 shrink-0 rounded-full bg-amber-500" />
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
-                  {t('detail.essayPrompt')}
-                </p>
-                <p className="text-sm leading-relaxed">{essay.prompt}</p>
-              </div>
-            </div>
-          )}
-
-          {/* ── Tab 切换（紧凑样式） ── */}
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <div className="flex items-center justify-between mb-4">
-              <TabsList className="inline-flex w-auto h-9 p-1">
-                <TabsTrigger value="content" className="gap-1.5 text-sm px-3 h-7">
-                  <FileText className="h-3.5 w-3.5" />
-                  {t('detail.tabs.original')}
-                </TabsTrigger>
-                <TabsTrigger value="analysis" className="gap-1.5 text-sm px-3 h-7">
-                  <Brain className="h-3.5 w-3.5" />
-                  {t('detail.tabs.aiReview')}
-                </TabsTrigger>
-              </TabsList>
-
-              {/* ── 阅读工具栏（从浮动改为固定在 Tab 旁边） ── */}
-              {activeTab === 'content' && (
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0"
-                    onClick={() => setUseSerif(!useSerif)}
-                    title={useSerif ? 'Sans-serif' : 'Serif'}
-                  >
-                    <Type className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={handleCopy}>
-                    {copied ? (
-                      <Check className="h-3.5 w-3.5 text-emerald-500" />
-                    ) : (
-                      <Copy className="h-3.5 w-3.5" />
-                    )}
-                  </Button>
-                </div>
-              )}
+      {/* ── 可滚动内容区（min-h-0 + overflow-hidden 让 flex 子元素可收缩从而出现滚动） ── */}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <ScrollArea className="h-full">
+          <div className="px-6 py-6">
+            {/* ── 申请者背景指标（上移到文书内容之前） ── */}
+            <div className="flex flex-wrap gap-2.5 mb-5">
+              {essay.gpaRange && <CompactScore label="GPA" value={essay.gpaRange} />}
+              {essay.satRange && <CompactScore label="SAT" value={essay.satRange} />}
+              <CompactScore label={t('detail.words')} value={String(essay.wordCount)} />
+              <CompactScore label={t('detail.yearLabel') || 'Year'} value={String(essay.year)} />
             </div>
 
-            {/* ── 原文 Tab ── */}
-            <TabsContent value="content" className="mt-0">
-              <div
-                className={cn(
-                  'prose dark:prose-invert max-w-[68ch] mx-auto p-6 rounded-xl bg-muted/30 border',
-                  useSerif && 'font-serif'
-                )}
-              >
-                {paragraphs.map((p, i) => (
-                  <p key={i} className="mb-6 last:mb-0 text-base leading-[1.8]">
-                    {p}
+            {/* ── 文书题目 ── */}
+            {essay.prompt && (
+              <div className="flex gap-3 p-4 rounded-xl bg-muted/50 border mb-5">
+                <div className="w-1 shrink-0 rounded-full bg-amber-500" />
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
+                    {t('detail.essayPrompt')}
                   </p>
-                ))}
+                  <p className="text-sm leading-relaxed">{essay.prompt}</p>
+                </div>
               </div>
-            </TabsContent>
+            )}
 
-            {/* ── AI 分析 Tab ── */}
-            <TabsContent value="analysis" className="mt-0">
-              {!accessToken ? (
-                <Card className="border-dashed">
-                  <CardContent className="py-8 text-center">
-                    <Brain className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="font-medium mb-2">{t('detail.ai.loginRequired')}</p>
-                    <p className="text-sm text-muted-foreground mb-4">{t('detail.ai.costHint')}</p>
-                    <Button onClick={() => (window.location.href = '/login')}>
-                      {t('detail.ai.loginButton')}
-                    </Button>
-                  </CardContent>
-                </Card>
-              ) : analyzeMutation.data ? (
-                <AnalysisResultView analysis={analyzeMutation.data} paragraphs={paragraphs} t={t} />
-              ) : (
-                <Card className="border-dashed">
-                  <CardContent className="py-8 text-center">
-                    <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-lg bg-primary/20 mb-4">
-                      <Sparkles className="h-8 w-8 text-primary" />
-                    </div>
-                    <p className="font-medium mb-2">{t('detail.ai.title')}</p>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      {t('detail.ai.description')}
-                    </p>
+            {/* ── Tab 切换（紧凑样式） ── */}
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <div className="flex items-center justify-between mb-4">
+                <TabsList className="inline-flex w-auto h-9 p-1">
+                  <TabsTrigger value="content" className="gap-1.5 text-sm px-3 h-7">
+                    <FileText className="h-3.5 w-3.5" />
+                    {t('detail.tabs.original')}
+                  </TabsTrigger>
+                  <TabsTrigger value="analysis" className="gap-1.5 text-sm px-3 h-7">
+                    <Brain className="h-3.5 w-3.5" />
+                    {t('detail.tabs.aiReview')}
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* ── 阅读工具栏（从浮动改为固定在 Tab 旁边） ── */}
+                {activeTab === 'content' && (
+                  <div className="flex items-center gap-1">
                     <Button
-                      onClick={() => analyzeMutation.mutate()}
-                      disabled={analyzeMutation.isPending}
-                      className="gap-2 bg-primary dark:bg-primary hover:opacity-90"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      onClick={() => setUseSerif(!useSerif)}
+                      title={useSerif ? 'Sans-serif' : 'Serif'}
                     >
-                      {analyzeMutation.isPending ? (
-                        <>
-                          <RefreshCw className="h-4 w-4 animate-spin" />
-                          {t('detail.ai.analyzing')}
-                        </>
+                      <Type className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={handleCopy}>
+                      {copied ? (
+                        <Check className="h-3.5 w-3.5 text-emerald-500" />
                       ) : (
-                        <>
-                          <Brain className="h-4 w-4" />
-                          {t('detail.ai.startAnalysis')}
-                        </>
+                        <Copy className="h-3.5 w-3.5" />
                       )}
                     </Button>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
-          </Tabs>
-        </div>
-      </ScrollArea>
+                  </div>
+                )}
+              </div>
+
+              {/* ── 原文 Tab ── */}
+              <TabsContent value="content" className="mt-0">
+                <div
+                  className={cn(
+                    'prose dark:prose-invert max-w-[68ch] mx-auto p-6 rounded-xl bg-muted/30 border',
+                    useSerif && 'font-serif'
+                  )}
+                >
+                  {paragraphs.map((p, i) => (
+                    <p key={i} className="mb-6 last:mb-0 text-base leading-[1.8]">
+                      {p}
+                    </p>
+                  ))}
+                </div>
+              </TabsContent>
+
+              {/* ── AI 分析 Tab ── */}
+              <TabsContent value="analysis" className="mt-0">
+                {!accessToken ? (
+                  <Card className="border-dashed">
+                    <CardContent className="py-8 text-center">
+                      <Brain className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                      <p className="font-medium mb-2">{t('detail.ai.loginRequired')}</p>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        {t('detail.ai.costHint')}
+                      </p>
+                      <Button onClick={() => (window.location.href = '/login')}>
+                        {t('detail.ai.loginButton')}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : analyzeMutation.data ? (
+                  <AnalysisResultView
+                    analysis={analyzeMutation.data}
+                    paragraphs={paragraphs}
+                    t={t}
+                  />
+                ) : (
+                  <Card className="border-dashed">
+                    <CardContent className="py-8 text-center">
+                      <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-lg bg-primary/20 mb-4">
+                        <Sparkles className="h-8 w-8 text-primary" />
+                      </div>
+                      <p className="font-medium mb-2">{t('detail.ai.title')}</p>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        {t('detail.ai.description')}
+                      </p>
+                      <Button
+                        onClick={() => analyzeMutation.mutate()}
+                        disabled={analyzeMutation.isPending}
+                        className="gap-2 bg-primary dark:bg-primary hover:opacity-90"
+                      >
+                        {analyzeMutation.isPending ? (
+                          <>
+                            <RefreshCw className="h-4 w-4 animate-spin" />
+                            {t('detail.ai.analyzing')}
+                          </>
+                        ) : (
+                          <>
+                            <Brain className="h-4 w-4" />
+                            {t('detail.ai.startAnalysis')}
+                          </>
+                        )}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+            </Tabs>
+          </div>
+        </ScrollArea>
+      </div>
     </div>
   );
 }

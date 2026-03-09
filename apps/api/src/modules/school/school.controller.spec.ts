@@ -8,6 +8,8 @@ import { AiService } from '../ai/ai.service';
 import { ProfileService } from '../profile/profile.service';
 import { RedisService } from '../../common/redis/redis.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditLogService } from '../../common/services/audit-log.service';
+import { SchoolLogoService } from './school-logo.service';
 
 describe('SchoolController', () => {
   let controller: SchoolController;
@@ -29,7 +31,7 @@ describe('SchoolController', () => {
     name: 'MIT',
     nameZh: 'MIT Chinese',
     usNewsRank: 1,
-    acceptanceRate: 0.04,
+    acceptanceRate: 4,
     sat25: 1510,
     sat75: 1580,
     act25: 34,
@@ -54,6 +56,7 @@ describe('SchoolController', () => {
             findById: jest.fn().mockResolvedValue(mockSchool),
             create: jest.fn().mockResolvedValue(mockSchool),
             update: jest.fn().mockResolvedValue(mockSchool),
+            invalidateSchoolCache: jest.fn().mockResolvedValue(undefined),
             getDataQualityReport: jest.fn().mockResolvedValue({
               summary: {
                 total: 100,
@@ -138,6 +141,20 @@ describe('SchoolController', () => {
             predictionSnapshot: { create: jest.fn() },
           },
         },
+        {
+          provide: AuditLogService,
+          useValue: { log: jest.fn().mockResolvedValue(undefined) },
+        },
+        {
+          provide: SchoolLogoService,
+          useValue: {
+            isConfigured: jest.fn().mockReturnValue(false),
+            getSuggestedLogoUrl: jest.fn().mockReturnValue(null),
+            fillLogosByDomain: jest
+              .fn()
+              .mockResolvedValue({ filled: 0, failed: 0, skipped: 0 }),
+          },
+        },
       ],
     }).compile();
 
@@ -214,7 +231,7 @@ describe('SchoolController', () => {
     it('should call schoolService.update with id and dto', async () => {
       const dto = { name: 'MIT Updated' } as any;
 
-      const result = await controller.update('school-1', dto);
+      const result = await controller.update('school-1', dto, mockUser as any);
 
       expect(schoolService.update).toHaveBeenCalledWith('school-1', dto);
       expect(result).toEqual(mockSchool);

@@ -22,6 +22,14 @@ import {
   CaseIncentiveService,
   PointAction,
 } from '../case/case-incentive.service';
+import { clampPercentRate } from '../../common/utils/percent.util';
+import { formatHighSchoolContext } from '../ai-agent/tools/helpers/education-context.helper';
+import {
+  extractProfileMetrics,
+  extractSchoolMetrics,
+  calculateOverallScore,
+  calculateProbability,
+} from '../../common/utils/scoring';
 
 @Injectable()
 export class RecommendationService {
@@ -86,9 +94,12 @@ export class RecommendationService {
       where: { userId },
       include: {
         testScores: true,
-        activities: true,
+        activities: {
+          orderBy: { order: 'asc' },
+          include: { activityTemplate: true },
+        },
         awards: { include: { competition: true } },
-        education: true,
+        education: { include: { highSchool: true } },
       },
     });
 
@@ -121,6 +132,10 @@ export class RecommendationService {
 - 专业契合度：学校在该专业的排名和资源
 - 活动/奖项匹配：课外活动与学校文化的契合
 - 地理位置、费用等偏好
+
+重要约束：必须根据目标专业与活动方向推荐，不得推荐与申请者背景明显不符的学校。例如：商科/经济背景不推艺术类院校，纯文科背景不推纯理工院校，STEM/商科背景不推纯艺术类学校。专业与活动方向明显错配的学校必须排除。
+
+estimatedProbability 要求：你的录取概率估计应基于学生的 GPA、标化成绩与学校的录取率、SAT 中位数等数据的客观对比。不要凭感觉给出概率，而应参照数据合理推导。系统会使用统计模型校准你的估计值。
 
 返回严格的 JSON 格式：
 {
@@ -155,6 +170,10 @@ Evaluation dimensions:
 - Major fit: school ranking and resources in the target major
 - Activity/award fit: extracurriculars aligned with school culture
 - Location, cost, and other preferences
+
+Critical constraint: Recommend only schools that match the student's target major and activity focus. Do NOT recommend schools that are a clear mismatch (e.g. do not recommend art schools for business/economics profiles; do not recommend pure STEM schools for humanities-only profiles; do not recommend pure art schools for STEM/business profiles). Exclude any school that would be an obvious major/activity mismatch.
+
+estimatedProbability requirement: Your probability estimates should be grounded in objective comparison of the student's GPA and test scores against each school's acceptance rate and SAT midpoints. Do not guess probabilities — derive them from data. The system will calibrate your estimates using a statistical model.
 
 Return strict JSON:
 {
@@ -223,6 +242,9 @@ All text fields must be in English.`;
 
       // 模糊匹配数据库中的学校
       const recommendations = await this.matchSchoolIds(parsed.recommendations);
+
+      // 使用统计模型锚定 LLM 概率估计，防止 LLM 猜测与数据驱动模型偏差过大
+      await this.anchorProbabilities(profile, recommendations);
 
       // 保存结果
       const savedRecommendation = await this.prisma.schoolRecommendation.create(
@@ -351,7 +373,7 @@ All text fields must be in English.`;
               detail: r,
             })) as any,
             suggestions: rec.concerns || ([] as any),
-            modelVersion: 'v1-recommendation-ai',
+            modelVersion: 'v2-recommendation-anchored',
             source: 'recommendation',
           },
           create: {
@@ -367,7 +389,7 @@ All text fields must be in English.`;
               detail: r,
             })) as any,
             suggestions: rec.concerns || ([] as any),
-            modelVersion: 'v1-recommendation-ai',
+            modelVersion: 'v2-recommendation-anchored',
             source: 'recommendation',
           },
         });
@@ -381,7 +403,7 @@ All text fields must be in English.`;
             tier: rec.tier,
             confidence: 'medium',
             source: 'recommendation',
-            modelVersion: 'v1-recommendation-ai',
+            modelVersion: 'v2-recommendation-anchored',
           },
         });
       } catch (error) {
@@ -515,12 +537,47 @@ All text fields must be in English.`;
       parts.push(`${isZh ? '标化成绩' : 'Test Scores'}: ${scores}`);
     }
 
+    // 高中背景
+    if (profile.education?.length) {
+      const hsEntry = profile.education.find(
+        (e: any) => e.schoolType === 'HIGH_SCHOOL',
+      );
+      if (hsEntry) {
+        const hsContext = formatHighSchoolContext(
+          profile.education.map((e: any) => ({
+            school: e.schoolName,
+            schoolType: e.schoolType,
+            highSchoolId: e.highSchoolId,
+          })),
+          hsEntry.highSchool
+            ? {
+                name: hsEntry.highSchool.name,
+                tier: hsEntry.highSchool.tier,
+                type: hsEntry.highSchool.type,
+                country: hsEntry.highSchool.country,
+                state: hsEntry.highSchool.state,
+              }
+            : null,
+          locale,
+        );
+        if (hsContext) {
+          parts.push(hsContext);
+        }
+      }
+    }
+
     if (profile.activities?.length) {
       const activities = profile.activities
-        .slice(0, 5)
-        .map((a: any) => `${a.name || a.category}(${a.role})`)
-        .join(', ');
-      parts.push(`${isZh ? '主要活动' : 'Key Activities'}: ${activities}`);
+        .slice(0, 8)
+        .map((a: any) => {
+          const base = `${a.name || a.category}${a.role ? `(${a.role})` : ''}`;
+          const desc = a.description?.trim();
+          return desc ? `${base}: ${desc}` : base;
+        })
+        .join('; ');
+      parts.push(
+        `${isZh ? '主要活动（含方向/描述）' : 'Key Activities (with direction/description)'}: ${activities}`,
+      );
     }
 
     if (profile.awards?.length) {
@@ -627,9 +684,7 @@ All text fields must be in English.`;
           ? {
               nameZh: matched.nameZh,
               usNewsRank: matched.usNewsRank,
-              acceptanceRate: matched.acceptanceRate
-                ? Number(matched.acceptanceRate)
-                : undefined,
+              acceptanceRate: clampPercentRate(matched.acceptanceRate),
               city: matched.city,
               state: matched.state,
               tuition: matched.tuition,
@@ -638,6 +693,82 @@ All text fields must be in English.`;
           : undefined,
       };
     });
+  }
+
+  /**
+   * Anchor LLM-generated estimatedProbability to the stats model baseline.
+   * Clamps each recommendation's probability within ±15pp of the statistical
+   * estimate so that rates converge with the Prediction module's output.
+   */
+  private async anchorProbabilities(
+    profile: any,
+    recommendations: RecommendedSchoolDto[],
+  ): Promise<void> {
+    const matchedIds = recommendations
+      .filter((r) => r.schoolId)
+      .map((r) => r.schoolId!);
+    if (matchedIds.length === 0) return;
+
+    const schools = await this.prisma.school.findMany({
+      where: { id: { in: matchedIds } },
+      select: {
+        id: true,
+        acceptanceRate: true,
+        usNewsRank: true,
+        satAvg: true,
+        sat25: true,
+        sat75: true,
+        actAvg: true,
+        act25: true,
+        act75: true,
+        graduationRate: true,
+      },
+    });
+
+    const schoolMap = new Map(schools.map((s) => [s.id, s]));
+    const profileMetrics = extractProfileMetrics(profile);
+    const MAX_DEVIATION = 0.15;
+
+    for (const rec of recommendations) {
+      if (!rec.schoolId) continue;
+      const school = schoolMap.get(rec.schoolId);
+      if (!school) continue;
+
+      const schoolMetrics = extractSchoolMetrics({
+        acceptanceRate:
+          school.acceptanceRate != null
+            ? clampPercentRate(school.acceptanceRate)
+            : undefined,
+        usNewsRank: school.usNewsRank ?? undefined,
+        satAvg: school.satAvg ?? undefined,
+        sat25: school.sat25 ?? undefined,
+        sat75: school.sat75 ?? undefined,
+        actAvg: school.actAvg ?? undefined,
+        act25: school.act25 ?? undefined,
+        act75: school.act75 ?? undefined,
+        graduationRate:
+          school.graduationRate != null
+            ? Number(school.graduationRate)
+            : undefined,
+      });
+
+      const overallScore = calculateOverallScore(profileMetrics, schoolMetrics);
+      const statsProb = calculateProbability(overallScore, schoolMetrics);
+
+      const llmProb = rec.estimatedProbability / 100;
+      const anchored = Math.max(
+        0,
+        Math.min(
+          1,
+          Math.max(
+            statsProb - MAX_DEVIATION,
+            Math.min(statsProb + MAX_DEVIATION, llmProb),
+          ),
+        ),
+      );
+
+      rec.estimatedProbability = Math.round(anchored * 100);
+    }
   }
 
   private findBestMatch(

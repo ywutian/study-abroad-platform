@@ -8,20 +8,37 @@ export interface ProfileInput {
   grade?: string;
   currentSchoolType?: string;
   targetMajor?: string;
+  highSchoolName?: string;
+  highSchoolTier?: number;
+  highSchoolType?: string;
+  highSchoolLocation?: string;
+  isInternational?: boolean;
+  nationality?: string;
+  educationSystem?: string;
+  needsFinancialAid?: boolean;
+  majorCompetitiveness?: {
+    name: string;
+    level: number;
+    schoolEstimate?: number;
+  };
   testScores: Array<{
     type: string;
     score: number;
     subScores?: Record<string, number>;
   }>;
   activities: Array<{
+    name?: string;
     category: string;
     role: string;
+    description?: string;
     hoursPerWeek?: number;
     weeksPerYear?: number;
   }>;
   awards: Array<{
     level: string;
     name?: string;
+    tier?: number;
+    competitionName?: string;
   }>;
 }
 
@@ -30,6 +47,9 @@ export interface SchoolInput {
   name: string;
   nameZh?: string;
   acceptanceRate?: number;
+  intlAcceptanceRate?: number;
+  intlStudentPct?: number;
+  needBlindInternational?: boolean;
   satAvg?: number;
   sat25?: number;
   sat75?: number;
@@ -69,20 +89,30 @@ function formatTestScores(
 function formatAwards(awards: ProfileInput['awards'], isZh: boolean): string {
   if (!awards || awards.length === 0) return isZh ? '无' : 'None';
 
-  const levelCounts: Record<string, number> = {};
-  awards.forEach((a) => {
-    levelCounts[a.level] = (levelCounts[a.level] || 0) + 1;
+  const TIER_LABELS: Record<number, string> = {
+    5: 'Elite',
+    4: 'National',
+    3: 'Notable',
+    2: 'Regional',
+    1: 'Entry',
+  };
+
+  const lines = awards.slice(0, 10).map((a) => {
+    let line = `- ${a.name || a.level}`;
+    if (a.competitionName) line += ` (${a.competitionName})`;
+    line += ` | ${isZh ? '级别' : 'Level'}: ${a.level}`;
+    if (a.tier) line += ` | Tier ${a.tier} (${TIER_LABELS[a.tier] || ''})`;
+    return line;
   });
 
-  return Object.entries(levelCounts)
-    .map(([level, count]) =>
-      isZh ? `${level}: ${count}项` : `${level}: ${count}`,
-    )
-    .join(', ');
+  const header = isZh
+    ? `共${awards.length}项奖项:`
+    : `${awards.length} awards:`;
+  return header + '\n' + lines.join('\n');
 }
 
 /**
- * 格式化活动情况
+ * 格式化活动情况 — 包含描述和时间投入以供 AI 评估
  */
 function formatActivities(
   activities: ProfileInput['activities'],
@@ -90,24 +120,21 @@ function formatActivities(
 ): string {
   if (!activities || activities.length === 0) return isZh ? '无' : 'None';
 
-  const categoryCounts: Record<string, number> = {};
-  let totalHours = 0;
-
-  activities.forEach((a) => {
-    categoryCounts[a.category] = (categoryCounts[a.category] || 0) + 1;
+  const lines = activities.slice(0, 10).map((a) => {
+    let line = `- ${a.name || a.category} (${a.category})`;
+    if (a.role) line += ` | ${isZh ? '角色' : 'Role'}: ${a.role}`;
+    if ((a as any).description)
+      line += ` | ${(a as any).description.slice(0, 120)}`;
     if (a.hoursPerWeek && a.weeksPerYear) {
-      totalHours += a.hoursPerWeek * a.weeksPerYear;
+      line += ` | ${a.hoursPerWeek}h/${isZh ? '周' : 'wk'}, ${a.weeksPerYear}${isZh ? '周/年' : 'wk/yr'}`;
     }
+    return line;
   });
 
-  const categories = Object.entries(categoryCounts)
-    .map(([cat, count]) => (isZh ? `${cat}: ${count}项` : `${cat}: ${count}`))
-    .join(', ');
-
-  if (isZh) {
-    return `共${activities.length}项活动 (${categories})${totalHours > 0 ? `，约${totalHours}小时` : ''}`;
-  }
-  return `${activities.length} activities (${categories})${totalHours > 0 ? `, ~${totalHours} hours` : ''}`;
+  const header = isZh
+    ? `共${activities.length}项活动:`
+    : `${activities.length} activities:`;
+  return header + '\n' + lines.join('\n');
 }
 
 /**
@@ -135,15 +162,15 @@ export function buildPredictionPrompt(
 
 ## 学生档案
 - GPA: ${gpaText}
-- 年级: ${profile.grade || unknown}
+- 年级: ${profile.grade || unknown}${profile.highSchoolName ? `\n- 高中背景: ${profile.highSchoolName}${profile.highSchoolTier ? ` (Tier ${profile.highSchoolTier}${profile.highSchoolType ? `, ${profile.highSchoolType}` : ''}${profile.highSchoolLocation ? `, ${profile.highSchoolLocation}` : ''})` : ' (用户自填)'}` : ''}
 - 标化成绩: ${formatTestScores(profile.testScores, true)}
-- 目标专业: ${profile.targetMajor || '未确定'}
+- 目标专业: ${profile.targetMajor || '未确定'}${profile.majorCompetitiveness ? `（该校竞争度: ${profile.majorCompetitiveness.level}/5${profile.majorCompetitiveness.schoolEstimate ? `，预估专业录取率 ~${profile.majorCompetitiveness.schoolEstimate}%` : ''}）` : ''}
 - 活动经历: ${formatActivities(profile.activities, true)}
-- 获奖情况: ${formatAwards(profile.awards, true)}
+- 获奖情况: ${formatAwards(profile.awards, true)}${profile.isInternational ? `\n- 申请者身份: 国际生${profile.nationality ? `（${profile.nationality}）` : ''}${profile.educationSystem ? `，${profile.educationSystem}体系` : ''}${profile.needsFinancialAid ? '，需要助学金' : ''}` : ''}
 
 ## 目标学校: ${schoolName}
 - US News 排名: ${school.usNewsRank ? `#${school.usNewsRank}` : unknown}
-- 录取率: ${school.acceptanceRate ? `${school.acceptanceRate}%` : unknown}
+- 录取率: ${school.acceptanceRate ? `${school.acceptanceRate}%` : unknown}${school.intlAcceptanceRate ? `\n- 国际生录取率: ${school.intlAcceptanceRate}%` : ''}${school.intlStudentPct ? `\n- 国际生比例: ${school.intlStudentPct}%` : ''}${school.needBlindInternational ? '\n- Need-Blind政策: 对国际生Need-Blind' : ''}
 - 毕业率: ${school.graduationRate ? `${school.graduationRate}%` : unknown}
 - 平均 SAT: ${school.satAvg || unknown}${school.sat25 && school.sat75 ? ` (25th-75th: ${school.sat25}-${school.sat75})` : ''}
 - 平均 ACT: ${school.actAvg || unknown}${school.act25 && school.act75 ? ` (25th-75th: ${school.act25}-${school.act75})` : ''}
@@ -198,15 +225,15 @@ export function buildPredictionPrompt(
 
 ## Student Profile
 - GPA: ${gpaText}
-- Grade: ${profile.grade || unknown}
+- Grade: ${profile.grade || unknown}${profile.highSchoolName ? `\n- High School: ${profile.highSchoolName}${profile.highSchoolTier ? ` (Tier ${profile.highSchoolTier}${profile.highSchoolType ? `, ${profile.highSchoolType}` : ''}${profile.highSchoolLocation ? `, ${profile.highSchoolLocation}` : ''})` : ' (user-provided)'}` : ''}
 - Test Scores: ${formatTestScores(profile.testScores, false)}
-- Target Major: ${profile.targetMajor || 'Undecided'}
+- Target Major: ${profile.targetMajor || 'Undecided'}${profile.majorCompetitiveness ? ` (competitiveness at this school: ${profile.majorCompetitiveness.level}/5${profile.majorCompetitiveness.schoolEstimate ? `, estimated major acceptance ~${profile.majorCompetitiveness.schoolEstimate}%` : ''})` : ''}
 - Activities: ${formatActivities(profile.activities, false)}
-- Awards: ${formatAwards(profile.awards, false)}
+- Awards: ${formatAwards(profile.awards, false)}${profile.isInternational ? `\n- Applicant Status: International student${profile.nationality ? ` (${profile.nationality})` : ''}${profile.educationSystem ? `, ${profile.educationSystem} curriculum` : ''}${profile.needsFinancialAid ? ', needs financial aid' : ''}` : ''}
 
 ## Target School: ${schoolName}
 - US News Rank: ${school.usNewsRank ? `#${school.usNewsRank}` : unknown}
-- Acceptance Rate: ${school.acceptanceRate ? `${school.acceptanceRate}%` : unknown}
+- Acceptance Rate: ${school.acceptanceRate ? `${school.acceptanceRate}%` : unknown}${school.intlAcceptanceRate ? `\n- International Acceptance Rate: ${school.intlAcceptanceRate}%` : ''}${school.intlStudentPct ? `\n- International Student %: ${school.intlStudentPct}%` : ''}${school.needBlindInternational ? '\n- Need-Blind for International Students: Yes' : ''}
 - Graduation Rate: ${school.graduationRate ? `${school.graduationRate}%` : unknown}
 - Average SAT: ${school.satAvg || unknown}${school.sat25 && school.sat75 ? ` (25th-75th: ${school.sat25}-${school.sat75})` : ''}
 - Average ACT: ${school.actAvg || unknown}${school.act25 && school.act75 ? ` (25th-75th: ${school.act25}-${school.act75})` : ''}
@@ -291,7 +318,7 @@ export function buildBatchPredictionPrompt(
     return `你是资深美国大学招生顾问。根据学生档案，快速评估多所学校的录取概率。请用中文回复。
 
 ## 学生档案
-- GPA: ${gpaText}
+- GPA: ${gpaText}${profile.highSchoolName ? `\n- 高中: ${profile.highSchoolName}${profile.highSchoolTier ? ` (Tier ${profile.highSchoolTier})` : ''}` : ''}
 - 标化: ${formatTestScores(profile.testScores, true)}
 - 活动: ${profile.activities?.length || 0}项
 - 奖项: ${profile.awards?.length || 0}项
@@ -316,7 +343,7 @@ ${schoolsList}
   return `You are an expert US college admissions consultant. Based on the student profile, quickly evaluate admission probability for multiple schools. Respond in English.
 
 ## Student Profile
-- GPA: ${gpaText}
+- GPA: ${gpaText}${profile.highSchoolName ? `\n- High School: ${profile.highSchoolName}${profile.highSchoolTier ? ` (Tier ${profile.highSchoolTier})` : ''}` : ''}
 - Test Scores: ${formatTestScores(profile.testScores, false)}
 - Activities: ${profile.activities?.length || 0}
 - Awards: ${profile.awards?.length || 0}

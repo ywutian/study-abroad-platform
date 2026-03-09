@@ -18,6 +18,7 @@ import {
 import { BottomSheet } from '@/components/ui/Modal';
 import { useDebouncedSearch, usePaginatedQuery } from '@/hooks/api';
 import { useColors, spacing, fontSize, fontWeight } from '@/utils/theme';
+import { formatAcceptanceRate } from '@/utils/format';
 import type { School } from '@/types';
 
 interface SchoolListItemProps {
@@ -40,8 +41,8 @@ const SchoolListItem = memo(function SchoolListItem({ item, colors }: SchoolList
             </Text>
             <View style={styles.badges}>
               {item.usNewsRank && <Badge variant="secondary">#{item.usNewsRank}</Badge>}
-              {item.acceptanceRate && (
-                <Badge variant="outline">{(item.acceptanceRate * 100).toFixed(0)}%</Badge>
+              {item.acceptanceRate != null && (
+                <Badge variant="outline">{formatAcceptanceRate(Number(item.acceptanceRate))}</Badge>
               )}
             </View>
           </View>

@@ -19,10 +19,29 @@ export interface ProfileAnalysisRequest {
   gpa?: number;
   gpaScale?: number;
   testScores?: Array<{ type: string; score: number }>;
-  activities?: Array<{ name: string; category: string; role: string }>;
-  awards?: Array<{ name: string; level: string }>;
+  activities?: Array<{
+    name: string;
+    category: string;
+    role: string;
+    description?: string;
+    hoursPerWeek?: number;
+    weeksPerYear?: number;
+    tier?: number;
+  }>;
+  awards?: Array<{
+    name: string;
+    level: string;
+    competitionCategory?: string;
+    tier?: number;
+    competitionName?: string;
+  }>;
   targetMajor?: string;
+  intendedMajor?: string;
+  secondMajor?: string;
   targetSchools?: string[];
+  grade?: string;
+  /** Pre-formatted high school context line (from formatHighSchoolContext) */
+  highSchoolContext?: string;
 }
 
 export interface ProfileAnalysisResponse {
@@ -97,10 +116,22 @@ export class AiService {
    */
   async chat(
     messages: ChatMessage[],
-    options?: { temperature?: number; maxTokens?: number },
+    options?: {
+      temperature?: number;
+      maxTokens?: number;
+      seed?: number;
+      providerOptions?: Record<string, unknown>;
+    },
   ): Promise<string> {
     const systemMsg = messages.find((m) => m.role === 'system');
     const otherMsgs = messages.filter((m) => m.role !== 'system');
+
+    const extraProviderOptions: Record<string, unknown> = {
+      ...options?.providerOptions,
+    };
+    if (options?.seed !== undefined) {
+      extraProviderOptions.seed = options.seed;
+    }
 
     const response = await this.provider.chat({
       systemPrompt: systemMsg?.content || '',
@@ -108,6 +139,9 @@ export class AiService {
       model: this.model,
       temperature: options?.temperature ?? 0.7,
       maxTokens: options?.maxTokens ?? 2000,
+      ...(Object.keys(extraProviderOptions).length > 0 && {
+        providerOptions: extraProviderOptions,
+      }),
     });
 
     return response.content;
@@ -141,21 +175,65 @@ Output requirements:
 
 All text fields must be in English. Return results in JSON format.`;
 
+    const hsLine = request.highSchoolContext
+      ? `\n${request.highSchoolContext}`
+      : '';
+
     const userPrompt = isZh
       ? `请分析以下学生档案:
 
-GPA: ${request.gpa ? `${request.gpa}/${request.gpaScale || 4.0}` : na}
+GPA: ${request.gpa ? `${request.gpa}/${request.gpaScale || 4.0}` : na}${hsLine}
 标化成绩: ${request.testScores?.map((s) => `${s.type}: ${s.score}`).join(', ') || na}
-活动: ${request.activities?.map((a) => `${a.name}(${a.role})`).join(', ') || na}
-奖项: ${request.awards?.map((a) => `${a.name}(${a.level})`).join(', ') || na}
+活动:
+${
+  request.activities
+    ?.map((a) => {
+      let line = `- ${a.name}(${a.role}, ${a.category})`;
+      if (a.description) line += `: ${a.description.slice(0, 100)}`;
+      if (a.hoursPerWeek) line += ` [${a.hoursPerWeek}h/周]`;
+      return line;
+    })
+    .join('\n') || na
+}
+奖项:
+${
+  request.awards
+    ?.map((a) => {
+      let line = `- ${a.name}(${a.level})`;
+      if (a.competitionName) line += ` — ${a.competitionName}`;
+      if (a.tier) line += ` [Tier ${a.tier}]`;
+      return line;
+    })
+    .join('\n') || na
+}
 目标专业: ${request.targetMajor || undecided}
 目标学校: ${request.targetSchools?.join(', ') || undecided}`
       : `Analyze the following student profile:
 
-GPA: ${request.gpa ? `${request.gpa}/${request.gpaScale || 4.0}` : na}
+GPA: ${request.gpa ? `${request.gpa}/${request.gpaScale || 4.0}` : na}${hsLine}
 Test Scores: ${request.testScores?.map((s) => `${s.type}: ${s.score}`).join(', ') || na}
-Activities: ${request.activities?.map((a) => `${a.name}(${a.role})`).join(', ') || na}
-Awards: ${request.awards?.map((a) => `${a.name}(${a.level})`).join(', ') || na}
+Activities:
+${
+  request.activities
+    ?.map((a) => {
+      let line = `- ${a.name}(${a.role}, ${a.category})`;
+      if (a.description) line += `: ${a.description.slice(0, 100)}`;
+      if (a.hoursPerWeek) line += ` [${a.hoursPerWeek}h/wk]`;
+      return line;
+    })
+    .join('\n') || na
+}
+Awards:
+${
+  request.awards
+    ?.map((a) => {
+      let line = `- ${a.name}(${a.level})`;
+      if (a.competitionName) line += ` — ${a.competitionName}`;
+      if (a.tier) line += ` [Tier ${a.tier}]`;
+      return line;
+    })
+    .join('\n') || na
+}
 Target Major: ${request.targetMajor || undecided}
 Target Schools: ${request.targetSchools?.join(', ') || undecided}`;
 
@@ -368,9 +446,20 @@ All text fields must be in English. Return strict JSON only, no other content.`;
     }
 
     parts.push(isZh ? `\n【课外活动】` : `\n[Extracurricular Activities]`);
+    parts.push(
+      isZh
+        ? '(注: 知名项目如RSI/TASP/Science Olympiad等权重更高；未知活动按描述和投入评估)'
+        : '(Note: Well-known programs like RSI/TASP/Science Olympiad carry higher weight; unknown activities evaluated by description and commitment)',
+    );
     if (request.activities?.length) {
       request.activities.forEach((a, i) => {
-        parts.push(`${i + 1}. ${a.name} - ${a.role} (${a.category})`);
+        let line = `${i + 1}. ${a.name} - ${a.role} (${a.category})`;
+        if (a.description) line += ` | ${a.description.slice(0, 200)}`;
+        if (a.hoursPerWeek && a.weeksPerYear) {
+          line += ` | ${a.hoursPerWeek}h/${isZh ? '周' : 'wk'}, ${a.weeksPerYear}${isZh ? '周/年' : 'wk/yr'}`;
+        }
+        if (a.tier) line += ` | Tier ${a.tier}`;
+        parts.push(line);
       });
     } else {
       parts.push(isZh ? `- 未填写活动` : `- No activities listed`);
@@ -379,7 +468,10 @@ All text fields must be in English. Return strict JSON only, no other content.`;
     parts.push(isZh ? `\n【奖项荣誉】` : `\n[Awards & Honors]`);
     if (request.awards?.length) {
       request.awards.forEach((a, i) => {
-        parts.push(`${i + 1}. ${a.name} (${a.level})`);
+        let line = `${i + 1}. ${a.name} (${a.level})`;
+        if (a.competitionName) line += ` — ${a.competitionName}`;
+        if (a.tier) line += ` [Tier ${a.tier}]`;
+        parts.push(line);
       });
     } else {
       parts.push(isZh ? `- 未填写奖项` : `- No awards listed`);
@@ -632,24 +724,75 @@ Please provide some writing ideas:`;
     const undecided = isZh ? '未确定' : 'Undecided';
 
     const systemPrompt = isZh
-      ? `你是留学选校顾问。根据学生档案,推荐10-15所合适的美国大学,分为冲刺校、匹配校、保底校三类。
+      ? `你是留学选校顾问。根据学生档案（含学术成绩、课外活动方向、获奖领域、目标专业）,推荐10-15所合适的美国大学,分为冲刺校、匹配校、保底校三类。
+
+重要约束:
+- 必须分析学生活动和获奖所属领域（如商科/经济、STEM、人文社科、艺术等），只推荐与该方向匹配的学校
+- 绝不推荐与学生背景方向明显不符的学校（如商科背景不推艺术设计类院校，STEM背景不推纯艺术院校）
+- 保底校必须是知名度高、录取率>60%的实力院校（如大型州立大学），且在学生目标专业方向有良好项目
+
 返回JSON数组: [{ "name": "学校名", "fit": "reach/match/safety", "reason": "简短原因（中文）" }]
 所有文本必须用中文。`
-      : `You are a college admissions school-matching consultant. Based on the student profile, recommend 10-15 suitable US universities in three categories: reach, match, and safety.
+      : `You are a college admissions school-matching consultant. Based on the student profile (academic stats, extracurricular focus, award domains, target major), recommend 10-15 suitable US universities in three categories: reach, match, and safety.
+
+Critical constraints:
+- Analyze the student's activity and award domains (e.g., business/economics, STEM, humanities, arts) and ONLY recommend schools matching that focus
+- NEVER recommend schools that are a clear mismatch (e.g., do NOT recommend art/design schools for business/STEM profiles)
+- Safety schools must be well-known institutions with >60% acceptance rates (e.g., large state universities) that offer strong programs in the student's target major area
+
 Return JSON array: [{ "name": "School Name", "fit": "reach/match/safety", "reason": "Brief reason (English)" }]
 All text must be in English.`;
+
+    const hsLine = profile.highSchoolContext
+      ? `\n${profile.highSchoolContext}`
+      : '';
+
+    const majorLines: string[] = [];
+    if (profile.targetMajor) majorLines.push(profile.targetMajor);
+    if (profile.intendedMajor && profile.intendedMajor !== profile.targetMajor)
+      majorLines.push(profile.intendedMajor);
+    if (profile.secondMajor) majorLines.push(profile.secondMajor);
+    const majorText = majorLines.length > 0 ? majorLines.join(', ') : undecided;
+
+    const activitiesText = profile.activities?.length
+      ? profile.activities
+          .slice(0, 8)
+          .map((a) => {
+            const base = `${a.name}(${a.category}${a.role ? ', ' + a.role : ''})`;
+            return a.description
+              ? `${base}: ${a.description.slice(0, 80)}`
+              : base;
+          })
+          .join('; ')
+      : na;
+
+    const awardsText = profile.awards?.length
+      ? profile.awards
+          .slice(0, 5)
+          .map((a) => {
+            const cat = a.competitionCategory
+              ? ` [${a.competitionCategory}]`
+              : '';
+            return `${a.name}(${a.level}${cat})`;
+          })
+          .join(', ')
+      : na;
 
     const userPrompt = isZh
       ? `学生档案:
 GPA: ${profile.gpa ? `${profile.gpa}/${profile.gpaScale || 4.0}` : na}
 标化: ${profile.testScores?.map((s) => `${s.type}: ${s.score}`).join(', ') || na}
-目标专业: ${profile.targetMajor || undecided}
+目标专业: ${majorText}${hsLine}
+主要活动: ${activitiesText}
+奖项: ${awardsText}
 
 请推荐学校:`
       : `Student Profile:
 GPA: ${profile.gpa ? `${profile.gpa}/${profile.gpaScale || 4.0}` : na}
 Test Scores: ${profile.testScores?.map((s) => `${s.type}: ${s.score}`).join(', ') || na}
-Target Major: ${profile.targetMajor || undecided}
+Target Major: ${majorText}${hsLine}
+Key Activities: ${activitiesText}
+Awards: ${awardsText}
 
 Please recommend schools:`;
 
@@ -1159,23 +1302,38 @@ All text fields must be in English.
       )
       .join('\n');
 
+    const hsLine = profile.highSchoolContext
+      ? `\n${isZh ? '高中背景' : 'High School'}: ${profile.highSchoolContext}`
+      : '';
+    const activitiesSummary = profile.activities?.length
+      ? profile.activities
+          .slice(0, 5)
+          .map((a) => {
+            const base = `${a.name}(${a.category}${a.role ? ', ' + a.role : ''})`;
+            return a.description
+              ? `${base}: ${a.description.slice(0, 60)}`
+              : base;
+          })
+          .join('; ')
+      : isZh
+        ? '无'
+        : 'None';
+    const awardsSummary = profile.awards?.length
+      ? profile.awards
+          .slice(0, 5)
+          .map((a) => `${a.name}(${a.level})`)
+          .join(', ')
+      : isZh
+        ? '无'
+        : 'None';
+
     const userPrompt = isZh
       ? `【学生档案】
 GPA: ${profile.gpa ? `${profile.gpa}/${profile.gpaScale || 4.0}` : na}
-标化: ${profile.testScores?.map((s) => `${s.type}: ${s.score}`).join(', ') || na}
-活动: ${profile.activities?.length || 0}项 ${
-          profile.activities
-            ?.slice(0, 3)
-            .map((a) => a.name)
-            .join(', ') || ''
-        }
-奖项: ${profile.awards?.length || 0}项 ${
-          profile.awards
-            ?.slice(0, 3)
-            .map((a) => `${a.name}(${a.level})`)
-            .join(', ') || ''
-        }
+标化: ${profile.testScores?.map((s) => `${s.type}: ${s.score}`).join(', ') || na}${hsLine}
 目标专业: ${profile.targetMajor || undecided}
+主要活动(${profile.activities?.length || 0}项): ${activitiesSummary}
+奖项(${profile.awards?.length || 0}项): ${awardsSummary}
 
 【可选学校】
 ${schoolsInfo}
@@ -1183,20 +1341,10 @@ ${schoolsInfo}
 请根据学生背景推荐合适的学校:`
       : `[Student Profile]
 GPA: ${profile.gpa ? `${profile.gpa}/${profile.gpaScale || 4.0}` : na}
-Test Scores: ${profile.testScores?.map((s) => `${s.type}: ${s.score}`).join(', ') || na}
-Activities: ${profile.activities?.length || 0} ${
-          profile.activities
-            ?.slice(0, 3)
-            .map((a) => a.name)
-            .join(', ') || ''
-        }
-Awards: ${profile.awards?.length || 0} ${
-          profile.awards
-            ?.slice(0, 3)
-            .map((a) => `${a.name}(${a.level})`)
-            .join(', ') || ''
-        }
+Test Scores: ${profile.testScores?.map((s) => `${s.type}: ${s.score}`).join(', ') || na}${hsLine}
 Target Major: ${profile.targetMajor || undecided}
+Key Activities (${profile.activities?.length || 0}): ${activitiesSummary}
+Awards (${profile.awards?.length || 0}): ${awardsSummary}
 
 [Available Schools]
 ${schoolsInfo}
@@ -2036,18 +2184,26 @@ ${context.grade ? `Grade: ${context.grade}` : ''}
 Existing Content: ${JSON.stringify(context.existingContent)}
 ${
   context.profileActivities?.length
-    ? `Profile Activities: ${context.profileActivities
+    ? `Profile Activities:\n${context.profileActivities
         .slice(0, 5)
-        .map((a: any) => a.name)
-        .join(', ')}`
+        .map((a: any) => {
+          let line = `- ${a.name} (${a.role || ''}, ${a.category || ''})`;
+          if (a.description) line += `: ${a.description.slice(0, 100)}`;
+          return line;
+        })
+        .join('\n')}`
     : ''
 }
 ${
   context.profileAwards?.length
-    ? `Profile Awards: ${context.profileAwards
+    ? `Profile Awards:\n${context.profileAwards
         .slice(0, 5)
-        .map((a: any) => a.name)
-        .join(', ')}`
+        .map((a: any) => {
+          let line = `- ${a.name} (${a.level || ''})`;
+          if (a.competition?.name) line += ` — ${a.competition.name}`;
+          return line;
+        })
+        .join('\n')}`
     : ''
 }`;
 

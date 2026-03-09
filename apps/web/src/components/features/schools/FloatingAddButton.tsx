@@ -31,9 +31,11 @@ export interface SelectedSchool {
   usNewsRank?: number;
 }
 
+const ROUND_VALUES = ['ED', 'ED2', 'EA', 'REA', 'RD', 'ROLLING'] as const;
+
 interface FloatingAddButtonProps {
   selectedSchools: SelectedSchool[];
-  onAdd: (schoolIds: string[], tier: string) => void;
+  onAdd: (schoolIds: string[], tier: string, round: string) => void;
   onRemove: (schoolId: string) => void;
   onClear: () => void;
   isAdding?: boolean;
@@ -55,17 +57,19 @@ export function FloatingAddButton({
   className,
 }: FloatingAddButtonProps) {
   const locale = useLocale();
-  const t = useTranslations('findCollege');
+  const t = useTranslations('schools');
   const tc = useTranslations('common');
   const [isOpen, setIsOpen] = useState(false);
   const [tier, setTier] = useState('TARGET');
+  const [round, setRound] = useState('RD');
   const hasSelected = selectedSchools.length > 0;
 
   const handleAddAll = () => {
     if (selectedSchools.length > 0) {
       onAdd(
         selectedSchools.map((s) => s.id),
-        tier
+        tier,
+        round
       );
     }
   };
@@ -113,6 +117,24 @@ export function FloatingAddButton({
                     <SelectItem value="REACH">{t('tiers.reach')}</SelectItem>
                     <SelectItem value="TARGET">{t('tiers.target')}</SelectItem>
                     <SelectItem value="SAFETY">{t('tiers.safety')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {/* Round 选择器 */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground hidden sm:inline">
+                  {t('roundLabel')}:
+                </span>
+                <Select value={round} onValueChange={setRound}>
+                  <SelectTrigger className="h-8 w-24 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ROUND_VALUES.map((r) => (
+                      <SelectItem key={r} value={r}>
+                        {t(`rounds.${r}`)}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

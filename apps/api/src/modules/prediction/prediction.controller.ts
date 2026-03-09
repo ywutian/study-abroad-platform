@@ -7,12 +7,14 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { PredictionService } from './prediction.service';
+import { SchoolService } from '../school/school.service';
 import { CurrentUser, Roles } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { Role } from '@prisma/client';
 import { ThrottleAI } from '../../common/decorators/throttle.decorator';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PredictionRequestDto, PredictionResponseDto } from './dto';
+import { clampPercentRate } from '../../common/utils/percent.util';
 
 @ApiTags('predictions')
 @ApiBearerAuth()
@@ -21,6 +23,7 @@ import { PredictionRequestDto, PredictionResponseDto } from './dto';
 export class PredictionController {
   constructor(
     private readonly predictionService: PredictionService,
+    private readonly schoolService: SchoolService,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -45,9 +48,14 @@ export class PredictionController {
       return { results: [], processingTime: 0 };
     }
 
+    // When user selects any UC school, expand to all 9 UC campuses for comparison (plan: UC 本科横向比较)
+    const ucIds = await this.schoolService.getUcSchoolIds();
+    const hasAnyUc = data.schoolIds.some((id) => ucIds.includes(id));
+    const schoolIdsToUse = hasAnyUc ? ucIds : data.schoolIds;
+
     const output = await this.predictionService.predict(
       profile.id,
-      data.schoolIds,
+      schoolIdsToUse,
       data.forceRefresh,
       user.locale,
     );
@@ -57,6 +65,7 @@ export class PredictionController {
       processingTime: Date.now() - startTime,
       dataCompleteness: output.dataCompleteness,
       memoryContext: output.memoryContext,
+      ucComparisonExpanded: hasAnyUc ? true : undefined,
     };
   }
 
@@ -240,7 +249,13 @@ export class PredictionController {
         modelVersion: h.modelVersion,
         createdAt: h.createdAt,
       })),
-      school,
+      school: school
+        ? {
+            ...school,
+            acceptanceRate:
+              clampPercentRate(school.acceptanceRate) ?? school.acceptanceRate,
+          }
+        : null,
     };
   }
 }

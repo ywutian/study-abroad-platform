@@ -788,7 +788,7 @@ export class MemoryManagerService {
    * @param conversationId - The conversation the message belongs to
    * @param message - The message record to extract memories from
    */
-  // 从消息中提取并保存记忆
+  // 从消息中提取并保存记忆（通过 remember() 管道以获得冲突检测和评分）
   private async extractAndSaveMemory(
     conversationId: string,
     message: MessageRecord,
@@ -799,12 +799,12 @@ export class MemoryManagerService {
     const { memories, entities } =
       await this.summarizer.extractFromMessage(message);
 
-    // 保存记忆
-    if (memories.length > 0) {
-      await this.persistent.createMemories(conversation.userId, memories);
+    for (const mem of memories) {
+      await this.remember(conversation.userId, mem).catch((err) => {
+        this.logger.warn(`Failed to remember extracted memory: ${err.message}`);
+      });
     }
 
-    // 保存实体
     for (const entity of entities) {
       await this.persistent.upsertEntity(conversation.userId, entity);
     }

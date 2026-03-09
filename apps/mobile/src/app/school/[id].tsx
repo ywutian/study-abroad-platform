@@ -22,6 +22,7 @@ import { Tabs } from '@/components/ui/Tabs';
 import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import { getResultBadgeVariant } from '@/utils/case-helpers';
+import { formatAcceptanceRate } from '@/utils/format';
 import type { School, Case, PaginatedResponse } from '@/types';
 
 export default function SchoolDetailScreen() {
@@ -93,8 +94,7 @@ export default function SchoolDetailScreen() {
   };
 
   const formatPercent = (value?: number) => {
-    if (!value) return '-';
-    return `${(value * 100).toFixed(1)}%`;
+    return formatAcceptanceRate(value);
   };
 
   const stats = [

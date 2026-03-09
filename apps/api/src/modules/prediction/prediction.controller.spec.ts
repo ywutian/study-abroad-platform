@@ -1,11 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PredictionController } from './prediction.controller';
 import { PredictionService } from './prediction.service';
+import { SchoolService } from '../school/school.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
 describe('PredictionController', () => {
   let controller: PredictionController;
   let predictionService: PredictionService;
+  let schoolService: { getUcSchoolIds: jest.Mock };
   let prisma: PrismaService;
 
   const mockUser = {
@@ -42,6 +44,12 @@ describe('PredictionController', () => {
       controllers: [PredictionController],
       providers: [
         {
+          provide: SchoolService,
+          useValue: {
+            getUcSchoolIds: jest.fn().mockResolvedValue([]),
+          },
+        },
+        {
           provide: PredictionService,
           useValue: {
             predict: jest.fn().mockResolvedValue({
@@ -67,6 +75,7 @@ describe('PredictionController', () => {
 
     controller = module.get<PredictionController>(PredictionController);
     predictionService = module.get<PredictionService>(PredictionService);
+    schoolService = module.get(SchoolService);
     prisma = module.get<PrismaService>(PrismaService);
   });
 
@@ -100,6 +109,32 @@ describe('PredictionController', () => {
 
       expect(result).toEqual({ results: [], processingTime: 0 });
       expect(predictionService.predict).not.toHaveBeenCalled();
+    });
+
+    it('should expand to all 9 UC campuses when any UC school is selected', async () => {
+      const ucIds = [
+        'uc-1',
+        'uc-2',
+        'uc-3',
+        'uc-4',
+        'uc-5',
+        'uc-6',
+        'uc-7',
+        'uc-8',
+        'uc-9',
+      ];
+      schoolService.getUcSchoolIds.mockResolvedValue(ucIds);
+
+      const dto = { schoolIds: ['uc-1', 'school-other'], forceRefresh: false };
+      const result = await controller.predict(mockUser as any, dto as any);
+
+      expect(predictionService.predict).toHaveBeenCalledWith(
+        'profile-1',
+        ucIds,
+        false,
+        'zh',
+      );
+      expect(result.ucComparisonExpanded).toBe(true);
     });
   });
 

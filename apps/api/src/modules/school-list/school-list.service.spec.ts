@@ -30,7 +30,7 @@ describe('SchoolListService', () => {
     name: 'MIT',
     nameZh: '麻省理工',
     usNewsRank: 1,
-    acceptanceRate: 0.04,
+    acceptanceRate: 4,
     tuition: 55000,
     city: 'Cambridge',
     state: 'MA',

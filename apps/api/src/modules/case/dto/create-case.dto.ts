@@ -1,6 +1,7 @@
 import {
   IsString,
   IsInt,
+  IsNumber,
   IsEnum,
   IsOptional,
   IsArray,
@@ -44,6 +45,53 @@ export class CreateCaseDto {
   })
   gpaRange?: string;
 
+  @ApiPropertyOptional({ description: 'Grade 9 GPA' })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(5)
+  gpa9?: number;
+
+  @ApiPropertyOptional({ description: 'Grade 10 GPA' })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(5)
+  gpa10?: number;
+
+  @ApiPropertyOptional({ description: 'Grade 11 GPA' })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(5)
+  gpa11?: number;
+
+  @ApiPropertyOptional({ description: 'Grade 12 GPA' })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(5)
+  gpa12?: number;
+
+  @ApiPropertyOptional({ description: 'UC capped weighted GPA' })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(5)
+  ucCappedGpa?: number;
+
+  @ApiPropertyOptional({ description: 'UC uncapped weighted GPA' })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(5)
+  ucUncappedGpa?: number;
+
+  @ApiPropertyOptional({ description: 'GPA scale (4.0, 5.0, or 100)' })
+  @IsOptional()
+  @IsNumber()
+  gpaScale?: number;
+
   @ApiPropertyOptional({ description: 'SAT score range', example: '1500-1550' })
   @IsOptional()
   @IsString()
@@ -70,6 +118,14 @@ export class CreateCaseDto {
   @IsArray()
   @IsString({ each: true })
   tags?: string[];
+
+  @ApiPropertyOptional({
+    description:
+      'Activity list, one per line (e.g. "Research - XX Lab", "Contest - AMC 12")',
+  })
+  @IsOptional()
+  @IsString()
+  activityList?: string;
 
   @ApiPropertyOptional({ enum: Visibility, default: Visibility.PRIVATE })
   @IsOptional()

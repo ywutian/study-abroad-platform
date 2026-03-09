@@ -23,6 +23,8 @@ import {
   CreditCard,
   Settings,
   TrendingUp,
+  Database,
+  Layers,
 } from 'lucide-react';
 
 interface AdminStats {
@@ -54,6 +56,7 @@ export function AdminSidebar() {
     },
     { href: '/admin/users', icon: Users, label: t('sidebar.users') },
     { href: '/admin/schools', icon: GraduationCap, label: t('sidebar.schools') },
+    { href: '/admin/data-updates', icon: Database, label: t('sidebar.dataUpdates') },
     { href: '/admin/deadlines', icon: Calendar, label: t('sidebar.deadlines') },
     { href: '/admin/events', icon: Globe, label: t('sidebar.events') },
     { href: '/admin/essays', icon: PenTool, label: t('sidebar.essays') },
@@ -67,6 +70,7 @@ export function AdminSidebar() {
     { href: '/admin/payments', icon: CreditCard, label: t('sidebar.payments') },
     { href: '/admin/audit-logs', icon: ScrollText, label: t('sidebar.auditLogs') },
     { href: '/admin/analytics', icon: TrendingUp, label: t('sidebar.analytics') },
+    { href: '/admin/activity-templates', icon: Layers, label: t('sidebar.activityTemplates') },
     { href: '/admin/ai-agent', icon: Bot, label: t('sidebar.aiAgent') },
     { href: '/admin/memory', icon: Brain, label: t('sidebar.memory') },
     { href: '/admin/settings', icon: Settings, label: t('sidebar.settings') },

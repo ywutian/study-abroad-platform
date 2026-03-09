@@ -5,12 +5,20 @@
  * All functions operate on plain data types — no Prisma or database dependencies.
  */
 
-import { SCORING_WEIGHTS, ACADEMIC_CONFIG, LEADERSHIP_KEYWORDS } from './constants';
+import {
+  SCORING_WEIGHTS,
+  ACADEMIC_CONFIG,
+  LEADERSHIP_KEYWORDS,
+  ACTIVITY_TIER_POINTS,
+  MAJOR_ACTIVITY_MAP,
+  REGION_COMPETITIVENESS,
+} from './constants';
 import type {
   ProfileMetrics,
   SchoolMetrics,
   ScoreBreakdown,
   HistoricalDistribution,
+  SelectivityOptions,
 } from './types';
 import { calculatePercentile, empiricalPercentile, normalizeGpa } from './math';
 
@@ -21,9 +29,10 @@ import { calculatePercentile, empiricalPercentile, normalizeGpa } from './math';
 /**
  * 计算学术分数 (0-100)
  *
- * - GPA: 归一化到4.0后映射到 0-40 分 (3.0 GPA = 基准)
- * - SAT/ACT: 三级 Fallback — 百分位 CDF → 差值法 → 默认基准
- * - TOEFL: 门槛型加分项 (+/- 5 分)
+ * 针对国际生申请美本校准:
+ * - GPA: 归一化到4.0后映射到 0-36 分 (3.0 GPA = 基准 18 分)
+ * - SAT/ACT: 四级 Fallback — 历史百分位 → 正态CDF → 差值法 → 默认基准, +/-18 分
+ * - TOEFL: 门槛型 + 线性加分 — 低于90硬扣分, 以105为中位, +/-10 分
  */
 export function calculateAcademicScore(
   profile: ProfileMetrics,
@@ -32,14 +41,12 @@ export function calculateAcademicScore(
 ): number {
   let score = ACADEMIC_CONFIG.baseScore;
 
-  // GPA 分数 (最高 40 分)
   if (profile.gpa) {
     const normalizedGpa = normalizeGpa(profile.gpa, profile.gpaScale ?? 4.0);
     const gpaScore = (normalizedGpa / 4.0) * ACADEMIC_CONFIG.gpaMaxBonus;
     score += gpaScore - ACADEMIC_CONFIG.gpaBaseline;
   }
 
-  // SAT 分数 (+/- 15 分) — 四级 Fallback
   if (profile.satScore) {
     score += calculateTestScoreBonus(
       profile.satScore,
@@ -49,7 +56,6 @@ export function calculateAcademicScore(
     );
   }
 
-  // ACT 分数 (仅在无 SAT 时使用) — 四级 Fallback
   if (profile.actScore && !profile.satScore) {
     if (school.act25 && school.act75 && school.act75 > school.act25) {
       const percentile = calculatePercentile(profile.actScore, school.act25, school.act75);
@@ -65,16 +71,20 @@ export function calculateAcademicScore(
     }
   }
 
-  // TOEFL 分数 (+/- 5 分)
+  // TOEFL: threshold gatekeeper + linear bonus (critical for intl students)
   if (profile.toeflScore) {
+    const hardPenalty =
+      profile.toeflScore < ACADEMIC_CONFIG.toeflHardPenaltyThreshold
+        ? ACADEMIC_CONFIG.toeflHardPenalty
+        : 0;
     const toeflBonus = Math.max(
       -ACADEMIC_CONFIG.toeflMaxBonus,
       Math.min(
         ACADEMIC_CONFIG.toeflMaxBonus,
-        (profile.toeflScore - ACADEMIC_CONFIG.toeflBaseline) / 4
+        (profile.toeflScore - ACADEMIC_CONFIG.toeflBaseline) / 3
       )
     );
-    score += toeflBonus;
+    score += toeflBonus + hardPenalty;
   }
 
   return Math.max(0, Math.min(100, score));
@@ -116,39 +126,57 @@ function calculateTestScoreBonus(
 /**
  * 计算活动分数 (0-100)
  *
- * 双路径:
- *   - 有 activityDetails 时: 数量 + 领导力 + 深度参与 + 多样性
- *   - 无 activityDetails 时: 退化到 activityCount 计数（向后兼容）
+ * Tier-aware scoring: Quality (35) + Depth (25) + Leadership (20) + Spike (15) + Breadth (5)
+ * Falls back to count-based scoring when activityDetails is unavailable.
  */
 export function calculateActivityScore(profile: ProfileMetrics): number {
   if (profile.activityDetails && profile.activityDetails.length > 0) {
     const details = profile.activityDetails;
-    let score = 20;
+    let score = 0;
 
-    // 数量分 (max 30)
-    score += Math.min(30, details.length * 3);
+    // 1. Tier-based quality (max 35) — top 3 activities by tier
+    const tierScores = details
+      .map((a) => ACTIVITY_TIER_POINTS[a.tier ?? 4] ?? 2)
+      .sort((a, b) => b - a)
+      .slice(0, 3);
+    score += Math.min(
+      35,
+      tierScores.reduce((s, v) => s + v, 0)
+    );
 
-    // 领导力分 (max 15)
-    const leadershipCount = details.filter((a) =>
+    // 2. Depth & commitment (max 25)
+    const deepActivities = details.filter((a) => a.totalHours > 200 || (a.yearsActive ?? 0) >= 3);
+    score += Math.min(25, deepActivities.length * 8);
+
+    // 3. Leadership progression (max 20)
+    const leaderCount = details.filter((a) =>
       LEADERSHIP_KEYWORDS.some((kw) => a.role.toLowerCase().includes(kw as string))
     ).length;
-    score += Math.min(15, leadershipCount * 5);
+    score += Math.min(20, leaderCount * 7);
 
-    // 深度参与分 (max 15)
-    const deepCount = details.filter((a) => a.totalHours > 200).length;
-    score += Math.min(15, deepCount * 5);
+    // 4. Spike alignment with target major (max 15)
+    if (profile.targetMajorCategory) {
+      const alignedCategories = MAJOR_ACTIVITY_MAP[profile.targetMajorCategory];
+      if (alignedCategories) {
+        const alignedCount = details.filter((a) => alignedCategories.includes(a.category)).length;
+        score += Math.min(15, alignedCount * 5);
+      }
+    }
 
-    // 多样性分 (max 10)
-    const uniqueCategories = new Set(details.map((a) => a.category)).size;
-    if (uniqueCategories >= 5) score += 10;
-    else if (uniqueCategories >= 3) score += 5;
+    // 5. Graduated breadth bonus (max 10)
+    const uniqueCats = new Set(details.map((a) => a.category)).size;
+    if (uniqueCats >= 5) score += 10;
+    else if (uniqueCats >= 4) score += 8;
+    else if (uniqueCats >= 3) score += 5;
 
     return Math.max(0, Math.min(100, score));
   }
 
-  // Fallback 路径
-  let score = 30;
-  score += Math.min(50, profile.activityCount * 5);
+  // Fallback: count-based (improved to differentiate 6-10 activities)
+  let score = 25;
+  score += Math.min(40, profile.activityCount * 5);
+  if (profile.activityCount >= 8) score += 8;
+  if (profile.activityCount >= 10) score += 7;
   return Math.max(0, Math.min(100, score));
 }
 
@@ -191,11 +219,17 @@ export function calculateOverallScore(
   const activity = calculateActivityScore(profile);
   const award = calculateAwardScore(profile);
 
-  return (
+  const rawScore =
     academic * SCORING_WEIGHTS.academic +
     activity * SCORING_WEIGHTS.activity +
-    award * SCORING_WEIGHTS.award
-  );
+    award * SCORING_WEIGHTS.award;
+
+  const HS_TIER_MULTIPLIER: Record<number, number> = { 5: 1.08, 4: 1.04, 3: 1.0, 2: 0.98, 1: 0.96 };
+  const hsTierBonus = profile.highSchoolTier
+    ? (HS_TIER_MULTIPLIER[profile.highSchoolTier] ?? 1.0)
+    : 1.0;
+
+  return rawScore * hsTierBonus;
 }
 
 /**
@@ -214,10 +248,7 @@ export function calculateScoreBreakdown(
     academic,
     activity,
     award,
-    overall:
-      academic * SCORING_WEIGHTS.academic +
-      activity * SCORING_WEIGHTS.activity +
-      award * SCORING_WEIGHTS.award,
+    overall: calculateOverallScore(profile, school, historicalDistribution),
   };
 }
 
@@ -232,17 +263,26 @@ export function calculateScoreBreakdown(
  * 不依赖 US News 排名等年度波动较大的主观排名。
  *
  * 三个信号加权（缺失时自动重新归一化剩余信号）:
- * - Acceptance rate (0.50): pow(1 - rate/100, 0.6) — 非线性拉伸低录取率区间
- * - SAT midpoint  (0.30): (satMid - 1000) / 600 — 线性归一化
- * - Graduation rate (0.20): gradRate / 100 — 线性归一化
+ * - Acceptance rate (0.45): pow(1 - rate/100, 0.6) — 非线性拉伸低录取率区间
+ * - SAT midpoint  (0.25): (satMid - 1000) / 600 — 线性归一化
+ * - Graduation rate (0.15): gradRate / 100 — 线性归一化
+ * - US News rank  (0.15): 1 - (rank-1)/300 — 排名越高选拔性越高
  */
-export function calculateSelectivityIndex(school: SchoolMetrics): number {
+export function calculateSelectivityIndex(
+  school: SchoolMetrics,
+  opts?: SelectivityOptions
+): number {
   const signals: Array<{ value: number; weight: number }> = [];
 
-  // Signal 1: Acceptance rate
-  if (school.acceptanceRate != null && school.acceptanceRate > 0) {
-    const value = Math.pow(1 - school.acceptanceRate / 100, 0.6);
-    signals.push({ value: Math.max(0, Math.min(1, value)), weight: 0.5 });
+  // Signal 1: Acceptance rate (blend intl + overall for international students)
+  const effectiveRate =
+    opts?.useIntlRate && opts.intlAcceptanceRate != null
+      ? opts.intlAcceptanceRate * 0.5 + (school.acceptanceRate ?? opts.intlAcceptanceRate) * 0.5
+      : school.acceptanceRate;
+  if (effectiveRate != null && effectiveRate > 0) {
+    const normalizedRate = effectiveRate < 1 ? effectiveRate * 100 : effectiveRate;
+    const value = Math.pow(1 - normalizedRate / 100, 0.6);
+    signals.push({ value: Math.max(0, Math.min(1, value)), weight: 0.45 });
   }
 
   // Signal 2: SAT midpoint
@@ -252,13 +292,19 @@ export function calculateSelectivityIndex(school: SchoolMetrics): number {
       : (school.satAvg ?? null);
   if (satMid != null) {
     const value = (satMid - 1000) / 600;
-    signals.push({ value: Math.max(0, Math.min(1, value)), weight: 0.3 });
+    signals.push({ value: Math.max(0, Math.min(1, value)), weight: 0.25 });
   }
 
   // Signal 3: Graduation rate
   if (school.graduationRate != null && school.graduationRate > 0) {
     const value = school.graduationRate / 100;
-    signals.push({ value: Math.max(0, Math.min(1, value)), weight: 0.2 });
+    signals.push({ value: Math.max(0, Math.min(1, value)), weight: 0.15 });
+  }
+
+  // Signal 4: US News rank
+  if (school.usNewsRank != null && school.usNewsRank > 0) {
+    const value = Math.max(0, 1 - (school.usNewsRank - 1) / 300);
+    signals.push({ value: Math.max(0, Math.min(1, value)), weight: 0.15 });
   }
 
   // No data available — neutral prior
@@ -266,7 +312,17 @@ export function calculateSelectivityIndex(school: SchoolMetrics): number {
 
   // Re-normalize weights when some signals are missing
   const totalWeight = signals.reduce((sum, s) => sum + s.weight, 0);
-  return signals.reduce((sum, s) => sum + (s.value * s.weight) / totalWeight, 0);
+  let index = signals.reduce((sum, s) => sum + (s.value * s.weight) / totalWeight, 0);
+
+  // Apply region competitiveness multiplier (increases selectivity for competitive regions)
+  const regionMultiplier =
+    opts?.regionCompetitivenessMultiplier ??
+    (opts?.applicantRegion
+      ? (REGION_COMPETITIVENESS[opts.applicantRegion] ?? REGION_COMPETITIVENESS.DEFAULT)
+      : 1.0);
+  index = Math.min(1, index * regionMultiplier);
+
+  return index;
 }
 
 // ============================================
@@ -277,16 +333,20 @@ export function calculateSelectivityIndex(school: SchoolMetrics): number {
  * 根据综合分数和学校选拔性指数计算录取概率
  *
  * 使用 logistic sigmoid 模型:
- * - threshold = 35 + selectivity * 50 (高选拔性学校 → 高门槛)
- * - k = 6 + (1 - selectivity) * 8 (高选拔性 → 陡峭曲线，对分数差异更敏感)
+ * - threshold = 30 + selectivity * 45 (适配国际生分数分布)
+ * - k = 8 + (1 - selectivity) * 7  (更宽的 sigmoid 以提高区分度)
  * - P = sigmoid((overallScore - threshold) / k)
  *
  * 所有信号来自 College Scorecard 客观数据，不依赖 US News 排名。
  */
-export function calculateProbability(overallScore: number, school: SchoolMetrics): number {
-  const selectivity = calculateSelectivityIndex(school);
-  const threshold = 35 + selectivity * 50;
-  const k = 6 + (1 - selectivity) * 8;
+export function calculateProbability(
+  overallScore: number,
+  school: SchoolMetrics,
+  selectivityOpts?: SelectivityOptions
+): number {
+  const selectivity = calculateSelectivityIndex(school, selectivityOpts);
+  const threshold = 30 + selectivity * 45;
+  const k = 8 + (1 - selectivity) * 7;
   const z = (overallScore - threshold) / k;
   const probability = 1 / (1 + Math.exp(-z));
   return Math.max(0.05, Math.min(0.95, probability));
@@ -410,6 +470,16 @@ export function enforceMonotonicity<
         weights[i + 1] = poolWeight;
         changed = true;
       }
+    }
+  }
+
+  // Post-PAV tie-breaking: nudge colliding adjacent schools apart
+  // so schools with different selectivity never share the exact same probability
+  const epsilon = 0.005;
+  for (let i = 0; i < probs.length - 1; i++) {
+    if (Math.abs(probs[i] - probs[i + 1]) < 0.001) {
+      probs[i] = probs[i] + epsilon;
+      probs[i + 1] = probs[i + 1] - epsilon;
     }
   }
 

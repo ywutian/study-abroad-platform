@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -117,6 +118,22 @@ export default function TimelinePage() {
     queryFn: () => apiClient.get('/timelines/personal-events'),
   });
 
+  const { data: schoolListItems = [] } = useQuery<
+    Array<{ id: string; schoolId: string; school: { id: string; name: string; nameZh?: string } }>
+  >({
+    queryKey: ['school-lists'],
+    queryFn: () => apiClient.get('/school-lists'),
+  });
+
+  const generateTimelineMutation = useMutation({
+    mutationFn: (schoolIds: string[]) => apiClient.post('/timelines/generate', { schoolIds }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['timelines'] });
+      queryClient.invalidateQueries({ queryKey: ['timeline-overview'] });
+      toast.success(t('generateSuccess'));
+    },
+  });
+
   const { data: timelineDetail, isLoading: timelineDetailLoading } = useQuery<TimelineDetail>({
     queryKey: ['timeline-detail', expandedTimeline],
     queryFn: () => apiClient.get(`/timelines/${expandedTimeline}`),
@@ -200,6 +217,11 @@ export default function TimelinePage() {
   const hasTimelines = timelines.length > 0;
   const hasPersonalEvents = personalEvents.length > 0;
   const hasAny = hasTimelines || hasPersonalEvents;
+
+  const schoolsWithoutTimeline = useMemo(() => {
+    const timelineSchoolIds = new Set(timelines.map((tl) => tl.schoolId));
+    return schoolListItems.filter((item) => item.school && !timelineSchoolIds.has(item.schoolId));
+  }, [timelines, schoolListItems]);
 
   const formatDate = useCallback(
     (dateStr?: string) => {
@@ -376,7 +398,7 @@ export default function TimelinePage() {
               <Plus className="h-4 w-4 mr-1" />
               {t('personalEvents.create')}
             </Button>
-            <Button onClick={() => router.push('find-college')} size="sm">
+            <Button onClick={() => router.push('schools')} size="sm">
               <Plus className="h-4 w-4 mr-1" />
               {t('addSchool')}
             </Button>
@@ -459,7 +481,7 @@ export default function TimelinePage() {
                 <Plus className="h-4 w-4 mr-1" />
                 {t('personalEvents.create')}
               </Button>
-              <Button onClick={() => router.push('find-college')}>
+              <Button onClick={() => router.push('schools')}>
                 <Plus className="h-4 w-4 mr-1" />
                 {t('empty.action')}
               </Button>
@@ -535,89 +557,93 @@ export default function TimelinePage() {
         </Card>
       )}
 
-      {/* 创建个人事件表单 */}
-      {showCreateEvent && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">{t('personalEvents.createTitle')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form
-              onSubmit={eventForm.handleSubmit((data) => createPersonalEventMutation.mutate(data))}
-              className="space-y-4"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="event-title">{t('personalEvents.form.title')}</Label>
-                  <Input
-                    id="event-title"
-                    {...eventForm.register('title')}
-                    placeholder={t('personalEvents.form.titlePlaceholder')}
-                  />
-                  {eventForm.formState.errors.title && (
-                    <p className="text-xs text-destructive">
-                      {eventForm.formState.errors.title.message}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-1.5">
-                  <Label>{t('personalEvents.form.category')}</Label>
-                  <Select
-                    value={eventForm.watch('category')}
-                    onValueChange={(value) =>
-                      eventForm.setValue('category', value as PersonalEventFormData['category'])
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PERSONAL_CATEGORIES.map((cat) => (
-                        <SelectItem key={cat} value={cat}>
-                          {getCategoryLabel(cat)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="event-deadline">{t('personalEvents.form.deadline')}</Label>
-                  <Input id="event-deadline" type="date" {...eventForm.register('deadline')} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="event-date">{t('personalEvents.form.eventDate')}</Label>
-                  <Input id="event-date" type="date" {...eventForm.register('eventDate')} />
-                </div>
+      {/* 创建个人事件：Bottom Sheet */}
+      <Sheet open={showCreateEvent} onOpenChange={setShowCreateEvent}>
+        <SheetContent side="bottom" className="max-h-[85vh] rounded-t-xl">
+          <SheetHeader>
+            <SheetTitle>{t('personalEvents.createTitle')}</SheetTitle>
+          </SheetHeader>
+          <form
+            onSubmit={eventForm.handleSubmit((data) => createPersonalEventMutation.mutate(data))}
+            className="overflow-y-auto px-4 space-y-4"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="event-title">{t('personalEvents.form.title')}</Label>
+                <Input
+                  id="event-title"
+                  {...eventForm.register('title')}
+                  placeholder={t('personalEvents.form.titlePlaceholder')}
+                />
+                {eventForm.formState.errors.title && (
+                  <p className="text-xs text-destructive">
+                    {eventForm.formState.errors.title.message}
+                  </p>
+                )}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="event-desc">{t('personalEvents.form.description')}</Label>
-                <Textarea
-                  id="event-desc"
-                  className="min-h-[80px]"
-                  {...eventForm.register('description')}
-                  placeholder={t('personalEvents.form.descriptionPlaceholder')}
-                />
-              </div>
-              <div className="flex gap-2 justify-end">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  type="button"
-                  onClick={() => setShowCreateEvent(false)}
+                <Label>{t('personalEvents.form.category')}</Label>
+                <Select
+                  value={eventForm.watch('category')}
+                  onValueChange={(value) =>
+                    eventForm.setValue('category', value as PersonalEventFormData['category'])
+                  }
                 >
-                  {t('personalEvents.form.cancel')}
-                </Button>
-                <Button size="sm" type="submit" disabled={createPersonalEventMutation.isPending}>
-                  {createPersonalEventMutation.isPending && (
-                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                  )}
-                  {t('personalEvents.form.submit')}
-                </Button>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PERSONAL_CATEGORIES.map((cat) => (
+                      <SelectItem key={cat} value={cat}>
+                        {getCategoryLabel(cat)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            </form>
-          </CardContent>
-        </Card>
-      )}
+              <div className="space-y-1.5">
+                <Label htmlFor="event-deadline">{t('personalEvents.form.deadline')}</Label>
+                <Input id="event-deadline" type="date" {...eventForm.register('deadline')} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="event-date">{t('personalEvents.form.eventDate')}</Label>
+                <Input id="event-date" type="date" {...eventForm.register('eventDate')} />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="event-desc">{t('personalEvents.form.description')}</Label>
+              <Textarea
+                id="event-desc"
+                className="min-h-[80px]"
+                {...eventForm.register('description')}
+                placeholder={t('personalEvents.form.descriptionPlaceholder')}
+              />
+            </div>
+          </form>
+          <SheetFooter className="px-4">
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="ghost"
+                size="sm"
+                type="button"
+                onClick={() => setShowCreateEvent(false)}
+              >
+                {t('personalEvents.form.cancel')}
+              </Button>
+              <Button
+                size="sm"
+                disabled={createPersonalEventMutation.isPending}
+                onClick={eventForm.handleSubmit((data) => createPersonalEventMutation.mutate(data))}
+              >
+                {createPersonalEventMutation.isPending && (
+                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                )}
+                {t('personalEvents.form.submit')}
+              </Button>
+            </div>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
 
       {/* 个人事件列表 */}
       {(activeTab === 'all' || activeTab === 'personal') && hasPersonalEvents && (
@@ -912,6 +938,42 @@ export default function TimelinePage() {
                 </div>
               );
             })}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Schools in list but without timelines */}
+      {(activeTab === 'all' || activeTab === 'school') && schoolsWithoutTimeline.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">{t('schoolTimelines.pendingSchools')}</CardTitle>
+            <CardDescription>{t('schoolTimelines.pendingSchoolsDesc')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {schoolsWithoutTimeline.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center justify-between p-3 rounded-lg border"
+              >
+                <div className="flex items-center gap-2">
+                  <GraduationCap className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">{item.school.name}</span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => generateTimelineMutation.mutate([item.schoolId])}
+                  disabled={generateTimelineMutation.isPending}
+                >
+                  {generateTimelineMutation.isPending ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
+                  ) : (
+                    <Plus className="h-3.5 w-3.5 mr-1" />
+                  )}
+                  {t('schoolTimelines.generateTimeline')}
+                </Button>
+              </div>
+            ))}
           </CardContent>
         </Card>
       )}

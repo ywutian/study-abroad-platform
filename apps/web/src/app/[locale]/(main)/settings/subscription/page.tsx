@@ -48,19 +48,10 @@ export default function SubscriptionPage() {
   const t = useTranslations('subscription');
   const tCommon = useTranslations('common');
   const [currentPlan] = useState('free');
-  const [isUpgrading, setIsUpgrading] = useState<string | null>(null);
+  const isUpgrading: string | null = null; // Payment not yet integrated
 
-  const handleUpgrade = async (planId: string) => {
-    setIsUpgrading(planId);
-    try {
-      // TODO: 替换为真实支付 API 调用
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      toast.success(t('upgradeSuccess'));
-    } catch (_error) {
-      toast.error(tCommon('error'));
-    } finally {
-      setIsUpgrading(null);
-    }
+  const handleUpgrade = (_planId: string) => {
+    toast.info('Payment integration coming soon');
   };
 
   return (

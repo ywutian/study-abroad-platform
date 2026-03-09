@@ -119,9 +119,15 @@ export class SchoolScraperService {
 
         // 控制请求频率
         await this.delay(this.REQUEST_DELAY);
-      } catch (error) {
-        this.logger.error(`❌ ${schoolName} 失败:`, error);
-        results.failed.push({ school: schoolName, error: error.message });
+      } catch (error: unknown) {
+        this.logger.error(
+          `❌ ${schoolName} 失败:`,
+          error instanceof Error ? error.message : String(error),
+        );
+        results.failed.push({
+          school: schoolName,
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
     }
 
@@ -149,8 +155,10 @@ export class SchoolScraperService {
       try {
         const html = await this.fetchPage(urls.deadlines);
         data.deadlines = this.parseDeadlines(html, schoolName);
-      } catch (e) {
-        this.logger.warn(`  截止日期爬取失败: ${e.message}`);
+      } catch (e: unknown) {
+        this.logger.warn(
+          `  截止日期爬取失败: ${e instanceof Error ? e.message : String(e)}`,
+        );
       }
     }
 
@@ -160,8 +168,10 @@ export class SchoolScraperService {
         await this.delay(this.REQUEST_DELAY);
         const html = await this.fetchPage(urls.essays);
         data.essays = this.parseEssays(html, schoolName);
-      } catch (e) {
-        this.logger.warn(`  文书题目爬取失败: ${e.message}`);
+      } catch (e: unknown) {
+        this.logger.warn(
+          `  文书题目爬取失败: ${e instanceof Error ? e.message : String(e)}`,
+        );
       }
     }
 
@@ -171,8 +181,10 @@ export class SchoolScraperService {
         await this.delay(this.REQUEST_DELAY);
         const html = await this.fetchPage(urls.admissions);
         data.requirements = this.parseRequirements(html, schoolName);
-      } catch (e) {
-        this.logger.warn(`  录取要求爬取失败: ${e.message}`);
+      } catch (e: unknown) {
+        this.logger.warn(
+          `  录取要求爬取失败: ${e instanceof Error ? e.message : String(e)}`,
+        );
       }
     }
 
@@ -455,9 +467,9 @@ export class SchoolScraperService {
             source: 'SCRAPED',
           },
         });
-      } catch (error) {
+      } catch (error: unknown) {
         this.logger.warn(
-          `Failed to upsert deadline for school ${schoolId}, round ${config.round}: ${error.message}`,
+          `Failed to upsert deadline for school ${schoolId}, round ${config.round}: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
     }

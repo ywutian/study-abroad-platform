@@ -85,7 +85,9 @@ export class UserDataService {
     ]);
 
     return {
-      items: items.map(this.toMemoryItem),
+      items: items.map((item) =>
+        this.toMemoryItem(item as unknown as RawMemoryRow),
+      ),
       total,
       page,
       limit,

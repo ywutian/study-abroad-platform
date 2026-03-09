@@ -29,8 +29,10 @@ import { PageHeader } from '@/components/layout';
 import { ListSkeleton } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PaginationControls } from '../_components/pagination-controls';
+import { Link } from '@/lib/i18n/navigation';
 import { apiClient } from '@/lib/api';
-import { cn, getSchoolName, getSchoolSubName } from '@/lib/utils';
+import { cn, getSchoolName, getSchoolSubName, formatAcceptanceRate } from '@/lib/utils';
+import { SchoolLogo } from '@/components/features';
 import { toast } from 'sonner';
 import {
   GraduationCap,
@@ -44,7 +46,18 @@ import {
   CheckCircle2,
   AlertTriangle,
   XCircle,
+  Pencil,
+  ImageIcon,
 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 
 interface School {
   id: string;
@@ -54,6 +67,8 @@ interface School {
   state?: string;
   acceptanceRate?: number;
   tuition?: number;
+  website?: string;
+  logoUrl?: string;
   metadata?: {
     deadlines?: Record<string, string>;
     applicationType?: string;
@@ -106,9 +121,19 @@ export default function AdminSchoolsPage() {
   const queryClient = useQueryClient();
 
   const [schoolSearch, setSchoolSearch] = useState('');
-  const [syncLimit, setSyncLimit] = useState('100');
   const [page, setPage] = useState(1);
   const pageSize = 50;
+  const [editOpen, setEditOpen] = useState(false);
+  const [editingSchool, setEditingSchool] = useState<School | null>(null);
+  const [editForm, setEditForm] = useState<{
+    logoUrl: string;
+    name?: string;
+    nameZh?: string;
+    website?: string;
+  }>({
+    logoUrl: '',
+  });
+  const [editPreviewFailed, setEditPreviewFailed] = useState(false);
 
   const { data: schoolsData, isLoading } = useQuery({
     queryKey: ['adminSchools', schoolSearch, page],
@@ -118,6 +143,12 @@ export default function AdminSchoolsPage() {
       }),
   });
 
+  const { data: logoFillStatus } = useQuery({
+    queryKey: ['adminLogoFillStatus'],
+    queryFn: () => apiClient.get<{ configured: boolean }>('/schools/admin/logo-fill-status'),
+  });
+  const logoFillConfigured = logoFillStatus?.configured ?? false;
+
   const {
     data: qualityData,
     isLoading: isQualityLoading,
@@ -126,16 +157,6 @@ export default function AdminSchoolsPage() {
     queryKey: ['schoolDataQuality'],
     queryFn: () => apiClient.get<DataQualityReport>('/schools/admin/data-quality'),
     staleTime: 60 * 60 * 1000, // 1 hour
-  });
-
-  const syncScorecardMutation = useMutation({
-    mutationFn: (limit: number) =>
-      apiClient.post<{ synced: number; errors: number }>(`/schools/sync/scorecard?limit=${limit}`),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['adminSchools'] });
-      queryClient.invalidateQueries({ queryKey: ['schoolDataQuality'] });
-      toast.success(t('toast.syncComplete', { count: data.synced }));
-    },
   });
 
   const scrapeSchoolsMutation = useMutation({
@@ -148,6 +169,77 @@ export default function AdminSchoolsPage() {
       toast.success(t('toast.scrapeComplete', { count: data.success.length }));
     },
   });
+
+  const updateSchoolMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
+      apiClient.put(`/schools/${id}`, data),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ['adminSchools'] });
+      queryClient.invalidateQueries({ queryKey: ['school', id] });
+      setEditOpen(false);
+      setEditingSchool(null);
+      toast.success(t('schools.saveSuccess'));
+    },
+  });
+
+  const fillLogosMutation = useMutation({
+    mutationFn: (limit: number) =>
+      apiClient.post<{
+        filled: number;
+        failed: number;
+        skipped: number;
+        message?: string;
+      }>('/schools/admin/fill-logos-by-domain', { limit }),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['adminSchools'] });
+      if (data.message) toast.info(data.message);
+      else
+        toast.success(
+          t('schools.fillByDomainSuccess', {
+            filled: data.filled,
+            failed: data.failed,
+          })
+        );
+    },
+    onError: () => {
+      toast.error(t('schools.fillByDomainError'));
+    },
+  });
+
+  const fetchLogoSuggestionMutation = useMutation({
+    mutationFn: (schoolId: string) =>
+      apiClient.get<{ suggestedLogoUrl: string }>(`/schools/${schoolId}/logo-suggestion`),
+    onSuccess: (data) => {
+      setEditForm((prev) => ({ ...prev, logoUrl: data.suggestedLogoUrl }));
+      setEditPreviewFailed(false);
+      toast.success(t('schools.generateFromDomainDone'));
+    },
+    onError: () => {
+      toast.error(t('schools.generateFromDomainError'));
+    },
+  });
+
+  const openEdit = (school: School) => {
+    setEditingSchool(school);
+    setEditForm({
+      logoUrl: school.logoUrl ?? '',
+      name: school.name,
+      nameZh: school.nameZh ?? '',
+      website: school.website ?? '',
+    });
+    setEditPreviewFailed(false);
+    setEditOpen(true);
+  };
+
+  const isValidUrl = (s: string) => {
+    if (!s.trim()) return true;
+    try {
+      new URL(s);
+      return true;
+    } catch {
+      return false;
+    }
+  };
 
   const totalPages = schoolsData ? Math.ceil(schoolsData.total / pageSize) : 1;
 
@@ -199,34 +291,14 @@ export default function AdminSchoolsPage() {
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-medium flex items-center gap-2">
                     <Database className="h-4 w-4" />
-                    {t('data.syncScorecard')}
+                    {t('data.goToDataUpdates')}
                   </CardTitle>
-                  <CardDescription>{t('data.syncScorecardDesc')}</CardDescription>
+                  <CardDescription>{t('data.goToDataUpdatesDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center gap-2">
-                    <Select value={syncLimit} onValueChange={setSyncLimit}>
-                      <SelectTrigger className="w-[100px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="100">100</SelectItem>
-                        <SelectItem value="500">500</SelectItem>
-                        <SelectItem value="1000">1000</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      onClick={() => syncScorecardMutation.mutate(parseInt(syncLimit))}
-                      disabled={syncScorecardMutation.isPending}
-                    >
-                      {syncScorecardMutation.isPending ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        <RefreshCw className="mr-2 h-4 w-4" />
-                      )}
-                      {t('data.startSync')}
-                    </Button>
-                  </div>
+                  <Button asChild variant="outline">
+                    <Link href="/admin/data-updates">{t('data.goToDataUpdates')}</Link>
+                  </Button>
                 </CardContent>
               </Card>
 
@@ -253,6 +325,36 @@ export default function AdminSchoolsPage() {
                   </Button>
                 </CardContent>
               </Card>
+
+              {logoFillConfigured && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <ImageIcon className="h-4 w-4" />
+                      {t('schools.fillByDomain')}
+                    </CardTitle>
+                    <CardDescription>{t('schools.fillByDomainDesc')}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button
+                      variant="outline"
+                      disabled={fillLogosMutation.isPending}
+                      onClick={() => {
+                        if (window.confirm(t('schools.fillByDomainConfirm'))) {
+                          fillLogosMutation.mutate(100);
+                        }
+                      }}
+                    >
+                      {fillLogosMutation.isPending ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <ImageIcon className="mr-2 h-4 w-4" />
+                      )}
+                      {t('schools.fillByDomainButton')}
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
 
               <Card>
                 <CardHeader className="pb-3">
@@ -293,17 +395,27 @@ export default function AdminSchoolsPage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
+                          <TableHead className="w-[50px]">{t('data.logo')}</TableHead>
                           <TableHead className="w-[60px]">{t('data.rank')}</TableHead>
                           <TableHead>{t('data.schoolName')}</TableHead>
                           <TableHead>{t('data.state')}</TableHead>
                           <TableHead>{t('data.applicationType')}</TableHead>
                           <TableHead>{t('data.deadline')}</TableHead>
                           <TableHead>{t('data.acceptanceRate')}</TableHead>
+                          <TableHead className="w-[80px]">{t('data.actions')}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {schoolsData.items.map((school) => (
                           <TableRow key={school.id}>
+                            <TableCell>
+                              <SchoolLogo
+                                logoUrl={school.logoUrl}
+                                name={getSchoolName(school, locale)}
+                                size="sm"
+                                className="rounded-md"
+                              />
+                            </TableCell>
                             <TableCell>
                               {school.usNewsRank ? (
                                 <Badge variant="outline">#{school.usNewsRank}</Badge>
@@ -351,10 +463,17 @@ export default function AdminSchoolsPage() {
                                 '-'
                               )}
                             </TableCell>
+                            <TableCell>{formatAcceptanceRate(school.acceptanceRate)}</TableCell>
                             <TableCell>
-                              {school.acceptanceRate
-                                ? `${Number(school.acceptanceRate).toFixed(1)}%`
-                                : '-'}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="gap-1"
+                                onClick={() => openEdit(school)}
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                                {t('common.edit')}
+                              </Button>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -601,6 +720,115 @@ export default function AdminSchoolsPage() {
             )}
           </TabsContent>
         </Tabs>
+
+        {/* Edit School Dialog */}
+        <Dialog open={editOpen} onOpenChange={setEditOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>{t('schools.editSchool')}</DialogTitle>
+              <DialogDescription>
+                {editingSchool ? getSchoolName(editingSchool, locale) : t('schools.editSchoolDesc')}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <Label htmlFor="edit-logoUrl">{t('schools.logoUrl')}</Label>
+                  <div className="flex items-center gap-1">
+                    {editForm.logoUrl && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs text-muted-foreground"
+                        onClick={() => {
+                          setEditForm((prev) => ({ ...prev, logoUrl: '' }));
+                          setEditPreviewFailed(false);
+                        }}
+                      >
+                        {t('schools.clearLogo')}
+                      </Button>
+                    )}
+                    {editingSchool?.website && logoFillConfigured && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs"
+                        disabled={fetchLogoSuggestionMutation.isPending}
+                        onClick={() =>
+                          editingSchool && fetchLogoSuggestionMutation.mutate(editingSchool.id)
+                        }
+                      >
+                        {fetchLogoSuggestionMutation.isPending ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : null}
+                        {t('schools.generateFromDomain')}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <Input
+                  id="edit-logoUrl"
+                  placeholder={t('schools.logoUrlPlaceholder')}
+                  value={editForm.logoUrl}
+                  onChange={(e) => {
+                    setEditForm((prev) => ({ ...prev, logoUrl: e.target.value }));
+                    setEditPreviewFailed(false);
+                  }}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>{t('schools.logoPreview')}</Label>
+                <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center overflow-hidden border">
+                  {editForm.logoUrl && !editPreviewFailed ? (
+                    <img
+                      src={editForm.logoUrl}
+                      alt=""
+                      className="w-full h-full object-cover"
+                      onError={() => setEditPreviewFailed(true)}
+                    />
+                  ) : (
+                    <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                  )}
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setEditOpen(false)}>
+                {t('common.cancel')}
+              </Button>
+              <Button
+                disabled={
+                  updateSchoolMutation.isPending ||
+                  (editForm.logoUrl.trim() !== '' && !isValidUrl(editForm.logoUrl.trim()))
+                }
+                onClick={() => {
+                  if (!editingSchool) return;
+                  const payload: Record<string, unknown> = {};
+                  if (editForm.logoUrl !== (editingSchool.logoUrl ?? ''))
+                    payload.logoUrl = editForm.logoUrl.trim() || null;
+                  if (editForm.name !== editingSchool.name) payload.name = editForm.name;
+                  if (editForm.nameZh !== (editingSchool.nameZh ?? ''))
+                    payload.nameZh = editForm.nameZh || null;
+                  if (editForm.website !== (editingSchool.website ?? ''))
+                    payload.website = editForm.website || null;
+                  if (Object.keys(payload).length === 0) {
+                    setEditOpen(false);
+                    return;
+                  }
+                  updateSchoolMutation.mutate({ id: editingSchool.id, data: payload });
+                }}
+              >
+                {updateSchoolMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  t('common.save')
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </>
   );

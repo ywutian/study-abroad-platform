@@ -3,12 +3,9 @@ import { RedisService } from '../../common/redis/redis.service';
 
 const MAX_ATTEMPTS = 10;
 const LOCKOUT_SECONDS = 15 * 60; // 15 minutes
+const LOCKOUT_MS = LOCKOUT_SECONDS * 1000;
 const KEY_PREFIX = 'brute_force:';
 
-// Lua script: atomically INCR the key and set TTL only if no TTL exists.
-// Prevents race condition where concurrent requests both see current===1
-// and both try to set TTL, or where a crash between INCR and EXPIRE
-// leaves a key with no TTL (permanent lockout).
 const INCR_WITH_EXPIRE_SCRIPT = `
   local current = redis.call('INCR', KEYS[1])
   if current == 1 then
@@ -17,85 +14,98 @@ const INCR_WITH_EXPIRE_SCRIPT = `
   return current
 `;
 
+interface MemoryEntry {
+  count: number;
+  expiresAt: number;
+}
+
 @Injectable()
 export class BruteForceService {
   private readonly logger = new Logger(BruteForceService.name);
+  private readonly memoryStore = new Map<string, MemoryEntry>();
+  private cleanupTimer: ReturnType<typeof setInterval> | null = null;
 
-  constructor(private readonly redis: RedisService) {}
+  constructor(private readonly redis: RedisService) {
+    this.cleanupTimer = setInterval(() => this.evictExpired(), 60_000);
+  }
 
-  /**
-   * Check if an email is currently locked out due to too many failed attempts.
-   * Returns true if locked, false otherwise.
-   * Fails open (returns false) when Redis is unavailable.
-   */
+  onModuleDestroy() {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
+      this.cleanupTimer = null;
+    }
+  }
+
   async isLocked(email: string): Promise<boolean> {
+    const client = this.redis.getClient();
+    if (!client) {
+      return this.isLockedMemory(email);
+    }
+
     try {
       const key = this.buildKey(email);
       const attempts = await this.redis.get(key);
       if (attempts === null) {
-        return false;
+        return this.isLockedMemory(email);
       }
       return parseInt(attempts, 10) >= MAX_ATTEMPTS;
     } catch (error) {
       this.logger.warn(
-        `Redis error during lockout check for ${email}, failing open: ${
+        `Redis unavailable for lockout check (${email}), using in-memory fallback: ${
           error instanceof Error ? error.message : 'unknown'
         }`,
       );
-      return false;
+      return this.isLockedMemory(email);
     }
   }
 
-  /**
-   * Record a failed login attempt for the given email.
-   * Returns the number of remaining attempts before lockout.
-   * Uses atomic Lua script to prevent INCR/EXPIRE race conditions.
-   * Fails open (returns MAX_ATTEMPTS) when Redis is unavailable.
-   */
   async recordFailedAttempt(email: string): Promise<number> {
+    const client = this.redis.getClient();
+    if (!client) {
+      return this.recordFailedAttemptMemory(email);
+    }
+
+    let current: number;
     try {
       const key = this.buildKey(email);
-      const client = this.redis.getClient();
-
-      let current: number;
-      if (client) {
-        // Atomic INCR + conditional EXPIRE via Lua script
-        current = (await client.eval(
-          INCR_WITH_EXPIRE_SCRIPT,
-          1,
-          key,
-          LOCKOUT_SECONDS,
-        )) as number;
-      } else {
-        // No Redis — degrade gracefully
-        return MAX_ATTEMPTS;
-      }
-
-      const remaining = Math.max(0, MAX_ATTEMPTS - current);
-
-      if (current >= MAX_ATTEMPTS) {
-        // Refresh TTL when lockout threshold is reached
-        await this.redis.expire(key, LOCKOUT_SECONDS);
-        this.logger.warn(
-          `Account locked for ${email} after ${current} failed attempts`,
-        );
-      }
-
-      return remaining;
+      current = (await client.eval(
+        INCR_WITH_EXPIRE_SCRIPT,
+        1,
+        key,
+        LOCKOUT_SECONDS,
+      )) as number;
     } catch (error) {
       this.logger.warn(
-        `Redis error recording failed attempt for ${email}, failing open: ${
+        `Redis error recording failed attempt for ${email}, using in-memory fallback: ${
           error instanceof Error ? error.message : 'unknown'
         }`,
       );
-      return MAX_ATTEMPTS;
+      return this.recordFailedAttemptMemory(email);
     }
+
+    const remaining = Math.max(0, MAX_ATTEMPTS - current);
+
+    if (current >= MAX_ATTEMPTS) {
+      // Refresh TTL — non-critical, so log and continue on failure
+      try {
+        await this.redis.expire(this.buildKey(email), LOCKOUT_SECONDS);
+      } catch (error) {
+        this.logger.warn(
+          `Redis error refreshing lockout TTL for ${email}: ${
+            error instanceof Error ? error.message : 'unknown'
+          }`,
+        );
+      }
+      this.logger.warn(
+        `Account locked for ${email} after ${current} failed attempts`,
+      );
+    }
+
+    return remaining;
   }
 
-  /**
-   * Reset the failed-attempt counter for the given email (on successful login).
-   */
   async resetAttempts(email: string): Promise<void> {
+    this.memoryStore.delete(email.toLowerCase());
     try {
       const key = this.buildKey(email);
       await this.redis.del(key);
@@ -105,6 +115,48 @@ export class BruteForceService {
           error instanceof Error ? error.message : 'unknown'
         }`,
       );
+    }
+  }
+
+  private isLockedMemory(email: string): boolean {
+    const entry = this.memoryStore.get(email.toLowerCase());
+    if (!entry) return false;
+    if (Date.now() > entry.expiresAt) {
+      this.memoryStore.delete(email.toLowerCase());
+      return false;
+    }
+    return entry.count >= MAX_ATTEMPTS;
+  }
+
+  private recordFailedAttemptMemory(email: string): number {
+    const key = email.toLowerCase();
+    const now = Date.now();
+    let entry = this.memoryStore.get(key);
+
+    if (!entry || now > entry.expiresAt) {
+      entry = { count: 0, expiresAt: now + LOCKOUT_MS };
+      this.memoryStore.set(key, entry);
+    }
+
+    entry.count++;
+    const remaining = Math.max(0, MAX_ATTEMPTS - entry.count);
+
+    if (entry.count >= MAX_ATTEMPTS) {
+      entry.expiresAt = now + LOCKOUT_MS;
+      this.logger.warn(
+        `Account locked (in-memory) for ${email} after ${entry.count} failed attempts`,
+      );
+    }
+
+    return remaining;
+  }
+
+  private evictExpired(): void {
+    const now = Date.now();
+    for (const [key, entry] of this.memoryStore) {
+      if (now > entry.expiresAt) {
+        this.memoryStore.delete(key);
+      }
     }
   }
 

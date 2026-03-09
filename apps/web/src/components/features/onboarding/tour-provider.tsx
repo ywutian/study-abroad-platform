@@ -56,7 +56,11 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
     setCompletedTours((prev) => {
       const next = new Set(prev);
       next.add(tourId);
-      localStorage.setItem(TOUR_STORAGE_KEY, JSON.stringify([...next]));
+      try {
+        localStorage.setItem(TOUR_STORAGE_KEY, JSON.stringify([...next]));
+      } catch {
+        /* private browsing */
+      }
       return next;
     });
   }, []);
@@ -79,7 +83,11 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
     setCompletedTours((prev) => {
       const next = new Set(prev);
       next.delete(tourId);
-      localStorage.setItem(TOUR_STORAGE_KEY, JSON.stringify([...next]));
+      try {
+        localStorage.setItem(TOUR_STORAGE_KEY, JSON.stringify([...next]));
+      } catch {
+        /* private browsing */
+      }
       return next;
     });
   }, []);

@@ -59,6 +59,9 @@ const envSchema = z.object({
   // --- College Scorecard (Optional) ---
   COLLEGE_SCORECARD_API_KEY: z.string().optional(),
 
+  // --- Logo.dev (Optional — for auto-filling school logos by domain) ---
+  LOGO_DEV_TOKEN: z.string().optional(),
+
   // --- Storage (Optional) ---
   STORAGE_TYPE: z.enum(['local', 's3', 'oss', 'cos']).default('local'),
   STORAGE_BUCKET: z.string().optional(),

@@ -134,6 +134,11 @@ const EXEMPT_KEYS = new Set([
   'auth.layout.testimonials.items.2.school',
   'auth.layout.testimonials.items.3.school',
   'auth.layout.testimonials.items.4.school',
+  // GPA 标准术语保留英文
+  'submitCase.ucCappedGpaLabel',
+  'submitCase.ucUncappedGpaLabel',
+  // 教育体系名称含跨语言注释
+  'profile.demographics.educationSystems.GAOKAO',
 ]);
 
 interface WrongLangIssue {

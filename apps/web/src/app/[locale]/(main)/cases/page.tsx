@@ -271,7 +271,9 @@ export default function CasesPage() {
                   tags={caseItem.tags}
                   rank={caseItem.school?.usNewsRank}
                   isVerified={caseItem.isVerified}
+                  hasEssay={!!caseItem.essayContent}
                   onClick={() => router.push(`/${locale}/cases/${caseItem.id}`)}
+                  onEssayClick={() => router.push(`/${locale}/essay-gallery?id=${caseItem.id}`)}
                 />
               </motion.div>
             ))}

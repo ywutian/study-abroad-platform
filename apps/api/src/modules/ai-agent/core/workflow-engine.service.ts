@@ -25,6 +25,7 @@ import { LLMService, LLMResponse } from './llm.service';
 import { ToolExecutorService } from './tool-executor.service';
 import { MemoryService } from './memory.service';
 import { ResilienceService } from './resilience.service';
+import { MemoryManagerService } from '../memory';
 import {
   AgentType,
   AgentConfig,
@@ -192,6 +193,7 @@ export class WorkflowEngineService {
     private toolExecutor: ToolExecutorService,
     private memory: MemoryService,
     @Optional() private resilience?: ResilienceService,
+    @Optional() private memoryManager?: MemoryManagerService,
   ) {}
 
   // ==================== 公开 API ====================
@@ -426,7 +428,7 @@ export class WorkflowEngineService {
     conversation: ConversationState,
     tools: ToolDefinition[],
   ): Promise<ExecutionPlan> {
-    const systemPrompt = this.buildPlanPrompt(config, conversation);
+    const systemPrompt = await this.buildPlanPrompt(config, conversation);
     const messages = this.memory.getRecentMessages(conversation);
 
     const response = await this.llm.call(systemPrompt, messages, {
@@ -683,7 +685,7 @@ export class WorkflowEngineService {
     config: AgentConfig,
     conversation: ConversationState,
   ): AsyncGenerator<string> {
-    const systemPrompt = this.buildSolvePrompt(config, conversation);
+    const systemPrompt = await this.buildSolvePrompt(config, conversation);
     const messages = this.memory.getRecentMessages(conversation);
     const llmOpts = {
       model: config.model,
@@ -823,72 +825,95 @@ export class WorkflowEngineService {
   }
 
   /**
-   * Build the system prompt for the Plan phase.
-   *
-   * Combines the agent's localized base prompt, the current date, the user's
-   * context summary, and Plan-specific workflow instructions that tell the LLM
-   * to analyze intent and call all needed tools in a single response.
-   *
-   * @param config - Agent configuration containing the base system prompt
-   * @param conversation - Current conversation state (provides locale and user context)
-   * @returns The assembled Plan-phase system prompt
+   * Build the system prompt for the Plan phase, enriched with enterprise memory
+   * when MemoryManagerService is available. Falls back to basic in-memory context.
    */
-  /**
-   * 构建 Plan 阶段的 system prompt
-   */
-  private buildPlanPrompt(
+  private async buildPlanPrompt(
     config: AgentConfig,
     conversation: ConversationState,
-  ): string {
-    const contextSummary = this.memory.getContextSummary(conversation.context);
+  ): Promise<string> {
     const locale = (conversation.metadata?.locale as string) || 'zh';
     const localizedPrompt = getLocalizedSystemPrompt(config, locale);
     const dateLabel =
       locale === 'en' ? '## Current Date\nToday is' : '## 当前时间\n今天是';
     const userInfoLabel =
       locale === 'en' ? '## Current User Info' : '## 当前用户信息';
+    const baseContext = this.memory.getContextSummary(conversation.context);
+    const memoryContext = await this.getEnterpriseMemoryContext(
+      conversation,
+      locale,
+    );
 
     return `${localizedPrompt}
 
 ${dateLabel} ${this.getCurrentDateString(locale)}
 
 ${userInfoLabel}
-${contextSummary}
-${getPlanSystemSuffix(locale)}`;
+${baseContext}
+${memoryContext}${getPlanSystemSuffix(locale)}`;
   }
 
   /**
-   * Build the system prompt for the Solve phase.
-   *
-   * Similar to `buildPlanPrompt` but appends Solve-specific instructions that
-   * tell the LLM to synthesize tool results into a final response without
-   * calling any tools. Includes instructions for citing search results.
-   *
-   * @param config - Agent configuration containing the base system prompt
-   * @param conversation - Current conversation state (provides locale and user context)
-   * @returns The assembled Solve-phase system prompt
+   * Build the system prompt for the Solve phase, enriched with enterprise memory
+   * when MemoryManagerService is available. Falls back to basic in-memory context.
    */
-  /**
-   * 构建 Solve 阶段的 system prompt
-   */
-  private buildSolvePrompt(
+  private async buildSolvePrompt(
     config: AgentConfig,
     conversation: ConversationState,
-  ): string {
-    const contextSummary = this.memory.getContextSummary(conversation.context);
+  ): Promise<string> {
     const locale = (conversation.metadata?.locale as string) || 'zh';
     const localizedPrompt = getLocalizedSystemPrompt(config, locale);
     const dateLabel =
       locale === 'en' ? '## Current Date\nToday is' : '## 当前时间\n今天是';
     const userInfoLabel =
       locale === 'en' ? '## Current User Info' : '## 当前用户信息';
+    const baseContext = this.memory.getContextSummary(conversation.context);
+    const memoryContext = await this.getEnterpriseMemoryContext(
+      conversation,
+      locale,
+    );
 
     return `${localizedPrompt}
 
 ${dateLabel} ${this.getCurrentDateString(locale)}
 
 ${userInfoLabel}
-${contextSummary}
-${getSolveSystemSuffix(locale)}`;
+${baseContext}
+${memoryContext}${getSolveSystemSuffix(locale)}`;
+  }
+
+  /**
+   * Retrieve enterprise memory context (semantic recall, facts, preferences, decisions)
+   * and format it for injection into system prompts. Returns empty string when
+   * MemoryManagerService is unavailable or retrieval fails.
+   */
+  private async getEnterpriseMemoryContext(
+    conversation: ConversationState,
+    locale: string,
+  ): Promise<string> {
+    if (!this.memoryManager) return '';
+
+    const lastUserMsg = [...conversation.messages]
+      .reverse()
+      .find((m) => m.role === 'user');
+    if (!lastUserMsg) return '';
+
+    try {
+      const context = await this.memoryManager.getRetrievalContext(
+        conversation.userId,
+        lastUserMsg.content,
+        conversation.id,
+      );
+
+      const summary = this.memoryManager.buildContextSummary(context);
+      if (!summary) return '';
+
+      const header =
+        locale === 'en' ? '\n## Memory Context' : '\n## 记忆上下文';
+      return `${header}\n${summary}`;
+    } catch (error) {
+      this.logger.warn('Failed to retrieve enterprise memory context', error);
+      return '';
+    }
   }
 }

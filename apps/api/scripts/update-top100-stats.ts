@@ -3,6 +3,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
+import { normalizePercentRate } from '../src/common/utils/percent.util';
 
 const prisma = new PrismaClient();
 
@@ -140,11 +141,10 @@ async function main() {
           updateData.tuition = stats['latest.cost.tuition.out_of_state'];
         }
         if (stats['latest.completion.completion_rate_4yr_150nt']) {
-          updateData.graduationRate = Number(
-            (
-              stats['latest.completion.completion_rate_4yr_150nt'] * 100
-            ).toFixed(2),
+          const grad = normalizePercentRate(
+            stats['latest.completion.completion_rate_4yr_150nt'],
           );
+          if (grad != null) updateData.graduationRate = grad;
         }
         if (stats['latest.earnings.10_yrs_after_entry.median']) {
           updateData.avgSalary =
@@ -154,11 +154,10 @@ async function main() {
           stats['latest.admissions.admission_rate.overall'] &&
           !school.acceptanceRate
         ) {
-          updateData.acceptanceRate = Number(
-            (stats['latest.admissions.admission_rate.overall'] * 100).toFixed(
-              2,
-            ),
+          const rate = normalizePercentRate(
+            stats['latest.admissions.admission_rate.overall'],
           );
+          if (rate != null) updateData.acceptanceRate = rate;
         }
 
         if (Object.keys(updateData).length > 0) {

@@ -118,6 +118,7 @@ export interface School {
   country: string;
   state?: string;
   usNewsRank?: number;
+  /** 0–100 percentage (e.g. 4.0 means 4%) */
   acceptanceRate?: number;
   tuition?: number;
   avgSalary?: number;
@@ -126,6 +127,7 @@ export interface School {
 // Ranking
 export interface RankingWeights {
   usNewsRank: number;
+  /** Weight for acceptanceRate (0–100 scale) */
   acceptanceRate: number;
   tuition: number;
   avgSalary: number;
@@ -142,6 +144,20 @@ export interface CustomRanking {
 }
 
 // Prediction
+
+/**
+ * Standardized model version hierarchy for PredictionResult.
+ * Higher-quality sources never get overwritten by lower-quality ones.
+ */
+export enum ProbabilitySource {
+  /** Rule-based scoring only (calculateOverallScore + logistic sigmoid) */
+  STATS_ONLY = 'v1-stats',
+  /** AI recommendation anchored to statistical baseline */
+  RECOMMENDATION = 'v2-recommendation-anchored',
+  /** Full multi-engine ensemble (Stats + AI + Historical + ML) */
+  ENSEMBLE = 'v3-enterprise',
+}
+
 export interface PredictionRequest {
   profileId: string;
   targetSchools: string[];
@@ -193,13 +209,39 @@ export interface PredictionResult {
   actualResult?: string;
   schoolMeta?: {
     usNewsRank?: number;
+    /** 0–100 percentage (e.g. 4.0 means 4%) */
     acceptanceRate?: number;
+    /** 0–100 percentage — international-specific acceptance rate */
+    intlAcceptanceRate?: number;
+    /** 0–100 percentage — share of international students */
+    intlStudentPct?: number;
+    needBlindInternational?: boolean;
+    /** 0–100 percentage */
     graduationRate?: number;
     satAvg?: number;
     sat25?: number;
     sat75?: number;
   };
+  majorBreakdown?: MajorBreakdown;
+  communityInsight?: {
+    /** 0–1 ratio (e.g. 0.35 means 35% admit rate) — convert to % for display */
+    majorAdmitRate: number;
+    totalCases: number;
+    major: string;
+  };
   crossEngineConsistency?: number;
+}
+
+export interface MajorBreakdown {
+  majorName: string;
+  majorNameZh?: string;
+  cipCode: string;
+  competitiveness: number;
+  /** 0–100 percentage — estimated acceptance rate for this major */
+  acceptanceRateEstimate?: number;
+  modifier: number;
+  /** 0–1 probability (e.g. 0.35 means 35% chance) */
+  adjustedProbability: number;
 }
 
 export interface PredictionResponse {
@@ -215,6 +257,8 @@ export interface PredictionResponse {
     violations: string[];
     warnings: string[];
   };
+  /** Set when user selected any UC school and backend expanded to all 9 UC campuses */
+  ucComparisonExpanded?: boolean;
 }
 
 // Chat
@@ -346,6 +390,7 @@ export interface RegisterResponse {
 export interface SchoolMeta {
   nameZh?: string;
   usNewsRank?: number;
+  /** 0–100 percentage (e.g. 4.0 means 4%) */
   acceptanceRate?: number;
   city?: string;
   state?: string;

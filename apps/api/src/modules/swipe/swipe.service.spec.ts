@@ -220,7 +220,7 @@ describe('SwipeService', () => {
       expect(dto.tags).toEqual(['strong_research']);
       expect(dto.isVerified).toBe(true);
       expect(dto.usNewsRank).toBe(2);
-      expect(dto.acceptanceRate).toBeCloseTo(3.96);
+      expect(dto.acceptanceRate).toBe(4);
     });
 
     it('should request count*2 cases for shuffling', async () => {

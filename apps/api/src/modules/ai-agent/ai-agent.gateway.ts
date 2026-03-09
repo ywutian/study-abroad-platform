@@ -15,11 +15,12 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Logger } from '@nestjs/common';
+import { Logger, Optional } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { OrchestratorService, StreamEvent } from './core/orchestrator.service';
 import { MemoryManagerService } from './memory/memory-manager.service';
+import { PromptGuardService } from './security/prompt-guard.service';
 
 interface AuthenticatedSocket extends Socket {
   userId?: string;
@@ -64,6 +65,7 @@ export class AiAgentGateway
     private jwtService: JwtService,
     private configService: ConfigService,
     private memoryManager: MemoryManagerService,
+    @Optional() private promptGuard?: PromptGuardService,
   ) {}
 
   /**
@@ -154,13 +156,27 @@ export class AiAgentGateway
     }
 
     try {
-      // 发送开始事件
+      // Input security check
+      if (this.promptGuard) {
+        const guardResult = await this.promptGuard.analyze(message, {
+          userId: client.userId,
+          strictMode: false,
+        });
+        if (guardResult.blocked) {
+          client.emit('aiError', {
+            error: '输入内容包含不安全的模式',
+            code: 'SECURITY_BLOCK',
+          });
+          return { success: false, error: 'Input blocked by security check' };
+        }
+      }
+
       client.emit('aiTyping', { isTyping: true });
 
-      // 流式处理
+      const sanitizedMessage = message.trim();
       const stream = this.orchestrator.handleMessageStream(
         client.userId,
-        message.trim(),
+        sanitizedMessage,
         conversationId,
       );
 

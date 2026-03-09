@@ -7,10 +7,12 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
+import { clampPercentRate } from '../../../common/utils/percent.util';
 import { AiService } from '../../ai/ai.service';
 import { SwipeService } from '../../swipe/swipe.service';
 import { ProfileLoaderHelper } from './helpers/profile-loader.helper';
 import { SchoolLookupHelper } from './helpers/school-lookup.helper';
+import { formatHighSchoolContext } from './helpers/education-context.helper';
 import { ToolHandler, IToolHandlerProvider } from './tool-handler.interface';
 
 @Injectable()
@@ -186,7 +188,7 @@ ACT范围：${admissionCase.actRange || unknown}
 托福范围：${admissionCase.toeflRange || unknown}
 标签：${admissionCase.tags?.join('、') || none}
 结果：${admissionCase.result}
-录取率：${admissionCase.school.acceptanceRate ? Number(admissionCase.school.acceptanceRate).toFixed(1) + '%' : unknown}`
+录取率：${clampPercentRate(admissionCase.school.acceptanceRate) != null ? clampPercentRate(admissionCase.school.acceptanceRate) + '%' : unknown}`
         : `
 School: ${schoolName} (Rank #${admissionCase.school.usNewsRank || 'N/A'})
 Application year: ${admissionCase.year}
@@ -198,7 +200,7 @@ ACT range: ${admissionCase.actRange || unknown}
 TOEFL range: ${admissionCase.toeflRange || unknown}
 Tags: ${admissionCase.tags?.join(', ') || none}
 Result: ${admissionCase.result}
-Acceptance rate: ${admissionCase.school.acceptanceRate ? Number(admissionCase.school.acceptanceRate).toFixed(1) + '%' : unknown}`;
+Acceptance rate: ${clampPercentRate(admissionCase.school.acceptanceRate) != null ? clampPercentRate(admissionCase.school.acceptanceRate) + '%' : unknown}`;
 
       const analysis = await this.aiService.chat(
         [
@@ -338,8 +340,15 @@ Provide specific, actionable advice.`;
           { role: 'system', content: systemPrompt },
           {
             role: 'user',
-            content: isZh
-              ? `
+            content: (() => {
+              const hsCtx = formatHighSchoolContext(
+                profile.education,
+                profile.highSchool,
+                locale,
+              );
+              const hsLine = hsCtx ? `\n- ${hsCtx}` : '';
+              return isZh
+                ? `
 录取案例：
 - 学校：${schoolName}
 - 结果：${admissionCase.result}
@@ -348,12 +357,32 @@ Provide specific, actionable advice.`;
 - 标签：${admissionCase.tags?.join('、') || none}
 
 您的档案：
-- GPA：${profile.gpa || notFilled}/${profile.gpaScale || 4.0}
+- GPA：${profile.gpa || notFilled}/${profile.gpaScale || 4.0}${hsLine}
 - 标化：${profile.testScores?.map((s: any) => `${s.type}: ${s.score}`).join(', ') || notFilled}
-- 活动数量：${profile.activities?.length || 0}
-- 奖项数量：${profile.awards?.length || 0}
+- 活动(${profile.activities?.length || 0}项):
+${
+  profile.activities
+    ?.slice(0, 5)
+    .map((a: any) => {
+      let line = `  · ${a.name}(${a.role})`;
+      if (a.description) line += `: ${(a.description as string).slice(0, 60)}`;
+      return line;
+    })
+    .join('\n') || none
+}
+- 奖项(${profile.awards?.length || 0}项):
+${
+  profile.awards
+    ?.slice(0, 5)
+    .map((a: any) => {
+      let line = `  · ${a.name}(${a.level})`;
+      if (a.competition?.name) line += ` — ${a.competition.name}`;
+      return line;
+    })
+    .join('\n') || none
+}
 - 目标专业：${profile.targetMajor || undecided}`
-              : `
+                : `
 Admission case:
 - School: ${schoolName}
 - Result: ${admissionCase.result}
@@ -362,11 +391,32 @@ Admission case:
 - Tags: ${admissionCase.tags?.join(', ') || none}
 
 Your profile:
-- GPA: ${profile.gpa || notFilled}/${profile.gpaScale || 4.0}
+- GPA: ${profile.gpa || notFilled}/${profile.gpaScale || 4.0}${hsLine}
 - Test scores: ${profile.testScores?.map((s: any) => `${s.type}: ${s.score}`).join(', ') || notFilled}
-- Activities: ${profile.activities?.length || 0}
-- Awards: ${profile.awards?.length || 0}
-- Target major: ${profile.targetMajor || undecided}`,
+- Activities (${profile.activities?.length || 0}):
+${
+  profile.activities
+    ?.slice(0, 5)
+    .map((a: any) => {
+      let line = `  · ${a.name} (${a.role})`;
+      if (a.description) line += `: ${(a.description as string).slice(0, 60)}`;
+      return line;
+    })
+    .join('\n') || none
+}
+- Awards (${profile.awards?.length || 0}):
+${
+  profile.awards
+    ?.slice(0, 5)
+    .map((a: any) => {
+      let line = `  · ${a.name} (${a.level})`;
+      if (a.competition?.name) line += ` — ${a.competition.name}`;
+      return line;
+    })
+    .join('\n') || none
+}
+- Target major: ${profile.targetMajor || undecided}`;
+            })(),
           },
         ],
         { temperature: 0.5 },

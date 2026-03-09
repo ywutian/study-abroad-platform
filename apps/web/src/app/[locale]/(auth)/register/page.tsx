@@ -223,7 +223,11 @@ export default function RegisterPage() {
           ...(data.actScore ? [{ type: 'ACT', score: parseInt(data.actScore, 10) }] : []),
         ],
       };
-      localStorage.setItem('pendingOnboarding', JSON.stringify(onboardingData));
+      try {
+        sessionStorage.setItem('pendingOnboarding', JSON.stringify(onboardingData));
+      } catch {
+        /* private browsing */
+      }
 
       toast.success(t('auth.register.success'));
       router.push('/verify-email?email=' + encodeURIComponent(data.email));

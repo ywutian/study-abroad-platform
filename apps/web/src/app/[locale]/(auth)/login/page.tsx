@@ -84,7 +84,11 @@ export default function LoginPage() {
 
       // Mark new users for onboarding quick experience on dashboard
       if (response.isNewUser) {
-        localStorage.setItem('showQuickExperience', 'true');
+        try {
+          localStorage.setItem('showQuickExperience', 'true');
+        } catch {
+          /* private browsing */
+        }
       }
 
       // 提取用户名（邮箱@前的部分）用于欢迎提示

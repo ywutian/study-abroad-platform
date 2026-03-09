@@ -239,10 +239,15 @@ export class CaseService {
       result: string;
       major?: string;
       gpaRange?: string;
+      gpa9?: number;
+      gpa10?: number;
+      gpa11?: number;
+      gpa12?: number;
       satRange?: string;
       actRange?: string;
       toeflRange?: string;
       tags?: string[];
+      activityList?: string;
       visibility?: 'PRIVATE' | 'PUBLIC' | 'ANONYMOUS' | 'VERIFIED_ONLY';
       // Essay fields
       essayType?: EssayType;
@@ -294,10 +299,15 @@ export class CaseService {
       result: string;
       major: string;
       gpaRange: string;
+      gpa9: number;
+      gpa10: number;
+      gpa11: number;
+      gpa12: number;
       satRange: string;
       actRange: string;
       toeflRange: string;
       tags: string[];
+      activityList: string;
       visibility: 'PRIVATE' | 'PUBLIC' | 'ANONYMOUS' | 'VERIFIED_ONLY';
       // Essay fields
       essayType: EssayType;

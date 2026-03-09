@@ -1,6 +1,8 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
+import { useMemo } from 'react';
 import { Link } from '@/lib/i18n/navigation';
 import { motion } from 'framer-motion';
 import { PageContainer } from '@/components/layout';
@@ -24,6 +26,8 @@ import {
   Clock,
   Zap,
   AlertCircle,
+  Trophy,
+  CalendarDays,
 } from 'lucide-react';
 import { QuickExperience } from '@/components/features/onboarding/quick-experience';
 
@@ -65,6 +69,14 @@ interface DashboardData {
     deadline: string;
     daysLeft: number;
   }[];
+  upcomingPersonalEvents?: {
+    id: string;
+    title: string;
+    category: string;
+    deadline: string | null;
+    eventDate: string | null;
+    daysLeft: number;
+  }[];
   recentActivity: {
     type: string;
     title: string;
@@ -91,11 +103,11 @@ function getProfileGrade(completeness: number): {
 // 4 Main modules configuration
 const mainModules = [
   {
-    id: 'find-college',
-    href: '/find-college',
+    id: 'schools',
+    href: '/schools',
     icon: Search,
-    titleKey: 'dashboard.modules.findCollege',
-    descKey: 'dashboard.modules.findCollegeDesc',
+    titleKey: 'dashboard.modules.schools',
+    descKey: 'dashboard.modules.schoolsDesc',
     color: 'from-violet-500 to-purple-600',
     bgColor: 'bg-violet-500/10',
     iconColor: 'text-violet-500',
@@ -132,8 +144,19 @@ const mainModules = [
   },
 ];
 
+interface TodoItem {
+  id: string;
+  type: 'school' | 'event';
+  title: string;
+  subtitle: string;
+  date: Date;
+  dateStr: string;
+  daysLeft: number;
+}
+
 export default function DashboardPage() {
   const t = useTranslations();
+  const locale = useLocale();
 
   // Fetch aggregated dashboard data from backend
   const { data: dashboard } = useQuery({
@@ -150,6 +173,45 @@ export default function DashboardPage() {
 
   // Effective pending count: use profileGaps if no ApplicationTask data
   const effectivePending = pendingTotal > 0 ? pendingTotal : profileGaps.length;
+
+  const todoList = useMemo<TodoItem[]>(() => {
+    const items: TodoItem[] = [];
+    const dateFmt = new Intl.DateTimeFormat(locale === 'zh' ? 'zh-CN' : 'en-US', {
+      month: 'short',
+      day: 'numeric',
+    });
+
+    for (const d of dashboard?.upcomingDeadlines ?? []) {
+      const date = new Date(d.deadline);
+      items.push({
+        id: d.id,
+        type: 'school',
+        title: d.schoolName,
+        subtitle: d.round,
+        date,
+        dateStr: dateFmt.format(date),
+        daysLeft: d.daysLeft,
+      });
+    }
+
+    for (const ev of dashboard?.upcomingPersonalEvents ?? []) {
+      const raw = ev.deadline ?? ev.eventDate;
+      if (!raw) continue;
+      const date = new Date(raw);
+      items.push({
+        id: ev.id,
+        type: 'event',
+        title: ev.title,
+        subtitle: ev.category,
+        date,
+        dateStr: dateFmt.format(date),
+        daysLeft: ev.daysLeft,
+      });
+    }
+
+    items.sort((a, b) => a.date.getTime() - b.date.getTime());
+    return items.slice(0, 10);
+  }, [dashboard?.upcomingDeadlines, dashboard?.upcomingPersonalEvents, locale]);
 
   return (
     <PageContainer>
@@ -356,48 +418,87 @@ export default function DashboardPage() {
           transition={{ delay: 0.4 }}
           className="grid gap-6 lg:grid-cols-2"
         >
-          {/* Upcoming Deadlines */}
+          {/* Upcoming Deadlines — unified todo list */}
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <Clock className="w-5 h-5" />
                 {t('dashboard.upcomingDeadlines')}
               </CardTitle>
+              <Link href="/timeline">
+                <Button variant="ghost" size="sm" className="text-muted-foreground">
+                  {t('dashboard.viewAll')}
+                  <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                </Button>
+              </Link>
             </CardHeader>
             <CardContent>
-              {dashboard?.upcomingDeadlines && dashboard.upcomingDeadlines.length > 0 ? (
+              {todoList.length > 0 ? (
                 <div className="space-y-3">
-                  {dashboard.upcomingDeadlines.map((deadline) => (
+                  {todoList.map((item) => (
                     <div
-                      key={deadline.id}
-                      className="flex items-center justify-between py-2 border-b last:border-0"
+                      key={`${item.type}-${item.id}`}
+                      className="flex items-center gap-3 py-2 border-b last:border-0"
                     >
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm truncate">{deadline.schoolName}</p>
-                        <p className="text-xs text-muted-foreground">{deadline.round}</p>
+                      <div
+                        className={cn(
+                          'w-8 h-8 rounded-full flex items-center justify-center shrink-0',
+                          item.type === 'school' ? 'bg-violet-500/10' : 'bg-amber-500/10'
+                        )}
+                      >
+                        {item.type === 'school' ? (
+                          <GraduationCap className="w-4 h-4 text-violet-500" />
+                        ) : (
+                          <Trophy className="w-4 h-4 text-amber-500" />
+                        )}
                       </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-sm truncate">{item.title}</p>
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              'text-[10px] px-1.5 py-0 shrink-0',
+                              item.type === 'school'
+                                ? 'border-violet-300 text-violet-600 bg-violet-50 dark:border-violet-800 dark:text-violet-400 dark:bg-violet-950/30'
+                                : 'border-amber-300 text-amber-600 bg-amber-50 dark:border-amber-800 dark:text-amber-400 dark:bg-amber-950/30'
+                            )}
+                          >
+                            {t(`dashboard.todoType.${item.type}`)}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <p className="text-xs text-muted-foreground truncate">{item.subtitle}</p>
+                          <span className="text-xs text-muted-foreground flex items-center gap-0.5">
+                            <CalendarDays className="w-3 h-3" />
+                            {item.dateStr}
+                          </span>
+                        </div>
+                      </div>
+
                       <Badge
                         variant="outline"
                         className={cn(
                           'ml-2 shrink-0',
-                          deadline.daysLeft <= 3
-                            ? 'border-red-300 text-red-600 bg-red-50'
-                            : deadline.daysLeft <= 7
-                              ? 'border-amber-300 text-amber-600 bg-amber-50'
-                              : 'border-gray-300 text-gray-600 bg-gray-50'
+                          item.daysLeft <= 3
+                            ? 'border-red-300 text-red-600 bg-red-50 dark:border-red-800 dark:text-red-400 dark:bg-red-950/30'
+                            : item.daysLeft <= 7
+                              ? 'border-amber-300 text-amber-600 bg-amber-50 dark:border-amber-800 dark:text-amber-400 dark:bg-amber-950/30'
+                              : 'border-gray-300 text-gray-600 bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:bg-gray-900/30'
                         )}
                       >
                         <AlertCircle
                           className={cn(
                             'w-3 h-3 mr-1',
-                            deadline.daysLeft <= 3
+                            item.daysLeft <= 3
                               ? 'text-red-500'
-                              : deadline.daysLeft <= 7
+                              : item.daysLeft <= 7
                                 ? 'text-amber-500'
                                 : 'text-gray-400'
                           )}
                         />
-                        {t('dashboard.daysLeft', { days: deadline.daysLeft })}
+                        {t('dashboard.daysLeft', { days: item.daysLeft })}
                       </Badge>
                     </div>
                   ))}
@@ -406,6 +507,12 @@ export default function DashboardPage() {
                 <div className="text-center py-8 text-muted-foreground">
                   <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
                   <p>{t('dashboard.noDeadlines')}</p>
+                  <Link href="/timeline">
+                    <Button variant="link" className="mt-2">
+                      {t('dashboard.viewAll')}
+                      <ArrowRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  </Link>
                 </div>
               )}
             </CardContent>
@@ -449,7 +556,7 @@ export default function DashboardPage() {
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <p>{t('dashboard.noRecentActivity')}</p>
-                  <Link href="/find-college">
+                  <Link href="/schools">
                     <Button variant="link" className="mt-2">
                       {t('dashboard.startExploring')}
                       <ArrowRight className="w-4 h-4 ml-1" />

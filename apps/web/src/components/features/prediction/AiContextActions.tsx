@@ -12,7 +12,7 @@ import {
   GraduationCap,
   Sparkles,
 } from 'lucide-react';
-import { getSchoolName } from '@/lib/utils';
+import { getSchoolName, formatAcceptanceRate } from '@/lib/utils';
 import type { PredictionResult, SchoolSearchItem } from './types';
 
 interface AiContextActionsProps {
@@ -61,7 +61,7 @@ export function AiContextActions({ results, selectedSchools }: AiContextActionsP
       const schoolsText = selectedSchools
         .map(
           (s) =>
-            `- ${getSchoolName(s, locale)}${s.usNewsRank ? ` (#${s.usNewsRank})` : ''}${s.acceptanceRate ? ` (${t('prediction.acceptanceRateLabel', { rate: s.acceptanceRate })})` : ''}`
+            `- ${getSchoolName(s, locale)}${s.usNewsRank ? ` (#${s.usNewsRank})` : ''}${s.acceptanceRate ? ` (${t('prediction.acceptanceRateLabel', { rate: formatAcceptanceRate(s.acceptanceRate).replace('%', '') })})` : ''}`
         )
         .join('\n');
       items.push({

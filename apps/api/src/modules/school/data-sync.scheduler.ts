@@ -34,9 +34,17 @@ export class DataSyncScheduler {
 
       // 记录同步日志
       await this.logSync('COLLEGE_SCORECARD', result.synced, result.errors);
-    } catch (error) {
-      this.logger.error('❌ College Scorecard 同步失败', error);
-      await this.logSync('COLLEGE_SCORECARD', 0, 1, error.message);
+    } catch (error: unknown) {
+      this.logger.error(
+        '❌ College Scorecard 同步失败',
+        error instanceof Error ? error.message : String(error),
+      );
+      await this.logSync(
+        'COLLEGE_SCORECARD',
+        0,
+        1,
+        error instanceof Error ? error.message : String(error),
+      );
     }
   }
 

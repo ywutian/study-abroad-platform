@@ -1,5 +1,6 @@
 import {
   IsEmail,
+  IsNotEmpty,
   IsString,
   MinLength,
   MaxLength,
@@ -16,6 +17,7 @@ export class RequestPasswordResetDto {
 export class ResetPasswordDto {
   @ApiProperty({ description: '重置令牌' })
   @IsString()
+  @IsNotEmpty({ message: '重置令牌不能为空' })
   token: string;
 
   @ApiProperty({ example: 'NewPassword123!' })

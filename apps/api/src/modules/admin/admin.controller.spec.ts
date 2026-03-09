@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
+import { AdminDataSyncService } from './admin-data-sync.service';
 import { NotificationService } from '../notification/notification.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Role, GlobalEventCategory } from '@prisma/client';
@@ -20,6 +21,13 @@ describe('AdminController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AdminController],
       providers: [
+        {
+          provide: AdminDataSyncService,
+          useValue: {
+            getDataSyncJobs: jest.fn().mockResolvedValue([]),
+            triggerDataSync: jest.fn().mockResolvedValue({ synced: 0 }),
+          },
+        },
         {
           provide: NotificationService,
           useValue: {

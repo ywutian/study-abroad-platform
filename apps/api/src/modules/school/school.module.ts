@@ -5,28 +5,37 @@ import { SchoolController } from './school.controller';
 import { SchoolDataService } from './school-data.service';
 import { SchoolScraperService } from './school-scraper.service';
 import { SchoolDataMerger } from './school-data-merger';
+import { SchoolLogoService } from './school-logo.service';
 import { SchoolScraperScheduler } from './school-scraper.scheduler';
 import { DataSyncScheduler } from './data-sync.scheduler';
+import { HighSchoolService } from './high-school.service';
+import { HighSchoolController } from './high-school.controller';
+import { IpedsDataService } from './ipeds-data.service';
 import { PrismaModule } from '../../prisma/prisma.module';
-import { AiModule } from '../ai/ai.module';
-import { ProfileModule } from '../profile/profile.module';
+import { AuditLogModule } from '../../common/services/audit-log.module';
+import { SchoolListModule } from '../school-list/school-list.module';
 
 @Module({
-  imports: [PrismaModule, AiModule, ScheduleModule, ProfileModule],
-  controllers: [SchoolController],
+  imports: [PrismaModule, AuditLogModule, ScheduleModule, SchoolListModule],
+  controllers: [SchoolController, HighSchoolController],
   providers: [
     SchoolService,
     SchoolDataService,
     SchoolScraperService,
     SchoolDataMerger,
+    SchoolLogoService,
     SchoolScraperScheduler,
     DataSyncScheduler,
+    HighSchoolService,
+    IpedsDataService,
   ],
   exports: [
     SchoolService,
     SchoolDataService,
     SchoolScraperService,
     SchoolDataMerger,
+    HighSchoolService,
+    IpedsDataService,
   ],
 })
 export class SchoolModule {}

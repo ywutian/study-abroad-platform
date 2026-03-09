@@ -68,9 +68,9 @@ export class PrismaService
         await this.$connect();
         this.logger.log('Database connected successfully');
         return;
-      } catch (error) {
+      } catch (error: unknown) {
         this.logger.warn(
-          `Database connection attempt ${attempt}/${maxRetries} failed: ${error.message}`,
+          `Database connection attempt ${attempt}/${maxRetries} failed: ${error instanceof Error ? error.message : String(error)}`,
         );
         if (attempt === maxRetries) {
           this.logger.error(

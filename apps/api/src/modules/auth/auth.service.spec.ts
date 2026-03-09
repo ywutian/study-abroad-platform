@@ -50,7 +50,7 @@ describe('AuthService', () => {
         {
           provide: PrismaService,
           useFactory: () => {
-            const prismaValue = {
+            const prismaValue: any = {
               refreshToken: {
                 findUnique: jest.fn(),
                 findMany: jest.fn().mockResolvedValue([]),
@@ -412,7 +412,10 @@ describe('AuthService', () => {
       expect(prismaService.user.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: mockUser.id },
-          data: { emailVerifyToken: expect.any(String) },
+          data: expect.objectContaining({
+            emailVerifyToken: expect.any(String),
+            emailVerifyTokenExp: expect.any(Date),
+          }),
         }),
       );
       expect(emailService.sendVerificationEmail).toHaveBeenCalled();

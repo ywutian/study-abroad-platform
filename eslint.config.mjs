@@ -75,7 +75,7 @@ export default tseslint.config(
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-namespace': 'warn',
-      '@typescript-eslint/ban-ts-comment': 'off',
+      '@typescript-eslint/ban-ts-comment': 'warn',
 
       // Core JS — promoted to error where violations are zero or near-zero
       'no-console': ['warn', { allow: ['warn', 'error'] }],

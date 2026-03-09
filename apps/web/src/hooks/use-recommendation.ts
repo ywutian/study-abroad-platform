@@ -92,9 +92,14 @@ export function useDeleteRecommendation() {
 export function useAddToSchoolList() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (dto: { schoolId: string; tier: string; isAIRecommended: boolean }) =>
-      apiClient.post('/school-lists', dto),
+    mutationFn: (dto: {
+      schoolId: string;
+      tier: string;
+      round?: string;
+      isAIRecommended?: boolean;
+    }) => apiClient.post('/school-lists', { ...dto, isAIRecommended: dto.isAIRecommended ?? true }),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['school-lists'] });
       queryClient.invalidateQueries({ queryKey: ['school-list'] });
     },
   });

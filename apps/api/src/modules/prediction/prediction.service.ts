@@ -8,6 +8,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AiService } from '../ai/ai.service';
 import { RedisService } from '../../common/redis/redis.service';
 import { MemoryManagerService } from '../ai-agent/memory';
+import { extractJsonFromLlm } from '../ai-agent/tools/helpers/llm-json.helper';
 import { MemoryType, EntityType, Prisma, School } from '@prisma/client';
 import {
   AI_PREDICTION_TIMEOUT_MS,
@@ -29,6 +30,7 @@ import {
   PredictionComparison,
   EngineScores,
 } from './dto';
+import { clampPercentRate } from '../../common/utils/percent.util';
 import {
   buildPredictionPrompt,
   ProfileInput,
@@ -46,7 +48,25 @@ import {
   parseRange,
   enforceMonotonicity,
   calculateSelectivityIndex,
+  TIER_POINTS,
+  LEVEL_POINTS,
 } from './utils/score-calculator';
+import {
+  extractFeatureVector,
+  imputeFeatures,
+  featureVectorToArray,
+  predict as mlPredict,
+  predictGBDT,
+  explainPrediction,
+  detectInternationalStatus,
+  resolveMajorToCip,
+  CIP_NAMES,
+} from '@study-abroad/shared/scoring';
+import type { TrainedModel, GBDTModel } from '@study-abroad/shared/scoring';
+import { ModelRegistryService } from './ml/model-registry.service';
+import { ShadowEvaluatorService } from './ml/shadow-evaluator.service';
+import { ModelMonitorService } from './ml/model-monitor.service';
+import { getSelectivityBand } from './ml/tier-strategy';
 
 // ============================================
 // Constants
@@ -58,6 +78,9 @@ const DISTRIBUTION_CACHE_TTL = 86400; // 24 hours
 const DISTRIBUTION_CACHE_PREFIX = 'school:distribution:';
 const CALIBRATION_CACHE_PREFIX = 'prediction:calibration:';
 const MODEL_VERSION = 'v3-enterprise';
+
+const SCHOOL_CALIBRATION_CACHE_KEY = 'prediction:school-calibrations';
+const SCHOOL_CALIBRATION_CACHE_TTL = 3600; // 1 hour
 
 /**
  * 引擎权重配置
@@ -73,6 +96,14 @@ const ENGINE_WEIGHTS = {
   noHistory: { stats: 0.35, ai: 0.65 },
   noAi: { stats: 0.45, historical: 0.55 },
   statsOnly: { stats: 1.0 },
+} as const;
+
+/** Engine weights when ML model is available (Engine 4) */
+const ENGINE_WEIGHTS_ML = {
+  fullWithMl: { stats: 0.1, ai: 0.25, historical: 0.25, ml: 0.4 },
+  noHistWithMl: { stats: 0.15, ai: 0.4, ml: 0.45 },
+  noAiWithMl: { stats: 0.2, historical: 0.3, ml: 0.5 },
+  statsWithMl: { stats: 0.3, ml: 0.7 },
 } as const;
 
 /** 置信区间宽度 (根据 confidence level) */
@@ -117,6 +148,9 @@ export class PredictionService {
     private aiService: AiService,
     private redis: RedisService,
     @Optional() private memoryManager?: MemoryManagerService,
+    @Optional() private modelRegistry?: ModelRegistryService,
+    @Optional() private shadowEvaluator?: ShadowEvaluatorService,
+    @Optional() private modelMonitor?: ModelMonitorService,
   ) {}
 
   private isAiCircuitOpen(): boolean {
@@ -149,6 +183,58 @@ export class PredictionService {
     }
   }
 
+  // ==================== School Calibration ====================
+
+  private schoolCalibrationMap: Record<string, number> | null = null;
+
+  /**
+   * Load school calibrations from DB (cached in Redis + in-memory).
+   * Returns a map of schoolId → multiplier.
+   */
+  private async getSchoolCalibrations(): Promise<Record<string, number>> {
+    if (this.schoolCalibrationMap) return this.schoolCalibrationMap;
+
+    try {
+      const cached = await this.redis.get(SCHOOL_CALIBRATION_CACHE_KEY);
+      if (cached) {
+        this.schoolCalibrationMap = JSON.parse(cached);
+        return this.schoolCalibrationMap!;
+      }
+    } catch {
+      /* Redis unavailable, fall through */
+    }
+
+    try {
+      const calibrations = await this.prisma.schoolCalibration.findMany({
+        select: { schoolId: true, multiplier: true },
+      });
+      const map: Record<string, number> = {};
+      for (const c of calibrations) {
+        map[c.schoolId] = Number(c.multiplier);
+      }
+      this.schoolCalibrationMap = map;
+
+      try {
+        await this.redis.set(
+          SCHOOL_CALIBRATION_CACHE_KEY,
+          JSON.stringify(map),
+          SCHOOL_CALIBRATION_CACHE_TTL,
+        );
+      } catch {
+        /* best-effort cache write */
+      }
+
+      return map;
+    } catch (err) {
+      this.logger.warn(
+        'Failed to load school calibrations, using empty map',
+        err,
+      );
+      this.schoolCalibrationMap = {};
+      return {};
+    }
+  }
+
   // ==================== 缓存管理 ====================
 
   /**
@@ -172,7 +258,16 @@ export class PredictionService {
     testScores?: Array<{ type: string; score: number }>;
     activities?: any[];
     awards?: Array<{ level?: string }>;
+    education?: Array<{
+      schoolType?: string | null;
+      highSchoolId?: string | null;
+      highSchool?: { tier: number } | null;
+    }>;
   }): string {
+    // Extract high school info for cache key
+    const hsEdu = (profile.education || []).find(
+      (e) => e.schoolType === 'HIGH_SCHOOL',
+    );
     const data = JSON.stringify({
       gpa: profile.gpa,
       gpaScale: profile.gpaScale,
@@ -182,6 +277,8 @@ export class PredictionService {
       })),
       actCount: (profile.activities || []).length,
       awards: (profile.awards || []).map((a) => a.level).sort(),
+      hsId: hsEdu?.highSchoolId || null,
+      hsTier: hsEdu?.highSchool?.tier || null,
     });
     let hash = 2166136261; // FNV offset basis
     for (let i = 0; i < data.length; i++) {
@@ -687,26 +784,52 @@ export class PredictionService {
    * @returns Normalized ProfileInput for prediction calculations
    */
   private profileToInput(profile: ProfileWithRelations): ProfileInput {
+    // Extract high school education entry (first HIGH_SCHOOL type)
+    const hsEducation = (profile as any).education?.find(
+      (e: any) => e.schoolType === 'HIGH_SCHOOL',
+    );
+    const hs = hsEducation?.highSchool;
+
+    const intlContext = detectInternationalStatus({
+      nationality: (profile as any).nationality,
+      countryOfResidence: (profile as any).countryOfResidence,
+      citizenship: (profile as any).citizenship,
+      educationSystem: (profile as any).educationSystem,
+      currentSchoolType: profile.currentSchoolType,
+    });
+
     return {
       gpa: profile.gpa ? Number(profile.gpa) : undefined,
       gpaScale: profile.gpaScale ? Number(profile.gpaScale) : 4.0,
       grade: profile.grade ?? undefined,
       currentSchoolType: profile.currentSchoolType ?? undefined,
       targetMajor: profile.targetMajor ?? undefined,
+      isInternational: intlContext.isInternational,
+      nationality: (profile as any).nationality ?? undefined,
+      educationSystem: (profile as any).educationSystem ?? undefined,
+      needsFinancialAid: (profile as any).needsFinancialAid ?? undefined,
+      highSchoolName: hsEducation?.schoolName ?? undefined,
+      highSchoolTier: hs?.tier ?? undefined,
+      highSchoolType: hs?.type ?? undefined,
+      highSchoolLocation: hs?.state || hs?.country || undefined,
       testScores: (profile.testScores || []).map((s) => ({
         type: s.type,
         score: s.score,
         subScores: s.subScores as Record<string, number> | undefined,
       })),
       activities: (profile.activities || []).map((a) => ({
+        name: a.name,
         category: a.category,
         role: a.role,
+        description: a.description ?? undefined,
         hoursPerWeek: a.hoursPerWeek ?? undefined,
         weeksPerYear: a.weeksPerYear ?? undefined,
       })),
       awards: (profile.awards || []).map((a) => ({
         level: a.level,
         name: a.name,
+        tier: a.competition?.tier ?? undefined,
+        competitionName: a.competition?.name ?? undefined,
       })),
     };
   }
@@ -722,9 +845,13 @@ export class PredictionService {
       id: school.id,
       name: school.name,
       nameZh: school.nameZh ?? undefined,
-      acceptanceRate: school.acceptanceRate
-        ? Number(school.acceptanceRate)
+      acceptanceRate: clampPercentRate(school.acceptanceRate),
+      intlAcceptanceRate: clampPercentRate((school as any).intlAcceptanceRate),
+      intlStudentPct: (school as any).intlStudentPct
+        ? Number((school as any).intlStudentPct)
         : undefined,
+      needBlindInternational:
+        (school as any).needBlindInternational || undefined,
       satAvg: school.satAvg ?? undefined,
       sat25: school.sat25 ?? undefined,
       sat75: school.sat75 ?? undefined,
@@ -732,9 +859,7 @@ export class PredictionService {
       act25: school.act25 ?? undefined,
       act75: school.act75 ?? undefined,
       usNewsRank: school.usNewsRank ?? undefined,
-      graduationRate: school.graduationRate
-        ? Number(school.graduationRate)
-        : undefined,
+      graduationRate: clampPercentRate(school.graduationRate),
     };
   }
 
@@ -754,6 +879,12 @@ export class PredictionService {
       (s) => s.type === 'TOEFL',
     )?.score;
 
+    const awardTierScores = profile.awards.map((a) => {
+      if (a.tier)
+        return TIER_POINTS[a.tier] ?? LEVEL_POINTS[a.level ?? ''] ?? 3;
+      return LEVEL_POINTS[a.level ?? ''] ?? 3;
+    });
+
     return {
       gpa: profile.gpa,
       gpaScale: profile.gpaScale,
@@ -761,12 +892,20 @@ export class PredictionService {
       actScore,
       toeflScore,
       activityCount: profile.activities.length,
+      activityDetails: profile.activities.map((a) => ({
+        category: a.category || '',
+        role: a.role || '',
+        totalHours: (a.hoursPerWeek ?? 0) * (a.weeksPerYear ?? 0),
+        tier: (a as any).activityTemplate?.tier ?? undefined,
+      })),
       awardCount: profile.awards.length,
       nationalAwardCount: profile.awards.filter((a) => a.level === 'NATIONAL')
         .length,
       internationalAwardCount: profile.awards.filter(
         (a) => a.level === 'INTERNATIONAL',
       ).length,
+      awardTierScores,
+      highSchoolTier: profile.highSchoolTier,
     };
   }
 
@@ -786,6 +925,7 @@ export class PredictionService {
       act25: school.act25,
       act75: school.act75,
       usNewsRank: school.usNewsRank,
+      graduationRate: school.graduationRate,
     };
   }
 
@@ -862,7 +1002,15 @@ export class PredictionService {
       schoolMetrics,
       historicalDistribution,
     );
-    const probability = calculateProbability(overallScore, schoolMetrics);
+    const selectivityOpts =
+      profile.isInternational && school.intlAcceptanceRate
+        ? { useIntlRate: true, intlAcceptanceRate: school.intlAcceptanceRate }
+        : undefined;
+    const probability = calculateProbability(
+      overallScore,
+      schoolMetrics,
+      selectivityOpts,
+    );
 
     // 生成因素分析
     const factors: PredictionFactor[] = [];
@@ -1009,29 +1157,78 @@ export class PredictionService {
       });
     }
 
-    // 目标专业竞争力
-    if (profile.targetMajor) {
+    // 目标专业竞争力 (data-driven from SchoolProgram when available)
+    if (profile.targetMajor && profile.majorCompetitiveness) {
+      const compLevel = profile.majorCompetitiveness.level;
+      factors.push({
+        name: isZh ? '专业竞争度' : 'Major Competitiveness',
+        impact:
+          compLevel >= 4 ? 'negative' : compLevel <= 2 ? 'positive' : 'neutral',
+        weight: 0.1,
+        detail: isZh
+          ? `${profile.majorCompetitiveness.name}在该校竞争度: ${compLevel}/5${profile.majorCompetitiveness.schoolEstimate ? `，预估专业录取率 ~${profile.majorCompetitiveness.schoolEstimate}%` : ''}`
+          : `${profile.majorCompetitiveness.name} competitiveness at this school: ${compLevel}/5${profile.majorCompetitiveness.schoolEstimate ? `, estimated major acceptance ~${profile.majorCompetitiveness.schoolEstimate}%` : ''}`,
+        improvement:
+          compLevel >= 4
+            ? isZh
+              ? '建议在专业相关活动和研究上展现深度'
+              : 'Demonstrate depth in major-related activities and research'
+            : undefined,
+      });
+    } else if (profile.targetMajor) {
+      // Fallback: simple text-match competitive major check
       const competitiveMajors = [
-        'Computer Science',
-        'Engineering',
-        'Business',
-        'Pre-Med',
+        'computer science',
+        'engineering',
+        'business',
+        'pre-med',
         '计算机科学',
         '工程',
         '商科',
         '医学预科',
       ];
       const isCompetitive = competitiveMajors.some((m) =>
-        profile.targetMajor!.toLowerCase().includes(m.toLowerCase()),
+        profile.targetMajor!.toLowerCase().includes(m),
       );
       if (isCompetitive) {
         factors.push({
           name: isZh ? '目标专业竞争力' : 'Target Major Competitiveness',
           impact: 'neutral',
-          weight: 0.0, // 信息因素，不影响权重
+          weight: 0.0,
           detail: isZh
             ? `${profile.targetMajor}专业竞争激烈，申请者需要在各方面表现突出`
             : `${profile.targetMajor} is a highly competitive major — strong performance across all areas is needed`,
+        });
+      }
+    }
+
+    // 国际生身份
+    if (profile.isInternational) {
+      const intlRate = school.intlAcceptanceRate;
+      const overallRate = school.acceptanceRate;
+      factors.push({
+        name: isZh ? '国际生身份' : 'International Applicant',
+        impact:
+          intlRate && overallRate && intlRate < overallRate
+            ? 'negative'
+            : 'neutral',
+        weight: 0.15,
+        detail: intlRate
+          ? isZh
+            ? `国际生录取率 ${intlRate}% vs 整体 ${overallRate}%`
+            : `International rate ${intlRate}% vs overall ${overallRate}%`
+          : isZh
+            ? '暂无该校国际生录取率数据'
+            : 'International rate data not available for this school',
+      });
+      if (school.needBlindInternational) {
+        factors.push({
+          name: isZh ? 'Need-Blind政策' : 'Need-Blind Policy',
+          impact: 'positive',
+          weight: 0.0,
+          detail: isZh
+            ? '该校对国际生实行Need-Blind录取'
+            : 'This school is need-blind for international students',
         });
       }
     }
@@ -1120,6 +1317,14 @@ export class PredictionService {
       enhancedPrompt += `\n\n## Statistical Model Reference (for calibration only)\n- Statistical model probability: ${(statsResult.probability * 100).toFixed(0)}%\n- Adjust based on your professional judgment with reasonable justification.`;
     }
 
+    // International student context injection
+    if (profile.isInternational) {
+      enhancedPrompt +=
+        locale === 'zh'
+          ? `\n\n## 国际生评估要点\n如果申请者是国际生，请特别考虑：\n1. 该校对国际生的竞争程度（国际生录取率通常低于整体录取率）\n2. 申请者所在地区（如中国大陆）的竞争强度\n3. 高中背景在该校的认知度\n4. 标化成绩在国际生申请者池中的竞争力（而非整体申请池）\n5. TOEFL/IELTS在该校录取中的门槛作用`
+          : `\n\n## International Student Assessment\nFor international applicants, specifically consider:\n1. This school's competitiveness for international students\n2. Regional competition intensity (e.g., mainland China applicant pool)\n3. High school recognition at this specific school\n4. Test score competitiveness within the international applicant pool\n5. TOEFL/IELTS threshold requirements at this school`;
+    }
+
     if (memoryInsights.length > 0) {
       const insightsText = memoryInsights
         .slice(0, 3)
@@ -1152,10 +1357,15 @@ export class PredictionService {
         },
       );
 
-      const jsonMatch = response.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) return null;
+      const parsed = extractJsonFromLlm<{
+        probability: number;
+        reasoning?: string;
+        factors?: string[];
+        suggestions?: string[];
+        comparison?: Record<string, unknown>;
+      }>(response);
+      if (!parsed) return null;
 
-      const parsed = JSON.parse(jsonMatch[0]);
       let probability = Number(parsed.probability);
 
       if (isNaN(probability) || probability < 0 || probability > 1) {
@@ -1164,20 +1374,21 @@ export class PredictionService {
 
       probability = Math.max(0.05, Math.min(0.95, probability));
 
-      // 合理性校验：与统计模型偏差不能超过 1.8 倍
+      // 合理性校验：与统计模型偏差不能超过 2.5 倍 (widened to give AI more room
+      // for nuanced international student assessment)
       const statsProb = statsResult.probability;
-      if (probability > statsProb * 1.8 && statsProb > 0.05) {
-        probability = Math.min(probability, statsProb * 1.8);
+      if (probability > statsProb * 2.5 && statsProb > 0.05) {
+        probability = Math.min(probability, statsProb * 2.5);
       }
-      if (probability < statsProb / 1.8 && statsProb < 0.8) {
-        probability = Math.max(probability, statsProb / 1.8);
+      if (probability < statsProb / 2.5 && statsProb < 0.8) {
+        probability = Math.max(probability, statsProb / 2.5);
       }
 
       // 高选拔性学校额外 cap — 防止 AI 对顶尖学校给出过高概率
       const schoolMetrics = this.extractSchoolMetrics(school);
       const selectivity = calculateSelectivityIndex(schoolMetrics);
-      if (selectivity > 0.8) {
-        const aiCap = 0.4 - (selectivity - 0.8) * 1.0;
+      if (selectivity > 0.85) {
+        const aiCap = 0.5 - (selectivity - 0.85) * 1.5;
         probability = Math.min(probability, Math.max(0.05, aiCap));
       }
 
@@ -1191,7 +1402,7 @@ export class PredictionService {
           improvement: f.improvement || undefined,
         })),
         suggestions: parsed.suggestions || [],
-        comparison: parsed.comparison || {
+        comparison: (parsed.comparison as any) || {
           gpaPercentile: 50,
           testScorePercentile: 50,
           activityStrength: 'average',
@@ -1230,6 +1441,7 @@ export class PredictionService {
     } | null,
     memoryAdjustment: number,
     confidenceLevel: 'low' | 'medium' | 'high',
+    mlProbability: number | null = null,
   ): {
     probability: number;
     probabilityLow: number;
@@ -1243,62 +1455,127 @@ export class PredictionService {
     // 计算跨引擎一致性 (0-1, 1=完全一致)
     let crossEngineConsistency = 1;
 
-    if (aiProbability !== null && historicalResult !== null) {
-      // 全引擎可用
-      weights = { ...ENGINE_WEIGHTS.full };
-      // 历史数据权重随样本量调整
-      const histConfidence = historicalResult.confidence;
-      weights.historical = weights.historical * histConfidence;
+    const hasAi = aiProbability !== null;
+    const hasHist = historicalResult !== null;
+    const hasMl = mlProbability !== null;
 
-      // AI 权重根据跨引擎一致性动态调整
-      crossEngineConsistency = Math.max(
-        0,
-        1 - Math.abs(aiProbability - statsProbability) / 0.4,
-      );
-      const aiScale = 0.5 + 0.5 * crossEngineConsistency;
-      const originalAiWeight = weights.ai;
-      weights.ai *= aiScale;
-      const removedWeight = originalAiWeight - weights.ai;
-      weights.stats += removedWeight * 0.6;
-      weights.historical += removedWeight * 0.4;
+    if (hasMl) {
+      // --- ML model available: use ML-enhanced weights ---
 
-      // 重新归一化
-      const totalWeight = weights.stats + weights.ai + weights.historical;
-      weights.stats /= totalWeight;
-      weights.ai /= totalWeight;
-      weights.historical /= totalWeight;
+      if (hasAi && hasHist) {
+        weights = { ...ENGINE_WEIGHTS_ML.fullWithMl };
+        const histConfidence = historicalResult.confidence;
+        weights.historical *= histConfidence;
+      } else if (hasAi) {
+        weights = { ...ENGINE_WEIGHTS_ML.noHistWithMl };
+      } else if (hasHist) {
+        weights = { ...ENGINE_WEIGHTS_ML.noAiWithMl };
+      } else {
+        weights = { ...ENGINE_WEIGHTS_ML.statsWithMl };
+      }
 
+      // Cross-engine consistency (include ML in the calculation)
+      const probs = [statsProbability, mlProbability];
+      if (hasAi) probs.push(aiProbability);
+      if (hasHist) probs.push(historicalResult.probability);
+      const maxP = Math.max(...probs);
+      const minP = Math.min(...probs);
+      crossEngineConsistency = Math.max(0, 1 - (maxP - minP) / 0.4);
+
+      // Safety: if ML wildly disagrees with stats (>0.3 diff), halve ML weight
+      const mlStatsDiff = Math.abs(mlProbability - statsProbability);
+      if (mlStatsDiff > 0.3) {
+        const halved = weights.ml / 2;
+        weights.ml = halved;
+        weights.stats += halved; // redistribute to stats (safe)
+      }
+
+      // Safety floor: stats weight never below 0.10
+      if (weights.stats < 0.1) {
+        const deficit = 0.1 - weights.stats;
+        weights.stats = 0.1;
+        if (weights.ml) weights.ml -= deficit;
+      }
+
+      // AI consistency scaling (same as non-ML path)
+      if (hasAi && weights.ai) {
+        const aiConsistency = Math.max(
+          0,
+          1 - Math.abs(aiProbability - statsProbability) / 0.4,
+        );
+        const aiScale = 0.5 + 0.5 * aiConsistency;
+        const originalAi = weights.ai;
+        weights.ai *= aiScale;
+        weights.stats += (originalAi - weights.ai) * 0.5;
+        if (weights.ml) weights.ml += (originalAi - weights.ai) * 0.5;
+      }
+
+      // Renormalize
+      const totalWeight = Object.values(weights).reduce((s, v) => s + v, 0);
+      for (const key of Object.keys(weights)) {
+        weights[key] /= totalWeight;
+      }
+
+      // Weighted sum
       fusedProbability =
-        statsProbability * weights.stats +
-        aiProbability * weights.ai +
-        historicalResult.probability * weights.historical;
-    } else if (aiProbability !== null) {
-      weights = { ...ENGINE_WEIGHTS.noHistory };
-
-      // AI 权重根据跨引擎一致性动态调整
-      crossEngineConsistency = Math.max(
-        0,
-        1 - Math.abs(aiProbability - statsProbability) / 0.4,
-      );
-      const aiScale = 0.5 + 0.5 * crossEngineConsistency;
-      const originalAiWeight = weights.ai;
-      weights.ai *= aiScale;
-      weights.stats += originalAiWeight - weights.ai;
-      // 重新归一化
-      const totalWeight = weights.stats + weights.ai;
-      weights.stats /= totalWeight;
-      weights.ai /= totalWeight;
-
-      fusedProbability =
-        statsProbability * weights.stats + aiProbability * weights.ai;
-    } else if (historicalResult !== null) {
-      weights = { ...ENGINE_WEIGHTS.noAi };
-      fusedProbability =
-        statsProbability * weights.stats +
-        historicalResult.probability * weights.historical;
+        statsProbability * weights.stats + mlProbability * (weights.ml ?? 0);
+      if (hasAi) fusedProbability += aiProbability * (weights.ai ?? 0);
+      if (hasHist)
+        fusedProbability +=
+          historicalResult.probability * (weights.historical ?? 0);
     } else {
-      weights = { ...ENGINE_WEIGHTS.statsOnly };
-      fusedProbability = statsProbability;
+      // --- No ML model: original logic ---
+      if (hasAi && hasHist) {
+        weights = { ...ENGINE_WEIGHTS.full };
+        const histConfidence = historicalResult.confidence;
+        weights.historical *= histConfidence;
+
+        crossEngineConsistency = Math.max(
+          0,
+          1 - Math.abs(aiProbability - statsProbability) / 0.4,
+        );
+        const aiScale = 0.5 + 0.5 * crossEngineConsistency;
+        const originalAiWeight = weights.ai;
+        weights.ai *= aiScale;
+        const removedWeight = originalAiWeight - weights.ai;
+        weights.stats += removedWeight * 0.6;
+        weights.historical += removedWeight * 0.4;
+
+        const totalWeight = weights.stats + weights.ai + weights.historical;
+        weights.stats /= totalWeight;
+        weights.ai /= totalWeight;
+        weights.historical /= totalWeight;
+
+        fusedProbability =
+          statsProbability * weights.stats +
+          aiProbability * weights.ai +
+          historicalResult.probability * weights.historical;
+      } else if (hasAi) {
+        weights = { ...ENGINE_WEIGHTS.noHistory };
+
+        crossEngineConsistency = Math.max(
+          0,
+          1 - Math.abs(aiProbability - statsProbability) / 0.4,
+        );
+        const aiScale = 0.5 + 0.5 * crossEngineConsistency;
+        const originalAiWeight = weights.ai;
+        weights.ai *= aiScale;
+        weights.stats += originalAiWeight - weights.ai;
+        const totalWeight = weights.stats + weights.ai;
+        weights.stats /= totalWeight;
+        weights.ai /= totalWeight;
+
+        fusedProbability =
+          statsProbability * weights.stats + aiProbability * weights.ai;
+      } else if (hasHist) {
+        weights = { ...ENGINE_WEIGHTS.noAi };
+        fusedProbability =
+          statsProbability * weights.stats +
+          historicalResult.probability * weights.historical;
+      } else {
+        weights = { ...ENGINE_WEIGHTS.statsOnly };
+        fusedProbability = statsProbability;
+      }
     }
 
     // 应用记忆增强微调
@@ -1314,6 +1591,16 @@ export class PredictionService {
       fusedProbability + intervalWidth / 2,
     );
 
+    // Determine fusion method name
+    const engineList = ['stats'];
+    if (hasAi) engineList.push('ai');
+    if (hasHist) engineList.push('hist');
+    if (hasMl) engineList.push('ml');
+    const fusionMethod =
+      engineList.length === 1
+        ? 'stats_only'
+        : `weighted_ensemble_${engineList.length}_${engineList.join('_')}`;
+
     return {
       probability: fusedProbability,
       probabilityLow,
@@ -1323,16 +1610,10 @@ export class PredictionService {
         stats: statsProbability,
         ai: aiProbability ?? undefined,
         historical: historicalResult?.probability,
+        ml: mlProbability ?? undefined,
         memoryAdjustment: memoryAdjustment !== 0 ? memoryAdjustment : undefined,
         weights,
-        fusionMethod:
-          aiProbability !== null && historicalResult !== null
-            ? 'weighted_ensemble_3'
-            : aiProbability !== null
-              ? 'weighted_ensemble_2_ai'
-              : historicalResult !== null
-                ? 'weighted_ensemble_2_hist'
-                : 'stats_only',
+        fusionMethod,
       },
     };
   }
@@ -1381,7 +1662,7 @@ export class PredictionService {
       }
     }
 
-    // Check 3: 概率碰撞 (精度 0.01)
+    // Check 3: 概率碰撞 (精度 0.01 + 0.1 双重检测)
     const probMap = new Map<string, string[]>();
     for (const r of results) {
       const key = r.probability.toFixed(2);
@@ -1391,6 +1672,20 @@ export class PredictionService {
     for (const [prob, schools] of probMap) {
       if (schools.length > 1) {
         warnings.push(`P=${prob} shared by: ${schools.join(', ')}`);
+      }
+    }
+    // Coarse collision detection (1 decimal place)
+    const coarseMap = new Map<string, string[]>();
+    for (const r of results) {
+      const key = r.probability.toFixed(1);
+      if (!coarseMap.has(key)) coarseMap.set(key, []);
+      coarseMap.get(key)!.push(r.schoolName);
+    }
+    for (const [prob, schools] of coarseMap) {
+      if (schools.length > 2) {
+        warnings.push(
+          `P≈${prob} cluster (${schools.length} schools): ${schools.join(', ')}`,
+        );
       }
     }
 
@@ -1496,7 +1791,7 @@ export class PredictionService {
    *    - Engine 3 (Historical): returns null if < 10 matching cases
    * 4. Fuse engine outputs via dynamic weighted averaging + memory micro-adjustment
    * 5. Compute confidence interval based on data completeness
-   * 6. Cache result in Redis (1h TTL), persist to DB via upsert
+   * 6. Cache result in Redis (24h TTL), persist to DB via upsert
    * 7. Asynchronously write results to the memory system
    *
    * @param profileId - The profile to predict for
@@ -1578,8 +1873,12 @@ export class PredictionService {
       where: { id: profileId },
       include: {
         testScores: true,
-        activities: true,
+        activities: {
+          orderBy: { order: 'asc' },
+          include: { activityTemplate: true },
+        },
         awards: { include: { competition: true } },
+        education: { include: { highSchool: true } },
       },
     });
 
@@ -1642,6 +1941,9 @@ export class PredictionService {
       {
         usNewsRank?: number;
         acceptanceRate?: number;
+        intlAcceptanceRate?: number;
+        intlStudentPct?: number;
+        needBlindInternational?: boolean;
         graduationRate?: number;
         satAvg?: number;
         sat25?: number;
@@ -1651,10 +1953,13 @@ export class PredictionService {
     for (const s of schools) {
       schoolMetaMap.set(s.id, {
         usNewsRank: s.usNewsRank ?? undefined,
-        acceptanceRate:
-          s.acceptanceRate != null ? Number(s.acceptanceRate) : undefined,
-        graduationRate:
-          s.graduationRate != null ? Number(s.graduationRate) : undefined,
+        acceptanceRate: clampPercentRate(s.acceptanceRate),
+        intlAcceptanceRate: clampPercentRate((s as any).intlAcceptanceRate),
+        intlStudentPct: (s as any).intlStudentPct
+          ? Number((s as any).intlStudentPct)
+          : undefined,
+        needBlindInternational: (s as any).needBlindInternational || undefined,
+        graduationRate: clampPercentRate(s.graduationRate),
         satAvg: s.satAvg ?? undefined,
         sat25: s.sat25 ?? undefined,
         sat75: s.sat75 ?? undefined,
@@ -1680,6 +1985,19 @@ export class PredictionService {
       schoolsToPredict.push(...schools);
     }
 
+    // Batch prefetch SchoolProgram data for user's target major
+    const targetCip = profileInput.targetMajor
+      ? resolveMajorToCip(profileInput.targetMajor)
+      : null;
+    const programMap = new Map<string, any>();
+    if (targetCip) {
+      const allSchoolIds = schools.map((s) => s.id);
+      const programs = await this.prisma.schoolProgram.findMany({
+        where: { cipCode: targetCip, schoolId: { in: allSchoolIds } },
+      });
+      for (const p of programs) programMap.set(p.schoolId, p);
+    }
+
     // 并行预测（控制并发上限为 3）
     const CONCURRENCY = 3;
     const freshResults: PredictionResultDto[] = [];
@@ -1697,6 +2015,7 @@ export class PredictionService {
             locale,
             plattParams,
             profileHash,
+            programMap.get(school.id),
           ),
         ),
       );
@@ -1725,6 +2044,19 @@ export class PredictionService {
 
     // 单调性约束: 保证 selectivity 更高的学校 probability 更低
     enforceMonotonicity(results);
+
+    // 学校级校准：从 DB 加载 SchoolCalibration 乘数（如 BU 过严时可设 >1）
+    const calibrationMap = await this.getSchoolCalibrations();
+    for (const r of results) {
+      const adj = calibrationMap[r.schoolId];
+      if (adj != null && adj > 0) {
+        r.probability = Math.min(0.98, r.probability * adj);
+        if (r.probabilityLow != null)
+          r.probabilityLow = Math.min(0.98, r.probabilityLow * adj);
+        if (r.probabilityHigh != null)
+          r.probabilityHigh = Math.min(0.98, r.probabilityHigh * adj);
+      }
+    }
 
     // 按概率降序排序
     results.sort((a, b) => b.probability - a.probability);
@@ -1779,9 +2111,25 @@ export class PredictionService {
     locale: string,
     plattParams?: { a: number; b: number } | null,
     profileHash?: string,
+    programData?: any,
   ): Promise<PredictionResultDto> {
     const schoolInput = this.schoolToInput(school);
     const schoolMetrics = this.extractSchoolMetrics(schoolInput);
+
+    // Inject major competitiveness into profileInput for prompt builder
+    if (programData) {
+      const cipInfo = CIP_NAMES[programData.cipCode];
+      profileInput = {
+        ...profileInput,
+        majorCompetitiveness: {
+          name: cipInfo?.en || programData.programName,
+          level: programData.competitiveness,
+          schoolEstimate: programData.acceptanceRateEstimate
+            ? Number(programData.acceptanceRateEstimate)
+            : undefined,
+        },
+      };
+    }
 
     // 获取历史分布数据
     const historicalDist = await this.getSchoolDistribution(school.id);
@@ -1836,6 +2184,114 @@ export class PredictionService {
       school.id,
     );
 
+    // === 引擎 4: ML Model (Tier 2+) ===
+    let mlResult: {
+      probability: number;
+      modelTier: number;
+      contributions?: Array<{
+        feature: string;
+        contribution: number;
+        direction: 'positive' | 'negative';
+      }>;
+    } | null = null;
+
+    if (this.modelRegistry) {
+      try {
+        const selectivityBand = getSelectivityBand(
+          calculateSelectivityIndex(schoolMetrics),
+        );
+        // Try band-specific model first, fall back to global
+        const championModel =
+          (await this.modelRegistry.getChampionModel(selectivityBand)) ??
+          (await this.modelRegistry.getChampionModel(null));
+
+        if (championModel) {
+          const fv = extractFeatureVector(profileMetrics, schoolMetrics, {
+            activityDetails: profileMetrics.activityDetails,
+            isPrivateSchool: school.isPrivate,
+            tuition: school.tuition,
+            usNewsRank: school.usNewsRank,
+          });
+
+          const modelTyped = championModel;
+          const featureMedians =
+            'featureMedians' in modelTyped ? modelTyped.featureMedians : {};
+          const imputed = imputeFeatures(fv, featureMedians);
+
+          let prob: number;
+          let contributions:
+            | Array<{
+                feature: string;
+                contribution: number;
+                direction: 'positive' | 'negative';
+              }>
+            | undefined;
+
+          if ('trees' in modelTyped) {
+            // GBDT model
+            const featureArray = featureVectorToArray(
+              imputed,
+              modelTyped.featureNames as any,
+            );
+            prob = predictGBDT(modelTyped, featureArray);
+          } else {
+            // Logistic regression model
+            const lrModel = modelTyped;
+            const featureArray = featureVectorToArray(
+              imputed,
+              lrModel.featureNames as any,
+            );
+            prob = mlPredict(lrModel, featureArray);
+            contributions = explainPrediction(lrModel, featureArray).map(
+              (c: any) => ({
+                feature: c.feature,
+                contribution: c.contribution,
+                direction: c.direction,
+              }),
+            );
+          }
+
+          const tier =
+            'metadata' in modelTyped
+              ? (modelTyped as TrainedModel).metadata.tier
+              : 4;
+          mlResult = {
+            probability: Math.max(0.05, Math.min(0.95, prob)),
+            modelTier: tier,
+            contributions,
+          };
+
+          // Shadow evaluation (non-blocking)
+          if (this.shadowEvaluator) {
+            const featureArray = featureVectorToArray(
+              imputed,
+              ('featureNames' in modelTyped
+                ? modelTyped.featureNames
+                : []) as any,
+            );
+            this.shadowEvaluator
+              .runIfActive(featureArray, mlResult.probability, selectivityBand)
+              .catch(() => {
+                /* swallow */
+              });
+          }
+
+          // Record prediction for drift monitoring (non-blocking)
+          if (this.modelMonitor) {
+            this.modelMonitor
+              .recordPrediction(mlResult.probability)
+              .catch(() => {
+                /* swallow */
+              });
+          }
+        }
+      } catch (err) {
+        this.logger.debug(
+          `ML prediction skipped: ${err instanceof Error ? err.message : err}`,
+        );
+      }
+    }
+
     // 记忆增强调整
     const memoryAdjustment =
       memoryContext.memoryAdjustments.get(school.id) || 0;
@@ -1850,10 +2306,12 @@ export class PredictionService {
       historicalResult,
       memoryAdjustment,
       confidenceLevel,
+      mlResult?.probability ?? null,
     );
 
     // Platt scaling 校准（当有足够历史数据时）
-    if (plattParams) {
+    // Skip Platt when ML champion is active — ML logistic output is already calibrated
+    if (plattParams && !mlResult) {
       fusedResult.probability = this.applyPlattCalibration(
         fusedResult.probability,
         plattParams,
@@ -1869,6 +2327,45 @@ export class PredictionService {
         0.99,
         fusedResult.probability + intervalWidth / 2,
       );
+    }
+
+    // Apply major competitiveness modifier (softened — intl selectivity already accounts
+    // for competition; aggressive modifiers double-penalize international applicants)
+    const MAJOR_MODIFIERS: Record<number, number> = {
+      5: 0.82,
+      4: 0.92,
+      3: 1.0,
+      2: 1.05,
+      1: 1.1,
+    };
+    let majorBreakdownResult: any = undefined;
+    if (programData) {
+      const modifier = MAJOR_MODIFIERS[programData.competitiveness] ?? 1.0;
+      const preMajorProb = fusedResult.probability;
+      fusedResult.probability = Math.max(
+        0.05,
+        Math.min(0.95, fusedResult.probability * modifier),
+      );
+      fusedResult.probabilityLow = Math.max(
+        0.01,
+        fusedResult.probabilityLow * modifier,
+      );
+      fusedResult.probabilityHigh = Math.min(
+        0.99,
+        fusedResult.probabilityHigh * modifier,
+      );
+      const cipInfo = CIP_NAMES[programData.cipCode];
+      majorBreakdownResult = {
+        majorName: cipInfo?.en || programData.programName,
+        majorNameZh: cipInfo?.zh || programData.programNameZh,
+        cipCode: programData.cipCode,
+        competitiveness: programData.competitiveness,
+        acceptanceRateEstimate: programData.acceptanceRateEstimate
+          ? Number(programData.acceptanceRateEstimate)
+          : undefined,
+        modifier,
+        adjustedProbability: fusedResult.probability,
+      };
     }
 
     // 确定 tier
@@ -1906,10 +2403,34 @@ export class PredictionService {
       factors,
       suggestions,
       comparison,
-      engineScores: fusedResult.engineScores,
+      engineScores: {
+        ...fusedResult.engineScores,
+        mlModelTier: mlResult?.modelTier,
+        mlContributions: mlResult?.contributions,
+      },
       crossEngineConsistency: fusedResult.crossEngineConsistency,
       modelVersion: MODEL_VERSION,
+      majorBreakdown: majorBreakdownResult,
     };
+
+    // Attach community insight if target major exists
+    if (profileInput.targetMajor) {
+      try {
+        const caseStats = await this.getMajorCaseStats(
+          school.id,
+          profileInput.targetMajor,
+        );
+        if (caseStats) {
+          (result as any).communityInsight = {
+            majorAdmitRate: caseStats.admitRate,
+            totalCases: caseStats.totalCases,
+            major: profileInput.targetMajor,
+          };
+        }
+      } catch {
+        // Non-critical — skip community data on error
+      }
+    }
 
     // 保存到缓存
     await this.saveToCache(profileId, school.id, result, profileHash);
@@ -1918,6 +2439,33 @@ export class PredictionService {
     await this.savePrediction(profileId, school.id, result);
 
     return result;
+  }
+
+  // ==================== Community Insights ====================
+
+  /**
+   * Aggregate admission case data for a specific school + major combination.
+   * Returns admit rate only when at least 5 verified cases exist (statistical threshold).
+   */
+  private async getMajorCaseStats(
+    schoolId: string,
+    major: string,
+  ): Promise<{ admitRate: number; totalCases: number } | null> {
+    const cases = await this.prisma.admissionCase.groupBy({
+      by: ['result'],
+      where: {
+        schoolId,
+        isVerified: true,
+        major: { contains: major, mode: 'insensitive' },
+      },
+      _count: true,
+    });
+
+    const total = cases.reduce((sum, c) => sum + c._count, 0);
+    if (total < 5) return null;
+
+    const admitted = cases.find((c) => c.result === 'ADMITTED')?._count ?? 0;
+    return { admitRate: admitted / total, totalCases: total };
   }
 
   // ==================== 辅助方法 ====================

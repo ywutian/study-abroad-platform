@@ -28,6 +28,10 @@ import {
 } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { ResetPasswordDto, ChangePasswordDto } from './dto/reset-password.dto';
+import {
+  AuditLogService,
+  AuditAction,
+} from '../../common/services/audit-log.service';
 
 /**
  * 企业级 Cookie 安全配置
@@ -89,7 +93,10 @@ const CLEAR_ACCESS_TOKEN_OPTIONS = {
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
 
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly auditLogService: AuditLogService,
+  ) {}
 
   @Post('register')
   @Public()
@@ -104,11 +111,20 @@ export class AuthController {
   @ApiOperation({ summary: 'Login' })
   async login(
     @Body() data: LoginDto,
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
     this.logger.debug(`Login attempt for: ${data.email}`);
 
     const result = await this.authService.login(data);
+
+    await this.auditLogService.log({
+      userId: result.user.id,
+      action: AuditAction.LOGIN,
+      resource: 'auth',
+      ip: req.ip ?? req.socket?.remoteAddress,
+      userAgent: req.get('user-agent'),
+    });
 
     // 企业级：设置 httpOnly cookie 存储 refreshToken
     res.cookie(
@@ -126,12 +142,18 @@ export class AuthController {
 
     this.logger.log(`User logged in: ${data.email}`);
 
-    return {
+    const response: Record<string, unknown> = {
       user: result.user,
       accessToken: result.tokens.accessToken,
-      refreshToken: result.tokens.refreshToken,
       isNewUser: result.isNewUser,
     };
+
+    // Mobile clients can't use httpOnly cookies, so they need the token in the body
+    if (req.get('x-client-type') === 'mobile') {
+      response.refreshToken = result.tokens.refreshToken;
+    }
+
+    return response;
   }
 
   @Post('refresh')
@@ -172,10 +194,15 @@ export class AuthController {
 
       this.logger.debug('Token refreshed successfully');
 
-      return {
+      const response: Record<string, unknown> = {
         accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
       };
+
+      if (req.get('x-client-type') === 'mobile') {
+        response.refreshToken = tokens.refreshToken;
+      }
+
+      return response;
     } catch (error) {
       // 刷新失败时清除可能无效的 cookie
       res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, CLEAR_COOKIE_OPTIONS);
@@ -202,6 +229,14 @@ export class AuthController {
 
     // 即使没有 refreshToken 也要清除 cookie（防止残留）
     await this.authService.logout(user.id, refreshToken);
+
+    await this.auditLogService.log({
+      userId: user.id,
+      action: AuditAction.LOGOUT,
+      resource: 'auth',
+      ip: req.ip ?? req.socket?.remoteAddress,
+      userAgent: req.get('user-agent'),
+    });
 
     // 清除 cookies
     res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, CLEAR_COOKIE_OPTIONS);
@@ -242,8 +277,19 @@ export class AuthController {
   @Public()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Reset password' })
-  async resetPassword(@Body() data: ResetPasswordDto) {
-    return this.authService.resetPassword(data.token, data.newPassword);
+  async resetPassword(@Body() data: ResetPasswordDto, @Req() req: Request) {
+    const { userId, ...result } = await this.authService.resetPassword(
+      data.token,
+      data.newPassword,
+    );
+    await this.auditLogService.log({
+      userId,
+      action: AuditAction.PASSWORD_RESET,
+      resource: 'auth',
+      ip: req.ip ?? req.socket?.remoteAddress,
+      userAgent: req.get('user-agent'),
+    });
+    return result;
   }
 
   @Post('change-password')
@@ -252,12 +298,21 @@ export class AuthController {
   @ApiOperation({ summary: 'Change password' })
   async changePassword(
     @CurrentUser() user: CurrentUserPayload,
+    @Req() req: Request,
     @Body() data: ChangePasswordDto,
   ) {
-    return this.authService.changePassword(
+    await this.authService.changePassword(
       user.id,
       data.currentPassword,
       data.newPassword,
     );
+    await this.auditLogService.log({
+      userId: user.id,
+      action: AuditAction.PASSWORD_CHANGE,
+      resource: 'auth',
+      ip: req.ip ?? req.socket?.remoteAddress,
+      userAgent: req.get('user-agent'),
+    });
+    return { message: 'Password changed successfully' };
   }
 }

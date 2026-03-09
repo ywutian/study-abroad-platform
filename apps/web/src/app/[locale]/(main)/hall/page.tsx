@@ -16,7 +16,7 @@ import { useTranslations } from 'next-intl';
 import { AnimatePresence } from 'framer-motion';
 import { PageContainer } from '@/components/layout';
 import { cn } from '@/lib/utils';
-import { Zap, Users, Trophy, List, Sparkles } from 'lucide-react';
+import { Zap, Users, Trophy, List, Sparkles, Target } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import type { HallTab } from '@/types/hall';
 
@@ -37,6 +37,11 @@ const ListsTab = dynamic(
   () => import('@/components/features/hall/ListsTab').then((m) => ({ default: m.ListsTab })),
   { ssr: false }
 );
+const ChallengeTab = dynamic(
+  () =>
+    import('@/components/features/hall/ChallengeTab').then((m) => ({ default: m.ChallengeTab })),
+  { ssr: false }
+);
 
 // Tab 配置
 const TAB_CONFIG = [
@@ -49,6 +54,12 @@ const TAB_CONFIG = [
   { value: 'review' as const, labelKey: 'hall.tabs.review', icon: Users, color: 'bg-primary' },
   { value: 'ranking' as const, labelKey: 'hall.tabs.ranking', icon: Trophy, color: 'bg-warning' },
   { value: 'lists' as const, labelKey: 'hall.tabs.lists', icon: List, color: 'bg-primary' },
+  {
+    value: 'challenge' as const,
+    labelKey: 'hall.tabs.challenge',
+    icon: Target,
+    color: 'bg-gradient-to-r from-amber-500 to-orange-500',
+  },
 ];
 
 export default function HallPage() {
@@ -114,6 +125,7 @@ export default function HallPage() {
         {activeTab === 'review' && <ReviewTab />}
         {activeTab === 'ranking' && <RankingTab />}
         {activeTab === 'lists' && <ListsTab />}
+        {activeTab === 'challenge' && <ChallengeTab />}
       </AnimatePresence>
     </PageContainer>
   );

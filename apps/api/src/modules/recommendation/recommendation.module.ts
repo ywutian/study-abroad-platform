@@ -6,6 +6,7 @@ import { AiModule } from '../ai/ai.module';
 import { AiAgentMemoryModule } from '../ai-agent/memory/memory.module';
 import { CaseModule } from '../case/case.module';
 import { RedisModule } from '../../common/redis/redis.module';
+import { SchoolModule } from '../school/school.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { RedisModule } from '../../common/redis/redis.module';
     AiAgentMemoryModule,
     CaseModule,
     RedisModule,
+    SchoolModule,
   ],
   providers: [RecommendationService],
   controllers: [RecommendationController],

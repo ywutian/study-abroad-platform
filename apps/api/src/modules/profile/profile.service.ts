@@ -117,9 +117,12 @@ export class ProfileService {
       where: { userId },
       include: {
         testScores: { orderBy: { createdAt: 'desc' } },
-        activities: { orderBy: { order: 'asc' } },
-        awards: { orderBy: { order: 'asc' } },
-        education: true,
+        activities: {
+          orderBy: { order: 'asc' },
+          include: { activityTemplate: true },
+        },
+        awards: { orderBy: { order: 'asc' }, include: { competition: true } },
+        education: { include: { highSchool: true } },
         essays: true,
       },
     });
@@ -158,8 +161,11 @@ export class ProfileService {
       where: { id: profileId },
       include: {
         testScores: true,
-        activities: { orderBy: { order: 'asc' } },
-        awards: { orderBy: { order: 'asc' } },
+        activities: {
+          orderBy: { order: 'asc' },
+          include: { activityTemplate: true },
+        },
+        awards: { orderBy: { order: 'asc' }, include: { competition: true } },
         user: { select: { id: true } },
       },
     });
@@ -484,7 +490,11 @@ export class ProfileService {
         weeksPerYear: data.weeksPerYear,
         isOngoing: data.isOngoing ?? false,
         order: data.order ?? 0,
+        gradeLevels: data.gradeLevels ?? [],
+        timing: data.timing as any,
+        activityTemplateId: data.activityTemplateId || null,
       },
+      include: { activityTemplate: true },
     });
 
     await this.cacheInvalidation.onProfileChange(userId);
@@ -535,7 +545,11 @@ export class ProfileService {
         weeksPerYear: data.weeksPerYear,
         isOngoing: data.isOngoing,
         order: data.order,
+        gradeLevels: data.gradeLevels,
+        timing: data.timing as any,
+        activityTemplateId: data.activityTemplateId,
       },
+      include: { activityTemplate: true },
     });
     await this.cacheInvalidation.onProfileChange(userId);
     return result;
@@ -572,7 +586,12 @@ export class ProfileService {
   async getActivities(userId: string): Promise<Activity[]> {
     const profile = await this.prisma.profile.findUnique({
       where: { userId },
-      include: { activities: { orderBy: { order: 'asc' } } },
+      include: {
+        activities: {
+          orderBy: { order: 'asc' },
+          include: { activityTemplate: true },
+        },
+      },
     });
 
     return profile?.activities || [];
@@ -950,6 +969,7 @@ export class ProfileService {
         gpa: data.gpa ? new Prisma.Decimal(data.gpa) : null,
         gpaScale: data.gpaScale ? new Prisma.Decimal(data.gpaScale) : null,
         description: data.description,
+        highSchoolId: data.highSchoolId || null,
       },
     });
 
@@ -1002,6 +1022,10 @@ export class ProfileService {
             ? new Prisma.Decimal(data.gpaScale)
             : undefined,
         description: data.description,
+        highSchoolId:
+          data.highSchoolId !== undefined
+            ? data.highSchoolId || null
+            : undefined,
       },
     });
 
@@ -1324,17 +1348,39 @@ export class ProfileService {
   ): Promise<void> {
     if (!this.memoryManager) return;
 
+    // If a high school is linked, include tier info in memory
+    let hsLabel = '';
+    if (data.highSchoolId && data.schoolType === 'HIGH_SCHOOL') {
+      try {
+        const hs = await this.prisma.highSchool.findUnique({
+          where: { id: data.highSchoolId },
+          select: { name: true, tier: true, type: true },
+        });
+        if (hs) {
+          hsLabel = `（Tier ${hs.tier}，${hs.type}）`;
+        }
+      } catch {
+        // ignore — memory enrichment is best-effort
+      }
+    }
+
     await this.memoryManager.remember(userId, {
       type: MemoryType.FACT,
-      category: 'education',
-      content: `用户添加了教育经历：${data.schoolName}${data.degree ? '，' + data.degree + '学位' : ''}${data.major ? '，' + data.major + '专业' : ''}${data.gpa ? '，GPA' + data.gpa : ''}`,
-      importance: 0.7,
+      category: data.schoolType === 'HIGH_SCHOOL' ? 'academic' : 'education',
+      content:
+        data.schoolType === 'HIGH_SCHOOL'
+          ? `用户高中背景：${data.schoolName}${hsLabel}`
+          : `用户添加了教育经历：${data.schoolName}${data.degree ? '，' + data.degree + '学位' : ''}${data.major ? '，' + data.major + '专业' : ''}${data.gpa ? '，GPA' + data.gpa : ''}`,
+      importance: data.schoolType === 'HIGH_SCHOOL' ? 0.8 : 0.7,
       metadata: {
         schoolName: data.schoolName,
         schoolType: data.schoolType,
         degree: data.degree,
         major: data.major,
         gpa: data.gpa,
+        highSchoolId: data.highSchoolId,
+        dedupeKey:
+          data.schoolType === 'HIGH_SCHOOL' ? 'high_school' : undefined,
       },
     });
   }
@@ -1610,5 +1656,28 @@ export class ProfileService {
       ],
       projectedImprovement: Math.min(20, 100 - overallScore),
     };
+  }
+
+  async searchActivityTemplates(query: string, limit = 10) {
+    if (!query || query.length < 1) {
+      return this.prisma.activityTemplate.findMany({
+        where: { isActive: true },
+        orderBy: [{ tier: 'asc' }, { sortOrder: 'asc' }],
+        take: limit,
+      });
+    }
+
+    return this.prisma.activityTemplate.findMany({
+      where: {
+        isActive: true,
+        OR: [
+          { name: { contains: query, mode: 'insensitive' } },
+          { nameZh: { contains: query, mode: 'insensitive' } },
+          { aliases: { has: query } },
+        ],
+      },
+      orderBy: [{ tier: 'asc' }, { sortOrder: 'asc' }],
+      take: limit,
+    });
   }
 }

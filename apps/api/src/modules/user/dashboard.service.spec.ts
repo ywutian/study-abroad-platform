@@ -83,6 +83,7 @@ describe('DashboardService', () => {
             pointHistory: { findMany: jest.fn() },
             schoolListItem: { count: jest.fn(), groupBy: jest.fn() },
             applicationTask: { count: jest.fn(), groupBy: jest.fn() },
+            personalEvent: { findMany: jest.fn() },
             $transaction: jest.fn(),
           },
         },
@@ -121,6 +122,7 @@ describe('DashboardService', () => {
     (prisma.applicationTask.groupBy as jest.Mock).mockResolvedValue(
       mockPendingTaskTypes,
     );
+    (prisma.personalEvent.findMany as jest.Mock).mockResolvedValue([]);
   }
 
   describe('getDashboardSummary', () => {

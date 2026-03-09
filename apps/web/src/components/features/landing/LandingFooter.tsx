@@ -3,6 +3,7 @@
 import { Link } from '@/lib/i18n/navigation';
 import { Logo } from '@/components/ui/logo';
 import { cn } from '@/lib/utils';
+import { useAuthStore } from '@/stores';
 
 interface FooterLink {
   label: string;
@@ -22,6 +23,7 @@ interface LandingFooterProps {
 }
 
 export function LandingFooter({ description, sections, copyright, className }: LandingFooterProps) {
+  const { user } = useAuthStore();
   return (
     <footer className={cn('border-t zone-tinted', className)}>
       <div className="container mx-auto px-4 py-8 sm:py-12">
@@ -29,7 +31,7 @@ export function LandingFooter({ description, sections, copyright, className }: L
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand Section */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <Link href="/" className="inline-flex items-center gap-2 mb-4">
+            <Link href={user ? '/dashboard' : '/'} className="inline-flex items-center gap-2 mb-4">
               <Logo size="md" />
             </Link>
             {description && (

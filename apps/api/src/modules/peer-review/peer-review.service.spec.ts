@@ -173,9 +173,10 @@ describe('PeerReviewService', () => {
       (prisma.peerReview.create as jest.Mock).mockImplementation(({ data }) => {
         expect(data.expiresAt).toBeDefined();
         const diff = data.expiresAt.getTime() - Date.now();
-        // Should be roughly 7 days (allow 10s tolerance)
-        expect(diff).toBeGreaterThan(6.99 * 86400000);
-        expect(diff).toBeLessThan(7.01 * 86400000);
+        // Implementation uses setDate(getDate() + 7) - 7 calendar days in local time.
+        // DST transitions can cause ±1 hour deviation from 7 * 24h.
+        expect(diff).toBeGreaterThan(6.9 * 86400000);
+        expect(diff).toBeLessThan(7.1 * 86400000);
         return Promise.resolve(mockReview);
       });
 

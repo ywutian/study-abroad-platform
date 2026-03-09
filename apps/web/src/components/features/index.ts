@@ -57,9 +57,15 @@ export { EssayCaseReviewManager } from './admin/essay-case-review-manager';
 export { BulkImportDialog } from './admin/bulk-import-dialog';
 export { EssayPipelineDashboard } from './admin/essay-pipeline-dashboard';
 
+// Teams components
+export { TeamCard } from './teams/TeamCard';
+export type { TeamCardData } from './teams/TeamCard';
+
 // Schools components
 export { AdvancedSchoolFilter } from './schools/AdvancedSchoolFilter';
 export type { SchoolFilters } from './schools/AdvancedSchoolFilter';
+export { SchoolLogo } from './schools/SchoolLogo';
+export type { SchoolLogoProps } from './schools/SchoolLogo';
 export { SchoolRecommendation } from './schools/SchoolRecommendation';
 
 // Feedback components

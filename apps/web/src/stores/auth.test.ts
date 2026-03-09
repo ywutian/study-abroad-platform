@@ -64,31 +64,18 @@ describe('useAuthStore', () => {
   });
 
   describe('initialize', () => {
-    it('skips refresh when no auth_check cookie', async () => {
-      document.cookie = '';
-      await useAuthStore.getState().initialize();
-
-      expect(useAuthStore.getState().isInitialized).toBe(true);
-      expect(useAuthStore.getState().isLoading).toBe(false);
-      expect(mockFetch).not.toHaveBeenCalled();
-    });
-
     it('does not re-initialize if already initialized', async () => {
       useAuthStore.setState({ isInitialized: true });
       await useAuthStore.getState().initialize();
       expect(mockFetch).not.toHaveBeenCalled();
     });
 
-    it('attempts refresh when auth_check cookie exists', async () => {
-      document.cookie = 'auth_check=1';
-
-      // Mock refresh endpoint
+    it('attempts refresh via httpOnly cookie on init', async () => {
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
           json: () => Promise.resolve({ data: { accessToken: 'new-token' } }),
         })
-        // Mock users/me endpoint
         .mockResolvedValueOnce({
           ok: true,
           json: () =>
@@ -110,9 +97,17 @@ describe('useAuthStore', () => {
       expect(useAuthStore.getState().accessToken).toBe('new-token');
     });
 
-    it('clears state on failed initialization', async () => {
-      document.cookie = 'auth_check=1';
+    it('handles no active session gracefully', async () => {
+      mockFetch.mockResolvedValueOnce({ ok: false, status: 401 });
 
+      await useAuthStore.getState().initialize();
+
+      expect(useAuthStore.getState().isInitialized).toBe(true);
+      expect(useAuthStore.getState().isLoading).toBe(false);
+      expect(useAuthStore.getState().user).toBeNull();
+    });
+
+    it('clears state on failed initialization', async () => {
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
       await useAuthStore.getState().initialize();
@@ -219,7 +214,7 @@ describe('useAuthStore', () => {
   });
 
   describe('setAuthFromLogin', () => {
-    it('sets user, token, and cookie', () => {
+    it('sets user and token state', () => {
       const user = {
         id: '1',
         email: 'test@test.com',
@@ -233,7 +228,6 @@ describe('useAuthStore', () => {
       expect(useAuthStore.getState().accessToken).toBe('login-token');
       expect(useAuthStore.getState().isLoading).toBe(false);
       expect(useAuthStore.getState().isInitialized).toBe(true);
-      expect(document.cookie).toContain('auth_check=1');
     });
   });
 });

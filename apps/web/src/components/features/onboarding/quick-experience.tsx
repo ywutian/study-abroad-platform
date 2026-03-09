@@ -23,15 +23,23 @@ export function QuickExperience() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const pending = localStorage.getItem(PENDING_ONBOARDING_KEY);
-    if (pending === 'true') {
-      setOpen(true);
+    try {
+      const pending = localStorage.getItem(PENDING_ONBOARDING_KEY);
+      if (pending === 'true') {
+        setOpen(true);
+      }
+    } catch {
+      /* private browsing */
     }
   }, []);
 
   const handleClose = () => {
     setOpen(false);
-    localStorage.removeItem(PENDING_ONBOARDING_KEY);
+    try {
+      localStorage.removeItem(PENDING_ONBOARDING_KEY);
+    } catch {
+      /* private browsing */
+    }
   };
 
   const handleGetStarted = () => {

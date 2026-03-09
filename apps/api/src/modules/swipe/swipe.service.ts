@@ -6,6 +6,7 @@ import {
   Optional,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { clampPercentRate } from '../../common/utils/percent.util';
 import { Prisma, Visibility, MemoryType } from '@prisma/client';
 import {
   SwipeActionDto,
@@ -524,15 +525,11 @@ export class SwipeService {
       tags: c.tags,
       isVerified: c.isVerified,
       usNewsRank: c.school.usNewsRank || undefined,
-      acceptanceRate: c.school.acceptanceRate
-        ? Number(c.school.acceptanceRate)
-        : undefined,
+      acceptanceRate: clampPercentRate(c.school.acceptanceRate),
       // 扩展学校信息
       schoolState: c.school.state || undefined,
       schoolCity: c.school.city || undefined,
-      graduationRate: c.school.graduationRate
-        ? Number(c.school.graduationRate)
-        : undefined,
+      graduationRate: clampPercentRate(c.school.graduationRate),
       totalEnrollment: c.school.totalEnrollment || undefined,
       tuition: c.school.tuition || undefined,
       essayType: c.essayType || undefined,
@@ -613,5 +610,120 @@ export class SwipeService {
       BADGE_THRESHOLDS[nextBadge as keyof typeof BADGE_THRESHOLDS] -
       correctCount
     );
+  }
+
+  // ============ Community Challenge ============
+
+  /**
+   * Get a challenge: an applicant who applied to multiple schools.
+   * Groups AdmissionCases by userId to find applicants with 3+ cases.
+   */
+  async getChallengeCase(userId: string) {
+    const applicantsWithMultiple = await this.prisma.admissionCase.groupBy({
+      by: ['userId'],
+      where: {
+        visibility: { in: [Visibility.ANONYMOUS, Visibility.VERIFIED_ONLY] },
+        userId: { not: userId },
+      },
+      _count: { id: true },
+      having: { id: { _count: { gte: 3 } } },
+    });
+
+    if (applicantsWithMultiple.length === 0) return null;
+
+    const randomApplicant =
+      applicantsWithMultiple[
+        Math.floor(Math.random() * applicantsWithMultiple.length)
+      ];
+
+    const cases = await this.prisma.admissionCase.findMany({
+      where: {
+        userId: randomApplicant.userId,
+        visibility: { in: [Visibility.ANONYMOUS, Visibility.VERIFIED_ONLY] },
+      },
+      include: {
+        school: {
+          select: {
+            id: true,
+            name: true,
+            nameZh: true,
+            usNewsRank: true,
+            acceptanceRate: true,
+          },
+        },
+        user: {
+          select: {
+            profile: {
+              select: {
+                grade: true,
+                currentSchoolType: true,
+                gpa: true,
+                gpaScale: true,
+              },
+            },
+          },
+        },
+      },
+      take: 10,
+    });
+
+    if (cases.length < 3) return null;
+
+    const profile = cases[0]?.user?.profile;
+    return {
+      applicantProfile: {
+        grade: profile?.grade,
+        schoolType: profile?.currentSchoolType,
+        gpa: cases[0]?.gpaRange,
+        sat: cases[0]?.satRange,
+        toefl: cases[0]?.toeflRange,
+        activityCount: cases[0]?.tags?.length ?? 0,
+      },
+      schools: cases.map((c) => ({
+        caseId: c.id,
+        schoolId: c.school?.id,
+        schoolName: c.school?.name,
+        schoolNameZh: c.school?.nameZh,
+        usNewsRank: c.school?.usNewsRank,
+        major: c.major,
+        round: c.round,
+      })),
+    };
+  }
+
+  /**
+   * Submit challenge guesses and reveal results.
+   */
+  async submitChallenge(userId: string, guesses: Record<string, string>) {
+    const caseIds = Object.keys(guesses);
+    const cases = await this.prisma.admissionCase.findMany({
+      where: { id: { in: caseIds } },
+      select: { id: true, result: true, school: { select: { name: true } } },
+    });
+
+    let correct = 0;
+    const results = cases.map((c) => {
+      const guess = guesses[c.id];
+      const actual = c.result;
+      const isCorrect = guess === actual;
+      if (isCorrect) correct++;
+      return {
+        caseId: c.id,
+        schoolName: c.school?.name,
+        guess,
+        actual,
+        isCorrect,
+      };
+    });
+
+    const accuracy =
+      cases.length > 0 ? Math.round((correct / cases.length) * 100) : 0;
+
+    return {
+      results,
+      correct,
+      total: cases.length,
+      accuracy,
+    };
   }
 }

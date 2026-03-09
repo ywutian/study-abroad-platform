@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -22,9 +22,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import { apiClient } from '@/lib/api';
 import { toast } from 'sonner';
-import { Loader2, Save } from 'lucide-react';
+import { Loader2, Save, ChevronsUpDown, Check, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const SCHOOL_TYPE_KEYS = [
   { value: 'HIGH_SCHOOL', labelKey: 'highSchool' },
@@ -32,6 +42,16 @@ const SCHOOL_TYPE_KEYS = [
   { value: 'GRADUATE', labelKey: 'graduate' },
   { value: 'OTHER', labelKey: 'other' },
 ];
+
+interface HighSchool {
+  id: string;
+  name: string;
+  nameZh?: string;
+  country: string;
+  state?: string;
+  type: string;
+  tier: number;
+}
 
 interface Education {
   id: string;
@@ -44,6 +64,7 @@ interface Education {
   gpa?: number;
   gpaScale?: number;
   description?: string;
+  highSchoolId?: string;
 }
 
 interface EducationFormProps {
@@ -51,6 +72,38 @@ interface EducationFormProps {
   onOpenChange: (open: boolean) => void;
   education?: Education | null;
   onSuccess?: () => void;
+}
+
+function useHighSchoolSearch(enabled: boolean) {
+  const [search, setSearch] = useState('');
+  const [results, setResults] = useState<HighSchool[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const doSearch = useCallback(async (term: string) => {
+    if (!term || term.length < 1) {
+      setResults([]);
+      return;
+    }
+    setLoading(true);
+    try {
+      const data = await apiClient.get<HighSchool[]>('/high-schools', {
+        params: { search: term, pageSize: '20' },
+      });
+      setResults(Array.isArray(data) ? data : []);
+    } catch {
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!enabled) return;
+    const timer = setTimeout(() => doSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search, enabled, doSearch]);
+
+  return { search, setSearch, results, loading };
 }
 
 export function EducationForm({ open, onOpenChange, education, onSuccess }: EducationFormProps) {
@@ -69,7 +122,14 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
     gpa: '',
     gpaScale: '4.0',
     description: '',
+    highSchoolId: '' as string | undefined,
   });
+
+  const [hsPopoverOpen, setHsPopoverOpen] = useState(false);
+  const isHighSchool = formData.schoolType === 'HIGH_SCHOOL';
+  const { search, setSearch, results, loading } = useHighSchoolSearch(
+    isHighSchool && hsPopoverOpen
+  );
 
   useEffect(() => {
     if (education) {
@@ -83,6 +143,7 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
         gpa: education.gpa?.toString() || '',
         gpaScale: education.gpaScale?.toString() || '4.0',
         description: education.description || '',
+        highSchoolId: education.highSchoolId || undefined,
       });
     } else {
       setFormData({
@@ -95,6 +156,7 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
         gpa: '',
         gpaScale: '4.0',
         description: '',
+        highSchoolId: undefined,
       });
     }
   }, [education, open]);
@@ -120,7 +182,7 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
   });
 
   const handleSubmit = () => {
-    const data = {
+    const data: any = {
       schoolName: formData.schoolName,
       schoolType: formData.schoolType || undefined,
       degree: formData.degree || undefined,
@@ -132,11 +194,37 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
       description: formData.description || undefined,
     };
 
+    if (isHighSchool) {
+      data.highSchoolId = formData.highSchoolId || undefined;
+    }
+
     if (isEditing) {
       updateMutation.mutate(data);
     } else {
       createMutation.mutate(data);
     }
+  };
+
+  const handleSelectHighSchool = (hs: HighSchool) => {
+    setFormData({
+      ...formData,
+      schoolName: hs.nameZh || hs.name,
+      highSchoolId: hs.id,
+    });
+    setHsPopoverOpen(false);
+  };
+
+  const handleClearHighSchool = () => {
+    setFormData({ ...formData, highSchoolId: undefined });
+  };
+
+  const handleSchoolTypeChange = (value: string) => {
+    setFormData({
+      ...formData,
+      schoolType: value,
+      // Clear highSchoolId when switching away from HIGH_SCHOOL
+      highSchoolId: value === 'HIGH_SCHOOL' ? formData.highSchoolId : undefined,
+    });
   };
 
   const isPending = createMutation.isPending || updateMutation.isPending;
@@ -152,22 +240,11 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
         </DialogHeader>
 
         <div className="grid gap-4">
-          <div className="space-y-2">
-            <Label>{t('form.schoolName')} *</Label>
-            <Input
-              placeholder={t('form.schoolNamePlaceholder')}
-              value={formData.schoolName}
-              onChange={(e) => setFormData({ ...formData, schoolName: e.target.value })}
-            />
-          </div>
-
+          {/* School Type selector — placed first so high school search can appear */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label>{t('form.schoolType')}</Label>
-              <Select
-                value={formData.schoolType}
-                onValueChange={(value) => setFormData({ ...formData, schoolType: value })}
-              >
+              <Select value={formData.schoolType} onValueChange={handleSchoolTypeChange}>
                 <SelectTrigger>
                   <SelectValue placeholder={t('form.selectType')} />
                 </SelectTrigger>
@@ -189,6 +266,114 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
                 onChange={(e) => setFormData({ ...formData, degree: e.target.value })}
               />
             </div>
+          </div>
+
+          {/* School Name — Combobox for HIGH_SCHOOL, plain Input otherwise */}
+          <div className="space-y-2">
+            <Label>{t('form.schoolName')} *</Label>
+            {isHighSchool ? (
+              <div className="flex gap-2">
+                <Popover open={hsPopoverOpen} onOpenChange={setHsPopoverOpen} modal>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={hsPopoverOpen}
+                      className="w-full justify-between font-normal"
+                    >
+                      <span className="truncate">
+                        {formData.schoolName || t('form.searchHighSchool')}
+                      </span>
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-[var(--radix-popover-trigger-width)] p-0"
+                    align="start"
+                  >
+                    <Command shouldFilter={false}>
+                      <CommandInput
+                        placeholder={t('form.searchHighSchoolPlaceholder')}
+                        value={search}
+                        onValueChange={setSearch}
+                      />
+                      <CommandList>
+                        <CommandEmpty>
+                          {loading
+                            ? t('form.searching')
+                            : search.length > 0
+                              ? t('form.noHighSchoolFound')
+                              : t('form.typeToSearch')}
+                        </CommandEmpty>
+                        {results.length > 0 && (
+                          <CommandGroup>
+                            {results.map((hs) => (
+                              <CommandItem
+                                key={hs.id}
+                                value={hs.id}
+                                onSelect={() => handleSelectHighSchool(hs)}
+                              >
+                                <Check
+                                  className={cn(
+                                    'mr-2 h-4 w-4',
+                                    formData.highSchoolId === hs.id ? 'opacity-100' : 'opacity-0'
+                                  )}
+                                />
+                                <div className="flex flex-col">
+                                  <span className="font-medium">
+                                    {hs.nameZh || hs.name}
+                                    {hs.nameZh && hs.name !== hs.nameZh && (
+                                      <span className="ml-1 text-muted-foreground text-xs">
+                                        {hs.name}
+                                      </span>
+                                    )}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">
+                                    Tier {hs.tier} · {hs.type.replace(/_/g, ' ')} ·{' '}
+                                    {hs.state || hs.country}
+                                  </span>
+                                </div>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        )}
+                      </CommandList>
+                    </Command>
+                    {/* Allow custom input */}
+                    <div className="border-t p-2">
+                      <Input
+                        placeholder={t('form.customHighSchool')}
+                        value={formData.schoolName}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            schoolName: e.target.value,
+                            highSchoolId: undefined,
+                          })
+                        }
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                {formData.highSchoolId && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0"
+                    onClick={handleClearHighSchool}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <Input
+                placeholder={t('form.schoolNamePlaceholder')}
+                value={formData.schoolName}
+                onChange={(e) => setFormData({ ...formData, schoolName: e.target.value })}
+              />
+            )}
           </div>
 
           <div className="space-y-2">

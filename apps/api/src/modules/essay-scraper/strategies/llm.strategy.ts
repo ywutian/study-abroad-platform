@@ -67,9 +67,9 @@ export class LlmScrapeStrategy extends BaseScrapeStrategy {
         sourceUrl: url,
         rawContent: bodyText.substring(0, 5000),
       };
-    } catch (error) {
+    } catch (error: unknown) {
       this.logger.error(
-        `LLM scrape failed for ${schoolName}: ${error.message}`,
+        `LLM scrape failed for ${schoolName}: ${error instanceof Error ? error.message : String(error)}`,
       );
       return null;
     }
@@ -219,8 +219,10 @@ Only include actual essay prompts, not instructions, tips, or general admissions
       return (parsed.essays || []).filter(
         (e: ScrapedEssay) => e.prompt && e.prompt.length > 20,
       );
-    } catch (error) {
-      this.logger.error(`LLM extraction failed: ${error.message}`);
+    } catch (error: unknown) {
+      this.logger.error(
+        `LLM extraction failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
       return [];
     }
   }

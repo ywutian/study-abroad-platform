@@ -51,6 +51,7 @@ import {
   fontWeight,
   borderRadius,
 } from '@/utils/theme';
+import { formatAcceptanceRate } from '@/utils/format';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -273,7 +274,7 @@ const SchoolCard = memo(function SchoolCard({ school, colors }: SchoolCardProps)
               <View style={styles.metaItem}>
                 <Ionicons name="people-outline" size={14} color={colors.foregroundMuted} />
                 <Text style={[styles.metaText, { color: colors.foregroundMuted }]}>
-                  {school.schoolMeta.acceptanceRate}%{' '}
+                  {formatAcceptanceRate(school.schoolMeta.acceptanceRate)}{' '}
                   {t('recommendation.acceptRate', 'accept rate')}
                 </Text>
               </View>

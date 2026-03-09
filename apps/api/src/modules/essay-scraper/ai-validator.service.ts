@@ -81,8 +81,10 @@ export class AiValidatorService {
         aiCategory: result.aiCategory,
         issues: result.issues,
       };
-    } catch (error) {
-      this.logger.error(`AI validation failed: ${error.message}`);
+    } catch (error: unknown) {
+      this.logger.error(
+        `AI validation failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
       return { isValid: true, confidence: essay.confidence || 0.5 };
     }
   }
@@ -118,8 +120,10 @@ export class AiValidatorService {
 
       const result = JSON.parse(content);
       return result.translations || prompts.map(() => '');
-    } catch (error) {
-      this.logger.error(`Batch translation failed: ${error.message}`);
+    } catch (error: unknown) {
+      this.logger.error(
+        `Batch translation failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
       return prompts.map(() => '');
     }
   }

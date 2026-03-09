@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -25,7 +25,7 @@ import {
 import { apiClient } from '@/lib/api';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Send, GraduationCap, PenTool } from 'lucide-react';
+import { Loader2, Send, GraduationCap, PenTool, Upload, FileText } from 'lucide-react';
 import { getSchoolName } from '@/lib/utils';
 import { SchoolSelector } from './school-selector';
 
@@ -59,6 +59,7 @@ const ROUND_KEYS = [
   { value: 'EA', labelKey: 'EA' },
   { value: 'REA', labelKey: 'REA' },
   { value: 'RD', labelKey: 'RD' },
+  { value: 'UC', labelKey: 'UC' },
 ];
 
 interface School {
@@ -90,6 +91,39 @@ export function SubmitCaseDialog({
   const queryClient = useQueryClient();
   const [schoolSelectorOpen, setSchoolSelectorOpen] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
+  const essayFileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const processEssayFile = useCallback(async (file: File) => {
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    try {
+      if (ext === 'txt') {
+        const text = await file.text();
+        setFormData((prev) => ({ ...prev, essayContent: text }));
+      } else if (ext === 'docx') {
+        const mammoth = await import('mammoth');
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        setFormData((prev) => ({ ...prev, essayContent: result.value }));
+      } else if (ext === 'pdf') {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const pdfjsLib = (await import(/* webpackIgnore: true */ 'pdfjs-dist' as string)) as any;
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+        const pdf = await pdfjsLib.getDocument(await file.arrayBuffer()).promise;
+        const pages: string[] = [];
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          pages.push(content.items.map((item: any) => item.str).join(' '));
+        }
+        setFormData((prev) => ({ ...prev, essayContent: pages.join('\n\n') }));
+      } else {
+        toast.error('Unsupported file format. Please use .txt, .docx, or .pdf');
+      }
+    } catch {
+      toast.error('Failed to read file. Please try pasting the content instead.');
+    }
+  }, []);
 
   const [includeEssay, setIncludeEssay] = useState(defaultIncludeEssay);
   const [formData, setFormData] = useState({
@@ -98,9 +132,17 @@ export function SubmitCaseDialog({
     result: '',
     major: '',
     gpaRange: '',
+    gpa9: '',
+    gpa10: '',
+    gpa11: '',
+    gpa12: '',
+    ucCappedGpa: '',
+    ucUncappedGpa: '',
+    gpaScale: '4.0',
     satRange: '',
     toeflRange: '',
     tags: '',
+    activityList: '',
     reflection: '',
     // Essay fields
     essayType: '',
@@ -127,9 +169,17 @@ export function SubmitCaseDialog({
       result: '',
       major: '',
       gpaRange: '',
+      gpa9: '',
+      gpa10: '',
+      gpa11: '',
+      gpa12: '',
+      ucCappedGpa: '',
+      ucUncappedGpa: '',
+      gpaScale: '4.0',
       satRange: '',
       toeflRange: '',
       tags: '',
+      activityList: '',
       reflection: '',
       essayType: '',
       essayPrompt: '',
@@ -153,6 +203,13 @@ export function SubmitCaseDialog({
       result: formData.result,
       major: formData.major || undefined,
       gpaRange: formData.gpaRange || undefined,
+      gpa9: formData.gpa9 ? parseFloat(formData.gpa9) : undefined,
+      gpa10: formData.gpa10 ? parseFloat(formData.gpa10) : undefined,
+      gpa11: formData.gpa11 ? parseFloat(formData.gpa11) : undefined,
+      gpa12: formData.gpa12 ? parseFloat(formData.gpa12) : undefined,
+      ucCappedGpa: formData.ucCappedGpa ? parseFloat(formData.ucCappedGpa) : undefined,
+      ucUncappedGpa: formData.ucUncappedGpa ? parseFloat(formData.ucUncappedGpa) : undefined,
+      gpaScale: formData.gpaScale ? parseFloat(formData.gpaScale) : undefined,
       satRange: formData.satRange || undefined,
       toeflRange: formData.toeflRange || undefined,
       tags: formData.tags
@@ -161,6 +218,7 @@ export function SubmitCaseDialog({
             .map((t) => t.trim())
             .filter(Boolean)
         : undefined,
+      activityList: formData.activityList?.trim() || undefined,
       reflection: formData.reflection || undefined,
       visibility: formData.visibility || 'ANONYMOUS',
     };
@@ -284,6 +342,84 @@ export function SubmitCaseDialog({
                 />
               </div>
               <div className="space-y-2">
+                <Label>{t('gpa9Label')}</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="5"
+                  placeholder="9"
+                  value={formData.gpa9}
+                  onChange={(e) => setFormData({ ...formData, gpa9: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>{t('gpa10Label')}</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="5"
+                  placeholder="10"
+                  value={formData.gpa10}
+                  onChange={(e) => setFormData({ ...formData, gpa10: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="space-y-2">
+                <Label>{t('gpa11Label')}</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="5"
+                  placeholder="11"
+                  value={formData.gpa11}
+                  onChange={(e) => setFormData({ ...formData, gpa11: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>{t('gpa12Label')}</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="5"
+                  placeholder="12"
+                  value={formData.gpa12}
+                  onChange={(e) => setFormData({ ...formData, gpa12: e.target.value })}
+                />
+              </div>
+              {formData.round === 'UC' && (
+                <>
+                  <div className="space-y-2">
+                    <Label>{t('ucCappedGpaLabel')}</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="5"
+                      placeholder="UC Capped GPA"
+                      value={formData.ucCappedGpa}
+                      onChange={(e) => setFormData({ ...formData, ucCappedGpa: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('ucUncappedGpaLabel')}</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="5"
+                      placeholder="UC Uncapped GPA"
+                      value={formData.ucUncappedGpa}
+                      onChange={(e) => setFormData({ ...formData, ucUncappedGpa: e.target.value })}
+                    />
+                  </div>
+                </>
+              )}
+              <div className="space-y-2">
                 <Label>{t('satLabel')}</Label>
                 <Input
                   placeholder={t('satPlaceholder')}
@@ -307,6 +443,17 @@ export function SubmitCaseDialog({
                 placeholder={t('tagsPlaceholder')}
                 value={formData.tags}
                 onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>{t('activityListLabel')}</Label>
+              <Textarea
+                placeholder={t('activityListPlaceholder')}
+                value={formData.activityList}
+                onChange={(e) => setFormData({ ...formData, activityList: e.target.value })}
+                rows={4}
+                className="resize-y"
               />
             </div>
 
@@ -382,17 +529,69 @@ export function SubmitCaseDialog({
                   </div>
 
                   <div className="space-y-2">
-                    <Label>{t('essayContentLabel')}</Label>
-                    <Textarea
-                      placeholder={t('essayContentPlaceholder')}
-                      value={formData.essayContent}
-                      onChange={(e) => setFormData({ ...formData, essayContent: e.target.value })}
-                      rows={8}
-                    />
+                    <div className="flex items-center justify-between">
+                      <Label>{t('essayContentLabel')}</Label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-muted-foreground">.txt .docx .pdf</span>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="gap-1.5 text-xs"
+                          onClick={() => essayFileInputRef.current?.click()}
+                        >
+                          <Upload className="h-3.5 w-3.5" />
+                          {t('importFromFile')}
+                        </Button>
+                      </div>
+                      <input
+                        ref={essayFileInputRef}
+                        type="file"
+                        accept=".txt,.docx,.pdf"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) processEssayFile(file);
+                          e.target.value = '';
+                        }}
+                      />
+                    </div>
+                    <div
+                      className={`relative rounded-md transition-colors ${isDragging ? 'ring-2 ring-primary bg-primary/5' : ''}`}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        setIsDragging(true);
+                      }}
+                      onDragLeave={() => setIsDragging(false)}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        setIsDragging(false);
+                        const file = e.dataTransfer.files[0];
+                        if (file) processEssayFile(file);
+                      }}
+                    >
+                      {isDragging && (
+                        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-primary/10 border-2 border-dashed border-primary">
+                          <div className="flex items-center gap-2 text-primary font-medium">
+                            <FileText className="h-5 w-5" />
+                            {t('dropEssayHere') || 'Drop your essay file here'}
+                          </div>
+                        </div>
+                      )}
+                      <Textarea
+                        placeholder={t('essayContentPlaceholder')}
+                        value={formData.essayContent}
+                        onChange={(e) => setFormData({ ...formData, essayContent: e.target.value })}
+                        rows={15}
+                        className="min-h-[300px] resize-y"
+                      />
+                    </div>
                     {formData.essayContent && (
-                      <p className="text-xs text-muted-foreground">
-                        {formData.essayContent.split(/\s+/).filter(Boolean).length} words
-                      </p>
+                      <div className="flex justify-end">
+                        <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded">
+                          {formData.essayContent.split(/\s+/).filter(Boolean).length} words
+                        </span>
+                      </div>
                     )}
                   </div>
                 </div>

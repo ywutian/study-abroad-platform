@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UnauthorizedException } from '@nestjs/common';
+import { AuditLogService } from '../../common/services/audit-log.service';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -15,6 +16,12 @@ describe('AuthController', () => {
   const mockTokens = {
     accessToken: 'mock_access_token',
     refreshToken: 'mock_refresh_token',
+  };
+
+  const mockReqForLogin = {
+    ip: '127.0.0.1',
+    socket: { remoteAddress: '127.0.0.1' },
+    get: jest.fn().mockReturnValue('test-agent'),
   };
 
   const mockUser = {
@@ -59,6 +66,10 @@ describe('AuthController', () => {
               .mockResolvedValue({ message: 'Password changed successfully' }),
           },
         },
+        {
+          provide: AuditLogService,
+          useValue: { log: jest.fn().mockResolvedValue(undefined) },
+        },
       ],
     }).compile();
 
@@ -74,6 +85,7 @@ describe('AuthController', () => {
     it('should set refreshToken and access_token cookies', async () => {
       const result = await controller.login(
         { email: 'test@example.com', password: 'pass' },
+        mockReqForLogin as any,
         mockResponse as any,
       );
 
@@ -98,19 +110,21 @@ describe('AuthController', () => {
       );
     });
 
-    it('should return both accessToken and refreshToken in response body', async () => {
+    it('should return accessToken in response body (refreshToken in httpOnly cookie only)', async () => {
       const result = await controller.login(
         { email: 'test@example.com', password: 'pass' },
+        mockReqForLogin as any,
         mockResponse as any,
       );
 
       expect(result.accessToken).toBe('mock_access_token');
-      expect(result.refreshToken).toBe('mock_refresh_token');
+      expect(result.refreshToken).toBeUndefined();
     });
 
     it('should return user and isNewUser', async () => {
       const result = await controller.login(
         { email: 'test@example.com', password: 'pass' },
+        mockReqForLogin as any,
         mockResponse as any,
       );
 
@@ -122,6 +136,7 @@ describe('AuthController', () => {
   describe('refreshToken', () => {
     it('should prefer refreshToken from cookie over body', async () => {
       const mockReq = {
+        get: jest.fn().mockReturnValue('test-agent'),
         cookies: { refreshToken: 'cookie_token' },
       };
 
@@ -135,7 +150,7 @@ describe('AuthController', () => {
     });
 
     it('should fall back to body refreshToken when no cookie', async () => {
-      const mockReq = { cookies: {} };
+      const mockReq = { cookies: {}, get: jest.fn().mockReturnValue(null) };
 
       await controller.refreshToken(
         mockReq as any,
@@ -147,7 +162,7 @@ describe('AuthController', () => {
     });
 
     it('should throw UnauthorizedException when no token provided', async () => {
-      const mockReq = { cookies: {} };
+      const mockReq = { cookies: {}, get: jest.fn().mockReturnValue(null) };
 
       await expect(
         controller.refreshToken(mockReq as any, {} as any, mockResponse as any),
@@ -156,6 +171,7 @@ describe('AuthController', () => {
 
     it('should clear cookie when refresh fails', async () => {
       const mockReq = {
+        get: jest.fn().mockReturnValue('test-agent'),
         cookies: { refreshToken: 'invalid_token' },
       };
       (authService.refreshToken as jest.Mock).mockRejectedValue(
@@ -177,6 +193,7 @@ describe('AuthController', () => {
 
     it('should update cookies on successful refresh', async () => {
       const mockReq = {
+        get: jest.fn().mockReturnValue('test-agent'),
         cookies: { refreshToken: 'old_token' },
       };
 
@@ -198,8 +215,9 @@ describe('AuthController', () => {
       );
     });
 
-    it('should return both accessToken and refreshToken in response body', async () => {
+    it('should return accessToken in response body (refreshToken in httpOnly cookie only)', async () => {
       const mockReq = {
+        get: jest.fn().mockReturnValue('test-agent'),
         cookies: { refreshToken: 'old_token' },
       };
 
@@ -210,13 +228,14 @@ describe('AuthController', () => {
       );
 
       expect(result.accessToken).toBe('mock_access_token');
-      expect(result.refreshToken).toBe('mock_refresh_token');
+      expect(result.refreshToken).toBeUndefined();
     });
   });
 
   describe('logout', () => {
     it('should clear both cookies', async () => {
       const mockReq = {
+        get: jest.fn().mockReturnValue('test-agent'),
         cookies: { refreshToken: 'some_token' },
       };
 
@@ -244,6 +263,7 @@ describe('AuthController', () => {
 
     it('should pass refreshToken from cookie to service', async () => {
       const mockReq = {
+        get: jest.fn().mockReturnValue('test-agent'),
         cookies: { refreshToken: 'cookie_rt' },
       };
 
@@ -292,10 +312,16 @@ describe('AuthController', () => {
     });
 
     it('resetPassword should call authService.resetPassword', async () => {
-      await controller.resetPassword({
-        token: 'reset_token',
-        newPassword: 'newpass123',
-      });
+      const mockReq = {
+        ip: '127.0.0.1',
+        socket: { remoteAddress: '127.0.0.1' },
+        get: jest.fn().mockReturnValue('test-agent'),
+      };
+
+      await controller.resetPassword(
+        { token: 'reset_token', newPassword: 'newpass123' },
+        mockReq as any,
+      );
 
       expect(authService.resetPassword).toHaveBeenCalledWith(
         'reset_token',

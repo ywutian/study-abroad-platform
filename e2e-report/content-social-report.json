@@ -1,0 +1,171 @@
+[
+  {
+    "page": "Cases gallery",
+    "url": "http://localhost:4100/en/cases",
+    "renderStatus": "OK",
+    "finalUrl": "http://localhost:4100/en/cases",
+    "statusCode": 200,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 429 (Too Many Requests)"
+    ],
+    "consoleWarnings": [],
+    "uiIssues": [],
+    "screenshot": "/Users/yitianwu/Documents/study-abroad-platform/e2e-report/screenshots/content-social-cases.png"
+  },
+  {
+    "page": "Essays",
+    "url": "http://localhost:4100/en/essays",
+    "renderStatus": "Redirect",
+    "finalUrl": "http://localhost:4100/en/login?callbackUrl=%2Fen%2Fessays",
+    "statusCode": 200,
+    "consoleErrors": [],
+    "consoleWarnings": [],
+    "uiIssues": ["Expected redirect to login (protected route)"],
+    "screenshot": "/Users/yitianwu/Documents/study-abroad-platform/e2e-report/screenshots/content-social-essays.png"
+  },
+  {
+    "page": "Essay Gallery",
+    "url": "http://localhost:4100/en/essay-gallery",
+    "renderStatus": "OK",
+    "finalUrl": "http://localhost:4100/en/essay-gallery",
+    "statusCode": 200,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 429 (Too Many Requests)"
+    ],
+    "consoleWarnings": [],
+    "uiIssues": [],
+    "screenshot": "/Users/yitianwu/Documents/study-abroad-platform/e2e-report/screenshots/content-social-essay-gallery.png"
+  },
+  {
+    "page": "Forum",
+    "url": "http://localhost:4100/en/forum",
+    "renderStatus": "OK",
+    "finalUrl": "http://localhost:4100/en/forum",
+    "statusCode": 200,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 429 (Too Many Requests)",
+      "%o\n\n%s ReferenceError: Badge is not defined\n    at ForumPage (http://localhost:4100/_next/static/chunks/apps_web_src_1935d854._.js:5341:506)\n    at Object.react_stack_bottom_frame (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:14826:24)\n    at renderWithHooks (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:4651:24)\n    at updateFunctionComponent (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:6112:21)\n    at beginWork (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:6708:24)\n    at runWithFiberInDEV (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:965:74)\n    at performUnitOfWork (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:9562:97)\n    at workLoopSync (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:9456:40)\n    at renderRootSync (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:9440:13)\n    at performWorkOnRoot (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:9105:47)\n    at performWorkOnRootViaSchedulerTask (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:10230:9)\n    at MessagePort.performWorkUntilDeadline (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_06b9260a._.js:2647:64) The above error occurred in the <ForumPage> component. It was handled by the <ErrorBoundaryHandler> error boundary.",
+      "Application error: ReferenceError: Badge is not defined\n    at ForumPage (http://localhost:4100/_next/static/chunks/apps_web_src_1935d854._.js:5341:506)\n    at Object.react_stack_bottom_frame (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:14826:24)\n    at renderWithHooks (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:4651:24)\n    at updateFunctionComponent (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:6112:21)\n    at beginWork (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:6708:24)\n    at runWithFiberInDEV (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:965:74)\n    at performUnitOfWork (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:9562:97)\n    at workLoopSync (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:9456:40)\n    at renderRootSync (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:9440:13)\n    at performWorkOnRoot (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:9105:47)\n    at performWorkOnRootViaSchedulerTask (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:10230:9)\n    at MessagePort.performWorkUntilDeadline (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_06b9260a._.js:2647:64)",
+      "Application error: ReferenceError: Badge is not defined\n    at ForumPage (http://localhost:4100/_next/static/chunks/apps_web_src_1935d854._.js:5341:506)\n    at Object.react_stack_bottom_frame (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:14826:24)\n    at renderWithHooks (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:4651:24)\n    at updateFunctionComponent (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:6112:21)\n    at beginWork (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:6708:24)\n    at runWithFiberInDEV (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:965:74)\n    at performUnitOfWork (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:9562:97)\n    at workLoopSync (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:9456:40)\n    at renderRootSync (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:9440:13)\n    at performWorkOnRoot (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:9105:47)\n    at performWorkOnRootViaSchedulerTask (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_react-dom_12e808ce._.js:10230:9)\n    at MessagePort.performWorkUntilDeadline (http://localhost:4100/_next/static/chunks/62058_next_dist_compiled_06b9260a._.js:2647:64)"
+    ],
+    "consoleWarnings": [],
+    "uiIssues": ["Error boundary or generic error displayed"],
+    "screenshot": "/Users/yitianwu/Documents/study-abroad-platform/e2e-report/screenshots/content-social-forum.png"
+  },
+  {
+    "page": "Hall of Fame",
+    "url": "http://localhost:4100/en/hall",
+    "renderStatus": "OK",
+    "finalUrl": "http://localhost:4100/en/hall",
+    "statusCode": 200,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 429 (Too Many Requests)",
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "Failed to load resource: the server responded with a status of 429 (Too Many Requests)",
+      "Failed to load resource: the server responded with a status of 429 (Too Many Requests)"
+    ],
+    "consoleWarnings": [],
+    "uiIssues": [],
+    "screenshot": "/Users/yitianwu/Documents/study-abroad-platform/e2e-report/screenshots/content-social-hall.png"
+  },
+  {
+    "page": "Swipe",
+    "url": "http://localhost:4100/en/swipe",
+    "renderStatus": "OK",
+    "finalUrl": "http://localhost:4100/en/swipe",
+    "statusCode": 200,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 429 (Too Many Requests)",
+      "Failed to load resource: the server responded with a status of 429 (Too Many Requests)",
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "Failed to load resource: the server responded with a status of 429 (Too Many Requests)",
+      "Failed to load resource: the server responded with a status of 429 (Too Many Requests)"
+    ],
+    "consoleWarnings": [],
+    "uiIssues": [],
+    "screenshot": "/Users/yitianwu/Documents/study-abroad-platform/e2e-report/screenshots/content-social-swipe.png"
+  },
+  {
+    "page": "Chat",
+    "url": "http://localhost:4100/en/chat",
+    "renderStatus": "Redirect",
+    "finalUrl": "http://localhost:4100/en/login?callbackUrl=%2Fen%2Fchat",
+    "statusCode": 200,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 429 (Too Many Requests)"
+    ],
+    "consoleWarnings": [],
+    "uiIssues": ["Expected redirect to login (protected route)"],
+    "screenshot": "/Users/yitianwu/Documents/study-abroad-platform/e2e-report/screenshots/content-social-chat.png"
+  },
+  {
+    "page": "Ranking",
+    "url": "http://localhost:4100/en/ranking",
+    "renderStatus": "OK",
+    "finalUrl": "http://localhost:4100/en/ranking",
+    "statusCode": 200,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 429 (Too Many Requests)"
+    ],
+    "consoleWarnings": [],
+    "uiIssues": [],
+    "screenshot": "/Users/yitianwu/Documents/study-abroad-platform/e2e-report/screenshots/content-social-ranking.png"
+  },
+  {
+    "page": "Verified Ranking",
+    "url": "http://localhost:4100/en/verified-ranking",
+    "renderStatus": "OK",
+    "finalUrl": "http://localhost:4100/en/verified-ranking",
+    "statusCode": 200,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 429 (Too Many Requests)"
+    ],
+    "consoleWarnings": [],
+    "uiIssues": [],
+    "screenshot": "/Users/yitianwu/Documents/study-abroad-platform/e2e-report/screenshots/content-social-verified-ranking.png"
+  },
+  {
+    "page": "Help",
+    "url": "http://localhost:4100/en/help",
+    "renderStatus": "Error",
+    "finalUrl": "http://localhost:4100/en/help",
+    "statusCode": 500,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    ],
+    "consoleWarnings": [],
+    "uiIssues": ["HTTP 500"],
+    "screenshot": "/Users/yitianwu/Documents/study-abroad-platform/e2e-report/screenshots/content-social-help.png"
+  },
+  {
+    "page": "Terms",
+    "url": "http://localhost:4100/en/terms",
+    "renderStatus": "Error",
+    "finalUrl": "http://localhost:4100/en/terms",
+    "statusCode": 500,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ],
+    "consoleWarnings": [],
+    "uiIssues": ["HTTP 500"],
+    "screenshot": "/Users/yitianwu/Documents/study-abroad-platform/e2e-report/screenshots/content-social-terms.png"
+  },
+  {
+    "page": "Privacy",
+    "url": "http://localhost:4100/en/privacy",
+    "renderStatus": "OK",
+    "finalUrl": "http://localhost:4100/en/privacy",
+    "statusCode": 200,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ],
+    "consoleWarnings": [],
+    "uiIssues": [],
+    "screenshot": "/Users/yitianwu/Documents/study-abroad-platform/e2e-report/screenshots/content-social-privacy.png"
+  }
+]

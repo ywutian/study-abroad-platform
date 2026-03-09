@@ -65,9 +65,9 @@ export class CollegeVineScrapeStrategy extends BaseScrapeStrategy {
         sourceUrl: url,
         rawContent: html.substring(0, 5000),
       };
-    } catch (error) {
+    } catch (error: unknown) {
       this.logger.error(
-        `Failed to scrape CollegeVine for ${schoolName}: ${error.message}`,
+        `Failed to scrape CollegeVine for ${schoolName}: ${error instanceof Error ? error.message : String(error)}`,
       );
       return null;
     }

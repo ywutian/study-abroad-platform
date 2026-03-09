@@ -60,6 +60,11 @@ export class CreateEducationDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @ApiPropertyOptional({ description: '关联的高中参考数据ID' })
+  @IsOptional()
+  @IsString()
+  highSchoolId?: string;
 }
 
 export class UpdateEducationDto {
@@ -112,4 +117,9 @@ export class UpdateEducationDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @ApiPropertyOptional({ description: '关联的高中参考数据ID' })
+  @IsOptional()
+  @IsString()
+  highSchoolId?: string;
 }

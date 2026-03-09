@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -23,6 +24,7 @@ import {
   UpdateTestScoreDto,
   CreateActivityDto,
   UpdateActivityDto,
+  ReorderIdsDto,
   CreateAwardDto,
   UpdateAwardDto,
   CreateEssayDto,
@@ -110,11 +112,17 @@ export class ProfileController {
           name: a.name,
           category: a.category,
           role: a.role,
+          description: a.description ?? undefined,
+          hoursPerWeek: a.hoursPerWeek ?? undefined,
+          weeksPerYear: a.weeksPerYear ?? undefined,
+          tier: a.activityTemplate?.tier ?? undefined,
         })) || [],
       awards:
         (profile as any).awards?.map((a: any) => ({
           name: a.name,
           level: a.level,
+          tier: a.competition?.tier ?? undefined,
+          competitionName: a.competition?.name ?? undefined,
         })) || [],
       targetMajor: profile.targetMajor || undefined,
     };
@@ -238,6 +246,16 @@ export class ProfileController {
     return this.profileService.createActivity(user.id, data);
   }
 
+  @Put('me/activities/reorder')
+  @ApiOperation({ summary: '重排活动顺序' })
+  async reorderActivities(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() data: ReorderIdsDto,
+  ) {
+    await this.profileService.reorderActivities(user.id, data.ids);
+    return { success: true };
+  }
+
   @Put('me/activities/:id')
   @ApiOperation({ summary: '更新活动' })
   async updateActivity(
@@ -256,16 +274,6 @@ export class ProfileController {
     @Param('id') id: string,
   ) {
     await this.profileService.deleteActivity(user.id, id);
-  }
-
-  @Put('me/activities/reorder')
-  @ApiOperation({ summary: '重排活动顺序' })
-  async reorderActivities(
-    @CurrentUser() user: CurrentUserPayload,
-    @Body() data: { ids: string[] },
-  ) {
-    await this.profileService.reorderActivities(user.id, data.ids);
-    return { success: true };
   }
 
   // ============================================
@@ -287,6 +295,16 @@ export class ProfileController {
     return this.profileService.createAward(user.id, data);
   }
 
+  @Put('me/awards/reorder')
+  @ApiOperation({ summary: '重排奖项顺序' })
+  async reorderAwards(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() data: ReorderIdsDto,
+  ) {
+    await this.profileService.reorderAwards(user.id, data.ids);
+    return { success: true };
+  }
+
   @Put('me/awards/:id')
   @ApiOperation({ summary: '更新奖项' })
   async updateAward(
@@ -305,16 +323,6 @@ export class ProfileController {
     @Param('id') id: string,
   ) {
     await this.profileService.deleteAward(user.id, id);
-  }
-
-  @Put('me/awards/reorder')
-  @ApiOperation({ summary: '重排奖项顺序' })
-  async reorderAwards(
-    @CurrentUser() user: CurrentUserPayload,
-    @Body() data: { ids: string[] },
-  ) {
-    await this.profileService.reorderAwards(user.id, data.ids);
-    return { success: true };
   }
 
   // ============================================
@@ -481,5 +489,21 @@ export class ProfileController {
     if (item) {
       await this.schoolListService.removeItem(user.id, item.id);
     }
+  }
+
+  // ============================================
+  // Activity Templates (search for autocomplete)
+  // ============================================
+
+  @Get('activity-templates/search')
+  @ApiOperation({ summary: 'Search activity templates for autocomplete' })
+  async searchActivityTemplates(
+    @Query('q') query: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.profileService.searchActivityTemplates(
+      query,
+      limit ? parseInt(limit) : 10,
+    );
   }
 }

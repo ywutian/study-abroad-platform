@@ -125,10 +125,15 @@ export function PasswordStrength({
   );
 }
 
-// 辅助函数：检查密码是否满足最低要求
+// Must match backend regex: lowercase + uppercase + digit + special char, min 8
 export function isPasswordValid(password: string): boolean {
-  // 最低要求：长度+字母+数字
-  return password.length >= 8 && /[a-zA-Z]/.test(password) && /\d/.test(password);
+  return (
+    password.length >= 8 &&
+    /[a-z]/.test(password) &&
+    /[A-Z]/.test(password) &&
+    /\d/.test(password) &&
+    /[!@#$%^&*(),.?":{}|<>]/.test(password)
+  );
 }
 
 // 辅助函数：获取密码强度分数 (0-5)

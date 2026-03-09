@@ -213,6 +213,13 @@ export class TeamApplicationDto {
   @IsOptional()
   @IsString()
   message?: string;
+
+  @ApiPropertyOptional({
+    description: 'Resume ID to attach to the application',
+  })
+  @IsOptional()
+  @IsString()
+  resumeId?: string;
 }
 
 export class ReviewApplicationDto {

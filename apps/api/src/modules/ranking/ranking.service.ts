@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SchoolService } from '../school/school.service';
 import { CustomRanking, School } from '@prisma/client';
+import { clampPercentRate } from '../../common/utils/percent.util';
 
 export interface RankingWeights {
   usNewsRank: number;
@@ -59,9 +60,13 @@ export class RankingService {
     // Get min/max for normalization
     const stats = this.calculateStats(schools);
 
-    // Calculate scores
+    // Calculate scores (clamp rates for display)
     const scoredSchools = schools.map((school) => ({
       ...school,
+      acceptanceRate: (clampPercentRate(school.acceptanceRate) ??
+        school.acceptanceRate) as typeof school.acceptanceRate,
+      graduationRate: (clampPercentRate(school.graduationRate) ??
+        school.graduationRate) as typeof school.graduationRate,
       score: this.calculateScore(school, normalizedWeights, stats),
       rank: 0,
     }));

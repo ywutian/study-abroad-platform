@@ -12,6 +12,7 @@ import { HallService } from '../../hall/hall.service';
 import { ProfileLoaderHelper } from './helpers/profile-loader.helper';
 import { SchoolLookupHelper } from './helpers/school-lookup.helper';
 import { extractJsonFromLlm } from './helpers/llm-json.helper';
+import { formatHighSchoolContext } from './helpers/education-context.helper';
 import { ToolHandler, IToolHandlerProvider } from './tool-handler.interface';
 
 @Injectable()
@@ -185,51 +186,83 @@ Return in JSON format:
           { role: 'system', content: systemPrompt },
           {
             role: 'user',
-            content: isZh
-              ? `
+            content: (() => {
+              const hsCtx = formatHighSchoolContext(
+                profile.education,
+                profile.highSchool,
+                locale,
+              );
+              const hsLine = hsCtx ? `\n- ${hsCtx}` : '';
+              return isZh
+                ? `
 学生档案：
 - GPA：${profile.gpa || notFilled}/${profile.gpaScale || 4.0}
-- 年级：${profile.grade || notFilled}
+- 年级：${profile.grade || notFilled}${hsLine}
 - 标化成绩：${profile.testScores?.map((s: any) => `${s.type}: ${s.score}`).join(', ') || notFilled}
 - 活动数量：${profile.activities?.length || 0}
-- 活动详情：${
-                  profile.activities
-                    ?.slice(0, 3)
-                    .map((a: any) => `${a.name}(${a.role})`)
-                    .join(', ') || none
-                }
+- 活动详情：
+${
+  profile.activities
+    ?.slice(0, 5)
+    .map((a: any) => {
+      let line = `  · ${a.name}(${a.role}, ${a.category || ''})`;
+      if (a.description) line += `: ${(a.description as string).slice(0, 80)}`;
+      if (a.hoursPerWeek) line += ` [${a.hoursPerWeek}h/周]`;
+      return line;
+    })
+    .join('\n') || none
+}
 - 奖项数量：${profile.awards?.length || 0}
-- 奖项详情：${
-                  profile.awards
-                    ?.slice(0, 3)
-                    .map((a: any) => `${a.name}(${a.level})`)
-                    .join(', ') || none
-                }
+- 奖项详情：
+${
+  profile.awards
+    ?.slice(0, 5)
+    .map((a: any) => {
+      let line = `  · ${a.name}(${a.level})`;
+      if (a.competition?.name) line += ` — ${a.competition.name}`;
+      if (a.competition?.tier) line += ` [T${a.competition.tier}]`;
+      return line;
+    })
+    .join('\n') || none
+}
 - 目标专业：${profile.targetMajor || undecided}
 - 预算：${profile.budgetTier || undecided}
 ${targetTier ? `目标学校层次：${targetTier}` : ''}`
-              : `
+                : `
 Student profile:
 - GPA: ${profile.gpa || notFilled}/${profile.gpaScale || 4.0}
-- Grade: ${profile.grade || notFilled}
+- Grade: ${profile.grade || notFilled}${hsLine}
 - Test scores: ${profile.testScores?.map((s: any) => `${s.type}: ${s.score}`).join(', ') || notFilled}
 - Activities: ${profile.activities?.length || 0}
-- Activity details: ${
-                  profile.activities
-                    ?.slice(0, 3)
-                    .map((a: any) => `${a.name} (${a.role})`)
-                    .join(', ') || none
-                }
+- Activity details:
+${
+  profile.activities
+    ?.slice(0, 5)
+    .map((a: any) => {
+      let line = `  · ${a.name} (${a.role}, ${a.category || ''})`;
+      if (a.description) line += `: ${(a.description as string).slice(0, 80)}`;
+      if (a.hoursPerWeek) line += ` [${a.hoursPerWeek}h/wk]`;
+      return line;
+    })
+    .join('\n') || none
+}
 - Awards: ${profile.awards?.length || 0}
-- Award details: ${
-                  profile.awards
-                    ?.slice(0, 3)
-                    .map((a: any) => `${a.name} (${a.level})`)
-                    .join(', ') || none
-                }
+- Award details:
+${
+  profile.awards
+    ?.slice(0, 5)
+    .map((a: any) => {
+      let line = `  · ${a.name} (${a.level})`;
+      if (a.competition?.name) line += ` — ${a.competition.name}`;
+      if (a.competition?.tier) line += ` [T${a.competition.tier}]`;
+      return line;
+    })
+    .join('\n') || none
+}
 - Target major: ${profile.targetMajor || undecided}
 - Budget: ${profile.budgetTier || undecided}
-${targetTier ? `Target school tier: ${targetTier}` : ''}`,
+${targetTier ? `Target school tier: ${targetTier}` : ''}`;
+            })(),
           },
         ],
         { temperature: 0.6 },
@@ -321,8 +354,15 @@ ${targetTier ? `Target school tier: ${targetTier}` : ''}`,
           { role: 'system', content: systemPrompt },
           {
             role: 'user',
-            content: isZh
-              ? `
+            content: (() => {
+              const hsCtx = formatHighSchoolContext(
+                profile.education,
+                profile.highSchool,
+                locale,
+              );
+              const hsLine = hsCtx ? `\n- ${hsCtx}` : '';
+              return isZh
+                ? `
 目标学校：${displayName} (排名 #${school.usNewsRank})
 
 录取学生情况（${admittedCases.length}个案例）：
@@ -331,13 +371,13 @@ ${targetTier ? `Target school tier: ${targetTier}` : ''}`,
 - 常见标签：${[...new Set(admittedCases.flatMap((c) => c.tags || []))].slice(0, 10).join(', ')}
 
 您的档案：
-- GPA：${profile.gpa || notFilled}/${profile.gpaScale || 4.0}
+- GPA：${profile.gpa || notFilled}/${profile.gpaScale || 4.0}${hsLine}
 - 标化：${profile.testScores?.map((s: any) => `${s.type}: ${s.score}`).join(', ') || notFilled}
 - 活动：${profile.activities?.length || 0}个
 - 奖项：${profile.awards?.length || 0}个
 
 请分析差距并给出建议。`
-              : `
+                : `
 Target school: ${displayName} (Rank #${school.usNewsRank})
 
 Admitted student data (${admittedCases.length} cases):
@@ -346,12 +386,13 @@ Admitted student data (${admittedCases.length} cases):
 - Common tags: ${[...new Set(admittedCases.flatMap((c) => c.tags || []))].slice(0, 10).join(', ')}
 
 Your profile:
-- GPA: ${profile.gpa || notFilled}/${profile.gpaScale || 4.0}
+- GPA: ${profile.gpa || notFilled}/${profile.gpaScale || 4.0}${hsLine}
 - Test scores: ${profile.testScores?.map((s: any) => `${s.type}: ${s.score}`).join(', ') || notFilled}
 - Activities: ${profile.activities?.length || 0}
 - Awards: ${profile.awards?.length || 0}
 
-Analyze the gaps and provide recommendations.`,
+Analyze the gaps and provide recommendations.`;
+            })(),
           },
         ],
         { temperature: 0.5 },

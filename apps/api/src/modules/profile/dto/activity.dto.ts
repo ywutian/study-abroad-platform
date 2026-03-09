@@ -5,6 +5,7 @@ import {
   IsIn,
   IsBoolean,
   IsDateString,
+  IsArray,
   Min,
   Max,
   MaxLength,
@@ -20,8 +21,13 @@ const ACTIVITY_CATEGORIES = [
   'LEADERSHIP',
   'WORK',
   'RESEARCH',
+  'INTERNSHIP',
+  'CLUB',
+  'HOBBY',
   'OTHER',
 ] as const;
+
+const ACTIVITY_TIMING = ['SCHOOL_YEAR', 'SCHOOL_BREAK', 'ALL_YEAR'] as const;
 
 export class CreateActivityDto {
   @ApiProperty({ description: '活动名称', example: '机器人社' })
@@ -87,6 +93,22 @@ export class CreateActivityDto {
   @Type(() => Number)
   @Min(0)
   order?: number;
+
+  @ApiPropertyOptional({ description: '年级', type: [Number] })
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  gradeLevels?: number[];
+
+  @ApiPropertyOptional({ enum: ACTIVITY_TIMING, description: '时间段' })
+  @IsOptional()
+  @IsIn(ACTIVITY_TIMING)
+  timing?: string;
+
+  @ApiPropertyOptional({ description: '活动模板ID' })
+  @IsOptional()
+  @IsString()
+  activityTemplateId?: string;
 }
 
 export class UpdateActivityDto {
@@ -156,4 +178,27 @@ export class UpdateActivityDto {
   @Type(() => Number)
   @Min(0)
   order?: number;
+
+  @ApiPropertyOptional({ description: '年级', type: [Number] })
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  gradeLevels?: number[];
+
+  @ApiPropertyOptional({ enum: ACTIVITY_TIMING, description: '时间段' })
+  @IsOptional()
+  @IsIn(ACTIVITY_TIMING)
+  timing?: string;
+
+  @ApiPropertyOptional({ description: '活动模板ID' })
+  @IsOptional()
+  @IsString()
+  activityTemplateId?: string;
+}
+
+export class ReorderIdsDto {
+  @ApiProperty({ description: 'Ordered array of IDs', type: [String] })
+  @IsArray()
+  @IsString({ each: true })
+  ids: string[];
 }

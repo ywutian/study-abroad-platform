@@ -36,6 +36,10 @@
     "retry": "Retry",
     "clearAll": "Clear All",
     "ongoing": "Ongoing",
+    "total": "Total",
+    "create": "Create",
+    "hidden": "Hidden",
+    "noData": "No Data",
     "perWeek": "hours/week",
     "weeksPerYear": "weeks/year",
     "anonymous": "Anonymous",
@@ -84,8 +88,14 @@
     "noRecentActivity": "No recent activity",
     "startExploring": "Start Exploring",
     "upcomingDeadlines": "Upcoming Deadlines",
+    "upcomingPersonalEvents": "Competitions / Tests",
     "daysLeft": "{days} days left",
     "noDeadlines": "No upcoming deadlines",
+    "viewAll": "View All",
+    "todoType": {
+      "school": "Application",
+      "event": "Competition / Test"
+    },
     "stats": {
       "profileCompletion": "Profile Completion",
       "schoolList": "School List",
@@ -102,8 +112,8 @@
       "safety": "Safety"
     },
     "modules": {
-      "findCollege": "Find Your College",
-      "findCollegeDesc": "Smart filtering to find your perfect fit",
+      "schools": "School Library",
+      "schoolsDesc": "Browse and find your perfect fit",
       "uncommonApp": "Uncommon App",
       "uncommonAppDesc": "AI profile analysis and recommendations",
       "featureHall": "Feature Hall",
@@ -228,9 +238,9 @@
     "modules": {
       "title": "Four Core Modules",
       "subtitle": "From school selection to application, all in one place",
-      "findCollege": {
-        "title": "Find Your College",
-        "desc": "Smart filtering to find your perfect fit"
+      "schools": {
+        "title": "School Library",
+        "desc": "Browse, filter and find your perfect fit"
       },
       "uncommonApp": {
         "title": "Uncommon App",
@@ -461,6 +471,7 @@
       "newPasswordPlaceholder": "Enter new password",
       "confirmPlaceholder": "Confirm new password",
       "passwordTooShort": "Password must be at least 8 characters",
+      "passwordTooWeak": "Password must contain uppercase, lowercase, number and special character",
       "passwordNeedLetter": "Password must contain letters",
       "passwordMismatch": "Passwords do not match",
       "successDesc": "Password reset successful",
@@ -513,8 +524,9 @@
     "chat": "Messages",
     "hall": "Feature Hall",
     "forum": "Forum",
+    "teams": "Teams",
     "assessment": "Assessment",
-    "swipe": "Swipe Schools",
+    "swipe": "Community Challenge",
     "timeline": "Timeline",
     "recommendation": "Recommendations",
     "vault": "Password Vault",
@@ -525,7 +537,6 @@
     "schools": "Schools",
     "essays": "My Essays",
     "resume": "Resume Builder",
-    "findCollege": "Find College",
     "uncommonApp": "Application Hub",
     "verifiedRanking": "Verified Ranking",
     "followers": "Connections",
@@ -549,10 +560,10 @@
       "schools": "Browse and compare universities worldwide",
       "essays": "Write, edit and AI-review your essays",
       "resume": "Build professional resumes with 25+ templates",
-      "findCollege": "Smart college matching with custom weights",
       "uncommonApp": "AI-powered application management",
       "verifiedRanking": "Real verified admission results",
       "followers": "Manage followers and connections",
+      "teams": "Find or create teams for same-school applications and prep",
       "help": "FAQ, guides and support",
       "referral": "Invite friends and earn points"
     },
@@ -713,7 +724,8 @@
       "activities": "Activities",
       "awards": "Awards",
       "targets": "Target Schools",
-      "privacy": "Privacy"
+      "privacy": "Privacy",
+      "demographics": "Background"
     },
     "fields": {
       "grade": "Grade",
@@ -722,13 +734,55 @@
       "currentSchoolPlaceholder": "Enter your current school...",
       "targetMajor": "Target Major",
       "targetMajorPlaceholder": "Enter your target major...",
+      "intendedMajor": "Intended Major",
+      "secondMajor": "Second Major",
       "regionPref": "Region Preference",
       "budget": "Budget"
+    },
+    "demographics": {
+      "title": "Demographics & Background",
+      "desc": "Help us provide more accurate predictions based on your background",
+      "nationality": "Nationality",
+      "countryOfResidence": "Country of Residence",
+      "citizenship": "Citizenship",
+      "educationSystem": "Education System",
+      "needsFinancialAid": "I need financial aid",
+      "firstGeneration": "First generation college student",
+      "legacy": "Legacy (Alumni Connection)",
+      "legacyPlaceholder": "e.g. Harvard, Stanford",
+      "legacyHint": "Enter school names separated by commas if you have alumni connections",
+      "selectCountry": "Select country",
+      "selectEducationSystem": "Select education system",
+      "countries": {
+        "US": "United States",
+        "CN": "China",
+        "IN": "India",
+        "KR": "South Korea",
+        "JP": "Japan",
+        "TW": "Taiwan",
+        "HK": "Hong Kong",
+        "SG": "Singapore",
+        "GB": "United Kingdom",
+        "CA": "Canada",
+        "AU": "Australia",
+        "OTHER": "Other"
+      },
+      "educationSystems": {
+        "AP": "AP",
+        "IB": "IB",
+        "A_LEVEL": "A-Level",
+        "GAOKAO": "Gaokao (高考)",
+        "CANADIAN": "Canadian",
+        "AUSTRALIAN": "Australian",
+        "OTHER": "Other"
+      }
     },
     "placeholders": {
       "selectGrade": "Select grade",
       "selectBudget": "Select budget",
-      "gpaExample": "e.g. 3.85"
+      "gpaExample": "e.g. 3.85",
+      "intendedMajor": "e.g. Computer Science",
+      "secondMajor": "e.g. Mathematics"
     },
     "gpaScales": {
       "scale4": "4.0 Scale",
@@ -831,6 +885,9 @@
       "leadership": "Leadership",
       "work": "Work Experience",
       "research": "Research",
+      "internship": "Internship",
+      "club": "Club",
+      "hobby": "Hobby",
       "other": "Other"
     },
     "awardLevels": {
@@ -879,6 +936,12 @@
       "editEducationDesc": "Update your education information",
       "schoolName": "School Name",
       "schoolNamePlaceholder": "Enter school name",
+      "searchHighSchool": "Search for your high school...",
+      "searchHighSchoolPlaceholder": "Type school name to search",
+      "noHighSchoolFound": "No matching high school found",
+      "typeToSearch": "Type to search high schools",
+      "searching": "Searching...",
+      "customHighSchool": "Or type school name manually",
       "schoolType": "School Type",
       "selectType": "Select school type",
       "degree": "Degree",
@@ -954,6 +1017,33 @@
     "comingSoonDesc": "For now, click the button below to see a demo prediction",
     "emptyHint": "Select schools and run prediction to see your chances",
     "runPrediction": "Run Prediction",
+    "ucOneClick": "UC One-Click Prediction",
+    "ucOneClickUnavailable": "UC school list is not available",
+    "ucComparisonExpanded": "We have included all 9 UC campuses for comparison.",
+    "recommendedSchoolsTitle": "You may also like",
+    "recommendedSchoolsLoading": "Loading recommendations...",
+    "majorSpecificComingSoon": "Major-specific and regional acceptance data coming soon",
+    "rateBreakdown": {
+      "title": "Rate Breakdown",
+      "overall": "Overall Acceptance Rate",
+      "international": "Intl Student Rate",
+      "majorEstimate": "{major} Estimate",
+      "yourProbability": "Your Estimated Probability",
+      "needBlind": "Need-Blind for Intl",
+      "intlPercent": "{pct}% Intl Students",
+      "competitiveness": {
+        "5": "Extremely Competitive",
+        "4": "Highly Competitive",
+        "3": "Average",
+        "2": "Below Average",
+        "1": "Less Competitive"
+      },
+      "na": "No data available",
+      "naIntl": "International rate not available for this school",
+      "naMajor": "No program data for this major at this school",
+      "communityData": "Community Data ({count} reports)",
+      "communityTooltip": "Based on {count} verified admission cases"
+    },
     "probability": "Admission Probability",
     "factors": "Impact Factors",
     "positive": "Positive Factors",
@@ -1015,6 +1105,12 @@
     "factorsCount": "factors",
     "suggestionsCount": "suggestions",
     "impactFactors": "Impact Factors",
+    "factorsDisclaimer": "Note: This prediction does not account for essay quality, recommendation letters, or interview performance",
+    "source": {
+      "academic": "Academic Data",
+      "aiAnalysis": "AI Analysis",
+      "historicalData": "Historical Admissions"
+    },
     "engineWeights": "Engine Weight Distribution",
     "reportResult": "Report Actual Result",
     "resultReported": "Result reported successfully",
@@ -1029,8 +1125,12 @@
     "noHistory": "No prediction history yet",
     "rank": "#{rank}",
     "acceptRate": "{rate}% accept",
+    "estimatedProbabilityLabel": "Estimated admission probability",
+    "schoolAcceptanceRateLabel": "Acceptance rate {rate}%",
+    "probabilityVsRateDisclaimer": "Acceptance rate is school data; the percentage is your estimated admission probability based on your profile.",
     "predictionInProgress": "Prediction in progress, please wait",
     "resultsAnnouncement": "Showing {count} results, sorted by {sort}",
+    "essayDisclaimer": "This prediction does not include essays, interviews, or other subjective factors.",
     "comparison": {
       "title": "Comparison with Admitted Students",
       "gpaPercentile": "GPA Percentile",
@@ -1109,12 +1209,15 @@
       "academicBackground": "Academic Background",
       "noScoreInfo": "No score information",
       "applicantFeatures": "Applicant Features",
+      "activityListTitle": "Activities & Highlights",
       "share": "Share",
       "report": "Report",
       "relatedCases": "Other Cases from {school}",
       "viewMoreCases": "View more {school} application cases...",
       "decision": "Decision",
       "essayContent": "Essay Content",
+      "gpaByYear": "GPA by year (9–12)",
+      "viewInEssayGallery": "View in Essay Gallery",
       "applicationDetails": "Application Details"
     }
   },
@@ -1193,7 +1296,30 @@
       "tinder": "Prediction Game",
       "review": "Review Mode",
       "ranking": "Rank Comparison",
-      "lists": "User Lists"
+      "lists": "User Lists",
+      "challenge": "Community Challenge"
+    },
+    "challenge": {
+      "loading": "Loading challenge...",
+      "empty": "No Challenge Available",
+      "emptyDesc": "There are not enough shared cases to create a challenge right now. Check back later!",
+      "applicantProfile": "Applicant Profile",
+      "grade": "Grade",
+      "activities": "Activities",
+      "predictResults": "Predict the results",
+      "schools": "schools",
+      "selectResult": "Select result...",
+      "yourGuess": "Your guess",
+      "correct": "correct",
+      "submit": "Submit Predictions",
+      "submitting": "Submitting...",
+      "newChallenge": "New Challenge",
+      "results": {
+        "ACCEPTED": "Accepted",
+        "REJECTED": "Rejected",
+        "WAITLISTED": "Waitlisted",
+        "DEFERRED": "Deferred"
+      }
     },
     "tinder": {
       "title": "Case Prediction",
@@ -1582,6 +1708,8 @@
     "toeflPlaceholder": "e.g., 110-115",
     "tagsLabel": "Tags",
     "tagsPlaceholder": "Comma separated, e.g., Research, Competition",
+    "activityListLabel": "Activities & Highlights",
+    "activityListPlaceholder": "One per line, e.g.: Research - XX Lab; Contest - AMC 12; Club - Student Council President",
     "reflectionLabel": "Reflection",
     "reflectionPlaceholder": "Share your application experience and advice...",
     "submitButton": "Submit Case",
@@ -1590,8 +1718,15 @@
       "ED2": "Early Decision 2 (ED2)",
       "EA": "Early Action (EA)",
       "REA": "Restrictive Early Action (REA)",
-      "RD": "Regular Decision (RD)"
+      "RD": "Regular Decision (RD)",
+      "UC": "UC (University of California)"
     },
+    "gpa9Label": "Grade 9 GPA",
+    "gpa10Label": "Grade 10 GPA",
+    "gpa11Label": "Grade 11 GPA",
+    "gpa12Label": "Grade 12 GPA",
+    "ucCappedGpaLabel": "UC Capped Weighted GPA",
+    "ucUncappedGpaLabel": "UC Uncapped Weighted GPA",
     "results": {
       "admitted": "Admitted",
       "rejected": "Rejected",
@@ -1604,7 +1739,9 @@
     "essayPromptLabel": "Essay Prompt",
     "essayPromptPlaceholder": "Enter the essay question/prompt...",
     "essayContentLabel": "Essay Content",
-    "essayContentPlaceholder": "Paste your essay content here...",
+    "importFromFile": "Import file",
+    "dropEssayHere": "Drop your essay file here",
+    "essayContentPlaceholder": "Paste your essay content here, or drag & drop a file (.txt, .docx, .pdf)...",
     "visibilityLabel": "Visibility",
     "visibility": {
       "anonymous": "Anonymous",
@@ -1668,6 +1805,18 @@
       "deleteTitle": "Confirm Delete",
       "deleteDesc": "This action cannot be undone. Are you sure?",
       "deleteWithName": "Are you sure you want to delete \"{name}\"?"
+    },
+    "errorState": {
+      "default": "Something went wrong",
+      "defaultDesc": "An unexpected error occurred. Please try again later.",
+      "network": "Network Error",
+      "networkDesc": "Unable to connect to the server. Please check your connection.",
+      "server": "Server Error",
+      "serverDesc": "The server is temporarily unavailable. Please try again later.",
+      "permission": "Access Denied",
+      "permissionDesc": "You don't have permission to access this content.",
+      "notFound": "Not Found",
+      "notFoundDesc": "The requested content does not exist or has been removed."
     },
     "a11y": {
       "currentAccount": "Current Account",
@@ -1918,12 +2067,9 @@
       "D": "D",
       "D-": "D-",
       "F": "F"
-    }
-  },
-  "findCollege": {
-    "title": "Find Your College",
-    "description": "DIY school selection with smart filtering and sorting to find your perfect match",
-    "searchPlaceholder": "Search school name...",
+    },
+    "tabBrowse": "Browse",
+    "tabAiRecommend": "AI Recommendation",
     "allFilters": "All Filters",
     "filterOptions": "Filter Options",
     "schoolType": "School Type",
@@ -1950,19 +2096,11 @@
       "acceptanceRateDesc": "Lower means more competitive",
       "preview": "Preview Rankings"
     },
-    "indexLegend": "Index Legend",
-    "safetyIndex": "Safety",
-    "happinessIndex": "Happiness",
-    "foodIndex": "Food",
-    "indexHint": "More icons = better",
-    "noData": "No data",
-    "resultsCount": "{count} schools found",
     "addToList": "Add to List",
     "added": "Added",
     "addedToList": "Added to your school list",
     "alreadyInList": "This school is already in your list",
     "addFailed": "Failed to add, please try again",
-    "noResults": "No schools found",
     "noResultsDesc": "Try adjusting your filters",
     "loadError": "Failed to load",
     "loadErrorDesc": "Could not load school data, please try again",
@@ -1981,12 +2119,30 @@
     "timelineGenerateFailedHint": "Schools added but timeline generation failed",
     "viewTimeline": "View Timeline",
     "tierLabel": "Tier",
+    "roundLabel": "Application Round",
     "tiers": {
       "reach": "Reach",
       "target": "Target",
       "safety": "Safety"
     },
-    "advancedFilter": "Advanced Filter"
+    "rounds": {
+      "ED": "ED",
+      "ED2": "ED II",
+      "EA": "EA",
+      "REA": "REA",
+      "RD": "RD",
+      "ROLLING": "Rolling"
+    }
+  },
+  "findCollege": {
+    "rounds": {
+      "ED": "Early Decision (ED)",
+      "ED2": "Early Decision II (ED2)",
+      "EA": "Early Action (EA)",
+      "REA": "Restrictive Early Action (REA)",
+      "RD": "Regular Decision (RD)",
+      "ROLLING": "Rolling"
+    }
   },
   "uncommonApp": {
     "title": "Uncommon App",
@@ -3083,8 +3239,18 @@
     }
   },
   "swipe": {
-    "title": "Swipe Schools",
-    "description": "Discover schools like Tinder",
+    "title": "Community Challenge",
+    "description": "View applicant profiles and guess which schools admitted them",
+    "challengeTitle": "Guess the Admissions",
+    "challengeDesc": "View full applicant profiles and guess their results",
+    "guessAdmission": "Guess Admission Result",
+    "submitGuesses": "Submit Guesses",
+    "revealResults": "Reveal Results",
+    "yourGuess": "Your Guess",
+    "actualResult": "Actual Result",
+    "accuracy": "Accuracy",
+    "nextChallenge": "Next Challenge",
+    "noChallenge": "No challenges available right now, try again later",
     "play": "Start Swiping",
     "leaderboard": "Leaderboard",
     "like": "Like",
@@ -3237,6 +3403,7 @@
       "notFound": "Essay not found or has been deleted",
       "words": "words",
       "verified": "Verified",
+      "viewFullCase": "View Full Case",
       "essayPrompt": "Essay Prompt",
       "yearLabel": "Year",
       "tabs": {
@@ -3590,6 +3757,36 @@
     "additional": "Additional Requirements",
     "additionalPlaceholder": "Enter additional requirements...",
     "generateBtn": "Generate Recommendations",
+    "quiz": {
+      "showPreferences": "Show detailed preferences",
+      "hidePreferences": "Hide detailed preferences",
+      "title": "Campus Preferences",
+      "roiImportance": "ROI Importance",
+      "campusSize": "Campus Size Preference",
+      "locationType": "Location Type",
+      "campusCulture": "Campus Culture",
+      "weather": "Weather Preference",
+      "diversityImportance": "Diversity Importance",
+      "greekLife": "Greek Life Importance",
+      "athletics": "Athletics Importance",
+      "low": "Not important",
+      "high": "Very important",
+      "selectOne": "Select one",
+      "sizeSmall": "Small (<5,000)",
+      "sizeMedium": "Medium (5,000-15,000)",
+      "sizeLarge": "Large (15,000+)",
+      "urban": "Urban",
+      "suburban": "Suburban",
+      "rural": "Rural",
+      "research": "Research-focused",
+      "liberalArts": "Liberal Arts",
+      "preProfessional": "Pre-professional",
+      "balanced": "Balanced",
+      "warm": "Warm",
+      "moderate": "Moderate",
+      "cold": "Cold",
+      "noPreference": "No preference"
+    },
     "cost": "Each recommendation costs 1 AI credit",
     "howItWorks": "How It Works",
     "step1Title": "Profile Analysis",
@@ -3641,6 +3838,10 @@
     "failed": "Recommendation failed, please retry",
     "fitScore": "Fit Score",
     "probability": "Admission Probability",
+    "estimatedProbability": "Estimated Probability",
+    "aiRoughEstimate": "Estimated Probability",
+    "viewDetailedPrediction": "View detailed prediction →",
+    "probabilityTooltip": "Based on AI analysis anchored to statistical model. For a full analysis with historical data, use Prediction.",
     "strengths": "Strengths",
     "weaknesses": "Weaknesses",
     "concerns": "Concerns",
@@ -3771,8 +3972,8 @@
       "subscribed": "Subscribed to your personal timeline",
       "alreadySubscribed": "Already subscribed to this event",
       "delete": "Delete Event",
-      "deadline": "Deadline",
-      "eventDate": "Event Date",
+      "deadline": "Registration Deadline",
+      "eventDate": "Competition Date",
       "fromGlobal": "Subscribed",
       "categories": {
         "COMPETITION": "Competition",
@@ -3787,8 +3988,8 @@
         "title": "Event Name",
         "titlePlaceholder": "e.g., AMC 12, TOEFL Exam",
         "category": "Category",
-        "deadline": "Deadline",
-        "eventDate": "Event Date",
+        "deadline": "Registration Deadline",
+        "eventDate": "Competition Date",
         "description": "Notes",
         "descriptionPlaceholder": "Optional notes about this event",
         "cancel": "Cancel",
@@ -3797,12 +3998,16 @@
     },
     "schoolTimelines": {
       "title": "School Timelines",
-      "description": "Application progress sorted by deadline",
-      "deadline": "Deadline",
+      "description": "Application progress sorted by registration deadline",
+      "deadline": "Registration Deadline",
       "tasks": "Tasks",
       "loadingTasks": "Loading tasks...",
-      "noTasks": "No tasks yet"
+      "noTasks": "No tasks yet",
+      "pendingSchools": "Schools Awaiting Timeline",
+      "pendingSchoolsDesc": "These schools are in your list but don't have a timeline yet",
+      "generateTimeline": "Generate Timeline"
     },
+    "generateSuccess": "Timeline generated successfully",
     "taskTypes": {
       "ESSAY": "Essay",
       "DOCUMENT": "Document",
@@ -3828,6 +4033,12 @@
       "commitmentDeadlineDesc": "National reply date to confirm enrollment",
       "scholarships": "Scholarships",
       "scholarshipsDesc": "School scholarship deadlines"
+    },
+    "validation": {
+      "titleRequired": "Title is required",
+      "titleTooLong": "Title must be 200 characters or less",
+      "categoryRequired": "Please select a category",
+      "invalidUrl": "Please enter a valid URL"
     }
   },
   "forum": {
@@ -3964,6 +4175,8 @@
     "recruitRequirements": "Recruitment Requirements",
     "joinPlaceholder": "Briefly introduce yourself and why you want to join...",
     "joinTeam": "Apply to Join",
+    "attachResume": "Attach resume (optional)",
+    "noResume": "No resume",
     "commentsTitle": "Comments ({count})",
     "noComments": "No comments yet, be the first to comment",
     "bookmarkAction": "Bookmark",
@@ -3981,6 +4194,12 @@
     "aiTitle": "Forum AI Assistant",
     "aiDesc": "I can help you search discussions, answer questions, and summarize trending topics",
     "aiWelcome": "Hi! I'm the Forum AI Assistant. I can help you search discussions, answer study abroad questions, summarize trending topics, or find like-minded applicants. How can I help?",
+    "findTeammatesBanner": "Looking for application buddies? Get AI-recommended team posts.",
+    "openAiToFindTeammates": "Open AI to find teammates",
+    "teamSectionTitle": "Team Up",
+    "activeLabel": "active",
+    "teamSectionDesc": "Create or join team posts for competitions, application season support, and more",
+    "viewAllTeamPosts": "View all team posts",
     "aiActions": {
       "searchPosts": "Search Discussions",
       "searchPostsPrompt": "Please help me search for popular discussions about study abroad applications, especially about school selection and essays.",
@@ -3993,6 +4212,61 @@
       "essayHelp": "Essay Help",
       "essayHelpPrompt": "I'm working on my essay and not sure what angle to take. Please give me some suggestions or point me to good essay writing posts on the forum."
     }
+  },
+  "teams": {
+    "title": "Teams",
+    "description": "Find or create teams",
+    "myTeams": "My Teams",
+    "discover": "Discover",
+    "create": "Create Team",
+    "createTeam": "Create Team",
+    "createForm": {
+      "school": "Link to school (optional)",
+      "schoolPlaceholder": "Select a school",
+      "tags": "Tags (optional)",
+      "tagsPlaceholder": "Type and press Enter to add (max 10)",
+      "tagsHint": "Up to {max} tags"
+    },
+    "join": "Join",
+    "leave": "Leave Team",
+    "invite": "Invite",
+    "copyLink": "Copy invite link",
+    "settings": "Settings",
+    "disband": "Disband Team",
+    "memberCount": "{current}/{max} members",
+    "joinPolicy": {
+      "open": "Open join",
+      "inviteOnly": "Invite only"
+    },
+    "empty": {
+      "my": "You haven't joined any teams yet.",
+      "discover": "No public teams yet.",
+      "noResults": "No teams match your filters.",
+      "noMembers": "No members yet. Share the invite link to grow your team."
+    },
+    "errors": {
+      "notFound": "Team not found.",
+      "full": "This team is full.",
+      "inviteExpired": "This invite link has expired or is invalid.",
+      "forbidden": "You don't have access to this team. Ask the owner for an invite.",
+      "conflict": "Already a member or request conflict."
+    },
+    "confirm": {
+      "leave": "Leave this team? You will lose your membership.",
+      "disband": "Disband this team? This cannot be undone."
+    },
+    "view": "View",
+    "filters": {
+      "joinPolicy": "Join policy",
+      "joinPolicyAll": "All",
+      "sortNewest": "Newest first",
+      "sortMembers": "Most members"
+    },
+    "goDiscover": "Discover teams",
+    "loginToJoin": "Log in to join",
+    "loadErrorMy": "Failed to load your teams",
+    "loadErrorDiscover": "Failed to load teams",
+    "retry": "Retry"
   },
   "points": {
     "levels": {
@@ -4262,6 +4536,7 @@
       "reports": "Reports",
       "users": "Users",
       "schools": "Schools",
+      "dataUpdates": "Data Updates",
       "deadlines": "Deadlines",
       "events": "Events",
       "essays": "Essays",
@@ -4272,6 +4547,7 @@
       "content": "Content",
       "payments": "Payments",
       "analytics": "Analytics",
+      "activityTemplates": "Activity Templates",
       "settings": "Settings"
     },
     "pagination": {
@@ -4294,6 +4570,26 @@
       "admin": "Admin",
       "user": "User",
       "verified": "Verified"
+    },
+    "common": {
+      "edit": "Edit",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "dataUpdates": {
+      "title": "Data Updates",
+      "description": "Trigger and monitor data sync jobs. Last run status is from audit log.",
+      "lastRun": "Last run",
+      "status": "Status",
+      "runNow": "Run now",
+      "nextScheduled": "Next scheduled",
+      "success": "Success",
+      "failure": "Failure",
+      "neverRun": "Never run",
+      "triggerSuccess": "Sync completed",
+      "triggerError": "Sync failed",
+      "limit": "Limit (schools)",
+      "limitPlaceholder": "e.g. 500"
     },
     "overview": {
       "needsAttention": "Needs Attention",
@@ -4392,7 +4688,23 @@
     },
     "schools": {
       "notFound": "No schools found",
-      "tryOther": "Try different search criteria"
+      "tryOther": "Try different search criteria",
+      "editSchool": "Edit School",
+      "editSchoolDesc": "Update school info and logo",
+      "logoUrl": "Logo URL",
+      "logoUrlPlaceholder": "https://...",
+      "logoPreview": "Preview",
+      "saveSuccess": "School updated successfully",
+      "fillByDomain": "Fill logos by domain",
+      "fillByDomainDesc": "Auto-fill logo URL for schools with website (via Logo.dev). Only schools without logo are updated.",
+      "fillByDomainConfirm": "Fill logos for up to 100 schools that have a website but no logo?",
+      "fillByDomainButton": "Fill logos now",
+      "fillByDomainSuccess": "Done: {filled} filled, {failed} failed",
+      "fillByDomainError": "Logo fill failed",
+      "generateFromDomain": "Generate from website",
+      "generateFromDomainDone": "Suggested logo URL filled",
+      "generateFromDomainError": "Could not get logo suggestion",
+      "clearLogo": "Clear logo"
     },
     "data": {
       "scrapeSchools": "Scrape Schools",
@@ -4401,7 +4713,11 @@
       "syncScorecard": "Sync Scorecard",
       "syncScorecardDesc": "Sync school scoring data from sources",
       "startSync": "Start Sync",
+      "goToDataUpdates": "Data Updates",
+      "goToDataUpdatesDesc": "Sync Scorecard and other data jobs are managed on the Data Updates page.",
       "statusDesc": "Data management status",
+      "logo": "Logo",
+      "actions": "Actions",
       "schoolName": "School Name",
       "rank": "Rank",
       "acceptanceRate": "Acceptance Rate",
@@ -4495,7 +4811,7 @@
       "description": "Manage tests, competitions, summer programs and more",
       "eventTitle": "Event Name",
       "category": "Category",
-      "eventDate": "Event Date",
+      "eventDate": "Competition Date",
       "regDeadline": "Registration",
       "lateDeadline": "Late Deadline",
       "resultDate": "Result Date",

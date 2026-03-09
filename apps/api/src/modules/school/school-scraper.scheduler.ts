@@ -75,8 +75,11 @@ export class SchoolScraperScheduler {
       });
 
       this.logger.log(`✅ 爬取完成: ${result.success.length}/${result.total}`);
-    } catch (error) {
-      this.logger.error('❌ 爬取失败', error);
+    } catch (error: unknown) {
+      this.logger.error(
+        '❌ 爬取失败',
+        error instanceof Error ? error.message : String(error),
+      );
 
       await this.prisma.auditLog.create({
         data: {
@@ -84,7 +87,7 @@ export class SchoolScraperScheduler {
           resource: 'school',
           metadata: {
             trigger,
-            error: error.message,
+            error: error instanceof Error ? error.message : String(error),
             timestamp: new Date().toISOString(),
           },
         },

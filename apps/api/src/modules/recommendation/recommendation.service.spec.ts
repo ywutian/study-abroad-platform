@@ -35,7 +35,7 @@ describe('RecommendationService', () => {
     nameZh: '麻省理工',
     aliases: ['Massachusetts Institute of Technology'],
     usNewsRank: 1,
-    acceptanceRate: 0.04,
+    acceptanceRate: 4,
     city: 'Cambridge',
     state: 'MA',
     tuition: 55000,

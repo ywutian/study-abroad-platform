@@ -95,9 +95,13 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
 
   // 加载最近搜索
   useEffect(() => {
-    const stored = localStorage.getItem('recent_searches');
-    if (stored) {
-      setRecentSearches(JSON.parse(stored));
+    try {
+      const stored = localStorage.getItem('recent_searches');
+      if (stored) {
+        setRecentSearches(JSON.parse(stored));
+      }
+    } catch {
+      /* private browsing */
     }
   }, []);
 
@@ -106,7 +110,11 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
     (term: string) => {
       const updated = [term, ...recentSearches.filter((s) => s !== term)].slice(0, 5);
       setRecentSearches(updated);
-      localStorage.setItem('recent_searches', JSON.stringify(updated));
+      try {
+        localStorage.setItem('recent_searches', JSON.stringify(updated));
+      } catch {
+        /* private browsing */
+      }
     },
     [recentSearches]
   );

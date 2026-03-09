@@ -1,0 +1,79 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+    - generic [ref=e2]:
+        - link "StudyAbroad" [ref=e6] [cursor=pointer]:
+            - /url: /zh
+            - img [ref=e8]
+            - generic [ref=e11]: StudyAbroad
+        - generic [ref=e13]:
+            - generic [ref=e14]:
+                - generic [ref=e15]:
+                    - img [ref=e16]
+                    - generic [ref=e19]: AI 驱动的智能留学平台
+                - heading "开启你的 留学之旅" [level=1] [ref=e20]:
+                    - text: 开启你的
+                    - generic [ref=e21]: 留学之旅
+                - paragraph [ref=e22]: 智能选校、精准预测、案例分享 让留学申请不再迷茫
+            - generic [ref=e23]:
+                - generic [ref=e24]:
+                    - img [ref=e26]
+                    - generic [ref=e29]: AI 智能选校推荐
+                - generic [ref=e30]:
+                    - img [ref=e32]
+                    - generic [ref=e35]: 95% 预测准确率
+                - generic [ref=e36]:
+                    - img [ref=e38]
+                    - generic [ref=e43]: 10,000+ 真实案例
+                - generic [ref=e44]:
+                    - img [ref=e46]
+                    - generic [ref=e49]: 覆盖 500+ 院校
+            - generic [ref=e50]:
+                - generic [ref=e51]:
+                    - generic [ref=e52]:
+                        - generic [ref=e53]: L
+                        - generic [ref=e54]: W
+                        - generic [ref=e55]: Z
+                    - generic [ref=e56]:
+                        - img [ref=e57]
+                        - img [ref=e59]
+                        - img [ref=e61]
+                        - img [ref=e63]
+                        - img [ref=e65]
+                    - generic [ref=e67]: 10,000+ 用户好评
+                - blockquote [ref=e68]: '"这个平台帮助我成功拿到了 MIT 的 offer！"'
+                - generic [ref=e69]:
+                    - generic [ref=e70]: L
+                    - generic [ref=e71]:
+                        - paragraph [ref=e72]: 李同学
+                        - paragraph [ref=e73]: MIT CS 2025
+        - generic [ref=e77]:
+            - generic [ref=e78]:
+                - img [ref=e80]
+                - heading "忘记密码" [level=1] [ref=e83]
+                - paragraph [ref=e84]: 输入您的邮箱，我们将发送重置链接
+            - generic [ref=e85]:
+                - generic [ref=e86]:
+                    - generic [ref=e87]: 邮箱
+                    - generic [ref=e88]:
+                        - generic:
+                            - img
+                        - textbox "邮箱" [ref=e89]:
+                            - /placeholder: you@example.com
+                - button "发送重置链接" [ref=e90]:
+                    - img
+                    - text: 发送重置链接
+                - link "返回登录" [ref=e92] [cursor=pointer]:
+                    - /url: /zh/login
+                    - button "返回登录" [ref=e93]:
+                        - img
+                        - text: 返回登录
+    - region "Notifications alt+T"
+    - button "反馈" [ref=e94]:
+        - img
+        - text: 反馈
+    - button "Open Next.js Dev Tools" [ref=e100] [cursor=pointer]:
+        - img [ref=e101]
+    - alert [ref=e104]
+```

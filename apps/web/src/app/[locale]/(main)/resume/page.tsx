@@ -7,27 +7,27 @@ import { useRouter } from '@/lib/i18n/navigation';
 import { apiClient } from '@/lib/api';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import { LoadingState } from '@/components/ui/loading-state';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   FileText,
   Plus,
@@ -37,52 +37,70 @@ import {
   GraduationCap,
   Briefcase,
   BookOpen,
+  Clock,
+  Layers,
 } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import type { ResumeSummary } from '@study-abroad/shared';
 
-const RESUME_TYPE_ICONS = {
+type ResumeType = 'COLLEGE_APPLICATION' | 'INTERNSHIP' | 'GRADUATE_CV';
+type ResumeStatus = 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
+
+interface ResumeItem {
+  id: string;
+  title: string;
+  status: ResumeStatus;
+  type: ResumeType;
+  templateId: string;
+  language: string;
+  version: number;
+  updatedAt: string;
+  createdAt: string;
+  _count: { sections: number };
+}
+
+const TYPE_ICONS: Record<ResumeType, React.ElementType> = {
   COLLEGE_APPLICATION: GraduationCap,
   INTERNSHIP: Briefcase,
   GRADUATE_CV: BookOpen,
-} as const;
+};
 
-const STATUS_COLORS = {
+const STATUS_VARIANTS: Record<ResumeStatus, 'default' | 'secondary' | 'outline'> = {
   DRAFT: 'secondary',
   ACTIVE: 'default',
   ARCHIVED: 'outline',
-} as const;
+};
 
 export default function ResumePage() {
-  const t = useTranslations();
+  const t = useTranslations('resume');
+  const tc = useTranslations('common');
   const router = useRouter();
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState('');
-  const [newType, setNewType] = useState<string>('COLLEGE_APPLICATION');
-  const [importFromProfile, setImportFromProfile] = useState(true);
+  const [newType, setNewType] = useState<ResumeType>('COLLEGE_APPLICATION');
+  const [importProfile, setImportProfile] = useState(true);
 
   const { data: resumes, isLoading } = useQuery({
     queryKey: ['resumes'],
-    queryFn: () => apiClient.get<ResumeSummary[]>('/resumes'),
+    queryFn: () => apiClient.get<ResumeItem[]>('/resumes'),
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: { title: string; type: string; importFromProfile: boolean }) =>
-      apiClient.post('/resumes', data),
-    onSuccess: (data: any) => {
+    mutationFn: (dto: { title: string; type: ResumeType; importFromProfile: boolean }) =>
+      apiClient.post<ResumeItem>('/resumes', dto),
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['resumes'] });
       setCreateOpen(false);
-      setNewTitle('');
-      toast.success(t('resume.toast.created'));
       router.push(`/resume/${data.id}`);
+    },
+  });
+
+  const duplicateMutation = useMutation({
+    mutationFn: (id: string) => apiClient.post<ResumeItem>(`/resumes/${id}/duplicate`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['resumes'] });
+      toast.success(tc('success'));
     },
   });
 
@@ -90,16 +108,7 @@ export default function ResumePage() {
     mutationFn: (id: string) => apiClient.delete(`/resumes/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['resumes'] });
-      setDeleteId(null);
-      toast.success(t('resume.toast.deleted'));
-    },
-  });
-
-  const duplicateMutation = useMutation({
-    mutationFn: (id: string) => apiClient.post(`/resumes/${id}/duplicate`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['resumes'] });
-      toast.success(t('resume.toast.duplicated'));
+      toast.success(tc('success'));
     },
   });
 
@@ -108,116 +117,122 @@ export default function ResumePage() {
     createMutation.mutate({
       title: newTitle.trim(),
       type: newType,
-      importFromProfile,
+      importFromProfile: importProfile,
     });
   };
 
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
+  const resumeTypes: ResumeType[] = ['COLLEGE_APPLICATION', 'INTERNSHIP', 'GRADUATE_CV'];
 
   return (
-    <PageContainer>
+    <PageContainer maxWidth="default" className="space-y-6 py-6">
       <PageHeader
-        title={t('resume.title')}
-        description={t('resume.description')}
+        title={t('title')}
+        description={t('description')}
         icon={FileText}
-        color="blue"
+        color="indigo"
         actions={
-          <Button onClick={() => setCreateOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            {t('resume.new')}
+          <Button
+            onClick={() => {
+              setNewTitle('');
+              setCreateOpen(true);
+            }}
+            className="gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            {t('new')}
           </Button>
         }
+        stats={resumes ? [{ label: tc('total'), value: resumes.length, icon: Layers }] : undefined}
       />
 
       {isLoading ? (
-        <LoadingState variant="card" count={3} />
-      ) : !resumes?.length ? (
-        <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <FileText className="mb-4 h-12 w-12 text-muted-foreground" />
-            <h3 className="mb-2 text-lg font-semibold">{t('resume.empty.title')}</h3>
-            <p className="mb-6 text-sm text-muted-foreground">{t('resume.empty.description')}</p>
-            <Button onClick={() => setCreateOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              {t('resume.new')}
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-5 space-y-3">
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-4 w-1/3" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : !resumes || resumes.length === 0 ? (
+        <EmptyState
+          type="first-time"
+          title={t('title')}
+          description={t('description')}
+          action={{
+            label: t('new'),
+            onClick: () => {
+              setNewTitle('');
+              setCreateOpen(true);
+            },
+          }}
+        />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {resumes.map((resume) => {
-            const TypeIcon =
-              RESUME_TYPE_ICONS[resume.type as keyof typeof RESUME_TYPE_ICONS] ?? FileText;
+            const TypeIcon = TYPE_ICONS[resume.type];
             return (
               <Card
                 key={resume.id}
                 className="group cursor-pointer transition-shadow hover:shadow-md"
                 onClick={() => router.push(`/resume/${resume.id}`)}
               >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2">
-                      <TypeIcon className="h-5 w-5 text-muted-foreground" />
-                      <CardTitle className="text-base">{resume.title}</CardTitle>
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-500/10 dark:bg-indigo-400/10">
+                        <TypeIcon className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-medium truncate">
+                          {resume.title || t('untitled')}
+                        </h3>
+                        <p className="text-xs text-muted-foreground">{t(`types.${resume.type}`)}</p>
+                      </div>
                     </div>
+
                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
+                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 opacity-0 group-hover:opacity-100"
-                          onClick={(e) => e.stopPropagation()}
+                          className="h-8 w-8 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                         >
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            duplicateMutation.mutate(resume.id);
-                          }}
-                        >
+                      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenuItem onClick={() => duplicateMutation.mutate(resume.id)}>
                           <Copy className="mr-2 h-4 w-4" />
-                          {t('resume.editor.duplicate')}
+                          {t('editor.duplicate')}
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          className="text-destructive"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDeleteId(resume.id);
-                          }}
+                          className="text-destructive focus:text-destructive"
+                          onClick={() => deleteMutation.mutate(resume.id)}
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
-                          {t('resume.delete.title')}
+                          {tc('delete')}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
-                  <CardDescription className="flex items-center gap-2">
-                    <Badge
-                      variant={
-                        STATUS_COLORS[resume.status as keyof typeof STATUS_COLORS] ?? 'secondary'
-                      }
-                    >
-                      {t(`resume.status.${resume.status}`)}
+
+                  <div className="mt-4 flex items-center gap-2">
+                    <Badge variant={STATUS_VARIANTS[resume.status]}>
+                      {t(`status.${resume.status}`)}
                     </Badge>
-                    <span className="text-xs">{t(`resume.types.${resume.type}`)}</span>
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>
-                      {resume._count.sections}{' '}
-                      {resume._count.sections === 1 ? 'section' : 'sections'}
+                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Layers className="h-3 w-3" />
+                      {resume._count.sections}
                     </span>
-                    <span>{formatDate(resume.updatedAt)}</span>
+                  </div>
+
+                  <div className="mt-3 flex items-center gap-1 text-xs text-muted-foreground">
+                    <Clock className="h-3 w-3" />
+                    {new Date(resume.updatedAt).toLocaleDateString()}
                   </div>
                 </CardContent>
               </Card>
@@ -226,81 +241,84 @@ export default function ResumePage() {
         </div>
       )}
 
-      {/* Create Dialog */}
+      {/* Create Resume Dialog */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{t('resume.create.title')}</DialogTitle>
-            <DialogDescription>{t('resume.create.description')}</DialogDescription>
+            <DialogTitle>{t('create.title')}</DialogTitle>
+            <DialogDescription>{t('create.description')}</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+
+          <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label>{t('resume.create.titleLabel')}</Label>
+              <Label>{t('create.titleLabel')}</Label>
               <Input
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
-                placeholder={t('resume.create.titlePlaceholder')}
+                placeholder={t('create.titlePlaceholder')}
                 onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
               />
             </div>
+
             <div className="space-y-2">
-              <Label>{t('resume.create.typeLabel')}</Label>
-              <Select value={newType} onValueChange={setNewType}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {(['COLLEGE_APPLICATION', 'INTERNSHIP', 'GRADUATE_CV'] as const).map((type) => (
-                    <SelectItem key={type} value={type}>
-                      <div className="flex flex-col">
-                        <span>{t(`resume.types.${type}`)}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {t(`resume.typeDescriptions.${type}`)}
-                        </span>
+              <Label>{t('create.typeLabel')}</Label>
+              <div className="grid gap-2">
+                {resumeTypes.map((type) => {
+                  const Icon = TYPE_ICONS[type];
+                  const selected = newType === type;
+                  return (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setNewType(type)}
+                      className={cn(
+                        'flex items-start gap-3 rounded-lg border p-3 text-left transition-colors',
+                        selected
+                          ? 'border-primary bg-primary/5'
+                          : 'border-border hover:border-primary/40'
+                      )}
+                    >
+                      <Icon
+                        className={cn(
+                          'h-5 w-5 mt-0.5 shrink-0',
+                          selected ? 'text-primary' : 'text-muted-foreground'
+                        )}
+                      />
+                      <div>
+                        <div className={cn('text-sm font-medium', selected && 'text-primary')}>
+                          {t(`types.${type}`)}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {t(`typeDescriptions.${type}`)}
+                        </div>
                       </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center justify-between rounded-lg border p-3">
-              <div className="space-y-0.5">
-                <Label>{t('resume.create.importProfile')}</Label>
-                <p className="text-xs text-muted-foreground">
-                  {t('resume.create.importProfileDesc')}
-                </p>
+                    </button>
+                  );
+                })}
               </div>
-              <Switch checked={importFromProfile} onCheckedChange={setImportFromProfile} />
+            </div>
+
+            <div className="flex items-start gap-2">
+              <Checkbox
+                id="import-profile"
+                checked={importProfile}
+                onCheckedChange={(v) => setImportProfile(!!v)}
+              />
+              <div>
+                <Label htmlFor="import-profile" className="text-sm cursor-pointer">
+                  {t('create.importProfile')}
+                </Label>
+                <p className="text-xs text-muted-foreground">{t('create.importProfileDesc')}</p>
+              </div>
             </div>
           </div>
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>
-              Cancel
+              {tc('cancel')}
             </Button>
             <Button onClick={handleCreate} disabled={!newTitle.trim() || createMutation.isPending}>
-              {createMutation.isPending ? 'Creating...' : t('resume.new')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation */}
-      <Dialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('resume.delete.title')}</DialogTitle>
-            <DialogDescription>{t('resume.delete.description')}</DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteId(null)}>
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => deleteId && deleteMutation.mutate(deleteId)}
-              disabled={deleteMutation.isPending}
-            >
-              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+              {createMutation.isPending ? tc('loading') : tc('create')}
             </Button>
           </DialogFooter>
         </DialogContent>

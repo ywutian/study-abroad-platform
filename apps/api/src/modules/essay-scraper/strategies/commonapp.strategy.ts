@@ -48,8 +48,10 @@ export class CommonAppScrapeStrategy extends BaseScrapeStrategy {
         sourceUrl: this.COMMON_APP_URL,
         rawContent: bodyText.substring(0, 5000),
       };
-    } catch (error) {
-      this.logger.error(`CommonApp scrape failed: ${error.message}`);
+    } catch (error: unknown) {
+      this.logger.error(
+        `CommonApp scrape failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
       return null;
     }
   }
@@ -109,8 +111,10 @@ The Common App typically has 7 essay prompt options. Extract all of them.`,
       );
 
       return essays.length > 0 ? essays : this.getKnownCommonAppPrompts(year);
-    } catch (error) {
-      this.logger.error(`CommonApp LLM extraction failed: ${error.message}`);
+    } catch (error: unknown) {
+      this.logger.error(
+        `CommonApp LLM extraction failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
       return this.getKnownCommonAppPrompts(year);
     }
   }

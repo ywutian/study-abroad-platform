@@ -125,6 +125,10 @@ export const PredictionHistoryPanel = memo(function PredictionHistoryPanel({
 
       {/* Compact snapshot list (max 5 shown) */}
       <div className="space-y-1">
+        <div className="flex items-center justify-between text-[10px] text-muted-foreground uppercase tracking-wide pb-0.5 border-b border-dashed">
+          <span> </span>
+          <span>{t('probability')}</span>
+        </div>
         {history
           .slice(-5)
           .reverse()

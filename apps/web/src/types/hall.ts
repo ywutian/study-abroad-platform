@@ -157,6 +157,6 @@ export interface LeaderboardResponse {
 // ============================================
 // Tab configuration type
 // ============================================
-export type HallTab = 'tinder' | 'review' | 'ranking' | 'lists';
+export type HallTab = 'tinder' | 'review' | 'ranking' | 'lists' | 'challenge';
 
 export type ReviewModuleType = 'standardized' | 'honors' | 'activities';

@@ -34,7 +34,6 @@ import {
   Check,
   Shield,
   PenTool,
-  Compass,
   Rocket,
   ShieldCheck,
   HelpCircle,
@@ -415,6 +414,7 @@ export function Header() {
     { href: '/prediction', label: t('nav.prediction'), icon: TrendingUp },
     { href: '/cases', label: t('nav.cases'), icon: BookOpen },
     { href: '/forum', label: t('nav.forum'), icon: MessageSquare },
+    { href: '/teams', label: t('nav.teams'), icon: Users },
   ];
 
   // Tools & Resources
@@ -433,22 +433,10 @@ export function Header() {
       description: t('nav.descriptions.resume'),
     },
     {
-      href: '/find-college',
-      label: t('nav.findCollege'),
-      icon: Compass,
-      description: t('nav.descriptions.findCollege'),
-    },
-    {
       href: '/uncommon-app',
       label: t('nav.uncommonApp'),
       icon: Rocket,
       description: t('nav.descriptions.uncommonApp'),
-    },
-    {
-      href: '/recommendation',
-      label: t('nav.recommendation'),
-      icon: Target,
-      description: t('nav.descriptions.recommendation'),
     },
     {
       href: '/assessment',
@@ -571,7 +559,10 @@ export function Header() {
             </div>
           </ClientOnly>
 
-          <Link href="/" className="mr-4 lg:mr-6 transition-opacity hover:opacity-80">
+          <Link
+            href={user ? '/dashboard' : '/'}
+            className="mr-4 lg:mr-6 transition-opacity hover:opacity-80"
+          >
             <Logo size="sm" />
           </Link>
 

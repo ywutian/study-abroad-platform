@@ -6,6 +6,7 @@
 
 import { PrismaClient } from '@prisma/client';
 import { normalizeSchoolName } from '../src/common/utils/school-name.util';
+import { normalizePercentRate } from '../src/common/utils/percent.util';
 
 const prisma = new PrismaClient();
 
@@ -88,26 +89,18 @@ async function syncSchools(limit = 500): Promise<void> {
           state: school['school.state'] || null,
           city: school['school.city'] || null,
           website: school['school.school_url'] || null,
-          acceptanceRate: school['latest.admissions.admission_rate.overall']
-            ? Number(
-                (
-                  school['latest.admissions.admission_rate.overall'] * 100
-                ).toFixed(2),
-              )
-            : null,
+          acceptanceRate: normalizePercentRate(
+            school['latest.admissions.admission_rate.overall'],
+          ),
           satAvg:
             school['latest.admissions.sat_scores.average.overall'] || null,
           actAvg:
             school['latest.admissions.act_scores.midpoint.cumulative'] || null,
           tuition: school['latest.cost.tuition.out_of_state'] || null,
           studentCount: school['latest.student.size'] || null,
-          graduationRate: school['latest.completion.completion_rate_4yr_150nt']
-            ? Number(
-                (
-                  school['latest.completion.completion_rate_4yr_150nt'] * 100
-                ).toFixed(2),
-              )
-            : null,
+          graduationRate: normalizePercentRate(
+            school['latest.completion.completion_rate_4yr_150nt'],
+          ),
           avgSalary:
             school['latest.earnings.10_yrs_after_entry.median'] || null,
           metadata: {

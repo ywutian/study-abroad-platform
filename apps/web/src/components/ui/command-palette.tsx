@@ -71,7 +71,7 @@ export function CommandPalette({ customCommands = [] }: CommandPaletteProps) {
         id: 'home',
         title: t('home'),
         icon: <Home className="w-4 h-4" />,
-        action: () => router.push('/'),
+        action: () => router.push('/dashboard'),
         keywords: t('keywords.home').split(','),
         section: t('nav'),
       },

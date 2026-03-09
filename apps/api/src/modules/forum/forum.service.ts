@@ -402,6 +402,7 @@ export class ForumService {
                       profile: { select: { realName: true } },
                     },
                   },
+                  resume: { select: { id: true, title: true } },
                 },
               } as any),
       },
@@ -509,6 +510,81 @@ export class ForumService {
         createdAt: ta.createdAt,
       })),
     };
+  }
+
+  /**
+   * Get team applications for a post. Only the post author or an admin may list applications.
+   *
+   * @param postId - Post ID
+   * @param userId - Caller's user ID (required)
+   * @param role - Caller's role (for ADMIN check)
+   * @returns List of team applications with applicant info
+   * @throws {NotFoundException} When the post does not exist
+   * @throws {ForbiddenException} When the caller is not the post author or admin
+   */
+  async getApplicationsForPost(
+    postId: string,
+    userId: string,
+    role: string,
+  ): Promise<
+    Array<{
+      id: string;
+      applicant: {
+        id: string;
+        name?: string;
+        avatar?: string;
+        isVerified: boolean;
+      };
+      message?: string;
+      status: string;
+      createdAt: Date;
+    }>
+  > {
+    const post = await this.prisma.forumPost.findUnique({
+      where: { id: postId },
+      select: { authorId: true },
+    });
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+    const isAuthor = post.authorId === userId;
+    const isAdmin = role === Role.ADMIN;
+    if (!isAuthor && !isAdmin) {
+      throw new ForbiddenException(
+        'Only the post author or an admin can view team applications',
+      );
+    }
+    const list = await this.prisma.teamApplication.findMany({
+      where: { postId },
+      include: {
+        applicant: {
+          select: {
+            id: true,
+            role: true,
+            profile: { select: { realName: true } },
+          },
+        },
+        resume: { select: { id: true, title: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    return list.map((ta: any) => ({
+      id: ta.id,
+      applicant: {
+        id: ta.applicant.id,
+        name: ta.applicant.profile?.realName || undefined,
+        avatar: undefined,
+        isVerified:
+          ta.applicant.role === Role.VERIFIED ||
+          ta.applicant.role === Role.ADMIN,
+      },
+      message: ta.message ?? undefined,
+      resume: ta.resume
+        ? { id: ta.resume.id, title: ta.resume.title }
+        : undefined,
+      status: ta.status,
+      createdAt: ta.createdAt,
+    }));
   }
 
   /**
@@ -1155,6 +1231,7 @@ export class ForumService {
         postId,
         applicantId: userId,
         message: data.message,
+        resumeId: data.resumeId || undefined,
       },
     });
 

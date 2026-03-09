@@ -8,6 +8,6 @@ export class LoginDto {
 
   @ApiProperty({ example: 'Password123!' })
   @IsString()
-  @MinLength(1, { message: '请输入密码' })
+  @MinLength(8, { message: '密码至少8个字符' })
   password: string;
 }

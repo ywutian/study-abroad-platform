@@ -8,7 +8,13 @@ const withNextIntl = createNextIntlPlugin('./src/lib/i18n/request.ts');
 
 const nextConfig: NextConfig = {
   transpilePackages: ['@study-abroad/shared', 'geist'],
-  // output: 'standalone', // 仅用于 Docker/VPS 部署，Vercel 不需要
+  output: process.env.DOCKER_BUILD ? 'standalone' : undefined,
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: 'www.google.com', pathname: '/s2/favicons**' },
+      { protocol: 'https', hostname: 'img.logo.dev', pathname: '/**' },
+    ],
+  },
   experimental: {
     viewTransition: true,
     // 优化大型包的 barrel exports，显著减少编译和打包时间

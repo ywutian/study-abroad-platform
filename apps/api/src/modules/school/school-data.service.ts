@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
+import { SchoolService } from './school.service';
 import { normalizeSchoolName } from '../../common/utils/school-name.util';
+import { normalizePercentRate } from '../../common/utils/percent.util';
 
 /**
  * College Scorecard API 数据同步服务
@@ -12,11 +14,6 @@ import { normalizeSchoolName } from '../../common/utils/school-name.util';
  * 免费获取 API Key: https://api.data.gov/signup/
  */
 
-/**
- * Scorecard 有权写入的字段白名单
- * 排除 usNewsRank / nameZh / aliases / niche*Grade 等由其他来源管理的字段，
- * 防止 Scorecard 同步时用 null 覆盖已有数据。
- */
 const SCORECARD_WRITABLE_FIELDS = new Set([
   'name',
   'state',
@@ -48,6 +45,7 @@ export class SchoolDataService {
   constructor(
     private configService: ConfigService,
     private prisma: PrismaService,
+    private schoolService: SchoolService,
   ) {
     this.apiKey = this.configService.get<string>('COLLEGE_SCORECARD_API_KEY');
   }
@@ -113,7 +111,10 @@ export class SchoolDataService {
           if (synced >= limit) break;
 
           try {
-            await this.upsertSchool(school);
+            const schoolId = await this.upsertSchool(school);
+            if (schoolId) {
+              await this.schoolService.invalidateSchoolCache(schoolId);
+            }
             synced++;
           } catch (err) {
             this.logger.error(
@@ -140,11 +141,16 @@ export class SchoolDataService {
     }
   }
 
-  private async upsertSchool(data: Record<string, unknown>) {
+  /**
+   * Upsert a school from Scorecard payload. Returns the school id for cache invalidation.
+   */
+  private async upsertSchool(
+    data: Record<string, unknown>,
+  ): Promise<string | null> {
     const scorecardId = String(data['id']);
     const name = data['school.name'] as string;
 
-    if (!name) return;
+    if (!name) return null;
 
     // Parse SAT sub-score percentiles
     const satReading25 =
@@ -172,9 +178,9 @@ export class SchoolDataService {
       state: (data['school.state'] as string) || null,
       city: (data['school.city'] as string) || null,
       website: (data['school.school_url'] as string) || null,
-      acceptanceRate: data['latest.admissions.admission_rate.overall']
-        ? Number(data['latest.admissions.admission_rate.overall']) * 100
-        : null,
+      acceptanceRate: normalizePercentRate(
+        data['latest.admissions.admission_rate.overall'],
+      ),
       // SAT scores
       satAvg:
         (data['latest.admissions.sat_scores.average.overall'] as number) ||
@@ -200,15 +206,16 @@ export class SchoolDataService {
       // Cost, enrollment, outcomes
       tuition: (data['latest.cost.tuition.out_of_state'] as number) || null,
       studentCount: (data['latest.student.size'] as number) || null,
-      graduationRate: data['latest.completion.completion_rate_4yr_150nt']
-        ? Number(data['latest.completion.completion_rate_4yr_150nt']) * 100
-        : null,
+      graduationRate: normalizePercentRate(
+        data['latest.completion.completion_rate_4yr_150nt'],
+      ),
       avgSalary:
         (data['latest.earnings.10_yrs_after_entry.median'] as number) || null,
     };
 
     const nameNorm = normalizeSchoolName(name);
 
+    let schoolIdOut: string | null = null;
     // Wrap all DB writes in a transaction for atomicity
     await this.prisma.$transaction(async (tx) => {
       // Look up by scorecardId (indexed column) first, then by nameNorm (unique)
@@ -248,6 +255,7 @@ export class SchoolDataService {
         });
         schoolId = created.id;
       }
+      schoolIdOut = schoolId;
 
       // Write yearly snapshots to SchoolMetric
       const year = new Date().getFullYear();
@@ -288,6 +296,7 @@ export class SchoolDataService {
         });
       }
     });
+    return schoolIdOut;
   }
 
   /**

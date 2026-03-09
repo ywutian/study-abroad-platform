@@ -4,7 +4,7 @@ import { forwardRef } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { getLocalizedName } from '@/lib/i18n/locale-utils';
 import { motion, useMotionValue, useTransform, PanInfo } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import { cn, formatAcceptanceRate } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -398,7 +398,7 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
                 <div className="flex justify-between items-center text-xs sm:text-sm">
                   <span className="text-muted-foreground">{t('acceptanceRate')}</span>
                   <span className="font-semibold text-primary tabular-nums">
-                    {data.acceptanceRate.toFixed(1)}%
+                    {formatAcceptanceRate(data.acceptanceRate)}
                   </span>
                 </div>
                 <Progress value={data.acceptanceRate} className="h-1.5 [&>div]:bg-primary/60" />

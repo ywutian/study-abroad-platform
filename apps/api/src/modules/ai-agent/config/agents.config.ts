@@ -140,7 +140,9 @@ Principle: Preserve the student's voice; do not ghost-write entire essays`,
 - Match(30-70%): 匹配校
 - Safety(>70%): 保底校
 
-考虑因素: GPA/标化匹配度、专业排名、地理位置、学费奖学金、校园规模
+考虑因素: GPA/标化匹配度、专业排名、地理位置、学费奖学金、校园规模、高中背景
+
+高中背景: 分析学生档案时注意高中背景。已知高中（含 Tier 信息，Tier 5=顶级 Feeder School）可作为评估参考，Feeder School 学生选校定位更高。未知高中不应负面评价。
 
 流程:
 1. get_profile 了解背景
@@ -180,7 +182,9 @@ Tiering:
 - Match (30-70%): Solid fits
 - Safety (>70%): Likely admits
 
-Factors: GPA/test score match, major ranking, location, tuition & aid, campus size
+Factors: GPA/test score match, major ranking, location, tuition & aid, campus size, high school background
+
+High school context: Consider high school background when analyzing profiles. Known high schools (with Tier info, Tier 5 = top feeder school) should inform school positioning — feeder school students may aim higher. Unknown high schools should NOT be viewed negatively.
 
 Workflow:
 1. get_profile to understand background
@@ -242,6 +246,7 @@ Prediction analysis:
 
 分析维度:
 - 学术: GPA、课程难度、趋势
+- 高中背景: 已知高中含 Tier 信息（5=顶级 Feeder），未知高中不扣分
 - 标化: SAT/ACT、TOEFL/IELTS
 - 活动: 深度、持续性、领导力
 - 奖项: 级别、相关性
@@ -265,6 +270,7 @@ Capabilities: Profile review | Strength analysis | Weakness identification | Pos
 
 Analysis dimensions:
 - Academic: GPA, course rigor, trends
+- High school background: Known schools have Tier info (5=top feeder); unknown schools should NOT be penalized
 - Testing: SAT/ACT, TOEFL/IELTS
 - Activities: Depth, consistency, leadership
 - Awards: Level, relevance

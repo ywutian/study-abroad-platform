@@ -81,7 +81,7 @@ class ApiClient {
     try {
       const response = await fetch(`${this.baseUrl}${API_VERSION}/auth/refresh`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-Client-Type': 'mobile' },
         body: JSON.stringify({ refreshToken }),
       });
 
@@ -140,6 +140,7 @@ class ApiClient {
       const token = await getAccessToken();
       const headers: HeadersInit = {
         'Content-Type': 'application/json',
+        'X-Client-Type': 'mobile',
         ...init.headers,
       };
 

@@ -2,8 +2,7 @@
 
 import { memo } from 'react';
 import { useTranslations } from 'next-intl';
-import { Badge } from '@/components/ui/badge';
-import { Lightbulb } from 'lucide-react';
+import { Lightbulb, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { IMPACT_CONFIG } from './constants';
 import type { PredictionFactor } from './types';
@@ -40,9 +39,6 @@ export const FactorsPanel = memo(function FactorsPanel({ factors }: FactorsPanel
                   <Icon className={cn('h-3.5 w-3.5', config.text)} />
                   <span className="font-medium text-sm">{factor.name}</span>
                 </div>
-                <Badge variant="outline" className={cn('text-xs', config.text)}>
-                  {((factor.weight ?? 0) * 100).toFixed(0)}%
-                </Badge>
               </div>
               <p className="text-xs text-muted-foreground line-clamp-2">{factor.detail}</p>
               {factor.improvement && (
@@ -54,6 +50,12 @@ export const FactorsPanel = memo(function FactorsPanel({ factors }: FactorsPanel
             </div>
           );
         })}
+      </div>
+      <div className="mt-3 p-2.5 rounded-lg bg-amber-500/5 border border-amber-500/10">
+        <p className="text-xs text-amber-600 dark:text-amber-400">
+          <Info className="inline h-3 w-3 mr-1" />
+          {t('factorsDisclaimer')}
+        </p>
       </div>
     </div>
   );

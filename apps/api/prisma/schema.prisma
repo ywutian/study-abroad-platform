@@ -48,6 +48,25 @@ enum ActivityCategory {
   LEADERSHIP
   WORK
   RESEARCH
+  INTERNSHIP
+  CLUB
+  HOBBY
+  OTHER
+}
+
+enum ActivityTiming {
+  SCHOOL_YEAR
+  SCHOOL_BREAK
+  ALL_YEAR
+}
+
+enum EducationSystem {
+  IB
+  AP
+  A_LEVEL
+  GAOKAO
+  CANADIAN
+  AUSTRALIAN
   OTHER
 }
 
@@ -72,6 +91,18 @@ enum CompetitionCategory {
   GENERAL_ACADEMIC
   ARTS_MUSIC
   OTHER
+}
+
+enum HighSchoolType {
+  PUBLIC_US
+  PRIVATE_US
+  BOARDING_US
+  INTL_CN
+  PUBLIC_CN
+  PRIVATE_CN
+  INTL_OTHER
+  PUBLIC_OTHER
+  PRIVATE_OTHER
 }
 
 enum ReportTargetType {
@@ -185,6 +216,30 @@ enum ResumeSectionType {
   CUSTOM
 }
 
+// Standalone 组队 (first-class teams, not forum post teams)
+enum TeamVisibility {
+  PUBLIC
+  UNLISTED
+  PRIVATE
+}
+
+enum TeamJoinPolicy {
+  OPEN
+  INVITE_ONLY
+}
+
+enum TeamMemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum TeamInvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+}
+
 // ============================================
 // User & Auth
 // ============================================
@@ -196,6 +251,7 @@ model User {
   role                 Role      @default(USER)
   emailVerified        Boolean   @default(false)
   emailVerifyToken     String?
+  emailVerifyTokenExp  DateTime?
   passwordResetToken   String?
   passwordResetExpires DateTime?
   locale               String    @default("zh")
@@ -220,9 +276,16 @@ model User {
   schoolListItems SchoolListItem[]
 
   // Forum relations
-  forumPosts      ForumPost[]
-  forumComments   ForumComment[]
-  teamMemberships TeamMember[]
+  forumPosts               ForumPost[]
+  forumComments            ForumComment[]
+  teamMemberships          TeamMember[]
+  teamApplicationsApplied TeamApplication[]
+
+  // Standalone 组队 (first-class teams)
+  createdTeams             Team[]             @relation("TeamCreator")
+  standaloneTeamMemberships TeamMembership[]   @relation("StandaloneTeamMember")
+  teamInvitationsSent     TeamInvitation[]    @relation("TeamInvitationSent")
+  teamInvitationsReceived TeamInvitation[]    @relation("TeamInvitationReceived")
 
   // Swipe game
   points       Int            @default(0)
@@ -261,7 +324,7 @@ model User {
   // Referral system
   referralCode    String?   @unique
   referredById    String?
-  referredBy      User?     @relation("UserReferrals", fields: [referredById], references: [id])
+  referredBy      User?     @relation("UserReferrals", fields: [referredById], references: [id], onDelete: SetNull)
   referrals       User[]    @relation("UserReferrals")
 
   // Ban system
@@ -324,9 +387,23 @@ model Profile {
 
   // Non-sensitive
   targetMajor      String?
+  intendedMajor    String?
+  secondMajor      String?
   regionPref       String[]
   budgetTier       BudgetTier?
   applicationRound String? // ED / EA / RD
+
+  // Demographics & context
+  nationality        String?
+  countryOfResidence String?
+  citizenship        String?
+  legacy             String[]  @default([])
+  firstGeneration    Boolean   @default(false)
+  needsFinancialAid  Boolean?
+  educationSystem    EducationSystem?
+
+  // Recommendation preferences (JSON)
+  recommendationPreferences Json?
 
   // Visibility
   visibility Visibility @default(PRIVATE)
@@ -368,22 +445,45 @@ model Activity {
   profileId String
   profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
-  name         String
-  category     ActivityCategory
-  role         String
-  organization String?
-  description  String?          @db.Text
-  startDate    DateTime?
-  endDate      DateTime?
-  hoursPerWeek Int?
-  weeksPerYear Int?
-  isOngoing    Boolean          @default(false)
-  order        Int              @default(0)
+  name               String
+  category           ActivityCategory
+  role               String
+  organization       String?
+  description        String?          @db.Text
+  startDate          DateTime?
+  endDate            DateTime?
+  hoursPerWeek       Int?
+  weeksPerYear       Int?
+  isOngoing          Boolean          @default(false)
+  order              Int              @default(0)
+  gradeLevels        Int[]            @default([])
+  timing             ActivityTiming?
+  activityTemplateId String?
+  activityTemplate   ActivityTemplate? @relation(fields: [activityTemplateId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([profileId])
+  @@index([activityTemplateId])
+}
+
+model ActivityTemplate {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  nameZh      String?
+  aliases     String[]         @default([])
+  category    ActivityCategory
+  tier        Int              @default(4)
+  description String?
+  isActive    Boolean          @default(true)
+  sortOrder   Int              @default(0)
+  activities  Activity[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([tier])
+  @@index([category])
 }
 
 model Award {
@@ -398,7 +498,7 @@ model Award {
   order       Int        @default(0)
 
   competitionId String?
-  competition   Competition? @relation(fields: [competitionId], references: [id])
+  competition   Competition? @relation(fields: [competitionId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -437,20 +537,50 @@ model Education {
   profileId String
   profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
-  schoolName  String
-  schoolType  String? // HIGH_SCHOOL / COLLEGE / etc.
-  degree      String?
-  major       String?
-  startDate   DateTime?
-  endDate     DateTime?
-  gpa         Decimal?  @db.Decimal(3, 2)
-  gpaScale    Decimal?  @db.Decimal(3, 2)
-  description String?
+  schoolName    String
+  schoolType    String? // HIGH_SCHOOL / COLLEGE / etc.
+  degree        String?
+  major         String?
+  startDate     DateTime?
+  endDate       DateTime?
+  gpa           Decimal?  @db.Decimal(3, 2)
+  gpaScale      Decimal?  @db.Decimal(3, 2)
+  description   String?
+  highSchoolId  String?
+  highSchool    HighSchool? @relation(fields: [highSchoolId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([profileId])
+  @@index([highSchoolId])
+}
+
+// ============================================
+// High School Reference Data
+// ============================================
+
+model HighSchool {
+  id            String         @id @default(cuid())
+  name          String
+  nameZh        String?
+  abbreviation  String?        @unique
+  country       String
+  state         String?
+  city          String?
+  type          HighSchoolType
+  tier          Int // 1-5 (5 = top feeder, consistent with Competition.tier)
+  description   String?        @db.Text
+  isActive      Boolean        @default(true)
+
+  educations Education[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([name, country, state])
+  @@index([country])
+  @@index([tier])
+  @@index([type])
 }
 
 model Essay {
@@ -515,6 +645,11 @@ model School {
   // School Type
   isPrivate Boolean @default(false)
 
+  // International student info
+  needBlindInternational Boolean  @default(false)
+  intlStudentPct         Decimal? @db.Decimal(5, 2)
+  intlAcceptanceRate     Decimal? @db.Decimal(5, 2)
+
   // Niche Grades (A+, A, A-, B+, B, B-, C+, C, C-, D+, D, D-, F)
   nicheSafetyGrade  String? // Safety/Crime index
   nicheLifeGrade    String? // Student Life/Happiness index
@@ -533,6 +668,7 @@ model School {
 
   // Relations
   metrics       SchoolMetric[]
+  programs      SchoolProgram[]
   cases         AdmissionCase[]
   targetedBy    ProfileTargetSchool[]
   schoolLists   SchoolListItem[]
@@ -541,6 +677,8 @@ model School {
   essaySources  SchoolEssaySource[]
   deadlines     SchoolDeadline[]
   timelines     ApplicationTimeline[]
+  teams         Team[]
+  calibration   SchoolCalibration?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -566,11 +704,108 @@ model SchoolMetric {
   @@index([schoolId])
 }
 
+model SchoolProgram {
+  id       String @id @default(cuid())
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  cipCode       String
+  programName   String
+  programNameZh String?
+
+  competitiveness        Int      @default(3) // 1-5 (5 = most competitive at THIS school)
+  acceptanceRateEstimate Decimal? @db.Decimal(5, 2)
+  medianEarnings         Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([schoolId, cipCode])
+  @@index([schoolId])
+  @@index([cipCode])
+}
+
+// ============================================
+// School-level prediction calibration
+// ============================================
+
+model SchoolCalibration {
+  id         String   @id @default(cuid())
+  schoolId   String   @unique
+  school     School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  multiplier Decimal  @db.Decimal(4, 3) // e.g. 1.150 = boost probability by 15%
+  reason     String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// ============================================
+// Standalone 组队 (first-class teams)
+// ============================================
+
+model Team {
+  id          String         @id @default(cuid())
+  creatorId   String
+  creator     User           @relation("TeamCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  name        String
+  description String?        @db.Text
+  schoolId    String?
+  school      School?        @relation(fields: [schoolId], references: [id], onDelete: SetNull)
+  tags        Json?          // string[] max 10 in app
+  visibility  TeamVisibility
+  joinPolicy  TeamJoinPolicy
+  maxMembers  Int?
+
+  members     TeamMembership[]
+  invitations TeamInvitation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([creatorId])
+  @@index([schoolId])
+  @@index([visibility])
+  @@index([createdAt])
+}
+
+model TeamMembership {
+  id     String        @id @default(cuid())
+  teamId String
+  team   Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId String
+  user   User          @relation("StandaloneTeamMember", fields: [userId], references: [id], onDelete: Cascade)
+  role   TeamMemberRole
+  joinedAt DateTime    @default(now())
+
+  @@unique([teamId, userId])
+  @@index([teamId])
+  @@index([userId])
+}
+
+model TeamInvitation {
+  id        String              @id @default(cuid())
+  teamId    String
+  team      Team                @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  inviterId String
+  inviter   User                @relation("TeamInvitationSent", fields: [inviterId], references: [id], onDelete: Cascade)
+  inviteeId String?
+  invitee   User?               @relation("TeamInvitationReceived", fields: [inviteeId], references: [id], onDelete: Cascade)
+  token     String?             @unique
+  status    TeamInvitationStatus @default(PENDING)
+  expiresAt DateTime
+  createdAt DateTime            @default(now())
+
+  @@index([teamId])
+  @@index([inviteeId])
+  @@index([token])
+  @@index([status])
+}
+
 model ProfileTargetSchool {
   id        String @id @default(cuid())
   profileId String
   schoolId  String
-  school    School @relation(fields: [schoolId], references: [id])
+  school    School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
 
   priority Int     @default(0) // 1: Reach, 2: Match, 3: Safety
   round    String? // ED, EA, RD, etc.
@@ -698,7 +933,7 @@ model AdmissionCase {
   userId   String
   user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   schoolId String
-  school   School @relation(fields: [schoolId], references: [id])
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
 
   year   Int // Application year
   round  String? // ED, EA, RD
@@ -706,11 +941,19 @@ model AdmissionCase {
   major  String?
 
   // Anonymized profile snapshot at time of application
-  gpaRange   String? // "3.7-3.9"
-  satRange   String? // "1500-1550"
+  gpaRange   String? // "3.7-3.9" (legacy; prefer gpa9–gpa12)
+  gpa9       Float?  // Grade 9 GPA
+  gpa10      Float?   // Grade 10 GPA
+  gpa11      Float?   // Grade 11 GPA (highest weight)
+  gpa12          Float?   // Grade 12 GPA
+  ucCappedGpa    Float?   // UC capped weighted GPA
+  ucUncappedGpa  Float?   // UC uncapped weighted GPA
+  gpaScale       Float?   // GPA scale (4.0, 5.0, 100)
+  satRange       String? // "1500-1550"
   actRange   String?
   toeflRange String?
   tags       String[] // ["strong_research", "legacy", "athlete"]
+  activityList String? @db.Text // One activity per line, e.g. "Research - XX Lab; Contest - AMC 12"
 
   // Essay content (for essay gallery)
   essayType    EssayType? // COMMON_APP, UC, SUPPLEMENTAL, WHY_SCHOOL, OTHER
@@ -1311,7 +1554,7 @@ model ForumCategory {
 model ForumPost {
   id         String        @id @default(cuid())
   categoryId String
-  category   ForumCategory @relation(fields: [categoryId], references: [id])
+  category   ForumCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   authorId   String
   author     User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
@@ -1409,8 +1652,11 @@ model TeamApplication {
   postId      String
   post        ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
   applicantId String
+  applicant   User      @relation(fields: [applicantId], references: [id], onDelete: Cascade)
 
   message    String?       @db.Text
+  resumeId   String?
+  resume     Resume?       @relation(fields: [resumeId], references: [id], onDelete: SetNull)
   status     TeamAppStatus @default(PENDING)
   reviewedAt DateTime?
   reviewNote String?
@@ -1443,7 +1689,7 @@ model EssayExample {
   id       String  @id @default(cuid())
   authorId String? // Optional: can be anonymous
   schoolId String? // Target school
-  school   School? @relation(fields: [schoolId], references: [id])
+  school   School? @relation(fields: [schoolId], references: [id], onDelete: SetNull)
 
   type      EssayType
   prompt    String    @db.Text
@@ -1704,7 +1950,7 @@ model ApplicationTimeline {
   userId     String
   user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   schoolId   String
-  school     School            @relation(fields: [schoolId], references: [id])
+  school     School            @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   schoolName String // 冗余字段，便于查询展示
   round      String // ED, EA, RD, ED2, REA, Rolling
   deadline   DateTime?
@@ -1755,7 +2001,7 @@ model PersonalEvent {
   userId        String
   user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   globalEventId String? // 从 GlobalEvent 订阅时关联
-  globalEvent   GlobalEvent? @relation(fields: [globalEventId], references: [id])
+  globalEvent   GlobalEvent? @relation(fields: [globalEventId], references: [id], onDelete: SetNull)
 
   title       String
   category    PersonalEventCategory
@@ -2090,9 +2336,10 @@ model Resume {
   templateId     String       @default("jake-classic")
   language       String       @default("en")
   settings       Json         @default("{}")
-  sections       ResumeSection[]
-  snapshots      ResumeSnapshot[]
-  aiReviews      ResumeAIReview[]
+  sections           ResumeSection[]
+  snapshots          ResumeSnapshot[]
+  aiReviews          ResumeAIReview[]
+  teamApplications   TeamApplication[]
   version        Int          @default(1)
   lastImportedAt DateTime?
 
@@ -2145,4 +2392,51 @@ model ResumeAIReview {
   createdAt DateTime @default(now())
 
   @@index([resumeId])
+}
+
+// ============================================
+// ML Model Registry
+// ============================================
+
+enum ModelStatus {
+  CANDIDATE
+  SHADOW
+  CHAMPION
+  RETIRED
+}
+
+model PredictionModel {
+  id              String      @id @default(cuid())
+  version         Int         @unique
+  tier            Int         // 1=Platt, 2=LR-basic, 3=LR-full, 4=GBDT
+  modelType       String      // 'platt' | 'logistic_regression' | 'gbdt'
+  weights         Json        // TrainedModel or GBDTModel serialized
+  config          Json        // training hyperparameters
+  medians         Json        // feature medians for imputation
+  selectivityBand String?     // null=global, "0.0-0.3", "0.3-0.6", "0.6-0.8", "0.8-1.0"
+
+  // Evaluation metrics
+  trainSamples    Int
+  valSamples      Int
+  trainAuc        Float
+  valAuc          Float
+  brierScore      Float
+  calibrationECE  Float
+  cvMeanAuc       Float?
+  cvStdAuc        Float?
+
+  // Lifecycle
+  status          ModelStatus @default(CANDIDATE)
+  promotedAt      DateTime?
+  retiredAt       DateTime?
+  shadowMetrics   Json?       // online A/B metrics accumulated during shadow
+
+  // Fairness
+  fairnessMetrics Json?       // { demographicParity, equalizedOdds, bandFairness }
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([status])
+  @@index([tier, selectivityBand])
 }

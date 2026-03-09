@@ -6,6 +6,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
+import { clampPercentRate } from '../../../common/utils/percent.util';
 import { SchoolLookupHelper } from './helpers/school-lookup.helper';
 import { ToolHandler, IToolHandlerProvider } from './tool-handler.interface';
 
@@ -54,9 +55,10 @@ export class SchoolToolsService implements IToolHandlerProvider {
         nameZh: s.nameZh,
         state: s.state,
         rank: s.usNewsRank,
-        acceptanceRate: s.acceptanceRate
-          ? `${Number(s.acceptanceRate).toFixed(1)}%`
-          : 'N/A',
+        acceptanceRate:
+          clampPercentRate(s.acceptanceRate) != null
+            ? `${clampPercentRate(s.acceptanceRate)}%`
+            : 'N/A',
         tuition: s.tuition ? `$${s.tuition.toLocaleString()}` : 'N/A',
       })),
     };
@@ -90,9 +92,10 @@ export class SchoolToolsService implements IToolHandlerProvider {
       nameZh: fullSchool.nameZh,
       state: fullSchool.state,
       rank: fullSchool.usNewsRank,
-      acceptanceRate: fullSchool.acceptanceRate
-        ? `${Number(fullSchool.acceptanceRate).toFixed(1)}%`
-        : 'N/A',
+      acceptanceRate:
+        clampPercentRate(fullSchool.acceptanceRate) != null
+          ? `${clampPercentRate(fullSchool.acceptanceRate)}%`
+          : 'N/A',
       tuition: fullSchool.tuition
         ? `$${fullSchool.tuition.toLocaleString()}`
         : 'N/A',
@@ -123,9 +126,10 @@ export class SchoolToolsService implements IToolHandlerProvider {
       comparison: schools.map((s) => ({
         name: s.name,
         rank: s.usNewsRank,
-        acceptanceRate: s.acceptanceRate
-          ? Number(s.acceptanceRate).toFixed(1) + '%'
-          : 'N/A',
+        acceptanceRate:
+          clampPercentRate(s.acceptanceRate) != null
+            ? `${clampPercentRate(s.acceptanceRate)}%`
+            : 'N/A',
         tuition: s.tuition ? `$${s.tuition.toLocaleString()}` : 'N/A',
         avgSalary: s.avgSalary ? `$${s.avgSalary.toLocaleString()}` : 'N/A',
         state: s.state,
