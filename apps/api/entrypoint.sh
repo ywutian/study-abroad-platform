@@ -25,6 +25,7 @@ LEGACY_MIGRATIONS="
   20260224_add_resume_tables
   20260309_add_cascade_rules
   20260309_fix_production_schema
+  20260310_fix_user_missing_columns
 "
 
 if npx prisma migrate deploy --schema=./prisma/schema.prisma 2>&1; then
