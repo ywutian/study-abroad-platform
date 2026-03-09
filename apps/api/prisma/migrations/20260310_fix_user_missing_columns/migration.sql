@@ -1,0 +1,40 @@
+-- Fix: add User columns that were created via db:push but have no migration file.
+-- All statements use IF NOT EXISTS so this is safe to run on any database state.
+
+-- User scalar columns missing from all previous migrations:
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "points" INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "avgRating" DOUBLE PRECISION;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "reviewCount" INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "deletedAt" TIMESTAMP(3);
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+-- Also ensure these columns from fix_production_schema exist (in case that migration was skipped):
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "referralCode" TEXT;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "referredById" TEXT;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "isBanned" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "bannedAt" TIMESTAMP(3);
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "bannedUntil" TIMESTAMP(3);
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "banReason" TEXT;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "lastLoginAt" TIMESTAMP(3);
+
+-- Basic auth/profile columns that should exist from initial setup but might be missing:
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "emailVerified" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "emailVerifyToken" TEXT;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "emailVerifyTokenExp" TIMESTAMP(3);
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "passwordResetToken" TEXT;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "passwordResetExpires" TIMESTAMP(3);
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "locale" TEXT NOT NULL DEFAULT 'zh';
+
+-- Indexes
+CREATE INDEX IF NOT EXISTS "User_deletedAt_idx" ON "User"("deletedAt");
+CREATE INDEX IF NOT EXISTS "User_email_idx" ON "User"("email");
+CREATE UNIQUE INDEX IF NOT EXISTS "User_referralCode_key" ON "User"("referralCode");
+CREATE INDEX IF NOT EXISTS "User_isBanned_idx" ON "User"("isBanned");
+
+-- Self-referral FK
+DO $$ BEGIN
+  ALTER TABLE "User" ADD CONSTRAINT "User_referredById_fkey"
+    FOREIGN KEY ("referredById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
