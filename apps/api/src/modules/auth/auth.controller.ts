@@ -100,9 +100,30 @@ export class AuthController {
 
   @Post('register')
   @Public()
-  @ApiOperation({ summary: 'Register new user' })
-  async register(@Body() data: RegisterDto) {
-    return this.authService.register(data);
+  @ApiOperation({ summary: 'Register new user and auto-login' })
+  async register(
+    @Body() data: RegisterDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.register(data);
+
+    // Set auth cookies (same as login)
+    res.cookie(
+      REFRESH_TOKEN_COOKIE_NAME,
+      result.tokens.refreshToken,
+      REFRESH_TOKEN_COOKIE_OPTIONS,
+    );
+    res.cookie(
+      ACCESS_TOKEN_COOKIE_NAME,
+      result.tokens.accessToken,
+      ACCESS_TOKEN_COOKIE_OPTIONS,
+    );
+
+    return {
+      user: result.user,
+      accessToken: result.tokens.accessToken,
+      message: result.message,
+    };
   }
 
   @Post('login')

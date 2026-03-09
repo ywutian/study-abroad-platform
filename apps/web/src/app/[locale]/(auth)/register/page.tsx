@@ -28,6 +28,7 @@ import {
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
 import { ApiError } from '@/lib/api/api-error';
+import { setAuthFromLogin } from '@/stores/auth';
 import { cn } from '@/lib/utils';
 import {
   ChevronRight,
@@ -194,7 +195,7 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterForm) => {
     setIsLoading(true);
     try {
-      await apiClient.post(
+      const res = await apiClient.post(
         '/auth/register',
         {
           email: data.email,
@@ -203,6 +204,9 @@ export default function RegisterPage() {
         },
         { skipAuth: true }
       );
+
+      // Auto-login: store auth state from register response
+      setAuthFromLogin(res.user, res.accessToken);
 
       const birthday =
         data.birthYear && data.birthMonth && data.birthDay
@@ -230,7 +234,7 @@ export default function RegisterPage() {
       }
 
       toast.success(t('auth.register.success'));
-      router.push('/verify-email?email=' + encodeURIComponent(data.email));
+      router.push('/dashboard');
     } catch (error) {
       const msg =
         error instanceof ApiError

@@ -61,7 +61,11 @@ export class AuthService {
    */
   async register(
     data: RegisterDto,
-  ): Promise<{ user: Omit<User, 'passwordHash'>; message: string }> {
+  ): Promise<{
+    user: Omit<User, 'passwordHash'>;
+    tokens: AuthTokens;
+    message: string;
+  }> {
     // Check if email exists
     const existingUser = await this.userService.findByEmail(data.email);
     if (existingUser) {
@@ -124,11 +128,14 @@ export class AuthService {
         );
       });
 
+    // Auto-login: generate tokens immediately after registration
+    const tokens = await this.generateTokens(user);
+
     const { passwordHash: _, ...result } = user;
     return {
       user: result,
-      message:
-        'Registration successful. Please check your email to verify your account.',
+      tokens,
+      message: 'Registration successful.',
     };
   }
 
