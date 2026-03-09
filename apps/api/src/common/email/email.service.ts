@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 export interface EmailOptions {
   to: string | string[];
@@ -24,40 +24,23 @@ function escapeHtml(unsafe: string): string {
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private transporter: nodemailer.Transporter | null = null;
+  private resend: Resend | null = null;
   private readonly fromEmail: string;
   private readonly fromName: string;
 
   constructor(private configService: ConfigService) {
     this.fromEmail =
-      this.configService.get<string>('EMAIL_FROM') || 'noreply@studyabroad.com';
+      this.configService.get<string>('EMAIL_FROM') || 'onboarding@resend.dev';
     this.fromName =
       this.configService.get<string>('EMAIL_FROM_NAME') || '留学申请平台';
 
-    this.initializeTransporter();
-  }
-
-  private initializeTransporter() {
-    const smtpHost = this.configService.get<string>('SMTP_HOST');
-    const smtpPort = this.configService.get<number>('SMTP_PORT');
-    const smtpUser = this.configService.get<string>('SMTP_USER');
-    const smtpPass = this.configService.get<string>('SMTP_PASS');
-
-    if (smtpHost && smtpUser && smtpPass) {
-      this.transporter = nodemailer.createTransport({
-        host: smtpHost,
-        port: smtpPort || 587,
-        secure: smtpPort === 465,
-        auth: {
-          user: smtpUser,
-          pass: smtpPass,
-        },
-      });
-
-      this.logger.log('Email transporter initialized');
+    const resendApiKey = this.configService.get<string>('RESEND_API_KEY');
+    if (resendApiKey) {
+      this.resend = new Resend(resendApiKey);
+      this.logger.log('Resend email service initialized');
     } else {
       this.logger.warn(
-        'Email service not configured - emails will be logged only',
+        'RESEND_API_KEY not configured - emails will be logged only',
       );
     }
   }
@@ -65,8 +48,7 @@ export class EmailService {
   async sendEmail(options: EmailOptions): Promise<boolean> {
     const { to, subject, html, text } = options;
 
-    // If no transporter, log the email instead
-    if (!this.transporter) {
+    if (!this.resend) {
       this.logger.log(`[EMAIL MOCK] To: ${to}, Subject: ${subject}`);
       this.logger.debug(
         `[EMAIL MOCK] Content: ${text || html.substring(0, 200)}...`,
@@ -75,13 +57,19 @@ export class EmailService {
     }
 
     try {
-      await this.transporter.sendMail({
-        from: `"${this.fromName}" <${this.fromEmail}>`,
-        to: Array.isArray(to) ? to.join(', ') : to,
+      const toArray = Array.isArray(to) ? to : [to];
+      const { error } = await this.resend.emails.send({
+        from: `${this.fromName} <${this.fromEmail}>`,
+        to: toArray,
         subject,
         html,
         text: text || this.htmlToText(html),
       });
+
+      if (error) {
+        this.logger.error(`Resend error for ${to}: ${error.message}`);
+        return false;
+      }
 
       this.logger.log(`Email sent to ${to}: ${subject}`);
       return true;
