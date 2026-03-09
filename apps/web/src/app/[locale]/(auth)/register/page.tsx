@@ -195,7 +195,7 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterForm) => {
     setIsLoading(true);
     try {
-      const res = await apiClient.post(
+      const res = (await apiClient.post(
         '/auth/register',
         {
           email: data.email,
@@ -203,7 +203,7 @@ export default function RegisterPage() {
           ...(data.referralCode ? { referralCode: data.referralCode } : {}),
         },
         { skipAuth: true }
-      );
+      )) as { user: { id: string; email: string; role: string }; accessToken: string };
 
       // Auto-login: store auth state from register response
       setAuthFromLogin(res.user, res.accessToken);
