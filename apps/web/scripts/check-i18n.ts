@@ -25,6 +25,7 @@ const EXEMPT_FILES = [
   'not-found.tsx', // 404 页面的 fallback 文案（i18n 不可用时的兜底）
   'analysis-report-pdf.tsx', // react-pdf 组件，自带 zh/en translations 对象（无法使用 hooks）
   'admin/schools/page.tsx', // 管理面板字段映射，使用 { en, zh } 双语对象
+  'admin/activity-templates/page.tsx', // 管理面板，含中英文 placeholder 示例
 ];
 
 /** 豁免行模式（匹配到则跳过该行） */
