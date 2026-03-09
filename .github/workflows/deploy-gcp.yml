@@ -1,6 +1,6 @@
 # 手动部署 API 到 GCP Cloud Run（自动部署已并入 CI workflow 的 Deploy to GCP job）
 # 认证使用 Workload Identity Federation，无需服务账号密钥
-# GitHub Secrets: GCP_PROJECT_ID, GCP_REGION, GCP_WORKLOAD_IDENTITY_PROVIDER
+# GitHub Secrets: GCP_PROJECT_ID, GCP_REGION, GCP_WORKLOAD_IDENTITY_PROVIDER, GCP_CLOUDSQL_INSTANCE
 name: Deploy API to GCP
 
 on:
@@ -62,7 +62,9 @@ jobs:
             --region="$REGION" \
             --platform=managed \
             --max-instances=3 \
-            --min-instances=1 \
+            --min-instances=0 \
+            --cpu-throttling \
+            --add-cloudsql-instances=${{ secrets.GCP_CLOUDSQL_INSTANCE }} \
             --timeout=300 \
             --quiet
 
@@ -96,3 +98,14 @@ jobs:
             --region="$REGION" \
             --to-revisions="$PREV=100" \
             --quiet || echo "Rollback failed — manual intervention required"
+
+      - name: Cleanup old images
+        if: success()
+        run: |
+          REGION="${{ secrets.GCP_REGION }}"
+          PROJECT="${{ secrets.GCP_PROJECT_ID }}"
+          IMAGE="${REGION}-docker.pkg.dev/${PROJECT}/study-abroad/api"
+          gcloud artifacts docker images list "$IMAGE" \
+            --sort-by=~CREATE_TIME --format='value(VERSION)' \
+            | tail -n +4 \
+            | xargs -I {} gcloud artifacts docker images delete "${IMAGE}@{}" --quiet --delete-tags 2>/dev/null || true
