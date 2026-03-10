@@ -27,7 +27,13 @@ LEGACY_MIGRATIONS="
   20260309_fix_production_schema
   20260310_fix_user_missing_columns
   20260311_add_missing_user_columns
+"
+
+# These migrations use IF NOT EXISTS and must be RE-RUN (not skipped).
+# They are resolved as rolled-back only, so deploy retry will re-execute them.
+RERUN_MIGRATIONS="
   20260312_create_all_base_tables
+  20260313_add_missing_columns
 "
 
 if npx prisma migrate deploy --schema=./prisma/schema.prisma 2>&1; then
@@ -35,15 +41,15 @@ if npx prisma migrate deploy --schema=./prisma/schema.prisma 2>&1; then
 else
   echo "WARNING: Migration failed. Resolving problematic migrations and retrying..."
 
-  # Mark failed legacy migrations as rolled-back so they can be skipped.
-  # The 20260309_fix_production_schema migration covers all their changes idempotently.
+  # Mark old legacy migrations as applied (their changes are covered by later migrations).
   for name in $LEGACY_MIGRATIONS; do
     npx prisma migrate resolve --rolled-back "$name" --schema=./prisma/schema.prisma 2>/dev/null || true
+    npx prisma migrate resolve --applied "$name" --schema=./prisma/schema.prisma 2>/dev/null || true
   done
 
-  # Also mark them as applied since the fix migration handles everything
-  for name in $LEGACY_MIGRATIONS; do
-    npx prisma migrate resolve --applied "$name" --schema=./prisma/schema.prisma 2>/dev/null || true
+  # Mark idempotent migrations as rolled-back so they will re-run on retry.
+  for name in $RERUN_MIGRATIONS; do
+    npx prisma migrate resolve --rolled-back "$name" --schema=./prisma/schema.prisma 2>/dev/null || true
   done
 
   if npx prisma migrate deploy --schema=./prisma/schema.prisma 2>&1; then
