@@ -1,91 +1,130 @@
--- Idempotent migration: creates ALL base tables, enums, indexes, and foreign keys.
--- Every statement uses IF NOT EXISTS or exception handlers so it is safe to re-run.
--- This fixes the production schema gap where tables were created via db:push
--- but never had corresponding migration files.
+-- Baseline migration: full schema from prisma migrate diff --from-empty
+-- All statements are idempotent (IF NOT EXISTS / exception handlers).
 
--- Ensure pgvector extension exists (needed for Memory.embedding column)
+-- Enable pgvector extension
 CREATE EXTENSION IF NOT EXISTS vector;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "Role" AS ENUM ('USER', 'VERIFIED', 'ADMIN'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "Visibility" AS ENUM ('PRIVATE', 'PUBLIC', 'ANONYMOUS', 'VERIFIED_ONLY'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "BudgetTier" AS ENUM ('LOW', 'MEDIUM', 'HIGH', 'UNLIMITED'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "TestType" AS ENUM ('SAT', 'ACT', 'TOEFL', 'IELTS', 'AP', 'IB'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "ActivityCategory" AS ENUM ('ACADEMIC', 'ARTS', 'ATHLETICS', 'COMMUNITY_SERVICE', 'LEADERSHIP', 'WORK', 'RESEARCH', 'INTERNSHIP', 'CLUB', 'HOBBY', 'OTHER'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "ActivityTiming" AS ENUM ('SCHOOL_YEAR', 'SCHOOL_BREAK', 'ALL_YEAR'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "EducationSystem" AS ENUM ('IB', 'AP', 'A_LEVEL', 'GAOKAO', 'CANADIAN', 'AUSTRALIAN', 'OTHER'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "AwardLevel" AS ENUM ('SCHOOL', 'REGIONAL', 'STATE', 'NATIONAL', 'INTERNATIONAL'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "CompetitionCategory" AS ENUM ('MATH', 'BIOLOGY', 'PHYSICS', 'CHEMISTRY', 'COMPUTER_SCIENCE', 'ENGINEERING_RESEARCH', 'ECONOMICS_BUSINESS', 'DEBATE_SPEECH', 'WRITING_ESSAY', 'GENERAL_ACADEMIC', 'ARTS_MUSIC', 'OTHER'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "HighSchoolType" AS ENUM ('PUBLIC_US', 'PRIVATE_US', 'BOARDING_US', 'INTL_CN', 'PUBLIC_CN', 'PRIVATE_CN', 'INTL_OTHER', 'PUBLIC_OTHER', 'PRIVATE_OTHER'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "ReportTargetType" AS ENUM ('USER', 'MESSAGE', 'CASE', 'REVIEW', 'POST', 'COMMENT'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "ReportStatus" AS ENUM ('PENDING', 'REVIEWED', 'RESOLVED'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "VerificationStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "AdmissionResult" AS ENUM ('ADMITTED', 'REJECTED', 'WAITLISTED', 'DEFERRED'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "TaskType" AS ENUM ('ESSAY', 'DOCUMENT', 'TEST', 'INTERVIEW', 'RECOMMENDATION', 'OTHER'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "ApplicationStatus" AS ENUM ('NOT_STARTED', 'IN_PROGRESS', 'SUBMITTED', 'ACCEPTED', 'REJECTED', 'WAITLISTED', 'WITHDRAWN'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "GlobalEventCategory" AS ENUM ('TEST', 'COMPETITION', 'SUMMER_PROGRAM', 'FINANCIAL_AID', 'APPLICATION', 'OTHER'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "PersonalEventCategory" AS ENUM ('COMPETITION', 'TEST', 'SUMMER_PROGRAM', 'INTERNSHIP', 'ACTIVITY', 'MATERIAL', 'OTHER'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "PersonalEventStatus" AS ENUM ('NOT_STARTED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "VaultItemType" AS ENUM ('PASSWORD', 'CREDENTIAL', 'DOCUMENT', 'NOTE', 'API_KEY', 'OTHER'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "ResumeStatus" AS ENUM ('DRAFT', 'ACTIVE', 'ARCHIVED'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "ResumeType" AS ENUM ('COLLEGE_APPLICATION', 'INTERNSHIP', 'GRADUATE_CV'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "ResumeSectionType" AS ENUM ('HEADER', 'EDUCATION', 'TEST_SCORES', 'RESEARCH', 'WORK_EXPERIENCE', 'PROJECTS', 'ACTIVITIES', 'COMMUNITY_SERVICE', 'AWARDS', 'SKILLS', 'PUBLICATIONS', 'TEACHING', 'CERTIFICATIONS', 'CUSTOM'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "TeamVisibility" AS ENUM ('PUBLIC', 'UNLISTED', 'PRIVATE'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "TeamJoinPolicy" AS ENUM ('OPEN', 'INVITE_ONLY'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "TeamMemberRole" AS ENUM ('OWNER', 'ADMIN', 'MEMBER'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "TeamInvitationStatus" AS ENUM ('PENDING', 'ACCEPTED', 'EXPIRED'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "SchoolTier" AS ENUM ('SAFETY', 'TARGET', 'REACH'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "ReviewStatus" AS ENUM ('DRAFT', 'PUBLISHED', 'HIDDEN'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "MemoryType" AS ENUM ('FACT', 'PREFERENCE', 'DECISION', 'SUMMARY', 'FEEDBACK'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "EntityType" AS ENUM ('SCHOOL', 'PERSON', 'EVENT', 'TOPIC'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "TeamStatus" AS ENUM ('RECRUITING', 'FULL', 'CLOSED'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "TeamAppStatus" AS ENUM ('PENDING', 'ACCEPTED', 'REJECTED', 'CANCELLED'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "ForumPostTag" AS ENUM ('COMPETITION', 'ACTIVITY', 'QUESTION', 'SHARING', 'OTHER'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "EssayType" AS ENUM ('COMMON_APP', 'UC', 'MAIN', 'SUPPLEMENTAL', 'WHY_SCHOOL', 'SHORT_ANSWER', 'ACTIVITY', 'OPTIONAL', 'OTHER'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "PaymentStatus" AS ENUM ('PENDING', 'SUCCESS', 'FAILED', 'REFUNDED'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "PeerReviewStatus" AS ENUM ('PENDING', 'COMPLETED', 'EXPIRED'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "EssayStatus" AS ENUM ('PENDING', 'VERIFIED', 'REJECTED'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "AssessmentType" AS ENUM ('MBTI', 'HOLLAND', 'STRENGTH'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateEnum
 DO $$ BEGIN CREATE TYPE "ModelStatus" AS ENUM ('CANDIDATE', 'SHADOW', 'CHAMPION', 'RETIRED'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "User" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
@@ -114,6 +153,7 @@ CREATE TABLE IF NOT EXISTS "User" (
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "RefreshToken" (
     "id" TEXT NOT NULL,
     "token" TEXT NOT NULL,
@@ -124,6 +164,7 @@ CREATE TABLE IF NOT EXISTS "RefreshToken" (
     CONSTRAINT "RefreshToken_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "Profile" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -160,6 +201,7 @@ CREATE TABLE IF NOT EXISTS "Profile" (
     CONSTRAINT "Profile_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "TestScore" (
     "id" TEXT NOT NULL,
     "profileId" TEXT NOT NULL,
@@ -173,6 +215,7 @@ CREATE TABLE IF NOT EXISTS "TestScore" (
     CONSTRAINT "TestScore_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "Activity" (
     "id" TEXT NOT NULL,
     "profileId" TEXT NOT NULL,
@@ -196,6 +239,7 @@ CREATE TABLE IF NOT EXISTS "Activity" (
     CONSTRAINT "Activity_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "ActivityTemplate" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -212,6 +256,7 @@ CREATE TABLE IF NOT EXISTS "ActivityTemplate" (
     CONSTRAINT "ActivityTemplate_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "Award" (
     "id" TEXT NOT NULL,
     "profileId" TEXT NOT NULL,
@@ -227,6 +272,7 @@ CREATE TABLE IF NOT EXISTS "Award" (
     CONSTRAINT "Award_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "Competition" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -245,6 +291,7 @@ CREATE TABLE IF NOT EXISTS "Competition" (
     CONSTRAINT "Competition_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "Education" (
     "id" TEXT NOT NULL,
     "profileId" TEXT NOT NULL,
@@ -264,6 +311,7 @@ CREATE TABLE IF NOT EXISTS "Education" (
     CONSTRAINT "Education_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "HighSchool" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -282,6 +330,7 @@ CREATE TABLE IF NOT EXISTS "HighSchool" (
     CONSTRAINT "HighSchool_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "Essay" (
     "id" TEXT NOT NULL,
     "profileId" TEXT NOT NULL,
@@ -296,6 +345,7 @@ CREATE TABLE IF NOT EXISTS "Essay" (
     CONSTRAINT "Essay_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "School" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -344,6 +394,7 @@ CREATE TABLE IF NOT EXISTS "School" (
     CONSTRAINT "School_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "SchoolMetric" (
     "id" TEXT NOT NULL,
     "schoolId" TEXT NOT NULL,
@@ -355,6 +406,7 @@ CREATE TABLE IF NOT EXISTS "SchoolMetric" (
     CONSTRAINT "SchoolMetric_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "SchoolProgram" (
     "id" TEXT NOT NULL,
     "schoolId" TEXT NOT NULL,
@@ -370,6 +422,7 @@ CREATE TABLE IF NOT EXISTS "SchoolProgram" (
     CONSTRAINT "SchoolProgram_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "SchoolCalibration" (
     "id" TEXT NOT NULL,
     "schoolId" TEXT NOT NULL,
@@ -381,6 +434,7 @@ CREATE TABLE IF NOT EXISTS "SchoolCalibration" (
     CONSTRAINT "SchoolCalibration_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "Team" (
     "id" TEXT NOT NULL,
     "creatorId" TEXT NOT NULL,
@@ -397,6 +451,7 @@ CREATE TABLE IF NOT EXISTS "Team" (
     CONSTRAINT "Team_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "TeamMembership" (
     "id" TEXT NOT NULL,
     "teamId" TEXT NOT NULL,
@@ -407,6 +462,7 @@ CREATE TABLE IF NOT EXISTS "TeamMembership" (
     CONSTRAINT "TeamMembership_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "TeamInvitation" (
     "id" TEXT NOT NULL,
     "teamId" TEXT NOT NULL,
@@ -420,6 +476,7 @@ CREATE TABLE IF NOT EXISTS "TeamInvitation" (
     CONSTRAINT "TeamInvitation_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "ProfileTargetSchool" (
     "id" TEXT NOT NULL,
     "profileId" TEXT NOT NULL,
@@ -431,6 +488,7 @@ CREATE TABLE IF NOT EXISTS "ProfileTargetSchool" (
     CONSTRAINT "ProfileTargetSchool_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "SchoolListItem" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -445,6 +503,7 @@ CREATE TABLE IF NOT EXISTS "SchoolListItem" (
     CONSTRAINT "SchoolListItem_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "CustomRanking" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -457,6 +516,7 @@ CREATE TABLE IF NOT EXISTS "CustomRanking" (
     CONSTRAINT "CustomRanking_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "PredictionResult" (
     "id" TEXT NOT NULL,
     "profileId" TEXT NOT NULL,
@@ -480,6 +540,7 @@ CREATE TABLE IF NOT EXISTS "PredictionResult" (
     CONSTRAINT "PredictionResult_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "PredictionSnapshot" (
     "id" TEXT NOT NULL,
     "profileId" TEXT NOT NULL,
@@ -496,6 +557,7 @@ CREATE TABLE IF NOT EXISTS "PredictionSnapshot" (
     CONSTRAINT "PredictionSnapshot_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "AdmissionCase" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -530,6 +592,7 @@ CREATE TABLE IF NOT EXISTS "AdmissionCase" (
     CONSTRAINT "AdmissionCase_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "VerificationRequest" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -547,6 +610,7 @@ CREATE TABLE IF NOT EXISTS "VerificationRequest" (
     CONSTRAINT "VerificationRequest_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "Follow" (
     "id" TEXT NOT NULL,
     "followerId" TEXT NOT NULL,
@@ -556,6 +620,7 @@ CREATE TABLE IF NOT EXISTS "Follow" (
     CONSTRAINT "Follow_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "Block" (
     "id" TEXT NOT NULL,
     "blockerId" TEXT NOT NULL,
@@ -565,6 +630,7 @@ CREATE TABLE IF NOT EXISTS "Block" (
     CONSTRAINT "Block_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "Conversation" (
     "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -573,6 +639,7 @@ CREATE TABLE IF NOT EXISTS "Conversation" (
     CONSTRAINT "Conversation_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "ConversationParticipant" (
     "id" TEXT NOT NULL,
     "conversationId" TEXT NOT NULL,
@@ -584,6 +651,7 @@ CREATE TABLE IF NOT EXISTS "ConversationParticipant" (
     CONSTRAINT "ConversationParticipant_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "Message" (
     "id" TEXT NOT NULL,
     "conversationId" TEXT NOT NULL,
@@ -599,6 +667,7 @@ CREATE TABLE IF NOT EXISTS "Message" (
     CONSTRAINT "Message_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "Review" (
     "id" TEXT NOT NULL,
     "reviewerId" TEXT NOT NULL,
@@ -622,6 +691,7 @@ CREATE TABLE IF NOT EXISTS "Review" (
     CONSTRAINT "Review_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "ReviewReaction" (
     "id" TEXT NOT NULL,
     "reviewId" TEXT NOT NULL,
@@ -632,6 +702,7 @@ CREATE TABLE IF NOT EXISTS "ReviewReaction" (
     CONSTRAINT "ReviewReaction_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "UserList" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -646,6 +717,7 @@ CREATE TABLE IF NOT EXISTS "UserList" (
     CONSTRAINT "UserList_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "UserListVote" (
     "id" TEXT NOT NULL,
     "listId" TEXT NOT NULL,
@@ -656,6 +728,7 @@ CREATE TABLE IF NOT EXISTS "UserListVote" (
     CONSTRAINT "UserListVote_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "Report" (
     "id" TEXT NOT NULL,
     "reporterId" TEXT NOT NULL,
@@ -673,6 +746,7 @@ CREATE TABLE IF NOT EXISTS "Report" (
     CONSTRAINT "Report_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "AuditLog" (
     "id" TEXT NOT NULL,
     "userId" TEXT,
@@ -687,6 +761,7 @@ CREATE TABLE IF NOT EXISTS "AuditLog" (
     CONSTRAINT "AuditLog_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "AgentConversation" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -700,6 +775,7 @@ CREATE TABLE IF NOT EXISTS "AgentConversation" (
     CONSTRAINT "AgentConversation_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "AgentMessage" (
     "id" TEXT NOT NULL,
     "conversationId" TEXT NOT NULL,
@@ -714,6 +790,7 @@ CREATE TABLE IF NOT EXISTS "AgentMessage" (
     CONSTRAINT "AgentMessage_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "Memory" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -732,6 +809,7 @@ CREATE TABLE IF NOT EXISTS "Memory" (
     CONSTRAINT "Memory_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "Entity" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -746,6 +824,7 @@ CREATE TABLE IF NOT EXISTS "Entity" (
     CONSTRAINT "Entity_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "UserAIPreference" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -762,6 +841,7 @@ CREATE TABLE IF NOT EXISTS "UserAIPreference" (
     CONSTRAINT "UserAIPreference_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "AgentTokenUsage" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -779,6 +859,7 @@ CREATE TABLE IF NOT EXISTS "AgentTokenUsage" (
     CONSTRAINT "AgentTokenUsage_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "AgentQuota" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -794,6 +875,7 @@ CREATE TABLE IF NOT EXISTS "AgentQuota" (
     CONSTRAINT "AgentQuota_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "AgentAuditLog" (
     "id" TEXT NOT NULL,
     "userId" TEXT,
@@ -813,6 +895,7 @@ CREATE TABLE IF NOT EXISTS "AgentAuditLog" (
     CONSTRAINT "AgentAuditLog_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "AgentSecurityEvent" (
     "id" TEXT NOT NULL,
     "userId" TEXT,
@@ -830,6 +913,7 @@ CREATE TABLE IF NOT EXISTS "AgentSecurityEvent" (
     CONSTRAINT "AgentSecurityEvent_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "AgentConfigVersion" (
     "id" TEXT NOT NULL,
     "configType" TEXT NOT NULL,
@@ -844,6 +928,7 @@ CREATE TABLE IF NOT EXISTS "AgentConfigVersion" (
     CONSTRAINT "AgentConfigVersion_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "MemoryCompaction" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -859,6 +944,7 @@ CREATE TABLE IF NOT EXISTS "MemoryCompaction" (
     CONSTRAINT "MemoryCompaction_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "AgentTask" (
     "id" TEXT NOT NULL,
     "userId" TEXT,
@@ -879,6 +965,7 @@ CREATE TABLE IF NOT EXISTS "AgentTask" (
     CONSTRAINT "AgentTask_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "ForumCategory" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -895,6 +982,7 @@ CREATE TABLE IF NOT EXISTS "ForumCategory" (
     CONSTRAINT "ForumCategory_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "ForumPost" (
     "id" TEXT NOT NULL,
     "categoryId" TEXT NOT NULL,
@@ -920,6 +1008,7 @@ CREATE TABLE IF NOT EXISTS "ForumPost" (
     CONSTRAINT "ForumPost_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "ForumComment" (
     "id" TEXT NOT NULL,
     "postId" TEXT NOT NULL,
@@ -933,6 +1022,7 @@ CREATE TABLE IF NOT EXISTS "ForumComment" (
     CONSTRAINT "ForumComment_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "ForumLike" (
     "id" TEXT NOT NULL,
     "postId" TEXT NOT NULL,
@@ -942,6 +1032,7 @@ CREATE TABLE IF NOT EXISTS "ForumLike" (
     CONSTRAINT "ForumLike_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "TeamMember" (
     "id" TEXT NOT NULL,
     "postId" TEXT NOT NULL,
@@ -952,6 +1043,7 @@ CREATE TABLE IF NOT EXISTS "TeamMember" (
     CONSTRAINT "TeamMember_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "TeamApplication" (
     "id" TEXT NOT NULL,
     "postId" TEXT NOT NULL,
@@ -966,6 +1058,7 @@ CREATE TABLE IF NOT EXISTS "TeamApplication" (
     CONSTRAINT "TeamApplication_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "EssayExample" (
     "id" TEXT NOT NULL,
     "authorId" TEXT,
@@ -989,6 +1082,7 @@ CREATE TABLE IF NOT EXISTS "EssayExample" (
     CONSTRAINT "EssayExample_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "CaseSwipe" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -1001,6 +1095,7 @@ CREATE TABLE IF NOT EXISTS "CaseSwipe" (
     CONSTRAINT "CaseSwipe_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "SwipeStats" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -1016,6 +1111,7 @@ CREATE TABLE IF NOT EXISTS "SwipeStats" (
     CONSTRAINT "SwipeStats_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "PointHistory" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -1027,6 +1123,7 @@ CREATE TABLE IF NOT EXISTS "PointHistory" (
     CONSTRAINT "PointHistory_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "Payment" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -1048,6 +1145,7 @@ CREATE TABLE IF NOT EXISTS "Payment" (
     CONSTRAINT "Payment_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "PeerReview" (
     "id" TEXT NOT NULL,
     "reviewerId" TEXT NOT NULL,
@@ -1072,6 +1170,7 @@ CREATE TABLE IF NOT EXISTS "PeerReview" (
     CONSTRAINT "PeerReview_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "SchoolDeadline" (
     "id" TEXT NOT NULL,
     "schoolId" TEXT NOT NULL,
@@ -1093,6 +1192,7 @@ CREATE TABLE IF NOT EXISTS "SchoolDeadline" (
     CONSTRAINT "SchoolDeadline_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "GlobalEvent" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
@@ -1114,6 +1214,7 @@ CREATE TABLE IF NOT EXISTS "GlobalEvent" (
     CONSTRAINT "GlobalEvent_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "ApplicationTimeline" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -1131,6 +1232,7 @@ CREATE TABLE IF NOT EXISTS "ApplicationTimeline" (
     CONSTRAINT "ApplicationTimeline_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "ApplicationTask" (
     "id" TEXT NOT NULL,
     "timelineId" TEXT NOT NULL,
@@ -1150,6 +1252,7 @@ CREATE TABLE IF NOT EXISTS "ApplicationTask" (
     CONSTRAINT "ApplicationTask_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "PersonalEvent" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -1170,6 +1273,7 @@ CREATE TABLE IF NOT EXISTS "PersonalEvent" (
     CONSTRAINT "PersonalEvent_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "PersonalTask" (
     "id" TEXT NOT NULL,
     "eventId" TEXT NOT NULL,
@@ -1184,6 +1288,7 @@ CREATE TABLE IF NOT EXISTS "PersonalTask" (
     CONSTRAINT "PersonalTask_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "EssayPrompt" (
     "id" TEXT NOT NULL,
     "schoolId" TEXT NOT NULL,
@@ -1209,6 +1314,7 @@ CREATE TABLE IF NOT EXISTS "EssayPrompt" (
     CONSTRAINT "EssayPrompt_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "EssayPromptSource" (
     "id" TEXT NOT NULL,
     "essayPromptId" TEXT NOT NULL,
@@ -1222,6 +1328,7 @@ CREATE TABLE IF NOT EXISTS "EssayPromptSource" (
     CONSTRAINT "EssayPromptSource_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "SchoolEssaySource" (
     "id" TEXT NOT NULL,
     "schoolId" TEXT NOT NULL,
@@ -1241,6 +1348,7 @@ CREATE TABLE IF NOT EXISTS "SchoolEssaySource" (
     CONSTRAINT "SchoolEssaySource_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "EssayPipelineRun" (
     "id" TEXT NOT NULL,
     "trigger" TEXT NOT NULL,
@@ -1260,6 +1368,7 @@ CREATE TABLE IF NOT EXISTS "EssayPipelineRun" (
     CONSTRAINT "EssayPipelineRun_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "Assessment" (
     "id" TEXT NOT NULL,
     "type" "AssessmentType" NOT NULL,
@@ -1272,6 +1381,7 @@ CREATE TABLE IF NOT EXISTS "Assessment" (
     CONSTRAINT "Assessment_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "AssessmentResult" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -1284,6 +1394,7 @@ CREATE TABLE IF NOT EXISTS "AssessmentResult" (
     CONSTRAINT "AssessmentResult_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "EssayPromptAudit" (
     "id" TEXT NOT NULL,
     "essayPromptId" TEXT NOT NULL,
@@ -1299,6 +1410,7 @@ CREATE TABLE IF NOT EXISTS "EssayPromptAudit" (
     CONSTRAINT "EssayPromptAudit_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "VaultItem" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -1315,6 +1427,7 @@ CREATE TABLE IF NOT EXISTS "VaultItem" (
     CONSTRAINT "VaultItem_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "SystemSetting" (
     "key" TEXT NOT NULL,
     "value" TEXT NOT NULL,
@@ -1326,6 +1439,7 @@ CREATE TABLE IF NOT EXISTS "SystemSetting" (
     CONSTRAINT "SystemSetting_pkey" PRIMARY KEY ("key")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "SchoolRecommendation" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -1340,6 +1454,7 @@ CREATE TABLE IF NOT EXISTS "SchoolRecommendation" (
     CONSTRAINT "SchoolRecommendation_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "EssayAIResult" (
     "id" TEXT NOT NULL,
     "essayId" TEXT NOT NULL,
@@ -1355,6 +1470,7 @@ CREATE TABLE IF NOT EXISTS "EssayAIResult" (
     CONSTRAINT "EssayAIResult_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "CaseView" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -1364,6 +1480,7 @@ CREATE TABLE IF NOT EXISTS "CaseView" (
     CONSTRAINT "CaseView_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "Resume" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -1381,6 +1498,7 @@ CREATE TABLE IF NOT EXISTS "Resume" (
     CONSTRAINT "Resume_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "ResumeSection" (
     "id" TEXT NOT NULL,
     "resumeId" TEXT NOT NULL,
@@ -1395,6 +1513,7 @@ CREATE TABLE IF NOT EXISTS "ResumeSection" (
     CONSTRAINT "ResumeSection_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "ResumeSnapshot" (
     "id" TEXT NOT NULL,
     "resumeId" TEXT NOT NULL,
@@ -1406,6 +1525,7 @@ CREATE TABLE IF NOT EXISTS "ResumeSnapshot" (
     CONSTRAINT "ResumeSnapshot_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "ResumeAIReview" (
     "id" TEXT NOT NULL,
     "resumeId" TEXT NOT NULL,
@@ -1419,6 +1539,7 @@ CREATE TABLE IF NOT EXISTS "ResumeAIReview" (
     CONSTRAINT "ResumeAIReview_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE IF NOT EXISTS "PredictionModel" (
     "id" TEXT NOT NULL,
     "version" INTEGER NOT NULL,
@@ -1447,949 +1568,1017 @@ CREATE TABLE IF NOT EXISTS "PredictionModel" (
     CONSTRAINT "PredictionModel_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON "User"("email");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "User_referralCode_key" ON "User"("referralCode");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "User_email_idx" ON "User"("email");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "User_deletedAt_idx" ON "User"("deletedAt");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "User_isBanned_idx" ON "User"("isBanned");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "RefreshToken_token_key" ON "RefreshToken"("token");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "RefreshToken_userId_idx" ON "RefreshToken"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "RefreshToken_expiresAt_idx" ON "RefreshToken"("expiresAt");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "Profile_userId_key" ON "Profile"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Profile_userId_idx" ON "Profile"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Profile_visibility_idx" ON "Profile"("visibility");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Profile_onboardingCompleted_idx" ON "Profile"("onboardingCompleted");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "TestScore_profileId_idx" ON "TestScore"("profileId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Activity_profileId_idx" ON "Activity"("profileId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Activity_activityTemplateId_idx" ON "Activity"("activityTemplateId");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "ActivityTemplate_name_key" ON "ActivityTemplate"("name");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "ActivityTemplate_tier_idx" ON "ActivityTemplate"("tier");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "ActivityTemplate_category_idx" ON "ActivityTemplate"("category");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Award_profileId_idx" ON "Award"("profileId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Award_competitionId_idx" ON "Award"("competitionId");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "Competition_abbreviation_key" ON "Competition"("abbreviation");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Competition_category_idx" ON "Competition"("category");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Competition_tier_idx" ON "Competition"("tier");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Education_profileId_idx" ON "Education"("profileId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Education_highSchoolId_idx" ON "Education"("highSchoolId");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "HighSchool_abbreviation_key" ON "HighSchool"("abbreviation");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "HighSchool_country_idx" ON "HighSchool"("country");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "HighSchool_tier_idx" ON "HighSchool"("tier");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "HighSchool_type_idx" ON "HighSchool"("type");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "HighSchool_name_country_state_key" ON "HighSchool"("name", "country", "state");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Essay_profileId_idx" ON "Essay"("profileId");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "School_nameNorm_key" ON "School"("nameNorm");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "School_scorecardId_key" ON "School"("scorecardId");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "School_ipedsId_key" ON "School"("ipedsId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "School_name_idx" ON "School"("name");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "School_nameZh_idx" ON "School"("nameZh");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "School_usNewsRank_idx" ON "School"("usNewsRank");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "School_isPrivate_idx" ON "School"("isPrivate");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "SchoolMetric_schoolId_idx" ON "SchoolMetric"("schoolId");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "SchoolMetric_schoolId_year_metricKey_key" ON "SchoolMetric"("schoolId", "year", "metricKey");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "SchoolProgram_schoolId_idx" ON "SchoolProgram"("schoolId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "SchoolProgram_cipCode_idx" ON "SchoolProgram"("cipCode");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "SchoolProgram_schoolId_cipCode_key" ON "SchoolProgram"("schoolId", "cipCode");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "SchoolCalibration_schoolId_key" ON "SchoolCalibration"("schoolId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Team_creatorId_idx" ON "Team"("creatorId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Team_schoolId_idx" ON "Team"("schoolId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Team_visibility_idx" ON "Team"("visibility");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Team_createdAt_idx" ON "Team"("createdAt");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "TeamMembership_teamId_idx" ON "TeamMembership"("teamId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "TeamMembership_userId_idx" ON "TeamMembership"("userId");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "TeamMembership_teamId_userId_key" ON "TeamMembership"("teamId", "userId");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "TeamInvitation_token_key" ON "TeamInvitation"("token");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "TeamInvitation_teamId_idx" ON "TeamInvitation"("teamId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "TeamInvitation_inviteeId_idx" ON "TeamInvitation"("inviteeId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "TeamInvitation_token_idx" ON "TeamInvitation"("token");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "TeamInvitation_status_idx" ON "TeamInvitation"("status");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "ProfileTargetSchool_profileId_idx" ON "ProfileTargetSchool"("profileId");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "ProfileTargetSchool_profileId_schoolId_key" ON "ProfileTargetSchool"("profileId", "schoolId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "SchoolListItem_userId_idx" ON "SchoolListItem"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "SchoolListItem_tier_idx" ON "SchoolListItem"("tier");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "SchoolListItem_userId_schoolId_key" ON "SchoolListItem"("userId", "schoolId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "CustomRanking_userId_idx" ON "CustomRanking"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "CustomRanking_isPublic_idx" ON "CustomRanking"("isPublic");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "PredictionResult_profileId_idx" ON "PredictionResult"("profileId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "PredictionResult_schoolId_idx" ON "PredictionResult"("schoolId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "PredictionResult_modelVersion_idx" ON "PredictionResult"("modelVersion");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "PredictionResult_actualResult_idx" ON "PredictionResult"("actualResult");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "PredictionResult_profileId_schoolId_key" ON "PredictionResult"("profileId", "schoolId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "PredictionSnapshot_profileId_schoolId_createdAt_idx" ON "PredictionSnapshot"("profileId", "schoolId", "createdAt");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "PredictionSnapshot_profileId_createdAt_idx" ON "PredictionSnapshot"("profileId", "createdAt");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AdmissionCase_userId_idx" ON "AdmissionCase"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AdmissionCase_schoolId_idx" ON "AdmissionCase"("schoolId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AdmissionCase_visibility_idx" ON "AdmissionCase"("visibility");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AdmissionCase_year_idx" ON "AdmissionCase"("year");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AdmissionCase_essayType_idx" ON "AdmissionCase"("essayType");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "VerificationRequest_userId_idx" ON "VerificationRequest"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "VerificationRequest_caseId_idx" ON "VerificationRequest"("caseId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "VerificationRequest_status_idx" ON "VerificationRequest"("status");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Follow_followerId_idx" ON "Follow"("followerId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Follow_followingId_idx" ON "Follow"("followingId");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "Follow_followerId_followingId_key" ON "Follow"("followerId", "followingId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Block_blockerId_idx" ON "Block"("blockerId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Block_blockedId_idx" ON "Block"("blockedId");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "Block_blockerId_blockedId_key" ON "Block"("blockerId", "blockedId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Conversation_updatedAt_idx" ON "Conversation"("updatedAt");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "ConversationParticipant_userId_idx" ON "ConversationParticipant"("userId");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "ConversationParticipant_conversationId_userId_key" ON "ConversationParticipant"("conversationId", "userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Message_conversationId_idx" ON "Message"("conversationId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Message_senderId_idx" ON "Message"("senderId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Message_createdAt_idx" ON "Message"("createdAt");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Review_profileUserId_status_createdAt_idx" ON "Review"("profileUserId", "status", "createdAt");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Review_reviewerId_idx" ON "Review"("reviewerId");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "Review_reviewerId_profileUserId_key" ON "Review"("reviewerId", "profileUserId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "ReviewReaction_reviewId_idx" ON "ReviewReaction"("reviewId");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "ReviewReaction_reviewId_userId_type_key" ON "ReviewReaction"("reviewId", "userId", "type");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "UserList_userId_idx" ON "UserList"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "UserList_isPublic_idx" ON "UserList"("isPublic");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "UserListVote_listId_idx" ON "UserListVote"("listId");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "UserListVote_listId_userId_key" ON "UserListVote"("listId", "userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Report_reporterId_idx" ON "Report"("reporterId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Report_status_idx" ON "Report"("status");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Report_targetType_targetId_idx" ON "Report"("targetType", "targetId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AuditLog_userId_idx" ON "AuditLog"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AuditLog_action_idx" ON "AuditLog"("action");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AuditLog_createdAt_idx" ON "AuditLog"("createdAt");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentConversation_userId_idx" ON "AgentConversation"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentConversation_createdAt_idx" ON "AgentConversation"("createdAt");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentConversation_userId_updatedAt_idx" ON "AgentConversation"("userId", "updatedAt" DESC);
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentMessage_conversationId_idx" ON "AgentMessage"("conversationId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentMessage_createdAt_idx" ON "AgentMessage"("createdAt");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentMessage_conversationId_createdAt_idx" ON "AgentMessage"("conversationId", "createdAt" DESC);
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Memory_userId_idx" ON "Memory"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Memory_type_idx" ON "Memory"("type");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Memory_category_idx" ON "Memory"("category");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Memory_importance_idx" ON "Memory"("importance");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Memory_userId_type_idx" ON "Memory"("userId", "type");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Memory_userId_importance_idx" ON "Memory"("userId", "importance" DESC);
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Memory_userId_type_importance_idx" ON "Memory"("userId", "type", "importance" DESC);
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Memory_userId_category_idx" ON "Memory"("userId", "category");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Memory_accessCount_lastAccessedAt_idx" ON "Memory"("accessCount", "lastAccessedAt");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Memory_updatedAt_idx" ON "Memory"("updatedAt" DESC);
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Entity_userId_idx" ON "Entity"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Entity_type_idx" ON "Entity"("type");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "Entity_userId_type_name_key" ON "Entity"("userId", "type", "name");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "UserAIPreference_userId_key" ON "UserAIPreference"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentTokenUsage_userId_idx" ON "AgentTokenUsage"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentTokenUsage_userId_createdAt_idx" ON "AgentTokenUsage"("userId", "createdAt");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentTokenUsage_agentType_idx" ON "AgentTokenUsage"("agentType");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentTokenUsage_createdAt_idx" ON "AgentTokenUsage"("createdAt");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "AgentQuota_userId_key" ON "AgentQuota"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentQuota_tier_idx" ON "AgentQuota"("tier");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentAuditLog_userId_idx" ON "AgentAuditLog"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentAuditLog_traceId_idx" ON "AgentAuditLog"("traceId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentAuditLog_action_idx" ON "AgentAuditLog"("action");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentAuditLog_createdAt_idx" ON "AgentAuditLog"("createdAt");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentAuditLog_status_idx" ON "AgentAuditLog"("status");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentAuditLog_userId_action_createdAt_idx" ON "AgentAuditLog"("userId", "action", "createdAt" DESC);
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentAuditLog_resource_createdAt_idx" ON "AgentAuditLog"("resource", "createdAt" DESC);
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentSecurityEvent_userId_idx" ON "AgentSecurityEvent"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentSecurityEvent_eventType_idx" ON "AgentSecurityEvent"("eventType");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentSecurityEvent_severity_idx" ON "AgentSecurityEvent"("severity");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentSecurityEvent_resolved_idx" ON "AgentSecurityEvent"("resolved");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentSecurityEvent_createdAt_idx" ON "AgentSecurityEvent"("createdAt");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentSecurityEvent_userId_eventType_createdAt_idx" ON "AgentSecurityEvent"("userId", "eventType", "createdAt" DESC);
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentConfigVersion_isActive_idx" ON "AgentConfigVersion"("isActive");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "AgentConfigVersion_configType_configKey_version_key" ON "AgentConfigVersion"("configType", "configKey", "version");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "MemoryCompaction_userId_idx" ON "MemoryCompaction"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "MemoryCompaction_createdAt_idx" ON "MemoryCompaction"("createdAt");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentTask_status_idx" ON "AgentTask"("status");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentTask_type_idx" ON "AgentTask"("type");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentTask_scheduledAt_idx" ON "AgentTask"("scheduledAt");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AgentTask_priority_status_idx" ON "AgentTask"("priority", "status");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "ForumCategory_name_key" ON "ForumCategory"("name");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "ForumCategory_nameZh_key" ON "ForumCategory"("nameZh");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "ForumCategory_isActive_idx" ON "ForumCategory"("isActive");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "ForumCategory_sortOrder_idx" ON "ForumCategory"("sortOrder");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "ForumPost_categoryId_idx" ON "ForumPost"("categoryId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "ForumPost_authorId_idx" ON "ForumPost"("authorId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "ForumPost_isTeamPost_idx" ON "ForumPost"("isTeamPost");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "ForumPost_postTag_idx" ON "ForumPost"("postTag");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "ForumPost_createdAt_idx" ON "ForumPost"("createdAt");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "ForumPost_likeCount_idx" ON "ForumPost"("likeCount");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "ForumComment_postId_idx" ON "ForumComment"("postId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "ForumComment_authorId_idx" ON "ForumComment"("authorId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "ForumComment_parentId_idx" ON "ForumComment"("parentId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "ForumLike_postId_idx" ON "ForumLike"("postId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "ForumLike_userId_idx" ON "ForumLike"("userId");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "ForumLike_postId_userId_key" ON "ForumLike"("postId", "userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "TeamMember_postId_idx" ON "TeamMember"("postId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "TeamMember_userId_idx" ON "TeamMember"("userId");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "TeamMember_postId_userId_key" ON "TeamMember"("postId", "userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "TeamApplication_postId_idx" ON "TeamApplication"("postId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "TeamApplication_applicantId_idx" ON "TeamApplication"("applicantId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "TeamApplication_status_idx" ON "TeamApplication"("status");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "TeamApplication_postId_applicantId_key" ON "TeamApplication"("postId", "applicantId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "EssayExample_schoolId_idx" ON "EssayExample"("schoolId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "EssayExample_type_idx" ON "EssayExample"("type");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "EssayExample_isPublic_idx" ON "EssayExample"("isPublic");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "EssayExample_year_idx" ON "EssayExample"("year");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "CaseSwipe_userId_idx" ON "CaseSwipe"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "CaseSwipe_caseId_idx" ON "CaseSwipe"("caseId");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "CaseSwipe_userId_caseId_key" ON "CaseSwipe"("userId", "caseId");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "SwipeStats_userId_key" ON "SwipeStats"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "SwipeStats_badge_idx" ON "SwipeStats"("badge");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "SwipeStats_correctCount_idx" ON "SwipeStats"("correctCount");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "PointHistory_userId_idx" ON "PointHistory"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "PointHistory_createdAt_idx" ON "PointHistory"("createdAt");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "Payment_transactionId_key" ON "Payment"("transactionId");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "Payment_idempotencyKey_key" ON "Payment"("idempotencyKey");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Payment_userId_idx" ON "Payment"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Payment_status_idx" ON "Payment"("status");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Payment_createdAt_idx" ON "Payment"("createdAt");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "PeerReview_reviewerId_idx" ON "PeerReview"("reviewerId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "PeerReview_revieweeId_idx" ON "PeerReview"("revieweeId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "PeerReview_status_idx" ON "PeerReview"("status");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "PeerReview_expiresAt_idx" ON "PeerReview"("expiresAt");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "PeerReview_reviewerId_revieweeId_key" ON "PeerReview"("reviewerId", "revieweeId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "SchoolDeadline_schoolId_idx" ON "SchoolDeadline"("schoolId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "SchoolDeadline_year_idx" ON "SchoolDeadline"("year");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "SchoolDeadline_applicationDeadline_idx" ON "SchoolDeadline"("applicationDeadline");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "SchoolDeadline_schoolId_year_round_key" ON "SchoolDeadline"("schoolId", "year", "round");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "GlobalEvent_category_idx" ON "GlobalEvent"("category");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "GlobalEvent_eventDate_idx" ON "GlobalEvent"("eventDate");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "GlobalEvent_year_isActive_idx" ON "GlobalEvent"("year", "isActive");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "ApplicationTimeline_userId_idx" ON "ApplicationTimeline"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "ApplicationTimeline_deadline_idx" ON "ApplicationTimeline"("deadline");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "ApplicationTimeline_userId_schoolId_round_key" ON "ApplicationTimeline"("userId", "schoolId", "round");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "ApplicationTask_timelineId_idx" ON "ApplicationTask"("timelineId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "ApplicationTask_dueDate_idx" ON "ApplicationTask"("dueDate");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "PersonalEvent_userId_idx" ON "PersonalEvent"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "PersonalEvent_deadline_idx" ON "PersonalEvent"("deadline");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "PersonalEvent_category_idx" ON "PersonalEvent"("category");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "PersonalEvent_userId_globalEventId_key" ON "PersonalEvent"("userId", "globalEventId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "PersonalTask_eventId_idx" ON "PersonalTask"("eventId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "PersonalTask_dueDate_idx" ON "PersonalTask"("dueDate");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "EssayPrompt_schoolId_idx" ON "EssayPrompt"("schoolId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "EssayPrompt_status_idx" ON "EssayPrompt"("status");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "EssayPrompt_type_idx" ON "EssayPrompt"("type");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "EssayPrompt_year_idx" ON "EssayPrompt"("year");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "EssayPrompt_changeType_idx" ON "EssayPrompt"("changeType");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "EssayPromptSource_essayPromptId_idx" ON "EssayPromptSource"("essayPromptId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "SchoolEssaySource_schoolId_idx" ON "SchoolEssaySource"("schoolId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "SchoolEssaySource_isActive_idx" ON "SchoolEssaySource"("isActive");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "SchoolEssaySource_scrapeGroup_idx" ON "SchoolEssaySource"("scrapeGroup");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "SchoolEssaySource_schoolId_sourceType_key" ON "SchoolEssaySource"("schoolId", "sourceType");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "EssayPipelineRun_status_idx" ON "EssayPipelineRun"("status");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "EssayPipelineRun_year_idx" ON "EssayPipelineRun"("year");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "EssayPipelineRun_startedAt_idx" ON "EssayPipelineRun"("startedAt");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "Assessment_type_key" ON "Assessment"("type");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AssessmentResult_userId_idx" ON "AssessmentResult"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "AssessmentResult_assessmentId_idx" ON "AssessmentResult"("assessmentId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "EssayPromptAudit_essayPromptId_idx" ON "EssayPromptAudit"("essayPromptId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "EssayPromptAudit_operatorId_idx" ON "EssayPromptAudit"("operatorId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "VaultItem_userId_idx" ON "VaultItem"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "VaultItem_type_idx" ON "VaultItem"("type");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "VaultItem_category_idx" ON "VaultItem"("category");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "SchoolRecommendation_userId_idx" ON "SchoolRecommendation"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "SchoolRecommendation_createdAt_idx" ON "SchoolRecommendation"("createdAt");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "EssayAIResult_essayId_idx" ON "EssayAIResult"("essayId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "EssayAIResult_type_idx" ON "EssayAIResult"("type");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "CaseView_userId_idx" ON "CaseView"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "CaseView_caseId_idx" ON "CaseView"("caseId");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "CaseView_userId_caseId_key" ON "CaseView"("userId", "caseId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Resume_userId_idx" ON "Resume"("userId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "Resume_userId_updatedAt_idx" ON "Resume"("userId", "updatedAt" DESC);
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "ResumeSection_resumeId_idx" ON "ResumeSection"("resumeId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "ResumeSnapshot_resumeId_idx" ON "ResumeSnapshot"("resumeId");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "ResumeAIReview_resumeId_idx" ON "ResumeAIReview"("resumeId");
 
+-- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "PredictionModel_version_key" ON "PredictionModel"("version");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "PredictionModel_status_idx" ON "PredictionModel"("status");
 
+-- CreateIndex
 CREATE INDEX IF NOT EXISTS "PredictionModel_tier_selectivityBand_idx" ON "PredictionModel"("tier", "selectivityBand");
 
 -- AddForeignKey
-DO $$ BEGIN
-  ALTER TABLE "User" ADD CONSTRAINT "User_referredById_fkey" FOREIGN KEY ("referredById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "RefreshToken" ADD CONSTRAINT "RefreshToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "Profile" ADD CONSTRAINT "Profile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "TestScore" ADD CONSTRAINT "TestScore_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "Profile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "Activity" ADD CONSTRAINT "Activity_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "Profile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+DO $$ BEGIN ALTER TABLE "User" ADD CONSTRAINT "User_referredById_fkey" FOREIGN KEY ("referredById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- AddForeignKey
-DO $$ BEGIN
-  ALTER TABLE "Activity" ADD CONSTRAINT "Activity_activityTemplateId_fkey" FOREIGN KEY ("activityTemplateId") REFERENCES "ActivityTemplate"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "Award" ADD CONSTRAINT "Award_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "Profile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+DO $$ BEGIN ALTER TABLE "RefreshToken" ADD CONSTRAINT "RefreshToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- AddForeignKey
-DO $$ BEGIN
-  ALTER TABLE "Award" ADD CONSTRAINT "Award_competitionId_fkey" FOREIGN KEY ("competitionId") REFERENCES "Competition"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "Education" ADD CONSTRAINT "Education_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "Profile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+DO $$ BEGIN ALTER TABLE "Profile" ADD CONSTRAINT "Profile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- AddForeignKey
-DO $$ BEGIN
-  ALTER TABLE "Education" ADD CONSTRAINT "Education_highSchoolId_fkey" FOREIGN KEY ("highSchoolId") REFERENCES "HighSchool"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "Essay" ADD CONSTRAINT "Essay_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "Profile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "SchoolMetric" ADD CONSTRAINT "SchoolMetric_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "SchoolProgram" ADD CONSTRAINT "SchoolProgram_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "SchoolCalibration" ADD CONSTRAINT "SchoolCalibration_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "Team" ADD CONSTRAINT "Team_creatorId_fkey" FOREIGN KEY ("creatorId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+DO $$ BEGIN ALTER TABLE "TestScore" ADD CONSTRAINT "TestScore_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "Profile"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- AddForeignKey
-DO $$ BEGIN
-  ALTER TABLE "Team" ADD CONSTRAINT "Team_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "TeamMembership" ADD CONSTRAINT "TeamMembership_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "TeamMembership" ADD CONSTRAINT "TeamMembership_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "TeamInvitation" ADD CONSTRAINT "TeamInvitation_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "TeamInvitation" ADD CONSTRAINT "TeamInvitation_inviterId_fkey" FOREIGN KEY ("inviterId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "TeamInvitation" ADD CONSTRAINT "TeamInvitation_inviteeId_fkey" FOREIGN KEY ("inviteeId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "ProfileTargetSchool" ADD CONSTRAINT "ProfileTargetSchool_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "SchoolListItem" ADD CONSTRAINT "SchoolListItem_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "SchoolListItem" ADD CONSTRAINT "SchoolListItem_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "CustomRanking" ADD CONSTRAINT "CustomRanking_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "PredictionResult" ADD CONSTRAINT "PredictionResult_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "Profile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "AdmissionCase" ADD CONSTRAINT "AdmissionCase_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "AdmissionCase" ADD CONSTRAINT "AdmissionCase_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "VerificationRequest" ADD CONSTRAINT "VerificationRequest_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "VerificationRequest" ADD CONSTRAINT "VerificationRequest_caseId_fkey" FOREIGN KEY ("caseId") REFERENCES "AdmissionCase"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "Follow" ADD CONSTRAINT "Follow_followerId_fkey" FOREIGN KEY ("followerId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "Follow" ADD CONSTRAINT "Follow_followingId_fkey" FOREIGN KEY ("followingId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "Block" ADD CONSTRAINT "Block_blockerId_fkey" FOREIGN KEY ("blockerId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "Block" ADD CONSTRAINT "Block_blockedId_fkey" FOREIGN KEY ("blockedId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "ConversationParticipant" ADD CONSTRAINT "ConversationParticipant_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "ConversationParticipant" ADD CONSTRAINT "ConversationParticipant_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "Message" ADD CONSTRAINT "Message_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "Message" ADD CONSTRAINT "Message_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "Review" ADD CONSTRAINT "Review_reviewerId_fkey" FOREIGN KEY ("reviewerId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "Review" ADD CONSTRAINT "Review_profileUserId_fkey" FOREIGN KEY ("profileUserId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "ReviewReaction" ADD CONSTRAINT "ReviewReaction_reviewId_fkey" FOREIGN KEY ("reviewId") REFERENCES "Review"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "ReviewReaction" ADD CONSTRAINT "ReviewReaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "UserList" ADD CONSTRAINT "UserList_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "UserListVote" ADD CONSTRAINT "UserListVote_listId_fkey" FOREIGN KEY ("listId") REFERENCES "UserList"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "UserListVote" ADD CONSTRAINT "UserListVote_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "Report" ADD CONSTRAINT "Report_reporterId_fkey" FOREIGN KEY ("reporterId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "AgentMessage" ADD CONSTRAINT "AgentMessage_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "AgentConversation"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "ForumPost" ADD CONSTRAINT "ForumPost_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "ForumCategory"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "ForumPost" ADD CONSTRAINT "ForumPost_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "ForumComment" ADD CONSTRAINT "ForumComment_postId_fkey" FOREIGN KEY ("postId") REFERENCES "ForumPost"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "ForumComment" ADD CONSTRAINT "ForumComment_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "ForumComment" ADD CONSTRAINT "ForumComment_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "ForumComment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "ForumLike" ADD CONSTRAINT "ForumLike_postId_fkey" FOREIGN KEY ("postId") REFERENCES "ForumPost"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "TeamMember" ADD CONSTRAINT "TeamMember_postId_fkey" FOREIGN KEY ("postId") REFERENCES "ForumPost"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "TeamMember" ADD CONSTRAINT "TeamMember_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "TeamApplication" ADD CONSTRAINT "TeamApplication_postId_fkey" FOREIGN KEY ("postId") REFERENCES "ForumPost"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "TeamApplication" ADD CONSTRAINT "TeamApplication_applicantId_fkey" FOREIGN KEY ("applicantId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+DO $$ BEGIN ALTER TABLE "Activity" ADD CONSTRAINT "Activity_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "Profile"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- AddForeignKey
-DO $$ BEGIN
-  ALTER TABLE "TeamApplication" ADD CONSTRAINT "TeamApplication_resumeId_fkey" FOREIGN KEY ("resumeId") REFERENCES "Resume"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+DO $$ BEGIN ALTER TABLE "Activity" ADD CONSTRAINT "Activity_activityTemplateId_fkey" FOREIGN KEY ("activityTemplateId") REFERENCES "ActivityTemplate"("id") ON DELETE SET NULL ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- AddForeignKey
-DO $$ BEGIN
-  ALTER TABLE "EssayExample" ADD CONSTRAINT "EssayExample_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "CaseSwipe" ADD CONSTRAINT "CaseSwipe_caseId_fkey" FOREIGN KEY ("caseId") REFERENCES "AdmissionCase"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "SwipeStats" ADD CONSTRAINT "SwipeStats_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "PointHistory" ADD CONSTRAINT "PointHistory_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "Payment" ADD CONSTRAINT "Payment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "PeerReview" ADD CONSTRAINT "PeerReview_reviewerId_fkey" FOREIGN KEY ("reviewerId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "PeerReview" ADD CONSTRAINT "PeerReview_revieweeId_fkey" FOREIGN KEY ("revieweeId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "SchoolDeadline" ADD CONSTRAINT "SchoolDeadline_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "ApplicationTimeline" ADD CONSTRAINT "ApplicationTimeline_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "ApplicationTimeline" ADD CONSTRAINT "ApplicationTimeline_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "ApplicationTask" ADD CONSTRAINT "ApplicationTask_timelineId_fkey" FOREIGN KEY ("timelineId") REFERENCES "ApplicationTimeline"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TABLE "PersonalEvent" ADD CONSTRAINT "PersonalEvent_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+DO $$ BEGIN ALTER TABLE "Award" ADD CONSTRAINT "Award_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "Profile"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- AddForeignKey
-DO $$ BEGIN
-  ALTER TABLE "PersonalEvent" ADD CONSTRAINT "PersonalEvent_globalEventId_fkey" FOREIGN KEY ("globalEventId") REFERENCES "GlobalEvent"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+DO $$ BEGIN ALTER TABLE "Award" ADD CONSTRAINT "Award_competitionId_fkey" FOREIGN KEY ("competitionId") REFERENCES "Competition"("id") ON DELETE SET NULL ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-DO $$ BEGIN
-  ALTER TABLE "PersonalTask" ADD CONSTRAINT "PersonalTask_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "PersonalEvent"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "Education" ADD CONSTRAINT "Education_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "Profile"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-DO $$ BEGIN
-  ALTER TABLE "EssayPrompt" ADD CONSTRAINT "EssayPrompt_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "Education" ADD CONSTRAINT "Education_highSchoolId_fkey" FOREIGN KEY ("highSchoolId") REFERENCES "HighSchool"("id") ON DELETE SET NULL ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-DO $$ BEGIN
-  ALTER TABLE "EssayPromptSource" ADD CONSTRAINT "EssayPromptSource_essayPromptId_fkey" FOREIGN KEY ("essayPromptId") REFERENCES "EssayPrompt"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "Essay" ADD CONSTRAINT "Essay_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "Profile"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-DO $$ BEGIN
-  ALTER TABLE "SchoolEssaySource" ADD CONSTRAINT "SchoolEssaySource_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "SchoolMetric" ADD CONSTRAINT "SchoolMetric_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-DO $$ BEGIN
-  ALTER TABLE "AssessmentResult" ADD CONSTRAINT "AssessmentResult_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "SchoolProgram" ADD CONSTRAINT "SchoolProgram_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-DO $$ BEGIN
-  ALTER TABLE "AssessmentResult" ADD CONSTRAINT "AssessmentResult_assessmentId_fkey" FOREIGN KEY ("assessmentId") REFERENCES "Assessment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "SchoolCalibration" ADD CONSTRAINT "SchoolCalibration_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-DO $$ BEGIN
-  ALTER TABLE "EssayPromptAudit" ADD CONSTRAINT "EssayPromptAudit_essayPromptId_fkey" FOREIGN KEY ("essayPromptId") REFERENCES "EssayPrompt"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "Team" ADD CONSTRAINT "Team_creatorId_fkey" FOREIGN KEY ("creatorId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-DO $$ BEGIN
-  ALTER TABLE "VaultItem" ADD CONSTRAINT "VaultItem_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "Team" ADD CONSTRAINT "Team_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE SET NULL ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-DO $$ BEGIN
-  ALTER TABLE "SchoolRecommendation" ADD CONSTRAINT "SchoolRecommendation_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "TeamMembership" ADD CONSTRAINT "TeamMembership_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-DO $$ BEGIN
-  ALTER TABLE "EssayAIResult" ADD CONSTRAINT "EssayAIResult_essayId_fkey" FOREIGN KEY ("essayId") REFERENCES "Essay"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "TeamMembership" ADD CONSTRAINT "TeamMembership_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-DO $$ BEGIN
-  ALTER TABLE "CaseView" ADD CONSTRAINT "CaseView_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "TeamInvitation" ADD CONSTRAINT "TeamInvitation_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-DO $$ BEGIN
-  ALTER TABLE "CaseView" ADD CONSTRAINT "CaseView_caseId_fkey" FOREIGN KEY ("caseId") REFERENCES "AdmissionCase"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "TeamInvitation" ADD CONSTRAINT "TeamInvitation_inviterId_fkey" FOREIGN KEY ("inviterId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-DO $$ BEGIN
-  ALTER TABLE "Resume" ADD CONSTRAINT "Resume_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "TeamInvitation" ADD CONSTRAINT "TeamInvitation_inviteeId_fkey" FOREIGN KEY ("inviteeId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-DO $$ BEGIN
-  ALTER TABLE "ResumeSection" ADD CONSTRAINT "ResumeSection_resumeId_fkey" FOREIGN KEY ("resumeId") REFERENCES "Resume"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "ProfileTargetSchool" ADD CONSTRAINT "ProfileTargetSchool_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-DO $$ BEGIN
-  ALTER TABLE "ResumeSnapshot" ADD CONSTRAINT "ResumeSnapshot_resumeId_fkey" FOREIGN KEY ("resumeId") REFERENCES "Resume"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "SchoolListItem" ADD CONSTRAINT "SchoolListItem_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-DO $$ BEGIN
-  ALTER TABLE "ResumeAIReview" ADD CONSTRAINT "ResumeAIReview_resumeId_fkey" FOREIGN KEY ("resumeId") REFERENCES "Resume"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "SchoolListItem" ADD CONSTRAINT "SchoolListItem_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "CustomRanking" ADD CONSTRAINT "CustomRanking_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "PredictionResult" ADD CONSTRAINT "PredictionResult_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "Profile"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "AdmissionCase" ADD CONSTRAINT "AdmissionCase_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "AdmissionCase" ADD CONSTRAINT "AdmissionCase_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "VerificationRequest" ADD CONSTRAINT "VerificationRequest_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "VerificationRequest" ADD CONSTRAINT "VerificationRequest_caseId_fkey" FOREIGN KEY ("caseId") REFERENCES "AdmissionCase"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "Follow" ADD CONSTRAINT "Follow_followerId_fkey" FOREIGN KEY ("followerId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "Follow" ADD CONSTRAINT "Follow_followingId_fkey" FOREIGN KEY ("followingId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "Block" ADD CONSTRAINT "Block_blockerId_fkey" FOREIGN KEY ("blockerId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "Block" ADD CONSTRAINT "Block_blockedId_fkey" FOREIGN KEY ("blockedId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "ConversationParticipant" ADD CONSTRAINT "ConversationParticipant_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "ConversationParticipant" ADD CONSTRAINT "ConversationParticipant_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "Message" ADD CONSTRAINT "Message_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "Message" ADD CONSTRAINT "Message_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "Review" ADD CONSTRAINT "Review_reviewerId_fkey" FOREIGN KEY ("reviewerId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "Review" ADD CONSTRAINT "Review_profileUserId_fkey" FOREIGN KEY ("profileUserId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "ReviewReaction" ADD CONSTRAINT "ReviewReaction_reviewId_fkey" FOREIGN KEY ("reviewId") REFERENCES "Review"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "ReviewReaction" ADD CONSTRAINT "ReviewReaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "UserList" ADD CONSTRAINT "UserList_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "UserListVote" ADD CONSTRAINT "UserListVote_listId_fkey" FOREIGN KEY ("listId") REFERENCES "UserList"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "UserListVote" ADD CONSTRAINT "UserListVote_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "Report" ADD CONSTRAINT "Report_reporterId_fkey" FOREIGN KEY ("reporterId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "AgentMessage" ADD CONSTRAINT "AgentMessage_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "AgentConversation"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "ForumPost" ADD CONSTRAINT "ForumPost_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "ForumCategory"("id") ON DELETE RESTRICT ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "ForumPost" ADD CONSTRAINT "ForumPost_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "ForumComment" ADD CONSTRAINT "ForumComment_postId_fkey" FOREIGN KEY ("postId") REFERENCES "ForumPost"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "ForumComment" ADD CONSTRAINT "ForumComment_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "ForumComment" ADD CONSTRAINT "ForumComment_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "ForumComment"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "ForumLike" ADD CONSTRAINT "ForumLike_postId_fkey" FOREIGN KEY ("postId") REFERENCES "ForumPost"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "TeamMember" ADD CONSTRAINT "TeamMember_postId_fkey" FOREIGN KEY ("postId") REFERENCES "ForumPost"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "TeamMember" ADD CONSTRAINT "TeamMember_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "TeamApplication" ADD CONSTRAINT "TeamApplication_postId_fkey" FOREIGN KEY ("postId") REFERENCES "ForumPost"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "TeamApplication" ADD CONSTRAINT "TeamApplication_applicantId_fkey" FOREIGN KEY ("applicantId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "TeamApplication" ADD CONSTRAINT "TeamApplication_resumeId_fkey" FOREIGN KEY ("resumeId") REFERENCES "Resume"("id") ON DELETE SET NULL ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "EssayExample" ADD CONSTRAINT "EssayExample_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE SET NULL ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "CaseSwipe" ADD CONSTRAINT "CaseSwipe_caseId_fkey" FOREIGN KEY ("caseId") REFERENCES "AdmissionCase"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "SwipeStats" ADD CONSTRAINT "SwipeStats_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "PointHistory" ADD CONSTRAINT "PointHistory_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "Payment" ADD CONSTRAINT "Payment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "PeerReview" ADD CONSTRAINT "PeerReview_reviewerId_fkey" FOREIGN KEY ("reviewerId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "PeerReview" ADD CONSTRAINT "PeerReview_revieweeId_fkey" FOREIGN KEY ("revieweeId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "SchoolDeadline" ADD CONSTRAINT "SchoolDeadline_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "ApplicationTimeline" ADD CONSTRAINT "ApplicationTimeline_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "ApplicationTimeline" ADD CONSTRAINT "ApplicationTimeline_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "ApplicationTask" ADD CONSTRAINT "ApplicationTask_timelineId_fkey" FOREIGN KEY ("timelineId") REFERENCES "ApplicationTimeline"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "PersonalEvent" ADD CONSTRAINT "PersonalEvent_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "PersonalEvent" ADD CONSTRAINT "PersonalEvent_globalEventId_fkey" FOREIGN KEY ("globalEventId") REFERENCES "GlobalEvent"("id") ON DELETE SET NULL ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "PersonalTask" ADD CONSTRAINT "PersonalTask_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "PersonalEvent"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "EssayPrompt" ADD CONSTRAINT "EssayPrompt_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "EssayPromptSource" ADD CONSTRAINT "EssayPromptSource_essayPromptId_fkey" FOREIGN KEY ("essayPromptId") REFERENCES "EssayPrompt"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "SchoolEssaySource" ADD CONSTRAINT "SchoolEssaySource_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "AssessmentResult" ADD CONSTRAINT "AssessmentResult_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "AssessmentResult" ADD CONSTRAINT "AssessmentResult_assessmentId_fkey" FOREIGN KEY ("assessmentId") REFERENCES "Assessment"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "EssayPromptAudit" ADD CONSTRAINT "EssayPromptAudit_essayPromptId_fkey" FOREIGN KEY ("essayPromptId") REFERENCES "EssayPrompt"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "VaultItem" ADD CONSTRAINT "VaultItem_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "SchoolRecommendation" ADD CONSTRAINT "SchoolRecommendation_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "EssayAIResult" ADD CONSTRAINT "EssayAIResult_essayId_fkey" FOREIGN KEY ("essayId") REFERENCES "Essay"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "CaseView" ADD CONSTRAINT "CaseView_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "CaseView" ADD CONSTRAINT "CaseView_caseId_fkey" FOREIGN KEY ("caseId") REFERENCES "AdmissionCase"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "Resume" ADD CONSTRAINT "Resume_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "ResumeSection" ADD CONSTRAINT "ResumeSection_resumeId_fkey" FOREIGN KEY ("resumeId") REFERENCES "Resume"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "ResumeSnapshot" ADD CONSTRAINT "ResumeSnapshot_resumeId_fkey" FOREIGN KEY ("resumeId") REFERENCES "Resume"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- AddForeignKey
+DO $$ BEGIN ALTER TABLE "ResumeAIReview" ADD CONSTRAINT "ResumeAIReview_resumeId_fkey" FOREIGN KEY ("resumeId") REFERENCES "Resume"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
