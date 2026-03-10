@@ -13,6 +13,9 @@ export class PrismaService
 {
   private readonly logger = new Logger(PrismaService.name);
 
+  /** True if pending/failed migrations detected at startup */
+  hasPendingMigrations = false;
+
   /** Slow query threshold in milliseconds */
   private readonly slowQueryThresholdMs = Number(
     process.env.PRISMA_SLOW_QUERY_MS || 200,
@@ -67,6 +70,7 @@ export class PrismaService
       try {
         await this.$connect();
         this.logger.log('Database connected successfully');
+        await this.checkMigrationStatus();
         return;
       } catch (error: unknown) {
         this.logger.warn(
@@ -85,6 +89,30 @@ export class PrismaService
         this.logger.log(`Retrying in ${delay / 1000}s...`);
         await new Promise((r) => setTimeout(r, delay));
       }
+    }
+  }
+
+  /**
+   * Check _prisma_migrations for pending or failed migrations.
+   * Sets hasPendingMigrations flag so /health/ready can return 503.
+   */
+  private async checkMigrationStatus() {
+    try {
+      const result = await this.$queryRaw<Array<{ count: bigint }>>`
+        SELECT COUNT(*)::bigint as count
+        FROM "_prisma_migrations"
+        WHERE "finished_at" IS NULL OR "rolled_back_at" IS NOT NULL
+      `;
+      const pendingCount = Number(result[0]?.count ?? 0);
+      if (pendingCount > 0) {
+        this.logger.error(
+          `CRITICAL: ${pendingCount} pending/failed migration(s) detected. Schema may be out of sync.`,
+        );
+        this.hasPendingMigrations = true;
+      }
+    } catch {
+      // _prisma_migrations table may not exist on first run — not critical
+      this.logger.warn('Could not check migration status');
     }
   }
 

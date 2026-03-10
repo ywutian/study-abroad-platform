@@ -52,7 +52,35 @@ jobs:
           docker push "${IMAGE}:latest"
           echo "IMAGE=${IMAGE}:${SHA}" >> $GITHUB_ENV
 
+      - name: Run database migrations
+        run: |
+          REGION="${{ secrets.GCP_REGION }}"
+          SHA="${GITHUB_SHA::7}"
+          IMAGE="${REGION}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/study-abroad/api:${SHA}"
+
+          # Update migration job to use the newly built image
+          gcloud run jobs update study-abroad-migrate \
+            --image="$IMAGE" \
+            --region="$REGION" \
+            --quiet 2>/dev/null || \
+          gcloud run jobs create study-abroad-migrate \
+            --image="$IMAGE" \
+            --region="$REGION" \
+            --add-cloudsql-instances=${{ secrets.GCP_CLOUDSQL_INSTANCE }} \
+            --task-timeout=300 \
+            --max-retries=0 \
+            --command="./migrate.sh" \
+            --set-secrets="DATABASE_URL=DATABASE_URL:latest" \
+            --quiet
+
+          # Execute migration and wait for completion
+          gcloud run jobs execute study-abroad-migrate \
+            --region="$REGION" \
+            --wait \
+            --quiet
+
       - name: Deploy to Cloud Run
+        if: success()
         run: |
           REGION="${{ secrets.GCP_REGION }}"
           SHA="${GITHUB_SHA::7}"

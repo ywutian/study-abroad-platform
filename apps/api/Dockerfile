@@ -64,9 +64,10 @@ COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./dist
 # Copy Prisma schema and migrations for migrate deploy
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/prisma ./prisma
 
-# Copy entrypoint script
+# Copy entrypoint and migration scripts
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/entrypoint.sh ./entrypoint.sh
-RUN chmod +x entrypoint.sh
+COPY --from=builder --chown=nestjs:nodejs /app/apps/api/migrate.sh ./migrate.sh
+RUN chmod +x entrypoint.sh migrate.sh
 
 # Run as non-root user
 USER nestjs
@@ -74,5 +75,5 @@ USER nestjs
 # Default port 3001. Cloud providers may override via PORT env var.
 EXPOSE 3001
 
-# Run migrations on startup, then start application
+# Start application (migrations run via Cloud Run Job before deploy)
 CMD ["./entrypoint.sh"]

@@ -119,6 +119,15 @@ export class HealthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ status: CheckStatus; message?: string }> {
     try {
+      // Check for pending/failed migrations (set by PrismaService.onModuleInit)
+      if (this.prisma.hasPendingMigrations) {
+        res.status(HttpStatus.SERVICE_UNAVAILABLE);
+        return {
+          status: 'error',
+          message: 'Pending or failed migrations detected',
+        };
+      }
+
       const start = Date.now();
       await this.prisma.$queryRaw`SELECT 1`;
       const latency = Date.now() - start;
