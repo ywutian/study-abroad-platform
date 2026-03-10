@@ -82,9 +82,6 @@ jobs:
       - name: Generate Prisma Client
         run: pnpm --filter api exec prisma generate
 
-      - name: Check migration drift
-        run: pnpm --filter api exec prisma migrate diff --from-migrations ./prisma/migrations --to-schema-datamodel ./prisma/schema.prisma --exit-code
-
       - name: Type check API
         run: pnpm --filter api exec tsc --noEmit --project tsconfig.build.json
 
@@ -180,6 +177,14 @@ jobs:
 
       - name: Generate Prisma Client
         run: pnpm --filter api exec prisma generate
+
+      - name: Create shadow database for drift check
+        run: PGPASSWORD=postgres psql -h localhost -U postgres -c "CREATE DATABASE studyabroad_shadow;"
+
+      - name: Check migration drift
+        run: pnpm --filter api exec prisma migrate diff --from-migrations ./prisma/migrations --to-schema-datamodel ./prisma/schema.prisma --shadow-database-url postgresql://postgres:postgres@localhost:5432/studyabroad_shadow --exit-code
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_test?schema=public
 
       - name: Enable pgvector extension
         run: PGPASSWORD=postgres psql -h localhost -U postgres -d studyabroad_test -c "CREATE EXTENSION IF NOT EXISTS vector;"
