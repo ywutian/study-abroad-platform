@@ -67,8 +67,8 @@ jobs:
           gcloud run jobs create study-abroad-migrate \
             --image="$IMAGE" \
             --region="$REGION" \
-            --vpc-access-connector=projects/${{ secrets.GCP_PROJECT_ID }}/locations/$REGION/connectors/study-abroad-connector \
-            --vpc-access-egress=private-ranges-only \
+            --vpc-connector=projects/${{ secrets.GCP_PROJECT_ID }}/locations/$REGION/connectors/study-abroad-connector \
+            --vpc-egress=private-ranges-only \
             --task-timeout=300 \
             --max-retries=0 \
             --command="./migrate.sh" \
