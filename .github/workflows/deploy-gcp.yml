@@ -66,7 +66,7 @@ jobs:
           gcloud run jobs create study-abroad-migrate \
             --image="$IMAGE" \
             --region="$REGION" \
-            --add-cloudsql-instances=${{ secrets.GCP_CLOUDSQL_INSTANCE }} \
+            --set-cloudsql-instances=${{ secrets.GCP_CLOUDSQL_INSTANCE }} \
             --task-timeout=300 \
             --max-retries=0 \
             --command="./migrate.sh" \
