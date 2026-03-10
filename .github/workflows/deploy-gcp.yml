@@ -58,22 +58,24 @@ jobs:
           SHA="${GITHUB_SHA::7}"
           IMAGE="${REGION}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/study-abroad/api:${SHA}"
 
-          # Update migration job to use the newly built image
-          gcloud run jobs update study-abroad-migrate \
-            --image="$IMAGE" \
-            --region="$REGION" \
-            --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }}" \
-            --quiet 2>/dev/null || \
-          gcloud run jobs create study-abroad-migrate \
-            --image="$IMAGE" \
-            --region="$REGION" \
-            --vpc-connector=projects/${{ secrets.GCP_PROJECT_ID }}/locations/$REGION/connectors/study-abroad-connector \
-            --vpc-egress=private-ranges-only \
-            --task-timeout=300 \
-            --max-retries=0 \
-            --command="./migrate.sh" \
-            --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }}" \
+          # Create or update migration job
+          JOB_ARGS=(
+            --image="$IMAGE"
+            --region="$REGION"
+            --vpc-connector=projects/${{ secrets.GCP_PROJECT_ID }}/locations/$REGION/connectors/study-abroad-connector
+            --vpc-egress=private-ranges-only
+            --task-timeout=300
+            --max-retries=0
+            --command="./migrate.sh"
+            --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }}"
             --quiet
+          )
+
+          if gcloud run jobs describe study-abroad-migrate --region="$REGION" --quiet >/dev/null 2>&1; then
+            gcloud run jobs update study-abroad-migrate "${JOB_ARGS[@]}"
+          else
+            gcloud run jobs create study-abroad-migrate "${JOB_ARGS[@]}"
+          fi
 
           # Execute migration and wait for completion
           gcloud run jobs execute study-abroad-migrate \
