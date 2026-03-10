@@ -462,15 +462,17 @@ jobs:
           gcloud run jobs update study-abroad-migrate \
             --image="$IMAGE" \
             --region="$REGION" \
+            --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }}" \
             --quiet 2>/dev/null || \
           gcloud run jobs create study-abroad-migrate \
             --image="$IMAGE" \
             --region="$REGION" \
-            --set-cloudsql-instances=${{ secrets.GCP_CLOUDSQL_INSTANCE }} \
+            --vpc-access-connector=projects/${{ secrets.GCP_PROJECT_ID }}/locations/$REGION/connectors/study-abroad-connector \
+            --vpc-access-egress=private-ranges-only \
             --task-timeout=300 \
             --max-retries=0 \
             --command="./migrate.sh" \
-            --set-secrets="DATABASE_URL=DATABASE_URL:latest" \
+            --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }}" \
             --quiet
 
           gcloud run jobs execute study-abroad-migrate \
