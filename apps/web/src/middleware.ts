@@ -66,11 +66,10 @@ function buildCspHeader(nonce: string): string {
 
   const directives = [
     "default-src 'self'",
-    // 'strict-dynamic' trusts scripts loaded by nonced scripts (Next.js chunk loading)
-    isDev
-      ? `script-src 'self' 'unsafe-eval' 'unsafe-inline'`
-      : `script-src 'strict-dynamic' 'nonce-${nonce}'`,
-    // 'unsafe-inline' needed for Next.js/Radix inline styles
+    // Next.js App Router generates inline scripts (hydration, RSC payload) that
+    // cannot reliably receive nonce attributes when combined with next-intl middleware.
+    // 'unsafe-inline' is needed for these framework scripts in both dev and prod.
+    isDev ? `script-src 'self' 'unsafe-eval' 'unsafe-inline'` : `script-src 'self' 'unsafe-inline'`,
     `style-src 'self' 'unsafe-inline'`,
     "img-src 'self' data: https:",
     `connect-src ${connectSrcParts.join(' ')} data:`,
@@ -124,29 +123,15 @@ export default function middleware(request: NextRequest) {
     return intlResponse;
   }
 
-  // Create a new response with nonce in request headers.
-  // NextResponse.next({ request: { headers } }) is the ONLY way to forward
-  // request headers to server components (readable via headers() in layout).
-  // Setting x-middleware-request-* on an existing response does NOT work.
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('x-nonce', nonce);
-
-  const response = NextResponse.next({
-    request: { headers: requestHeaders },
-  });
-
-  // Preserve intl middleware headers (locale cookies, x-middleware-rewrite, etc.)
-  intlResponse.headers.forEach((value, key) => {
-    // Don't overwrite our request header forwarding (x-middleware-request-*)
-    if (!key.startsWith('x-middleware-request-')) {
-      response.headers.set(key, value);
-    }
-  });
+  // Forward nonce to server components via the intl middleware's response.
+  // x-middleware-request-* headers are how Next.js forwards request headers
+  // from middleware to server components (readable via headers() in layout).
+  intlResponse.headers.set('x-middleware-request-x-nonce', nonce);
 
   // Set CSP response header (browser enforces this)
-  response.headers.set('Content-Security-Policy', csp);
+  intlResponse.headers.set('Content-Security-Policy', csp);
 
-  return response;
+  return intlResponse;
 }
 
 export const config = {
