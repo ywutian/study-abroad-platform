@@ -5,6 +5,7 @@ import { AuthorizationService } from '../../common/services/authorization.servic
 import { RedisService } from '../../common/redis/redis.service';
 import { CacheInvalidationService } from '../../common/redis/cache-invalidation.service';
 import { MemoryManagerService } from '../ai-agent/memory';
+import { AiService } from '../ai/ai.service';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
 import { Visibility, Role, Prisma } from '@prisma/client';
 
@@ -170,6 +171,12 @@ describe('ProfileService', () => {
           provide: CacheInvalidationService,
           useValue: {
             onProfileChange: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: AiService,
+          useValue: {
+            chat: jest.fn().mockResolvedValue('{}'),
           },
         },
         {
