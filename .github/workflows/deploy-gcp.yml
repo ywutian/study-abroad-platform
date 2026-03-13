@@ -72,6 +72,11 @@ jobs:
           )
 
           if gcloud run jobs describe study-abroad-migrate --region="$REGION" --quiet >/dev/null 2>&1; then
+            # Clear any previously set env var to avoid conflict with secret reference
+            gcloud run jobs update study-abroad-migrate \
+              --region="$REGION" \
+              --remove-env-vars=DATABASE_URL \
+              --quiet 2>/dev/null || true
             gcloud run jobs update study-abroad-migrate "${JOB_ARGS[@]}"
           else
             gcloud run jobs create study-abroad-migrate "${JOB_ARGS[@]}"
