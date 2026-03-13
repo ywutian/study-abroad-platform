@@ -102,6 +102,8 @@ jobs:
             --min-instances=0 \
             --cpu-throttling \
             --add-cloudsql-instances=${{ secrets.GCP_CLOUDSQL_INSTANCE }} \
+            --set-env-vars="NODE_ENV=production,FRONTEND_URL=https://study-abroad-platform-web.vercel.app,CORS_ORIGINS=https://study-abroad-platform-web.vercel.app,OPENAI_MODEL=gpt-4o-mini" \
+            --set-secrets="DATABASE_URL=database-url:latest,JWT_SECRET=jwt-secret:latest,JWT_REFRESH_SECRET=jwt-refresh-secret:latest,VAULT_ENCRYPTION_KEY=vault-encryption-key:latest,OPENAI_API_KEY=openai-api-key:latest,REDIS_URL=redis-url:latest,RESEND_API_KEY=resend-api-key:latest,TAVILY_API_KEY=tavily-api-key:latest" \
             --timeout=300 \
             --quiet
 
