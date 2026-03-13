@@ -115,16 +115,19 @@ jobs:
           REGION="${{ secrets.GCP_REGION }}"
           URL=$(gcloud run services describe study-abroad-api --region=$REGION --format='value(status.url)')
           echo "url=$URL" >> $GITHUB_OUTPUT
-          sleep 10
+          sleep 15
           for i in 1 2 3 4 5; do
-            STATUS=$(curl -s -o /dev/null -w '%{http_code}' "$URL/health" --max-time 15 || echo "000")
-            if [ "$STATUS" = "200" ]; then
-              echo "✅ Health check passed (attempt $i)"
+            RESPONSE=$(curl -s "$URL/health" --max-time 15 || echo '{"data":{"status":"unreachable"}}')
+            HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' "$URL/health" --max-time 15 || echo "000")
+            HEALTH_STATUS=$(echo "$RESPONSE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('data',{}).get('status','unknown'))" 2>/dev/null || echo "unknown")
+
+            if [ "$HTTP_CODE" = "200" ] && [ "$HEALTH_STATUS" = "ok" -o "$HEALTH_STATUS" = "degraded" ]; then
+              echo "✅ Health check passed (attempt $i): HTTP $HTTP_CODE, status=$HEALTH_STATUS"
               echo "::notice title=API deployed::Cloud Run URL: $URL"
               exit 0
             fi
-            echo "⏳ Health check attempt $i: HTTP $STATUS"
-            sleep 5
+            echo "⏳ Health check attempt $i: HTTP $HTTP_CODE, status=$HEALTH_STATUS"
+            sleep 10
           done
           echo "::error::Health check failed after 5 attempts"
           exit 1
