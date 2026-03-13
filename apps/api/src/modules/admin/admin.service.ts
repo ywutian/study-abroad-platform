@@ -20,6 +20,10 @@ import {
   CreateGlobalEventDto,
   UpdateGlobalEventDto,
 } from './dto/global-event.dto';
+import {
+  CreateSchoolCalibrationDto,
+  UpdateSchoolCalibrationDto,
+} from './dto/school-calibration.dto';
 
 /**
  * 审计日志操作类型
@@ -31,7 +35,10 @@ type AuditAction =
   | 'DELETE_REPORT'
   | 'VERIFY_USER'
   | 'BAN_USER'
-  | 'UNBAN_USER';
+  | 'UNBAN_USER'
+  | 'CREATE_CALIBRATION'
+  | 'UPDATE_CALIBRATION'
+  | 'DELETE_CALIBRATION';
 
 @Injectable()
 export class AdminService {
@@ -805,5 +812,131 @@ export class AdminService {
     const event = await this.prisma.globalEvent.findUnique({ where: { id } });
     if (!event) throw new NotFoundException('全局事件不存在');
     await this.prisma.globalEvent.delete({ where: { id } });
+  }
+
+  // ============================================
+  // School Calibration Management
+  // ============================================
+
+  async getCalibrations() {
+    return this.prisma.schoolCalibration.findMany({
+      include: {
+        school: {
+          select: { id: true, name: true, nameZh: true, usNewsRank: true },
+        },
+      },
+      orderBy: { updatedAt: 'desc' },
+    });
+  }
+
+  async createCalibration(adminId: string, dto: CreateSchoolCalibrationDto) {
+    const school = await this.prisma.school.findUnique({
+      where: { id: dto.schoolId },
+      select: { id: true, name: true },
+    });
+    if (!school) throw new NotFoundException('School not found');
+
+    try {
+      const calibration = await this.prisma.schoolCalibration.create({
+        data: {
+          schoolId: dto.schoolId,
+          multiplier: dto.multiplier,
+          reason: dto.reason,
+        },
+        include: {
+          school: {
+            select: { id: true, name: true, nameZh: true, usNewsRank: true },
+          },
+        },
+      });
+
+      await this.logAudit(
+        adminId,
+        'CREATE_CALIBRATION',
+        'schoolCalibration',
+        calibration.id,
+        {
+          schoolId: dto.schoolId,
+          schoolName: school.name,
+          multiplier: dto.multiplier,
+          reason: dto.reason,
+        },
+      );
+
+      return calibration;
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2002'
+      ) {
+        throw new ConflictException(
+          'Calibration already exists for this school',
+        );
+      }
+      throw e;
+    }
+  }
+
+  async updateCalibration(
+    adminId: string,
+    id: string,
+    dto: UpdateSchoolCalibrationDto,
+  ) {
+    const existing = await this.prisma.schoolCalibration.findUnique({
+      where: { id },
+      include: { school: { select: { name: true } } },
+    });
+    if (!existing) throw new NotFoundException('Calibration not found');
+
+    const updated = await this.prisma.schoolCalibration.update({
+      where: { id },
+      data: {
+        multiplier: dto.multiplier,
+        reason: dto.reason,
+      },
+      include: {
+        school: {
+          select: { id: true, name: true, nameZh: true, usNewsRank: true },
+        },
+      },
+    });
+
+    await this.logAudit(
+      adminId,
+      'UPDATE_CALIBRATION',
+      'schoolCalibration',
+      id,
+      {
+        before: {
+          multiplier: Number(existing.multiplier),
+          reason: existing.reason,
+        },
+        after: { multiplier: dto.multiplier, reason: dto.reason },
+        schoolName: existing.school.name,
+      },
+    );
+
+    return updated;
+  }
+
+  async deleteCalibration(adminId: string, id: string) {
+    const existing = await this.prisma.schoolCalibration.findUnique({
+      where: { id },
+      include: { school: { select: { name: true } } },
+    });
+    if (!existing) throw new NotFoundException('Calibration not found');
+
+    await this.prisma.schoolCalibration.delete({ where: { id } });
+
+    await this.logAudit(
+      adminId,
+      'DELETE_CALIBRATION',
+      'schoolCalibration',
+      id,
+      {
+        schoolName: existing.school.name,
+        multiplier: Number(existing.multiplier),
+      },
+    );
   }
 }

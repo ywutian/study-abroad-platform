@@ -235,6 +235,19 @@ export class PredictionService {
     }
   }
 
+  /**
+   * Invalidate school calibration cache (called by AdminController after CUD).
+   * Clears both in-memory and Redis layers so next prediction re-fetches from DB.
+   */
+  async invalidateCalibrationCache(): Promise<void> {
+    this.schoolCalibrationMap = null;
+    try {
+      await this.redis.del(SCHOOL_CALIBRATION_CACHE_KEY);
+    } catch {
+      /* soft-fail: TTL will expire naturally */
+    }
+  }
+
   // ==================== 缓存管理 ====================
 
   /**

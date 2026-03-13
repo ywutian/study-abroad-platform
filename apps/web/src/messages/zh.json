@@ -822,6 +822,13 @@
       "delete": "删除",
       "addEducation": "添加教育经历"
     },
+    "aiSort": "AI 排序",
+    "aiSorting": "排序中...",
+    "aiSortPreview": "AI 排序预览",
+    "aiSortSummary": "总结",
+    "aiSortAccept": "应用排序",
+    "aiSortReject": "取消",
+    "aiSortApplied": "已应用 AI 建议排序",
     "activityCategories": {
       "academic": "学术",
       "arts": "艺术",
@@ -1306,6 +1313,13 @@
       "applicantProfile": "申请者档案",
       "grade": "年级",
       "activities": "活动数量",
+      "activityHighlights": "活动亮点",
+      "awards": "奖项",
+      "highestLevel": "最高: {level}",
+      "apCount": "AP/IB课程",
+      "nationality": "国籍",
+      "targetMajor": "目标专业",
+      "schoolType": "学校类型",
       "predictResults": "预测录取结果",
       "schools": "所学校",
       "selectResult": "选择结果...",
@@ -4585,6 +4599,7 @@
       "content": "内容审核",
       "payments": "支付管理",
       "analytics": "数据分析",
+      "calibrations": "学校校准",
       "activityTemplates": "活动模板",
       "settings": "系统设置"
     },
@@ -4832,6 +4847,27 @@
         "FAILURE": "失败",
         "DENIED": "拒绝"
       }
+    },
+    "calibrations": {
+      "title": "学校校准",
+      "description": "按学校调整录取概率乘数",
+      "create": "添加校准",
+      "editTitle": "编辑校准",
+      "school": "学校",
+      "multiplier": "乘数",
+      "reason": "原因",
+      "actions": "操作",
+      "multiplierHelper": "范围 0.5–2.0。大于 1.0 提升概率，小于 1.0 降低概率。",
+      "searchSchool": "搜索学校...",
+      "save": "保存",
+      "cancel": "取消",
+      "delete": "删除",
+      "created": "校准已创建",
+      "updated": "校准已更新",
+      "deleted": "校准已删除",
+      "confirmDelete": "删除校准",
+      "confirmDeleteDesc": "确定要删除此校准吗？该学校的预测将恢复为默认值。",
+      "noCalibrations": "暂无校准配置"
     },
     "deadlines": {
       "title": "截止日期管理",

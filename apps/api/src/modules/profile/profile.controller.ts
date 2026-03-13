@@ -17,6 +17,7 @@ import { SchoolListService } from '../school-list/school-list.service';
 import { RedisService } from '../../common/redis/redis.service';
 import { CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
+import { ThrottleAI } from '../../common/decorators/throttle.decorator';
 import { Role } from '@prisma/client';
 import {
   UpdateProfileDto,
@@ -246,6 +247,13 @@ export class ProfileController {
     @Body() data: CreateActivityDto,
   ) {
     return this.profileService.createActivity(user.id, data);
+  }
+
+  @Post('me/activities/ai-sort')
+  @ThrottleAI()
+  @ApiOperation({ summary: 'AI智能排序活动' })
+  async aiSortActivities(@CurrentUser() user: CurrentUserPayload) {
+    return this.profileService.aiSortActivities(user.id, user.locale);
   }
 
   @Put('me/activities/reorder')

@@ -1,13 +1,30 @@
 'use client';
 
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Plus, Pencil, Trash2, GripVertical } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { BookOpen, Plus, Pencil, Trash2, GripVertical, Sparkles, Loader2 } from 'lucide-react';
 import { ACTIVITY_CATEGORY_KEYS, TIER_BADGE_CONFIG } from './constants';
 import type { Activity } from './types';
+
+interface AiSortResult {
+  suggestedOrder: Array<{
+    activityId: string;
+    rank: number;
+    reasoning: string;
+  }>;
+  summary: string;
+}
 
 interface ActivitiesTabProps {
   activities: Activity[];
@@ -15,6 +32,11 @@ interface ActivitiesTabProps {
   onEditActivity: (activity: Activity) => void;
   onDeleteActivity: (id: string) => void;
   onReorderActivities: (ids: string[]) => void;
+  aiSortResult?: AiSortResult | null;
+  aiSortPending?: boolean;
+  onAiSort?: () => void;
+  onAiSortAccept?: (ids: string[]) => void;
+  onAiSortDismiss?: () => void;
 }
 
 export function ActivitiesTab({
@@ -23,8 +45,25 @@ export function ActivitiesTab({
   onEditActivity,
   onDeleteActivity,
   onReorderActivities,
+  aiSortResult,
+  aiSortPending,
+  onAiSort,
+  onAiSortAccept,
+  onAiSortDismiss,
 }: ActivitiesTabProps) {
   const t = useTranslations();
+  const [previewOpen, setPreviewOpen] = useState(false);
+
+  // Build sorted preview from AI result (spread to avoid mutating state)
+  const sortedPreview = aiSortResult?.suggestedOrder
+    ? [...aiSortResult.suggestedOrder]
+        .sort((a, b) => a.rank - b.rank)
+        .map((item) => ({
+          ...item,
+          activity: activities.find((a) => a.id === item.activityId),
+        }))
+        .filter((item) => item.activity)
+    : [];
 
   return (
     <Card className="overflow-hidden">
@@ -37,11 +76,101 @@ export function ActivitiesTab({
           </CardTitle>
           <CardDescription>{t('profile.activitiesDesc')}</CardDescription>
         </div>
-        <Button onClick={onAddActivity} className="gap-2 bg-warning hover:opacity-90">
-          <Plus className="h-4 w-4" />
-          {t('profile.actions.addActivity')}
-        </Button>
+        <div className="flex gap-2">
+          {onAiSort && (
+            <Button
+              variant="outline"
+              onClick={() => onAiSort()}
+              disabled={activities.length < 2 || aiSortPending}
+              className="gap-2"
+            >
+              {aiSortPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="h-4 w-4" />
+              )}
+              {t('profile.aiSort')}
+            </Button>
+          )}
+          <Button onClick={onAddActivity} className="gap-2 bg-warning hover:opacity-90">
+            <Plus className="h-4 w-4" />
+            {t('profile.actions.addActivity')}
+          </Button>
+        </div>
       </CardHeader>
+
+      {/* AI Sort Preview Dialog */}
+      <Dialog
+        open={previewOpen || !!aiSortResult}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPreviewOpen(false);
+            onAiSortDismiss?.();
+          }
+        }}
+      >
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              {t('profile.aiSortPreview')}
+            </DialogTitle>
+          </DialogHeader>
+          {aiSortResult && (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">{aiSortResult.summary}</p>
+              <div className="space-y-2 max-h-80 overflow-y-auto">
+                {sortedPreview.map((item) => (
+                  <div
+                    key={item.activityId}
+                    className="flex items-start gap-3 rounded-lg border p-3"
+                  >
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                      {item.rank}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-medium text-sm">{item.activity!.name}</p>
+                        <Badge variant="secondary" className="text-xs">
+                          {t(
+                            ACTIVITY_CATEGORY_KEYS[item.activity!.category] ||
+                              'profile.activityCategories.other'
+                          )}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">{item.reasoning}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setPreviewOpen(false);
+                onAiSortDismiss?.();
+              }}
+            >
+              {t('profile.aiSortReject')}
+            </Button>
+            <Button
+              onClick={() => {
+                if (aiSortResult?.suggestedOrder) {
+                  const ids = [...aiSortResult.suggestedOrder]
+                    .sort((a, b) => a.rank - b.rank)
+                    .map((item) => item.activityId);
+                  onAiSortAccept?.(ids);
+                }
+                setPreviewOpen(false);
+              }}
+            >
+              {t('profile.aiSortAccept')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <CardContent>
         {activities.length > 0 ? (
           <div className="space-y-3">

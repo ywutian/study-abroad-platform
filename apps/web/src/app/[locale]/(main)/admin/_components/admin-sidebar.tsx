@@ -25,6 +25,7 @@ import {
   TrendingUp,
   Database,
   Layers,
+  SlidersHorizontal,
 } from 'lucide-react';
 
 interface AdminStats {
@@ -57,6 +58,7 @@ export function AdminSidebar() {
     { href: '/admin/users', icon: Users, label: t('sidebar.users') },
     { href: '/admin/schools', icon: GraduationCap, label: t('sidebar.schools') },
     { href: '/admin/data-updates', icon: Database, label: t('sidebar.dataUpdates') },
+    { href: '/admin/calibrations', icon: SlidersHorizontal, label: t('sidebar.calibrations') },
     { href: '/admin/deadlines', icon: Calendar, label: t('sidebar.deadlines') },
     { href: '/admin/events', icon: Globe, label: t('sidebar.events') },
     { href: '/admin/essays', icon: PenTool, label: t('sidebar.essays') },

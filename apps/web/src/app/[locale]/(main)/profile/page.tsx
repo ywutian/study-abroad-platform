@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { Download, FileText, Save, User, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth';
+import { AI_TIMEOUTS } from '@/lib/constants';
 
 // Code-split heavy form components for better initial load performance
 const TestScoreForm = dynamic(
@@ -232,6 +233,26 @@ export default function ProfilePage() {
       apiClient.put('/profiles/me/activities/reorder', { ids: activityIds }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+    },
+  });
+
+  const [aiSortResult, setAiSortResult] = useState<{
+    suggestedOrder: Array<{ activityId: string; rank: number; reasoning: string }>;
+    summary: string;
+  } | null>(null);
+
+  const aiSortMutation = useMutation({
+    mutationFn: () =>
+      apiClient.post(
+        '/profiles/me/activities/ai-sort',
+        {},
+        { timeout: AI_TIMEOUTS.AI_REQUEST }
+      ) as Promise<{
+        suggestedOrder: Array<{ activityId: string; rank: number; reasoning: string }>;
+        summary: string;
+      }>,
+    onSuccess: (data) => {
+      setAiSortResult(data);
     },
   });
 
@@ -460,6 +481,15 @@ export default function ProfilePage() {
                   onEditActivity={handleEditActivity}
                   onDeleteActivity={(id) => deleteActivityMutation.mutate(id)}
                   onReorderActivities={(ids) => reorderActivitiesMutation.mutate(ids)}
+                  aiSortResult={aiSortResult}
+                  aiSortPending={aiSortMutation.isPending}
+                  onAiSort={() => aiSortMutation.mutate()}
+                  onAiSortAccept={(ids) => {
+                    reorderActivitiesMutation.mutate(ids);
+                    setAiSortResult(null);
+                    toast.success(t('profile.aiSortApplied'));
+                  }}
+                  onAiSortDismiss={() => setAiSortResult(null)}
                 />
               )}
 

@@ -51,6 +51,8 @@ const SWIPE_CASE_INCLUDE = {
         select: {
           grade: true,
           currentSchoolType: true,
+          nationality: true,
+          targetMajor: true,
           activities: {
             select: { category: true },
           },
@@ -65,6 +67,15 @@ const SWIPE_CASE_INCLUDE = {
     },
   },
 } as const;
+
+// 奖项等级排序 (从高到低)
+const AWARD_LEVEL_ORDER = [
+  'INTERNATIONAL',
+  'NATIONAL',
+  'STATE',
+  'REGIONAL',
+  'SCHOOL',
+];
 
 type AdmissionCaseWithDetails = Prisma.AdmissionCaseGetPayload<{
   include: typeof SWIPE_CASE_INCLUDE;
@@ -478,38 +489,43 @@ export class SwipeService {
 
   // ============ Helper Methods ============
 
-  /** 将 AdmissionCase (含 school + user profile) 映射为 SwipeCaseDto */
-  private mapCaseToDto(c: AdmissionCaseWithDetails): SwipeCaseDto {
-    const profile = c.user?.profile;
-
-    // 从用户档案聚合匿名化信息
+  /**
+   * 从用户档案聚合匿名化信息 (活动、奖项、AP/IB)。
+   * 供 mapCaseToDto() 和 getChallengeCase() 共用，避免逻辑重复。
+   */
+  private aggregateProfileInfo(
+    profile: AdmissionCaseWithDetails['user']['profile'],
+  ) {
     const activityCount = profile?.activities?.length ?? 0;
     const awardCount = profile?.awards?.length ?? 0;
 
-    // 活动类别去重取前 3
     const activityHighlights = profile?.activities
       ? [...new Set(profile.activities.map((a) => a.category))].slice(0, 3)
       : [];
 
-    // 奖项最高等级
-    const AWARD_LEVEL_ORDER = [
-      'INTERNATIONAL',
-      'NATIONAL',
-      'STATE',
-      'REGIONAL',
-      'SCHOOL',
-    ];
     const highestAwardLevel = profile?.awards?.length
       ? AWARD_LEVEL_ORDER.find((lvl) =>
           profile.awards.some((a) => a.level === lvl),
         ) || undefined
       : undefined;
 
-    // AP/IB 门数
-    const apScores =
-      profile?.testScores?.filter(
-        (ts) => ts.type === 'AP' || ts.type === 'IB',
-      ) ?? [];
+    const apCount =
+      profile?.testScores?.filter((ts) => ts.type === 'AP' || ts.type === 'IB')
+        ?.length ?? 0;
+
+    return {
+      activityCount,
+      activityHighlights,
+      awardCount,
+      highestAwardLevel,
+      apCount: apCount || undefined,
+    };
+  }
+
+  /** 将 AdmissionCase (含 school + user profile) 映射为 SwipeCaseDto */
+  private mapCaseToDto(c: AdmissionCaseWithDetails): SwipeCaseDto {
+    const profile = c.user?.profile;
+    const aggregated = this.aggregateProfileInfo(profile);
 
     return {
       id: c.id,
@@ -537,11 +553,7 @@ export class SwipeService {
       // 申请者档案聚合信息 (匿名化)
       applicantGrade: profile?.grade || undefined,
       applicantSchoolType: profile?.currentSchoolType || undefined,
-      activityCount,
-      activityHighlights,
-      awardCount,
-      highestAwardLevel,
-      apCount: apScores.length || undefined,
+      ...aggregated,
     };
   }
 
@@ -641,35 +653,15 @@ export class SwipeService {
         userId: randomApplicant.userId,
         visibility: { in: [Visibility.ANONYMOUS, Visibility.VERIFIED_ONLY] },
       },
-      include: {
-        school: {
-          select: {
-            id: true,
-            name: true,
-            nameZh: true,
-            usNewsRank: true,
-            acceptanceRate: true,
-          },
-        },
-        user: {
-          select: {
-            profile: {
-              select: {
-                grade: true,
-                currentSchoolType: true,
-                gpa: true,
-                gpaScale: true,
-              },
-            },
-          },
-        },
-      },
+      include: SWIPE_CASE_INCLUDE,
       take: 10,
     });
 
     if (cases.length < 3) return null;
 
     const profile = cases[0]?.user?.profile;
+    const aggregated = this.aggregateProfileInfo(profile);
+
     return {
       applicantProfile: {
         grade: profile?.grade,
@@ -677,7 +669,9 @@ export class SwipeService {
         gpa: cases[0]?.gpaRange,
         sat: cases[0]?.satRange,
         toefl: cases[0]?.toeflRange,
-        activityCount: cases[0]?.tags?.length ?? 0,
+        nationality: profile?.nationality || undefined,
+        targetMajor: profile?.targetMajor || undefined,
+        ...aggregated,
       },
       schools: cases.map((c) => ({
         caseId: c.id,
@@ -685,6 +679,7 @@ export class SwipeService {
         schoolName: c.school?.name,
         schoolNameZh: c.school?.nameZh,
         usNewsRank: c.school?.usNewsRank,
+        acceptanceRate: clampPercentRate(c.school?.acceptanceRate),
         major: c.major,
         round: c.round,
       })),
@@ -718,6 +713,26 @@ export class SwipeService {
 
     const accuracy =
       cases.length > 0 ? Math.round((correct / cases.length) * 100) : 0;
+
+    // Memory integration: record challenge results
+    if (this.memoryManager) {
+      try {
+        await this.memoryManager.remember(userId, {
+          type: MemoryType.DECISION,
+          category: 'challenge_prediction',
+          content: `社区挑战：${correct}/${cases.length} 正确 (${accuracy}%)`,
+          importance: accuracy >= 80 ? 0.6 : 0.4,
+          metadata: {
+            correct,
+            total: cases.length,
+            accuracy,
+            source: 'challenge',
+          },
+        });
+      } catch (err) {
+        this.logger.warn('Failed to save challenge memory', err);
+      }
+    }
 
     return {
       results,

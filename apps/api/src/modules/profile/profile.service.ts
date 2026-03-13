@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
   Logger,
   Optional,
 } from '@nestjs/common';
@@ -34,6 +35,8 @@ import {
   UpdateEducationDto,
 } from './dto';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
+import { AiService, ChatMessage } from '../ai/ai.service';
+import { extractJsonFromLlm } from '../ai-agent/tools/helpers/llm-json.helper';
 import { RedisService } from '../../common/redis/redis.service';
 import { CacheInvalidationService } from '../../common/redis/cache-invalidation.service';
 
@@ -62,6 +65,7 @@ export class ProfileService {
     private auth: AuthorizationService,
     private redis: RedisService,
     private cacheInvalidation: CacheInvalidationService,
+    private aiService: AiService,
     @Optional()
     private memoryManager?: MemoryManagerService,
   ) {}
@@ -645,6 +649,166 @@ export class ProfileService {
       ),
     );
     await this.cacheInvalidation.onProfileChange(userId);
+  }
+
+  /**
+   * Use AI to suggest an optimal activity ordering based on college admissions strategy.
+   */
+  async aiSortActivities(
+    userId: string,
+    locale: string,
+  ): Promise<{
+    suggestedOrder: Array<{
+      activityId: string;
+      rank: number;
+      reasoning: string;
+    }>;
+    summary: string;
+  }> {
+    const profile = await this.prisma.profile.findUnique({
+      where: { userId },
+      select: {
+        targetMajor: true,
+        grade: true,
+        activities: {
+          orderBy: { order: 'asc' },
+          select: {
+            id: true,
+            name: true,
+            category: true,
+            role: true,
+            description: true,
+            hoursPerWeek: true,
+            weeksPerYear: true,
+            isOngoing: true,
+          },
+        },
+      },
+    });
+
+    const activities = profile?.activities ?? [];
+    if (activities.length === 0) {
+      throw new BadRequestException('No activities to sort');
+    }
+
+    if (activities.length === 1) {
+      return {
+        suggestedOrder: [
+          {
+            activityId: activities[0].id,
+            rank: 1,
+            reasoning:
+              locale === 'zh'
+                ? '只有一项活动，无需排序'
+                : 'Only one activity, no sorting needed',
+          },
+        ],
+        summary:
+          locale === 'zh'
+            ? '只有一项活动，无需排序。'
+            : 'Only one activity, no sorting needed.',
+      };
+    }
+
+    const isZh = locale === 'zh';
+    const activitiesJson = activities.map((a, i) => ({
+      index: i + 1,
+      id: a.id,
+      name: a.name,
+      category: a.category,
+      role: a.role || undefined,
+      description: a.description || undefined,
+      hoursPerWeek: a.hoursPerWeek ?? undefined,
+      weeksPerYear: a.weeksPerYear ?? undefined,
+      isOngoing: a.isOngoing,
+    }));
+
+    const systemPrompt = isZh
+      ? `你是一位经验丰富的美国大学申请顾问。请根据以下标准为学生的课外活动排序：
+1. 与目标专业的关联度
+2. 领导力和角色重要性
+3. 时间投入和持续性
+4. 独特性和差异化
+5. 影响力和成就
+
+请返回JSON格式：{"suggestedOrder": [{"activityId": "...", "rank": 1, "reasoning": "简短理由"}], "summary": "整体排序策略总结"}`
+      : `You are an experienced US college admissions counselor. Rank the student's extracurricular activities by:
+1. Relevance to intended major
+2. Leadership and role significance
+3. Time commitment and consistency
+4. Uniqueness and differentiation
+5. Impact and achievement
+
+Return JSON: {"suggestedOrder": [{"activityId": "...", "rank": 1, "reasoning": "brief reason"}], "summary": "overall sorting strategy summary"}`;
+
+    const userPrompt = isZh
+      ? `目标专业：${profile?.targetMajor || '未指定'}
+年级：${profile?.grade || '未指定'}
+
+活动列表：
+${JSON.stringify(activitiesJson, null, 2)}`
+      : `Intended major: ${profile?.targetMajor || 'Not specified'}
+Grade: ${profile?.grade || 'Not specified'}
+
+Activities:
+${JSON.stringify(activitiesJson, null, 2)}`;
+
+    const messages: ChatMessage[] = [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ];
+
+    try {
+      const result = await this.aiService.chat(messages, { temperature: 0.3 });
+      const parsed = extractJsonFromLlm<{
+        suggestedOrder?: Array<{
+          activityId: string;
+          rank: number;
+          reasoning: string;
+        }>;
+        summary?: string;
+      }>(result);
+
+      if (!parsed?.suggestedOrder || !Array.isArray(parsed.suggestedOrder)) {
+        return this.buildFallbackSort(activities, isZh);
+      }
+
+      // Filter out invalid activityIds (prevent AI hallucination)
+      const validIds = new Set(activities.map((a) => a.id));
+      const validOrder = parsed.suggestedOrder.filter((item) =>
+        validIds.has(item.activityId),
+      );
+
+      if (validOrder.length === 0) {
+        return this.buildFallbackSort(activities, isZh);
+      }
+
+      return {
+        suggestedOrder: validOrder,
+        summary:
+          parsed.summary ||
+          (isZh ? 'AI排序建议已生成' : 'AI sorting suggestion generated'),
+      };
+    } catch (error) {
+      this.logger.warn('AI activity sort failed, returning fallback', error);
+      return this.buildFallbackSort(activities, isZh);
+    }
+  }
+
+  private buildFallbackSort(
+    activities: Array<{ id: string; name: string }>,
+    isZh: boolean,
+  ) {
+    return {
+      suggestedOrder: activities.map((a, i) => ({
+        activityId: a.id,
+        rank: i + 1,
+        reasoning: isZh ? '保持当前顺序' : 'Keeping current order',
+      })),
+      summary: isZh
+        ? 'AI分析暂不可用，保持当前排序。'
+        : 'AI analysis temporarily unavailable, keeping current order.',
+    };
   }
 
   // ============================================

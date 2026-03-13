@@ -7,3 +7,4 @@ export * from './ban-user.dto';
 export * from './trigger-data-sync.dto';
 export * from './activity-template.dto';
 export * from './broadcast-notification.dto';
+export * from './school-calibration.dto';

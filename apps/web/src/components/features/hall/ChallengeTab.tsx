@@ -10,7 +10,18 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { LoadingState } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Target, RefreshCw, CheckCircle2, XCircle, GraduationCap, Trophy } from 'lucide-react';
+import {
+  Target,
+  RefreshCw,
+  CheckCircle2,
+  XCircle,
+  GraduationCap,
+  Trophy,
+  Award,
+  BookOpen,
+  Globe,
+  Briefcase,
+} from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -27,6 +38,12 @@ interface ChallengeCase {
     sat?: string;
     toefl?: string;
     activityCount: number;
+    activityHighlights?: string[];
+    awardCount?: number;
+    highestAwardLevel?: string;
+    apCount?: number;
+    nationality?: string;
+    targetMajor?: string;
   };
   schools: Array<{
     caseId: string;
@@ -34,6 +51,7 @@ interface ChallengeCase {
     schoolName: string;
     schoolNameZh?: string;
     usNewsRank?: number;
+    acceptanceRate?: number;
     major?: string;
     round?: string;
   }>;
@@ -70,8 +88,8 @@ export function ChallengeTab() {
   });
 
   const submitMutation = useMutation({
-    mutationFn: (guesses: Record<string, string>) =>
-      apiClient.post<ChallengeResult>('/halls/swipe/challenge', { guesses }),
+    mutationFn: (guessData: Record<string, string>) =>
+      apiClient.post<ChallengeResult>('/halls/swipe/challenge', { guesses: guessData }),
     onSuccess: (data) => {
       setResult(data);
     },
@@ -109,6 +127,8 @@ export function ChallengeTab() {
     );
   }
 
+  const { applicantProfile } = challenge;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -124,37 +144,104 @@ export function ChallengeTab() {
             {t('challenge.applicantProfile')}
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          {/* Basic Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {challenge.applicantProfile.gpa && (
+            {applicantProfile.gpa && (
               <div>
                 <p className="text-xs text-muted-foreground">GPA</p>
-                <p className="font-medium">{challenge.applicantProfile.gpa}</p>
+                <p className="font-medium">{applicantProfile.gpa}</p>
               </div>
             )}
-            {challenge.applicantProfile.sat && (
+            {applicantProfile.sat && (
               <div>
                 <p className="text-xs text-muted-foreground">SAT</p>
-                <p className="font-medium">{challenge.applicantProfile.sat}</p>
+                <p className="font-medium">{applicantProfile.sat}</p>
               </div>
             )}
-            {challenge.applicantProfile.toefl && (
+            {applicantProfile.toefl && (
               <div>
                 <p className="text-xs text-muted-foreground">TOEFL</p>
-                <p className="font-medium">{challenge.applicantProfile.toefl}</p>
+                <p className="font-medium">{applicantProfile.toefl}</p>
               </div>
             )}
-            {challenge.applicantProfile.grade && (
+            {applicantProfile.grade && (
               <div>
                 <p className="text-xs text-muted-foreground">{t('challenge.grade')}</p>
-                <p className="font-medium">{challenge.applicantProfile.grade}</p>
+                <p className="font-medium">{applicantProfile.grade}</p>
+              </div>
+            )}
+            {applicantProfile.schoolType && (
+              <div>
+                <p className="text-xs text-muted-foreground">{t('challenge.schoolType')}</p>
+                <p className="font-medium">{applicantProfile.schoolType}</p>
               </div>
             )}
             <div>
               <p className="text-xs text-muted-foreground">{t('challenge.activities')}</p>
-              <p className="font-medium">{challenge.applicantProfile.activityCount}</p>
+              <p className="font-medium">{applicantProfile.activityCount}</p>
             </div>
+            {applicantProfile.apCount != null && applicantProfile.apCount > 0 && (
+              <div>
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <BookOpen className="h-3 w-3" />
+                  {t('challenge.apCount')}
+                </p>
+                <p className="font-medium">{applicantProfile.apCount}</p>
+              </div>
+            )}
+            {applicantProfile.awardCount != null && applicantProfile.awardCount > 0 && (
+              <div>
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Award className="h-3 w-3" />
+                  {t('challenge.awards')}
+                </p>
+                <p className="font-medium">
+                  {applicantProfile.awardCount}
+                  {applicantProfile.highestAwardLevel && (
+                    <span className="text-xs text-muted-foreground ml-1">
+                      ({t('challenge.highestLevel', { level: applicantProfile.highestAwardLevel })})
+                    </span>
+                  )}
+                </p>
+              </div>
+            )}
+            {applicantProfile.nationality && (
+              <div>
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Globe className="h-3 w-3" />
+                  {t('challenge.nationality')}
+                </p>
+                <p className="font-medium">{applicantProfile.nationality}</p>
+              </div>
+            )}
+            {applicantProfile.targetMajor && (
+              <div>
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Briefcase className="h-3 w-3" />
+                  {t('challenge.targetMajor')}
+                </p>
+                <p className="font-medium">{applicantProfile.targetMajor}</p>
+              </div>
+            )}
           </div>
+
+          {/* Activity Highlights */}
+          {applicantProfile.activityHighlights &&
+            applicantProfile.activityHighlights.length > 0 && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1.5">
+                  {t('challenge.activityHighlights')}
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {applicantProfile.activityHighlights.map((cat) => (
+                    <Badge key={cat} variant="secondary" className="text-xs">
+                      {cat}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
         </CardContent>
       </Card>
 

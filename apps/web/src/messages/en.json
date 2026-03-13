@@ -877,6 +877,13 @@
       "addSchool": "Add School",
       "addEducation": "Add Education"
     },
+    "aiSort": "AI Sort",
+    "aiSorting": "Sorting...",
+    "aiSortPreview": "AI Sort Preview",
+    "aiSortSummary": "Summary",
+    "aiSortAccept": "Apply Order",
+    "aiSortReject": "Cancel",
+    "aiSortApplied": "AI suggested order applied",
     "activityCategories": {
       "academic": "Academic",
       "arts": "Arts",
@@ -1306,6 +1313,13 @@
       "applicantProfile": "Applicant Profile",
       "grade": "Grade",
       "activities": "Activities",
+      "activityHighlights": "Activity Highlights",
+      "awards": "Awards",
+      "highestLevel": "Highest: {level}",
+      "apCount": "AP/IB Courses",
+      "nationality": "Nationality",
+      "targetMajor": "Target Major",
+      "schoolType": "School Type",
       "predictResults": "Predict the results",
       "schools": "schools",
       "selectResult": "Select result...",
@@ -4590,6 +4604,7 @@
       "content": "Content",
       "payments": "Payments",
       "analytics": "Analytics",
+      "calibrations": "Calibrations",
       "activityTemplates": "Activity Templates",
       "settings": "Settings"
     },
@@ -4837,6 +4852,27 @@
         "FAILURE": "Failure",
         "DENIED": "Denied"
       }
+    },
+    "calibrations": {
+      "title": "School Calibrations",
+      "description": "Adjust admission probability multipliers per school",
+      "create": "Add Calibration",
+      "editTitle": "Edit Calibration",
+      "school": "School",
+      "multiplier": "Multiplier",
+      "reason": "Reason",
+      "actions": "Actions",
+      "multiplierHelper": "Range 0.5–2.0. Values above 1.0 boost probability, below 1.0 reduce it.",
+      "searchSchool": "Search school...",
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "created": "Calibration created",
+      "updated": "Calibration updated",
+      "deleted": "Calibration deleted",
+      "confirmDelete": "Delete Calibration",
+      "confirmDeleteDesc": "Are you sure you want to delete this calibration? The school's prediction will revert to default.",
+      "noCalibrations": "No calibrations configured yet"
     },
     "deadlines": {
       "title": "Deadline Management",

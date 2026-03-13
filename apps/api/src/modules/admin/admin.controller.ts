@@ -14,7 +14,10 @@ import { AdminService } from './admin.service';
 import { Roles, CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { Role, GlobalEventCategory } from '@prisma/client';
-import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
+import {
+  ThrottleRelaxed,
+  ThrottleSensitive,
+} from '../../common/decorators/throttle.decorator';
 import {
   NotificationService,
   NotificationType,
@@ -35,8 +38,11 @@ import {
   UpdateActivityTemplateDto,
   ActivityTemplateQueryDto,
   BroadcastNotificationDto,
+  CreateSchoolCalibrationDto,
+  UpdateSchoolCalibrationDto,
 } from './dto';
 import { AdminDataSyncService } from './admin-data-sync.service';
+import { PredictionService } from '../prediction/prediction.service';
 import type { Response } from 'express';
 
 @ApiTags('admin')
@@ -50,6 +56,7 @@ export class AdminController {
     private readonly adminDataSyncService: AdminDataSyncService,
     private readonly notificationService: NotificationService,
     private readonly prisma: PrismaService,
+    private readonly predictionService: PredictionService,
   ) {}
 
   // Stats
@@ -613,5 +620,51 @@ export class AdminController {
     ]);
 
     return { items, total, page: Number(page), limit: Number(limit) };
+  }
+
+  // ============================================
+  // School Calibration Management
+  // ============================================
+
+  @Get('calibrations')
+  @ApiOperation({ summary: 'List all school calibrations' })
+  async getCalibrations() {
+    return this.adminService.getCalibrations();
+  }
+
+  @Post('calibrations')
+  @ThrottleSensitive()
+  @ApiOperation({ summary: 'Create a school calibration' })
+  async createCalibration(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: CreateSchoolCalibrationDto,
+  ) {
+    const result = await this.adminService.createCalibration(user.id, dto);
+    await this.predictionService.invalidateCalibrationCache();
+    return result;
+  }
+
+  @Put('calibrations/:id')
+  @ThrottleSensitive()
+  @ApiOperation({ summary: 'Update a school calibration' })
+  async updateCalibration(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() dto: UpdateSchoolCalibrationDto,
+  ) {
+    const result = await this.adminService.updateCalibration(user.id, id, dto);
+    await this.predictionService.invalidateCalibrationCache();
+    return result;
+  }
+
+  @Delete('calibrations/:id')
+  @ThrottleSensitive()
+  @ApiOperation({ summary: 'Delete a school calibration' })
+  async deleteCalibration(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+  ) {
+    await this.adminService.deleteCalibration(user.id, id);
+    await this.predictionService.invalidateCalibrationCache();
   }
 }
