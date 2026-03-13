@@ -26,11 +26,13 @@ export class RegisterDto {
   @ApiPropertyOptional({ example: 'zh', description: '用户语言偏好' })
   @IsOptional()
   @IsString()
+  @MaxLength(10)
   locale?: string;
 
   @ApiPropertyOptional({ example: 'A1B2C3D4', description: '推荐码（可选）' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   referralCode?: string;
 }
 
@@ -38,6 +40,7 @@ export class RefreshTokenDto {
   @ApiPropertyOptional({ description: '可选：优先从 httpOnly cookie 获取' })
   @IsOptional()
   @IsString()
+  @MaxLength(500)
   refreshToken?: string;
 }
 

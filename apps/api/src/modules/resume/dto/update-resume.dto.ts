@@ -16,20 +16,56 @@ import { Type } from 'class-transformer';
 // ─── Nested DTOs for Resume Settings validation ───
 
 class ResumeColorSettingsDto {
-  @IsOptional() @IsString() @Matches(/^#[0-9a-fA-F]{6}$/) primary?: string;
-  @IsOptional() @IsString() @Matches(/^#[0-9a-fA-F]{6}$/) text?: string;
-  @IsOptional() @IsString() @Matches(/^#[0-9a-fA-F]{6}$/) textLight?: string;
-  @IsOptional() @IsString() @Matches(/^#[0-9a-fA-F]{6}$/) background?: string;
-  @IsOptional() @IsString() @Matches(/^#[0-9a-fA-F]{6}$/) border?: string;
-  @IsOptional() @IsString() @Matches(/^#[0-9a-fA-F]{6}$/) sidebarBg?: string;
-  @IsOptional() @IsString() @Matches(/^#[0-9a-fA-F]{6}$/) sidebarText?: string;
-  @IsOptional() @IsString() @Matches(/^#[0-9a-fA-F]{6}$/) headerBg?: string;
-  @IsOptional() @IsString() @Matches(/^#[0-9a-fA-F]{6}$/) headerText?: string;
+  @IsOptional()
+  @MaxLength(7)
+  @IsString()
+  @Matches(/^#[0-9a-fA-F]{6}$/)
+  primary?: string;
+  @IsOptional()
+  @MaxLength(7)
+  @IsString()
+  @Matches(/^#[0-9a-fA-F]{6}$/)
+  text?: string;
+  @IsOptional()
+  @MaxLength(7)
+  @IsString()
+  @Matches(/^#[0-9a-fA-F]{6}$/)
+  textLight?: string;
+  @IsOptional()
+  @MaxLength(7)
+  @IsString()
+  @Matches(/^#[0-9a-fA-F]{6}$/)
+  background?: string;
+  @IsOptional()
+  @MaxLength(7)
+  @IsString()
+  @Matches(/^#[0-9a-fA-F]{6}$/)
+  border?: string;
+  @IsOptional()
+  @MaxLength(7)
+  @IsString()
+  @Matches(/^#[0-9a-fA-F]{6}$/)
+  sidebarBg?: string;
+  @IsOptional()
+  @MaxLength(7)
+  @IsString()
+  @Matches(/^#[0-9a-fA-F]{6}$/)
+  sidebarText?: string;
+  @IsOptional()
+  @MaxLength(7)
+  @IsString()
+  @Matches(/^#[0-9a-fA-F]{6}$/)
+  headerBg?: string;
+  @IsOptional()
+  @MaxLength(7)
+  @IsString()
+  @Matches(/^#[0-9a-fA-F]{6}$/)
+  headerText?: string;
 }
 
 class ResumeFontSettingsDto {
-  @IsOptional() @IsString() heading?: string;
-  @IsOptional() @IsString() body?: string;
+  @IsOptional() @MaxLength(100) @IsString() heading?: string;
+  @IsOptional() @MaxLength(100) @IsString() body?: string;
 }
 
 class ResumeFontSizeSettingsDto {
@@ -105,6 +141,7 @@ export class UpdateResumeDto {
 
   @ApiPropertyOptional({ description: 'Template ID' })
   @IsOptional()
+  @MaxLength(100)
   @IsString()
   templateId?: string;
 

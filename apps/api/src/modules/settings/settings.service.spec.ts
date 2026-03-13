@@ -469,8 +469,10 @@ describe('SettingsService', () => {
     });
 
     it('should handle missing key gracefully (no error thrown)', async () => {
+      const prismaError = new Error('Record not found');
+      (prismaError as unknown as { code: string }).code = 'P2025';
       (prismaService.systemSetting.delete as jest.Mock).mockRejectedValue(
-        new Error('Record not found'),
+        prismaError,
       );
 
       // Should not throw

@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsEnum } from 'class-validator';
+import { IsOptional, IsString, IsEnum, MaxLength } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { PaginationDto } from '../../../common/dto/pagination.dto';
@@ -13,6 +13,7 @@ export class ReportQueryDto extends PaginationDto {
   @ApiPropertyOptional({ description: 'Target type filter' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   targetType?: string;
 }
 
@@ -20,6 +21,7 @@ export class UserQueryDto extends PaginationDto {
   @ApiPropertyOptional({ description: 'Search by email or username' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   search?: string;
 
   @ApiPropertyOptional({ enum: Role })

@@ -38,6 +38,8 @@ COPY apps/web/ ./apps/web/
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.json ./
 
 # Build arguments for environment variables
+ARG DOCKER_BUILD=true
+ENV DOCKER_BUILD=$DOCKER_BUILD
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 

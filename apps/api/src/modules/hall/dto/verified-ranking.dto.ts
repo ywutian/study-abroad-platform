@@ -1,5 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsEnum, IsNumber } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsEnum,
+  IsNumber,
+  MaxLength,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export enum RankingFilter {
@@ -24,6 +30,7 @@ export class VerifiedRankingQueryDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   schoolId?: string;
 
   @ApiPropertyOptional()

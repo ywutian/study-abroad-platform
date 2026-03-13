@@ -16,6 +16,10 @@ import { SettingsService } from './settings.service';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
+import {
+  UpdateSettingValueDto,
+  UpdateSettingItemDto,
+} from './dto/update-setting-value.dto';
 
 @ApiTags('settings')
 @ThrottleRelaxed()
@@ -51,10 +55,7 @@ export class SettingsController {
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: '更新设置（管理员）' })
   @ApiResponse({ status: 200, description: '更新成功' })
-  async update(
-    @Param('key') key: string,
-    @Body() body: { value: string; description?: string },
-  ) {
+  async update(@Param('key') key: string, @Body() body: UpdateSettingValueDto) {
     await this.settingsService.set(key, body.value, body.description);
     return { success: true };
   }
@@ -64,9 +65,7 @@ export class SettingsController {
   @ApiOperation({ summary: '批量更新设置（管理员）' })
   async updateMany(
     @Body()
-    body:
-      | Array<{ key: string; value: string }>
-      | { settings: Array<{ key: string; value: string }> },
+    body: UpdateSettingItemDto[] | { settings: UpdateSettingItemDto[] },
   ) {
     const settings = Array.isArray(body) ? body : body.settings;
     if (!Array.isArray(settings)) {

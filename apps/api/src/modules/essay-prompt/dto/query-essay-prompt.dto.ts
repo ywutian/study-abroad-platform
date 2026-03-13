@@ -1,4 +1,12 @@
-import { IsString, IsInt, IsOptional, IsEnum, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsInt,
+  IsOptional,
+  IsEnum,
+  Min,
+  Max,
+  MaxLength,
+} from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { EssayType, EssayStatus } from '../../../common/types/enums';
@@ -7,6 +15,7 @@ export class QueryEssayPromptDto {
   @ApiPropertyOptional({ description: '学校ID' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   schoolId?: string;
 
   @ApiPropertyOptional({ description: '申请年份' })
@@ -28,6 +37,7 @@ export class QueryEssayPromptDto {
   @ApiPropertyOptional({ description: '搜索关键词' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   search?: string;
 
   @ApiPropertyOptional({ description: '页码', default: 1 })

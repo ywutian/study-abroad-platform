@@ -6,14 +6,14 @@
 
 ## 按角色快速入口
 
-| 角色         | 首先阅读                                                                                                                                               |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **新人**     | [ONBOARDING.md](ONBOARDING.md) → [QUICK_REFERENCE.md](QUICK_REFERENCE.md) → [ARCHITECTURE.md](ARCHITECTURE.md) → [CONTRIBUTING.md](../CONTRIBUTING.md) |
-| **后端开发** | [ARCHITECTURE.md](ARCHITECTURE.md) → [API_REFERENCE.md](API_REFERENCE.md) → [TESTING_CHECKLIST.md](TESTING_CHECKLIST.md)                               |
-| **前端开发** | [ARCHITECTURE.md](ARCHITECTURE.md) (Section 7) → [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)                                                                  |
-| **运维**     | [RUNBOOK.md](RUNBOOK.md) → [DEPLOY.md](DEPLOY.md) → [ARCHITECTURE.md](ARCHITECTURE.md) (Section 12)                                                    |
-| **产品经理** | [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md) → [GLOSSARY.md](GLOSSARY.md)                                                                                  |
-| **管理层**   | [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md) → [INVESTOR_PITCH_AI_SYSTEM.md](INVESTOR_PITCH_AI_SYSTEM.md)                                                  |
+| 角色         | 首先阅读                                                                                                                                                                                                      |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **新人**     | [ONBOARDING.md](ONBOARDING.md) → [QUICK_REFERENCE.md](QUICK_REFERENCE.md) → [ARCHITECTURE.md](ARCHITECTURE.md) → [ENGINEERING_STANDARDS.md](ENGINEERING_STANDARDS.md) → [CONTRIBUTING.md](../CONTRIBUTING.md) |
+| **后端开发** | [ARCHITECTURE.md](ARCHITECTURE.md) → [API_REFERENCE.md](API_REFERENCE.md) → [TESTING_CHECKLIST.md](TESTING_CHECKLIST.md)                                                                                      |
+| **前端开发** | [ARCHITECTURE.md](ARCHITECTURE.md) (Section 7) → [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)                                                                                                                         |
+| **运维**     | [RUNBOOK.md](RUNBOOK.md) → [DEPLOY.md](DEPLOY.md) → [ARCHITECTURE.md](ARCHITECTURE.md) (Section 12)                                                                                                           |
+| **产品经理** | [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md) → [GLOSSARY.md](GLOSSARY.md)                                                                                                                                         |
+| **管理层**   | [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md) → [INVESTOR_PITCH_AI_SYSTEM.md](INVESTOR_PITCH_AI_SYSTEM.md)                                                                                                         |
 
 ---
 
@@ -21,14 +21,15 @@
 
 ### 治理与流程
 
-| 文档                                                     | 说明                        | 语言 |
-| -------------------------------------------------------- | --------------------------- | ---- |
-| [LICENSE](../LICENSE)                                    | 私有许可证                  | EN   |
-| [SECURITY.md](../SECURITY.md)                            | 安全策略与漏洞上报          | EN   |
-| [CONTRIBUTING.md](../CONTRIBUTING.md)                    | 开发规范与协作流程          | ZH   |
-| [CHANGELOG.md](../CHANGELOG.md)                          | 变更日志 (Keep a Changelog) | ZH   |
-| [ADR 目录](adr/)                                         | 架构决策记录 (MADR 格式)    | EN   |
-| [DOCUMENTATION_STANDARDS.md](DOCUMENTATION_STANDARDS.md) | 文档元标准 (DORA 自评)      | ZH   |
+| 文档                                                     | 说明                          | 语言 |
+| -------------------------------------------------------- | ----------------------------- | ---- |
+| [LICENSE](../LICENSE)                                    | 私有许可证                    | EN   |
+| [SECURITY.md](../SECURITY.md)                            | 安全策略与漏洞上报            | EN   |
+| [CONTRIBUTING.md](../CONTRIBUTING.md)                    | 开发规范与协作流程            | ZH   |
+| [ENGINEERING_STANDARDS.md](ENGINEERING_STANDARDS.md)     | 工程标准 (质量门禁、编码规范) | EN   |
+| [CHANGELOG.md](../CHANGELOG.md)                          | 变更日志 (Keep a Changelog)   | ZH   |
+| [ADR 目录](adr/)                                         | 架构决策记录 (MADR 格式)      | EN   |
+| [DOCUMENTATION_STANDARDS.md](DOCUMENTATION_STANDARDS.md) | 文档元标准 (DORA 自评)        | ZH   |
 
 ### arc42 S1: 介绍与目标
 
@@ -44,7 +45,7 @@
 | [ARCHITECTURE.md](ARCHITECTURE.md)                 | **核心** — 系统架构 (70 models, 29 enums, 400+ APIs, 15 sections + arc42 补全) |
 | [API_REFERENCE.md](API_REFERENCE.md)               | API 端点参考 (32 controllers, 400+ endpoints)                                  |
 | [SCORING_SYSTEM.md](SCORING_SYSTEM.md)             | 评分系统详细规范                                                               |
-| [PREDICTION_SYSTEM.md](PREDICTION_SYSTEM.md)       | **预测系统技术文档 (v2 多引擎融合)**                                           |
+| [PREDICTION_SYSTEM.md](PREDICTION_SYSTEM.md)       | **预测系统技术文档 (v3-enterprise 多引擎融合)**                                |
 | [COMPETITION_DATABASE.md](COMPETITION_DATABASE.md) | 竞赛数据库文档 (90+ 竞赛)                                                      |
 | [DATA_SOURCES.md](DATA_SOURCES.md)                 | 数据来源 (College Scorecard API)                                               |
 
@@ -60,11 +61,11 @@
 
 ### arc42 S9: 运维与部署
 
-| 文档                                  | 说明                       |
-| ------------------------------------- | -------------------------- |
-| [DEPLOY.md](DEPLOY.md)                | 部署指南 (Docker, Railway) |
-| [RUNBOOK.md](RUNBOOK.md)              | 运维排障手册               |
-| [ENV_TEMPLATE.md](../ENV_TEMPLATE.md) | 环境变量说明               |
+| 文档                                  | 说明                     |
+| ------------------------------------- | ------------------------ |
+| [DEPLOY.md](DEPLOY.md)                | 部署指南 (GCP Cloud Run) |
+| [RUNBOOK.md](RUNBOOK.md)              | 运维排障手册             |
+| [ENV_TEMPLATE.md](../ENV_TEMPLATE.md) | 环境变量说明             |
 
 ### arc42 S10-11: 质量与风险
 
@@ -109,6 +110,7 @@
 
 | 日期       | 变更                                                                                                                                                                                                                                                                                                   |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-03-10 | 新增 ENGINEERING_STANDARDS.md (工程标准)；全面更新 ARCHITECTURE.md (GCP 部署、30 模块、请求管道、代码质量门禁)；更新文档索引                                                                                                                                                                           |
 | 2026-02-13 | **全量文档审计（6 轮，270+ 修正）**：48+ 文档逐一对照源码验证修正；新增 QUICK_REFERENCE.md（速查手册）、TROUBLESHOOTING.md（开发排障）；完整重写 apps/api、apps/web、apps/mobile README；GLOSSARY 扩展 32 术语；DORA 评分 37→38/40 (95.0%)；总计 53 份文档全部索引                                     |
 | 2026-02-12 | 文档审核：修正 model 数量为 70 models, 29 enums；索引补收 I18N_GUIDE.md、TYPOGRAPHY_GUIDE.md、ERROR_FIX_LOG_2026-02-08.md；根 README 修正环境要求、Docker 服务名、Web 开发命令；补写移动端开发启动说明                                                                                                 |
 | 2026-02-09 | 企业级预测系统文档：新增 PREDICTION_SYSTEM.md (v2 多引擎融合)、ADR-0008；更新 ARCHITECTURE.md (PredictionResult v2)、API_REFERENCE.md (4 endpoints)、SCORING_SYSTEM.md (多引擎关联)、ENTERPRISE_MEMORY_SYSTEM.md (预测集成)、PRODUCT_ROADMAP.md (v2 完成项)；更新文档索引和 DOCUMENTATION_STANDARDS.md |
@@ -119,4 +121,4 @@
 
 ---
 
-_最后更新: 2026-02-13_
+_最后更新: 2026-03-10_

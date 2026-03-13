@@ -13,6 +13,7 @@
 - [代码规范](#代码规范)
 - [测试要求](#测试要求)
 - [文档要求](#文档要求)
+- [数据库 Schema 变更](#数据库-schema-变更)
 
 ---
 
@@ -125,15 +126,96 @@ Closes #42
 
 1. **lint-staged**: 对暂存文件运行 Prettier 格式化 + ESLint 修复
 2. **commitlint**: 校验提交信息是否符合 Conventional Commits 格式
+3. **i18n 检查** (当 `apps/web/src/` 有变动时):
+   - 缺失翻译 key 检查
+   - zh.json / en.json key 一致性检查
+   - 翻译值语言正确性检查
+4. **前端质量检查** (当 `apps/web/src/` 有变动时, 7 条规则):
+   - ❌ Tailwind 动态类插值（生产构建会被 purge）
+   - ⚠️ 硬编码 slate/gray 颜色缺少 `dark:` 变体
+   - ⚠️ 页面超过 500 行未拆分 `_components/`
+   - ⚠️ 生产代码中的 `console.log/error`
+   - ⚠️ `page.tsx` 缺少同级 `loading.tsx`
+   - ⚠️ 路由组缺少 `error.tsx` 错误边界
+5. **后端质量检查** (当 `apps/api/src/` 有变动时, 5 条规则):
+   - ❌ `@Body()` 使用 inline 类型而非 DTO class
+   - ⚠️ AI 端点缺少 `@ThrottleAI()` 限流
+   - ⚠️ Service 中使用 `throw new Error()` 而非 NestJS 异常
+   - ⚠️ `@IsString()` 字段缺少 `@MaxLength()`
+   - ⚠️ Service 缺少 `.spec.ts` 测试文件
 
 如需跳过（仅限紧急情况）：`git commit --no-verify`
 
+### 代码质量检查详情
+
+本项目使用自定义静态分析脚本 `apps/web/scripts/check-code-quality.ts`，捕获 ESLint 无法覆盖的常见问题。
+
+```bash
+# 手动运行全量检查
+pnpm --filter web lint:quality
+
+# 仅检查暂存文件（pre-commit 使用此模式）
+pnpm --filter web lint:quality --staged
+```
+
+| 规则                        | 严重度           | 说明                                         | 修复方式                               |
+| --------------------------- | ---------------- | -------------------------------------------- | -------------------------------------- |
+| `no-dynamic-tailwind`       | **error** (阻断) | `` `bg-${color}-500` `` 在生产构建会被 purge | 使用静态类映射对象                     |
+| `no-hardcoded-dark-bg`      | warning          | `bg-slate-800` 缺少 `dark:` 变体             | 使用 CSS 变量或添加 `dark:`            |
+| `no-hardcoded-gray`         | warning          | `bg-gray-100` 等缺少 `dark:` 变体            | 使用语义类 (`bg-muted`) 或添加 `dark:` |
+| `page-size-limit`           | warning          | `page.tsx` 超过 500 行无 `_components/`      | 拆分为瘦 page.tsx + 组件目录           |
+| `no-console-in-prod`        | warning          | 生产代码中的 `console.log/error`             | 使用 toast 或移除调试日志              |
+| `no-missing-loading`        | warning          | `page.tsx` 无同级 `loading.tsx`              | 创建 Skeleton loading 文件             |
+| `no-missing-error-boundary` | warning          | 路由组无 `error.tsx`                         | 在路由组层级创建 error.tsx             |
+
+**Tailwind 动态类的正确做法**：
+
+```typescript
+// ❌ 错误：会被 Tailwind purge 掉
+className={`bg-${color}-500/10 text-${color}-600`}
+
+// ✅ 正确：使用静态类映射
+const COLOR_CLASSES = {
+  blue: { bg: 'bg-blue-500/10', text: 'text-blue-600' },
+  emerald: { bg: 'bg-emerald-500/10', text: 'text-emerald-600' },
+};
+className={`${COLOR_CLASSES[color].bg} ${COLOR_CLASSES[color].text}`}
+```
+
+### PR 提交检查清单
+
+**后端 (apps/api):**
+
+- [ ] `[AUTO]` 所有 `@Body()` 参数使用 DTO class + class-validator（禁止 inline 类型）
+- [ ] `[AUTO]` 字符串字段有 `@MaxLength()` (标题: 200, 正文: 50000, 短输入: 500)
+- [ ] `[AUTO]` AI 端点有 `@ThrottleAI()` 装饰器
+- [ ] `[AUTO]` 无 `throw new Error()` — 使用 NestJS 异常
+- [ ] `[AUTO]` Service 有对应 `.spec.ts` 测试文件
+- [ ] `[MANUAL]` 敏感端点有 `@Roles(Role.ADMIN)`
+- [ ] `[MANUAL]` DTO 字段有 `@ApiProperty()` (Swagger)
+- [ ] `[MANUAL]` `@types/*` 包在 devDependencies
+
+**前端 (apps/web):**
+
+- [ ] `[AUTO]` Tailwind 类名静态可分析（禁止动态插值）
+- [ ] `[AUTO]` 硬编码颜色有 `dark:` 变体（或使用 CSS 变量）
+- [ ] `[AUTO]` 新页面有 `loading.tsx` skeleton
+- [ ] `[AUTO]` 路由组有 `error.tsx` 错误边界
+- [ ] `[AUTO]` 无 `console.log/error` 残留
+- [ ] `[AUTO]` 图片有 alt 文本，交互元素可聚焦
+- [ ] `[MANUAL]` Icon-only 按钮有 `aria-label`
+- [ ] `[MANUAL]` 页面 > 500 行已拆分 `_components/`
+- [ ] `[MANUAL]` 无硬编码用户可见字符串（用 i18n）
+
+> 完整标准详见 [企业级代码标准](docs/CODE_STANDARDS.md)
+
 ### 创建 PR 前
 
-1. 确保代码通过 lint 检查：`pnpm lint`
-2. 确保所有测试通过：`pnpm --filter api test`
-3. 更新相关文档
-4. 将分支 rebase 到最新的目标分支
+1. 确保所有检查通过：`pnpm lint:all`
+2. 确保所有测试通过：`pnpm test`
+3. 或一键全量检查：`pnpm check`
+4. 更新相关文档
+5. 将分支 rebase 到最新的目标分支
 
 ### PR 描述要求
 
@@ -155,9 +237,13 @@ Closes #42
 
 - 代码正确性和边界处理
 - 类型安全（避免 `any` 类型）
-- 错误处理完整性
+- 错误处理完整性（后端使用 NestJS 异常，前端使用 toast）
 - 性能影响
 - 安全隐患（特别是用户输入处理）
+- **Tailwind 类是否静态可分析**（禁止 `` `bg-${var}` `` 动态插值）
+- **颜色是否有暗色模式支持**（优先 CSS 变量，硬编码色须加 `dark:` 变体）
+- **页面是否过长**（>500 行应拆分 `_components/`）
+- **console.log 是否残留**（使用 toast 替代用户错误提示）
 
 ---
 
@@ -243,6 +329,34 @@ pnpm --filter api test -- --coverage
 
 ---
 
+## 数据库 Schema 变更
+
+修改 `apps/api/prisma/schema.prisma` 时，**必须**遵循以下流程：
+
+1. **创建迁移文件**: `pnpm --filter api db:migrate -- --name <name>`
+   - 使用 snake_case 描述性名称: `add_school_retention_fields`, `rename_user_status`
+   - 禁止手动编辑生成的 migration SQL 文件
+2. **生成客户端**: `pnpm --filter api db:generate`
+3. **运行测试**: `pnpm --filter api test`
+4. **一起提交**: `schema.prisma` + `prisma/migrations/` 目录必须在同一个 commit 中
+
+### 数据回填脚本
+
+对于数据密集型迁移（例如将 JSON 字段提升为独立列）：
+
+- 在 `apps/api/scripts/` 下创建脚本，遵循 `--apply` 模式
+- 默认 dry-run（只读），需传 `--apply` 才写入数据
+- 包含校验步骤，对比源数据和目标数据的计数
+- 在脚本头部注释中说明用法
+
+### 注意事项
+
+- **禁止**在生产或 staging 环境使用 `db:push`（不生成迁移历史）
+- 新列必须为 **nullable** 或有 **default 值**，避免锁表
+- CI/CD 会自动执行 `prisma migrate deploy`，无需手动干预
+
+---
+
 ## 问题反馈
 
 - **Bug 报告**: 使用 [Bug 报告模板](.github/ISSUE_TEMPLATE/bug_report.yml) 创建 Issue
@@ -257,4 +371,4 @@ pnpm --filter api test -- --coverage
 
 ---
 
-_最后更新: 2026-02-13_
+_最后更新: 2026-03-11_

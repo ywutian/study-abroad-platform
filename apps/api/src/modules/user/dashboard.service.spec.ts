@@ -352,7 +352,7 @@ describe('DashboardService', () => {
       setupDefaultMocks();
       const ts = new Date('2025-06-13T08:00:00Z');
       (prisma.pointHistory.findMany as jest.Mock).mockResolvedValue([
-        { action: 'ESSAY_POLISH', points: -5, createdAt: ts },
+        { action: 'AI_ESSAY_POLISH', points: -5, createdAt: ts },
       ]);
 
       const result = await service.getDashboardSummary(userId);
@@ -360,8 +360,7 @@ describe('DashboardService', () => {
       expect(result.recentActivity).toHaveLength(1);
       expect(result.recentActivity[0].type).toBe('spend');
       expect(result.recentActivity[0].title).toBe('文书润色');
-      // Spend type should NOT include the points suffix
-      expect(result.recentActivity[0].description).not.toContain('积分');
+      expect(result.recentActivity[0].description).toContain('消耗 5 积分');
     });
 
     it('should handle empty timelines gracefully', async () => {
@@ -404,6 +403,20 @@ describe('DashboardService', () => {
 
       expect(result.stats.followers).toBe(42);
       expect(result.stats.following).toBe(18);
+    });
+
+    it('should build recentActivity for SWIPE_CORRECT', async () => {
+      setupDefaultMocks();
+      const ts = new Date('2025-06-14T10:00:00Z');
+      (prisma.pointHistory.findMany as jest.Mock).mockResolvedValue([
+        { action: 'SWIPE_CORRECT', points: 7, createdAt: ts },
+      ]);
+
+      const result = await service.getDashboardSummary(userId);
+
+      expect(result.recentActivity).toHaveLength(1);
+      expect(result.recentActivity[0].title).toBe('预测正确');
+      expect(result.recentActivity[0].description).toContain('获得 7 积分');
     });
 
     it('should handle unknown point actions gracefully', async () => {

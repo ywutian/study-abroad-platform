@@ -3,6 +3,8 @@ import * as os from 'os';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { Public } from '../../common/decorators/public.decorator';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { Role } from '@prisma/client';
 import { SkipThrottle } from '../../common/decorators/throttle.decorator';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
@@ -83,8 +85,8 @@ export class HealthController {
   }
 
   @Get('detailed')
-  @Public()
-  @ApiOperation({ summary: 'Detailed health check (internal use)' })
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Detailed health check (admin only)' })
   async detailedCheck(
     @Res({ passthrough: true }) res: Response,
   ): Promise<DetailedHealthStatus> {

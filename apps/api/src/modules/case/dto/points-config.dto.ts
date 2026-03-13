@@ -5,6 +5,7 @@ import {
   IsString,
   IsArray,
   ValidateNested,
+  MaxLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -23,6 +24,7 @@ export class UpdatePointActionDto {
 class PointActionUpdate {
   @ApiProperty({ description: '动作名称' })
   @IsString()
+  @MaxLength(200)
   action: string;
 
   @ApiProperty({ description: '积分值' })

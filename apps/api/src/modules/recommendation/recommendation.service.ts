@@ -4,6 +4,7 @@ import {
   BadRequestException,
   NotFoundException,
   ConflictException,
+  InternalServerErrorException,
   Optional,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -30,6 +31,11 @@ import {
   calculateOverallScore,
   calculateProbability,
 } from '../../common/utils/scoring';
+import {
+  RECOMMENDATION_SCHOOL_SELECT,
+  mapSchoolMeta,
+  type RecommendationSchoolResult,
+} from './recommendation.constants';
 
 @Injectable()
 export class RecommendationService {
@@ -212,7 +218,9 @@ All text fields must be in English.`;
 
       // 校验 AI 响应结构
       if (!Array.isArray(parsed.recommendations)) {
-        throw new Error('Invalid AI response: missing recommendations');
+        throw new InternalServerErrorException(
+          'Invalid AI response: missing recommendations',
+        );
       }
       parsed.recommendations = parsed.recommendations
         .filter((r: any) => r.schoolName && typeof r.schoolName === 'string')
@@ -661,18 +669,7 @@ All text fields must be in English.`;
           })),
         ],
       },
-      select: {
-        id: true,
-        name: true,
-        nameZh: true,
-        aliases: true,
-        usNewsRank: true,
-        acceptanceRate: true,
-        city: true,
-        state: true,
-        tuition: true,
-        isPrivate: true,
-      },
+      select: RECOMMENDATION_SCHOOL_SELECT,
     });
 
     return recommendations.map((r: any) => {
@@ -680,17 +677,7 @@ All text fields must be in English.`;
       return {
         ...r,
         schoolId: matched?.id || undefined,
-        schoolMeta: matched
-          ? {
-              nameZh: matched.nameZh,
-              usNewsRank: matched.usNewsRank,
-              acceptanceRate: clampPercentRate(matched.acceptanceRate),
-              city: matched.city,
-              state: matched.state,
-              tuition: matched.tuition,
-              isPrivate: matched.isPrivate,
-            }
-          : undefined,
+        schoolMeta: matched ? mapSchoolMeta(matched) : undefined,
       };
     });
   }
@@ -722,6 +709,8 @@ All text fields must be in English.`;
         act25: true,
         act75: true,
         graduationRate: true,
+        retentionRate: true,
+        percentNeedMet: true,
       },
     });
 
@@ -773,18 +762,7 @@ All text fields must be in English.`;
 
   private findBestMatch(
     name: string,
-    candidates: Array<{
-      id: string;
-      name: string;
-      nameZh: string | null;
-      aliases: string[];
-      usNewsRank: number | null;
-      acceptanceRate: any;
-      city: string | null;
-      state: string | null;
-      tuition: number | null;
-      isPrivate: boolean;
-    }>,
+    candidates: RecommendationSchoolResult[],
   ) {
     let best: (typeof candidates)[0] | undefined;
     let bestScore = 0;

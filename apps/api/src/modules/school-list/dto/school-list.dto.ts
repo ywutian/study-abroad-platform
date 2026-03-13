@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsEnum,
   IsBoolean,
+  MaxLength,
 } from 'class-validator';
 import { SchoolTier } from '@prisma/client';
 
@@ -14,6 +15,7 @@ export class CreateSchoolListItemDto {
   @ApiProperty({ description: 'School ID to add to list' })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(200)
   schoolId: string;
 
   @ApiPropertyOptional({ enum: SchoolTier, default: 'TARGET' })
@@ -24,11 +26,13 @@ export class CreateSchoolListItemDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   round?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(5000)
   notes?: string;
 
   @ApiPropertyOptional({ description: '是否为 AI 推荐' })
@@ -46,11 +50,13 @@ export class UpdateSchoolListItemDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   round?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(5000)
   notes?: string;
 }
 
@@ -77,6 +83,10 @@ export class SchoolListItemResponseDto {
     tuition?: number;
     city?: string;
     state?: string;
+    testOptional?: boolean;
+    hasEarlyDecision?: boolean;
+    acceptsCommonApp?: boolean;
+    logoUrl?: string;
   };
 
   @ApiProperty({ enum: SchoolTier })

@@ -4,7 +4,12 @@
  * Redis 缓存 + 内存LRU降级
  */
 
-import { Injectable, Logger, Optional } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  Optional,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash } from 'crypto';
 import { RedisService } from '../../../common/redis/redis.service';
@@ -137,7 +142,7 @@ export class EmbeddingService {
           this.logger.error(
             `Embedding API error: ${response.status} - ${errorBody}`,
           );
-          throw new Error(
+          throw new InternalServerErrorException(
             `Embedding API error: ${response.status} - ${errorBody}`,
           );
         }
@@ -210,7 +215,7 @@ export class EmbeddingService {
           this.logger.error(
             `Embedding batch API error: ${response.status} - ${errorBody}`,
           );
-          throw new Error(
+          throw new InternalServerErrorException(
             `Embedding API error: ${response.status} - ${errorBody}`,
           );
         }

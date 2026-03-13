@@ -49,6 +49,12 @@ jobs:
       - name: Check i18n (hardcoded text & key consistency)
         run: pnpm --filter web lint:i18n
 
+      - name: Check code quality (Tailwind, console, page size)
+        run: pnpm --filter web lint:quality
+
+      - name: Check API quality (DTO, throttle, throw)
+        run: pnpm --filter api lint:quality
+
       - name: Check commit messages
         if: github.event_name == 'pull_request'
         run: |
@@ -294,7 +300,7 @@ jobs:
       - name: Build Web
         run: pnpm --filter web build
         env:
-          NEXT_PUBLIC_API_URL: ${{ vars.API_URL || 'http://localhost:3002' }}
+          NEXT_PUBLIC_API_URL: ${{ vars.API_URL || 'http://localhost:4101' }}
 
       - name: Type check Mobile
         run: pnpm --filter mobile exec tsc --noEmit
@@ -467,7 +473,7 @@ jobs:
             --task-timeout=300
             --max-retries=0
             --command="./migrate.sh"
-            --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }}"
+            --set-secrets="DATABASE_URL=database-url:latest"
             --quiet
           )
 

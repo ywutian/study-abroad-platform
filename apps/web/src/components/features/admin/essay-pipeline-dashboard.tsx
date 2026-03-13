@@ -713,7 +713,7 @@ function ChangeTypeBadge({ type }: { type: string }) {
       );
     case 'UNCHANGED':
       return (
-        <Badge className="text-xs bg-gray-100 text-gray-600 hover:bg-gray-100">UNCHANGED</Badge>
+        <Badge className="text-xs bg-muted text-muted-foreground hover:bg-muted">UNCHANGED</Badge>
       );
     default:
       return (

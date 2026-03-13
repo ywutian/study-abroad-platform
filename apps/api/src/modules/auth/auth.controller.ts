@@ -28,6 +28,7 @@ import {
 } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { ResetPasswordDto, ChangePasswordDto } from './dto/reset-password.dto';
+import { LogoutDto } from './dto/logout.dto';
 import {
   AuditLogService,
   AuditAction,
@@ -241,7 +242,7 @@ export class AuthController {
   async logout(
     @CurrentUser() user: CurrentUserPayload,
     @Req() req: Request,
-    @Body() data: { refreshToken?: string },
+    @Body() data: LogoutDto,
     @Res({ passthrough: true }) res: Response,
   ) {
     // 企业级：从 httpOnly cookie 获取 refreshToken

@@ -11,6 +11,7 @@ import {
   IsEnum,
   Min,
   Max,
+  MaxLength,
 } from 'class-validator';
 import { TestType } from '@prisma/client';
 
@@ -29,6 +30,7 @@ export class OnboardingDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
+  @MaxLength(200)
   realName: string;
 
   @ApiPropertyOptional()

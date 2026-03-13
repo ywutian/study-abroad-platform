@@ -22,6 +22,7 @@ import {
   EssayReviewResponseDto,
   EssayBrainstormRequestDto,
   EssayBrainstormResponseDto,
+  AnalyzeGalleryEssayDto,
 } from './dto';
 import { CurrentUser, Public } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
@@ -174,7 +175,7 @@ export class EssayAiController {
   async analyzeGalleryEssay(
     @CurrentUser() user: CurrentUserPayload,
     @Param('essayId') essayId: string,
-    @Body() body: { schoolName?: string },
+    @Body() body: AnalyzeGalleryEssayDto,
   ) {
     return this.essayAiService.analyzeGalleryEssay(
       user.id,

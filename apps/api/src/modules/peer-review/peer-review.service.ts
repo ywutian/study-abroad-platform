@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { Role, PeerReviewStatus } from '@prisma/client';
+import { Prisma, Role, PeerReviewStatus } from '@prisma/client';
 import {
   CreatePeerReviewDto,
   SubmitReviewDto,
@@ -14,6 +14,17 @@ import {
   PeerReviewListDto,
   UserBasicDto,
 } from './dto';
+import { USER_SUMMARY_SELECT } from '../../common/constants/prisma-selects';
+
+const reviewInclude = {
+  reviewer: { select: USER_SUMMARY_SELECT },
+  reviewee: { select: USER_SUMMARY_SELECT },
+} satisfies Prisma.PeerReviewInclude;
+
+type ReviewWithUsers = Prisma.PeerReviewGetPayload<{
+  include: typeof reviewInclude;
+}>;
+type ReviewUser = ReviewWithUsers['reviewer'];
 
 @Injectable()
 export class PeerReviewService {
@@ -39,7 +50,7 @@ export class PeerReviewService {
         select: {
           id: true,
           role: true,
-          profile: { select: { realName: true } },
+          profile: { select: { realName: true, avatarUrl: true } },
         },
       }),
       this.prisma.user.findUnique({
@@ -47,7 +58,7 @@ export class PeerReviewService {
         select: {
           id: true,
           role: true,
-          profile: { select: { realName: true } },
+          profile: { select: { realName: true, avatarUrl: true } },
         },
       }),
     ]);
@@ -101,14 +112,14 @@ export class PeerReviewService {
           select: {
             id: true,
             role: true,
-            profile: { select: { realName: true } },
+            profile: { select: { realName: true, avatarUrl: true } },
           },
         },
         reviewee: {
           select: {
             id: true,
             role: true,
-            profile: { select: { realName: true } },
+            profile: { select: { realName: true, avatarUrl: true } },
           },
         },
       },
@@ -132,14 +143,14 @@ export class PeerReviewService {
           select: {
             id: true,
             role: true,
-            profile: { select: { realName: true } },
+            profile: { select: { realName: true, avatarUrl: true } },
           },
         },
         reviewee: {
           select: {
             id: true,
             role: true,
-            profile: { select: { realName: true } },
+            profile: { select: { realName: true, avatarUrl: true } },
           },
         },
       },
@@ -213,14 +224,14 @@ export class PeerReviewService {
           select: {
             id: true,
             role: true,
-            profile: { select: { realName: true } },
+            profile: { select: { realName: true, avatarUrl: true } },
           },
         },
         reviewee: {
           select: {
             id: true,
             role: true,
-            profile: { select: { realName: true } },
+            profile: { select: { realName: true, avatarUrl: true } },
           },
         },
       },
@@ -250,14 +261,14 @@ export class PeerReviewService {
           select: {
             id: true,
             role: true,
-            profile: { select: { realName: true } },
+            profile: { select: { realName: true, avatarUrl: true } },
           },
         },
         reviewee: {
           select: {
             id: true,
             role: true,
-            profile: { select: { realName: true } },
+            profile: { select: { realName: true, avatarUrl: true } },
           },
         },
       },
@@ -363,14 +374,14 @@ export class PeerReviewService {
           select: {
             id: true,
             role: true,
-            profile: { select: { realName: true } },
+            profile: { select: { realName: true, avatarUrl: true } },
           },
         },
         reviewee: {
           select: {
             id: true,
             role: true,
-            profile: { select: { realName: true } },
+            profile: { select: { realName: true, avatarUrl: true } },
           },
         },
       },
@@ -413,11 +424,11 @@ export class PeerReviewService {
     });
   }
 
-  private formatReview(review: any): PeerReviewDto {
-    const formatUser = (user: any): UserBasicDto => ({
+  private formatReview(review: ReviewWithUsers): PeerReviewDto {
+    const formatUser = (user: ReviewUser): UserBasicDto => ({
       id: user.id,
       name: user.profile?.realName || undefined,
-      avatar: user.profile?.avatar || undefined,
+      avatar: user.profile?.avatarUrl || undefined,
       isVerified: user.role === Role.VERIFIED || user.role === Role.ADMIN,
     });
 

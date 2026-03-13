@@ -33,6 +33,8 @@ import {
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { PageHeader } from '@/components/layout/page-header';
+import { PageContainer } from '@/components/layout/page-container';
 
 interface VerifiedUser {
   rank: number;
@@ -135,7 +137,7 @@ export default function VerifiedRankingPage() {
     }
     if (rank === 2) {
       return (
-        <div className="w-10 h-10 rounded-full bg-slate-400 flex items-center justify-center shadow-lg shadow-gray-400/30">
+        <div className="w-10 h-10 rounded-full bg-slate-400 dark:bg-slate-500 flex items-center justify-center shadow-lg shadow-gray-400/30 dark:shadow-gray-600/30">
           <Medal className="h-5 w-5 text-white" />
         </div>
       );
@@ -155,22 +157,8 @@ export default function VerifiedRankingPage() {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-6xl">
-      {/* Header */}
-      <div className="relative mb-8 overflow-hidden rounded-lg bg-warning/5 p-6 sm:p-8">
-        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-warning/15 blur-3xl" />
-        <div className="relative z-10">
-          <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-warning ">
-              <Trophy className="h-7 w-7 text-white" />
-            </div>
-            <div>
-              <h1 className="text-title">{t('title')}</h1>
-              <p className="text-muted-foreground">{t('description')}</p>
-            </div>
-          </div>
-        </div>
-      </div>
+    <PageContainer maxWidth="default">
+      <PageHeader title={t('title')} description={t('description')} icon={Trophy} color="emerald" />
 
       {/* 统计卡片 */}
       {data?.stats && (
@@ -409,6 +397,6 @@ export default function VerifiedRankingPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }

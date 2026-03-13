@@ -5,15 +5,12 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from '@/lib/i18n/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
-import { Search, FileText, X, Trophy, CheckCircle2, BookOpen } from 'lucide-react';
+import { Search, FileText, X, BookOpen } from 'lucide-react';
 
 import { PageContainer } from '@/components/layout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { AnimatedCounter } from '@/components/ui/animated-counter';
 import {
@@ -24,36 +21,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { apiClient } from '@/lib/api/client';
-import { cn, getSchoolName } from '@/lib/utils';
 import { AdvancedEssayFilter, EssayFilters } from '@/components/features/essay-gallery';
 import { SubmitCaseDialog } from '@/components/features';
 import {
-  getResultBarColor,
-  getResultBadgeClass,
   getResultLabel as getResultLabelUtil,
   getEssayTypeLabel as getEssayTypeLabelUtil,
-  getEssayTypeBadgeClass,
-  VERIFIED_BADGE_CLASS,
 } from '@/lib/utils/admission';
 
-interface GalleryEssay {
-  id: string;
-  year: number;
-  result: string;
-  essayType?: string;
-  promptNumber?: number;
-  prompt: string | null;
-  preview: string | null;
-  wordCount: number;
-  school: {
-    id: string;
-    name: string;
-    nameZh?: string;
-    usNewsRank?: number;
-  } | null;
-  tags: string[];
-  isVerified: boolean;
-}
+import { EssayCard, type GalleryEssay } from './_components/essay-card';
+import { LoadingSkeleton } from './_components/loading-skeleton';
 
 interface GalleryStats {
   total: number;
@@ -88,13 +64,13 @@ export default function EssayGalleryPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Backward-compatible redirect: ?id=xxx → /essay-gallery/[id]
+  // Backward-compatible redirect: ?id=xxx -> /essay-gallery/[id]
   useEffect(() => {
     const deepLinkId = searchParams.get('id');
     if (deepLinkId) router.replace(`/essay-gallery/${deepLinkId}`);
   }, [searchParams, router]);
 
-  // ── 筛选状态 ──
+  // ── Filter state ──
   const [search, setSearch] = useState('');
   const [yearFilter, setYearFilter] = useState<string>('ALL');
   const [typeFilter, setTypeFilter] = useState<string>('ALL');
@@ -102,7 +78,7 @@ export default function EssayGalleryPage() {
   const [page, setPage] = useState(1);
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
 
-  // 高级筛选
+  // Advanced filters
   const [advancedFilters, setAdvancedFilters] = useState<EssayFilters>({});
 
   const activeAdvancedFilterCount = useMemo(() => {
@@ -117,7 +93,7 @@ export default function EssayGalleryPage() {
 
   const resetAdvancedFilters = () => setAdvancedFilters({});
 
-  // ── 翻译辅助 ──
+  // ── Translation helpers ──
   const getResultLabel = useCallback(
     (result: string) => getResultLabelUtil(result, (key: string) => tc(key)),
     [tc]
@@ -127,7 +103,7 @@ export default function EssayGalleryPage() {
     [t]
   );
 
-  // ── 构建查询参数 ──
+  // ── Build query params ──
   const queryParams = useMemo(() => {
     const params: Record<string, string> = {
       page: String(page),
@@ -177,7 +153,7 @@ export default function EssayGalleryPage() {
 
   return (
     <PageContainer maxWidth="fluid">
-      {/* ══════════════ 紧凑标题栏 ══════════════ */}
+      {/* ══════════════ Header bar ══════════════ */}
       <div className="shrink-0 flex items-center gap-4 lg:gap-6 mb-4 flex-wrap">
         <div className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500">
@@ -204,9 +180,9 @@ export default function EssayGalleryPage() {
         </Button>
       </div>
 
-      {/* ══════════════ 统一筛选栏 ══════════════ */}
+      {/* ══════════════ Filter bar ══════════════ */}
       <div className="shrink-0 flex items-center gap-2 mb-4 flex-wrap">
-        {/* 搜索框 */}
+        {/* Search */}
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -220,7 +196,7 @@ export default function EssayGalleryPage() {
           />
         </div>
 
-        {/* 文书类型 */}
+        {/* Essay type */}
         <Select
           value={typeFilter}
           onValueChange={(v) => {
@@ -240,7 +216,7 @@ export default function EssayGalleryPage() {
           </SelectContent>
         </Select>
 
-        {/* 年份 */}
+        {/* Year */}
         <Select
           value={yearFilter}
           onValueChange={(v) => {
@@ -261,7 +237,7 @@ export default function EssayGalleryPage() {
           </SelectContent>
         </Select>
 
-        {/* 录取结果 */}
+        {/* Result */}
         <Select
           value={resultFilter}
           onValueChange={(v) => {
@@ -281,7 +257,7 @@ export default function EssayGalleryPage() {
           </SelectContent>
         </Select>
 
-        {/* 高级筛选（移动端和补充筛选） */}
+        {/* Advanced filters */}
         <AdvancedEssayFilter
           filters={advancedFilters}
           onChange={(f) => {
@@ -292,7 +268,7 @@ export default function EssayGalleryPage() {
           activeCount={activeAdvancedFilterCount}
         />
 
-        {/* 清除所有 */}
+        {/* Clear all */}
         {hasFilters && (
           <Button variant="ghost" size="sm" onClick={clearAll} className="text-xs h-9 px-2">
             <X className="h-3.5 w-3.5 mr-1" />
@@ -301,7 +277,7 @@ export default function EssayGalleryPage() {
         )}
       </div>
 
-      {/* ══════════════ 主体区域：卡片网格 ══════════════ */}
+      {/* ══════════════ Main content: card grid ══════════════ */}
       {isLoading ? (
         <LoadingSkeleton />
       ) : isError ? (
@@ -390,137 +366,12 @@ export default function EssayGalleryPage() {
         </Card>
       )}
 
-      {/* 投稿对话框 */}
+      {/* Submit dialog */}
       <SubmitCaseDialog
         open={submitDialogOpen}
         onOpenChange={setSubmitDialogOpen}
         defaultIncludeEssay
       />
     </PageContainer>
-  );
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// 文书卡片
-// ══════════════════════════════════════════════════════════════════════════════
-
-function EssayCard({
-  essay,
-  index,
-  onClick,
-  getResultLabel,
-  getTypeLabel,
-  locale,
-  t,
-}: {
-  essay: GalleryEssay;
-  index: number;
-  onClick: () => void;
-  getResultLabel: (result: string) => string;
-  getTypeLabel: (type?: string) => string;
-  locale: string;
-  t: any;
-}) {
-  const barColor = getResultBarColor(essay.result);
-  const resultBadgeClass = getResultBadgeClass(essay.result);
-  const typeBadgeClass = essay.essayType ? getEssayTypeBadgeClass(essay.essayType) : '';
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: Math.min(index * 0.04, 0.32) }}
-    >
-      <Card
-        className="cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden group"
-        onClick={onClick}
-      >
-        <div className={cn('h-1', barColor)} />
-        <CardContent className="pt-3 pb-3">
-          {/* 学校 + 结果 */}
-          <div className="flex items-center justify-between gap-2 mb-1.5">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <h3 className="font-semibold text-sm truncate">
-                {getSchoolName(essay.school, locale) || t('unknownSchool')}
-              </h3>
-              {essay.school?.usNewsRank && (
-                <Badge
-                  variant="outline"
-                  className="shrink-0 gap-0.5 text-[10px] h-5 bg-amber-500/10 text-amber-600 border-amber-500/20"
-                >
-                  <Trophy className="h-3 w-3" />#{essay.school.usNewsRank}
-                </Badge>
-              )}
-            </div>
-            <Badge className={cn('shrink-0 text-[11px]', resultBadgeClass)}>
-              {getResultLabel(essay.result)}
-            </Badge>
-          </div>
-
-          {/* 类型 + 年份 */}
-          <div className="flex items-center gap-1.5 mb-2">
-            {essay.essayType && (
-              <Badge variant="outline" className={cn('text-[10px] h-5', typeBadgeClass)}>
-                {getTypeLabel(essay.essayType)}
-                {essay.promptNumber && ` #${essay.promptNumber}`}
-              </Badge>
-            )}
-            <span className="text-xs text-muted-foreground">{essay.year}</span>
-          </div>
-
-          {/* 预览 */}
-          {essay.preview && (
-            <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed mb-2">
-              {essay.preview}
-            </p>
-          )}
-
-          {/* 底部：词数 + 认证 */}
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <FileText className="h-3 w-3" />
-              {t('wordCount', { count: essay.wordCount })}
-            </span>
-            {essay.isVerified && (
-              <Badge
-                variant="secondary"
-                className={cn('gap-0.5 text-[10px] px-1.5 py-0', VERIFIED_BADGE_CLASS)}
-              >
-                <CheckCircle2 className="h-3 w-3" />
-                {t('detail.verified')}
-              </Badge>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// 加载骨架屏
-// ══════════════════════════════════════════════════════════════════════════════
-
-function LoadingSkeleton() {
-  return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {[...Array(8)].map((_, i) => (
-        <Card key={i} className="overflow-hidden">
-          <div className="h-1 bg-muted animate-pulse" />
-          <CardContent className="pt-3 space-y-2">
-            <div className="flex justify-between">
-              <Skeleton className="h-4 w-32" />
-              <Skeleton className="h-4 w-14" />
-            </div>
-            <Skeleton className="h-3 w-24" />
-            <Skeleton className="h-8 w-full" />
-            <div className="flex justify-between">
-              <Skeleton className="h-3 w-16" />
-              <Skeleton className="h-4 w-14" />
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
   );
 }

@@ -31,7 +31,7 @@ function getRankIcon(rank: number) {
     case 1:
       return <Crown className="h-5 w-5 text-yellow-500" />;
     case 2:
-      return <Medal className="h-5 w-5 text-gray-400" />;
+      return <Medal className="h-5 w-5 text-gray-400 dark:text-gray-500" />;
     case 3:
       return <Award className="h-5 w-5 text-amber-600" />;
     default:
@@ -44,7 +44,7 @@ function getRankBgClass(rank: number) {
     case 1:
       return 'bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border-yellow-500/30';
     case 2:
-      return 'bg-gradient-to-r from-gray-300/10 to-gray-400/10 border-gray-400/30';
+      return 'bg-gradient-to-r from-gray-300/10 to-gray-400/10 dark:from-gray-600/10 dark:to-gray-500/10 border-gray-400/30 dark:border-gray-500/30';
     case 3:
       return 'bg-gradient-to-r from-amber-600/10 to-orange-500/10 border-amber-600/30';
     default:

@@ -38,6 +38,7 @@ import { MemoryManagerService } from '../memory/memory-manager.service';
 import { MemoryDecayService } from '../memory/memory-decay.service';
 import { MemoryConflictService } from '../memory/memory-conflict.service';
 import { AgentType } from '../types';
+import { ResolveSecurityEventDto } from '../dto/resolve-security-event.dto';
 import {
   IsString,
   IsNumber,
@@ -673,7 +674,7 @@ export class AgentAdminController {
   @ApiOperation({ summary: '解决安全事件' })
   async resolveSecurityEvent(
     @Param('id') id: string,
-    @Body() body: { action: 'approve' | 'reject'; reason?: string },
+    @Body() body: ResolveSecurityEventDto,
   ) {
     return this.prisma.agentSecurityEvent.update({
       where: { id },

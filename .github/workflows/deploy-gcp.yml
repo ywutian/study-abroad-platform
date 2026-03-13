@@ -67,7 +67,7 @@ jobs:
             --task-timeout=300
             --max-retries=0
             --command="./migrate.sh"
-            --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }}"
+            --set-secrets="DATABASE_URL=database-url:latest"
             --quiet
           )
 

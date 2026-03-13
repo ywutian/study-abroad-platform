@@ -104,7 +104,7 @@ export function PostList({
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && onSearch()}
-                className="pl-9 bg-gray-50/50"
+                className="pl-9 bg-muted/50"
               />
             </div>
             <div className="flex gap-1.5 overflow-x-auto pb-1 sm:pb-0">
@@ -167,9 +167,9 @@ export function PostList({
         ) : posts.length === 0 ? (
           <Card>
             <CardContent className="py-16 text-center">
-              <MessageSquare className="h-12 w-12 mx-auto text-gray-200 mb-4" />
-              <h3 className="text-lg font-medium text-gray-500 mb-1">{t('noPosts')}</h3>
-              <p className="text-gray-400 text-sm mb-4">{t('noPostsDesc')}</p>
+              <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
+              <h3 className="text-lg font-medium text-muted-foreground mb-1">{t('noPosts')}</h3>
+              <p className="text-muted-foreground/70 text-sm mb-4">{t('noPostsDesc')}</p>
               <Button onClick={onCreatePost}>
                 <Plus className="h-4 w-4 mr-2" />
                 {t('firstPost')}
@@ -230,12 +230,12 @@ export function PostList({
                         </div>
 
                         {/* Title */}
-                        <h3 className="font-semibold text-gray-900 group-hover:text-primary transition-colors line-clamp-1 mb-1">
+                        <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1 mb-1">
                           {post.title}
                         </h3>
 
                         {/* Content Preview */}
-                        <p className="text-gray-500 text-sm line-clamp-2 mb-2">
+                        <p className="text-muted-foreground text-sm line-clamp-2 mb-2">
                           {stripMarkdown(post.content)}
                         </p>
 
@@ -251,16 +251,18 @@ export function PostList({
                               </span>
                             ))}
                             {post.tags.length > 4 && (
-                              <span className="text-xs text-gray-400">+{post.tags.length - 4}</span>
+                              <span className="text-xs text-muted-foreground/70">
+                                +{post.tags.length - 4}
+                              </span>
                             )}
                           </div>
                         )}
 
                         {/* Footer */}
-                        <div className="flex items-center justify-between text-xs text-gray-400">
+                        <div className="flex items-center justify-between text-xs text-muted-foreground/70">
                           <div className="flex items-center gap-3">
                             <span className="flex items-center gap-1">
-                              <span className="font-medium text-gray-600">
+                              <span className="font-medium text-muted-foreground">
                                 {post.author.name || t('anonymous')}
                               </span>
                               {post.author.isVerified && (
@@ -294,13 +296,13 @@ export function PostList({
                       {/* Actions */}
                       <div className="flex flex-col items-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
-                          className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                          className="p-1.5 rounded-lg hover:bg-muted transition-colors"
                           onClick={(e) => {
                             e.stopPropagation();
                             onReport({ type: 'POST', id: post.id });
                           }}
                         >
-                          <Flag className="h-4 w-4 text-gray-400 hover:text-red-500" />
+                          <Flag className="h-4 w-4 text-muted-foreground/70 hover:text-red-500" />
                         </button>
                       </div>
                     </div>

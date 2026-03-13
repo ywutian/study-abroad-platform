@@ -1,4 +1,12 @@
-import { IsOptional, IsString, IsEnum, IsInt, Min, Max } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsEnum,
+  IsInt,
+  Min,
+  Max,
+  MaxLength,
+} from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { TeamVisibility, TeamJoinPolicy } from '@prisma/client';
@@ -21,6 +29,7 @@ export class TeamQueryDto {
 
   @ApiPropertyOptional({ description: 'Filter by school ID' })
   @IsOptional()
+  @MaxLength(500)
   @IsString()
   schoolId?: string;
 
@@ -43,5 +52,6 @@ export class TeamQueryDto {
   @ApiPropertyOptional({ description: 'Sort: newest | members' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   sort?: 'newest' | 'members';
 }

@@ -8,7 +8,12 @@
  * - 与 AuditService 集成
  */
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  OnModuleInit,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RedisService } from '../../../../common/redis/redis.service';
 
@@ -422,7 +427,7 @@ ${payload.message}${payload.traceId ? `\n\n**Trace ID**: ${payload.traceId}` : '
     });
 
     if (!response.ok) {
-      throw new Error(
+      throw new InternalServerErrorException(
         `PagerDuty API error: ${response.status} ${response.statusText}`,
       );
     }

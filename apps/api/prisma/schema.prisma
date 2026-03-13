@@ -656,6 +656,33 @@ model School {
   nicheFoodGrade    String? // Campus Food index
   nicheOverallGrade String? // Overall Niche grade
 
+  // Retention & Academics (from BigFuture)
+  retentionRate       Decimal? @db.Decimal(5, 2) // First-year retention rate %
+  studentFacultyRatio Int? // e.g. 6 means 6:1
+
+  // Financial Aid (from BigFuture + Appily)
+  percentNeedMet   Decimal? @db.Decimal(5, 2) // % of demonstrated need met
+  averageAidPackage Int? // Average financial aid package in USD
+  averageNetPrice   Int? // Net price after aid in USD
+  roomAndBoard      Int? // Annual room & board cost in USD
+
+  // Application Info (from BigFuture + IPEDS)
+  applicationFee     Int? // Application fee in USD
+  feeWaiverAvailable Boolean? // null=unknown, false=no, true=yes
+  acceptsCommonApp   Boolean? // null=unknown, false=no, true=yes
+  acceptsCoalition   Boolean?
+  testOptional       Boolean?
+  hasEarlyDecision   Boolean?
+
+  // Post-Graduation Outcomes (from Appily)
+  salary6YrPostGrad  Int? // Median salary 6 years after graduation
+  loanDefaultRate    Decimal? @db.Decimal(5, 2) // Federal loan default rate %
+  monthlyLoanPayment Int? // Median monthly loan payment
+
+  // Campus Life (from Appily)
+  countriesRepresented Int? // Number of countries represented
+  studentOrgsCount     Int? // Number of student organizations
+
   // Search aliases (abbreviations, short names, nicknames)
   aliases String[] @default([]) // e.g. ["MIT", "麻省理工", "Mass Tech"]
 
@@ -687,6 +714,8 @@ model School {
   @@index([nameZh])
   @@index([usNewsRank])
   @@index([isPrivate])
+  @@index([testOptional])
+  @@index([hasEarlyDecision])
 }
 
 model SchoolMetric {

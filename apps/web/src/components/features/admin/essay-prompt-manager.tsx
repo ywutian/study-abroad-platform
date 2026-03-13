@@ -198,7 +198,7 @@ export function EssayPromptManager() {
       WHY_SCHOOL: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
       ACTIVITY: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
       SHORT_ANSWER: 'bg-pink-500/10 text-pink-600 border-pink-500/20',
-      OPTIONAL: 'bg-slate-500/10 text-slate-600 border-slate-500/20',
+      OPTIONAL: 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20',
     };
     return (
       <Badge variant="outline" className={colors[type] || ''}>

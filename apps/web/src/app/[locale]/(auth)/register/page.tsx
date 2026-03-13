@@ -1,68 +1,26 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link, useRouter } from '@/lib/i18n/navigation';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-// Card removed for consistency with other auth pages (forgot-password, reset-password, verify-email)
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Form } from '@/components/ui/form';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
 import { ApiError } from '@/lib/api/api-error';
 import { setAuthFromLogin } from '@/stores/auth';
 import { cn } from '@/lib/utils';
-import {
-  ChevronRight,
-  ChevronLeft,
-  Check,
-  Loader2,
-  Gift,
-  ChevronDown,
-  Eye,
-  EyeOff,
-} from 'lucide-react';
+import { ChevronRight, ChevronLeft, Loader2 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { PasswordStrength } from '@/components/ui/password-strength';
+import { RegisterProgress } from './_components/register-progress';
+import { RegisterStepAccount } from './_components/register-step-account';
+import { RegisterStepProfile } from './_components/register-step-profile';
+import { RegisterStepScores } from './_components/register-step-scores';
 
-// 年份选项
-const currentYear = new Date().getFullYear();
-const birthYears = Array.from({ length: 50 }, (_, i) => currentYear - 10 - i);
-const graduationYears = Array.from({ length: 10 }, (_, i) => currentYear + 5 - i);
-
-// 月份选项
-const months = Array.from({ length: 12 }, (_, i) => ({
-  value: (i + 1).toString().padStart(2, '0'),
-  label: `${i + 1}`,
-}));
-
-const getDaysInMonth = (year: number, month: number) => {
-  return new Date(year, month, 0).getDate();
-};
-
-// 步骤配置
-// Step labels are resolved via translations in the component
-
-// 表单 Schema
+// Form Schema
 const createRegisterSchema = (t: ReturnType<typeof useTranslations>) =>
   z
     .object({
@@ -112,8 +70,6 @@ export default function RegisterPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [referralOpen, setReferralOpen] = useState(!!refCode);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const form = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
@@ -138,15 +94,6 @@ export default function RegisterPage() {
   });
 
   const watchedPassword = form.watch('password');
-  const watchBirthYear = form.watch('birthYear');
-  const watchBirthMonth = form.watch('birthMonth');
-
-  const daysInMonth = useMemo(() => {
-    if (watchBirthYear && watchBirthMonth) {
-      return getDaysInMonth(parseInt(watchBirthYear, 10), parseInt(watchBirthMonth, 10));
-    }
-    return 31;
-  }, [watchBirthYear, watchBirthMonth]);
 
   const isLastStep = currentStep === steps.length - 1;
   const isFirstStep = currentStep === 0;
@@ -260,65 +207,9 @@ export default function RegisterPage() {
   return (
     <div className="space-y-6">
       <div>
-        {/* 步骤指示器 */}
-        <div className="flex items-center justify-center mb-8">
-          {steps.map((step, index) => (
-            <div key={step.key} className="flex items-center">
-              {/* 步骤圆圈 */}
-              <div className="flex flex-col items-center">
-                <button
-                  type="button"
-                  onClick={() => index < currentStep && setCurrentStep(index)}
-                  disabled={index > currentStep}
-                  className={cn(
-                    'w-9 h-9 rounded-full flex items-center justify-center text-sm font-medium transition-all',
-                    index < currentStep &&
-                      'bg-primary text-primary-foreground cursor-pointer hover:bg-primary/90',
-                    index === currentStep &&
-                      'bg-primary text-primary-foreground ring-4 ring-primary/20',
-                    index > currentStep && 'bg-muted text-muted-foreground'
-                  )}
-                >
-                  {index < currentStep ? <Check className="w-4 h-4" /> : index + 1}
-                </button>
-                <span
-                  className={cn(
-                    'text-xs mt-1.5',
-                    index === currentStep ? 'text-primary font-medium' : 'text-muted-foreground'
-                  )}
-                >
-                  {step.label}
-                </span>
-              </div>
+        <RegisterProgress steps={steps} currentStep={currentStep} onStepClick={setCurrentStep} />
 
-              {/* 连接线 */}
-              {index < steps.length - 1 && (
-                <div
-                  className={cn(
-                    'w-16 h-0.5 mx-2 -mt-5',
-                    index < currentStep ? 'bg-primary' : 'bg-muted'
-                  )}
-                />
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* 标题区 */}
-        <div className="text-center mb-6">
-          <h1 className="text-title">
-            {currentStep === 0 && ta('steps.account.title')}
-            {currentStep === 1 && ta('steps.profile.title')}
-            {currentStep === 2 && ta('steps.scores.title')}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {currentStep === 0 && ta('steps.account.desc')}
-            {currentStep === 1 && ta('steps.profile.desc')}
-            {currentStep === 2 && ta('steps.scores.desc')}
-          </p>
-        </div>
-
-        {/* 表单 — all steps rendered simultaneously, inactive ones hidden via CSS
+        {/* Form — all steps rendered simultaneously, inactive ones hidden via CSS
              so fields stay mounted and react-hook-form retains their values */}
         <Form {...form}>
           <form
@@ -335,359 +226,26 @@ export default function RegisterPage() {
             <div className="min-h-[260px]">
               {/* Step 0: Account */}
               <div className={cn(currentStep !== 0 && 'hidden')}>
-                <div className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{ta('email')}</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="email"
-                            placeholder="your@email.com"
-                            autoComplete="email"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{ta('password')}</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Input
-                              type={showPassword ? 'text' : 'password'}
-                              placeholder={t('validation.passwordMin')}
-                              autoComplete="new-password"
-                              className="pr-10"
-                              {...field}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowPassword(!showPassword)}
-                              className="absolute right-0 top-0 bottom-0 w-10 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-                              tabIndex={-1}
-                            >
-                              {showPassword ? (
-                                <EyeOff className="h-4 w-4" />
-                              ) : (
-                                <Eye className="h-4 w-4" />
-                              )}
-                            </button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                        <PasswordStrength password={watchedPassword} />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="confirmPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{ta('confirmPassword')}</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Input
-                              type={showConfirmPassword ? 'text' : 'password'}
-                              placeholder={ta('confirmPassword')}
-                              autoComplete="new-password"
-                              className="pr-10"
-                              {...field}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                              className="absolute right-0 top-0 bottom-0 w-10 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-                              tabIndex={-1}
-                            >
-                              {showConfirmPassword ? (
-                                <EyeOff className="h-4 w-4" />
-                              ) : (
-                                <Eye className="h-4 w-4" />
-                              )}
-                            </button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="agreeTerms"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 pt-2">
-                        <FormControl>
-                          <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                        </FormControl>
-                        <FormLabel className="text-sm font-normal text-muted-foreground leading-snug cursor-pointer">
-                          {ta('agreeTerms')}
-                        </FormLabel>
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Referral Code (collapsible) */}
-                  <Collapsible open={referralOpen} onOpenChange={setReferralOpen}>
-                    <CollapsibleTrigger asChild>
-                      <button
-                        type="button"
-                        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors pt-2"
-                      >
-                        <Gift className="h-4 w-4" />
-                        <span>
-                          {t('referral.yourCode', { defaultValue: 'Have a referral code?' })}
-                        </span>
-                        <ChevronDown
-                          className={cn(
-                            'h-3 w-3 transition-transform',
-                            referralOpen && 'rotate-180'
-                          )}
-                        />
-                      </button>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <FormField
-                        control={form.control}
-                        name="referralCode"
-                        render={({ field }) => (
-                          <FormItem className="pt-2">
-                            <FormControl>
-                              <Input
-                                placeholder="A1B2C3D4"
-                                className="font-mono uppercase tracking-wider"
-                                {...field}
-                                onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </CollapsibleContent>
-                  </Collapsible>
-                </div>
+                <RegisterStepAccount
+                  form={form}
+                  watchedPassword={watchedPassword}
+                  referralOpen={referralOpen}
+                  onReferralOpenChange={setReferralOpen}
+                />
               </div>
 
               {/* Step 1: Profile */}
               <div className={cn(currentStep !== 1 && 'hidden')}>
-                <div className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="realName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          {ta('realName')} <span className="text-destructive">*</span>
-                        </FormLabel>
-                        <FormControl>
-                          <Input placeholder={ta('realNamePlaceholder')} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="space-y-2">
-                    <FormLabel className="text-sm">
-                      {ta('birthday')}{' '}
-                      <span className="text-muted-foreground font-normal text-xs ml-1">
-                        {t('common.optional', { defaultValue: '' })}
-                      </span>
-                    </FormLabel>
-                    <div className="grid grid-cols-3 gap-2">
-                      <FormField
-                        control={form.control}
-                        name="birthYear"
-                        render={({ field }) => (
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="YYYY" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {birthYears.map((year) => (
-                                <SelectItem key={year} value={year.toString()}>
-                                  {year}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="birthMonth"
-                        render={({ field }) => (
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="MM" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {months.map((m) => (
-                                <SelectItem key={m.value} value={m.value}>
-                                  {m.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="birthDay"
-                        render={({ field }) => (
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="DD" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {Array.from({ length: daysInMonth }, (_, i) => (
-                                <SelectItem key={i + 1} value={(i + 1).toString().padStart(2, '0')}>
-                                  {i + 1}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <FormLabel className="text-sm">{ta('graduationDate')}</FormLabel>
-                    <div className="grid grid-cols-2 gap-2">
-                      <FormField
-                        control={form.control}
-                        name="gradYear"
-                        render={({ field }) => (
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="YYYY" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {graduationYears.map((year) => (
-                                <SelectItem key={year} value={year.toString()}>
-                                  {year}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="gradMonth"
-                        render={({ field }) => (
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="MM" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {months.map((m) => (
-                                <SelectItem key={m.value} value={m.value}>
-                                  {m.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      />
-                    </div>
-                  </div>
-                </div>
+                <RegisterStepProfile form={form} />
               </div>
 
               {/* Step 2: Scores */}
               <div className={cn(currentStep !== 2 && 'hidden')}>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-4">
-                    <FormField
-                      control={form.control}
-                      name="toeflScore"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm">
-                            TOEFL{' '}
-                            <span className="text-muted-foreground font-normal text-xs">/ 120</span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input type="number" placeholder="-" min={0} max={120} {...field} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="ieltsScore"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm">
-                            IELTS{' '}
-                            <span className="text-muted-foreground font-normal text-xs">/ 9.0</span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              placeholder="-"
-                              min={0}
-                              max={9}
-                              step={0.5}
-                              {...field}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="satScore"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm">
-                            SAT{' '}
-                            <span className="text-muted-foreground font-normal text-xs">
-                              / 1600
-                            </span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input type="number" placeholder="-" min={400} max={1600} {...field} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="actScore"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm">
-                            ACT{' '}
-                            <span className="text-muted-foreground font-normal text-xs">/ 36</span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input type="number" placeholder="-" min={1} max={36} {...field} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground text-center pt-2">
-                    {ta('scoresOptional')}
-                  </p>
-                </div>
+                <RegisterStepScores form={form} />
               </div>
             </div>
 
-            {/* 导航按钮 */}
+            {/* Navigation buttons */}
             <div className="flex justify-between items-center pt-6 mt-4 border-t">
               <Button
                 type="button"
@@ -721,7 +279,7 @@ export default function RegisterPage() {
           </form>
         </Form>
 
-        {/* 底部链接 */}
+        {/* Bottom link */}
         <p className="text-center text-sm text-muted-foreground mt-6">
           {ta('hasAccount')}
           <Link href="/login" className="text-primary font-medium hover:underline ml-1">

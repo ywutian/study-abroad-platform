@@ -6,6 +6,7 @@ import {
   IsEnum,
   Min,
   Max,
+  MaxLength,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationDto } from '../../../common/dto/pagination.dto';
@@ -20,21 +21,25 @@ export class SchoolQueryDto extends PaginationDto {
   @ApiPropertyOptional({ description: '国家代码' })
   @IsOptional()
   @IsString()
+  @MaxLength(10)
   country?: string;
 
   @ApiPropertyOptional({ description: '搜索关键词' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   search?: string;
 
   @ApiPropertyOptional({ description: '州/省' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   state?: string;
 
   @ApiPropertyOptional({ description: '地区 (northeast/midwest/south/west)' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   region?: string;
 
   @ApiPropertyOptional({ description: '最低排名' })

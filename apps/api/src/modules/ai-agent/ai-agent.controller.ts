@@ -19,6 +19,7 @@ import {
   HttpStatus,
   UseGuards,
   Logger,
+  UnauthorizedException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -165,7 +166,7 @@ export class AiAgentController {
 
     if (!user?.id) {
       this.logger.error('No user ID in request - authentication issue');
-      throw new Error('Authentication required');
+      throw new UnauthorizedException('Authentication required');
     }
 
     return this.orchestrator.callAgent(

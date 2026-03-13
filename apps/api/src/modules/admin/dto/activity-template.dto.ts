@@ -5,6 +5,7 @@ import {
   IsBoolean,
   IsArray,
   IsEnum,
+  MaxLength,
   Min,
   Max,
 } from 'class-validator';
@@ -13,11 +14,13 @@ import { ActivityCategory } from '@prisma/client';
 
 export class CreateActivityTemplateDto {
   @ApiProperty()
+  @MaxLength(200)
   @IsString()
   name: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
+  @MaxLength(200)
   @IsString()
   nameZh?: string;
 
@@ -25,6 +28,7 @@ export class CreateActivityTemplateDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @MaxLength(200, { each: true })
   aliases?: string[];
 
   @ApiProperty({ enum: ActivityCategory })
@@ -40,6 +44,7 @@ export class CreateActivityTemplateDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
+  @MaxLength(2000)
   @IsString()
   description?: string;
 }
@@ -47,11 +52,13 @@ export class CreateActivityTemplateDto {
 export class UpdateActivityTemplateDto {
   @ApiProperty({ required: false })
   @IsOptional()
+  @MaxLength(200)
   @IsString()
   name?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
+  @MaxLength(200)
   @IsString()
   nameZh?: string;
 
@@ -59,6 +66,7 @@ export class UpdateActivityTemplateDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @MaxLength(200, { each: true })
   aliases?: string[];
 
   @ApiProperty({ enum: ActivityCategory, required: false })
@@ -75,6 +83,7 @@ export class UpdateActivityTemplateDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
+  @MaxLength(2000)
   @IsString()
   description?: string;
 
@@ -87,6 +96,7 @@ export class UpdateActivityTemplateDto {
 export class ActivityTemplateQueryDto {
   @ApiProperty({ required: false })
   @IsOptional()
+  @MaxLength(500)
   @IsString()
   search?: string;
 

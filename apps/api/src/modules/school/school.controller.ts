@@ -21,6 +21,15 @@ import { SchoolLogoService } from './school-logo.service';
 import { SchoolQueryDto } from './dto/school-query.dto';
 import { CreateSchoolDto } from './dto/create-school.dto';
 import { UpdateSchoolDto } from './dto/update-school.dto';
+import { FillLogosDto } from './dto/fill-logos.dto';
+import {
+  DataEnrichmentDto,
+  ScrapeEnrichmentDto,
+  EnrichmentRunDto,
+} from './dto/data-enrichment.dto';
+import { UrbanInstituteDataService } from './urban-institute-data.service';
+import { BigFutureScrapeService } from './scrapers/bigfuture.scraper';
+import { AppilyScrapeService } from './scrapers/appily.scraper';
 import { Public, Roles, CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -51,6 +60,9 @@ export class SchoolController {
     private readonly auditLogService: AuditLogService,
     private readonly schoolLogoService: SchoolLogoService,
     private readonly schoolListService: SchoolListService,
+    private readonly urbanInstituteService: UrbanInstituteDataService,
+    private readonly bigFutureService: BigFutureScrapeService,
+    private readonly appilyService: AppilyScrapeService,
   ) {}
 
   @Get('uc-ids')
@@ -139,6 +151,38 @@ export class SchoolController {
   @ApiOperation({ summary: 'Get field provenance for a school (admin only)' })
   async getProvenance(@Param('id') id: string) {
     return this.schoolDataMerger.getProvenance(id);
+  }
+
+  /**
+   * 各数据源最近同步状态
+   */
+  @Get('admin/sync-status')
+  @ApiBearerAuth()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Get last sync status for all data sources' })
+  async getSyncStatus() {
+    const sources = [
+      'COLLEGE_SCORECARD',
+      'URBAN_INSTITUTE',
+      'BIGFUTURE',
+      'APPILY',
+      'IPEDS_CHECK',
+    ];
+    const results = [];
+    for (const source of sources) {
+      const lastRun = await this.prisma.auditLog.findFirst({
+        where: { action: 'DATA_SYNC', resource: source },
+        orderBy: { createdAt: 'desc' },
+        select: { createdAt: true, metadata: true },
+      });
+      results.push({
+        source,
+        lastRun: lastRun?.createdAt ?? null,
+        metadata: lastRun?.metadata ?? null,
+      });
+    }
+    return results;
   }
 
   /**
@@ -330,10 +374,111 @@ export class SchoolController {
     summary: 'Fill school logos by website domain via Logo.dev (admin only)',
   })
   async fillLogosByDomain(
-    @Body() body: { limit?: number },
+    @Body() body: FillLogosDto,
     @CurrentUser() user: CurrentUserPayload,
   ) {
     const limit = Math.min(Math.max(1, body?.limit ?? 100), 500);
     return this.schoolLogoService.fillLogosByDomain(limit, user.id);
+  }
+
+  // ──────────────────────────────────────────────
+  //  Data Enrichment Endpoints (多源数据补充)
+  // ──────────────────────────────────────────────
+
+  /**
+   * 从 Urban Institute API 同步 IPEDS 数据
+   */
+  @Post('sync/urban-institute')
+  @ApiBearerAuth()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({
+    summary: 'Sync schools from Urban Institute IPEDS API (admin only)',
+  })
+  async syncFromUrbanInstitute(
+    @Body() body: DataEnrichmentDto,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.urbanInstituteService.syncAll(
+      body.year,
+      body.limit || 100,
+      user.id,
+    );
+  }
+
+  /**
+   * 从 BigFuture 爬取学校数据
+   */
+  @Post('scrape/bigfuture')
+  @ApiBearerAuth()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({
+    summary: 'Scrape school data from College Board BigFuture (admin only)',
+  })
+  async scrapeBigFuture(
+    @Body() body: ScrapeEnrichmentDto,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.bigFutureService.scrapeSchools(body.limit || 100, user.id);
+  }
+
+  /**
+   * 从 Appily 爬取学校数据
+   */
+  @Post('scrape/appily')
+  @ApiBearerAuth()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({
+    summary: 'Scrape school data from Appily (admin only)',
+  })
+  async scrapeAppily(
+    @Body() body: ScrapeEnrichmentDto,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.appilyService.scrapeSchools(body.limit || 100, user.id);
+  }
+
+  /**
+   * 一键全量数据补充
+   * 按顺序运行所有数据源: Urban Institute → BigFuture → Appily
+   */
+  @Post('data-enrichment/run')
+  @ApiBearerAuth()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({
+    summary: 'Run full data enrichment pipeline (all sources, admin only)',
+  })
+  async runDataEnrichment(
+    @Body() body: EnrichmentRunDto,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    const limit = body.limit || 100;
+    const sourcesStr = body.sources || 'urban,bigfuture,appily';
+    const sources = sourcesStr.split(',').map((s) => s.trim().toLowerCase());
+    const results: Record<string, unknown> = {};
+
+    if (sources.includes('urban')) {
+      results.urbanInstitute = await this.urbanInstituteService.syncAll(
+        undefined,
+        limit,
+        user.id,
+      );
+    }
+
+    if (sources.includes('bigfuture')) {
+      results.bigFuture = await this.bigFutureService.scrapeSchools(
+        limit,
+        user.id,
+      );
+    }
+
+    if (sources.includes('appily')) {
+      results.appily = await this.appilyService.scrapeSchools(limit, user.id);
+    }
+
+    return { sources: sourcesStr, limit, results };
   }
 }

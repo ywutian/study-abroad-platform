@@ -80,6 +80,9 @@ interface School {
   nicheLifeGrade?: string;
   nicheFoodGrade?: string;
   nicheOverallGrade?: string;
+  testOptional?: boolean;
+  hasEarlyDecision?: boolean;
+  acceptsCommonApp?: boolean;
 }
 
 interface Filters {
@@ -768,6 +771,21 @@ export function BrowseTab() {
                           )}
                         </div>
                       </div>
+
+                      {(school.testOptional || school.hasEarlyDecision) && (
+                        <div className="flex flex-wrap gap-1 mb-2">
+                          {school.testOptional && (
+                            <Badge variant="outline" className="text-xs">
+                              {t('specialConditions.testOptional')}
+                            </Badge>
+                          )}
+                          {school.hasEarlyDecision && (
+                            <Badge variant="outline" className="text-xs">
+                              ED
+                            </Badge>
+                          )}
+                        </div>
+                      )}
 
                       <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-3">
                         <MapPin className="h-3.5 w-3.5 shrink-0 text-rose-500" />

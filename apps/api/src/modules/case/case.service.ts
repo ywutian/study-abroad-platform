@@ -35,6 +35,10 @@ import {
   parseTags,
   type BatchImportResult,
 } from '../../common/utils/import-normalizers';
+import {
+  SCHOOL_NAME_SELECT,
+  SCHOOL_NAME_RANK_SELECT,
+} from '../../common/constants/prisma-selects';
 
 interface CaseFilters {
   schoolId?: string;
@@ -142,7 +146,7 @@ export class CaseService {
         take: pageSize,
         orderBy: { createdAt: 'desc' },
         include: {
-          school: { select: { id: true, name: true, nameZh: true } },
+          school: { select: SCHOOL_NAME_SELECT },
         },
       }),
       this.prisma.admissionCase.count({ where }),
@@ -183,7 +187,7 @@ export class CaseService {
       where: { id },
       include: {
         school: {
-          select: { id: true, name: true, nameZh: true, usNewsRank: true },
+          select: SCHOOL_NAME_RANK_SELECT,
         },
       },
     });
@@ -369,7 +373,7 @@ export class CaseService {
     return this.prisma.admissionCase.findMany({
       where: { userId },
       include: {
-        school: { select: { id: true, name: true, nameZh: true } },
+        school: { select: SCHOOL_NAME_SELECT },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -423,7 +427,7 @@ export class CaseService {
         take: pageSize,
         orderBy: { createdAt: 'desc' },
         include: {
-          school: { select: { id: true, name: true, nameZh: true } },
+          school: { select: SCHOOL_NAME_SELECT },
         },
       }),
       this.prisma.admissionCase.count({ where }),
@@ -545,7 +549,7 @@ export class CaseService {
           verifiedAt: new Date(),
         },
         include: {
-          school: { select: { id: true, name: true, nameZh: true } },
+          school: { select: SCHOOL_NAME_SELECT },
         },
       });
     } else {
@@ -556,7 +560,7 @@ export class CaseService {
           visibility: Visibility.PRIVATE,
         },
         include: {
-          school: { select: { id: true, name: true, nameZh: true } },
+          school: { select: SCHOOL_NAME_SELECT },
         },
       });
     }

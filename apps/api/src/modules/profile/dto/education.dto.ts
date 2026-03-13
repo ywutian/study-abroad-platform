@@ -20,16 +20,19 @@ export class CreateEducationDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   schoolType?: string;
 
   @ApiPropertyOptional({ description: '学位' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   degree?: string;
 
   @ApiPropertyOptional({ description: '专业' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   major?: string;
 
   @ApiPropertyOptional({ description: '开始日期' })
@@ -59,11 +62,13 @@ export class CreateEducationDto {
   @ApiPropertyOptional({ description: '描述' })
   @IsOptional()
   @IsString()
+  @MaxLength(500)
   description?: string;
 
   @ApiPropertyOptional({ description: '关联的高中参考数据ID' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   highSchoolId?: string;
 }
 
@@ -77,16 +82,19 @@ export class UpdateEducationDto {
   @ApiPropertyOptional({ description: '学校类型' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   schoolType?: string;
 
   @ApiPropertyOptional({ description: '学位' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   degree?: string;
 
   @ApiPropertyOptional({ description: '专业' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   major?: string;
 
   @ApiPropertyOptional({ description: '开始日期' })
@@ -116,10 +124,12 @@ export class UpdateEducationDto {
   @ApiPropertyOptional({ description: '描述' })
   @IsOptional()
   @IsString()
+  @MaxLength(500)
   description?: string;
 
   @ApiPropertyOptional({ description: '关联的高中参考数据ID' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   highSchoolId?: string;
 }

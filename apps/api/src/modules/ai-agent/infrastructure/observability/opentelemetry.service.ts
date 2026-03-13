@@ -523,12 +523,14 @@ export class OpenTelemetryService implements OnModuleInit, OnModuleDestroy {
   }
 
   private exportToConsole(spans: Span[]): void {
+    if (this.configService.get('NODE_ENV') === 'production') return;
+
     for (const span of spans) {
       const duration = span.endTime
         ? span.endTime.getTime() - span.startTime.getTime()
         : 0;
 
-      console.log(
+      this.logger.debug(
         JSON.stringify({
           type: 'span',
           traceId: span.context.traceId,

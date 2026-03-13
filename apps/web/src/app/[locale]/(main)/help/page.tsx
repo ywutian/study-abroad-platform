@@ -71,6 +71,22 @@ const categoryConfig: Record<string, { icon: typeof HelpCircle; color: string }>
   privacySecurity: { icon: Shield, color: 'rose' },
 };
 
+const COLOR_CLASSES: Record<string, { bg: string; bgHover: string; text: string }> = {
+  blue: { bg: 'bg-blue-500/10', bgHover: 'group-hover:bg-blue-500/20', text: 'text-blue-500' },
+  rose: { bg: 'bg-rose-500/10', bgHover: 'group-hover:bg-rose-500/20', text: 'text-rose-500' },
+  violet: {
+    bg: 'bg-violet-500/10',
+    bgHover: 'group-hover:bg-violet-500/20',
+    text: 'text-violet-500',
+  },
+  emerald: {
+    bg: 'bg-emerald-500/10',
+    bgHover: 'group-hover:bg-emerald-500/20',
+    text: 'text-emerald-500',
+  },
+  amber: { bg: 'bg-amber-500/10', bgHover: 'group-hover:bg-amber-500/20', text: 'text-amber-500' },
+};
+
 const resourceConfig = [
   { key: 'docs', icon: BookOpen, color: 'blue', gradient: 'bg-primary' },
   { key: 'video', icon: Video, color: 'rose', gradient: 'bg-destructive' },
@@ -145,10 +161,11 @@ export default function HelpPage() {
                   <div
                     className={cn(
                       'flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-all duration-300',
-                      `bg-${resource.color}-500/10 group-hover:bg-${resource.color}-500/20`
+                      COLOR_CLASSES[resource.color]?.bg,
+                      COLOR_CLASSES[resource.color]?.bgHover
                     )}
                   >
-                    <Icon className={cn('h-6 w-6', `text-${resource.color}-500`)} />
+                    <Icon className={cn('h-6 w-6', COLOR_CLASSES[resource.color]?.text)} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold">{t(`resources.${resource.key}.title`)}</h3>

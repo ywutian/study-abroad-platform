@@ -290,6 +290,7 @@ function DiscoverSchoolFilter({
   locale: string;
   onSelect: (id: string | null) => void;
 }) {
+  const t = useTranslations('teams');
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const { data: searchData, isLoading } = useSchoolSearch(search, open);
@@ -303,16 +304,16 @@ function DiscoverSchoolFilter({
           <GraduationCap className="mr-2 h-4 w-4 shrink-0" />
           {schoolId ? (
             <span className="truncate">
-              {selectedSchool ? getSchoolName(selectedSchool, locale) : 'School selected'}
+              {selectedSchool ? getSchoolName(selectedSchool, locale) : t('filters.schoolSelected')}
             </span>
           ) : (
-            <span className="text-muted-foreground">School (optional)</span>
+            <span className="text-muted-foreground">{t('filters.schoolPlaceholder')}</span>
           )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[280px] p-0" align="start">
         <Input
-          placeholder="Search schools..."
+          placeholder={t('filters.schoolSearch')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="rounded-b-none border-0 border-b"
@@ -328,13 +329,17 @@ function DiscoverSchoolFilter({
               }}
             >
               <X className="h-4 w-4" />
-              Clear filter
+              {t('filters.schoolClear')}
             </button>
           )}
           {isLoading ? (
-            <div className="py-4 text-center text-sm text-muted-foreground">Loading...</div>
+            <div className="py-4 text-center text-sm text-muted-foreground">
+              {t('filters.schoolLoading')}
+            </div>
           ) : items.length === 0 && search.trim() ? (
-            <div className="py-4 text-center text-sm text-muted-foreground">No schools found</div>
+            <div className="py-4 text-center text-sm text-muted-foreground">
+              {t('filters.schoolNoResults')}
+            </div>
           ) : (
             items.slice(0, 10).map((school) => (
               <button

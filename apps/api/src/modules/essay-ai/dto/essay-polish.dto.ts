@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsOptional, IsEnum } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsEnum,
+  MaxLength,
+} from 'class-validator';
 
 export enum PolishStyle {
   FORMAL = 'formal',
@@ -9,6 +15,7 @@ export enum PolishStyle {
 
 export class EssayPolishRequestDto {
   @ApiProperty({ description: '文书ID' })
+  @MaxLength(500)
   @IsString()
   @IsNotEmpty()
   essayId: string;
@@ -19,6 +26,7 @@ export class EssayPolishRequestDto {
   })
   @IsString()
   @IsOptional()
+  @MaxLength(50000)
   content?: string;
 
   @ApiProperty({ enum: PolishStyle, description: '润色风格', required: false })

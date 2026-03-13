@@ -549,7 +549,12 @@ export function Header() {
           {/* Mobile hamburger drawer */}
           <ClientOnly
             fallback={
-              <Button variant="ghost" size="icon" className="lg:hidden">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden"
+                aria-label="Toggle navigation menu"
+              >
                 <Menu className="h-5 w-5" />
               </Button>
             }

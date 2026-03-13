@@ -10,7 +10,12 @@
  * - API Key 未配置时静默禁用
  */
 
-import { Injectable, Logger, Optional } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  Optional,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RedisService } from '../../../common/redis/redis.service';
 import { ResilienceService } from '../core/resilience.service';
@@ -413,7 +418,9 @@ export class WebSearchService {
 
     if (!res.ok) {
       const errorBody = await res.text();
-      throw new Error(`Google Search API error ${res.status}: ${errorBody}`);
+      throw new InternalServerErrorException(
+        `Google Search API error ${res.status}: ${errorBody}`,
+      );
     }
 
     const data = await res.json();
@@ -457,7 +464,9 @@ export class WebSearchService {
 
     if (!res.ok) {
       const errorBody = await res.text();
-      throw new Error(`Google Search API error ${res.status}: ${errorBody}`);
+      throw new InternalServerErrorException(
+        `Google Search API error ${res.status}: ${errorBody}`,
+      );
     }
 
     const data = await res.json();
@@ -500,7 +509,9 @@ export class WebSearchService {
 
     if (!res.ok) {
       const errorBody = await res.text();
-      throw new Error(`Tavily API error ${res.status}: ${errorBody}`);
+      throw new InternalServerErrorException(
+        `Tavily API error ${res.status}: ${errorBody}`,
+      );
     }
 
     const data = await res.json();
@@ -545,7 +556,9 @@ export class WebSearchService {
 
     if (!res.ok) {
       const errorBody = await res.text();
-      throw new Error(`Tavily API error ${res.status}: ${errorBody}`);
+      throw new InternalServerErrorException(
+        `Tavily API error ${res.status}: ${errorBody}`,
+      );
     }
 
     const data = await res.json();

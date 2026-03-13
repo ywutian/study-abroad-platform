@@ -27,6 +27,7 @@ export class CreateResumeDto {
   @ApiPropertyOptional({ description: 'Template ID', example: 'jake-classic' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   templateId?: string;
 
   @ApiPropertyOptional({ description: 'Language', enum: ['en', 'zh'] })

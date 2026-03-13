@@ -33,6 +33,8 @@ import {
   UpdateEducationDto,
   OnboardingDto,
   ProfileGradeResponseDto,
+  SetTargetSchoolsDto,
+  AddTargetSchoolDto,
 } from './dto';
 
 @ApiTags('profiles')
@@ -430,11 +432,7 @@ export class ProfileController {
   @ApiOperation({ summary: '批量设置目标学校列表' })
   async setTargetSchools(
     @CurrentUser() user: CurrentUserPayload,
-    @Body()
-    data: {
-      schoolIds: string[];
-      priorities?: Record<string, number>;
-    },
+    @Body() data: SetTargetSchoolsDto,
   ) {
     // 兼容旧接口：先清空现有列表，再逐个添加
     const existing = await this.schoolListService.getUserSchoolList(user.id);
@@ -465,7 +463,7 @@ export class ProfileController {
   async addTargetSchool(
     @CurrentUser() user: CurrentUserPayload,
     @Param('schoolId') schoolId: string,
-    @Body() data?: { priority?: number },
+    @Body() data: AddTargetSchoolDto,
   ) {
     const priority = data?.priority ?? 2;
     const tier =

@@ -86,21 +86,17 @@ export function ResponsiveGrid({
 }: ResponsiveGridProps) {
   const getColsClass = () => {
     const classes: string[] = ['grid'];
-    
+
     if (cols.default) classes.push(`grid-cols-${cols.default}`);
     if (cols.sm) classes.push(`sm:grid-cols-${cols.sm}`);
     if (cols.md) classes.push(`md:grid-cols-${cols.md}`);
     if (cols.lg) classes.push(`lg:grid-cols-${cols.lg}`);
     if (cols.xl) classes.push(`xl:grid-cols-${cols.xl}`);
-    
+
     return classes.join(' ');
   };
 
-  return (
-    <div className={cn(getColsClass(), gapClasses[gap], className)}>
-      {children}
-    </div>
-  );
+  return <div className={cn(getColsClass(), gapClasses[gap], className)}>{children}</div>;
 }
 
 // 响应式堆栈
@@ -141,7 +137,7 @@ export function ResponsiveStack({
   const getDirectionClass = () => {
     const baseDirection = direction.includes('row') ? 'flex-row' : 'flex-col';
     const responsiveDirection = direction.includes('row') ? 'flex-col' : 'flex-row';
-    
+
     return `${responsiveDirection} ${breakpoint}:${baseDirection}`;
   };
 
@@ -183,17 +179,8 @@ const showBelowClasses = {
   xl: 'xl:hidden',
 };
 
-export function ResponsiveShow({
-  children,
-  above,
-  below,
-  className,
-}: ResponsiveShowProps) {
-  const visibilityClass = above
-    ? showAboveClasses[above]
-    : below
-    ? showBelowClasses[below]
-    : '';
+export function ResponsiveShow({ children, above, below, className }: ResponsiveShowProps) {
+  const visibilityClass = above ? showAboveClasses[above] : below ? showBelowClasses[below] : '';
 
   return <div className={cn(visibilityClass, className)}>{children}</div>;
 }
@@ -217,20 +204,29 @@ export function ResponsiveText({
   size = { default: 'base', md: 'lg' },
   as: Component = 'p',
 }: ResponsiveTextProps) {
+  const SIZE_MAP: Record<string, { default: string; sm: string; md: string; lg: string }> = {
+    xs: { default: 'text-xs', sm: 'sm:text-xs', md: 'md:text-xs', lg: 'lg:text-xs' },
+    sm: { default: 'text-sm', sm: 'sm:text-sm', md: 'md:text-sm', lg: 'lg:text-sm' },
+    base: { default: 'text-base', sm: 'sm:text-base', md: 'md:text-base', lg: 'lg:text-base' },
+    lg: { default: 'text-lg', sm: 'sm:text-lg', md: 'md:text-lg', lg: 'lg:text-lg' },
+    xl: { default: 'text-xl', sm: 'sm:text-xl', md: 'md:text-xl', lg: 'lg:text-xl' },
+    '2xl': { default: 'text-2xl', sm: 'sm:text-2xl', md: 'md:text-2xl', lg: 'lg:text-2xl' },
+    '3xl': { default: 'text-3xl', sm: 'sm:text-3xl', md: 'md:text-3xl', lg: 'lg:text-3xl' },
+    '4xl': { default: 'text-4xl', sm: 'sm:text-4xl', md: 'md:text-4xl', lg: 'lg:text-4xl' },
+    '5xl': { default: 'text-5xl', sm: 'sm:text-5xl', md: 'md:text-5xl', lg: 'lg:text-5xl' },
+    '6xl': { default: 'text-6xl', sm: 'sm:text-6xl', md: 'md:text-6xl', lg: 'lg:text-6xl' },
+  };
+
   const getSizeClasses = () => {
     const classes: string[] = [];
-    
-    if (size.default) classes.push(`text-${size.default}`);
-    if (size.sm) classes.push(`sm:text-${size.sm}`);
-    if (size.md) classes.push(`md:text-${size.md}`);
-    if (size.lg) classes.push(`lg:text-${size.lg}`);
-    
+
+    if (size.default) classes.push(SIZE_MAP[size.default]?.default || 'text-base');
+    if (size.sm) classes.push(SIZE_MAP[size.sm]?.sm || 'sm:text-base');
+    if (size.md) classes.push(SIZE_MAP[size.md]?.md || 'md:text-base');
+    if (size.lg) classes.push(SIZE_MAP[size.lg]?.lg || 'lg:text-base');
+
     return classes.join(' ');
   };
 
-  return (
-    <Component className={cn(getSizeClasses(), className)}>
-      {children}
-    </Component>
-  );
+  return <Component className={cn(getSizeClasses(), className)}>{children}</Component>;
 }

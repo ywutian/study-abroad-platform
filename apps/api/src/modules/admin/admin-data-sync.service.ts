@@ -1,6 +1,9 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SchoolDataService } from '../school/school-data.service';
+import { UrbanInstituteDataService } from '../school/urban-institute-data.service';
+import { BigFutureScrapeService } from '../school/scrapers/bigfuture.scraper';
+import { AppilyScrapeService } from '../school/scrapers/appily.scraper';
 
 const DATA_SYNC_ACTION = 'DATA_SYNC';
 
@@ -34,6 +37,24 @@ const JOB_DEFINITIONS: Record<
     description: 'Reminder to update US News rankings',
     nextScheduledRun: 'Yearly on Sep 15 at 05:00',
   },
+  URBAN_INSTITUTE: {
+    name: 'Urban Institute IPEDS',
+    description:
+      'Sync enrollment, financial aid, demographics from Urban Institute API',
+    nextScheduledRun: 'Quarterly (Jan/Apr/Jul/Oct 1st at 04:00)',
+  },
+  BIGFUTURE: {
+    name: 'BigFuture Scrape',
+    description:
+      'Scrape retention rate, financial aid, Common App status from BigFuture',
+    nextScheduledRun: 'Quarterly (Jan/Apr/Jul/Oct 1st at 05:00)',
+  },
+  APPILY: {
+    name: 'Appily Scrape',
+    description:
+      'Scrape net price, post-grad salary, loan data, campus life from Appily',
+    nextScheduledRun: 'Quarterly (Jan/Apr/Jul/Oct 1st at 06:00)',
+  },
 };
 
 @Injectable()
@@ -43,6 +64,9 @@ export class AdminDataSyncService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly schoolDataService: SchoolDataService,
+    private readonly urbanInstituteService: UrbanInstituteDataService,
+    private readonly bigFutureService: BigFutureScrapeService,
+    private readonly appilyService: AppilyScrapeService,
   ) {}
 
   /**
@@ -131,6 +155,69 @@ export class AdminDataSyncService {
           synced: result.synced,
           errors: result.errors,
           message: `Synced ${result.synced} schools, ${result.errors} errors`,
+        };
+      }
+
+      if (jobId === 'URBAN_INSTITUTE') {
+        const limit =
+          typeof runParams.limit === 'number'
+            ? runParams.limit
+            : typeof runParams.limit === 'string'
+              ? parseInt(runParams.limit, 10)
+              : 500;
+        const result = await this.urbanInstituteService.syncAll(
+          undefined,
+          Number.isNaN(limit) ? 500 : Math.min(limit, 2000),
+          userId,
+        );
+        await this.logSync(
+          userId,
+          jobId,
+          result.total.synced,
+          result.total.errors,
+        );
+        return {
+          synced: result.total.synced,
+          errors: result.total.errors,
+          message: `Synced ${result.total.synced} schools, ${result.total.errors} failed`,
+        };
+      }
+
+      if (jobId === 'BIGFUTURE') {
+        const limit =
+          typeof runParams.limit === 'number'
+            ? runParams.limit
+            : typeof runParams.limit === 'string'
+              ? parseInt(runParams.limit, 10)
+              : 200;
+        const result = await this.bigFutureService.scrapeSchools(
+          Number.isNaN(limit) ? 200 : Math.min(limit, 500),
+          userId,
+        );
+        await this.logSync(userId, jobId, result.updated, result.failed);
+        return {
+          synced: result.updated,
+          errors: result.failed,
+          message: `Scraped ${result.scraped}, updated ${result.updated}, ${result.failed} failed`,
+        };
+      }
+
+      if (jobId === 'APPILY') {
+        const limit =
+          typeof runParams.limit === 'number'
+            ? runParams.limit
+            : typeof runParams.limit === 'string'
+              ? parseInt(runParams.limit, 10)
+              : 200;
+        const result = await this.appilyService.scrapeSchools(
+          Number.isNaN(limit) ? 200 : Math.min(limit, 500),
+          userId,
+        );
+        await this.logSync(userId, jobId, result.updated, result.failed);
+        return {
+          synced: result.updated,
+          errors: result.failed,
+          message: `Scraped ${result.scraped}, updated ${result.updated}, ${result.failed} failed`,
         };
       }
 

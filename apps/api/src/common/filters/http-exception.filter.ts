@@ -79,12 +79,20 @@ export class AllExceptionsFilter implements ExceptionFilter {
     }
 
     // Log with full detail (never masked)
-    this.logger.error(
-      `[${correlationId || 'no-id'}] ${request.method} ${request.url} - ${status} - ${
-        Array.isArray(message) ? message.join('; ') : message
-      }`,
-      exception instanceof Error ? exception.stack : JSON.stringify(exception),
-    );
+    // 4xx = client error (expected) → warn without stack; 5xx = server error → error with stack
+    const logMessage = `[${correlationId || 'no-id'}] ${request.method} ${request.url} - ${status} - ${
+      Array.isArray(message) ? message.join('; ') : message
+    }`;
+    if (status >= 500) {
+      this.logger.error(
+        logMessage,
+        exception instanceof Error
+          ? exception.stack
+          : JSON.stringify(exception),
+      );
+    } else {
+      this.logger.warn(logMessage);
+    }
 
     const body: ErrorResponseBody = {
       success: false,

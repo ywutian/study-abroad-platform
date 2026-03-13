@@ -16,6 +16,10 @@ import {
   resolveSchoolId,
   type BatchImportResult,
 } from '../../common/utils/import-normalizers';
+import {
+  SCHOOL_NAME_SELECT,
+  SCHOOL_NAME_RANK_SELECT,
+} from '../../common/constants/prisma-selects';
 
 @Injectable()
 export class EssayPromptService {
@@ -50,7 +54,7 @@ export class EssayPromptService {
           : undefined,
       },
       include: {
-        school: { select: { id: true, name: true, nameZh: true } },
+        school: { select: SCHOOL_NAME_SELECT },
         sources: true,
       },
     });
@@ -104,7 +108,7 @@ export class EssayPromptService {
         where,
         include: {
           school: {
-            select: { id: true, name: true, nameZh: true, usNewsRank: true },
+            select: SCHOOL_NAME_RANK_SELECT,
           },
           sources: {
             select: { sourceType: true, sourceUrl: true, scrapedAt: true },
@@ -128,7 +132,7 @@ export class EssayPromptService {
       where: { id },
       include: {
         school: {
-          select: { id: true, name: true, nameZh: true, usNewsRank: true },
+          select: SCHOOL_NAME_RANK_SELECT,
         },
         sources: true,
         auditLogs: {
@@ -172,7 +176,7 @@ export class EssayPromptService {
       where: { id },
       data: dto,
       include: {
-        school: { select: { id: true, name: true, nameZh: true } },
+        school: { select: SCHOOL_NAME_SELECT },
         sources: true,
       },
     });
@@ -212,7 +216,7 @@ export class EssayPromptService {
         rejectReason: dto.status === EssayStatus.REJECTED ? dto.reason : null,
       },
       include: {
-        school: { select: { id: true, name: true, nameZh: true } },
+        school: { select: SCHOOL_NAME_SELECT },
       },
     });
 

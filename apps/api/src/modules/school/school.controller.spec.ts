@@ -11,6 +11,9 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../../common/services/audit-log.service';
 import { SchoolLogoService } from './school-logo.service';
 import { SchoolListService } from '../school-list/school-list.service';
+import { UrbanInstituteDataService } from './urban-institute-data.service';
+import { BigFutureScrapeService } from './scrapers/bigfuture.scraper';
+import { AppilyScrapeService } from './scrapers/appily.scraper';
 
 describe('SchoolController', () => {
   let controller: SchoolController;
@@ -164,6 +167,39 @@ describe('SchoolController', () => {
             getAIRecommendations: jest
               .fn()
               .mockResolvedValue({ reach: [], target: [], safety: [] }),
+          },
+        },
+        {
+          provide: UrbanInstituteDataService,
+          useValue: {
+            syncAll: jest.fn().mockResolvedValue({
+              synced: 10,
+              updated: 5,
+              failed: 0,
+              skipped: 0,
+            }),
+          },
+        },
+        {
+          provide: BigFutureScrapeService,
+          useValue: {
+            scrapeSchools: jest.fn().mockResolvedValue({
+              scraped: 10,
+              updated: 5,
+              failed: 0,
+              skipped: 0,
+            }),
+          },
+        },
+        {
+          provide: AppilyScrapeService,
+          useValue: {
+            scrapeSchools: jest.fn().mockResolvedValue({
+              scraped: 10,
+              updated: 5,
+              failed: 0,
+              skipped: 0,
+            }),
           },
         },
       ],

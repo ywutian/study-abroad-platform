@@ -4,7 +4,12 @@
  * 用于生产环境和多实例部署
  */
 
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { IStorage } from './storage.interface';
 
@@ -85,7 +90,9 @@ export class RedisStorage implements IStorage, OnModuleDestroy {
 
   private ensureConnected() {
     if (!this.client) {
-      throw new Error('Redis not connected. Call connect() first.');
+      throw new InternalServerErrorException(
+        'Redis not connected. Call connect() first.',
+      );
     }
     return this.client;
   }

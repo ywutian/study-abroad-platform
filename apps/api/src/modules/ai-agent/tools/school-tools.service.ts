@@ -102,6 +102,17 @@ export class SchoolToolsService implements IToolHandlerProvider {
       avgSalary: fullSchool.avgSalary
         ? `$${fullSchool.avgSalary.toLocaleString()}`
         : 'N/A',
+      retentionRate:
+        (fullSchool as any).retentionRate != null
+          ? `${(fullSchool as any).retentionRate}%`
+          : 'N/A',
+      testOptional: (fullSchool as any).testOptional ?? null,
+      acceptsCommonApp: (fullSchool as any).acceptsCommonApp ?? null,
+      hasEarlyDecision: (fullSchool as any).hasEarlyDecision ?? null,
+      salary6YrPostGrad:
+        (fullSchool as any).salary6YrPostGrad != null
+          ? `$${(fullSchool as any).salary6YrPostGrad.toLocaleString()}`
+          : 'N/A',
       deadlines: metadata.deadlines || {},
       essayPrompts: metadata.essayPrompts || [],
       requirements: metadata.requirements || {},
@@ -133,6 +144,11 @@ export class SchoolToolsService implements IToolHandlerProvider {
         tuition: s.tuition ? `$${s.tuition.toLocaleString()}` : 'N/A',
         avgSalary: s.avgSalary ? `$${s.avgSalary.toLocaleString()}` : 'N/A',
         state: s.state,
+        testOptional: (s as any).testOptional ?? null,
+        retentionRate:
+          (s as any).retentionRate != null
+            ? `${(s as any).retentionRate}%`
+            : 'N/A',
       })),
     };
   }

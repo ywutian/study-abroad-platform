@@ -59,9 +59,7 @@ export class AuthService {
    * @throws {ConflictException} When the email is already registered
    * @returns The created user (without password hash) and a success message
    */
-  async register(
-    data: RegisterDto,
-  ): Promise<{
+  async register(data: RegisterDto): Promise<{
     user: Omit<User, 'passwordHash'>;
     tokens: AuthTokens;
     message: string;

@@ -25,7 +25,8 @@
     "db:studio": "prisma studio",
     "db:seed": "ts-node prisma/seed.ts",
     "db:seed-calibrations": "ts-node prisma/seed-calibrations.ts",
-    "scripts:fill-logos": "ts-node -r tsconfig-paths/register scripts/fill-school-logos.ts"
+    "scripts:fill-logos": "ts-node -r tsconfig-paths/register scripts/fill-school-logos.ts",
+    "lint:quality": "npx tsx scripts/check-api-quality.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.972.0",
@@ -46,8 +47,6 @@
     "@sentry/nestjs": "^10.34.0",
     "@sentry/node": "^10.34.0",
     "@study-abroad/shared": "workspace:*",
-    "@types/cookie-parser": "^1.4.10",
-    "@types/cors": "^2.8.19",
     "ali-oss": "^6.23.0",
     "bcrypt": "^6.0.0",
     "bullmq": "^5.66.5",
@@ -67,7 +66,6 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "prisma": "5.22.0",
-    "puppeteer": "^24.35.0",
     "reflect-metadata": "^0.2.2",
     "resend": "^6.9.3",
     "rxjs": "^7.8.1",
@@ -88,6 +86,8 @@
     "@swc/jest": "^0.2.39",
     "@types/ali-oss": "^6.23.1",
     "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
     "@types/multer": "^2.0.0",
@@ -102,6 +102,7 @@
     "globals": "^16.0.0",
     "jest": "^30.0.0",
     "prettier": "^3.4.2",
+    "puppeteer": "^24.35.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
     "source-map-support": "^0.5.21",

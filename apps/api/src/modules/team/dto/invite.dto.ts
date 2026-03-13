@@ -9,6 +9,7 @@ export class InviteDto {
     description: 'User ID to invite (cuid); omit for shareable link',
   })
   @IsOptional()
+  @MaxLength(500)
   @IsString()
   @Matches(CUID_REGEX, { message: 'inviteeId must be a valid user id' })
   inviteeId?: string;

@@ -120,7 +120,7 @@ function NotificationItem({
   locale: string;
 }) {
   const Icon = notificationIcons[notification.type] || Bell;
-  const colorClass = notificationColors[notification.type] || 'text-gray-500 bg-gray-500/10';
+  const colorClass = notificationColors[notification.type] || 'text-muted-foreground bg-muted';
 
   // 根据类型生成链接
   const getActionUrl = () => {

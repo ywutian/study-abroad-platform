@@ -1,41 +1,16 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, type ReactNode } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Calendar,
   CheckCircle2,
-  Info,
   Plus,
-  ChevronDown,
-  ChevronUp,
-  Trash2,
   GraduationCap,
   Trophy,
   FileText,
@@ -45,27 +20,30 @@ import {
   Briefcase,
   Users,
   ClipboardList,
-  Bell,
-  Star,
+  Info,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PageContainer, PageHeader } from '@/components/layout';
-import Link from 'next/link';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createPersonalEventSchema, type PersonalEventFormData } from '@/lib/validations/timeline';
 import type {
   TimelineResponse,
-  TaskResponse,
-  TimelineOverview,
+  TimelineOverview as TimelineOverviewType,
   GlobalEvent,
   TimelineDetail,
   PersonalEventResponse,
   PersonalEventDetail,
   TabType,
 } from '@/types/timeline';
-import { PERSONAL_CATEGORIES } from '@/types/timeline';
+
+import { TimelineOverview } from './_components/timeline-overview';
+import { TimelineTabs } from './_components/timeline-tabs';
+import { PersonalEventsSection } from './_components/personal-events-section';
+import { GlobalEventsSection } from './_components/generate-timeline-dialog';
+import { CreateEventDialog } from './_components/create-event-dialog';
+import { DeleteConfirmationDialog } from './_components/delete-confirmation-dialog';
 
 // ============ Page Component ============
 
@@ -96,7 +74,7 @@ export default function TimelinePage() {
 
   // ============ Queries ============
 
-  const { data: overview, isLoading: overviewLoading } = useQuery<TimelineOverview>({
+  const { data: overview, isLoading: overviewLoading } = useQuery<TimelineOverviewType>({
     queryKey: ['timeline-overview'],
     queryFn: () => apiClient.get('/timelines/overview'),
   });
@@ -250,7 +228,7 @@ export default function TimelinePage() {
   );
 
   const getStatusBadge = useCallback(
-    (status: string) => {
+    (status: string): ReactNode => {
       switch (status) {
         case 'SUBMITTED':
           return <Badge variant="success">{t('statuses.submitted')}</Badge>;
@@ -277,7 +255,7 @@ export default function TimelinePage() {
     [t]
   );
 
-  const getRoundBadge = useCallback((round: string) => {
+  const getRoundBadge = useCallback((round: string): ReactNode => {
     const colors: Record<string, string> = {
       ED: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
       ED2: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
@@ -293,7 +271,7 @@ export default function TimelinePage() {
     );
   }, []);
 
-  const getCategoryIcon = useCallback((category: string) => {
+  const getCategoryIcon = useCallback((category: string): ReactNode => {
     switch (category) {
       case 'TEST':
         return <FileText className="h-4 w-4" />;
@@ -341,7 +319,7 @@ export default function TimelinePage() {
     return colors[category] || colors.OTHER;
   }, []);
 
-  // 排序
+  // Sorted data
   const sortedTimelines = useMemo(() => {
     return [...timelines].sort((a, b) => {
       if (a.status === 'SUBMITTED' && b.status !== 'SUBMITTED') return 1;
@@ -406,7 +384,7 @@ export default function TimelinePage() {
         }
       />
 
-      {/* Tab 切换 */}
+      {/* Tab navigation */}
       <div className="flex gap-1 p-1 bg-muted rounded-lg w-fit">
         {(['all', 'school', 'personal'] as TabType[]).map((tab) => (
           <button
@@ -423,53 +401,10 @@ export default function TimelinePage() {
         ))}
       </div>
 
-      {/* 概览统计 */}
-      {hasAny && overview && (
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-          <Card>
-            <CardContent className="py-4 text-center">
-              <div className="text-2xl font-bold">{overview.totalSchools}</div>
-              <div className="text-xs text-muted-foreground">{t('overview.totalSchools')}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="py-4 text-center">
-              <div className="text-2xl font-bold text-yellow-600">{overview.inProgress}</div>
-              <div className="text-xs text-muted-foreground">{t('overview.inProgress')}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="py-4 text-center">
-              <div className="text-2xl font-bold text-green-600">{overview.submitted}</div>
-              <div className="text-xs text-muted-foreground">{t('overview.submitted')}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="py-4 text-center">
-              <div className="text-2xl font-bold text-muted-foreground">{overview.notStarted}</div>
-              <div className="text-xs text-muted-foreground">{t('overview.notStarted')}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="py-4 text-center">
-              <div className="text-2xl font-bold text-blue-600">{overview.totalPersonalEvents}</div>
-              <div className="text-xs text-muted-foreground">
-                {t('overview.totalPersonalEvents')}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="py-4 text-center">
-              <div className="text-2xl font-bold text-emerald-600">
-                {overview.personalCompleted}
-              </div>
-              <div className="text-xs text-muted-foreground">{t('overview.personalCompleted')}</div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      {/* Overview stats */}
+      {hasAny && overview && <TimelineOverview overview={overview} />}
 
-      {/* 空状态 */}
+      {/* Empty state */}
       {!hasAny && (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
@@ -490,495 +425,73 @@ export default function TimelinePage() {
         </Card>
       )}
 
-      {/* 全局事件（可订阅） */}
-      {(activeTab === 'all' || activeTab === 'personal') && upcomingGlobalEvents.length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Bell className="h-4 w-4" />
-              {t('globalEvents.title')}
-            </CardTitle>
-            <CardDescription>{t('globalEvents.description')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {upcomingGlobalEvents.map((event) => {
-                const days = getDaysUntil(event.eventDate);
-                return (
-                  <div
-                    key={event.id}
-                    className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary flex-shrink-0">
-                      {getCategoryIcon(event.category)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="font-medium text-sm truncate">
-                          {event.titleZh || event.title}
-                        </span>
-                        {days !== null && days >= 0 && (
-                          <span className="text-xs px-1.5 py-0.5 bg-primary/10 text-primary rounded-full flex-shrink-0">
-                            {formatDaysUntil(days)}
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {formatDate(event.eventDate)}
-                        {event.registrationDeadline && (
-                          <span>
-                            {' '}
-                            · {t('globalEvents.regBy')} {formatDate(event.registrationDeadline)}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <Button
-                      variant={event.subscribed ? 'secondary' : 'outline'}
-                      size="sm"
-                      disabled={event.subscribed}
-                      className="flex-shrink-0"
-                      onClick={() => subscribeGlobalEventMutation.mutate(event.id)}
-                    >
-                      {event.subscribed ? (
-                        <CheckCircle2 className="h-3 w-3 mr-1" />
-                      ) : (
-                        <Plus className="h-3 w-3 mr-1" />
-                      )}
-                      {event.subscribed
-                        ? t('globalEvents.subscribed')
-                        : t('globalEvents.subscribe')}
-                    </Button>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Global events (subscribable) */}
+      {(activeTab === 'all' || activeTab === 'personal') && (
+        <GlobalEventsSection
+          upcomingGlobalEvents={upcomingGlobalEvents}
+          subscribeGlobalEventMutation={subscribeGlobalEventMutation}
+          formatDate={formatDate}
+          getDaysUntil={getDaysUntil}
+          formatDaysUntil={formatDaysUntil}
+          getCategoryIcon={getCategoryIcon}
+        />
       )}
 
-      {/* 创建个人事件：Bottom Sheet */}
-      <Sheet open={showCreateEvent} onOpenChange={setShowCreateEvent}>
-        <SheetContent side="bottom" className="max-h-[85vh] rounded-t-xl">
-          <SheetHeader>
-            <SheetTitle>{t('personalEvents.createTitle')}</SheetTitle>
-          </SheetHeader>
-          <form
-            onSubmit={eventForm.handleSubmit((data) => createPersonalEventMutation.mutate(data))}
-            className="overflow-y-auto px-4 space-y-4"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="event-title">{t('personalEvents.form.title')}</Label>
-                <Input
-                  id="event-title"
-                  {...eventForm.register('title')}
-                  placeholder={t('personalEvents.form.titlePlaceholder')}
-                />
-                {eventForm.formState.errors.title && (
-                  <p className="text-xs text-destructive">
-                    {eventForm.formState.errors.title.message}
-                  </p>
-                )}
-              </div>
-              <div className="space-y-1.5">
-                <Label>{t('personalEvents.form.category')}</Label>
-                <Select
-                  value={eventForm.watch('category')}
-                  onValueChange={(value) =>
-                    eventForm.setValue('category', value as PersonalEventFormData['category'])
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PERSONAL_CATEGORIES.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {getCategoryLabel(cat)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="event-deadline">{t('personalEvents.form.deadline')}</Label>
-                <Input id="event-deadline" type="date" {...eventForm.register('deadline')} />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="event-date">{t('personalEvents.form.eventDate')}</Label>
-                <Input id="event-date" type="date" {...eventForm.register('eventDate')} />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="event-desc">{t('personalEvents.form.description')}</Label>
-              <Textarea
-                id="event-desc"
-                className="min-h-[80px]"
-                {...eventForm.register('description')}
-                placeholder={t('personalEvents.form.descriptionPlaceholder')}
-              />
-            </div>
-          </form>
-          <SheetFooter className="px-4">
-            <div className="flex gap-2 justify-end">
-              <Button
-                variant="ghost"
-                size="sm"
-                type="button"
-                onClick={() => setShowCreateEvent(false)}
-              >
-                {t('personalEvents.form.cancel')}
-              </Button>
-              <Button
-                size="sm"
-                disabled={createPersonalEventMutation.isPending}
-                onClick={eventForm.handleSubmit((data) => createPersonalEventMutation.mutate(data))}
-              >
-                {createPersonalEventMutation.isPending && (
-                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                )}
-                {t('personalEvents.form.submit')}
-              </Button>
-            </div>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
+      {/* Create personal event dialog */}
+      <CreateEventDialog
+        open={showCreateEvent}
+        onOpenChange={setShowCreateEvent}
+        eventForm={eventForm}
+        createPersonalEventMutation={createPersonalEventMutation}
+        getCategoryLabel={getCategoryLabel}
+      />
 
-      {/* 个人事件列表 */}
+      {/* Personal events list */}
       {(activeTab === 'all' || activeTab === 'personal') && hasPersonalEvents && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Star className="h-4 w-4" />
-              {t('personalEvents.title')}
-            </CardTitle>
-            <CardDescription>{t('personalEvents.description')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {sortedPersonalEvents.map((ev) => {
-              const isExpanded = expandedPersonalEvent === ev.id;
-              const days = getDaysUntil(ev.deadline || ev.eventDate);
-              const tasks =
-                isExpanded && personalEventDetail?.tasks ? personalEventDetail.tasks : [];
-
-              return (
-                <div key={ev.id} className="border rounded-lg overflow-hidden">
-                  <div
-                    className="flex items-center gap-3 p-4 cursor-pointer hover:bg-muted/50 transition-colors"
-                    onClick={() => setExpandedPersonalEvent(isExpanded ? null : ev.id)}
-                  >
-                    <div
-                      className={`flex h-8 w-8 items-center justify-center rounded-md flex-shrink-0 ${getCategoryColor(ev.category)}`}
-                    >
-                      {getCategoryIcon(ev.category)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-semibold text-sm truncate">{ev.title}</span>
-                        <span
-                          className={`text-xs px-2 py-0.5 rounded-md font-medium ${getCategoryColor(ev.category)}`}
-                        >
-                          {getCategoryLabel(ev.category)}
-                        </span>
-                        {getStatusBadge(ev.status)}
-                      </div>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        {(ev.deadline || ev.eventDate) && (
-                          <span>
-                            {ev.deadline
-                              ? `${t('personalEvents.deadline')}: ${formatDate(ev.deadline)}`
-                              : `${t('personalEvents.eventDate')}: ${formatDate(ev.eventDate)}`}
-                          </span>
-                        )}
-                        {days !== null && (
-                          <span
-                            className={`px-1.5 py-0.5 rounded-full ${
-                              days < 0
-                                ? 'bg-destructive/10 text-destructive'
-                                : days <= 7
-                                  ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                                  : 'bg-primary/10 text-primary'
-                            }`}
-                          >
-                            {formatDaysUntil(days)}
-                          </span>
-                        )}
-                        <span>
-                          {t('schoolTimelines.tasks')}: {ev.tasksCompleted}/{ev.tasksTotal}
-                        </span>
-                        {ev.globalEventId && (
-                          <span className="text-xs text-blue-500">
-                            {t('personalEvents.fromGlobal')}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-28 h-2.5 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
-                          style={{ width: `${ev.progress}%` }}
-                        />
-                      </div>
-                      <span className="text-xs font-medium w-8 text-right">{ev.progress}%</span>
-                      {isExpanded ? (
-                        <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                      ) : (
-                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                      )}
-                    </div>
-                  </div>
-
-                  {isExpanded && (
-                    <div className="border-t bg-muted/20 p-4">
-                      {personalEventDetailLoading ? (
-                        <div className="text-sm text-muted-foreground text-center py-4">
-                          <Loader2 className="h-4 w-4 animate-spin mx-auto mb-2" />
-                          {t('schoolTimelines.loadingTasks')}
-                        </div>
-                      ) : tasks.length > 0 ? (
-                        <div className="space-y-2">
-                          {tasks.map((task) => (
-                            <div
-                              key={task.id}
-                              className="flex items-center gap-3 p-2 rounded-md hover:bg-background transition-colors"
-                            >
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  togglePersonalTaskMutation.mutate(task.id);
-                                }}
-                                className={`flex-shrink-0 h-5 w-5 rounded border-2 flex items-center justify-center transition-colors ${
-                                  task.completed
-                                    ? 'bg-primary border-primary text-primary-foreground'
-                                    : 'border-muted-foreground/30 hover:border-primary'
-                                }`}
-                              >
-                                {task.completed && <CheckCircle2 className="h-3 w-3" />}
-                              </button>
-                              <div className="flex-1 min-w-0">
-                                <span
-                                  className={`text-sm ${task.completed ? 'line-through text-muted-foreground' : ''}`}
-                                >
-                                  {task.title}
-                                </span>
-                                {task.dueDate && (
-                                  <span className="text-xs text-muted-foreground ml-2">
-                                    {formatDate(task.dueDate)}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-sm text-muted-foreground text-center py-4">
-                          {t('schoolTimelines.noTasks')}
-                        </div>
-                      )}
-
-                      <div className="mt-4 pt-3 border-t flex justify-end">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() =>
-                            setDeleteTarget({ type: 'personalEvent', id: ev.id, name: ev.title })
-                          }
-                        >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          {t('personalEvents.delete')}
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
+        <PersonalEventsSection
+          sortedPersonalEvents={sortedPersonalEvents}
+          expandedPersonalEvent={expandedPersonalEvent}
+          setExpandedPersonalEvent={setExpandedPersonalEvent}
+          personalEventDetail={personalEventDetail}
+          personalEventDetailLoading={personalEventDetailLoading}
+          togglePersonalTaskMutation={togglePersonalTaskMutation}
+          setDeleteTarget={setDeleteTarget}
+          formatDate={formatDate}
+          getDaysUntil={getDaysUntil}
+          formatDaysUntil={formatDaysUntil}
+          getStatusBadge={getStatusBadge}
+          getRoundBadge={getRoundBadge}
+          getCategoryIcon={getCategoryIcon}
+          getCategoryLabel={getCategoryLabel}
+          getCategoryColor={getCategoryColor}
+        />
       )}
 
-      {/* 学校时间线列表 */}
+      {/* School timelines + pending schools */}
       {(activeTab === 'all' || activeTab === 'school') && hasTimelines && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">{t('schoolTimelines.title')}</CardTitle>
-            <CardDescription>{t('schoolTimelines.description')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {sortedTimelines.map((tl) => {
-              const isExpanded = expandedTimeline === tl.id;
-              const days = getDaysUntil(tl.deadline);
-              const tasks = isExpanded && timelineDetail?.tasks ? timelineDetail.tasks : [];
-
-              return (
-                <div key={tl.id} className="border rounded-lg overflow-hidden">
-                  <div
-                    className="flex items-center gap-3 p-4 cursor-pointer hover:bg-muted/50 transition-colors"
-                    onClick={() => setExpandedTimeline(isExpanded ? null : tl.id)}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Link
-                          href={`/schools/${tl.schoolId}`}
-                          className="font-semibold truncate hover:underline hover:text-primary transition-colors"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {tl.schoolName}
-                        </Link>
-                        {getRoundBadge(tl.round)}
-                        {getStatusBadge(tl.status)}
-                      </div>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span>
-                          {t('schoolTimelines.deadline')}: {formatDate(tl.deadline)}
-                        </span>
-                        {days !== null && (
-                          <span
-                            className={`px-1.5 py-0.5 rounded-full ${
-                              days < 0
-                                ? 'bg-destructive/10 text-destructive'
-                                : days <= 7
-                                  ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                                  : 'bg-primary/10 text-primary'
-                            }`}
-                          >
-                            {formatDaysUntil(days)}
-                          </span>
-                        )}
-                        <span>
-                          {t('schoolTimelines.tasks')}: {tl.tasksCompleted}/{tl.tasksTotal}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-28 h-2.5 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
-                          style={{ width: `${tl.progress}%` }}
-                        />
-                      </div>
-                      <span className="text-xs font-medium w-8 text-right">{tl.progress}%</span>
-                      {isExpanded ? (
-                        <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                      ) : (
-                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                      )}
-                    </div>
-                  </div>
-
-                  {isExpanded && (
-                    <div className="border-t bg-muted/20 p-4">
-                      {timelineDetailLoading ? (
-                        <div className="text-sm text-muted-foreground text-center py-4">
-                          <Loader2 className="h-4 w-4 animate-spin mx-auto mb-2" />
-                          {t('schoolTimelines.loadingTasks')}
-                        </div>
-                      ) : tasks.length > 0 ? (
-                        <div className="space-y-2">
-                          {tasks.map((task) => (
-                            <div
-                              key={task.id}
-                              className="flex items-center gap-3 p-2 rounded-md hover:bg-background transition-colors"
-                            >
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  toggleTaskMutation.mutate(task.id);
-                                }}
-                                className={`flex-shrink-0 h-5 w-5 rounded border-2 flex items-center justify-center transition-colors ${
-                                  task.completed
-                                    ? 'bg-primary border-primary text-primary-foreground'
-                                    : 'border-muted-foreground/30 hover:border-primary'
-                                }`}
-                              >
-                                {task.completed && <CheckCircle2 className="h-3 w-3" />}
-                              </button>
-                              <div className="flex-1 min-w-0">
-                                <span
-                                  className={`text-sm ${task.completed ? 'line-through text-muted-foreground' : ''}`}
-                                >
-                                  {task.title}
-                                </span>
-                                {task.dueDate && (
-                                  <span className="text-xs text-muted-foreground ml-2">
-                                    {formatDate(task.dueDate)}
-                                  </span>
-                                )}
-                              </div>
-                              <Badge variant="outline" className="text-xs">
-                                {t(`taskTypes.${task.type}`)}
-                              </Badge>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-sm text-muted-foreground text-center py-4">
-                          {t('schoolTimelines.noTasks')}
-                        </div>
-                      )}
-
-                      <div className="mt-4 pt-3 border-t flex justify-end">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() =>
-                            setDeleteTarget({ type: 'timeline', id: tl.id, name: tl.schoolName })
-                          }
-                        >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          {t('deleteTimeline')}
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
+        <TimelineTabs
+          activeTab={activeTab}
+          sortedTimelines={sortedTimelines}
+          expandedTimeline={expandedTimeline}
+          setExpandedTimeline={setExpandedTimeline}
+          timelineDetail={timelineDetail}
+          timelineDetailLoading={timelineDetailLoading}
+          toggleTaskMutation={toggleTaskMutation}
+          setDeleteTarget={setDeleteTarget}
+          schoolsWithoutTimeline={schoolsWithoutTimeline}
+          generateTimelineMutation={generateTimelineMutation}
+          formatDate={formatDate}
+          getDaysUntil={getDaysUntil}
+          formatDaysUntil={formatDaysUntil}
+          getStatusBadge={getStatusBadge}
+          getRoundBadge={getRoundBadge}
+          getCategoryIcon={getCategoryIcon}
+          getCategoryLabel={getCategoryLabel}
+          getCategoryColor={getCategoryColor}
+        />
       )}
 
-      {/* Schools in list but without timelines */}
-      {(activeTab === 'all' || activeTab === 'school') && schoolsWithoutTimeline.length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">{t('schoolTimelines.pendingSchools')}</CardTitle>
-            <CardDescription>{t('schoolTimelines.pendingSchoolsDesc')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {schoolsWithoutTimeline.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between p-3 rounded-lg border"
-              >
-                <div className="flex items-center gap-2">
-                  <GraduationCap className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">{item.school.name}</span>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => generateTimelineMutation.mutate([item.schoolId])}
-                  disabled={generateTimelineMutation.isPending}
-                >
-                  {generateTimelineMutation.isPending ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
-                  ) : (
-                    <Plus className="h-3.5 w-3.5 mr-1" />
-                  )}
-                  {t('schoolTimelines.generateTimeline')}
-                </Button>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* 动态计算提示 */}
+      {/* Dynamic calculation note */}
       {hasAny && (
         <div className="p-3 bg-muted/50 rounded-lg flex items-start gap-2 text-sm">
           <Info className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
@@ -986,34 +499,13 @@ export default function TimelinePage() {
         </div>
       )}
 
-      {/* 删除确认对话框 */}
-      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('deleteConfirmTitle')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('deleteConfirmDesc', { name: deleteTarget?.name || '' })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => {
-                if (!deleteTarget) return;
-                if (deleteTarget.type === 'timeline') {
-                  deleteTimelineMutation.mutate(deleteTarget.id);
-                } else if (deleteTarget.type === 'personalEvent') {
-                  deletePersonalEventMutation.mutate(deleteTarget.id);
-                }
-                setDeleteTarget(null);
-              }}
-            >
-              {t('deleteConfirmAction')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Delete confirmation dialog */}
+      <DeleteConfirmationDialog
+        deleteTarget={deleteTarget}
+        setDeleteTarget={setDeleteTarget}
+        deleteTimelineMutation={deleteTimelineMutation}
+        deletePersonalEventMutation={deletePersonalEventMutation}
+      />
     </PageContainer>
   );
 }

@@ -10,6 +10,7 @@ import {
   Max,
   ArrayMinSize,
   ArrayMaxSize,
+  MaxLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -18,6 +19,7 @@ import { EssayType } from '../../../common/types/enums';
 export class BatchImportEssayPromptItemDto {
   @ApiProperty({ description: '学校名称（支持缩写如 MIT, Stanford）' })
   @IsString()
+  @MaxLength(200)
   school: string;
 
   @ApiProperty({ description: '申请年份', example: 2025 })
@@ -32,11 +34,13 @@ export class BatchImportEssayPromptItemDto {
 
   @ApiProperty({ description: '英文原文' })
   @IsString()
+  @MaxLength(5000)
   prompt: string;
 
   @ApiPropertyOptional({ description: '中文翻译' })
   @IsOptional()
   @IsString()
+  @MaxLength(5000)
   promptZh?: string;
 
   @ApiPropertyOptional({ description: '字数限制' })
@@ -59,6 +63,7 @@ export class BatchImportEssayPromptItemDto {
   @ApiPropertyOptional({ description: '来源URL' })
   @IsOptional()
   @IsString()
+  @MaxLength(2048)
   sourceUrl?: string;
 }
 

@@ -177,3 +177,4 @@ export class BatchRankingDto {
 }
 
 export * from './verified-ranking.dto';
+export * from './hall-reaction.dto';

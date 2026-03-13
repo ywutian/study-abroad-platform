@@ -5,6 +5,7 @@ import {
   IsNotEmpty,
   ArrayMaxSize,
   ArrayMinSize,
+  MaxLength,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -20,6 +21,7 @@ export class PredictionRequestDto {
   @ArrayMinSize(1)
   @ArrayMaxSize(10)
   @IsString({ each: true })
+  @MaxLength(500, { each: true })
   @IsNotEmpty({ each: true })
   schoolIds: string[];
 

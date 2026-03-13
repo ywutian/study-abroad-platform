@@ -22,7 +22,9 @@
     "db:push": "turbo db:push",
     "prepare": "husky",
     "sbom:generate": "cdxgen -o sbom/bom.json --deep -t js --spec-version 1.5",
-    "sbom:verify": "node -e \"const s=require('./sbom/bom.json'); if(!s.specVersion||!(s.components||[]).length){process.exit(1)} console.log('SBOM OK — specVersion:', s.specVersion, '| components:', s.components.length);\""
+    "sbom:verify": "node -e \"const s=require('./sbom/bom.json'); if(!s.specVersion||!(s.components||[]).length){process.exit(1)} console.log('SBOM OK — specVersion:', s.specVersion, '| components:', s.components.length);\"",
+    "lint:all": "pnpm lint && pnpm --filter web lint:quality && pnpm --filter api lint:quality && pnpm --filter web lint:i18n",
+    "check": "pnpm lint:all && pnpm test"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.4.1",
@@ -34,6 +36,7 @@
     "@typescript-eslint/parser": "^7.18.0",
     "eslint": "^9.39.2",
     "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
     "globals": "^16.5.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",

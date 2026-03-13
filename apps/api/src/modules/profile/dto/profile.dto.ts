@@ -8,6 +8,7 @@ import {
   IsBoolean,
   Min,
   Max,
+  MaxLength,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -26,6 +27,7 @@ export class UpdateProfileDto {
   @ApiPropertyOptional({ description: '真实姓名' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   realName?: string;
 
   @ApiPropertyOptional({ description: 'GPA', example: 3.85 })
@@ -46,11 +48,13 @@ export class UpdateProfileDto {
   @ApiPropertyOptional({ description: '当前学校' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   currentSchool?: string;
 
   @ApiPropertyOptional({ description: '学校类型' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   currentSchoolType?: string;
 
   @ApiPropertyOptional({ enum: GRADES, description: '年级' })
@@ -61,6 +65,7 @@ export class UpdateProfileDto {
   @ApiPropertyOptional({ description: '目标专业' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   targetMajor?: string;
 
   @ApiPropertyOptional({ description: '地区偏好', type: [String] })
@@ -90,6 +95,7 @@ export class UpdateProfileDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(10)
   nationality?: string;
 
   @ApiPropertyOptional({
@@ -98,6 +104,7 @@ export class UpdateProfileDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(10)
   countryOfResidence?: string;
 
   @ApiPropertyOptional({
@@ -106,6 +113,7 @@ export class UpdateProfileDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(10)
   citizenship?: string;
 
   @ApiPropertyOptional({ enum: EducationSystem, description: '教育体系' })
@@ -129,15 +137,18 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @MaxLength(500, { each: true })
   legacy?: string[];
 
   @ApiPropertyOptional({ description: '意向专业' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   intendedMajor?: string;
 
   @ApiPropertyOptional({ description: '第二专业' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   secondMajor?: string;
 }

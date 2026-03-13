@@ -144,8 +144,8 @@ export function PostDetailDialog({ post, onClose, onLike, onReport, user }: Post
       });
       setApplicationMessage('');
       setSelectedResumeId('');
-    } catch (_error) {
-      console.error('Failed to apply:', _error);
+    } catch {
+      // Error handled by global MutationCache toast
     }
   };
 
@@ -201,7 +201,7 @@ export function PostDetailDialog({ post, onClose, onLike, onReport, user }: Post
                     ) || t('uncategorized')}
                   </Badge>
                 </div>
-                <h2 className="text-xl font-bold text-gray-900 mb-3">{showPostDetail.title}</h2>
+                <h2 className="text-xl font-bold text-foreground mb-3">{showPostDetail.title}</h2>
                 <div className="flex items-center gap-3">
                   <Avatar className="h-9 w-9">
                     <AvatarImage src={showPostDetail.author.avatar || ''} />
@@ -227,7 +227,7 @@ export function PostDetailDialog({ post, onClose, onLike, onReport, user }: Post
 
               {/* Content */}
               <div className="flex-1 overflow-y-auto p-6">
-                <div className="prose prose-sm max-w-none text-gray-700 mb-6">
+                <div className="prose prose-sm max-w-none text-muted-foreground mb-6">
                   {renderMarkdown(showPostDetail.content)}
                 </div>
 
@@ -241,7 +241,7 @@ export function PostDetailDialog({ post, onClose, onLike, onReport, user }: Post
                       </h4>
                       <div className="grid grid-cols-2 gap-4 text-sm mb-4">
                         <div>
-                          <span className="text-gray-500">{t('currentMembersLabel')}</span>
+                          <span className="text-muted-foreground">{t('currentMembersLabel')}</span>
                           <p className="font-medium">
                             {t('memberCount', {
                               current: showPostDetail.currentSize ?? 1,
@@ -251,7 +251,7 @@ export function PostDetailDialog({ post, onClose, onLike, onReport, user }: Post
                         </div>
                         {showPostDetail.teamDeadline && (
                           <div>
-                            <span className="text-gray-500">{t('teamDeadlineLabel')}</span>
+                            <span className="text-muted-foreground">{t('teamDeadlineLabel')}</span>
                             <p className="font-medium">
                               {format.dateTime(new Date(showPostDetail.teamDeadline), 'medium')}
                             </p>
@@ -259,8 +259,12 @@ export function PostDetailDialog({ post, onClose, onLike, onReport, user }: Post
                         )}
                         {showPostDetail.requirements && (
                           <div className="col-span-2">
-                            <span className="text-gray-500">{t('recruitRequirements')}</span>
-                            <p className="mt-1 text-gray-700">{showPostDetail.requirements}</p>
+                            <span className="text-muted-foreground">
+                              {t('recruitRequirements')}
+                            </span>
+                            <p className="mt-1 text-muted-foreground">
+                              {showPostDetail.requirements}
+                            </p>
                           </div>
                         )}
                       </div>
@@ -323,18 +327,18 @@ export function PostDetailDialog({ post, onClose, onLike, onReport, user }: Post
                     className={`flex items-center gap-1.5 px-4 py-2 rounded-full transition-all ${
                       showPostDetail.isLiked
                         ? 'bg-red-100 text-red-500'
-                        : 'hover:bg-gray-100 text-gray-600'
+                        : 'hover:bg-muted text-muted-foreground'
                     }`}
                     onClick={() => onLike(showPostDetail.id)}
                   >
                     <Heart className={`h-5 w-5 ${showPostDetail.isLiked ? 'fill-current' : ''}`} />
                     <span className="font-medium">{showPostDetail.likeCount}</span>
                   </button>
-                  <div className="flex items-center gap-1.5 text-gray-500">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
                     <Eye className="h-5 w-5" />
                     <span>{formatNumber(showPostDetail.viewCount)}</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-gray-500">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
                     <MessageCircle className="h-5 w-5" />
                     <span>{showPostDetail.commentCount}</span>
                   </div>
@@ -381,7 +385,7 @@ export function PostDetailDialog({ post, onClose, onLike, onReport, user }: Post
                       <Loader2 className="h-6 w-6 animate-spin text-primary" />
                     </div>
                   ) : comments.length === 0 ? (
-                    <div className="text-center py-8 text-gray-400">
+                    <div className="text-center py-8 text-muted-foreground/70">
                       <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
                       <p>{t('noComments')}</p>
                     </div>
@@ -392,7 +396,7 @@ export function PostDetailDialog({ post, onClose, onLike, onReport, user }: Post
                           <div className="flex gap-3">
                             <Avatar className="h-8 w-8 shrink-0">
                               <AvatarImage src={comment.author.avatar || ''} />
-                              <AvatarFallback className="bg-gray-100 text-gray-600 text-sm">
+                              <AvatarFallback className="bg-muted text-muted-foreground text-sm">
                                 {(comment.author.name || 'U').charAt(0).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
@@ -404,20 +408,20 @@ export function PostDetailDialog({ post, onClose, onLike, onReport, user }: Post
                                 {comment.author.isVerified && (
                                   <CheckCircle className="h-3 w-3 text-blue-500" />
                                 )}
-                                <span className="text-xs text-gray-400">
+                                <span className="text-xs text-muted-foreground/70">
                                   {formatDate(comment.createdAt)}
                                 </span>
                               </div>
-                              <p className="text-gray-700 text-sm">{comment.content}</p>
+                              <p className="text-muted-foreground text-sm">{comment.content}</p>
                             </div>
                           </div>
                           {comment.replies && comment.replies.length > 0 && (
-                            <div className="ml-11 space-y-3 pl-3 border-l-2 border-gray-100">
+                            <div className="ml-11 space-y-3 pl-3 border-l-2 border-border">
                               {comment.replies.map((reply) => (
                                 <div key={reply.id} className="flex gap-3">
                                   <Avatar className="h-6 w-6 shrink-0">
                                     <AvatarImage src={reply.author.avatar || ''} />
-                                    <AvatarFallback className="bg-gray-100 text-gray-600 text-xs">
+                                    <AvatarFallback className="bg-muted text-muted-foreground text-xs">
                                       {(reply.author.name || 'U').charAt(0).toUpperCase()}
                                     </AvatarFallback>
                                   </Avatar>
@@ -429,11 +433,11 @@ export function PostDetailDialog({ post, onClose, onLike, onReport, user }: Post
                                       {reply.author.isVerified && (
                                         <CheckCircle className="h-3 w-3 text-blue-500" />
                                       )}
-                                      <span className="text-xs text-gray-400">
+                                      <span className="text-xs text-muted-foreground/70">
                                         {formatDate(reply.createdAt)}
                                       </span>
                                     </div>
-                                    <p className="text-gray-700 text-sm">{reply.content}</p>
+                                    <p className="text-muted-foreground text-sm">{reply.content}</p>
                                   </div>
                                 </div>
                               ))}
@@ -495,10 +499,12 @@ export function PostDetailDialog({ post, onClose, onLike, onReport, user }: Post
                                 : t('appWaiting')}
                           </Badge>
                         </div>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-muted-foreground">
                           {app.message || t('noAdditionalInfo')}
                         </p>
-                        <span className="text-xs text-gray-400">{formatDate(app.createdAt)}</span>
+                        <span className="text-xs text-muted-foreground/70">
+                          {formatDate(app.createdAt)}
+                        </span>
                       </div>
                       {app.status === 'PENDING' && (
                         <div className="flex gap-2">

@@ -10,6 +10,7 @@ import {
   Min,
   Max,
   IsArray,
+  MaxLength,
 } from 'class-validator';
 import { PersonalEventCategory, PersonalEventStatus } from '@prisma/client';
 
@@ -19,6 +20,7 @@ export class CreatePersonalEventDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
+  @MaxLength(200)
   title: string;
 
   @ApiProperty({ enum: PersonalEventCategory })
@@ -42,16 +44,19 @@ export class CreatePersonalEventDto {
   priority?: number;
 
   @ApiPropertyOptional()
+  @MaxLength(2000)
   @IsString()
   @IsOptional()
   description?: string;
 
   @ApiPropertyOptional()
+  @MaxLength(2048)
   @IsString()
   @IsOptional()
   url?: string;
 
   @ApiPropertyOptional()
+  @MaxLength(2000)
   @IsString()
   @IsOptional()
   notes?: string;
@@ -61,6 +66,7 @@ export class UpdatePersonalEventDto {
   @ApiPropertyOptional()
   @IsString()
   @IsOptional()
+  @MaxLength(200)
   title?: string;
 
   @ApiPropertyOptional({ enum: PersonalEventCategory })
@@ -98,14 +104,17 @@ export class UpdatePersonalEventDto {
   @ApiPropertyOptional()
   @IsString()
   @IsOptional()
+  @MaxLength(2000)
   description?: string;
 
   @ApiPropertyOptional()
+  @MaxLength(2048)
   @IsString()
   @IsOptional()
   url?: string;
 
   @ApiPropertyOptional()
+  @MaxLength(2000)
   @IsString()
   @IsOptional()
   notes?: string;
@@ -113,6 +122,7 @@ export class UpdatePersonalEventDto {
 
 export class SubscribeGlobalEventDto {
   @ApiProperty({ description: '全局事件ID' })
+  @MaxLength(500)
   @IsString()
   @IsNotEmpty()
   globalEventId: string;
@@ -169,11 +179,13 @@ export class PersonalEventResponseDto {
 
 export class CreatePersonalTaskDto {
   @ApiProperty({ description: '所属事件ID' })
+  @MaxLength(500)
   @IsString()
   @IsNotEmpty()
   eventId: string;
 
   @ApiProperty()
+  @MaxLength(200)
   @IsString()
   @IsNotEmpty()
   title: string;

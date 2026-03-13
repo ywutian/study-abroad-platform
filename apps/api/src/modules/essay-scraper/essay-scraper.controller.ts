@@ -15,7 +15,6 @@ import { Roles, CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { Role } from '@prisma/client';
 import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
-import { SourceType } from '../../common/types/enums';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   CreateSchoolEssaySourceDto,
@@ -23,6 +22,10 @@ import {
   TestScrapeDto,
   ConfirmSaveDto,
 } from './dto/school-essay-source.dto';
+import {
+  ScrapeSchoolDto,
+  StartPipelineDto,
+} from './dto/essay-scraper-pipeline.dto';
 
 @ApiTags('admin/essay-scraper')
 @ApiBearerAuth()
@@ -48,14 +51,7 @@ export class EssayScraperController {
 
   @Post('scrape')
   @ApiOperation({ summary: '爬取单个学校的文书题目' })
-  async scrapeSchool(
-    @Body()
-    body: {
-      schoolName: string;
-      year?: number;
-      sources?: SourceType[];
-    },
-  ) {
+  async scrapeSchool(@Body() body: ScrapeSchoolDto) {
     const { schoolName, year, sources } = body;
     return this.scraperService.scrapeSchool(schoolName, year, sources);
   }
@@ -90,7 +86,7 @@ export class EssayScraperController {
   @ApiOperation({ summary: '手动启动全量采集管道' })
   async startPipeline(
     @CurrentUser() user: CurrentUserPayload,
-    @Body() body: { year?: number },
+    @Body() body: StartPipelineDto,
   ) {
     const runId = await this.scheduler.runPipeline('MANUAL', user.id);
     return { runId, status: 'RUNNING' };

@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { ThrottleAI } from '../../common/decorators/throttle.decorator';
 import { ResumeService } from './resume.service';
 import { CreateResumeDto } from './dto/create-resume.dto';
 import { UpdateResumeDto } from './dto/update-resume.dto';
@@ -186,6 +187,7 @@ export class ResumeController {
   }
 
   @Post(':id/ai/review')
+  @ThrottleAI()
   @ApiOperation({ summary: 'AI full resume review' })
   aiReview(
     @CurrentUser() user: { id: string },
@@ -201,6 +203,7 @@ export class ResumeController {
   }
 
   @Post(':id/ai/optimize-bullets')
+  @ThrottleAI()
   @ApiOperation({ summary: 'AI optimize bullet points' })
   aiOptimizeBullets(
     @CurrentUser() user: { id: string },
@@ -218,6 +221,7 @@ export class ResumeController {
   }
 
   @Post(':id/ai/suggest-content')
+  @ThrottleAI()
   @ApiOperation({ summary: 'AI suggest content for a section' })
   aiSuggestContent(
     @CurrentUser() user: { id: string },

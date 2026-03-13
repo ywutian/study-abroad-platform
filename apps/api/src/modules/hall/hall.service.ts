@@ -37,6 +37,8 @@ import {
   calculateOverallScore,
   type ScoreBreakdown,
 } from '../../common/utils/scoring';
+import { HALL_REVIEWER_SELECT } from './hall.constants';
+import { extractJsonFromLlm } from '../ai-agent/tools/helpers/llm-json.helper';
 
 interface CreateReviewDto {
   profileUserId: string;
@@ -712,7 +714,7 @@ export class HallService {
         orderBy: { [sortBy]: sortOrder },
         include: {
           reviewer: {
-            select: { id: true, email: true, role: true },
+            select: HALL_REVIEWER_SELECT,
           },
           _count: { select: { reactions: true } },
         },
@@ -833,9 +835,7 @@ export class HallService {
     return this.prisma.review.findMany({
       where: { profileUserId, status: 'PUBLISHED' },
       include: {
-        reviewer: {
-          select: { id: true, email: true, role: true },
-        },
+        reviewer: { select: HALL_REVIEWER_SELECT },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -1113,12 +1113,17 @@ Output only JSON, nothing else.`;
       ]);
 
       // 解析 AI 返回的 JSON
-      const jsonMatch = response.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
+      const parsed = extractJsonFromLlm<{
+        analysis: string;
+        strengths: string[];
+        improvements: string[];
+        competitivePosition: 'strong' | 'moderate' | 'challenging' | 'unknown';
+      }>(response);
+
+      if (parsed.analysis && Array.isArray(parsed.strengths)) {
         return {
-          analysis: parsed.analysis || '',
-          strengths: parsed.strengths || [],
+          analysis: parsed.analysis,
+          strengths: parsed.strengths,
           improvements: parsed.improvements || [],
           competitivePosition: parsed.competitivePosition || 'unknown',
         };

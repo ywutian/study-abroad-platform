@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Logger,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { User, Prisma } from '@prisma/client';
 import { safeDelete } from '../../common/utils/safe-delete';
@@ -249,7 +254,7 @@ export class UserService {
     } while (attempts < 10);
 
     if (attempts >= 10) {
-      throw new Error(
+      throw new InternalServerErrorException(
         'Failed to generate unique referral code after 10 attempts',
       );
     }

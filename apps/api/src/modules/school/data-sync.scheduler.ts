@@ -1,6 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { SchoolDataService } from './school-data.service';
+import { UrbanInstituteDataService } from './urban-institute-data.service';
+import { BigFutureScrapeService } from './scrapers/bigfuture.scraper';
+import { AppilyScrapeService } from './scrapers/appily.scraper';
 import { PrismaService } from '../../prisma/prisma.service';
 
 /**
@@ -17,6 +20,9 @@ export class DataSyncScheduler {
 
   constructor(
     private schoolDataService: SchoolDataService,
+    private urbanInstituteService: UrbanInstituteDataService,
+    private bigFutureService: BigFutureScrapeService,
+    private appilyService: AppilyScrapeService,
     private prisma: PrismaService,
   ) {}
 
@@ -49,23 +55,102 @@ export class DataSyncScheduler {
   }
 
   /**
-   * 每季度检查 IPEDS 更新 (3月、6月、9月、12月 1日)
+   * 每季度从 Urban Institute API 同步 IPEDS 数据 (1月、4月、7月、10月)
+   */
+  @Cron('0 4 1 1,4,7,10 *')
+  async syncUrbanInstitute() {
+    this.logger.log('Starting quarterly Urban Institute IPEDS sync...');
+
+    try {
+      const result = await this.urbanInstituteService.syncAll(undefined, 500);
+      this.logger.log(
+        `Urban Institute sync completed: ${result.total.synced} synced`,
+      );
+      await this.logSync(
+        'URBAN_INSTITUTE',
+        result.total.synced,
+        result.total.errors,
+      );
+    } catch (error: unknown) {
+      this.logger.error(
+        'Urban Institute sync failed',
+        error instanceof Error ? error.message : String(error),
+      );
+      await this.logSync(
+        'URBAN_INSTITUTE',
+        0,
+        1,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }
+
+  /**
+   * 每季度爬取 BigFuture 数据 (1月、4月、7月、10月 5:00)
+   */
+  @Cron('0 5 1 1,4,7,10 *')
+  async scrapeBigFuture() {
+    this.logger.log('Starting quarterly BigFuture scrape...');
+
+    try {
+      const result = await this.bigFutureService.scrapeSchools(200);
+      this.logger.log(
+        `BigFuture scrape completed: ${result.scraped} scraped, ${result.updated} updated`,
+      );
+      await this.logSync('BIGFUTURE', result.scraped, result.failed);
+    } catch (error: unknown) {
+      this.logger.error(
+        'BigFuture scrape failed',
+        error instanceof Error ? error.message : String(error),
+      );
+      await this.logSync(
+        'BIGFUTURE',
+        0,
+        1,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }
+
+  /**
+   * 每季度爬取 Appily 数据 (1月、4月、7月、10月 6:00)
+   */
+  @Cron('0 6 1 1,4,7,10 *')
+  async scrapeAppily() {
+    this.logger.log('Starting quarterly Appily scrape...');
+
+    try {
+      const result = await this.appilyService.scrapeSchools(200);
+      this.logger.log(
+        `Appily scrape completed: ${result.scraped} scraped, ${result.updated} updated`,
+      );
+      await this.logSync('APPILY', result.scraped, result.failed);
+    } catch (error: unknown) {
+      this.logger.error(
+        'Appily scrape failed',
+        error instanceof Error ? error.message : String(error),
+      );
+      await this.logSync(
+        'APPILY',
+        0,
+        1,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }
+
+  /**
+   * 每季度检查 IPEDS CSV 更新 (3月、6月、9月、12月 — 备份渠道)
    */
   @Cron('0 4 1 3,6,9,12 *')
   async checkIpedsUpdates() {
-    this.logger.log('🔄 检查 IPEDS 数据更新...');
-
-    // IPEDS 需要手动下载，这里只发送提醒
-    // 实际生产中可以:
-    // 1. 检查 IPEDS 网站的 RSS/更新页面
-    // 2. 发送邮件/Slack 通知管理员
-    // 3. 如果有预下载的文件，自动导入
+    this.logger.log('Checking IPEDS CSV updates (backup channel)...');
 
     this.logger.log(
-      '📧 IPEDS 更新检查完成，请手动检查 https://nces.ed.gov/ipeds/datacenter/DataFiles.aspx',
+      'IPEDS CSV check completed. Urban Institute API is primary sync source.',
     );
 
-    await this.logSync('IPEDS_CHECK', 0, 0, 'Manual check required');
+    await this.logSync('IPEDS_CHECK', 0, 0, 'Manual check — backup channel');
   }
 
   /**

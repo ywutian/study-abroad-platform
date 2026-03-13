@@ -1,4 +1,10 @@
-import { IsString, IsOptional, IsEnum, IsArray } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsArray,
+  MaxLength,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EssayStatus } from '../../../common/types/enums';
 
@@ -10,6 +16,7 @@ export class VerifyEssayPromptDto {
   @ApiPropertyOptional({ description: '拒绝原因（拒绝时必填）' })
   @IsOptional()
   @IsString()
+  @MaxLength(500)
   reason?: string;
 }
 
@@ -26,5 +33,6 @@ export class BatchVerifyDto {
   @ApiPropertyOptional({ description: '原因' })
   @IsOptional()
   @IsString()
+  @MaxLength(500)
   reason?: string;
 }

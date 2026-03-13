@@ -1,20 +1,23 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, MaxLength } from 'class-validator';
 
 export class EssayReviewRequestDto {
   @ApiProperty({ description: '文书ID' })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(200)
   essayId: string;
 
   @ApiProperty({ description: '目标学校名称（可选）', required: false })
   @IsString()
   @IsOptional()
+  @MaxLength(200)
   schoolName?: string;
 
   @ApiProperty({ description: '目标专业（可选）', required: false })
   @IsString()
   @IsOptional()
+  @MaxLength(200)
   major?: string;
 }
 

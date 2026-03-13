@@ -4,6 +4,7 @@ import {
   IsEnum,
   IsArray,
   MinLength,
+  MaxLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { VaultItemType } from '../../../common/types/enums';
@@ -20,14 +21,17 @@ export class CreateVaultItemDto {
   @ApiProperty()
   @IsString()
   @MinLength(1)
+  @MaxLength(200)
   title: string;
 
   @ApiProperty({ description: 'Plain text data to be encrypted' })
+  @MaxLength(50000)
   @IsString()
   data: string;
 
   @ApiPropertyOptional()
   @IsOptional()
+  @MaxLength(100)
   @IsString()
   category?: string;
 
@@ -35,10 +39,12 @@ export class CreateVaultItemDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @MaxLength(500, { each: true })
   tags?: string[];
 
   @ApiPropertyOptional()
   @IsOptional()
+  @MaxLength(100)
   @IsString()
   icon?: string;
 }
@@ -50,17 +56,20 @@ export class CreateVaultItemDto {
 export class UpdateVaultItemDto {
   @ApiPropertyOptional()
   @IsOptional()
+  @MaxLength(200)
   @IsString()
   @MinLength(1)
   title?: string;
 
   @ApiPropertyOptional({ description: 'Plain text data to be encrypted' })
   @IsOptional()
+  @MaxLength(50000)
   @IsString()
   data?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
+  @MaxLength(100)
   @IsString()
   category?: string;
 
@@ -68,10 +77,12 @@ export class UpdateVaultItemDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @MaxLength(500, { each: true })
   tags?: string[];
 
   @ApiPropertyOptional()
   @IsOptional()
+  @MaxLength(100)
   @IsString()
   icon?: string;
 }
@@ -89,10 +100,12 @@ export class VaultQueryDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   category?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
+  @MaxLength(500)
   @IsString()
   search?: string;
 }
@@ -158,20 +171,24 @@ export class VaultStatsDto {
 
 export class ImportVaultItemDto {
   @ApiProperty()
+  @MaxLength(100)
   @IsString()
   type: string;
 
   @ApiProperty()
+  @MaxLength(200)
   @IsString()
   @MinLength(1)
   title: string;
 
   @ApiProperty({ description: 'Plain text data to be encrypted' })
+  @MaxLength(50000)
   @IsString()
   data: string;
 
   @ApiPropertyOptional()
   @IsOptional()
+  @MaxLength(100)
   @IsString()
   category?: string;
 
@@ -179,5 +196,6 @@ export class ImportVaultItemDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @MaxLength(500, { each: true })
   tags?: string[];
 }

@@ -1,4 +1,10 @@
-import { IsString, IsNotEmpty, IsOptional, IsEnum } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsEnum,
+  MaxLength,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum ReportTargetType {
@@ -16,15 +22,18 @@ export class CreateReportDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
+  @MaxLength(200)
   targetId: string;
 
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
+  @MaxLength(500)
   reason: string;
 
   @ApiPropertyOptional()
   @IsString()
   @IsOptional()
+  @MaxLength(5000)
   detail?: string;
 }

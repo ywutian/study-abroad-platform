@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { SettingsService, SETTING_KEYS } from '../settings/settings.service';
 
 /**
@@ -196,7 +196,7 @@ export class PointsConfigService {
   async setPointValue(action: PointAction, value: number): Promise<void> {
     const registry = POINT_ACTION_REGISTRY[action];
     if (!registry) {
-      throw new Error(`Unknown point action: ${action}`);
+      throw new BadRequestException(`Unknown point action: ${action}`);
     }
     await this.settingsService.set(registry.settingKey, String(value));
     this.logger.log(`Point value for ${action} updated to ${value}`);

@@ -361,7 +361,7 @@ export default function RankingPage() {
                               school.rank === 1 &&
                                 'bg-gradient-to-br bg-warning text-white border-2 border-amber-500/30',
                               school.rank === 2 &&
-                                'bg-gradient-to-br bg-slate-400 text-white border-2 border-slate-400/30',
+                                'bg-gradient-to-br bg-slate-400 dark:bg-slate-500 text-white border-2 border-slate-400/30 dark:border-slate-500/30',
                               school.rank === 3 &&
                                 'bg-warning text-white shadow-lg shadow-amber-600/30',
                               school.rank > 3 && 'bg-muted text-muted-foreground'

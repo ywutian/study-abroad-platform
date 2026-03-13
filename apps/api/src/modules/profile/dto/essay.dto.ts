@@ -21,11 +21,13 @@ export class CreateEssayDto {
 
   @ApiProperty({ description: '文书内容' })
   @IsString()
+  @MaxLength(50000)
   content: string;
 
   @ApiPropertyOptional({ description: '关联学校ID' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   schoolId?: string;
 }
 
@@ -45,10 +47,12 @@ export class UpdateEssayDto {
   @ApiPropertyOptional({ description: '文书内容' })
   @IsOptional()
   @IsString()
+  @MaxLength(50000)
   content?: string;
 
   @ApiPropertyOptional({ description: '关联学校ID' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   schoolId?: string;
 }

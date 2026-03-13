@@ -34,6 +34,7 @@ import {
   CreateActivityTemplateDto,
   UpdateActivityTemplateDto,
   ActivityTemplateQueryDto,
+  BroadcastNotificationDto,
 } from './dto';
 import { AdminDataSyncService } from './admin-data-sync.service';
 import type { Response } from 'express';
@@ -297,14 +298,7 @@ export class AdminController {
 
   @Post('notifications/broadcast')
   @ApiOperation({ summary: '广播通知' })
-  async broadcastNotification(
-    @Body()
-    body: {
-      title: string;
-      content: string;
-      audience: 'ALL' | 'VERIFIED' | 'ADMIN';
-    },
-  ) {
+  async broadcastNotification(@Body() body: BroadcastNotificationDto) {
     const roleFilter: any = {};
     if (body.audience === 'VERIFIED')
       roleFilter.role = { in: [Role.VERIFIED, Role.ADMIN] };

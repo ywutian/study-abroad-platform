@@ -58,6 +58,12 @@ export interface SchoolInput {
   act75?: number;
   usNewsRank?: number;
   graduationRate?: number;
+  retentionRate?: number;
+  studentFacultyRatio?: number;
+  percentNeedMet?: number;
+  averageNetPrice?: number;
+  testOptional?: boolean;
+  hasEarlyDecision?: boolean;
 }
 
 /**
@@ -173,7 +179,7 @@ export function buildPredictionPrompt(
 - 录取率: ${school.acceptanceRate ? `${school.acceptanceRate}%` : unknown}${school.intlAcceptanceRate ? `\n- 国际生录取率: ${school.intlAcceptanceRate}%` : ''}${school.intlStudentPct ? `\n- 国际生比例: ${school.intlStudentPct}%` : ''}${school.needBlindInternational ? '\n- Need-Blind政策: 对国际生Need-Blind' : ''}
 - 毕业率: ${school.graduationRate ? `${school.graduationRate}%` : unknown}
 - 平均 SAT: ${school.satAvg || unknown}${school.sat25 && school.sat75 ? ` (25th-75th: ${school.sat25}-${school.sat75})` : ''}
-- 平均 ACT: ${school.actAvg || unknown}${school.act25 && school.act75 ? ` (25th-75th: ${school.act25}-${school.act75})` : ''}
+- 平均 ACT: ${school.actAvg || unknown}${school.act25 && school.act75 ? ` (25th-75th: ${school.act25}-${school.act75})` : ''}${school.retentionRate ? `\n- 新生留存率: ${school.retentionRate}%` : ''}${school.studentFacultyRatio ? `\n- 师生比: ${school.studentFacultyRatio}:1` : ''}${school.percentNeedMet ? `\n- 助学金满足率: ${school.percentNeedMet}%` : ''}${school.averageNetPrice ? `\n- 平均净费用: $${school.averageNetPrice.toLocaleString()}` : ''}${school.testOptional === true ? '\n- 标化政策: Test Optional' : ''}${school.hasEarlyDecision ? '\n- 提前决定: 有ED轮次' : ''}
 
 ## 分析要求
 1. 综合评估学生竞争力与学校录取标准的匹配度
@@ -236,7 +242,7 @@ export function buildPredictionPrompt(
 - Acceptance Rate: ${school.acceptanceRate ? `${school.acceptanceRate}%` : unknown}${school.intlAcceptanceRate ? `\n- International Acceptance Rate: ${school.intlAcceptanceRate}%` : ''}${school.intlStudentPct ? `\n- International Student %: ${school.intlStudentPct}%` : ''}${school.needBlindInternational ? '\n- Need-Blind for International Students: Yes' : ''}
 - Graduation Rate: ${school.graduationRate ? `${school.graduationRate}%` : unknown}
 - Average SAT: ${school.satAvg || unknown}${school.sat25 && school.sat75 ? ` (25th-75th: ${school.sat25}-${school.sat75})` : ''}
-- Average ACT: ${school.actAvg || unknown}${school.act25 && school.act75 ? ` (25th-75th: ${school.act25}-${school.act75})` : ''}
+- Average ACT: ${school.actAvg || unknown}${school.act25 && school.act75 ? ` (25th-75th: ${school.act25}-${school.act75})` : ''}${school.retentionRate ? `\n- Retention Rate: ${school.retentionRate}%` : ''}${school.studentFacultyRatio ? `\n- Student-Faculty Ratio: ${school.studentFacultyRatio}:1` : ''}${school.percentNeedMet ? `\n- % Need Met: ${school.percentNeedMet}%` : ''}${school.averageNetPrice ? `\n- Avg Net Price: $${school.averageNetPrice.toLocaleString()}` : ''}${school.testOptional === true ? '\n- Test Policy: Test Optional' : ''}${school.hasEarlyDecision ? '\n- Early Decision: Available' : ''}
 
 ## Analysis Requirements
 1. Evaluate the student's competitiveness against the school's admission standards

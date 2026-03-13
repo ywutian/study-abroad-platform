@@ -115,9 +115,14 @@ export class LoggingInterceptor implements NestInterceptor {
         },
         error: (error) => {
           const duration = Date.now() - startTime;
-          this.logger.error(
-            `${method} ${url} ${error.status || 500} ${duration}ms ${userId ? `[${userId}]` : ''}`,
-          );
+          const status = error.status || 500;
+          const logMessage = `${method} ${url} ${status} ${duration}ms ${userId ? `[${userId}]` : ''}`;
+          // 4xx = client error (expected) → warn; 5xx = server error → error
+          if (status >= 500) {
+            this.logger.error(logMessage);
+          } else {
+            this.logger.warn(logMessage);
+          }
         },
       }),
     );

@@ -183,11 +183,56 @@ const mutation = useMutation({
 });
 ```
 
+### Prisma Select & Response Mapping
+
+```typescript
+// ALWAYS use shared constants for Prisma select blocks:
+import { SCHOOL_BASIC_SELECT, SCHOOL_NAME_SELECT } from '../../common/constants/prisma-selects';
+// Module-level extensions:
+import { SCHOOL_LIST_SCHOOL_SELECT, mapSchoolForList } from './school-list.constants';
+
+// ALWAYS use mapper functions for response construction:
+school: mapSchoolForList(item.school),  // NOT inline { id: item.school.id, ... }
+
+// NEVER duplicate inline select blocks — extract to *.constants.ts with:
+export const MY_SELECT = { ... } as const satisfies Prisma.ModelSelect;
+export type MyResult = Prisma.ModelGetPayload<{ select: typeof MY_SELECT }>;
+export function mapMyResult(item: MyResult) { return { ... }; }
+```
+
+Shared constants in `common/constants/prisma-selects.ts`: `SCHOOL_BASIC_SELECT`, `SCHOOL_NAME_SELECT`, `SCHOOL_NAME_RANK_SELECT`, `USER_SUMMARY_SELECT`. Module constants in `module-name.constants.ts`.
+
 ### Error Handling
 
 - Backend: Throw `BadRequestException` for user errors; let `LLMProviderError` propagate for provider issues
 - Frontend: Global `MutationCache.onError` handles toast; use `meta.skipGlobalErrorToast` to opt out
 - AI Error Boundary: `<AIErrorBoundary feature="...">` wraps AI feature components
+
+## Backend Security Patterns
+
+### Rate Limiting Rules
+
+- All endpoints calling LLM APIs **MUST** use `@ThrottleAI()` (20 req/min) from `common/decorators/throttle.decorator`
+- Sensitive operations (auth, vault) use `@ThrottleSensitive()` (5/min) or `@ThrottleStrict()` (3/min)
+- Read-heavy endpoints can use `@ThrottleRelaxed()` (200/min)
+- Health endpoints use `@SkipThrottle()`
+
+### DTO Validation Rules
+
+- **Never** use inline `@Body() body: { ... }` types — always create a DTO class with `class-validator` decorators
+- All string fields **MUST** have `@MaxLength()`: titles → 200, body content → 50000, short inputs → 500
+- Array fields use `@IsArray()` + `@IsString({ each: true })`
+- DTOs live in `dto/` subdirectory of each module, exported via `dto/index.ts` barrel
+
+### Health Endpoint Access
+
+- `/health`, `/health/live`, `/health/ready`, `/health/startup` — `@Public()` (probes)
+- `/health/detailed` — `@Roles(Role.ADMIN)` (exposes env/build info)
+
+### Exception Handling
+
+- Service methods: throw NestJS exceptions (`BadRequestException`, `NotFoundException`, etc.) — **never** `throw new Error()`
+- Exception: startup validators (`config-validator.service.ts`, `encryption.service.ts`) may use `throw new Error()` to crash the process
 
 ## Module Dependency Rules
 
@@ -215,6 +260,14 @@ ai/                 →  Import AiModule for AiService
   - Seed data: `pnpm --filter api db:seed`
   - Browse data: `pnpm --filter api db:studio` (http://localhost:5555)
 - **Seeds**: `seed.ts` (main), `seed-aliases.ts`, `seed-competitions.ts`, `seed-essay-prompts-v2.ts`, `seed-forum-categories.ts`
+- **Schema Change Rules**:
+  - Every `schema.prisma` change **MUST** create a migration file: `pnpm --filter api db:migrate -- --name <descriptive_name>`
+  - **Never** use `db:push` in production or staging — it doesn't create migration history
+  - `db:push` is only for local development rapid iteration; switch to `db:migrate` before committing
+  - Migration files are auto-deployed via Cloud Run Job (`migrate.sh` → `prisma migrate deploy`)
+  - All new columns must be **nullable** or have a **default** to avoid downtime (metadata-only ALTER on PostgreSQL)
+  - If promoting fields from `metadata` JSON to schema columns, create a data backfill script in `apps/api/scripts/` with `--apply` flag pattern
+  - CI/CD handles migration execution automatically — deploy-gcp.yml runs `prisma migrate deploy` before service update, with auto-rollback on failure
 
 ## Environment Variables
 
@@ -263,7 +316,7 @@ ThemeProvider (next-themes)
 
 Also renders: `<Toaster>` (sonner), `<OfflineIndicator>`, `<FeedbackWidget>`.
 
-### Route Protection (`middleware.ts`)
+### Route Protection (`proxy.ts`)
 
 - Protected: `/profile`, `/dashboard`, `/essays`, `/assessment`, `/prediction`, `/chat`, `/settings`
 - Admin: `/admin/*`
@@ -289,7 +342,20 @@ Key utility classes: `zone-tinted`/`zone-dark` (section backgrounds), `glass`/`g
 
 ### UI Conventions
 
-- **Colors**: Use CSS vars (`text-foreground`, `bg-card`, `text-muted-foreground`) or semantic classes (`bg-success`, `bg-destructive`). When using hardcoded Tailwind colors (`bg-emerald-50`), MUST add `dark:` variant.
+- **Colors (STRICT — enforced by `check-code-quality.ts`)**:
+  - **Prefer CSS vars**: `text-foreground`, `bg-background`, `bg-card`, `bg-muted`, `text-muted-foreground`, `border-border`, `text-primary`, `bg-success`, `bg-destructive`.
+  - **Hardcoded Tailwind colors** (`bg-emerald-50`, `text-blue-600`): MUST add `dark:` variant (e.g., `bg-emerald-50 dark:bg-emerald-950/30`, `text-blue-600 dark:text-blue-400`).
+  - **Never dynamically interpolate Tailwind classes**: `` `bg-${color}-500` `` gets purged in production. Use static class maps instead:
+    ```typescript
+    // BAD — purged in production build
+    className={`bg-${color}-500/10 text-${color}-600`}
+    // GOOD — static, scannable by Tailwind
+    const COLOR_CLASSES = { blue: { bg: 'bg-blue-500/10', text: 'text-blue-600' }, ... };
+    className={`${COLOR_CLASSES[color].bg} ${COLOR_CLASSES[color].text}`}
+    ```
+  - **Never use `bg-slate-800/900` or `text-white` for page backgrounds** — use `bg-background` and `text-foreground` (auto light/dark).
+  - **Intentional dark sections**: Use `.zone-dark` class instead of `bg-slate-900`.
+  - **Common mappings**: `bg-slate-50` → `bg-muted`, `text-slate-500/600` → `text-muted-foreground`, `border-slate-200` → `border-border`, `hover:bg-slate-700` → `hover:bg-muted`.
 - **Auth pages**: Use `--auth-*` CSS vars (auto light/dark) — never hardcode colors.
 - **Typography**: Use utility classes (`text-title`, `text-body-sm`, `text-caption`) from the typography scale, not raw Tailwind `text-xl` etc.
 - **Loading**: Use `Skeleton` component from `@/components/ui/skeleton` in `loading.tsx` files, matching page layout structure.
@@ -312,6 +378,7 @@ Key utility classes: `zone-tinted`/`zone-dark` (section backgrounds), `glass`/`g
 | `pnpm docker:up` / `docker:down` | PostgreSQL 16 (pgvector) + Redis 7      |
 | `pnpm build`                     | Production build (all apps via Turbo)   |
 | `pnpm lint`                      | ESLint all apps                         |
+| `pnpm --filter web lint:quality` | Code quality checks (Tailwind, console) |
 | `pnpm test`                      | Unit tests (API: Jest, Web: Vitest)     |
 | `pnpm test:e2e`                  | E2E tests (requires running DB + Redis) |
 | `pnpm format`                    | Prettier format all files               |
@@ -324,7 +391,7 @@ Key utility classes: `zone-tinted`/`zone-dark` (section backgrounds), `glass`/`g
 
 ### GitHub Actions
 
-- `ci.yml` (on push/PR): lint → typecheck → test → build (parallel jobs)
+- `ci.yml` (on push/PR): lint (ESLint + i18n + code quality) → typecheck → test → build (parallel jobs)
 - `deploy-gcp.yml` (manual): Build → push to Artifact Registry → deploy to Cloud Run → smoke test → auto-rollback on failure
 - E2E uses `pgvector/pgvector:pg16` + `redis:7-alpine` service containers
 
@@ -334,8 +401,49 @@ Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`
 
 ### Pre-commit Hooks (Husky + lint-staged)
 
-1. Prettier + ESLint on staged `.ts/.tsx` files
-2. i18n checks (when `apps/web/src/` changed): missing keys, key consistency, wrong-language detection
+1. **Prettier + ESLint** on staged `.ts/.tsx` files (includes import sorting via `simple-import-sort`)
+2. **i18n checks** (when `apps/web/src/` changed): missing keys, key consistency, wrong-language detection
+3. **Frontend quality checks** (when `apps/web/src/` changed): 7 rules — dynamic Tailwind, hardcoded colors, console.log, page size, loading.tsx, error.tsx
+4. **Backend quality checks** (when `apps/api/src/` changed): 5 rules — inline body, throttle, throw, maxlength, tests
+
+### Code Quality Checks (`check-code-quality.ts`)
+
+Custom static analysis (7 rules) that catches issues ESLint can't:
+
+| Rule                        | Severity                     | What it catches                                | Fix                                                                       |
+| --------------------------- | ---------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------- |
+| `no-dynamic-tailwind`       | **error** (blocks commit/CI) | `` `bg-${color}-500` `` — purged in production | Use static class map (`COLOR_CLASSES[color].bg`)                          |
+| `no-hardcoded-dark-bg`      | warning                      | `bg-slate-800` without `dark:` variant         | Use CSS vars (`bg-background`) or add `dark:`                             |
+| `no-hardcoded-gray`         | warning                      | `bg-gray-100`, `text-gray-600` without `dark:` | Use semantic classes (`bg-muted`, `text-muted-foreground`) or add `dark:` |
+| `page-size-limit`           | warning                      | `page.tsx` >500 lines without `_components/`   | Split into thin orchestrator + `_components/`                             |
+| `no-console-in-prod`        | warning                      | `console.log/error` in production code         | Use `toast` for user errors, remove debug logs                            |
+| `no-missing-loading`        | warning                      | `page.tsx` without sibling `loading.tsx`       | Create Skeleton loading file                                              |
+| `no-missing-error-boundary` | warning                      | Route group without `error.tsx`                | Add error.tsx at route group level                                        |
+
+### API Quality Checks (`check-api-quality.ts`)
+
+Backend static analysis (7 rules) integrated into pre-commit and CI:
+
+| Rule                      | Severity                  | What it catches                                         | Fix                                   |
+| ------------------------- | ------------------------- | ------------------------------------------------------- | ------------------------------------- |
+| `no-inline-body`          | **error** (blocks commit) | `@Body() body: { ... }` inline types                    | Create DTO class with class-validator |
+| `no-unthrottled-ai`       | warning                   | AI route without `@Throttle*` decorator                 | Add `@ThrottleAI()`                   |
+| `no-generic-throw`        | warning                   | `throw new Error()` in service files                    | Use NestJS exceptions                 |
+| `no-missing-maxlength`    | warning                   | `@IsString()` DTO field without `@MaxLength()`          | Add `@MaxLength()` decorator          |
+| `no-missing-test`         | warning (full-scan only)  | Service without `.spec.ts` test                         | Create test file                      |
+| `no-duplicated-select`    | warning                   | Same Prisma select block repeated 2+ times in service   | Extract to `*.constants.ts`           |
+| `no-select-mapping-drift` | warning                   | SELECT constant field not referenced in mapper function | Update mapper to include field        |
+
+### Quick Check Commands
+
+```bash
+pnpm lint:all                          # One command: ESLint + quality + i18n
+pnpm --filter web lint:quality         # Frontend quality (7 rules)
+pnpm --filter api lint:quality         # Backend quality (5 rules)
+pnpm --filter web lint:i18n            # i18n checks
+```
+
+Exemption lists in each script for known-safe patterns.
 
 ## Admin Panel
 
@@ -364,6 +472,37 @@ Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`
 - **CSV export**: `GET /admin/export/:resource` returns `text/csv`
 - **Broadcast**: `POST /admin/notifications/broadcast` with audience filter (ALL/VERIFIED/ADMIN)
 
+## Code Review Checklist
+
+After writing code, verify these items. `[AUTO]` items are enforced by tooling; `[MANUAL]` items require human verification. Full standards: `docs/CODE_STANDARDS.md`.
+
+### Backend PR
+
+1. `[AUTO]` `@Body()` uses DTO class, not inline type
+2. `[AUTO]` String DTO fields have `@MaxLength()`
+3. `[AUTO]` AI routes have `@ThrottleAI()`
+4. `[AUTO]` No `throw new Error()` in services
+5. `[AUTO]` Service has `.spec.ts` test file
+6. `[MANUAL]` Sensitive endpoints have `@Roles(Role.ADMIN)`
+7. `[MANUAL]` DTO fields have `@ApiProperty()` for Swagger
+
+### Frontend PR
+
+1. `[AUTO]` Tailwind classes are static (no `${var}` interpolation)
+2. `[AUTO]` Hardcoded colors have `dark:` variant
+3. `[AUTO]` New page has sibling `loading.tsx`
+4. `[AUTO]` No `console.log` in production code
+5. `[AUTO]` Accessibility: images have alt, elements focusable
+6. `[MANUAL]` Icon buttons have `aria-label`
+7. `[MANUAL]` Uses `PageHeader` + `PageContainer` pattern
+8. `[MANUAL]` No hardcoded user-facing strings (use i18n)
+
+### Run All Checks
+
+```bash
+pnpm lint:all    # ESLint + frontend quality + backend quality + i18n
+```
+
 ## File Index
 
 | Category     | File                                                        | Purpose                                               |
@@ -384,7 +523,7 @@ Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`
 |              | `api/src/common/config/env.validation.ts`                   | Zod env var validation                                |
 | **Frontend** | `web/src/components/providers/index.tsx`                    | Provider chain + AuthInitializer                      |
 |              | `web/src/lib/api/client.ts`                                 | API client (auth, retry, unwrap)                      |
-|              | `web/src/middleware.ts`                                     | Route protection + i18n                               |
+|              | `web/src/proxy.ts`                                          | Route protection + i18n                               |
 |              | `web/src/stores/auth.ts`                                    | Auth state (Zustand)                                  |
 |              | `web/src/lib/constants.ts`                                  | AI timeouts, cache times                              |
 | **Shared**   | `packages/shared/src/types/index.ts`                        | Shared TypeScript types                               |

@@ -17,7 +17,16 @@ import { PageHeader } from '@/components/layout';
 import { ListSkeleton } from '@/components/ui/loading-state';
 import { apiClient } from '@/lib/api';
 import { toast } from 'sonner';
-import { Database, RefreshCw, Loader2, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import {
+  Database,
+  Globe,
+  Bell,
+  RefreshCw,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  Clock,
+} from 'lucide-react';
 
 interface DataSyncJob {
   id: string;
@@ -55,9 +64,18 @@ export default function AdminDataUpdatesPage() {
     },
   });
 
+  const JOBS_WITH_LIMIT = ['COLLEGE_SCORECARD', 'URBAN_INSTITUTE', 'BIGFUTURE', 'APPILY'];
+
+  const getJobIcon = (jobId: string) => {
+    if (['BIGFUTURE', 'APPILY'].includes(jobId)) return Globe;
+    if (['IPEDS_CHECK', 'RANKINGS_REMINDER'].includes(jobId)) return Bell;
+    return Database;
+  };
+
   const handleRunNow = (jobId: string) => {
-    const params =
-      jobId === 'COLLEGE_SCORECARD' ? { limit: parseInt(triggerLimit, 10) || 500 } : undefined;
+    const params = JOBS_WITH_LIMIT.includes(jobId)
+      ? { limit: parseInt(triggerLimit, 10) || 500 }
+      : undefined;
     triggerMutation.mutate({ job: jobId, params });
   };
 
@@ -88,7 +106,10 @@ export default function AdminDataUpdatesPage() {
           <Card key={job.id}>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Database className="h-4 w-4" />
+                {(() => {
+                  const Icon = getJobIcon(job.id);
+                  return <Icon className="h-4 w-4" />;
+                })()}
                 {job.name}
               </CardTitle>
               <CardDescription>{job.description}</CardDescription>
@@ -127,7 +148,7 @@ export default function AdminDataUpdatesPage() {
                 )}
               </div>
               <div className="flex items-center gap-2 pt-2">
-                {job.id === 'COLLEGE_SCORECARD' && (
+                {JOBS_WITH_LIMIT.includes(job.id) && (
                   <Select value={triggerLimit} onValueChange={setTriggerLimit}>
                     <SelectTrigger className="w-[100px]">
                       <SelectValue placeholder={t('limitPlaceholder')} />
@@ -143,12 +164,7 @@ export default function AdminDataUpdatesPage() {
                 <Button
                   size="sm"
                   onClick={() => handleRunNow(job.id)}
-                  disabled={
-                    triggerMutation.isPending ||
-                    (job.id !== 'COLLEGE_SCORECARD' &&
-                      job.id !== 'IPEDS_CHECK' &&
-                      job.id !== 'RANKINGS_REMINDER')
-                  }
+                  disabled={triggerMutation.isPending}
                 >
                   {triggerMutation.isPending ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

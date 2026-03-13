@@ -1032,11 +1032,11 @@
       "needBlind": "对国际生Need-Blind",
       "intlPercent": "{pct}%国际生",
       "competitiveness": {
-        "5": "极度竞争",
-        "4": "高度竞争",
-        "3": "一般竞争",
+        "1": "较低竞争",
         "2": "竞争较低",
-        "1": "较低竞争"
+        "3": "一般竞争",
+        "4": "高度竞争",
+        "5": "极度竞争"
       },
       "na": "暂无数据",
       "naIntl": "该校暂无国际生录取率数据",
@@ -2132,6 +2132,9 @@
       "REA": "REA",
       "RD": "RD",
       "ROLLING": "Rolling"
+    },
+    "specialConditions": {
+      "testOptional": "可选考试"
     }
   },
   "findCollege": {
@@ -3256,7 +3259,6 @@
     "badge": "当前等级",
     "badgeUpgraded": "等级提升",
     "newBadge": "新等级",
-    "actualResult": "实际结果",
     "swipes": "次滑动",
     "badges": {
       "bronze": "青铜",
@@ -3282,7 +3284,6 @@
     "youreRight": "猜对了！",
     "notQuite": "猜错了",
     "nextCase": "下一个案例",
-    "accuracy": "准确率",
     "totalSwipes": "总预测",
     "bestStreak": "最佳连胜",
     "current": "当前",
@@ -3539,6 +3540,46 @@
     "satAvg": "SAT 平均分",
     "actAvg": "ACT 平均分",
     "graduationRate": "毕业率",
+    "retentionRate": "新生留存率",
+    "studentFacultyRatio": "师生比",
+    "tuition": "学费",
+    "financialAid": {
+      "title": "费用与资助",
+      "netPrice": "净费用（扣除资助）",
+      "aidPackage": "平均资助金额",
+      "needMet": "助学金满足率",
+      "applicationFee": "申请费",
+      "feeWaiver": "可免申请费",
+      "roomAndBoard": "食宿费"
+    },
+    "applicationInfo": {
+      "title": "申请信息",
+      "commonApp": "Common App",
+      "coalition": "Coalition App",
+      "testOptional": "可选提交考试成绩",
+      "needBlind": "Need Blind",
+      "earlyDecision": "提前决定"
+    },
+    "international": {
+      "title": "国际生信息",
+      "studentPct": "国际生比例",
+      "acceptanceRate": "国际生录取率",
+      "countries": "来源国家数"
+    },
+    "campusLife": {
+      "title": "校园生活评级",
+      "overall": "综合",
+      "safety": "安全",
+      "life": "学生生活",
+      "food": "餐饮",
+      "studentOrgs": "学生社团数量"
+    },
+    "postGrad": {
+      "title": "毕业后发展",
+      "salary": "毕业6年后薪资中位数",
+      "loanDefault": "贷款违约率",
+      "monthlyLoan": "月贷款还款额"
+    },
     "about": "学校简介",
     "deadlines": {
       "title": "申请截止日期",
@@ -3728,7 +3769,9 @@
       "schoolSelectionTag": "选校",
       "importantTag": "重要",
       "mainAccountNote": "主账户信息"
-    }
+    },
+    "saveError": "保存失败",
+    "deleteError": "删除失败"
   },
   "recommendation": {
     "title": "智能选校",
@@ -3845,7 +3888,6 @@
     "reach": "冲刺",
     "match": "匹配",
     "safety": "保底",
-
     "schoolCountLabel": "推荐学校数量",
     "schoolCountOptions": {
       "10": "10 所学校",
@@ -3857,7 +3899,6 @@
     "noMatchingRegions": "没有匹配的地区",
     "noMatchingMajors": "没有匹配的专业",
     "maxChars": "{count}/{max} 字符",
-
     "profileReady": "档案已就绪",
     "profileReadySummary": "GPA {gpa}，{testCount} 项标化成绩，{activityCount} 项活动",
     "profileIncomplete": "档案不完整",
@@ -3868,7 +3909,6 @@
     "missingActivities": "课外活动",
     "missingTargetMajor": "目标专业",
     "missingProfile": "个人档案",
-
     "points": "积分",
     "pointsRemaining": "剩余 {points} 积分",
     "insufficientPoints": "积分不足（需要 25 积分）",
@@ -3877,13 +3917,11 @@
     "confirmDescSimple": "根据您的档案生成个性化选校推荐？",
     "confirmGenerate": "确认生成",
     "cancel": "取消",
-
     "progressStep1": "正在分析您的档案...",
     "progressStep2": "正在匹配数据库中的学校...",
     "progressStep3": "正在生成 AI 推荐...",
     "progressStep4": "正在整理结果...",
     "progressStepOf": "第 {current} 步，共 {total} 步",
-
     "rank": "排名",
     "location": "位置",
     "acceptanceRate": "录取率",
@@ -3895,7 +3933,6 @@
     "addToListSuccess": "已将 {name} 加入选校清单",
     "showMore": "展开更多",
     "showLess": "收起",
-
     "tierDistribution": "分档分布",
     "loadingHistory": "加载历史中...",
     "deleteHistory": "删除",
@@ -4255,7 +4292,13 @@
       "joinPolicy": "加入方式",
       "joinPolicyAll": "全部",
       "sortNewest": "最新创建",
-      "sortMembers": "成员最多"
+      "sortMembers": "成员最多",
+      "schoolPlaceholder": "学校（选填）",
+      "schoolSelected": "已选学校",
+      "schoolSearch": "搜索学校...",
+      "schoolClear": "清除筛选",
+      "schoolLoading": "加载中...",
+      "schoolNoResults": "未找到学校"
     },
     "goDiscover": "去发现队伍",
     "loginToJoin": "登录后加入",
@@ -4699,7 +4742,24 @@
       "generateFromDomain": "从官网生成",
       "generateFromDomainDone": "已填入建议 Logo 链接",
       "generateFromDomainError": "无法获取 Logo 建议",
-      "clearLogo": "清除 Logo"
+      "clearLogo": "清除 Logo",
+      "website": "官网",
+      "acceptanceRate": "录取率",
+      "graduationRate": "毕业率",
+      "retentionRate": "留存率",
+      "studentFacultyRatio": "师生比",
+      "tuition": "学费",
+      "applicationFee": "申请费",
+      "averageAidPackage": "平均资助",
+      "averageNetPrice": "平均净费用",
+      "roomAndBoard": "食宿费",
+      "percentNeedMet": "助学金满足率",
+      "tabs": {
+        "basic": "基础信息",
+        "rankings": "排名录取",
+        "financial": "费用援助",
+        "application": "申请方式"
+      }
     },
     "data": {
       "scrapeSchools": "抓取学校数据",

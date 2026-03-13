@@ -98,8 +98,8 @@ export function CreatePostDialog({
         resetForm();
         onPostCreated();
       }
-    } catch (_error) {
-      console.error('Failed to create post:', _error);
+    } catch {
+      // Error handled by global MutationCache toast
     } finally {
       setSubmitting(false);
     }
@@ -169,10 +169,12 @@ export function CreatePostDialog({
 
             <TabsContent value="edit" className="space-y-4 mt-0">
               {/* Post Type Toggle */}
-              <div className="flex gap-2 p-1 bg-gray-100 rounded-lg w-fit">
+              <div className="flex gap-2 p-1 bg-muted rounded-lg w-fit">
                 <button
                   className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                    !isTeamPost ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                    !isTeamPost
+                      ? 'bg-card shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                   onClick={() => setIsTeamPost(false)}
                 >
@@ -182,7 +184,7 @@ export function CreatePostDialog({
                   className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-1.5 ${
                     isTeamPost
                       ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                   onClick={() => isVerified && setIsTeamPost(true)}
                   disabled={!isVerified}
@@ -209,7 +211,7 @@ export function CreatePostDialog({
 
               {/* Title */}
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
                   {t('postTitleLabel')}
                 </label>
                 <Input
@@ -219,12 +221,14 @@ export function CreatePostDialog({
                   className="text-base"
                   maxLength={100}
                 />
-                <p className="text-xs text-gray-400 mt-1 text-right">{formTitle.length}/100</p>
+                <p className="text-xs text-muted-foreground/70 mt-1 text-right">
+                  {formTitle.length}/100
+                </p>
               </div>
 
               {/* Category */}
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
                   {t('categoryLabel')}
                 </label>
                 <Select value={formCategory} onValueChange={setFormCategory}>
@@ -246,7 +250,7 @@ export function CreatePostDialog({
 
               {/* Content */}
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
                   {t('contentLabel')}
                 </label>
                 <Textarea
@@ -255,7 +259,7 @@ export function CreatePostDialog({
                   placeholder={t('contentPlaceholder')}
                   className="min-h-[200px] resize-none"
                 />
-                <p className="text-xs text-gray-400 mt-1 text-right">
+                <p className="text-xs text-muted-foreground/70 mt-1 text-right">
                   {t('charCount', { count: formContent.length })}
                 </p>
               </div>
@@ -269,7 +273,7 @@ export function CreatePostDialog({
                   </h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm text-gray-600 mb-1.5 block">
+                      <label className="text-sm text-muted-foreground mb-1.5 block">
                         {t('teamMembersLabel')}
                       </label>
                       <Input
@@ -281,7 +285,7 @@ export function CreatePostDialog({
                       />
                     </div>
                     <div>
-                      <label className="text-sm text-gray-600 mb-1.5 block">
+                      <label className="text-sm text-muted-foreground mb-1.5 block">
                         {t('teamDeadlineLabel')}
                       </label>
                       <Input
@@ -292,7 +296,7 @@ export function CreatePostDialog({
                     </div>
                   </div>
                   <div>
-                    <label className="text-sm text-gray-600 mb-1.5 block">
+                    <label className="text-sm text-muted-foreground mb-1.5 block">
                       {t('teamRequirementsDesc')}
                     </label>
                     <Textarea
@@ -307,7 +311,7 @@ export function CreatePostDialog({
 
               {/* Tags */}
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
                   {t('maxTags')}
                 </label>
                 {formTags.length > 0 && (
@@ -339,7 +343,7 @@ export function CreatePostDialog({
                       .map((tag) => (
                         <button
                           key={tag}
-                          className="text-xs text-gray-500 hover:text-primary hover:bg-primary/5 px-2 py-0.5 rounded transition-colors"
+                          className="text-xs text-muted-foreground hover:text-primary hover:bg-primary/5 px-2 py-0.5 rounded transition-colors"
                           onClick={() => addTag(tag)}
                         >
                           +{tag}
@@ -359,7 +363,7 @@ export function CreatePostDialog({
                         const category = categories.find((c) => c.id === formCategory);
                         return (
                           <Badge
-                            className={`${category ? getCategoryColorStyle(category).className : 'bg-gray-500'} text-white text-xs`}
+                            className={`${category ? getCategoryColorStyle(category).className : 'bg-gray-500 dark:bg-gray-600'} text-white text-xs`}
                           >
                             {getLocalizedName(category?.nameZh, category?.name, locale) ||
                               t('unchosenCategory')}
@@ -374,11 +378,11 @@ export function CreatePostDialog({
                     )}
                   </div>
                   <h2 className="text-xl font-bold mb-3">{formTitle || t('postTitlePreview')}</h2>
-                  <div className="prose prose-sm max-w-none text-gray-700">
+                  <div className="prose prose-sm max-w-none text-muted-foreground">
                     {formContent ? (
                       renderMarkdown(formContent)
                     ) : (
-                      <p className="text-gray-400">{t('contentPreviewText')}</p>
+                      <p className="text-muted-foreground/70">{t('contentPreviewText')}</p>
                     )}
                   </div>
                   {formTags.length > 0 && (

@@ -20,6 +20,8 @@ import { UpdateTeamDto } from './dto/update-team.dto';
 import { InviteDto } from './dto/invite.dto';
 import { TeamQueryDto } from './dto/team-query.dto';
 import { randomBytes } from 'crypto';
+import { TEAM_USER_SELECT } from './team.constants';
+import { SCHOOL_NAME_SELECT } from '../../common/constants/prisma-selects';
 
 @Injectable()
 export class TeamService {
@@ -58,13 +60,9 @@ export class TeamService {
         where,
         include: {
           creator: {
-            select: {
-              id: true,
-              email: true,
-              profile: { select: { nickname: true, avatarUrl: true } },
-            },
+            select: TEAM_USER_SELECT,
           },
-          school: { select: { id: true, name: true, nameZh: true } },
+          school: { select: SCHOOL_NAME_SELECT },
           _count: { select: { members: true } },
         },
         orderBy,
@@ -103,7 +101,7 @@ export class TeamService {
       include: {
         team: {
           include: {
-            school: { select: { id: true, name: true, nameZh: true } },
+            school: { select: SCHOOL_NAME_SELECT },
             _count: { select: { members: true } },
           },
         },
@@ -135,7 +133,7 @@ export class TeamService {
         },
       },
       include: {
-        school: { select: { id: true, name: true, nameZh: true } },
+        school: { select: SCHOOL_NAME_SELECT },
         _count: { select: { members: true } },
       },
     });
@@ -154,23 +152,11 @@ export class TeamService {
     const team = await this.prisma.team.findUnique({
       where: { id },
       include: {
-        creator: {
-          select: {
-            id: true,
-            email: true,
-            profile: { select: { nickname: true, avatarUrl: true } },
-          },
-        },
-        school: { select: { id: true, name: true, nameZh: true } },
+        creator: { select: TEAM_USER_SELECT },
+        school: { select: SCHOOL_NAME_SELECT },
         members: {
           include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                profile: { select: { nickname: true, avatarUrl: true } },
-              },
-            },
+            user: { select: TEAM_USER_SELECT },
           },
         },
         _count: { select: { members: true } },
@@ -209,7 +195,7 @@ export class TeamService {
         maxMembers: dto.maxMembers,
       },
       include: {
-        school: { select: { id: true, name: true, nameZh: true } },
+        school: { select: SCHOOL_NAME_SELECT },
         _count: { select: { members: true } },
       },
     });
@@ -430,13 +416,7 @@ export class TeamService {
     const members = await this.prisma.teamMembership.findMany({
       where: { teamId },
       include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            profile: { select: { nickname: true, avatarUrl: true } },
-          },
-        },
+        user: { select: TEAM_USER_SELECT },
       },
       orderBy: [{ role: 'asc' }, { joinedAt: 'asc' }],
     });

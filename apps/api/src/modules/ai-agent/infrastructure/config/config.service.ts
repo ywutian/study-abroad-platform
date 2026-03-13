@@ -9,7 +9,13 @@
  * - 版本历史和回滚
  */
 
-import { Injectable, Logger, OnModuleInit, Optional } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  OnModuleInit,
+  Optional,
+} from '@nestjs/common';
 import { ConfigService as NestConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../../../prisma/prisma.service';
@@ -284,7 +290,9 @@ export class AgentConfigService implements OnModuleInit {
     options?: { createdBy?: string },
   ): Promise<AgentConfig> {
     if (!this.prisma) {
-      throw new Error('Database not available for rollback');
+      throw new InternalServerErrorException(
+        'Database not available for rollback',
+      );
     }
 
     const targetConfig = await this.prisma.agentConfigVersion.findFirst({
@@ -292,7 +300,9 @@ export class AgentConfigService implements OnModuleInit {
     });
 
     if (!targetConfig) {
-      throw new Error(`Version ${toVersion} not found for agent ${agentType}`);
+      throw new InternalServerErrorException(
+        `Version ${toVersion} not found for agent ${agentType}`,
+      );
     }
 
     const value = targetConfig.value as Prisma.JsonObject;
@@ -397,7 +407,7 @@ export class AgentConfigService implements OnModuleInit {
   ): AgentConfig {
     const current = this.config.agents[agentType];
     if (!current) {
-      throw new Error(`Agent ${agentType} not found`);
+      throw new InternalServerErrorException(`Agent ${agentType} not found`);
     }
 
     const updated: AgentConfig = {
@@ -437,7 +447,7 @@ export class AgentConfigService implements OnModuleInit {
   updateToolConfig(toolName: string, updates: Partial<ToolConfig>): ToolConfig {
     const current = this.config.tools[toolName];
     if (!current) {
-      throw new Error(`Tool ${toolName} not found`);
+      throw new InternalServerErrorException(`Tool ${toolName} not found`);
     }
 
     const updated: ToolConfig = { ...current, ...updates };

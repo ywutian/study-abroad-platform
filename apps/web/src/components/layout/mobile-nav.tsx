@@ -45,7 +45,7 @@ export function MobileNav({ sections, user, onLogout }: MobileNavProps) {
   // SSR placeholder
   if (!isHydrated) {
     return (
-      <Button variant="ghost" size="icon" suppressHydrationWarning>
+      <Button variant="ghost" size="icon" aria-label="Navigation menu" suppressHydrationWarning>
         <Menu className="h-5 w-5" />
       </Button>
     );

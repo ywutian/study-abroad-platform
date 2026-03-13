@@ -66,7 +66,7 @@ export default function SubscriptionPage() {
       {/* Current Plan */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <Card className="mb-8 overflow-hidden">
-          <div className="h-1.5 bg-slate-500" />
+          <div className="h-1.5 bg-slate-500 dark:bg-slate-400" />
           <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6">
             <div className="flex items-center gap-4">
               <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-muted">

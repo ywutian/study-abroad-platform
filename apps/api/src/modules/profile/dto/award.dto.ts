@@ -45,6 +45,7 @@ export class CreateAwardDto {
   @ApiPropertyOptional({ description: '关联竞赛 ID (Competition.id)' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   competitionId?: string;
 
   @ApiPropertyOptional({ description: '排序顺序' })
@@ -84,6 +85,7 @@ export class UpdateAwardDto {
   @ApiPropertyOptional({ description: '关联竞赛 ID (Competition.id)' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   competitionId?: string;
 
   @ApiPropertyOptional({ description: '排序顺序' })

@@ -6,6 +6,7 @@ import {
   IsEnum,
   Min,
   Max,
+  MaxLength,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { EssayType } from '../../../common/types/enums';
@@ -19,11 +20,13 @@ export class UpdateEssayPromptDto {
   @ApiPropertyOptional({ description: '英文原文' })
   @IsOptional()
   @IsString()
+  @MaxLength(5000)
   prompt?: string;
 
   @ApiPropertyOptional({ description: '中文翻译' })
   @IsOptional()
   @IsString()
+  @MaxLength(5000)
   promptZh?: string;
 
   @ApiPropertyOptional({ description: '字数限制' })
@@ -46,10 +49,12 @@ export class UpdateEssayPromptDto {
   @ApiPropertyOptional({ description: 'AI 写作建议' })
   @IsOptional()
   @IsString()
+  @MaxLength(5000)
   aiTips?: string;
 
   @ApiPropertyOptional({ description: 'AI 分类标签' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   aiCategory?: string;
 }

@@ -12,6 +12,7 @@ import {
   ArrayMaxSize,
   Min,
   Max,
+  MaxLength,
 } from 'class-validator';
 
 export enum ApplicationRound {
@@ -48,6 +49,7 @@ export class CreateTimelineDto {
   @ApiProperty({ description: '学校ID' })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(200)
   schoolId: string;
 
   @ApiProperty({ enum: ApplicationRound })
@@ -66,6 +68,7 @@ export class CreateTimelineDto {
   priority?: number;
 
   @ApiPropertyOptional()
+  @MaxLength(2000)
   @IsString()
   @IsOptional()
   notes?: string;
@@ -97,6 +100,7 @@ export class UpdateTimelineDto {
   @ApiPropertyOptional()
   @IsString()
   @IsOptional()
+  @MaxLength(2000)
   notes?: string;
 }
 
@@ -142,6 +146,7 @@ export class TimelineResponseDto {
 
 export class CreateTaskDto {
   @ApiProperty({ description: '时间线ID' })
+  @MaxLength(500)
   @IsString()
   @IsNotEmpty()
   timelineId: string;
@@ -149,6 +154,7 @@ export class CreateTaskDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
+  @MaxLength(200)
   title: string;
 
   @ApiPropertyOptional({ enum: TaskType })
@@ -159,6 +165,7 @@ export class CreateTaskDto {
   @ApiPropertyOptional()
   @IsString()
   @IsOptional()
+  @MaxLength(500)
   description?: string;
 
   @ApiPropertyOptional()
@@ -169,6 +176,7 @@ export class CreateTaskDto {
   @ApiPropertyOptional({ description: '文书题目（文书类型任务）' })
   @IsString()
   @IsOptional()
+  @MaxLength(5000)
   essayPrompt?: string;
 
   @ApiPropertyOptional({ description: '字数限制' })
@@ -181,6 +189,7 @@ export class UpdateTaskDto {
   @ApiPropertyOptional()
   @IsString()
   @IsOptional()
+  @MaxLength(200)
   title?: string;
 
   @ApiPropertyOptional({ enum: TaskType })
@@ -191,6 +200,7 @@ export class UpdateTaskDto {
   @ApiPropertyOptional()
   @IsString()
   @IsOptional()
+  @MaxLength(500)
   description?: string;
 
   @ApiPropertyOptional()
@@ -206,6 +216,7 @@ export class UpdateTaskDto {
   @ApiPropertyOptional()
   @IsString()
   @IsOptional()
+  @MaxLength(200)
   essayId?: string;
 
   @ApiPropertyOptional()
@@ -257,6 +268,7 @@ export class GenerateTimelineDto {
   @ArrayMinSize(1)
   @ArrayMaxSize(50)
   @IsString({ each: true })
+  @MaxLength(500, { each: true })
   @IsNotEmpty({ each: true })
   schoolIds: string[];
 }

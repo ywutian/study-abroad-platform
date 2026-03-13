@@ -860,6 +860,12 @@ export class PredictionService {
       act75: school.act75 ?? undefined,
       usNewsRank: school.usNewsRank ?? undefined,
       graduationRate: clampPercentRate(school.graduationRate),
+      retentionRate: clampPercentRate((school as any).retentionRate),
+      studentFacultyRatio: (school as any).studentFacultyRatio ?? undefined,
+      percentNeedMet: clampPercentRate((school as any).percentNeedMet),
+      averageNetPrice: (school as any).averageNetPrice ?? undefined,
+      testOptional: (school as any).testOptional ?? undefined,
+      hasEarlyDecision: (school as any).hasEarlyDecision ?? undefined,
     };
   }
 

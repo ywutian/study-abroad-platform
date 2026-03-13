@@ -26,7 +26,7 @@ const BADGE_CONFIG: Record<SwipeBadge, BadgeConfig> = {
     key: 'bronze',
   },
   silver: {
-    color: 'text-gray-500',
+    color: 'text-gray-500 dark:text-gray-400',
     bgColor: 'from-gray-300 to-gray-500',
     glowColor: 'shadow-gray-400/30',
     icon: Shield,

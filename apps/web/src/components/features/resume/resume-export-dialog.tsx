@@ -182,8 +182,7 @@ export function ResumeExportDialog({ open, onOpenChange, profileData }: ResumeEx
 
       toast.success(t('resume.toast.success'));
       onOpenChange(false);
-    } catch (error) {
-      console.error('PDF export failed:', error);
+    } catch {
       toast.error(t('resume.toast.failed'));
     } finally {
       setIsExporting(false);

@@ -132,8 +132,8 @@ const colorMap: Record<string, { bg: string; text: string; gradient: string; che
   slate: {
     bg: 'bg-muted',
     text: 'text-muted-foreground',
-    gradient: 'from-slate-500 to-gray-500',
-    checkBg: 'bg-slate-500',
+    gradient: 'from-gray-500 to-gray-400 dark:from-gray-600 dark:to-gray-500',
+    checkBg: 'bg-gray-500 dark:bg-gray-400',
   },
 };
 

@@ -2,6 +2,7 @@ import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
+import simpleImportSort from 'eslint-plugin-simple-import-sort';
 
 export default tseslint.config(
   // Global ignores
@@ -30,9 +31,12 @@ export default tseslint.config(
     files: ['**/*.{ts,tsx}'],
     plugins: {
       'react-hooks': reactHooks,
+      'simple-import-sort': simpleImportSort,
     },
     rules: {
       'react-hooks/exhaustive-deps': 'warn',
+      'simple-import-sort/imports': 'warn',
+      'simple-import-sort/exports': 'warn',
     },
   },
   {

@@ -1,25 +1,29 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, MaxLength } from 'class-validator';
 
 export class EssayBrainstormRequestDto {
   @ApiProperty({ description: '文书题目' })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(50000)
   prompt: string;
 
   @ApiProperty({ description: '学生背景简述（可选）', required: false })
   @IsString()
   @IsOptional()
+  @MaxLength(50000)
   background?: string;
 
   @ApiProperty({ description: '目标学校（可选）', required: false })
   @IsString()
   @IsOptional()
+  @MaxLength(200)
   school?: string;
 
   @ApiProperty({ description: '目标专业（可选）', required: false })
   @IsString()
   @IsOptional()
+  @MaxLength(200)
   major?: string;
 }
 

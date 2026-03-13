@@ -176,7 +176,7 @@ const LEVEL_COLORS: Record<string, string> = {
   NATIONAL: 'bg-red-500/10 text-red-600',
   STATE: 'bg-blue-500/10 text-blue-600',
   REGIONAL: 'bg-emerald-500/10 text-emerald-600',
-  SCHOOL: 'bg-gray-500/10 text-gray-600',
+  SCHOOL: 'bg-gray-500/10 text-gray-600 dark:text-gray-400',
 };
 
 function HonorsReview({ awards, score, onScoreChange }: HonorsReviewProps) {

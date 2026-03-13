@@ -135,6 +135,7 @@ describe('LoggingInterceptor', () => {
   let interceptor: LoggingInterceptor;
   let logSpy: jest.SpyInstance;
   let errorSpy: jest.SpyInstance;
+  let warnSpy: jest.SpyInstance;
   let debugSpy: jest.SpyInstance;
 
   function createMockContext(overrides: {
@@ -169,6 +170,7 @@ describe('LoggingInterceptor', () => {
     interceptor = new LoggingInterceptor();
     logSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation();
     errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation();
+    warnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
     debugSpy = jest.spyOn(Logger.prototype, 'debug').mockImplementation();
   });
 
@@ -191,16 +193,17 @@ describe('LoggingInterceptor', () => {
     });
   });
 
-  it('should log error on failed request', (done) => {
+  it('should log warn on 4xx client error', (done) => {
     const context = createMockContext({ method: 'POST', url: '/api/auth' });
     const error = { status: 401, message: 'Unauthorized' };
     const handler: CallHandler = { handle: () => throwError(() => error) };
 
     interceptor.intercept(context, handler).subscribe({
       error: () => {
-        expect(errorSpy).toHaveBeenCalledWith(
+        expect(warnSpy).toHaveBeenCalledWith(
           expect.stringContaining('POST /api/auth 401'),
         );
+        expect(errorSpy).not.toHaveBeenCalled();
         done();
       },
     });

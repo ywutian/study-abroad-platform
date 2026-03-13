@@ -38,6 +38,9 @@ describe('EssayAiService', () => {
             profile: {
               findFirst: jest.fn(),
             },
+            school: {
+              findFirst: jest.fn().mockResolvedValue(null),
+            },
             essayAIResult: {
               create: jest.fn().mockResolvedValue({
                 id: 'result-1',

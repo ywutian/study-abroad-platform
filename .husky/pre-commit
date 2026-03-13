@@ -42,3 +42,35 @@ if [ "$WEB_SRC_CHANGED" -gt "0" ]; then
   echo "✅ i18n checks passed!"
   echo ""
 fi
+
+# ── Code quality checks ─────────────────────────────────────
+# Check for dynamic Tailwind classes, hardcoded slate colors, console.log, etc.
+if [ "$WEB_SRC_CHANGED" -gt "0" ]; then
+  echo ""
+  echo "🔍 Running code quality checks..."
+  echo ""
+
+  if ! pnpm --filter web exec npx tsx scripts/check-code-quality.ts --staged; then
+    echo ""
+    echo "❌ Code quality check failed. See issues above."
+    echo ""
+    exit 1
+  fi
+fi
+
+# ── API quality checks ──────────────────────────────────────
+# Check for inline @Body types, unthrottled AI endpoints, generic throws
+API_SRC_CHANGED=$(echo "$STAGED_FILES" | grep -c "^apps/api/src/" || true)
+
+if [ "$API_SRC_CHANGED" -gt "0" ]; then
+  echo ""
+  echo "🔍 Running API quality checks..."
+  echo ""
+
+  if ! pnpm --filter api exec npx tsx scripts/check-api-quality.ts --staged; then
+    echo ""
+    echo "❌ API quality check failed. See issues above."
+    echo ""
+    exit 1
+  fi
+fi

@@ -140,10 +140,38 @@ export class EssayAiService {
       );
     }
 
+    // Enrich with school data when schoolName is provided
+    let schoolContext = '';
+    if (dto.schoolName) {
+      const school = await this.prisma.school.findFirst({
+        where: {
+          OR: [
+            { name: { contains: dto.schoolName, mode: 'insensitive' } },
+            { nameZh: dto.schoolName },
+          ],
+        },
+        select: {
+          name: true,
+          usNewsRank: true,
+          acceptanceRate: true,
+          testOptional: true,
+        },
+      });
+      if (school) {
+        const rate =
+          school.acceptanceRate != null
+            ? `${Number(school.acceptanceRate)}%`
+            : null;
+        schoolContext = isZh
+          ? `\n该校 US News 排名 #${school.usNewsRank ?? '未知'}，录取率 ${rate ?? '未知'}${school.testOptional ? '（Test Optional）' : ''}`
+          : `\nSchool ranked #${school.usNewsRank ?? 'N/A'} (US News), ${rate ?? 'N/A'} acceptance rate${school.testOptional ? ' (Test Optional)' : ''}`;
+      }
+    }
+
     const systemPrompt = isZh
       ? `你是一位顶尖大学招生官，请从招生官视角评估以下文书。
 
-${dto.schoolName ? `目标学校：${dto.schoolName}` : ''}
+${dto.schoolName ? `目标学校：${dto.schoolName}${schoolContext}` : ''}
 ${dto.major ? `目标专业：${dto.major}` : ''}
 
 请从以下维度评分(1-10)并给出详细点评：
@@ -166,7 +194,7 @@ ${dto.major ? `目标专业：${dto.major}` : ''}
 所有文本字段必须用中文。`
       : `You are a top university admissions officer. Evaluate the following essay from an admissions perspective.
 
-${dto.schoolName ? `Target school: ${dto.schoolName}` : ''}
+${dto.schoolName ? `Target school: ${dto.schoolName}${schoolContext}` : ''}
 ${dto.major ? `Target major: ${dto.major}` : ''}
 
 Score each dimension (1-10) and provide detailed feedback:
@@ -384,10 +412,33 @@ All text fields must be in English.`;
       PointAction.AI_ESSAY_BRAINSTORM,
     );
 
+    // Enrich with school data
+    let brainstormSchoolCtx = '';
+    if (dto.school) {
+      const school = await this.prisma.school.findFirst({
+        where: {
+          OR: [
+            { name: { contains: dto.school, mode: 'insensitive' } },
+            { nameZh: dto.school },
+          ],
+        },
+        select: { usNewsRank: true, acceptanceRate: true, testOptional: true },
+      });
+      if (school) {
+        const rate =
+          school.acceptanceRate != null
+            ? `${Number(school.acceptanceRate)}%`
+            : null;
+        brainstormSchoolCtx = isZh
+          ? `（US News #${school.usNewsRank ?? '未知'}，录取率 ${rate ?? '未知'}）`
+          : ` (US News #${school.usNewsRank ?? 'N/A'}, ${rate ?? 'N/A'} acceptance rate)`;
+      }
+    }
+
     const systemPrompt = isZh
       ? `你是一位资深留学文书顾问，擅长帮助学生挖掘独特的故事和角度。
 
-${dto.school ? `目标学校：${dto.school}` : ''}
+${dto.school ? `目标学校：${dto.school}${brainstormSchoolCtx}` : ''}
 ${dto.major ? `目标专业：${dto.major}` : ''}
 
 根据提供的题目和背景，生成5-8个具体、有深度的写作角度。每个想法要：
@@ -410,7 +461,7 @@ ${dto.major ? `目标专业：${dto.major}` : ''}
 所有文本字段必须用中文。`
       : `You are an expert college essay consultant who excels at helping students discover unique stories and angles.
 
-${dto.school ? `Target school: ${dto.school}` : ''}
+${dto.school ? `Target school: ${dto.school}${brainstormSchoolCtx}` : ''}
 ${dto.major ? `Target major: ${dto.major}` : ''}
 
 Based on the prompt and background, generate 5-8 specific, insightful writing angles. Each idea should:

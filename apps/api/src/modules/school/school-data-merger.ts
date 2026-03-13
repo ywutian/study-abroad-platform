@@ -11,16 +11,22 @@ export enum DataSource {
   MANUAL_ADMIN = 'MANUAL_ADMIN', // 管理员手动设置
   SEED = 'SEED', // 人工整理的种子数据
   COLLEGE_SCORECARD = 'COLLEGE_SCORECARD', // College Scorecard API
-  IPEDS = 'IPEDS', // IPEDS CSV 导入
-  SCRAPER = 'SCRAPER', // 网页爬虫
+  URBAN_INSTITUTE = 'URBAN_INSTITUTE', // Urban Institute IPEDS API
+  BIGFUTURE = 'BIGFUTURE', // College Board BigFuture 爬虫
+  APPILY = 'APPILY', // Appily (原 Cappex) 爬虫
+  IPEDS = 'IPEDS', // IPEDS CSV 导入（保留备份）
+  SCRAPER = 'SCRAPER', // 通用网页爬虫
 }
 
 const SOURCE_PRIORITY: Record<DataSource, number> = {
   [DataSource.MANUAL_ADMIN]: 1,
   [DataSource.SEED]: 2,
   [DataSource.COLLEGE_SCORECARD]: 3,
-  [DataSource.IPEDS]: 4,
-  [DataSource.SCRAPER]: 5,
+  [DataSource.URBAN_INSTITUTE]: 4,
+  [DataSource.BIGFUTURE]: 5,
+  [DataSource.APPILY]: 6,
+  [DataSource.IPEDS]: 7,
+  [DataSource.SCRAPER]: 8,
 };
 
 /**
@@ -71,6 +77,24 @@ const MERGEABLE_FIELDS = [
   'nicheLifeGrade',
   'nicheFoodGrade',
   'nicheOverallGrade',
+  // Promoted from metadata (Phase 1)
+  'retentionRate',
+  'studentFacultyRatio',
+  'percentNeedMet',
+  'averageAidPackage',
+  'averageNetPrice',
+  'roomAndBoard',
+  'applicationFee',
+  'feeWaiverAvailable',
+  'acceptsCommonApp',
+  'acceptsCoalition',
+  'testOptional',
+  'hasEarlyDecision',
+  'salary6YrPostGrad',
+  'loanDefaultRate',
+  'monthlyLoanPayment',
+  'countriesRepresented',
+  'studentOrgsCount',
 ] as const;
 
 type MergeableField = (typeof MERGEABLE_FIELDS)[number];

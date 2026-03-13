@@ -27,6 +27,7 @@ import {
   VaultItemDetailDto,
   VaultStatsDto,
   ImportVaultItemDto,
+  VaultExportDto,
 } from './dto';
 import { CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
@@ -107,7 +108,7 @@ export class VaultController {
   @ApiResponse({ status: 200, type: [VaultItemDetailDto] })
   async exportAll(
     @CurrentUser() user: CurrentUserPayload,
-    @Body() body: { password: string },
+    @Body() body: VaultExportDto,
   ): Promise<VaultItemDetailDto[]> {
     // Re-confirm password before exporting sensitive data
     const fullUser = await this.userService.findByIdOrThrow(user.id);

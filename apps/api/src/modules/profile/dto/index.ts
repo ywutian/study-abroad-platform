@@ -5,3 +5,4 @@ export * from './award.dto';
 export * from './essay.dto';
 export * from './education.dto';
 export * from './onboarding.dto';
+export * from './target-schools.dto';

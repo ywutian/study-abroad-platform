@@ -2,6 +2,7 @@ import {
   Injectable,
   Logger,
   BadRequestException,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
   Optional,
@@ -422,7 +423,9 @@ export class SubscriptionService {
         throw new UnauthorizedException('Invalid webhook signature');
       }
     } else if (this.configService.get('NODE_ENV') === 'production') {
-      throw new Error('WEBHOOK_SECRET must be set in production');
+      throw new InternalServerErrorException(
+        'WEBHOOK_SECRET must be set in production',
+      );
     } else {
       this.logger.warn(
         'WEBHOOK_SECRET not set — skipping signature verification (dev only)',

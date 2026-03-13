@@ -10,6 +10,7 @@ import {
   IsDateString,
   Min,
   Max,
+  MaxLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -37,31 +38,37 @@ export class CreateCategoryDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
+  @MaxLength(200)
   name: string;
 
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
+  @MaxLength(200)
   nameZh: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(500)
   description?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(500)
   descriptionZh?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   icon?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   color?: string;
 
   @ApiPropertyOptional()
@@ -74,22 +81,26 @@ export class CreatePostDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
+  @MaxLength(200)
   categoryId: string;
 
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
+  @MaxLength(200)
   title: string;
 
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
+  @MaxLength(50000)
   content: string;
 
   @ApiPropertyOptional({ type: [String] })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @MaxLength(500, { each: true })
   tags?: string[];
 
   // 组队帖子字段
@@ -108,6 +119,7 @@ export class CreatePostDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(5000)
   requirements?: string;
 
   @ApiPropertyOptional()
@@ -120,22 +132,26 @@ export class UpdatePostDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   title?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(50000)
   content?: string;
 
   @ApiPropertyOptional({ type: [String] })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @MaxLength(500, { each: true })
   tags?: string[];
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(5000)
   requirements?: string;
 
   @ApiPropertyOptional()
@@ -148,11 +164,13 @@ export class CreateCommentDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
+  @MaxLength(10000)
   content: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   parentId?: string;
 }
 
@@ -160,6 +178,7 @@ export class PostQueryDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   categoryId?: string;
 
   @ApiPropertyOptional()
@@ -171,11 +190,13 @@ export class PostQueryDto {
   @ApiPropertyOptional({ description: '帖子标签筛选' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   postTag?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   search?: string;
 
   @ApiPropertyOptional({ enum: PostSortBy })
@@ -205,6 +226,7 @@ export class CreateReportDto {
   @ApiPropertyOptional({ description: '补充说明' })
   @IsOptional()
   @IsString()
+  @MaxLength(5000)
   detail?: string;
 }
 
@@ -212,6 +234,7 @@ export class TeamApplicationDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(5000)
   message?: string;
 
   @ApiPropertyOptional({
@@ -219,6 +242,7 @@ export class TeamApplicationDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   resumeId?: string;
 }
 
@@ -230,6 +254,7 @@ export class ReviewApplicationDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(500)
   note?: string;
 }
 

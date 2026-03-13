@@ -1,4 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { normalizeSchoolName } from '../../common/utils/school-name.util';
 import * as cheerio from 'cheerio';
@@ -205,7 +209,9 @@ export class SchoolScraperService {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      throw new InternalServerErrorException(
+        `HTTP ${response.status}: ${response.statusText}`,
+      );
     }
 
     return response.text();

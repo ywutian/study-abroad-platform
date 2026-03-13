@@ -1,4 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SchoolService } from './school.service';
@@ -57,7 +61,9 @@ export class SchoolDataService {
     limit = 100,
   ): Promise<{ synced: number; errors: number }> {
     if (!this.apiKey) {
-      throw new Error('COLLEGE_SCORECARD_API_KEY not configured');
+      throw new InternalServerErrorException(
+        'COLLEGE_SCORECARD_API_KEY not configured',
+      );
     }
 
     const fields = [
@@ -99,7 +105,9 @@ export class SchoolDataService {
 
         const response = await fetch(url);
         if (!response.ok) {
-          throw new Error(`API error: ${response.status}`);
+          throw new InternalServerErrorException(
+            `API error: ${response.status}`,
+          );
         }
 
         const data = await response.json();
@@ -304,14 +312,16 @@ export class SchoolDataService {
    */
   async getSchoolDetails(scorecardId: string) {
     if (!this.apiKey) {
-      throw new Error('COLLEGE_SCORECARD_API_KEY not configured');
+      throw new InternalServerErrorException(
+        'COLLEGE_SCORECARD_API_KEY not configured',
+      );
     }
 
     const url = `${this.baseUrl}?api_key=${this.apiKey}&id=${scorecardId}`;
     const response = await fetch(url);
 
     if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+      throw new InternalServerErrorException(`API error: ${response.status}`);
     }
 
     const data = await response.json();

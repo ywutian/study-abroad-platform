@@ -9,12 +9,14 @@ import {
   IsArray,
   IsEnum,
   Min,
+  MaxLength,
 } from 'class-validator';
 
 export class CreateSchoolDeadlineDto {
   @ApiProperty({ description: '学校ID' })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(200)
   schoolId: string;
 
   @ApiProperty({ description: '申请季年份，如 2026 表示 Fall 2026 入学' })
@@ -25,6 +27,7 @@ export class CreateSchoolDeadlineDto {
   @ApiProperty({ description: '轮次: ED, ED2, EA, REA, RD, Rolling' })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(200)
   round: string;
 
   @ApiProperty({ description: '申请截止日期' })
@@ -70,6 +73,7 @@ export class CreateSchoolDeadlineDto {
   @ApiPropertyOptional()
   @IsString()
   @IsOptional()
+  @MaxLength(5000)
   notes?: string;
 }
 
@@ -116,5 +120,6 @@ export class UpdateSchoolDeadlineDto {
   @ApiPropertyOptional()
   @IsString()
   @IsOptional()
+  @MaxLength(5000)
   notes?: string;
 }

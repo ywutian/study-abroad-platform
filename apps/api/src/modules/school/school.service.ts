@@ -210,16 +210,15 @@ export class SchoolService {
       where.isPrivate = filters.schoolType === 'private';
     }
 
-    // TODO: 以下字段需在 Prisma Schema 添加后启用
-    // if (filters?.testOptional) {
-    //   where.testOptional = true;
-    // }
-    // if (filters?.needBlind) {
-    //   where.needBlind = true;
-    // }
-    // if (filters?.hasEarlyDecision) {
-    //   where.hasEarlyDecision = true;
-    // }
+    if (filters?.testOptional) {
+      where.testOptional = true;
+    }
+    if (filters?.needBlind) {
+      where.needBlindInternational = true;
+    }
+    if (filters?.hasEarlyDecision) {
+      where.hasEarlyDecision = true;
+    }
 
     const [schools, total] = await Promise.all([
       this.prisma.school.findMany({
@@ -488,6 +487,12 @@ export class SchoolService {
       'nameZh',
       'state',
       'isPrivate',
+      'retentionRate',
+      'averageNetPrice',
+      'applicationFee',
+      'acceptsCommonApp',
+      'testOptional',
+      'percentNeedMet',
     ] as const;
 
     const allSchools = await this.prisma.school.findMany({
@@ -510,6 +515,12 @@ export class SchoolService {
         sat75: true,
         state: true,
         isPrivate: true,
+        retentionRate: true,
+        averageNetPrice: true,
+        applicationFee: true,
+        acceptsCommonApp: true,
+        testOptional: true,
+        percentNeedMet: true,
       },
       orderBy: { usNewsRank: 'asc' },
     });

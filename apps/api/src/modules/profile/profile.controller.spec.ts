@@ -579,7 +579,7 @@ describe('ProfileController', () => {
       const result = await controller.addTargetSchool(
         mockUser as any,
         'school-1',
-        undefined,
+        {} as any,
       );
 
       expect(schoolListService.addSchool).toHaveBeenCalledWith('user-1', {

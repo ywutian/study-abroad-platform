@@ -50,7 +50,6 @@ export default function PDFViewerInner({ sections, templateId, settings }: PDFVi
         setError(null);
       } catch (err) {
         if (cancelled) return;
-        console.error('PDF render failed:', err);
         setError(err instanceof Error ? err.message : 'PDF render failed');
       }
     }

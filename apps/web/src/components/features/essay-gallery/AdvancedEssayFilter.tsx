@@ -116,22 +116,23 @@ export function AdvancedEssayFilter({
                   {
                     value: 'COMMON_APP',
                     label: 'Common App',
-                    color: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+                    color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
                   },
                   {
                     value: 'UC',
                     label: t('filter.ucEssays'),
-                    color: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+                    color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
                   },
                   {
                     value: 'SUPPLEMENTAL',
                     label: t('filter.supplementalEssays'),
-                    color: 'bg-purple-500/10 text-purple-600 border-purple-500/20',
+                    color:
+                      'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
                   },
                   {
                     value: 'WHY_SCHOOL',
                     label: 'Why School',
-                    color: 'bg-teal-500/10 text-teal-600 border-teal-500/20',
+                    color: 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20',
                   },
                 ].map((item) => (
                   <Button
@@ -319,22 +320,23 @@ export function AdvancedEssayFilter({
                 {
                   value: 'ADMITTED',
                   label: t('filter.admitted'),
-                  color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30',
+                  color:
+                    'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
                 },
                 {
                   value: 'WAITLISTED',
                   label: 'Waitlist',
-                  color: 'bg-amber-500/10 text-amber-600 border-amber-500/30',
+                  color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30',
                 },
                 {
                   value: 'REJECTED',
                   label: t('filter.rejected'),
-                  color: 'bg-rose-500/10 text-rose-600 border-rose-500/30',
+                  color: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30',
                 },
                 {
                   value: 'DEFERRED',
                   label: t('filter.deferred'),
-                  color: 'bg-blue-500/10 text-blue-600 border-blue-500/30',
+                  color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30',
                 },
               ].map((item) => (
                 <Button

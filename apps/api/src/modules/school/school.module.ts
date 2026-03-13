@@ -11,6 +11,9 @@ import { DataSyncScheduler } from './data-sync.scheduler';
 import { HighSchoolService } from './high-school.service';
 import { HighSchoolController } from './high-school.controller';
 import { IpedsDataService } from './ipeds-data.service';
+import { UrbanInstituteDataService } from './urban-institute-data.service';
+import { BigFutureScrapeService } from './scrapers/bigfuture.scraper';
+import { AppilyScrapeService } from './scrapers/appily.scraper';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { AuditLogModule } from '../../common/services/audit-log.module';
 import { SchoolListModule } from '../school-list/school-list.module';
@@ -28,6 +31,9 @@ import { SchoolListModule } from '../school-list/school-list.module';
     DataSyncScheduler,
     HighSchoolService,
     IpedsDataService,
+    UrbanInstituteDataService,
+    BigFutureScrapeService,
+    AppilyScrapeService,
   ],
   exports: [
     SchoolService,
@@ -36,6 +42,9 @@ import { SchoolListModule } from '../school-list/school-list.module';
     SchoolDataMerger,
     HighSchoolService,
     IpedsDataService,
+    UrbanInstituteDataService,
+    BigFutureScrapeService,
+    AppilyScrapeService,
   ],
 })
 export class SchoolModule {}

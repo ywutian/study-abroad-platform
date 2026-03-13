@@ -29,7 +29,13 @@ interface PointsSummary {
 
 // 等级样式配置
 const LEVEL_STYLES = [
-  { key: 'novice', minPoints: 0, maxPoints: 99, icon: Star, color: 'text-gray-500' },
+  {
+    key: 'novice',
+    minPoints: 0,
+    maxPoints: 99,
+    icon: Star,
+    color: 'text-gray-500 dark:text-gray-400',
+  },
   { key: 'beginner', minPoints: 100, maxPoints: 299, icon: Star, color: 'text-blue-500' },
   { key: 'intermediate', minPoints: 300, maxPoints: 599, icon: Sparkles, color: 'text-primary' },
   { key: 'advanced', minPoints: 600, maxPoints: 999, icon: Gift, color: 'text-amber-500' },

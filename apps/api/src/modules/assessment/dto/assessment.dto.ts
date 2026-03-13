@@ -6,6 +6,7 @@ import {
   IsEnum,
   IsOptional,
   ValidateNested,
+  MaxLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -20,10 +21,12 @@ export enum AssessmentTypeEnum {
 export class SubmitAnswerDto {
   @ApiProperty()
   @IsString()
+  @MaxLength(200)
   questionId: string;
 
   @ApiProperty()
   @IsString()
+  @MaxLength(500)
   answer: string;
 }
 

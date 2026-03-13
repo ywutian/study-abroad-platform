@@ -263,7 +263,7 @@ export default function ForumPage() {
           formatNumber={formatNumber}
         />
 
-        <div className="space-y-4">
+        <div className="lg:col-span-9 space-y-4">
           {/* 组队专区：单独板块 */}
           <Card className="overflow-hidden border-2 border-amber-500/40 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/20 shadow-md shadow-amber-500/10">
             <div className="h-1 bg-gradient-to-r from-amber-500 to-orange-500" />

@@ -30,6 +30,9 @@ import {
   BatchRankingDto,
   VerifiedRankingQueryDto,
   VerifiedRankingResponseDto,
+  HallReactionDto,
+  RankingAnalysisDto,
+  ChallengeGuessesDto,
 } from './dto';
 import {
   SwipeActionDto,
@@ -153,7 +156,7 @@ export class HallController {
   async reactToReview(
     @CurrentUser() user: CurrentUserPayload,
     @Param('reviewId') reviewId: string,
-    @Body() body: { type: string },
+    @Body() body: HallReactionDto,
   ) {
     return this.hallService.reactToReview(reviewId, user.id, body.type);
   }
@@ -198,7 +201,7 @@ export class HallController {
   @ApiOperation({ summary: 'Get AI analysis for ranking at a specific school' })
   async getRankingAnalysis(
     @CurrentUser() user: CurrentUserPayload,
-    @Body() data: { schoolId: string },
+    @Body() data: RankingAnalysisDto,
   ) {
     return this.hallService.getRankingAnalysis(
       user.id,
@@ -373,7 +376,7 @@ export class HallController {
   @ApiOperation({ summary: 'Submit challenge guesses' })
   async submitChallenge(
     @CurrentUser() user: CurrentUserPayload,
-    @Body() body: { guesses: Record<string, string> },
+    @Body() body: ChallengeGuessesDto,
   ) {
     return this.swipeService.submitChallenge(user.id, body.guesses);
   }

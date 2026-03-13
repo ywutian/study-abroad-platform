@@ -26,6 +26,7 @@ export class SchoolRecommendationRequestDto {
   @IsArray()
   @IsOptional()
   @IsString({ each: true })
+  @MaxLength(500, { each: true })
   @ArrayMaxSize(10)
   preferredRegions?: string[];
 
@@ -97,6 +98,9 @@ export class RecommendedSchoolDto {
     state?: string;
     tuition?: number;
     isPrivate?: boolean;
+    testOptional?: boolean;
+    hasEarlyDecision?: boolean;
+    retentionRate?: number;
   };
 }
 

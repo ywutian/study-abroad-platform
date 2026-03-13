@@ -9,6 +9,7 @@ export enum ProofType {
 
 export class CreateVerificationDto {
   @ApiProperty({ description: '案例ID' })
+  @MaxLength(500)
   @IsString()
   caseId: string;
 
@@ -34,6 +35,7 @@ export class CreateVerificationDto {
     required: false,
   })
   @IsOptional()
+  @MaxLength(2048)
   @IsString()
   proofUrl?: string;
 }

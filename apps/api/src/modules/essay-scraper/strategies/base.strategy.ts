@@ -1,4 +1,8 @@
-import { Logger, BadRequestException } from '@nestjs/common';
+import {
+  Logger,
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { SourceType } from '../../../common/types/enums';
 import * as dns from 'dns';
 import * as net from 'net';
@@ -122,7 +126,9 @@ export abstract class BaseScrapeStrategy {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      throw new InternalServerErrorException(
+        `HTTP ${response.status}: ${response.statusText}`,
+      );
     }
 
     return response.text();

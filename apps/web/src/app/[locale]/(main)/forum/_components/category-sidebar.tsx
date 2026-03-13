@@ -56,7 +56,7 @@ export function CategorySidebar({
               className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
                 selectedCategory === null && !showTeamOnly
                   ? 'bg-primary text-white'
-                  : 'hover:bg-gray-100'
+                  : 'hover:bg-muted'
               }`}
               onClick={() => {
                 onSelectCategory(null);
@@ -74,7 +74,7 @@ export function CategorySidebar({
               className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
                 showTeamOnly
                   ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
-                  : 'hover:bg-gray-100'
+                  : 'hover:bg-muted'
               }`}
               onClick={() => {
                 onToggleTeamOnly();
@@ -88,7 +88,7 @@ export function CategorySidebar({
               <span className="text-xs opacity-70">{forumStats.teamingCount}</span>
             </button>
 
-            <div className="h-px bg-gray-100 my-2" />
+            <div className="h-px bg-muted my-2" />
 
             {categories.map((category) => {
               const colorStyle = getCategoryColorStyle(category);
@@ -97,7 +97,7 @@ export function CategorySidebar({
                 <button
                   key={category.id}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
-                    isSelected ? 'text-white' : 'hover:bg-gray-100'
+                    isSelected ? 'text-white' : 'hover:bg-muted'
                   } ${isSelected ? colorStyle.className : ''}`}
                   style={isSelected ? colorStyle.style : undefined}
                   onClick={() => {

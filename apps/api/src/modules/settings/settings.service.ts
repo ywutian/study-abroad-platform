@@ -389,8 +389,8 @@ export class SettingsService {
       .delete({
         where: { key: normalizedKey },
       })
-      .catch(() => {
-        // Ignore if not exists
+      .catch((error) => {
+        if (error?.code !== 'P2025') throw error;
       });
 
     await this.redis.del(`${CACHE_PREFIX}${normalizedKey}`);

@@ -72,8 +72,8 @@ RUN chmod +x entrypoint.sh migrate.sh
 # Run as non-root user
 USER nestjs
 
-# Default port 3001. Cloud providers may override via PORT env var.
-EXPOSE 3001
+# Default port 4101. Cloud providers may override via PORT env var.
+EXPOSE 4101
 
 # Start application (migrations run via Cloud Run Job before deploy)
 CMD ["./entrypoint.sh"]

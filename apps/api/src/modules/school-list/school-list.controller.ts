@@ -16,6 +16,7 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { ThrottleAI } from '../../common/decorators/throttle.decorator';
 import { SchoolListService } from './school-list.service';
 import {
   CreateSchoolListItemDto,
@@ -72,6 +73,7 @@ export class SchoolListController {
   }
 
   @Get('ai-recommend')
+  @ThrottleAI()
   @ApiOperation({ summary: 'Get AI-recommended schools based on profile' })
   @ApiResponse({ status: 200, type: AIRecommendationsResponseDto })
   async getAIRecommendations(

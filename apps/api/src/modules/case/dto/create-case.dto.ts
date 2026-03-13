@@ -8,6 +8,7 @@ import {
   Min,
   Max,
   Matches,
+  MaxLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AdmissionResult, Visibility, EssayType } from '@prisma/client';
@@ -15,6 +16,7 @@ import { AdmissionResult, Visibility, EssayType } from '@prisma/client';
 export class CreateCaseDto {
   @ApiProperty({ description: 'School ID' })
   @IsString()
+  @MaxLength(200)
   schoolId: string;
 
   @ApiProperty({ description: 'Application year', example: 2025 })
@@ -26,6 +28,7 @@ export class CreateCaseDto {
   @ApiPropertyOptional({ description: 'Application round', example: 'ED' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   round?: string;
 
   @ApiProperty({ enum: AdmissionResult, description: 'Admission result' })
@@ -35,6 +38,7 @@ export class CreateCaseDto {
   @ApiPropertyOptional({ description: 'Major applied to' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   major?: string;
 
   @ApiPropertyOptional({ description: 'GPA range', example: '3.7-3.9' })
@@ -100,12 +104,14 @@ export class CreateCaseDto {
 
   @ApiPropertyOptional({ description: 'ACT score range' })
   @IsOptional()
+  @MaxLength(100)
   @IsString()
   @Matches(/^\d+-\d+$/, { message: 'ACT range must be in format "XX-XX"' })
   actRange?: string;
 
   @ApiPropertyOptional({ description: 'TOEFL score range' })
   @IsOptional()
+  @MaxLength(100)
   @IsString()
   @Matches(/^\d+-\d+$/, { message: 'TOEFL range must be in format "XXX-XXX"' })
   toeflRange?: string;
@@ -117,6 +123,7 @@ export class CreateCaseDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @MaxLength(500, { each: true })
   tags?: string[];
 
   @ApiPropertyOptional({
@@ -125,6 +132,7 @@ export class CreateCaseDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(5000)
   activityList?: string;
 
   @ApiPropertyOptional({ enum: Visibility, default: Visibility.PRIVATE })
@@ -141,11 +149,13 @@ export class CreateCaseDto {
   @ApiPropertyOptional({ description: 'Essay prompt/question' })
   @IsOptional()
   @IsString()
+  @MaxLength(5000)
   essayPrompt?: string;
 
   @ApiPropertyOptional({ description: 'Essay content' })
   @IsOptional()
   @IsString()
+  @MaxLength(50000)
   essayContent?: string;
 
   @ApiPropertyOptional({

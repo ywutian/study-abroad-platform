@@ -1,6 +1,6 @@
 # Study Abroad Platform — Architecture Document
 
-> Last updated: 2026-02-13
+> Last updated: 2026-03-10
 > Status: Living document — update on every architectural change
 
 ---
@@ -43,32 +43,32 @@
 | UI Framework      | Tailwind CSS + shadcn/ui       | —       |
 | Animation         | Framer Motion                  | —       |
 | i18n              | next-intl (zh, en)             | —       |
-| Package Manager   | pnpm (workspace)               | 9.x     |
-| Deployment        | Railway (API) + Vercel (Web)   | —       |
+| Package Manager   | pnpm (workspace)               | 10.x    |
+| Deployment        | GCP Cloud Run (API + Web)      | —       |
 
 ### High-Level Architecture
 
 ```text
-                        ┌─────────────────┐
-                        │    Vercel CDN    │
-                        │   (Next.js Web)  │
-                        └────────┬────────┘
-                                 │ HTTPS
-                                 ▼
+                     ┌──────────────────────┐
+                     │   GCP Cloud Run      │
+                     │   (Next.js Web)      │
+                     └──────────┬───────────┘
+                                │ HTTPS
+                                ▼
 ┌────────────────────────────────────────────────────────────┐
-│                     Railway / Docker                        │
+│                   GCP Cloud Run / Docker                    │
 │  ┌──────────────────────────────────────────────────────┐  │
 │  │               NestJS API (port 4101)                  │  │
 │  │  ┌────────┬─────────┬──────────┬───────────────────┐ │  │
 │  │  │  Auth  │ Profile │  School  │  AI Agent (ReWOO)  │ │  │
 │  │  │  Hall  │  Forum  │  Chat    │  Prediction        │ │  │
-│  │  │  Case  │Timeline │  Vault   │  + 20 more modules │ │  │
+│  │  │  Case  │Timeline │  Vault   │  + 22 more modules │ │  │
 │  │  └────────┴─────────┴──────────┴───────────────────┘ │  │
 │  └──────────────┬──────────────────┬────────────────────┘  │
 │                 │                  │                        │
 │  ┌──────────────▼──────┐  ┌───────▼──────────┐            │
-│  │   PostgreSQL 16     │  │    Redis 7       │            │
-│  │   + pgvector        │  │    (cache/rate)   │            │
+│  │  Cloud SQL PG 16   │  │  Memorystore     │            │
+│  │   + pgvector        │  │  Redis 7         │            │
 │  └─────────────────────┘  └──────────────────┘            │
 └────────────────────────────────────────────────────────────┘
                                  │
@@ -91,7 +91,7 @@ study-abroad-platform/
 │   │   ├── scripts/            # Data scraping & sync scripts
 │   │   └── src/
 │   │       ├── common/         # Shared infrastructure
-│   │       ├── modules/        # Feature modules (28)
+│   │       ├── modules/        # Feature modules (30)
 │   │       ├── prisma/         # PrismaService
 │   │       └── main.ts         # Bootstrap
 │   ├── web/                    # Next.js frontend
@@ -112,9 +112,11 @@ study-abroad-platform/
 │   └── browser-extension/      # CommonApp auto-fill extension
 ├── docs/                       # Documentation
 ├── nginx/                      # Nginx configs (dev + prod)
+├── e2e/                        # End-to-end tests
 ├── scripts/                    # Deployment scripts
 ├── pnpm-workspace.yaml         # Workspace definition
-└── railway.json                # Railway deployment config
+├── Dockerfile                  # Root Docker build (API)
+└── docker-compose.yml          # Local dev (PG + Redis)
 ```
 
 ### Workspace Config (`pnpm-workspace.yaml`)
@@ -135,7 +137,7 @@ packages:
 
 ### 3.1 Module Organization
 
-The API has **28 feature modules** and **8 common infrastructure modules**.
+The API has **30 feature modules** and **8 common infrastructure modules**.
 
 #### Global Infrastructure (available to all modules)
 
@@ -164,8 +166,8 @@ The API has **28 feature modules** and **8 common infrastructure modules**.
 | **Social**       | `ForumModule`, `ChatModule`, `HallModule`, `SwipeModule`, `PeerReviewModule`                                                       |
 | **Timeline**     | `TimelineModule`                                                                                                                   |
 | **Content**      | `EssayPromptModule`, `EssayScraperModule`                                                                                          |
-| **Tools**        | `VaultModule`, `NotificationModule`, `SettingsModule`, `SubscriptionModule`                                                        |
-| **Admin**        | `AdminModule`                                                                                                                      |
+| **Tools**        | `VaultModule`, `NotificationModule`, `SettingsModule`, `SubscriptionModule`, `ResumeModule`                                        |
+| **Admin**        | `AdminModule`, `TeamModule`                                                                                                        |
 | **Health**       | `HealthModule`                                                                                                                     |
 
 #### Module Dependency Graph
@@ -187,14 +189,16 @@ Key dependency patterns:
 ```text
 Request
   → CorrelationIdMiddleware (adds x-correlation-id)
-    → ThrottlerGuard (rate limiting)
-      → JwtAuthGuard (authentication, skips @Public())
-        → RolesGuard (authorization, checks @Roles())
-          → Controller Handler
-            → TransformInterceptor (wraps response: { success, data })
-            → LoggingInterceptor (logs request/response, masks sensitive fields)
-            → SentryInterceptor (reports 5xx to Sentry)
-              → AllExceptionsFilter (standardizes error format)
+    → TimeoutMiddleware (30s default, 120s for AI routes)
+      → ThrottlerGuard (rate limiting)
+        → JwtAuthGuard (authentication, skips @Public())
+          → RolesGuard (authorization, checks @Roles())
+            → SanitizeInterceptor (strips HTML from request body, XSS prevention)
+              → Controller Handler
+                → SentryInterceptor (reports 5xx to Sentry)
+                → TransformInterceptor (wraps response: { success, data, meta })
+                → LoggingInterceptor (logs request/response, masks sensitive fields)
+                  → AllExceptionsFilter (standardizes error format)
 ```
 
 **Sensitive field masking** (in logging): `password`, `passwordHash`, `token`, `refreshToken`, `accessToken`, `secret`, `apiKey`, `authorization`, `creditCard`, `ssn`, `cvv`
@@ -262,7 +266,7 @@ app.useGlobalPipes(
 | -------------------- | ------------- | -------------------------- |
 | id                   | String (cuid) | Primary key                |
 | email                | String        | Unique                     |
-| passwordHash         | String        | bcrypt (10 rounds)         |
+| passwordHash         | String        | bcrypt (12 rounds)         |
 | role                 | Role          | Default: USER              |
 | emailVerified        | Boolean       | Default: false             |
 | emailVerifyToken     | String?       |                            |
@@ -709,7 +713,7 @@ All routes prefixed with `/api/v1/`. Health endpoints excluded.
 | GET                 | /swipe/stats                  | Yes    | My swipe stats (upsert)                                           |
 | GET                 | /swipe/leaderboard            | Yes    | Leaderboard (privacy-masked)                                      |
 
-#### Predictions (`/predictions`) — v2 Multi-Engine Ensemble
+#### Predictions (`/predictions`) — v3-Enterprise Multi-Engine Ensemble
 
 | Method | Path              | Auth   | Description                                  |
 | ------ | ----------------- | ------ | -------------------------------------------- |
@@ -930,7 +934,7 @@ The swipe game is a Tinder-style prediction game where users predict admission o
 │      notifications (localStorage)         │
 │                                           │
 │ 2. React Query (Server State)             │
-│    - staleTime: 60s                       │
+│    - staleTime: 5min (300s)                │
 │    - retry: 1 (queries), 0 (mutations)   │
 │    - Query key pattern: ['resource', ...] │
 │                                           │
@@ -1060,7 +1064,7 @@ Login
 
 | Setting              | Value                                                                                        |
 | -------------------- | -------------------------------------------------------------------------------------------- |
-| Password hashing     | bcrypt, 10 rounds                                                                            |
+| Password hashing     | bcrypt, 12 rounds                                                                            |
 | Access token expiry  | 15m (configurable: `JWT_EXPIRES_IN`)                                                         |
 | Refresh token expiry | 7d (configurable: `JWT_REFRESH_EXPIRES_IN`)                                                  |
 | Refresh token type   | 128 hex chars (randomBytes(64))                                                              |
@@ -1214,26 +1218,29 @@ This allows both real-time scoring (from School columns) and historical trend an
 
 ### 12.1 Environments
 
-| Environment | Frontend       | Backend        | Database                   |
-| ----------- | -------------- | -------------- | -------------------------- |
-| Development | localhost:4100 | localhost:4101 | Docker PostgreSQL + Redis  |
-| Production  | Vercel         | Railway        | Railway PostgreSQL + Redis |
+| Environment | Frontend       | Backend        | Database                                 |
+| ----------- | -------------- | -------------- | ---------------------------------------- |
+| Development | localhost:4100 | localhost:4101 | Docker PostgreSQL + Redis                |
+| Production  | GCP Cloud Run  | GCP Cloud Run  | Cloud SQL PostgreSQL + Memorystore Redis |
 
 ### 12.2 Docker
 
-**Standard Dockerfile** (`apps/api/Dockerfile`): Multi-stage pnpm build, port 8080
+**API Dockerfile** (`Dockerfile` at root): Multi-stage pnpm build, port 4101, runs as non-root user
 
-**Railway Dockerfile** (`apps/api/Dockerfile.railway`): npm-based build with auto-migration, port 4101, runs as non-root `nestjs` user (UID 1001)
-
-> **NOTE**: `railway.json` points to the standard Dockerfile, not the Railway one.
+**Web Dockerfile** (`apps/web/Dockerfile`): Multi-stage Next.js standalone build, port 3000
 
 ### 12.3 CI/CD Pipeline
 
 ```text
-Push to main
-  → CI: Lint → Dependency Audit → Typecheck → Test → E2E (PostgreSQL 16) → Build → Docker → SBOM → Security Scan (blocks on CRITICAL/HIGH)
-    → Deploy Staging: Migrate → Deploy Web (Vercel) → Notify Slack
-      → Deploy Production: Migrate → Create Sentry Release
+Push / PR
+  → CI: Lint + i18n + Code Quality → Typecheck → Test → Build
+    (on push to main only:)
+      → SBOM generation
+
+Manual Deploy (deploy-gcp.yml)
+  → Build Docker images → Push to GCP Artifact Registry
+    → Deploy API to Cloud Run → Run DB migration (Cloud Run Job)
+      → Deploy Web to Cloud Run → Smoke tests → Auto-rollback on failure
 ```
 
 ### 12.4 Required Environment Variables
@@ -1242,8 +1249,8 @@ Push to main
 
 - `DATABASE_URL` — PostgreSQL connection
 - `REDIS_URL` — Redis connection
-- `JWT_SECRET` — Min 32 chars
-- `JWT_REFRESH_SECRET` — Min 32 chars
+- `JWT_SECRET` — Min 16 chars
+- `JWT_REFRESH_SECRET` — Min 16 chars
 - `OPENAI_API_KEY` — AI features
 
 **Optional:**
@@ -1430,7 +1437,35 @@ All responses wrapped by `TransformInterceptor`:
 { success: true, data: { items: [], total: number, page: number, pageSize: number, totalPages: number } }
 ```
 
-### 15.5 Important Conventions
+### 15.5 Code Quality Gates
+
+Automated static analysis via `apps/web/scripts/check-code-quality.ts`, enforced in pre-commit and CI:
+
+| Rule                   | Severity  | Description                                          |
+| ---------------------- | --------- | ---------------------------------------------------- |
+| `no-dynamic-tailwind`  | **error** | Blocks `bg-${color}-500` interpolation (purge issue) |
+| `no-hardcoded-dark-bg` | warning   | `bg-slate-800` without `dark:` variant               |
+| `page-size-limit`      | warning   | `page.tsx` >500 lines without `_components/`         |
+| `no-console-in-prod`   | warning   | `console.log/error` in production code               |
+
+Run manually: `pnpm --filter web lint:quality`
+
+### 15.6 Page Split Pattern
+
+Pages exceeding ~500 lines should be decomposed:
+
+```text
+feature/
+├── page.tsx              # Thin orchestrator (<100 lines)
+└── _components/
+    ├── feature-header.tsx
+    ├── feature-list.tsx
+    └── feature-stats.tsx
+```
+
+Each extracted component is `'use client'` with own state management where possible.
+
+### 15.7 Important Conventions
 
 - **Decimal fields:** Always convert `Prisma.Decimal` to `Number()` before returning to client
 - **Soft delete:** Use `deletedAt` field on User model; check in JwtAuthGuard
@@ -1561,7 +1596,7 @@ Quality
 | Missing security headers              | Helmet CSP/HSTS in production (ADR-0005)                                | 2026-02-07 |
 | Generic Prisma error handling         | Typed exception mapping in global filter (ADR-0006)                     | 2026-02-07 |
 | No response traceability              | CorrelationId + responseTimeMs in response meta (ADR-0007)              | 2026-02-07 |
-| Prediction identical probabilities    | Multi-engine ensemble v2 with stats/AI/historical fusion (ADR-0008)     | 2026-02-09 |
+| Prediction identical probabilities    | Multi-engine ensemble v3-enterprise with Platt calibration (ADR-0008)   | 2026-02-09 |
 | No prediction calibration loop        | User can report actual results; calibration API added                   | 2026-02-09 |
 | Entity table raw SQL error            | Replaced raw SQL with Prisma ORM for Entity operations                  | 2026-02-09 |
 | pgvector deserialization errors       | Excluded embedding columns from all raw SQL RETURNING/SELECT clauses    | 2026-02-09 |

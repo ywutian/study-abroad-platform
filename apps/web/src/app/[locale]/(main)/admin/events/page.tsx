@@ -1,16 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations, useFormatter, useLocale } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
@@ -18,22 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,12 +22,11 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { PageHeader } from '@/components/layout';
-import { ListSkeleton } from '@/components/ui/loading-state';
-import { EmptyState } from '@/components/ui/empty-state';
-import { PaginationControls } from '../_components/pagination-controls';
 import { apiClient } from '@/lib/api';
 import { toast } from 'sonner';
-import { Globe, Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { Globe, Plus, Loader2 } from 'lucide-react';
+import { EventsTable } from './_components/events-table';
+import { EventFormDialog, type EventFormData } from './_components/event-form-dialog';
 
 interface GlobalEvent {
   id: string;
@@ -80,16 +56,7 @@ const CATEGORIES = [
 ];
 const YEARS = [2025, 2026, 2027];
 
-const CATEGORY_COLORS: Record<string, string> = {
-  TEST: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-  COMPETITION: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-  SUMMER_PROGRAM: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
-  FINANCIAL_AID: 'bg-violet-500/10 text-violet-600 border-violet-500/20',
-  APPLICATION: 'bg-pink-500/10 text-pink-600 border-pink-500/20',
-  OTHER: 'bg-slate-500/10 text-slate-600 border-slate-500/20',
-};
-
-const emptyForm = {
+const emptyForm: EventFormData = {
   title: '',
   titleZh: '',
   category: 'TEST',
@@ -107,7 +74,6 @@ const emptyForm = {
 
 export default function AdminEventsPage() {
   const t = useTranslations('admin');
-  const fmt = useFormatter();
   const locale = useLocale();
   const queryClient = useQueryClient();
 
@@ -220,8 +186,6 @@ export default function AdminEventsPage() {
     return t.has(key) ? t(key) : cat;
   };
 
-  const getTitle = (e: GlobalEvent) => (locale === 'zh' && e.titleZh ? e.titleZh : e.title);
-
   const isPending = createMutation.isPending || updateMutation.isPending;
 
   return (
@@ -234,6 +198,7 @@ export default function AdminEventsPage() {
       />
 
       <div className="mt-6">
+        {/* Filters */}
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Select
@@ -280,260 +245,29 @@ export default function AdminEventsPage() {
           </Button>
         </div>
 
-        {isLoading ? (
-          <ListSkeleton count={5} />
-        ) : data?.data && data.data.length > 0 ? (
-          <>
-            <Card>
-              <ScrollArea className="h-[500px]">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{t('events.eventTitle')}</TableHead>
-                      <TableHead>{t('events.category')}</TableHead>
-                      <TableHead>{t('events.eventDate')}</TableHead>
-                      <TableHead>{t('events.regDeadline')}</TableHead>
-                      <TableHead>{t('events.active')}</TableHead>
-                      <TableHead className="w-[80px]">{t('deadlines.actions')}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {data.data.map((event) => (
-                      <TableRow key={event.id}>
-                        <TableCell>
-                          <div>
-                            <div className="font-medium">{getTitle(event)}</div>
-                            {locale === 'zh' && event.titleZh && event.title !== event.titleZh && (
-                              <div className="text-xs text-muted-foreground">{event.title}</div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={CATEGORY_COLORS[event.category] || ''}
-                          >
-                            {getCategoryLabel(event.category)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-sm">
-                          {fmt.dateTime(new Date(event.eventDate), 'medium')}
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {event.registrationDeadline
-                            ? fmt.dateTime(new Date(event.registrationDeadline), 'medium')
-                            : '-'}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={event.isActive ? 'success' : 'secondary'}>
-                            {event.isActive ? t('events.activeYes') : t('events.activeNo')}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7"
-                              onClick={() => openEdit(event)}
-                            >
-                              <Pencil className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 text-destructive"
-                              onClick={() => setDeleteId(event.id)}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </ScrollArea>
-            </Card>
-            <PaginationControls
-              page={page}
-              totalPages={data.totalPages ?? 1}
-              total={data.total ?? 0}
-              pageSize={pageSize}
-              onPageChange={setPage}
-            />
-          </>
-        ) : (
-          <EmptyState
-            icon={<Globe className="h-12 w-12" />}
-            title={t('events.empty')}
-            description={t('events.emptyDesc')}
-          />
-        )}
+        <EventsTable
+          events={data?.data ?? []}
+          isLoading={isLoading}
+          page={page}
+          totalPages={data?.totalPages ?? 1}
+          total={data?.total ?? 0}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          onEdit={openEdit}
+          onDelete={setDeleteId}
+        />
       </div>
 
-      {/* Create/Edit Dialog */}
-      <Dialog
+      <EventFormDialog
         open={dialogOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            setDialogOpen(false);
-            resetForm();
-          }
-        }}
-      >
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editingId ? t('events.edit') : t('events.create')}</DialogTitle>
-            <DialogDescription>{t('events.formDesc')}</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t('events.titleEn')} *</Label>
-              <Input
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>{t('events.titleZh')}</Label>
-              <Input
-                value={form.titleZh}
-                onChange={(e) => setForm({ ...form, titleZh: e.target.value })}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{t('events.category')} *</Label>
-                <Select
-                  value={form.category}
-                  onValueChange={(v) => setForm({ ...form, category: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CATEGORIES.map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {getCategoryLabel(c)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>{t('deadlines.year')} *</Label>
-                <Select
-                  value={String(form.year)}
-                  onValueChange={(v) => setForm({ ...form, year: Number(v) })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {YEARS.map((y) => (
-                      <SelectItem key={y} value={String(y)}>
-                        {y}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{t('events.eventDate')} *</Label>
-                <Input
-                  type="date"
-                  value={form.eventDate}
-                  onChange={(e) => setForm({ ...form, eventDate: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('events.regDeadline')}</Label>
-                <Input
-                  type="date"
-                  value={form.registrationDeadline}
-                  onChange={(e) => setForm({ ...form, registrationDeadline: e.target.value })}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{t('events.lateDeadline')}</Label>
-                <Input
-                  type="date"
-                  value={form.lateDeadline}
-                  onChange={(e) => setForm({ ...form, lateDeadline: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('events.resultDate')}</Label>
-                <Input
-                  type="date"
-                  value={form.resultDate}
-                  onChange={(e) => setForm({ ...form, resultDate: e.target.value })}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>{t('events.descriptionEn')}</Label>
-              <Textarea
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                rows={2}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>{t('events.descriptionZh')}</Label>
-              <Textarea
-                value={form.descriptionZh}
-                onChange={(e) => setForm({ ...form, descriptionZh: e.target.value })}
-                rows={2}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>URL</Label>
-              <Input
-                value={form.url}
-                onChange={(e) => setForm({ ...form, url: e.target.value })}
-                placeholder="https://..."
-              />
-            </div>
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
-                <Switch
-                  checked={form.isRecurring}
-                  onCheckedChange={(v) => setForm({ ...form, isRecurring: v })}
-                />
-                <Label>{t('events.recurring')}</Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Switch
-                  checked={form.isActive}
-                  onCheckedChange={(v) => setForm({ ...form, isActive: v })}
-                />
-                <Label>{t('events.active')}</Label>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setDialogOpen(false);
-                resetForm();
-              }}
-            >
-              {t('dialogs.cancel')}
-            </Button>
-            <Button onClick={handleSubmit} disabled={isPending || !form.title || !form.eventDate}>
-              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {editingId ? t('events.save') : t('events.create')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        onOpenChange={setDialogOpen}
+        editingId={editingId}
+        form={form}
+        onFormChange={setForm}
+        onSubmit={handleSubmit}
+        onReset={resetForm}
+        isPending={isPending}
+      />
 
       {/* Delete Confirmation */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>

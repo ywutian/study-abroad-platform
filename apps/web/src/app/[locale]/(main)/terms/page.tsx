@@ -88,7 +88,7 @@ export default function TermsPage() {
       {/* Introduction */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <Card className="mb-8 overflow-hidden">
-          <div className="h-1 bg-slate-500" />
+          <div className="h-1 bg-slate-500 dark:bg-slate-400" />
           <CardContent className="pt-6">
             <div className="flex items-start gap-4">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">

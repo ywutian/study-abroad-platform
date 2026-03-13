@@ -6,6 +6,7 @@ import {
   IsEnum,
   Min,
   Max,
+  MaxLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EssayType, SourceType } from '../../../common/types/enums';
@@ -13,6 +14,7 @@ import { EssayType, SourceType } from '../../../common/types/enums';
 export class CreateEssayPromptDto {
   @ApiProperty({ description: '学校ID' })
   @IsString()
+  @MaxLength(200)
   schoolId: string;
 
   @ApiProperty({ description: '申请年份', example: 2025 })
@@ -27,11 +29,13 @@ export class CreateEssayPromptDto {
 
   @ApiProperty({ description: '英文原文' })
   @IsString()
+  @MaxLength(5000)
   prompt: string;
 
   @ApiPropertyOptional({ description: '中文翻译' })
   @IsOptional()
   @IsString()
+  @MaxLength(5000)
   promptZh?: string;
 
   @ApiPropertyOptional({ description: '字数限制' })
@@ -59,5 +63,6 @@ export class CreateEssayPromptDto {
   @ApiPropertyOptional({ description: '来源URL' })
   @IsOptional()
   @IsString()
+  @MaxLength(2048)
   sourceUrl?: string;
 }

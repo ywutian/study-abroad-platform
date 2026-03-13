@@ -26,6 +26,42 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
+const COLOR_CLASSES: Record<
+  string,
+  { bg: string; bgHover: string; text: string; textBold: string }
+> = {
+  blue: {
+    bg: 'bg-blue-500/10',
+    bgHover: 'group-hover:bg-blue-500/20',
+    text: 'text-blue-500',
+    textBold: 'text-blue-600 dark:text-blue-400',
+  },
+  emerald: {
+    bg: 'bg-emerald-500/10',
+    bgHover: 'group-hover:bg-emerald-500/20',
+    text: 'text-emerald-500',
+    textBold: 'text-emerald-600 dark:text-emerald-400',
+  },
+  amber: {
+    bg: 'bg-amber-500/10',
+    bgHover: 'group-hover:bg-amber-500/20',
+    text: 'text-amber-500',
+    textBold: 'text-amber-600 dark:text-amber-400',
+  },
+  violet: {
+    bg: 'bg-violet-500/10',
+    bgHover: 'group-hover:bg-violet-500/20',
+    text: 'text-violet-500',
+    textBold: 'text-violet-600 dark:text-violet-400',
+  },
+  rose: {
+    bg: 'bg-rose-500/10',
+    bgHover: 'group-hover:bg-rose-500/20',
+    text: 'text-rose-500',
+    textBold: 'text-rose-600 dark:text-rose-400',
+  },
+};
+
 const stats = [
   { icon: Users, value: '50,000+', labelKey: 'stats.users', color: 'blue', gradient: 'bg-primary' },
   {
@@ -158,12 +194,12 @@ export default function AboutPage() {
                   <div
                     className={cn(
                       'flex h-12 w-12 items-center justify-center rounded-xl mx-auto mb-3',
-                      `bg-${stat.color}-500/10`
+                      COLOR_CLASSES[stat.color]?.bg
                     )}
                   >
-                    <Icon className={cn('h-6 w-6', `text-${stat.color}-500`)} />
+                    <Icon className={cn('h-6 w-6', COLOR_CLASSES[stat.color]?.text)} />
                   </div>
-                  <div className={cn('text-3xl font-bold', `text-${stat.color}-600`)}>
+                  <div className={cn('text-3xl font-bold', COLOR_CLASSES[stat.color]?.textBold)}>
                     {stat.value}
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">{t(stat.labelKey)}</p>
@@ -247,10 +283,11 @@ export default function AboutPage() {
                     <div
                       className={cn(
                         'flex h-14 w-14 items-center justify-center rounded-lg mx-auto mb-4 transition-colors',
-                        `bg-${value.color}-500/10 group-hover:bg-${value.color}-500/20`
+                        COLOR_CLASSES[value.color]?.bg,
+                        COLOR_CLASSES[value.color]?.bgHover
                       )}
                     >
-                      <Icon className={cn('h-7 w-7', `text-${value.color}-500`)} />
+                      <Icon className={cn('h-7 w-7', COLOR_CLASSES[value.color]?.text)} />
                     </div>
                     <h3 className="font-semibold mb-2">{t(value.titleKey)}</h3>
                     <p className="text-sm text-muted-foreground">{t(value.descKey)}</p>

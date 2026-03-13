@@ -45,6 +45,7 @@ export class CreateTeamDto {
 
   @ApiPropertyOptional({ description: 'School ID' })
   @IsOptional()
+  @MaxLength(500)
   @IsString()
   schoolId?: string;
 

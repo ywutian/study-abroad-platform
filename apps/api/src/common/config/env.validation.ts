@@ -52,10 +52,24 @@ const envSchema = z.object({
   // --- Frontend URL (for email links) ---
   FRONTEND_URL: z.string().url().optional(),
 
-  // --- OpenAI (Optional) ---
+  // --- AI / LLM (Optional) ---
   OPENAI_API_KEY: z.string().optional(),
   OPENAI_MODEL: z.string().default('gpt-4o-mini'),
   OPENAI_BASE_URL: z.string().url().default('https://api.openai.com/v1'),
+  LLM_PROVIDER: z.enum(['openai', 'anthropic']).default('openai'),
+  EMBEDDING_MODEL: z.string().default('text-embedding-3-small'),
+
+  // --- Search Engines (Optional) ---
+  GOOGLE_SEARCH_API_KEY: z.string().optional(),
+  GOOGLE_SEARCH_ENGINE_ID: z.string().optional(),
+  TAVILY_API_KEY: z.string().optional(),
+
+  // --- Memory & Cache ---
+  MEMORY_CACHE_TTL: z.coerce.number().int().positive().default(86400),
+
+  // --- Observability ---
+  APP_NAME: z.string().default('api'),
+  METRICS_ENABLED: z.enum(['true', 'false']).default('true'),
 
   // --- College Scorecard (Optional) ---
   COLLEGE_SCORECARD_API_KEY: z.string().optional(),

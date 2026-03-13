@@ -5,25 +5,30 @@ import {
   IsInt,
   IsObject,
   IsArray,
+  MaxLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateSchoolEssaySourceDto {
   @ApiProperty({ description: '学校 ID' })
   @IsString()
+  @MaxLength(200)
   schoolId: string;
 
   @ApiProperty({ description: '来源类型', example: 'OFFICIAL' })
   @IsString()
+  @MaxLength(200)
   sourceType: string;
 
   @ApiProperty({ description: '采集 URL' })
   @IsString()
+  @MaxLength(2048)
   url: string;
 
   @ApiPropertyOptional({ description: 'CollegeVine slug' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   slug?: string;
 
   @ApiPropertyOptional({
@@ -33,6 +38,7 @@ export class CreateSchoolEssaySourceDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   scrapeGroup?: string;
 
   @ApiPropertyOptional({ description: '优先级 (高=优先)', default: 0 })
@@ -56,16 +62,19 @@ export class UpdateSchoolEssaySourceDto {
   @ApiPropertyOptional({ description: '采集 URL' })
   @IsOptional()
   @IsString()
+  @MaxLength(2048)
   url?: string;
 
   @ApiPropertyOptional({ description: 'CollegeVine slug' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   slug?: string;
 
   @ApiPropertyOptional({ description: '采集分组' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   scrapeGroup?: string;
 
   @ApiPropertyOptional({ description: '是否启用' })
@@ -87,6 +96,7 @@ export class UpdateSchoolEssaySourceDto {
 export class TestScrapeDto {
   @ApiProperty({ description: '学校名称' })
   @IsString()
+  @MaxLength(200)
   schoolName: string;
 
   @ApiPropertyOptional({ description: '目标年份' })

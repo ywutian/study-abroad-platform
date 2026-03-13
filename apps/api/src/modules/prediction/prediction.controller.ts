@@ -13,7 +13,11 @@ import type { CurrentUserPayload } from '../../common/decorators';
 import { Role } from '@prisma/client';
 import { ThrottleAI } from '../../common/decorators/throttle.decorator';
 import { PrismaService } from '../../prisma/prisma.service';
-import { PredictionRequestDto, PredictionResponseDto } from './dto';
+import {
+  PredictionRequestDto,
+  PredictionResponseDto,
+  ReportResultDto,
+} from './dto';
 import { clampPercentRate } from '../../common/utils/percent.util';
 
 @ApiTags('predictions')
@@ -90,7 +94,7 @@ export class PredictionController {
   async reportResult(
     @CurrentUser() user: CurrentUserPayload,
     @Param('schoolId') schoolId: string,
-    @Body() body: { result: 'ADMITTED' | 'REJECTED' | 'WAITLISTED' },
+    @Body() body: ReportResultDto,
   ) {
     const profile = await this.prisma.profile.findUnique({
       where: { userId: user.id },

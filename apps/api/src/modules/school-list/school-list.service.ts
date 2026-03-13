@@ -20,6 +20,11 @@ import {
   calculateTier,
 } from '../../common/utils/scoring';
 import { clampPercentRate } from '../../common/utils/percent.util';
+import {
+  SCHOOL_LIST_SCHOOL_SELECT,
+  AI_RECOMMENDATION_SCHOOL_SELECT,
+  mapSchoolForList,
+} from './school-list.constants';
 
 @Injectable()
 export class SchoolListService {
@@ -36,18 +41,7 @@ export class SchoolListService {
     const items = await this.prisma.schoolListItem.findMany({
       where: { userId },
       include: {
-        school: {
-          select: {
-            id: true,
-            name: true,
-            nameZh: true,
-            usNewsRank: true,
-            acceptanceRate: true,
-            tuition: true,
-            city: true,
-            state: true,
-          },
-        },
+        school: { select: SCHOOL_LIST_SCHOOL_SELECT },
       },
       orderBy: [{ tier: 'asc' }, { createdAt: 'desc' }],
     });
@@ -104,18 +98,7 @@ export class SchoolListService {
     return items.map((item) => ({
       id: item.id,
       schoolId: item.schoolId,
-      school: {
-        id: item.school.id,
-        name: item.school.name,
-        nameZh: item.school.nameZh || undefined,
-        usNewsRank: item.school.usNewsRank || undefined,
-        acceptanceRate: item.school.acceptanceRate
-          ? clampPercentRate(item.school.acceptanceRate)
-          : undefined,
-        tuition: item.school.tuition || undefined,
-        city: item.school.city || undefined,
-        state: item.school.state || undefined,
-      },
+      school: mapSchoolForList(item.school),
       tier: item.tier,
       round: item.round || undefined,
       notes: item.notes || undefined,
@@ -135,16 +118,7 @@ export class SchoolListService {
     // Check if school exists
     const school = await this.prisma.school.findUnique({
       where: { id: dto.schoolId },
-      select: {
-        id: true,
-        name: true,
-        nameZh: true,
-        usNewsRank: true,
-        acceptanceRate: true,
-        tuition: true,
-        city: true,
-        state: true,
-      },
+      select: SCHOOL_LIST_SCHOOL_SELECT,
     });
 
     if (!school) {
@@ -176,36 +150,14 @@ export class SchoolListService {
         isAIRecommended: dto.isAIRecommended ?? false,
       },
       include: {
-        school: {
-          select: {
-            id: true,
-            name: true,
-            nameZh: true,
-            usNewsRank: true,
-            acceptanceRate: true,
-            tuition: true,
-            city: true,
-            state: true,
-          },
-        },
+        school: { select: SCHOOL_LIST_SCHOOL_SELECT },
       },
     });
 
     return {
       id: item.id,
       schoolId: item.schoolId,
-      school: {
-        id: school.id,
-        name: school.name,
-        nameZh: school.nameZh || undefined,
-        usNewsRank: school.usNewsRank || undefined,
-        acceptanceRate: school.acceptanceRate
-          ? clampPercentRate(school.acceptanceRate)
-          : undefined,
-        tuition: school.tuition || undefined,
-        city: school.city || undefined,
-        state: school.state || undefined,
-      },
+      school: mapSchoolForList(school),
       tier: item.tier,
       round: item.round || undefined,
       notes: item.notes || undefined,
@@ -225,18 +177,7 @@ export class SchoolListService {
     const item = await this.prisma.schoolListItem.findFirst({
       where: { id: itemId, userId },
       include: {
-        school: {
-          select: {
-            id: true,
-            name: true,
-            nameZh: true,
-            usNewsRank: true,
-            acceptanceRate: true,
-            tuition: true,
-            city: true,
-            state: true,
-          },
-        },
+        school: { select: SCHOOL_LIST_SCHOOL_SELECT },
       },
     });
 
@@ -252,36 +193,14 @@ export class SchoolListService {
         notes: dto.notes,
       },
       include: {
-        school: {
-          select: {
-            id: true,
-            name: true,
-            nameZh: true,
-            usNewsRank: true,
-            acceptanceRate: true,
-            tuition: true,
-            city: true,
-            state: true,
-          },
-        },
+        school: { select: SCHOOL_LIST_SCHOOL_SELECT },
       },
     });
 
     return {
       id: updated.id,
       schoolId: updated.schoolId,
-      school: {
-        id: updated.school.id,
-        name: updated.school.name,
-        nameZh: updated.school.nameZh || undefined,
-        usNewsRank: updated.school.usNewsRank || undefined,
-        acceptanceRate: updated.school.acceptanceRate
-          ? clampPercentRate(updated.school.acceptanceRate)
-          : undefined,
-        tuition: updated.school.tuition || undefined,
-        city: updated.school.city || undefined,
-        state: updated.school.state || undefined,
-      },
+      school: mapSchoolForList(updated.school),
       tier: updated.tier,
       round: updated.round || undefined,
       notes: updated.notes || undefined,
@@ -339,23 +258,7 @@ export class SchoolListService {
       },
       orderBy: { usNewsRank: 'asc' },
       take: 100,
-      select: {
-        id: true,
-        name: true,
-        nameZh: true,
-        usNewsRank: true,
-        acceptanceRate: true,
-        satAvg: true,
-        sat25: true,
-        sat75: true,
-        actAvg: true,
-        act25: true,
-        act75: true,
-        graduationRate: true,
-        tuition: true,
-        city: true,
-        state: true,
-      },
+      select: AI_RECOMMENDATION_SCHOOL_SELECT,
     });
 
     // 使用统一评分系统分类学校
@@ -396,18 +299,7 @@ export class SchoolListService {
       const schoolItem = {
         id: `ai-${school.id}`,
         schoolId: school.id,
-        school: {
-          id: school.id,
-          name: school.name,
-          nameZh: school.nameZh || undefined,
-          usNewsRank: school.usNewsRank || undefined,
-          acceptanceRate: school.acceptanceRate
-            ? clampPercentRate(school.acceptanceRate)
-            : undefined,
-          tuition: school.tuition || undefined,
-          city: school.city || undefined,
-          state: school.state || undefined,
-        },
+        school: mapSchoolForList(school),
         tier: tierEnum,
         isAIRecommended: true,
         createdAt: new Date(),

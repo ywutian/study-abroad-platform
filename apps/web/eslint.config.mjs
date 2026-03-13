@@ -33,6 +33,16 @@ const eslintConfig = defineConfig([
       "react-hooks/incompatible-library": "warn",
     },
   },
+  {
+    // jsx-a11y plugin is already registered by eslint-config-next — just add rules
+    files: ["**/*.tsx"],
+    rules: {
+      "jsx-a11y/alt-text": "warn",
+      "jsx-a11y/aria-props": "error",
+      "jsx-a11y/interactive-supports-focus": "warn",
+      "jsx-a11y/click-events-have-key-events": "warn",
+    },
+  },
 ]);
 
 export default eslintConfig;

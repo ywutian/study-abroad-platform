@@ -7,17 +7,20 @@ import {
   IsBoolean,
   IsDateString,
   IsEnum,
+  MaxLength,
   Min,
 } from 'class-validator';
 import { GlobalEventCategory } from '@prisma/client';
 
 export class CreateGlobalEventDto {
   @ApiProperty({ description: '事件标题（英文）' })
+  @MaxLength(200)
   @IsString()
   @IsNotEmpty()
   title: string;
 
   @ApiPropertyOptional({ description: '事件标题（中文）' })
+  @MaxLength(200)
   @IsString()
   @IsOptional()
   titleZh?: string;
@@ -46,16 +49,19 @@ export class CreateGlobalEventDto {
   resultDate?: string;
 
   @ApiPropertyOptional()
+  @MaxLength(2000)
   @IsString()
   @IsOptional()
   description?: string;
 
   @ApiPropertyOptional()
+  @MaxLength(2000)
   @IsString()
   @IsOptional()
   descriptionZh?: string;
 
   @ApiPropertyOptional()
+  @MaxLength(2048)
   @IsString()
   @IsOptional()
   url?: string;
@@ -73,11 +79,13 @@ export class CreateGlobalEventDto {
 
 export class UpdateGlobalEventDto {
   @ApiPropertyOptional()
+  @MaxLength(200)
   @IsString()
   @IsOptional()
   title?: string;
 
   @ApiPropertyOptional()
+  @MaxLength(200)
   @IsString()
   @IsOptional()
   titleZh?: string;
@@ -108,16 +116,19 @@ export class UpdateGlobalEventDto {
   resultDate?: string;
 
   @ApiPropertyOptional()
+  @MaxLength(2000)
   @IsString()
   @IsOptional()
   description?: string;
 
   @ApiPropertyOptional()
+  @MaxLength(2000)
   @IsString()
   @IsOptional()
   descriptionZh?: string;
 
   @ApiPropertyOptional()
+  @MaxLength(2048)
   @IsString()
   @IsOptional()
   url?: string;

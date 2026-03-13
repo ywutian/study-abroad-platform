@@ -84,7 +84,7 @@ function buildCspHeader(nonce: string): string {
   return directives.join('; ');
 }
 
-export default function middleware(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Auth check for protected routes (cookie-based, no JWT verification in edge)

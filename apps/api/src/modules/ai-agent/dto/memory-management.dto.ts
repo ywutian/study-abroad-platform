@@ -15,6 +15,7 @@ import {
   IsIn,
   ArrayMaxSize,
   Length,
+  MaxLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -60,10 +61,12 @@ export class QueryMemoriesDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   category?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
+  @MaxLength(500)
   @IsString()
   search?: string;
 
@@ -221,6 +224,7 @@ export class QueryEntitiesDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(500)
   search?: string;
 
   @ApiPropertyOptional({ default: 1 })
@@ -278,6 +282,7 @@ export class SchoolPreferencesDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @MaxLength(500, { each: true })
   @ArrayMaxSize(10, { message: '地区偏好不能超过10个' })
   regions?: string[];
 
@@ -290,6 +295,7 @@ export class SchoolPreferencesDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @MaxLength(500, { each: true })
   @IsIn(['small', 'medium', 'large'], {
     each: true,
     message: '学校规模必须是 small, medium, large 之一',
@@ -305,6 +311,7 @@ export class SchoolPreferencesDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @MaxLength(500, { each: true })
   @IsIn(['public', 'private', 'lac', 'research', 'comprehensive'], {
     each: true,
     message:
@@ -323,6 +330,7 @@ export class EssayPreferencesDto {
     example: 'narrative',
   })
   @IsOptional()
+  @MaxLength(500)
   @IsString()
   @IsIn(['narrative', 'reflective', 'analytical', 'descriptive'], {
     message:
@@ -336,6 +344,7 @@ export class EssayPreferencesDto {
     example: 'casual',
   })
   @IsOptional()
+  @MaxLength(500)
   @IsString()
   @IsIn(['formal', 'casual', 'humorous', 'serious', 'optimistic'], {
     message: '语气必须是 formal, casual, humorous, serious, optimistic 之一',
@@ -491,6 +500,7 @@ export class BatchDeleteMemoriesDto {
   @ApiProperty({ type: [String] })
   @IsArray()
   @IsString({ each: true })
+  @MaxLength(500, { each: true })
   ids: string[];
 }
 

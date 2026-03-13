@@ -1,4 +1,9 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -96,7 +101,7 @@ export class StorageService implements OnModuleInit {
     } else {
       // Validate cloud storage credentials at startup
       if (!this.isCloudStorageConfigured()) {
-        throw new Error(
+        throw new InternalServerErrorException(
           `Storage type "${this.storageType}" selected but required credentials are missing. ` +
             'Check environment variables for your storage provider.',
         );

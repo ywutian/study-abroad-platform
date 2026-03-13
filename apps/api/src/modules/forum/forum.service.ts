@@ -32,6 +32,7 @@ import {
   CommentDto,
 } from './dto';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
+import { FORUM_AUTHOR_SELECT, mapForumAuthor } from './forum.constants';
 
 @Injectable()
 export class ForumService {
@@ -268,11 +269,7 @@ export class ForumService {
         include: {
           category: true,
           author: {
-            select: {
-              id: true,
-              role: true,
-              profile: { select: { realName: true } },
-            },
+            select: FORUM_AUTHOR_SELECT,
           },
           likes: userId ? { where: { userId }, select: { id: true } } : false,
           _count: { select: { comments: true } },
@@ -294,13 +291,7 @@ export class ForumService {
         color: post.category.color || undefined,
         postCount: 0,
       },
-      author: {
-        id: post.author.id,
-        name: post.author.profile?.realName || undefined,
-        avatar: undefined,
-        isVerified:
-          post.author.role === Role.VERIFIED || post.author.role === Role.ADMIN,
-      },
+      author: mapForumAuthor(post.author),
       title: post.title,
       content: post.content,
       tags: post.tags,
@@ -344,11 +335,7 @@ export class ForumService {
       include: {
         category: true,
         author: {
-          select: {
-            id: true,
-            role: true,
-            profile: { select: { realName: true } },
-          },
+          select: FORUM_AUTHOR_SELECT,
         },
         likes: userId ? { where: { userId }, select: { id: true } } : false,
         comments: {
@@ -356,21 +343,13 @@ export class ForumService {
           orderBy: { createdAt: 'desc' },
           include: {
             author: {
-              select: {
-                id: true,
-                role: true,
-                profile: { select: { realName: true } },
-              },
+              select: FORUM_AUTHOR_SELECT,
             },
             replies: {
               orderBy: { createdAt: 'asc' },
               include: {
                 author: {
-                  select: {
-                    id: true,
-                    role: true,
-                    profile: { select: { realName: true } },
-                  },
+                  select: FORUM_AUTHOR_SELECT,
                 },
               },
             },
@@ -379,11 +358,7 @@ export class ForumService {
         teamMembers: {
           include: {
             user: {
-              select: {
-                id: true,
-                role: true,
-                profile: { select: { realName: true } },
-              },
+              select: FORUM_AUTHOR_SELECT,
             },
           },
         },
@@ -396,11 +371,7 @@ export class ForumService {
                 },
                 include: {
                   applicant: {
-                    select: {
-                      id: true,
-                      role: true,
-                      profile: { select: { realName: true } },
-                    },
+                    select: FORUM_AUTHOR_SELECT,
                   },
                   resume: { select: { id: true, title: true } },
                 },
@@ -429,14 +400,7 @@ export class ForumService {
 
     const formatComment = (comment: any): CommentDto => ({
       id: comment.id,
-      author: {
-        id: comment.author.id,
-        name: comment.author.profile?.realName || undefined,
-        avatar: undefined,
-        isVerified:
-          comment.author.role === Role.VERIFIED ||
-          comment.author.role === Role.ADMIN,
-      },
+      author: mapForumAuthor(comment.author),
       content: comment.content,
       parentId: comment.parentId || undefined,
       likeCount: comment.likeCount,
@@ -457,14 +421,7 @@ export class ForumService {
         color: postData.category.color || undefined,
         postCount: 0,
       },
-      author: {
-        id: postData.author.id,
-        name: postData.author.profile?.realName || undefined,
-        avatar: undefined,
-        isVerified:
-          postData.author.role === Role.VERIFIED ||
-          postData.author.role === Role.ADMIN,
-      },
+      author: mapForumAuthor(postData.author),
       title: post.title,
       content: post.content,
       tags: post.tags,
@@ -485,26 +442,13 @@ export class ForumService {
       comments: postData.comments.map(formatComment),
       teamMembers: postData.teamMembers?.map((tm: any) => ({
         id: tm.id,
-        user: {
-          id: tm.user.id,
-          name: tm.user.profile?.realName || undefined,
-          avatar: undefined,
-          isVerified:
-            tm.user.role === Role.VERIFIED || tm.user.role === Role.ADMIN,
-        },
+        user: mapForumAuthor(tm.user),
         role: tm.role,
         joinedAt: tm.joinedAt,
       })),
       teamApplications: postData.teamApplications?.map((ta: any) => ({
         id: ta.id,
-        applicant: {
-          id: ta.applicant.id,
-          name: ta.applicant.profile?.realName || undefined,
-          avatar: undefined,
-          isVerified:
-            ta.applicant.role === Role.VERIFIED ||
-            ta.applicant.role === Role.ADMIN,
-        },
+        applicant: mapForumAuthor(ta.applicant),
         message: ta.message || undefined,
         status: ta.status,
         createdAt: ta.createdAt,
@@ -558,11 +502,7 @@ export class ForumService {
       where: { postId },
       include: {
         applicant: {
-          select: {
-            id: true,
-            role: true,
-            profile: { select: { realName: true } },
-          },
+          select: FORUM_AUTHOR_SELECT,
         },
         resume: { select: { id: true, title: true } },
       },
@@ -570,14 +510,7 @@ export class ForumService {
     });
     return list.map((ta: any) => ({
       id: ta.id,
-      applicant: {
-        id: ta.applicant.id,
-        name: ta.applicant.profile?.realName || undefined,
-        avatar: undefined,
-        isVerified:
-          ta.applicant.role === Role.VERIFIED ||
-          ta.applicant.role === Role.ADMIN,
-      },
+      applicant: mapForumAuthor(ta.applicant),
       message: ta.message ?? undefined,
       resume: ta.resume
         ? { id: ta.resume.id, title: ta.resume.title }
@@ -650,11 +583,7 @@ export class ForumService {
       include: {
         category: true,
         author: {
-          select: {
-            id: true,
-            role: true,
-            profile: { select: { realName: true } },
-          },
+          select: FORUM_AUTHOR_SELECT,
         },
       },
     });
@@ -679,13 +608,7 @@ export class ForumService {
         nameZh: post.category.nameZh,
         postCount: 0,
       },
-      author: {
-        id: post.author.id,
-        name: post.author.profile?.realName || undefined,
-        avatar: undefined,
-        isVerified:
-          post.author.role === Role.VERIFIED || post.author.role === Role.ADMIN,
-      },
+      author: mapForumAuthor(post.author),
       title: post.title,
       content: post.content,
       tags: post.tags,
@@ -918,11 +841,7 @@ export class ForumService {
       include: {
         category: true,
         author: {
-          select: {
-            id: true,
-            role: true,
-            profile: { select: { realName: true } },
-          },
+          select: FORUM_AUTHOR_SELECT,
         },
         _count: { select: { comments: true } },
       },
@@ -931,13 +850,7 @@ export class ForumService {
     return {
       id: updated.id,
       categoryId: updated.categoryId,
-      author: {
-        id: updated.author.id,
-        name: updated.author.profile?.realName || undefined,
-        isVerified:
-          updated.author.role === Role.VERIFIED ||
-          updated.author.role === Role.ADMIN,
-      },
+      author: mapForumAuthor(updated.author),
       title: updated.title,
       content: updated.content,
       tags: updated.tags,
@@ -1068,11 +981,7 @@ export class ForumService {
       },
       include: {
         author: {
-          select: {
-            id: true,
-            role: true,
-            profile: { select: { realName: true } },
-          },
+          select: FORUM_AUTHOR_SELECT,
         },
       },
     });
@@ -1085,14 +994,7 @@ export class ForumService {
 
     const result = {
       id: comment.id,
-      author: {
-        id: comment.author.id,
-        name: comment.author.profile?.realName || undefined,
-        avatar: undefined,
-        isVerified:
-          comment.author.role === Role.VERIFIED ||
-          comment.author.role === Role.ADMIN,
-      },
+      author: mapForumAuthor(comment.author),
       content: comment.content,
       parentId: comment.parentId || undefined,
       likeCount: 0,
@@ -1415,11 +1317,7 @@ export class ForumService {
           include: {
             category: true,
             author: {
-              select: {
-                id: true,
-                role: true,
-                profile: { select: { realName: true } },
-              },
+              select: FORUM_AUTHOR_SELECT,
             },
             _count: { select: { comments: true, teamMembers: true } },
           },
@@ -1431,13 +1329,7 @@ export class ForumService {
     return memberships.map((m) => ({
       id: m.post.id,
       categoryId: m.post.categoryId,
-      author: {
-        id: m.post.author.id,
-        name: m.post.author.profile?.realName || undefined,
-        isVerified:
-          m.post.author.role === Role.VERIFIED ||
-          m.post.author.role === Role.ADMIN,
-      },
+      author: mapForumAuthor(m.post.author),
       title: m.post.title,
       content: m.post.content,
       tags: m.post.tags,

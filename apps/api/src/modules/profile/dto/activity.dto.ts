@@ -108,6 +108,7 @@ export class CreateActivityDto {
   @ApiPropertyOptional({ description: '活动模板ID' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   activityTemplateId?: string;
 }
 
@@ -193,6 +194,7 @@ export class UpdateActivityDto {
   @ApiPropertyOptional({ description: '活动模板ID' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   activityTemplateId?: string;
 }
 
@@ -200,5 +202,6 @@ export class ReorderIdsDto {
   @ApiProperty({ description: 'Ordered array of IDs', type: [String] })
   @IsArray()
   @IsString({ each: true })
+  @MaxLength(500, { each: true })
   ids: string[];
 }

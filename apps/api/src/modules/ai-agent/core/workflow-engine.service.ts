@@ -20,7 +20,12 @@
  * - Solve 阶段流式输出为空 → 自动 fallback 到非流式重试
  */
 
-import { Injectable, Logger, Optional } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  Optional,
+} from '@nestjs/common';
 import { LLMService, LLMResponse } from './llm.service';
 import { ToolExecutorService } from './tool-executor.service';
 import { MemoryService } from './memory.service';
@@ -235,11 +240,13 @@ export class WorkflowEngineService {
     )) {
       if (event.type === 'done') result = event.result;
       if (event.type === 'error')
-        throw new Error(event.error || 'Workflow failed');
+        throw new InternalServerErrorException(
+          event.error || 'Workflow failed',
+        );
     }
 
     if (!result) {
-      throw new Error(
+      throw new InternalServerErrorException(
         `[${agentType}] Workflow completed without producing a result`,
       );
     }

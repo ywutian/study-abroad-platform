@@ -2,7 +2,11 @@
  * 对话摘要服务 - 生成摘要并提取记忆
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MemoryType, EntityType } from '@prisma/client';
 import {
@@ -83,7 +87,7 @@ category 说明: competition=竞赛, summer_program=夏校/暑期项目, interns
       });
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
+        throw new InternalServerErrorException(`API error: ${response.status}`);
       }
 
       const data = await response.json();

@@ -413,13 +413,37 @@ export class DashboardService {
   ): DashboardSummary['recentActivity'] {
     const actionDescriptions: Record<string, { title: string; desc: string }> =
       {
+        // Earning points
         SUBMIT_CASE: { title: '提交案例', desc: '分享了录取案例' },
         CASE_VERIFIED: { title: '案例认证', desc: '案例通过审核' },
+        CASE_HELPFUL: { title: '案例获赞', desc: '案例被标记为有帮助' },
         COMPLETE_PROFILE: { title: '完善档案', desc: '更新了个人档案' },
+        REFER_USER: { title: '邀请好友', desc: '成功邀请新用户注册' },
+        VERIFICATION_APPROVED: {
+          title: '认证通过',
+          desc: '身份认证已通过审核',
+        },
+        SWIPE_CORRECT: { title: '预测正确', desc: '案例预测判断正确' },
+        SUBMIT_REVIEW: { title: '提交评审', desc: '发表了案例评审' },
+        REVIEW_HELPFUL: { title: '评审获赞', desc: '评审被标记为有帮助' },
+        // Spending points
         VIEW_CASE_DETAIL: { title: '查看案例', desc: '浏览了录取案例详情' },
         AI_ANALYSIS: { title: 'AI分析', desc: '使用了AI智能分析' },
-        ESSAY_POLISH: { title: '文书润色', desc: '使用了文书润色服务' },
-        ESSAY_REVIEW: { title: '文书评审', desc: '获取了AI文书评审' },
+        MESSAGE_VERIFIED: {
+          title: '私信认证用户',
+          desc: '向认证用户发送了私信',
+        },
+        AI_ESSAY_POLISH: { title: '文书润色', desc: '使用了AI文书润色' },
+        AI_ESSAY_REVIEW: { title: '文书评审', desc: '获取了AI文书评审' },
+        AI_ESSAY_BRAINSTORM: {
+          title: '文书头脑风暴',
+          desc: '使用了AI头脑风暴',
+        },
+        AI_ESSAY_GALLERY: { title: '文书画廊', desc: '查看了文书画廊内容' },
+        AI_SCHOOL_RECOMMENDATION: {
+          title: 'AI选校推荐',
+          desc: '获取了AI选校推荐',
+        },
       };
 
     return pointHistory.map((h) => {
@@ -430,7 +454,7 @@ export class DashboardService {
       return {
         type: h.points > 0 ? 'earn' : 'spend',
         title: info.title,
-        description: `${info.desc}${h.points > 0 ? `，获得 ${h.points} 积分` : ''}`,
+        description: `${info.desc}${h.points > 0 ? `，获得 ${h.points} 积分` : `，消耗 ${Math.abs(h.points)} 积分`}`,
         createdAt: h.createdAt.toISOString(),
       };
     });

@@ -4,11 +4,13 @@ import {
   IsOptional,
   IsString,
   IsNumber,
+  MaxLength,
   Min,
 } from 'class-validator';
 
 export class BanUserDto {
   @ApiProperty({ description: '封禁原因' })
+  @MaxLength(2000)
   @IsString()
   reason: string;
 

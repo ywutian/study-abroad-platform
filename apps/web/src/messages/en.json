@@ -1032,11 +1032,11 @@
       "needBlind": "Need-Blind for Intl",
       "intlPercent": "{pct}% Intl Students",
       "competitiveness": {
-        "5": "Extremely Competitive",
-        "4": "Highly Competitive",
-        "3": "Average",
+        "1": "Less Competitive",
         "2": "Below Average",
-        "1": "Less Competitive"
+        "3": "Average",
+        "4": "Highly Competitive",
+        "5": "Extremely Competitive"
       },
       "na": "No data available",
       "naIntl": "International rate not available for this school",
@@ -2132,6 +2132,9 @@
       "REA": "REA",
       "RD": "RD",
       "ROLLING": "Rolling"
+    },
+    "specialConditions": {
+      "testOptional": "Test Optional"
     }
   },
   "findCollege": {
@@ -3261,7 +3264,6 @@
     "badge": "Current Badge",
     "badgeUpgraded": "Badge Upgraded",
     "newBadge": "New Badge",
-    "actualResult": "Actual Result",
     "swipes": "swipes",
     "badges": {
       "bronze": "Bronze",
@@ -3287,7 +3289,6 @@
     "youreRight": "You're right!",
     "notQuite": "Not quite",
     "nextCase": "Next Case",
-    "accuracy": "Accuracy",
     "totalSwipes": "Total Swipes",
     "bestStreak": "Best Streak",
     "current": "Current",
@@ -3544,6 +3545,46 @@
     "satAvg": "SAT Average",
     "actAvg": "ACT Average",
     "graduationRate": "Graduation Rate",
+    "retentionRate": "Retention Rate",
+    "studentFacultyRatio": "Student-Faculty Ratio",
+    "tuition": "Tuition",
+    "financialAid": {
+      "title": "Financial Aid & Cost",
+      "netPrice": "Net Price (after aid)",
+      "aidPackage": "Average Aid Package",
+      "needMet": "% of Need Met",
+      "applicationFee": "Application Fee",
+      "feeWaiver": "Fee Waiver",
+      "roomAndBoard": "Room & Board"
+    },
+    "applicationInfo": {
+      "title": "Application Info",
+      "commonApp": "Common App",
+      "coalition": "Coalition App",
+      "testOptional": "Test Optional",
+      "needBlind": "Need Blind",
+      "earlyDecision": "Early Decision"
+    },
+    "international": {
+      "title": "International Students",
+      "studentPct": "International Student %",
+      "acceptanceRate": "International Acceptance Rate",
+      "countries": "Countries Represented"
+    },
+    "campusLife": {
+      "title": "Campus Life Ratings",
+      "overall": "Overall",
+      "safety": "Safety",
+      "life": "Student Life",
+      "food": "Food",
+      "studentOrgs": "Student Organizations"
+    },
+    "postGrad": {
+      "title": "Post-Graduation Outcomes",
+      "salary": "Median Salary (6yr Post-Grad)",
+      "loanDefault": "Loan Default Rate",
+      "monthlyLoan": "Monthly Loan Payment"
+    },
     "about": "About",
     "deadlines": {
       "title": "Application Deadlines",
@@ -3733,7 +3774,9 @@
       "schoolSelectionTag": "Selection",
       "importantTag": "Important",
       "mainAccountNote": "Main account info"
-    }
+    },
+    "saveError": "Failed to save",
+    "deleteError": "Failed to delete"
   },
   "recommendation": {
     "title": "Smart School Match",
@@ -3850,7 +3893,6 @@
     "reach": "Reach",
     "match": "Match",
     "safety": "Safety",
-
     "schoolCountLabel": "Number of Schools",
     "schoolCountOptions": {
       "10": "10 schools",
@@ -3862,7 +3904,6 @@
     "noMatchingRegions": "No matching regions",
     "noMatchingMajors": "No matching majors",
     "maxChars": "{count}/{max} characters",
-
     "profileReady": "Profile Ready",
     "profileReadySummary": "GPA {gpa}, {testCount} test scores, {activityCount} activities",
     "profileIncomplete": "Profile Incomplete",
@@ -3873,7 +3914,6 @@
     "missingActivities": "activities",
     "missingTargetMajor": "target major",
     "missingProfile": "profile",
-
     "points": "points",
     "pointsRemaining": "{points} points remaining",
     "insufficientPoints": "Insufficient points (need 25)",
@@ -3882,13 +3922,11 @@
     "confirmDescSimple": "Generate personalized school recommendations based on your profile?",
     "confirmGenerate": "Generate",
     "cancel": "Cancel",
-
     "progressStep1": "Analyzing your profile...",
     "progressStep2": "Matching schools from database...",
     "progressStep3": "Generating AI recommendations...",
     "progressStep4": "Finalizing results...",
     "progressStepOf": "Step {current} of {total}",
-
     "rank": "Rank",
     "location": "Location",
     "acceptanceRate": "Acceptance Rate",
@@ -3900,7 +3938,6 @@
     "addToListSuccess": "Added {name} to your school list",
     "showMore": "Show more",
     "showLess": "Show less",
-
     "tierDistribution": "Tier Distribution",
     "loadingHistory": "Loading history...",
     "deleteHistory": "Delete",
@@ -4260,7 +4297,13 @@
       "joinPolicy": "Join policy",
       "joinPolicyAll": "All",
       "sortNewest": "Newest first",
-      "sortMembers": "Most members"
+      "sortMembers": "Most members",
+      "schoolPlaceholder": "School (optional)",
+      "schoolSelected": "School selected",
+      "schoolSearch": "Search schools...",
+      "schoolClear": "Clear filter",
+      "schoolLoading": "Loading...",
+      "schoolNoResults": "No schools found"
     },
     "goDiscover": "Discover teams",
     "loginToJoin": "Log in to join",
@@ -4704,7 +4747,24 @@
       "generateFromDomain": "Generate from website",
       "generateFromDomainDone": "Suggested logo URL filled",
       "generateFromDomainError": "Could not get logo suggestion",
-      "clearLogo": "Clear logo"
+      "clearLogo": "Clear logo",
+      "website": "Website",
+      "acceptanceRate": "Acceptance Rate",
+      "graduationRate": "Graduation Rate",
+      "retentionRate": "Retention Rate",
+      "studentFacultyRatio": "Student-Faculty Ratio",
+      "tuition": "Tuition",
+      "applicationFee": "Application Fee",
+      "averageAidPackage": "Average Aid Package",
+      "averageNetPrice": "Average Net Price",
+      "roomAndBoard": "Room & Board",
+      "percentNeedMet": "% Need Met",
+      "tabs": {
+        "basic": "Basic Info",
+        "rankings": "Rankings",
+        "financial": "Financial",
+        "application": "Application"
+      }
     },
     "data": {
       "scrapeSchools": "Scrape Schools",

@@ -65,5 +65,6 @@ export class ReorderSectionsDto {
   @ApiProperty({ description: 'Ordered array of section IDs' })
   @IsArray()
   @IsString({ each: true })
+  @MaxLength(500, { each: true })
   sectionIds: string[];
 }

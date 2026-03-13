@@ -7,6 +7,7 @@ import {
   IsInt,
   Min,
   Max,
+  MaxLength,
 } from 'class-validator';
 
 // ============ Request DTOs ============
@@ -46,6 +47,7 @@ export class SubmitReviewDto {
   @ApiPropertyOptional({ description: '评价内容' })
   @IsOptional()
   @IsString()
+  @MaxLength(5000)
   comment?: string;
 }
 

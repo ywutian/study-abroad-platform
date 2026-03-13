@@ -1,4 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 
@@ -81,7 +85,7 @@ export class EncryptionService {
       };
     } catch (error) {
       this.logger.error('Encryption failed:', error);
-      throw new Error('Encryption failed');
+      throw new InternalServerErrorException('Encryption failed');
     }
   }
 
@@ -115,7 +119,7 @@ export class EncryptionService {
       return decrypted;
     } catch (error) {
       this.logger.error('Decryption failed:', error);
-      throw new Error(
+      throw new InternalServerErrorException(
         'Decryption failed - data may be corrupted or tampered with',
       );
     }
