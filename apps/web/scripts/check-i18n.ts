@@ -26,6 +26,9 @@ const EXEMPT_FILES = [
   'analysis-report-pdf.tsx', // react-pdf 组件，自带 zh/en translations 对象（无法使用 hooks）
   'admin/schools/page.tsx', // 管理面板字段映射，使用 { en, zh } 双语对象
   'admin/activity-templates/page.tsx', // 管理面板，含中英文 placeholder 示例
+  'admin/activity-templates/_components/template-form-dialog.tsx', // 管理面板，含中英文 placeholder 示例
+  'admin/activity-templates/_components/templates-table.tsx', // 管理面板，EmptyState 组件标题
+  'admin/schools/_components/data-quality-tab.tsx', // 管理面板字段映射，使用 { en, zh } 双语对象
 ];
 
 /** 豁免行模式（匹配到则跳过该行） */

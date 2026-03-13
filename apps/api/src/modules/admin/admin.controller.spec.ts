@@ -4,6 +4,7 @@ import { AdminService } from './admin.service';
 import { AdminDataSyncService } from './admin-data-sync.service';
 import { NotificationService } from '../notification/notification.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { PredictionService } from '../prediction/prediction.service';
 import { Role, GlobalEventCategory } from '@prisma/client';
 
 describe('AdminController', () => {
@@ -43,6 +44,12 @@ describe('AdminController', () => {
             },
             payment: { findMany: jest.fn().mockResolvedValue([]) },
             auditLog: { findMany: jest.fn().mockResolvedValue([]) },
+          },
+        },
+        {
+          provide: PredictionService,
+          useValue: {
+            invalidateCalibrationCache: jest.fn().mockResolvedValue(undefined),
           },
         },
         {
