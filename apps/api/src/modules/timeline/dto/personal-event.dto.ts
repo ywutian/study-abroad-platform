@@ -5,11 +5,9 @@ import {
   IsOptional,
   IsEnum,
   IsInt,
-  IsBoolean,
   IsDateString,
   Min,
   Max,
-  IsArray,
   MaxLength,
 } from 'class-validator';
 import { PersonalEventCategory, PersonalEventStatus } from '@prisma/client';

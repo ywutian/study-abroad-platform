@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HallController } from './hall.controller';
 import { HallService } from './hall.service';
-import { SwipeService } from '../swipe/swipe.service';
+import { SwipeService } from './swipe.service';
 
 describe('HallController', () => {
   let controller: HallController;

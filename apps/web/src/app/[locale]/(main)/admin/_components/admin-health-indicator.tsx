@@ -9,7 +9,7 @@ import { Activity, CheckCircle2, XCircle } from 'lucide-react';
 
 interface HealthData {
   status: string;
-  components: Record<string, { status: string; details?: any }>;
+  components: Record<string, { status: string; details?: Record<string, unknown> }>;
 }
 
 interface AdminHealthIndicatorProps {

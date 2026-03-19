@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -230,10 +231,13 @@ export function VerificationDialog({
               {file ? (
                 <div className="flex items-center gap-3">
                   {previewUrl ? (
-                    <img
+                    <Image
                       src={previewUrl}
                       alt="Preview"
+                      width={64}
+                      height={64}
                       className="w-16 h-16 object-cover rounded-lg"
+                      unoptimized
                     />
                   ) : (
                     <div className="w-16 h-16 flex items-center justify-center bg-muted rounded-lg">

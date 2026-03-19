@@ -198,7 +198,7 @@ export class AgentConfigService implements OnModuleInit {
 
       this.logger.log('Loaded config from database');
     } catch (error) {
-      this.logger.warn(`Failed to load config from database: ${error}`);
+      this.logger.warn(`Failed to load config from database: ${String(error)}`);
     }
   }
 
@@ -238,7 +238,7 @@ export class AgentConfigService implements OnModuleInit {
 
       this.logger.log(`Persisted agent config: ${agentType} v${newVersion}`);
     } catch (error) {
-      this.logger.error(`Failed to persist agent config: ${error}`);
+      this.logger.error(`Failed to persist agent config: ${String(error)}`);
     }
   }
 
@@ -277,7 +277,7 @@ export class AgentConfigService implements OnModuleInit {
 
       this.logger.log(`Persisted system config v${newVersion}`);
     } catch (error) {
-      this.logger.error(`Failed to persist system config: ${error}`);
+      this.logger.error(`Failed to persist system config: ${String(error)}`);
     }
   }
 

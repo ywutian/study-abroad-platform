@@ -157,7 +157,7 @@ export class EmbeddingService {
       return embedding;
     } catch (error) {
       this.logger.warn(
-        `Embedding generation failed, degrading to empty vector: ${error instanceof Error ? error.message : error}`,
+        `Embedding generation failed, degrading to empty vector: ${String(error instanceof Error ? error.message : error)}`,
       );
       return [];
     }
@@ -243,7 +243,7 @@ export class EmbeddingService {
       return results.map((r) => r || []);
     } catch (error) {
       this.logger.warn(
-        `Batch embedding failed, degrading to empty vectors: ${error instanceof Error ? error.message : error}`,
+        `Batch embedding failed, degrading to empty vectors: ${String(error instanceof Error ? error.message : error)}`,
       );
       return texts.map(() => []);
     }
@@ -310,7 +310,7 @@ export class EmbeddingService {
           return JSON.parse(raw);
         }
       } catch (err) {
-        this.logger.debug(`Redis getCachedEmbedding failed: ${err}`);
+        this.logger.debug(`Redis getCachedEmbedding failed: ${String(err)}`);
       }
     }
 
@@ -335,7 +335,7 @@ export class EmbeddingService {
         );
         return;
       } catch (err) {
-        this.logger.debug(`Redis cacheEmbedding failed: ${err}`);
+        this.logger.debug(`Redis cacheEmbedding failed: ${String(err)}`);
       }
     }
 

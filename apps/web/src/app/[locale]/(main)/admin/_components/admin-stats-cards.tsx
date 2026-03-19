@@ -61,7 +61,7 @@ export function AdminStatsCards({ stats }: AdminStatsCardsProps) {
       value: stats.pendingReports,
       icon: AlertTriangle,
       color: 'amber',
-      href: '/admin/reports',
+      href: '/admin/moderation?tab=reports',
     },
     {
       title: t('stats.totalReviews'),
@@ -178,7 +178,7 @@ export function AdminStatsCards({ stats }: AdminStatsCardsProps) {
                   <p className="text-xs text-muted-foreground">{t('overview.needsAttention')}</p>
                 </div>
                 <Button size="sm" variant="outline" asChild>
-                  <Link href="/admin/reports">{t('overview.handle')}</Link>
+                  <Link href="/admin/moderation?tab=reports">{t('overview.handle')}</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -221,7 +221,7 @@ export function AdminStatsCards({ stats }: AdminStatsCardsProps) {
                 <p className="text-xs text-muted-foreground">{t('overview.deadlinesDesc')}</p>
               </div>
               <Button size="sm" variant="outline" asChild>
-                <Link href="/admin/deadlines">{t('overview.manage')}</Link>
+                <Link href="/admin/calendar">{t('overview.manage')}</Link>
               </Button>
             </CardContent>
           </Card>
@@ -263,7 +263,7 @@ export function AdminStatsCards({ stats }: AdminStatsCardsProps) {
                 <p className="text-xs text-muted-foreground">{t('overview.eventsDesc')}</p>
               </div>
               <Button size="sm" variant="outline" asChild>
-                <Link href="/admin/events">{t('overview.manage')}</Link>
+                <Link href="/admin/calendar?tab=events">{t('overview.manage')}</Link>
               </Button>
             </CardContent>
           </Card>
@@ -284,7 +284,7 @@ export function AdminStatsCards({ stats }: AdminStatsCardsProps) {
                 <p className="text-xs text-muted-foreground">{t('overview.aiAgentDesc')}</p>
               </div>
               <Button size="sm" variant="outline" asChild>
-                <Link href="/admin/ai-agent">{t('overview.manage')}</Link>
+                <Link href="/admin/ai-operations">{t('overview.manage')}</Link>
               </Button>
             </CardContent>
           </Card>
@@ -326,7 +326,7 @@ export function AdminStatsCards({ stats }: AdminStatsCardsProps) {
                 <p className="text-xs text-muted-foreground">{t('contentMod.description')}</p>
               </div>
               <Button size="sm" variant="outline" asChild>
-                <Link href="/admin/content">{t('overview.manage')}</Link>
+                <Link href="/admin/moderation">{t('overview.manage')}</Link>
               </Button>
             </CardContent>
           </Card>

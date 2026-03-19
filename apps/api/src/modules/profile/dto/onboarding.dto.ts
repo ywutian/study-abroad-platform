@@ -10,7 +10,6 @@ import {
   IsNumber,
   IsEnum,
   Min,
-  Max,
   MaxLength,
 } from 'class-validator';
 import { TestType } from '@prisma/client';

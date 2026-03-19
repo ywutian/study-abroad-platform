@@ -25,7 +25,7 @@ describe('AuthService', () => {
   let service: AuthService;
   let prismaService: PrismaService;
   let userService: UserService;
-  let jwtService: JwtService;
+  let _jwtService: JwtService;
   let emailService: EmailService;
   let sessionManager: SessionManager;
   let bruteForceService: BruteForceService;
@@ -133,7 +133,7 @@ describe('AuthService', () => {
     service = module.get<AuthService>(AuthService);
     prismaService = module.get<PrismaService>(PrismaService);
     userService = module.get<UserService>(UserService);
-    jwtService = module.get<JwtService>(JwtService);
+    _jwtService = module.get<JwtService>(JwtService);
     emailService = module.get<EmailService>(EmailService);
     sessionManager = module.get<SessionManager>(SessionManager);
     bruteForceService = module.get<BruteForceService>(BruteForceService);

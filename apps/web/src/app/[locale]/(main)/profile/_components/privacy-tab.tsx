@@ -43,6 +43,11 @@ export function PrivacyTab({ formData, onFormDataChange }: PrivacyTabProps) {
                   isSelected ? 'border-primary bg-primary/5 shadow-sm' : 'hover:bg-muted/50'
                 )}
                 onClick={() => onFormDataChange((p) => ({ ...p, visibility: opt.value }))}
+                onKeyDown={(e) =>
+                  e.key === 'Enter' && onFormDataChange((p) => ({ ...p, visibility: opt.value }))
+                }
+                role="button"
+                tabIndex={0}
               >
                 <div className="flex items-start gap-4">
                   <div

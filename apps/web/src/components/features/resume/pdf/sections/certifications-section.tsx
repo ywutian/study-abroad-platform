@@ -3,9 +3,10 @@ import { Text, View, StyleSheet } from '@react-pdf/renderer';
 import type { SectionRendererProps } from '../types';
 import { SectionTitle } from '../primitives/section-title';
 import type { CertificationItem } from '@study-abroad/shared';
+import type { ResumeTheme } from '../types';
 
 export function CertificationsSection({ section, theme }: SectionRendererProps) {
-  const items = ((section.content as any).items ?? []) as CertificationItem[];
+  const items = ((section.content as Record<string, unknown>).items ?? []) as CertificationItem[];
   if (!items.length) return null;
 
   const styles = getStyles(theme);
@@ -28,7 +29,7 @@ export function CertificationsSection({ section, theme }: SectionRendererProps) 
   );
 }
 
-function getStyles(theme: any) {
+function getStyles(theme: ResumeTheme) {
   return StyleSheet.create({
     container: { marginBottom: theme.spacing.sectionGap },
     item: { marginBottom: 2 },

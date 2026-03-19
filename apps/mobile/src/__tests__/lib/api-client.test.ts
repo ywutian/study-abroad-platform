@@ -79,10 +79,10 @@ afterAll(() => {
 // We import the *singleton* instance. Because the module caches it, every test
 // shares it. That is intentional -- it mirrors production usage.
 // The module reads EXPO_PUBLIC_API_URL at import time; we rely on the default
-// fallback (http://localhost:3002).
+// fallback (http://localhost:4101).
 import { apiClient } from '@/lib/api/client';
 
-const BASE = 'http://localhost:3002/api/v1';
+const BASE = 'http://localhost:4101/api/v1';
 
 // ======================================================================
 // Tests

@@ -2,9 +2,9 @@
  * MemoryDecayService 单元测试
  */
 import { Test, TestingModule } from '@nestjs/testing';
-import { MemoryDecayService, DecayConfig } from './memory-decay.service';
+import { MemoryDecayService } from './memory-decay.service';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { MemoryScorerService, MemoryTier } from './memory-scorer.service';
+import { MemoryScorerService } from './memory-scorer.service';
 import { RedisService } from '../../../common/redis/redis.service';
 
 type MockPrismaMemory = {

@@ -62,7 +62,9 @@ export class RedisCacheService {
         await client.expire(key, ttl || this.defaultTTL);
         return;
       } catch (err) {
-        this.logger.debug(`Redis cacheMessage failed, using fallback: ${err}`);
+        this.logger.debug(
+          `Redis cacheMessage failed, using fallback: ${String(err)}`,
+        );
       }
     }
 
@@ -87,7 +89,9 @@ export class RedisCacheService {
         const raw = await client.lrange(key, 0, -1);
         return raw.map((r) => JSON.parse(r));
       } catch (err) {
-        this.logger.debug(`Redis getConversationMessages failed: ${err}`);
+        this.logger.debug(
+          `Redis getConversationMessages failed: ${String(err)}`,
+        );
       }
     }
 
@@ -116,7 +120,7 @@ export class RedisCacheService {
         );
         return;
       } catch (err) {
-        this.logger.debug(`Redis cacheConversation failed: ${err}`);
+        this.logger.debug(`Redis cacheConversation failed: ${String(err)}`);
       }
     }
 
@@ -138,7 +142,7 @@ export class RedisCacheService {
         const raw = await client.get(key);
         return raw ? JSON.parse(raw) : null;
       } catch (err) {
-        this.logger.debug(`Redis getConversationMeta failed: ${err}`);
+        this.logger.debug(`Redis getConversationMeta failed: ${String(err)}`);
       }
     }
 
@@ -157,7 +161,7 @@ export class RedisCacheService {
       try {
         await client.del(msgKey, metaKey);
       } catch (err) {
-        this.logger.debug(`Redis deleteConversation failed: ${err}`);
+        this.logger.debug(`Redis deleteConversation failed: ${String(err)}`);
       }
     }
 
@@ -188,7 +192,7 @@ export class RedisCacheService {
         );
         return;
       } catch (err) {
-        this.logger.debug(`Redis cacheUserContext failed: ${err}`);
+        this.logger.debug(`Redis cacheUserContext failed: ${String(err)}`);
       }
     }
 
@@ -207,7 +211,7 @@ export class RedisCacheService {
         const raw = await client.get(key);
         return raw ? JSON.parse(raw) : null;
       } catch (err) {
-        this.logger.debug(`Redis getUserContext failed: ${err}`);
+        this.logger.debug(`Redis getUserContext failed: ${String(err)}`);
       }
     }
 
@@ -236,7 +240,7 @@ export class RedisCacheService {
       try {
         await client.del(key);
       } catch (err) {
-        this.logger.debug(`Redis deleteUserContext failed: ${err}`);
+        this.logger.debug(`Redis deleteUserContext failed: ${String(err)}`);
       }
     }
 
@@ -260,7 +264,7 @@ export class RedisCacheService {
         await client.set(key, conversationId, 'EX', this.defaultTTL);
         return;
       } catch (err) {
-        this.logger.debug(`Redis setActiveConversation failed: ${err}`);
+        this.logger.debug(`Redis setActiveConversation failed: ${String(err)}`);
       }
     }
 
@@ -278,7 +282,7 @@ export class RedisCacheService {
       try {
         return await client.get(key);
       } catch (err) {
-        this.logger.debug(`Redis getActiveConversation failed: ${err}`);
+        this.logger.debug(`Redis getActiveConversation failed: ${String(err)}`);
       }
     }
 

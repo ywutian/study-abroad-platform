@@ -16,13 +16,13 @@ import {
 } from './dto';
 import { USER_SUMMARY_SELECT } from '../../common/constants/prisma-selects';
 
-const reviewInclude = {
+const _REVIEW_INCLUDE = {
   reviewer: { select: USER_SUMMARY_SELECT },
   reviewee: { select: USER_SUMMARY_SELECT },
 } satisfies Prisma.PeerReviewInclude;
 
 type ReviewWithUsers = Prisma.PeerReviewGetPayload<{
-  include: typeof reviewInclude;
+  include: typeof _REVIEW_INCLUDE;
 }>;
 type ReviewUser = ReviewWithUsers['reviewer'];
 

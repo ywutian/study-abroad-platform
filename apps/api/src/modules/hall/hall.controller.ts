@@ -17,7 +17,7 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { HallService } from './hall.service';
-import { SwipeService } from '../swipe/swipe.service';
+import { SwipeService } from './swipe.service';
 import { CurrentUser, Public } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
@@ -42,7 +42,7 @@ import {
   SwipeStatsDto,
   LeaderboardDto,
   LeaderboardQueryDto,
-} from '../swipe/dto';
+} from './swipe-dto';
 
 @ApiTags('hall')
 @ThrottleRelaxed()

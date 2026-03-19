@@ -18,7 +18,7 @@ import { Server, Socket } from 'socket.io';
 import { Logger, Optional } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { OrchestratorService, StreamEvent } from './core/orchestrator.service';
+import { OrchestratorService } from './core/orchestrator.service';
 import { MemoryManagerService } from './memory/memory-manager.service';
 import { PromptGuardService } from './security/prompt-guard.service';
 
@@ -71,7 +71,7 @@ export class AiAgentGateway
   /**
    * 处理客户端连接
    */
-  async handleConnection(client: AuthenticatedSocket) {
+  handleConnection(client: AuthenticatedSocket) {
     try {
       const token =
         client.handshake.auth.token ||
@@ -103,7 +103,7 @@ export class AiAgentGateway
       this.userSockets.get(userId)?.add(client.id);
 
       // 加入用户房间
-      client.join(`user:${userId}`);
+      void client.join(`user:${userId}`);
 
       this.logger.log(`Client connected: ${client.id} (user: ${userId})`);
       client.emit('connected', { userId });

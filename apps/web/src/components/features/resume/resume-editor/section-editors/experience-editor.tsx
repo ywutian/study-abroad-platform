@@ -22,7 +22,7 @@ const LABELS: Record<string, { title: string; org: string; add: string }> = {
 };
 
 export function ExperienceEditor({ content, onChange, type }: ExperienceEditorProps) {
-  const items = ((content as any).items ?? []) as ExperienceItem[];
+  const items = (content.items ?? []) as ExperienceItem[];
   const labels = LABELS[type] ?? LABELS.WORK_EXPERIENCE;
 
   const updateItem = (index: number, field: string, value: unknown) => {

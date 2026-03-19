@@ -236,7 +236,7 @@ export class ManualSyncService {
         if (imported % 100 === 0) {
           this.logger.log(`  已导入 ${imported} 条...`);
         }
-      } catch (err) {
+      } catch {
         errors++;
       }
     }

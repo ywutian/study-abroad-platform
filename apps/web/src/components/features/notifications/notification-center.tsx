@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,7 +13,6 @@ import {
   CheckCircle,
   AlertTriangle,
   XCircle,
-  Settings,
   ExternalLink,
   UserPlus,
   MessageSquare,
@@ -225,6 +224,7 @@ function EmptyState({ emptyText, emptyHint }: { emptyText: string; emptyHint: st
 
 export function NotificationCenter() {
   const t = useTranslations('notifications');
+  const tUi = useTranslations('ui');
   const locale = useLocale();
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -286,7 +286,13 @@ export function NotificationCenter() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative" data-tour="notifications">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative"
+          data-tour="notifications"
+          aria-label={tUi('a11y.notifications')}
+        >
           {unreadCount > 0 ? (
             <BellRing className="h-5 w-5 text-amber-500" />
           ) : (

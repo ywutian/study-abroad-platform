@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
@@ -198,8 +199,8 @@ export default function CaseDetailPage() {
                     {t('cases.detail.essayContent')}
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
-                    <Link href={`/essay-gallery?id=${caseData.id}`}>
-                      {t('cases.detail.viewInEssayGallery')}
+                    <Link href={`/cases?tab=essays&id=${caseData.id}`}>
+                      {t('cases.detail.viewEssays')}
                     </Link>
                   </Button>
                 </CardHeader>

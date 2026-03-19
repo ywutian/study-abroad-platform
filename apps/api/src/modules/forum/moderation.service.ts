@@ -27,6 +27,7 @@ export class ForumModerationService {
   /**
    * 检测内容是否包含敏感词
    */
+  // eslint-disable-next-line @typescript-eslint/require-await
   async filterContent(content: string): Promise<{
     isClean: boolean;
     hasSuspicious: boolean;

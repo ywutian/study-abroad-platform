@@ -75,5 +75,9 @@ USER nestjs
 # Default port 4101. Cloud providers may override via PORT env var.
 EXPOSE 4101
 
+# Health check — wget is available in alpine by default
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+  CMD wget -qO- http://localhost:4101/health/live || exit 1
+
 # Start application (migrations run via Cloud Run Job before deploy)
 CMD ["./entrypoint.sh"]

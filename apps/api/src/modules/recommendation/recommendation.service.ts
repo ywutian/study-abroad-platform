@@ -8,8 +8,9 @@ import {
   Optional,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { AiService } from '../ai/ai.service';
-import { extractJsonFromLlm } from '../ai-agent/tools/helpers/llm-json.helper';
+import { fireAndForget } from '../../common/utils/async.util';
+import { LLMService } from '../ai-agent/core/llm.service';
+import { extractJsonFromLlm } from '../../common/utils/llm-json.util';
 import { RedisService } from '../../common/redis/redis.service';
 import { MemoryManagerService } from '../ai-agent/memory';
 import { MemoryType, EntityType } from '@prisma/client';
@@ -19,12 +20,9 @@ import {
   RecommendedSchoolDto,
   RecommendationAnalysisDto,
 } from './dto';
-import {
-  CaseIncentiveService,
-  PointAction,
-} from '../case/case-incentive.service';
+import { CaseIncentiveService, PointAction } from '../points/incentive.service';
+import { safeRefund } from '../points/refund.helper';
 import { clampPercentRate } from '../../common/utils/percent.util';
-import { formatHighSchoolContext } from '../ai-agent/tools/helpers/education-context.helper';
 import {
   extractProfileMetrics,
   extractSchoolMetrics,
@@ -36,6 +34,10 @@ import {
   mapSchoolMeta,
   type RecommendationSchoolResult,
 } from './recommendation.constants';
+import {
+  buildRecommendationSystemPrompt,
+  buildRecommendationUserPrompt,
+} from './recommendation.prompts';
 
 @Injectable()
 export class RecommendationService {
@@ -43,7 +45,7 @@ export class RecommendationService {
 
   constructor(
     private prisma: PrismaService,
-    private aiService: AiService,
+    private llmService: LLMService,
     private caseIncentiveService: CaseIncentiveService,
     private redis: RedisService,
     @Optional() private memoryManager?: MemoryManagerService,
@@ -110,14 +112,12 @@ export class RecommendationService {
     });
 
     if (!profile) {
-      await this.caseIncentiveService
-        .refund(userId, PointAction.AI_SCHOOL_RECOMMENDATION)
-        .catch((err) => {
-          this.logger.error('CRITICAL: refund failed after profile not found', {
-            userId,
-            error: err instanceof Error ? err.message : err,
-          });
-        });
+      await safeRefund(
+        this.caseIncentiveService,
+        userId,
+        PointAction.AI_SCHOOL_RECOMMENDATION,
+        this.logger,
+      );
       throw new NotFoundException(
         isZh ? '请先完善个人档案' : 'Please complete your profile first',
       );
@@ -125,88 +125,11 @@ export class RecommendationService {
 
     // 构建 AI Prompt
     const schoolCount = dto.schoolCount || 15;
-    const systemPrompt = isZh
-      ? `你是一位资深留学顾问，擅长根据学生背景推荐最适合的美国大学。
-
-请根据学生档案推荐 ${schoolCount} 所学校，分为三档：
-1. 冲刺校 (Reach): 约占30%，录取概率 < 30%
-2. 匹配校 (Match): 约占40%，录取概率 30-60%
-3. 保底校 (Safety): 约占30%，录取概率 > 60%
-
-评估维度：
-- 学术匹配度：GPA、标化成绩与学校平均水平的对比
-- 专业契合度：学校在该专业的排名和资源
-- 活动/奖项匹配：课外活动与学校文化的契合
-- 地理位置、费用等偏好
-
-重要约束：必须根据目标专业与活动方向推荐，不得推荐与申请者背景明显不符的学校。例如：商科/经济背景不推艺术类院校，纯文科背景不推纯理工院校，STEM/商科背景不推纯艺术类学校。专业与活动方向明显错配的学校必须排除。
-
-estimatedProbability 要求：你的录取概率估计应基于学生的 GPA、标化成绩与学校的录取率、SAT 中位数等数据的客观对比。不要凭感觉给出概率，而应参照数据合理推导。系统会使用统计模型校准你的估计值。
-
-返回严格的 JSON 格式：
-{
-  "recommendations": [
-    {
-      "schoolName": "学校英文名",
-      "tier": "reach" | "match" | "safety",
-      "estimatedProbability": 25,
-      "fitScore": 85,
-      "reasons": ["推荐理由1（中文）", "推荐理由2（中文）"],
-      "concerns": ["需要注意的点（中文）"]
-    }
-  ],
-  "analysis": {
-    "strengths": ["学生申请优势1（中文）", "优势2（中文）"],
-    "weaknesses": ["需要改进的方面1（中文）"],
-    "improvementTips": ["提升建议1（中文）", "建议2（中文）"]
-  },
-  "summary": "选校策略总结（中文，100-150字）"
-}
-
-所有文本字段必须用中文。`
-      : `You are an expert college admissions consultant who specializes in recommending the best-fit US universities based on student profiles.
-
-Based on the student profile, recommend ${schoolCount} schools in three tiers:
-1. Reach: ~30% of list, admission probability < 30%
-2. Match: ~40% of list, admission probability 30-60%
-3. Safety: ~30% of list, admission probability > 60%
-
-Evaluation dimensions:
-- Academic fit: GPA and test scores vs. school averages
-- Major fit: school ranking and resources in the target major
-- Activity/award fit: extracurriculars aligned with school culture
-- Location, cost, and other preferences
-
-Critical constraint: Recommend only schools that match the student's target major and activity focus. Do NOT recommend schools that are a clear mismatch (e.g. do not recommend art schools for business/economics profiles; do not recommend pure STEM schools for humanities-only profiles; do not recommend pure art schools for STEM/business profiles). Exclude any school that would be an obvious major/activity mismatch.
-
-estimatedProbability requirement: Your probability estimates should be grounded in objective comparison of the student's GPA and test scores against each school's acceptance rate and SAT midpoints. Do not guess probabilities — derive them from data. The system will calibrate your estimates using a statistical model.
-
-Return strict JSON:
-{
-  "recommendations": [
-    {
-      "schoolName": "School English Name",
-      "tier": "reach" | "match" | "safety",
-      "estimatedProbability": 25,
-      "fitScore": 85,
-      "reasons": ["Reason 1 (English)", "Reason 2 (English)"],
-      "concerns": ["Concern (English)"]
-    }
-  ],
-  "analysis": {
-    "strengths": ["Strength 1 (English)", "Strength 2 (English)"],
-    "weaknesses": ["Area for improvement (English)"],
-    "improvementTips": ["Tip 1 (English)", "Tip 2 (English)"]
-  },
-  "summary": "School selection strategy summary (English, 100-150 words)"
-}
-
-All text fields must be in English.`;
-
-    const userPrompt = this.buildUserPrompt(profile, dto, locale);
+    const systemPrompt = buildRecommendationSystemPrompt(locale, schoolCount);
+    const userPrompt = buildRecommendationUserPrompt(profile, dto, locale);
 
     try {
-      const result = await this.aiService.chat(
+      const result = await this.llmService.chatSimple(
         [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
@@ -293,177 +216,26 @@ All text fields must be in English.`;
       });
 
       // 写入记忆系统（异步非阻塞）
-      this.recordRecommendationToMemory(userId, response).catch((err) => {
-        this.logger.warn('Failed to record recommendation to memory', err);
-      });
-
-      // 桥接：将推荐结果同步到 PredictionResult（异步非阻塞）
-      this.syncToPredictionResult(userId, recommendations).catch((err) => {
-        this.logger.warn('Failed to sync recommendation to predictions', err);
-      });
+      fireAndForget(
+        this.recordRecommendationToMemory(userId, response),
+        this.logger,
+        'Failed to record recommendation to memory',
+      );
 
       return response;
     } catch (error) {
-      await this.caseIncentiveService
-        .refund(userId, PointAction.AI_SCHOOL_RECOMMENDATION)
-        .catch((refundErr) => {
-          this.logger.error(
-            'CRITICAL: refund failed after recommendation error',
-            {
-              userId,
-              originalError: error instanceof Error ? error.message : error,
-              refundError:
-                refundErr instanceof Error ? refundErr.message : refundErr,
-            },
-          );
-        });
+      await safeRefund(
+        this.caseIncentiveService,
+        userId,
+        PointAction.AI_SCHOOL_RECOMMENDATION,
+        this.logger,
+      );
       this.logger.error('School recommendation failed', error);
       throw new BadRequestException(
         isZh
           ? '生成选校建议失败，请重试'
           : 'Failed to generate school recommendations, please try again',
       );
-    }
-  }
-
-  /**
-   * 桥接：将推荐结果同步到统一的 PredictionResult 表
-   * 使 recommendation 生成的数据可在学校详情页、选校清单、仪表盘中复用
-   */
-  private async syncToPredictionResult(
-    userId: string,
-    recommendations: RecommendedSchoolDto[],
-  ): Promise<void> {
-    const profile = await this.prisma.profile.findFirst({
-      where: { userId },
-      select: { id: true },
-    });
-    if (!profile) return;
-
-    for (const rec of recommendations) {
-      if (!rec.schoolId) continue;
-
-      const probability = rec.estimatedProbability / 100;
-
-      try {
-        // 防覆盖：不覆盖更高质量的 v2-ensemble 预测结果
-        const existing = await this.prisma.predictionResult.findUnique({
-          where: {
-            profileId_schoolId: {
-              profileId: profile.id,
-              schoolId: rec.schoolId,
-            },
-          },
-          select: { modelVersion: true },
-        });
-
-        if (
-          existing?.modelVersion === 'v3-enterprise' ||
-          existing?.modelVersion === 'v2-ensemble'
-        )
-          continue;
-
-        await this.prisma.predictionResult.upsert({
-          where: {
-            profileId_schoolId: {
-              profileId: profile.id,
-              schoolId: rec.schoolId,
-            },
-          },
-          update: {
-            probability,
-            tier: rec.tier,
-            confidence: 'medium',
-            factors: rec.reasons.map((r) => ({
-              name: r,
-              impact: 'neutral' as const,
-              weight: 0,
-              detail: r,
-            })) as any,
-            suggestions: rec.concerns || ([] as any),
-            modelVersion: 'v2-recommendation-anchored',
-            source: 'recommendation',
-          },
-          create: {
-            profileId: profile.id,
-            schoolId: rec.schoolId,
-            probability,
-            tier: rec.tier,
-            confidence: 'medium',
-            factors: rec.reasons.map((r) => ({
-              name: r,
-              impact: 'neutral' as const,
-              weight: 0,
-              detail: r,
-            })) as any,
-            suggestions: rec.concerns || ([] as any),
-            modelVersion: 'v2-recommendation-anchored',
-            source: 'recommendation',
-          },
-        });
-
-        // 写入历史快照
-        await this.prisma.predictionSnapshot.create({
-          data: {
-            profileId: profile.id,
-            schoolId: rec.schoolId,
-            probability,
-            tier: rec.tier,
-            confidence: 'medium',
-            source: 'recommendation',
-            modelVersion: 'v2-recommendation-anchored',
-          },
-        });
-      } catch (error) {
-        this.logger.warn(
-          `Failed to sync recommendation for school ${rec.schoolId}`,
-          error,
-        );
-      }
-    }
-
-    // 写入记忆系统
-    if (this.memoryManager) {
-      const schools = recommendations
-        .filter((r) => r.schoolId)
-        .slice(0, 5)
-        .map((r) => ({
-          name: r.schoolName,
-          probability: r.estimatedProbability / 100,
-          tier: r.tier,
-        }));
-
-      if (schools.length > 0) {
-        const summary = schools
-          .map(
-            (s) =>
-              `${s.name} ${(s.probability * 100).toFixed(0)}%(${
-                s.tier === 'reach'
-                  ? '冲刺'
-                  : s.tier === 'match'
-                    ? '匹配'
-                    : '保底'
-              })`,
-          )
-          .join(', ');
-
-        await this.memoryManager
-          .remember(userId, {
-            type: MemoryType.FACT,
-            category: 'school_prediction',
-            content: `通过智能选校获得预测: ${summary}`,
-            importance: 0.5,
-            metadata: {
-              source: 'recommendation',
-              schoolCount: schools.length,
-              topSchools: schools,
-              timestamp: new Date().toISOString(),
-            },
-          })
-          .catch((err) => {
-            this.logger.warn('Failed to record bridge prediction memory', err);
-          });
-      }
     }
   }
 
@@ -505,9 +277,11 @@ All text fields must be in English.`;
     }
 
     // 记录浏览行为
-    this.recordViewToMemory(userId, recommendation).catch((err) => {
-      this.logger.warn('Failed to record view to memory', err);
-    });
+    fireAndForget(
+      this.recordViewToMemory(userId, recommendation),
+      this.logger,
+      'Failed to record view to memory',
+    );
 
     return {
       id: recommendation.id,
@@ -521,114 +295,6 @@ All text fields must be in English.`;
   }
 
   // ============ Helper Methods ============
-
-  private buildUserPrompt(
-    profile: any,
-    dto: SchoolRecommendationRequestDto,
-    locale = 'zh',
-  ): string {
-    const isZh = locale === 'zh';
-    const parts: string[] = [
-      isZh
-        ? '请根据以下学生档案推荐选校清单：\n'
-        : 'Based on the following student profile, recommend a school list:\n',
-    ];
-
-    if (profile.gpa) {
-      parts.push(`GPA: ${profile.gpa}/${profile.gpaScale || 4.0}`);
-    }
-
-    if (profile.testScores?.length) {
-      const scores = profile.testScores
-        .map((s: any) => `${s.type}: ${s.score}`)
-        .join(', ');
-      parts.push(`${isZh ? '标化成绩' : 'Test Scores'}: ${scores}`);
-    }
-
-    // 高中背景
-    if (profile.education?.length) {
-      const hsEntry = profile.education.find(
-        (e: any) => e.schoolType === 'HIGH_SCHOOL',
-      );
-      if (hsEntry) {
-        const hsContext = formatHighSchoolContext(
-          profile.education.map((e: any) => ({
-            school: e.schoolName,
-            schoolType: e.schoolType,
-            highSchoolId: e.highSchoolId,
-          })),
-          hsEntry.highSchool
-            ? {
-                name: hsEntry.highSchool.name,
-                tier: hsEntry.highSchool.tier,
-                type: hsEntry.highSchool.type,
-                country: hsEntry.highSchool.country,
-                state: hsEntry.highSchool.state,
-              }
-            : null,
-          locale,
-        );
-        if (hsContext) {
-          parts.push(hsContext);
-        }
-      }
-    }
-
-    if (profile.activities?.length) {
-      const activities = profile.activities
-        .slice(0, 8)
-        .map((a: any) => {
-          const base = `${a.name || a.category}${a.role ? `(${a.role})` : ''}`;
-          const desc = a.description?.trim();
-          return desc ? `${base}: ${desc}` : base;
-        })
-        .join('; ');
-      parts.push(
-        `${isZh ? '主要活动（含方向/描述）' : 'Key Activities (with direction/description)'}: ${activities}`,
-      );
-    }
-
-    if (profile.awards?.length) {
-      const awards = profile.awards
-        .slice(0, 5)
-        .map((a: any) => `${a.name}(${a.level})`)
-        .join(', ');
-      parts.push(`${isZh ? '奖项' : 'Awards'}: ${awards}`);
-    }
-
-    if (profile.targetMajor) {
-      parts.push(
-        `${isZh ? '目标专业' : 'Target Major'}: ${profile.targetMajor}`,
-      );
-    }
-
-    if (dto.preferredRegions?.length) {
-      parts.push(
-        `${isZh ? '偏好地区' : 'Preferred Regions'}: ${dto.preferredRegions.join(', ')}`,
-      );
-    }
-    if (dto.preferredMajors?.length) {
-      parts.push(
-        `${isZh ? '意向专业' : 'Intended Majors'}: ${dto.preferredMajors.join(', ')}`,
-      );
-    }
-    if (dto.budget) {
-      const budgetMap = {
-        low: isZh ? '< $30,000/年' : '< $30,000/year',
-        medium: isZh ? '$30,000 - $60,000/年' : '$30,000 - $60,000/year',
-        high: isZh ? '$60,000 - $80,000/年' : '$60,000 - $80,000/year',
-        unlimited: isZh ? '不限' : 'No limit',
-      };
-      parts.push(`${isZh ? '预算' : 'Budget'}: ${budgetMap[dto.budget]}`);
-    }
-    if (dto.additionalPreferences) {
-      parts.push(
-        `${isZh ? '其他偏好' : 'Other Preferences'}: ${dto.additionalPreferences}`,
-      );
-    }
-
-    return parts.join('\n');
-  }
 
   private createProfileSnapshot(profile: any): any {
     return {

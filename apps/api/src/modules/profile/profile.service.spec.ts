@@ -1,17 +1,23 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProfileService } from './profile.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { AuthorizationService } from '../../common/services/authorization.service';
-import { RedisService } from '../../common/redis/redis.service';
-import { CacheInvalidationService } from '../../common/redis/cache-invalidation.service';
-import { MemoryManagerService } from '../ai-agent/memory';
-import { AiService } from '../ai/ai.service';
+import { ProfileCrudService } from './profile-crud.service';
+import { ProfileScoresService } from './profile-scores.service';
+import { ProfileEducationService } from './profile-education.service';
+import { ProfileAnalysisService } from './profile-analysis.service';
+import { ProfileMemoryService } from './profile-memory.service';
+import { ProfileHelpersService } from './profile-helpers.service';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
 import { Visibility, Role, Prisma } from '@prisma/client';
 
 describe('ProfileService', () => {
   let service: ProfileService;
-  let prismaService: PrismaService;
+  let crudService: ProfileCrudService;
+  let scoresService: ProfileScoresService;
+  let _educationService: ProfileEducationService;
+  let analysisService: ProfileAnalysisService;
+  let memoryService: ProfileMemoryService;
+  let _helpersService: ProfileHelpersService;
 
   const mockUserId = 'user-123';
   const mockProfileId = 'profile-123';
@@ -85,111 +91,157 @@ describe('ProfileService', () => {
         {
           provide: PrismaService,
           useValue: {
-            profile: {
-              findUnique: jest.fn(),
-              create: jest.fn(),
-              update: jest.fn(),
-              upsert: jest.fn(),
+            activityTemplate: {
+              findMany: jest.fn().mockResolvedValue([]),
             },
-            testScore: {
-              findUnique: jest.fn(),
-              create: jest.fn(),
-              update: jest.fn(),
-              delete: jest.fn(),
-            },
-            activity: {
-              findUnique: jest.fn(),
-              create: jest.fn(),
-              update: jest.fn(),
-              delete: jest.fn(),
-              updateMany: jest.fn(),
-            },
-            award: {
-              findUnique: jest.fn(),
-              create: jest.fn(),
-              update: jest.fn(),
-              delete: jest.fn(),
-              updateMany: jest.fn(),
-            },
-            $transaction: jest.fn((ops) => Promise.all(ops)),
           },
         },
         {
-          provide: AuthorizationService,
+          provide: ProfileCrudService,
           useValue: {
-            verifyOwnership: jest
+            findByUserId: jest.fn().mockResolvedValue(mockProfile),
+            findByIdWithVisibilityCheck: jest
               .fn()
-              .mockImplementation((entity, userId, options) => {
+              .mockResolvedValue(mockProfile),
+            create: jest.fn().mockResolvedValue(mockProfile),
+            update: jest.fn().mockResolvedValue(mockProfile),
+            upsert: jest.fn().mockResolvedValue(mockProfile),
+          },
+        },
+        {
+          provide: ProfileScoresService,
+          useValue: {
+            createTestScore: jest.fn().mockResolvedValue(mockTestScore),
+            updateTestScore: jest.fn().mockResolvedValue({
+              ...mockTestScore,
+              score: 1600,
+            }),
+            deleteTestScore: jest.fn().mockResolvedValue(undefined),
+            getTestScores: jest.fn().mockResolvedValue([mockTestScore]),
+            createActivity: jest.fn().mockResolvedValue(mockActivity),
+            updateActivity: jest.fn().mockResolvedValue({
+              ...mockActivity,
+              role: 'Vice President',
+            }),
+            deleteActivity: jest.fn().mockResolvedValue(undefined),
+            getActivities: jest.fn().mockResolvedValue([mockActivity]),
+            reorderActivities: jest.fn().mockResolvedValue(undefined),
+            aiSortActivities: jest.fn().mockResolvedValue({
+              suggestedOrder: [],
+              summary: 'test',
+            }),
+            createAward: jest.fn().mockResolvedValue(mockAward),
+            updateAward: jest.fn().mockResolvedValue({
+              ...mockAward,
+              description: 'Updated description',
+            }),
+            deleteAward: jest.fn().mockResolvedValue(undefined),
+            getAwards: jest.fn().mockResolvedValue([mockAward]),
+            reorderAwards: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: ProfileEducationService,
+          useValue: {
+            createEducation: jest.fn().mockResolvedValue({}),
+            updateEducation: jest.fn().mockResolvedValue({}),
+            deleteEducation: jest.fn().mockResolvedValue(undefined),
+            getEducation: jest.fn().mockResolvedValue([]),
+            getTargetSchools: jest.fn().mockResolvedValue([]),
+            setTargetSchools: jest.fn().mockResolvedValue([]),
+            addTargetSchool: jest.fn().mockResolvedValue({}),
+            removeTargetSchool: jest.fn().mockResolvedValue(undefined),
+            createEssay: jest.fn().mockResolvedValue({}),
+            updateEssay: jest.fn().mockResolvedValue({}),
+            deleteEssay: jest.fn().mockResolvedValue(undefined),
+            getEssays: jest.fn().mockResolvedValue([]),
+            getEssayById: jest.fn().mockResolvedValue({}),
+          },
+        },
+        {
+          provide: ProfileAnalysisService,
+          useValue: {
+            calculateProfileGrade: jest.fn().mockResolvedValue({
+              overallScore: 50,
+              admissionPrediction:
+                'Building a strong profile - focus on key areas',
+              strengths: [],
+              weaknesses: [],
+              improvements: [
+                'Consider adding research experience',
+                'Participate in leadership positions in your activities',
+                'Pursue academic competitions in your field of interest',
+              ],
+              recommendedActivities: [
+                'Join summer research programs at local universities',
+                'Start a project or initiative related to your intended major',
+                'Seek internship opportunities in your field',
+              ],
+              timeline: [
+                { date: '3 months', task: 'Complete standardized testing' },
+                { date: '6 months', task: 'Start college essays' },
+                {
+                  date: '9 months',
+                  task: 'Finalize school list and applications',
+                },
+              ],
+              projectedImprovement: 20,
+            }),
+          },
+        },
+        {
+          provide: ProfileMemoryService,
+          useValue: {
+            recordProfileUpdateToMemory: jest.fn().mockResolvedValue(undefined),
+            recordTestScoreToMemory: jest.fn().mockResolvedValue(undefined),
+            recordActivityToMemory: jest.fn().mockResolvedValue(undefined),
+            recordAwardToMemory: jest.fn().mockResolvedValue(undefined),
+            recordEducationToMemory: jest.fn().mockResolvedValue(undefined),
+            recordEssayToMemory: jest.fn().mockResolvedValue(undefined),
+            recordTargetSchoolAddToMemory: jest
+              .fn()
+              .mockResolvedValue(undefined),
+            recordTargetSchoolRemovalToMemory: jest
+              .fn()
+              .mockResolvedValue(undefined),
+            recordSetTargetSchoolsToMemory: jest
+              .fn()
+              .mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: ProfileHelpersService,
+          useValue: {
+            getProfileId: jest.fn().mockResolvedValue(mockProfileId),
+            verifyProfileOwnership: jest
+              .fn()
+              .mockImplementation((entity, userId, entityName) => {
                 if (!entity) {
-                  throw new NotFoundException(
-                    `${options?.entityName || 'Resource'} not found`,
-                  );
+                  throw new NotFoundException(`${entityName} not found`);
                 }
-                const ownerField = options?.ownerField || 'userId';
-                let actualOwnerId = entity;
-                if (ownerField.includes('.')) {
-                  for (const part of ownerField.split('.')) {
-                    actualOwnerId = actualOwnerId?.[part];
-                  }
-                } else {
-                  actualOwnerId = entity[ownerField];
-                }
-                if (actualOwnerId !== userId) {
+                if (entity.profile?.userId !== userId) {
                   throw new ForbiddenException(
-                    `You don't have access to this ${options?.entityName || 'Resource'}`,
+                    `You don't have access to this ${entityName}`,
                   );
                 }
                 return entity;
               }),
-            verifyNestedOwnership: jest
-              .fn()
-              .mockImplementation((entity, userId, getOwnerId, options) => {
-                if (!entity) {
-                  throw new NotFoundException(
-                    `${options?.entityName || 'Resource'} not found`,
-                  );
-                }
-                const ownerId = getOwnerId(entity);
-                if (ownerId !== userId) {
-                  throw new ForbiddenException(
-                    `You don't have access to this ${options?.entityName || 'Resource'}`,
-                  );
-                }
-                return entity;
-              }),
-          },
-        },
-        {
-          provide: RedisService,
-          useValue: {
-            getJSON: jest.fn().mockResolvedValue(null),
-            setJSON: jest.fn().mockResolvedValue(undefined),
-            del: jest.fn().mockResolvedValue(undefined),
-          },
-        },
-        {
-          provide: CacheInvalidationService,
-          useValue: {
-            onProfileChange: jest.fn().mockResolvedValue(undefined),
-          },
-        },
-        {
-          provide: AiService,
-          useValue: {
-            chat: jest.fn().mockResolvedValue('{}'),
-          },
-        },
-        {
-          provide: MemoryManagerService,
-          useValue: {
-            remember: jest.fn().mockResolvedValue(undefined),
           },
         },
       ],
     }).compile();
 
     service = module.get<ProfileService>(ProfileService);
-    prismaService = module.get<PrismaService>(PrismaService);
+    crudService = module.get<ProfileCrudService>(ProfileCrudService);
+    scoresService = module.get<ProfileScoresService>(ProfileScoresService);
+    _educationService = module.get<ProfileEducationService>(
+      ProfileEducationService,
+    );
+    analysisService = module.get<ProfileAnalysisService>(
+      ProfileAnalysisService,
+    );
+    memoryService = module.get<ProfileMemoryService>(ProfileMemoryService);
+    _helpersService = module.get<ProfileHelpersService>(ProfileHelpersService);
   });
 
   afterEach(() => {
@@ -211,21 +263,18 @@ describe('ProfileService', () => {
         essays: [],
       };
 
-      (prismaService.profile.findUnique as jest.Mock).mockResolvedValue(
+      (crudService.findByUserId as jest.Mock).mockResolvedValue(
         profileWithRelations,
       );
 
       const result = await service.findByUserId(mockUserId);
 
       expect(result).toEqual(profileWithRelations);
-      expect(prismaService.profile.findUnique).toHaveBeenCalledWith({
-        where: { userId: mockUserId },
-        include: expect.any(Object),
-      });
+      expect(crudService.findByUserId).toHaveBeenCalledWith(mockUserId);
     });
 
     it('should return null if profile not found', async () => {
-      (prismaService.profile.findUnique as jest.Mock).mockResolvedValue(null);
+      (crudService.findByUserId as jest.Mock).mockResolvedValue(null);
 
       const result = await service.findByUserId('nonexistent');
 
@@ -236,7 +285,7 @@ describe('ProfileService', () => {
   describe('findByIdWithVisibilityCheck', () => {
     it('should return own profile regardless of visibility', async () => {
       const privateProfile = { ...mockProfile, visibility: Visibility.PRIVATE };
-      (prismaService.profile.findUnique as jest.Mock).mockResolvedValue({
+      (crudService.findByIdWithVisibilityCheck as jest.Mock).mockResolvedValue({
         ...privateProfile,
         user: { id: mockUserId },
       });
@@ -251,11 +300,9 @@ describe('ProfileService', () => {
     });
 
     it('should throw ForbiddenException for private profile viewed by others', async () => {
-      (prismaService.profile.findUnique as jest.Mock).mockResolvedValue({
-        ...mockProfile,
-        visibility: Visibility.PRIVATE,
-        user: { id: mockUserId },
-      });
+      (crudService.findByIdWithVisibilityCheck as jest.Mock).mockRejectedValue(
+        new ForbiddenException('This profile is private'),
+      );
 
       await expect(
         service.findByIdWithVisibilityCheck(
@@ -267,7 +314,7 @@ describe('ProfileService', () => {
     });
 
     it('should allow ADMIN to view any profile', async () => {
-      (prismaService.profile.findUnique as jest.Mock).mockResolvedValue({
+      (crudService.findByIdWithVisibilityCheck as jest.Mock).mockResolvedValue({
         ...mockProfile,
         visibility: Visibility.PRIVATE,
         user: { id: mockUserId },
@@ -283,7 +330,9 @@ describe('ProfileService', () => {
     });
 
     it('should throw NotFoundException if profile not found', async () => {
-      (prismaService.profile.findUnique as jest.Mock).mockResolvedValue(null);
+      (crudService.findByIdWithVisibilityCheck as jest.Mock).mockRejectedValue(
+        new NotFoundException('Profile not found'),
+      );
 
       await expect(
         service.findByIdWithVisibilityCheck(
@@ -295,11 +344,9 @@ describe('ProfileService', () => {
     });
 
     it('should throw ForbiddenException for VERIFIED_ONLY profile viewed by non-verified user', async () => {
-      (prismaService.profile.findUnique as jest.Mock).mockResolvedValue({
-        ...mockProfile,
-        visibility: Visibility.VERIFIED_ONLY,
-        user: { id: mockUserId },
-      });
+      (crudService.findByIdWithVisibilityCheck as jest.Mock).mockRejectedValue(
+        new ForbiddenException('Only verified users can view this profile'),
+      );
 
       await expect(
         service.findByIdWithVisibilityCheck(
@@ -313,9 +360,7 @@ describe('ProfileService', () => {
 
   describe('upsert', () => {
     it('should create or update profile', async () => {
-      (prismaService.profile.upsert as jest.Mock).mockResolvedValue(
-        mockProfile,
-      );
+      (crudService.upsert as jest.Mock).mockResolvedValue(mockProfile);
 
       const result = await service.upsert(mockUserId, {
         gpa: 3.9,
@@ -323,7 +368,7 @@ describe('ProfileService', () => {
       });
 
       expect(result).toEqual(mockProfile);
-      expect(prismaService.profile.upsert).toHaveBeenCalled();
+      expect(crudService.upsert).toHaveBeenCalled();
     });
   });
 
@@ -333,13 +378,6 @@ describe('ProfileService', () => {
 
   describe('createTestScore', () => {
     it('should create test score', async () => {
-      (prismaService.profile.findUnique as jest.Mock).mockResolvedValue({
-        id: mockProfileId,
-      });
-      (prismaService.testScore.create as jest.Mock).mockResolvedValue(
-        mockTestScore,
-      );
-
       const result = await service.createTestScore(mockUserId, {
         type: 'SAT',
         score: 1550,
@@ -347,45 +385,46 @@ describe('ProfileService', () => {
       });
 
       expect(result).toEqual(mockTestScore);
+      expect(scoresService.createTestScore).toHaveBeenCalledWith(
+        mockUserId,
+        expect.any(Object),
+      );
     });
 
-    it('should auto-create profile if not exists', async () => {
-      (prismaService.profile.findUnique as jest.Mock).mockResolvedValue(null);
-      (prismaService.profile.create as jest.Mock).mockResolvedValue({
-        id: 'new-profile',
-      });
-      (prismaService.testScore.create as jest.Mock).mockResolvedValue(
-        mockTestScore,
-      );
-
+    it('should record to memory on create', async () => {
       await service.createTestScore(mockUserId, {
         type: 'SAT',
         score: 1550,
       });
 
-      expect(prismaService.profile.create).toHaveBeenCalled();
+      // Memory recording is async (fire-and-forget), give it a tick
+      await new Promise((resolve) => setImmediate(resolve));
+
+      expect(memoryService.recordTestScoreToMemory).toHaveBeenCalledWith(
+        mockUserId,
+        expect.objectContaining({ type: 'SAT', score: 1550 }),
+      );
     });
   });
 
   describe('updateTestScore', () => {
     it('should update test score', async () => {
-      (prismaService.testScore.findUnique as jest.Mock).mockResolvedValue(
-        mockTestScore,
-      );
-      (prismaService.testScore.update as jest.Mock).mockResolvedValue({
-        ...mockTestScore,
-        score: 1600,
-      });
-
       const result = await service.updateTestScore(mockUserId, 'score-123', {
         score: 1600,
       });
 
       expect(result.score).toBe(1600);
+      expect(scoresService.updateTestScore).toHaveBeenCalledWith(
+        mockUserId,
+        'score-123',
+        { score: 1600 },
+      );
     });
 
     it('should throw NotFoundException if score not found', async () => {
-      (prismaService.testScore.findUnique as jest.Mock).mockResolvedValue(null);
+      (scoresService.updateTestScore as jest.Mock).mockRejectedValue(
+        new NotFoundException('Test score not found'),
+      );
 
       await expect(
         service.updateTestScore(mockUserId, 'nonexistent', { score: 1600 }),
@@ -393,10 +432,9 @@ describe('ProfileService', () => {
     });
 
     it('should throw ForbiddenException if score belongs to another user', async () => {
-      (prismaService.testScore.findUnique as jest.Mock).mockResolvedValue({
-        ...mockTestScore,
-        profile: { userId: 'other-user' },
-      });
+      (scoresService.updateTestScore as jest.Mock).mockRejectedValue(
+        new ForbiddenException("You don't have access to this Test score"),
+      );
 
       await expect(
         service.updateTestScore(mockUserId, 'score-123', { score: 1600 }),
@@ -406,18 +444,12 @@ describe('ProfileService', () => {
 
   describe('deleteTestScore', () => {
     it('should delete test score', async () => {
-      (prismaService.testScore.findUnique as jest.Mock).mockResolvedValue(
-        mockTestScore,
-      );
-      (prismaService.testScore.delete as jest.Mock).mockResolvedValue(
-        mockTestScore,
-      );
-
       await service.deleteTestScore(mockUserId, 'score-123');
 
-      expect(prismaService.testScore.delete).toHaveBeenCalledWith({
-        where: { id: 'score-123' },
-      });
+      expect(scoresService.deleteTestScore).toHaveBeenCalledWith(
+        mockUserId,
+        'score-123',
+      );
     });
   });
 
@@ -427,13 +459,6 @@ describe('ProfileService', () => {
 
   describe('createActivity', () => {
     it('should create activity', async () => {
-      (prismaService.profile.findUnique as jest.Mock).mockResolvedValue({
-        id: mockProfileId,
-      });
-      (prismaService.activity.create as jest.Mock).mockResolvedValue(
-        mockActivity,
-      );
-
       const result = await service.createActivity(mockUserId, {
         name: 'Math Club',
         category: 'ACADEMIC',
@@ -441,19 +466,15 @@ describe('ProfileService', () => {
       });
 
       expect(result).toEqual(mockActivity);
+      expect(scoresService.createActivity).toHaveBeenCalledWith(
+        mockUserId,
+        expect.any(Object),
+      );
     });
   });
 
   describe('updateActivity', () => {
     it('should update activity', async () => {
-      (prismaService.activity.findUnique as jest.Mock).mockResolvedValue(
-        mockActivity,
-      );
-      (prismaService.activity.update as jest.Mock).mockResolvedValue({
-        ...mockActivity,
-        role: 'Vice President',
-      });
-
       const result = await service.updateActivity(mockUserId, 'activity-123', {
         role: 'Vice President',
       });
@@ -462,7 +483,9 @@ describe('ProfileService', () => {
     });
 
     it('should throw NotFoundException if activity not found', async () => {
-      (prismaService.activity.findUnique as jest.Mock).mockResolvedValue(null);
+      (scoresService.updateActivity as jest.Mock).mockRejectedValue(
+        new NotFoundException('Activity not found'),
+      );
 
       await expect(
         service.updateActivity(mockUserId, 'nonexistent', { role: 'Member' }),
@@ -472,18 +495,12 @@ describe('ProfileService', () => {
 
   describe('deleteActivity', () => {
     it('should delete activity', async () => {
-      (prismaService.activity.findUnique as jest.Mock).mockResolvedValue(
-        mockActivity,
-      );
-      (prismaService.activity.delete as jest.Mock).mockResolvedValue(
-        mockActivity,
-      );
-
       await service.deleteActivity(mockUserId, 'activity-123');
 
-      expect(prismaService.activity.delete).toHaveBeenCalledWith({
-        where: { id: 'activity-123' },
-      });
+      expect(scoresService.deleteActivity).toHaveBeenCalledWith(
+        mockUserId,
+        'activity-123',
+      );
     });
   });
 
@@ -493,11 +510,6 @@ describe('ProfileService', () => {
 
   describe('createAward', () => {
     it('should create award', async () => {
-      (prismaService.profile.findUnique as jest.Mock).mockResolvedValue({
-        id: mockProfileId,
-      });
-      (prismaService.award.create as jest.Mock).mockResolvedValue(mockAward);
-
       const result = await service.createAward(mockUserId, {
         name: 'AMC Gold',
         level: 'NATIONAL',
@@ -505,19 +517,15 @@ describe('ProfileService', () => {
       });
 
       expect(result).toEqual(mockAward);
+      expect(scoresService.createAward).toHaveBeenCalledWith(
+        mockUserId,
+        expect.any(Object),
+      );
     });
   });
 
   describe('updateAward', () => {
     it('should update award', async () => {
-      (prismaService.award.findUnique as jest.Mock).mockResolvedValue(
-        mockAward,
-      );
-      (prismaService.award.update as jest.Mock).mockResolvedValue({
-        ...mockAward,
-        description: 'Updated description',
-      });
-
       const result = await service.updateAward(mockUserId, 'award-123', {
         description: 'Updated description',
       });
@@ -526,61 +534,59 @@ describe('ProfileService', () => {
     });
 
     it('should throw NotFoundException if award not found', async () => {
-      (prismaService.award.findUnique as jest.Mock).mockResolvedValue(null);
+      (scoresService.updateAward as jest.Mock).mockRejectedValue(
+        new NotFoundException('Award not found'),
+      );
 
       await expect(
-        service.updateAward(mockUserId, 'nonexistent', { description: 'Test' }),
+        service.updateAward(mockUserId, 'nonexistent', {
+          description: 'Test',
+        }),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('deleteAward', () => {
     it('should delete award', async () => {
-      (prismaService.award.findUnique as jest.Mock).mockResolvedValue(
-        mockAward,
-      );
-      (prismaService.award.delete as jest.Mock).mockResolvedValue(mockAward);
-
       await service.deleteAward(mockUserId, 'award-123');
 
-      expect(prismaService.award.delete).toHaveBeenCalledWith({
-        where: { id: 'award-123' },
-      });
+      expect(scoresService.deleteAward).toHaveBeenCalledWith(
+        mockUserId,
+        'award-123',
+      );
     });
   });
 
   // ============================================
-  // calculateProfileGrade (Phase 6 — extracted logic tests)
+  // calculateProfileGrade (delegated to ProfileAnalysisService)
   // ============================================
   describe('calculateProfileGrade', () => {
     it('should return base score when profile not found', async () => {
-      (prismaService.profile.findUnique as jest.Mock).mockResolvedValue(null);
       const result = await service.calculateProfileGrade(mockUserId);
       expect(result.overallScore).toBe(50);
-      expect(result.weaknesses).toEqual(
-        expect.not.arrayContaining(['GPA not recorded']),
+      expect(analysisService.calculateProfileGrade).toHaveBeenCalledWith(
+        mockUserId,
       );
     });
 
     it('should score high GPA profile correctly', async () => {
-      const profileWithRelations = {
-        ...mockProfile,
-        testScores: [{ ...mockTestScore, type: 'SAT', score: 1550 }],
-        activities: [
-          mockActivity,
-          mockActivity,
-          mockActivity,
-          mockActivity,
-          mockActivity,
+      (analysisService.calculateProfileGrade as jest.Mock).mockResolvedValue({
+        overallScore: 95,
+        admissionPrediction: 'Strong candidate for top universities',
+        strengths: [
+          'Excellent GPA above 3.6',
+          'Strong SAT score: 1550',
+          'Diverse extracurricular involvement (5 activities)',
+          'Multiple awards and recognitions (3)',
         ],
-        awards: [mockAward, mockAward, mockAward],
-      };
-      (prismaService.profile.findUnique as jest.Mock).mockResolvedValue(
-        profileWithRelations,
-      );
+        weaknesses: [],
+        improvements: [],
+        recommendedActivities: [],
+        timeline: [],
+        projectedImprovement: 5,
+      });
 
       const result = await service.calculateProfileGrade(mockUserId);
-      // GPA 3.8/4.0 = 95% -> +15, SAT 1550 >= 1400 -> +10, 5 activities -> +10, 3 awards -> +10
       expect(result.overallScore).toBeGreaterThanOrEqual(85);
       expect(result.strengths).toEqual(
         expect.arrayContaining([
@@ -591,37 +597,35 @@ describe('ProfileService', () => {
     });
 
     it('should cap overall score at 100', async () => {
-      const superProfile = {
-        ...mockProfile,
-        gpa: new Prisma.Decimal(4.0),
-        gpaScale: new Prisma.Decimal(4.0),
-        testScores: [
-          { ...mockTestScore, type: 'SAT', score: 1600 },
-          { ...mockTestScore, id: 'toefl-1', type: 'TOEFL', score: 115 },
-        ],
-        activities: Array(10).fill(mockActivity),
-        awards: Array(5).fill(mockAward),
-      };
-      (prismaService.profile.findUnique as jest.Mock).mockResolvedValue(
-        superProfile,
-      );
+      (analysisService.calculateProfileGrade as jest.Mock).mockResolvedValue({
+        overallScore: 100,
+        admissionPrediction: 'Strong candidate for top universities',
+        strengths: [],
+        weaknesses: [],
+        improvements: [],
+        recommendedActivities: [],
+        timeline: [],
+        projectedImprovement: 0,
+      });
 
       const result = await service.calculateProfileGrade(mockUserId);
       expect(result.overallScore).toBeLessThanOrEqual(100);
     });
 
     it('should identify weaknesses for empty profile', async () => {
-      const emptyProfile = {
-        ...mockProfile,
-        gpa: null,
-        gpaScale: null,
-        testScores: [],
-        activities: [],
-        awards: [],
-      };
-      (prismaService.profile.findUnique as jest.Mock).mockResolvedValue(
-        emptyProfile,
-      );
+      (analysisService.calculateProfileGrade as jest.Mock).mockResolvedValue({
+        overallScore: 50,
+        admissionPrediction: 'Building a strong profile - focus on key areas',
+        strengths: [],
+        weaknesses: [
+          'GPA not recorded',
+          'No extracurricular activities recorded',
+        ],
+        improvements: [],
+        recommendedActivities: [],
+        timeline: [],
+        projectedImprovement: 20,
+      });
 
       const result = await service.calculateProfileGrade(mockUserId);
       expect(result.weaknesses).toEqual(
@@ -633,7 +637,6 @@ describe('ProfileService', () => {
     });
 
     it('should always return timeline and improvement suggestions', async () => {
-      (prismaService.profile.findUnique as jest.Mock).mockResolvedValue(null);
       const result = await service.calculateProfileGrade(mockUserId);
       expect(result.timeline).toHaveLength(3);
       expect(result.improvements).toHaveLength(3);

@@ -144,7 +144,7 @@ export class HealthController {
       }
 
       return { status: 'ok' };
-    } catch (error) {
+    } catch {
       res.status(HttpStatus.SERVICE_UNAVAILABLE);
       return { status: 'error', message: 'Database connection failed' };
     }

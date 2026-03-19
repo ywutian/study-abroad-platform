@@ -4,12 +4,12 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import cookieParser from 'cookie-parser';
 import { AppModule } from '../src/app.module';
-import { registerAndLogin, unwrap } from './helpers/auth.helper';
+import { registerAndLogin } from './helpers/auth.helper';
 
 describe('Admin (e2e)', () => {
   let app: INestApplication<App>;
   let userToken: string;
-  let userEmail: string;
+  let _userEmail: string;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -25,7 +25,7 @@ describe('Admin (e2e)', () => {
 
     const auth = await registerAndLogin(app);
     userToken = auth.accessToken;
-    userEmail = auth.email;
+    _userEmail = auth.email;
   }, 30000);
 
   afterAll(async () => {

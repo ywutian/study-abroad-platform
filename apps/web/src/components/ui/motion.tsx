@@ -11,7 +11,6 @@ import {
   AnimatePresence,
   useInView,
   useReducedMotion,
-  MotionProps,
 } from 'framer-motion';
 import { useFormatter, useLocale } from 'next-intl';
 import { toBcp47 } from '@/lib/i18n/locale-utils';
@@ -22,13 +21,8 @@ import {
   fadeInDown,
   fadeInLeft,
   fadeInRight,
-  scaleIn,
   popIn,
-  staggerContainer,
   staggerItem,
-  cardHover,
-  buttonTap,
-  messageIn,
   messageInLeft,
   messageInRight,
   transitions,
@@ -479,9 +473,12 @@ function CountUpAnimation({
   return (
     <motion.span
       ref={nodeRef}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       initial={{ '--num': 0 } as any}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       animate={{ '--num': target } as any}
       transition={{ duration, ease: 'easeOut' }}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onUpdate={(latest: any) => {
         if (nodeRef.current) {
           nodeRef.current.textContent = formatter.format(Math.round(latest['--num'] || 0));

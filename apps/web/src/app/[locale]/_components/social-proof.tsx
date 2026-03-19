@@ -38,7 +38,7 @@ const stories = [
 
 export function SocialProof() {
   const t = useTranslations();
-  const prefersReducedMotion = useReducedMotion();
+  const _prefersReducedMotion = useReducedMotion();
 
   return (
     <section id="testimonials" className="zone-dark section-expansive relative overflow-hidden">
@@ -113,7 +113,7 @@ export function SocialProof() {
 
 function TestimonialCard({
   story,
-  index,
+  index: _index,
   t,
   isGrid = false,
 }: {

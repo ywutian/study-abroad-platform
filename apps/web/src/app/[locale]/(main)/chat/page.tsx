@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback, useMemo, useLayoutEffect } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import {
@@ -26,6 +26,7 @@ import { ChatHeader } from './_components/ChatHeader';
 import { ChatMessageArea } from './_components/ChatMessageArea';
 import { ReportDialog } from './_components/ReportDialog';
 import { BlockDialog } from './_components/BlockDialog';
+import { useChatScroll } from './_components/use-chat-scroll';
 
 export default function ChatPage() {
   const t = useTranslations();
@@ -36,24 +37,12 @@ export default function ChatPage() {
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [showConversations, setShowConversations] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [isAtBottom, setIsAtBottom] = useState(true);
-  const isAtBottomRef = useRef(true);
-  const [hasNewMessage, setHasNewMessage] = useState(false);
   const [otherReadAt, setOtherReadAt] = useState<string | null>(null);
 
   // ── Dialog State ──────────────────────────────────────────
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
   const [blockDialogOpen, setBlockDialogOpen] = useState(false);
-
-  // ── Scroll helpers ────────────────────────────────────────
-  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
-    const el = scrollContainerRef.current;
-    if (el) el.scrollTo({ top: el.scrollHeight, behavior });
-    setHasNewMessage(false);
-  }, []);
 
   // ── WebSocket ─────────────────────────────────────────────
   const {
@@ -98,7 +87,7 @@ export default function ChatPage() {
     queryKey: ['conversations'],
     queryFn: () => apiClient.get<Conversation[]>('/chats/conversations'),
   });
-  const conversations = conversationsData || [];
+  const conversations = useMemo(() => conversationsData || [], [conversationsData]);
 
   // Auto-select conversation from URL param (e.g. /chat?conversation=xxx)
   const autoSelectedRef = useRef(false);
@@ -218,51 +207,24 @@ export default function ChatPage() {
     },
   });
 
-  // ── Scroll Logic ──────────────────────────────────────────
-  const pendingScrollRestore = useRef<number | null>(null);
-  const rafId = useRef(0);
-
-  const handleScroll = useCallback(() => {
-    cancelAnimationFrame(rafId.current);
-    rafId.current = requestAnimationFrame(() => {
-      const el = scrollContainerRef.current;
-      if (!el) return;
-      const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
-      // Only trigger re-render when value actually changes
-      if (atBottom !== isAtBottomRef.current) {
-        isAtBottomRef.current = atBottom;
-        setIsAtBottom(atBottom);
-      }
-      if (atBottom) setHasNewMessage(false);
-      // Pagination: load older messages near top
-      if (el.scrollTop < 50 && hasNextPage && !isFetchingNextPage) {
-        pendingScrollRestore.current = el.scrollHeight - el.scrollTop;
-        fetchNextPage();
-      }
-    });
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-  // Restore scroll position after older messages load
-  useLayoutEffect(() => {
-    if (pendingScrollRestore.current === null) return;
-    const el = scrollContainerRef.current;
-    if (el) el.scrollTop = el.scrollHeight - pendingScrollRestore.current;
-    pendingScrollRestore.current = null;
-  }, [sortedMessages]);
-
-  // Instant scroll when messages first load for a new conversation
-  const prevConvRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (
-      selectedConversation &&
-      selectedConversation !== prevConvRef.current &&
-      !messagesLoading &&
-      sortedMessages.length > 0
-    ) {
-      prevConvRef.current = selectedConversation;
-      scrollToBottom('instant' as ScrollBehavior);
-    }
-  }, [selectedConversation, messagesLoading, sortedMessages.length, scrollToBottom]);
+  // ── Scroll Logic (extracted hook) ─────────────────────────
+  const {
+    messagesEndRef,
+    scrollContainerRef,
+    isAtBottom,
+    isAtBottomRef,
+    hasNewMessage,
+    setHasNewMessage,
+    scrollToBottom,
+    handleScroll,
+  } = useChatScroll({
+    selectedConversation,
+    messagesLoading,
+    sortedMessagesLength: sortedMessages.length,
+    hasNextPage: hasNextPage ?? false,
+    isFetchingNextPage,
+    fetchNextPage,
+  });
 
   // Join conversation + mark as read
   useEffect(() => {

@@ -6,7 +6,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '@/lib/api/api-error';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -29,7 +28,6 @@ import { useAuthStore } from '@/stores';
 import { toast } from 'sonner';
 import { Users, Search, Shield, Loader2, UserCheck, Heart, X } from 'lucide-react';
 import { useRouter } from '@/lib/i18n/navigation';
-import { cn } from '@/lib/utils';
 import { UserCard, type User } from './_components/user-card';
 
 interface FollowRelation {

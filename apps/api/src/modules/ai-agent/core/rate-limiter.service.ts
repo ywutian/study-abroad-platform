@@ -125,7 +125,7 @@ export class RateLimiterService {
       };
     } catch (error) {
       this.logger.warn(
-        `Redis rate limit error: ${error}, falling back to memory`,
+        `Redis rate limit error: ${String(error)}, falling back to memory`,
       );
       return this.checkLimitMemory(fullKey, config);
     }
@@ -274,7 +274,7 @@ export class RateLimiterService {
       try {
         await client.del(fullKey);
       } catch (error) {
-        this.logger.warn(`Failed to reset Redis rate limit: ${error}`);
+        this.logger.warn(`Failed to reset Redis rate limit: ${String(error)}`);
       }
     }
 

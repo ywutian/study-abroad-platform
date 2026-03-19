@@ -18,7 +18,7 @@ export function useNotifications() {
   const queryClient = useQueryClient();
 
   // 处理新通知
-  const handleNewNotification = useCallback(
+  const _handleNewNotification = useCallback(
     (notification: Notification) => {
       // 刷新通知列表和未读计数
       queryClient.invalidateQueries({ queryKey: ['notifications'] });

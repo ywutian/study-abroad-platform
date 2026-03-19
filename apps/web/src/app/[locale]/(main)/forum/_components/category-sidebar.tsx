@@ -36,7 +36,7 @@ export function CategorySidebar({
   onTagClick,
   onCreatePost,
   onCreateTeamPost,
-  formatNumber,
+  formatNumber: _formatNumber,
 }: CategorySidebarProps) {
   const t = useTranslations('forum');
 

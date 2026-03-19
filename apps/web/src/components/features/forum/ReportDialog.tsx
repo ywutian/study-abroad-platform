@@ -90,6 +90,9 @@ export function ReportDialog({ open, onOpenChange, targetType, targetId }: Repor
                   reason === item.value ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
                 )}
                 onClick={() => setReason(item.value)}
+                onKeyDown={(e) => e.key === 'Enter' && setReason(item.value)}
+                role="button"
+                tabIndex={0}
               >
                 <RadioGroupItem value={item.value} id={item.value} className="mt-1" />
                 <Label htmlFor={item.value} className="flex-1 cursor-pointer">

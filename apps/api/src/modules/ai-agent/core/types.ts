@@ -4,7 +4,7 @@
  * 替代所有 any 使用，提供类型安全
  */
 
-import { AgentType, ToolCall, Message } from '../types';
+import { AgentType, ToolCall } from '../types';
 import { ActionButton } from '@study-abroad/shared';
 
 // ==================== LLM 相关类型 ====================

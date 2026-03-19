@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
@@ -10,13 +11,9 @@ import {
   Trophy,
   GraduationCap,
   ChevronRight,
-  ChevronDown,
   SlidersHorizontal,
-  DollarSign,
   Plus,
   Check,
-  TrendingUp,
-  Percent,
   Filter,
   Globe,
   Users,
@@ -30,7 +27,6 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import {
@@ -47,14 +43,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { AdvancedSchoolFilter, SchoolFilters, SchoolLogo } from '@/components/features';
 import { IndexGroup, IndexLegend } from '@/components/features/schools/IndexIndicators';
 import { FloatingAddButton, SelectedSchool } from '@/components/features/schools/FloatingAddButton';
 import { Link } from '@/lib/i18n/navigation';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/auth';
-import { apiClient } from '@/lib/api/client';
+import { apiClient, STALE_TIME } from '@/lib/api';
 import { ApiError } from '@/lib/api/api-error';
 import { cn, getSchoolName, getSchoolSubName, formatAcceptanceRate } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -90,12 +86,18 @@ interface Filters {
   tuitionRange: string;
 }
 
-interface Weights {
+interface WeightPreset {
   ranking: number;
   salary: number;
   tuition: number;
   acceptanceRate: number;
 }
+
+const WEIGHT_PRESETS: Record<string, WeightPreset> = {
+  selectivity: { ranking: 50, acceptanceRate: 30, tuition: 10, salary: 10 },
+  affordability: { ranking: 15, acceptanceRate: 10, tuition: 50, salary: 25 },
+  employment: { ranking: 20, acceptanceRate: 10, tuition: 15, salary: 55 },
+};
 
 const countries = [
   { value: 'ALL', labelKey: 'all' },
@@ -122,71 +124,6 @@ const getRankBadgeStyle = (rank: number) => {
   return 'bg-muted text-muted-foreground';
 };
 
-// Weight slider sub-component
-interface WeightSliderItemProps {
-  icon: typeof Trophy;
-  iconBg: string;
-  iconColor: string;
-  barColor: string;
-  label: string;
-  description?: string;
-  value: number;
-  onChange: (value: number) => void;
-}
-
-function WeightSliderItem({
-  icon: Icon,
-  iconBg,
-  iconColor,
-  barColor,
-  label,
-  description,
-  value,
-  onChange,
-}: WeightSliderItemProps) {
-  return (
-    <motion.div className="group" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-      <div className="flex items-center gap-3 mb-3">
-        <div className={cn('flex h-9 w-9 items-center justify-center rounded-lg', iconBg)}>
-          <Icon className={cn('h-4 w-4', iconColor)} />
-        </div>
-        <span className="flex-1 text-sm font-medium">{label}</span>
-        <div className="px-3 py-1 rounded-full bg-muted border border-border/50 text-xs font-semibold tabular-nums min-w-[52px] text-center">
-          {value}%
-        </div>
-      </div>
-      <div className="ml-12">
-        <div className="relative">
-          <div className="absolute inset-0 h-2 rounded-full bg-muted" />
-          <motion.div
-            className={cn('absolute h-2 rounded-full', barColor)}
-            initial={false}
-            animate={{ width: `${value}%` }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
-          />
-          <Slider
-            value={[value]}
-            onValueChange={([v]) => onChange(v)}
-            max={100}
-            step={5}
-            className={cn(
-              'relative',
-              '[&_[data-slot=slider-track]]:bg-transparent',
-              '[&_[data-slot=slider-range]]:bg-transparent',
-              '[&_[data-slot=slider-thumb]]:border-2',
-              '[&_[data-slot=slider-thumb]]:shadow-md',
-              '[&_[data-slot=slider-thumb]]:transition-transform',
-              '[&_[data-slot=slider-thumb]]:hover:scale-110',
-              iconColor.replace('text-', '[&_[data-slot=slider-thumb]]:border-')
-            )}
-          />
-        </div>
-        {description && <p className="text-xs text-muted-foreground mt-2">{description}</p>}
-      </div>
-    </motion.div>
-  );
-}
-
 const defaultAdvancedFilters: SchoolFilters = {};
 
 export function BrowseTab() {
@@ -203,13 +140,7 @@ export function BrowseTab() {
   const [sortBy, setSortBy] = useState<'rank' | 'name' | 'acceptance' | 'weighted'>('rank');
   const [advancedFilters, setAdvancedFilters] = useState<SchoolFilters>(defaultAdvancedFilters);
   const [filters, setFilters] = useState<Filters>({ schoolType: 'ALL', tuitionRange: 'ALL' });
-  const [weights, setWeights] = useState<Weights>({
-    ranking: 40,
-    salary: 20,
-    tuition: 20,
-    acceptanceRate: 20,
-  });
-  const [showWeights, setShowWeights] = useState(false);
+  const [activePreset, setActivePreset] = useState<string>('selectivity');
   const [addedSchools, setAddedSchools] = useState<Set<string>>(new Set());
   const [selectedSchools, setSelectedSchools] = useState<SelectedSchool[]>([]);
 
@@ -275,7 +206,7 @@ export function BrowseTab() {
       if (advancedFilters.hasEarlyDecision) params.hasEarlyDecision = 'true';
       return apiClient.get<{ items: School[]; total: number }>('/schools', { params });
     },
-    staleTime: 60 * 1000,
+    staleTime: STALE_TIME.DYNAMIC,
     retry: 2,
     refetchOnWindowFocus: false,
   });
@@ -355,7 +286,7 @@ export function BrowseTab() {
     },
   });
 
-  const schools = schoolsData?.items || [];
+  const schools = useMemo(() => schoolsData?.items || [], [schoolsData?.items]);
   const total = schoolsData?.total || 0;
   const hasFilters =
     search || country !== 'ALL' || activeAdvancedFilterCount > 0 || activeFilterCount > 0;
@@ -368,6 +299,7 @@ export function BrowseTab() {
     const sorted = [...schools];
 
     if (sortBy === 'weighted') {
+      const weights = WEIGHT_PRESETS[activePreset] || WEIGHT_PRESETS.selectivity;
       return sorted.sort((a, b) => {
         const getScore = (school: School) => {
           let score = 0;
@@ -405,7 +337,7 @@ export function BrowseTab() {
       default:
         return sorted;
     }
-  }, [schools, sortBy, weights]);
+  }, [schools, sortBy, activePreset]);
 
   const toggleSchoolSelection = useCallback((school: School, checked: boolean) => {
     if (checked) {
@@ -463,13 +395,7 @@ export function BrowseTab() {
             </Select>
 
             {/* Sort */}
-            <Select
-              value={sortBy}
-              onValueChange={(v) => {
-                setSortBy(v as any);
-                if (v === 'weighted') setShowWeights(true);
-              }}
-            >
+            <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
               <SelectTrigger className="w-full md:w-[150px]">
                 <SlidersHorizontal className="h-4 w-4 mr-2 text-muted-foreground" />
                 <SelectValue placeholder={t('sortBy')} />
@@ -585,75 +511,38 @@ export function BrowseTab() {
             </div>
           )}
 
-          {/* Weight Sliders (shown when weighted sort is selected) */}
-          <Collapsible open={showWeights && sortBy === 'weighted'}>
+          {/* Weight Presets (shown when weighted sort is selected) */}
+          <Collapsible open={sortBy === 'weighted'}>
             <CollapsibleContent>
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mt-6 pt-6 border-t"
-              >
-                <div className="flex items-center gap-3 mb-6">
+              <div className="mt-6 pt-6 border-t">
+                <div className="flex items-center gap-3 mb-4">
                   <div className="p-2 rounded-lg bg-amber-500/10">
                     <SlidersHorizontal className="h-5 w-5 text-amber-500" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-sm">{t('weights.title')}</h4>
-                    <p className="text-xs text-muted-foreground">{t('weights.description')}</p>
+                    <h4 className="font-semibold text-sm">{t('presets.title')}</h4>
+                    <p className="text-xs text-muted-foreground">{t('presets.description')}</p>
                   </div>
                 </div>
-                <div className="space-y-4">
-                  <WeightSliderItem
-                    icon={Trophy}
-                    iconBg="bg-amber-500/10"
-                    iconColor="text-amber-500"
-                    barColor="bg-amber-500"
-                    label={t('weights.ranking')}
-                    value={weights.ranking}
-                    onChange={(v) => setWeights((prev) => ({ ...prev, ranking: v }))}
-                  />
-                  <WeightSliderItem
-                    icon={Percent}
-                    iconBg="bg-violet-500/10"
-                    iconColor="text-violet-500"
-                    barColor="bg-violet-500"
-                    label={t('weights.acceptanceRate')}
-                    description={t('weights.acceptanceRateDesc')}
-                    value={weights.acceptanceRate}
-                    onChange={(v) => setWeights((prev) => ({ ...prev, acceptanceRate: v }))}
-                  />
-                  <WeightSliderItem
-                    icon={DollarSign}
-                    iconBg="bg-blue-500/10"
-                    iconColor="text-blue-500"
-                    barColor="bg-blue-500"
-                    label={t('weights.tuition')}
-                    description={t('weights.tuitionDesc')}
-                    value={weights.tuition}
-                    onChange={(v) => setWeights((prev) => ({ ...prev, tuition: v }))}
-                  />
-                  <WeightSliderItem
-                    icon={TrendingUp}
-                    iconBg="bg-emerald-500/10"
-                    iconColor="text-emerald-500"
-                    barColor="bg-emerald-500"
-                    label={t('weights.salary')}
-                    value={weights.salary}
-                    onChange={(v) => setWeights((prev) => ({ ...prev, salary: v }))}
-                  />
-                </div>
-                <div className="mt-6 pt-4 border-t">
-                  <Button
-                    className="w-full gap-2"
-                    variant="outline"
-                    onClick={() => setShowWeights(false)}
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                    {t('weights.preview')}
+                <div className="flex flex-wrap gap-2">
+                  {Object.keys(WEIGHT_PRESETS).map((key) => (
+                    <Button
+                      key={key}
+                      variant={activePreset === key ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setActivePreset(key)}
+                    >
+                      {t(`presets.${key}`)}
+                    </Button>
+                  ))}
+                  <Button variant="ghost" size="sm" className="gap-1" asChild>
+                    <Link href="/ranking">
+                      {t('presets.customRanking')}
+                      <ChevronRight className="h-4 w-4" />
+                    </Link>
                   </Button>
                 </div>
-              </motion.div>
+              </div>
             </CollapsibleContent>
           </Collapsible>
         </CardContent>

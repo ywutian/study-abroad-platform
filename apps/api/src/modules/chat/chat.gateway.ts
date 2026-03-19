@@ -91,12 +91,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.userSockets.get(userId)?.add(client.id);
 
       // 加入用户专属房间
-      client.join(`user:${userId}`);
+      void client.join(`user:${userId}`);
 
       // 加入所有会话房间
       const conversations = await this.chatService.getConversations(userId);
       conversations.forEach((conv) => {
-        client.join(`conversation:${conv.id}`);
+        void client.join(`conversation:${conv.id}`);
       });
 
       // 通知客户端已连接
@@ -187,7 +187,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return { success: false, error: 'Not a participant' };
     }
 
-    client.join(`conversation:${data.conversationId}`);
+    void client.join(`conversation:${data.conversationId}`);
 
     return { success: true };
   }

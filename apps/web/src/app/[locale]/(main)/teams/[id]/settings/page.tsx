@@ -69,11 +69,11 @@ export default function TeamSettingsPage() {
     }) => apiClient.patch(`/teams/${id}`, body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
-      toast.success('Settings saved');
+      toast.success(t('toast.settingsSaved'));
     },
     onError: (e: unknown) => {
       const err = e as { response?: { data?: { error?: { message?: string } } } };
-      toast.error(err.response?.data?.error?.message ?? 'Failed to save');
+      toast.error(err.response?.data?.error?.message ?? t('toast.saveFailed'));
     },
   });
 
@@ -81,13 +81,13 @@ export default function TeamSettingsPage() {
     mutationFn: () => apiClient.delete(`/teams/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
-      toast.success('Team disbanded');
+      toast.success(t('toast.disbanded'));
       setDisbandOpen(false);
       router.push('/teams');
     },
     onError: (e: unknown) => {
       const err = e as { response?: { data?: { error?: { message?: string } } } };
-      toast.error(err.response?.data?.error?.message ?? 'Failed to disband');
+      toast.error(err.response?.data?.error?.message ?? t('toast.disbandFailed'));
     },
   });
 
@@ -98,12 +98,12 @@ export default function TeamSettingsPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      toast.error('Name is required');
+      toast.error(t('validation.nameRequired'));
       return;
     }
     const max = maxMembers.trim() ? parseInt(maxMembers, 10) : undefined;
     if (max !== undefined && (isNaN(max) || max < 2 || max > 100)) {
-      toast.error('Max members must be between 2 and 100');
+      toast.error(t('validation.maxMembersError'));
       return;
     }
     updateMutation.mutate({
@@ -119,10 +119,10 @@ export default function TeamSettingsPage() {
   if (error) {
     return (
       <PageContainer maxWidth="md">
-        <p className="text-destructive">You don&apos;t have access to these settings.</p>
+        <p className="text-destructive">{t('errors.noAccess')}</p>
         <Link href={`/teams/${id}`}>
           <Button variant="outline" className="mt-4">
-            Back to team
+            {t('backToTeam')}
           </Button>
         </Link>
       </PageContainer>
@@ -139,10 +139,10 @@ export default function TeamSettingsPage() {
   if (!team.isMember || (team.myRole !== 'OWNER' && team.myRole !== 'ADMIN')) {
     return (
       <PageContainer maxWidth="md">
-        <p className="text-destructive">Only the owner or admins can edit settings.</p>
+        <p className="text-destructive">{t('errors.ownerAdminOnly')}</p>
         <Link href={`/teams/${id}`}>
           <Button variant="outline" className="mt-4">
-            Back to team
+            {t('backToTeam')}
           </Button>
         </Link>
       </PageContainer>
@@ -154,47 +154,47 @@ export default function TeamSettingsPage() {
       <Link href={`/teams/${id}`}>
         <Button variant="ghost" size="sm" className="mb-4 -ml-2">
           <ArrowLeft className="h-4 w-4 mr-1" />
-          Back
+          {t('back')}
         </Button>
       </Link>
       <PageHeader title={t('settings')} description={team.name} icon={Users} color="amber" />
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <div>
-          <Label htmlFor="name">Name *</Label>
+          <Label htmlFor="name">{t('form.nameLabel')} *</Label>
           <Input
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Team name"
+            placeholder={t('form.namePlaceholder')}
             maxLength={100}
             className="mt-1"
           />
         </div>
         <div>
-          <Label htmlFor="description">Description</Label>
+          <Label htmlFor="description">{t('form.descriptionLabel')}</Label>
           <Input
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Optional description"
+            placeholder={t('form.descriptionPlaceholder')}
             maxLength={500}
             className="mt-1"
           />
         </div>
         <div>
-          <Label>Visibility</Label>
+          <Label>{t('form.visibilityLabel')}</Label>
           <select
             value={visibility}
             onChange={(e) => setVisibility(e.target.value as 'PUBLIC' | 'UNLISTED' | 'PRIVATE')}
             className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           >
-            <option value="PUBLIC">Public</option>
-            <option value="UNLISTED">Unlisted</option>
-            <option value="PRIVATE">Private</option>
+            <option value="PUBLIC">{t('visibility.public')}</option>
+            <option value="UNLISTED">{t('visibility.unlisted')}</option>
+            <option value="PRIVATE">{t('visibility.private')}</option>
           </select>
         </div>
         <div>
-          <Label>Join policy</Label>
+          <Label>{t('form.joinPolicyLabel')}</Label>
           <select
             value={joinPolicy}
             onChange={(e) => setJoinPolicy(e.target.value as 'OPEN' | 'INVITE_ONLY')}
@@ -205,7 +205,7 @@ export default function TeamSettingsPage() {
           </select>
         </div>
         <div>
-          <Label htmlFor="maxMembers">Max members (optional, 2–100)</Label>
+          <Label htmlFor="maxMembers">{t('form.maxMembersLabel')}</Label>
           <Input
             id="maxMembers"
             type="number"
@@ -213,13 +213,13 @@ export default function TeamSettingsPage() {
             max={100}
             value={maxMembers}
             onChange={(e) => setMaxMembers(e.target.value)}
-            placeholder="Leave empty for no limit"
+            placeholder={t('form.maxMembersPlaceholder')}
             className="mt-1"
           />
         </div>
         <div className="flex gap-2">
           <Button type="submit" disabled={updateMutation.isPending || !name.trim()}>
-            {updateMutation.isPending ? 'Saving...' : 'Save'}
+            {updateMutation.isPending ? t('form.saving') : t('form.save')}
           </Button>
         </div>
       </form>

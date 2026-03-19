@@ -12,18 +12,17 @@ import {
   StorageFile,
 } from '../../common/storage/storage.service';
 import { VerificationStatus, Role } from '@prisma/client';
-import {
-  CreateVerificationDto,
-  ProofType,
-} from './dto/create-verification.dto';
+import { CreateVerificationDto } from './dto/create-verification.dto';
 import {
   ReviewVerificationDto,
   ReviewAction,
 } from './dto/review-verification.dto';
+import { CaseIncentiveService, PointAction } from '../points/incentive.service';
 import {
-  CaseIncentiveService,
-  PointAction,
-} from '../case/case-incentive.service';
+  NotificationService,
+  NotificationType,
+} from '../notification/notification.service';
+import { fireAndForget } from '../../common/utils/async.util';
 
 @Injectable()
 export class VerificationService {
@@ -33,6 +32,7 @@ export class VerificationService {
     private prisma: PrismaService,
     private storage: StorageService,
     private caseIncentiveService: CaseIncentiveService,
+    private notificationService: NotificationService,
   ) {}
 
   /**
@@ -248,6 +248,22 @@ export class VerificationService {
 
       return updated;
     });
+
+    // 通知用户审核结果
+    fireAndForget(
+      this.notificationService.createNotification(
+        request.userId,
+        isApproved
+          ? NotificationType.VERIFICATION_APPROVED
+          : NotificationType.VERIFICATION_REJECTED,
+        {
+          relatedId: request.caseId,
+          relatedType: 'admission_case',
+        },
+      ),
+      this.logger,
+      'Failed to send verification notification',
+    );
 
     // 奖励积分 (outside transaction, handled by centralized service)
     if (dto.action === ReviewAction.APPROVE) {

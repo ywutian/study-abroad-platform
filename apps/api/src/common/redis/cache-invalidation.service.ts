@@ -34,7 +34,7 @@ export class CacheInvalidationService {
       this.logger.debug(`Invalidated caches for user ${userId}`);
     } catch (error) {
       this.logger.error(
-        `Failed to invalidate cache for user ${userId}: ${error instanceof Error ? error.message : error}`,
+        `Failed to invalidate cache for user ${userId}: ${String(error instanceof Error ? error.message : error)}`,
       );
     }
   }
@@ -82,7 +82,7 @@ export class CacheInvalidationService {
       this.logger.debug(`Invalidated cache for school ${schoolId}`);
     } catch (error) {
       this.logger.error(
-        `Failed to invalidate school cache ${schoolId}: ${error instanceof Error ? error.message : error}`,
+        `Failed to invalidate school cache ${schoolId}: ${String(error instanceof Error ? error.message : error)}`,
       );
     }
   }

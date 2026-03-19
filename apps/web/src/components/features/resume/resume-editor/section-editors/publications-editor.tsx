@@ -13,7 +13,7 @@ interface PublicationsEditorProps {
 }
 
 export function PublicationsEditor({ content, onChange }: PublicationsEditorProps) {
-  const items = ((content as any).items ?? []) as PublicationItem[];
+  const items = (content.items ?? []) as PublicationItem[];
 
   const updateItem = (index: number, field: string, value: unknown) => {
     const updated = [...items];

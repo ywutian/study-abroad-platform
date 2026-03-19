@@ -9,29 +9,7 @@ import { AI_TIMEOUTS } from '@/lib/constants';
 import { getSchoolName } from '@/lib/utils';
 import { School, Loader2 } from 'lucide-react';
 
-interface SchoolInfo {
-  id: string;
-  name: string;
-  nameZh?: string;
-  usNewsRank?: number;
-  acceptanceRate?: number;
-}
-
-interface RecommendationItem {
-  schoolId: string;
-  probability: number;
-  reason: string;
-  highlights: string[];
-  school?: SchoolInfo;
-}
-
-interface RecommendationResponse {
-  reach: RecommendationItem[];
-  target: RecommendationItem[];
-  safety: RecommendationItem[];
-  summary: string;
-  status?: string;
-}
+import type { RecommendationResponse } from '@/components/features/schools/school-recommendation.types';
 
 const MAX_SCHOOLS = 6;
 

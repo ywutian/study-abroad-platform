@@ -23,7 +23,6 @@ import {
   ConversationState,
   AgentResponse,
   ToolDefinition,
-  ToolCall,
 } from '../types';
 import { ActionSuggestion } from './types';
 
@@ -166,7 +165,7 @@ export class AgentRunnerService {
     const lines = message.split('\n');
 
     for (const line of lines) {
-      const match = line.match(/^[\d\-\*]\s*[\.）\)]\s*(.+)$/);
+      const match = line.match(/^[\d\-*]\s*[.）)]\s*(.+)$/);
       if (match) suggestions.push(match[1].trim());
     }
 
@@ -178,7 +177,7 @@ export class AgentRunnerService {
    */
   private generateActions(
     message: string,
-    agentType: AgentType,
+    _agentType: AgentType,
   ): ActionSuggestion[] | undefined {
     const actions: ActionSuggestion[] = [];
     const lowerMessage = message.toLowerCase();

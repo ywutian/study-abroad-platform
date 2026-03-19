@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { DashboardService } from './dashboard.service';
-import { CaseModule } from '../case/case.module';
+import { PointsModule } from '../points/points.module';
 
 @Module({
-  imports: [CaseModule],
+  imports: [PointsModule],
   controllers: [UserController],
   providers: [UserService, DashboardService],
   exports: [UserService, DashboardService],

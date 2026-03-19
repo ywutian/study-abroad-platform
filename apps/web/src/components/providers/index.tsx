@@ -24,7 +24,7 @@ import { useAuthStore, startTokenRefreshInterval, stopTokenRefreshInterval } fro
  * - RefreshToken 通过 httpOnly cookie 自动发送，JavaScript 无法访问
  */
 function AuthInitializer({ children }: { children: React.ReactNode }) {
-  const { accessToken, isInitialized, initialize } = useAuthStore();
+  const { accessToken, initialize } = useAuthStore();
 
   useEffect(() => {
     // 初始化认证状态（尝试通过 cookie 恢复会话）

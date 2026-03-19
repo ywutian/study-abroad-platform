@@ -38,6 +38,7 @@ export function AgentEditDialog({
   const queryClient = useQueryClient();
 
   const updateAgentMutation = useMutation({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mutationFn: ({ type, ...data }: { type: string; [key: string]: any }) =>
       apiClient.put(`/admin/ai-agent/agents/${type}`, data),
     onSuccess: () => {

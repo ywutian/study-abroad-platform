@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { DashboardService } from './dashboard.service';
-import { CaseIncentiveService } from '../case/case-incentive.service';
-import { PointsConfigService } from '../case/points-config.service';
+import { CaseIncentiveService } from '../points/incentive.service';
+import { PointsConfigService } from '../points/points-config.service';
 
 describe('UserController', () => {
   let controller: UserController;

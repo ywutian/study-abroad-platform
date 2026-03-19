@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
+import { useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import {
@@ -22,6 +23,7 @@ import {
   Settings,
   Palette,
   Sparkles,
+  Clock,
 } from 'lucide-react';
 
 import { PageContainer, PageHeader } from '@/components/layout';
@@ -43,6 +45,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useRouter, usePathname } from '@/lib/i18n/navigation';
 import { Link } from '@/lib/i18n/navigation';
 import { cn } from '@/lib/utils';
+import { apiClient } from '@/lib/api';
 
 interface SettingSection {
   id: string;
@@ -50,6 +53,7 @@ interface SettingSection {
   description?: string;
   icon: React.ComponentType<{ className?: string }>;
   color: string;
+  comingSoon?: boolean;
   items: SettingItem[];
 }
 
@@ -75,8 +79,6 @@ export default function SettingsPage() {
   const router = useRouter();
   const pathname = usePathname();
 
-  const [notifications, setNotifications] = useState(true);
-  const [emailNotifications, setEmailNotifications] = useState(true);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
@@ -86,9 +88,18 @@ export default function SettingsPage() {
     toast.success(t('settings.toast.logoutSuccess'));
   };
 
+  const deleteAccountMutation = useMutation({
+    mutationFn: () => apiClient.delete('/users/me'),
+    onSuccess: () => {
+      setDeleteDialogOpen(false);
+      toast.success(t('settings.toast.accountDeleted'));
+      logout();
+      router.push('/login');
+    },
+  });
+
   const handleDeleteAccount = () => {
-    toast.info(t('common.featureInDev'));
-    setDeleteDialogOpen(false);
+    deleteAccountMutation.mutate();
   };
 
   const handleLanguageChange = (lang: string) => {
@@ -156,24 +167,23 @@ export default function SettingsPage() {
       title: t('settings.sections.notifications'),
       icon: Bell,
       color: 'amber',
+      comingSoon: true,
       items: [
         {
           id: 'push',
           icon: Bell,
           label: t('settings.items.pushNotification'),
           description: t('settings.items.pushNotificationDesc'),
-          type: 'toggle',
-          value: notifications,
-          onToggle: setNotifications,
+          type: 'toggle' as const,
+          value: false,
         },
         {
           id: 'email',
           icon: FileText,
           label: t('settings.items.emailNotification'),
           description: t('settings.items.emailNotificationDesc'),
-          type: 'toggle',
-          value: emailNotifications,
-          onToggle: setEmailNotifications,
+          type: 'toggle' as const,
+          value: false,
         },
       ],
     },
@@ -317,7 +327,7 @@ export default function SettingsPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: sectionIndex * 0.08 }}
             >
-              <Card className="h-full overflow-hidden">
+              <Card className={cn('h-full overflow-hidden', section.comingSoon && 'opacity-60')}>
                 <div className={cn('h-1 bg-gradient-to-r', colors.border)} />
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-3">
@@ -330,6 +340,12 @@ export default function SettingsPage() {
                       <SectionIcon className={cn('h-4 w-4', colors.icon)} />
                     </div>
                     <CardTitle className="text-base">{section.title}</CardTitle>
+                    {section.comingSoon && (
+                      <Badge variant="secondary" className="gap-1 text-xs">
+                        <Clock className="h-3 w-3" />
+                        {t('common.comingSoon')}
+                      </Badge>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-1 pt-0">

@@ -12,7 +12,6 @@ import { ProjectsEditor } from './section-editors/projects-editor';
 import { PublicationsEditor } from './section-editors/publications-editor';
 import { CertificationsEditor } from './section-editors/certifications-editor';
 import { CustomEditor } from './section-editors/custom-editor';
-import { BulletEditor } from './bullet-editor';
 
 interface SectionEditorProps {
   section: ResumeSection;

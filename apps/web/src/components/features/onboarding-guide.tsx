@@ -2,11 +2,10 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Link } from '@/lib/i18n/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import {
   User,
@@ -14,7 +13,6 @@ import {
   GraduationCap,
   ChevronRight,
   CheckCircle2,
-  Circle,
   Sparkles,
   Rocket,
   X,

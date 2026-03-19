@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -313,10 +314,13 @@ export function EditSchoolDialog({
               <Label>{t('schools.logoPreview')}</Label>
               <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center overflow-hidden border">
                 {form.logoUrl && !previewFailed ? (
-                  <img
+                  <Image
                     src={form.logoUrl}
                     alt=""
+                    width={64}
+                    height={64}
                     className="w-full h-full object-cover"
+                    unoptimized
                     onError={() => setPreviewFailed(true)}
                   />
                 ) : (

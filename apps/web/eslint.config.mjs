@@ -14,23 +14,26 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "scripts/**",
+    // Auto-generated service worker files (next-pwa / Workbox)
+    "public/sw.js",
+    "public/workbox-*.js",
   ]),
   {
-    // Relax strict rules for CI — 逐步修复后可恢复为 error
     rules: {
       "@typescript-eslint/no-explicit-any": "warn",
-      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrorsIgnorePattern: "^_" }],
       "react/no-unescaped-entities": "warn",
       "@next/next/no-html-link-for-pages": "warn",
-      // React hooks v5+ rules — 代码量大暂降为 warn
-      "react-hooks/rules-of-hooks": "warn",
-      "react-hooks/set-state-in-effect": "warn",
-      "react-hooks/preserve-manual-memoization": "warn",
-      "react-hooks/purity": "warn",
-      "react-hooks/refs": "warn",
-      "react-hooks/use-memo": "warn",
-      "react-hooks/immutability": "warn",
-      "react-hooks/incompatible-library": "warn",
+      // rules-of-hooks must be error — violations cause runtime crashes
+      "react-hooks/rules-of-hooks": "error",
+      // React 19 Compiler diagnostics — optimization hints, not code quality issues
+      "react-hooks/set-state-in-effect": "off",
+      "react-hooks/preserve-manual-memoization": "off",
+      "react-hooks/purity": "off",
+      "react-hooks/refs": "off",
+      "react-hooks/use-memo": "off",
+      "react-hooks/immutability": "off",
+      "react-hooks/incompatible-library": "off",
     },
   },
   {

@@ -45,7 +45,12 @@ export function MobileNav({ sections, user, onLogout }: MobileNavProps) {
   // SSR placeholder
   if (!isHydrated) {
     return (
-      <Button variant="ghost" size="icon" aria-label="Navigation menu" suppressHydrationWarning>
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label={t('ui.a11y.navigationMenu')}
+        suppressHydrationWarning
+      >
         <Menu className="h-5 w-5" />
       </Button>
     );
@@ -54,9 +59,8 @@ export function MobileNav({ sections, user, onLogout }: MobileNavProps) {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" aria-label={t('ui.a11y.openMenu')}>
           <Menu className="h-5 w-5" />
-          <span className="sr-only">{t('ui.a11y.openMenu')}</span>
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-[300px] p-0">
@@ -69,7 +73,7 @@ export function MobileNav({ sections, user, onLogout }: MobileNavProps) {
         <ScrollArea className="h-[calc(100vh-140px)]">
           <nav className="flex flex-col py-2">
             {sections.map((section, sectionIdx) => (
-              <div key={sectionIdx}>
+              <div key={section.label || 'main'}>
                 {/* Section separator + label */}
                 {sectionIdx > 0 && <Separator className="my-2" />}
                 {section.label && (

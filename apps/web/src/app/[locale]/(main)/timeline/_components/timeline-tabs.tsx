@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { GraduationCap, Loader2, Plus } from 'lucide-react';
 import type { TimelineTabsProps } from './timeline-helpers';
-import type { TabType } from '@/types/timeline';
 import { TimelineItem } from './timeline-item';
 
 export function TimelineTabs({

@@ -2,13 +2,9 @@
  * 对话摘要服务 - 生成摘要并提取记忆
  */
 
-import {
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-} from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, Logger } from '@nestjs/common';
 import { MemoryType, EntityType } from '@prisma/client';
+import { LLMService } from '../core/llm.service';
 import {
   MessageRecord,
   ConversationSummary,
@@ -21,18 +17,8 @@ import {
 @Injectable()
 export class SummarizerService {
   private readonly logger = new Logger(SummarizerService.name);
-  private readonly apiKey: string;
-  private readonly baseUrl: string;
-  private readonly model: string;
 
-  constructor(private config: ConfigService) {
-    this.apiKey = this.config.get('OPENAI_API_KEY', '');
-    this.baseUrl = this.config.get(
-      'OPENAI_BASE_URL',
-      'https://api.openai.com/v1',
-    );
-    this.model = this.config.get('OPENAI_MODEL', 'gpt-4o-mini');
-  }
+  constructor(private llmService: LLMService) {}
 
   /**
    * 生成对话摘要
@@ -44,25 +30,14 @@ export class SummarizerService {
       return this.getEmptySummary();
     }
 
-    if (!this.apiKey) {
-      return this.fallbackSummary(messages);
-    }
-
     const prompt = this.buildSummaryPrompt(messages);
 
     try {
-      const response = await fetch(`${this.baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: this.model,
-          messages: [
-            {
-              role: 'system',
-              content: `你是一个对话分析专家。分析留学咨询对话，提取关键信息。
+      const content = await this.llmService.chatSimple(
+        [
+          {
+            role: 'system',
+            content: `你是一个对话分析专家。分析留学咨询对话，提取关键信息。
 输出格式为 JSON：
 {
   "summary": "对话的简短摘要（2-3句话）",
@@ -77,21 +52,11 @@ export class SummarizerService {
   ]
 }
 category 说明: competition=竞赛, summer_program=夏校/暑期项目, internship=实习, material=材料准备, timeline=时间规划`,
-            },
-            { role: 'user', content: prompt },
-          ],
-          temperature: 0.3,
-          max_tokens: 1500,
-          response_format: { type: 'json_object' },
-        }),
-      });
-
-      if (!response.ok) {
-        throw new InternalServerErrorException(`API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const content = data.choices?.[0]?.message?.content || '{}';
+          },
+          { role: 'user', content: prompt },
+        ],
+        { temperature: 0.3, maxTokens: 1500 },
+      );
 
       return this.parseSummaryResponse(content);
     } catch (error) {
@@ -105,9 +70,9 @@ category 说明: competition=竞赛, summer_program=夏校/暑期项目, interns
    */
   async extractFromMessage(
     message: MessageRecord,
-    context?: { previousMessages?: MessageRecord[] },
+    _context?: { previousMessages?: MessageRecord[] },
   ): Promise<{ memories: MemoryInput[]; entities: EntityInput[] }> {
-    if (!this.apiKey || message.role !== 'user') {
+    if (message.role !== 'user') {
       return { memories: [], entities: [] };
     }
 
@@ -117,18 +82,11 @@ category 说明: competition=竞赛, summer_program=夏校/暑期项目, interns
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: this.model,
-          messages: [
-            {
-              role: 'system',
-              content: `分析用户消息，提取重要信息。只提取明确陈述的事实和偏好，不要推测。
+      const content = await this.llmService.chatSimple(
+        [
+          {
+            role: 'system',
+            content: `分析用户消息，提取重要信息。只提取明确陈述的事实和偏好，不要推测。
 输出 JSON：
 {
   "memories": [
@@ -140,21 +98,12 @@ category 说明: competition=竞赛, summer_program=夏校/暑期项目, interns
 }
 category 说明: competition=竞赛, summer_program=夏校/暑期项目, internship=实习, material=材料准备, timeline=时间规划
 如果没有值得记录的信息，返回空数组。`,
-            },
-            { role: 'user', content: message.content },
-          ],
-          temperature: 0.2,
-          max_tokens: 500,
-          response_format: { type: 'json_object' },
-        }),
-      });
+          },
+          { role: 'user', content: message.content },
+        ],
+        { temperature: 0.2, maxTokens: 500 },
+      );
 
-      if (!response.ok) {
-        return { memories: [], entities: [] };
-      }
-
-      const data = await response.json();
-      const content = data.choices?.[0]?.message?.content || '{}';
       const parsed = JSON.parse(content);
 
       return {
@@ -209,39 +158,18 @@ category 说明: competition=竞赛, summer_program=夏校/暑期项目, interns
 
     const combined = texts.join('\n- ');
 
-    if (!this.apiKey) {
-      // 无 API key 时简单拼接
-      return texts.slice(0, 3).join('; ');
-    }
-
     try {
-      const response = await fetch(`${this.baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: this.model,
-          messages: [
-            {
-              role: 'system',
-              content:
-                '将以下多条记忆合并为一条简洁的摘要，保留关键信息。直接输出合并后的文本，不要加前缀。',
-            },
-            { role: 'user', content: `- ${combined}` },
-          ],
-          temperature: 0.3,
-          max_tokens: 300,
-        }),
-      });
-
-      if (!response.ok) {
-        return texts.slice(0, 3).join('; ');
-      }
-
-      const data = await response.json();
-      return data.choices?.[0]?.message?.content || texts[0];
+      return await this.llmService.chatSimple(
+        [
+          {
+            role: 'system',
+            content:
+              '将以下多条记忆合并为一条简洁的摘要，保留关键信息。直接输出合并后的文本，不要加前缀。',
+          },
+          { role: 'user', content: `- ${combined}` },
+        ],
+        { temperature: 0.3, maxTokens: 300 },
+      );
     } catch {
       return texts.slice(0, 3).join('; ');
     }
@@ -251,38 +179,17 @@ category 说明: competition=竞赛, summer_program=夏校/暑期项目, interns
    * 压缩单段文本到指定 token 数量
    */
   async summarizeText(text: string, maxTokens: number): Promise<string> {
-    if (!this.apiKey) {
-      // 无 API key 时简单截断
-      return text.slice(0, maxTokens * 4);
-    }
-
     try {
-      const response = await fetch(`${this.baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: this.model,
-          messages: [
-            {
-              role: 'system',
-              content: `将以下文本压缩为更简短的版本，保留关键信息，目标约 ${maxTokens} 个 token。直接输出压缩后的文本。`,
-            },
-            { role: 'user', content: text },
-          ],
-          temperature: 0.2,
-          max_tokens: maxTokens * 2,
-        }),
-      });
-
-      if (!response.ok) {
-        return text.slice(0, maxTokens * 4);
-      }
-
-      const data = await response.json();
-      return data.choices?.[0]?.message?.content || text;
+      return await this.llmService.chatSimple(
+        [
+          {
+            role: 'system',
+            content: `将以下文本压缩为更简短的版本，保留关键信息，目标约 ${maxTokens} 个 token。直接输出压缩后的文本。`,
+          },
+          { role: 'user', content: text },
+        ],
+        { temperature: 0.2, maxTokens: maxTokens * 2 },
+      );
     } catch {
       return text.slice(0, maxTokens * 4);
     }

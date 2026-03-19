@@ -9,7 +9,7 @@ import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { transitions } from '@/lib/motion';
-import { Check, ChevronRight, Circle, Loader2 } from 'lucide-react';
+import { Check, ChevronRight, Loader2 } from 'lucide-react';
 import { Button } from './button';
 
 // ============================================
@@ -65,12 +65,15 @@ export function StepperProvider({
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
 
-  const goToStep = useCallback((step: number) => {
-    if (step >= 0 && step < steps.length) {
-      setCurrentStep(step);
-      onStepChange?.(step);
-    }
-  }, [steps.length, onStepChange]);
+  const goToStep = useCallback(
+    (step: number) => {
+      if (step >= 0 && step < steps.length) {
+        setCurrentStep(step);
+        onStepChange?.(step);
+      }
+    },
+    [steps.length, onStepChange]
+  );
 
   const nextStep = useCallback(() => {
     if (currentStep < steps.length - 1) {
@@ -85,16 +88,22 @@ export function StepperProvider({
   }, [currentStep, goToStep]);
 
   const markComplete = useCallback((step: number) => {
-    setCompletedSteps(prev => new Set([...prev, step]));
+    setCompletedSteps((prev) => new Set([...prev, step]));
   }, []);
 
-  const isStepComplete = useCallback((step: number) => {
-    return completedSteps.has(step);
-  }, [completedSteps]);
+  const isStepComplete = useCallback(
+    (step: number) => {
+      return completedSteps.has(step);
+    },
+    [completedSteps]
+  );
 
-  const isStepActive = useCallback((step: number) => {
-    return step === currentStep;
-  }, [currentStep]);
+  const isStepActive = useCallback(
+    (step: number) => {
+      return step === currentStep;
+    },
+    [currentStep]
+  );
 
   return (
     <StepperContext.Provider
@@ -127,6 +136,7 @@ interface StepperHeaderProps {
 export function StepperHeader({ className, variant = 'default' }: StepperHeaderProps) {
   const { steps, currentStep, isStepComplete, goToStep } = useStepperContext();
   const prefersReducedMotion = useReducedMotion();
+  const t = useTranslations('ui.stepper');
 
   if (variant === 'dots') {
     return (
@@ -156,7 +166,6 @@ export function StepperHeader({ className, variant = 'default' }: StepperHeaderP
   }
 
   if (variant === 'compact') {
-    const t = useTranslations('ui.stepper');
     return (
       <div className={cn('flex items-center justify-between', className)}>
         <span className="text-sm text-muted-foreground">
@@ -194,11 +203,13 @@ export function StepperHeader({ className, variant = 'default' }: StepperHeaderP
                 'relative flex items-center justify-center rounded-full border-2 transition-colors',
                 'h-10 w-10',
                 isActive && 'border-primary bg-primary text-primary-foreground',
-                isComplete && !isActive && 'border-primary bg-primary/10 text-primary cursor-pointer',
+                isComplete &&
+                  !isActive &&
+                  'border-primary bg-primary/10 text-primary cursor-pointer',
                 !isActive && !isComplete && 'border-muted bg-background text-muted-foreground'
               )}
-              whileHover={(isComplete || isPast) ? { scale: 1.1 } : undefined}
-              whileTap={(isComplete || isPast) ? { scale: 0.95 } : undefined}
+              whileHover={isComplete || isPast ? { scale: 1.1 } : undefined}
+              whileTap={isComplete || isPast ? { scale: 0.95 } : undefined}
             >
               <AnimatePresence mode="wait">
                 {isComplete ? (
@@ -235,10 +246,12 @@ export function StepperHeader({ className, variant = 'default' }: StepperHeaderP
 
             {/* Step Label */}
             <div className="ml-3 hidden sm:block">
-              <p className={cn(
-                'text-sm font-medium',
-                isActive ? 'text-foreground' : 'text-muted-foreground'
-              )}>
+              <p
+                className={cn(
+                  'text-sm font-medium',
+                  isActive ? 'text-foreground' : 'text-muted-foreground'
+                )}
+              >
                 {step.title}
               </p>
               {step.description && (
@@ -383,12 +396,7 @@ interface SuccessAnimationProps {
   onComplete?: () => void;
 }
 
-export function SuccessAnimation({
-  show,
-  title,
-  description,
-  onComplete,
-}: SuccessAnimationProps) {
+export function SuccessAnimation({ show, title, description, onComplete }: SuccessAnimationProps) {
   const t = useTranslations('ui.stepper');
   const prefersReducedMotion = useReducedMotion();
   const finalTitle = title ?? t('submitSuccess');
@@ -486,7 +494,3 @@ export function SuccessAnimation({
 
 // Export hook
 export { useStepperContext };
-
-
-
-

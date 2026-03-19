@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
+import { useRef, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useVirtualizer, VirtualItem } from '@tanstack/react-virtual';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';

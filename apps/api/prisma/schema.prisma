@@ -342,6 +342,7 @@ model User {
   @@index([email])
   @@index([deletedAt])
   @@index([isBanned])
+  @@index([deletedAt, isBanned])
 }
 
 model RefreshToken {
@@ -699,7 +700,6 @@ model School {
   cases         AdmissionCase[]
   targetedBy    ProfileTargetSchool[]
   schoolLists   SchoolListItem[]
-  essayExamples EssayExample[]
   essayPrompts  EssayPrompt[]
   essaySources  SchoolEssaySource[]
   deadlines     SchoolDeadline[]
@@ -716,6 +716,7 @@ model School {
   @@index([isPrivate])
   @@index([testOptional])
   @@index([hasEarlyDecision])
+  @@index([country, usNewsRank])
 }
 
 model SchoolMetric {
@@ -728,6 +729,7 @@ model SchoolMetric {
   value     Decimal @db.Decimal(10, 2)
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([schoolId, year, metricKey])
   @@index([schoolId])
@@ -804,7 +806,9 @@ model TeamMembership {
   userId String
   user   User          @relation("StandaloneTeamMember", fields: [userId], references: [id], onDelete: Cascade)
   role   TeamMemberRole
-  joinedAt DateTime    @default(now())
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  joinedAt  DateTime    @default(now())
 
   @@unique([teamId, userId])
   @@index([teamId])
@@ -823,6 +827,7 @@ model TeamInvitation {
   status    TeamInvitationStatus @default(PENDING)
   expiresAt DateTime
   createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
 
   @@index([teamId])
   @@index([inviteeId])
@@ -840,6 +845,7 @@ model ProfileTargetSchool {
   round    String? // ED, EA, RD, etc.
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([profileId, schoolId])
   @@index([profileId])
@@ -948,6 +954,7 @@ model PredictionSnapshot {
   source          String   @default("prediction") // prediction | recommendation | ai-recommend | quick-match
   modelVersion    String   @default("v2")
   createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@index([profileId, schoolId, createdAt])
   @@index([profileId, createdAt])
@@ -1051,6 +1058,7 @@ model Follow {
   following   User   @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([followerId, followingId])
   @@index([followerId])
@@ -1065,6 +1073,7 @@ model Block {
   blocked   User   @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([blockerId, blockedId])
   @@index([blockerId])
@@ -1097,6 +1106,7 @@ model ConversationParticipant {
   isPinned   Boolean   @default(false)
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([conversationId, userId])
   @@index([userId])
@@ -1117,6 +1127,7 @@ model Message {
   mediaType  String?
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([conversationId])
   @@index([senderId])
@@ -1240,6 +1251,7 @@ model Report {
   resolution String?
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([reporterId])
   @@index([status])
@@ -1342,14 +1354,12 @@ model Memory {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([userId])
-  @@index([type])
-  @@index([category])
-  @@index([importance])
-  @@index([userId, type])
-  @@index([userId, importance(sort: Desc)])
+  // [userId, type, importance] covers userId-only and userId+type queries
   @@index([userId, type, importance(sort: Desc)])
   @@index([userId, category])
+  @@index([userId, importance(sort: Desc)])
+  @@index([type])
+  @@index([category])
   @@index([accessCount, lastAccessedAt])
   @@index([updatedAt(sort: Desc)])
 }
@@ -1669,7 +1679,9 @@ model TeamMember {
 
   role String @default("member") // owner, member
 
-  joinedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  joinedAt  DateTime @default(now())
 
   @@unique([postId, userId])
   @@index([postId])
@@ -1691,6 +1703,7 @@ model TeamApplication {
   reviewNote String?
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([postId, applicantId])
   @@index([postId])
@@ -1712,42 +1725,6 @@ enum EssayType {
   ACTIVITY
   OPTIONAL
   OTHER
-}
-
-model EssayExample {
-  id       String  @id @default(cuid())
-  authorId String? // Optional: can be anonymous
-  schoolId String? // Target school
-  school   School? @relation(fields: [schoolId], references: [id], onDelete: SetNull)
-
-  type      EssayType
-  prompt    String    @db.Text
-  content   String    @db.Text
-  wordCount Int
-  year      Int? // Application year
-
-  // For Common App: prompt number (1-7)
-  promptNumber Int?
-
-  // Stats
-  viewCount   Int      @default(0)
-  likeCount   Int      @default(0)
-  rating      Decimal? @db.Decimal(2, 1) // Average rating 1.0-5.0
-  ratingCount Int      @default(0)
-
-  // Verification
-  isVerified Boolean @default(false)
-  isPublic   Boolean @default(true)
-
-  tags String[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([schoolId])
-  @@index([type])
-  @@index([isPublic])
-  @@index([year])
 }
 
 // ============================================
@@ -1784,6 +1761,7 @@ model SwipeStats {
   dailyChallengeCount Int       @default(0)
   dailyChallengeDate  DateTime?
 
+  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([badge])
@@ -1803,6 +1781,7 @@ model PointHistory {
 
   @@index([userId])
   @@index([createdAt])
+  @@index([action, createdAt])
 }
 
 // ============================================
@@ -2123,6 +2102,7 @@ model EssayPrompt {
   @@index([type])
   @@index([year])
   @@index([changeType])
+  @@index([schoolId, year, type])
 }
 
 model EssayPromptSource {
@@ -2137,6 +2117,7 @@ model EssayPromptSource {
   scrapedAt   DateTime?
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([essayPromptId])
 }
@@ -2227,6 +2208,8 @@ model AssessmentResult {
   result               Json
   majorRecommendations Json?
 
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   completedAt DateTime @default(now())
 
   @@index([userId])
@@ -2306,6 +2289,7 @@ model SchoolRecommendation {
   tokenUsed       Int     @default(0)
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([createdAt])
@@ -2328,6 +2312,7 @@ model EssayAIResult {
   tokenUsed   Int     @default(0)
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([essayId])
   @@index([type])
@@ -2404,6 +2389,7 @@ model ResumeSnapshot {
   description String?
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([resumeId])
 }
@@ -2419,6 +2405,7 @@ model ResumeAIReview {
   tokenUsed    Int    @default(0)
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([resumeId])
 }

@@ -15,7 +15,7 @@ interface ActivitiesEditorProps {
 }
 
 export function ActivitiesEditor({ content, onChange }: ActivitiesEditorProps) {
-  const items = ((content as any).items ?? []) as ActivityItem[];
+  const items = (content.items ?? []) as ActivityItem[];
 
   const updateItem = (index: number, field: string, value: unknown) => {
     const updated = [...items];

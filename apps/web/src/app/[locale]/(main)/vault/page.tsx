@@ -86,7 +86,7 @@ export default function VaultPage() {
       if (statsRes.success) {
         setStats(statsRes.data);
       }
-    } catch (error) {
+    } catch (_error) {
       // Fetch failed — fall back to demo data
       // Demo data
       setItems([
@@ -200,7 +200,7 @@ export default function VaultPage() {
       setShowCreateDialog(false);
       resetForm();
       fetchData();
-    } catch (error) {
+    } catch (_error) {
       toast.error(t('saveError'));
     } finally {
       setSubmitting(false);
@@ -214,7 +214,7 @@ export default function VaultPage() {
       setShowDeleteDialog(null);
       setShowViewDialog(null);
       fetchData();
-    } catch (error) {
+    } catch (_error) {
       toast.error(t('deleteError'));
     }
   };

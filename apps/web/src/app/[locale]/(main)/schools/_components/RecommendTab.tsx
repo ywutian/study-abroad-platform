@@ -9,10 +9,10 @@ import { apiClient } from '@/lib/api';
 import { useRecommendationPreflight, useGenerateRecommendation } from '@/hooks/use-recommendation';
 import type { GenerateRecommendationDto } from '@/hooks/use-recommendation';
 import type { RecommendationResult } from '@study-abroad/shared';
-import { ProfileStatusBanner } from '@/app/[locale]/(main)/recommendation/_components/ProfileStatusBanner';
-import { RecommendationForm } from '@/app/[locale]/(main)/recommendation/_components/RecommendationForm';
-import { GenerationProgress } from '@/app/[locale]/(main)/recommendation/_components/GenerationProgress';
-import { ResultsView } from '@/app/[locale]/(main)/recommendation/_components/ResultsView';
+import { ProfileStatusBanner } from './ProfileStatusBanner';
+import { RecommendationForm } from './RecommendationForm';
+import { GenerationProgress } from './GenerationProgress';
+import { ResultsView } from './ResultsView';
 
 type GenerationState = 'idle' | 'loading' | 'done';
 

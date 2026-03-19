@@ -8,7 +8,6 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { predict, predictGBDT } from '@study-abroad/shared/scoring';
-import type { TrainedModel, GBDTModel } from '@study-abroad/shared/scoring';
 import { ModelRegistryService } from './model-registry.service';
 import { RedisService } from '../../../common/redis/redis.service';
 
@@ -92,7 +91,7 @@ export class ShadowEvaluatorService {
       );
     } catch (err) {
       this.logger.debug(
-        `Shadow evaluation skipped: ${err instanceof Error ? err.message : err}`,
+        `Shadow evaluation skipped: ${String(err instanceof Error ? err.message : err)}`,
       );
     }
   }

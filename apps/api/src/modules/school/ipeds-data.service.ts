@@ -115,9 +115,10 @@ export class IpedsDataService {
    * 3. 下载 CSV 文件
    * 4. 调用此方法导入
    */
+  // eslint-disable-next-line @typescript-eslint/require-await
   async parseIpedsCsv(
     csvContent: string,
-    type: 'ADM' | 'EF' | 'IC',
+    _type: 'ADM' | 'EF' | 'IC',
   ): Promise<any[]> {
     const lines = csvContent.split('\n');
     const headers = lines[0].split(',').map((h) => h.trim().replace(/"/g, ''));

@@ -136,7 +136,7 @@ export class ToolExecutorService implements OnModuleInit {
 
     try {
       // Special: delegation tool (no retry)
-      if (toolCall.name === ToolName.DELEGATE_TO_AGENT) {
+      if ((toolCall.name as ToolName) === ToolName.DELEGATE_TO_AGENT) {
         return this.handleDelegation(toolCall, startTime);
       }
 

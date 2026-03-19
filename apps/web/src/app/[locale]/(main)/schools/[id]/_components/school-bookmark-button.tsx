@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useTranslations } from 'next-intl';
@@ -137,7 +138,7 @@ export function SchoolBookmarkButton({ schoolId, canShare }: SchoolBookmarkButto
                 onClick={() => handleAddToList(round)}
                 disabled={addBookmarkMutation.isPending}
               >
-                {t('findCollege.rounds.' + round)}
+                {t('schools.rounds.' + round)}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>

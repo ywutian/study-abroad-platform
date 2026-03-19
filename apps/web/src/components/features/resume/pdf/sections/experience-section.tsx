@@ -5,12 +5,13 @@ import { SectionTitle } from '../primitives/section-title';
 import { BulletList } from '../primitives/bullet-list';
 import { DateRange } from '../primitives/date-range';
 import type { ExperienceItem } from '@study-abroad/shared';
+import type { ResumeTheme } from '../types';
 
 /**
  * Shared section renderer for WORK_EXPERIENCE, RESEARCH, and TEACHING.
  */
 export function ExperienceSection({ section, theme }: SectionRendererProps) {
-  const items = ((section.content as any).items ?? []) as ExperienceItem[];
+  const items = ((section.content as Record<string, unknown>).items ?? []) as ExperienceItem[];
   if (!items.length) return null;
 
   const styles = getStyles(theme);
@@ -45,7 +46,7 @@ export function ExperienceSection({ section, theme }: SectionRendererProps) {
   );
 }
 
-function getStyles(theme: any) {
+function getStyles(theme: ResumeTheme) {
   return StyleSheet.create({
     container: { marginBottom: theme.spacing.sectionGap },
     item: { marginBottom: theme.spacing.itemGap },

@@ -28,9 +28,9 @@ type ScrollState = 'top' | 'scrolling' | 'scrolled';
 
 const NAV_LINKS = [
   { key: 'schools', href: '/schools' },
+  { key: 'prediction', href: '/prediction' },
   { key: 'cases', href: '/cases' },
   { key: 'forum', href: '/forum' },
-  { key: 'ai', href: '/ai' },
 ] as const;
 
 export function LandingHeader() {

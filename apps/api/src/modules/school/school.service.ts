@@ -412,7 +412,7 @@ export class SchoolService {
   private calculateRelevanceScore(school: School, searchTerm: string): number {
     let score = 0;
     const lowerSearch = searchTerm.toLowerCase();
-    const upperSearch = searchTerm.toUpperCase();
+    const _upperSearch = searchTerm.toUpperCase();
     const schoolAliases =
       (school as School & { aliases?: string[] }).aliases || [];
 

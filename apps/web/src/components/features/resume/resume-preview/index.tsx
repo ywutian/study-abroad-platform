@@ -27,6 +27,7 @@ export function ResumePreview({ sections, templateId, settings }: ResumePreviewP
   const visibleSections = useMemo(() => sections.filter((s) => s.isVisible), [sections]);
 
   // Stabilize settings object reference to avoid unnecessary PDF re-renders
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional deep comparison via JSON.stringify
   const stableSettings = useMemo(() => settings, [JSON.stringify(settings)]);
 
   return (

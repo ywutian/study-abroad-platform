@@ -163,7 +163,7 @@ export class RedisStorage implements IStorage, OnModuleDestroy {
     await pipeline.exec();
   }
 
-  async incr(key: string, delta: number = 1): Promise<number> {
+  incr(key: string, delta: number = 1): Promise<number> {
     const client = this.ensureConnected();
     if (delta === 1) {
       return client.incr(key);
@@ -171,7 +171,7 @@ export class RedisStorage implements IStorage, OnModuleDestroy {
     return client.incrby(key, delta);
   }
 
-  async decr(key: string, delta: number = 1): Promise<number> {
+  decr(key: string, delta: number = 1): Promise<number> {
     const client = this.ensureConnected();
     if (delta === 1) {
       return client.decr(key);
@@ -190,7 +190,7 @@ export class RedisStorage implements IStorage, OnModuleDestroy {
     return ttl;
   }
 
-  async keys(pattern: string): Promise<string[]> {
+  keys(pattern: string): Promise<string[]> {
     const client = this.ensureConnected();
     // 注意: 生产环境应使用 SCAN 而非 KEYS
     return client.keys(pattern);
@@ -205,32 +205,32 @@ export class RedisStorage implements IStorage, OnModuleDestroy {
 
   // ==================== List ====================
 
-  async lpush(key: string, ...values: string[]): Promise<number> {
+  lpush(key: string, ...values: string[]): Promise<number> {
     const client = this.ensureConnected();
     return client.lpush(key, ...values);
   }
 
-  async rpush(key: string, ...values: string[]): Promise<number> {
+  rpush(key: string, ...values: string[]): Promise<number> {
     const client = this.ensureConnected();
     return client.rpush(key, ...values);
   }
 
-  async lpop(key: string): Promise<string | null> {
+  lpop(key: string): Promise<string | null> {
     const client = this.ensureConnected();
     return client.lpop(key);
   }
 
-  async rpop(key: string): Promise<string | null> {
+  rpop(key: string): Promise<string | null> {
     const client = this.ensureConnected();
     return client.rpop(key);
   }
 
-  async lrange(key: string, start: number, stop: number): Promise<string[]> {
+  lrange(key: string, start: number, stop: number): Promise<string[]> {
     const client = this.ensureConnected();
     return client.lrange(key, start, stop);
   }
 
-  async llen(key: string): Promise<number> {
+  llen(key: string): Promise<number> {
     const client = this.ensureConnected();
     return client.llen(key);
   }
@@ -242,7 +242,7 @@ export class RedisStorage implements IStorage, OnModuleDestroy {
 
   // ==================== Hash ====================
 
-  async hget(key: string, field: string): Promise<string | null> {
+  hget(key: string, field: string): Promise<string | null> {
     const client = this.ensureConnected();
     return client.hget(key, field);
   }
@@ -252,7 +252,7 @@ export class RedisStorage implements IStorage, OnModuleDestroy {
     await client.hset(key, field, value);
   }
 
-  async hmget(key: string, ...fields: string[]): Promise<(string | null)[]> {
+  hmget(key: string, ...fields: string[]): Promise<(string | null)[]> {
     const client = this.ensureConnected();
     return client.hmget(key, ...fields);
   }
@@ -262,43 +262,39 @@ export class RedisStorage implements IStorage, OnModuleDestroy {
     await client.hmset(key, data);
   }
 
-  async hdel(key: string, ...fields: string[]): Promise<number> {
+  hdel(key: string, ...fields: string[]): Promise<number> {
     const client = this.ensureConnected();
     return client.hdel(key, ...fields);
   }
 
-  async hgetall(key: string): Promise<Record<string, string>> {
+  hgetall(key: string): Promise<Record<string, string>> {
     const client = this.ensureConnected();
     return client.hgetall(key);
   }
 
-  async hincrby(key: string, field: string, delta: number): Promise<number> {
+  hincrby(key: string, field: string, delta: number): Promise<number> {
     const client = this.ensureConnected();
     return client.hincrby(key, field, delta);
   }
 
   // ==================== Sorted Set ====================
 
-  async zadd(key: string, score: number, member: string): Promise<number> {
+  zadd(key: string, score: number, member: string): Promise<number> {
     const client = this.ensureConnected();
     return client.zadd(key, score, member);
   }
 
-  async zrange(key: string, start: number, stop: number): Promise<string[]> {
+  zrange(key: string, start: number, stop: number): Promise<string[]> {
     const client = this.ensureConnected();
     return client.zrange(key, start, stop);
   }
 
-  async zrangebyscore(
-    key: string,
-    min: number,
-    max: number,
-  ): Promise<string[]> {
+  zrangebyscore(key: string, min: number, max: number): Promise<string[]> {
     const client = this.ensureConnected();
     return client.zrangebyscore(key, min, max);
   }
 
-  async zrem(key: string, ...members: string[]): Promise<number> {
+  zrem(key: string, ...members: string[]): Promise<number> {
     const client = this.ensureConnected();
     return client.zrem(key, ...members);
   }
@@ -309,16 +305,12 @@ export class RedisStorage implements IStorage, OnModuleDestroy {
     return score !== null ? parseFloat(score) : null;
   }
 
-  async zcard(key: string): Promise<number> {
+  zcard(key: string): Promise<number> {
     const client = this.ensureConnected();
     return client.zcard(key);
   }
 
-  async zremrangebyscore(
-    key: string,
-    min: number,
-    max: number,
-  ): Promise<number> {
+  zremrangebyscore(key: string, min: number, max: number): Promise<number> {
     const client = this.ensureConnected();
     return client.zremrangebyscore(key, min, max);
   }

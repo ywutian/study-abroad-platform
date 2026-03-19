@@ -47,6 +47,7 @@ export function TeamJoinPageClient() {
     if (joinStarted.current) return;
     joinStarted.current = true;
     joinMutation.mutate(token);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- joinMutation and router are stable refs, including them causes infinite re-renders
   }, [isLoggedIn, token]);
 
   if (!token) {

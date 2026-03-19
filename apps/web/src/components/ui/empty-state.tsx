@@ -16,7 +16,6 @@ import {
   GraduationCap,
   BookOpen,
   Users,
-  Target,
   Rocket,
 } from 'lucide-react';
 

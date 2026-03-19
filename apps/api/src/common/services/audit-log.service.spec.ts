@@ -5,7 +5,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 describe('AuditLogService', () => {
   let service: AuditLogService;
-  let logSpy: jest.SpyInstance;
+  let _logSpy: jest.SpyInstance;
   let errorSpy: jest.SpyInstance;
 
   const auditLogCreateMock = jest.fn().mockResolvedValue({});
@@ -24,7 +24,7 @@ describe('AuditLogService', () => {
     }).compile();
 
     service = module.get<AuditLogService>(AuditLogService);
-    logSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation();
+    _logSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation();
     errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation();
     auditLogCreateMock.mockClear();
   });

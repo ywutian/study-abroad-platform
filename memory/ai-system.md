@@ -4,10 +4,15 @@
 
 Two entry points for LLM calls:
 
-| Service      | Location                               | When to use                                                  |
-| ------------ | -------------------------------------- | ------------------------------------------------------------ |
-| `AiService`  | `modules/ai/ai.service.ts`             | Simple one-shot calls (essay-ai, recommendation, prediction) |
-| `LLMService` | `modules/ai-agent/core/llm.service.ts` | Agent loop calls with retry + circuit breaker + timeout      |
+All LLM calls go through `LLMService` (globally provided by `LLMProvidersModule.forRoot()`):
+
+| Method                           | Use case                 | Input                      | Output                        |
+| -------------------------------- | ------------------------ | -------------------------- | ----------------------------- |
+| `chatSimple(messages, options)`  | One-shot domain AI calls | `ChatSimpleMessage[]`      | `string`                      |
+| `call(systemPrompt, msgs, opts)` | Agent loop (with tools)  | `Message[]` + `LLMOptions` | `LLMResponse`                 |
+| `callStream(prompt, msgs, opts)` | Streaming agent loop     | `Message[]` + `LLMOptions` | `AsyncGenerator<StreamChunk>` |
+
+**Note**: The legacy `AiService` has been removed. All domain consumers use `LLMService.chatSimple()` directly.
 
 ## LLM Provider Abstraction
 
@@ -19,8 +24,8 @@ All LLM calls go through `ILLMProvider` interface (`ai-agent/providers/`).
 
 ### Call Chains
 
-- **Simple**: Consumer → `AiService.chat()` → `ILLMProvider.chat()` → OpenAI API
-- **Agent**: WebSocket/HTTP → `OrchestratorService` → `AgentRunnerService` → `LLMService` → `ILLMProvider`
+- **Simple**: Consumer → `LLMService.chatSimple()` → resilience → `ILLMProvider.chat()` → OpenAI API
+- **Agent**: WebSocket/HTTP → `OrchestratorService` → `AgentRunnerService` → `LLMService.call()` → resilience → `ILLMProvider`
 
 ## Tool System
 
@@ -100,11 +105,12 @@ Location: `modules/ai-agent/memory/`
 
 ```
 ai-agent/security/  →  @Global(), no imports needed
-ai-agent/providers/ →  global: true via forRoot(), no imports needed
+ai-agent/providers/ →  global: true via forRoot(); provides LLMService, ResilienceService, TokenTrackerService
 ai-agent/memory/    →  Import AiAgentMemoryModule for MemoryManagerService
 ai-agent/           →  Import AiAgentModule for OrchestratorService
-ai/                 →  Import AiModule for AiService
+ai/                 →  Import AiModule for ProfileAiService, ResumeAiService
 ```
 
-- `AiModule` does NOT import `AiAgentModule` (no circular deps)
+- `LLMService`, `ResilienceService`, `TokenTrackerService` are globally provided — no module import needed
+- `AiModule` only provides `ProfileAiService` and `ResumeAiService`
 - External domain modules are imported by `AiAgentModule` for tool service DI

@@ -21,7 +21,7 @@ function mockFetchResponse(body: any, status = 200): Response {
 
 describe('WebSearchService', () => {
   let service: WebSearchService;
-  let configService: ConfigService;
+  let _configService: ConfigService;
   let redisService: Partial<RedisService>;
   let resilienceService: Partial<ResilienceService>;
   let fetchMock: jest.Mock;
@@ -71,7 +71,7 @@ describe('WebSearchService', () => {
     }).compile();
 
     service = module.get<WebSearchService>(WebSearchService);
-    configService = module.get<ConfigService>(ConfigService);
+    _configService = module.get<ConfigService>(ConfigService);
   });
 
   afterEach(() => {
@@ -322,7 +322,7 @@ describe('WebSearchService', () => {
       await service.search('test');
 
       expect(redisService.set).toHaveBeenCalled();
-      const [key, value, ttl] = (redisService.set as jest.Mock).mock.calls[0];
+      const [key, _value, ttl] = (redisService.set as jest.Mock).mock.calls[0];
       expect(key).toMatch(/^search:/);
       expect(ttl).toBe(6 * 3600); // 通用搜索 6 小时 TTL
     });

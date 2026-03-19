@@ -21,37 +21,13 @@ import {
   Target,
   Shield,
   Rocket,
-  School,
   TrendingUp,
-  ExternalLink,
   Star,
   Info,
 } from 'lucide-react';
 import Link from 'next/link';
 
-interface SchoolInfo {
-  id: string;
-  name: string;
-  nameZh?: string;
-  usNewsRank?: number;
-  acceptanceRate?: number;
-}
-
-interface RecommendationItem {
-  schoolId: string;
-  probability: number;
-  reason: string;
-  highlights: string[];
-  school?: SchoolInfo;
-}
-
-interface RecommendationResponse {
-  reach: RecommendationItem[];
-  target: RecommendationItem[];
-  safety: RecommendationItem[];
-  summary: string;
-  status?: 'cached' | 'profile_incomplete' | 'ai_error';
-}
+import type { RecommendationResponse } from './school-recommendation.types';
 
 const CATEGORY_STYLES = {
   reach: {

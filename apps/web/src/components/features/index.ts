@@ -1,3 +1,6 @@
+// AI error boundary
+export { AIErrorBoundary } from './ai-error-boundary';
+
 // Core feature components
 export { FeatureCard, StatCard, CTACard } from './feature-card';
 

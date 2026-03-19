@@ -54,7 +54,7 @@ export function TeamsPageClient() {
       toast.success('Joined');
       router.push(`/teams/${teamId}`);
     },
-    onError: (e: unknown, teamId) => {
+    onError: (e: unknown, _teamId) => {
       const err = e as { response?: { data?: { error?: { code?: string; message?: string } } } };
       const code = err.response?.data?.error?.code;
       if (code === 'CONFLICT') toast.error(t('errors.full'));

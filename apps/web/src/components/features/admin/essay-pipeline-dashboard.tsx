@@ -37,13 +37,11 @@ import { apiClient } from '@/lib/api/client';
 import {
   Play,
   Search,
-  Settings,
   Eye,
   RefreshCw,
   CheckCircle2,
   XCircle,
   Clock,
-  AlertTriangle,
   Loader2,
   Save,
   ChevronDown,
@@ -169,7 +167,7 @@ export function EssayPipelineDashboard() {
   const handleStartPipeline = async () => {
     setStartingPipeline(true);
     try {
-      const res = await apiClient.post<{ runId: string; status: string }>(
+      await apiClient.post<{ runId: string; status: string }>(
         '/admin/essay-scraper/pipeline/start',
         {}
       );

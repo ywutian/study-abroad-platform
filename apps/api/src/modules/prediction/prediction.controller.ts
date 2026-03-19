@@ -19,6 +19,7 @@ import {
   ReportResultDto,
 } from './dto';
 import { clampPercentRate } from '../../common/utils/percent.util';
+import { SCHOOL_NAME_RANK_SELECT } from '../../common/constants/prisma-selects';
 
 @ApiTags('predictions')
 @ApiBearerAuth()
@@ -146,7 +147,7 @@ export class PredictionController {
     const schoolIds = [...new Set(predictions.map((p) => p.schoolId))];
     const schools = await this.prisma.school.findMany({
       where: { id: { in: schoolIds } },
-      select: { id: true, name: true, nameZh: true, usNewsRank: true },
+      select: SCHOOL_NAME_RANK_SELECT,
     });
     const schoolMap = new Map(schools.map((s) => [s.id, s]));
 

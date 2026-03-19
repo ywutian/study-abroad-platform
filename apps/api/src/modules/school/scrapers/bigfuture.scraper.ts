@@ -42,7 +42,7 @@ class BigFutureParser extends BaseSchoolScraper {
 
   parseSchoolData(
     html: string,
-    school: { id: string; name: string },
+    _school: { id: string; name: string },
   ): {
     data: Record<string, unknown>;
     metrics: Array<{ key: string; value: number }>;

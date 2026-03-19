@@ -33,6 +33,7 @@
     "settings": "Settings",
     "all": "All",
     "processing": "Processing...",
+    "comingSoon": "Coming Soon",
     "retry": "Retry",
     "clearAll": "Clear All",
     "ongoing": "Ongoing",
@@ -114,12 +115,20 @@
     "modules": {
       "schools": "School Library",
       "schoolsDesc": "Browse and find your perfect fit",
-      "uncommonApp": "Uncommon App",
-      "uncommonAppDesc": "AI profile analysis and recommendations",
-      "featureHall": "Feature Hall",
-      "featureHallDesc": "Admissions officer evaluation",
+      "prediction": "Admission Prediction",
+      "predictionDesc": "AI-powered admission probability analysis",
+      "cases": "Case Gallery",
+      "casesDesc": "Real admission cases and success stories",
+      "essays": "My Essays",
+      "essaysDesc": "Write and manage your application essays",
+      "aiAssistant": "AI Assistant",
+      "aiAssistantDesc": "Smart Q&A for study abroad advice",
       "forum": "Community Forum",
-      "forumDesc": "Connect and share experiences"
+      "forumDesc": "Connect and share experiences",
+      "resume": "Resume Builder",
+      "resumeDesc": "Create professional resumes with AI assistance",
+      "timeline": "Timeline",
+      "timelineDesc": "Track deadlines and plan your application journey"
     },
     "onboarding": {
       "title": "Welcome",
@@ -242,13 +251,13 @@
         "title": "School Library",
         "desc": "Browse, filter and find your perfect fit"
       },
-      "uncommonApp": {
-        "title": "Uncommon App",
-        "desc": "AI-powered profile analysis and school recommendations"
+      "prediction": {
+        "title": "AI Prediction",
+        "desc": "AI-powered admission probability analysis"
       },
-      "featureHall": {
-        "title": "Feature Hall",
-        "desc": "Evaluate from admissions officer perspective"
+      "cases": {
+        "title": "Case Gallery",
+        "desc": "Real admission cases and success stories"
       },
       "forum": {
         "title": "Community Forum",
@@ -526,9 +535,7 @@
     "forum": "Forum",
     "teams": "Teams",
     "assessment": "Assessment",
-    "swipe": "Community Challenge",
     "timeline": "Timeline",
-    "recommendation": "Recommendations",
     "vault": "Password Vault",
     "essayGallery": "Essay Gallery",
     "ai": "AI Assistant",
@@ -550,7 +557,6 @@
     },
     "descriptions": {
       "ai": "Smart AI assistant for study abroad questions",
-      "recommendation": "Personalized school recommendations based on your profile",
       "assessment": "Personality and career interest assessments",
       "timeline": "Track application deadlines and tasks",
       "hall": "Admissions officer evaluation and rank comparison",
@@ -563,14 +569,17 @@
       "uncommonApp": "AI-powered application management",
       "verifiedRanking": "Real verified admission results",
       "followers": "Manage followers and connections",
+      "forum": "Join discussions with fellow applicants",
       "teams": "Find or create teams for same-school applications and prep",
       "help": "FAQ, guides and support",
-      "referral": "Invite friends and earn points"
+      "referral": "Invite friends and earn points",
+      "ranking": "Customize school rankings based on your preferences"
     },
     "sections": {
-      "tools": "Tools & Resources",
-      "community": "Discovery & Community",
-      "utility": "Utilities"
+      "research": "Research & Discover",
+      "social": "Community",
+      "tools": "Tools",
+      "account": "Account"
     },
     "user": {
       "manageAccount": "Manage Account"
@@ -716,6 +725,13 @@
       "description": "Complete the following steps to quickly fill in your profile",
       "fillGpa": "Fill GPA",
       "fillScore": "Fill Scores"
+    },
+    "nextSteps": {
+      "title": "Next Steps",
+      "prediction": "Admission Prediction",
+      "essays": "My Essays",
+      "assessment": "Assessment",
+      "resume": "Resume Builder"
     },
     "steps": {
       "basic": "Basic Info",
@@ -1180,6 +1196,10 @@
   "cases": {
     "title": "Case Library",
     "description": "Browse real application cases and learn from success stories",
+    "tabs": {
+      "cases": "Cases",
+      "essays": "Essays"
+    },
     "shareCase": "Share Case",
     "searchPlaceholder": "Search cases...",
     "stats": {
@@ -1224,7 +1244,7 @@
       "decision": "Decision",
       "essayContent": "Essay Content",
       "gpaByYear": "GPA by year (9–12)",
-      "viewInEssayGallery": "View in Essay Gallery",
+      "viewEssays": "View Essays",
       "applicationDetails": "Application Details"
     }
   },
@@ -1304,7 +1324,8 @@
       "review": "Review Mode",
       "ranking": "Rank Comparison",
       "lists": "User Lists",
-      "challenge": "Community Challenge"
+      "challenge": "Community Challenge",
+      "verified": "Verified Ranking"
     },
     "challenge": {
       "loading": "Loading challenge...",
@@ -1699,7 +1720,8 @@
       "confirm": "Confirm"
     },
     "toast": {
-      "logoutSuccess": "Logged out successfully"
+      "logoutSuccess": "Logged out successfully",
+      "accountDeleted": "Account deleted successfully"
     }
   },
   "submitCase": {
@@ -1837,11 +1859,20 @@
       "mainContent": "Main Content",
       "openMenu": "Open Menu",
       "skipToMain": "Skip to main content",
-      "skipToNav": "Skip to navigation"
+      "skipToNav": "Skip to navigation",
+      "switchLanguage": "Switch language",
+      "notifications": "Notifications",
+      "helpCenter": "Help center",
+      "userMenu": "User menu",
+      "navigationMenu": "Toggle navigation menu"
     },
     "command": {
       "searchPlaceholder": "Search commands...",
       "nav": "Navigation",
+      "research": "Research & Discover",
+      "social": "Community",
+      "tools": "Tools",
+      "admin": "Admin",
       "navigate": "Navigate to",
       "other": "Other",
       "noResults": "No results found",
@@ -1849,23 +1880,83 @@
       "home": "Home",
       "profile": "Profile",
       "schools": "Schools",
+      "prediction": "Prediction",
       "cases": "Cases",
+      "forum": "Forum",
+      "teams": "Teams",
+      "essays": "Essays",
+      "resume": "Resume",
+      "timeline": "Timeline",
+      "assessment": "Assessment",
       "aiAssistant": "AI Assistant",
+      "uncommonApp": "Uncommon App",
+      "hall": "Hall of Fame",
+      "chat": "Chat",
+      "vault": "Vault",
+      "settingsPage": "Settings",
+      "referral": "Referral",
       "helpDocs": "Help & Docs",
       "switchToDark": "Switch to Dark Mode",
       "switchToLight": "Switch to Light Mode",
+      "adminDashboard": "Admin Dashboard",
+      "adminUsers": "Manage Users",
+      "adminModeration": "Content Moderation",
+      "adminAiOps": "AI Operations",
+      "adminAuditLogs": "Audit Logs",
       "keywords": {
-        "home": "home,main",
+        "home": "home,main,dashboard",
         "profile": "profile,personal",
-        "schools": "schools,universities",
-        "cases": "cases,applications",
-        "aiAssistant": "AI,assistant,smart",
-        "help": "help,support",
-        "theme": "theme,dark,light"
+        "schools": "schools,universities,college",
+        "prediction": "prediction,probability,chance,admit",
+        "cases": "cases,applications,admit",
+        "forum": "forum,discussion,post",
+        "teams": "teams,group,collaborate",
+        "essays": "essays,writing,draft",
+        "resume": "resume,cv,curriculum",
+        "timeline": "timeline,deadlines,schedule",
+        "assessment": "assessment,mbti,personality",
+        "aiAssistant": "AI,assistant,smart,chat",
+        "uncommonApp": "uncommon,strategy,unique",
+        "hall": "hall,fame,ranking,leaderboard",
+        "chat": "chat,message,conversation",
+        "vault": "vault,documents,secure",
+        "settings": "settings,preferences,account",
+        "referral": "referral,invite,friend",
+        "help": "help,support,faq",
+        "theme": "theme,dark,light",
+        "admin": "admin,dashboard,manage",
+        "adminUsers": "users,manage,ban",
+        "adminModeration": "moderation,content,review,reports",
+        "adminAiOps": "ai,agent,operations,config",
+        "adminAuditLogs": "audit,logs,activity",
+        "ranking": "ranking,rank,compare,weight",
+        "followers": "followers,following,social,friends",
+        "adminSchools": "schools,university,manage",
+        "adminCalendar": "calendar,deadlines,events",
+        "adminEssays": "essays,prompts,gallery",
+        "adminVerifications": "verification,verify,approve",
+        "adminPayments": "payments,billing,revenue",
+        "adminMemory": "memory,embeddings,decay",
+        "adminSettings": "settings,config",
+        "adminCalibrations": "calibration,multiplier",
+        "adminPoints": "points,rewards,badges",
+        "adminTemplates": "templates,activities"
       },
       "settings": "Settings",
       "close": "Close",
-      "search": "Search"
+      "search": "Search",
+      "ranking": "Custom Ranking",
+      "followers": "Followers",
+      "adminSchools": "Schools Management",
+      "adminCalendar": "Calendar & Deadlines",
+      "adminEssays": "Essay Management",
+      "adminVerifications": "Verifications",
+      "adminPayments": "Payments",
+      "adminMemory": "AI Memory System",
+      "adminSettings": "Admin Settings",
+      "adminCalibrations": "Calibration Settings",
+      "adminPoints": "Points Management",
+      "adminTemplates": "Activity Templates"
     },
     "offline": {
       "checkConnection": "Please check your connection",
@@ -2099,16 +2190,13 @@
     },
     "resetFilters": "Reset Filters",
     "weightSort": "Sort by Weight",
-    "weights": {
-      "title": "Weight Settings",
-      "description": "Adjust the weight of each indicator",
-      "ranking": "US News Rank",
-      "salary": "Average Salary",
-      "tuition": "Tuition",
-      "tuitionDesc": "Annual tuition amount",
-      "acceptanceRate": "Acceptance Rate",
-      "acceptanceRateDesc": "Lower means more competitive",
-      "preview": "Preview Rankings"
+    "presets": {
+      "title": "Sort Presets",
+      "description": "Choose a sorting strategy or create custom rankings",
+      "selectivity": "Selectivity",
+      "affordability": "Affordability",
+      "employment": "Employment",
+      "customRanking": "Custom Ranking"
     },
     "addToList": "Add to List",
     "added": "Added",
@@ -2140,25 +2228,15 @@
       "safety": "Safety"
     },
     "rounds": {
-      "ED": "ED",
-      "ED2": "ED II",
-      "EA": "EA",
-      "REA": "REA",
-      "RD": "RD",
-      "ROLLING": "Rolling"
-    },
-    "specialConditions": {
-      "testOptional": "Test Optional"
-    }
-  },
-  "findCollege": {
-    "rounds": {
       "ED": "Early Decision (ED)",
       "ED2": "Early Decision II (ED2)",
       "EA": "Early Action (EA)",
       "REA": "Restrictive Early Action (REA)",
       "RD": "Regular Decision (RD)",
       "ROLLING": "Rolling"
+    },
+    "specialConditions": {
+      "testOptional": "Test Optional"
     }
   },
   "uncommonApp": {
@@ -3255,81 +3333,6 @@
       "comprehensiveAnalysisPrompt": "Please analyze all my assessment results"
     }
   },
-  "swipe": {
-    "title": "Community Challenge",
-    "description": "View applicant profiles and guess which schools admitted them",
-    "challengeTitle": "Guess the Admissions",
-    "challengeDesc": "View full applicant profiles and guess their results",
-    "guessAdmission": "Guess Admission Result",
-    "submitGuesses": "Submit Guesses",
-    "revealResults": "Reveal Results",
-    "yourGuess": "Your Guess",
-    "actualResult": "Actual Result",
-    "accuracy": "Accuracy",
-    "nextChallenge": "Next Challenge",
-    "noChallenge": "No challenges available right now, try again later",
-    "play": "Start Swiping",
-    "leaderboard": "Leaderboard",
-    "like": "Like",
-    "dislike": "Skip",
-    "superLike": "Super Like",
-    "noMore": "No more schools",
-    "loading": "Loading...",
-    "badge": "Current Badge",
-    "badgeUpgraded": "Badge Upgraded",
-    "newBadge": "New Badge",
-    "swipes": "swipes",
-    "badges": {
-      "bronze": "Bronze",
-      "silver": "Silver",
-      "gold": "Gold",
-      "platinum": "Platinum",
-      "diamond": "Diamond"
-    },
-    "noCases": "No Cases Available",
-    "noCasesDesc": "No cases to swipe right now. Check back later!",
-    "refresh": "Refresh",
-    "correct": "Correct!",
-    "incorrect": "Incorrect",
-    "failed": "Operation failed",
-    "points": "points",
-    "streak": "streak",
-    "admit": "Admit",
-    "reject": "Reject",
-    "verified": "Verified",
-    "undeclared": "Undeclared",
-    "none": "None",
-    "acceptanceRate": "Acceptance Rate",
-    "youreRight": "You're right!",
-    "notQuite": "Not quite",
-    "nextCase": "Next Case",
-    "totalSwipes": "Total Swipes",
-    "bestStreak": "Best Streak",
-    "current": "Current",
-    "toNextBadge": "To Next Badge",
-    "swipeHint": "Swipe left to reject, right to admit",
-    "you": "You",
-    "aiTitle": "Admission Prediction AI",
-    "aiDesc": "I can help you analyze cases and improve prediction accuracy",
-    "aiDescWithResult": "I can help you analyze this case result",
-    "aiActions": {
-      "explainResult": "Explain this result",
-      "analyzeCase": "Analyze current case",
-      "analyzePerformance": "Analyze my performance",
-      "compareProfile": "Compare my profile",
-      "predictionTips": "Prediction tips"
-    },
-    "aiPrompts": {
-      "explainResult": "Please help me analyze this admission case:\n- School: {school}\n- Rank: #{rank}\n- Acceptance Rate: {rate}%\n- GPA: {gpa}\n- SAT: {sat}\n- Actual Result: {actualResult}\n- My Prediction: {prediction}\n- Prediction was {correctText}\n\nPlease analyze:\n1. Why did this applicant get this result?\n2. Why was my prediction {correctText}?\n3. What can I learn from this case?",
-      "analyzeCase": "Please help me analyze this applicant's chance of admission:\n- School: {school}\n- Rank: #{rank}\n- Acceptance Rate: {rate}%\n- Major: {major}\n- GPA: {gpa}\n- SAT: {sat}\n- ACT: {act}\n- TOEFL: {toefl}\n- Tags: {tags}\n\nPlease analyze the probability of admission, rejection, and waitlist, and explain the reasons. (Don't tell me the answer directly, give me hints)",
-      "analyzePerformance": "Please analyze my admission prediction game performance:\n- Total Predictions: {totalSwipes}\n- Correct Count: {correctCount}\n- Accuracy: {accuracy}%\n- Current Streak: {currentStreak}\n- Best Streak: {bestStreak}\n- Current Badge: {badge}\n\nPlease analyze:\n1. How is my performance? Compared to average?\n2. What types of cases might I tend to judge incorrectly?\n3. Give me some tips to improve accuracy",
-      "compareProfile": "Please compare my profile with recent admission cases. Analyze my competitiveness for applying to similar schools. What are my strengths and weaknesses?",
-      "predictionTips": "Please teach me some tips for predicting admission results. What factors do admission officers generally value? What are the differences in admission standards between different types of schools (e.g., liberal arts colleges, research universities)?"
-    },
-    "aiInitialCorrect": "You got it right! The actual result was {result}. Want me to help you analyze this case?",
-    "aiInitialWrong": "Not quite! The actual result was {result}. Want me to help you analyze this case?",
-    "aiWelcome": "Hi! I'm the Admission Prediction AI Assistant. I can help you analyze cases, improve prediction accuracy, or compare your profile. How can I help?"
-  },
   "essayGallery": {
     "title": "Essay Library",
     "description": "Browse excellent admission essays and learn writing techniques",
@@ -3515,7 +3518,7 @@
   "school": {
     "notFound": "School Not Found",
     "notFoundDesc": "This school does not exist or has been removed",
-    "backToRanking": "Back to Rankings",
+    "backToSchools": "Back to Schools",
     "website": "Visit Website",
     "bookmark": "Bookmark",
     "share": "Share",
@@ -3960,7 +3963,19 @@
     "deleteSuccess": "Recommendation deleted",
     "deleteFailed": "Failed to delete recommendation",
     "showingRecent": "Showing most recent {count} results",
-    "generateFirst": "Generate Your First Recommendation"
+    "generateFirst": "Generate Your First Recommendation",
+    "generating": "Generating...",
+    "generatingDesc": "AI is analyzing your profile and matching schools",
+    "formTitle": "Recommendation Settings",
+    "additionalPreferences": "Additional Preferences",
+    "additionalPreferencesPlaceholder": "Any specific requirements...",
+    "completeProfileFirst": "Complete profile first",
+    "tests": "Tests",
+    "activities": "Activities",
+    "missing": "Missing",
+    "inList": "In List",
+    "analysis": "Analysis",
+    "regenerate": "Regenerate"
   },
   "timeline": {
     "title": "Application Timeline",
@@ -4300,7 +4315,9 @@
       "full": "This team is full.",
       "inviteExpired": "This invite link has expired or is invalid.",
       "forbidden": "You don't have access to this team. Ask the owner for an invite.",
-      "conflict": "Already a member or request conflict."
+      "conflict": "Already a member or request conflict.",
+      "noAccess": "You don't have access to these settings.",
+      "ownerAdminOnly": "Only the owner or admins can edit settings."
     },
     "confirm": {
       "leave": "Leave this team? You will lose your membership.",
@@ -4323,7 +4340,52 @@
     "loginToJoin": "Log in to join",
     "loadErrorMy": "Failed to load your teams",
     "loadErrorDiscover": "Failed to load teams",
-    "retry": "Retry"
+    "retry": "Retry",
+    "back": "Back",
+    "backToTeam": "Back to team",
+    "member": "Member",
+    "members": "Members",
+    "toast": {
+      "created": "Team created",
+      "createFailed": "Failed to create team",
+      "left": "Left team",
+      "leaveFailed": "Failed to leave",
+      "disbanded": "Team disbanded",
+      "disbandFailed": "Failed to disband",
+      "linkCopied": "Invite link copied",
+      "linkFailed": "Failed to create link",
+      "joined": "Joined",
+      "joinFailed": "Failed to join",
+      "alreadyMember": "Already a member",
+      "settingsSaved": "Settings saved",
+      "saveFailed": "Failed to save"
+    },
+    "validation": {
+      "nameRequired": "Name is required",
+      "nameLengthError": "Name must be 1–100 characters",
+      "descriptionLengthError": "Description must be at most 500 characters",
+      "maxTags": "Max {max} tags",
+      "maxMembersError": "Max members must be between 2 and 100"
+    },
+    "form": {
+      "nameLabel": "Name",
+      "namePlaceholder": "Team name",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Optional description",
+      "visibilityLabel": "Visibility",
+      "joinPolicyLabel": "Join policy",
+      "maxMembersLabel": "Max members (optional, 2–100)",
+      "maxMembersPlaceholder": "Leave empty for no limit",
+      "clear": "Clear",
+      "creating": "Creating...",
+      "saving": "Saving...",
+      "save": "Save"
+    },
+    "visibility": {
+      "public": "Public",
+      "unlisted": "Unlisted",
+      "private": "Private"
+    }
   },
   "points": {
     "levels": {
@@ -4594,19 +4656,35 @@
       "users": "Users",
       "schools": "Schools",
       "dataUpdates": "Data Updates",
+      "dataSync": "Data Sync",
+      "calendar": "Calendar",
       "deadlines": "Deadlines",
       "events": "Events",
       "essays": "Essays",
       "auditLogs": "Audit Logs",
       "aiAgent": "AI Agent",
+      "aiOps": "AI Operations",
       "memory": "Memory",
       "points": "Points",
       "content": "Content",
+      "moderation": "Moderation",
       "payments": "Payments",
       "analytics": "Analytics",
       "calibrations": "Calibrations",
       "activityTemplates": "Activity Templates",
-      "settings": "Settings"
+      "settings": "Settings",
+      "verifications": "Verifications",
+      "health": "System Health",
+      "menu": "Menu",
+      "adminNav": "Admin Navigation",
+      "groups": {
+        "overview": "Overview",
+        "users": "Users & Verification",
+        "academic": "Academic Data",
+        "moderation": "Content & Operations",
+        "ai": "AI System",
+        "system": "System"
+      }
     },
     "pagination": {
       "showing": "Showing {from}-{to} of {total}",
@@ -4874,6 +4952,9 @@
       "confirmDeleteDesc": "Are you sure you want to delete this calibration? The school's prediction will revert to default.",
       "noCalibrations": "No calibrations configured yet"
     },
+    "calendar": {
+      "description": "Manage application deadlines and global events"
+    },
     "deadlines": {
       "title": "Deadline Management",
       "description": "Manage school application deadlines",
@@ -4938,6 +5019,17 @@
         "FINANCIAL_AID": "Financial Aid",
         "APPLICATION": "Application",
         "OTHER": "Other"
+      }
+    },
+    "aiOps": {
+      "title": "AI Operations",
+      "description": "Monitor, configure, and analyze the AI system",
+      "tabs": {
+        "overview": "Overview",
+        "config": "Configuration",
+        "performance": "Performance",
+        "reliability": "Reliability",
+        "engagement": "Engagement"
       }
     },
     "aiAgent": {
@@ -5153,8 +5245,9 @@
     },
     "contentMod": {
       "title": "Content Moderation",
-      "description": "Manage forum posts, chat messages, and reviews",
+      "description": "Manage forum posts, chat messages, reviews, and reports",
       "forum": "Forum",
+      "reports": "Reports",
       "chat": "Chat",
       "reviews": "Reviews",
       "forumPosts": "Forum Posts",
@@ -5367,6 +5460,76 @@
       "noIssues": "All schools have complete data",
       "refreshing": "Refreshing...",
       "refresh": "Refresh"
+    },
+    "health": {
+      "title": "System Health",
+      "description": "Real-time system health monitoring and diagnostics",
+      "status": "System Status",
+      "uptime": "Uptime",
+      "uptimeDays": "{days}d {hours}h {minutes}m",
+      "components": "Components",
+      "database": "Database",
+      "redis": "Redis",
+      "latency": "Latency",
+      "latencyMs": "{ms}ms",
+      "lastCheck": "Last Check",
+      "systemInfo": "System Info",
+      "environment": "Environment",
+      "nodeVersion": "Node Version",
+      "appVersion": "App Version",
+      "commitSha": "Commit SHA",
+      "buildTime": "Build Time",
+      "memoryUsage": "Memory Usage",
+      "memoryDetail": "{used} / {total} MB",
+      "operational": "Operational",
+      "degraded": "Degraded",
+      "down": "Down",
+      "autoRefresh": "Auto-refresh every 15s",
+      "loading": "Loading health status..."
+    },
+    "verifications": {
+      "title": "Verification Requests",
+      "description": "Review and manage user identity verification requests",
+      "stats": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "total": "Total"
+      },
+      "table": {
+        "user": "User",
+        "proofType": "Proof Type",
+        "school": "School",
+        "submitted": "Submitted",
+        "status": "Status"
+      },
+      "proofTypes": {
+        "offer_letter": "Offer Letter",
+        "enrollment_proof": "Enrollment Proof",
+        "student_id": "Student ID"
+      },
+      "detail": {
+        "title": "Verification Detail",
+        "userInfo": "User Information",
+        "caseInfo": "Case Information",
+        "proofPreview": "Proof Document",
+        "reviewNote": "Review Note",
+        "reviewNotePlaceholder": "Optional note for the user..."
+      },
+      "actions": {
+        "approve": "Approve",
+        "reject": "Reject",
+        "confirmApprove": "Approve this verification? User will be granted Verified status.",
+        "confirmReject": "Reject this verification? Please provide a reason."
+      },
+      "approved": "Verification approved",
+      "rejected": "Verification rejected",
+      "empty": "No Verification Requests",
+      "emptyDesc": "No pending verification requests at this time",
+      "filterAll": "All Statuses",
+      "filterPending": "Pending",
+      "filterApproved": "Approved",
+      "filterRejected": "Rejected"
     }
   },
   "essayAdmin": {
@@ -5584,10 +5747,11 @@
       "askAiDesc": "Let AI help you search"
     },
     "actions": {
-      "aiChat": "AI Chat",
       "browseSchools": "Browse Schools",
+      "prediction": "Admission Prediction",
       "viewCases": "View Cases",
-      "profile": "Profile"
+      "essays": "My Essays",
+      "aiAssistant": "AI Assistant"
     },
     "types": {
       "school": "School",

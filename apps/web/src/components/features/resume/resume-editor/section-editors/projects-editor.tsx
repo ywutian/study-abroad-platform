@@ -16,7 +16,7 @@ interface ProjectsEditorProps {
 }
 
 export function ProjectsEditor({ content, onChange }: ProjectsEditorProps) {
-  const items = ((content as any).items ?? []) as ProjectItem[];
+  const items = (content.items ?? []) as ProjectItem[];
 
   const updateItem = (index: number, field: string, value: unknown) => {
     const updated = [...items];

@@ -1,0 +1,231 @@
+import React, { memo } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
+
+import { AnimatedCard, CardContent, Badge, Progress, AnimatedCounter } from '@/components/ui';
+import { spacing, fontSize, fontWeight } from '@/utils/theme';
+import { formatAcceptanceRate } from '@/utils/format';
+
+import {
+  RecommendedSchool,
+  ColorsType,
+  TIER_CONFIG,
+  getTierBadgeVariant,
+  formatCurrency,
+} from './types';
+
+interface SchoolCardProps {
+  school: RecommendedSchool;
+  colors: ColorsType;
+}
+
+export const SchoolCard = memo(function SchoolCard({ school, colors }: SchoolCardProps) {
+  const { t } = useTranslation();
+  const tierConfig = TIER_CONFIG[school.tier];
+
+  const getTierLabel = (tier: 'reach' | 'match' | 'safety') => {
+    const labels: Record<string, string> = {
+      reach: t('recommendation.tierReach', 'Reach'),
+      match: t('recommendation.tierMatch', 'Match'),
+      safety: t('recommendation.tierSafety', 'Safety'),
+    };
+    return labels[tier] || tier;
+  };
+
+  return (
+    <AnimatedCard
+      style={[styles.schoolCard, { borderLeftColor: tierConfig.color, borderLeftWidth: 3 }]}
+    >
+      <CardContent>
+        <View style={styles.schoolCardHeader}>
+          <View style={styles.schoolCardInfo}>
+            <Text style={[styles.schoolName, { color: colors.foreground }]} numberOfLines={2}>
+              {school.schoolName}
+            </Text>
+            <View style={styles.schoolMetaRow}>
+              <Badge variant={getTierBadgeVariant(school.tier)}>{getTierLabel(school.tier)}</Badge>
+              {school.schoolMeta?.usNewsRank && (
+                <Text style={[styles.rankText, { color: colors.foregroundMuted }]}>
+                  #{school.schoolMeta.usNewsRank} US News
+                </Text>
+              )}
+            </View>
+          </View>
+          <View style={styles.fitScoreContainer}>
+            <AnimatedCounter
+              value={school.fitScore}
+              style={[styles.fitScoreValue, { color: tierConfig.color }]}
+            />
+            <Text style={[styles.fitScoreLabel, { color: colors.foregroundMuted }]}>
+              {t('recommendation.fitScore', 'Fit')}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.probabilitySection}>
+          <View style={styles.probabilityHeader}>
+            <Text style={[styles.probabilityLabel, { color: colors.foregroundMuted }]}>
+              {t('recommendation.probability', 'Admission Probability')}
+            </Text>
+            <Text style={[styles.probabilityValue, { color: tierConfig.color }]}>
+              {Math.round(school.estimatedProbability)}%
+            </Text>
+          </View>
+          <Progress
+            value={school.estimatedProbability}
+            max={100}
+            height={6}
+            color={tierConfig.color}
+            trackColor={colors.muted}
+          />
+        </View>
+
+        {school.schoolMeta && (
+          <View style={styles.schoolMetaDetails}>
+            {school.schoolMeta.location && (
+              <View style={styles.metaItem}>
+                <Ionicons name="location-outline" size={14} color={colors.foregroundMuted} />
+                <Text style={[styles.metaText, { color: colors.foregroundMuted }]}>
+                  {school.schoolMeta.location}
+                </Text>
+              </View>
+            )}
+            {school.schoolMeta.acceptanceRate != null && (
+              <View style={styles.metaItem}>
+                <Ionicons name="people-outline" size={14} color={colors.foregroundMuted} />
+                <Text style={[styles.metaText, { color: colors.foregroundMuted }]}>
+                  {formatAcceptanceRate(school.schoolMeta.acceptanceRate)}{' '}
+                  {t('recommendation.acceptRate', 'accept rate')}
+                </Text>
+              </View>
+            )}
+            {school.schoolMeta.tuition != null && (
+              <View style={styles.metaItem}>
+                <Ionicons name="cash-outline" size={14} color={colors.foregroundMuted} />
+                <Text style={[styles.metaText, { color: colors.foregroundMuted }]}>
+                  {formatCurrency(school.schoolMeta.tuition)}/yr
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        {school.reasons.length > 0 && (
+          <View style={styles.reasonsSection}>
+            {school.reasons.map((reason, i) => (
+              <View key={i} style={styles.reasonRow}>
+                <Ionicons name="checkmark-circle" size={16} color={colors.success} />
+                <Text style={[styles.reasonText, { color: colors.foregroundSecondary }]}>
+                  {reason}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {school.concerns && school.concerns.length > 0 && (
+          <View style={styles.concernsSection}>
+            {school.concerns.map((concern, i) => (
+              <View key={i} style={styles.reasonRow}>
+                <Ionicons name="alert-circle" size={16} color={colors.warning} />
+                <Text style={[styles.reasonText, { color: colors.foregroundSecondary }]}>
+                  {concern}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+      </CardContent>
+    </AnimatedCard>
+  );
+});
+
+const styles = StyleSheet.create({
+  schoolCard: {
+    marginBottom: spacing.md,
+  },
+  schoolCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: spacing.md,
+  },
+  schoolCardInfo: {
+    flex: 1,
+    marginRight: spacing.md,
+    gap: spacing.sm,
+  },
+  schoolName: {
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.semibold,
+    lineHeight: fontSize.base * 1.3,
+  },
+  schoolMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  rankText: {
+    fontSize: fontSize.xs,
+  },
+  fitScoreContainer: {
+    alignItems: 'center',
+  },
+  fitScoreValue: {
+    fontSize: fontSize['2xl'],
+    fontWeight: fontWeight.bold,
+  },
+  fitScoreLabel: {
+    fontSize: fontSize.xs,
+    marginTop: 2,
+  },
+  probabilitySection: {
+    marginBottom: spacing.md,
+  },
+  probabilityHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  probabilityLabel: {
+    fontSize: fontSize.xs,
+  },
+  probabilityValue: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.bold,
+  },
+  schoolMetaDetails: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+    marginBottom: spacing.md,
+  },
+  metaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  metaText: {
+    fontSize: fontSize.xs,
+  },
+  reasonsSection: {
+    gap: spacing.sm,
+    marginTop: spacing.xs,
+  },
+  concernsSection: {
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  reasonRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+  },
+  reasonText: {
+    flex: 1,
+    fontSize: fontSize.sm,
+    lineHeight: fontSize.sm * 1.5,
+  },
+});

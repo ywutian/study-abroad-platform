@@ -8,8 +8,6 @@
  * ChatGateway listens and pushes via WebSocket.
  */
 
-import { NotificationType } from '../../modules/notification/notification.service';
-
 export const CHAT_MESSAGE_OFFLINE = 'chat.message.offline';
 export const NOTIFICATION_PUSH = 'notification.push';
 export const USER_REGISTERED = 'user.registered';

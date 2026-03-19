@@ -1,14 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProfileController } from './profile.controller';
 import { ProfileService } from './profile.service';
-import { AiService } from '../ai/ai.service';
+import { ProfileAiService } from '../ai/profile-ai.service';
 import { SchoolListService } from '../school-list/school-list.service';
 import { RedisService } from '../../common/redis/redis.service';
 
 describe('ProfileController', () => {
   let controller: ProfileController;
   let profileService: ProfileService;
-  let aiService: AiService;
+  let profileAiService: ProfileAiService;
   let schoolListService: SchoolListService;
 
   const mockUser = {
@@ -86,7 +86,7 @@ describe('ProfileController', () => {
           },
         },
         {
-          provide: AiService,
+          provide: ProfileAiService,
           useValue: {
             analyzeProfileDetailed: jest
               .fn()
@@ -116,7 +116,7 @@ describe('ProfileController', () => {
 
     controller = module.get<ProfileController>(ProfileController);
     profileService = module.get<ProfileService>(ProfileService);
-    aiService = module.get<AiService>(AiService);
+    profileAiService = module.get<ProfileAiService>(ProfileAiService);
     schoolListService = module.get<SchoolListService>(SchoolListService);
   });
 
@@ -172,7 +172,7 @@ describe('ProfileController', () => {
       const result = await controller.getAIAnalysis(mockUser as any);
 
       expect(profileService.findByUserId).toHaveBeenCalledWith('user-1');
-      expect(aiService.analyzeProfileDetailed).toHaveBeenCalled();
+      expect(profileAiService.analyzeProfileDetailed).toHaveBeenCalled();
       expect(result).toEqual({ overall: 'GREEN', status: 'fresh' });
     });
 
@@ -181,7 +181,10 @@ describe('ProfileController', () => {
 
       await controller.getAIAnalysis(mockUser as any);
 
-      expect(aiService.analyzeProfileDetailed).toHaveBeenCalledWith({}, 'zh');
+      expect(profileAiService.analyzeProfileDetailed).toHaveBeenCalledWith(
+        {},
+        'zh',
+      );
     });
   });
 
@@ -576,7 +579,7 @@ describe('ProfileController', () => {
 
   describe('addTargetSchool', () => {
     it('should add a target school with default priority', async () => {
-      const result = await controller.addTargetSchool(
+      const _result = await controller.addTargetSchool(
         mockUser as any,
         'school-1',
         {} as any,

@@ -57,22 +57,6 @@ export const ChatMessage = memo(function ChatMessage({
 }: ChatMessageProps) {
   const t = useTranslations('agentChat');
 
-  // 工具名称格式化
-  const formatToolName = (name: string) => {
-    const labels: Record<string, string> = {
-      search_schools: t('tools.searchSchools'),
-      get_user_profile: t('tools.getProfile'),
-      analyze_profile: t('tools.analyzeProfile'),
-      search_cases: t('tools.searchCases'),
-      get_deadlines: t('tools.getDeadlines'),
-      review_essay: t('tools.reviewEssay'),
-      query_database: t('tools.queryDatabase'),
-      generate_essay_outline: t('tools.generateOutline'),
-      recommend_schools: t('tools.recommendSchools'),
-      analyze_admission_chance: t('tools.analyzeChance'),
-    };
-    return labels[name] || name.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-  };
   const locale = useLocale();
   const isUser = message.role === 'user';
   const agentInfo = message.agent ? AGENT_INFO[message.agent] : null;

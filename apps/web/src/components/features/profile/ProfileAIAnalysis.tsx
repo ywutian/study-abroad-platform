@@ -30,7 +30,7 @@ import {
   Clock,
   Zap,
 } from 'lucide-react';
-import type { SectionStatus, SectionAnalysis, AIAnalysisResult } from '@study-abroad/shared';
+import type { SectionAnalysis, AIAnalysisResult } from '@study-abroad/shared';
 
 const STATUS_STYLES = {
   green: {

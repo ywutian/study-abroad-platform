@@ -63,7 +63,7 @@ export function SchoolSelector({
     enabled: open,
   });
 
-  const schools = schoolsResponse?.items || [];
+  const schools = useMemo(() => schoolsResponse?.items || [], [schoolsResponse?.items]);
 
   // Filter and sort schools
   const filteredSchools = useMemo(() => {
@@ -166,6 +166,9 @@ export function SchoolSelector({
                     isSelected(school) ? 'bg-primary/5' : ''
                   }`}
                   onClick={() => toggleSchool(school)}
+                  onKeyDown={(e) => e.key === 'Enter' && toggleSchool(school)}
+                  role="button"
+                  tabIndex={0}
                 >
                   <Checkbox
                     checked={isSelected(school)}

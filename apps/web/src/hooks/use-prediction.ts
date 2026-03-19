@@ -25,6 +25,7 @@ export interface SchoolPredictionData {
     probabilityHigh?: number;
     tier?: string;
     confidence?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     factors?: any[];
     source?: string;
     modelVersion?: string;

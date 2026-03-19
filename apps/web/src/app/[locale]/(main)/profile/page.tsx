@@ -44,6 +44,10 @@ const MilestoneCelebration = dynamic(
   () => import('@/components/features').then((m) => ({ default: m.MilestoneCelebration })),
   { ssr: false }
 );
+const DataExportDialog = dynamic(
+  () => import('@/components/features').then((m) => ({ default: m.DataExportDialog })),
+  { ssr: false }
+);
 
 import { TAB_CONFIG } from './_components/constants';
 import type {
@@ -189,6 +193,7 @@ export default function ProfilePage() {
     if (profile?.activities && profile.activities.length > 0) completed++;
     if (profile?.awards && profile.awards.length > 0) completed++;
     return Math.round((completed / total) * 100);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only recompute when lengths change, not array contents
   }, [
     formData.grade,
     formData.currentSchool,
@@ -289,6 +294,7 @@ export default function ProfilePage() {
         setPreviousCompleteness(calculateCompleteness());
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- calculateCompleteness uses formData which is already tracked via profile
   }, [profile, previousCompleteness]);
 
   const handleSave = () => {
@@ -351,10 +357,14 @@ export default function ProfilePage() {
               <FileText className="h-4 w-4" />
               {t('profile.exportResume')}
             </Button>
-            <Button variant="outline" size="sm" className="gap-2">
-              <Download className="h-4 w-4" />
-              {t('profile.exportData')}
-            </Button>
+            <DataExportDialog
+              trigger={
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Download className="h-4 w-4" />
+                  {t('profile.exportData')}
+                </Button>
+              }
+            />
           </div>
         }
       />

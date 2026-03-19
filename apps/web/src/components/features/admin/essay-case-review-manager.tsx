@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState } from 'react';
@@ -28,17 +29,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { apiClient } from '@/lib/api';
 import { toast } from 'sonner';
-import {
-  CheckCircle,
-  XCircle,
-  Clock,
-  Loader2,
-  FileText,
-  Eye,
-  Check,
-  X,
-  Shield,
-} from 'lucide-react';
+import { CheckCircle, Clock, Loader2, FileText, Eye, Check, X, Shield } from 'lucide-react';
 
 interface CaseEssay {
   id: string;

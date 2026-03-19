@@ -21,7 +21,6 @@ import {
   BookOpen,
   MessageSquare,
   Sparkles,
-  Target,
   ClipboardList,
   Calendar,
   FileText,
@@ -35,10 +34,12 @@ import {
   Shield,
   PenTool,
   Rocket,
-  ShieldCheck,
-  HelpCircle,
   Gift,
   Menu,
+  BarChart3,
+  MessagesSquare,
+  UserPlus,
+  HelpCircle,
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Logo } from '@/components/ui/logo';
@@ -46,6 +47,7 @@ import { CountBadge } from '@/components/ui/count-badge';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { ClientOnly } from '@/components/common/client-only';
 import { MobileNav } from './mobile-nav';
+import { NotificationCenter, HelpCenter } from '@/components/features';
 import { useAuthStore } from '@/stores';
 import { localeNames, type Locale } from '@/lib/i18n/config';
 import { useRouter } from '@/lib/i18n/navigation';
@@ -65,6 +67,8 @@ function MoreMenuPlaceholder() {
 function HeaderActionsPlaceholder() {
   return (
     <div className="flex items-center gap-2">
+      <div className="h-8 w-8 rounded-lg bg-muted/60 animate-pulse" />
+      <div className="h-8 w-8 rounded-lg bg-muted/60 animate-pulse" />
       <div className="h-8 w-8 rounded-lg bg-muted/60 animate-pulse" />
       <div className="h-8 w-8 rounded-lg bg-muted/60 animate-pulse" />
       <div className="mx-1 h-5 w-px bg-border hidden sm:block" />
@@ -88,17 +92,17 @@ interface NavItemDef {
 // Interactive sub-components (rendered only after hydration via ClientOnly)
 // ============================================================================
 
-/** "More" mega-menu dropdown with tools, community, and utility nav items */
+/** "More" mega-menu dropdown with research, social, and tools nav items */
 function MoreMegaMenu({
+  researchNavItems,
+  socialNavItems,
   toolsNavItems,
-  communityNavItems,
-  utilityNavItems,
   unreadCount,
   isActive,
 }: {
+  researchNavItems: NavItemDef[];
+  socialNavItems: NavItemDef[];
   toolsNavItems: NavItemDef[];
-  communityNavItems: NavItemDef[];
-  utilityNavItems: NavItemDef[];
   unreadCount: number;
   isActive: (href: string) => boolean;
 }) {
@@ -132,13 +136,13 @@ function MoreMegaMenu({
         sideOffset={8}
       >
         <div className="grid grid-cols-2 gap-1">
-          {/* Tools Section */}
+          {/* Research & Discover Section */}
           <div className="col-span-2 mb-2">
             <DropdownMenuLabel className="px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {t('nav.sections.tools')}
+              {t('nav.sections.research')}
             </DropdownMenuLabel>
           </div>
-          {toolsNavItems.map((item) => {
+          {researchNavItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href);
             return (
@@ -179,10 +183,10 @@ function MoreMegaMenu({
           {/* Community Section */}
           <div className="col-span-2 mb-2 mt-3">
             <DropdownMenuLabel className="px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {t('nav.sections.community')}
+              {t('nav.sections.social')}
             </DropdownMenuLabel>
           </div>
-          {communityNavItems.map((item) => {
+          {socialNavItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href);
             const showBadge = item.href === '/chat' && unreadCount > 0;
@@ -224,37 +228,45 @@ function MoreMegaMenu({
             );
           })}
 
-          {/* Utilities Section */}
+          {/* Tools Section */}
           <div className="col-span-2 mb-2 mt-3">
             <DropdownMenuLabel className="px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {t('nav.sections.utility')}
+              {t('nav.sections.tools')}
             </DropdownMenuLabel>
           </div>
-          <DropdownMenuSeparator className="col-span-2 my-1" />
-          {utilityNavItems.map((item) => {
+          {toolsNavItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href);
             return (
-              <DropdownMenuItem key={item.href} asChild className="col-span-2 p-0">
+              <DropdownMenuItem key={item.href} asChild className="p-0">
                 <Link
                   href={item.href}
                   className={cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2 transition-colors',
+                    'flex items-start gap-3 rounded-lg px-3 py-2.5 transition-colors',
                     active ? 'bg-primary/5 text-primary' : 'hover:bg-muted/50'
                   )}
                 >
-                  <Icon
-                    className={cn('h-4 w-4', active ? 'text-primary' : 'text-muted-foreground')}
-                  />
-                  <span
+                  <div
                     className={cn(
-                      'text-sm font-medium',
-                      active ? 'text-primary' : 'text-foreground'
+                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-md',
+                      active ? 'bg-primary/10' : 'bg-muted'
                     )}
                   >
-                    {item.label}
-                  </span>
-                  <span className="text-xs text-muted-foreground">— {item.description}</span>
+                    <Icon
+                      className={cn('h-4 w-4', active ? 'text-primary' : 'text-muted-foreground')}
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div
+                      className={cn(
+                        'text-sm font-medium',
+                        active ? 'text-primary' : 'text-foreground'
+                      )}
+                    >
+                      {item.label}
+                    </div>
+                    <div className="text-xs text-muted-foreground truncate">{item.description}</div>
+                  </div>
                 </Link>
               </DropdownMenuItem>
             );
@@ -287,6 +299,7 @@ function HeaderActions() {
             variant="ghost"
             size="sm"
             className="gap-1.5 px-2.5 text-muted-foreground hover:text-foreground hover:bg-muted"
+            aria-label={t('ui.a11y.switchLanguage')}
           >
             <Globe className="h-4 w-4" />
             <span className="hidden sm:inline text-sm">{localeNames[locale]}</span>
@@ -310,6 +323,10 @@ function HeaderActions() {
       {/* Theme Toggle */}
       <ThemeToggle className="text-muted-foreground hover:text-foreground hover:bg-muted" />
 
+      {/* Notifications + Help (logged-in only for notifications, help always visible) */}
+      {user && <NotificationCenter />}
+      <HelpCenter />
+
       {/* Divider */}
       <div className="mx-1 h-5 w-px bg-border hidden sm:block" />
 
@@ -317,7 +334,12 @@ function HeaderActions() {
       {user ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="gap-2 px-2 hover:bg-muted">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-2 px-2 hover:bg-muted"
+              aria-label={t('ui.a11y.userMenu')}
+            >
               <Avatar className="h-7 w-7 ring-2 ring-muted transition-all hover:ring-primary/20">
                 <AvatarFallback className="bg-gradient-to-br from-primary/80 to-primary text-xs font-semibold text-white">
                   {user.email[0].toUpperCase()}
@@ -344,6 +366,18 @@ function HeaderActions() {
                 <Link href="/settings" className="flex items-center gap-2.5 px-2 py-1.5">
                   <Settings className="h-4 w-4 text-muted-foreground" />
                   <span>{t('common.settings')}</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/vault" className="flex items-center gap-2.5 px-2 py-1.5">
+                  <Lock className="h-4 w-4 text-muted-foreground" />
+                  <span>{t('nav.vault')}</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/referral" className="flex items-center gap-2.5 px-2 py-1.5">
+                  <Gift className="h-4 w-4 text-muted-foreground" />
+                  <span>{t('nav.referral')}</span>
                 </Link>
               </DropdownMenuItem>
               {user.role === 'ADMIN' && (
@@ -413,19 +447,56 @@ export function Header() {
     { href: '/schools', label: t('nav.schools'), icon: GraduationCap },
     { href: '/prediction', label: t('nav.prediction'), icon: TrendingUp },
     { href: '/cases', label: t('nav.cases'), icon: BookOpen },
-    { href: '/forum', label: t('nav.forum'), icon: MessageSquare },
-    { href: '/teams', label: t('nav.teams'), icon: Users },
+    { href: '/essays', label: t('nav.essays'), icon: PenTool },
   ];
 
-  // Tools & Resources
-  const toolsNavItems: NavItemDef[] = [
-    { href: '/ai', label: t('nav.ai'), icon: Sparkles, description: t('nav.descriptions.ai') },
+  // Research & Discover — "I want to research schools and learn from others"
+  const researchNavItems: NavItemDef[] = [
     {
-      href: '/essays',
-      label: t('nav.essays'),
-      icon: PenTool,
-      description: t('nav.descriptions.essays'),
+      href: '/ranking',
+      label: t('nav.ranking'),
+      icon: BarChart3,
+      description: t('nav.descriptions.ranking'),
     },
+    { href: '/hall', label: t('nav.hall'), icon: Trophy, description: t('nav.descriptions.hall') },
+    {
+      href: '/uncommon-app',
+      label: t('nav.uncommonApp'),
+      icon: Rocket,
+      description: t('nav.descriptions.uncommonApp'),
+    },
+  ];
+
+  // Community — "I want to connect with other applicants"
+  const socialNavItems: NavItemDef[] = [
+    {
+      href: '/forum',
+      label: t('nav.forum'),
+      icon: MessageSquare,
+      description: t('nav.descriptions.forum'),
+    },
+    {
+      href: '/teams',
+      label: t('nav.teams'),
+      icon: Users,
+      description: t('nav.descriptions.teams'),
+    },
+    {
+      href: '/chat',
+      label: t('nav.chat'),
+      icon: MessagesSquare,
+      description: t('nav.descriptions.chat'),
+    },
+    {
+      href: '/followers',
+      label: t('nav.followers'),
+      icon: UserPlus,
+      description: t('nav.descriptions.followers'),
+    },
+  ];
+
+  // Tools — practical utilities
+  const toolsNavItems: NavItemDef[] = [
     {
       href: '/resume',
       label: t('nav.resume'),
@@ -433,10 +504,10 @@ export function Header() {
       description: t('nav.descriptions.resume'),
     },
     {
-      href: '/uncommon-app',
-      label: t('nav.uncommonApp'),
-      icon: Rocket,
-      description: t('nav.descriptions.uncommonApp'),
+      href: '/timeline',
+      label: t('nav.timeline'),
+      icon: Calendar,
+      description: t('nav.descriptions.timeline'),
     },
     {
       href: '/assessment',
@@ -444,58 +515,7 @@ export function Header() {
       icon: ClipboardList,
       description: t('nav.descriptions.assessment'),
     },
-    {
-      href: '/timeline',
-      label: t('nav.timeline'),
-      icon: Calendar,
-      description: t('nav.descriptions.timeline'),
-    },
-  ];
-
-  // Discovery & Community
-  const communityNavItems: NavItemDef[] = [
-    { href: '/hall', label: t('nav.hall'), icon: Trophy, description: t('nav.descriptions.hall') },
-    {
-      href: '/verified-ranking',
-      label: t('nav.verifiedRanking'),
-      icon: ShieldCheck,
-      description: t('nav.descriptions.verifiedRanking'),
-    },
-    {
-      href: '/essay-gallery',
-      label: t('nav.essayGallery'),
-      icon: FileText,
-      description: t('nav.descriptions.essayGallery'),
-    },
-    {
-      href: '/chat',
-      label: t('nav.chat'),
-      icon: MessageSquare,
-      description: t('nav.descriptions.chat'),
-    },
-    {
-      href: '/followers',
-      label: t('nav.followers'),
-      icon: Users,
-      description: t('nav.descriptions.followers'),
-    },
-  ];
-
-  // Utilities
-  const utilityNavItems: NavItemDef[] = [
-    { href: '/vault', label: t('nav.vault'), icon: Lock, description: t('nav.descriptions.vault') },
-    {
-      href: '/help',
-      label: t('nav.help'),
-      icon: HelpCircle,
-      description: t('nav.descriptions.help'),
-    },
-    {
-      href: '/referral',
-      label: t('nav.referral'),
-      icon: Gift,
-      description: t('nav.descriptions.referral'),
-    },
+    { href: '/ai', label: t('nav.ai'), icon: Sparkles, description: t('nav.descriptions.ai') },
   ];
 
   const isActive = (href: string) => {
@@ -516,6 +536,22 @@ export function Header() {
       })),
     },
     {
+      label: t('nav.sections.research'),
+      items: researchNavItems.map((item) => ({
+        href: item.href,
+        label: item.label,
+        icon: <item.icon className="h-5 w-5" />,
+      })),
+    },
+    {
+      label: t('nav.sections.social'),
+      items: socialNavItems.map((item) => ({
+        href: item.href,
+        label: item.label,
+        icon: <item.icon className="h-5 w-5" />,
+      })),
+    },
+    {
       label: t('nav.sections.tools'),
       items: toolsNavItems.map((item) => ({
         href: item.href,
@@ -524,20 +560,12 @@ export function Header() {
       })),
     },
     {
-      label: t('nav.sections.community'),
-      items: communityNavItems.map((item) => ({
-        href: item.href,
-        label: item.label,
-        icon: <item.icon className="h-5 w-5" />,
-      })),
-    },
-    {
-      label: t('nav.sections.utility'),
-      items: utilityNavItems.map((item) => ({
-        href: item.href,
-        label: item.label,
-        icon: <item.icon className="h-5 w-5" />,
-      })),
+      label: t('nav.sections.account'),
+      items: [
+        { href: '/vault', label: t('nav.vault'), icon: <Lock className="h-5 w-5" /> },
+        { href: '/help', label: t('nav.help'), icon: <HelpCircle className="h-5 w-5" /> },
+        { href: '/referral', label: t('nav.referral'), icon: <Gift className="h-5 w-5" /> },
+      ],
     },
   ];
 
@@ -553,7 +581,7 @@ export function Header() {
                 variant="ghost"
                 size="icon"
                 className="lg:hidden"
-                aria-label="Toggle navigation menu"
+                aria-label={t('ui.a11y.navigationMenu')}
               >
                 <Menu className="h-5 w-5" />
               </Button>
@@ -602,9 +630,9 @@ export function Header() {
             {/* "More" mega-menu — client-only (contains Radix DropdownMenu) */}
             <ClientOnly fallback={<MoreMenuPlaceholder />}>
               <MoreMegaMenu
+                researchNavItems={researchNavItems}
+                socialNavItems={socialNavItems}
                 toolsNavItems={toolsNavItems}
-                communityNavItems={communityNavItems}
-                utilityNavItems={utilityNavItems}
                 unreadCount={unreadCount}
                 isActive={isActive}
               />

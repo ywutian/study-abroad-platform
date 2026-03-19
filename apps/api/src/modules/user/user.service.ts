@@ -27,13 +27,13 @@ export class UserService {
   }
 
   /**
-   * Find a user by their email address
+   * Find a user by their email address, excluding soft-deleted users
    * @param email - The email address to search for
-   * @returns The user if found, or null if no user matches the email
+   * @returns The user if found, or null if no user matches the email or is soft-deleted
    */
   async findByEmail(email: string): Promise<User | null> {
-    return this.prisma.user.findUnique({
-      where: { email },
+    return this.prisma.user.findFirst({
+      where: { email, deletedAt: null },
     });
   }
 
@@ -219,7 +219,7 @@ export class UserService {
     }
 
     // 移除敏感字段
-    const { passwordHash, ...userData } = user;
+    const { passwordHash: _passwordHash, ...userData } = user;
 
     return {
       exportDate: new Date().toISOString(),

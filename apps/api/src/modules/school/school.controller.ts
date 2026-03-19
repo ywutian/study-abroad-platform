@@ -218,7 +218,7 @@ export class SchoolController {
       return { ...mapped, status: 'fresh' as const };
     } catch (error) {
       this.logger.error(
-        `AI recommendation failed for user ${user.id}: ${error instanceof Error ? error.message : error}`,
+        `AI recommendation failed for user ${user.id}: ${String(error instanceof Error ? error.message : error)}`,
       );
       return { ...emptyResult, status: 'ai_error' as const };
     }
@@ -341,7 +341,7 @@ export class SchoolController {
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get list of schools configured for scraping' })
-  async getConfiguredSchools() {
+  getConfiguredSchools() {
     return {
       schools: this.schoolScraperService.getConfiguredSchools(),
       total: this.schoolScraperService.getConfiguredSchools().length,

@@ -7,7 +7,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { AiService } from '../../ai/ai.service';
+import { LLMService } from '../core/llm.service';
 import { HallService } from '../../hall/hall.service';
 import { ProfileLoaderHelper } from './helpers/profile-loader.helper';
 import { SchoolLookupHelper } from './helpers/school-lookup.helper';
@@ -21,7 +21,7 @@ export class RankingToolsService implements IToolHandlerProvider {
 
   constructor(
     private prisma: PrismaService,
-    private aiService: AiService,
+    private llmService: LLMService,
     private hallService: HallService,
     private profileLoader: ProfileLoaderHelper,
     private schoolLookup: SchoolLookupHelper,
@@ -181,7 +181,7 @@ Return in JSON format:
   ]
 }`;
 
-      const response = await this.aiService.chat(
+      const response = await this.llmService.chatSimple(
         [
           { role: 'system', content: systemPrompt },
           {
@@ -349,7 +349,7 @@ ${targetTier ? `Target school tier: ${targetTier}` : ''}`;
         ? `你是留学数据分析师。请对比学生档案与该校录取学生的整体情况。`
         : `You are an admissions data analyst. Compare the student's profile with the overall admitted student data for this school.`;
 
-      const analysis = await this.aiService.chat(
+      const analysis = await this.llmService.chatSimple(
         [
           { role: 'system', content: systemPrompt },
           {

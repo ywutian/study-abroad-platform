@@ -1,0 +1,194 @@
+import { SchoolRecommendationRequestDto } from './dto';
+import { formatHighSchoolContext } from '../ai-agent/tools/helpers/education-context.helper';
+
+export function buildRecommendationSystemPrompt(
+  locale: string,
+  schoolCount: number,
+): string {
+  const isZh = locale === 'zh';
+
+  if (isZh) {
+    return `你是一位资深留学顾问，擅长根据学生背景推荐最适合的美国大学。
+
+请根据学生档案推荐 ${schoolCount} 所学校，分为三档：
+1. 冲刺校 (Reach): 约占30%，录取概率 < 30%
+2. 匹配校 (Match): 约占40%，录取概率 30-60%
+3. 保底校 (Safety): 约占30%，录取概率 > 60%
+
+评估维度：
+- 学术匹配度：GPA、标化成绩与学校平均水平的对比
+- 专业契合度：学校在该专业的排名和资源
+- 活动/奖项匹配：课外活动与学校文化的契合
+- 地理位置、费用等偏好
+
+重要约束：必须根据目标专业与活动方向推荐，不得推荐与申请者背景明显不符的学校。例如：商科/经济背景不推艺术类院校，纯文科背景不推纯理工院校，STEM/商科背景不推纯艺术类学校。专业与活动方向明显错配的学校必须排除。
+
+estimatedProbability 要求：你的录取概率估计应基于学生的 GPA、标化成绩与学校的录取率、SAT 中位数等数据的客观对比。不要凭感觉给出概率，而应参照数据合理推导。系统会使用统计模型校准你的估计值。
+
+返回严格的 JSON 格式：
+{
+  "recommendations": [
+    {
+      "schoolName": "学校英文名",
+      "tier": "reach" | "match" | "safety",
+      "estimatedProbability": 25,
+      "fitScore": 85,
+      "reasons": ["推荐理由1（中文）", "推荐理由2（中文）"],
+      "concerns": ["需要注意的点（中文）"]
+    }
+  ],
+  "analysis": {
+    "strengths": ["学生申请优势1（中文）", "优势2（中文）"],
+    "weaknesses": ["需要改进的方面1（中文）"],
+    "improvementTips": ["提升建议1（中文）", "建议2（中文）"]
+  },
+  "summary": "选校策略总结（中文，100-150字）"
+}
+
+所有文本字段必须用中文。`;
+  }
+
+  return `You are an expert college admissions consultant who specializes in recommending the best-fit US universities based on student profiles.
+
+Based on the student profile, recommend ${schoolCount} schools in three tiers:
+1. Reach: ~30% of list, admission probability < 30%
+2. Match: ~40% of list, admission probability 30-60%
+3. Safety: ~30% of list, admission probability > 60%
+
+Evaluation dimensions:
+- Academic fit: GPA and test scores vs. school averages
+- Major fit: school ranking and resources in the target major
+- Activity/award fit: extracurriculars aligned with school culture
+- Location, cost, and other preferences
+
+Critical constraint: Recommend only schools that match the student's target major and activity focus. Do NOT recommend schools that are a clear mismatch (e.g. do not recommend art schools for business/economics profiles; do not recommend pure STEM schools for humanities-only profiles; do not recommend pure art schools for STEM/business profiles). Exclude any school that would be an obvious major/activity mismatch.
+
+estimatedProbability requirement: Your probability estimates should be grounded in objective comparison of the student's GPA and test scores against each school's acceptance rate and SAT midpoints. Do not guess probabilities — derive them from data. The system will calibrate your estimates using a statistical model.
+
+Return strict JSON:
+{
+  "recommendations": [
+    {
+      "schoolName": "School English Name",
+      "tier": "reach" | "match" | "safety",
+      "estimatedProbability": 25,
+      "fitScore": 85,
+      "reasons": ["Reason 1 (English)", "Reason 2 (English)"],
+      "concerns": ["Concern (English)"]
+    }
+  ],
+  "analysis": {
+    "strengths": ["Strength 1 (English)", "Strength 2 (English)"],
+    "weaknesses": ["Area for improvement (English)"],
+    "improvementTips": ["Tip 1 (English)", "Tip 2 (English)"]
+  },
+  "summary": "School selection strategy summary (English, 100-150 words)"
+}
+
+All text fields must be in English.`;
+}
+
+export function buildRecommendationUserPrompt(
+  profile: any,
+  dto: SchoolRecommendationRequestDto,
+  locale = 'zh',
+): string {
+  const isZh = locale === 'zh';
+  const parts: string[] = [
+    isZh
+      ? '请根据以下学生档案推荐选校清单：\n'
+      : 'Based on the following student profile, recommend a school list:\n',
+  ];
+
+  if (profile.gpa) {
+    parts.push(`GPA: ${profile.gpa}/${profile.gpaScale || 4.0}`);
+  }
+
+  if (profile.testScores?.length) {
+    const scores = profile.testScores
+      .map((s: any) => `${s.type}: ${s.score}`)
+      .join(', ');
+    parts.push(`${isZh ? '标化成绩' : 'Test Scores'}: ${scores}`);
+  }
+
+  if (profile.education?.length) {
+    const hsEntry = profile.education.find(
+      (e: any) => e.schoolType === 'HIGH_SCHOOL',
+    );
+    if (hsEntry) {
+      const hsContext = formatHighSchoolContext(
+        profile.education.map((e: any) => ({
+          school: e.schoolName,
+          schoolType: e.schoolType,
+          highSchoolId: e.highSchoolId,
+        })),
+        hsEntry.highSchool
+          ? {
+              name: hsEntry.highSchool.name,
+              tier: hsEntry.highSchool.tier,
+              type: hsEntry.highSchool.type,
+              country: hsEntry.highSchool.country,
+              state: hsEntry.highSchool.state,
+            }
+          : null,
+        locale,
+      );
+      if (hsContext) {
+        parts.push(hsContext);
+      }
+    }
+  }
+
+  if (profile.activities?.length) {
+    const activities = profile.activities
+      .slice(0, 8)
+      .map((a: any) => {
+        const base = `${a.name || a.category}${a.role ? `(${a.role})` : ''}`;
+        const desc = a.description?.trim();
+        return desc ? `${base}: ${desc}` : base;
+      })
+      .join('; ');
+    parts.push(
+      `${isZh ? '主要活动（含方向/描述）' : 'Key Activities (with direction/description)'}: ${activities}`,
+    );
+  }
+
+  if (profile.awards?.length) {
+    const awards = profile.awards
+      .slice(0, 5)
+      .map((a: any) => `${a.name}(${a.level})`)
+      .join(', ');
+    parts.push(`${isZh ? '奖项' : 'Awards'}: ${awards}`);
+  }
+
+  if (profile.targetMajor) {
+    parts.push(`${isZh ? '目标专业' : 'Target Major'}: ${profile.targetMajor}`);
+  }
+
+  if (dto.preferredRegions?.length) {
+    parts.push(
+      `${isZh ? '偏好地区' : 'Preferred Regions'}: ${dto.preferredRegions.join(', ')}`,
+    );
+  }
+  if (dto.preferredMajors?.length) {
+    parts.push(
+      `${isZh ? '意向专业' : 'Intended Majors'}: ${dto.preferredMajors.join(', ')}`,
+    );
+  }
+  if (dto.budget) {
+    const budgetMap = {
+      low: isZh ? '< $30,000/年' : '< $30,000/year',
+      medium: isZh ? '$30,000 - $60,000/年' : '$30,000 - $60,000/year',
+      high: isZh ? '$60,000 - $80,000/年' : '$60,000 - $80,000/year',
+      unlimited: isZh ? '不限' : 'No limit',
+    };
+    parts.push(`${isZh ? '预算' : 'Budget'}: ${budgetMap[dto.budget]}`);
+  }
+  if (dto.additionalPreferences) {
+    parts.push(
+      `${isZh ? '其他偏好' : 'Other Preferences'}: ${dto.additionalPreferences}`,
+    );
+  }
+
+  return parts.join('\n');
+}

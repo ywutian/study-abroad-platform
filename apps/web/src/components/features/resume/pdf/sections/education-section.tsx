@@ -2,11 +2,12 @@ import React from 'react';
 import { Text, View, StyleSheet } from '@react-pdf/renderer';
 import type { SectionRendererProps } from '../types';
 import { SectionTitle } from '../primitives/section-title';
+import type { ResumeTheme } from '../types';
 import { DateRange } from '../primitives/date-range';
 import type { EducationItem } from '@study-abroad/shared';
 
 export function EducationSection({ section, theme }: SectionRendererProps) {
-  const items = ((section.content as any).items ?? []) as EducationItem[];
+  const items = ((section.content as Record<string, unknown>).items ?? []) as EducationItem[];
   if (!items.length) return null;
 
   const styles = getStyles(theme);
@@ -57,7 +58,7 @@ export function EducationSection({ section, theme }: SectionRendererProps) {
   );
 }
 
-function getStyles(theme: any) {
+function getStyles(theme: ResumeTheme) {
   return StyleSheet.create({
     container: { marginBottom: theme.spacing.sectionGap },
     item: { marginBottom: theme.spacing.itemGap },

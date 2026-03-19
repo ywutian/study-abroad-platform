@@ -33,15 +33,13 @@ import {
   Star,
   ChevronLeft,
   ChevronRight,
-  Check,
   Send,
   Tag,
 } from 'lucide-react';
-import { useSubmitReview, hallKeys, reviewKeys } from '@/hooks/use-hall-api';
+import { useSubmitReview, hallKeys } from '@/hooks/use-hall-api';
 import { ProfileSelector } from '@/components/features';
-import { ModuleSelector, ReviewModuleCard } from './ReviewModuleCard';
 import { SwipeReviewMode } from './SwipeReviewMode';
-import type { PublicProfile, ReviewModuleType } from '@/types/hall';
+import type { PublicProfile } from '@/types/hall';
 import { cn } from '@/lib/utils';
 
 // 评审维度配置

@@ -22,7 +22,6 @@ import {
   predict,
   computeAucRoc,
   computeBrierScore,
-  computeECE,
   FEATURE_NAMES_BASIC,
   FEATURE_NAMES_FULL,
 } from '@study-abroad/shared/scoring';
@@ -352,7 +351,7 @@ export class ModelTrainerService {
         });
       } catch (err) {
         this.logger.warn(
-          `Band ${bandName} training failed: ${err instanceof Error ? err.message : err}`,
+          `Band ${bandName} training failed: ${String(err instanceof Error ? err.message : err)}`,
         );
       }
     }

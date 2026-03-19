@@ -1,16 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RecommendationService } from './recommendation.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { AiService } from '../ai/ai.service';
-import { CaseIncentiveService } from '../case/case-incentive.service';
+import { LLMService } from '../ai-agent/core/llm.service';
+import { CaseIncentiveService } from '../points/incentive.service';
 import { MemoryManagerService } from '../ai-agent/memory';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { RedisService } from '../../common/redis/redis.service';
 
 describe('RecommendationService', () => {
   let service: RecommendationService;
   let prisma: PrismaService;
-  let aiService: AiService;
+  let llmService: LLMService;
   let caseIncentive: CaseIncentiveService;
 
   const mockProfile = {
@@ -97,19 +97,12 @@ describe('RecommendationService', () => {
             user: {
               findUnique: jest.fn().mockResolvedValue({ points: 100 }),
             },
-            predictionResult: {
-              findUnique: jest.fn().mockResolvedValue(null),
-              upsert: jest.fn().mockResolvedValue({}),
-            },
-            predictionSnapshot: {
-              create: jest.fn().mockResolvedValue({}),
-            },
           },
         },
         {
-          provide: AiService,
+          provide: LLMService,
           useValue: {
-            chat: jest.fn().mockResolvedValue(mockAIResponse),
+            chatSimple: jest.fn().mockResolvedValue(mockAIResponse),
           },
         },
         {
@@ -138,7 +131,7 @@ describe('RecommendationService', () => {
 
     service = module.get<RecommendationService>(RecommendationService);
     prisma = module.get<PrismaService>(PrismaService);
-    aiService = module.get<AiService>(AiService);
+    llmService = module.get<LLMService>(LLMService);
     caseIncentive = module.get<CaseIncentiveService>(CaseIncentiveService);
   });
 
@@ -171,7 +164,7 @@ describe('RecommendationService', () => {
 
       expect(result).toBeDefined();
       expect(result.recommendations).toBeDefined();
-      expect(aiService.chat).toHaveBeenCalled();
+      expect(llmService.chatSimple).toHaveBeenCalled();
     });
 
     it('should throw NotFoundException and refund if profile not found', async () => {
@@ -185,7 +178,7 @@ describe('RecommendationService', () => {
 
     it('should refund points if AI service fails', async () => {
       (prisma.profile.findFirst as jest.Mock).mockResolvedValue(mockProfile);
-      (aiService.chat as jest.Mock).mockRejectedValue(
+      (llmService.chatSimple as jest.Mock).mockRejectedValue(
         new Error('AI service timeout'),
       );
 
@@ -225,7 +218,9 @@ describe('RecommendationService', () => {
 
     it('should refund and throw on non-JSON AI response', async () => {
       (prisma.profile.findFirst as jest.Mock).mockResolvedValue(mockProfile);
-      (aiService.chat as jest.Mock).mockResolvedValue('This is not valid JSON');
+      (llmService.chatSimple as jest.Mock).mockResolvedValue(
+        'This is not valid JSON',
+      );
 
       await expect(
         service.generateRecommendation('user-1', dto as any),

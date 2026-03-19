@@ -36,9 +36,13 @@ export default tseslint.config(
       '@typescript-eslint/only-throw-error': 'warn',
       '@typescript-eslint/no-require-imports': 'warn',
       '@typescript-eslint/no-floating-promises': 'warn',
+      // no-unsafe-member-access and no-unsafe-assignment are off because
+      // no-explicit-any is off by design (NestJS/Prisma/Express patterns).
+      // These two rules produce ~1900 warnings that are downstream noise.
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      // Keep these three as actionable warnings (lower volume, more specific)
       '@typescript-eslint/no-unsafe-argument': 'warn',
-      '@typescript-eslint/no-unsafe-member-access': 'warn',
-      '@typescript-eslint/no-unsafe-assignment': 'warn',
       '@typescript-eslint/no-unsafe-return': 'warn',
       '@typescript-eslint/no-unsafe-call': 'warn',
       '@typescript-eslint/no-unsafe-enum-comparison': 'warn',
@@ -49,6 +53,23 @@ export default tseslint.config(
       '@typescript-eslint/no-base-to-string': 'warn',
       '@typescript-eslint/unbound-method': 'off',
       "prettier/prettier": ["error", { endOfLine: "auto" }],
+    },
+  },
+  // Relax strict type-checking rules for test files — mocking inherently produces `any` types
+  {
+    files: ['**/*.spec.ts', '**/*.e2e-spec.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-enum-comparison': 'off',
+      '@typescript-eslint/restrict-template-expressions': 'off',
+      '@typescript-eslint/require-await': 'off',
+      '@typescript-eslint/no-redundant-type-constituents': 'off',
+      '@typescript-eslint/no-floating-promises': 'off',
+      '@typescript-eslint/no-misused-promises': 'off',
     },
   },
 );

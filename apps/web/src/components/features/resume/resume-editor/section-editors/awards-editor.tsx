@@ -13,7 +13,7 @@ interface AwardsEditorProps {
 }
 
 export function AwardsEditor({ content, onChange }: AwardsEditorProps) {
-  const items = ((content as any).items ?? []) as AwardItem[];
+  const items = (content.items ?? []) as AwardItem[];
 
   const updateItem = (index: number, field: string, value: unknown) => {
     const updated = [...items];

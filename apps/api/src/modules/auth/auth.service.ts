@@ -93,11 +93,12 @@ export class AuthService {
     const emailVerifyTokenExp = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
     // Create user
-    // TODO: Re-enable email verification when domain is configured on Resend
+    const skipVerification =
+      this.configService.get('SKIP_EMAIL_VERIFICATION') === 'true';
     const createData: any = {
       email: data.email,
       passwordHash,
-      emailVerified: true,
+      emailVerified: skipVerification,
       emailVerifyToken,
       emailVerifyTokenExp,
       locale: data.locale || 'zh',

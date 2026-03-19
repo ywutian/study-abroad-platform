@@ -7,7 +7,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { MemoryType, EntityType, Prisma } from '@prisma/client';
+import { EntityType, Prisma } from '@prisma/client';
 import {
   MemoryInput,
   MemoryRecord,
@@ -19,16 +19,8 @@ import {
   MessageRecord,
   UserPreferences,
   MemoryStats,
-  MemoryMetadata,
-  EntityAttributes,
-  EntityRelation,
 } from './types';
-import {
-  RawMemoryRow,
-  RawEntityRow,
-  RawMessageRow,
-  MemoryWhereInput,
-} from './prisma-types';
+import { RawMemoryRow, RawEntityRow, RawMessageRow } from './prisma-types';
 import { EmbeddingService } from './embedding.service';
 
 // pgvector 列无法被 Prisma $queryRaw 反序列化，因此在 RETURNING / SELECT 中排除 embedding 列
@@ -37,7 +29,7 @@ const MEMORY_COLUMNS = `
   "accessCount", "lastAccessedAt", metadata, "expiresAt", "createdAt", "updatedAt"
 `;
 
-const ENTITY_COLUMNS = `
+const _ENTITY_COLUMNS = `
   id, "userId", type, name, description, attributes, relations, "createdAt", "updatedAt"
 `;
 

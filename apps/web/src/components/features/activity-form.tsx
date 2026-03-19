@@ -154,7 +154,6 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
     } else {
       resetForm();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editingActivity, open]);
 
   useEffect(() => {

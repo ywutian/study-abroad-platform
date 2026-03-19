@@ -6,8 +6,6 @@ import {
   IsInt,
   IsBoolean,
   IsDateString,
-  IsArray,
-  IsEnum,
   Min,
   MaxLength,
 } from 'class-validator';

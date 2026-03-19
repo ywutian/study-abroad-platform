@@ -66,7 +66,7 @@ export function TemplatesTable({
   onEdit,
   onDelete,
 }: TemplatesTableProps) {
-  const t = useTranslations('admin');
+  const _t = useTranslations('admin');
 
   if (isLoading) {
     return <ListSkeleton count={5} />;

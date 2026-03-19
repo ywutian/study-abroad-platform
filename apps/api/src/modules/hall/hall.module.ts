@@ -1,23 +1,35 @@
 import { Module } from '@nestjs/common';
 import { HallService } from './hall.service';
+import { HallRankingService } from './hall-ranking.service';
+import { HallReviewService } from './hall-review.service';
+import { HallListService } from './hall-list.service';
+import { HallVerifiedService } from './hall-verified.service';
+import { SwipeService } from './swipe.service';
 import { HallController } from './hall.controller';
 import { HallAdminController } from './hall-admin.controller';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { AiAgentMemoryModule } from '../ai-agent/memory/memory.module';
-import { AiModule } from '../ai/ai.module';
-import { SwipeModule } from '../swipe/swipe.module';
+import { PointsModule } from '../points/points.module';
 import { SchoolListModule } from '../school-list/school-list.module';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
     PrismaModule,
     AiAgentMemoryModule,
-    AiModule,
-    SwipeModule,
+    PointsModule,
     SchoolListModule,
+    NotificationModule,
   ],
   controllers: [HallController, HallAdminController],
-  providers: [HallService],
-  exports: [HallService],
+  providers: [
+    HallRankingService,
+    HallReviewService,
+    HallListService,
+    HallVerifiedService,
+    HallService,
+    SwipeService,
+  ],
+  exports: [HallService, SwipeService],
 })
 export class HallModule {}

@@ -6,7 +6,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { getRequestId, requestContext, getCorrelationId } from '../context';
+import { requestContext, getCorrelationId } from '../context';
 
 // ==================== Span 定义 ====================
 
@@ -32,11 +32,6 @@ export interface SpanLog {
 }
 
 // ==================== Span Context ====================
-
-interface SpanContext {
-  traceId: string;
-  spanId: string;
-}
 
 // ==================== 服务实现 ====================
 

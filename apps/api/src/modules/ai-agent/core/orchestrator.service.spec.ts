@@ -23,7 +23,7 @@ describe('OrchestratorService', () => {
   let module: TestingModule;
   let agentRunner: jest.Mocked<AgentRunnerService>;
   let memory: jest.Mocked<MemoryService>;
-  let llm: jest.Mocked<LLMService>;
+  let _llm: jest.Mocked<LLMService>;
   let fastRouter: jest.Mocked<FastRouterService>;
 
   beforeEach(async () => {
@@ -114,7 +114,7 @@ describe('OrchestratorService', () => {
     service = module.get<OrchestratorService>(OrchestratorService);
     agentRunner = module.get(AgentRunnerService);
     memory = module.get(MemoryService);
-    llm = module.get(LLMService);
+    _llm = module.get(LLMService);
     fastRouter = module.get(FastRouterService);
   });
 
@@ -182,7 +182,7 @@ describe('OrchestratorService', () => {
         agentType: AgentType.SCHOOL,
       });
 
-      const result = await service.handleMessage('user_1', '帮我推荐学校');
+      const _result = await service.handleMessage('user_1', '帮我推荐学校');
 
       expect(agentRunner.run).toHaveBeenCalledWith(
         AgentType.SCHOOL,

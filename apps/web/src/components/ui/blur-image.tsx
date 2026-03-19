@@ -68,7 +68,7 @@ export function NativeBlurImage({
   ...props
 }: NativeBlurImageProps) {
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [, setError] = useState(false);
   const [currentSrc, setCurrentSrc] = useState<string | undefined>(undefined);
 
   useEffect(() => {
@@ -134,7 +134,13 @@ const sizeMap = {
   xl: 'w-16 h-16',
 };
 
-export function BlurAvatar({ src, alt, fallback, size = 'md', className }: BlurAvatarProps) {
+export function BlurAvatar({
+  src,
+  alt,
+  fallback: _fallback,
+  size = 'md',
+  className,
+}: BlurAvatarProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
 

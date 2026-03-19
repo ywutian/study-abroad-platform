@@ -371,6 +371,7 @@ export class MemoryConflictService {
   /**
    * 解决记忆冲突
    */
+  // eslint-disable-next-line @typescript-eslint/require-await
   async resolveConflict(
     newMemory: MemoryInput,
     detection: ConflictDetectionResult,

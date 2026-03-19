@@ -6,7 +6,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { AiService } from '../../ai/ai.service';
+import { LLMService } from '../core/llm.service';
 import { SchoolLookupHelper } from './helpers/school-lookup.helper';
 import { extractJsonFromLlm } from './helpers/llm-json.helper';
 import { ToolHandler, IToolHandlerProvider } from './tool-handler.interface';
@@ -17,7 +17,7 @@ export class TimelineToolsService implements IToolHandlerProvider {
 
   constructor(
     private prisma: PrismaService,
-    private aiService: AiService,
+    private llmService: LLMService,
     private schoolLookup: SchoolLookupHelper,
   ) {}
 
@@ -120,7 +120,7 @@ Return in JSON format:
   "tips": ["Tip 1", "Tip 2"]
 }`;
 
-    const result = await this.aiService.chat(
+    const result = await this.llmService.chatSimple(
       [
         { role: 'system', content: systemPrompt },
         {

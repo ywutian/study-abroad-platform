@@ -19,6 +19,7 @@ import { SchoolModule } from './modules/school/school.module';
 import { RankingModule } from './modules/ranking/ranking.module';
 import { PredictionModule } from './modules/prediction/prediction.module';
 import { CaseModule } from './modules/case/case.module';
+import { PointsModule } from './modules/points/points.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { HallModule } from './modules/hall/hall.module';
 import { AiModule } from './modules/ai/ai.module';
@@ -27,17 +28,14 @@ import { AgentSecurityModule } from './modules/ai-agent/security/security.module
 import { AdminModule } from './modules/admin/admin.module';
 import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { VerificationModule } from './modules/verification/verification.module';
-import { EssayAiModule } from './modules/essay-ai/essay-ai.module';
+import { EssayModule } from './modules/essay/essay.module';
 import { RecommendationModule } from './modules/recommendation/recommendation.module';
 import { TimelineModule } from './modules/timeline/timeline.module';
-import { SwipeModule } from './modules/swipe/swipe.module';
 import { AssessmentModule } from './modules/assessment/assessment.module';
 import { ForumModule } from './modules/forum/forum.module';
 import { VaultModule } from './modules/vault/vault.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { NotificationModule } from './modules/notification/notification.module';
-import { EssayPromptModule } from './modules/essay-prompt/essay-prompt.module';
-import { EssayScraperModule } from './modules/essay-scraper/essay-scraper.module';
 import { SchoolListModule } from './modules/school-list/school-list.module';
 import { PeerReviewModule } from './modules/peer-review/peer-review.module';
 import { ResumeModule } from './modules/resume/resume.module';
@@ -92,6 +90,7 @@ import { AuditLogModule } from './common/services/audit-log.module';
     RankingModule,
     PredictionModule,
     CaseModule,
+    PointsModule,
     ChatModule,
     HallModule,
     AiModule,
@@ -100,17 +99,14 @@ import { AuditLogModule } from './common/services/audit-log.module';
     AdminModule,
     SubscriptionModule,
     VerificationModule,
-    EssayAiModule,
+    EssayModule,
     RecommendationModule,
     TimelineModule,
-    SwipeModule,
     AssessmentModule,
     ForumModule,
     VaultModule,
     SettingsModule,
     NotificationModule,
-    EssayPromptModule,
-    EssayScraperModule,
     SchoolListModule,
     PeerReviewModule,
     ResumeModule,

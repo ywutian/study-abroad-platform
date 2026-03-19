@@ -23,7 +23,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
 import {
@@ -39,7 +38,6 @@ import {
   Briefcase,
   BookOpen,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { Link } from '@/lib/i18n/navigation';
 import { ResumePreview } from '@/components/features/resume/resume-preview';
@@ -280,6 +278,9 @@ export default function ResumeEditPage() {
               <h1
                 className="text-lg font-semibold cursor-pointer hover:text-primary transition-colors"
                 onClick={startEditTitle}
+                onKeyDown={(e) => e.key === 'Enter' && startEditTitle()}
+                role="button"
+                tabIndex={0}
               >
                 {resume.title || t('untitled')}
               </h1>

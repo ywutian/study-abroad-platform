@@ -16,7 +16,6 @@ import {
   Shield,
   BadgeCheck,
   Clock,
-  XCircle,
   Upload,
   ChevronRight,
   GraduationCap,
@@ -60,7 +59,7 @@ export function VerificationStatusCard({
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedCase, setSelectedCase] = useState<{ id: string; schoolName: string } | null>(null);
 
-  const { data: verifications, isLoading } = useQuery<VerificationRequest[]>({
+  const { data: verifications } = useQuery<VerificationRequest[]>({
     queryKey: ['myVerifications', userId],
     queryFn: () => apiClient.get('/verifications/my'),
     enabled: !!userId,

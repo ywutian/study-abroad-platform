@@ -13,7 +13,8 @@ type AIFeature =
   | 'profile-analysis'
   | 'prediction'
   | 'recommendation'
-  | 'agent-chat';
+  | 'agent-chat'
+  | 'uncommon-app';
 
 interface AIErrorBoundaryProps {
   feature: AIFeature;
@@ -34,6 +35,7 @@ const FEATURE_LABELS: Record<AIFeature, { zh: string; en: string }> = {
   'essay-brainstorm': { zh: '文书灵感', en: 'Essay Brainstorm' },
   'profile-analysis': { zh: '档案分析', en: 'Profile Analysis' },
   prediction: { zh: '录取预测', en: 'Admission Prediction' },
+  'uncommon-app': { zh: '申请规划', en: 'Application Planning' },
   recommendation: { zh: '智能选校', en: 'School Recommendation' },
   'agent-chat': { zh: 'AI 助手', en: 'AI Assistant' },
 };

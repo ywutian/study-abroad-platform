@@ -12,7 +12,6 @@ export { useAuth } from './use-auth';
 
 // 通用
 export { useDebounce } from './useDebounce';
-export { useRefreshOnFocus } from './useRefreshOnFocus';
 
 // Hall 模块
 export {
@@ -27,6 +26,16 @@ export {
   useSubmitReview,
   usePublicLists,
 } from './use-hall-api';
+
+// Essay AI
+export {
+  essayAiKeys,
+  useEssayReview,
+  useEssayPolish,
+  useEssayRewrite,
+  useEssayContinue,
+  useEssayOpening,
+} from './use-essay-ai';
 
 // Hydration 安全
 export {

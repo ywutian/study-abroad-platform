@@ -46,6 +46,9 @@ export function TimelineItem({
       <div
         className="flex items-center gap-3 p-4 cursor-pointer hover:bg-muted/50 transition-colors"
         onClick={onToggleExpand}
+        onKeyDown={(e) => e.key === 'Enter' && onToggleExpand()}
+        role="button"
+        tabIndex={0}
       >
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">

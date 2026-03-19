@@ -93,7 +93,7 @@ class RedisCircuitStorage implements CircuitBreakerStorage {
         return JSON.parse(raw);
       }
     } catch (err) {
-      this.logger.debug(`Redis getState failed: ${err}`);
+      this.logger.debug(`Redis getState failed: ${String(err)}`);
     }
     return null;
   }
@@ -114,7 +114,7 @@ class RedisCircuitStorage implements CircuitBreakerStorage {
         ttl,
       );
     } catch (err) {
-      this.logger.debug(`Redis setState failed: ${err}`);
+      this.logger.debug(`Redis setState failed: ${String(err)}`);
     }
   }
 
@@ -145,7 +145,7 @@ class RedisCircuitStorage implements CircuitBreakerStorage {
       );
       return typeof result === 'number' ? result : 0;
     } catch (err) {
-      this.logger.debug(`Redis incrementFailures failed: ${err}`);
+      this.logger.debug(`Redis incrementFailures failed: ${String(err)}`);
       return 0;
     }
   }
@@ -157,7 +157,7 @@ class RedisCircuitStorage implements CircuitBreakerStorage {
     try {
       await client.del(`${this.keyPrefix}${key}`);
     } catch (err) {
-      this.logger.debug(`Redis resetFailures failed: ${err}`);
+      this.logger.debug(`Redis resetFailures failed: ${String(err)}`);
     }
   }
 }
@@ -170,6 +170,7 @@ class MemoryCircuitStorage implements CircuitBreakerStorage {
     { state: CircuitBreakerState; expiresAt: number }
   > = new Map();
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async getState(key: string): Promise<CircuitBreakerState | null> {
     const entry = this.circuits.get(key);
     if (!entry) return null;
@@ -180,6 +181,7 @@ class MemoryCircuitStorage implements CircuitBreakerStorage {
     return entry.state;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async setState(
     key: string,
     state: CircuitBreakerState,
@@ -191,6 +193,7 @@ class MemoryCircuitStorage implements CircuitBreakerStorage {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async incrementFailures(key: string): Promise<number> {
     const entry = this.circuits.get(key);
     if (!entry || Date.now() > entry.expiresAt) return 0;
@@ -199,6 +202,7 @@ class MemoryCircuitStorage implements CircuitBreakerStorage {
     return entry.state.failures;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async resetFailures(key: string): Promise<void> {
     this.circuits.delete(key);
   }
@@ -499,6 +503,7 @@ export class ResilienceService {
    * @param retryableErrors - List of error code substrings to match against
    * @returns True if the error message or name contains any retryable code
    */
+
   private isRetryable(error: Error, retryableErrors?: string[]): boolean {
     const errorStr = error.message + (error.name || '');
     return (retryableErrors || []).some((code) => errorStr.includes(code));

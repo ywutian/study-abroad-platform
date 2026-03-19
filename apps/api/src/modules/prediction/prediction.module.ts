@@ -3,27 +3,47 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { PredictionService } from './prediction.service';
 import { PredictionController } from './prediction.controller';
 import { PredictionMlController } from './prediction-ml.controller';
-import { AiModule } from '../ai/ai.module';
 import { RedisModule } from '../../common/redis/redis.module';
 import { AiAgentMemoryModule } from '../ai-agent/memory/memory.module';
 import { SchoolModule } from '../school/school.module';
+import { PointsModule } from '../points/points.module';
 import { ModelRegistryService } from './ml/model-registry.service';
 import { TrainingDataService } from './ml/training-data.service';
 import { ModelTrainerService } from './ml/model-trainer.service';
 import { ShadowEvaluatorService } from './ml/shadow-evaluator.service';
 import { ModelMonitorService } from './ml/model-monitor.service';
+import { PredictionTransformerService } from './prediction-transformer.service';
+import { PredictionStatisticalEngine } from './prediction-statistical-engine.service';
+import { PredictionAiEngine } from './prediction-ai-engine.service';
+import { PredictionFusionEngine } from './prediction-fusion-engine.service';
+import { PredictionCacheService } from './prediction-cache.service';
+import { PredictionCalibrationService } from './prediction-calibration.service';
+import { PredictionHistoricalService } from './prediction-historical.service';
+import { PredictionMemoryService } from './prediction-memory.service';
+import { PredictionPersistenceService } from './prediction-persistence.service';
+import { PredictionReportingService } from './prediction-reporting.service';
 
 @Module({
   imports: [
-    AiModule,
     RedisModule,
     AiAgentMemoryModule,
     SchoolModule,
     ScheduleModule,
+    PointsModule,
   ],
   controllers: [PredictionController, PredictionMlController],
   providers: [
+    PredictionTransformerService,
+    PredictionStatisticalEngine,
+    PredictionAiEngine,
+    PredictionFusionEngine,
     PredictionService,
+    PredictionCacheService,
+    PredictionCalibrationService,
+    PredictionHistoricalService,
+    PredictionMemoryService,
+    PredictionPersistenceService,
+    PredictionReportingService,
     ModelRegistryService,
     TrainingDataService,
     ModelTrainerService,

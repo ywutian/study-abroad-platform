@@ -19,15 +19,15 @@ import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { RedisModule } from '../../common/redis/redis.module';
-import { AiModule } from '../ai/ai.module';
 
 // External domain modules (for tool service DI)
 import { PredictionModule } from '../prediction/prediction.module';
 import { AssessmentModule } from '../assessment/assessment.module';
 import { ForumModule } from '../forum/forum.module';
-import { SwipeModule } from '../swipe/swipe.module';
 import { HallModule } from '../hall/hall.module';
 import { ResumeModule } from '../resume/resume.module';
+import { EssayModule } from '../essay/essay.module';
+import { RecommendationModule } from '../recommendation/recommendation.module';
 
 // Sub-Modules
 import { AiAgentMemoryModule } from './memory/memory.module';
@@ -38,17 +38,16 @@ import { LLMProvidersModule } from './providers/provider.module';
 import { AiAgentGateway } from './ai-agent.gateway';
 
 // Core services
-import { LLMService } from './core/llm.service';
+// NOTE: LLMService, ResilienceService, TokenTrackerService are globally
+// provided by LLMProvidersModule.forRoot() — imported for type references only.
 import { MemoryService } from './core/memory.service';
 import { ToolExecutorService } from './core/tool-executor.service';
 import { WorkflowEngineService } from './core/workflow-engine.service';
 import { AgentRunnerService } from './core/agent-runner.service';
 import { OrchestratorService } from './core/orchestrator.service';
 
-// Resilience services
-import { ResilienceService } from './core/resilience.service';
+// Resilience services (not globally provided)
 import { RateLimiterService } from './core/rate-limiter.service';
-import { TokenTrackerService } from './core/token-tracker.service';
 import { FallbackService } from './core/fallback.service';
 import { FastRouterService } from './core/fast-router.service';
 
@@ -100,7 +99,6 @@ import { AgentSecurityMiddleware } from './middleware/security.middleware';
     JwtModule.register({}),
     PrismaModule,
     RedisModule,
-    AiModule,
 
     // LLM Provider abstraction (global — available to all modules)
     LLMProvidersModule.forRoot(),
@@ -109,9 +107,10 @@ import { AgentSecurityMiddleware } from './middleware/security.middleware';
     PredictionModule,
     AssessmentModule,
     ForumModule,
-    SwipeModule,
     HallModule,
     ResumeModule,
+    EssayModule,
+    RecommendationModule,
 
     // Sub-modules (encapsulate memory & infrastructure providers)
     AiAgentMemoryModule,
@@ -123,9 +122,9 @@ import { AgentSecurityMiddleware } from './middleware/security.middleware';
     ConfigValidatorService,
 
     // Resilience & Protection Services
-    ResilienceService,
+    // NOTE: ResilienceService, TokenTrackerService, LLMService are provided
+    // globally by LLMProvidersModule.forRoot() — do NOT duplicate here.
     RateLimiterService,
-    TokenTrackerService,
     FallbackService,
     FastRouterService,
 
@@ -148,7 +147,6 @@ import { AgentSecurityMiddleware } from './middleware/security.middleware';
     ResumeToolsService,
 
     // Core Agent Services
-    LLMService,
     MemoryService, // Legacy (backward-compatible)
     ToolExecutorService,
     WorkflowEngineService,
@@ -175,7 +173,6 @@ import { AgentSecurityMiddleware } from './middleware/security.middleware';
   ],
   exports: [
     OrchestratorService,
-    TokenTrackerService,
     RateLimiterService,
     AiAgentGateway,
     WebSearchService,
@@ -186,7 +183,7 @@ import { AgentSecurityMiddleware } from './middleware/security.middleware';
 export class AiAgentModule implements OnModuleInit, NestModule {
   private readonly logger = new Logger(AiAgentModule.name);
 
-  async onModuleInit() {
+  onModuleInit() {
     this.logger.log('Initializing AI Agent module with resilience features');
   }
 

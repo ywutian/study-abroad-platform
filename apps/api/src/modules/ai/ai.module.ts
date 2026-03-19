@@ -1,12 +1,9 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { AiService } from './ai.service';
-import { AiController } from './ai.controller';
+import { ProfileAiService } from './profile-ai.service';
+import { ResumeAiService } from './resume-ai.service';
 
 @Module({
-  imports: [ConfigModule],
-  controllers: [AiController],
-  providers: [AiService],
-  exports: [AiService],
+  providers: [ProfileAiService, ResumeAiService],
+  exports: [ProfileAiService, ResumeAiService],
 })
 export class AiModule {}

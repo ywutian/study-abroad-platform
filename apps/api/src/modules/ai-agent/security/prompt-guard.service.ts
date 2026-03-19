@@ -414,6 +414,7 @@ export class PromptGuardService {
     // 4. 检测多语言混合（可能是绕过尝试）
     const hasEnglish = /[a-zA-Z]{5,}/.test(input);
     const hasChinese = /[\u4e00-\u9fa5]{5,}/.test(input);
+    // eslint-disable-next-line no-misleading-character-class -- intentional broad Unicode range detection for multi-script injection
     const hasOther = /[\u0400-\u04FF\u0600-\u06FF\u0900-\u097F]{3,}/.test(
       input,
     );
@@ -482,7 +483,7 @@ export class PromptGuardService {
         await client.incrby(key, increment);
         await client.expire(key, 3600); // 1小时过期
       } catch (err) {
-        this.logger.debug(`Failed to record threat: ${err}`);
+        this.logger.debug(`Failed to record threat: ${String(err)}`);
       }
     }
 

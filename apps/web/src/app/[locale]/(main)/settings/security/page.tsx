@@ -2,22 +2,20 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
+import { Link } from '@/lib/i18n/navigation';
 import { toast } from 'sonner';
 import {
   Key,
   Smartphone,
-  History,
-  LogOut,
   AlertTriangle,
   Check,
   Eye,
   EyeOff,
   Loader2,
-  Monitor,
-  MapPin,
-  Clock,
   ShieldCheck,
+  Clock as ClockIcon,
 } from 'lucide-react';
 
 import { PageContainer, PageHeader } from '@/components/layout';
@@ -25,35 +23,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { cn } from '@/lib/utils';
-
-interface Session {
-  id: string;
-  device: string;
-  location: string;
-  lastActive: string;
-  current: boolean;
-}
-
-const mockSessions: Session[] = [
-  {
-    id: '1',
-    device: 'Chrome on macOS',
-    location: '北京, 中国',
-    lastActive: '当前会话',
-    current: true,
-  },
-  {
-    id: '2',
-    device: 'Safari on iPhone',
-    location: '上海, 中国',
-    lastActive: '2小时前',
-    current: false,
-  },
-];
+import { apiClient } from '@/lib/api';
 
 export default function SecurityPage() {
   const t = useTranslations('security');
@@ -64,11 +35,19 @@ export default function SecurityPage() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-  const [logoutAllDialogOpen, setLogoutAllDialogOpen] = useState(false);
 
-  const handleChangePassword = async () => {
+  const changePasswordMutation = useMutation({
+    mutationFn: (data: { currentPassword: string; newPassword: string }) =>
+      apiClient.post('/auth/change-password', data),
+    onSuccess: () => {
+      toast.success(t('passwordChanged'));
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    },
+  });
+
+  const handleChangePassword = () => {
     if (newPassword !== confirmPassword) {
       toast.error(t('passwordMismatch'));
       return;
@@ -77,35 +56,7 @@ export default function SecurityPage() {
       toast.error(t('passwordTooShort'));
       return;
     }
-
-    setIsChangingPassword(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      toast.success(t('passwordChanged'));
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-    } catch (_error) {
-      toast.error(tCommon('error'));
-    } finally {
-      setIsChangingPassword(false);
-    }
-  };
-
-  const handleToggle2FA = async (enabled: boolean) => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setTwoFactorEnabled(enabled);
-    toast.success(enabled ? t('twoFactorEnabled') : t('twoFactorDisabled'));
-  };
-
-  const handleLogoutAllDevices = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    toast.success(t('loggedOutAll'));
-    setLogoutAllDialogOpen(false);
-  };
-
-  const handleRevokeSession = async (_sessionId: string) => {
-    toast.success(t('sessionRevoked'));
+    changePasswordMutation.mutate({ currentPassword, newPassword });
   };
 
   return (
@@ -118,7 +69,7 @@ export default function SecurityPage() {
       />
 
       <div className="space-y-6">
-        {/* Password Section */}
+        {/* Password Section — wired to POST /auth/change-password */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <Card className="overflow-hidden">
             <div className="h-1 bg-primary" />
@@ -209,11 +160,14 @@ export default function SecurityPage() {
               <Button
                 onClick={handleChangePassword}
                 disabled={
-                  !currentPassword || !newPassword || !confirmPassword || isChangingPassword
+                  !currentPassword ||
+                  !newPassword ||
+                  !confirmPassword ||
+                  changePasswordMutation.isPending
                 }
-                className="gap-2 bg-primary hover:opacity-90 text-white "
+                className="gap-2 bg-primary hover:opacity-90 text-white"
               >
-                {isChangingPassword ? (
+                {changePasswordMutation.isPending ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
                     {tCommon('processing')}
@@ -229,137 +183,31 @@ export default function SecurityPage() {
           </Card>
         </motion.div>
 
-        {/* Two-Factor Authentication */}
+        {/* Two-Factor Authentication — Coming Soon (no backend) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="overflow-hidden">
+          <Card className="overflow-hidden opacity-60">
             <div className="h-1 bg-primary dark:bg-primary" />
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
                   <Smartphone className="h-5 w-5 text-primary" />
                 </div>
-                <div>
-                  <CardTitle>{t('twoFactor')}</CardTitle>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <CardTitle>{t('twoFactor')}</CardTitle>
+                    <Badge variant="secondary" className="gap-1 text-xs">
+                      <ClockIcon className="h-3 w-3" />
+                      {tCommon('comingSoon')}
+                    </Badge>
+                  </div>
                   <CardDescription>{t('twoFactorDesc')}</CardDescription>
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between p-4 rounded-xl bg-muted/50">
-                <div className="flex items-center gap-3">
-                  {twoFactorEnabled ? (
-                    <Badge variant="success" className="gap-1">
-                      <Check className="h-3 w-3" />
-                      {t('enabled')}
-                    </Badge>
-                  ) : (
-                    <Badge variant="secondary">{t('disabled')}</Badge>
-                  )}
-                  <span className="text-sm text-muted-foreground">
-                    {twoFactorEnabled ? t('twoFactorOn') : t('twoFactorOff')}
-                  </span>
-                </div>
-                <Switch checked={twoFactorEnabled} onCheckedChange={handleToggle2FA} />
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Active Sessions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Card className="overflow-hidden">
-            <div className="h-1 bg-warning" />
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10">
-                    <History className="h-5 w-5 text-amber-500" />
-                  </div>
-                  <div>
-                    <CardTitle>{t('activeSessions')}</CardTitle>
-                    <CardDescription>{t('activeSessionsDesc')}</CardDescription>
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2"
-                  onClick={() => setLogoutAllDialogOpen(true)}
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t('logoutAll')}</span>
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {mockSessions.map((session) => (
-                  <div
-                    key={session.id}
-                    className={cn(
-                      'flex items-center justify-between p-4 rounded-xl transition-colors',
-                      session.current
-                        ? 'bg-emerald-500/5 border border-emerald-500/20'
-                        : 'bg-muted/50'
-                    )}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={cn(
-                          'flex h-10 w-10 items-center justify-center rounded-lg',
-                          session.current ? 'bg-emerald-500/10' : 'bg-muted'
-                        )}
-                      >
-                        <Monitor
-                          className={cn(
-                            'h-5 w-5',
-                            session.current ? 'text-emerald-500' : 'text-muted-foreground'
-                          )}
-                        />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium text-sm">{session.device}</p>
-                          {session.current && (
-                            <Badge variant="success" className="text-xs">
-                              {t('currentSession')}
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-                          <span className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3" />
-                            {session.location}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {session.lastActive}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    {!session.current && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => handleRevokeSession(session.id)}
-                      >
-                        {t('revoke')}
-                      </Button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
           </Card>
         </motion.div>
 
@@ -367,7 +215,7 @@ export default function SecurityPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.2 }}
         >
           <Card className="overflow-hidden border-destructive/30">
             <div className="h-1 bg-gradient-to-r bg-destructive" />
@@ -382,24 +230,15 @@ export default function SecurityPage() {
             <CardContent>
               <p className="text-sm text-muted-foreground mb-4">{t('dangerZoneDesc')}</p>
               <Button variant="destructive" className="gap-2" asChild>
-                <a href="/settings">
+                <Link href="/settings">
                   <AlertTriangle className="h-4 w-4" />
                   {t('deleteAccount')}
-                </a>
+                </Link>
               </Button>
             </CardContent>
           </Card>
         </motion.div>
       </div>
-
-      {/* Logout All Dialog */}
-      <ConfirmDialog
-        open={logoutAllDialogOpen}
-        onOpenChange={setLogoutAllDialogOpen}
-        title={t('logoutAllTitle')}
-        description={t('logoutAllDesc')}
-        onConfirm={handleLogoutAllDevices}
-      />
     </PageContainer>
   );
 }

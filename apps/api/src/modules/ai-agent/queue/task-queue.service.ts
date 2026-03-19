@@ -97,7 +97,7 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
     private redis: RedisService,
   ) {}
 
-  async onModuleInit() {
+  onModuleInit() {
     // 仅在 Redis 可用时启动任务轮询（避免无 Redis 时频繁查询数据库耗尽连接池）
     if (this.redis.connected) {
       this.start();
@@ -108,7 +108,7 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async onModuleDestroy() {
+  onModuleDestroy() {
     this.stop();
   }
 
@@ -192,7 +192,7 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
           );
         }
       } catch (err) {
-        this.logger.error(`Failed to add task to Redis: ${err}`);
+        this.logger.error(`Failed to add task to Redis: ${String(err)}`);
       }
     }
 
@@ -225,7 +225,7 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
           }
         }
       } catch (err) {
-        this.logger.error(`Failed to remove task from Redis: ${err}`);
+        this.logger.error(`Failed to remove task from Redis: ${String(err)}`);
       }
     }
 
@@ -360,11 +360,11 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
 
       // 3. 执行任务
       this.activeWorkers++;
-      this.executeTask(task).finally(() => {
+      void this.executeTask(task).finally(() => {
         this.activeWorkers--;
       });
     } catch (err) {
-      this.logger.error(`Poll error: ${err}`);
+      this.logger.error(`Poll error: ${String(err)}`);
     }
   }
 
@@ -382,7 +382,7 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
         await client.zrem(this.DELAYED_KEY, taskJson);
       }
     } catch (err) {
-      this.logger.debug(`Failed to promote delayed tasks: ${err}`);
+      this.logger.debug(`Failed to promote delayed tasks: ${String(err)}`);
     }
   }
 
@@ -397,7 +397,9 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
           return JSON.parse(result[0]);
         }
       } catch (err) {
-        this.logger.debug(`Redis queue error, falling back to DB: ${err}`);
+        this.logger.debug(
+          `Redis queue error, falling back to DB: ${String(err)}`,
+        );
       }
     }
 

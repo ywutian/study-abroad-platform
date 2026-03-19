@@ -5,7 +5,7 @@
  */
 
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
-import { IStorage, IStorageTransaction } from './storage.interface';
+import { IStorage } from './storage.interface';
 
 interface CacheEntry<T = any> {
   value: T;
@@ -36,6 +36,7 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
 
   // ==================== Key-Value ====================
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async get<T>(key: string): Promise<T | null> {
     const entry = this.store.get(key);
     if (!entry) return null;
@@ -46,6 +47,7 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
     return entry.value as T;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async set<T>(key: string, value: T, ttlMs?: number): Promise<void> {
     this.evictIfNeeded();
     this.store.set(key, {
@@ -54,6 +56,7 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async delete(key: string): Promise<void> {
     this.store.delete(key);
     this.lists.delete(key);
@@ -61,6 +64,7 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
     this.sortedSets.delete(key);
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async exists(key: string): Promise<boolean> {
     const entry = this.store.get(key);
     if (!entry) return false;
@@ -94,6 +98,7 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
     return this.incr(key, -delta);
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async expire(key: string, ttlMs: number): Promise<void> {
     const entry = this.store.get(key);
     if (entry) {
@@ -101,6 +106,7 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async ttl(key: string): Promise<number> {
     const entry = this.store.get(key);
     if (!entry) return -2;
@@ -109,6 +115,7 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
     return remaining > 0 ? remaining : -2;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async keys(pattern: string): Promise<string[]> {
     const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
     return Array.from(this.store.keys()).filter((k) => regex.test(k));
@@ -122,6 +129,7 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
 
   // ==================== List ====================
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async lpush(key: string, ...values: string[]): Promise<number> {
     const list = this.lists.get(key) || [];
     list.unshift(...values);
@@ -129,6 +137,7 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
     return list.length;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async rpush(key: string, ...values: string[]): Promise<number> {
     const list = this.lists.get(key) || [];
     list.push(...values);
@@ -136,26 +145,31 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
     return list.length;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async lpop(key: string): Promise<string | null> {
     const list = this.lists.get(key);
     return list?.shift() || null;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async rpop(key: string): Promise<string | null> {
     const list = this.lists.get(key);
     return list?.pop() || null;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async lrange(key: string, start: number, stop: number): Promise<string[]> {
     const list = this.lists.get(key) || [];
     const end = stop < 0 ? list.length + stop + 1 : stop + 1;
     return list.slice(start, end);
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async llen(key: string): Promise<number> {
     return this.lists.get(key)?.length || 0;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async ltrim(key: string, start: number, stop: number): Promise<void> {
     const list = this.lists.get(key);
     if (list) {
@@ -166,10 +180,12 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
 
   // ==================== Hash ====================
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async hget(key: string, field: string): Promise<string | null> {
     return this.hashes.get(key)?.get(field) || null;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async hset(key: string, field: string, value: string): Promise<void> {
     if (!this.hashes.has(key)) {
       this.hashes.set(key, new Map());
@@ -177,11 +193,13 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
     this.hashes.get(key)!.set(field, value);
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async hmget(key: string, ...fields: string[]): Promise<(string | null)[]> {
     const hash = this.hashes.get(key);
     return fields.map((f) => hash?.get(f) || null);
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async hmset(key: string, data: Record<string, string>): Promise<void> {
     if (!this.hashes.has(key)) {
       this.hashes.set(key, new Map());
@@ -190,6 +208,7 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
     Object.entries(data).forEach(([k, v]) => hash.set(k, v));
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async hdel(key: string, ...fields: string[]): Promise<number> {
     const hash = this.hashes.get(key);
     if (!hash) return 0;
@@ -200,6 +219,7 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
     return count;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async hgetall(key: string): Promise<Record<string, string>> {
     const hash = this.hashes.get(key);
     if (!hash) return {};
@@ -215,6 +235,7 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
 
   // ==================== Sorted Set ====================
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async zadd(key: string, score: number, member: string): Promise<number> {
     if (!this.sortedSets.has(key)) {
       this.sortedSets.set(key, new Map());
@@ -224,6 +245,7 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
     return isNew ? 1 : 0;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async zrange(key: string, start: number, stop: number): Promise<string[]> {
     const set = this.sortedSets.get(key);
     if (!set) return [];
@@ -234,6 +256,7 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
     return sorted.slice(start, end);
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async zrangebyscore(
     key: string,
     min: number,
@@ -247,6 +270,7 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
       .map(([member]) => member);
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async zrem(key: string, ...members: string[]): Promise<number> {
     const set = this.sortedSets.get(key);
     if (!set) return 0;
@@ -257,14 +281,17 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
     return count;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async zscore(key: string, member: string): Promise<number | null> {
     return this.sortedSets.get(key)?.get(member) ?? null;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async zcard(key: string): Promise<number> {
     return this.sortedSets.get(key)?.size || 0;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async zremrangebyscore(
     key: string,
     min: number,
@@ -281,14 +308,17 @@ export class MemoryStorage implements IStorage, OnModuleDestroy {
 
   // ==================== Connection ====================
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async ping(): Promise<boolean> {
     return true;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async connect(): Promise<void> {
     this.logger.log('MemoryStorage connected');
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async disconnect(): Promise<void> {
     this.store.clear();
     this.lists.clear();

@@ -112,6 +112,9 @@ export function ComboboxTagInput({
               className
             )}
             onClick={() => inputRef.current?.focus()}
+            onKeyDown={(e) => e.key === 'Enter' && inputRef.current?.focus()}
+            role="group"
+            tabIndex={0}
           >
             {selected.map((tag) => (
               <Badge key={tag} variant="secondary" className="gap-1 pr-1">

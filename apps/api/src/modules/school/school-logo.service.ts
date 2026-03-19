@@ -121,7 +121,7 @@ export class SchoolLogoService {
         filled++;
       } catch (err) {
         this.logger.warn(
-          `Failed to update logo for school ${school.id}: ${err}`,
+          `Failed to update logo for school ${school.id}: ${String(err)}`,
         );
         failed++;
       }

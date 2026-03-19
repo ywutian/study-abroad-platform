@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,7 +14,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -36,12 +36,9 @@ import {
   X,
   Loader2,
   CheckCircle2,
-  Image as ImageIcon,
   FileText,
   Eye,
   EyeOff,
-  GraduationCap,
-  Calendar,
   Info,
 } from 'lucide-react';
 
@@ -60,8 +57,6 @@ const PROOF_TYPES: { value: ProofType; labelKey: string }[] = [
   { value: 'STUDENT_ID', labelKey: 'verification.proofType.studentId' },
   { value: 'OTHER', labelKey: 'verification.proofType.other' },
 ];
-
-const ADMISSION_ROUNDS = ['ED', 'ED2', 'EA', 'REA', 'RD', 'Rolling'];
 
 export function VerificationUploadDialog({
   open,
@@ -263,13 +258,16 @@ export function VerificationUploadDialog({
                         <div className="flex items-center justify-center">
                           {previewUrl ? (
                             <div className="relative">
-                              <img
+                              <Image
                                 src={previewUrl}
                                 alt="Preview"
+                                width={128}
+                                height={128}
                                 className={cn(
                                   'h-32 w-auto rounded-lg object-cover shadow-md',
                                   !showPreview && 'blur-md'
                                 )}
+                                unoptimized
                               />
                               <Button
                                 variant="secondary"

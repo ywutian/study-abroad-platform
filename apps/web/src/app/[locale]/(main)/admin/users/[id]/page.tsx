@@ -18,7 +18,6 @@ import {
   Calendar,
   Ban,
   Zap,
-  CreditCard,
   ScrollText,
   Loader2,
 } from 'lucide-react';

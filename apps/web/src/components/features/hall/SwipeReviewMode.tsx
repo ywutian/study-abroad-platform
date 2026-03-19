@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState, useCallback } from 'react';
@@ -7,7 +8,6 @@ import { useMutation } from '@tanstack/react-query';
 import {
   X,
   ChevronLeft,
-  ChevronRight,
   GraduationCap,
   BarChart,
   BookOpen,
@@ -15,7 +15,6 @@ import {
   Star,
   ThumbsUp,
   ThumbsDown,
-  Sparkles,
   Check,
   Brain,
   User,
@@ -48,13 +47,22 @@ interface SwipeReviewModeProps {
   onComplete?: () => void;
 }
 
+const STEP_GRADIENT: Record<string, string> = {
+  intro: 'bg-primary',
+  academic: 'bg-primary',
+  scores: 'bg-gradient-to-r from-indigo-500 to-violet-500',
+  activities: 'bg-warning',
+  awards: 'bg-gradient-to-r from-yellow-500 to-orange-500',
+  verdict: 'bg-destructive',
+};
+
 const STEP_STYLES = [
-  { key: 'intro', icon: User, color: 'bg-primary' },
-  { key: 'academic', icon: GraduationCap, color: 'bg-primary' },
-  { key: 'scores', icon: BarChart, color: 'from-indigo-500 to-violet-500' },
-  { key: 'activities', icon: BookOpen, color: 'bg-warning' },
-  { key: 'awards', icon: Trophy, color: 'from-yellow-500 to-orange-500' },
-  { key: 'verdict', icon: Star, color: 'bg-destructive' },
+  { key: 'intro', icon: User },
+  { key: 'academic', icon: GraduationCap },
+  { key: 'scores', icon: BarChart },
+  { key: 'activities', icon: BookOpen },
+  { key: 'awards', icon: Trophy },
+  { key: 'verdict', icon: Star },
 ];
 
 export function SwipeReviewMode({ profile, onClose, onComplete }: SwipeReviewModeProps) {
@@ -127,6 +135,7 @@ export function SwipeReviewMode({ profile, onClose, onComplete }: SwipeReviewMod
         }
       }, 300);
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- REVIEW_STEPS is a module-level constant
     [currentStep]
   );
 
@@ -483,7 +492,7 @@ export function SwipeReviewMode({ profile, onClose, onComplete }: SwipeReviewMod
                 i < currentStep
                   ? 'bg-primary'
                   : i === currentStep
-                    ? `bg-gradient-to-r ${step.color}`
+                    ? STEP_GRADIENT[step.key]
                     : 'bg-muted'
               )}
             />
@@ -524,7 +533,7 @@ export function SwipeReviewMode({ profile, onClose, onComplete }: SwipeReviewMod
               <div
                 className={cn(
                   'flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br text-white',
-                  currentStepConfig.color
+                  STEP_GRADIENT[currentStepConfig.key]
                 )}
               >
                 <StepIcon className="h-5 w-5" />

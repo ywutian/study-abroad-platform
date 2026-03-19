@@ -10,7 +10,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
 import type {
-  SwipeCaseData,
   SwipeBatchResponse,
   SwipeStats,
   SwipeResult,
@@ -188,6 +187,7 @@ export function useReactToReview() {
 export function usePublicLists(enabled: boolean) {
   return useQuery({
     queryKey: hallKeys.publicLists(),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     queryFn: () => apiClient.get<{ items: any[] }>('/halls/lists'),
     enabled,
   });

@@ -16,15 +16,17 @@ interface StatCardProps {
   index?: number; // for animation delay
 }
 
-export function StatCard({ label, value, icon: Icon, trend, className, index = 0 }: StatCardProps) {
+export function StatCard({
+  label,
+  value,
+  icon: Icon,
+  trend,
+  className,
+  index: _index = 0,
+}: StatCardProps) {
   const t = useTranslations('stats');
   return (
-    <div
-      className={cn(
-        'rounded-xl border bg-card p-4 sm:p-6',
-        className
-      )}
-    >
+    <div className={cn('rounded-xl border bg-card p-4 sm:p-6', className)}>
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <p className="text-sm text-muted-foreground">{label}</p>
@@ -44,7 +46,8 @@ export function StatCard({ label, value, icon: Icon, trend, className, index = 0
               trend.isPositive ? 'text-success' : 'text-destructive'
             )}
           >
-            {trend.isPositive ? '+' : ''}{trend.value}%
+            {trend.isPositive ? '+' : ''}
+            {trend.value}%
           </span>
           <span className="text-xs text-muted-foreground">{t('vsLastMonth')}</span>
         </div>
@@ -52,8 +55,3 @@ export function StatCard({ label, value, icon: Icon, trend, className, index = 0
     </div>
   );
 }
-
-
-
-
-

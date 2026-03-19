@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { Gift, ChevronDown, Eye, EyeOff } from 'lucide-react';
 
 interface RegisterStepAccountProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   form: UseFormReturn<any>;
   watchedPassword: string;
   referralOpen: boolean;

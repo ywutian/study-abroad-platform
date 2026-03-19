@@ -7,7 +7,6 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { LoadingState } from '@/components/ui/loading-state';
 import { TypingIndicator } from '@/components/features';
-import { cn } from '@/lib/utils';
 import { fadeInUp } from '@/lib/motion';
 import { ChevronDown, MessageSquare, Loader2 } from 'lucide-react';
 import type { Message, Conversation } from './types';

@@ -2,18 +2,19 @@
  * Recommendation Tools Service
  *
  * Tools: RECOMMEND_SCHOOLS, ANALYZE_ADMISSION_CHANCE
+ *
+ * Phase 2: recommend_schools delegates to RecommendationService
+ * (charge points → AI ranking → probability calibration → persist → memory)
  */
 
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { AiService } from '../../ai/ai.service';
+import { LLMService } from '../core/llm.service';
 import { PredictionService } from '../../prediction/prediction.service';
+import { RecommendationService } from '../../recommendation/recommendation.service';
 import { ProfileLoaderHelper } from './helpers/profile-loader.helper';
 import { SchoolLookupHelper } from './helpers/school-lookup.helper';
-import {
-  formatHighSchoolContext,
-  extractHighSchoolFromEducation,
-} from './helpers/education-context.helper';
+import {} from './helpers/education-context.helper';
 import { ToolHandler, IToolHandlerProvider } from './tool-handler.interface';
 
 @Injectable()
@@ -22,8 +23,9 @@ export class RecommendationToolsService implements IToolHandlerProvider {
 
   constructor(
     private prisma: PrismaService,
-    private aiService: AiService,
+    private llmService: LLMService,
     private predictionService: PredictionService,
+    private recommendationService: RecommendationService,
     private profileLoader: ProfileLoaderHelper,
     private schoolLookup: SchoolLookupHelper,
   ) {}
@@ -50,6 +52,8 @@ export class RecommendationToolsService implements IToolHandlerProvider {
     locale = 'zh',
   ) {
     const isZh = locale === 'zh';
+
+    // Quick profile check before delegating (avoid charging if profile is empty)
     const profile =
       context?.profile ||
       (await this.profileLoader.loadProfile(userId, locale));
@@ -62,35 +66,40 @@ export class RecommendationToolsService implements IToolHandlerProvider {
       };
     }
 
-    const hsContext = formatHighSchoolContext(
-      profile.education,
-      profile.highSchool,
-      locale,
-    );
+    try {
+      // Delegate to RecommendationService: charge points → AI ranking → persist → memory
+      const result = await this.recommendationService.generateRecommendation(
+        userId,
+        {
+          schoolCount: args.count || 15,
+          preferredRegions: args.preference ? [args.preference] : undefined,
+        },
+        locale,
+      );
 
-    return this.aiService.schoolMatch(
-      {
-        gpa: profile.gpa ?? undefined,
-        gpaScale: profile.gpaScale,
-        testScores: profile.testScores,
-        targetMajor: profile.targetMajor ?? undefined,
-        intendedMajor: profile.intendedMajor ?? undefined,
-        secondMajor: profile.secondMajor ?? undefined,
-        highSchoolContext: hsContext ?? undefined,
-        activities: profile.activities?.map((a: any) => ({
-          name: a.name,
-          category: a.category ?? '',
-          role: a.role ?? '',
-          description: a.description ?? undefined,
+      return {
+        recommendations: result.recommendations?.map((r) => ({
+          schoolName: r.schoolName,
+          schoolId: r.schoolId,
+          tier: r.tier,
+          estimatedProbability: r.estimatedProbability,
+          fitScore: r.fitScore,
+          reasons: r.reasons,
+          concerns: r.concerns,
+          schoolMeta: r.schoolMeta,
         })),
-        awards: profile.awards?.map((a: any) => ({
-          name: a.name,
-          level: a.level ?? '',
-          competitionCategory: a.competitionCategory ?? undefined,
-        })),
-      },
-      locale,
-    );
+        analysis: result.analysis,
+        summary: result.summary,
+        totalCount: result.recommendations?.length || 0,
+      };
+    } catch (error: any) {
+      this.logger.warn(`recommend_schools failed: ${error?.message}`);
+      return {
+        error: isZh
+          ? `推荐失败：${error?.message || '请稍后重试'}`
+          : `Recommendation failed: ${error?.message || 'Please try again later'}`,
+      };
+    }
   }
 
   async analyzeAdmissionChance(

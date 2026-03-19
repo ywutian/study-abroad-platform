@@ -24,7 +24,7 @@ export function useKeyboardShortcuts(
   shortcuts: Shortcut[],
   options: UseKeyboardShortcutsOptions = {}
 ) {
-  const { enabled = true, scope } = options;
+  const { enabled = true, scope: _scope } = options;
   const shortcutsRef = useRef(shortcuts);
   shortcutsRef.current = shortcuts;
 

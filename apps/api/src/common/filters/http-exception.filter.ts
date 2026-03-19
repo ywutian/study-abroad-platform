@@ -83,7 +83,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const logMessage = `[${correlationId || 'no-id'}] ${request.method} ${request.url} - ${status} - ${
       Array.isArray(message) ? message.join('; ') : message
     }`;
-    if (status >= 500) {
+    if ((status as number) >= 500) {
       this.logger.error(
         logMessage,
         exception instanceof Error
@@ -202,7 +202,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
   }
 
   private getCodeFromStatus(status: number): string {
-    switch (status) {
+    switch (status as HttpStatus) {
       case HttpStatus.BAD_REQUEST:
         return 'BAD_REQUEST';
       case HttpStatus.UNAUTHORIZED:

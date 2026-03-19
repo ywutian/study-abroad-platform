@@ -50,10 +50,13 @@ export function DeadlineReminder({ deadlines, className }: DeadlineReminderProps
   }
 
   const getUrgencyColor = (daysLeft: number) => {
-    if (daysLeft <= 3) return 'text-red-500 bg-red-500/10 border-red-500/30';
-    if (daysLeft <= 7) return 'text-amber-500 bg-amber-500/10 border-amber-500/30';
-    if (daysLeft <= 14) return 'text-yellow-500 bg-yellow-500/10 border-yellow-500/30';
-    return 'text-emerald-500 bg-emerald-500/10 border-emerald-500/30';
+    if (daysLeft <= 3)
+      return 'text-red-500 dark:text-red-400 bg-red-500/10 dark:bg-red-500/20 border-red-500/30';
+    if (daysLeft <= 7)
+      return 'text-amber-500 dark:text-amber-400 bg-amber-500/10 dark:bg-amber-500/20 border-amber-500/30';
+    if (daysLeft <= 14)
+      return 'text-yellow-500 dark:text-yellow-400 bg-yellow-500/10 dark:bg-yellow-500/20 border-yellow-500/30';
+    return 'text-emerald-500 dark:text-emerald-400 bg-emerald-500/10 dark:bg-emerald-500/20 border-emerald-500/30';
   };
 
   const getUrgencyBadge = (daysLeft: number) => {
@@ -117,9 +120,9 @@ export function DeadlineReminder({ deadlines, className }: DeadlineReminderProps
                       className={cn(
                         'text-lg font-bold',
                         deadline.daysLeft <= 3
-                          ? 'text-red-500'
+                          ? 'text-red-500 dark:text-red-400'
                           : deadline.daysLeft <= 7
-                            ? 'text-amber-500'
+                            ? 'text-amber-500 dark:text-amber-400'
                             : 'text-foreground'
                       )}
                     >

@@ -17,11 +17,7 @@ import {
   LLMChatResponse,
   LLMStreamChunk,
 } from '../providers/llm-provider.types';
-import {
-  ResilienceService,
-  CircuitOpenError,
-  TimeoutError,
-} from './resilience.service';
+import { ResilienceService } from './resilience.service';
 import { TokenTrackerService, TokenUsage } from './token-tracker.service';
 import { ToolCall } from '../types';
 
@@ -42,6 +38,26 @@ export interface LLMOptions {
   conversationId?: string;
   agentType?: string;
   timeoutMs?: number;
+  seed?: number;
+  providerOptions?: Record<string, unknown>;
+}
+
+/**
+ * Simplified message format for one-shot LLM calls (chatSimple).
+ * Matches the legacy AiService.chat() contract.
+ */
+export interface ChatSimpleMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
+
+export interface ChatSimpleOptions {
+  temperature?: number;
+  maxTokens?: number;
+  seed?: number;
+  timeoutMs?: number;
+  userId?: string;
+  providerOptions?: Record<string, unknown>;
 }
 
 export interface StreamChunk {
@@ -186,6 +202,39 @@ export class LLMService {
     return { isHealthy: true };
   }
 
+  /**
+   * Simplified one-shot LLM call for domain services.
+   *
+   * Extracts the system message from the array, forwards the rest as user/assistant
+   * messages, and returns just the content string. Provides the same convenience
+   * as the former AiService.chat() with full resilience + token tracking.
+   */
+  async chatSimple(
+    messages: ChatSimpleMessage[],
+    options?: ChatSimpleOptions,
+  ): Promise<string> {
+    const systemMsg = messages.find((m) => m.role === 'system');
+    const otherMsgs: Message[] = messages
+      .filter((m) => m.role !== 'system')
+      .map((m) => ({
+        id: `cs_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        role: m.role as Message['role'],
+        content: m.content,
+        timestamp: new Date(),
+      }));
+
+    const result = await this.call(systemMsg?.content || '', otherMsgs, {
+      temperature: options?.temperature,
+      maxTokens: options?.maxTokens,
+      timeoutMs: options?.timeoutMs,
+      userId: options?.userId,
+      seed: options?.seed,
+      providerOptions: options?.providerOptions,
+    });
+
+    return result.content;
+  }
+
   // ── Private helpers ──────────────────────────────────────
 
   private buildRequest(
@@ -211,6 +260,13 @@ export class LLMService {
       parameters: t.parameters,
     }));
 
+    const mergedProviderOptions: Record<string, unknown> = {
+      ...options.providerOptions,
+    };
+    if (options.seed !== undefined) {
+      mergedProviderOptions.seed = options.seed;
+    }
+
     return {
       systemPrompt,
       messages: llmMessages,
@@ -219,6 +275,9 @@ export class LLMService {
       maxTokens: options.maxTokens,
       tools,
       toolChoice: tools?.length ? 'auto' : undefined,
+      ...(Object.keys(mergedProviderOptions).length > 0 && {
+        providerOptions: mergedProviderOptions,
+      }),
     };
   }
 

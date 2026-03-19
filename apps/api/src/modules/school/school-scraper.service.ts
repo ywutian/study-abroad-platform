@@ -266,7 +266,7 @@ export class SchoolScraperService {
   /**
    * 解析文书题目
    */
-  private parseEssays(html: string, schoolName: string): EssayPrompt[] {
+  private parseEssays(html: string, _schoolName: string): EssayPrompt[] {
     const $ = cheerio.load(html);
     const essays: EssayPrompt[] = [];
 
@@ -318,7 +318,10 @@ export class SchoolScraperService {
   /**
    * 解析录取要求
    */
-  private parseRequirements(html: string, schoolName: string): RequirementInfo {
+  private parseRequirements(
+    html: string,
+    _schoolName: string,
+  ): RequirementInfo {
     const $ = cheerio.load(html);
     const text = $('body').text();
     const requirements: RequirementInfo = {};

@@ -39,7 +39,7 @@ function getLoginUrl(request: NextRequest): string {
   return `/${locale}/login`;
 }
 
-function buildCspHeader(nonce: string): string {
+function buildCspHeader(_nonce: string): string {
   const isDev = process.env.NODE_ENV !== 'production';
 
   // connect-src: allow API, WebSocket, and Sentry

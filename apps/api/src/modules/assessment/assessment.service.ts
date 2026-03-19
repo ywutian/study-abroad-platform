@@ -6,6 +6,7 @@ import {
   Optional,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { fireAndForget } from '../../common/utils/async.util';
 import { AssessmentType, MemoryType } from '@prisma/client';
 import {
   AssessmentTypeEnum,
@@ -20,7 +21,6 @@ import {
   MBTI_INTERPRETATIONS,
   LIKERT_OPTIONS,
   MBTI_DISCLAIMER,
-  MbtiQuestion,
 } from './data/mbti-questions';
 import { HOLLAND_QUESTIONS, HOLLAND_TYPE_INFO } from './data/holland-questions';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
@@ -60,6 +60,7 @@ export class AssessmentService {
   /**
    * 获取测评题目
    */
+  // eslint-disable-next-line @typescript-eslint/require-await
   async getAssessment(type: AssessmentTypeEnum): Promise<AssessmentDto> {
     let questions;
     let title: string;
@@ -393,9 +394,11 @@ export class AssessmentService {
 
     // 记录查看历史行为
     if (results.length > 0) {
-      this.recordViewHistoryToMemory(userId, results).catch((err) => {
-        this.logger.warn('Failed to record view history to memory', err);
-      });
+      fireAndForget(
+        this.recordViewHistoryToMemory(userId, results),
+        this.logger,
+        'Failed to record view history to memory',
+      );
     }
 
     return results.map((r) =>
@@ -430,13 +433,15 @@ export class AssessmentService {
     }
 
     // 记录查看详情行为
-    this.recordViewResultToMemory(
-      userId,
-      result.assessment.type as AssessmentTypeEnum,
-      result,
-    ).catch((err) => {
-      this.logger.warn('Failed to record view result to memory', err);
-    });
+    fireAndForget(
+      this.recordViewResultToMemory(
+        userId,
+        result.assessment.type as AssessmentTypeEnum,
+        result,
+      ),
+      this.logger,
+      'Failed to record view result to memory',
+    );
 
     return this.formatResult(
       result.assessment.type as AssessmentTypeEnum,

@@ -70,13 +70,13 @@ export default function TeamDetailPage() {
     mutationFn: () => apiClient.post(`/teams/${id}/leave`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
-      toast.success('Left team');
+      toast.success(t('toast.left'));
       setLeaveOpen(false);
       router.push('/teams?tab=my');
     },
     onError: (e: unknown) => {
       const err = e as { response?: { data?: { error?: { message?: string } } } };
-      toast.error(err.response?.data?.error?.message ?? 'Failed to leave');
+      toast.error(err.response?.data?.error?.message ?? t('toast.leaveFailed'));
     },
   });
 
@@ -84,13 +84,13 @@ export default function TeamDetailPage() {
     mutationFn: () => apiClient.delete(`/teams/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
-      toast.success('Team disbanded');
+      toast.success(t('toast.disbanded'));
       setDisbandOpen(false);
       router.push('/teams');
     },
     onError: (e: unknown) => {
       const err = e as { response?: { data?: { error?: { message?: string } } } };
-      toast.error(err.response?.data?.error?.message ?? 'Failed to disband');
+      toast.error(err.response?.data?.error?.message ?? t('toast.disbandFailed'));
     },
   });
 
@@ -99,11 +99,11 @@ export default function TeamDetailPage() {
     onSuccess: (data) => {
       const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/${locale}/teams/join?token=${data.token}`;
       void navigator.clipboard.writeText(url);
-      toast.success('Invite link copied');
+      toast.success(t('toast.linkCopied'));
     },
     onError: (e: unknown) => {
       const err = e as { response?: { data?: { error?: { message?: string } } } };
-      toast.error(err.response?.data?.error?.message ?? 'Failed to create link');
+      toast.error(err.response?.data?.error?.message ?? t('toast.linkFailed'));
     },
   });
 
@@ -114,14 +114,15 @@ export default function TeamDetailPage() {
     }
     try {
       await apiClient.post(`/teams/${id}/join`);
-      toast.success('Joined');
+      toast.success(t('toast.joined'));
       queryClient.invalidateQueries({ queryKey: ['teams'] });
     } catch (e: unknown) {
       const err = e as { response?: { data?: { error?: { code?: string; message?: string } } } };
       const code = err.response?.data?.error?.code;
       const msg = err.response?.data?.error?.message;
-      if (code === 'CONFLICT') toast.error(team?.isMember ? 'Already a member' : t('errors.full'));
-      else toast.error(msg ?? 'Failed to join');
+      if (code === 'CONFLICT')
+        toast.error(team?.isMember ? t('toast.alreadyMember') : t('errors.full'));
+      else toast.error(msg ?? t('toast.joinFailed'));
     }
   };
 
@@ -165,7 +166,7 @@ export default function TeamDetailPage() {
       <Link href="/teams">
         <Button variant="ghost" size="sm" className="mb-4 -ml-2">
           <ArrowLeft className="h-4 w-4 mr-1" />
-          Back
+          {t('back')}
         </Button>
       </Link>
       <div className="space-y-6">
@@ -184,7 +185,7 @@ export default function TeamDetailPage() {
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 {team.isMember ? (
-                  <Badge>Member</Badge>
+                  <Badge>{t('member')}</Badge>
                 ) : team.joinPolicy === 'OPEN' ? (
                   <Button onClick={handleJoin}>{isLoggedIn ? t('join') : t('loginToJoin')}</Button>
                 ) : (
@@ -236,7 +237,7 @@ export default function TeamDetailPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Members
+              {t('members')}
             </CardTitle>
           </CardHeader>
           <CardContent>

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
@@ -106,7 +107,6 @@ export function SubmitCaseDialog({
         const result = await mammoth.extractRawText({ arrayBuffer });
         setFormData((prev) => ({ ...prev, essayContent: result.value }));
       } else if (ext === 'pdf') {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const pdfjsLib = (await import(/* webpackIgnore: true */ 'pdfjs-dist' as string)) as any;
         pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
         const pdf = await pdfjsLib.getDocument(await file.arrayBuffer()).promise;

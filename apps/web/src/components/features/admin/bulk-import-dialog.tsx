@@ -165,6 +165,7 @@ export function BulkImportDialog({ open, onOpenChange, importType }: BulkImportD
 
     // Reset input so same file can be re-selected
     e.target.value = '';
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- t is stable from next-intl, adding it causes unnecessary re-renders
   }, []);
 
   const handleDownloadTemplate = () => {
@@ -206,6 +207,9 @@ export function BulkImportDialog({ open, onOpenChange, importType }: BulkImportD
             <div
               className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
               onClick={() => fileInputRef.current?.click()}
+              onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
+              role="button"
+              tabIndex={0}
               onDragOver={(e) => {
                 e.preventDefault();
                 e.currentTarget.classList.add('border-primary');

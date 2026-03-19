@@ -1,9 +1,8 @@
 'use client';
 
-import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, X, GripVertical, Sparkles } from 'lucide-react';
+import { Plus, X, GripVertical } from 'lucide-react';
 
 interface BulletEditorProps {
   bullets: string[];

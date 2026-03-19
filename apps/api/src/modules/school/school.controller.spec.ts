@@ -4,7 +4,7 @@ import { SchoolService } from './school.service';
 import { SchoolDataService } from './school-data.service';
 import { SchoolScraperService } from './school-scraper.service';
 import { SchoolDataMerger } from './school-data-merger';
-import { AiService } from '../ai/ai.service';
+import { LLMService } from '../ai-agent/core/llm.service';
 import { ProfileService } from '../profile/profile.service';
 import { RedisService } from '../../common/redis/redis.service';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -20,8 +20,8 @@ describe('SchoolController', () => {
   let schoolService: SchoolService;
   let schoolDataService: SchoolDataService;
   let schoolScraperService: SchoolScraperService;
-  let aiService: AiService;
-  let profileService: ProfileService;
+  let _llmService: LLMService;
+  let _profileService: ProfileService;
   let schoolListService: SchoolListService;
 
   const mockUser = {
@@ -107,8 +107,9 @@ describe('SchoolController', () => {
           },
         },
         {
-          provide: AiService,
+          provide: LLMService,
           useValue: {
+            chatSimple: jest.fn().mockResolvedValue(''),
             recommendSchools: jest.fn().mockResolvedValue({
               reach: [{ schoolId: 'school-1', reason: 'top' }],
               target: [],
@@ -210,8 +211,8 @@ describe('SchoolController', () => {
     schoolDataService = module.get<SchoolDataService>(SchoolDataService);
     schoolScraperService =
       module.get<SchoolScraperService>(SchoolScraperService);
-    aiService = module.get<AiService>(AiService);
-    profileService = module.get<ProfileService>(ProfileService);
+    _llmService = module.get<LLMService>(LLMService);
+    _profileService = module.get<ProfileService>(ProfileService);
     schoolListService = module.get<SchoolListService>(SchoolListService);
   });
 
@@ -322,7 +323,7 @@ describe('SchoolController', () => {
 
   describe('getConfiguredSchools', () => {
     it('should return configured schools with count', async () => {
-      const result = await controller.getConfiguredSchools();
+      const result = controller.getConfiguredSchools();
 
       expect(schoolScraperService.getConfiguredSchools).toHaveBeenCalled();
       expect(result).toEqual({

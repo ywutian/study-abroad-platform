@@ -21,7 +21,7 @@ interface CustomEditorProps {
 }
 
 export function CustomEditor({ content, onChange }: CustomEditorProps) {
-  const items = ((content as any).items ?? []) as CustomItem[];
+  const items = (content.items ?? []) as CustomItem[];
 
   const updateItem = (index: number, field: string, value: unknown) => {
     const updated = [...items];

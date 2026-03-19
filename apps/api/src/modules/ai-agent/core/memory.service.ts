@@ -17,13 +17,7 @@ import {
   ProfileSnapshot,
   TimelineSummary,
 } from '../types';
-import {
-  ProfileData,
-  TestScoreData,
-  ActivityData,
-  AwardData,
-  ToolResultSummary,
-} from './types';
+import { ProfileData, TestScoreData, ActivityData, AwardData } from './types';
 
 // 用户上下文缓存条目（带时间戳）
 interface ContextCacheEntry {

@@ -46,6 +46,11 @@ export function PersonalEventsSection({
               <div
                 className="flex items-center gap-3 p-4 cursor-pointer hover:bg-muted/50 transition-colors"
                 onClick={() => setExpandedPersonalEvent(isExpanded ? null : ev.id)}
+                onKeyDown={(e) =>
+                  e.key === 'Enter' && setExpandedPersonalEvent(isExpanded ? null : ev.id)
+                }
+                role="button"
+                tabIndex={0}
               >
                 <div
                   className={`flex h-8 w-8 items-center justify-center rounded-md flex-shrink-0 ${getCategoryColor(ev.category)}`}

@@ -184,6 +184,7 @@ export function MilestoneCelebration({
                 size="icon"
                 className="absolute right-3 top-5 h-8 w-8 rounded-full text-muted-foreground hover:text-foreground"
                 onClick={onClose}
+                aria-label="Close"
               >
                 <X className="h-4 w-4" />
               </Button>

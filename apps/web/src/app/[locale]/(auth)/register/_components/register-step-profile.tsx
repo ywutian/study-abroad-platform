@@ -27,6 +27,7 @@ const getDaysInMonth = (year: number, month: number) => {
 };
 
 interface RegisterStepProfileProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   form: UseFormReturn<any>;
 }
 

@@ -15,6 +15,7 @@ import {
   EntityType,
   EssayType,
 } from '@prisma/client';
+import { fireAndForget } from '../../common/utils/async.util';
 import { getSchoolDisplayName } from '../../common/utils/locale.util';
 import {
   PaginationDto,
@@ -22,6 +23,7 @@ import {
   PaginatedResponseDto,
 } from '../../common/dto/pagination.dto';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
+import { CaseIncentiveService, PointAction } from '../points/incentive.service';
 import {
   BatchImportCaseDto,
   ReviewCaseEssayDto,
@@ -63,6 +65,8 @@ export class CaseService {
     private prisma: PrismaService,
     @Optional()
     private memoryManager?: MemoryManagerService,
+    @Optional()
+    private caseIncentiveService?: CaseIncentiveService,
   ) {}
 
   /**
@@ -216,12 +220,21 @@ export class CaseService {
     }
 
     // ANONYMOUS visibility - allow public access
+    // 扣除查看积分（首次查看才扣）
+    if (requesterId && this.caseIncentiveService) {
+      fireAndForget(
+        this.caseIncentiveService.chargeViewCaseDetail(requesterId, id),
+        this.logger,
+        'Failed to charge view case detail',
+      );
+    }
+
     // 记录浏览行为到记忆系统
     if (requesterId) {
-      this.recordViewCaseToMemory(requesterId, caseItem, locale).catch(
-        (err) => {
-          this.logger.warn('Failed to record view case to memory', err);
-        },
+      fireAndForget(
+        this.recordViewCaseToMemory(requesterId, caseItem, locale),
+        this.logger,
+        'Failed to record view case to memory',
       );
     }
 
@@ -275,11 +288,22 @@ export class CaseService {
       },
     });
 
+    // 奖励积分
+    if (this.caseIncentiveService) {
+      fireAndForget(
+        this.caseIncentiveService.reward(userId, PointAction.SUBMIT_CASE, {
+          caseId: admissionCase.id,
+        }),
+        this.logger,
+        'Failed to reward case submission',
+      );
+    }
+
     // 记录创建案例到记忆系统
-    this.recordCreateCaseToMemory(userId, admissionCase, data, locale).catch(
-      (err) => {
-        this.logger.warn('Failed to record create case to memory', err);
-      },
+    fireAndForget(
+      this.recordCreateCaseToMemory(userId, admissionCase, data, locale),
+      this.logger,
+      'Failed to record create case to memory',
     );
 
     return admissionCase;
@@ -444,7 +468,7 @@ export class CaseService {
    */
   async batchImport(
     dto: BatchImportCaseDto,
-    operatorId: string,
+    _operatorId: string,
   ): Promise<BatchImportResult> {
     const result: BatchImportResult = { imported: 0, skipped: 0, errors: [] };
 

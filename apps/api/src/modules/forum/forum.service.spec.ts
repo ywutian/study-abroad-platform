@@ -1,9 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ForumService } from './forum.service';
+import { ForumCategoryService } from './forum-category.service';
+import { ForumPostService } from './forum-post.service';
+import { ForumCommentService } from './forum-comment.service';
+import { ForumTeamService } from './forum-team.service';
+import { ForumReportService } from './forum-report.service';
+import { ForumMemoryService } from './forum-memory.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthorizationService } from '../../common/services/authorization.service';
 import { ForumModerationService } from './moderation.service';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
+import { NotificationService } from '../notification/notification.service';
 import {
   NotFoundException,
   ForbiddenException,
@@ -88,94 +95,116 @@ describe('ForumService', () => {
     replies: [],
   };
 
+  const mockPrismaService = {
+    user: {
+      findUnique: jest.fn().mockResolvedValue({ role: 'USER' }),
+    },
+    forumCategory: {
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      findFirst: jest.fn().mockResolvedValue(null),
+      create: jest.fn(),
+    },
+    forumPost: {
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      count: jest.fn(),
+      groupBy: jest.fn().mockResolvedValue([]),
+    },
+    forumComment: {
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      delete: jest.fn(),
+      deleteMany: jest.fn(),
+    },
+    forumLike: {
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      delete: jest.fn(),
+    },
+    teamMember: {
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+      create: jest.fn(),
+      delete: jest.fn(),
+      count: jest.fn(),
+    },
+    teamApplication: {
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+    },
+    report: {
+      findFirst: jest.fn(),
+      create: jest.fn(),
+    },
+    $transaction: jest.fn((ops) => Promise.all(ops)),
+  };
+
+  const mockAuthService = {
+    verifyOwnership: jest.fn().mockImplementation((entity, userId, options) => {
+      if (!entity) {
+        throw new NotFoundException(
+          `${options?.entityName || 'Resource'} not found`,
+        );
+      }
+      const ownerField = options?.ownerField || 'userId';
+      const actualOwnerId = entity[ownerField];
+      if (actualOwnerId !== userId) {
+        throw new ForbiddenException(
+          `You don't have access to this ${options?.entityName || 'Resource'}`,
+        );
+      }
+      return entity;
+    }),
+  };
+
+  const mockModerationService = {
+    moderateContent: jest.fn().mockResolvedValue({ approved: true }),
+    validateContent: jest.fn().mockResolvedValue(undefined),
+    validateMultiple: jest.fn().mockResolvedValue(undefined),
+    checkSpam: jest.fn().mockResolvedValue(false),
+  };
+
+  const mockMemoryManagerService = {
+    remember: jest.fn().mockResolvedValue(undefined),
+    recall: jest.fn().mockResolvedValue([]),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ForumService,
+        ForumCategoryService,
+        ForumPostService,
+        ForumCommentService,
+        ForumTeamService,
+        ForumReportService,
+        ForumMemoryService,
         {
           provide: PrismaService,
-          useValue: {
-            user: {
-              findUnique: jest.fn().mockResolvedValue({ role: 'USER' }),
-            },
-            forumCategory: {
-              findMany: jest.fn(),
-              findUnique: jest.fn(),
-              findFirst: jest.fn().mockResolvedValue(null),
-              create: jest.fn(),
-            },
-            forumPost: {
-              findMany: jest.fn(),
-              findUnique: jest.fn(),
-              create: jest.fn(),
-              update: jest.fn(),
-              delete: jest.fn(),
-              count: jest.fn(),
-            },
-            forumComment: {
-              findMany: jest.fn(),
-              findUnique: jest.fn(),
-              create: jest.fn(),
-              delete: jest.fn(),
-              deleteMany: jest.fn(),
-            },
-            forumLike: {
-              findUnique: jest.fn(),
-              create: jest.fn(),
-              delete: jest.fn(),
-            },
-            teamMember: {
-              findUnique: jest.fn(),
-              findMany: jest.fn(),
-              create: jest.fn(),
-              delete: jest.fn(),
-              count: jest.fn(),
-            },
-            teamApplication: {
-              findUnique: jest.fn(),
-              create: jest.fn(),
-              update: jest.fn(),
-            },
-            $transaction: jest.fn((ops) => Promise.all(ops)),
-          },
+          useValue: mockPrismaService,
         },
         {
           provide: AuthorizationService,
-          useValue: {
-            verifyOwnership: jest
-              .fn()
-              .mockImplementation((entity, userId, options) => {
-                if (!entity) {
-                  throw new NotFoundException(
-                    `${options?.entityName || 'Resource'} not found`,
-                  );
-                }
-                const ownerField = options?.ownerField || 'userId';
-                const actualOwnerId = entity[ownerField];
-                if (actualOwnerId !== userId) {
-                  throw new ForbiddenException(
-                    `You don't have access to this ${options?.entityName || 'Resource'}`,
-                  );
-                }
-                return entity;
-              }),
-          },
+          useValue: mockAuthService,
         },
         {
           provide: ForumModerationService,
-          useValue: {
-            moderateContent: jest.fn().mockResolvedValue({ approved: true }),
-            validateContent: jest.fn().mockResolvedValue(undefined),
-            validateMultiple: jest.fn().mockResolvedValue(undefined),
-            checkSpam: jest.fn().mockResolvedValue(false),
-          },
+          useValue: mockModerationService,
         },
         {
           provide: MemoryManagerService,
-          useValue: {
-            remember: jest.fn().mockResolvedValue(undefined),
-            recall: jest.fn().mockResolvedValue([]),
-          },
+          useValue: mockMemoryManagerService,
+        },
+        {
+          provide: NotificationService,
+          useValue: { createNotification: jest.fn().mockResolvedValue({}) },
         },
       ],
     }).compile();

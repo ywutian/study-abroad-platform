@@ -5,7 +5,6 @@ import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations, useLocale, useFormatter } from 'next-intl';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageContainer, PageHeader } from '@/components/layout';
@@ -121,8 +120,8 @@ export default function SchoolDetailPage() {
           title={t('school.notFound')}
           description={t('school.notFoundDesc')}
           action={{
-            label: t('school.backToRanking'),
-            onClick: () => router.push('/ranking'),
+            label: t('school.backToSchools'),
+            onClick: () => router.push('/schools'),
           }}
         />
       </PageContainer>

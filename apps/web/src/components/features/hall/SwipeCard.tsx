@@ -103,8 +103,17 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
     const downStampOpacity = useTransform(y, [0, 80], [0, 1]);
 
     // Gradient tint on drag
-    const greenTint = useTransform(x, [0, 150], [0, 0.15]);
-    const redTint = useTransform(x, [-150, 0], [0.15, 0]);
+    const _greenTint = useTransform(x, [0, 150], [0, 0.15]);
+    const _redTint = useTransform(x, [-150, 0], [0.15, 0]);
+    const dragBackground = useTransform(
+      x,
+      [-150, 0, 150],
+      [
+        'linear-gradient(135deg, rgba(239,68,68,0.15) 0%, transparent 50%)',
+        'transparent',
+        'linear-gradient(225deg, rgba(34,197,94,0.15) 0%, transparent 50%)',
+      ]
+    );
 
     const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
       const vx = Math.abs(info.velocity.x);
@@ -198,17 +207,7 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
               {/* Gradient tint on drag */}
               <motion.div
                 className="absolute inset-0 pointer-events-none z-[5] rounded-2xl"
-                style={{
-                  background: useTransform(
-                    x,
-                    [-150, 0, 150],
-                    [
-                      'linear-gradient(135deg, rgba(239,68,68,0.15) 0%, transparent 50%)',
-                      'transparent',
-                      'linear-gradient(225deg, rgba(34,197,94,0.15) 0%, transparent 50%)',
-                    ]
-                  ),
-                }}
+                style={{ background: dragBackground }}
               />
             </>
           )}

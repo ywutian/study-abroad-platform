@@ -114,7 +114,7 @@ export class AlertChannelService implements OnModuleInit {
     };
   }
 
-  async onModuleInit() {
+  onModuleInit() {
     this.logger.log('AlertChannelService initialized');
 
     // 定期刷新聚合告警
@@ -571,6 +571,7 @@ ${payload.metadata ? `\nMetadata:\n${JSON.stringify(payload.metadata, null, 2)}`
   /**
    * 获取告警统计
    */
+  // eslint-disable-next-line @typescript-eslint/require-await
   async getStats(): Promise<{
     pendingAlerts: number;
     alertsPerMinute: number;

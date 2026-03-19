@@ -19,12 +19,11 @@ import {
 } from '@study-abroad/shared/scoring';
 import type {
   FeatureVector,
-  CaseRecord,
   FeatureExtractionOptions,
   ProfileMetrics,
   SchoolMetrics,
 } from '@study-abroad/shared/scoring';
-import { validateTrainingRecord, validateDataset } from './data-validator';
+import { validateDataset } from './data-validator';
 import { determineTier } from './tier-strategy';
 
 // ============================================

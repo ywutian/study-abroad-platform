@@ -302,7 +302,7 @@ export class WorkflowEngineService {
         `[${agentType}] PLAN completed (${planMs}ms, ${plan.steps.length} steps)`,
       );
 
-      // 快速路径：不需要工具调用 → 直接把 Plan 内容当最终回复输出
+      // 快速路径：不需要工具调用 → 把 Plan 内容当最终回复，分块输出模拟流式
       if (plan.steps.length === 0 && !plan.delegation) {
         if (plan.planningContent) {
           this.memory.addMessage(conversation, {
@@ -310,7 +310,10 @@ export class WorkflowEngineService {
             content: plan.planningContent,
             agentType,
           });
-          yield { type: 'plan_content', content: plan.planningContent };
+          // Emit in small chunks to simulate streaming for the client.
+          // Without this, the entire response arrives as a single event
+          // because the Plan phase uses non-streaming llm.call().
+          yield* this.emitChunked(plan.planningContent, 'plan_content');
         }
 
         yield {
@@ -393,7 +396,7 @@ export class WorkflowEngineService {
       };
     } catch (error) {
       this.logger.error(
-        `[${agentType}] Workflow failed: ${error instanceof Error ? error.message : error}`,
+        `[${agentType}] Workflow failed: ${String(error instanceof Error ? error.message : error)}`,
       );
       yield {
         type: 'error',
@@ -754,6 +757,44 @@ export class WorkflowEngineService {
   }
 
   // ==================== 辅助方法 ====================
+
+  /**
+   * Emit a string in small chunks as WorkflowStreamEvents, simulating
+   * streaming for content that was produced by a non-streaming LLM call
+   * (e.g., the Plan-phase fast path).
+   *
+   * Chunks on CJK sentence boundaries (。！？\n) when possible so that
+   * the output reads naturally. Falls back to ~80-char chunks for long
+   * runs without punctuation.
+   */
+  // eslint-disable-next-line @typescript-eslint/require-await
+  private async *emitChunked(
+    content: string,
+    type: 'plan_content' | 'solve_content',
+  ): AsyncGenerator<WorkflowStreamEvent> {
+    if (!content) return;
+
+    // Split on sentence boundaries (CJK + Western + newlines)
+    const sentenceRe = /[^。！？\n.!?]*[。！？\n.!?]+|[^。！？\n.!?]+$/g;
+    const segments = content.match(sentenceRe);
+
+    if (!segments) {
+      yield { type, content };
+      return;
+    }
+
+    // Further split long segments into ~80-char chunks
+    const MAX_CHUNK = 80;
+    for (const segment of segments) {
+      if (segment.length <= MAX_CHUNK) {
+        yield { type, content: segment };
+      } else {
+        for (let i = 0; i < segment.length; i += MAX_CHUNK) {
+          yield { type, content: segment.slice(i, i + MAX_CHUNK) };
+        }
+      }
+    }
+  }
 
   /**
    * Build a standardized {@link WorkflowResult} from workflow execution data.

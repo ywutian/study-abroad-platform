@@ -69,7 +69,7 @@ describe('RankingController', () => {
 
     const result = await controller.saveRanking(mockUser as any, data);
 
-    const { name, isPublic, ...weights } = data;
+    const { name: _name, isPublic: _isPublic, ...weights } = data;
     expect(rankingService.saveRanking).toHaveBeenCalledWith(
       'user-1',
       'My Ranking',

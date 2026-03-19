@@ -1,15 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/layout';
-import { Link } from '@/lib/i18n/navigation';
-import { apiClient } from '@/lib/api';
-import { getSchoolName } from '@/lib/utils';
+import { apiClient, STALE_TIME } from '@/lib/api';
 import { toast } from 'sonner';
 import {
   GraduationCap,
@@ -23,6 +22,7 @@ import {
 } from 'lucide-react';
 import { SchoolsList } from './_components/schools-list';
 import { DataQualityTab } from './_components/data-quality-tab';
+import { DataSyncTab } from './_components/data-sync-tab';
 import { EditSchoolDialog } from './_components/edit-school-dialog';
 
 interface School {
@@ -62,10 +62,28 @@ interface DataQualityReport {
   }>;
 }
 
+const VALID_TABS = ['schools', 'quality', 'sync'] as const;
+type SchoolsTab = (typeof VALID_TABS)[number];
+
 export default function AdminSchoolsPage() {
   const t = useTranslations('admin');
-  const locale = useLocale();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
+
+  const initialTab = VALID_TABS.includes(searchParams.get('tab') as SchoolsTab)
+    ? (searchParams.get('tab') as SchoolsTab)
+    : 'schools';
+  const [activeTab, setActiveTab] = useState<string>(initialTab);
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    const params = new URLSearchParams(searchParams.toString());
+    if (tab === 'schools') params.delete('tab');
+    else params.set('tab', tab);
+    const qs = params.toString();
+    router.replace(`/admin/schools${qs ? `?${qs}` : ''}`, { scroll: false });
+  };
 
   const [schoolSearch, setSchoolSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -94,7 +112,7 @@ export default function AdminSchoolsPage() {
   } = useQuery({
     queryKey: ['schoolDataQuality'],
     queryFn: () => apiClient.get<DataQualityReport>('/schools/admin/data-quality'),
-    staleTime: 60 * 60 * 1000,
+    staleTime: STALE_TIME.STATIC,
   });
 
   const scrapeSchoolsMutation = useMutation({
@@ -144,7 +162,6 @@ export default function AdminSchoolsPage() {
       apiClient.get<{ suggestedLogoUrl: string }>(`/schools/${schoolId}/logo-suggestion`),
     onSuccess: (data) => {
       toast.success(t('schools.generateFromDomainDone'));
-      // The dialog will pick up via re-render since we update editingSchool
       setEditingSchool((prev) => (prev ? { ...prev, logoUrl: data.suggestedLogoUrl } : prev));
     },
     onError: () => {
@@ -169,7 +186,7 @@ export default function AdminSchoolsPage() {
       />
 
       <div className="mt-6">
-        <Tabs defaultValue="schools" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
           <TabsList>
             <TabsTrigger value="schools" className="flex items-center gap-2">
               <Database className="h-4 w-4" />
@@ -179,27 +196,16 @@ export default function AdminSchoolsPage() {
               <BarChart3 className="h-4 w-4" />
               {t('dataQuality.title')}
             </TabsTrigger>
+            <TabsTrigger value="sync" className="flex items-center gap-2">
+              <RefreshCw className="h-4 w-4" />
+              {t('sidebar.dataSync')}
+            </TabsTrigger>
           </TabsList>
 
           {/* Schools Tab */}
           <TabsContent value="schools" className="space-y-6">
             {/* Data Sync Actions */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <Database className="h-4 w-4" />
-                    {t('data.goToDataUpdates')}
-                  </CardTitle>
-                  <CardDescription>{t('data.goToDataUpdatesDesc')}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button asChild variant="outline">
-                    <Link href="/admin/data-updates">{t('data.goToDataUpdates')}</Link>
-                  </Button>
-                </CardContent>
-              </Card>
-
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -293,6 +299,11 @@ export default function AdminSchoolsPage() {
               isLoading={isQualityLoading}
               onRefresh={() => refetchQuality()}
             />
+          </TabsContent>
+
+          {/* Data Sync Tab */}
+          <TabsContent value="sync" className="space-y-6">
+            <DataSyncTab />
           </TabsContent>
         </Tabs>
 

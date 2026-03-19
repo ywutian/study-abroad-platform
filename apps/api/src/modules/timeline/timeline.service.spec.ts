@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TimelineService } from './timeline.service';
+import { TimelineApplicationService } from './timeline-application.service';
+import { TimelinePersonalEventService } from './timeline-personal-event.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotFoundException, ConflictException } from '@nestjs/common';
 import { ApplicationStatus, TaskType } from '@prisma/client';
@@ -59,6 +61,8 @@ describe('TimelineService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TimelineService,
+        TimelineApplicationService,
+        TimelinePersonalEventService,
         {
           provide: PrismaService,
           useValue: {
@@ -83,9 +87,21 @@ describe('TimelineService', () => {
             personalEvent: {
               findMany: jest.fn().mockResolvedValue([]),
               findFirst: jest.fn(),
+              findUnique: jest.fn(),
               create: jest.fn(),
               update: jest.fn(),
               delete: jest.fn(),
+            },
+            personalTask: {
+              findFirst: jest.fn(),
+              findMany: jest.fn(),
+              create: jest.fn(),
+              update: jest.fn(),
+              delete: jest.fn(),
+            },
+            globalEvent: {
+              findUnique: jest.fn(),
+              findMany: jest.fn(),
             },
           },
         },

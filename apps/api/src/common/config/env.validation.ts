@@ -101,6 +101,9 @@ const envSchema = z.object({
   // --- Webhook Signature [A5-020] ---
   WEBHOOK_SECRET: z.string().min(32).optional(),
 
+  // --- Email Verification ---
+  SKIP_EMAIL_VERIFICATION: z.enum(['true', 'false']).default('false'),
+
   // --- Request Timeouts (ms) ---
   REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(30000),
   AUTH_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(60000),
@@ -143,7 +146,7 @@ export function validateEnv(
       ...errors.map((e) => `║ ${e.padEnd(56)} ║`),
       '╠══════════════════════════════════════════════════════════╣',
       '║  Check your .env file or environment configuration.     ║',
-      '║  See ENV_TEMPLATE.md for required variables.            ║',
+      '║  See .env.example for required variables.            ║',
       '╚══════════════════════════════════════════════════════════╝',
       '',
     ].join('\n');

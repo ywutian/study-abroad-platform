@@ -9,7 +9,12 @@
  * - 多后端导出支持 (Jaeger, Zipkin, OTLP)
  */
 
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 
@@ -168,7 +173,7 @@ export class OpenTelemetryService implements OnModuleInit, OnModuleDestroy {
   private spans: Map<string, Span[]> = new Map();
   private activeSpans: Map<string, SpanContext> = new Map();
   private flushInterval?: NodeJS.Timeout;
-  private readonly logger = console; // 使用 console 避免循环依赖
+  private readonly logger = new Logger(OpenTelemetryService.name);
 
   constructor(private configService: ConfigService) {
     this.config = this.loadConfig();
@@ -504,7 +509,7 @@ export class OpenTelemetryService implements OnModuleInit, OnModuleDestroy {
       case 'jaeger':
       case 'zipkin':
       case 'otlp':
-        this.exportToBackend(allSpans);
+        void this.exportToBackend(allSpans);
         break;
     }
 

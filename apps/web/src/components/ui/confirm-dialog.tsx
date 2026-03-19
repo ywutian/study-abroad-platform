@@ -13,7 +13,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 // 确认对话框类型
@@ -33,7 +32,10 @@ interface ConfirmDialogProps {
 }
 
 // 类型配置
-const typeConfig: Record<ConfirmType, { icon: React.ElementType; iconClass: string; buttonClass: string }> = {
+const typeConfig: Record<
+  ConfirmType,
+  { icon: React.ElementType; iconClass: string; buttonClass: string }
+> = {
   danger: {
     icon: Trash2,
     iconClass: 'text-destructive bg-destructive/10',
@@ -97,28 +99,31 @@ export function ConfirmDialog({
       <AlertDialogContent className="sm:max-w-[400px]">
         <AlertDialogHeader>
           <div className="flex items-start gap-4">
-            <div className={cn('flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full', config.iconClass)}>
+            <div
+              className={cn(
+                'flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full',
+                config.iconClass
+              )}
+            >
               <Icon className="h-5 w-5" />
             </div>
             <div>
               <AlertDialogTitle>{title}</AlertDialogTitle>
               {description && (
-                <AlertDialogDescription className="mt-2">
-                  {description}
-                </AlertDialogDescription>
+                <AlertDialogDescription className="mt-2">{description}</AlertDialogDescription>
               )}
             </div>
           </div>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-col gap-2 sm:flex-row">
-          <AlertDialogCancel 
+          <AlertDialogCancel
             onClick={handleCancel}
             disabled={showLoading}
             className="w-full sm:w-auto"
           >
             {finalCancelLabel}
           </AlertDialogCancel>
-          <AlertDialogAction 
+          <AlertDialogAction
             onClick={handleConfirm}
             disabled={showLoading}
             className={cn('w-full sm:w-auto', config.buttonClass)}
@@ -165,18 +170,23 @@ export function useConfirm() {
   const handleConfirm = useCallback(() => {
     state.resolve?.(true);
     setState({ open: false, options: null, resolve: null });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only state.resolve matters, adding full state object causes unnecessary re-renders
   }, [state.resolve]);
 
   const handleCancel = useCallback(() => {
     state.resolve?.(false);
     setState({ open: false, options: null, resolve: null });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only state.resolve matters, adding full state object causes unnecessary re-renders
   }, [state.resolve]);
 
-  const handleOpenChange = useCallback((open: boolean) => {
-    if (!open) {
-      handleCancel();
-    }
-  }, [handleCancel]);
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        handleCancel();
+      }
+    },
+    [handleCancel]
+  );
 
   const ConfirmDialogComponent = state.options ? (
     <ConfirmDialog
@@ -222,6 +232,3 @@ export function DeleteConfirmDialog({
     />
   );
 }
-
-
-

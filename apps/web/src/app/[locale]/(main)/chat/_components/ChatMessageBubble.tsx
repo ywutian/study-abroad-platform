@@ -1,6 +1,7 @@
 'use client';
 
 import { memo, useMemo, useRef, useCallback, useState } from 'react';
+import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
@@ -40,7 +41,7 @@ export const ChatMessageBubble = memo(function ChatMessageBubble({
   message,
   isOwn,
   isNew,
-  selectedUser,
+  selectedUser: _selectedUser,
   otherReadAt,
   onDelete,
   onRecall,
@@ -150,10 +151,13 @@ export const ChatMessageBubble = memo(function ChatMessageBubble({
           ) : (
             <>
               {message.mediaUrl && message.mediaType === 'image' && (
-                <img
+                <Image
                   src={message.mediaUrl}
                   alt=""
-                  className="rounded-md max-w-full max-h-60 mb-1"
+                  width={400}
+                  height={240}
+                  className="rounded-md max-w-full max-h-60 mb-1 object-contain"
+                  unoptimized
                 />
               )}
               {message.mediaUrl && message.mediaType === 'file' && (

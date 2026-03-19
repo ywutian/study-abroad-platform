@@ -43,7 +43,7 @@ class AppilyParser extends BaseSchoolScraper {
 
   parseSchoolData(
     html: string,
-    school: { id: string; name: string },
+    _school: { id: string; name: string },
   ): {
     data: Record<string, unknown>;
     metrics: Array<{ key: string; value: number }>;
@@ -114,7 +114,7 @@ class AppilyParser extends BaseSchoolScraper {
     $: cheerio.CheerioAPI,
     data: Record<string, unknown>,
     metrics: Array<{ key: string; value: number }>,
-    metadata: Record<string, unknown>,
+    _metadata: Record<string, unknown>,
   ): void {
     const pageText = $('body').text();
 

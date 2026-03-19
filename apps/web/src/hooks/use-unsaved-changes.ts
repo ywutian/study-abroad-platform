@@ -40,7 +40,7 @@ export function useUnsavedChanges(hasChanges: boolean, options: UseUnsavedChange
     setIsBlocking(true);
 
     // Next.js 13+ 路由拦截
-    const handleRouteChange = () => {
+    const _handleRouteChange = () => {
       if (hasChanges && enabled) {
         const confirmLeave = window.confirm(message);
         if (!confirmLeave) {
@@ -51,7 +51,7 @@ export function useUnsavedChanges(hasChanges: boolean, options: UseUnsavedChange
     };
 
     // 监听 popstate（浏览器后退/前进按钮）
-    const handlePopState = (e: PopStateEvent) => {
+    const handlePopState = (_e: PopStateEvent) => {
       if (hasChanges && enabled) {
         const confirmLeave = window.confirm(message);
         if (!confirmLeave) {

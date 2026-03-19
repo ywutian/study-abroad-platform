@@ -263,7 +263,7 @@ async function bootstrap() {
 
   process.on('uncaughtException', (error) => {
     logger.error('Uncaught Exception:', error);
-    gracefulShutdown('uncaughtException');
+    void gracefulShutdown('uncaughtException');
   });
 
   const desiredPort = Number(process.env.PORT) || 4101;
@@ -275,4 +275,4 @@ async function bootstrap() {
   logger.log(`Health check: http://localhost:${port}/health`);
 }
 
-bootstrap();
+void bootstrap();

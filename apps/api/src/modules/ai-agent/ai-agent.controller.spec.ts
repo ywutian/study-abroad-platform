@@ -164,10 +164,7 @@ describe('AiAgentController', () => {
 
   describe('DELETE /conversation', () => {
     it('should clear conversation and return success', async () => {
-      const result = await controller.clearConversation(
-        mockUser as any,
-        'conv-1',
-      );
+      const result = controller.clearConversation(mockUser as any, 'conv-1');
 
       expect(orchestrator.clearConversation).toHaveBeenCalledWith(
         'user-1',
@@ -197,7 +194,7 @@ describe('AiAgentController', () => {
 
   describe('GET /rate-limit', () => {
     it('should return rate limit status for user and conversation', async () => {
-      const result = await controller.getRateLimit(mockUser as any);
+      const result = controller.getRateLimit(mockUser as any);
 
       expect(rateLimiter.getStatus).toHaveBeenCalledWith('user-1', 'user');
       expect(rateLimiter.getStatus).toHaveBeenCalledWith(

@@ -4,9 +4,11 @@ import type { SectionRendererProps } from '../types';
 import { SectionTitle } from '../primitives/section-title';
 import { SkillTags } from '../primitives/skill-bar';
 import type { SkillCategory } from '@study-abroad/shared';
+import type { ResumeTheme } from '../types';
 
 export function SkillsSection({ section, theme }: SectionRendererProps) {
-  const categories = ((section.content as any).categories ?? []) as SkillCategory[];
+  const categories = ((section.content as Record<string, unknown>).categories ??
+    []) as SkillCategory[];
   if (!categories.length) return null;
 
   const styles = getStyles(theme);
@@ -21,7 +23,7 @@ export function SkillsSection({ section, theme }: SectionRendererProps) {
   );
 }
 
-function getStyles(theme: any) {
+function getStyles(theme: ResumeTheme) {
   return StyleSheet.create({
     container: { marginBottom: theme.spacing.sectionGap },
   });

@@ -6,7 +6,6 @@
 
 import { forwardRef, useState, useCallback, MouseEvent } from 'react';
 import { motion, AnimatePresence, useReducedMotion, HTMLMotionProps } from 'framer-motion';
-import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 import { transitions } from '@/lib/motion';
@@ -66,7 +65,7 @@ const MotionButton = forwardRef<HTMLButtonElement, MotionButtonProps>(
       className,
       variant = 'default',
       size = 'default',
-      asChild = false,
+      asChild: _asChild = false,
       loading = false,
       ripple = true,
       pulse = false,
@@ -172,6 +171,7 @@ const MotionButton = forwardRef<HTMLButtonElement, MotionButtonProps>(
           className={cn(motionButtonVariants({ variant, size, className }))}
           disabled={isDisabled}
           onClick={handleClick}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           {...(props as any)}
         >
           {buttonContent}

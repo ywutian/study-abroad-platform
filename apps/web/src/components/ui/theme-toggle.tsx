@@ -77,7 +77,7 @@ export function ThemeToggle({ className, showLabel = false }: ThemeToggleProps) 
  */
 export function ThemeSelector({ className }: { className?: string }) {
   const t = useTranslations('ui.theme');
-  const { resolvedTheme, setTheme, theme } = useThemeTransition();
+  const { setTheme, theme } = useThemeTransition();
 
   const options = [
     { value: 'light', icon: Sun, label: t('light') },

@@ -49,7 +49,7 @@ export class EmailService {
     const { to, subject, html, text } = options;
 
     if (!this.resend) {
-      this.logger.log(`[EMAIL MOCK] To: ${to}, Subject: ${subject}`);
+      this.logger.log(`[EMAIL MOCK] To: ${String(to)}, Subject: ${subject}`);
       this.logger.debug(
         `[EMAIL MOCK] Content: ${text || html.substring(0, 200)}...`,
       );
@@ -67,14 +67,14 @@ export class EmailService {
       });
 
       if (error) {
-        this.logger.error(`Resend error for ${to}: ${error.message}`);
+        this.logger.error(`Resend error for ${String(to)}: ${error.message}`);
         return false;
       }
 
-      this.logger.log(`Email sent to ${to}: ${subject}`);
+      this.logger.log(`Email sent to ${String(to)}: ${subject}`);
       return true;
     } catch (error) {
-      this.logger.error(`Failed to send email to ${to}`, error);
+      this.logger.error(`Failed to send email to ${String(to)}`, error);
       return false;
     }
   }

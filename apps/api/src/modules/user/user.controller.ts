@@ -1,4 +1,4 @@
-import { Controller, Get, Delete, Post, Res, Query } from '@nestjs/common';
+import { Controller, Get, Delete, Res, Query } from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -9,11 +9,8 @@ import {
 import type { Response } from 'express';
 import { UserService } from './user.service';
 import { DashboardService } from './dashboard.service';
-import {
-  CaseIncentiveService,
-  PointAction,
-} from '../case/case-incentive.service';
-import { PointsConfigService } from '../case/points-config.service';
+import { CaseIncentiveService } from '../points/incentive.service';
+import { PointsConfigService } from '../points/points-config.service';
 import { CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 
@@ -38,7 +35,7 @@ export class UserController {
   @ApiOperation({ summary: 'Get current user info' })
   async getCurrentUser(@CurrentUser() user: CurrentUserPayload) {
     const fullUser = await this.userService.findByIdOrThrow(user.id);
-    const { passwordHash, ...result } = fullUser;
+    const { passwordHash: _passwordHash, ...result } = fullUser;
     return result;
   }
 

@@ -53,12 +53,12 @@ export default function CreateTeamPage() {
     }) => apiClient.post<{ id: string }>('/teams', body),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
-      toast.success('Team created');
+      toast.success(t('toast.created'));
       router.push(`/teams/${data.id}`);
     },
     onError: (e: unknown) => {
       const err = e as { response?: { data?: { error?: { message?: string } } } };
-      toast.error(err.response?.data?.error?.message ?? 'Failed to create team');
+      toast.error(err.response?.data?.error?.message ?? t('toast.createFailed'));
     },
   });
 
@@ -66,12 +66,12 @@ export default function CreateTeamPage() {
     const trimmed = tagInput.trim().slice(0, MAX_TAG_LENGTH);
     if (!trimmed || tags.includes(trimmed)) return;
     if (tags.length >= MAX_TAGS) {
-      toast.error(`Max ${MAX_TAGS} tags`);
+      toast.error(t('validation.maxTags', { max: MAX_TAGS }));
       return;
     }
     setTags((prev) => [...prev, trimmed]);
     setTagInput('');
-  }, [tagInput, tags]);
+  }, [tagInput, tags, t]);
 
   const removeTag = useCallback((tag: string) => {
     setTags((prev) => prev.filter((t) => t !== tag));
@@ -81,15 +81,15 @@ export default function CreateTeamPage() {
     e.preventDefault();
     const nameTrimmed = name.trim();
     if (!nameTrimmed) {
-      toast.error('Name is required');
+      toast.error(t('validation.nameRequired'));
       return;
     }
     if (nameTrimmed.length < 1 || nameTrimmed.length > 100) {
-      toast.error('Name must be 1–100 characters');
+      toast.error(t('validation.nameLengthError'));
       return;
     }
     if (description.length > 500) {
-      toast.error('Description must be at most 500 characters');
+      toast.error(t('validation.descriptionLengthError'));
       return;
     }
     createMutation.mutate({
@@ -112,41 +112,41 @@ export default function CreateTeamPage() {
       />
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <div>
-          <Label htmlFor="name">Name *</Label>
+          <Label htmlFor="name">{t('form.nameLabel')} *</Label>
           <Input
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Team name"
+            placeholder={t('form.namePlaceholder')}
             maxLength={100}
             className="mt-1"
           />
         </div>
         <div>
-          <Label htmlFor="description">Description</Label>
+          <Label htmlFor="description">{t('form.descriptionLabel')}</Label>
           <Input
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Optional description"
+            placeholder={t('form.descriptionPlaceholder')}
             maxLength={500}
             className="mt-1"
           />
         </div>
         <div>
-          <Label>Visibility</Label>
+          <Label>{t('form.visibilityLabel')}</Label>
           <select
             value={visibility}
             onChange={(e) => setVisibility(e.target.value as 'PUBLIC' | 'UNLISTED' | 'PRIVATE')}
             className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           >
-            <option value="PUBLIC">Public</option>
-            <option value="UNLISTED">Unlisted</option>
-            <option value="PRIVATE">Private</option>
+            <option value="PUBLIC">{t('visibility.public')}</option>
+            <option value="UNLISTED">{t('visibility.unlisted')}</option>
+            <option value="PRIVATE">{t('visibility.private')}</option>
           </select>
         </div>
         <div>
-          <Label>Join policy</Label>
+          <Label>{t('form.joinPolicyLabel')}</Label>
           <select
             value={joinPolicy}
             onChange={(e) => setJoinPolicy(e.target.value as 'OPEN' | 'INVITE_ONLY')}
@@ -176,7 +176,7 @@ export default function CreateTeamPage() {
               onClick={() => setSchool(null)}
             >
               <X className="h-3 w-3 mr-1" />
-              Clear
+              {t('form.clear')}
             </Button>
           )}
         </div>
@@ -225,7 +225,7 @@ export default function CreateTeamPage() {
           maxSelection={1}
         />
         <Button type="submit" disabled={createMutation.isPending || !name.trim()}>
-          {createMutation.isPending ? 'Creating...' : t('create')}
+          {createMutation.isPending ? t('form.creating') : t('create')}
         </Button>
       </form>
     </PageContainer>

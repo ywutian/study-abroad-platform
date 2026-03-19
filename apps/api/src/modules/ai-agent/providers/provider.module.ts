@@ -2,13 +2,18 @@
  * LLM Providers Module
  *
  * Dynamically injects the correct LLM provider based on env config.
- * Default: OpenAI (also compatible with DeepSeek, Azure, etc.)
+ * Also provides global resilience (retry, circuit breaker) and token tracking.
+ *
+ * Default provider: OpenAI (also compatible with DeepSeek, Azure, etc.)
  */
 
 import { Module, DynamicModule } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LLM_PROVIDER_TOKEN } from './llm-provider.interface';
 import { OpenAIProvider } from './openai.provider';
+import { ResilienceService } from '../core/resilience.service';
+import { TokenTrackerService } from '../core/token-tracker.service';
+import { LLMService } from '../core/llm.service';
 
 @Module({})
 export class LLMProvidersModule {
@@ -31,8 +36,17 @@ export class LLMProvidersModule {
           },
           inject: [ConfigService, OpenAIProvider],
         },
+        ResilienceService,
+        TokenTrackerService,
+        LLMService,
       ],
-      exports: [LLM_PROVIDER_TOKEN, OpenAIProvider],
+      exports: [
+        LLM_PROVIDER_TOKEN,
+        OpenAIProvider,
+        ResilienceService,
+        TokenTrackerService,
+        LLMService,
+      ],
     };
   }
 }

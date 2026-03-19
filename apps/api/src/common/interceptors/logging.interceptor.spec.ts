@@ -75,7 +75,7 @@ describe('maskSensitiveData', () => {
     const deepObj = { a: { b: { c: { d: { e: { password: 'deep' } } } } } };
     // Start at depth 0, nesting is 5 levels deep for 'password' key => depth will be 5 at the e level
     // At depth 6 (processing password's parent), it should stop
-    const result = maskSensitiveData(deepObj) as any;
+    const _result = maskSensitiveData(deepObj) as any;
     // depth 0 -> a, depth 1 -> b, depth 2 -> c, depth 3 -> d, depth 4 -> e, depth 5 -> password
     // At depth 5 processing e's children, the recursive call for password value will be depth 6 -> returns as-is
     // But the key check happens before recursion, so password key still gets redacted at depth 5

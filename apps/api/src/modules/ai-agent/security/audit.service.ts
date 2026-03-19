@@ -406,7 +406,7 @@ export class AuditService {
         skipDuplicates: true,
       });
     } catch (err) {
-      this.logger.error(`Failed to flush audit logs: ${err}`);
+      this.logger.error(`Failed to flush audit logs: ${String(err)}`);
       // 失败的日志放回缓冲区，但限制总量防止内存泄漏
       this.auditBuffer.unshift(...batch);
       if (this.auditBuffer.length > 5000) {

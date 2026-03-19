@@ -48,11 +48,7 @@ import {
   BarChart3,
 } from 'lucide-react';
 import { useTargetRanking, useSchoolRanking, useAiAnalysis } from '@/hooks/use-hall-api';
-import {
-  ProbabilityRing,
-  AnimatedStat,
-  AnimatedProgressBar,
-} from '@/components/features/probability-ring';
+import { ProbabilityRing, AnimatedStat } from '@/components/features/probability-ring';
 import { SchoolSelector } from '@/components/features';
 import type { School, AiAnalysisResult, RankingResult } from '@/types/hall';
 

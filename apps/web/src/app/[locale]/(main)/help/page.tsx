@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
+import { Link } from '@/lib/i18n/navigation';
 import {
   Search,
   HelpCircle,
@@ -320,9 +321,11 @@ export default function HelpPage() {
                   {t('sendEmail')}
                 </a>
               </Button>
-              <Button className="gap-2 bg-success hover:opacity-90 text-white ">
-                <MessageCircle className="h-4 w-4" />
-                {t('onlineService')}
+              <Button className="gap-2 bg-success hover:opacity-90 text-white" asChild>
+                <Link href="/chat">
+                  <MessageCircle className="h-4 w-4" />
+                  {t('onlineService')}
+                </Link>
               </Button>
             </div>
           </CardContent>

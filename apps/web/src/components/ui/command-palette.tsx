@@ -11,14 +11,37 @@ import {
   FileText,
   MessageSquare,
   User,
-  Settings,
   Moon,
   Sun,
   HelpCircle,
   X,
+  TrendingUp,
+  BookOpen,
+  PenTool,
+  Rocket,
+  ClipboardList,
+  Calendar,
+  Trophy,
+  Users,
+  Lock,
+  Gift,
+  BarChart3,
+  Shield,
+  Bot,
+  Brain,
+  ScrollText,
+  Settings,
+  UserPlus,
+  GraduationCap,
+  CreditCard,
+  Coins,
+  Layers,
+  SlidersHorizontal,
+  FileCheck,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useHotkey, getShortcutDisplay } from '@/hooks/use-keyboard-shortcuts';
+import { useAuthStore } from '@/stores/auth';
 import { cn } from '@/lib/utils';
 
 interface CommandItem {
@@ -62,11 +85,14 @@ export function CommandPalette({ customCommands = [] }: CommandPaletteProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const router = useRouter();
   const { theme, setTheme } = useTheme();
+  const { user } = useAuthStore();
   const t = useTranslations('ui.command');
+  const isAdmin = user?.role === 'ADMIN';
 
   // 默认命令
   const defaultCommands: CommandItem[] = useMemo(
     () => [
+      // ── Navigation ──
       {
         id: 'home',
         title: t('home'),
@@ -84,20 +110,78 @@ export function CommandPalette({ customCommands = [] }: CommandPaletteProps) {
         section: t('nav'),
       },
       {
+        id: 'prediction',
+        title: t('prediction'),
+        icon: <TrendingUp className="w-4 h-4" />,
+        action: () => router.push('/prediction'),
+        keywords: t('keywords.prediction').split(','),
+        section: t('nav'),
+      },
+      {
         id: 'cases',
         title: t('cases'),
-        icon: <FileText className="w-4 h-4" />,
+        icon: <BookOpen className="w-4 h-4" />,
         action: () => router.push('/cases'),
         keywords: t('keywords.cases').split(','),
         section: t('nav'),
       },
       {
+        id: 'essays',
+        title: t('essays'),
+        icon: <PenTool className="w-4 h-4" />,
+        action: () => router.push('/essays'),
+        keywords: t('keywords.essays').split(','),
+        section: t('nav'),
+      },
+      // ── Research & Discover ──
+      {
+        id: 'uncommon-app',
+        title: t('uncommonApp'),
+        icon: <Rocket className="w-4 h-4" />,
+        action: () => router.push('/uncommon-app'),
+        keywords: t('keywords.uncommonApp').split(','),
+        section: t('research'),
+      },
+      {
+        id: 'hall',
+        title: t('hall'),
+        icon: <Trophy className="w-4 h-4" />,
+        action: () => router.push('/hall'),
+        keywords: t('keywords.hall').split(','),
+        section: t('research'),
+      },
+      {
+        id: 'ranking',
+        title: t('ranking'),
+        icon: <BarChart3 className="w-4 h-4" />,
+        action: () => router.push('/ranking'),
+        keywords: t('keywords.ranking').split(','),
+        section: t('research'),
+      },
+      // ── Community ──
+      {
+        id: 'forum',
+        title: t('forum'),
+        icon: <MessageSquare className="w-4 h-4" />,
+        action: () => router.push('/forum'),
+        keywords: t('keywords.forum').split(','),
+        section: t('social'),
+      },
+      {
+        id: 'teams',
+        title: t('teams'),
+        icon: <Users className="w-4 h-4" />,
+        action: () => router.push('/teams'),
+        keywords: t('keywords.teams').split(','),
+        section: t('social'),
+      },
+      {
         id: 'chat',
-        title: t('aiAssistant'),
+        title: t('chat'),
         icon: <MessageSquare className="w-4 h-4" />,
         action: () => router.push('/chat'),
-        keywords: t('keywords.aiAssistant').split(','),
-        section: t('nav'),
+        keywords: t('keywords.chat').split(','),
+        section: t('social'),
       },
       {
         id: 'profile',
@@ -105,8 +189,84 @@ export function CommandPalette({ customCommands = [] }: CommandPaletteProps) {
         icon: <User className="w-4 h-4" />,
         action: () => router.push('/profile'),
         keywords: t('keywords.profile').split(','),
-        section: t('nav'),
+        section: t('social'),
       },
+      {
+        id: 'followers',
+        title: t('followers'),
+        icon: <UserPlus className="w-4 h-4" />,
+        action: () => router.push('/followers'),
+        keywords: t('keywords.followers').split(','),
+        section: t('social'),
+      },
+      // ── Tools ──
+      {
+        id: 'resume',
+        title: t('resume'),
+        icon: <FileText className="w-4 h-4" />,
+        action: () => router.push('/resume'),
+        keywords: t('keywords.resume').split(','),
+        section: t('tools'),
+      },
+      {
+        id: 'timeline',
+        title: t('timeline'),
+        icon: <Calendar className="w-4 h-4" />,
+        action: () => router.push('/timeline'),
+        keywords: t('keywords.timeline').split(','),
+        section: t('tools'),
+      },
+      {
+        id: 'assessment',
+        title: t('assessment'),
+        icon: <ClipboardList className="w-4 h-4" />,
+        action: () => router.push('/assessment'),
+        keywords: t('keywords.assessment').split(','),
+        section: t('tools'),
+      },
+      {
+        id: 'ai',
+        title: t('aiAssistant'),
+        icon: <Bot className="w-4 h-4" />,
+        action: () => router.push('/ai'),
+        keywords: t('keywords.aiAssistant').split(','),
+        section: t('tools'),
+      },
+      // ── Account Tools ──
+      {
+        id: 'vault',
+        title: t('vault'),
+        icon: <Lock className="w-4 h-4" />,
+        action: () => router.push('/vault'),
+        keywords: t('keywords.vault').split(','),
+        section: t('tools'),
+      },
+      {
+        id: 'settings',
+        title: t('settingsPage'),
+        icon: <Settings className="w-4 h-4" />,
+        action: () => router.push('/settings'),
+        keywords: t('keywords.settings').split(','),
+        section: t('tools'),
+      },
+      {
+        id: 'referral',
+        title: t('referral'),
+        icon: <Gift className="w-4 h-4" />,
+        action: () => router.push('/referral'),
+        keywords: t('keywords.referral').split(','),
+        section: t('tools'),
+      },
+      {
+        id: 'help',
+        title: t('helpDocs'),
+        icon: <HelpCircle className="w-4 h-4" />,
+        shortcut: ['?'],
+        action: () => router.push('/help'),
+        keywords: t('keywords.help').split(','),
+        section: t('tools'),
+      },
+      // ── Settings ──
       {
         id: 'toggle-theme',
         title: theme === 'dark' ? t('switchToLight') : t('switchToDark'),
@@ -115,17 +275,133 @@ export function CommandPalette({ customCommands = [] }: CommandPaletteProps) {
         keywords: t('keywords.theme').split(','),
         section: t('settings'),
       },
-      {
-        id: 'help',
-        title: t('helpDocs'),
-        icon: <HelpCircle className="w-4 h-4" />,
-        shortcut: ['?'],
-        action: () => window.open('/help', '_blank'),
-        keywords: t('keywords.help').split(','),
-        section: t('other'),
-      },
+      // ── Admin (conditional) ──
+      ...(isAdmin
+        ? [
+            {
+              id: 'admin-dashboard',
+              title: t('adminDashboard'),
+              icon: <BarChart3 className="w-4 h-4" />,
+              action: () => router.push('/admin'),
+              keywords: t('keywords.admin').split(','),
+              section: t('admin'),
+            },
+            {
+              id: 'admin-users',
+              title: t('adminUsers'),
+              icon: <Users className="w-4 h-4" />,
+              action: () => router.push('/admin/users'),
+              keywords: t('keywords.adminUsers').split(','),
+              section: t('admin'),
+            },
+            {
+              id: 'admin-moderation',
+              title: t('adminModeration'),
+              icon: <Shield className="w-4 h-4" />,
+              action: () => router.push('/admin/moderation'),
+              keywords: t('keywords.adminModeration').split(','),
+              section: t('admin'),
+            },
+            {
+              id: 'admin-ai-operations',
+              title: t('adminAiOps'),
+              icon: <Brain className="w-4 h-4" />,
+              action: () => router.push('/admin/ai-operations'),
+              keywords: t('keywords.adminAiOps').split(','),
+              section: t('admin'),
+            },
+            {
+              id: 'admin-audit-logs',
+              title: t('adminAuditLogs'),
+              icon: <ScrollText className="w-4 h-4" />,
+              action: () => router.push('/admin/audit-logs'),
+              keywords: t('keywords.adminAuditLogs').split(','),
+              section: t('admin'),
+            },
+            {
+              id: 'admin-schools',
+              title: t('adminSchools'),
+              icon: <GraduationCap className="w-4 h-4" />,
+              action: () => router.push('/admin/schools'),
+              keywords: t('keywords.adminSchools').split(','),
+              section: t('admin'),
+            },
+            {
+              id: 'admin-calendar',
+              title: t('adminCalendar'),
+              icon: <Calendar className="w-4 h-4" />,
+              action: () => router.push('/admin/calendar'),
+              keywords: t('keywords.adminCalendar').split(','),
+              section: t('admin'),
+            },
+            {
+              id: 'admin-essays',
+              title: t('adminEssays'),
+              icon: <PenTool className="w-4 h-4" />,
+              action: () => router.push('/admin/essays'),
+              keywords: t('keywords.adminEssays').split(','),
+              section: t('admin'),
+            },
+            {
+              id: 'admin-verifications',
+              title: t('adminVerifications'),
+              icon: <FileCheck className="w-4 h-4" />,
+              action: () => router.push('/admin/verifications'),
+              keywords: t('keywords.adminVerifications').split(','),
+              section: t('admin'),
+            },
+            {
+              id: 'admin-payments',
+              title: t('adminPayments'),
+              icon: <CreditCard className="w-4 h-4" />,
+              action: () => router.push('/admin/payments'),
+              keywords: t('keywords.adminPayments').split(','),
+              section: t('admin'),
+            },
+            {
+              id: 'admin-memory',
+              title: t('adminMemory'),
+              icon: <Brain className="w-4 h-4" />,
+              action: () => router.push('/admin/memory'),
+              keywords: t('keywords.adminMemory').split(','),
+              section: t('admin'),
+            },
+            {
+              id: 'admin-settings',
+              title: t('adminSettings'),
+              icon: <Settings className="w-4 h-4" />,
+              action: () => router.push('/admin/settings'),
+              keywords: t('keywords.adminSettings').split(','),
+              section: t('admin'),
+            },
+            {
+              id: 'admin-calibrations',
+              title: t('adminCalibrations'),
+              icon: <SlidersHorizontal className="w-4 h-4" />,
+              action: () => router.push('/admin/calibrations'),
+              keywords: t('keywords.adminCalibrations').split(','),
+              section: t('admin'),
+            },
+            {
+              id: 'admin-points',
+              title: t('adminPoints'),
+              icon: <Coins className="w-4 h-4" />,
+              action: () => router.push('/admin/points'),
+              keywords: t('keywords.adminPoints').split(','),
+              section: t('admin'),
+            },
+            {
+              id: 'admin-templates',
+              title: t('adminTemplates'),
+              icon: <Layers className="w-4 h-4" />,
+              action: () => router.push('/admin/activity-templates'),
+              keywords: t('keywords.adminTemplates').split(','),
+              section: t('admin'),
+            },
+          ]
+        : []),
     ],
-    [router, theme, setTheme, t]
+    [router, theme, setTheme, t, isAdmin]
   );
 
   const allCommands = useMemo(
@@ -155,6 +431,7 @@ export function CommandPalette({ customCommands = [] }: CommandPaletteProps) {
       groups[section].push(cmd);
     });
     return groups;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- t is stable from next-intl
   }, [filteredCommands]);
 
   // 快捷键打开
@@ -327,7 +604,7 @@ export function CommandPalette({ customCommands = [] }: CommandPaletteProps) {
 
 // 导出用于触发命令面板的按钮
 export function CommandPaletteTrigger() {
-  const t = useTranslations('common');
+  const tc = useTranslations('common');
   return (
     <button
       className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground bg-muted/50 border border-border rounded-lg hover:bg-muted transition-colors"
@@ -342,7 +619,7 @@ export function CommandPaletteTrigger() {
       }}
     >
       <Search className="w-4 h-4" />
-      <span className="hidden sm:inline">{t('search')}</span>
+      <span className="hidden sm:inline">{tc('search')}</span>
       <kbd className="hidden sm:inline px-1.5 py-0.5 text-xs bg-background rounded">
         {getShortcutDisplay('K', ['meta'])}
       </kbd>

@@ -11,7 +11,7 @@ import { LLMService } from './llm.service';
 import { ToolExecutorService } from './tool-executor.service';
 import { MemoryService } from './memory.service';
 import { ResilienceService } from './resilience.service';
-import { AgentType, ConversationState, UserContext } from '../types';
+import { AgentType, ConversationState } from '../types';
 
 describe('AgentRunnerService', () => {
   let service: AgentRunnerService;

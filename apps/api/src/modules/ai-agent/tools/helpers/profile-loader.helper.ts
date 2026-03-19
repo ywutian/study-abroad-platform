@@ -101,7 +101,7 @@ export class ProfileLoaderHelper {
           description: a.description,
           hoursPerWeek: a.hoursPerWeek,
           weeksPerYear: a.weeksPerYear,
-          duration: `${a.startDate} - ${a.endDate || (isZh ? '至今' : 'Present')}`,
+          duration: `${String(a.startDate)} - ${String(a.endDate || (isZh ? '至今' : 'Present'))}`,
         })) || [],
       awards:
         profile.awards?.map((a: any) => ({

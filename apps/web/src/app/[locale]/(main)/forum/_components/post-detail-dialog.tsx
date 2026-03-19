@@ -15,7 +15,6 @@ import {
   Share2,
   Send,
   UserPlus,
-  Flag,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,7 +41,13 @@ interface PostDetailDialogProps {
   user: { email?: string } | null;
 }
 
-export function PostDetailDialog({ post, onClose, onLike, onReport, user }: PostDetailDialogProps) {
+export function PostDetailDialog({
+  post,
+  onClose,
+  onLike,
+  onReport: _onReport,
+  user,
+}: PostDetailDialogProps) {
   const t = useTranslations('forum');
   const locale = useLocale();
   const format = useFormatter();
@@ -511,7 +516,7 @@ export function PostDetailDialog({ post, onClose, onLike, onReport, user }: Post
                           <Button
                             size="sm"
                             variant="outline"
-                            className="text-green-600 border-green-200 hover:bg-green-50"
+                            className="text-green-600 dark:text-green-400 border-green-200 dark:border-green-800 hover:bg-green-50 dark:hover:bg-green-950/30"
                             onClick={() => handleApplication(app.id, 'accept')}
                           >
                             <CheckCircle className="h-4 w-4" />
@@ -519,7 +524,7 @@ export function PostDetailDialog({ post, onClose, onLike, onReport, user }: Post
                           <Button
                             size="sm"
                             variant="outline"
-                            className="text-red-600 border-red-200 hover:bg-red-50"
+                            className="text-red-600 dark:text-red-400 border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-950/30"
                             onClick={() => handleApplication(app.id, 'reject')}
                           >
                             <XCircle className="h-4 w-4" />

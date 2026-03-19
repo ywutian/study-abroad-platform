@@ -1,28 +1,13 @@
 'use client';
 
-import { useState, useMemo, useCallback, type ReactNode } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  Calendar,
-  CheckCircle2,
-  Plus,
-  GraduationCap,
-  Trophy,
-  FileText,
-  Target,
-  Loader2,
-  BookOpen,
-  Briefcase,
-  Users,
-  ClipboardList,
-  Info,
-} from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { Calendar, Plus, GraduationCap, Loader2, Info } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
@@ -44,6 +29,16 @@ import { PersonalEventsSection } from './_components/personal-events-section';
 import { GlobalEventsSection } from './_components/generate-timeline-dialog';
 import { CreateEventDialog } from './_components/create-event-dialog';
 import { DeleteConfirmationDialog } from './_components/delete-confirmation-dialog';
+import {
+  formatDate as formatDateHelper,
+  getDaysUntil,
+  formatDaysUntil as formatDaysUntilHelper,
+  getStatusBadge as getStatusBadgeHelper,
+  getRoundBadge,
+  getCategoryIcon,
+  getCategoryLabel as getCategoryLabelHelper,
+  getCategoryColor,
+} from './_components/timeline.helpers';
 
 // ============ Page Component ============
 
@@ -51,8 +46,26 @@ export default function TimelinePage() {
   const t = useTranslations('timeline');
   const format = useFormatter();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<TabType>('all');
+
+  const VALID_TABS: TabType[] = ['all', 'school', 'personal'];
+  const initialTab = VALID_TABS.includes(searchParams.get('tab') as TabType)
+    ? (searchParams.get('tab') as TabType)
+    : 'all';
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab);
+
+  const handleTabChange = useCallback(
+    (tab: TabType) => {
+      setActiveTab(tab);
+      const params = new URLSearchParams(searchParams.toString());
+      if (tab === 'all') params.delete('tab');
+      else params.set('tab', tab);
+      const qs = params.toString();
+      router.replace(`/timeline${qs ? `?${qs}` : ''}`, { scroll: false });
+    },
+    [searchParams, router]
+  );
   const [expandedTimeline, setExpandedTimeline] = useState<string | null>(null);
   const [expandedPersonalEvent, setExpandedPersonalEvent] = useState<string | null>(null);
   const [showCreateEvent, setShowCreateEvent] = useState(false);
@@ -201,123 +214,16 @@ export default function TimelinePage() {
     return schoolListItems.filter((item) => item.school && !timelineSchoolIds.has(item.schoolId));
   }, [timelines, schoolListItems]);
 
-  const formatDate = useCallback(
-    (dateStr?: string) => {
-      if (!dateStr) return '-';
-      return format.dateTime(new Date(dateStr), 'medium');
-    },
-    [format]
-  );
+  const formatDate = useCallback((dateStr?: string) => formatDateHelper(dateStr, format), [format]);
 
-  const getDaysUntil = useCallback((dateStr?: string) => {
-    if (!dateStr) return null;
-    const now = new Date();
-    const target = new Date(dateStr);
-    return Math.ceil((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-  }, []);
+  const formatDaysUntil = useCallback((days: number | null) => formatDaysUntilHelper(days, t), [t]);
 
-  const formatDaysUntil = useCallback(
-    (days: number | null) => {
-      if (days === null) return '';
-      if (days < 0) return t('daysAgo', { days: Math.abs(days) });
-      if (days === 0) return t('today');
-      if (days === 1) return t('tomorrow');
-      return t('daysLeft', { days });
-    },
-    [t]
-  );
-
-  const getStatusBadge = useCallback(
-    (status: string): ReactNode => {
-      switch (status) {
-        case 'SUBMITTED':
-          return <Badge variant="success">{t('statuses.submitted')}</Badge>;
-        case 'IN_PROGRESS':
-          return <Badge variant="warning">{t('statuses.inProgress')}</Badge>;
-        case 'ACCEPTED':
-          return <Badge variant="solid-success">{t('statuses.accepted')}</Badge>;
-        case 'REJECTED':
-          return <Badge variant="destructive">{t('statuses.rejected')}</Badge>;
-        case 'WAITLISTED':
-          return <Badge variant="purple">{t('statuses.waitlisted')}</Badge>;
-        case 'WITHDRAWN':
-          return <Badge variant="secondary">{t('statuses.withdrawn')}</Badge>;
-        case 'COMPLETED':
-          return <Badge variant="success">{t('statuses.completed')}</Badge>;
-        case 'CANCELLED':
-          return <Badge variant="secondary">{t('statuses.cancelled')}</Badge>;
-        case 'NOT_STARTED':
-          return <Badge variant="outline">{t('statuses.notStarted')}</Badge>;
-        default:
-          return <Badge variant="outline">{t('statuses.notStarted')}</Badge>;
-      }
-    },
-    [t]
-  );
-
-  const getRoundBadge = useCallback((round: string): ReactNode => {
-    const colors: Record<string, string> = {
-      ED: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-      ED2: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-      EA: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-      REA: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-      RD: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-      Rolling: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
-    };
-    return (
-      <span className={`text-xs px-2 py-0.5 rounded-md font-medium ${colors[round] || colors.RD}`}>
-        {round}
-      </span>
-    );
-  }, []);
-
-  const getCategoryIcon = useCallback((category: string): ReactNode => {
-    switch (category) {
-      case 'TEST':
-        return <FileText className="h-4 w-4" />;
-      case 'COMPETITION':
-        return <Trophy className="h-4 w-4" />;
-      case 'SUMMER_PROGRAM':
-        return <BookOpen className="h-4 w-4" />;
-      case 'INTERNSHIP':
-        return <Briefcase className="h-4 w-4" />;
-      case 'ACTIVITY':
-        return <Users className="h-4 w-4" />;
-      case 'MATERIAL':
-        return <ClipboardList className="h-4 w-4" />;
-      case 'FINANCIAL_AID':
-        return <Target className="h-4 w-4" />;
-      case 'APPLICATION':
-        return <GraduationCap className="h-4 w-4" />;
-      default:
-        return <Calendar className="h-4 w-4" />;
-    }
-  }, []);
+  const getStatusBadge = useCallback((status: string) => getStatusBadgeHelper(status, t), [t]);
 
   const getCategoryLabel = useCallback(
-    (category: string) => {
-      const key = `personalEvents.categories.${category}`;
-      try {
-        return t(key);
-      } catch {
-        return category;
-      }
-    },
+    (category: string) => getCategoryLabelHelper(category, t),
     [t]
   );
-
-  const getCategoryColor = useCallback((category: string) => {
-    const colors: Record<string, string> = {
-      COMPETITION: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-      TEST: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-      SUMMER_PROGRAM: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-      INTERNSHIP: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-      ACTIVITY: 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400',
-      MATERIAL: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
-      OTHER: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
-    };
-    return colors[category] || colors.OTHER;
-  }, []);
 
   // Sorted data
   const sortedTimelines = useMemo(() => {
@@ -389,7 +295,7 @@ export default function TimelinePage() {
         {(['all', 'school', 'personal'] as TabType[]).map((tab) => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => handleTabChange(tab)}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
               activeTab === tab
                 ? 'bg-background shadow-sm text-foreground'

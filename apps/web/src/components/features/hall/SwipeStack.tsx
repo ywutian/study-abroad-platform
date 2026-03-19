@@ -38,7 +38,7 @@ export function SwipeStack({
   const router = useRouter();
   const pathname = usePathname();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [swipedCards, setSwipedCards] = useState<string[]>([]);
+  const [, setSwipedCards] = useState<string[]>([]);
   const [lastDirection, setLastDirection] = useState<'left' | 'right' | 'up' | 'down' | null>(null);
 
   // Reset on data change

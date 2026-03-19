@@ -8,8 +8,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { clampPercentRate } from '../../../common/utils/percent.util';
-import { AiService } from '../../ai/ai.service';
-import { SwipeService } from '../../swipe/swipe.service';
+import { LLMService } from '../core/llm.service';
+import { SwipeService } from '../../hall/swipe.service';
 import { ProfileLoaderHelper } from './helpers/profile-loader.helper';
 import { SchoolLookupHelper } from './helpers/school-lookup.helper';
 import { formatHighSchoolContext } from './helpers/education-context.helper';
@@ -21,7 +21,7 @@ export class CaseToolsService implements IToolHandlerProvider {
 
   constructor(
     private prisma: PrismaService,
-    private aiService: AiService,
+    private llmService: LLMService,
     private swipeService: SwipeService,
     private profileLoader: ProfileLoaderHelper,
     private schoolLookup: SchoolLookupHelper,
@@ -202,7 +202,7 @@ Tags: ${admissionCase.tags?.join(', ') || none}
 Result: ${admissionCase.result}
 Acceptance rate: ${clampPercentRate(admissionCase.school.acceptanceRate) != null ? clampPercentRate(admissionCase.school.acceptanceRate) + '%' : unknown}`;
 
-      const analysis = await this.aiService.chat(
+      const analysis = await this.llmService.chatSimple(
         [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: caseInfo },
@@ -231,7 +231,7 @@ Acceptance rate: ${clampPercentRate(admissionCase.school.acceptanceRate) != null
         ? `你是数据分析师。根据用户的案例预测游戏统计数据，分析其预测能力和改进建议。`
         : `You are a data analyst. Analyze the user's prediction game statistics and provide insights and improvement suggestions.`;
 
-      const analysis = await this.aiService.chat(
+      const analysis = await this.llmService.chatSimple(
         [
           { role: 'system', content: systemPrompt },
           {
@@ -335,7 +335,7 @@ Key points:
 
 Provide specific, actionable advice.`;
 
-      const comparison = await this.aiService.chat(
+      const comparison = await this.llmService.chatSimple(
         [
           { role: 'system', content: systemPrompt },
           {

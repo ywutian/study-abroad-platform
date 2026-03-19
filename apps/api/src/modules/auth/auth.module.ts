@@ -20,7 +20,7 @@ import { AuditLogModule } from '../../common/services/audit-log.module';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => {
+      useFactory: (configService: ConfigService) => {
         const jwtSecret = configService.get<string>('JWT_SECRET');
         if (!jwtSecret) {
           throw new Error('FATAL: JWT_SECRET environment variable is not set');

@@ -14,7 +14,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Visibility, EssayType } from '@prisma/client';
+import { Visibility } from '@prisma/client';
 
 export class BatchImportCaseItemDto {
   @ApiProperty({ description: '学校名称（支持缩写如 MIT, Stanford）' })

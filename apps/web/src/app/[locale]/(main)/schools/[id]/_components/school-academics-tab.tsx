@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useTranslations } from 'next-intl';
@@ -16,7 +17,10 @@ interface SchoolAcademicsTabProps {
   essayPrompts: (EssayPrompt | { id: number; prompt: string; year: number })[];
 }
 
-export function SchoolAcademicsTab({ school, essayPrompts }: SchoolAcademicsTabProps) {
+export function SchoolAcademicsTab({
+  school,
+  essayPrompts: _essayPrompts,
+}: SchoolAcademicsTabProps) {
   const t = useTranslations();
   const tc = useTranslations('common');
 

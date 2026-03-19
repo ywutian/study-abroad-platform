@@ -273,7 +273,7 @@ export class WebSearchService {
     } catch (primaryError) {
       // Tavily 失败，降级到 Google
       this.logger.warn(
-        `Primary search (Tavily) failed, trying Google fallback: ${primaryError}`,
+        `Primary search (Tavily) failed, trying Google fallback: ${String(primaryError)}`,
       );
 
       if (this.googleEnabled && this.tavilyEnabled) {
@@ -282,7 +282,9 @@ export class WebSearchService {
             this.googleSearch(query, maxResults, topic),
           );
         } catch (googleError) {
-          this.logger.error(`All search engines failed: ${googleError}`);
+          this.logger.error(
+            `All search engines failed: ${String(googleError)}`,
+          );
           return {
             results: [],
             source: 'tavily',
@@ -357,7 +359,7 @@ export class WebSearchService {
     } catch (primaryError) {
       // 主引擎失败，降级到备用引擎
       this.logger.warn(
-        `Primary school search failed, trying fallback: ${primaryError}`,
+        `Primary school search failed, trying fallback: ${String(primaryError)}`,
       );
 
       if (this.googleEnabled && this.tavilyEnabled) {
@@ -367,7 +369,7 @@ export class WebSearchService {
           );
         } catch (fallbackError) {
           this.logger.error(
-            `All search engines failed for school search: ${fallbackError}`,
+            `All search engines failed for school search: ${String(fallbackError)}`,
           );
           return {
             results: [],
@@ -658,7 +660,7 @@ export class WebSearchService {
           return JSON.parse(raw);
         }
       } catch (err) {
-        this.logger.debug(`Redis cache read failed: ${err}`);
+        this.logger.debug(`Redis cache read failed: ${String(err)}`);
       }
     }
 
@@ -686,7 +688,7 @@ export class WebSearchService {
         await this.redis.set(key, JSON.stringify(data), ttlSeconds);
         return;
       } catch (err) {
-        this.logger.debug(`Redis cache write failed: ${err}`);
+        this.logger.debug(`Redis cache write failed: ${String(err)}`);
       }
     }
 

@@ -5,7 +5,17 @@ import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
-import { Search, FileCheck, Star, MessageCircle, ArrowRight } from 'lucide-react';
+import {
+  Search,
+  TrendingUp,
+  BookOpen,
+  PenTool,
+  Sparkles,
+  MessageCircle,
+  ArrowRight,
+  FileText,
+  Calendar,
+} from 'lucide-react';
 
 const mainModules = [
   {
@@ -19,24 +29,64 @@ const mainModules = [
     iconColor: 'text-violet-500',
   },
   {
-    id: 'uncommon-app',
-    href: '/uncommon-app',
-    icon: FileCheck,
-    titleKey: 'dashboard.modules.uncommonApp',
-    descKey: 'dashboard.modules.uncommonAppDesc',
+    id: 'prediction',
+    href: '/prediction',
+    icon: TrendingUp,
+    titleKey: 'dashboard.modules.prediction',
+    descKey: 'dashboard.modules.predictionDesc',
     color: 'from-blue-500 to-cyan-500',
     bgColor: 'bg-blue-500/10',
     iconColor: 'text-blue-500',
   },
   {
-    id: 'feature-hall',
-    href: '/hall',
-    icon: Star,
-    titleKey: 'dashboard.modules.featureHall',
-    descKey: 'dashboard.modules.featureHallDesc',
+    id: 'cases',
+    href: '/cases',
+    icon: BookOpen,
+    titleKey: 'dashboard.modules.cases',
+    descKey: 'dashboard.modules.casesDesc',
     color: 'from-amber-500 to-orange-500',
     bgColor: 'bg-amber-500/10',
     iconColor: 'text-amber-500',
+  },
+  {
+    id: 'essays',
+    href: '/essays',
+    icon: PenTool,
+    titleKey: 'dashboard.modules.essays',
+    descKey: 'dashboard.modules.essaysDesc',
+    color: 'from-emerald-500 to-teal-500',
+    bgColor: 'bg-emerald-500/10',
+    iconColor: 'text-emerald-500',
+  },
+  {
+    id: 'resume',
+    href: '/resume',
+    icon: FileText,
+    titleKey: 'dashboard.modules.resume',
+    descKey: 'dashboard.modules.resumeDesc',
+    color: 'from-cyan-500 to-blue-500',
+    bgColor: 'bg-cyan-500/10',
+    iconColor: 'text-cyan-500',
+  },
+  {
+    id: 'timeline',
+    href: '/timeline',
+    icon: Calendar,
+    titleKey: 'dashboard.modules.timeline',
+    descKey: 'dashboard.modules.timelineDesc',
+    color: 'from-orange-500 to-red-500',
+    bgColor: 'bg-orange-500/10',
+    iconColor: 'text-orange-500',
+  },
+  {
+    id: 'ai-assistant',
+    href: '/ai',
+    icon: Sparkles,
+    titleKey: 'dashboard.modules.aiAssistant',
+    descKey: 'dashboard.modules.aiAssistantDesc',
+    color: 'from-indigo-500 to-purple-500',
+    bgColor: 'bg-indigo-500/10',
+    iconColor: 'text-indigo-500',
   },
   {
     id: 'forum',
@@ -44,9 +94,9 @@ const mainModules = [
     icon: MessageCircle,
     titleKey: 'dashboard.modules.forum',
     descKey: 'dashboard.modules.forumDesc',
-    color: 'from-emerald-500 to-teal-500',
-    bgColor: 'bg-emerald-500/10',
-    iconColor: 'text-emerald-500',
+    color: 'from-rose-500 to-pink-500',
+    bgColor: 'bg-rose-500/10',
+    iconColor: 'text-rose-500',
   },
 ];
 

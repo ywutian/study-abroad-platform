@@ -1,6 +1,5 @@
 import { IsOptional, IsString, IsEnum, MaxLength } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 import { PaginationDto } from '../../../common/dto/pagination.dto';
 import { ReportStatus, Role } from '@prisma/client';
 

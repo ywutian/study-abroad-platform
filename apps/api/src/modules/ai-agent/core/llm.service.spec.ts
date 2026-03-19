@@ -3,12 +3,8 @@
  */
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
-import { LLMService, LLMOptions } from './llm.service';
-import {
-  ResilienceService,
-  CircuitOpenError,
-  TimeoutError,
-} from './resilience.service';
+import { LLMService } from './llm.service';
+import { ResilienceService } from './resilience.service';
 import { TokenTrackerService } from './token-tracker.service';
 import { Message } from '../types';
 import {

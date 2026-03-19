@@ -407,7 +407,7 @@ export class MemoryManagerService {
       // 低分记忆直接跳过
       if (
         scoreResult.totalScore < 0.1 &&
-        scoreResult.tier === MemoryTier.ARCHIVE
+        (scoreResult.tier as MemoryTier) === MemoryTier.ARCHIVE
       ) {
         this.logger.debug('Memory score too low, skipping');
         return null;

@@ -245,10 +245,11 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
       toast.error(t('socketError'));
     });
 
+    const typingTimeouts = typingTimeoutRef.current;
     return () => {
       socket.disconnect();
-      typingTimeoutRef.current.forEach((timeout) => clearTimeout(timeout));
-      typingTimeoutRef.current.clear();
+      typingTimeouts.forEach((timeout) => clearTimeout(timeout));
+      typingTimeouts.clear();
     };
   }, [accessToken, t]);
 

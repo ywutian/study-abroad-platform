@@ -4,7 +4,7 @@
  * 概率环组件 - 带动画效果
  */
 
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect } from 'react';
 import { motion, useInView, useSpring, useTransform, useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { transitions } from '@/lib/motion';
@@ -28,20 +28,22 @@ const sizeConfig = {
 };
 
 function getColorByValue(value: number) {
-  if (value >= 70) return { 
-    stroke: 'stroke-success', 
-    text: 'text-success',
-    bg: 'bg-success/10',
-    gradient: 'from-success to-success/60',
-  };
-  if (value >= 40) return { 
-    stroke: 'stroke-warning', 
-    text: 'text-warning',
-    bg: 'bg-warning/10',
-    gradient: 'from-warning to-warning/60',
-  };
-  return { 
-    stroke: 'stroke-destructive', 
+  if (value >= 70)
+    return {
+      stroke: 'stroke-success',
+      text: 'text-success',
+      bg: 'bg-success/10',
+      gradient: 'from-success to-success/60',
+    };
+  if (value >= 40)
+    return {
+      stroke: 'stroke-warning',
+      text: 'text-warning',
+      bg: 'bg-warning/10',
+      gradient: 'from-warning to-warning/60',
+    };
+  return {
+    stroke: 'stroke-destructive',
     text: 'text-destructive',
     bg: 'bg-destructive/10',
     gradient: 'from-destructive to-destructive/60',
@@ -61,7 +63,7 @@ export function ProbabilityRing({
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.5 });
   const prefersReducedMotion = useReducedMotion();
-  
+
   const config = sizeConfig[size];
   const colors = getColorByValue(value);
 
@@ -76,10 +78,7 @@ export function ProbabilityRing({
   });
 
   const displayValue = useTransform(springValue, (v) => Math.round(v));
-  const strokeOffset = useTransform(
-    springValue,
-    (v) => circumference - (v / 100) * circumference
-  );
+  const strokeOffset = useTransform(springValue, (v) => circumference - (v / 100) * circumference);
 
   useEffect(() => {
     if (isInView && animated && !prefersReducedMotion) {
@@ -213,7 +212,7 @@ export function ProbabilityRing({
               <motion.span
                 key={i}
                 className="absolute w-1 h-1 rounded-full bg-success"
-                initial={{ 
+                initial={{
                   opacity: 0,
                   x: config.size / 2,
                   y: config.size / 2,
@@ -358,9 +357,7 @@ export function AnimatedProgressBar({
       {(label || showValue) && (
         <div className="flex justify-between items-center mb-1.5">
           {label && <span className="text-sm text-muted-foreground">{label}</span>}
-          {showValue && (
-            <span className={cn('text-sm font-medium', colors.text)}>{value}%</span>
-          )}
+          {showValue && <span className={cn('text-sm font-medium', colors.text)}>{value}%</span>}
         </div>
       )}
 
@@ -368,7 +365,9 @@ export function AnimatedProgressBar({
         <motion.div
           className={cn('h-full rounded-full', colors.bg.replace('/10', ''))}
           initial={{ width: 0 }}
-          animate={isInView && !prefersReducedMotion ? { width: `${value}%` } : { width: `${value}%` }}
+          animate={
+            isInView && !prefersReducedMotion ? { width: `${value}%` } : { width: `${value}%` }
+          }
           transition={{
             type: 'spring',
             stiffness: 50,

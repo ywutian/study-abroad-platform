@@ -2,7 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { VerificationService } from './verification.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { StorageService } from '../../common/storage/storage.service';
-import { CaseIncentiveService } from '../case/case-incentive.service';
+import { CaseIncentiveService } from '../points/incentive.service';
+import { NotificationService } from '../notification/notification.service';
 import {
   NotFoundException,
   ForbiddenException,
@@ -87,6 +88,10 @@ describe('VerificationService', () => {
           useValue: {
             reward: jest.fn().mockResolvedValue(undefined),
           },
+        },
+        {
+          provide: NotificationService,
+          useValue: { createNotification: jest.fn().mockResolvedValue({}) },
         },
       ],
     }).compile();
@@ -306,7 +311,7 @@ describe('VerificationService', () => {
       };
       (prisma.$transaction as jest.Mock).mockImplementation((fn) => fn(txMock));
 
-      const result = await service.reviewVerification('vr-1', 'admin-1', {
+      const _result = await service.reviewVerification('vr-1', 'admin-1', {
         action: ReviewAction.APPROVE,
       });
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -8,8 +9,6 @@ import {
   Search,
   School,
   FileText,
-  User,
-  MessageSquare,
   ArrowRight,
   Clock,
   Sparkles,
@@ -24,7 +23,6 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { useDebounce } from '@/hooks';
-import { useKeyboardShortcuts } from '@/hooks';
 
 // 搜索结果类型
 type SearchResultType = 'school' | 'case' | 'article' | 'ai' | 'page';
@@ -58,10 +56,11 @@ const typeColors: Record<SearchResultType, string> = {
 
 // Quick action keys for translation
 const quickActionKeys = [
-  { id: 'ai-chat', labelKey: 'aiChat', type: 'ai' as const, url: '/ai' },
   { id: 'schools', labelKey: 'browseSchools', type: 'page' as const, url: '/schools' },
+  { id: 'prediction', labelKey: 'prediction', type: 'page' as const, url: '/prediction' },
   { id: 'cases', labelKey: 'viewCases', type: 'page' as const, url: '/cases' },
-  { id: 'profile', labelKey: 'profile', type: 'page' as const, url: '/profile' },
+  { id: 'essays', labelKey: 'essays', type: 'page' as const, url: '/essays' },
+  { id: 'ai', labelKey: 'aiAssistant', type: 'ai' as const, url: '/ai' },
 ];
 
 // Hot searches - English terms that are commonly used
@@ -172,6 +171,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
       title: action.label,
       url: action.url,
     }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- quickActions is derived from stable t(), including it causes re-renders
   }, [query, results]);
 
   // 处理键盘事件
@@ -197,6 +197,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
           break;
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleSelect is defined below, circular dep
     [allItems, selectedIndex, onOpenChange]
   );
 

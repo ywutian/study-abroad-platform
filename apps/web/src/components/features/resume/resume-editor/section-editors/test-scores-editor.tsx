@@ -15,7 +15,7 @@ interface TestScoresEditorProps {
 const TEST_TYPES = ['SAT', 'ACT', 'TOEFL', 'IELTS', 'GRE', 'GMAT', 'AP', 'IB', 'LSAT', 'MCAT'];
 
 export function TestScoresEditor({ content, onChange }: TestScoresEditorProps) {
-  const items = ((content as any).items ?? []) as TestScoreItem[];
+  const items = (content.items ?? []) as TestScoreItem[];
 
   const updateItem = (index: number, field: string, value: unknown) => {
     const updated = [...items];

@@ -33,6 +33,7 @@
     "settings": "设置",
     "all": "全部",
     "processing": "处理中...",
+    "comingSoon": "即将推出",
     "retry": "重试",
     "clearAll": "清除全部",
     "ongoing": "进行中",
@@ -114,12 +115,20 @@
     "modules": {
       "schools": "学校库",
       "schoolsDesc": "浏览和搜索，找到最适合的学校",
-      "uncommonApp": "智能申请",
-      "uncommonAppDesc": "AI 分析档案，智能推荐选校",
-      "featureHall": "功能大厅",
-      "featureHallDesc": "招生官视角评估申请",
-      "forum": "社交论坛",
-      "forumDesc": "与申请者交流经验"
+      "prediction": "录取预测",
+      "predictionDesc": "AI 驱动的录取概率分析",
+      "cases": "案例库",
+      "casesDesc": "真实录取案例与成功经验",
+      "essays": "我的文书",
+      "essaysDesc": "撰写和管理申请文书",
+      "aiAssistant": "AI 助手",
+      "aiAssistantDesc": "智能留学问答与建议",
+      "forum": "社区论坛",
+      "forumDesc": "与申请者交流经验",
+      "resume": "简历制作",
+      "resumeDesc": "利用 AI 辅助创建专业简历",
+      "timeline": "时间线",
+      "timelineDesc": "追踪截止日期，规划申请旅程"
     },
     "onboarding": {
       "title": "欢迎使用",
@@ -242,13 +251,13 @@
         "title": "学校库",
         "desc": "浏览、筛选，找到最适合你的学校"
       },
-      "uncommonApp": {
-        "title": "智能申请",
-        "desc": "AI 分析你的申请档案，智能推荐选校"
+      "prediction": {
+        "title": "AI 录取预测",
+        "desc": "AI 驱动的录取概率分析"
       },
-      "featureHall": {
-        "title": "功能大厅",
-        "desc": "招生官视角评估，全方位提升申请"
+      "cases": {
+        "title": "案例库",
+        "desc": "真实录取案例与成功故事"
       },
       "forum": {
         "title": "社交论坛",
@@ -526,9 +535,7 @@
     "forum": "论坛",
     "teams": "组队",
     "assessment": "性格测评",
-    "swipe": "社区挑战",
     "timeline": "申请时间线",
-    "recommendation": "智能推荐",
     "vault": "密码库",
     "essayGallery": "文书库",
     "ai": "AI 助手",
@@ -550,7 +557,6 @@
     },
     "descriptions": {
       "ai": "智能 AI 助手，帮你解答留学问题",
-      "recommendation": "基于背景的个性化选校推荐",
       "assessment": "性格与职业兴趣测评",
       "timeline": "追踪申请截止日期与任务",
       "hall": "招生官视角评估与排名对比",
@@ -563,14 +569,17 @@
       "uncommonApp": "AI驱动的申请综合管理",
       "verifiedRanking": "真实认证录取排行榜",
       "followers": "管理关注与社交关系",
+      "forum": "加入讨论，与申请者交流经验",
       "teams": "发现或创建队伍，一起申请、备考、共享时间线",
       "help": "常见问题、指南与支持",
-      "referral": "邀请好友赚取积分"
+      "referral": "邀请好友赚取积分",
+      "ranking": "根据个人偏好自定义学校排名榜单"
     },
     "sections": {
-      "tools": "工具与资源",
-      "community": "发现与社区",
-      "utility": "实用工具"
+      "research": "选校研究",
+      "social": "社区互动",
+      "tools": "实用工具",
+      "account": "账户"
     },
     "user": {
       "manageAccount": "管理账户"
@@ -716,6 +725,13 @@
       "description": "完成以下步骤快速完善你的档案",
       "fillGpa": "填写 GPA",
       "fillScore": "填写成绩"
+    },
+    "nextSteps": {
+      "title": "下一步",
+      "prediction": "录取预测",
+      "essays": "我的文书",
+      "assessment": "测评",
+      "resume": "简历制作"
     },
     "steps": {
       "basic": "基本信息",
@@ -1180,6 +1196,10 @@
   "cases": {
     "title": "案例库",
     "description": "浏览真实申请案例，参考成功经验",
+    "tabs": {
+      "cases": "案例",
+      "essays": "文书"
+    },
     "shareCase": "分享案例",
     "searchPlaceholder": "搜索案例...",
     "stats": {
@@ -1224,7 +1244,7 @@
       "decision": "录取结果",
       "essayContent": "文书内容",
       "gpaByYear": "分年级 GPA（9–12）",
-      "viewInEssayGallery": "在文书案例库中查看",
+      "viewEssays": "查看文书",
       "applicationDetails": "申请信息"
     }
   },
@@ -1304,7 +1324,8 @@
       "review": "锐评模式",
       "ranking": "排名对比",
       "lists": "用户榜单",
-      "challenge": "社区挑战"
+      "challenge": "社区挑战",
+      "verified": "认证排行"
     },
     "challenge": {
       "loading": "加载挑战中...",
@@ -1699,7 +1720,8 @@
       "confirm": "确认"
     },
     "toast": {
-      "logoutSuccess": "已退出登录"
+      "logoutSuccess": "已退出登录",
+      "accountDeleted": "账号已成功删除"
     }
   },
   "submitCase": {
@@ -1837,11 +1859,20 @@
       "mainContent": "主要内容",
       "openMenu": "打开菜单",
       "skipToMain": "跳转到主内容",
-      "skipToNav": "跳转到导航"
+      "skipToNav": "跳转到导航",
+      "switchLanguage": "切换语言",
+      "notifications": "通知",
+      "helpCenter": "帮助中心",
+      "userMenu": "用户菜单",
+      "navigationMenu": "切换导航菜单"
     },
     "command": {
       "searchPlaceholder": "搜索命令...",
       "nav": "导航",
+      "research": "选校研究",
+      "social": "社区互动",
+      "tools": "实用工具",
+      "admin": "管理后台",
       "navigate": "导航到",
       "other": "其他",
       "noResults": "未找到结果",
@@ -1849,23 +1880,83 @@
       "home": "首页",
       "profile": "个人档案",
       "schools": "学校",
+      "prediction": "录取预测",
       "cases": "案例",
+      "forum": "论坛",
+      "teams": "小组",
+      "essays": "文书",
+      "resume": "简历",
+      "timeline": "时间线",
+      "assessment": "测评",
       "aiAssistant": "AI 助手",
+      "uncommonApp": "独特申请",
+      "hall": "名人堂",
+      "chat": "消息",
+      "vault": "文件保险箱",
+      "settingsPage": "设置",
+      "referral": "推荐邀请",
       "helpDocs": "帮助文档",
       "switchToDark": "切换暗色模式",
       "switchToLight": "切换亮色模式",
+      "adminDashboard": "管理面板",
+      "adminUsers": "用户管理",
+      "adminModeration": "内容审核",
+      "adminAiOps": "AI 运维",
+      "adminAuditLogs": "审计日志",
       "keywords": {
-        "home": "首页,主页",
+        "home": "首页,主页,dashboard",
         "profile": "档案,个人",
-        "schools": "学校,院校",
-        "cases": "案例,申请",
-        "aiAssistant": "AI,助手,智能",
-        "help": "帮助,支持",
-        "theme": "主题,暗色,亮色"
+        "schools": "学校,院校,大学",
+        "prediction": "预测,概率,录取,机会",
+        "cases": "案例,申请,录取",
+        "forum": "论坛,讨论,帖子",
+        "teams": "小组,队伍,协作",
+        "essays": "文书,写作,草稿",
+        "resume": "简历,CV",
+        "timeline": "时间线,截止日期,日程",
+        "assessment": "测评,MBTI,性格",
+        "aiAssistant": "AI,助手,智能,聊天",
+        "uncommonApp": "独特,策略,申请",
+        "hall": "名人堂,排名,排行",
+        "chat": "消息,聊天,对话",
+        "vault": "保险箱,文件,安全",
+        "settings": "设置,偏好,账号",
+        "referral": "推荐,邀请,好友",
+        "help": "帮助,支持,FAQ",
+        "theme": "主题,暗色,亮色",
+        "admin": "管理,后台,面板",
+        "adminUsers": "用户,管理,封禁",
+        "adminModeration": "审核,内容,举报",
+        "adminAiOps": "AI,代理,运维,配置",
+        "adminAuditLogs": "审计,日志,活动",
+        "ranking": "排名,排行,对比,权重",
+        "followers": "关注,粉丝,社交,好友",
+        "adminSchools": "学校,大学,管理",
+        "adminCalendar": "日历,截止日期,事件",
+        "adminEssays": "文书,题目,画廊",
+        "adminVerifications": "认证,审核,批准",
+        "adminPayments": "支付,账单,收入",
+        "adminMemory": "记忆,嵌入,衰减",
+        "adminSettings": "设置,配置",
+        "adminCalibrations": "校准,乘数",
+        "adminPoints": "积分,奖励,徽章",
+        "adminTemplates": "模板,活动"
       },
       "settings": "设置",
       "close": "关闭",
-      "search": "搜索"
+      "search": "搜索",
+      "ranking": "自定义排名",
+      "followers": "关注列表",
+      "adminSchools": "学校管理",
+      "adminCalendar": "日历与截止日期",
+      "adminEssays": "文书管理",
+      "adminVerifications": "认证审核",
+      "adminPayments": "支付管理",
+      "adminMemory": "AI 记忆系统",
+      "adminSettings": "管理员设置",
+      "adminCalibrations": "校准设置",
+      "adminPoints": "积分管理",
+      "adminTemplates": "活动模板"
     },
     "offline": {
       "checkConnection": "请检查网络连接",
@@ -2099,16 +2190,13 @@
     },
     "resetFilters": "重置筛选",
     "weightSort": "权重排序",
-    "weights": {
-      "title": "权重设置",
-      "description": "调整各项指标的权重",
-      "ranking": "US News 排名",
-      "salary": "平均薪资",
-      "tuition": "学费",
-      "tuitionDesc": "年度学费金额",
-      "acceptanceRate": "录取率",
-      "acceptanceRateDesc": "越低表示竞争越激烈",
-      "preview": "预览排名"
+    "presets": {
+      "title": "排序预设",
+      "description": "选择排序策略或创建自定义排名",
+      "selectivity": "选择性优先",
+      "affordability": "性价比",
+      "employment": "就业导向",
+      "customRanking": "自定义排名"
     },
     "addToList": "加入清单",
     "added": "已添加",
@@ -2140,25 +2228,15 @@
       "safety": "保底"
     },
     "rounds": {
-      "ED": "ED",
-      "ED2": "ED II",
-      "EA": "EA",
-      "REA": "REA",
-      "RD": "RD",
-      "ROLLING": "Rolling"
-    },
-    "specialConditions": {
-      "testOptional": "可选考试"
-    }
-  },
-  "findCollege": {
-    "rounds": {
       "ED": "ED (早决定)",
       "ED2": "ED II (早决定2)",
       "EA": "EA (早申请)",
       "REA": "REA (限制性早申请)",
       "RD": "RD (常规申请)",
       "ROLLING": "Rolling (滚动录取)"
+    },
+    "specialConditions": {
+      "testOptional": "可选考试"
     }
   },
   "uncommonApp": {
@@ -3250,81 +3328,6 @@
       "comprehensiveAnalysisPrompt": "请综合分析我的所有测评结果"
     }
   },
-  "swipe": {
-    "title": "社区挑战",
-    "description": "查看申请者资料，猜测哪些学校录取了ta",
-    "challengeTitle": "录取猜猜猜",
-    "challengeDesc": "查看完整申请者资料，猜测ta的申请结果",
-    "guessAdmission": "猜测录取结果",
-    "submitGuesses": "提交猜测",
-    "revealResults": "揭晓结果",
-    "yourGuess": "你的猜测",
-    "actualResult": "实际结果",
-    "accuracy": "准确率",
-    "nextChallenge": "下一个挑战",
-    "noChallenge": "暂无可用挑战，请稍后再试",
-    "play": "开始滑动",
-    "leaderboard": "排行榜",
-    "like": "喜欢",
-    "dislike": "跳过",
-    "superLike": "超级喜欢",
-    "noMore": "暂无更多学校",
-    "loading": "加载中...",
-    "badge": "当前等级",
-    "badgeUpgraded": "等级提升",
-    "newBadge": "新等级",
-    "swipes": "次滑动",
-    "badges": {
-      "bronze": "青铜",
-      "silver": "白银",
-      "gold": "黄金",
-      "platinum": "铂金",
-      "diamond": "钻石"
-    },
-    "noCases": "暂无案例",
-    "noCasesDesc": "当前没有可滑动的案例，请稍后再来！",
-    "refresh": "刷新",
-    "correct": "预测正确",
-    "incorrect": "预测错误",
-    "failed": "操作失败",
-    "points": "积分",
-    "streak": "连胜",
-    "admit": "录取",
-    "reject": "拒绝",
-    "verified": "已认证",
-    "undeclared": "未声明",
-    "none": "无",
-    "acceptanceRate": "录取率",
-    "youreRight": "猜对了！",
-    "notQuite": "猜错了",
-    "nextCase": "下一个案例",
-    "totalSwipes": "总预测",
-    "bestStreak": "最佳连胜",
-    "current": "当前",
-    "toNextBadge": "距下一等级",
-    "swipeHint": "向左滑动拒绝，向右滑动录取",
-    "you": "你",
-    "aiTitle": "招生预测 AI 助手",
-    "aiDesc": "我可以帮你分析案例、提高预测准确率",
-    "aiDescWithResult": "我可以帮你分析这个案例的结果",
-    "aiActions": {
-      "explainResult": "解释这个案例的结果",
-      "analyzeCase": "分析当前案例",
-      "analyzePerformance": "分析我的预测表现",
-      "compareProfile": "对比我的档案",
-      "predictionTips": "录取预测技巧"
-    },
-    "aiPrompts": {
-      "explainResult": "请帮我分析这个录取案例：\n- 学校: {school}\n- 排名: #{rank}\n- 录取率: {rate}%\n- GPA: {gpa}\n- SAT: {sat}\n- 实际结果: {actualResult}\n- 我的预测: {prediction}\n- 预测{correctText}\n\n请分析：\n1. 为什么这个申请者得到了这个结果？\n2. 我的预测为什么{correctText}？\n3. 从这个案例中我能学到什么？",
-      "analyzeCase": "请帮我分析这个申请者被录取的可能性：\n- 学校: {school}\n- 排名: #{rank}\n- 录取率: {rate}%\n- 专业: {major}\n- GPA: {gpa}\n- SAT: {sat}\n- ACT: {act}\n- TOEFL: {toefl}\n- 标签: {tags}\n\n请分析录取、拒绝、等待名单的可能性，并解释原因。（不要直接告诉我答案，给我提示）",
-      "analyzePerformance": "请分析我的招生预测游戏表现：\n- 总预测次数: {totalSwipes}\n- 正确次数: {correctCount}\n- 准确率: {accuracy}%\n- 当前连胜: {currentStreak}\n- 最佳连胜: {bestStreak}\n- 当前徽章: {badge}\n\n请分析：\n1. 我的表现如何？和一般水平相比呢？\n2. 我可能在哪些类型的案例上容易判断错误？\n3. 给我一些提高准确率的建议",
-      "compareProfile": "请将我的个人档案与最近的录取案例进行对比，分析我申请类似学校的竞争力。我的优势和劣势是什么？",
-      "predictionTips": "请教我一些预测录取结果的技巧。招生官一般会看重哪些因素？不同类型的学校（如文理学院、研究型大学）的录取标准有什么区别？"
-    },
-    "aiInitialCorrect": "你猜对了！实际结果是{result}。想让我帮你分析这个案例吗？",
-    "aiInitialWrong": "你猜错了！实际结果是{result}。想让我帮你分析这个案例吗？",
-    "aiWelcome": "你好！我是招生预测 AI 助手。我可以帮你分析案例、提高预测准确率、或者对比你的档案。有什么需要帮助的吗？"
-  },
   "essayGallery": {
     "title": "文书案例库",
     "description": "浏览优秀录取文书，学习写作技巧",
@@ -3510,7 +3513,7 @@
   "school": {
     "notFound": "学校未找到",
     "notFoundDesc": "该学校不存在或已被删除",
-    "backToRanking": "返回榜单",
+    "backToSchools": "返回学校列表",
     "website": "访问官网",
     "bookmark": "收藏",
     "share": "分享",
@@ -3955,7 +3958,19 @@
     "deleteSuccess": "推荐记录已删除",
     "deleteFailed": "删除推荐记录失败",
     "showingRecent": "显示最近 {count} 条结果",
-    "generateFirst": "生成第一份选校推荐"
+    "generateFirst": "生成第一份选校推荐",
+    "generating": "生成中...",
+    "generatingDesc": "AI 正在分析你的背景并匹配学校",
+    "formTitle": "推荐设置",
+    "additionalPreferences": "额外偏好",
+    "additionalPreferencesPlaceholder": "任何特殊要求...",
+    "completeProfileFirst": "请先完善个人档案",
+    "tests": "考试",
+    "activities": "活动",
+    "missing": "缺少",
+    "inList": "已在列表",
+    "analysis": "分析",
+    "regenerate": "重新生成"
   },
   "timeline": {
     "title": "申请时间线",
@@ -4295,7 +4310,9 @@
       "full": "队伍已满。",
       "inviteExpired": "邀请链接已失效或无效。",
       "forbidden": "您无法查看此队伍，可向队长申请邀请。",
-      "conflict": "已是成员或请求冲突。"
+      "conflict": "已是成员或请求冲突。",
+      "noAccess": "您无权访问此设置页面。",
+      "ownerAdminOnly": "仅队长或管理员可编辑设置。"
     },
     "confirm": {
       "leave": "确定退出？您将失去成员身份。",
@@ -4318,7 +4335,52 @@
     "loginToJoin": "登录后加入",
     "loadErrorMy": "加载我的队伍失败",
     "loadErrorDiscover": "加载队伍列表失败",
-    "retry": "重试"
+    "retry": "重试",
+    "back": "返回",
+    "backToTeam": "返回队伍",
+    "member": "成员",
+    "members": "成员",
+    "toast": {
+      "created": "队伍已创建",
+      "createFailed": "创建队伍失败",
+      "left": "已退出队伍",
+      "leaveFailed": "退出失败",
+      "disbanded": "队伍已解散",
+      "disbandFailed": "解散失败",
+      "linkCopied": "邀请链接已复制",
+      "linkFailed": "创建链接失败",
+      "joined": "已加入",
+      "joinFailed": "加入失败",
+      "alreadyMember": "已经是成员",
+      "settingsSaved": "设置已保存",
+      "saveFailed": "保存失败"
+    },
+    "validation": {
+      "nameRequired": "名称不能为空",
+      "nameLengthError": "名称须为 1–100 个字符",
+      "descriptionLengthError": "描述不超过 500 个字符",
+      "maxTags": "最多 {max} 个标签",
+      "maxMembersError": "最大人数须在 2–100 之间"
+    },
+    "form": {
+      "nameLabel": "名称",
+      "namePlaceholder": "队伍名称",
+      "descriptionLabel": "描述",
+      "descriptionPlaceholder": "选填描述",
+      "visibilityLabel": "可见性",
+      "joinPolicyLabel": "加入方式",
+      "maxMembersLabel": "最大人数（选填，2–100）",
+      "maxMembersPlaceholder": "留空表示不限制",
+      "clear": "清除",
+      "creating": "创建中...",
+      "saving": "保存中...",
+      "save": "保存"
+    },
+    "visibility": {
+      "public": "公开",
+      "unlisted": "不公开",
+      "private": "私密"
+    }
   },
   "points": {
     "levels": {
@@ -4589,19 +4651,35 @@
       "users": "用户管理",
       "schools": "学校数据",
       "dataUpdates": "数据更新",
+      "dataSync": "数据同步",
+      "calendar": "日历管理",
       "deadlines": "截止日期",
       "events": "全局事件",
       "essays": "文书管理",
       "auditLogs": "审计日志",
       "aiAgent": "AI 助手",
+      "aiOps": "AI 运维",
       "memory": "记忆管理",
       "points": "积分管理",
       "content": "内容审核",
+      "moderation": "内容审核",
       "payments": "支付管理",
       "analytics": "数据分析",
       "calibrations": "学校校准",
       "activityTemplates": "活动模板",
-      "settings": "系统设置"
+      "settings": "系统设置",
+      "verifications": "身份认证",
+      "health": "系统健康",
+      "menu": "菜单",
+      "adminNav": "管理导航",
+      "groups": {
+        "overview": "概览",
+        "users": "用户与认证",
+        "academic": "学术数据",
+        "moderation": "内容与运营",
+        "ai": "AI 系统",
+        "system": "系统"
+      }
     },
     "pagination": {
       "showing": "显示 {from}-{to}，共 {total} 条",
@@ -4869,6 +4947,9 @@
       "confirmDeleteDesc": "确定要删除此校准吗？该学校的预测将恢复为默认值。",
       "noCalibrations": "暂无校准配置"
     },
+    "calendar": {
+      "description": "管理申请截止日期和全局事件"
+    },
     "deadlines": {
       "title": "截止日期管理",
       "description": "管理学校申请截止日期",
@@ -4933,6 +5014,17 @@
         "FINANCIAL_AID": "助学金",
         "APPLICATION": "申请",
         "OTHER": "其他"
+      }
+    },
+    "aiOps": {
+      "title": "AI 运维中心",
+      "description": "监控、配置和分析 AI 系统",
+      "tabs": {
+        "overview": "概览",
+        "config": "配置",
+        "performance": "性能",
+        "reliability": "可靠性",
+        "engagement": "用户参与"
       }
     },
     "aiAgent": {
@@ -5148,8 +5240,9 @@
     },
     "contentMod": {
       "title": "内容审核",
-      "description": "管理论坛帖子、聊天消息和评价",
+      "description": "管理论坛帖子、聊天消息、评价和举报",
       "forum": "论坛",
+      "reports": "举报",
       "chat": "聊天",
       "reviews": "评价",
       "forumPosts": "论坛帖子",
@@ -5362,6 +5455,76 @@
       "noIssues": "所有学校数据均已完整",
       "refreshing": "刷新中...",
       "refresh": "刷新"
+    },
+    "health": {
+      "title": "系统健康",
+      "description": "实时系统健康监控与诊断",
+      "status": "系统状态",
+      "uptime": "运行时间",
+      "uptimeDays": "{days}天 {hours}时 {minutes}分",
+      "components": "组件状态",
+      "database": "数据库",
+      "redis": "Redis",
+      "latency": "延迟",
+      "latencyMs": "{ms}ms",
+      "lastCheck": "上次检查",
+      "systemInfo": "系统信息",
+      "environment": "环境",
+      "nodeVersion": "Node 版本",
+      "appVersion": "应用版本",
+      "commitSha": "提交哈希",
+      "buildTime": "构建时间",
+      "memoryUsage": "内存使用",
+      "memoryDetail": "{used} / {total} MB",
+      "operational": "正常运行",
+      "degraded": "性能降级",
+      "down": "已停止",
+      "autoRefresh": "每 15 秒自动刷新",
+      "loading": "加载健康状态中..."
+    },
+    "verifications": {
+      "title": "身份认证审核",
+      "description": "审核和管理用户身份认证请求",
+      "stats": {
+        "pending": "待审核",
+        "approved": "已通过",
+        "rejected": "已拒绝",
+        "total": "总计"
+      },
+      "table": {
+        "user": "用户",
+        "proofType": "证明类型",
+        "school": "学校",
+        "submitted": "提交时间",
+        "status": "状态"
+      },
+      "proofTypes": {
+        "offer_letter": "录取通知书",
+        "enrollment_proof": "入学证明",
+        "student_id": "学生证"
+      },
+      "detail": {
+        "title": "认证详情",
+        "userInfo": "用户信息",
+        "caseInfo": "案例信息",
+        "proofPreview": "证明文件",
+        "reviewNote": "审核备注",
+        "reviewNotePlaceholder": "可选：给用户的备注..."
+      },
+      "actions": {
+        "approve": "通过",
+        "reject": "拒绝",
+        "confirmApprove": "确认通过该认证？用户将获得已认证身份。",
+        "confirmReject": "确认拒绝该认证？请填写原因。"
+      },
+      "approved": "认证已通过",
+      "rejected": "认证已拒绝",
+      "empty": "暂无认证请求",
+      "emptyDesc": "当前没有待处理的认证请求",
+      "filterAll": "所有状态",
+      "filterPending": "待审核",
+      "filterApproved": "已通过",
+      "filterRejected": "已拒绝"
     }
   },
   "essayAdmin": {
@@ -5579,10 +5742,11 @@
       "askAiDesc": "让 AI 帮你搜索"
     },
     "actions": {
-      "aiChat": "AI 对话",
       "browseSchools": "浏览学校",
+      "prediction": "录取预测",
       "viewCases": "查看案例",
-      "profile": "个人档案"
+      "essays": "我的文书",
+      "aiAssistant": "AI 助手"
     },
     "types": {
       "school": "学校",

@@ -28,6 +28,7 @@ describe('UserService', () => {
           useValue: {
             user: {
               findUnique: jest.fn(),
+              findFirst: jest.fn(),
               create: jest.fn(),
               update: jest.fn(),
             },
@@ -128,18 +129,18 @@ describe('UserService', () => {
 
   describe('findByEmail', () => {
     it('should return user when found by email', async () => {
-      (prismaService.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
+      (prismaService.user.findFirst as jest.Mock).mockResolvedValue(mockUser);
 
       const result = await service.findByEmail('test@example.com');
 
       expect(result).toEqual(mockUser);
-      expect(prismaService.user.findUnique).toHaveBeenCalledWith({
-        where: { email: 'test@example.com' },
+      expect(prismaService.user.findFirst).toHaveBeenCalledWith({
+        where: { email: 'test@example.com', deletedAt: null },
       });
     });
 
     it('should return null when email not found', async () => {
-      (prismaService.user.findUnique as jest.Mock).mockResolvedValue(null);
+      (prismaService.user.findFirst as jest.Mock).mockResolvedValue(null);
 
       const result = await service.findByEmail('nonexistent@example.com');
 

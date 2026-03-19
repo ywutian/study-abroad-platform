@@ -18,7 +18,7 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { useTranslations } from 'next-intl';
 
- 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LooseMessages = Record<string, any>;
 
 declare module 'next-intl' {

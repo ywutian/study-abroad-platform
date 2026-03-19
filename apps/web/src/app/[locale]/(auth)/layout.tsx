@@ -138,7 +138,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               </span>
             </div>
             <blockquote className="text-muted-foreground italic text-sm leading-relaxed border-l-2 border-primary/30 pl-4">
-              "{t(`auth.layout.testimonials.items.${testimonials[0].key}.quote`)}"
+              &ldquo;{t(`auth.layout.testimonials.items.${testimonials[0].key}.quote`)}&rdquo;
             </blockquote>
             <div className="mt-3 flex items-center gap-3">
               <div className="h-9 w-9 rounded-md bg-primary flex items-center justify-center text-primary-foreground font-semibold text-sm">

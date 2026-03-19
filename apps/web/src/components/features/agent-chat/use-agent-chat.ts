@@ -20,7 +20,10 @@ import {
 } from './use-chat-history';
 import { env } from '@/lib/env';
 
-// SSE streaming requests connect to the backend directly to bypass Next.js proxy buffering
+// SSE streaming requests connect to the backend directly to bypass Next.js proxy buffering.
+// When empty, requests go through the Next.js rewrite proxy which buffers SSE responses
+// (Vercel Edge/Serverless does not support streaming passthrough for rewrites).
+// MUST be set to the API server URL in production (via NEXT_PUBLIC_API_URL env var).
 const STREAM_API_URL = env.NEXT_PUBLIC_API_URL;
 
 interface UseAgentChatOptions {

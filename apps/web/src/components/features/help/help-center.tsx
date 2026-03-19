@@ -3,11 +3,8 @@
 import { useState, useMemo } from 'react';
 import { useHydrated } from '@/hooks/use-hydration';
 import { useTranslations } from 'next-intl';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   HelpCircle,
-  ChevronDown,
-  ChevronRight,
   Search,
   BookOpen,
   MessageCircle,
@@ -27,7 +24,6 @@ import {
 } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils';
 
 // FAQ 数据
 interface FAQItem {
@@ -47,9 +43,9 @@ const faqDataKeys: FAQItem[] = [
     answerKey: 'predictionAccuracy',
     categoryKey: 'aiFeatures',
   },
-  { id: '4', questionKey: 'viewCases', answerKey: 'viewCases', categoryKey: 'usage' },
-  { id: '5', questionKey: 'dataSecure', answerKey: 'dataSecure', categoryKey: 'privacySecurity' },
-  { id: '6', questionKey: 'exportData', answerKey: 'exportData', categoryKey: 'usage' },
+  { id: '4', questionKey: 'shareCase', answerKey: 'shareCase', categoryKey: 'featureUsage' },
+  { id: '5', questionKey: 'dataPrivacy', answerKey: 'dataPrivacy', categoryKey: 'privacySecurity' },
+  { id: '6', questionKey: 'exportData', answerKey: 'exportData', categoryKey: 'featureUsage' },
 ];
 
 // Help resources config
@@ -64,6 +60,7 @@ const categoryKeys = ['gettingStarted', 'aiFeatures', 'featureUsage', 'privacySe
 
 export function HelpCenter() {
   const t = useTranslations('helpCenter');
+  const tUi = useTranslations('ui');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const isHydrated = useHydrated();
@@ -121,6 +118,7 @@ export function HelpCenter() {
         size="icon"
         className="relative"
         data-tour="help"
+        aria-label={tUi('a11y.helpCenter')}
         suppressHydrationWarning
       >
         <HelpCircle className="h-5 w-5" />
@@ -131,7 +129,13 @@ export function HelpCenter() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative" data-tour="help">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative"
+          data-tour="help"
+          aria-label={tUi('a11y.helpCenter')}
+        >
           <HelpCircle className="h-5 w-5" />
         </Button>
       </SheetTrigger>

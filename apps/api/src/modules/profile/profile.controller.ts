@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { ProfileService } from './profile.service';
-import { AiService } from '../ai/ai.service';
+import { ProfileAiService } from '../ai/profile-ai.service';
 import { SchoolListService } from '../school-list/school-list.service';
 import { RedisService } from '../../common/redis/redis.service';
 import { CurrentUser } from '../../common/decorators';
@@ -44,7 +44,7 @@ import {
 export class ProfileController {
   constructor(
     private readonly profileService: ProfileService,
-    private readonly aiService: AiService,
+    private readonly profileAiService: ProfileAiService,
     private readonly schoolListService: SchoolListService,
     private readonly redis: RedisService,
   ) {}
@@ -98,7 +98,7 @@ export class ProfileController {
     const profile = await this.profileService.findByUserId(user.id);
 
     if (!profile) {
-      return this.aiService.analyzeProfileDetailed({}, user.locale);
+      return this.profileAiService.analyzeProfileDetailed({}, user.locale);
     }
 
     // 构建分析请求
@@ -130,7 +130,7 @@ export class ProfileController {
       targetMajor: profile.targetMajor || undefined,
     };
 
-    const result = await this.aiService.analyzeProfileDetailed(
+    const result = await this.profileAiService.analyzeProfileDetailed(
       request,
       user.locale,
     );

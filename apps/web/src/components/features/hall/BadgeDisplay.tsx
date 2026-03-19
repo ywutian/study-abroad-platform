@@ -1,9 +1,8 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
-import { getLocalizedName } from '@/lib/i18n/locale-utils';
 import { Shield, Crown, Gem, Award } from 'lucide-react';
 
 export type SwipeBadge = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond';

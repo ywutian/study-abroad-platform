@@ -179,6 +179,7 @@ export function MessageInput({
           className="shrink-0 h-10 w-10"
           onClick={() => fileInputRef.current?.click()}
           disabled={disabled || isSending}
+          aria-label="Attach file"
         >
           <Paperclip className="h-5 w-5 text-muted-foreground" />
         </Button>
@@ -188,6 +189,7 @@ export function MessageInput({
           variant="ghost"
           size="icon"
           className="shrink-0 h-10 w-10 hidden sm:flex"
+          aria-label="Attach image"
           onClick={() => {
             if (fileInputRef.current) {
               fileInputRef.current.accept = 'image/*';
@@ -222,6 +224,7 @@ export function MessageInput({
           onClick={handleSend}
           disabled={disabled || isSending || (!message.trim() && attachments.length === 0)}
           className="shrink-0 h-11 w-11 p-0 bg-primary hover:opacity-90"
+          aria-label="Send message"
         >
           {isSending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
         </Button>

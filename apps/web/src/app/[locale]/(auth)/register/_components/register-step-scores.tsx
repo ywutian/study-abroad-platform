@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 
 interface RegisterStepScoresProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   form: UseFormReturn<any>;
 }
 

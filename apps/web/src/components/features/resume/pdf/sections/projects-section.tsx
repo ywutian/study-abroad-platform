@@ -5,9 +5,10 @@ import { SectionTitle } from '../primitives/section-title';
 import { BulletList } from '../primitives/bullet-list';
 import { DateRange } from '../primitives/date-range';
 import type { ProjectItem } from '@study-abroad/shared';
+import type { ResumeTheme } from '../types';
 
 export function ProjectsSection({ section, theme }: SectionRendererProps) {
-  const items = ((section.content as any).items ?? []) as ProjectItem[];
+  const items = ((section.content as Record<string, unknown>).items ?? []) as ProjectItem[];
   if (!items.length) return null;
 
   const styles = getStyles(theme);
@@ -38,7 +39,7 @@ export function ProjectsSection({ section, theme }: SectionRendererProps) {
   );
 }
 
-function getStyles(theme: any) {
+function getStyles(theme: ResumeTheme) {
   return StyleSheet.create({
     container: { marginBottom: theme.spacing.sectionGap },
     item: { marginBottom: theme.spacing.itemGap },

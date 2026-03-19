@@ -2,10 +2,7 @@
  * SecurityPipelineService 单元测试
  */
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  SecurityPipelineService,
-  PipelineOptions,
-} from './security-pipeline.service';
+import { SecurityPipelineService } from './security-pipeline.service';
 import {
   PromptGuardService,
   PromptGuardResult,

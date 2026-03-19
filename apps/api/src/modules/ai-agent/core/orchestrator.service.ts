@@ -16,7 +16,6 @@ import { LLMService } from './llm.service';
 import { ToolExecutorService } from './tool-executor.service';
 import {
   WorkflowEngineService,
-  WorkflowStreamEvent,
   WorkflowPhase,
 } from './workflow-engine.service';
 import { MemoryManagerService } from '../memory';
@@ -29,13 +28,7 @@ import { FallbackService } from './fallback.service';
 import { ConfigValidatorService } from '../config/config-validator.service';
 import { AGENT_CONFIGS } from '../config/agents.config';
 import { TOOLS } from '../config/tools.config';
-import {
-  AgentType,
-  AgentResponse,
-  ConversationState,
-  ToolDefinition,
-  Message,
-} from '../types';
+import { AgentType, AgentResponse, ConversationState, Message } from '../types';
 import { ActionSuggestion } from './types';
 import { StreamEvent } from '@study-abroad/shared';
 import { randomUUID } from 'crypto';

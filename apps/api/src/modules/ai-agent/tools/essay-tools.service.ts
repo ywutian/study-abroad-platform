@@ -2,11 +2,15 @@
  * Essay Tools Service
  *
  * Tools: GET_ESSAYS, REVIEW_ESSAY, POLISH_ESSAY, GENERATE_OUTLINE, BRAINSTORM_IDEAS
+ *
+ * Phase 2: polish_essay, review_essay, brainstorm_ideas delegate to EssayAiService
+ * (charge points → call AI → persist EssayAIResult → record memory)
  */
 
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { AiService } from '../../ai/ai.service';
+import { LLMService } from '../core/llm.service';
+import { EssayAiService } from '../../essay/essay-ai.service';
 import { extractJsonFromLlm } from './helpers/llm-json.helper';
 import { ToolHandler, IToolHandlerProvider } from './tool-handler.interface';
 
@@ -16,7 +20,8 @@ export class EssayToolsService implements IToolHandlerProvider {
 
   constructor(
     private prisma: PrismaService,
-    private aiService: AiService,
+    private llmService: LLMService,
+    private essayAiService: EssayAiService,
   ) {}
 
   getHandlers(): Map<string, ToolHandler> {
@@ -31,8 +36,7 @@ export class EssayToolsService implements IToolHandlerProvider {
       ],
       [
         'polish_essay',
-        (args, _userId, _ctx, locale) =>
-          this.aiService.polishEssay(args.content, args.style, locale),
+        (args, userId, _ctx, locale) => this.polishEssay(args, userId, locale),
       ],
       [
         'generate_outline',
@@ -44,12 +48,8 @@ export class EssayToolsService implements IToolHandlerProvider {
       ],
       [
         'brainstorm_ideas',
-        (args, _userId, _ctx, locale) =>
-          this.aiService.generateEssayIdeas(
-            args.prompt,
-            args.background,
-            locale,
-          ),
+        (args, userId, _ctx, locale) =>
+          this.brainstormIdeas(args, userId, locale),
       ],
     ]);
   }
@@ -78,6 +78,36 @@ export class EssayToolsService implements IToolHandlerProvider {
     };
   }
 
+  async polishEssay(
+    args: { content?: string; style?: string },
+    userId: string,
+    locale = 'zh',
+  ) {
+    if (!args.content) {
+      return {
+        error:
+          locale === 'zh' ? '请提供文书内容' : 'Please provide essay content',
+      };
+    }
+
+    try {
+      return await this.essayAiService.polishEssayDirect(
+        userId,
+        args.content,
+        (args.style as any) || 'default',
+        locale,
+      );
+    } catch (error: any) {
+      this.logger.warn(`polish_essay failed: ${error?.message}`);
+      return {
+        error:
+          locale === 'zh'
+            ? `润色失败：${error?.message || '请稍后重试'}`
+            : `Polish failed: ${error?.message || 'Please try again later'}`,
+      };
+    }
+  }
+
   async reviewEssay(
     args: { essayId?: string; content?: string; prompt?: string },
     userId: string,
@@ -103,10 +133,52 @@ export class EssayToolsService implements IToolHandlerProvider {
       };
     }
 
-    return this.aiService.reviewEssay(
-      { prompt: prompt || 'Personal Statement', content },
-      locale,
-    );
+    try {
+      return await this.essayAiService.reviewEssayDirect(
+        userId,
+        content,
+        prompt || 'Personal Statement',
+        locale,
+      );
+    } catch (error: any) {
+      this.logger.warn(`review_essay failed: ${error?.message}`);
+      return {
+        error:
+          locale === 'zh'
+            ? `点评失败：${error?.message || '请稍后重试'}`
+            : `Review failed: ${error?.message || 'Please try again later'}`,
+      };
+    }
+  }
+
+  async brainstormIdeas(
+    args: { prompt?: string; background?: string },
+    userId: string,
+    locale = 'zh',
+  ) {
+    if (!args.prompt) {
+      return {
+        error:
+          locale === 'zh' ? '请提供文书题目' : 'Please provide essay prompt',
+      };
+    }
+
+    try {
+      return await this.essayAiService.brainstormDirect(
+        userId,
+        args.prompt,
+        args.background,
+        locale,
+      );
+    } catch (error: any) {
+      this.logger.warn(`brainstorm_ideas failed: ${error?.message}`);
+      return {
+        error:
+          locale === 'zh'
+            ? `头脑风暴失败：${error?.message || '请稍后重试'}`
+            : `Brainstorm failed: ${error?.message || 'Please try again later'}`,
+      };
+    }
   }
 
   async generateOutline(
@@ -150,7 +222,7 @@ Return in JSON format:
   "tips": ["Writing tip 1", "Writing tip 2"]
 }`;
 
-    const result = await this.aiService.chat(
+    const result = await this.llmService.chatSimple(
       [
         { role: 'system', content: systemPrompt },
         {

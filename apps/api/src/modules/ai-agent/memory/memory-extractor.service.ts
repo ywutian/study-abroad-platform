@@ -150,6 +150,7 @@ export class MemoryExtractorService {
   /**
    * 使用规则提取
    */
+  // eslint-disable-next-line @typescript-eslint/require-await
   private async extractWithRules(content: string): Promise<{
     memories: ExtractedMemory[];
     entities: ExtractedEntity[];
@@ -264,6 +265,7 @@ export class MemoryExtractorService {
   /**
    * 处理提取的数据（验证、去重、评分）
    */
+  // eslint-disable-next-line @typescript-eslint/require-await
   private async processExtractedData(
     memories: ExtractedMemory[],
     entities: ExtractedEntity[],

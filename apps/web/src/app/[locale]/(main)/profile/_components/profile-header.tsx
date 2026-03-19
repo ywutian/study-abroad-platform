@@ -4,9 +4,19 @@ import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Download, FileText, Sparkles, Zap, GraduationCap, BarChart } from 'lucide-react';
+import {
+  Sparkles,
+  Zap,
+  GraduationCap,
+  BarChart,
+  TrendingUp,
+  PenTool,
+  ClipboardList,
+  FileText,
+} from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { VerificationStatusCard, PointsOverview } from '@/components/features';
+import { Link } from '@/lib/i18n/navigation';
+import { VerificationStatusCard, PointsOverview, AIErrorBoundary } from '@/components/features';
 import type { ProfileData } from './types';
 
 const ProfileAIAnalysis = dynamic(
@@ -24,7 +34,7 @@ interface ProfileHeaderProps {
 export function ProfileHeader({
   completeness,
   profile,
-  onOpenResumeExport,
+  onOpenResumeExport: _onOpenResumeExport,
   onSetActiveTab,
 }: ProfileHeaderProps) {
   const t = useTranslations();
@@ -61,7 +71,61 @@ export function ProfileHeader({
           transition={{ delay: 0.3 }}
           className="mt-6"
         >
-          <ProfileAIAnalysis compact />
+          <AIErrorBoundary feature="profile-analysis">
+            <ProfileAIAnalysis compact />
+          </AIErrorBoundary>
+        </motion.div>
+      )}
+
+      {/* Next Steps — feature discovery CTAs */}
+      {completeness >= 30 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="mt-6"
+        >
+          <h3 className="text-sm font-semibold mb-3">{t('profile.nextSteps.title')}</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              {
+                href: '/prediction',
+                icon: TrendingUp,
+                label: t('profile.nextSteps.prediction'),
+                color: 'text-blue-500 dark:text-blue-400',
+              },
+              {
+                href: '/essays',
+                icon: PenTool,
+                label: t('profile.nextSteps.essays'),
+                color: 'text-emerald-500 dark:text-emerald-400',
+              },
+              {
+                href: '/assessment',
+                icon: ClipboardList,
+                label: t('profile.nextSteps.assessment'),
+                color: 'text-amber-500 dark:text-amber-400',
+              },
+              {
+                href: '/resume',
+                icon: FileText,
+                label: t('profile.nextSteps.resume'),
+                color: 'text-violet-500 dark:text-violet-400',
+              },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex items-center gap-2 p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+                >
+                  <Icon className={`h-4 w-4 shrink-0 ${item.color}`} />
+                  <span className="text-sm font-medium truncate">{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
         </motion.div>
       )}
 

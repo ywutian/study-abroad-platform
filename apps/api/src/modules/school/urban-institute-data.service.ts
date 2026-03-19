@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SchoolDataMerger, DataSource } from './school-data-merger';
-import { normalizeSchoolName } from '../../common/utils/school-name.util';
 import { normalizePercentRate } from '../../common/utils/percent.util';
 import {
   AuditLogService,
@@ -292,7 +291,7 @@ export class UrbanInstituteDataService {
             synced++;
           } catch (err) {
             errors++;
-            this.logger.warn(`Failed to process row: ${err}`);
+            this.logger.warn(`Failed to process row: ${String(err)}`);
           }
         }
 
@@ -304,7 +303,7 @@ export class UrbanInstituteDataService {
         await this.delay(REQUEST_DELAY);
       }
     } catch (err) {
-      this.logger.error(`Sync ${label} failed: ${err}`);
+      this.logger.error(`Sync ${label} failed: ${String(err)}`);
     }
 
     this.logger.log(

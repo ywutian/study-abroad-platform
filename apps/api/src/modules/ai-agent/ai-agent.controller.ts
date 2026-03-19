@@ -28,7 +28,7 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import type { Response } from 'express';
-import { OrchestratorService, StreamEvent } from './core/orchestrator.service';
+import { OrchestratorService } from './core/orchestrator.service';
 import { TokenTrackerService } from './core/token-tracker.service';
 import { RateLimiterService } from './core/rate-limiter.service';
 import { LLMService } from './core/llm.service';
@@ -126,7 +126,7 @@ export class AiAgentController {
           }
           res.write(`data: ${JSON.stringify(event)}\n\n`);
         }
-      } catch (error) {
+      } catch {
         if (!clientDisconnected) {
           res.write(
             `data: ${JSON.stringify({ type: 'error', error: 'Stream failed' })}\n\n`,
@@ -214,11 +214,11 @@ export class AiAgentController {
    */
   @Delete('conversation')
   @ApiOperation({ summary: '清除对话' })
-  async clearConversation(
+  clearConversation(
     @CurrentUser() user: CurrentUserPayload,
     @Query('conversationId') conversationId?: string,
   ) {
-    this.orchestrator.clearConversation(user.id, conversationId);
+    void this.orchestrator.clearConversation(user.id, conversationId);
     return { success: true };
   }
 
@@ -253,7 +253,7 @@ export class AiAgentController {
   @Get('rate-limit')
   @SkipAgentThrottle()
   @ApiOperation({ summary: '获取当前限流状态' })
-  async getRateLimit(@CurrentUser() user: CurrentUserPayload) {
+  getRateLimit(@CurrentUser() user: CurrentUserPayload) {
     return {
       user: this.rateLimiter.getStatus(user.id, 'user'),
       conversation: this.rateLimiter.getStatus(user.id, 'conversation'),

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
@@ -160,6 +161,7 @@ export default function PredictionPage() {
         },
       }
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- predictMutation.mutate is stable, adding predictMutation object would cause infinite re-renders
   }, [selectedSchools, ucIdsData?.schoolIds, predictMutation.mutate, t]);
 
   const handleToggleExpand = useCallback((schoolId: string) => {
@@ -192,6 +194,7 @@ export default function PredictionPage() {
         }
       );
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- predictMutation.mutate is stable
     [predictMutation.mutate]
   );
 
@@ -227,6 +230,7 @@ export default function PredictionPage() {
         },
       }
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- predictMutation.mutate is stable
   }, [ucIdsData?.schoolIds, predictMutation.mutate, t]);
 
   return (
@@ -275,7 +279,9 @@ export default function PredictionPage() {
               refreshingSchoolId={refreshingSchoolId}
               isInternational={isInternational}
             />
-            <RecommendedSchoolsBlock />
+            <AIErrorBoundary feature="recommendation">
+              <RecommendedSchoolsBlock />
+            </AIErrorBoundary>
             <AiContextActions results={results} selectedSchools={selectedSchools} />
           </>
         ) : (

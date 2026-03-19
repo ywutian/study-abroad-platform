@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
+import { apiClient } from '@/lib/api';
 import {
   Download,
   FileJson,
@@ -100,32 +101,31 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
     setProgress(0);
 
     try {
-      // 模拟导出过程
-      for (let i = 0; i <= 100; i += 10) {
-        await new Promise((resolve) => setTimeout(resolve, 200));
-        setProgress(i);
+      setProgress(20);
+      const data = await apiClient.get<Record<string, unknown>>('/users/me/export');
+      setProgress(60);
+
+      // Filter to selected data types
+      const filtered: Record<string, unknown> = {};
+      for (const type of selectedTypes) {
+        if (data && typeof data === 'object' && type in data) {
+          filtered[type] = (data as Record<string, unknown>)[type];
+        }
+      }
+      filtered.exportedAt = new Date().toISOString();
+
+      let blob: Blob;
+      if (format === 'csv') {
+        // Simple CSV conversion for flat data
+        const rows = Object.entries(filtered).map(
+          ([key, value]) => `"${key}","${JSON.stringify(value).replace(/"/g, '""')}"`
+        );
+        blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+      } else {
+        blob = new Blob([JSON.stringify(filtered, null, 2)], { type: 'application/json' });
       }
 
-      // 实际应该调用 API
-      // const blob = await api.exportData({
-      //   format,
-      //   types: selectedTypes,
-      // });
-
-      // 模拟生成下载链接
-      const mockData = {
-        exportedAt: new Date().toISOString(),
-        format,
-        types: selectedTypes,
-        data: {
-          // ... actual data
-        },
-      };
-
-      const blob = new Blob([JSON.stringify(mockData, null, 2)], {
-        type: format === 'json' ? 'application/json' : 'text/csv',
-      });
-
+      setProgress(100);
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setStep('done');
@@ -251,6 +251,9 @@ export function DataExportDialog({ trigger }: DataExportDialogProps) {
                           : 'hover:bg-muted/50'
                       )}
                       onClick={() => toggleType(type.id)}
+                      onKeyDown={(e) => e.key === 'Enter' && toggleType(type.id)}
+                      role="button"
+                      tabIndex={0}
                     >
                       <Checkbox
                         checked={selectedTypes.includes(type.id)}

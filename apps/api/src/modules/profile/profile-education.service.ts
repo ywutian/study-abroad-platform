@@ -1,0 +1,398 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
+import { CacheInvalidationService } from '../../common/redis/cache-invalidation.service';
+import { Education, Essay, Prisma } from '@prisma/client';
+import {
+  CreateEducationDto,
+  UpdateEducationDto,
+  CreateEssayDto,
+  UpdateEssayDto,
+} from './dto';
+import { ProfileHelpersService } from './profile-helpers.service';
+
+/**
+ * Handles education records, essays, and target schools CRUD operations.
+ */
+@Injectable()
+export class ProfileEducationService {
+  private readonly logger = new Logger(ProfileEducationService.name);
+
+  constructor(
+    private prisma: PrismaService,
+    private cacheInvalidation: CacheInvalidationService,
+    private helpers: ProfileHelpersService,
+  ) {}
+
+  // ============================================
+  // Education CRUD
+  // ============================================
+
+  /**
+   * Create an education record for the user's profile. Auto-creates the profile if needed.
+   *
+   * @param userId - The user identifier
+   * @param data - Education creation DTO
+   * @returns The created Education record
+   */
+  async createEducation(
+    userId: string,
+    data: CreateEducationDto,
+  ): Promise<Education> {
+    const profileId = await this.helpers.getProfileId(userId);
+
+    const education = await this.prisma.education.create({
+      data: {
+        profileId,
+        schoolName: data.schoolName,
+        schoolType: data.schoolType,
+        degree: data.degree,
+        major: data.major,
+        startDate: data.startDate ? new Date(data.startDate) : null,
+        endDate: data.endDate ? new Date(data.endDate) : null,
+        gpa: data.gpa ? new Prisma.Decimal(data.gpa) : null,
+        gpaScale: data.gpaScale ? new Prisma.Decimal(data.gpaScale) : null,
+        description: data.description,
+        highSchoolId: data.highSchoolId || null,
+      },
+    });
+
+    await this.cacheInvalidation.onProfileChange(userId);
+
+    return education;
+  }
+
+  /**
+   * Update an existing education record after verifying ownership.
+   *
+   * @param userId - The requesting user's ID
+   * @param educationId - The education record ID to update
+   * @param data - Partial education update DTO
+   * @returns The updated Education record
+   * @throws {NotFoundException} When the education record does not exist
+   * @throws {ForbiddenException} When the education record does not belong to the user
+   */
+  async updateEducation(
+    userId: string,
+    educationId: string,
+    data: UpdateEducationDto,
+  ): Promise<Education> {
+    const _education = this.helpers.verifyProfileOwnership(
+      await this.prisma.education.findUnique({
+        where: { id: educationId },
+        include: { profile: { select: { userId: true } } },
+      }),
+      userId,
+      'Education',
+    );
+
+    const updated = await this.prisma.education.update({
+      where: { id: educationId },
+      data: {
+        schoolName: data.schoolName,
+        schoolType: data.schoolType,
+        degree: data.degree,
+        major: data.major,
+        startDate: data.startDate ? new Date(data.startDate) : undefined,
+        endDate: data.endDate ? new Date(data.endDate) : undefined,
+        gpa: data.gpa !== undefined ? new Prisma.Decimal(data.gpa) : undefined,
+        gpaScale:
+          data.gpaScale !== undefined
+            ? new Prisma.Decimal(data.gpaScale)
+            : undefined,
+        description: data.description,
+        highSchoolId:
+          data.highSchoolId !== undefined
+            ? data.highSchoolId || null
+            : undefined,
+      },
+    });
+
+    await this.cacheInvalidation.onProfileChange(userId);
+
+    return updated;
+  }
+
+  /**
+   * Delete an education record by ID after verifying ownership.
+   *
+   * @param userId - The requesting user's ID
+   * @param educationId - The education record ID to delete
+   * @throws {NotFoundException} When the education record does not exist
+   * @throws {ForbiddenException} When the education record does not belong to the user
+   */
+  async deleteEducation(userId: string, educationId: string): Promise<void> {
+    this.helpers.verifyProfileOwnership(
+      await this.prisma.education.findUnique({
+        where: { id: educationId },
+        include: { profile: { select: { userId: true } } },
+      }),
+      userId,
+      'Education',
+    );
+
+    await this.prisma.education.delete({ where: { id: educationId } });
+
+    await this.cacheInvalidation.onProfileChange(userId);
+  }
+
+  /**
+   * Get all education records for a user, ordered by startDate descending.
+   *
+   * @param userId - The user identifier
+   * @returns Array of Education records, or empty array if no profile exists
+   */
+  async getEducation(userId: string): Promise<Education[]> {
+    const profile = await this.prisma.profile.findUnique({
+      where: { userId },
+      include: { education: { orderBy: { startDate: 'desc' } } },
+    });
+
+    return profile?.education || [];
+  }
+
+  // ============================================
+  // Target Schools CRUD
+  // ============================================
+
+  /**
+   * Get all target schools for a user with school details, ordered by priority ascending.
+   *
+   * @param userId - The user identifier
+   * @returns Array of ProfileTargetSchool records with included school relation
+   */
+  async getTargetSchools(userId: string) {
+    const profile = await this.prisma.profile.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+
+    if (!profile) return [];
+
+    return this.prisma.profileTargetSchool.findMany({
+      where: { profileId: profile.id },
+      include: { school: true },
+      orderBy: { priority: 'asc' },
+    });
+  }
+
+  /**
+   * Replace all target schools for a user. Deletes existing entries and creates new ones.
+   *
+   * @param userId - The user identifier
+   * @param schoolIds - Array of school IDs to set as targets
+   * @param priorities - Optional map of schoolId to priority number
+   * @returns The newly created target school records with school details
+   */
+  async setTargetSchools(
+    userId: string,
+    schoolIds: string[],
+    priorities?: Record<string, number>,
+  ) {
+    const profileId = await this.helpers.getProfileId(userId);
+
+    // Wrap delete + create in a transaction for atomicity
+    await this.prisma.$transaction(async (tx) => {
+      // Delete existing target schools
+      await tx.profileTargetSchool.deleteMany({
+        where: { profileId },
+      });
+
+      // Create new target schools
+      if (schoolIds.length > 0) {
+        await tx.profileTargetSchool.createMany({
+          data: schoolIds.map((schoolId, index) => ({
+            profileId,
+            schoolId,
+            priority: priorities?.[schoolId] ?? index + 1,
+          })),
+        });
+      }
+    });
+
+    const result = await this.getTargetSchools(userId);
+
+    await this.cacheInvalidation.onProfileChange(userId);
+
+    return result;
+  }
+
+  /**
+   * Add a single target school (idempotent). Returns the existing record if already present.
+   *
+   * @param userId - The user identifier
+   * @param schoolId - The school ID to add as a target
+   * @param priority - Optional priority value (defaults to 0)
+   * @returns The created or existing ProfileTargetSchool record with school details
+   */
+  async addTargetSchool(userId: string, schoolId: string, priority?: number) {
+    const profileId = await this.helpers.getProfileId(userId);
+
+    // Check if already exists
+    const existing = await this.prisma.profileTargetSchool.findUnique({
+      where: { profileId_schoolId: { profileId, schoolId } },
+    });
+
+    if (existing) {
+      return existing;
+    }
+
+    const result = await this.prisma.profileTargetSchool.create({
+      data: { profileId, schoolId, priority: priority ?? 0 },
+      include: { school: true },
+    });
+
+    await this.cacheInvalidation.onProfileChange(userId);
+
+    return result;
+  }
+
+  /**
+   * Remove a target school from the user's list.
+   *
+   * @param userId - The user identifier
+   * @param schoolId - The school ID to remove
+   */
+  async removeTargetSchool(userId: string, schoolId: string) {
+    const profileId = await this.helpers.getProfileId(userId);
+
+    await this.prisma.profileTargetSchool.deleteMany({
+      where: { profileId, schoolId },
+    });
+
+    await this.cacheInvalidation.onProfileChange(userId);
+  }
+
+  // ============================================
+  // Essays CRUD
+  // ============================================
+
+  /**
+   * Create a new essay for the user's profile. Auto-creates the profile if needed.
+   * Computes word count from the content.
+   *
+   * @param userId - The user identifier
+   * @param data - Essay creation DTO (title, prompt, content, schoolId)
+   * @returns The created Essay record with computed wordCount
+   */
+  async createEssay(userId: string, data: CreateEssayDto): Promise<Essay> {
+    const profileId = await this.helpers.getProfileId(userId);
+    const wordCount = data.content.split(/\s+/).filter(Boolean).length;
+
+    const essay = await this.prisma.essay.create({
+      data: {
+        profileId,
+        title: data.title,
+        prompt: data.prompt,
+        content: data.content,
+        wordCount,
+        schoolId: data.schoolId,
+      },
+    });
+
+    await this.cacheInvalidation.onProfileChange(userId);
+
+    return essay;
+  }
+
+  /**
+   * Update an existing essay after verifying ownership. Recomputes word count
+   * if content is provided.
+   *
+   * @param userId - The requesting user's ID
+   * @param essayId - The essay ID to update
+   * @param data - Partial essay update DTO
+   * @returns The updated Essay record
+   * @throws {NotFoundException} When the essay does not exist
+   * @throws {ForbiddenException} When the essay does not belong to the user
+   */
+  async updateEssay(
+    userId: string,
+    essayId: string,
+    data: UpdateEssayDto,
+  ): Promise<Essay> {
+    this.helpers.verifyProfileOwnership(
+      await this.prisma.essay.findUnique({
+        where: { id: essayId },
+        include: { profile: { select: { userId: true } } },
+      }),
+      userId,
+      'Essay',
+    );
+
+    const wordCount = data.content
+      ? data.content.split(/\s+/).filter(Boolean).length
+      : undefined;
+
+    const result = await this.prisma.essay.update({
+      where: { id: essayId },
+      data: {
+        title: data.title,
+        prompt: data.prompt,
+        content: data.content,
+        wordCount,
+        schoolId: data.schoolId,
+      },
+    });
+    await this.cacheInvalidation.onProfileChange(userId);
+    return result;
+  }
+
+  /**
+   * Delete an essay by ID after verifying ownership.
+   *
+   * @param userId - The requesting user's ID
+   * @param essayId - The essay ID to delete
+   * @throws {NotFoundException} When the essay does not exist
+   * @throws {ForbiddenException} When the essay does not belong to the user
+   */
+  async deleteEssay(userId: string, essayId: string): Promise<void> {
+    this.helpers.verifyProfileOwnership(
+      await this.prisma.essay.findUnique({
+        where: { id: essayId },
+        include: { profile: { select: { userId: true } } },
+      }),
+      userId,
+      'Essay',
+    );
+
+    await this.prisma.essay.delete({ where: { id: essayId } });
+    await this.cacheInvalidation.onProfileChange(userId);
+  }
+
+  /**
+   * Get all essays for a user, ordered by updatedAt descending.
+   *
+   * @param userId - The user identifier
+   * @returns Array of Essay records, or empty array if no profile exists
+   */
+  async getEssays(userId: string): Promise<Essay[]> {
+    const profile = await this.prisma.profile.findUnique({
+      where: { userId },
+      include: { essays: { orderBy: { updatedAt: 'desc' } } },
+    });
+
+    return profile?.essays || [];
+  }
+
+  /**
+   * Get a single essay by ID after verifying ownership.
+   *
+   * @param userId - The requesting user's ID
+   * @param essayId - The essay ID to retrieve
+   * @returns The Essay record
+   * @throws {NotFoundException} When the essay does not exist
+   * @throws {ForbiddenException} When the essay does not belong to the user
+   */
+  async getEssayById(userId: string, essayId: string): Promise<Essay> {
+    const essay = this.helpers.verifyProfileOwnership(
+      await this.prisma.essay.findUnique({
+        where: { id: essayId },
+        include: { profile: { select: { userId: true } } },
+      }),
+      userId,
+      'Essay',
+    );
+
+    return essay;
+  }
+}

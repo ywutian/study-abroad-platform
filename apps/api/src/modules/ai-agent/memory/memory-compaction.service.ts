@@ -499,6 +499,7 @@ export class MemoryCompactionService {
     return result.map((r) => r.userId);
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   private async calculateSimilarity(
     m1: MemoryWithEmbedding,
     m2: MemoryWithEmbedding,
@@ -563,6 +564,7 @@ export class MemoryCompactionService {
     return Math.ceil(chineseChars / 1.5 + otherChars / 4);
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   private async recordCompaction(
     userId: string,
     stats: {

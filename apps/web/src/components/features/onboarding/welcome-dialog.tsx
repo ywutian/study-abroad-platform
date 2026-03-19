@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Rocket, GraduationCap, Brain, Target, ChevronRight, ChevronLeft, X } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useTour, TOURS, welcomeTourSteps } from './tour-provider';
@@ -50,7 +50,7 @@ export function WelcomeDialog({ forceShow = false, onClose }: WelcomeDialogProps
   const t = useTranslations('welcome');
   const [open, setOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const { registerTour, startTour, hasCompletedTour } = useTour();
+  const { registerTour, startTour, hasCompletedTour: _hasCompletedTour } = useTour();
 
   // 检查是否首次访问
   useEffect(() => {

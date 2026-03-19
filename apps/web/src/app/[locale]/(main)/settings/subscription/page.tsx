@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useFormatter } from 'next-intl';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import {
@@ -30,6 +30,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { apiClient } from '@/lib/api';
 
 // UI-specific props (icon, color, gradient) stay in frontend
 const PLAN_UI: Record<string, { icon: typeof Gift; color: string; gradient: string }> = {
@@ -44,15 +45,53 @@ const planConfigs = SUBSCRIPTION_PLAN_LIST.map((plan) => ({
   ...PLAN_UI[plan.key],
 }));
 
+interface SubscriptionData {
+  plan: string;
+  planDetails: { name: string };
+  startDate: string;
+  endDate: string | null;
+  isActive: boolean;
+}
+
+interface BillingHistoryItem {
+  id: string;
+  plan: string;
+  amount: number;
+  currency: string;
+  status: string;
+  description: string | null;
+  createdAt: string;
+}
+
 export default function SubscriptionPage() {
   const t = useTranslations('subscription');
   const tCommon = useTranslations('common');
-  const [currentPlan] = useState('free');
-  const isUpgrading: string | null = null; // Payment not yet integrated
+  const format = useFormatter();
 
-  const handleUpgrade = (_planId: string) => {
-    toast.info('Payment integration coming soon');
+  const { data: subscription } = useQuery<SubscriptionData>({
+    queryKey: ['subscription-me'],
+    queryFn: () => apiClient.get('/subscriptions/me'),
+  });
+
+  const { data: billingHistory = [] } = useQuery<BillingHistoryItem[]>({
+    queryKey: ['billing-history'],
+    queryFn: () => apiClient.get('/subscriptions/billing-history'),
+  });
+
+  const currentPlan = subscription?.plan?.toLowerCase() ?? 'free';
+
+  const upgradeMutation = useMutation({
+    mutationFn: (plan: string) => apiClient.post('/subscriptions/subscribe', { plan }),
+    onSuccess: () => {
+      toast.success(t('upgradeSuccess'));
+    },
+  });
+
+  const handleUpgrade = (planKey: string) => {
+    upgradeMutation.mutate(planKey.toUpperCase());
   };
+
+  const isUpgrading = upgradeMutation.isPending;
 
   return (
     <PageContainer maxWidth="5xl">
@@ -66,20 +105,36 @@ export default function SubscriptionPage() {
       {/* Current Plan */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <Card className="mb-8 overflow-hidden">
-          <div className="h-1.5 bg-slate-500 dark:bg-slate-400" />
+          {(() => {
+            const ui = PLAN_UI[currentPlan] ?? PLAN_UI.free;
+            return <div className={cn('h-1.5 bg-gradient-to-r', ui.gradient)} />;
+          })()}
           <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-muted">
-                <Gift className="h-7 w-7 text-muted-foreground" />
-              </div>
+              {(() => {
+                const ui = PLAN_UI[currentPlan] ?? PLAN_UI.free;
+                const CurrentIcon = ui.icon;
+                return (
+                  <div
+                    className={cn(
+                      'flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br shadow-lg',
+                      ui.gradient
+                    )}
+                  >
+                    <CurrentIcon className="h-7 w-7 text-white" />
+                  </div>
+                );
+              })()}
               <div>
                 <p className="text-sm text-muted-foreground">{t('currentPlan')}</p>
-                <h3 className="text-xl font-bold">{t('plans.free.name')}</h3>
+                <h3 className="text-xl font-bold">{t(`plans.${currentPlan}.name`)}</h3>
               </div>
             </div>
             <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
               <Calendar className="h-3.5 w-3.5" />
-              {t('validForever')}
+              {subscription?.endDate
+                ? format.dateTime(new Date(subscription.endDate), { dateStyle: 'medium' })
+                : t('validForever')}
             </Badge>
           </CardContent>
         </Card>
@@ -176,10 +231,10 @@ export default function SubscriptionPage() {
                       plan.popular && 'bg-primary hover:opacity-90 text-white '
                     )}
                     variant={plan.popular ? 'default' : 'outline'}
-                    disabled={isCurrentPlan || isUpgrading === plan.key}
+                    disabled={isCurrentPlan || isUpgrading}
                     onClick={() => handleUpgrade(plan.key)}
                   >
-                    {isUpgrading === plan.key ? (
+                    {isUpgrading ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />
                         {tCommon('processing')}
@@ -220,13 +275,42 @@ export default function SubscriptionPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {/* TODO: fetch from GET /subscriptions/billing-history */}
-            <div className="text-center py-12">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted mx-auto mb-4">
-                <ReceiptText className="h-8 w-8 text-muted-foreground" />
+            {billingHistory.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted mx-auto mb-4">
+                  <ReceiptText className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <p className="text-muted-foreground">{t('noInvoices')}</p>
               </div>
-              <p className="text-muted-foreground">{t('noInvoices')}</p>
-            </div>
+            ) : (
+              <div className="space-y-3">
+                {billingHistory.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                  >
+                    <div>
+                      <p className="font-medium text-sm">{item.description ?? item.plan}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {format.dateTime(new Date(item.createdAt), { dateStyle: 'medium' })}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium text-sm">
+                        {item.currency === 'CNY' ? '¥' : '$'}
+                        {item.amount / 100}
+                      </p>
+                      <Badge
+                        variant={item.status === 'SUCCESS' ? 'success' : 'secondary'}
+                        className="text-xs"
+                      >
+                        {item.status === 'SUCCESS' ? tCommon('success') : item.status}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </motion.div>

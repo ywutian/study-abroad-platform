@@ -134,7 +134,7 @@ export function parseSchoolRecommendations(text: string): TieredRecommendations 
         }
       }
     } catch (_e) {
-      console.warn('Failed to parse JSON from AI response:', _e);
+      // JSON parsing failed, fall through to line-by-line parsing
     }
   }
 

@@ -38,6 +38,7 @@ import {
   UpdateActivityTemplateDto,
   ActivityTemplateQueryDto,
   BroadcastNotificationDto,
+  BroadcastAudience,
   CreateSchoolCalibrationDto,
   UpdateSchoolCalibrationDto,
 } from './dto';
@@ -307,9 +308,9 @@ export class AdminController {
   @ApiOperation({ summary: '广播通知' })
   async broadcastNotification(@Body() body: BroadcastNotificationDto) {
     const roleFilter: any = {};
-    if (body.audience === 'VERIFIED')
+    if (body.audience === BroadcastAudience.VERIFIED)
       roleFilter.role = { in: [Role.VERIFIED, Role.ADMIN] };
-    if (body.audience === 'ADMIN') roleFilter.role = Role.ADMIN;
+    if (body.audience === BroadcastAudience.ADMIN) roleFilter.role = Role.ADMIN;
 
     const users = await this.prisma.user.findMany({
       where: { ...roleFilter, isBanned: false },

@@ -5,7 +5,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { AiService } from '../../ai/ai.service';
+import { LLMService } from '../core/llm.service';
 import { ForumService } from '../../forum/forum.service';
 import { ToolHandler, IToolHandlerProvider } from './tool-handler.interface';
 
@@ -14,7 +14,7 @@ export class ForumToolsService implements IToolHandlerProvider {
   private readonly logger = new Logger(ForumToolsService.name);
 
   constructor(
-    private aiService: AiService,
+    private llmService: LLMService,
     private forumService: ForumService,
   ) {}
 
@@ -137,7 +137,7 @@ Requirements:
 3. Reference relevant resources when appropriate
 4. Respond in English`;
 
-    const response = await this.aiService.chat(
+    const response = await this.llmService.chatSimple(
       [
         { role: 'system', content: systemPrompt },
         {

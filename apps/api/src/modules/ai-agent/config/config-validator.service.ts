@@ -11,7 +11,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AGENT_CONFIGS } from './agents.config';
-import { TOOLS, ToolName } from './tools.config';
+import { TOOLS } from './tools.config';
 import { AgentType, AgentConfig } from '../types';
 
 export interface ConfigValidationResult {

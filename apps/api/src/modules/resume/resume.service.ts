@@ -14,7 +14,6 @@ import {
   ResumeType,
   ResumeSectionType,
   ActivityCategory,
-  Prisma,
 } from '@prisma/client';
 import { CreateResumeDto } from './dto/create-resume.dto';
 import { UpdateResumeDto } from './dto/update-resume.dto';
@@ -24,7 +23,7 @@ import {
   ReorderSectionsDto,
 } from './dto/section.dto';
 import { ProfileService } from '../profile/profile.service';
-import { AiService } from '../ai/ai.service';
+import { ResumeAiService } from '../ai/resume-ai.service';
 
 type ResumeWithSections = Resume & { sections: ResumeSection[] };
 
@@ -159,7 +158,7 @@ export class ResumeService {
     private prisma: PrismaService,
     private auth: AuthorizationService,
     private profileService: ProfileService,
-    private aiService: AiService,
+    private resumeAiService: ResumeAiService,
   ) {}
 
   private verifyOwnership(resume: Resume | null, userId: string): Resume {
@@ -873,7 +872,7 @@ export class ResumeService {
       resumeType: resume.type,
     };
 
-    const result = await this.aiService.reviewResume(resumeData, {
+    const result = await this.resumeAiService.reviewResume(resumeData, {
       targetSchool,
       targetMajor,
     });
@@ -938,7 +937,10 @@ export class ResumeService {
       throw new BadRequestException('No bullets to optimize');
     }
 
-    const result = await this.aiService.optimizeResumeBullets(bullets, context);
+    const result = await this.resumeAiService.optimizeResumeBullets(
+      bullets,
+      context,
+    );
 
     await this.prisma.resumeAIReview.create({
       data: {
@@ -964,14 +966,17 @@ export class ResumeService {
     const profile = await this.profileService.findByUserId(userId);
     const profileData = profile as any;
 
-    const result = await this.aiService.suggestSectionContent(sectionType, {
-      existingContent: section?.content ?? {},
-      resumeType: resume.type,
-      targetMajor,
-      grade: profileData?.grade,
-      profileActivities: profileData?.activities,
-      profileAwards: profileData?.awards,
-    });
+    const result = await this.resumeAiService.suggestSectionContent(
+      sectionType,
+      {
+        existingContent: section?.content ?? {},
+        resumeType: resume.type,
+        targetMajor,
+        grade: profileData?.grade,
+        profileActivities: profileData?.activities,
+        profileAwards: profileData?.awards,
+      },
+    );
 
     await this.prisma.resumeAIReview.create({
       data: {

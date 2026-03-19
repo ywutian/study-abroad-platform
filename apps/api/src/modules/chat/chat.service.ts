@@ -772,6 +772,6 @@ export class ChatService {
     return scoredUsers
       .sort((a, b) => b.score - a.score)
       .slice(0, limit)
-      .map(({ score, ...user }) => user);
+      .map(({ ...user }) => user);
   }
 }

@@ -5,7 +5,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { AiService } from '../../ai/ai.service';
+import { LLMService } from '../core/llm.service';
 import { AssessmentService } from '../../assessment/assessment.service';
 import { extractJsonFromLlm } from './helpers/llm-json.helper';
 import { ToolHandler, IToolHandlerProvider } from './tool-handler.interface';
@@ -15,7 +15,7 @@ export class AssessmentToolsService implements IToolHandlerProvider {
   private readonly logger = new Logger(AssessmentToolsService.name);
 
   constructor(
-    private aiService: AiService,
+    private llmService: LLMService,
     private assessmentService: AssessmentService,
   ) {}
 
@@ -169,7 +169,7 @@ Types: ${result.hollandResult?.types?.join(', ')}
 Suitable fields: ${result.hollandResult?.fields?.join(', ')}
 Recommended majors: ${result.hollandResult?.majors?.join(', ')}`;
 
-      const interpretation = await this.aiService.chat(
+      const interpretation = await this.llmService.chatSimple(
         [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userContent },
@@ -279,7 +279,7 @@ ${targetMajor ? `Target major: ${targetMajor}` : ''}
 
 Please recommend suitable activities and competitions for this student.`;
 
-      const response = await this.aiService.chat(
+      const response = await this.llmService.chatSimple(
         [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userContent },

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Document, Page, View, StyleSheet } from '@react-pdf/renderer';
+import { Document, Page, StyleSheet } from '@react-pdf/renderer';
 import type { LayoutProps } from '../types';
 import { RenderSection } from '../sections';
 import { HeaderSectionBanner } from '../sections/header-section';

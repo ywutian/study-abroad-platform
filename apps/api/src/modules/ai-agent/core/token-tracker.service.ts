@@ -143,7 +143,7 @@ export class TokenTrackerService implements OnModuleInit {
       );
     } catch (err) {
       this.logger.warn(
-        `Failed to initialize tiktoken encoders: ${err}. Using fallback estimation.`,
+        `Failed to initialize tiktoken encoders: ${String(err)}. Using fallback estimation.`,
       );
       this.encoderReady = false;
     }
@@ -194,7 +194,9 @@ export class TokenTrackerService implements OnModuleInit {
 
         await pipeline.exec();
       } catch (err) {
-        this.logger.debug(`Redis trackUsage failed, using fallback: ${err}`);
+        this.logger.debug(
+          `Redis trackUsage failed, using fallback: ${String(err)}`,
+        );
         this.trackUsageFallback(userId, usage, dateKey, monthKey);
       }
     } else {
@@ -207,7 +209,7 @@ export class TokenTrackerService implements OnModuleInit {
     });
 
     // 检查配额警告
-    this.checkQuotaWarningAsync(userId);
+    void this.checkQuotaWarningAsync(userId);
   }
 
   /**
@@ -317,7 +319,9 @@ export class TokenTrackerService implements OnModuleInit {
           calls: parseInt(monthlyData.calls || '0'),
         };
       } catch (err) {
-        this.logger.debug(`Redis getUsageStats failed, using fallback: ${err}`);
+        this.logger.debug(
+          `Redis getUsageStats failed, using fallback: ${String(err)}`,
+        );
         return this.getUsageStatsFallback(userId, quota);
       }
     } else {
@@ -381,7 +385,9 @@ export class TokenTrackerService implements OnModuleInit {
       try {
         return encoder.encode(text).length;
       } catch (err) {
-        this.logger.debug(`Tiktoken encode failed, using fallback: ${err}`);
+        this.logger.debug(
+          `Tiktoken encode failed, using fallback: ${String(err)}`,
+        );
       }
     }
     return this.estimateTokensFallback(text);
@@ -631,7 +637,7 @@ export class TokenTrackerService implements OnModuleInit {
       `;
     } catch (err) {
       // 数据库写入失败不影响主流程
-      this.logger.error(`Failed to persist usage to DB: ${err}`);
+      this.logger.error(`Failed to persist usage to DB: ${String(err)}`);
     }
 
     this.logger.debug(
@@ -655,7 +661,7 @@ export class TokenTrackerService implements OnModuleInit {
           `User ${userId} approaching daily cost limit: $${stats.today.cost.toFixed(2)}/$${quota.dailyCost}`,
         );
       }
-    } catch (err) {
+    } catch {
       // 忽略警告检查错误
     }
   }

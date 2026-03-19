@@ -11,40 +11,40 @@ Turbo monorepo with pnpm workspaces:
 
 ## Backend Module Map
 
-28 domain modules in `apps/api/src/modules/` (see `app.module.ts`):
+29 domain modules in `apps/api/src/modules/` (see `app.module.ts`):
 
 **Core Business:**
 
 - `auth` — JWT auth, refresh token rotation, brute force protection, email verification
 - `user` — User CRUD, dashboard, soft delete
-- `profile` — Student profiles (test scores, activities, awards, education)
+- `profile` — Student profiles; thin facade delegates to 5 sub-services (ProfileCrudService, ProfileScoresService, ProfileEducationService, ProfileAnalysisService, ProfileMemoryService)
 - `school` — School database (3000+ institutions), scraping, data sync
 - `school-list` — User school lists with application tracking
-- `prediction` — Admission probability (v3-enterprise, multi-engine ensemble + Platt calibration)
+- `prediction` — Admission probability (v3-enterprise); orchestrator + 13 sub-services (Transformer, StatisticalEngine, AiEngine, FusionEngine, Cache, Calibration, Historical, Memory, Persistence, Reporting, Validator, Insights, Suggestion)
 - `case` — Admission case gallery, incentive system, verification
 - `ranking` — Custom school rankings, weighted scoring
+- `points` — Points system, incentives, badges
 
 **Content & Social:**
 
 - `chat` — Real-time messaging (WebSocket gateway at `/chat` namespace)
-- `forum` — Discussion forums, categories, moderation
-- `hall` — Hall of Fame (admitted student profiles, trending)
-- `swipe` — Admission case swiping / review game
+- `forum` — Discussion forums; thin facade delegates to 6 sub-services (ForumPostService, ForumCommentService, ForumTeamService, ForumCategoryService, ForumReportService, ForumMemoryService) + ForumModerationService
+- `hall` — Hall of Fame + case swiping; thin facade delegates to 4 sub-services (HallRankingService, HallReviewService, HallListService, HallVerifiedService) + SwipeService
 - `peer-review` — Peer essay review system with ratings
+- `team` — Team formation and management
 
 **Essay & AI:**
 
-- `ai` — Simple AI service facade (chat, analyzeProfile, reviewEssay)
+- `essay` — Consolidated essay module; sub-services: EssayAiService (review/polish/brainstorm), EssayPromptService (prompt DB), EssayScraperService (scraping pipeline), EssayGalleryService (gallery)
+- `ai` — AI sub-services: ProfileAiService (profile analysis), ResumeAiService (resume review/optimize/suggest)
 - `ai-agent` — Enterprise multi-agent system (see `memory/ai-system.md`)
-- `essay-ai` — Essay review, polish, brainstorm
-- `essay-prompt` — Essay prompt database & scraping
-- `essay-scraper` — Essay prompt scraping pipeline
 - `recommendation` — AI school recommendations
 - `assessment` — MBTI/Holland/Strength assessments
 
 **Platform:**
 
-- `timeline` — Deadlines, personal events, global events
+- `timeline` — Deadlines, personal events, global events; thin facade delegates to TimelineApplicationService + TimelinePersonalEventService
+- `resume` — Resume builder with AI review
 - `notification` — Push notifications, email digests, broadcast
 - `subscription` — Payment plans, invoicing
 - `vault` — Encrypted document storage (AES-256)
@@ -137,14 +137,21 @@ Prisma error mapping: P2002 → `DUPLICATE_ENTRY` (409), P2025 → `NOT_FOUND` (
 
 ### LLM Provider Abstraction
 
-All LLM calls go through `ILLMProvider` interface (`ai-agent/providers/`). Provider selected by `LLM_PROVIDER` env var (default: `openai`). `LLMProvidersModule.forRoot()` is `global: true`.
+All LLM calls go through `ILLMProvider` interface (`ai-agent/providers/`). Provider selected by `LLM_PROVIDER` env var (default: `openai`). `LLMProvidersModule.forRoot()` is `global: true` and also provides `LLMService`, `ResilienceService`, and `TokenTrackerService` as global singletons — ensuring shared circuit breaker state and unified token tracking across the entire application.
 
-### Two Entry Points
+### Unified LLM Service
 
-| Service                         | When to use                                                  | Features                                           |
-| ------------------------------- | ------------------------------------------------------------ | -------------------------------------------------- |
-| `AiService` (`ai/`)             | Simple one-shot calls (essay-ai, recommendation, prediction) | Direct provider call, no resilience                |
-| `LLMService` (`ai-agent/core/`) | Agent loop calls (orchestrator, agent runner)                | Retry + circuit breaker + timeout + token tracking |
+All LLM calls go through `LLMService` (globally provided by `LLMProvidersModule.forRoot()`):
+
+| Method                                        | Use case                 | Input                      | Output                        |
+| --------------------------------------------- | ------------------------ | -------------------------- | ----------------------------- |
+| `chatSimple(messages, options)`               | One-shot domain AI calls | `ChatSimpleMessage[]`      | `string`                      |
+| `call(systemPrompt, messages, options)`       | Agent loop (with tools)  | `Message[]` + `LLMOptions` | `LLMResponse`                 |
+| `callStream(systemPrompt, messages, options)` | Streaming agent loop     | `Message[]` + `LLMOptions` | `AsyncGenerator<StreamChunk>` |
+
+`LLMOptions` supports `seed`, `providerOptions` (for `response_format`, etc.), `temperature`, `maxTokens`, `timeoutMs`.
+
+**Note**: The legacy `AiService` has been removed. All consumers use `LLMService.chatSimple()` directly.
 
 ### Tool System
 
@@ -164,7 +171,7 @@ Enterprise memory: Redis (hot) + PostgreSQL (cold) + pgvector (semantic search).
 
 ```typescript
 // ALWAYS use:
-import { extractJsonFromLlm } from '../ai-agent/tools/helpers/llm-json.helper';
+import { extractJsonFromLlm } from '../../common/utils/llm-json.util';
 const parsed = extractJsonFromLlm<MyType>(llmResponse);
 // NEVER use: result.match(/\{[\s\S]*\}/)
 ```
@@ -238,19 +245,31 @@ Shared constants in `common/constants/prisma-selects.ts`: `SCHOOL_BASIC_SELECT`,
 
 ```
 ai-agent/security/  →  @Global(), no imports needed
-ai-agent/providers/ →  global: true via forRoot(), no imports needed
+ai-agent/providers/ →  global: true via forRoot(); provides LLMService, ResilienceService, TokenTrackerService
 ai-agent/memory/    →  Import AiAgentMemoryModule for MemoryManagerService
-ai-agent/           →  Import AiAgentModule for OrchestratorService, TokenTrackerService
-ai/                 →  Import AiModule for AiService
+ai-agent/           →  Import AiAgentModule for OrchestratorService
+ai/                 →  Import AiModule for ProfileAiService, ResumeAiService
 ```
 
-- `AiModule` does NOT import `AiAgentModule` (no circular deps)
-- External domain modules (Prediction, Assessment, Forum, Swipe, Hall) are imported by `AiAgentModule` for tool service DI
+- `LLMService`, `ResilienceService`, `TokenTrackerService` are **globally** provided by `LLMProvidersModule.forRoot()` — no module import needed
+- `extractJsonFromLlm` is imported from `common/utils/llm-json.util` (not from `ai-agent/`)
+- `AiModule` provides only `ProfileAiService` and `ResumeAiService` (no `AiService`)
+- Domain modules (Prediction, Essay, Recommendation, Hall, Profile) inject `LLMService` directly — no need to import `AiModule`
+- External domain modules (Prediction, Assessment, Forum, Hall) are imported by `AiAgentModule` for tool service DI
 - Never import a service directly from another module's internal files without importing the module
+
+### Prompt File Convention
+
+Each module with AI prompts has a dedicated `*.prompts.ts` file exporting builder functions:
+
+- `buildXxxSystemPrompt(locale: string, ...context): string`
+- `buildXxxUserPrompt(data, locale: string): string`
+
+Examples: `ai/profile-ai.prompts.ts`, `ai/resume-ai.prompts.ts`, `recommendation/recommendation.prompts.ts`, `prediction/prediction.prompts.ts`, `essay/essay-ai.prompts.ts`
 
 ## Database
 
-- **Schema**: `apps/api/prisma/schema.prisma` (2046 lines, 28 enums, 50+ models)
+- **Schema**: `apps/api/prisma/schema.prisma` (~2460 lines, 28 enums, 50+ models)
 - **Key enums**: `Role` (USER/VERIFIED/ADMIN), `Visibility` (PRIVATE/PUBLIC/ANONYMOUS/VERIFIED_ONLY), `AdmissionResult`, `ApplicationStatus`, `TestType`, `MemoryType`
 - **Extensions**: pgvector (1536-dim embeddings for AI memory semantic search)
 - **Commands**:
@@ -449,20 +468,22 @@ Exemption lists in each script for known-safe patterns.
 
 ### Architecture
 
-- 16 pages under `apps/web/src/app/[locale]/(main)/admin/`
+- 9 active pages under `apps/web/src/app/[locale]/(main)/admin/` (merged from 16 via tab consolidation)
 - Dashboard uses **recharts** for AreaChart visualizations + health indicator
 - Large pages split into `_components/` with self-contained `useQuery` per section
 - i18n: `admin.*` keys in `apps/web/src/messages/{en,zh}.json`
 - Backend: `AdminController` (`admin/`) + `AgentAdminController` (`admin/ai-agent/`)
+- **Note**: `admin/ai-agent/_components/` is a shared component directory imported by `ai-operations/` — do NOT delete it
+- **Note**: `admin/analytics/_components/` is a shared component directory imported by `ai-operations/` — do NOT delete it
 
 ### Pages
 
 **Overview**: Dashboard (recharts AreaChart, health, recent activity)
 **User Mgmt**: Users (search, role, ban, CSV export), User Detail (AI usage, rate limits)
-**Content**: Content (4 tabs: Forum/Chat/Reviews/AI Moderation), Reports, Essays
-**Academic**: Schools, Deadlines, Events, Points
-**AI System**: AI Agent (8 sections), Memory (6 sections), Analytics (3 tabs: Token Usage/Engagement/Agent Performance)
-**Platform**: Payments, Audit Logs (2 tabs: Admin/AI Agent), Settings
+**Content**: Moderation (5 tabs: Forum/Chat/Reviews/AI Moderation/Reports), Essays
+**Academic**: Schools (3 tabs: search/quality/data-sync), Calendar (2 tabs: Deadlines/Events), Calibrations, Points, Activity Templates
+**AI System**: AI Operations (5 tabs: Overview/Config/Performance/Reliability/Engagement), Memory (6 sections)
+**Platform**: Payments, Audit Logs (2 tabs: Admin/AI Agent), Verifications (4 tabs), Settings
 
 ### Patterns
 
@@ -513,13 +534,12 @@ pnpm lint:all    # ESLint + frontend quality + backend quality + i18n
 |              | `api/src/common/guards/roles.guard.ts`                      | Role-based access control                             |
 | **Pipeline** | `api/src/common/interceptors/transform.interceptor.ts`      | Response envelope wrapping                            |
 |              | `api/src/common/filters/http-exception.filter.ts`           | Global error handling                                 |
-| **AI**       | `api/src/modules/ai/ai.service.ts`                          | Simple AI facade                                      |
-|              | `api/src/modules/ai-agent/core/llm.service.ts`              | Resilient LLM service                                 |
+| **AI**       | `api/src/modules/ai-agent/core/llm.service.ts`              | Unified LLM service (chatSimple + call + callStream)  |
 |              | `api/src/modules/ai-agent/core/orchestrator.service.ts`     | Multi-agent orchestrator                              |
 |              | `api/src/modules/ai-agent/config/agents.config.ts`          | Agent definitions                                     |
 |              | `api/src/modules/ai-agent/config/tools.config.ts`           | Tool definitions                                      |
 |              | `api/src/modules/ai-agent/tools/helpers/llm-json.helper.ts` | JSON extraction helper                                |
-| **DB**       | `api/prisma/schema.prisma`                                  | Database schema (2046 lines)                          |
+| **DB**       | `api/prisma/schema.prisma`                                  | Database schema (~2460 lines)                         |
 |              | `api/src/common/config/env.validation.ts`                   | Zod env var validation                                |
 | **Frontend** | `web/src/components/providers/index.tsx`                    | Provider chain + AuthInitializer                      |
 |              | `web/src/lib/api/client.ts`                                 | API client (auth, retry, unwrap)                      |

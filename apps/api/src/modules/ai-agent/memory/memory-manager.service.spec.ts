@@ -148,7 +148,7 @@ describe('MemoryManagerService', () => {
         updatedAt: new Date(),
       });
 
-      const result = await service.getOrCreateConversation('user_1');
+      const _result = await service.getOrCreateConversation('user_1');
 
       expect(persistent.createConversation).toHaveBeenCalled();
       expect(cache.cacheConversation).toHaveBeenCalled();
@@ -175,7 +175,7 @@ describe('MemoryManagerService', () => {
         entities: [],
       });
 
-      const result = await service.addMessage('conv_1', messageInput);
+      const _result = await service.addMessage('conv_1', messageInput);
 
       expect(persistent.addMessage).toHaveBeenCalled();
       expect(cache.cacheMessage).toHaveBeenCalled();
@@ -270,7 +270,7 @@ describe('MemoryManagerService', () => {
         },
       ]);
 
-      const result = await service.recall('user_1', {
+      const _result = await service.recall('user_1', {
         types: [MemoryType.PREFERENCE],
       });
 

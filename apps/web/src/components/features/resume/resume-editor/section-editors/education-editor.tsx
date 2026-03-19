@@ -13,7 +13,7 @@ interface EducationEditorProps {
 }
 
 export function EducationEditor({ content, onChange }: EducationEditorProps) {
-  const items = ((content as any).items ?? []) as EducationItem[];
+  const items = (content.items ?? []) as EducationItem[];
 
   const updateItem = (index: number, field: string, value: unknown) => {
     const updated = [...items];

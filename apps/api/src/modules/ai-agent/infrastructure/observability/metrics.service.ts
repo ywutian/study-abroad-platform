@@ -5,24 +5,12 @@
  */
 
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { getRequestId, getRequestDuration } from '../context';
-
 // ==================== 指标类型 ====================
-
-interface Counter {
-  value: number;
-  labels: Record<string, string>;
-}
 
 interface Histogram {
   count: number;
   sum: number;
   buckets: Map<number, number>; // bucket -> count
-}
-
-interface Gauge {
-  value: number;
-  timestamp: number;
 }
 
 // ==================== 预定义指标 ====================

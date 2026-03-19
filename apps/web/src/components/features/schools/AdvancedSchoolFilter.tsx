@@ -1,16 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   SlidersHorizontal,
-  X,
   DollarSign,
   Trophy,
   Users,
   MapPin,
-  GraduationCap,
   Building2,
   CheckCircle2,
   RotateCcw,

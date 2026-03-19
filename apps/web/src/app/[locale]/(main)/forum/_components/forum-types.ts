@@ -123,7 +123,7 @@ export const getCategoryColorStyle = (
     return { className: 'bg-gradient-to-r from-blue-500 to-cyan-500' };
   if (nameLC.includes('school') || nameLC.includes('选校'))
     return { className: 'bg-gradient-to-r from-teal-500 to-emerald-500' };
-  return { className: 'bg-gray-500' };
+  return { className: 'bg-gray-500 dark:bg-gray-600' };
 };
 
 export const stripMarkdown = (content: string): string => {

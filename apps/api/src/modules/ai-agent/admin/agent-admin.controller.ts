@@ -17,12 +17,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { ThrottleRelaxed } from '../../../common/decorators/throttle.decorator';
 import { Role, MemoryType, EntityType } from '@prisma/client';
@@ -44,8 +39,6 @@ import {
   IsNumber,
   IsBoolean,
   IsOptional,
-  IsObject,
-  IsEnum,
   Min,
   Max,
 } from 'class-validator';
@@ -136,19 +129,6 @@ class UpdateLlmConfigDto {
 class UpdateFeatureDto {
   @IsBoolean()
   enabled: boolean;
-}
-
-class SetUserQuotaDto {
-  @IsString()
-  userId: string;
-
-  @IsNumber()
-  @Min(1000)
-  dailyTokens: number;
-
-  @IsNumber()
-  @Min(10000)
-  monthlyTokens: number;
 }
 
 class UpdateDecayConfigDto {
@@ -409,9 +389,9 @@ export class AgentAdminController {
   @ApiOperation({ summary: '重置用户限流' })
   @HttpCode(HttpStatus.NO_CONTENT)
   resetUserRateLimit(@Param('userId') userId: string) {
-    this.rateLimiter.reset(userId, 'user');
-    this.rateLimiter.reset(userId, 'conversation');
-    this.rateLimiter.reset(userId, 'agent');
+    void this.rateLimiter.reset(userId, 'user');
+    void this.rateLimiter.reset(userId, 'conversation');
+    void this.rateLimiter.reset(userId, 'agent');
   }
 
   // ==================== 监控指标 ====================

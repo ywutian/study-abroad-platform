@@ -84,7 +84,7 @@ describe('AuthController', () => {
 
   describe('login', () => {
     it('should set refreshToken and access_token cookies', async () => {
-      const result = await controller.login(
+      const _result = await controller.login(
         { email: 'test@example.com', password: 'pass' },
         mockReqForLogin as any,
         mockResponse as any,

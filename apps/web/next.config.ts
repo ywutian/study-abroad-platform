@@ -52,6 +52,78 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // 已删除/合并的路由重定向
+  async redirects() {
+    return [
+      { source: '/:locale/find-college', destination: '/:locale/schools', permanent: true },
+      {
+        source: '/:locale/recommendation',
+        destination: '/:locale/schools?tab=recommend',
+        permanent: true,
+      },
+      { source: '/:locale/swipe', destination: '/:locale/hall', permanent: true },
+      {
+        source: '/:locale/verified-ranking',
+        destination: '/:locale/hall?tab=verified',
+        permanent: true,
+      },
+      // A1: Content + Reports → Moderation
+      {
+        source: '/:locale/admin/content',
+        destination: '/:locale/admin/moderation',
+        permanent: true,
+      },
+      {
+        source: '/:locale/admin/reports',
+        destination: '/:locale/admin/moderation?tab=reports',
+        permanent: true,
+      },
+      // A2: Data Updates → Schools (sync tab)
+      {
+        source: '/:locale/admin/data-updates',
+        destination: '/:locale/admin/schools?tab=sync',
+        permanent: true,
+      },
+      // A5: Essay Gallery → Cases (essays tab)
+      {
+        source: '/:locale/essay-gallery',
+        destination: '/:locale/cases?tab=essays',
+        permanent: true,
+      },
+      {
+        source: '/:locale/essay-gallery/:id',
+        destination: '/:locale/cases/essays/:id',
+        permanent: true,
+      },
+      // A6: AI Agent + Analytics + Health → AI Operations
+      {
+        source: '/:locale/admin/ai-agent',
+        destination: '/:locale/admin/ai-operations',
+        permanent: true,
+      },
+      {
+        source: '/:locale/admin/analytics',
+        destination: '/:locale/admin/ai-operations?tab=performance',
+        permanent: true,
+      },
+      {
+        source: '/:locale/admin/health',
+        destination: '/:locale/admin/ai-operations',
+        permanent: true,
+      },
+      // A3: Deadlines + Events → Calendar
+      {
+        source: '/:locale/admin/deadlines',
+        destination: '/:locale/admin/calendar',
+        permanent: true,
+      },
+      {
+        source: '/:locale/admin/events',
+        destination: '/:locale/admin/calendar?tab=events',
+        permanent: true,
+      },
+    ];
+  },
   // 代理 API 请求到后端，避免跨域 cookie 问题
   async rewrites() {
     const fallback =

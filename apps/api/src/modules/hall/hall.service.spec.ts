@@ -1,8 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HallService } from './hall.service';
+import { HallRankingService } from './hall-ranking.service';
+import { HallReviewService } from './hall-review.service';
+import { HallListService } from './hall-list.service';
+import { HallVerifiedService } from './hall-verified.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
-import { AiService } from '../ai/ai.service';
+import { LLMService } from '../ai-agent/core/llm.service';
+import { NotificationService } from '../notification/notification.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 jest.mock('../../common/utils/scoring', () => ({
@@ -29,7 +34,7 @@ jest.mock('../../common/utils/scoring', () => ({
 
 describe('HallService', () => {
   let service: HallService;
-  let prisma: PrismaService;
+  let _prisma: PrismaService;
 
   const mockPrisma = {
     profile: {
@@ -92,6 +97,10 @@ describe('HallService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         HallService,
+        HallRankingService,
+        HallReviewService,
+        HallListService,
+        HallVerifiedService,
         {
           provide: PrismaService,
           useValue: mockPrisma,
@@ -101,14 +110,18 @@ describe('HallService', () => {
           useValue: null,
         },
         {
-          provide: AiService,
+          provide: LLMService,
           useValue: null,
+        },
+        {
+          provide: NotificationService,
+          useValue: { createNotification: jest.fn().mockResolvedValue({}) },
         },
       ],
     }).compile();
 
     service = module.get<HallService>(HallService);
-    prisma = module.get<PrismaService>(PrismaService);
+    _prisma = module.get<PrismaService>(PrismaService);
   });
 
   afterEach(() => {
@@ -116,27 +129,30 @@ describe('HallService', () => {
   });
 
   // ============================================
-  // calcBands (private, tested indirectly via ranking)
+  // calcBands (tested via HallRankingService)
   // ============================================
 
-  describe('calcBands (via internal usage)', () => {
+  describe('calcBands (via ranking sub-service)', () => {
+    let rankingService: HallRankingService;
+
+    beforeEach(() => {
+      rankingService = (service as any).ranking;
+    });
+
     it('should return zeros for empty values', () => {
-      // Access private method via bracket notation for direct unit test
-      const result = (service as any).calcBands([]);
+      const result = rankingService.calcBands([]);
       expect(result).toEqual({ p25: 0, p50: 0, p75: 0 });
     });
 
     it('should compute percentile bands for a sorted array', () => {
-      const result = (service as any).calcBands([
-        10, 20, 30, 40, 50, 60, 70, 80,
-      ]);
+      const result = rankingService.calcBands([10, 20, 30, 40, 50, 60, 70, 80]);
       expect(result.p25).toBeGreaterThan(0);
       expect(result.p50).toBeGreaterThanOrEqual(result.p25);
       expect(result.p75).toBeGreaterThanOrEqual(result.p50);
     });
 
     it('should handle single-element array', () => {
-      const result = (service as any).calcBands([50]);
+      const result = rankingService.calcBands([50]);
       expect(result).toEqual({ p25: 50, p50: 50, p75: 50 });
     });
   });
@@ -174,9 +190,7 @@ describe('HallService', () => {
       const result = await service.getPublicProfiles();
 
       expect(result.data).toHaveLength(2);
-      // VERIFIED_ONLY keeps real userId
       expect(result.data[0].userId).toBe('user-1');
-      // ANONYMOUS replaces userId with anon-<id prefix>
       expect(result.data[1].userId).toMatch(/^anon-/);
       expect(result.data[1].userId).not.toBe('user-2');
     });
@@ -289,7 +303,6 @@ describe('HallService', () => {
 
       await service.createReview('reviewer-1', reviewData);
 
-      // pointHistory.create is called as fire-and-forget with .then().catch()
       expect(mockPrisma.pointHistory.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           userId: 'reviewer-1',
@@ -470,7 +483,6 @@ describe('HallService', () => {
       expect(result!.averages.academic).toBe(7);
       expect(result!.averages.test).toBe(8);
       expect(result!.averages.overall).toBe(7.5);
-      // 'strong-academic' appears 2 times, should be first top tag
       expect(result!.topTags[0]).toBe('strong-academic');
     });
   });
@@ -850,8 +862,6 @@ describe('HallService', () => {
 
       const result = await service.getProfileRanking('user-1', 'school-1');
 
-      // Both profiles scored with mocked calculateOverallScore returning 72
-      // so total should be 2
       expect(result.total).toBe(2);
     });
   });
@@ -887,7 +897,6 @@ describe('HallService', () => {
       expect(result.rankings).toHaveLength(2);
       expect(result.rankings[0].schoolId).toBe('school-1');
       expect(result.rankings[1].schoolId).toBe('school-2');
-      // When user is only profile, rank=1, percentile=100
       expect(result.rankings[0].yourRank).toBe(1);
       expect(result.rankings[0].percentile).toBe(100);
     });

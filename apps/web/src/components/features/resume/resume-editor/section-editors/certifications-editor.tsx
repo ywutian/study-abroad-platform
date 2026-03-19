@@ -13,7 +13,7 @@ interface CertificationsEditorProps {
 }
 
 export function CertificationsEditor({ content, onChange }: CertificationsEditorProps) {
-  const items = ((content as any).items ?? []) as CertificationItem[];
+  const items = (content.items ?? []) as CertificationItem[];
 
   const updateItem = (index: number, field: string, value: unknown) => {
     const updated = [...items];
