@@ -10,11 +10,11 @@ import { useTranslation } from 'react-i18next';
 
 import { Segment } from '@/components/ui';
 import { useColors, spacing } from '@/utils/theme';
-import type { TabKey } from './_components/types';
-import { ReviewsTab } from './_components/ReviewsTab';
-import { RankingTab } from './_components/RankingTab';
-import { ListsTab } from './_components/ListsTab';
-import { VerifiedTab } from './_components/VerifiedTab';
+import type { TabKey } from '@/screens/hall/types';
+import { ReviewsTab } from '@/screens/hall/ReviewsTab';
+import { RankingTab } from '@/screens/hall/RankingTab';
+import { ListsTab } from '@/screens/hall/ListsTab';
+import { VerifiedTab } from '@/screens/hall/VerifiedTab';
 
 export default function HallOfFamePage() {
   const { t } = useTranslation();

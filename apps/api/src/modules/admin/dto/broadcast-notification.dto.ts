@@ -8,19 +8,19 @@ export enum BroadcastAudience {
 }
 
 export class BroadcastNotificationDto {
-  @ApiProperty({ description: '通知标题', maxLength: 200 })
+  @ApiProperty({ description: 'Notification title', maxLength: 200 })
   @IsString()
   @IsNotEmpty()
   @MaxLength(200)
   title: string;
 
-  @ApiProperty({ description: '通知内容', maxLength: 5000 })
+  @ApiProperty({ description: 'Notification content', maxLength: 5000 })
   @IsString()
   @IsNotEmpty()
   @MaxLength(5000)
   content: string;
 
-  @ApiProperty({ description: '目标受众', enum: BroadcastAudience })
+  @ApiProperty({ description: 'Target audience', enum: BroadcastAudience })
   @IsEnum(BroadcastAudience)
   audience: BroadcastAudience;
 }

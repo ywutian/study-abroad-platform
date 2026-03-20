@@ -50,6 +50,7 @@ export function useEssayManager() {
   const [openingResult, setOpeningResult] = useState<OpeningResult | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [isBrainstormOpen, setIsBrainstormOpen] = useState(false);
+  const [essayPromptId, setEssayPromptId] = useState<string | null>(null);
 
   const essayForm = useForm<EssayFormData>({
     resolver: zodResolver(createEssaySchema(t)),
@@ -79,12 +80,17 @@ export function useEssayManager() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: { title: string; prompt?: string; content: string }) =>
-      apiClient.post<Essay>('/profiles/me/essays', data),
+    mutationFn: (data: {
+      title: string;
+      prompt?: string;
+      content: string;
+      essayPromptId?: string;
+    }) => apiClient.post<Essay>('/profiles/me/essays', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['essays'] });
       setIsFormOpen(false);
       essayForm.reset();
+      setEssayPromptId(null);
       toast.success(t('essays.toast.saved'));
     },
   });
@@ -95,13 +101,14 @@ export function useEssayManager() {
       data,
     }: {
       id: string;
-      data: { title: string; prompt?: string; content: string };
+      data: { title: string; prompt?: string; content: string; essayPromptId?: string };
     }) => apiClient.put<Essay>(`/profiles/me/essays/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['essays'] });
       setIsFormOpen(false);
       setSelectedEssay(null);
       essayForm.reset();
+      setEssayPromptId(null);
       toast.success(t('essays.toast.updated'));
     },
   });
@@ -148,12 +155,14 @@ export function useEssayManager() {
   const handleCreate = () => {
     essayForm.reset({ title: '', prompt: '', content: '' });
     setSelectedEssay(null);
+    setEssayPromptId(null);
     setIsFormOpen(true);
   };
 
   const handleEdit = (essay: Essay) => {
     essayForm.reset({ title: essay.title, prompt: essay.prompt || '', content: essay.content });
     setSelectedEssay(essay);
+    setEssayPromptId(essay.essayPromptId ?? null);
     setIsFormOpen(true);
   };
 
@@ -167,6 +176,7 @@ export function useEssayManager() {
       title: values.title,
       prompt: values.prompt || undefined,
       content: values.content,
+      essayPromptId: essayPromptId || undefined,
     };
     if (selectedEssay) {
       updateMutation.mutate({ id: selectedEssay.id, data });
@@ -271,6 +281,10 @@ export function useEssayManager() {
     essayForm,
     derivedScores,
     getWordCount,
+
+    // Prompt linking
+    essayPromptId,
+    setEssayPromptId,
 
     // Form dialogs
     isFormOpen,

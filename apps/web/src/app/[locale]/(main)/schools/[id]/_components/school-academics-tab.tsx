@@ -231,6 +231,22 @@ export function SchoolEssaysTab({ school, essayPrompts }: SchoolEssaysTabProps) 
                         {t('school.essays.words')}
                       </Badge>
                     )}
+                    {essay.changeType === 'NEW' && (
+                      <Badge
+                        variant="outline"
+                        className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                      >
+                        {t('school.essays.newTag')}
+                      </Badge>
+                    )}
+                    {essay.changeType === 'MODIFIED' && (
+                      <Badge
+                        variant="outline"
+                        className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                      >
+                        {t('school.essays.modifiedTag')}
+                      </Badge>
+                    )}
                   </div>
 
                   {/* English prompt */}

@@ -21,7 +21,7 @@ import { ListItem, ListGroup, Separator } from '@/components/ui/ListItem';
 import { CircularProgress } from '@/components/ui/Progress';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useColors, withOpacity, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import type { Profile } from '@/types';
 
 export default function ProfileScreen() {
@@ -37,6 +37,19 @@ export default function ProfileScreen() {
   } = useQuery({
     queryKey: ['profile'],
     queryFn: () => apiClient.get<Profile>('/profile'),
+    enabled: isAuthenticated,
+  });
+
+  const { data: verificationData } = useQuery({
+    queryKey: ['verification', 'status'],
+    queryFn: () =>
+      apiClient.get<{ emailVerified: boolean; identityVerified: boolean }>('/verification/status'),
+    enabled: isAuthenticated,
+  });
+
+  const { data: pointsData } = useQuery({
+    queryKey: ['points', 'balance'],
+    queryFn: () => apiClient.get<{ balance: number; level: string }>('/points/balance'),
     enabled: isAuthenticated,
   });
 
@@ -220,7 +233,87 @@ export default function ProfileScreen() {
             </Button>
           </>
         )}
+
+        {/* Verification Status */}
+        {verificationData && (
+          <View style={styles.verificationRow}>
+            <View
+              style={[
+                styles.verifyBadge,
+                {
+                  backgroundColor: verificationData.emailVerified
+                    ? withOpacity(colors.success, 0.1)
+                    : withOpacity(colors.foregroundMuted, 0.1),
+                },
+              ]}
+            >
+              <Ionicons
+                name={verificationData.emailVerified ? 'checkmark-circle' : 'close-circle'}
+                size={14}
+                color={verificationData.emailVerified ? colors.success : colors.foregroundMuted}
+              />
+              <Text
+                style={[
+                  styles.verifyText,
+                  {
+                    color: verificationData.emailVerified ? colors.success : colors.foregroundMuted,
+                  },
+                ]}
+              >
+                {t('profile.emailVerified')}
+              </Text>
+            </View>
+            <View
+              style={[
+                styles.verifyBadge,
+                {
+                  backgroundColor: verificationData.identityVerified
+                    ? withOpacity(colors.success, 0.1)
+                    : withOpacity(colors.foregroundMuted, 0.1),
+                },
+              ]}
+            >
+              <Ionicons
+                name={verificationData.identityVerified ? 'checkmark-circle' : 'close-circle'}
+                size={14}
+                color={verificationData.identityVerified ? colors.success : colors.foregroundMuted}
+              />
+              <Text
+                style={[
+                  styles.verifyText,
+                  {
+                    color: verificationData.identityVerified
+                      ? colors.success
+                      : colors.foregroundMuted,
+                  },
+                ]}
+              >
+                {t('profile.identityVerified')}
+              </Text>
+            </View>
+          </View>
+        )}
       </View>
+
+      {/* Points Balance */}
+      {pointsData && (
+        <TouchableOpacity
+          onPress={() => router.push('/points')}
+          style={[styles.pointsCard, { backgroundColor: withOpacity(colors.warning, 0.1) }]}
+        >
+          <Ionicons name="star" size={20} color={colors.warning} />
+          <Text style={[styles.pointsValue, { color: colors.warning }]}>{pointsData.balance}</Text>
+          <Text style={[styles.pointsLabel, { color: colors.foregroundMuted }]}>
+            {t('profile.points')}
+          </Text>
+          <Ionicons
+            name="chevron-forward"
+            size={16}
+            color={colors.foregroundMuted}
+            style={{ marginLeft: 'auto' }}
+          />
+        </TouchableOpacity>
+      )}
 
       {/* Profile Sections */}
       <View style={styles.section}>
@@ -241,6 +334,35 @@ export default function ProfileScreen() {
               onPress={() => router.push(item.route as Href)}
             />
           ))}
+        </ListGroup>
+      </View>
+
+      {/* Quick Links */}
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.foregroundMuted }]}>
+          {t('more.title')}
+        </Text>
+        <ListGroup>
+          <ListItem
+            title={t('more.resume')}
+            leftIcon="document-outline"
+            onPress={() => router.push('/resume' as Href)}
+          />
+          <ListItem
+            title={t('more.vault')}
+            leftIcon="lock-closed-outline"
+            onPress={() => router.push('/vault' as Href)}
+          />
+          <ListItem
+            title={t('more.verification')}
+            leftIcon="shield-checkmark-outline"
+            onPress={() => router.push('/verification' as Href)}
+          />
+          <ListItem
+            title={t('more.points')}
+            leftIcon="star-outline"
+            onPress={() => router.push('/points' as Href)}
+          />
         </ListGroup>
       </View>
 
@@ -361,6 +483,41 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     marginBottom: spacing.md,
     marginLeft: spacing.xs,
+  },
+  verificationRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+  },
+  verifyBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.full,
+  },
+  verifyText: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.medium,
+  },
+  pointsCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.lg,
+  },
+  pointsValue: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
+  },
+  pointsLabel: {
+    fontSize: fontSize.sm,
   },
   footer: {
     alignItems: 'center',

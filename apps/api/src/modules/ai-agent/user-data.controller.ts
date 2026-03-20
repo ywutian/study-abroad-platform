@@ -14,8 +14,6 @@ import {
   Param,
   Query,
   UseGuards,
-  HttpCode,
-  HttpStatus,
   Res,
   Header,
 } from '@nestjs/common';
@@ -63,7 +61,7 @@ export class UserDataController {
   // ==================== 记忆管理 ====================
 
   @Get('memories')
-  @ApiOperation({ summary: '获取记忆列表' })
+  @ApiOperation({ summary: 'Get memory list' })
   @ApiResponse({ status: 200, type: MemoryListResponseDto })
   async getMemories(
     @CurrentUser() user: CurrentUserPayload,
@@ -73,8 +71,8 @@ export class UserDataController {
   }
 
   @Get('memories/:id')
-  @ApiOperation({ summary: '获取单条记忆' })
-  @ApiParam({ name: 'id', description: '记忆ID' })
+  @ApiOperation({ summary: 'Get single memory' })
+  @ApiParam({ name: 'id', description: 'Memory ID' })
   @ApiResponse({ status: 200, type: MemoryItemDto })
   async getMemory(
     @CurrentUser() user: CurrentUserPayload,
@@ -84,18 +82,18 @@ export class UserDataController {
   }
 
   @Delete('memories/:id')
-  @ApiOperation({ summary: '删除单条记忆' })
-  @ApiParam({ name: 'id', description: '记忆ID' })
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete single memory' })
+  @ApiParam({ name: 'id', description: 'Memory ID' })
   async deleteMemory(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
-  ): Promise<void> {
+  ) {
     await this.userDataService.deleteMemory(user.id, id);
+    return { message: 'Memory deleted' };
   }
 
   @Post('memories/batch-delete')
-  @ApiOperation({ summary: '批量删除记忆' })
+  @ApiOperation({ summary: 'Batch delete memories' })
   @ApiResponse({ status: 200, type: BatchDeleteResponseDto })
   async batchDeleteMemories(
     @CurrentUser() user: CurrentUserPayload,
@@ -105,8 +103,11 @@ export class UserDataController {
   }
 
   @Delete('memories')
-  @ApiOperation({ summary: '清除所有记忆' })
-  @ApiResponse({ status: 200, description: '返回删除的记忆数量' })
+  @ApiOperation({ summary: 'Clear all memories' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns number of deleted memories',
+  })
   async clearAllMemories(
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<{ deleted: number }> {
@@ -117,7 +118,7 @@ export class UserDataController {
   // ==================== 对话管理 ====================
 
   @Get('conversations')
-  @ApiOperation({ summary: '获取对话列表' })
+  @ApiOperation({ summary: 'Get conversation list' })
   @ApiResponse({ status: 200, type: ConversationListResponseDto })
   async getConversations(
     @CurrentUser() user: CurrentUserPayload,
@@ -127,8 +128,8 @@ export class UserDataController {
   }
 
   @Get('conversations/:id')
-  @ApiOperation({ summary: '获取对话详情（含消息）' })
-  @ApiParam({ name: 'id', description: '对话ID' })
+  @ApiOperation({ summary: 'Get conversation details (with messages)' })
+  @ApiParam({ name: 'id', description: 'Conversation ID' })
   @ApiResponse({ status: 200, type: ConversationDetailDto })
   async getConversation(
     @CurrentUser() user: CurrentUserPayload,
@@ -138,19 +139,22 @@ export class UserDataController {
   }
 
   @Delete('conversations/:id')
-  @ApiOperation({ summary: '删除对话' })
-  @ApiParam({ name: 'id', description: '对话ID' })
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete conversation' })
+  @ApiParam({ name: 'id', description: 'Conversation ID' })
   async deleteConversation(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
-  ): Promise<void> {
+  ) {
     await this.userDataService.deleteConversation(user.id, id);
+    return { message: 'Conversation deleted' };
   }
 
   @Delete('conversations')
-  @ApiOperation({ summary: '清除所有对话' })
-  @ApiResponse({ status: 200, description: '返回删除的对话数量' })
+  @ApiOperation({ summary: 'Clear all conversations' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns number of deleted conversations',
+  })
   async clearAllConversations(
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<{ deleted: number }> {
@@ -161,7 +165,7 @@ export class UserDataController {
   // ==================== 实体管理 ====================
 
   @Get('entities')
-  @ApiOperation({ summary: '获取实体列表' })
+  @ApiOperation({ summary: 'Get entity list' })
   @ApiResponse({ status: 200, type: EntityListResponseDto })
   async getEntities(
     @CurrentUser() user: CurrentUserPayload,
@@ -171,19 +175,22 @@ export class UserDataController {
   }
 
   @Delete('entities/:id')
-  @ApiOperation({ summary: '删除实体' })
-  @ApiParam({ name: 'id', description: '实体ID' })
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete entity' })
+  @ApiParam({ name: 'id', description: 'Entity ID' })
   async deleteEntity(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
-  ): Promise<void> {
+  ) {
     await this.userDataService.deleteEntity(user.id, id);
+    return { message: 'Entity deleted' };
   }
 
   @Delete('entities')
-  @ApiOperation({ summary: '清除所有实体' })
-  @ApiResponse({ status: 200, description: '返回删除的实体数量' })
+  @ApiOperation({ summary: 'Clear all entities' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns number of deleted entities',
+  })
   async clearAllEntities(
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<{ deleted: number }> {
@@ -194,7 +201,7 @@ export class UserDataController {
   // ==================== 偏好设置 ====================
 
   @Get('preferences')
-  @ApiOperation({ summary: '获取 AI 偏好设置' })
+  @ApiOperation({ summary: 'Get AI preferences' })
   @ApiResponse({ status: 200, type: AIPreferencesResponseDto })
   async getPreferences(
     @CurrentUser() user: CurrentUserPayload,
@@ -203,7 +210,7 @@ export class UserDataController {
   }
 
   @Put('preferences')
-  @ApiOperation({ summary: '更新 AI 偏好设置' })
+  @ApiOperation({ summary: 'Update AI preferences' })
   @ApiResponse({ status: 200, type: AIPreferencesResponseDto })
   async updatePreferences(
     @CurrentUser() user: CurrentUserPayload,
@@ -213,7 +220,7 @@ export class UserDataController {
   }
 
   @Post('preferences/reset')
-  @ApiOperation({ summary: '重置偏好设置为默认值' })
+  @ApiOperation({ summary: 'Reset preferences to defaults' })
   @ApiResponse({ status: 200, type: AIPreferencesResponseDto })
   async resetPreferences(
     @CurrentUser() user: CurrentUserPayload,
@@ -225,7 +232,7 @@ export class UserDataController {
   // ==================== 数据导出 ====================
 
   @Post('export')
-  @ApiOperation({ summary: '导出用户所有 AI 数据' })
+  @ApiOperation({ summary: 'Export all user AI data' })
   @ApiResponse({ status: 200, type: DataExportResponseDto })
   async exportData(
     @CurrentUser() user: CurrentUserPayload,
@@ -235,7 +242,7 @@ export class UserDataController {
   }
 
   @Get('export/download')
-  @ApiOperation({ summary: '下载导出数据（JSON 文件）' })
+  @ApiOperation({ summary: 'Download exported data (JSON file)' })
   @Header('Content-Type', 'application/json')
   async downloadExport(
     @CurrentUser() user: CurrentUserPayload,
@@ -257,7 +264,7 @@ export class UserDataController {
   // ==================== 统计信息 ====================
 
   @Get('stats')
-  @ApiOperation({ summary: '获取用户数据统计' })
+  @ApiOperation({ summary: 'Get user data statistics' })
   @ApiResponse({ status: 200, type: MemoryStatsDto })
   async getStats(
     @CurrentUser() user: CurrentUserPayload,
@@ -268,7 +275,7 @@ export class UserDataController {
   // ==================== 批量清除 ====================
 
   @Post('clear')
-  @ApiOperation({ summary: '批量清除数据' })
+  @ApiOperation({ summary: 'Batch clear data' })
   @ApiResponse({ status: 200, type: ClearDataResponseDto })
   async clearData(
     @CurrentUser() user: CurrentUserPayload,
@@ -278,7 +285,9 @@ export class UserDataController {
   }
 
   @Delete('all')
-  @ApiOperation({ summary: '清除所有 AI 数据（记忆+对话+实体）' })
+  @ApiOperation({
+    summary: 'Clear all AI data (memories + conversations + entities)',
+  })
   @ApiResponse({ status: 200, type: ClearDataResponseDto })
   async clearAllData(
     @CurrentUser() user: CurrentUserPayload,

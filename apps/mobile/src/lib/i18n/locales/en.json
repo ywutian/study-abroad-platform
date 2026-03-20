@@ -77,7 +77,8 @@
     "schools": "Schools",
     "cases": "Cases",
     "ai": "AI",
-    "profile": "Profile"
+    "profile": "Profile",
+    "more": "More"
   },
   "home": {
     "title": "Study Abroad Platform",
@@ -109,7 +110,17 @@
       "forumDesc": "Community",
       "swipe": "Swipe Game",
       "swipeDesc": "Predict admissions"
-    }
+    },
+    "profileGrade": "Profile Grade",
+    "profileCompletion": "{{pct}}% Complete",
+    "schoolTiers": "School List",
+    "tiers": {
+      "reach": "Reach",
+      "target": "Target",
+      "safety": "Safety"
+    },
+    "upcomingDeadlines": "Upcoming Deadlines",
+    "daysLeft": "days"
   },
   "auth": {
     "login": {
@@ -226,7 +237,10 @@
     "noScores": "No test scores",
     "noActivities": "No activities",
     "noAwards": "No awards",
-    "noEducation": "No education records"
+    "noEducation": "No education records",
+    "emailVerified": "Email Verified",
+    "identityVerified": "Identity Verified",
+    "points": "Points"
   },
   "profileEdit": {
     "saveSuccess": "Saved successfully",
@@ -468,7 +482,15 @@
     "typing": "typing...",
     "socketError": "Connection error",
     "socketDisconnected": "Not connected",
-    "sendFailed": "Failed to send message"
+    "sendFailed": "Failed to send message",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "copy": "Copy",
+    "recall": "Recall",
+    "delete": "Delete",
+    "copied": "Copied to clipboard",
+    "recalled": "Message recalled",
+    "messageActions": "Message Actions"
   },
   "notifications": {
     "title": "Notifications",
@@ -535,7 +557,35 @@
       "title": "No posts yet",
       "description": "Be the first to start a discussion!",
       "action": "Create Post"
-    }
+    },
+    "comments": "Comments",
+    "noComments": "No comments yet. Be the first to comment!",
+    "reply": "Reply",
+    "replyingTo": "Replying to {{name}}",
+    "commentPlaceholder": "Write a comment...",
+    "replyPlaceholder": "Write a reply...",
+    "postNotFound": "Post not found",
+    "goBack": "Go Back",
+    "loading": "Loading...",
+    "applied": "Application submitted",
+    "reported": "Post reported",
+    "postDeleted": "Post deleted",
+    "reportTitle": "Report Post",
+    "reportMessage": "Are you sure you want to report this post?",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "pinned": "Pinned",
+    "locked": "Locked",
+    "teamInfo": "Team Info",
+    "teamOpen": "Open",
+    "teamClosed": "Closed",
+    "teamMembers": "Members",
+    "teamDeadline": "Deadline",
+    "requirements": "Requirements",
+    "applyToJoin": "Apply to Join",
+    "postLocked": "This post is locked",
+    "deletePostTitle": "Delete Post",
+    "deletePostMessage": "Are you sure you want to delete this post? This action cannot be undone."
   },
   "followers": {
     "title": "Social",
@@ -725,6 +775,42 @@
       "confirm": "Delete"
     }
   },
+  "essayEditor": {
+    "newEssay": "New Essay",
+    "editEssay": "Edit Essay",
+    "titlePlaceholder": "Essay title...",
+    "contentPlaceholder": "Start writing your essay...",
+    "words": "words",
+    "save": "Save",
+    "saving": "Saving...",
+    "saved": "Essay saved",
+    "saveFailed": "Failed to save essay",
+    "saveFirst": "Please save the essay first",
+    "aiFailed": "AI processing failed",
+    "aiProcessing": "AI is processing...",
+    "applied": "Changes applied",
+    "appended": "Text appended",
+    "copied": "Copied to clipboard",
+    "overallScore": "Overall Score",
+    "summary": "Summary",
+    "suggestions": "Suggestions",
+    "applyChanges": "Apply Changes",
+    "copy": "Copy",
+    "tapToCopy": "Tap to copy",
+    "appendToEssay": "Append to Essay",
+    "use": "Use",
+    "rewriteInstructions": "How would you like to rewrite?",
+    "rewritePlaceholder": "e.g., Make it more personal and vivid...",
+    "rewriteSubmit": "Rewrite",
+    "tools": {
+      "review": "Review",
+      "polish": "Polish",
+      "brainstorm": "Brainstorm",
+      "continue": "Continue",
+      "opening": "Opening",
+      "rewrite": "Rewrite"
+    }
+  },
   "hall": {
     "title": "Feature Hall",
     "tabs": {
@@ -836,7 +922,19 @@
       "description": "Add schools to start prediction",
       "addSchool": "Add School"
     },
-    "addPrediction": "Add School Prediction"
+    "addPrediction": "Add School Prediction",
+    "reportResult": "Report Result",
+    "reportActualResult": "Report Actual Result",
+    "selectResult": "What was the actual result?",
+    "submitResult": "Submit Result",
+    "resultReported": "Result reported successfully",
+    "reportFailed": "Failed to report result",
+    "results": {
+      "admitted": "Admitted",
+      "rejected": "Rejected",
+      "waitlisted": "Waitlisted",
+      "deferred": "Deferred"
+    }
   },
   "settings": {
     "title": "Settings",
@@ -861,6 +959,9 @@
     "sections": {
       "account": "Account",
       "preferences": "Preferences",
+      "notifications": "Notifications",
+      "security": "Security",
+      "help": "Help",
       "support": "Support",
       "about": "About",
       "accountActions": "Account Actions"
@@ -885,7 +986,10 @@
     "deleteAccountConfirm": "This action is irreversible. Are you sure you want to delete your account? All data will be permanently deleted.",
     "featureInDev": "Feature in Development",
     "thankYou": "Thank You",
-    "thankYouReview": "Thank you for your review!"
+    "thankYouReview": "Thank you for your review!",
+    "emailDigest": "Email Digest",
+    "loginDevices": "Login Devices",
+    "faq": "FAQ"
   },
   "admin": {
     "title": "Admin Dashboard",
@@ -900,6 +1004,13 @@
       "totalCases": "Total Cases",
       "pendingReports": "Pending Reports",
       "totalReviews": "Total Reviews"
+    },
+    "roles": {
+      "user": "User",
+      "verified": "Verified",
+      "operator": "Operator",
+      "admin": "Admin",
+      "superAdmin": "Super Admin"
     },
     "users": {
       "search": "Search by email...",
@@ -1379,6 +1490,77 @@
       "password": "Password",
       "confirm": "Delete Account",
       "cancel": "Cancel"
+    }
+  },
+  "more": {
+    "title": "More Features",
+    "subtitle": "Explore all tools and features",
+    "resume": "Resume",
+    "vault": "Vault",
+    "teams": "Teams",
+    "points": "Points",
+    "peerReview": "Peer Review",
+    "referral": "Referral",
+    "verification": "Verification",
+    "ranking": "Ranking",
+    "assessment": "Assessment",
+    "settings": "Settings",
+    "timeline": "Timeline",
+    "chat": "Chat"
+  },
+  "resume": {
+    "title": "Resume Builder",
+    "description": "Create and manage your resumes",
+    "empty": {
+      "title": "No Resumes Yet",
+      "description": "Create your first resume to get started"
+    }
+  },
+  "vault": {
+    "title": "Secure Vault",
+    "description": "Store your credentials and documents safely",
+    "empty": {
+      "title": "Vault is Empty",
+      "description": "Add credentials, documents, or notes to your vault"
+    }
+  },
+  "teams": {
+    "title": "Teams",
+    "description": "Find and join study groups",
+    "empty": {
+      "title": "No Teams Found",
+      "description": "Browse or create a team to collaborate with others"
+    }
+  },
+  "points": {
+    "title": "Points & Badges",
+    "description": "Track your achievements and rewards",
+    "empty": {
+      "title": "Start Earning Points",
+      "description": "Complete activities to earn points and unlock badges"
+    }
+  },
+  "peerReview": {
+    "title": "Peer Review",
+    "description": "Review essays and get feedback",
+    "empty": {
+      "title": "No Reviews Available",
+      "description": "Check back later for essays to review"
+    }
+  },
+  "referral": {
+    "title": "Referral",
+    "description": "Invite friends and earn rewards",
+    "yourCode": "Your Referral Code",
+    "copy": "Copy Code",
+    "copied": "Code copied to clipboard!"
+  },
+  "verification": {
+    "title": "Verification",
+    "description": "Verify your identity and admission",
+    "empty": {
+      "title": "Not Verified Yet",
+      "description": "Submit documents to verify your identity"
     }
   },
   "errors": {

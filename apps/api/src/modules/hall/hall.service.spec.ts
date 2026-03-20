@@ -40,6 +40,7 @@ describe('HallService', () => {
     profile: {
       findMany: jest.fn(),
       findUnique: jest.fn(),
+      count: jest.fn(),
     },
     review: {
       findUnique: jest.fn(),
@@ -186,6 +187,7 @@ describe('HallService', () => {
         },
       ];
       mockPrisma.profile.findMany.mockResolvedValue(profiles);
+      mockPrisma.profile.count.mockResolvedValue(2);
 
       const result = await service.getPublicProfiles();
 
@@ -197,6 +199,7 @@ describe('HallService', () => {
 
     it('should filter by search term (targetMajor)', async () => {
       mockPrisma.profile.findMany.mockResolvedValue([]);
+      mockPrisma.profile.count.mockResolvedValue(0);
 
       await service.getPublicProfiles('Computer');
 
@@ -222,6 +225,7 @@ describe('HallService', () => {
           _count: { testScores: 0, activities: 0, awards: 0 },
         },
       ]);
+      mockPrisma.profile.count.mockResolvedValue(1);
 
       const result = await service.getPublicProfiles();
       expect(result.data[0].gpa).toBeUndefined();

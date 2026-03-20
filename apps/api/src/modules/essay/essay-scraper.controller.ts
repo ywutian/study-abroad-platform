@@ -42,7 +42,7 @@ export class EssayScraperController {
   // ============ Core Scraping ============
 
   @Get('schools')
-  @ApiOperation({ summary: '获取可爬取的学校列表' })
+  @ApiOperation({ summary: 'Get list of scrapeable schools' })
   async getConfiguredSchools() {
     return {
       schools: await this.scraperService.getConfiguredSchools(),
@@ -50,14 +50,14 @@ export class EssayScraperController {
   }
 
   @Post('scrape')
-  @ApiOperation({ summary: '爬取单个学校的文书题目' })
+  @ApiOperation({ summary: 'Scrape essay prompts for a single school' })
   async scrapeSchool(@Body() body: ScrapeSchoolDto) {
     const { schoolName, year, sources } = body;
     return this.scraperService.scrapeSchool(schoolName, year, sources);
   }
 
   @Post('scrape-all')
-  @ApiOperation({ summary: '爬取所有配置学校的文书题目' })
+  @ApiOperation({ summary: 'Scrape essay prompts for all configured schools' })
   async scrapeAllSchools(@Query('year') year?: number) {
     return this.scraperService.scrapeAllSchools(year);
   }
@@ -65,13 +65,13 @@ export class EssayScraperController {
   // ============ Test Scrape (Preview) ============
 
   @Post('test-scrape')
-  @ApiOperation({ summary: '测试采集（预览，不写入 DB）' })
+  @ApiOperation({ summary: 'Test scrape (preview, does not write to DB)' })
   async testScrape(@Body() dto: TestScrapeDto) {
     return this.scraperService.testScrapeSchool(dto.schoolName, dto.year);
   }
 
   @Post('confirm-save')
-  @ApiOperation({ summary: '确认保存测试采集结果' })
+  @ApiOperation({ summary: 'Confirm and save test scrape results' })
   async confirmSave(@Body() dto: ConfirmSaveDto) {
     const saved = await this.scraperService.confirmSave(
       dto.data,
@@ -83,7 +83,7 @@ export class EssayScraperController {
   // ============ Pipeline Management ============
 
   @Post('pipeline/start')
-  @ApiOperation({ summary: '手动启动全量采集管道' })
+  @ApiOperation({ summary: 'Manually start full scraping pipeline' })
   async startPipeline(
     @CurrentUser() user: CurrentUserPayload,
     @Body() _body: StartPipelineDto,
@@ -93,7 +93,7 @@ export class EssayScraperController {
   }
 
   @Get('pipeline/runs')
-  @ApiOperation({ summary: '管道运行历史' })
+  @ApiOperation({ summary: 'Get pipeline run history' })
   async listPipelineRuns(@Query('limit') limit?: number) {
     return this.prisma.essayPipelineRun.findMany({
       orderBy: { startedAt: 'desc' },
@@ -102,7 +102,7 @@ export class EssayScraperController {
   }
 
   @Get('pipeline/:runId')
-  @ApiOperation({ summary: '查看管道运行状态' })
+  @ApiOperation({ summary: 'Get pipeline run status' })
   async getPipelineStatus(@Param('runId') runId: string) {
     return this.prisma.essayPipelineRun.findUnique({
       where: { id: runId },
@@ -112,7 +112,7 @@ export class EssayScraperController {
   // ============ Dashboard ============
 
   @Get('dashboard/coverage')
-  @ApiOperation({ summary: '文书覆盖率统计' })
+  @ApiOperation({ summary: 'Get essay prompt coverage statistics' })
   async getCoverageStats(@Query('year') year?: number) {
     const targetYear = year || this.getCurrentApplicationYear();
 
@@ -159,7 +159,7 @@ export class EssayScraperController {
   }
 
   @Get('dashboard/freshness')
-  @ApiOperation({ summary: '各校采集新鲜度' })
+  @ApiOperation({ summary: 'Get scrape freshness by school' })
   async getFreshness() {
     return this.prisma.schoolEssaySource.findMany({
       where: { isActive: true },
@@ -185,7 +185,7 @@ export class EssayScraperController {
   }
 
   @Get('dashboard/changes')
-  @ApiOperation({ summary: '年度变化列表' })
+  @ApiOperation({ summary: 'Get annual changes list' })
   async getChanges(@Query('year') year?: number) {
     const targetYear = year || this.getCurrentApplicationYear();
     return this.prisma.essayPrompt.findMany({
@@ -205,7 +205,7 @@ export class EssayScraperController {
   // ============ Source URL Management ============
 
   @Get('sources')
-  @ApiOperation({ summary: '列出所有采集源配置' })
+  @ApiOperation({ summary: 'List all scrape source configurations' })
   async listSources() {
     return this.prisma.schoolEssaySource.findMany({
       include: {
@@ -223,7 +223,7 @@ export class EssayScraperController {
   }
 
   @Post('sources')
-  @ApiOperation({ summary: '添加采集源' })
+  @ApiOperation({ summary: 'Add scrape source' })
   async addSource(@Body() dto: CreateSchoolEssaySourceDto) {
     return this.prisma.schoolEssaySource.create({
       data: {
@@ -242,7 +242,7 @@ export class EssayScraperController {
   }
 
   @Put('sources/:id')
-  @ApiOperation({ summary: '修改采集源' })
+  @ApiOperation({ summary: 'Update scrape source' })
   async updateSource(
     @Param('id') id: string,
     @Body() dto: UpdateSchoolEssaySourceDto,
@@ -257,7 +257,7 @@ export class EssayScraperController {
   }
 
   @Delete('sources/:id')
-  @ApiOperation({ summary: '删除采集源' })
+  @ApiOperation({ summary: 'Delete scrape source' })
   async deleteSource(@Param('id') id: string) {
     return this.prisma.schoolEssaySource.delete({ where: { id } });
   }

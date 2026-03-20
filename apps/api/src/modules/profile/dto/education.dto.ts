@@ -10,37 +10,37 @@ import {
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateEducationDto {
-  @ApiProperty({ description: '学校名称' })
+  @ApiProperty({ description: 'School name' })
   @IsString()
   @MaxLength(200)
   schoolName: string;
 
   @ApiPropertyOptional({
-    description: '学校类型 (HIGH_SCHOOL / COLLEGE / etc.)',
+    description: 'School type (HIGH_SCHOOL / COLLEGE / etc.)',
   })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   schoolType?: string;
 
-  @ApiPropertyOptional({ description: '学位' })
+  @ApiPropertyOptional({ description: 'Degree' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   degree?: string;
 
-  @ApiPropertyOptional({ description: '专业' })
+  @ApiPropertyOptional({ description: 'Major' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   major?: string;
 
-  @ApiPropertyOptional({ description: '开始日期' })
+  @ApiPropertyOptional({ description: 'Start date' })
   @IsOptional()
   @IsDateString()
   startDate?: string;
 
-  @ApiPropertyOptional({ description: '结束日期' })
+  @ApiPropertyOptional({ description: 'End date' })
   @IsOptional()
   @IsDateString()
   endDate?: string;
@@ -52,20 +52,22 @@ export class CreateEducationDto {
   @Max(5)
   gpa?: number;
 
-  @ApiPropertyOptional({ description: 'GPA满分' })
+  @ApiPropertyOptional({ description: 'GPA scale maximum' })
   @IsOptional()
   @IsNumber()
   @Min(1)
   @Max(100)
   gpaScale?: number;
 
-  @ApiPropertyOptional({ description: '描述' })
+  @ApiPropertyOptional({ description: 'Description' })
   @IsOptional()
   @IsString()
   @MaxLength(500)
   description?: string;
 
-  @ApiPropertyOptional({ description: '关联的高中参考数据ID' })
+  @ApiPropertyOptional({
+    description: 'Associated high school reference data ID',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(200)
@@ -73,36 +75,36 @@ export class CreateEducationDto {
 }
 
 export class UpdateEducationDto {
-  @ApiPropertyOptional({ description: '学校名称' })
+  @ApiPropertyOptional({ description: 'School name' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   schoolName?: string;
 
-  @ApiPropertyOptional({ description: '学校类型' })
+  @ApiPropertyOptional({ description: 'School type' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   schoolType?: string;
 
-  @ApiPropertyOptional({ description: '学位' })
+  @ApiPropertyOptional({ description: 'Degree' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   degree?: string;
 
-  @ApiPropertyOptional({ description: '专业' })
+  @ApiPropertyOptional({ description: 'Major' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   major?: string;
 
-  @ApiPropertyOptional({ description: '开始日期' })
+  @ApiPropertyOptional({ description: 'Start date' })
   @IsOptional()
   @IsDateString()
   startDate?: string;
 
-  @ApiPropertyOptional({ description: '结束日期' })
+  @ApiPropertyOptional({ description: 'End date' })
   @IsOptional()
   @IsDateString()
   endDate?: string;
@@ -114,20 +116,22 @@ export class UpdateEducationDto {
   @Max(5)
   gpa?: number;
 
-  @ApiPropertyOptional({ description: 'GPA满分' })
+  @ApiPropertyOptional({ description: 'GPA scale maximum' })
   @IsOptional()
   @IsNumber()
   @Min(1)
   @Max(100)
   gpaScale?: number;
 
-  @ApiPropertyOptional({ description: '描述' })
+  @ApiPropertyOptional({ description: 'Description' })
   @IsOptional()
   @IsString()
   @MaxLength(500)
   description?: string;
 
-  @ApiPropertyOptional({ description: '关联的高中参考数据ID' })
+  @ApiPropertyOptional({
+    description: 'Associated high school reference data ID',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(200)

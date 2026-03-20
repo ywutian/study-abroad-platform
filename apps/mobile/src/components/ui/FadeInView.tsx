@@ -1,5 +1,5 @@
 import React, { useEffect, ReactNode } from 'react';
-import { ViewStyle, StyleProp } from 'react-native';
+import { View, ViewStyle, StyleProp } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -20,6 +20,7 @@ import Animated, {
   ZoomIn,
   BounceIn,
 } from 'react-native-reanimated';
+import { useReducedMotion } from 'react-native-reanimated';
 
 type AnimationType =
   | 'fade'
@@ -70,10 +71,14 @@ export function FadeInView({
   index = 0,
   staggerDelay = 50,
 }: FadeInViewProps) {
+  const reducedMotion = useReducedMotion();
+
+  if (reducedMotion) {
+    return <View style={style}>{children}</View>;
+  }
+
   const totalDelay = delay + index * staggerDelay;
-  const enteringAnimation = animationPresets[animation]
-    .delay(totalDelay)
-    .duration(duration);
+  const enteringAnimation = animationPresets[animation].delay(totalDelay).duration(duration);
 
   return (
     <Animated.View entering={enteringAnimation} style={style}>
@@ -106,9 +111,11 @@ export function CustomAnimatedView({
   rotate = 0,
   opacity = 0,
 }: CustomAnimatedViewProps) {
-  const progress = useSharedValue(0);
+  const reducedMotion = useReducedMotion();
+  const progress = useSharedValue(reducedMotion ? 1 : 0);
 
   useEffect(() => {
+    if (reducedMotion) return;
     progress.value = withDelay(
       delay,
       withTiming(1, {
@@ -128,9 +135,7 @@ export function CustomAnimatedView({
     ],
   }));
 
-  return (
-    <Animated.View style={[animatedStyle, style]}>{children}</Animated.View>
-  );
+  return <Animated.View style={[animatedStyle, style]}>{children}</Animated.View>;
 }
 
 // 脉冲动画视图
@@ -149,23 +154,17 @@ export function PulseView({
   minScale = 0.97,
   maxScale = 1.03,
 }: PulseViewProps) {
+  const reducedMotion = useReducedMotion();
   const scale = useSharedValue(1);
 
   useEffect(() => {
-    scale.value = withRepeat(
-      withTiming(maxScale, { duration: duration / 2 }),
-      -1,
-      true
-    );
+    if (reducedMotion) return;
+    scale.value = withRepeat(withTiming(maxScale, { duration: duration / 2 }), -1, true);
   }, []);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));
 
-  return (
-    <Animated.View style={[animatedStyle, style]}>{children}</Animated.View>
-  );
+  return <Animated.View style={[animatedStyle, style]}>{children}</Animated.View>;
 }
-
-

@@ -10,9 +10,11 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { apiClient } from '@/lib/api';
+import { useAuthStore } from '@/stores/auth';
 import {
   BarChart3,
   Users,
+  UsersRound,
   GraduationCap,
   Calendar,
   PenTool,
@@ -26,10 +28,20 @@ import {
   Settings,
   Layers,
   SlidersHorizontal,
+  ClipboardCheck,
   ChevronDown,
   Menu,
   type LucideIcon,
 } from 'lucide-react';
+import { RoleBadge } from './role-badge';
+
+type AdminRole = 'OPERATOR' | 'ADMIN' | 'SUPER_ADMIN';
+
+const ROLE_LEVEL: Record<AdminRole, number> = {
+  OPERATOR: 0,
+  ADMIN: 1,
+  SUPER_ADMIN: 2,
+};
 
 interface AdminStats {
   totalUsers: number;
@@ -38,6 +50,7 @@ interface AdminStats {
   pendingReports: number;
   totalReviews: number;
   pendingVerifications?: number;
+  pendingReview?: number;
 }
 
 interface NavItem {
@@ -46,18 +59,27 @@ interface NavItem {
   label: string;
   exact?: boolean;
   badge?: number;
+  minRole?: AdminRole;
 }
 
 interface NavGroup {
   title: string;
   items: NavItem[];
   defaultOpen?: boolean;
+  minRole?: AdminRole;
+}
+
+function hasAccess(userRole: AdminRole, minRole?: AdminRole): boolean {
+  if (!minRole) return true;
+  return (ROLE_LEVEL[userRole] ?? -1) >= ROLE_LEVEL[minRole];
 }
 
 export function AdminSidebar() {
   const t = useTranslations('admin');
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const user = useAuthStore((s) => s.user);
+  const userRole = (user?.role ?? 'ADMIN') as AdminRole;
 
   const { data: stats } = useQuery({
     queryKey: ['adminStats'],
@@ -73,6 +95,7 @@ export function AdminSidebar() {
     },
     {
       title: t('sidebar.groups.users'),
+      minRole: 'ADMIN',
       items: [
         { href: '/admin/users', icon: Users, label: t('sidebar.users') },
         {
@@ -86,17 +109,40 @@ export function AdminSidebar() {
     {
       title: t('sidebar.groups.academic'),
       items: [
-        { href: '/admin/schools', icon: GraduationCap, label: t('sidebar.schools') },
-        { href: '/admin/calendar', icon: Calendar, label: t('sidebar.calendar') },
-        { href: '/admin/calibrations', icon: SlidersHorizontal, label: t('sidebar.calibrations') },
-        { href: '/admin/essays', icon: PenTool, label: t('sidebar.essays') },
-        { href: '/admin/activity-templates', icon: Layers, label: t('sidebar.activityTemplates') },
-        { href: '/admin/points', icon: Coins, label: t('sidebar.points') },
+        {
+          href: '/admin/data-review',
+          icon: ClipboardCheck,
+          label: t('sidebar.dataReview'),
+          badge: stats?.pendingReview,
+        },
+        {
+          href: '/admin/schools',
+          icon: GraduationCap,
+          label: t('sidebar.schools'),
+          minRole: 'ADMIN',
+        },
+        { href: '/admin/calendar', icon: Calendar, label: t('sidebar.calendar'), minRole: 'ADMIN' },
+        {
+          href: '/admin/calibrations',
+          icon: SlidersHorizontal,
+          label: t('sidebar.calibrations'),
+          minRole: 'ADMIN',
+        },
+        { href: '/admin/essays', icon: PenTool, label: t('sidebar.essays'), minRole: 'ADMIN' },
+        {
+          href: '/admin/activity-templates',
+          icon: Layers,
+          label: t('sidebar.activityTemplates'),
+          minRole: 'ADMIN',
+        },
+        { href: '/admin/points', icon: Coins, label: t('sidebar.points'), minRole: 'ADMIN' },
       ],
     },
     {
-      title: t('sidebar.groups.moderation'),
+      title: t('sidebar.groups.management'),
+      minRole: 'ADMIN',
       items: [
+        { href: '/admin/team', icon: UsersRound, label: t('sidebar.team') },
         {
           href: '/admin/moderation',
           icon: ShieldCheck,
@@ -109,6 +155,7 @@ export function AdminSidebar() {
     },
     {
       title: t('sidebar.groups.ai'),
+      minRole: 'ADMIN',
       items: [
         { href: '/admin/ai-operations', icon: Bot, label: t('sidebar.aiOps') },
         { href: '/admin/memory', icon: Brain, label: t('sidebar.memory') },
@@ -116,9 +163,19 @@ export function AdminSidebar() {
     },
     {
       title: t('sidebar.groups.system'),
+      minRole: 'SUPER_ADMIN',
       items: [{ href: '/admin/settings', icon: Settings, label: t('sidebar.settings') }],
     },
   ];
+
+  // Filter groups and items by role
+  const filteredGroups = navGroups
+    .filter((group) => hasAccess(userRole, group.minRole))
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => hasAccess(userRole, item.minRole)),
+    }))
+    .filter((group) => group.items.length > 0);
 
   const isActive = (href: string, exact?: boolean) => {
     if (exact) return pathname === href;
@@ -162,7 +219,7 @@ export function AdminSidebar() {
   };
 
   const renderGroups = () =>
-    navGroups.map((group) => (
+    filteredGroups.map((group) => (
       <SidebarGroup key={group.title} group={group} isGroupActive={isGroupActive(group)}>
         {group.items.map((item) => renderNavItem(item))}
       </SidebarGroup>
@@ -173,6 +230,12 @@ export function AdminSidebar() {
       {/* Desktop sidebar */}
       <aside className="hidden md:fixed md:inset-y-0 md:flex md:w-56 md:flex-col md:pt-16 z-30">
         <div className="flex flex-1 flex-col border-r bg-card/50 backdrop-blur-sm">
+          <div className="px-4 py-3 border-b">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium truncate">{user?.email?.split('@')[0]}</span>
+              <RoleBadge role={userRole} size="sm" />
+            </div>
+          </div>
           <ScrollArea className="flex-1 py-4">
             <nav className="space-y-1 px-3">{renderGroups()}</nav>
           </ScrollArea>
@@ -199,11 +262,14 @@ export function AdminSidebar() {
             </SheetContent>
           </Sheet>
           {/* Show current section name on mobile */}
-          {navGroups.flatMap((g) => g.items).find((item) => isActive(item.href, item.exact)) && (
+          {filteredGroups
+            .flatMap((g) => g.items)
+            .find((item) => isActive(item.href, item.exact)) && (
             <span className="text-sm font-medium text-muted-foreground truncate">
               {
-                navGroups.flatMap((g) => g.items).find((item) => isActive(item.href, item.exact))
-                  ?.label
+                filteredGroups
+                  .flatMap((g) => g.items)
+                  .find((item) => isActive(item.href, item.exact))?.label
               }
             </span>
           )}

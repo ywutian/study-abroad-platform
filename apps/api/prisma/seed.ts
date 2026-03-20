@@ -518,7 +518,7 @@ async function main() {
         email: 'admin@example.com',
         passwordHash: adminPasswordHash,
         emailVerified: true,
-        role: 'ADMIN',
+        role: 'SUPER_ADMIN',
         locale: 'zh',
       },
     });

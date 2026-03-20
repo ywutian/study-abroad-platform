@@ -30,43 +30,43 @@ const ACTIVITY_CATEGORIES = [
 const ACTIVITY_TIMING = ['SCHOOL_YEAR', 'SCHOOL_BREAK', 'ALL_YEAR'] as const;
 
 export class CreateActivityDto {
-  @ApiProperty({ description: '活动名称', example: '机器人社' })
+  @ApiProperty({ description: 'Activity name', example: 'Robotics Club' })
   @IsString()
   @MaxLength(100)
   name: string;
 
-  @ApiProperty({ enum: ACTIVITY_CATEGORIES, description: '活动类别' })
+  @ApiProperty({ enum: ACTIVITY_CATEGORIES, description: 'Activity category' })
   @IsIn(ACTIVITY_CATEGORIES)
   category: string;
 
-  @ApiProperty({ description: '角色/职位', example: '社长' })
+  @ApiProperty({ description: 'Role/position', example: 'President' })
   @IsString()
   @MaxLength(100)
   role: string;
 
-  @ApiPropertyOptional({ description: '组织名称' })
+  @ApiPropertyOptional({ description: 'Organization name' })
   @IsOptional()
   @IsString()
   @MaxLength(100)
   organization?: string;
 
-  @ApiPropertyOptional({ description: '活动描述' })
+  @ApiPropertyOptional({ description: 'Activity description' })
   @IsOptional()
   @IsString()
   @MaxLength(500)
   description?: string;
 
-  @ApiPropertyOptional({ description: '开始日期' })
+  @ApiPropertyOptional({ description: 'Start date' })
   @IsOptional()
   @IsDateString()
   startDate?: string;
 
-  @ApiPropertyOptional({ description: '结束日期' })
+  @ApiPropertyOptional({ description: 'End date' })
   @IsOptional()
   @IsDateString()
   endDate?: string;
 
-  @ApiPropertyOptional({ description: '每周小时数' })
+  @ApiPropertyOptional({ description: 'Hours per week' })
   @IsOptional()
   @IsInt()
   @Type(() => Number)
@@ -74,7 +74,7 @@ export class CreateActivityDto {
   @Max(40)
   hoursPerWeek?: number;
 
-  @ApiPropertyOptional({ description: '每年周数' })
+  @ApiPropertyOptional({ description: 'Weeks per year' })
   @IsOptional()
   @IsInt()
   @Type(() => Number)
@@ -82,30 +82,30 @@ export class CreateActivityDto {
   @Max(52)
   weeksPerYear?: number;
 
-  @ApiPropertyOptional({ description: '是否持续中' })
+  @ApiPropertyOptional({ description: 'Whether ongoing' })
   @IsOptional()
   @IsBoolean()
   isOngoing?: boolean;
 
-  @ApiPropertyOptional({ description: '排序顺序' })
+  @ApiPropertyOptional({ description: 'Sort order' })
   @IsOptional()
   @IsInt()
   @Type(() => Number)
   @Min(0)
   order?: number;
 
-  @ApiPropertyOptional({ description: '年级', type: [Number] })
+  @ApiPropertyOptional({ description: 'Grade levels', type: [Number] })
   @IsOptional()
   @IsArray()
   @IsInt({ each: true })
   gradeLevels?: number[];
 
-  @ApiPropertyOptional({ enum: ACTIVITY_TIMING, description: '时间段' })
+  @ApiPropertyOptional({ enum: ACTIVITY_TIMING, description: 'Time period' })
   @IsOptional()
   @IsIn(ACTIVITY_TIMING)
   timing?: string;
 
-  @ApiPropertyOptional({ description: '活动模板ID' })
+  @ApiPropertyOptional({ description: 'Activity template ID' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
@@ -113,7 +113,7 @@ export class CreateActivityDto {
 }
 
 export class UpdateActivityDto {
-  @ApiPropertyOptional({ description: '活动名称' })
+  @ApiPropertyOptional({ description: 'Activity name' })
   @IsOptional()
   @IsString()
   @MaxLength(100)
@@ -124,35 +124,35 @@ export class UpdateActivityDto {
   @IsIn(ACTIVITY_CATEGORIES)
   category?: string;
 
-  @ApiPropertyOptional({ description: '角色/职位' })
+  @ApiPropertyOptional({ description: 'Role/position' })
   @IsOptional()
   @IsString()
   @MaxLength(100)
   role?: string;
 
-  @ApiPropertyOptional({ description: '组织名称' })
+  @ApiPropertyOptional({ description: 'Organization name' })
   @IsOptional()
   @IsString()
   @MaxLength(100)
   organization?: string;
 
-  @ApiPropertyOptional({ description: '活动描述' })
+  @ApiPropertyOptional({ description: 'Activity description' })
   @IsOptional()
   @IsString()
   @MaxLength(500)
   description?: string;
 
-  @ApiPropertyOptional({ description: '开始日期' })
+  @ApiPropertyOptional({ description: 'Start date' })
   @IsOptional()
   @IsDateString()
   startDate?: string;
 
-  @ApiPropertyOptional({ description: '结束日期' })
+  @ApiPropertyOptional({ description: 'End date' })
   @IsOptional()
   @IsDateString()
   endDate?: string;
 
-  @ApiPropertyOptional({ description: '每周小时数' })
+  @ApiPropertyOptional({ description: 'Hours per week' })
   @IsOptional()
   @IsInt()
   @Type(() => Number)
@@ -160,7 +160,7 @@ export class UpdateActivityDto {
   @Max(40)
   hoursPerWeek?: number;
 
-  @ApiPropertyOptional({ description: '每年周数' })
+  @ApiPropertyOptional({ description: 'Weeks per year' })
   @IsOptional()
   @IsInt()
   @Type(() => Number)
@@ -168,30 +168,30 @@ export class UpdateActivityDto {
   @Max(52)
   weeksPerYear?: number;
 
-  @ApiPropertyOptional({ description: '是否持续中' })
+  @ApiPropertyOptional({ description: 'Whether ongoing' })
   @IsOptional()
   @IsBoolean()
   isOngoing?: boolean;
 
-  @ApiPropertyOptional({ description: '排序顺序' })
+  @ApiPropertyOptional({ description: 'Sort order' })
   @IsOptional()
   @IsInt()
   @Type(() => Number)
   @Min(0)
   order?: number;
 
-  @ApiPropertyOptional({ description: '年级', type: [Number] })
+  @ApiPropertyOptional({ description: 'Grade levels', type: [Number] })
   @IsOptional()
   @IsArray()
   @IsInt({ each: true })
   gradeLevels?: number[];
 
-  @ApiPropertyOptional({ enum: ACTIVITY_TIMING, description: '时间段' })
+  @ApiPropertyOptional({ enum: ACTIVITY_TIMING, description: 'Time period' })
   @IsOptional()
   @IsIn(ACTIVITY_TIMING)
   timing?: string;
 
-  @ApiPropertyOptional({ description: '活动模板ID' })
+  @ApiPropertyOptional({ description: 'Activity template ID' })
   @IsOptional()
   @IsString()
   @MaxLength(200)

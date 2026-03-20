@@ -1,6 +1,6 @@
 'use client';
 
-import { GraduationCap, Plus, Sparkles, Trash2 } from 'lucide-react';
+import { FileText, GraduationCap, Plus, Sparkles, Trash2 } from 'lucide-react';
 import { Link, useRouter } from '@/lib/i18n/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -86,6 +86,12 @@ export function StepSchoolLists({
                               <Badge variant="secondary" className="text-xs">
                                 <Sparkles className="h-3 w-3 mr-1" />
                                 AI
+                              </Badge>
+                            )}
+                            {(item.essayPromptCount ?? 0) > 0 && (
+                              <Badge variant="outline" className="text-xs gap-1">
+                                <FileText className="h-3 w-3" />
+                                {item.essayPromptCount}
                               </Badge>
                             )}
                           </div>

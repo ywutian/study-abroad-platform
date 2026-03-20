@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotificationService, NotificationType } from './notification.service';
 import { RedisService } from '../../common/redis/redis.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 describe('NotificationService', () => {
@@ -35,6 +36,14 @@ describe('NotificationService', () => {
         {
           provide: EventEmitter2,
           useValue: mockEventEmitter,
+        },
+        {
+          provide: PrismaService,
+          useValue: {
+            schoolListItem: {
+              findMany: jest.fn().mockResolvedValue([]),
+            },
+          },
         },
       ],
     }).compile();

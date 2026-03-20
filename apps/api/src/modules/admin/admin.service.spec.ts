@@ -33,6 +33,10 @@ describe('AdminService', () => {
             },
             admissionCase: {
               count: jest.fn(),
+              findMany: jest.fn(),
+            },
+            dataImportStaging: {
+              count: jest.fn(),
             },
             review: {
               count: jest.fn(),
@@ -106,7 +110,9 @@ describe('AdminService', () => {
         .mockResolvedValueOnce(40) // freeUsers
         .mockResolvedValueOnce(50) // proUsers
         .mockResolvedValueOnce(10); // adminUsers
-      (prisma.admissionCase.count as jest.Mock).mockResolvedValue(30);
+      (prisma.admissionCase.count as jest.Mock)
+        .mockResolvedValueOnce(30) // totalCases
+        .mockResolvedValueOnce(4); // pendingCasesCount
       (prisma.report.count as jest.Mock).mockResolvedValue(5);
       (prisma.review.count as jest.Mock).mockResolvedValue(200);
       (prisma.forumPost.count as jest.Mock).mockResolvedValue(120);
@@ -117,6 +123,7 @@ describe('AdminService', () => {
         .mockResolvedValueOnce({ _sum: { amount: 10000 } })
         .mockResolvedValueOnce({ _sum: { amount: 2500 } });
       (prisma.payment.count as jest.Mock).mockResolvedValue(2);
+      (prisma.dataImportStaging.count as jest.Mock).mockResolvedValue(3);
 
       const result = await service.getStats();
 
@@ -140,6 +147,7 @@ describe('AdminService', () => {
         freeUsers: 40,
         proUsers: 50,
         premiumUsers: 10,
+        pendingReview: 7, // 3 (staging) + 4 (cases)
       });
     });
   });

@@ -111,6 +111,7 @@ export function PostCard({ post, index, onLike, onReport, onClick }: PostCardPro
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                  aria-label="More options"
                 >
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>

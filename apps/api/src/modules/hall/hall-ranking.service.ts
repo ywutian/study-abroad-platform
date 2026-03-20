@@ -84,7 +84,14 @@ export class HallRankingService {
 
   async getPublicProfiles(
     search?: string,
-  ): Promise<{ data: PublicProfileResponse[] }> {
+    page = 1,
+    pageSize = 20,
+  ): Promise<{
+    data: PublicProfileResponse[];
+    total: number;
+    page: number;
+    pageSize: number;
+  }> {
     const where: any = {
       visibility: { in: ['ANONYMOUS', 'VERIFIED_ONLY'] },
     };
@@ -93,27 +100,34 @@ export class HallRankingService {
       where.targetMajor = { contains: search, mode: 'insensitive' };
     }
 
-    const profiles = await this.prisma.profile.findMany({
-      where,
-      select: {
-        id: true,
-        userId: true,
-        grade: true,
-        gpa: true,
-        gpaScale: true,
-        targetMajor: true,
-        visibility: true,
-        _count: {
-          select: {
-            testScores: true,
-            activities: true,
-            awards: true,
+    const safePage = Math.max(1, page);
+    const safePageSize = Math.min(Math.max(1, pageSize), 100);
+
+    const [profiles, total] = await Promise.all([
+      this.prisma.profile.findMany({
+        where,
+        select: {
+          id: true,
+          userId: true,
+          grade: true,
+          gpa: true,
+          gpaScale: true,
+          targetMajor: true,
+          visibility: true,
+          _count: {
+            select: {
+              testScores: true,
+              activities: true,
+              awards: true,
+            },
           },
         },
-      },
-      take: 50,
-      orderBy: { updatedAt: 'desc' },
-    });
+        take: safePageSize,
+        skip: (safePage - 1) * safePageSize,
+        orderBy: { updatedAt: 'desc' },
+      }),
+      this.prisma.profile.count({ where }),
+    ]);
 
     const result = profiles.map((p) => ({
       ...p,
@@ -123,7 +137,7 @@ export class HallRankingService {
       gpaScale: p.gpaScale ? Number(p.gpaScale) : undefined,
     }));
 
-    return { data: result };
+    return { data: result, total, page: safePage, pageSize: safePageSize };
   }
 
   async getBatchRanking(

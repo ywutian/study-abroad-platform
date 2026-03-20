@@ -206,6 +206,7 @@ export function MemoryBrowserSection() {
                             size="icon"
                             className="h-7 w-7"
                             onClick={() => setViewMemory(mem)}
+                            aria-label="View memory"
                           >
                             <Eye className="h-3.5 w-3.5" />
                           </Button>
@@ -214,6 +215,7 @@ export function MemoryBrowserSection() {
                             size="icon"
                             className="h-7 w-7 text-destructive"
                             onClick={() => setDeleteMemoryId(mem.id)}
+                            aria-label="Delete memory"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>

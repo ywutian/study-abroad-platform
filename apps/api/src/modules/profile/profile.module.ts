@@ -7,6 +7,7 @@ import { ProfileScoresService } from './profile-scores.service';
 import { ProfileEducationService } from './profile-education.service';
 import { ProfileAnalysisService } from './profile-analysis.service';
 import { ProfileMemoryService } from './profile-memory.service';
+import { ProfileEnrichmentService } from './profile-enrichment.service';
 import { AiModule } from '../ai/ai.module';
 import { AiAgentMemoryModule } from '../ai-agent/memory/memory.module';
 import { SchoolListModule } from '../school-list/school-list.module';
@@ -21,8 +22,9 @@ import { SchoolListModule } from '../school-list/school-list.module';
     ProfileEducationService,
     ProfileAnalysisService,
     ProfileMemoryService,
+    ProfileEnrichmentService,
     ProfileService,
   ],
-  exports: [ProfileService],
+  exports: [ProfileService, ProfileEnrichmentService],
 })
 export class ProfileModule {}

@@ -33,10 +33,12 @@ export class PredictionController {
   ) {}
 
   @Post()
-  @ApiOperation({ summary: '运行录取预测（多引擎融合 v2）' })
+  @ApiOperation({
+    summary: 'Run admission prediction (multi-engine fusion v2)',
+  })
   @ApiResponse({
     status: 200,
-    description: '预测成功',
+    description: 'Prediction successful',
     type: PredictionResponseDto,
   })
   async predict(
@@ -75,7 +77,7 @@ export class PredictionController {
   }
 
   @Get('history')
-  @ApiOperation({ summary: '获取预测历史' })
+  @ApiOperation({ summary: 'Get prediction history' })
   async getHistory(@CurrentUser() user: CurrentUserPayload) {
     const profile = await this.prisma.profile.findUnique({
       where: { userId: user.id },
@@ -89,9 +91,9 @@ export class PredictionController {
   }
 
   @Patch(':schoolId/result')
-  @ApiOperation({ summary: '报告实际录取结果（用于校准）' })
-  @ApiParam({ name: 'schoolId', description: '学校ID' })
-  @ApiResponse({ status: 200, description: '结果已记录' })
+  @ApiOperation({ summary: 'Report actual admission result (for calibration)' })
+  @ApiParam({ name: 'schoolId', description: 'School ID' })
+  @ApiResponse({ status: 200, description: 'Result recorded' })
   async reportResult(
     @CurrentUser() user: CurrentUserPayload,
     @Param('schoolId') schoolId: string,
@@ -116,13 +118,13 @@ export class PredictionController {
 
   @Get('calibration')
   @Roles(Role.ADMIN)
-  @ApiOperation({ summary: '获取模型校准数据（管理员）' })
+  @ApiOperation({ summary: 'Get model calibration data (admin)' })
   async getCalibration() {
     return this.predictionService.getCalibrationData();
   }
 
   @Get('dashboard')
-  @ApiOperation({ summary: '获取预测仪表盘聚合数据' })
+  @ApiOperation({ summary: 'Get prediction dashboard aggregated data' })
   async getDashboard(@CurrentUser() user: CurrentUserPayload) {
     const profile = await this.prisma.profile.findUnique({
       where: { userId: user.id },
@@ -188,8 +190,10 @@ export class PredictionController {
   }
 
   @Get('school/:schoolId')
-  @ApiOperation({ summary: '获取单校预测详情 + 历史趋势' })
-  @ApiParam({ name: 'schoolId', description: '学校ID' })
+  @ApiOperation({
+    summary: 'Get single school prediction details + historical trends',
+  })
+  @ApiParam({ name: 'schoolId', description: 'School ID' })
   async getSchoolPrediction(
     @CurrentUser() user: CurrentUserPayload,
     @Param('schoolId') schoolId: string,

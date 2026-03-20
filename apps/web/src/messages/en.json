@@ -47,6 +47,8 @@
     "explore": "Explore",
     "enter": "Enter",
     "administrator": "Administrator",
+    "superAdmin": "Super Admin",
+    "operator": "Operator",
     "days": "days",
     "featureInDev": "Feature in Development",
     "refresh": "Refresh",
@@ -423,6 +425,15 @@
       },
       "common": {
         "optional": "(Optional)"
+      },
+      "invite": {
+        "title": "Team Invite Registration",
+        "subtitle": "You've been invited to join the team",
+        "invalidToken": "This invite link is invalid or has expired.",
+        "emailLocked": "This invite is restricted to the email shown below.",
+        "submit": "Create Account",
+        "success": "Account created successfully!",
+        "hasAccount": "Already have an account?"
       }
     },
     "verifyEmail": {
@@ -2853,6 +2864,17 @@
       "brainstormWithTitle": "Help me brainstorm for the essay",
       "review": "Please review this essay",
       "polish": "Please polish this essay"
+    },
+    "promptSelector": {
+      "linkPrompt": "Link to essay prompt",
+      "searchSchool": "Search for a school...",
+      "selectPrompt": "Select a prompt",
+      "clearLink": "Clear linked prompt",
+      "wordLimit": "{count} words",
+      "required": "Required",
+      "optional": "Optional",
+      "linked": "Linked to prompt",
+      "noPrompts": "No verified prompts found for this school"
     }
   },
   "resume": {
@@ -3423,6 +3445,7 @@
       "verified": "Verified",
       "viewFullCase": "View Full Case",
       "essayPrompt": "Essay Prompt",
+      "writeWithPrompt": "Write with this prompt",
       "yearLabel": "Year",
       "tabs": {
         "original": "Original Essay",
@@ -3633,6 +3656,8 @@
       "words": "words",
       "aiTips": "AI Writing Tips",
       "category": "Category",
+      "newTag": "New",
+      "modifiedTag": "Modified",
       "noData": "No essay prompts available",
       "updateHint": "Essay prompts are typically updated in August"
     },
@@ -4643,6 +4668,10 @@
   "admin": {
     "title": "Admin Panel",
     "description": "Manage users, cases, reports and data",
+    "error": "Something went wrong",
+    "errorDescription": "An error occurred while loading this page. Please try again.",
+    "tryAgain": "Try again",
+    "backToDashboard": "Back to Dashboard",
     "tabs": {
       "overview": "Overview",
       "users": "Users",
@@ -4672,16 +4701,18 @@
       "analytics": "Analytics",
       "calibrations": "Calibrations",
       "activityTemplates": "Activity Templates",
+      "dataReview": "Data Review",
       "settings": "Settings",
       "verifications": "Verifications",
       "health": "System Health",
+      "team": "Team",
       "menu": "Menu",
       "adminNav": "Admin Navigation",
       "groups": {
         "overview": "Overview",
         "users": "Users & Verification",
         "academic": "Academic Data",
-        "moderation": "Content & Operations",
+        "management": "Management",
         "ai": "AI System",
         "system": "System"
       }
@@ -4705,12 +4736,17 @@
     "roles": {
       "admin": "Admin",
       "user": "User",
-      "verified": "Verified"
+      "verified": "Verified",
+      "operator": "Operator",
+      "superAdmin": "Super Admin",
+      "setOperator": "Set as Operator",
+      "setAdmin": "Set as Admin"
     },
     "common": {
       "edit": "Edit",
       "cancel": "Cancel",
-      "save": "Save"
+      "save": "Save",
+      "loading": "Loading..."
     },
     "dataUpdates": {
       "title": "Data Updates",
@@ -5194,6 +5230,395 @@
       "decayErrors": "Errors",
       "decayDuration": "Duration"
     },
+    "dataReview": {
+      "title": "Data Review",
+      "description": "Review imported data, manage staging queue, track import history",
+      "tabs": {
+        "queue": "Review Queue",
+        "cases": "Pending Cases",
+        "history": "Import History",
+        "import": "Bulk Import",
+        "pipeline": "Data Collection",
+        "batch": "Batch Entry"
+      },
+      "stats": {
+        "pendingStaging": "Pending Staging",
+        "pendingCases": "Pending Cases",
+        "approvedToday": "Approved Today",
+        "rejectedToday": "Rejected Today"
+      },
+      "enums": {
+        "hsType": {
+          "PUBLIC_US": "US Public",
+          "PRIVATE_US": "US Private",
+          "BOARDING_US": "US Boarding",
+          "INTL_CN": "China International",
+          "PUBLIC_CN": "China Public",
+          "PRIVATE_CN": "China Private",
+          "INTL_OTHER": "International (Other)",
+          "PUBLIC_OTHER": "Public (Other)",
+          "PRIVATE_OTHER": "Private (Other)"
+        },
+        "curriculum": {
+          "AP": "AP",
+          "IB": "IB",
+          "A_LEVEL": "A-Level",
+          "GAOKAO": "Gaokao",
+          "CANADIAN": "Canadian",
+          "AUSTRALIAN": "Australian",
+          "OTHER": "Other"
+        },
+        "financialAid": {
+          "no_aid": "Did Not Apply for Aid",
+          "need_based": "Need-based Grant",
+          "merit": "Merit Scholarship",
+          "need_and_merit": "Need-based + Merit",
+          "full_tuition": "Full Tuition Scholarship",
+          "full_ride": "Full Ride (Tuition + Room & Board)",
+          "loan_only": "Loan Only",
+          "none_received": "Applied but No Aid Received",
+          "unknown": "Unknown"
+        },
+        "demographic": {
+          "international": "International Student",
+          "first_gen": "First-generation College Student",
+          "legacy": "Legacy",
+          "urm": "URM (Underrepresented Minority)",
+          "recruited_athlete": "Recruited Athlete",
+          "low_income": "Low-income Family",
+          "transfer": "Transfer Student",
+          "homeschool": "Homeschooled",
+          "military": "Military Family",
+          "gap_year": "Gap Year"
+        },
+        "result": {
+          "ADMITTED": "Admitted",
+          "REJECTED": "Rejected",
+          "WAITLISTED": "Waitlisted",
+          "DEFERRED": "Deferred"
+        },
+        "round": {
+          "ED": "ED",
+          "ED2": "ED II",
+          "EA": "EA",
+          "REA": "REA",
+          "RD": "RD",
+          "ROLLING": "Rolling"
+        },
+        "activityCategory": {
+          "RESEARCH": "Research",
+          "ACADEMIC": "Academic",
+          "CLUB": "Club",
+          "ATHLETICS": "Athletics",
+          "COMMUNITY_SERVICE": "Community Service",
+          "ARTS": "Arts",
+          "WORK": "Work",
+          "ENTREPRENEURSHIP": "Entrepreneurship",
+          "LEADERSHIP": "Leadership",
+          "WRITING": "Writing",
+          "OTHER": "Other"
+        },
+        "awardLevel": {
+          "school": "School",
+          "regional": "Regional",
+          "state": "State",
+          "national": "National",
+          "international": "International"
+        },
+        "visibility": {
+          "ANONYMOUS": "Anonymous",
+          "PUBLIC": "Public",
+          "VERIFIED_ONLY": "Verified Only"
+        },
+        "essayType": {
+          "SUPPLEMENTAL": "Supplemental",
+          "SHORT_ANSWER": "Short Answer",
+          "PERSONAL_STATEMENT": "Personal Statement",
+          "WHY_SCHOOL": "Why School",
+          "ACTIVITY": "Activity",
+          "OPTIONAL": "Optional",
+          "OTHER": "Other"
+        }
+      },
+      "filter": {
+        "dataType": "Data Type",
+        "allTypes": "All Types",
+        "source": "Source",
+        "sourcePlaceholder": "Filter by source...",
+        "reset": "Reset"
+      },
+      "table": {
+        "type": "Type",
+        "source": "Source",
+        "school": "School",
+        "title": "Title",
+        "qualityScore": "Quality",
+        "year": "Year",
+        "round": "Round",
+        "result": "Result",
+        "gpa": "GPA",
+        "sat": "SAT",
+        "submittedAt": "Submitted",
+        "actions": "Actions",
+        "selectAll": "Select All",
+        "selected": "{count} selected",
+        "noData": "No Data",
+        "noDataDesc": "No data pending review",
+        "completeness": "Completeness"
+      },
+      "help": {
+        "qualityTitle": "Quality Score",
+        "qualityDesc": "Measures data correctness (0-100) based on required fields, score validity, and internal consistency.",
+        "completenessTitle": "Completeness",
+        "completenessDesc": "Shows how many optional fields are filled (0-100%). Partial data is still valuable for predictions."
+      },
+      "guide": {
+        "title": "Review Workflow",
+        "step1": "Check the review queue for new items",
+        "step2": "Review the quality score and completeness",
+        "step3": "Edit data if needed using inline editing",
+        "step4": "Approve or reject with a reason",
+        "step5": "Approved items become available to users and the AI system"
+      },
+      "actions": {
+        "approve": "Approve",
+        "reject": "Reject",
+        "viewDetail": "View Details",
+        "editAndApprove": "Edit & Approve",
+        "batchApprove": "Batch Approve",
+        "batchReject": "Batch Reject"
+      },
+      "detail": {
+        "stagingDetail": "Staging Item Details",
+        "caseDetail": "Case Details",
+        "rawData": "Raw Data",
+        "correctedData": "Corrected Data",
+        "editMode": "Edit Mode",
+        "note": "Note",
+        "notePlaceholder": "Optional note...",
+        "major": "Major",
+        "tags": "Tags",
+        "testScores": "Test Scores",
+        "activities": "Activities",
+        "awards": "Awards",
+        "apInfo": "AP / IB",
+        "apCount": "AP Count",
+        "apSubjects": "AP Subjects",
+        "ibScore": "IB Score",
+        "hsType": "High School Type",
+        "curriculum": "Curriculum",
+        "demographics": "Demographics",
+        "financialAid": "Financial Aid",
+        "enrollment": "Enrollment",
+        "narrative": "Narrative",
+        "enrichment": "Enrichment Details",
+        "activitiesCount": "{count} activities",
+        "awardsCount": "{count} awards"
+      },
+      "reject": {
+        "title": "Rejection Reason",
+        "reason": "Please enter rejection reason",
+        "reasonPlaceholder": "Enter rejection reason...",
+        "confirm": "Confirm Reject"
+      },
+      "history": {
+        "batchId": "Batch ID",
+        "count": "Count",
+        "importedAt": "Imported At",
+        "rollback": "Rollback",
+        "rollbackConfirm": "Confirm Rollback",
+        "rollbackDesc": "Rollback will delete all data imported in this batch. This cannot be undone.",
+        "rollbackSuccess": "Batch rolled back",
+        "noHistory": "No Import History",
+        "noHistoryDesc": "No data has been imported yet"
+      },
+      "import": {
+        "title": "Bulk Import",
+        "step1": "Upload File",
+        "step2": "Validate Data",
+        "step3": "Preview Results",
+        "step4": "Execute Import",
+        "step5": "Import Complete",
+        "uploadTitle": "Upload CSV File",
+        "uploadDesc": "Drag and drop or click to select",
+        "importType": "Import Type",
+        "typeCases": "Admission Cases",
+        "typeEssays": "Essay Prompts",
+        "typeSchools": "School Data",
+        "downloadTemplate": "Download Template",
+        "validating": "Validating...",
+        "validRows": "Valid rows",
+        "warningRows": "Warning rows",
+        "errorRows": "Error rows",
+        "rowNumber": "Row",
+        "field": "Field",
+        "issue": "Issue",
+        "preview": "Preview",
+        "autoApprove": "Auto-approve",
+        "needsReview": "Needs review",
+        "toStaging": "To staging",
+        "importing": "Importing {current}/{total}...",
+        "importSuccess": "Import Complete",
+        "imported": "Imported",
+        "skipped": "Skipped",
+        "errors": "Errors",
+        "goToQueue": "Go to Review Queue",
+        "goToHistory": "View Import History",
+        "startNew": "Start New Import",
+        "formatHelp": "Field Reference",
+        "formatHelpDesc": "Format requirements and valid values for each CSV field",
+        "fieldName": "Field",
+        "fieldRequired": "Required",
+        "fieldFormat": "Format",
+        "fieldValidValues": "Valid Values",
+        "fieldExample": "Example",
+        "required": "Required",
+        "optional": "Optional",
+        "table": {
+          "school": "School"
+        }
+      },
+      "toast": {
+        "approved": "Approved successfully",
+        "rejected": "Rejected",
+        "editApproved": "Edited and approved",
+        "batchSuccess": "Batch operation complete, {count} items processed",
+        "conflict": "This item has already been processed by another admin"
+      },
+      "manualEntry": {
+        "addData": "Add Data",
+        "addCase": "Add Admission Case",
+        "addEssayPrompt": "Add Essay Prompt",
+        "caseForm": {
+          "title": "Add Admission Case",
+          "school": "School",
+          "schoolSearch": "Search school...",
+          "year": "Year",
+          "result": "Result",
+          "round": "Round",
+          "major": "Major",
+          "gpa": "GPA Range",
+          "sat": "SAT Range",
+          "toefl": "TOEFL Range",
+          "tags": "Tags (comma separated)",
+          "visibility": "Visibility",
+          "submit": "Submit",
+          "success": "Case created successfully",
+          "scores": "Scores",
+          "apCount": "AP Count",
+          "ibScore": "IB Score",
+          "apSubjects": "AP Subjects (comma separated)",
+          "background": "Background",
+          "hsType": "High School Type",
+          "curriculum": "Curriculum",
+          "demographics": "Applicant Background Tags",
+          "financialAid": "Financial Aid",
+          "activitiesAwards": "Activities & Awards",
+          "activities": "Activities (one per line, format: Category - Description (Role))",
+          "awards": "Awards (one per line)",
+          "other": "Other",
+          "narrative": "Application Narrative",
+          "narrativePlaceholder": "Application story, special background...",
+          "majorPlaceholder": "e.g. Computer Science",
+          "act": "ACT Range",
+          "apSubjectsPlaceholder": "e.g. Calculus BC, Physics C, Chemistry",
+          "activitiesPlaceholder": "Research - MIT PRIMES (Researcher)\nCompetition - USACO Platinum\nClub - Robotics Club (President)",
+          "awardsPlaceholder": "USAMO Qualifier\nIntel ISEF Finalist\nNational Merit Semifinalist",
+          "tagsPlaceholder": "e.g. research, olympiad",
+          "cancel": "Cancel",
+          "validation": {
+            "schoolRequired": "Please select a school"
+          }
+        },
+        "essayForm": {
+          "title": "Add Essay Prompt",
+          "type": "Prompt Type",
+          "prompt": "Prompt (English)",
+          "promptZh": "Prompt (Chinese)",
+          "wordLimit": "Word Limit",
+          "isRequired": "Required",
+          "sourceUrl": "Source URL",
+          "promptPlaceholder": "What matters to you and why?",
+          "promptZhPlaceholder": "Enter Chinese translation of the prompt",
+          "cancel": "Cancel",
+          "submit": "Submit",
+          "success": "Essay prompt created successfully"
+        }
+      },
+      "pipeline": {
+        "dataFlow": "Data Flow",
+        "scrape": "Scrape",
+        "staging": "Staging",
+        "review": "Review",
+        "approved": "Approved",
+        "startScrape": "Start Essay Scrape",
+        "syncSchools": "Sync School Data",
+        "goToQueue": "Go to Review Queue",
+        "scrapeStarted": "Essay scraping pipeline started",
+        "syncStarted": "School data sync started"
+      },
+      "batchEntry": {
+        "title": "Batch Entry",
+        "description": "Add multiple admission cases at once using a spreadsheet-style table",
+        "addRow": "Add Row",
+        "addRows": "Add 5 Rows",
+        "paste": "Paste from Clipboard",
+        "clear": "Clear All",
+        "submit": "Submit ({valid}/{total})",
+        "submitting": "Submitting...",
+        "school": "School",
+        "schoolSearch": "Search...",
+        "year": "Year",
+        "round": "Round",
+        "result": "Result",
+        "major": "Major",
+        "gpa": "GPA",
+        "sat": "SAT",
+        "act": "ACT",
+        "toefl": "TOEFL",
+        "apCount": "AP Count",
+        "apSubjects": "AP Subjects",
+        "ibScore": "IB Score",
+        "hsType": "HS Type",
+        "curriculum": "Curriculum",
+        "demographics": "Demographics",
+        "activities": "Activities",
+        "awards": "Awards",
+        "financialAid": "Aid",
+        "enrollment": "Enrollment",
+        "narrative": "Narrative",
+        "tags": "Tags",
+        "actions": "Actions",
+        "deleteRow": "Delete Row",
+        "duplicateRow": "Duplicate Row",
+        "noRows": "No rows yet. Click 'Add Row' to start.",
+        "validationError": "Please fix validation errors before submitting",
+        "submitSuccess": "{count} cases submitted successfully",
+        "maxRows": "Maximum {max} rows allowed",
+        "editActivities": "Edit Activities ({count})",
+        "editAwards": "Edit Awards ({count})",
+        "activitiesEditor": "Activities Editor",
+        "awardsEditor": "Awards Editor",
+        "addActivity": "Add Activity",
+        "addAward": "Add Award",
+        "category": "Category",
+        "description": "Description",
+        "role": "Role",
+        "tier": "Tier",
+        "hoursPerWeek": "Hours/Week",
+        "weeksPerYear": "Weeks/Year",
+        "name": "Name",
+        "level": "Level",
+        "competition": "Competition",
+        "awardYear": "Year",
+        "pasteTitle": "Paste from Spreadsheet",
+        "pasteDescription": "Paste tab-separated data from Excel or Google Sheets. First row should be headers.",
+        "pasteArea": "Paste data here...",
+        "pasteImport": "Import",
+        "pasteCancel": "Cancel",
+        "parsedRows": "{count} rows parsed"
+      }
+    },
     "ban": {
       "banUser": "Ban User",
       "unbanUser": "Unban User",
@@ -5530,6 +5955,257 @@
       "filterPending": "Pending",
       "filterApproved": "Approved",
       "filterRejected": "Rejected"
+    },
+    "team": {
+      "title": "Team Management",
+      "description": "Manage admin team members, invitations, and role permissions",
+      "tabs": {
+        "members": "Members",
+        "invites": "Invites",
+        "permissions": "Permissions",
+        "activity": "Activity"
+      },
+      "members": {
+        "email": "Email",
+        "role": "Role",
+        "casesReviewed": "Cases Reviewed",
+        "casesApproved": "Approved",
+        "casesRejected": "Rejected",
+        "importsProcessed": "Imports Processed",
+        "lastActive": "Last Active",
+        "viewStats": "Stats",
+        "statsTitle": "Operator Statistics",
+        "empty": "No Team Members",
+        "emptyDesc": "No operators or admins have been added yet. Invite team members to get started."
+      },
+      "invites": {
+        "email": "Email",
+        "role": "Role",
+        "status": "Status",
+        "sentDate": "Sent Date",
+        "sentBy": "Sent By",
+        "create": "Add Member",
+        "createTitle": "Add Team Member",
+        "emailLabel": "Email Address",
+        "roleLabel": "Role",
+        "searchButton": "Search",
+        "searchPlaceholder": "Enter registered user email...",
+        "userNotFound": "No registered user found with this email. They must register an account first.",
+        "userFound": "User Found",
+        "currentRole": "Current Role",
+        "targetRole": "Promote To",
+        "sameRole": "User already has this role",
+        "promote": "Promote",
+        "promoted": "User promoted successfully",
+        "joinedAt": "Joined",
+        "pending": "Pending",
+        "accepted": "Accepted",
+        "expired": "Expired",
+        "empty": "No Team Members Added",
+        "emptyDesc": "Search for a registered user by email and promote them to your team.",
+        "tabSearch": "Find Existing User",
+        "tabInvite": "Generate Invite Link",
+        "emailOptional": "Email (optional — leave empty for unrestricted)",
+        "generateLink": "Generate Invite Link",
+        "inviteLink": "Invite Link",
+        "copyLink": "Copy Link",
+        "linkCopied": "Link copied!",
+        "linkExpiry": "This link expires in 7 days",
+        "history": "Invite History"
+      },
+      "permissions": {
+        "permission": "Permission",
+        "guideTitle": "How Permissions Work",
+        "guideStep1": "Permissions control what each role can do. Toggle switches to grant or revoke access.",
+        "guideStep2": "OPERATOR permissions apply to data review operators. ADMIN permissions apply to administrators.",
+        "guideStep3": "Changes take effect immediately after saving. All changes are recorded in the audit log.",
+        "guideWarning": "Super Admin bypasses all permission checks and cannot be restricted.",
+        "superAdminTitle": "Super Admin Permissions",
+        "superAdminDesc": "Super Admin has unrestricted access to all features and cannot be limited through this permission matrix.",
+        "saveChanges": "Save Changes",
+        "saved": "Permissions saved successfully",
+        "groups": {
+          "cases": "Cases",
+          "essays": "Essays",
+          "schools": "Schools",
+          "users": "Users",
+          "content": "Content",
+          "data": "Data",
+          "system": "System",
+          "ai": "AI",
+          "audit": "Audit",
+          "notifications": "Notifications"
+        },
+        "desc": {
+          "case_create": "Create new admission cases manually",
+          "case_review": "Approve or reject cases in the review queue",
+          "case_delete": "Permanently delete admission cases",
+          "essay_manage": "Manage essay prompts and content",
+          "school_edit": "Edit school information and details",
+          "school_review": "Review and approve school data changes",
+          "user_view": "View user profiles and details",
+          "user_manage": "Manage user accounts and roles",
+          "user_delete": "Permanently delete user accounts",
+          "user_ban": "Ban or unban user accounts",
+          "content_moderate": "Moderate forum posts, reviews, and chat",
+          "data_export": "Export data as CSV files",
+          "data_health": "View data health and quality metrics",
+          "data_sync": "Trigger data sync and scraping jobs",
+          "system_settings": "Modify system-wide settings",
+          "system_roles": "Manage roles and permissions",
+          "system_calibration": "Create and edit school calibrations",
+          "ai_config": "Configure AI agent behavior",
+          "audit_view": "View audit logs",
+          "notification_broadcast": "Send broadcast notifications"
+        }
+      },
+      "activity": {
+        "time": "Time",
+        "action": "Action",
+        "resource": "Resource",
+        "resourceId": "Resource ID",
+        "allMembers": "All Members",
+        "allActions": "All Actions",
+        "empty": "No Activity",
+        "emptyDesc": "No admin activity has been recorded yet."
+      }
+    },
+    "help": {
+      "permissionMatrix": {
+        "title": "Permission Matrix",
+        "description": "Permissions control what each role can do in the admin panel. SUPER_ADMIN bypasses all permissions. Changes take effect immediately."
+      },
+      "qualityScore": {
+        "title": "Quality Score",
+        "description": "Quality Score (0-100) measures data correctness based on required fields, score validity, and internal consistency."
+      },
+      "dataCompleteness": {
+        "title": "Data Completeness",
+        "description": "Completeness (0-100%) shows how many optional fields are filled. Partial data is still valuable for predictions."
+      },
+      "reviewQueue": {
+        "title": "Review Queue",
+        "description": "Low-quality imports land here for manual review. You can edit data before approving, or reject with a reason."
+      },
+      "importPolicy": {
+        "title": "Import Policy",
+        "description": "Import policies control how data flows through the pipeline. Higher thresholds mean stricter auto-approval."
+      },
+      "roleHierarchy": {
+        "title": "Role Hierarchy",
+        "description": "Each role inherits all permissions of lower roles. OPERATOR can review data, ADMIN manages everything, SUPER_ADMIN controls system settings."
+      },
+      "aiOperations": {
+        "title": "AI Operations",
+        "description": "Monitor AI system health, configure agent behavior, and track usage metrics."
+      },
+      "memorySystem": {
+        "title": "Memory System",
+        "description": "The AI memory system stores conversation context for personalized responses. Memories decay over time based on relevance."
+      },
+      "calibrations": {
+        "title": "Calibrations",
+        "description": "Calibration multipliers adjust prediction accuracy per school. Higher multiplier means more weight on historical data."
+      }
+    },
+    "tour": {
+      "overview": {
+        "step1": {
+          "title": "Dashboard Overview",
+          "desc": "Key metrics at a glance. Click any card for details."
+        },
+        "step2": {
+          "title": "Quick Actions",
+          "desc": "Common admin actions are accessible from the quick actions panel."
+        },
+        "step3": {
+          "title": "Health Status",
+          "desc": "System health indicator shows the status of all services."
+        },
+        "step4": {
+          "title": "Recent Activity",
+          "desc": "Track recent admin actions and data changes in real time."
+        }
+      },
+      "dataReview": {
+        "step1": {
+          "title": "Stats Overview",
+          "desc": "See how many items are pending review, approved, or rejected today."
+        },
+        "step2": {
+          "title": "Review Queue",
+          "desc": "Items from all sources appear here. Filter by type or source."
+        },
+        "step3": {
+          "title": "Quality & Completeness",
+          "desc": "Quality score measures correctness, completeness shows how much data is filled."
+        },
+        "step4": {
+          "title": "Approve or Reject",
+          "desc": "Review each item, edit if needed, then approve or reject with a reason."
+        },
+        "step5": {
+          "title": "Bulk Import",
+          "desc": "Import multiple items at once via CSV. Download the template first."
+        },
+        "step6": {
+          "title": "Data Collection",
+          "desc": "View and manage automated data collection sources and their status."
+        }
+      },
+      "team": {
+        "step1": {
+          "title": "Team Members",
+          "desc": "View all operators and admins. Monitor their review activity."
+        },
+        "step2": {
+          "title": "Invite Members",
+          "desc": "Send invitations to add new operators or admins to the team."
+        },
+        "step3": {
+          "title": "Permission Matrix",
+          "desc": "Control what each role can do. Toggle permissions per role."
+        },
+        "step4": {
+          "title": "Activity Log",
+          "desc": "Track all admin actions filtered by team member."
+        }
+      },
+      "aiOperations": {
+        "step1": {
+          "title": "AI Health",
+          "desc": "Overall health status of the AI system and response times."
+        },
+        "step2": {
+          "title": "Agent Configuration",
+          "desc": "Configure AI agent behavior, system prompts, and model settings."
+        },
+        "step3": {
+          "title": "Performance Metrics",
+          "desc": "Track AI usage, token consumption, and response quality."
+        },
+        "step4": {
+          "title": "Reliability",
+          "desc": "Monitor error rates, circuit breaker status, and fallback usage."
+        }
+      }
+    },
+    "dataPipeline": {
+      "title": "Data Pipeline",
+      "description": "Configure import policies, quality thresholds, and data source settings",
+      "autoApproveThreshold": "Auto-approve Threshold",
+      "autoApproveDesc": "Cases with quality score above this threshold are automatically approved",
+      "pendingThreshold": "Pending Review Threshold",
+      "pendingDesc": "Cases between this and auto-approve threshold require manual review",
+      "minQuality": "Minimum Quality",
+      "minQualityDesc": "Cases below this threshold are rejected automatically",
+      "policyUpdated": "Import policy updated successfully",
+      "stats": {
+        "totalImported": "Total Imported",
+        "pendingReview": "Pending Review",
+        "autoApproved": "Auto Approved",
+        "rejected": "Rejected"
+      }
     }
   },
   "essayAdmin": {
@@ -5562,6 +6238,7 @@
     "scrapeFailed": "Data scraping failed",
     "verifySuccess": "Verification succeeded",
     "batchVerifySuccess": "Batch verification completed",
+    "viewDetail": "View Detail",
     "emptyTitle": "No Essay Data",
     "emptyDescription": "Try adjusting filters or scraping new data",
     "status": {
@@ -5669,7 +6346,10 @@
     "results": "Results",
     "startedAt": "Started",
     "duration": "Duration",
-    "running": "Running..."
+    "running": "Running...",
+    "refresh": "Refresh",
+    "scrapeStarted": "Scraping started",
+    "savedSuccessfully": "Saved successfully"
   },
   "dataExport": {
     "title": "Export Data",

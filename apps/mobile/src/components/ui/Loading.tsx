@@ -6,10 +6,17 @@ import {
   Text,
   ViewStyle,
   StyleProp,
+  useColorScheme,
 } from 'react-native';
 import { colors as themeColors, spacing, fontSize } from '@/utils/theme';
 
-// Use light theme colors as default - these components may be used before providers are ready
+// Use system color scheme to pick colors — avoids white flash when user is in dark mode
+function useDefaultColors() {
+  const scheme = useColorScheme();
+  return scheme === 'dark' ? themeColors.dark : themeColors.light;
+}
+
+// Fallback for non-hook contexts
 const defaultColors = themeColors.light;
 
 interface LoadingProps {
@@ -20,27 +27,19 @@ interface LoadingProps {
 }
 
 export function Loading({ size = 'large', text, fullScreen = false, style }: LoadingProps) {
+  const colors = useDefaultColors();
   const content = (
     <View style={[styles.container, style]}>
-      <ActivityIndicator size={size} color={defaultColors.primary} />
+      <ActivityIndicator size={size} color={colors.primary} />
       {text !== undefined && (
-        <Text style={[styles.text, { color: defaultColors.foregroundMuted }]}>
-          {text || 'Loading...'}
-        </Text>
+        <Text style={[styles.text, { color: colors.foregroundMuted }]}>{text || 'Loading...'}</Text>
       )}
     </View>
   );
 
   if (fullScreen) {
     return (
-      <View 
-        style={[
-          styles.fullScreen, 
-          { backgroundColor: defaultColors.background }
-        ]}
-      >
-        {content}
-      </View>
+      <View style={[styles.fullScreen, { backgroundColor: colors.background }]}>{content}</View>
     );
   }
 
@@ -55,11 +54,11 @@ interface SkeletonProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export function Skeleton({ 
-  width = '100%' as const, 
-  height = 20, 
+export function Skeleton({
+  width = '100%' as const,
+  height = 20,
   borderRadius = 4,
-  style 
+  style,
 }: SkeletonProps) {
   return (
     <View
@@ -84,18 +83,14 @@ interface LoadingOverlayProps {
 }
 
 export function LoadingOverlay({ visible, text }: LoadingOverlayProps) {
+  const colors = useDefaultColors();
   if (!visible) return null;
 
   return (
-    <View style={[styles.overlay, { backgroundColor: defaultColors.overlay }]}>
-      <View 
-        style={[
-          styles.overlayContent, 
-          { backgroundColor: defaultColors.card }
-        ]}
-      >
-        <ActivityIndicator size="large" color={defaultColors.primary} />
-        <Text style={[styles.overlayText, { color: defaultColors.foreground }]}>
+    <View style={[styles.overlay, { backgroundColor: colors.overlay }]}>
+      <View style={[styles.overlayContent, { backgroundColor: colors.card }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={[styles.overlayText, { color: colors.foreground }]}>
           {text || 'Loading...'}
         </Text>
       </View>

@@ -46,6 +46,12 @@ export class CaseController {
     );
   }
 
+  @Get('prefill')
+  @ApiOperation({ summary: 'Get prefilled case data from user profile' })
+  async getPrefillFromProfile(@CurrentUser() user: CurrentUserPayload) {
+    return this.caseService.getPrefillFromProfile(user.id);
+  }
+
   @Get('me')
   @ApiOperation({ summary: 'Get my cases' })
   async getMyCases(@CurrentUser() user: CurrentUserPayload) {
@@ -77,7 +83,12 @@ export class CaseController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: CreateCaseDto,
   ) {
-    return this.caseService.create(user.id, data, user.locale);
+    return this.caseService.create(
+      user.id,
+      data,
+      user.locale,
+      user.role as any,
+    );
   }
 
   @Put(':id')

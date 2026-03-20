@@ -24,7 +24,7 @@ const GRADES = [
 const APP_ROUNDS = ['ED', 'ED2', 'EA', 'REA', 'RD'] as const;
 
 export class UpdateProfileDto {
-  @ApiPropertyOptional({ description: '真实姓名' })
+  @ApiPropertyOptional({ description: 'Real name' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
@@ -38,53 +38,53 @@ export class UpdateProfileDto {
   @Max(5)
   gpa?: number;
 
-  @ApiPropertyOptional({ description: 'GPA 满分', example: 4.0 })
+  @ApiPropertyOptional({ description: 'GPA scale maximum', example: 4.0 })
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   @Type(() => Number)
   @IsIn([4.0, 5.0, 100])
   gpaScale?: number;
 
-  @ApiPropertyOptional({ description: '当前学校' })
+  @ApiPropertyOptional({ description: 'Current school' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   currentSchool?: string;
 
-  @ApiPropertyOptional({ description: '学校类型' })
+  @ApiPropertyOptional({ description: 'School type' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   currentSchoolType?: string;
 
-  @ApiPropertyOptional({ enum: GRADES, description: '年级' })
+  @ApiPropertyOptional({ enum: GRADES, description: 'Grade levels' })
   @IsOptional()
   @IsIn(GRADES)
   grade?: string;
 
-  @ApiPropertyOptional({ description: '目标专业' })
+  @ApiPropertyOptional({ description: 'Target major' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   targetMajor?: string;
 
-  @ApiPropertyOptional({ description: '地区偏好', type: [String] })
+  @ApiPropertyOptional({ description: 'Region preference', type: [String] })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   regionPref?: string[];
 
-  @ApiPropertyOptional({ enum: BudgetTier, description: '预算档次' })
+  @ApiPropertyOptional({ enum: BudgetTier, description: 'Budget tier' })
   @IsOptional()
   @IsEnum(BudgetTier)
   budgetTier?: BudgetTier;
 
-  @ApiPropertyOptional({ enum: APP_ROUNDS, description: '申请轮次' })
+  @ApiPropertyOptional({ enum: APP_ROUNDS, description: 'Application round' })
   @IsOptional()
   @IsIn(APP_ROUNDS)
   applicationRound?: string;
 
-  @ApiPropertyOptional({ enum: Visibility, description: '可见性' })
+  @ApiPropertyOptional({ enum: Visibility, description: 'Visibility' })
   @IsOptional()
   @IsEnum(Visibility)
   visibility?: Visibility;
@@ -116,37 +116,45 @@ export class UpdateProfileDto {
   @MaxLength(10)
   citizenship?: string;
 
-  @ApiPropertyOptional({ enum: EducationSystem, description: '教育体系' })
+  @ApiPropertyOptional({
+    enum: EducationSystem,
+    description: 'Education system',
+  })
   @IsOptional()
   @IsEnum(EducationSystem)
   educationSystem?: EducationSystem;
 
-  @ApiPropertyOptional({ description: '是否需要助学金' })
+  @ApiPropertyOptional({ description: 'Whether financial aid is needed' })
   @IsOptional()
   @IsBoolean()
   @Type(() => Boolean)
   needsFinancialAid?: boolean;
 
-  @ApiPropertyOptional({ description: '是否第一代大学生' })
+  @ApiPropertyOptional({
+    description: 'Whether first-generation college student',
+  })
   @IsOptional()
   @IsBoolean()
   @Type(() => Boolean)
   firstGeneration?: boolean;
 
-  @ApiPropertyOptional({ description: 'Legacy 校友子女', type: [String] })
+  @ApiPropertyOptional({
+    description: 'Legacy (alumni children)',
+    type: [String],
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   @MaxLength(500, { each: true })
   legacy?: string[];
 
-  @ApiPropertyOptional({ description: '意向专业' })
+  @ApiPropertyOptional({ description: 'Intended major' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   intendedMajor?: string;
 
-  @ApiPropertyOptional({ description: '第二专业' })
+  @ApiPropertyOptional({ description: 'Second major' })
   @IsOptional()
   @IsString()
   @MaxLength(200)

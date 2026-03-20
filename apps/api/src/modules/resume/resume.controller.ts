@@ -6,8 +6,6 @@ import {
   Delete,
   Body,
   Param,
-  HttpCode,
-  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -66,10 +64,10 @@ export class ResumeController {
   }
 
   @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a resume' })
-  delete(@CurrentUser() user: { id: string }, @Param('id') id: string) {
-    return this.resumeService.delete(user.id, id);
+  async delete(@CurrentUser() user: { id: string }, @Param('id') id: string) {
+    await this.resumeService.delete(user.id, id);
+    return { message: 'Resume deleted' };
   }
 
   @Post(':id/duplicate')
@@ -104,14 +102,14 @@ export class ResumeController {
   }
 
   @Delete(':id/sections/:sid')
-  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a resume section' })
-  deleteSection(
+  async deleteSection(
     @CurrentUser() user: { id: string },
     @Param('id') id: string,
     @Param('sid') sid: string,
   ) {
-    return this.resumeService.deleteSection(user.id, id, sid);
+    await this.resumeService.deleteSection(user.id, id, sid);
+    return { message: 'Section deleted' };
   }
 
   @Put(':id/sections/reorder')

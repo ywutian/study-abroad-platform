@@ -165,7 +165,7 @@ export default function SecurityPage() {
                   !confirmPassword ||
                   changePasswordMutation.isPending
                 }
-                className="gap-2 bg-primary hover:opacity-90 text-white"
+                className="gap-2 bg-primary hover:opacity-90 text-primary-foreground"
               >
                 {changePasswordMutation.isPending ? (
                   <>

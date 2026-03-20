@@ -5,6 +5,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ERR } from '../../common/constants/error-messages';
 import { ApplicationStatus } from '@prisma/client';
 import { TaskType } from '../../common/types/enums';
 import { getSchoolDisplayName } from '../../common/utils/locale.util';
@@ -50,7 +51,7 @@ export class TimelineApplicationService {
     });
 
     if (!school) {
-      throw new NotFoundException('学校不存在');
+      throw new NotFoundException(ERR.NOT_FOUND.school());
     }
 
     const existing = await this.prisma.applicationTimeline.findUnique({
@@ -64,7 +65,7 @@ export class TimelineApplicationService {
     });
 
     if (existing) {
-      throw new ConflictException('该学校的此轮次申请已存在');
+      throw new ConflictException(ERR.CONFLICT.duplicateApplication());
     }
 
     const timeline = await this.prisma.applicationTimeline.create({
@@ -167,9 +168,14 @@ export class TimelineApplicationService {
               const parsedDate =
                 this.parseMetadataDate(dateStr, applicationYear) ??
                 new Date(applicationYear, 0, 1);
+              const verifiedPrompts = await this.prisma.essayPrompt.findMany({
+                where: { schoolId, isActive: true, status: 'VERIFIED' },
+                orderBy: { sortOrder: 'asc' },
+                select: { prompt: true, wordLimit: true },
+              });
               const tasks = this.buildSmartTasks(
                 round,
-                metadata?.essayPrompts,
+                verifiedPrompts.length > 0 ? verifiedPrompts : null,
                 null,
               );
               const timeline = await this.prisma.applicationTimeline.create({
@@ -384,7 +390,7 @@ export class TimelineApplicationService {
     });
 
     if (!timeline) {
-      throw new NotFoundException('时间线不存在');
+      throw new NotFoundException(ERR.NOT_FOUND.timeline());
     }
 
     return {
@@ -403,7 +409,7 @@ export class TimelineApplicationService {
     });
 
     if (!timeline) {
-      throw new NotFoundException('时间线不存在');
+      throw new NotFoundException(ERR.NOT_FOUND.timeline());
     }
 
     const updated = await this.prisma.applicationTimeline.update({
@@ -427,7 +433,7 @@ export class TimelineApplicationService {
     });
 
     if (!timeline) {
-      throw new NotFoundException('时间线不存在');
+      throw new NotFoundException(ERR.NOT_FOUND.timeline());
     }
 
     await this.prisma.applicationTimeline.delete({ where: { id } });
@@ -504,7 +510,7 @@ export class TimelineApplicationService {
     });
 
     if (!timeline) {
-      throw new NotFoundException('时间线不存在');
+      throw new NotFoundException(ERR.NOT_FOUND.timeline());
     }
 
     const maxOrder = await this.prisma.applicationTask.findFirst({
@@ -542,7 +548,7 @@ export class TimelineApplicationService {
     });
 
     if (!task || task.timeline.userId !== userId) {
-      throw new NotFoundException('任务不存在');
+      throw new NotFoundException(ERR.NOT_FOUND.task());
     }
 
     const updated = await this.prisma.applicationTask.update({
@@ -571,7 +577,7 @@ export class TimelineApplicationService {
     });
 
     if (!task || task.timeline.userId !== userId) {
-      throw new NotFoundException('任务不存在');
+      throw new NotFoundException(ERR.NOT_FOUND.task());
     }
 
     await this.prisma.applicationTask.delete({ where: { id: taskId } });
@@ -588,7 +594,7 @@ export class TimelineApplicationService {
     });
 
     if (!task || task.timeline.userId !== userId) {
-      throw new NotFoundException('任务不存在');
+      throw new NotFoundException(ERR.NOT_FOUND.task());
     }
 
     const updated = await this.prisma.applicationTask.update({

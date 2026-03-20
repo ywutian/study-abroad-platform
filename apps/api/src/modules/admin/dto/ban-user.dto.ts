@@ -9,13 +9,13 @@ import {
 } from 'class-validator';
 
 export class BanUserDto {
-  @ApiProperty({ description: '封禁原因' })
+  @ApiProperty({ description: 'Ban reason' })
   @MaxLength(2000)
   @IsString()
   reason: string;
 
   @ApiPropertyOptional({
-    description: '封禁时长（小时），不填则为永久封禁',
+    description: 'Ban duration (hours); leave empty for permanent ban',
     example: 24,
   })
   @IsOptional()
@@ -23,7 +23,10 @@ export class BanUserDto {
   @Min(1)
   durationHours?: number;
 
-  @ApiPropertyOptional({ description: '是否永久封禁', default: false })
+  @ApiPropertyOptional({
+    description: 'Whether to permanently ban',
+    default: false,
+  })
   @IsOptional()
   @IsBoolean()
   permanent?: boolean;

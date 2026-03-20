@@ -19,16 +19,16 @@ const AWARD_LEVELS = [
 ] as const;
 
 export class CreateAwardDto {
-  @ApiProperty({ description: '奖项名称', example: 'AMC 12 满分' })
+  @ApiProperty({ description: 'Award name', example: 'AMC 12 Perfect Score' })
   @IsString()
   @MaxLength(200)
   name: string;
 
-  @ApiProperty({ enum: AWARD_LEVELS, description: '奖项级别' })
+  @ApiProperty({ enum: AWARD_LEVELS, description: 'Award level' })
   @IsIn(AWARD_LEVELS)
   level: string;
 
-  @ApiPropertyOptional({ description: '获奖年份', example: 2025 })
+  @ApiPropertyOptional({ description: 'Award year', example: 2025 })
   @IsOptional()
   @IsInt()
   @Type(() => Number)
@@ -36,19 +36,21 @@ export class CreateAwardDto {
   @Max(2030)
   year?: number;
 
-  @ApiPropertyOptional({ description: '奖项描述' })
+  @ApiPropertyOptional({ description: 'Award description' })
   @IsOptional()
   @IsString()
   @MaxLength(500)
   description?: string;
 
-  @ApiPropertyOptional({ description: '关联竞赛 ID (Competition.id)' })
+  @ApiPropertyOptional({
+    description: 'Associated competition ID (Competition.id)',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   competitionId?: string;
 
-  @ApiPropertyOptional({ description: '排序顺序' })
+  @ApiPropertyOptional({ description: 'Sort order' })
   @IsOptional()
   @IsInt()
   @Type(() => Number)
@@ -57,7 +59,7 @@ export class CreateAwardDto {
 }
 
 export class UpdateAwardDto {
-  @ApiPropertyOptional({ description: '奖项名称' })
+  @ApiPropertyOptional({ description: 'Award name' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
@@ -68,7 +70,7 @@ export class UpdateAwardDto {
   @IsIn(AWARD_LEVELS)
   level?: string;
 
-  @ApiPropertyOptional({ description: '获奖年份' })
+  @ApiPropertyOptional({ description: 'Award year' })
   @IsOptional()
   @IsInt()
   @Type(() => Number)
@@ -76,19 +78,21 @@ export class UpdateAwardDto {
   @Max(2030)
   year?: number;
 
-  @ApiPropertyOptional({ description: '奖项描述' })
+  @ApiPropertyOptional({ description: 'Award description' })
   @IsOptional()
   @IsString()
   @MaxLength(500)
   description?: string;
 
-  @ApiPropertyOptional({ description: '关联竞赛 ID (Competition.id)' })
+  @ApiPropertyOptional({
+    description: 'Associated competition ID (Competition.id)',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   competitionId?: string;
 
-  @ApiPropertyOptional({ description: '排序顺序' })
+  @ApiPropertyOptional({ description: 'Sort order' })
   @IsOptional()
   @IsInt()
   @Type(() => Number)

@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
+import { CASE_REVIEW_APPROVED_WHERE } from '../../common/constants/prisma-selects';
 import { fireAndForget } from '../../common/utils/async.util';
 import { CaseIncentiveService, PointAction } from '../points/incentive.service';
 import { safeRefund } from '../points/refund.helper';
@@ -1091,6 +1092,7 @@ export class PredictionService {
       where: {
         schoolId,
         isVerified: true,
+        ...CASE_REVIEW_APPROVED_WHERE,
         major: { contains: major, mode: 'insensitive' },
       },
       _count: true,

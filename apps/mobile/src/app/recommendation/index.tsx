@@ -31,9 +31,9 @@ import * as Haptics from 'expo-haptics';
 import { Segment } from '@/components/ui';
 import { useColors, colors as themeColors, spacing, fontSize, fontWeight } from '@/utils/theme';
 
-import { GenerateTab } from './_components/GenerateTab';
-import { HistoryTab } from './_components/HistoryTab';
-import { RecommendationResult, recommendationKeys } from './_components/types';
+import { GenerateTab } from '@/screens/recommendation/GenerateTab';
+import { HistoryTab } from '@/screens/recommendation/HistoryTab';
+import { RecommendationResult, recommendationKeys } from '@/screens/recommendation/types';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {

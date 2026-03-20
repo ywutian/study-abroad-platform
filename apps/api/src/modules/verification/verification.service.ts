@@ -11,7 +11,7 @@ import {
   StorageService,
   StorageFile,
 } from '../../common/storage/storage.service';
-import { VerificationStatus, Role } from '@prisma/client';
+import { VerificationStatus, Role, DataReviewStatus } from '@prisma/client';
 import { CreateVerificationDto } from './dto/create-verification.dto';
 import {
   ReviewVerificationDto,
@@ -23,6 +23,7 @@ import {
   NotificationType,
 } from '../notification/notification.service';
 import { fireAndForget } from '../../common/utils/async.util';
+import { ERR } from '../../common/constants/error-messages';
 
 @Injectable()
 export class VerificationService {
@@ -55,15 +56,13 @@ export class VerificationService {
       'application/pdf',
     ];
     if (!allowedTypes.includes(file.mimetype)) {
-      throw new BadRequestException(
-        '不支持的文件类型。支持：JPEG, PNG, WebP, PDF',
-      );
+      throw new BadRequestException(ERR.BAD_REQUEST.unsupportedFileType());
     }
 
     // 验证文件大小（最大 10MB）
     const maxSize = 10 * 1024 * 1024;
     if (file.buffer.length > maxSize) {
-      throw new BadRequestException('文件大小不能超过 10MB');
+      throw new BadRequestException(ERR.BAD_REQUEST.fileTooLarge());
     }
 
     const result = await this.storage.uploadVerificationFile(userId, file);
@@ -84,15 +83,15 @@ export class VerificationService {
     });
 
     if (!admissionCase) {
-      throw new NotFoundException('案例不存在');
+      throw new NotFoundException(ERR.NOT_FOUND.case());
     }
 
     if (admissionCase.userId !== userId) {
-      throw new ForbiddenException('只能认证自己的案例');
+      throw new ForbiddenException(ERR.FORBIDDEN.selfOnly());
     }
 
     if (admissionCase.isVerified) {
-      throw new ConflictException('该案例已认证');
+      throw new ConflictException(ERR.CONFLICT.alreadyVerified());
     }
 
     // 检查是否有待处理的认证请求
@@ -104,12 +103,12 @@ export class VerificationService {
     });
 
     if (pendingRequest) {
-      throw new ConflictException('已有待处理的认证请求');
+      throw new ConflictException(ERR.CONFLICT.pendingVerification());
     }
 
     // 验证必须提供证明材料
     if (!dto.proofData && !dto.proofUrl) {
-      throw new BadRequestException('请上传证明材料');
+      throw new BadRequestException(ERR.BAD_REQUEST.uploadProof());
     }
 
     // 创建认证请求
@@ -203,11 +202,11 @@ export class VerificationService {
     });
 
     if (!request) {
-      throw new NotFoundException('认证请求不存在');
+      throw new NotFoundException(ERR.NOT_FOUND.verification());
     }
 
     if (request.status !== VerificationStatus.PENDING) {
-      throw new ConflictException('该请求已被处理');
+      throw new ConflictException(ERR.CONFLICT.alreadyProcessed());
     }
 
     const isApproved = dto.action === ReviewAction.APPROVE;
@@ -236,6 +235,7 @@ export class VerificationService {
           data: {
             isVerified: true,
             verifiedAt: new Date(),
+            reviewStatus: DataReviewStatus.APPROVED,
           },
         });
 
@@ -308,7 +308,7 @@ export class VerificationService {
     });
 
     if (!request) {
-      throw new NotFoundException('认证请求不存在');
+      throw new NotFoundException(ERR.NOT_FOUND.verification());
     }
 
     return request;

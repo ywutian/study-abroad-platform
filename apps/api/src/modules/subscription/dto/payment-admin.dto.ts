@@ -31,7 +31,7 @@ export class PaymentQueryDto {
 }
 
 export class RefundPaymentDto {
-  @ApiPropertyOptional({ description: '退款原因' })
+  @ApiPropertyOptional({ description: 'Refund reason' })
   @IsOptional()
   @MaxLength(2000)
   @IsString()
@@ -40,7 +40,7 @@ export class RefundPaymentDto {
 
 export class UpdateSubscriptionDto {
   @ApiPropertyOptional({
-    description: '目标订阅方案（推荐）',
+    description: 'Target subscription plan (recommended)',
     enum: SubscriptionPlan,
   })
   @IsOptional()
@@ -48,14 +48,14 @@ export class UpdateSubscriptionDto {
   plan?: SubscriptionPlan;
 
   @ApiPropertyOptional({
-    description: '目标角色（兼容旧客户端）',
+    description: 'Target role (compatible with legacy clients)',
     enum: Role,
   })
   @IsOptional()
   @IsEnum(Role)
   role?: Role;
 
-  @ApiPropertyOptional({ description: '原因' })
+  @ApiPropertyOptional({ description: 'Reason' })
   @IsOptional()
   @IsString()
   @MaxLength(500)

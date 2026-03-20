@@ -1,0 +1,156 @@
+/**
+ * More Tab — Grid of additional features
+ */
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import type { ComponentProps } from 'react';
+import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+import { FadeInView } from '@/components/ui';
+import { useColors, spacing, fontSize, fontWeight, borderRadius, withOpacity } from '@/utils/theme';
+
+interface MoreItem {
+  icon: ComponentProps<typeof Ionicons>['name'];
+  label: string;
+  route: string;
+  color: string;
+  badge?: number;
+}
+
+export default function MoreScreen() {
+  const { t } = useTranslation();
+  const colors = useColors();
+  const insets = useSafeAreaInsets();
+
+  const items: MoreItem[] = [
+    { icon: 'document-text', label: t('more.resume'), route: '/resume', color: '#6366f1' },
+    { icon: 'lock-closed', label: t('more.vault'), route: '/vault', color: '#10b981' },
+    { icon: 'people', label: t('more.teams'), route: '/teams', color: '#3b82f6' },
+    { icon: 'trophy', label: t('more.points'), route: '/points', color: '#f59e0b' },
+    { icon: 'star', label: t('more.peerReview'), route: '/peer-review', color: '#8b5cf6' },
+    { icon: 'gift', label: t('more.referral'), route: '/referral', color: '#f59e0b' },
+    {
+      icon: 'shield-checkmark',
+      label: t('more.verification'),
+      route: '/verification',
+      color: '#10b981',
+    },
+    { icon: 'podium', label: t('more.ranking'), route: '/ranking', color: '#3b82f6' },
+    { icon: 'clipboard', label: t('more.assessment'), route: '/assessment', color: '#ec4899' },
+    { icon: 'settings', label: t('more.settings'), route: '/settings', color: '#64748b' },
+    { icon: 'calendar', label: t('more.timeline'), route: '/timeline', color: '#6366f1' },
+    { icon: 'chatbubbles', label: t('more.chat'), route: '/chat', color: '#3b82f6' },
+  ];
+
+  return (
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={styles.header}>
+        <Text style={[styles.title, { color: colors.foreground }]}>{t('more.title')}</Text>
+        <Text style={[styles.subtitle, { color: colors.foregroundMuted }]}>
+          {t('more.subtitle')}
+        </Text>
+      </View>
+
+      <View style={styles.grid}>
+        {items.map((item, index) => (
+          <FadeInView key={item.route} index={index} staggerDelay={30} style={styles.gridItem}>
+            <TouchableOpacity
+              onPress={() => router.push(item.route as never)}
+              activeOpacity={0.7}
+              style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
+              accessibilityRole="button"
+              accessibilityLabel={item.label}
+            >
+              <View
+                style={[styles.iconContainer, { backgroundColor: withOpacity(item.color, 0.1) }]}
+              >
+                <Ionicons name={item.icon} size={24} color={item.color} />
+              </View>
+              <Text style={[styles.cardLabel, { color: colors.foreground }]} numberOfLines={1}>
+                {item.label}
+              </Text>
+              {item.badge !== undefined && item.badge > 0 && (
+                <View style={[styles.badge, { backgroundColor: colors.error }]}>
+                  <Text style={styles.badgeText}>{item.badge}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </FadeInView>
+        ))}
+      </View>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing['2xl'],
+  },
+  title: {
+    fontSize: fontSize['2xl'],
+    fontWeight: fontWeight.bold,
+    marginBottom: spacing.xs,
+  },
+  subtitle: {
+    fontSize: fontSize.sm,
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: spacing.md,
+    gap: spacing.md,
+    justifyContent: 'flex-start',
+  },
+  gridItem: {
+    width: '31%',
+  },
+  card: {
+    width: '100%',
+    alignItems: 'center',
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.sm,
+    borderRadius: borderRadius.xl,
+    borderWidth: 1,
+    minWidth: 100,
+  },
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: borderRadius.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.sm,
+  },
+  cardLabel: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.medium,
+    textAlign: 'center',
+  },
+  badge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    fontSize: 10,
+    fontWeight: fontWeight.bold,
+    color: '#ffffff',
+  },
+});

@@ -158,7 +158,7 @@ export function SectionCard({
               size="icon"
               className="h-7 w-7"
               onClick={onToggleVisibility}
-              title={section.isVisible ? 'Hide' : 'Show'}
+              aria-label={section.isVisible ? 'Hide section' : 'Show section'}
             >
               {section.isVisible ? (
                 <Eye className="h-3.5 w-3.5" />
@@ -171,6 +171,7 @@ export function SectionCard({
               size="icon"
               className="h-7 w-7 text-destructive hover:text-destructive"
               onClick={onDelete}
+              aria-label="Delete section"
             >
               <Trash2 className="h-3.5 w-3.5" />
             </Button>

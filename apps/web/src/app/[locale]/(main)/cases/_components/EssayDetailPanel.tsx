@@ -20,8 +20,10 @@ import {
   Check,
   Type,
   ExternalLink,
+  PenTool,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from '@/lib/i18n/navigation';
 
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
@@ -115,6 +117,7 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
   const [useSerif, setUseSerif] = useState(false);
   const [copied, setCopied] = useState(false);
   const { accessToken } = useAuthStore();
+  const router = useRouter();
 
   // 获取文书详情
   const { data: essay, isLoading } = useQuery({
@@ -226,11 +229,28 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
             {essay.prompt && (
               <div className="flex gap-3 p-4 rounded-xl bg-muted/50 border mb-5">
                 <div className="w-1 shrink-0 rounded-full bg-amber-500" />
-                <div>
+                <div className="flex-1">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
                     {t('detail.essayPrompt')}
                   </p>
-                  <p className="text-sm leading-relaxed">{essay.prompt}</p>
+                  <p className="text-sm leading-relaxed mb-2">{essay.prompt}</p>
+                  {accessToken && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5 h-7 text-xs"
+                      onClick={() => {
+                        const params = new URLSearchParams();
+                        params.set('create', 'true');
+                        params.set('prompt', essay.prompt!);
+                        if (essay.school?.id) params.set('schoolId', essay.school.id);
+                        router.push(`/essays?${params.toString()}`);
+                      }}
+                    >
+                      <PenTool className="h-3 w-3" />
+                      {t('detail.writeWithPrompt')}
+                    </Button>
+                  )}
                 </div>
               </div>
             )}

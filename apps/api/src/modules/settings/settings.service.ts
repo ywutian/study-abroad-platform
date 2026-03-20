@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
 
-// 系统设置键名常量
+// System setting key constants
 export const SETTING_KEYS = {
   ADMIN_EMAIL: 'admin_email',
   SITE_NAME: 'site_name',
@@ -40,162 +40,162 @@ export const SETTING_KEYS = {
   AI_QUOTA_PREMIUM_MONTHLY: 'ai_quota_premium_monthly',
 } as const;
 
-// 默认设置值
+// Default setting values
 const DEFAULT_SETTINGS: Record<
   string,
   { value: string; description: string; category: string }
 > = {
   [SETTING_KEYS.ADMIN_EMAIL]: {
     value: '',
-    description: '管理员邮箱，用于接收系统通知',
+    description: 'Admin email for receiving system notifications',
     category: 'notification',
   },
   [SETTING_KEYS.SITE_NAME]: {
-    value: '留学申请平台',
-    description: '网站名称',
+    value: 'Study Abroad Platform',
+    description: 'Site name',
     category: 'general',
   },
   [SETTING_KEYS.SUPPORT_EMAIL]: {
     value: '',
-    description: '客服支持邮箱',
+    description: 'Customer support email',
     category: 'notification',
   },
   [SETTING_KEYS.NOTIFICATION_ENABLED]: {
     value: 'true',
-    description: '是否启用邮件通知',
+    description: 'Whether email notifications are enabled',
     category: 'notification',
   },
   [SETTING_KEYS.IPEDS_MONITOR_ENABLED]: {
     value: 'true',
-    description: '是否启用 IPEDS 数据更新监控',
+    description: 'Whether IPEDS data update monitoring is enabled',
     category: 'notification',
   },
   // Points system defaults
   [SETTING_KEYS.POINTS_ENABLED]: {
     value: 'false',
-    description: '是否启用积分系统',
+    description: 'Whether the points system is enabled',
     category: 'points',
   },
   [SETTING_KEYS.POINTS_ACTION_SUBMIT_CASE]: {
     value: '50',
-    description: '提交录取案例奖励积分',
+    description: 'Points rewarded for submitting an admission case',
     category: 'points',
   },
   [SETTING_KEYS.POINTS_ACTION_CASE_VERIFIED]: {
     value: '100',
-    description: '案例通过验证奖励积分',
+    description: 'Points rewarded when a case passes verification',
     category: 'points',
   },
   [SETTING_KEYS.POINTS_ACTION_CASE_HELPFUL]: {
     value: '10',
-    description: '案例被标记有帮助奖励积分',
+    description: 'Points rewarded when a case is marked as helpful',
     category: 'points',
   },
   [SETTING_KEYS.POINTS_ACTION_COMPLETE_PROFILE]: {
     value: '30',
-    description: '完善个人档案奖励积分',
+    description: 'Points rewarded for completing profile',
     category: 'points',
   },
   [SETTING_KEYS.POINTS_ACTION_REFER_USER]: {
     value: '50',
-    description: '成功邀请新用户奖励积分',
+    description: 'Points rewarded for successfully referring a new user',
     category: 'points',
   },
   [SETTING_KEYS.POINTS_ACTION_VIEW_CASE_DETAIL]: {
     value: '-20',
-    description: '查看案例详情消耗积分',
+    description: 'Points consumed for viewing case details',
     category: 'points',
   },
   [SETTING_KEYS.POINTS_ACTION_AI_ANALYSIS]: {
     value: '-30',
-    description: 'AI智能分析消耗积分',
+    description: 'Points consumed for AI analysis',
     category: 'points',
   },
   [SETTING_KEYS.POINTS_ACTION_MESSAGE_VERIFIED]: {
     value: '-10',
-    description: '私信认证用户消耗积分',
+    description: 'Points consumed for messaging a verified user',
     category: 'points',
   },
   [SETTING_KEYS.POINTS_ACTION_VERIFICATION_APPROVED]: {
     value: '100',
-    description: '身份认证通过奖励积分',
+    description: 'Points rewarded when identity verification is approved',
     category: 'points',
   },
   [SETTING_KEYS.POINTS_ACTION_SWIPE_CORRECT]: {
     value: '5',
-    description: '滑动猜测正确基础积分',
+    description: 'Base points rewarded for a correct swipe guess',
     category: 'points',
   },
   [SETTING_KEYS.POINTS_ACTION_AI_ESSAY_POLISH]: {
     value: '-20',
-    description: '文书润色消耗积分',
+    description: 'Points consumed for AI essay polishing',
     category: 'points',
   },
   [SETTING_KEYS.POINTS_ACTION_AI_ESSAY_REVIEW]: {
     value: '-30',
-    description: '文书评审消耗积分',
+    description: 'Points consumed for AI essay review',
     category: 'points',
   },
   [SETTING_KEYS.POINTS_ACTION_AI_ESSAY_BRAINSTORM]: {
     value: '-15',
-    description: '文书头脑风暴消耗积分',
+    description: 'Points consumed for AI essay brainstorming',
     category: 'points',
   },
   [SETTING_KEYS.POINTS_ACTION_AI_ESSAY_GALLERY]: {
     value: '-20',
-    description: '文书范例分析消耗积分',
+    description: 'Points consumed for essay gallery analysis',
     category: 'points',
   },
   [SETTING_KEYS.POINTS_ACTION_AI_SCHOOL_RECOMMENDATION]: {
     value: '-25',
-    description: 'AI选校推荐消耗积分',
+    description: 'Points consumed for AI school recommendation',
     category: 'points',
   },
   // Subscription pricing defaults
   [SETTING_KEYS.SUBSCRIPTION_PRO_PRICE]: {
     value: '99',
-    description: 'PRO 月度价格 (CNY)',
+    description: 'PRO monthly price (CNY)',
     category: 'subscription',
   },
   [SETTING_KEYS.SUBSCRIPTION_PREMIUM_PRICE]: {
     value: '299',
-    description: 'PREMIUM 月度价格 (CNY)',
+    description: 'PREMIUM monthly price (CNY)',
     category: 'subscription',
   },
   [SETTING_KEYS.SUBSCRIPTION_YEARLY_DISCOUNT]: {
     value: '10',
-    description: '年付折扣月数（付此月数享12个月）',
+    description: 'Yearly discount months (pay this many months for 12 months)',
     category: 'subscription',
   },
   // AI quota defaults
   [SETTING_KEYS.AI_QUOTA_DEFAULT_DAILY]: {
     value: '100000',
-    description: '免费用户每日 Token 配额',
+    description: 'Free user daily token quota',
     category: 'ai_quota',
   },
   [SETTING_KEYS.AI_QUOTA_DEFAULT_MONTHLY]: {
     value: '2000000',
-    description: '免费用户每月 Token 配额',
+    description: 'Free user monthly token quota',
     category: 'ai_quota',
   },
   [SETTING_KEYS.AI_QUOTA_PRO_DAILY]: {
     value: '300000',
-    description: 'PRO 用户每日 Token 配额',
+    description: 'PRO user daily token quota',
     category: 'ai_quota',
   },
   [SETTING_KEYS.AI_QUOTA_PRO_MONTHLY]: {
     value: '6000000',
-    description: 'PRO 用户每月 Token 配额',
+    description: 'PRO user monthly token quota',
     category: 'ai_quota',
   },
   [SETTING_KEYS.AI_QUOTA_PREMIUM_DAILY]: {
     value: '1000000',
-    description: 'PREMIUM 用户每日 Token 配额',
+    description: 'PREMIUM user daily token quota',
     category: 'ai_quota',
   },
   [SETTING_KEYS.AI_QUOTA_PREMIUM_MONTHLY]: {
     value: '20000000',
-    description: 'PREMIUM 用户每月 Token 配额',
+    description: 'PREMIUM user monthly token quota',
     category: 'ai_quota',
   },
 };
@@ -226,7 +226,7 @@ export class SettingsService {
   }
 
   /**
-   * 获取单个设置值
+   * Get a single setting value
    */
   async get(key: string): Promise<string | null> {
     const normalizedKey = this.normalizeKey(key);
@@ -257,7 +257,7 @@ export class SettingsService {
   }
 
   /**
-   * 获取设置值并解析为指定类型
+   * Get a setting value and parse it to the specified type
    */
   async getTyped<T>(key: string, defaultValue: T): Promise<T> {
     const value = await this.get(key);
@@ -283,7 +283,7 @@ export class SettingsService {
   }
 
   /**
-   * 设置值（仅管理员）
+   * Set a value (admin only)
    */
   async set(key: string, value: string, description?: string): Promise<void> {
     const normalizedKey = this.normalizeKey(key);
@@ -306,7 +306,7 @@ export class SettingsService {
   }
 
   /**
-   * 批量设置
+   * Set multiple values in batch
    */
   async setMany(
     settings: Array<{ key: string; value: string }>,
@@ -317,7 +317,7 @@ export class SettingsService {
   }
 
   /**
-   * 获取所有设置（按分类）
+   * Get all settings (grouped by category)
    */
   async getAll(): Promise<
     Array<{
@@ -366,7 +366,7 @@ export class SettingsService {
   }
 
   /**
-   * 获取指定分类的设置
+   * Get settings by category
    */
   async getByCategory(category: string): Promise<
     Array<{
@@ -380,7 +380,7 @@ export class SettingsService {
   }
 
   /**
-   * 删除设置（恢复默认）
+   * Delete a setting (revert to default)
    */
   async delete(key: string): Promise<void> {
     const normalizedKey = this.normalizeKey(key);
@@ -397,7 +397,7 @@ export class SettingsService {
   }
 
   /**
-   * 初始化默认设置
+   * Initialize default settings
    */
   async initializeDefaults(): Promise<void> {
     for (const [key, def] of Object.entries(DEFAULT_SETTINGS)) {

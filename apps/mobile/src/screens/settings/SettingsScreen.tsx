@@ -7,7 +7,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Linking } 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import * as StoreReview from 'expo-store-review';
 import * as LocalAuthentication from 'expo-local-authentication';
@@ -57,6 +57,7 @@ export default function SettingsScreen() {
   const toast = useToast();
 
   const [notifications, setNotifications] = useState(true);
+  const [emailDigest, setEmailDigest] = useState(true);
   const [biometrics, setBiometrics] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
 
@@ -187,20 +188,20 @@ export default function SettingsScreen() {
           icon: 'person-outline',
           label: t('settings.personalInfo'),
           type: 'navigate',
-          onPress: () => router.push('/profile/edit'),
+          onPress: () => router.push('/profile/basic' as Href),
         },
         {
           icon: 'shield-checkmark-outline',
           label: t('settings.accountSecurity'),
           type: 'navigate',
-          onPress: () => router.push('/settings/security'),
+          onPress: () => router.push('/security' as Href),
         },
         {
           icon: 'card-outline',
           label: t('settings.subscription'),
           value: user?.role === 'VERIFIED' ? 'VIP' : t('settings.freeVersion'),
           type: 'navigate',
-          onPress: () => router.push('/settings/subscription'),
+          onPress: () => router.push('/subscription' as Href),
         },
       ],
     },
@@ -224,16 +225,6 @@ export default function SettingsScreen() {
           type: 'navigate',
           onPress: handleLanguageChange,
         },
-        {
-          icon: 'notifications-outline',
-          label: t('settings.pushNotification'),
-          type: 'toggle',
-          toggleValue: notifications,
-          onToggle: (value) => {
-            setNotifications(value);
-            Haptics.selectionAsync();
-          },
-        },
         ...(biometricAvailable
           ? [
               {
@@ -245,6 +236,65 @@ export default function SettingsScreen() {
               },
             ]
           : []),
+      ],
+    },
+    {
+      title: t('settings.sections.notifications'),
+      items: [
+        {
+          icon: 'notifications-outline',
+          label: t('settings.pushNotification'),
+          type: 'toggle',
+          toggleValue: notifications,
+          onToggle: (value) => {
+            setNotifications(value);
+            Haptics.selectionAsync();
+          },
+        },
+        {
+          icon: 'mail-outline',
+          label: t('settings.emailDigest'),
+          type: 'toggle',
+          toggleValue: emailDigest,
+          onToggle: (value) => {
+            setEmailDigest(value);
+            Haptics.selectionAsync();
+          },
+        },
+      ],
+    },
+    {
+      title: t('settings.sections.security'),
+      items: [
+        {
+          icon: 'key-outline',
+          label: t('settings.changePassword'),
+          type: 'navigate',
+          onPress: () => router.push('/security' as Href),
+        },
+        {
+          icon: 'phone-portrait-outline',
+          label: t('settings.loginDevices'),
+          type: 'navigate',
+          onPress: () => router.push('/security' as Href),
+        },
+      ],
+    },
+    {
+      title: t('settings.sections.help'),
+      items: [
+        {
+          icon: 'help-circle-outline',
+          label: t('settings.faq'),
+          type: 'navigate',
+          onPress: () => Linking.openURL('https://studyabroad.app/faq'),
+        },
+        {
+          icon: 'chatbubble-outline',
+          label: t('settings.feedback'),
+          type: 'navigate',
+          onPress: () => Linking.openURL('mailto:feedback@studyabroad.app'),
+        },
       ],
     },
     {
@@ -327,7 +377,10 @@ export default function SettingsScreen() {
         {/* User Profile Card */}
         {isAuthenticated && user && (
           <Animated.View entering={FadeInDown.duration(400)}>
-            <TouchableOpacity onPress={() => router.push('/profile/edit')} activeOpacity={0.7}>
+            <TouchableOpacity
+              onPress={() => router.push('/profile/basic' as Href)}
+              activeOpacity={0.7}
+            >
               <AnimatedCard style={styles.profileCard}>
                 <CardContent style={styles.profileContent}>
                   <Avatar source={undefined} name={user.email} size="lg" />

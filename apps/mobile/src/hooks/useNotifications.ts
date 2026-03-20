@@ -114,8 +114,8 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
   // Retrieve the Expo push token
   const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
 
-  if (!projectId) {
-    console.warn('useNotifications: no EAS project ID found');
+  if (!projectId || projectId === 'your-project-id') {
+    console.warn('useNotifications: no valid EAS project ID configured, skipping push token');
     return null;
   }
 
@@ -168,7 +168,7 @@ function navigateToNotification(notification: Notification): void {
       break;
 
     case 'CASE_HELPFUL':
-      router.push('/cases' as Href);
+      router.push('/(tabs)/cases' as Href);
       break;
 
     case 'ESSAY_COMMENT':

@@ -6,18 +6,20 @@ import { useRouter } from '@/lib/i18n/navigation';
 import { AdminSidebar } from './_components/admin-sidebar';
 import { AdminBreadcrumb } from './_components/admin-breadcrumb';
 
+const ADMIN_ROLES = ['OPERATOR', 'ADMIN', 'SUPER_ADMIN'];
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user } = useAuthStore();
-  const isAdmin = user?.role === 'ADMIN';
+  const hasAdminAccess = user ? ADMIN_ROLES.includes(user.role) : false;
 
   useEffect(() => {
-    if (user && user.role !== 'ADMIN') {
+    if (user && !ADMIN_ROLES.includes(user.role)) {
       router.push('/profile');
     }
   }, [user, router]);
 
-  if (!isAdmin) {
+  if (!hasAdminAccess) {
     return null;
   }
 

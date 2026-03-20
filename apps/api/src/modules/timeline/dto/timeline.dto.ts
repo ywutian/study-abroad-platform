@@ -46,7 +46,7 @@ export enum TaskType {
 // ============ Timeline DTOs ============
 
 export class CreateTimelineDto {
-  @ApiProperty({ description: '学校ID' })
+  @ApiProperty({ description: 'School ID' })
   @IsString()
   @IsNotEmpty()
   @MaxLength(200)
@@ -56,7 +56,7 @@ export class CreateTimelineDto {
   @IsEnum(ApplicationRound)
   round: ApplicationRound;
 
-  @ApiPropertyOptional({ description: '截止日期' })
+  @ApiPropertyOptional({ description: 'Deadline' })
   @IsDateString()
   @IsOptional()
   deadline?: string;
@@ -145,7 +145,7 @@ export class TimelineResponseDto {
 // ============ Task DTOs ============
 
 export class CreateTaskDto {
-  @ApiProperty({ description: '时间线ID' })
+  @ApiProperty({ description: 'Timeline ID' })
   @MaxLength(500)
   @IsString()
   @IsNotEmpty()
@@ -173,13 +173,13 @@ export class CreateTaskDto {
   @IsOptional()
   dueDate?: string;
 
-  @ApiPropertyOptional({ description: '文书题目（文书类型任务）' })
+  @ApiPropertyOptional({ description: 'Essay prompt (for essay-type tasks)' })
   @IsString()
   @IsOptional()
   @MaxLength(5000)
   essayPrompt?: string;
 
-  @ApiPropertyOptional({ description: '字数限制' })
+  @ApiPropertyOptional({ description: 'Word limit' })
   @IsInt()
   @IsOptional()
   wordLimit?: number;
@@ -263,7 +263,7 @@ export class TaskResponseDto {
 // ============ Generate Timeline DTO ============
 
 export class GenerateTimelineDto {
-  @ApiProperty({ type: [String], description: '学校ID列表' })
+  @ApiProperty({ type: [String], description: 'School ID list' })
   @IsArray()
   @ArrayMinSize(1)
   @ArrayMaxSize(50)
@@ -274,23 +274,26 @@ export class GenerateTimelineDto {
 }
 
 export class GenerateTimelineFailedItemDto {
-  @ApiProperty({ description: '学校ID' })
+  @ApiProperty({ description: 'School ID' })
   schoolId: string;
 
   @ApiProperty({
-    description: '失败原因',
+    description: '失败Reason',
     enum: ['SCHOOL_NOT_FOUND', 'ALREADY_EXISTS', 'INTERNAL_ERROR'],
   })
   reason: string;
 }
 
 export class GenerateTimelinesResultDto {
-  @ApiProperty({ type: [TimelineResponseDto], description: '成功创建的时间线' })
+  @ApiProperty({
+    type: [TimelineResponseDto],
+    description: 'Successfully created timelines',
+  })
   created: TimelineResponseDto[];
 
   @ApiProperty({
     type: [GenerateTimelineFailedItemDto],
-    description: '失败的学校',
+    description: 'Failed schools',
   })
   failed: GenerateTimelineFailedItemDto[];
 }
@@ -316,15 +319,15 @@ export class TimelineOverviewDto {
   overdueTasks: TaskResponseDto[];
 
   // 个人事件统计
-  @ApiProperty({ description: '个人事件总数' })
+  @ApiProperty({ description: 'Total personal events' })
   totalPersonalEvents: number;
 
-  @ApiProperty({ description: '进行中的个人事件' })
+  @ApiProperty({ description: 'Personal events in progress' })
   personalInProgress: number;
 
-  @ApiProperty({ description: '已完成的个人事件' })
+  @ApiProperty({ description: 'Completed personal events' })
   personalCompleted: number;
 
-  @ApiProperty({ description: '即将到来的个人事件' })
+  @ApiProperty({ description: 'Upcoming personal events' })
   upcomingPersonalEvents: any[];
 }

@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useRef } from 
 import { View, Text, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useColors, spacing, fontSize, fontWeight, borderRadius, withOpacity } from '@/utils/theme';
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -57,13 +57,14 @@ export function ToastProvider({ children }: ToastProviderProps) {
         useNativeDriver: false, // Web doesn't support native driver
       }).start();
 
+      const tc = getTypeConfig();
       timeoutRef.current = setTimeout(() => {
         Animated.timing(fadeAnim, {
           toValue: 0,
           duration: 200,
           useNativeDriver: false, // Web doesn't support native driver
         }).start(() => setVisible(false));
-      }, newConfig.duration || 3000);
+      }, newConfig.duration || tc.defaultDuration);
     },
     [fadeAnim]
   );
@@ -102,25 +103,33 @@ export function ToastProvider({ children }: ToastProviderProps) {
         return {
           icon: 'checkmark-circle' as const,
           color: colors.success,
-          bgColor: colors.success + '15',
+          bgColor: withOpacity(colors.success, 0.12),
+          defaultDuration: 3000,
+          liveRegion: 'polite' as const,
         };
       case 'error':
         return {
           icon: 'close-circle' as const,
           color: colors.error,
-          bgColor: colors.error + '15',
+          bgColor: withOpacity(colors.error, 0.12),
+          defaultDuration: 5000,
+          liveRegion: 'assertive' as const,
         };
       case 'warning':
         return {
           icon: 'warning' as const,
           color: colors.warning,
-          bgColor: colors.warning + '15',
+          bgColor: withOpacity(colors.warning, 0.12),
+          defaultDuration: 4000,
+          liveRegion: 'assertive' as const,
         };
       default:
         return {
           icon: 'information-circle' as const,
           color: colors.info,
-          bgColor: colors.info + '15',
+          bgColor: withOpacity(colors.info, 0.12),
+          defaultDuration: 3000,
+          liveRegion: 'polite' as const,
         };
     }
   };
@@ -149,14 +158,18 @@ export function ToastProvider({ children }: ToastProviderProps) {
           ]}
         >
           <View
+            accessible
+            accessibilityRole="alert"
+            accessibilityLiveRegion={typeConfig.liveRegion}
             style={[
               styles.toast,
               {
                 backgroundColor: typeConfig.bgColor,
-                borderColor: typeConfig.color + '30',
+                borderColor: withOpacity(typeConfig.color, 0.3),
               },
             ]}
           >
+            <View style={[styles.accentBar, { backgroundColor: typeConfig.color }]} />
             <Ionicons
               name={typeConfig.icon}
               size={20}
@@ -271,13 +284,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: spacing.md,
-    borderRadius: borderRadius.lg,
+    paddingLeft: spacing.lg,
+    borderRadius: borderRadius.xl,
     borderWidth: 1,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 24,
+    elevation: 8,
+    overflow: 'hidden',
+  },
+  accentBar: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
+    borderTopLeftRadius: borderRadius.xl,
+    borderBottomLeftRadius: borderRadius.xl,
   },
   icon: {
     marginRight: spacing.sm,

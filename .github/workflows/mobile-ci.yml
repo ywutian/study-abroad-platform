@@ -1,0 +1,49 @@
+name: Mobile CI
+
+on:
+  pull_request:
+    paths:
+      - 'apps/mobile/**'
+      - 'packages/shared/**'
+      - 'pnpm-lock.yaml'
+  push:
+    branches: [main, develop]
+    paths:
+      - 'apps/mobile/**'
+      - 'packages/shared/**'
+
+jobs:
+  lint-and-test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm --filter study-abroad-mobile lint
+
+      - name: TypeCheck
+        run: pnpm --filter study-abroad-mobile exec tsc --noEmit
+
+      - name: Unit Tests
+        run: pnpm --filter study-abroad-mobile test -- --ci --coverage
+
+      - name: Upload Coverage
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          flags: mobile
+          directory: apps/mobile/coverage
+        continue-on-error: true

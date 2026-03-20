@@ -2,19 +2,22 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty, IsOptional, MaxLength } from 'class-validator';
 
 export class EssayReviewRequestDto {
-  @ApiProperty({ description: '文书ID' })
+  @ApiProperty({ description: 'Essay ID' })
   @IsString()
   @IsNotEmpty()
   @MaxLength(200)
   essayId: string;
 
-  @ApiProperty({ description: '目标学校名称（可选）', required: false })
+  @ApiProperty({
+    description: 'Target school name (optional)',
+    required: false,
+  })
   @IsString()
   @IsOptional()
   @MaxLength(200)
   schoolName?: string;
 
-  @ApiProperty({ description: '目标专业（可选）', required: false })
+  @ApiProperty({ description: 'Target major (optional)', required: false })
   @IsString()
   @IsOptional()
   @MaxLength(200)
@@ -22,19 +25,19 @@ export class EssayReviewRequestDto {
 }
 
 export class EssayScoresDto {
-  @ApiProperty({ description: '主题清晰度 1-10' })
+  @ApiProperty({ description: 'Theme clarity 1-10' })
   clarity: number;
 
-  @ApiProperty({ description: '个人特色 1-10' })
+  @ApiProperty({ description: 'Personal uniqueness 1-10' })
   uniqueness: number;
 
-  @ApiProperty({ description: '故事性 1-10' })
+  @ApiProperty({ description: 'Storytelling 1-10' })
   storytelling: number;
 
-  @ApiProperty({ description: '与学校契合度 1-10' })
+  @ApiProperty({ description: 'School fit 1-10' })
   fit: number;
 
-  @ApiProperty({ description: '语言表达 1-10' })
+  @ApiProperty({ description: 'Language expression 1-10' })
   language: number;
 }
 

@@ -13,7 +13,7 @@ export class EssayPromptController {
 
   @Get()
   @Public()
-  @ApiOperation({ summary: '获取文书题目列表（公开，仅已验证）' })
+  @ApiOperation({ summary: 'Get essay prompt list (public, verified only)' })
   async findAll(@Query() query: QueryEssayPromptDto) {
     // 公开接口只返回已验证的数据
     return this.essayPromptService.findAll({
@@ -22,9 +22,22 @@ export class EssayPromptController {
     });
   }
 
+  @Get('by-school/:schoolId')
+  @Public()
+  @ApiOperation({ summary: 'Get essay prompts for a school' })
+  async findBySchool(
+    @Param('schoolId') schoolId: string,
+    @Query('year') year?: number,
+  ) {
+    return this.essayPromptService.findBySchool(
+      schoolId,
+      year ? +year : undefined,
+    );
+  }
+
   @Get(':id')
   @Public()
-  @ApiOperation({ summary: '获取单个文书题目' })
+  @ApiOperation({ summary: 'Get single essay prompt' })
   async findOne(@Param('id') id: string) {
     return this.essayPromptService.findOne(id);
   }

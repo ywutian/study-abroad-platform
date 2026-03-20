@@ -77,7 +77,8 @@
     "schools": "学校",
     "cases": "案例",
     "ai": "AI",
-    "profile": "我的"
+    "profile": "我的",
+    "more": "更多"
   },
   "home": {
     "title": "留学申请平台",
@@ -109,7 +110,17 @@
       "forumDesc": "交流讨论",
       "swipe": "滑动游戏",
       "swipeDesc": "预测录取"
-    }
+    },
+    "profileGrade": "资料等级",
+    "profileCompletion": "已完成 {{pct}}%",
+    "schoolTiers": "选校列表",
+    "tiers": {
+      "reach": "冲刺",
+      "target": "匹配",
+      "safety": "保底"
+    },
+    "upcomingDeadlines": "即将到来的截止日",
+    "daysLeft": "天"
   },
   "auth": {
     "login": {
@@ -226,7 +237,10 @@
     "noScores": "暂无标化成绩",
     "noActivities": "暂无活动经历",
     "noAwards": "暂无奖项",
-    "noEducation": "暂无教育背景"
+    "noEducation": "暂无教育背景",
+    "emailVerified": "邮箱已验证",
+    "identityVerified": "身份已验证",
+    "points": "积分"
   },
   "profileEdit": {
     "saveSuccess": "保存成功",
@@ -468,7 +482,15 @@
     "typing": "正在输入...",
     "socketError": "连接错误",
     "socketDisconnected": "未连接",
-    "sendFailed": "发送失败"
+    "sendFailed": "发送失败",
+    "today": "今天",
+    "yesterday": "昨天",
+    "copy": "复制",
+    "recall": "撤回",
+    "delete": "删除",
+    "copied": "已复制到剪贴板",
+    "recalled": "消息已撤回",
+    "messageActions": "消息操作"
   },
   "notifications": {
     "title": "通知",
@@ -535,7 +557,35 @@
       "title": "暂无帖子",
       "description": "成为第一个发起讨论的人吧！",
       "action": "发帖"
-    }
+    },
+    "comments": "评论",
+    "noComments": "暂无评论，快来抢沙发吧！",
+    "reply": "回复",
+    "replyingTo": "回复 {{name}}",
+    "commentPlaceholder": "写下你的评论...",
+    "replyPlaceholder": "写下你的回复...",
+    "postNotFound": "帖子未找到",
+    "goBack": "返回",
+    "loading": "加载中...",
+    "applied": "已提交申请",
+    "reported": "已举报",
+    "postDeleted": "帖子已删除",
+    "reportTitle": "举报帖子",
+    "reportMessage": "确定要举报这篇帖子吗？",
+    "cancel": "取消",
+    "confirm": "确定",
+    "pinned": "置顶",
+    "locked": "已锁定",
+    "teamInfo": "组队信息",
+    "teamOpen": "招募中",
+    "teamClosed": "已满员",
+    "teamMembers": "成员",
+    "teamDeadline": "截止日期",
+    "requirements": "要求",
+    "applyToJoin": "申请加入",
+    "postLocked": "该帖子已锁定",
+    "deletePostTitle": "删除帖子",
+    "deletePostMessage": "确定要删除这篇帖子吗？此操作不可撤销。"
   },
   "followers": {
     "title": "社交",
@@ -725,6 +775,42 @@
       "confirm": "删除"
     }
   },
+  "essayEditor": {
+    "newEssay": "新建文书",
+    "editEssay": "编辑文书",
+    "titlePlaceholder": "文书标题...",
+    "contentPlaceholder": "开始撰写你的文书...",
+    "words": "词",
+    "save": "保存",
+    "saving": "保存中...",
+    "saved": "文书已保存",
+    "saveFailed": "保存失败",
+    "saveFirst": "请先保存文书",
+    "aiFailed": "AI 处理失败",
+    "aiProcessing": "AI 正在处理...",
+    "applied": "已应用更改",
+    "appended": "已追加文本",
+    "copied": "已复制到剪贴板",
+    "overallScore": "总评分",
+    "summary": "总结",
+    "suggestions": "建议",
+    "applyChanges": "应用更改",
+    "copy": "复制",
+    "tapToCopy": "点击复制",
+    "appendToEssay": "追加到文书",
+    "use": "使用",
+    "rewriteInstructions": "你希望如何改写？",
+    "rewritePlaceholder": "例如：让文章更加生动有个性...",
+    "rewriteSubmit": "改写",
+    "tools": {
+      "review": "评审",
+      "polish": "润色",
+      "brainstorm": "头脑风暴",
+      "continue": "续写",
+      "opening": "开头",
+      "rewrite": "改写"
+    }
+  },
   "hall": {
     "title": "功能大厅",
     "tabs": {
@@ -836,7 +922,19 @@
       "description": "添加学校开始预测",
       "addSchool": "添加学校"
     },
-    "addPrediction": "添加学校预测"
+    "addPrediction": "添加学校预测",
+    "reportResult": "报告结果",
+    "reportActualResult": "报告实际结果",
+    "selectResult": "实际录取结果是什么？",
+    "submitResult": "提交结果",
+    "resultReported": "结果提交成功",
+    "reportFailed": "提交失败",
+    "results": {
+      "admitted": "录取",
+      "rejected": "拒绝",
+      "waitlisted": "候补",
+      "deferred": "延期"
+    }
   },
   "settings": {
     "title": "设置",
@@ -861,6 +959,9 @@
     "sections": {
       "account": "账户",
       "preferences": "偏好设置",
+      "notifications": "通知",
+      "security": "安全",
+      "help": "帮助",
       "support": "支持",
       "about": "关于",
       "accountActions": "账号操作"
@@ -885,7 +986,10 @@
     "deleteAccountConfirm": "此操作不可逆，确定要删除账号吗？所有数据将被永久删除。",
     "featureInDev": "功能开发中",
     "thankYou": "感谢支持",
-    "thankYouReview": "感谢您的好评！"
+    "thankYouReview": "感谢您的好评！",
+    "emailDigest": "邮件摘要",
+    "loginDevices": "登录设备",
+    "faq": "常见问题"
   },
   "admin": {
     "title": "管理后台",
@@ -900,6 +1004,13 @@
       "totalCases": "录取案例",
       "pendingReports": "待处理举报",
       "totalReviews": "评价数量"
+    },
+    "roles": {
+      "user": "普通用户",
+      "verified": "已认证",
+      "operator": "运营员",
+      "admin": "管理员",
+      "superAdmin": "超级管理员"
     },
     "users": {
       "search": "搜索用户邮箱...",
@@ -1379,6 +1490,77 @@
       "password": "密码",
       "confirm": "确认删除",
       "cancel": "取消"
+    }
+  },
+  "more": {
+    "title": "更多功能",
+    "subtitle": "探索所有工具和功能",
+    "resume": "简历",
+    "vault": "保险箱",
+    "teams": "团队",
+    "points": "积分",
+    "peerReview": "同行评审",
+    "referral": "推荐",
+    "verification": "验证",
+    "ranking": "排名",
+    "assessment": "测评",
+    "settings": "设置",
+    "timeline": "时间线",
+    "chat": "聊天"
+  },
+  "resume": {
+    "title": "简历构建器",
+    "description": "创建和管理你的简历",
+    "empty": {
+      "title": "还没有简历",
+      "description": "创建你的第一份简历开始吧"
+    }
+  },
+  "vault": {
+    "title": "安全保险箱",
+    "description": "安全存储你的证书和文档",
+    "empty": {
+      "title": "保险箱为空",
+      "description": "添加证书、文档或笔记到你的保险箱"
+    }
+  },
+  "teams": {
+    "title": "团队",
+    "description": "查找和加入学习小组",
+    "empty": {
+      "title": "未找到团队",
+      "description": "浏览或创建团队与他人协作"
+    }
+  },
+  "points": {
+    "title": "积分与徽章",
+    "description": "追踪你的成就和奖励",
+    "empty": {
+      "title": "开始赚取积分",
+      "description": "完成活动以赚取积分和解锁徽章"
+    }
+  },
+  "peerReview": {
+    "title": "同行评审",
+    "description": "评审文书并获取反馈",
+    "empty": {
+      "title": "暂无可评审内容",
+      "description": "稍后再来查看可评审的文书"
+    }
+  },
+  "referral": {
+    "title": "推荐有礼",
+    "description": "邀请好友获取奖励",
+    "yourCode": "你的推荐码",
+    "copy": "复制推荐码",
+    "copied": "推荐码已复制到剪贴板！"
+  },
+  "verification": {
+    "title": "身份验证",
+    "description": "验证你的身份和录取信息",
+    "empty": {
+      "title": "尚未验证",
+      "description": "提交文档以验证你的身份"
     }
   },
   "errors": {

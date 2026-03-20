@@ -70,6 +70,13 @@ describe('SchoolListService', () => {
             profile: {
               findUnique: jest.fn(),
             },
+            predictionResult: {
+              findMany: jest.fn().mockResolvedValue([]),
+            },
+            essayPrompt: {
+              groupBy: jest.fn().mockResolvedValue([]),
+              count: jest.fn().mockResolvedValue(0),
+            },
           },
         },
       ],

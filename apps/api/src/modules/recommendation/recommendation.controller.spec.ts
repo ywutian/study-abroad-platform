@@ -100,7 +100,7 @@ describe('RecommendationController', () => {
         'user-1',
         'rec-1',
       );
-      expect(result).toBeUndefined();
+      expect(result).toEqual({ message: 'Recommendation deleted' });
     });
   });
 });

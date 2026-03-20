@@ -19,7 +19,7 @@ export class HallAdminController {
   constructor(private readonly prisma: PrismaService) {}
 
   @Get()
-  @ApiOperation({ summary: '管理员查看所有评论' })
+  @ApiOperation({ summary: 'Admin view all reviews' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
   @ApiQuery({ name: 'status', required: false, enum: ReviewStatus })
@@ -71,7 +71,7 @@ export class HallAdminController {
   }
 
   @Put(':id/hide')
-  @ApiOperation({ summary: '隐藏评论' })
+  @ApiOperation({ summary: 'Hide review' })
   async hideReview(@Param('id') id: string) {
     return this.prisma.review.update({
       where: { id },
@@ -81,7 +81,7 @@ export class HallAdminController {
   }
 
   @Put(':id/unhide')
-  @ApiOperation({ summary: '恢复评论' })
+  @ApiOperation({ summary: 'Unhide review' })
   async unhideReview(@Param('id') id: string) {
     return this.prisma.review.update({
       where: { id },
@@ -91,7 +91,7 @@ export class HallAdminController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: '管理员删除评论' })
+  @ApiOperation({ summary: 'Admin delete review' })
   async deleteReview(@Param('id') id: string) {
     await this.prisma.review.delete({ where: { id } });
     return { message: 'Review deleted' };

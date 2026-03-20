@@ -13,11 +13,11 @@ import { Type } from 'class-transformer';
 const TEST_TYPES = ['SAT', 'ACT', 'TOEFL', 'IELTS', 'AP', 'IB'] as const;
 
 export class CreateTestScoreDto {
-  @ApiProperty({ enum: TEST_TYPES, description: '考试类型' })
+  @ApiProperty({ enum: TEST_TYPES, description: 'Test type' })
   @IsIn(TEST_TYPES)
   type: string;
 
-  @ApiProperty({ description: '总分', example: 1500 })
+  @ApiProperty({ description: 'Total score', example: 1500 })
   @IsInt()
   @Type(() => Number)
   @Min(0)
@@ -25,14 +25,14 @@ export class CreateTestScoreDto {
   score: number;
 
   @ApiPropertyOptional({
-    description: '分项成绩',
+    description: 'Sub-scores',
     example: { reading: 750, math: 750 },
   })
   @IsOptional()
   @IsObject()
   subScores?: Record<string, number>;
 
-  @ApiPropertyOptional({ description: '考试日期' })
+  @ApiPropertyOptional({ description: 'Test date' })
   @IsOptional()
   @IsDateString()
   testDate?: string;
@@ -44,7 +44,7 @@ export class UpdateTestScoreDto {
   @IsIn(TEST_TYPES)
   type?: string;
 
-  @ApiPropertyOptional({ description: '总分' })
+  @ApiPropertyOptional({ description: 'Total score' })
   @IsOptional()
   @IsInt()
   @Type(() => Number)
@@ -52,12 +52,12 @@ export class UpdateTestScoreDto {
   @Max(2000)
   score?: number;
 
-  @ApiPropertyOptional({ description: '分项成绩' })
+  @ApiPropertyOptional({ description: 'Sub-scores' })
   @IsOptional()
   @IsObject()
   subScores?: Record<string, number>;
 
-  @ApiPropertyOptional({ description: '考试日期' })
+  @ApiPropertyOptional({ description: 'Test date' })
   @IsOptional()
   @IsDateString()
   testDate?: string;

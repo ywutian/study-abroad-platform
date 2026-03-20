@@ -20,6 +20,11 @@ import {
   SCHOOL_NAME_SELECT,
   SCHOOL_NAME_RANK_SELECT,
 } from '../../common/constants/prisma-selects';
+import { EssayType } from '../../common/types/enums';
+import { ERR } from '../../common/constants/error-messages';
+
+/** Number of leading characters used for deduplication matching */
+const DEDUP_PREFIX_LENGTH = 50;
 
 @Injectable()
 export class EssayPromptService {
@@ -36,7 +41,7 @@ export class EssayPromptService {
       where: { id: schoolId },
     });
     if (!school) {
-      throw new NotFoundException('学校不存在');
+      throw new NotFoundException(ERR.NOT_FOUND.school());
     }
 
     // 创建文书题目
@@ -143,7 +148,7 @@ export class EssayPromptService {
     });
 
     if (!essayPrompt) {
-      throw new NotFoundException('文书题目不存在');
+      throw new NotFoundException(ERR.NOT_FOUND.essayPrompt());
     }
 
     return essayPrompt;
@@ -205,7 +210,7 @@ export class EssayPromptService {
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
     if (dto.status === EssayStatus.REJECTED && !dto.reason) {
-      throw new BadRequestException('拒绝时必须填写原因');
+      throw new BadRequestException(ERR.BAD_REQUEST.rejectReasonRequired());
     }
 
     const essayPrompt = await this.prisma.essayPrompt.update({
@@ -248,12 +253,17 @@ export class EssayPromptService {
   ) {
     const results = await Promise.all(
       ids.map((id) =>
-        this.verify(id, { status: status as any, reason }, operatorId).catch(
-          (e) => ({
-            id,
-            error: e.message,
-          }),
-        ),
+        this.verify(
+          id,
+          {
+            status: status as unknown as VerifyEssayPromptDto['status'],
+            reason,
+          },
+          operatorId,
+        ).catch((e) => ({
+          id,
+          error: e.message,
+        })),
       ),
     );
 
@@ -283,7 +293,7 @@ export class EssayPromptService {
       'ADMIN',
     );
 
-    return { message: '删除成功' };
+    return { message: ERR.BAD_REQUEST.deleted() };
   }
 
   /**
@@ -329,6 +339,25 @@ export class EssayPromptService {
   }
 
   /**
+   * 按学校 ID 批量查询已验证文书题目数量
+   */
+  async countBySchoolIds(schoolIds: string[]): Promise<Map<string, number>> {
+    if (schoolIds.length === 0) return new Map();
+
+    const counts = await this.prisma.essayPrompt.groupBy({
+      by: ['schoolId'],
+      where: {
+        schoolId: { in: schoolIds },
+        isActive: true,
+        status: EssayStatus.VERIFIED,
+      },
+      _count: true,
+    });
+
+    return new Map(counts.map((c) => [c.schoolId, c._count]));
+  }
+
+  /**
    * 批量导入文书题目
    */
   async batchImport(
@@ -340,24 +369,25 @@ export class EssayPromptService {
     for (let i = 0; i < dto.items.length; i++) {
       const item = dto.items[i];
       try {
-        // 解析学校名 → schoolId
+        // Resolve school name → schoolId
         const school = await resolveSchoolId(this.prisma, item.school);
         if (!school) {
           result.skipped++;
           result.errors.push({
             row: i + 1,
             school: item.school,
-            message: `学校未找到: ${item.school}`,
+            message: `${ERR.NOT_FOUND.essaySchool()}: ${item.school}`,
           });
           continue;
         }
 
-        // 去重检查：同学校 + 同年份 + 相同 prompt 前50字
-        const promptPrefix = item.prompt.substring(0, 50);
+        // Dedup: same school + year + type + prompt prefix
+        const promptPrefix = item.prompt.substring(0, DEDUP_PREFIX_LENGTH);
         const existing = await this.prisma.essayPrompt.findFirst({
           where: {
             schoolId: school.id,
             year: item.year,
+            type: item.type as EssayType,
             prompt: { startsWith: promptPrefix },
             isActive: true,
           },
@@ -368,12 +398,12 @@ export class EssayPromptService {
           result.errors.push({
             row: i + 1,
             school: item.school,
-            message: '重复数据，已跳过',
+            message: ERR.CONFLICT.essayDuplicate(),
           });
           continue;
         }
 
-        // 创建 EssayPrompt
+        // Create EssayPrompt
         const status = dto.autoVerify
           ? EssayStatus.VERIFIED
           : EssayStatus.PENDING;
@@ -382,7 +412,7 @@ export class EssayPromptService {
           data: {
             schoolId: school.id,
             year: item.year,
-            type: item.type as any,
+            type: item.type as EssayType,
             prompt: item.prompt,
             promptZh: item.promptZh,
             wordLimit: item.wordLimit,
@@ -404,7 +434,7 @@ export class EssayPromptService {
           },
         });
 
-        // 审计日志
+        // Audit log
         await this.createAuditLog(
           essayPrompt.id,
           'CREATE',
@@ -416,12 +446,12 @@ export class EssayPromptService {
         );
 
         result.imported++;
-      } catch (e: any) {
+      } catch (e: unknown) {
         result.skipped++;
         result.errors.push({
           row: i + 1,
           school: item.school,
-          message: e.message,
+          message: e instanceof Error ? e.message : String(e),
         });
       }
     }

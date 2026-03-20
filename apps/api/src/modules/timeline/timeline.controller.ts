@@ -47,7 +47,7 @@ export class TimelineController {
   // ============ Timeline Endpoints ============
 
   @Post()
-  @ApiOperation({ summary: '创建申请时间线' })
+  @ApiOperation({ summary: 'Create application timeline' })
   @ApiResponse({ status: 201, type: TimelineResponseDto })
   async createTimeline(
     @CurrentUser() user: CurrentUserPayload,
@@ -57,7 +57,7 @@ export class TimelineController {
   }
 
   @Post('generate')
-  @ApiOperation({ summary: '批量生成时间线' })
+  @ApiOperation({ summary: 'Batch generate timelines' })
   @ApiResponse({ status: 201, type: GenerateTimelinesResultDto })
   async generateTimelines(
     @CurrentUser() user: CurrentUserPayload,
@@ -67,7 +67,7 @@ export class TimelineController {
   }
 
   @Get()
-  @ApiOperation({ summary: '获取所有时间线' })
+  @ApiOperation({ summary: 'Get all timelines' })
   @ApiResponse({ status: 200, type: [TimelineResponseDto] })
   async getTimelines(
     @CurrentUser() user: CurrentUserPayload,
@@ -76,7 +76,7 @@ export class TimelineController {
   }
 
   @Get('overview')
-  @ApiOperation({ summary: '获取概览统计' })
+  @ApiOperation({ summary: 'Get overview statistics' })
   @ApiResponse({ status: 200, type: TimelineOverviewDto })
   async getOverview(
     @CurrentUser() user: CurrentUserPayload,
@@ -85,7 +85,9 @@ export class TimelineController {
   }
 
   @Get('global-events')
-  @ApiOperation({ summary: '获取全局事件（考试/竞赛/助学金）' })
+  @ApiOperation({
+    summary: 'Get global events (exams/competitions/scholarships)',
+  })
   async getGlobalEvents(@Query('year') year?: number) {
     return this.timelineService.getGlobalEvents(
       year ? Number(year) : undefined,
@@ -95,7 +97,7 @@ export class TimelineController {
   // ============ Personal Event Endpoints ============
 
   @Post('personal-events')
-  @ApiOperation({ summary: '创建个人事件' })
+  @ApiOperation({ summary: 'Create personal event' })
   @ApiResponse({ status: 201, type: PersonalEventResponseDto })
   async createPersonalEvent(
     @CurrentUser() user: CurrentUserPayload,
@@ -105,7 +107,7 @@ export class TimelineController {
   }
 
   @Post('personal-events/subscribe')
-  @ApiOperation({ summary: '订阅全局事件到个人时间线' })
+  @ApiOperation({ summary: 'Subscribe to global event on personal timeline' })
   @ApiResponse({ status: 201, type: PersonalEventResponseDto })
   async subscribeGlobalEvent(
     @CurrentUser() user: CurrentUserPayload,
@@ -115,7 +117,7 @@ export class TimelineController {
   }
 
   @Get('personal-events')
-  @ApiOperation({ summary: '获取所有个人事件' })
+  @ApiOperation({ summary: 'Get all personal events' })
   @ApiResponse({ status: 200, type: [PersonalEventResponseDto] })
   async getPersonalEvents(
     @CurrentUser() user: CurrentUserPayload,
@@ -124,7 +126,7 @@ export class TimelineController {
   }
 
   @Get('personal-events/:id')
-  @ApiOperation({ summary: '获取个人事件详情' })
+  @ApiOperation({ summary: 'Get personal event details' })
   async getPersonalEventById(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
@@ -133,7 +135,7 @@ export class TimelineController {
   }
 
   @Put('personal-events/:id')
-  @ApiOperation({ summary: '更新个人事件' })
+  @ApiOperation({ summary: 'Update personal event' })
   @ApiResponse({ status: 200, type: PersonalEventResponseDto })
   async updatePersonalEvent(
     @CurrentUser() user: CurrentUserPayload,
@@ -144,7 +146,7 @@ export class TimelineController {
   }
 
   @Delete('personal-events/:id')
-  @ApiOperation({ summary: '删除个人事件' })
+  @ApiOperation({ summary: 'Delete personal event' })
   async deletePersonalEvent(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
@@ -155,7 +157,7 @@ export class TimelineController {
   // ============ Personal Task Endpoints ============
 
   @Post('personal-tasks')
-  @ApiOperation({ summary: '创建个人任务' })
+  @ApiOperation({ summary: 'Create personal task' })
   @ApiResponse({ status: 201, type: PersonalTaskResponseDto })
   async createPersonalTask(
     @CurrentUser() user: CurrentUserPayload,
@@ -165,7 +167,7 @@ export class TimelineController {
   }
 
   @Post('personal-tasks/:taskId/toggle')
-  @ApiOperation({ summary: '切换个人任务完成状态' })
+  @ApiOperation({ summary: 'Toggle personal task completion status' })
   @ApiResponse({ status: 200, type: PersonalTaskResponseDto })
   async togglePersonalTaskComplete(
     @CurrentUser() user: CurrentUserPayload,
@@ -175,7 +177,7 @@ export class TimelineController {
   }
 
   @Delete('personal-tasks/:taskId')
-  @ApiOperation({ summary: '删除个人任务' })
+  @ApiOperation({ summary: 'Delete personal task' })
   async deletePersonalTask(
     @CurrentUser() user: CurrentUserPayload,
     @Param('taskId') taskId: string,
@@ -184,7 +186,7 @@ export class TimelineController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: '获取时间线详情' })
+  @ApiOperation({ summary: 'Get timeline details' })
   @ApiResponse({ status: 200, type: TimelineResponseDto })
   async getTimelineById(
     @CurrentUser() user: CurrentUserPayload,
@@ -194,7 +196,7 @@ export class TimelineController {
   }
 
   @Put(':id')
-  @ApiOperation({ summary: '更新时间线' })
+  @ApiOperation({ summary: 'Update timeline' })
   @ApiResponse({ status: 200, type: TimelineResponseDto })
   async updateTimeline(
     @CurrentUser() user: CurrentUserPayload,
@@ -205,7 +207,7 @@ export class TimelineController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: '删除时间线' })
+  @ApiOperation({ summary: 'Delete timeline' })
   async deleteTimeline(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
@@ -216,7 +218,7 @@ export class TimelineController {
   // ============ Task Endpoints ============
 
   @Post('tasks')
-  @ApiOperation({ summary: '创建任务' })
+  @ApiOperation({ summary: 'Create task' })
   @ApiResponse({ status: 201, type: TaskResponseDto })
   async createTask(
     @CurrentUser() user: CurrentUserPayload,
@@ -226,7 +228,7 @@ export class TimelineController {
   }
 
   @Put('tasks/:taskId')
-  @ApiOperation({ summary: '更新任务' })
+  @ApiOperation({ summary: 'Update task' })
   @ApiResponse({ status: 200, type: TaskResponseDto })
   async updateTask(
     @CurrentUser() user: CurrentUserPayload,
@@ -237,7 +239,7 @@ export class TimelineController {
   }
 
   @Post('tasks/:taskId/toggle')
-  @ApiOperation({ summary: '切换任务完成状态' })
+  @ApiOperation({ summary: 'Toggle task completion status' })
   @ApiResponse({ status: 200, type: TaskResponseDto })
   async toggleTaskComplete(
     @CurrentUser() user: CurrentUserPayload,
@@ -247,7 +249,7 @@ export class TimelineController {
   }
 
   @Delete('tasks/:taskId')
-  @ApiOperation({ summary: '删除任务' })
+  @ApiOperation({ summary: 'Delete task' })
   async deleteTask(
     @CurrentUser() user: CurrentUserPayload,
     @Param('taskId') taskId: string,

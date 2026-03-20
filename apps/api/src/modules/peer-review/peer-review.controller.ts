@@ -30,7 +30,7 @@ export class PeerReviewController {
   @Post('request/:userId')
   @UseGuards(RolesGuard)
   @Roles(Role.VERIFIED, Role.ADMIN)
-  @ApiOperation({ summary: '发起互评请求 (仅认证用户)' })
+  @ApiOperation({ summary: 'Request peer review (verified users only)' })
   @ApiResponse({ status: 201, type: PeerReviewDto })
   async requestReview(
     @CurrentUser() user: CurrentUserPayload,
@@ -43,7 +43,7 @@ export class PeerReviewController {
   @Post(':id/submit')
   @UseGuards(RolesGuard)
   @Roles(Role.VERIFIED, Role.ADMIN)
-  @ApiOperation({ summary: '提交评价' })
+  @ApiOperation({ summary: 'Submit review' })
   @ApiResponse({ status: 200, type: PeerReviewDto })
   async submitReview(
     @CurrentUser() user: CurrentUserPayload,
@@ -54,7 +54,7 @@ export class PeerReviewController {
   }
 
   @Get('my-reviews')
-  @ApiOperation({ summary: '获取我的互评记录' })
+  @ApiOperation({ summary: 'Get my peer review records' })
   @ApiResponse({ status: 200, type: PeerReviewListDto })
   async getMyReviews(
     @CurrentUser() user: CurrentUserPayload,
@@ -63,14 +63,14 @@ export class PeerReviewController {
   }
 
   @Get('user/:userId/rating')
-  @ApiOperation({ summary: '获取用户评分' })
+  @ApiOperation({ summary: 'Get user rating' })
   @ApiResponse({ status: 200, type: UserRatingDto })
   async getUserRating(@Param('userId') userId: string): Promise<UserRatingDto> {
     return this.peerReviewService.getUserRating(userId);
   }
 
   @Get('user/:userId/reviews')
-  @ApiOperation({ summary: '获取用户收到的评价列表' })
+  @ApiOperation({ summary: 'Get reviews received by user' })
   @ApiResponse({ status: 200, type: PeerReviewListDto })
   async getUserReviews(
     @Param('userId') userId: string,

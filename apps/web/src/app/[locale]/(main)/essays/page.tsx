@@ -40,7 +40,7 @@ export default function EssaysPage() {
         actions={
           <Button
             onClick={mgr.handleCreate}
-            className="gap-2 bg-destructive hover:opacity-90 text-white shadow-md"
+            className="gap-2 bg-destructive hover:opacity-90 text-destructive-foreground shadow-md"
           >
             <Plus className="h-4 w-4" />
             {t('essays.new')}
@@ -85,6 +85,8 @@ export default function EssaysPage() {
         onSubmit={mgr.handleSubmit}
         isSaving={mgr.isSaving}
         getWordCount={mgr.getWordCount}
+        essayPromptId={mgr.essayPromptId}
+        onEssayPromptIdChange={mgr.setEssayPromptId}
       />
 
       <EssayDeleteDialog

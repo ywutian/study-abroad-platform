@@ -66,7 +66,7 @@ export class QuestionDto {
   @ApiProperty({ type: [QuestionOptionDto] })
   options: QuestionOptionDto[];
 
-  @ApiPropertyOptional({ description: 'MBTI/Holland 维度' })
+  @ApiPropertyOptional({ description: 'MBTI/Holland dimension' })
   dimension?: string;
 }
 
@@ -95,11 +95,11 @@ export class AssessmentDto {
 
 // MBTI 结果
 export class MbtiResultDto {
-  @ApiProperty({ description: '如 INTJ, ENFP' })
+  @ApiProperty({ description: 'e.g. INTJ, ENFP' })
   type: string;
 
   @ApiProperty({
-    description: '各维度得分 { E: 30, I: 70, S: 40, N: 60, ... }',
+    description: 'Scores by dimension { E: 30, I: 70, S: 40, N: 60, ... }',
   })
   scores: Record<string, number>;
 
@@ -127,10 +127,10 @@ export class MbtiResultDto {
 
 // Holland 结果
 export class HollandResultDto {
-  @ApiProperty({ description: '如 RIA, ASE' })
+  @ApiProperty({ description: 'e.g. RIA, ASE' })
   codes: string;
 
-  @ApiProperty({ description: '各类型得分' })
+  @ApiProperty({ description: 'Scores by type' })
   scores: Record<string, number>;
 
   @ApiProperty({ type: [String] })

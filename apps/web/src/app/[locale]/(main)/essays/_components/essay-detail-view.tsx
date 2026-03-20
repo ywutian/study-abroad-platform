@@ -182,7 +182,7 @@ export function EssayDetailView({
               {t('essays.clickNewToCreate')}
             </p>
             <Button
-              className="mt-6 gap-2 bg-primary dark:bg-primary hover:opacity-90 text-white"
+              className="mt-6 gap-2 bg-primary dark:bg-primary hover:opacity-90 text-primary-foreground"
               onClick={onCreate}
             >
               <Plus className="h-4 w-4" />

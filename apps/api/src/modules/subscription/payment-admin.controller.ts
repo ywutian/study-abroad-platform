@@ -36,7 +36,7 @@ export class PaymentAdminController {
   constructor(private readonly prisma: PrismaService) {}
 
   @Get()
-  @ApiOperation({ summary: '查看所有支付记录' })
+  @ApiOperation({ summary: 'View all payment records' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
   @ApiQuery({ name: 'status', required: false, enum: PaymentStatus })
@@ -81,7 +81,7 @@ export class PaymentAdminController {
   }
 
   @Get('stats')
-  @ApiOperation({ summary: '支付统计' })
+  @ApiOperation({ summary: 'Payment statistics' })
   async getStats() {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -139,7 +139,7 @@ export class PaymentAdminController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: '支付详情' })
+  @ApiOperation({ summary: 'Payment details' })
   async getPayment(@Param('id') id: string) {
     const payment = await this.prisma.payment.findUnique({
       where: { id },
@@ -152,7 +152,7 @@ export class PaymentAdminController {
   }
 
   @Post(':id/refund')
-  @ApiOperation({ summary: '手动退款' })
+  @ApiOperation({ summary: 'Manual refund' })
   async refundPayment(@Param('id') id: string, @Body() dto: RefundPaymentDto) {
     const payment = await this.prisma.payment.findUnique({
       where: { id },
@@ -202,7 +202,7 @@ export class PaymentAdminController {
   }
 
   @Put('users/:userId/subscription')
-  @ApiOperation({ summary: '手动调整用户订阅等级' })
+  @ApiOperation({ summary: 'Manually adjust user subscription tier' })
   async updateSubscription(
     @Param('userId') userId: string,
     @Body() dto: UpdateSubscriptionDto,

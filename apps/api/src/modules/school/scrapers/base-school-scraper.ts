@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { BadRequestException, Logger } from '@nestjs/common';
 import * as dns from 'dns';
 import * as net from 'net';
 import { promisify } from 'util';
@@ -31,14 +31,18 @@ async function validateUrlNotPrivate(url: string): Promise<void> {
 
   if (net.isIP(hostname)) {
     if (isPrivateIP(hostname)) {
-      throw new Error('SSRF blocked: URL resolves to a private IP address');
+      throw new BadRequestException(
+        'SSRF blocked: URL resolves to a private IP address',
+      );
     }
     return;
   }
 
   const { address } = await dnsLookup(hostname);
   if (isPrivateIP(address)) {
-    throw new Error('SSRF blocked: URL resolves to a private IP address');
+    throw new BadRequestException(
+      'SSRF blocked: URL resolves to a private IP address',
+    );
   }
 }
 

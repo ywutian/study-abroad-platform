@@ -110,28 +110,57 @@ export abstract class BaseScrapeStrategy {
     year: number,
   ): Promise<ScrapeResult | null>;
 
+  /** Max retries for rate-limited or temporarily unavailable responses */
+  protected readonly MAX_RETRIES = 3;
+  /** Status codes that trigger exponential backoff */
+  private readonly RETRYABLE_STATUSES = new Set([429, 503]);
+
   protected async fetchPage(url: string): Promise<string> {
     // SSRF protection: block requests to private/internal IPs
     await validateUrlNotPrivate(url);
 
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        Accept:
-          'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Cache-Control': 'no-cache',
-      },
-    });
+    let lastError: Error | null = null;
 
-    if (!response.ok) {
+    for (let attempt = 0; attempt <= this.MAX_RETRIES; attempt++) {
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          Accept:
+            'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Cache-Control': 'no-cache',
+        },
+      });
+
+      if (response.ok) {
+        return response.text();
+      }
+
+      // Exponential backoff for rate-limited / unavailable responses
+      if (
+        this.RETRYABLE_STATUSES.has(response.status) &&
+        attempt < this.MAX_RETRIES
+      ) {
+        const backoffMs = this.REQUEST_DELAY * Math.pow(2, attempt); // 2s → 4s → 8s
+        this.logger.warn(
+          `HTTP ${response.status} from ${url}, retrying in ${backoffMs}ms (attempt ${attempt + 1}/${this.MAX_RETRIES})`,
+        );
+        await this.delay(backoffMs);
+        lastError = new Error(
+          `HTTP ${response.status}: ${response.statusText}`,
+        );
+        continue;
+      }
+
       throw new InternalServerErrorException(
         `HTTP ${response.status}: ${response.statusText}`,
       );
     }
 
-    return response.text();
+    throw new InternalServerErrorException(
+      `Max retries exceeded for ${url}: ${lastError?.message}`,
+    );
   }
 
   protected delay(ms: number): Promise<void> {

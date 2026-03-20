@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma, AdmissionResult } from '@prisma/client';
+import { CASE_REVIEW_APPROVED_WHERE } from '../../common/constants/prisma-selects';
 import {
   VerifiedRankingQueryDto,
   VerifiedRankingResponseDto,
@@ -41,6 +42,7 @@ export class HallVerifiedService {
 
     const where: Prisma.AdmissionCaseWhereInput = {
       isVerified: true,
+      ...CASE_REVIEW_APPROVED_WHERE,
     };
 
     if (year) {
@@ -123,13 +125,20 @@ export class HallVerifiedService {
   private async getVerifiedStats() {
     const [totalVerified, totalAdmitted, topSchoolsCount, ivyCount] =
       await Promise.all([
-        this.prisma.admissionCase.count({ where: { isVerified: true } }),
         this.prisma.admissionCase.count({
-          where: { isVerified: true, result: AdmissionResult.ADMITTED },
+          where: { isVerified: true, ...CASE_REVIEW_APPROVED_WHERE },
         }),
         this.prisma.admissionCase.count({
           where: {
             isVerified: true,
+            ...CASE_REVIEW_APPROVED_WHERE,
+            result: AdmissionResult.ADMITTED,
+          },
+        }),
+        this.prisma.admissionCase.count({
+          where: {
+            isVerified: true,
+            ...CASE_REVIEW_APPROVED_WHERE,
             result: AdmissionResult.ADMITTED,
             school: { usNewsRank: { lte: 20 } },
           },
@@ -137,6 +146,7 @@ export class HallVerifiedService {
         this.prisma.admissionCase.count({
           where: {
             isVerified: true,
+            ...CASE_REVIEW_APPROVED_WHERE,
             result: AdmissionResult.ADMITTED,
             school: { name: { in: this.IVY_PLUS_SCHOOLS } },
           },
@@ -153,7 +163,7 @@ export class HallVerifiedService {
 
   async getAvailableYears(): Promise<number[]> {
     const cases = await this.prisma.admissionCase.findMany({
-      where: { isVerified: true },
+      where: { isVerified: true, ...CASE_REVIEW_APPROVED_WHERE },
       select: { year: true },
       distinct: ['year'],
       orderBy: { year: 'desc' },

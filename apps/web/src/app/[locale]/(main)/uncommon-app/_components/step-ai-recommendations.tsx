@@ -273,7 +273,7 @@ function RecommendationEmptyState({
       <Button
         size="lg"
         onClick={onGetRecommendations}
-        className="w-full max-w-[280px] bg-gradient-to-r from-primary to-violet-600 hover:from-primary/90 hover:to-violet-600/90 text-white border-0"
+        className="w-full max-w-[280px] bg-gradient-to-r from-primary to-violet-600 dark:from-primary dark:to-violet-500 hover:from-primary/90 hover:to-violet-600/90 text-white border-0"
       >
         <Sparkles className="h-4 w-4 mr-2" />
         {t('getRecommendations')}

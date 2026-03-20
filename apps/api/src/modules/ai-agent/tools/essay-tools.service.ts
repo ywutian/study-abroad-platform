@@ -1,10 +1,12 @@
 /**
  * Essay Tools Service
  *
- * Tools: GET_ESSAYS, REVIEW_ESSAY, POLISH_ESSAY, GENERATE_OUTLINE, BRAINSTORM_IDEAS
+ * Tools: GET_ESSAYS, REVIEW_ESSAY, POLISH_ESSAY, GENERATE_OUTLINE, BRAINSTORM_IDEAS, SEARCH_ESSAY_PROMPTS
  *
  * Phase 2: polish_essay, review_essay, brainstorm_ideas delegate to EssayAiService
  * (charge points → call AI → persist EssayAIResult → record memory)
+ *
+ * Phase 3: search_essay_prompts for prompt lookup; review_essay enhanced with prompt-aware context
  */
 
 import { Injectable, Logger } from '@nestjs/common';
@@ -50,6 +52,10 @@ export class EssayToolsService implements IToolHandlerProvider {
         'brainstorm_ideas',
         (args, userId, _ctx, locale) =>
           this.brainstormIdeas(args, userId, locale),
+      ],
+      [
+        'search_essay_prompts',
+        (args, _userId, _ctx, locale) => this.searchEssayPrompts(args, locale),
       ],
     ]);
   }
@@ -115,6 +121,7 @@ export class EssayToolsService implements IToolHandlerProvider {
   ) {
     let content = args.content;
     let prompt = args.prompt;
+    let promptContext = '';
 
     if (args.essayId) {
       const essay = await this.prisma.essay.findFirst({
@@ -123,6 +130,60 @@ export class EssayToolsService implements IToolHandlerProvider {
       if (essay) {
         content = essay.content;
         prompt = essay.prompt || essay.title;
+
+        // Phase 3.2: If essay has an associated essayPromptId, fetch the prompt details
+        // for more targeted, prompt-aware review feedback
+        if ((essay as any).essayPromptId) {
+          try {
+            const essayPrompt = await this.prisma.essayPrompt.findUnique({
+              where: { id: (essay as any).essayPromptId },
+              include: { school: { select: { name: true, nameZh: true } } },
+            });
+            if (essayPrompt) {
+              const isZh = locale === 'zh';
+              const parts: string[] = [];
+              if (essayPrompt.type) {
+                parts.push(
+                  isZh
+                    ? `题目类型：${essayPrompt.type}`
+                    : `Essay type: ${essayPrompt.type}`,
+                );
+              }
+              if (essayPrompt.wordLimit) {
+                parts.push(
+                  isZh
+                    ? `字数限制：${essayPrompt.wordLimit}词`
+                    : `Word limit: ${essayPrompt.wordLimit} words`,
+                );
+              }
+              if (essayPrompt.aiTips) {
+                parts.push(
+                  isZh
+                    ? `写作建议：${essayPrompt.aiTips}`
+                    : `Writing tips: ${essayPrompt.aiTips}`,
+                );
+              }
+              if (essayPrompt.school) {
+                parts.push(
+                  isZh
+                    ? `目标学校：${essayPrompt.school.nameZh || essayPrompt.school.name}`
+                    : `Target school: ${essayPrompt.school.name}`,
+                );
+              }
+              // Use the official prompt text if available
+              if (essayPrompt.prompt) {
+                prompt = essayPrompt.prompt;
+              }
+              if (parts.length > 0) {
+                promptContext = parts.join('\n');
+              }
+            }
+          } catch (err: any) {
+            this.logger.debug(
+              `Could not fetch essayPrompt context: ${err?.message}`,
+            );
+          }
+        }
       }
     }
 
@@ -133,11 +194,16 @@ export class EssayToolsService implements IToolHandlerProvider {
       };
     }
 
+    // Build enriched prompt string with prompt context for the AI review
+    const enrichedPrompt = promptContext
+      ? `${prompt || 'Personal Statement'}\n\n--- Prompt Context ---\n${promptContext}`
+      : prompt || 'Personal Statement';
+
     try {
       return await this.essayAiService.reviewEssayDirect(
         userId,
         content,
-        prompt || 'Personal Statement',
+        enrichedPrompt,
         locale,
       );
     } catch (error: any) {
@@ -179,6 +245,75 @@ export class EssayToolsService implements IToolHandlerProvider {
             : `Brainstorm failed: ${error?.message || 'Please try again later'}`,
       };
     }
+  }
+
+  async searchEssayPrompts(params: Record<string, any>, locale = 'zh') {
+    const { schoolName, schoolId, type, year } = params;
+
+    let resolvedSchoolId = schoolId;
+    if (!resolvedSchoolId && schoolName) {
+      const school = await this.prisma.school.findFirst({
+        where: {
+          OR: [
+            { name: { contains: schoolName, mode: 'insensitive' } },
+            { nameZh: { contains: schoolName, mode: 'insensitive' } },
+            { aliases: { has: schoolName } },
+          ],
+        },
+        select: { id: true, name: true, nameZh: true },
+      });
+      if (!school) {
+        return {
+          error:
+            locale === 'zh'
+              ? `未找到学校：${schoolName}`
+              : `School not found: ${schoolName}`,
+        };
+      }
+      resolvedSchoolId = school.id;
+    }
+
+    const where: Record<string, any> = {
+      isActive: true,
+      status: 'VERIFIED',
+      ...(resolvedSchoolId && { schoolId: resolvedSchoolId }),
+      ...(type && { type }),
+      ...(year && { year: +year }),
+    };
+
+    const prompts = await this.prisma.essayPrompt.findMany({
+      where,
+      include: { school: { select: { name: true, nameZh: true } } },
+      orderBy: { sortOrder: 'asc' },
+      take: 20,
+    });
+
+    if (prompts.length === 0) {
+      return {
+        count: 0,
+        message:
+          locale === 'zh'
+            ? '未找到匹配的文书题目'
+            : 'No matching essay prompts found',
+        prompts: [],
+      };
+    }
+
+    return {
+      count: prompts.length,
+      prompts: prompts.map((p) => ({
+        id: p.id,
+        schoolName: p.school.name,
+        schoolNameZh: p.school.nameZh,
+        type: p.type,
+        year: p.year,
+        prompt: p.prompt,
+        promptZh: p.promptZh,
+        wordLimit: p.wordLimit,
+        isRequired: p.isRequired,
+        aiTips: p.aiTips,
+      })),
+    };
   }
 
   async generateOutline(

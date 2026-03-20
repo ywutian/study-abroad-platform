@@ -2,25 +2,28 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty, IsOptional, MaxLength } from 'class-validator';
 
 export class EssayBrainstormRequestDto {
-  @ApiProperty({ description: '文书题目' })
+  @ApiProperty({ description: 'Essay prompt' })
   @IsString()
   @IsNotEmpty()
   @MaxLength(50000)
   prompt: string;
 
-  @ApiProperty({ description: '学生背景简述（可选）', required: false })
+  @ApiProperty({
+    description: 'Student background summary (optional)',
+    required: false,
+  })
   @IsString()
   @IsOptional()
   @MaxLength(50000)
   background?: string;
 
-  @ApiProperty({ description: '目标学校（可选）', required: false })
+  @ApiProperty({ description: 'Target school (optional)', required: false })
   @IsString()
   @IsOptional()
   @MaxLength(200)
   school?: string;
 
-  @ApiProperty({ description: '目标专业（可选）', required: false })
+  @ApiProperty({ description: 'Target major (optional)', required: false })
   @IsString()
   @IsOptional()
   @MaxLength(200)
@@ -28,13 +31,13 @@ export class EssayBrainstormRequestDto {
 }
 
 export class EssayIdeaDto {
-  @ApiProperty({ description: '想法标题' })
+  @ApiProperty({ description: 'Idea title' })
   title: string;
 
-  @ApiProperty({ description: '详细说明' })
+  @ApiProperty({ description: 'Detailed description' })
   description: string;
 
-  @ApiProperty({ description: '适合的文书类型', required: false })
+  @ApiProperty({ description: 'Suitable essay type', required: false })
   suitableFor?: string;
 }
 
@@ -42,7 +45,7 @@ export class EssayBrainstormResponseDto {
   @ApiProperty({ type: [EssayIdeaDto] })
   ideas: EssayIdeaDto[];
 
-  @ApiProperty({ description: '整体写作建议' })
+  @ApiProperty({ description: 'Overall writing advice' })
   overallAdvice: string;
 
   @ApiProperty()

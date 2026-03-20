@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Body,
+  Param,
+  Query,
+} from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { CaseService } from './case.service';
 import {
@@ -6,10 +14,14 @@ import {
   ReviewCaseEssayDto,
   BatchVerifyCaseDto,
 } from './dto/batch-import-case.dto';
+import { AdminReviewService } from '../admin/admin-review.service';
 import { Roles, CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { Role } from '@prisma/client';
-import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
+import {
+  ThrottleRelaxed,
+  ThrottleSensitive,
+} from '../../common/decorators/throttle.decorator';
 
 @ApiTags('admin/cases')
 @ApiBearerAuth()
@@ -17,16 +29,19 @@ import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 @Controller('admin/cases')
 @Roles(Role.ADMIN)
 export class CaseAdminController {
-  constructor(private readonly caseService: CaseService) {}
+  constructor(
+    private readonly caseService: CaseService,
+    private readonly adminReviewService: AdminReviewService,
+  ) {}
 
   @Get('stats')
-  @ApiOperation({ summary: '获取案例管理统计' })
+  @ApiOperation({ summary: 'Get case management statistics' })
   async getAdminStats() {
     return this.caseService.getAdminStats();
   }
 
   @Get('pending-essays')
-  @ApiOperation({ summary: '获取待审核的用户提交文书' })
+  @ApiOperation({ summary: 'Get pending user-submitted essays for review' })
   async getPendingEssays(
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
@@ -38,7 +53,8 @@ export class CaseAdminController {
   }
 
   @Post('batch-import')
-  @ApiOperation({ summary: '批量导入案例' })
+  @ThrottleSensitive()
+  @ApiOperation({ summary: 'Batch import cases' })
   async batchImport(
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: BatchImportCaseDto,
@@ -47,14 +63,42 @@ export class CaseAdminController {
   }
 
   @Post(':id/review-essay')
-  @ApiOperation({ summary: '审核用户提交的文书' })
+  @ApiOperation({ summary: 'Review user-submitted essay' })
   async reviewEssay(@Param('id') id: string, @Body() dto: ReviewCaseEssayDto) {
     return this.caseService.reviewCaseEssay(id, dto);
   }
 
   @Post('batch-verify')
-  @ApiOperation({ summary: '批量审核案例' })
+  @ApiOperation({ summary: 'Batch verify cases' })
   async batchVerify(@Body() dto: BatchVerifyCaseDto) {
     return this.caseService.batchVerifyCases(dto);
+  }
+
+  @Get('batch-history')
+  @ApiOperation({ summary: 'Get import batch history' })
+  async getBatchHistory(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.caseService.getBatchHistory(
+      page ? Number(page) : 1,
+      limit ? Number(limit) : 20,
+    );
+  }
+
+  @Get('batch/:batchId/progress')
+  @ApiOperation({ summary: 'Get import progress for a batch' })
+  async getImportProgress(@Param('batchId') batchId: string) {
+    return this.caseService.getImportProgress(batchId);
+  }
+
+  @Delete('batch/:batchId')
+  @ThrottleSensitive()
+  @ApiOperation({ summary: 'Rollback a batch import (soft delete)' })
+  async rollbackBatch(
+    @Param('batchId') batchId: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.adminReviewService.rollbackBatch(batchId, user.id);
   }
 }

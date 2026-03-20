@@ -139,6 +139,89 @@ export class AuthService {
   }
 
   /**
+   * Register a new operator account using an invite token.
+   * Validates the invite token first, then creates the user and consumes the invite.
+   */
+  async registerWithInvite(data: {
+    email: string;
+    password: string;
+    inviteToken: string;
+    locale?: string;
+  }): Promise<{
+    user: Omit<User, 'passwordHash'>;
+    tokens: AuthTokens;
+    message: string;
+  }> {
+    // Validate invite token before creating user
+    const invite = await this.prisma.operatorInvite.findUnique({
+      where: { token: data.inviteToken },
+    });
+
+    if (!invite) {
+      throw new BadRequestException('Invalid invite token');
+    }
+    if (invite.usedBy) {
+      throw new BadRequestException('Invite already used');
+    }
+    if (invite.expiresAt < new Date()) {
+      throw new BadRequestException('Invite expired');
+    }
+    // If invite has a target email, enforce it
+    if (invite.email && invite.email !== data.email) {
+      throw new BadRequestException(
+        'This invite is designated for a different email address',
+      );
+    }
+
+    // Check if email exists
+    const existingUser = await this.userService.findByEmail(data.email);
+    if (existingUser) {
+      throw new ConflictException('Email already registered');
+    }
+
+    // Hash password
+    const passwordHash = await bcrypt.hash(data.password, 12);
+    const emailVerifyToken = randomBytes(32).toString('hex');
+    const emailVerifyTokenExp = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    // Create user + consume invite atomically
+    const user = await this.prisma.$transaction(async (tx) => {
+      const newUser = await tx.user.create({
+        data: {
+          email: data.email,
+          passwordHash,
+          role: invite.role,
+          emailVerified: true, // Invite-based registration = trusted email
+          emailVerifyToken,
+          emailVerifyTokenExp,
+          locale: data.locale || 'zh',
+        },
+      });
+
+      await tx.operatorInvite.update({
+        where: { id: invite.id },
+        data: { usedBy: newUser.id, usedAt: new Date() },
+      });
+
+      return newUser;
+    });
+
+    this.eventEmitter.emit(USER_REGISTERED, {
+      userId: user.id,
+      email: data.email,
+    } as UserRegisteredPayload);
+
+    const tokens = await this.generateTokens(user);
+
+    const { passwordHash: _, ...result } = user;
+    return {
+      user: result,
+      tokens,
+      message: `Operator registration successful. Role: ${invite.role}`,
+    };
+  }
+
+  /**
    * Authenticate a user with email and password and issue JWT tokens
    * @param data - Login credentials containing email and password
    * @throws {UnauthorizedException} When the credentials are invalid or the user is deleted

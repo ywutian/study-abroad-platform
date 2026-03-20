@@ -2,12 +2,12 @@ import { IsString, IsOptional, MaxLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class GenerateOpeningDto {
-  @ApiProperty({ description: '文书题目' })
+  @ApiProperty({ description: 'Essay prompt' })
   @IsString()
   @MaxLength(500)
   prompt: string;
 
-  @ApiPropertyOptional({ description: '学生背景信息' })
+  @ApiPropertyOptional({ description: 'Student background information' })
   @IsOptional()
   @IsString()
   @MaxLength(5000)

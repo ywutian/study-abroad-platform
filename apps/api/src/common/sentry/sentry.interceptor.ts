@@ -5,39 +5,65 @@ import {
   CallHandler,
 } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 import { Request } from 'express';
 import * as Sentry from '@sentry/node';
 
 @Injectable()
 export class SentryInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
-    return next.handle().pipe(
-      catchError((error) => {
-        // Only capture server errors (5xx)
-        const statusCode = error.status || error.statusCode || 500;
+    const request = context.switchToHttp().getRequest<Request>();
+    const method = request.method;
+    const route =
+      (request.route?.path as string | undefined) || request.url || 'unknown';
+    const user = (request as Request & { user?: { id?: string } }).user;
 
-        if (statusCode >= 500) {
-          const request = context.switchToHttp().getRequest<Request>();
+    return new Observable((subscriber) => {
+      Sentry.startSpan(
+        {
+          name: `${method} ${route}`,
+          op: 'http.server',
+          attributes: {
+            'http.method': method,
+            'http.route': route,
+            'http.url': request.url,
+            ...(user?.id ? { 'user.id': user.id } : {}),
+          },
+        },
+        () => {
+          return next
+            .handle()
+            .pipe(
+              tap({
+                next: (value) => subscriber.next(value),
+                complete: () => subscriber.complete(),
+              }),
+              catchError((error) => {
+                const statusCode = error.status || error.statusCode || 500;
 
-          Sentry.withScope((scope) => {
-            scope.setTag('type', 'api_error');
-            scope.setExtra('path', request.url);
-            scope.setExtra('method', request.method);
-            scope.setExtra('statusCode', statusCode);
+                if (statusCode >= 500) {
+                  Sentry.withScope((scope) => {
+                    scope.setTag('type', 'api_error');
+                    scope.setExtra('path', request.url);
+                    scope.setExtra('method', method);
+                    scope.setExtra('statusCode', statusCode);
 
-            const user = (request as Request & { user?: { id?: string } }).user;
-            if (user?.id) {
-              // Only send user ID to Sentry, not PII like email
-              scope.setUser({ id: user.id });
-            }
+                    if (user?.id) {
+                      scope.setUser({ id: user.id });
+                    }
 
-            Sentry.captureException(error);
-          });
-        }
+                    Sentry.captureException(error);
+                  });
+                }
 
-        return throwError(() => error);
-      }),
-    );
+                return throwError(() => error);
+              }),
+            )
+            .subscribe({
+              error: (err) => subscriber.error(err),
+            });
+        },
+      );
+    });
   }
 }

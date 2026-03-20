@@ -2,8 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CaseService } from './case.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
+import { AuditLogService } from '../../common/services/audit-log.service';
+import { RedisService } from '../../common/redis/redis.service';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
-import { Role, Visibility } from '@prisma/client';
+import { DataReviewStatus, Role, Visibility } from '@prisma/client';
 
 describe('CaseService', () => {
   let service: CaseService;
@@ -16,6 +18,7 @@ describe('CaseService', () => {
     year: 2024,
     result: 'ADMITTED',
     visibility: Visibility.ANONYMOUS,
+    reviewStatus: DataReviewStatus.AUTO_APPROVED,
     gpa: 3.9,
     satScore: 1550,
     createdAt: new Date(),
@@ -39,6 +42,19 @@ describe('CaseService', () => {
               count: jest.fn(),
               groupBy: jest.fn().mockResolvedValue([]),
             },
+          },
+        },
+        {
+          provide: AuditLogService,
+          useValue: {
+            log: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: RedisService,
+          useValue: {
+            get: jest.fn().mockResolvedValue(null),
+            set: jest.fn().mockResolvedValue(undefined),
           },
         },
         {
@@ -163,7 +179,12 @@ describe('CaseService', () => {
         mockCase,
       );
 
-      const result = await service.findById('case-123', 'user-123', Role.USER);
+      const result = await service.findById(
+        'case-123',
+        'user-123',
+        Role.USER,
+        'zh',
+      );
 
       expect(result.id).toBe('case-123');
     });
@@ -174,7 +195,12 @@ describe('CaseService', () => {
         privateCase,
       );
 
-      const result = await service.findById('case-123', 'admin-id', Role.ADMIN);
+      const result = await service.findById(
+        'case-123',
+        'admin-id',
+        Role.ADMIN,
+        'zh',
+      );
 
       expect(result.id).toBe('case-123');
     });
@@ -185,7 +211,7 @@ describe('CaseService', () => {
       );
 
       await expect(
-        service.findById('nonexistent', 'user-id', Role.USER),
+        service.findById('nonexistent', 'user-id', Role.USER, 'zh'),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -196,7 +222,7 @@ describe('CaseService', () => {
       );
 
       await expect(
-        service.findById('case-123', 'other-user', Role.USER),
+        service.findById('case-123', 'other-user', Role.USER, 'zh'),
       ).rejects.toThrow(ForbiddenException);
     });
 
@@ -210,7 +236,7 @@ describe('CaseService', () => {
       );
 
       await expect(
-        service.findById('case-123', 'other-user', Role.USER),
+        service.findById('case-123', 'other-user', Role.USER, 'zh'),
       ).rejects.toThrow(ForbiddenException);
     });
   });
@@ -520,6 +546,150 @@ describe('CaseService', () => {
       expect(result.success).toBe(1);
       expect(result.failed).toHaveLength(1);
       expect(result.failed[0]).toHaveProperty('error');
+    });
+  });
+
+  describe('batchImport', () => {
+    const mockImportUser = {
+      id: 'import-user-id',
+      email: 'import@system.local',
+    };
+    const mockSchool = { id: 'school-mit', name: 'MIT', nameZh: 'MIT' };
+
+    beforeEach(() => {
+      // Mock user lookup/creation
+      (prismaService as any).user = {
+        findFirst: jest.fn().mockResolvedValue(mockImportUser),
+        create: jest.fn().mockResolvedValue(mockImportUser),
+      };
+      // Mock school lookup
+      (prismaService as any).school = {
+        findFirst: jest.fn().mockResolvedValue(mockSchool),
+      };
+      // Mock $transaction to execute the callback directly
+      (prismaService as any).$transaction = jest
+        .fn()
+        .mockImplementation(async (cb: any) => cb(prismaService));
+      // Mock findMany for dedup check
+      (prismaService.admissionCase.findMany as jest.Mock).mockResolvedValue([]);
+      // Mock create for each case
+      (prismaService.admissionCase.create as jest.Mock).mockResolvedValue({
+        ...mockCase,
+        source: 'csv_import',
+      });
+    });
+
+    it('should import valid cases successfully', async () => {
+      const dto = {
+        items: [
+          { school: 'MIT', year: 2025, result: 'ADMITTED', major: 'CS' },
+          { school: 'MIT', year: 2025, result: 'REJECTED', major: 'EE' },
+        ],
+      };
+
+      const result = await service.batchImport(dto as any, 'admin-id');
+
+      expect(result.imported).toBe(2);
+      expect(result.skipped).toBe(0);
+      expect(result.errors).toHaveLength(0);
+      expect(result.importBatchId).toBeDefined();
+    });
+
+    it('should skip items with unresolved schools', async () => {
+      (prismaService as any).school.findFirst = jest
+        .fn()
+        .mockResolvedValue(null);
+
+      const dto = {
+        items: [
+          { school: 'Unknown University', year: 2025, result: 'ADMITTED' },
+        ],
+      };
+
+      const result = await service.batchImport(dto as any, 'admin-id');
+
+      expect(result.imported).toBe(0);
+      expect(result.skipped).toBe(1);
+      expect(result.errors[0].message).toContain('School not found');
+    });
+
+    it('should return early if all schools fail to resolve', async () => {
+      (prismaService as any).school.findFirst = jest
+        .fn()
+        .mockResolvedValue(null);
+
+      const dto = {
+        items: [
+          { school: 'Unknown1', year: 2025, result: 'ADMITTED' },
+          { school: 'Unknown2', year: 2025, result: 'REJECTED' },
+        ],
+      };
+
+      const result = await service.batchImport(dto as any, 'admin-id');
+
+      expect(result.imported).toBe(0);
+      expect(result.skipped).toBe(2);
+      expect((prismaService as any).$transaction).not.toHaveBeenCalled();
+    });
+
+    it('should skip duplicate cases within the same batch', async () => {
+      const dto = {
+        items: [
+          { school: 'MIT', year: 2025, result: 'ADMITTED', major: 'CS' },
+          { school: 'MIT', year: 2025, result: 'ADMITTED', major: 'CS' }, // duplicate
+        ],
+      };
+
+      const result = await service.batchImport(dto as any, 'admin-id');
+
+      expect(result.imported).toBe(1);
+      expect(result.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            message: expect.stringContaining('Duplicate'),
+          }),
+        ]),
+      );
+    });
+
+    it('should skip cases already in database', async () => {
+      // Simulate existing case in DB
+      (prismaService.admissionCase.findMany as jest.Mock).mockResolvedValue([
+        { schoolId: 'school-mit', year: 2025, result: 'ADMITTED', major: 'CS' },
+      ]);
+
+      const dto = {
+        items: [{ school: 'MIT', year: 2025, result: 'ADMITTED', major: 'CS' }],
+      };
+
+      const result = await service.batchImport(dto as any, 'admin-id');
+
+      expect(result.imported).toBe(0);
+      expect(result.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            message: expect.stringContaining('Duplicate'),
+          }),
+        ]),
+      );
+    });
+
+    it('should use PENDING_REVIEW when autoVerify is false', async () => {
+      const dto = {
+        items: [{ school: 'MIT', year: 2025, result: 'ADMITTED' }],
+        autoVerify: false,
+      };
+
+      await service.batchImport(dto as any, 'admin-id');
+
+      expect(prismaService.admissionCase.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            reviewStatus: DataReviewStatus.PENDING_REVIEW,
+            isVerified: false,
+          }),
+        }),
+      );
     });
   });
 });

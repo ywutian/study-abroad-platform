@@ -15,9 +15,9 @@ export class RequestPasswordResetDto {
 }
 
 export class ResetPasswordDto {
-  @ApiProperty({ description: '重置令牌' })
+  @ApiProperty({ description: 'Reset token' })
   @IsString()
-  @IsNotEmpty({ message: '重置令牌不能为空' })
+  @IsNotEmpty({ message: 'Reset token不能为空' })
   @MaxLength(500)
   token: string;
 
@@ -33,9 +33,9 @@ export class ResetPasswordDto {
 }
 
 export class ChangePasswordDto {
-  @ApiProperty({ description: '当前密码' })
+  @ApiProperty({ description: 'Current password' })
   @IsString()
-  @MinLength(1, { message: '请输入当前密码' })
+  @MinLength(1, { message: '请输入Current password' })
   @MaxLength(128)
   currentPassword: string;
 

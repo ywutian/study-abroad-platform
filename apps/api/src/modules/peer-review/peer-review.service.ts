@@ -15,6 +15,7 @@ import {
   UserBasicDto,
 } from './dto';
 import { USER_SUMMARY_SELECT } from '../../common/constants/prisma-selects';
+import { ERR } from '../../common/constants/error-messages';
 
 const _REVIEW_INCLUDE = {
   reviewer: { select: USER_SUMMARY_SELECT },
@@ -40,7 +41,7 @@ export class PeerReviewService {
   ): Promise<PeerReviewDto> {
     // 不能给自己发起互评
     if (reviewerId === revieweeId) {
-      throw new BadRequestException('不能对自己发起互评');
+      throw new BadRequestException(ERR.BAD_REQUEST.cannotReviewSelf());
     }
 
     // 验证双方都是认证用户
@@ -64,21 +65,21 @@ export class PeerReviewService {
     ]);
 
     if (!reviewer || !reviewee) {
-      throw new NotFoundException('用户不存在');
+      throw new NotFoundException(ERR.NOT_FOUND.user());
     }
 
     if (reviewer.role === Role.USER) {
-      throw new ForbiddenException('只有认证用户才能发起互评');
+      throw new ForbiddenException(ERR.FORBIDDEN.verifiedOnly());
     }
 
     if (reviewee.role === Role.USER) {
-      throw new ForbiddenException('只能对认证用户发起互评');
+      throw new ForbiddenException(ERR.FORBIDDEN.targetVerifiedOnly());
     }
 
     // 检查是否有互动历史 (互关)
     const mutualFollow = await this.checkMutualFollow(reviewerId, revieweeId);
     if (!mutualFollow) {
-      throw new BadRequestException('需要互相关注后才能发起互评');
+      throw new BadRequestException(ERR.BAD_REQUEST.mutualFollowRequired());
     }
 
     // 检查是否已有未完成的互评
@@ -93,7 +94,7 @@ export class PeerReviewService {
     });
 
     if (existingReview) {
-      throw new BadRequestException('已有进行中的互评请求');
+      throw new BadRequestException(ERR.BAD_REQUEST.pendingReviewExists());
     }
 
     // 创建互评记录
@@ -157,33 +158,33 @@ export class PeerReviewService {
     });
 
     if (!review) {
-      throw new NotFoundException('互评不存在');
+      throw new NotFoundException(ERR.NOT_FOUND.peerReview());
     }
 
     if (review.status === PeerReviewStatus.COMPLETED) {
-      throw new BadRequestException('互评已完成');
+      throw new BadRequestException(ERR.BAD_REQUEST.reviewCompleted());
     }
 
     if (
       review.status === PeerReviewStatus.EXPIRED ||
       new Date() > review.expiresAt
     ) {
-      throw new BadRequestException('互评已过期');
+      throw new BadRequestException(ERR.BAD_REQUEST.reviewExpired());
     }
 
     const isReviewer = review.reviewerId === userId;
     const isReviewee = review.revieweeId === userId;
 
     if (!isReviewer && !isReviewee) {
-      throw new ForbiddenException('无权操作此互评');
+      throw new ForbiddenException(ERR.FORBIDDEN.noPermission());
     }
 
     // 检查是否已经评价过
     if (isReviewer && review.overallScore !== null) {
-      throw new BadRequestException('您已经提交过评价');
+      throw new BadRequestException(ERR.BAD_REQUEST.alreadySubmitted());
     }
     if (isReviewee && review.reverseOverallScore !== null) {
-      throw new BadRequestException('您已经提交过评价');
+      throw new BadRequestException(ERR.BAD_REQUEST.alreadySubmitted());
     }
 
     // 更新评分

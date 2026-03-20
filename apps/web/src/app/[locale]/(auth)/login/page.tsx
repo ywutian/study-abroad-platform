@@ -117,7 +117,8 @@ export default function LoginPage() {
 
       // 优先使用 callbackUrl 跳转，否则根据角色跳转
       const callbackUrl = searchParams.get('callbackUrl');
-      const defaultPath = response.user.role === 'ADMIN' ? '/admin' : '/dashboard';
+      const adminRoles = ['OPERATOR', 'ADMIN', 'SUPER_ADMIN'];
+      const defaultPath = adminRoles.includes(response.user.role) ? '/admin' : '/dashboard';
       // 提取路径（去掉 locale 前缀），严格校验只允许站内相对路径
       const rawPath = callbackUrl?.replace(/^\/(zh|en)/, '') || '';
       const targetPath = rawPath && /^\/[\w\-/]*$/.test(rawPath) ? rawPath : defaultPath;

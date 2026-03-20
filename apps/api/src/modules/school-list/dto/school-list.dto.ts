@@ -35,7 +35,7 @@ export class CreateSchoolListItemDto {
   @MaxLength(5000)
   notes?: string;
 
-  @ApiPropertyOptional({ description: '是否为 AI 推荐' })
+  @ApiPropertyOptional({ description: 'Whether AI recommended' })
   @IsOptional()
   @IsBoolean()
   isAIRecommended?: boolean;
@@ -101,7 +101,7 @@ export class SchoolListItemResponseDto {
   @ApiProperty()
   isAIRecommended: boolean;
 
-  @ApiPropertyOptional({ description: '预测数据（如有）' })
+  @ApiPropertyOptional({ description: 'Prediction data (if available)' })
   prediction?: {
     probability: number;
     tier?: string;
@@ -109,6 +109,9 @@ export class SchoolListItemResponseDto {
     source?: string;
     updatedAt: Date;
   };
+
+  @ApiProperty({ description: 'Number of verified essay prompts' })
+  essayPromptCount: number;
 
   @ApiProperty()
   createdAt: Date;

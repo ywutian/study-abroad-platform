@@ -65,7 +65,9 @@ export function UserCard({
   const isBlocked = variant === 'blocked';
 
   const getRoleBadge = (role: string) => {
+    if (role === 'SUPER_ADMIN') return <Badge variant="purple">{t('common.superAdmin')}</Badge>;
     if (role === 'ADMIN') return <Badge variant="purple">{t('common.administrator')}</Badge>;
+    if (role === 'OPERATOR') return <Badge variant="warning">{t('common.operator')}</Badge>;
     if (role === 'VERIFIED') return <Badge variant="success">{t('common.verified')}</Badge>;
     return null;
   };
@@ -96,7 +98,7 @@ export function UserCard({
               ) : (
                 <AvatarFallback
                   className={cn(
-                    'font-semibold text-white',
+                    'font-semibold text-primary-foreground',
                     !isBlocked && 'bg-gradient-to-br from-primary/80 to-primary',
                     isBlocked && 'bg-muted text-muted-foreground'
                   )}

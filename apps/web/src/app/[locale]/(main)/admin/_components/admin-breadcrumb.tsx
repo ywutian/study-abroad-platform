@@ -34,6 +34,8 @@ export function AdminBreadcrumb() {
     memory: t('sidebar.memory'),
     health: t('sidebar.health'),
     settings: t('sidebar.settings'),
+    'data-review': t('sidebar.dataReview'),
+    team: t('sidebar.team'),
   };
 
   const crumbs: { label: string; href: string }[] = [

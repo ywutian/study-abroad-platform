@@ -1,4 +1,16 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, DataReviewStatus } from '@prisma/client';
+
+/**
+ * Shared WHERE clause for approved case queries — use everywhere cases are exposed to non-admin users.
+ */
+export const CASE_REVIEW_APPROVED_WHERE = {
+  reviewStatus: {
+    in: [
+      DataReviewStatus.AUTO_APPROVED,
+      DataReviewStatus.APPROVED,
+    ] as DataReviewStatus[],
+  },
+};
 
 /**
  * School basic fields — shared across school-list, recommendation, hall, case, swipe.

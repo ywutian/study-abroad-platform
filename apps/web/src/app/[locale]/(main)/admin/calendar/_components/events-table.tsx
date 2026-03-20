@@ -148,6 +148,7 @@ export function EventsTable({
                         size="icon"
                         className="h-7 w-7"
                         onClick={() => onEdit(event)}
+                        aria-label="Edit event"
                       >
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
@@ -156,6 +157,7 @@ export function EventsTable({
                         size="icon"
                         className="h-7 w-7 text-destructive"
                         onClick={() => onDelete(event.id)}
+                        aria-label="Delete event"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>

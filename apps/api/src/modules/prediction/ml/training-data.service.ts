@@ -8,6 +8,12 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
+import { CASE_REVIEW_APPROVED_WHERE } from '../../../common/constants/prisma-selects';
+import {
+  parseCaseTestScores,
+  parseCaseActivities,
+  parseCaseAwards,
+} from '../../../common/constants/data-formats';
 import {
   extractFeatureVector,
   extractFeaturesFromCase,
@@ -187,7 +193,7 @@ export class TrainingDataService {
         where: { actualResult: { not: null } },
       }),
       this.prisma.admissionCase.count({
-        where: { isVerified: true },
+        where: { isVerified: true, ...CASE_REVIEW_APPROVED_WHERE },
       }),
     ]);
     return predCount + caseCount;
@@ -205,12 +211,18 @@ export class TrainingDataService {
         this.prisma.predictionResult.count({
           where: { actualResult: { not: null } },
         }),
-        this.prisma.admissionCase.count({ where: { isVerified: true } }),
+        this.prisma.admissionCase.count({
+          where: { isVerified: true, ...CASE_REVIEW_APPROVED_WHERE },
+        }),
         this.prisma.predictionResult.count({
           where: { actualResult: 'ADMITTED' },
         }),
         this.prisma.admissionCase.count({
-          where: { isVerified: true, result: 'ADMITTED' },
+          where: {
+            isVerified: true,
+            ...CASE_REVIEW_APPROVED_WHERE,
+            result: 'ADMITTED',
+          },
         }),
       ]);
 
@@ -312,6 +324,7 @@ export class TrainingDataService {
     const cases = await this.prisma.admissionCase.findMany({
       where: {
         isVerified: true,
+        ...CASE_REVIEW_APPROVED_WHERE,
         result: { in: ['ADMITTED', 'REJECTED', 'WAITLISTED', 'DEFERRED'] },
       },
       select: {
@@ -327,6 +340,20 @@ export class TrainingDataService {
         round: true,
         year: true,
         major: true,
+        activityList: true,
+        testScores: true,
+        activities: true,
+        awards: true,
+        highSchoolType: true,
+        curriculumType: true,
+        demographicTags: true,
+        apCount: true,
+        apSubjects: true,
+        ibScore: true,
+        ibPredicted: true,
+        financialAid: true,
+        enrollmentStatus: true,
+        narrative: true,
       },
     });
 
@@ -346,25 +373,150 @@ export class TrainingDataService {
 
       try {
         const schoolMetrics = this.schoolToMetrics(school);
-        const { features, label, weight } = extractFeaturesFromCase(
-          {
-            gpaRange: caseRecord.gpaRange,
-            satRange: caseRecord.satRange,
-            actRange: caseRecord.actRange,
-            toeflRange: caseRecord.toeflRange,
-            tags: caseRecord.tags,
-            result: caseRecord.result,
-            round: caseRecord.round,
-            year: caseRecord.year,
-            major: caseRecord.major,
-          },
-          schoolMetrics,
-          {
-            isPrivate: (school as any).isPrivate,
+
+        // Parse structured fields (prefer over legacy range/tag fallbacks)
+        const testScores = parseCaseTestScores(caseRecord.testScores);
+        const structuredActivities = parseCaseActivities(caseRecord.activities);
+        const structuredAwards = parseCaseAwards(caseRecord.awards);
+
+        const hasStructuredData =
+          testScores.length > 0 ||
+          structuredActivities.length > 0 ||
+          structuredAwards.length > 0;
+
+        let features: FeatureVector;
+        let label: number;
+        let weight: number;
+
+        if (hasStructuredData) {
+          // Build enriched ProfileMetrics from structured data with range fallbacks
+          const satScore =
+            testScores.find((t) => t.type === 'SAT')?.score ?? undefined;
+          const actScore =
+            testScores.find((t) => t.type === 'ACT')?.score ?? undefined;
+          const toeflScore =
+            testScores.find((t) => t.type === 'TOEFL')?.score ?? undefined;
+
+          // Activity metrics from structured data, fallback to text or tags
+          const activityCount =
+            structuredActivities.length ||
+            countActivitiesFromText(caseRecord.activityList) ||
+            estimateActivityCountFromTags(caseRecord.tags);
+          const leadershipCount = structuredActivities.filter((a) =>
+            isLeadershipRole(a.role),
+          ).length;
+          const activityTierScore = structuredActivities.reduce(
+            (sum, a) => sum + (a.tier ? (5 - a.tier) * 3 : 0),
+            0,
+          );
+
+          // Award metrics from structured data, fallback to tags
+          const awardCount =
+            structuredAwards.length ||
+            estimateAwardCountFromTags(caseRecord.tags);
+          const hasNationalAward = structuredAwards.some(
+            (a) => a.level === 'national' || a.level === 'international',
+          );
+          const hasIntlAward = structuredAwards.some(
+            (a) => a.level === 'international',
+          );
+
+          const profile: ProfileMetrics = {
+            gpa: caseRecord.gpaRange
+              ? parseRangeMidpointLocal(caseRecord.gpaRange)
+              : undefined,
+            gpaScale: 4.0,
+            satScore: satScore ?? parseRangeMidpointLocal(caseRecord.satRange),
+            actScore: actScore ?? parseRangeMidpointLocal(caseRecord.actRange),
+            toeflScore:
+              toeflScore ?? parseRangeMidpointLocal(caseRecord.toeflRange),
+            activityCount,
+            awardCount,
+            nationalAwardCount: hasNationalAward
+              ? structuredAwards.filter(
+                  (a) => a.level === 'national' || a.level === 'international',
+                ).length
+              : 0,
+            internationalAwardCount: hasIntlAward
+              ? structuredAwards.filter((a) => a.level === 'international')
+                  .length
+              : 0,
+            awardTierScores: structuredAwards
+              .filter((a) => a.tier)
+              .map((a) => {
+                const tierPoints: Record<number, number> = {
+                  5: 25,
+                  4: 15,
+                  3: 8,
+                  2: 4,
+                  1: 2,
+                };
+                return tierPoints[a.tier!] ?? 0;
+              }),
+          };
+
+          // Build activity details for feature extraction
+          const activityDetails = structuredActivities.map((a) => ({
+            category: a.category ?? 'other',
+            role: a.role ?? '',
+            totalHours: a.hoursPerWeek
+              ? a.hoursPerWeek * (a.weeksPerYear ?? 40)
+              : 0,
+          }));
+
+          features = extractFeatureVector(profile, schoolMetrics, {
+            round: caseRecord.round ?? undefined,
+            year: caseRecord.year ?? undefined,
+            major: caseRecord.major ?? undefined,
+            isPrivateSchool: (school as any).isPrivate,
             tuition: (school as any).tuition,
             usNewsRank: (school as any).usNewsRank,
-          },
-        );
+            activityDetails:
+              activityDetails.length > 0 ? activityDetails : undefined,
+          });
+
+          label = caseRecord.result === 'ADMITTED' ? 1 : 0;
+
+          // Higher weight for structured data (more reliable)
+          const completeness = [
+            profile.gpa,
+            profile.satScore,
+            profile.actScore,
+            profile.toeflScore,
+          ].filter((v) => v != null).length;
+          const structuredBonus =
+            structuredActivities.length > 0 || structuredAwards.length > 0
+              ? 0.2
+              : 0;
+          weight = Math.min(
+            1.5,
+            (completeness >= 2 ? 1.0 : 0.5) + structuredBonus,
+          );
+        } else {
+          // Fallback: use legacy extractFeaturesFromCase (range + tag-based)
+          const result = extractFeaturesFromCase(
+            {
+              gpaRange: caseRecord.gpaRange,
+              satRange: caseRecord.satRange,
+              actRange: caseRecord.actRange,
+              toeflRange: caseRecord.toeflRange,
+              tags: caseRecord.tags,
+              result: caseRecord.result,
+              round: caseRecord.round,
+              year: caseRecord.year,
+              major: caseRecord.major,
+            },
+            schoolMetrics,
+            {
+              isPrivate: (school as any).isPrivate,
+              tuition: (school as any).tuition,
+              usNewsRank: (school as any).usNewsRank,
+            },
+          );
+          features = result.features;
+          label = result.label;
+          weight = result.weight;
+        }
 
         records.push({
           features,
@@ -452,4 +604,74 @@ export class TrainingDataService {
         : 0,
     }));
   }
+}
+
+// ============================================
+// Module-level helpers for structured data extraction
+// ============================================
+
+const LEADERSHIP_KEYWORDS = [
+  'president',
+  'captain',
+  'founder',
+  'editor-in-chief',
+  'head',
+  'director',
+  'lead',
+  'chair',
+];
+
+function isLeadershipRole(role?: string): boolean {
+  if (!role) return false;
+  const lower = role.toLowerCase();
+  return LEADERSHIP_KEYWORDS.some((k) => lower.includes(k));
+}
+
+/**
+ * Parse a range string like "1500-1550" to its midpoint.
+ * Local version for use within the training data service.
+ */
+function parseRangeMidpointLocal(range?: string | null): number | undefined {
+  if (!range) return undefined;
+  const match = range.match(/^(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)$/);
+  if (match) {
+    return (parseFloat(match[1]) + parseFloat(match[2])) / 2;
+  }
+  const single = parseFloat(range);
+  return isNaN(single) ? undefined : single;
+}
+
+/**
+ * Count activities from a text list (one per line or semicolon-separated).
+ */
+function countActivitiesFromText(activityList?: string | null): number {
+  if (!activityList) return 0;
+  const lines = activityList
+    .split(/[;\n]/)
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0);
+  return lines.length;
+}
+
+/**
+ * Estimate activity count from tags (legacy fallback).
+ */
+function estimateActivityCountFromTags(tags: string[]): number {
+  const lower = tags.map((t) => t.toLowerCase());
+  if (lower.includes('strong_activities') || lower.includes('strong_ec')) {
+    return 8;
+  }
+  return 4; // Default assumption
+}
+
+/**
+ * Estimate award count from tags (legacy fallback).
+ */
+function estimateAwardCountFromTags(tags: string[]): number {
+  const lower = tags.map((t) => t.toLowerCase());
+  const hasNational = lower.includes('national_award');
+  const hasInternational = lower.includes('international_award');
+  if (hasInternational) return 3;
+  if (hasNational) return 2;
+  return 0;
 }

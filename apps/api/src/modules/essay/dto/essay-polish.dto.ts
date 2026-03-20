@@ -14,14 +14,14 @@ export enum PolishStyle {
 }
 
 export class EssayPolishRequestDto {
-  @ApiProperty({ description: '文书ID' })
+  @ApiProperty({ description: 'Essay ID' })
   @MaxLength(500)
   @IsString()
   @IsNotEmpty()
   essayId: string;
 
   @ApiProperty({
-    description: '要润色的内容（可选，默认使用文书全文）',
+    description: 'Content to polish (optional, defaults to full essay text)',
     required: false,
   })
   @IsString()
@@ -29,7 +29,11 @@ export class EssayPolishRequestDto {
   @MaxLength(50000)
   content?: string;
 
-  @ApiProperty({ enum: PolishStyle, description: '润色风格', required: false })
+  @ApiProperty({
+    enum: PolishStyle,
+    description: 'Polish style',
+    required: false,
+  })
   @IsEnum(PolishStyle)
   @IsOptional()
   style?: PolishStyle;

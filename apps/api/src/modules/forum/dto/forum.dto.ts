@@ -23,7 +23,7 @@ export enum PostSortBy {
   RECOMMENDED = 'recommended',
 }
 
-// 举报原因
+// 举报Reason
 export enum ReportReason {
   SPAM = 'spam',
   INAPPROPRIATE = 'inappropriate',
@@ -187,7 +187,7 @@ export class PostQueryDto {
   @Type(() => Boolean)
   isTeamPost?: boolean;
 
-  @ApiPropertyOptional({ description: '帖子标签筛选' })
+  @ApiPropertyOptional({ description: 'Post tag filter' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
@@ -219,11 +219,11 @@ export class PostQueryDto {
 
 // 举报 DTO
 export class CreateReportDto {
-  @ApiProperty({ enum: ReportReason, description: '举报原因' })
+  @ApiProperty({ enum: ReportReason, description: 'Report reason' })
   @IsEnum(ReportReason)
   reason: ReportReason;
 
-  @ApiPropertyOptional({ description: '补充说明' })
+  @ApiPropertyOptional({ description: 'Additional details' })
   @IsOptional()
   @IsString()
   @MaxLength(5000)

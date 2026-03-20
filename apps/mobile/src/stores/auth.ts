@@ -80,7 +80,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (token && user) {
         // Verify token is still valid
         try {
-          const freshUser = await apiClient.get<User>('/auth/me');
+          const freshUser = await apiClient.get<User>('/users/me');
           await saveUser(freshUser);
           set({ user: freshUser, isAuthenticated: true, isLoading: false });
         } catch (error: unknown) {

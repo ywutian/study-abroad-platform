@@ -47,6 +47,8 @@
     "explore": "探索",
     "enter": "进入",
     "administrator": "管理员",
+    "superAdmin": "超级管理员",
+    "operator": "运营员",
     "days": "天",
     "featureInDev": "功能开发中",
     "refresh": "刷新",
@@ -423,6 +425,15 @@
       },
       "common": {
         "optional": "（选填）"
+      },
+      "invite": {
+        "title": "团队邀请注册",
+        "subtitle": "您已被邀请加入团队",
+        "invalidToken": "邀请链接无效或已过期。",
+        "emailLocked": "此邀请仅限以下邮箱使用。",
+        "submit": "创建账号",
+        "success": "账号创建成功！",
+        "hasAccount": "已有账号？"
       }
     },
     "verifyEmail": {
@@ -2848,6 +2859,17 @@
       "brainstormWithTitle": "帮我为文书头脑风暴",
       "review": "请评审这篇文书",
       "polish": "请润色这篇文书"
+    },
+    "promptSelector": {
+      "linkPrompt": "关联文书题目",
+      "searchSchool": "搜索学校...",
+      "selectPrompt": "选择题目",
+      "clearLink": "取消关联",
+      "wordLimit": "{count} 字",
+      "required": "必选",
+      "optional": "选答",
+      "linked": "已关联题目",
+      "noPrompts": "该学校暂无已验证的文书题目"
     }
   },
   "resume": {
@@ -3418,6 +3440,7 @@
       "verified": "已认证",
       "viewFullCase": "查看完整案例",
       "essayPrompt": "文书题目",
+      "writeWithPrompt": "以此题目写文书",
       "yearLabel": "年份",
       "tabs": {
         "original": "文书原文",
@@ -3628,6 +3651,8 @@
       "words": "词",
       "aiTips": "AI 写作提示",
       "category": "类别",
+      "newTag": "新题",
+      "modifiedTag": "已修改",
       "noData": "暂无文书题目",
       "updateHint": "文书题目通常在每年8月更新"
     },
@@ -4638,6 +4663,10 @@
   "admin": {
     "title": "管理后台",
     "description": "管理用户、案例、举报和数据",
+    "error": "出错了",
+    "errorDescription": "加载页面时发生错误，请重试。",
+    "tryAgain": "重试",
+    "backToDashboard": "返回仪表盘",
     "tabs": {
       "overview": "概览",
       "users": "用户管理",
@@ -4667,16 +4696,18 @@
       "analytics": "数据分析",
       "calibrations": "学校校准",
       "activityTemplates": "活动模板",
+      "dataReview": "数据审核",
       "settings": "系统设置",
       "verifications": "身份认证",
       "health": "系统健康",
+      "team": "团队",
       "menu": "菜单",
       "adminNav": "管理导航",
       "groups": {
         "overview": "概览",
         "users": "用户与认证",
         "academic": "学术数据",
-        "moderation": "内容与运营",
+        "management": "管理",
         "ai": "AI 系统",
         "system": "系统"
       }
@@ -4700,12 +4731,17 @@
     "roles": {
       "admin": "管理员",
       "user": "普通用户",
-      "verified": "已认证"
+      "verified": "已认证",
+      "operator": "运营员",
+      "superAdmin": "超级管理员",
+      "setOperator": "设为运营员",
+      "setAdmin": "设为管理员"
     },
     "common": {
       "edit": "编辑",
       "cancel": "取消",
-      "save": "保存"
+      "save": "保存",
+      "loading": "加载中..."
     },
     "dataUpdates": {
       "title": "数据更新",
@@ -5189,6 +5225,395 @@
       "decayErrors": "错误数量",
       "decayDuration": "耗时"
     },
+    "dataReview": {
+      "title": "数据审核",
+      "description": "审核导入数据、管理暂存队列、追踪导入历史",
+      "tabs": {
+        "queue": "审核队列",
+        "cases": "待审案例",
+        "history": "导入历史",
+        "import": "批量导入",
+        "pipeline": "数据采集",
+        "batch": "批量录入"
+      },
+      "stats": {
+        "pendingStaging": "待审暂存",
+        "pendingCases": "待审案例",
+        "approvedToday": "今日通过",
+        "rejectedToday": "今日拒绝"
+      },
+      "enums": {
+        "hsType": {
+          "PUBLIC_US": "美国公立",
+          "PRIVATE_US": "美国私立",
+          "BOARDING_US": "美国寄宿",
+          "INTL_CN": "中国国际学校",
+          "PUBLIC_CN": "中国公立",
+          "PRIVATE_CN": "中国私立",
+          "INTL_OTHER": "其他国际学校",
+          "PUBLIC_OTHER": "其他公立",
+          "PRIVATE_OTHER": "其他私立"
+        },
+        "curriculum": {
+          "AP": "AP",
+          "IB": "IB",
+          "A_LEVEL": "A-Level",
+          "GAOKAO": "高考",
+          "CANADIAN": "加拿大课程",
+          "AUSTRALIAN": "澳洲课程",
+          "OTHER": "其他"
+        },
+        "financialAid": {
+          "no_aid": "未申请资助",
+          "need_based": "Need-based 助学金",
+          "merit": "Merit 奖学金",
+          "need_and_merit": "助学金 + 奖学金",
+          "full_tuition": "全额学费减免 (Full Tuition)",
+          "full_ride": "全奖 (Full Ride)",
+          "loan_only": "仅贷款",
+          "none_received": "申请了未获得",
+          "unknown": "未知"
+        },
+        "demographic": {
+          "international": "国际学生",
+          "first_gen": "第一代大学生",
+          "legacy": "校友子女 (Legacy)",
+          "urm": "URM (少数族裔)",
+          "recruited_athlete": "被招募运动员",
+          "low_income": "低收入家庭",
+          "transfer": "转学生",
+          "homeschool": "在家教育",
+          "military": "军人家庭",
+          "gap_year": "Gap Year"
+        },
+        "result": {
+          "ADMITTED": "录取",
+          "REJECTED": "拒绝",
+          "WAITLISTED": "候补",
+          "DEFERRED": "延期"
+        },
+        "round": {
+          "ED": "ED",
+          "ED2": "ED II",
+          "EA": "EA",
+          "REA": "REA",
+          "RD": "RD",
+          "ROLLING": "滚动录取"
+        },
+        "activityCategory": {
+          "RESEARCH": "科研",
+          "ACADEMIC": "学术",
+          "CLUB": "社团",
+          "ATHLETICS": "体育",
+          "COMMUNITY_SERVICE": "社区服务",
+          "ARTS": "艺术",
+          "WORK": "工作",
+          "ENTREPRENEURSHIP": "创业",
+          "LEADERSHIP": "领导力",
+          "WRITING": "写作",
+          "OTHER": "其他"
+        },
+        "awardLevel": {
+          "school": "校级",
+          "regional": "地区级",
+          "state": "省/州级",
+          "national": "国家级",
+          "international": "国际级"
+        },
+        "visibility": {
+          "ANONYMOUS": "匿名",
+          "PUBLIC": "公开",
+          "VERIFIED_ONLY": "仅认证用户可见"
+        },
+        "essayType": {
+          "SUPPLEMENTAL": "补充文书",
+          "SHORT_ANSWER": "简答题",
+          "PERSONAL_STATEMENT": "个人陈述",
+          "WHY_SCHOOL": "Why School",
+          "ACTIVITY": "活动描述",
+          "OPTIONAL": "选做题",
+          "OTHER": "其他"
+        }
+      },
+      "filter": {
+        "dataType": "数据类型",
+        "allTypes": "全部类型",
+        "source": "来源",
+        "sourcePlaceholder": "筛选来源...",
+        "reset": "重置"
+      },
+      "table": {
+        "type": "类型",
+        "source": "来源",
+        "school": "学校",
+        "title": "标题",
+        "qualityScore": "质量分",
+        "year": "年份",
+        "round": "轮次",
+        "result": "结果",
+        "gpa": "GPA",
+        "sat": "SAT",
+        "submittedAt": "提交时间",
+        "actions": "操作",
+        "selectAll": "全选",
+        "selected": "已选 {count} 项",
+        "noData": "暂无数据",
+        "noDataDesc": "当前没有需要审核的数据",
+        "completeness": "完整度"
+      },
+      "help": {
+        "qualityTitle": "质量评分",
+        "qualityDesc": "基于必填字段、分数有效性和内部一致性衡量数据正确性（0-100）。",
+        "completenessTitle": "完整度",
+        "completenessDesc": "显示已填写的可选字段百分比（0-100%）。部分数据对预测仍然有价值。"
+      },
+      "guide": {
+        "title": "审核工作流程",
+        "step1": "检查审核队列中的新项目",
+        "step2": "查看质量评分和完整度",
+        "step3": "如有需要，使用内联编辑修改数据",
+        "step4": "通过或拒绝并注明原因",
+        "step5": "通过的项目将对用户和AI系统可用"
+      },
+      "actions": {
+        "approve": "通过",
+        "reject": "拒绝",
+        "viewDetail": "查看详情",
+        "editAndApprove": "编辑并通过",
+        "batchApprove": "批量通过",
+        "batchReject": "批量拒绝"
+      },
+      "detail": {
+        "stagingDetail": "暂存项详情",
+        "caseDetail": "案例详情",
+        "rawData": "原始数据",
+        "correctedData": "修正后数据",
+        "editMode": "编辑模式",
+        "note": "备注",
+        "notePlaceholder": "可选备注...",
+        "major": "专业",
+        "tags": "标签",
+        "testScores": "标化成绩",
+        "activities": "活动",
+        "awards": "奖项",
+        "apInfo": "AP / IB",
+        "apCount": "AP数量",
+        "apSubjects": "AP科目",
+        "ibScore": "IB总分",
+        "hsType": "高中类型",
+        "curriculum": "课程体系",
+        "demographics": "背景标签",
+        "financialAid": "资助情况",
+        "enrollment": "入学状态",
+        "narrative": "叙述",
+        "enrichment": "补充详情",
+        "activitiesCount": "{count} 项活动",
+        "awardsCount": "{count} 项奖项"
+      },
+      "reject": {
+        "title": "拒绝原因",
+        "reason": "请输入拒绝原因",
+        "reasonPlaceholder": "填写拒绝原因...",
+        "confirm": "确认拒绝"
+      },
+      "history": {
+        "batchId": "批次 ID",
+        "count": "数量",
+        "importedAt": "导入时间",
+        "rollback": "回滚",
+        "rollbackConfirm": "确认回滚",
+        "rollbackDesc": "回滚将删除该批次导入的所有数据，此操作不可撤销。",
+        "rollbackSuccess": "批次已回滚",
+        "noHistory": "暂无导入记录",
+        "noHistoryDesc": "还没有导入过任何数据"
+      },
+      "import": {
+        "title": "批量导入",
+        "step1": "上传文件",
+        "step2": "校验数据",
+        "step3": "预览结果",
+        "step4": "执行导入",
+        "step5": "导入完成",
+        "uploadTitle": "上传 CSV 文件",
+        "uploadDesc": "拖拽文件到此处或点击选择",
+        "importType": "导入类型",
+        "typeCases": "录取案例",
+        "typeEssays": "文书题目",
+        "typeSchools": "学校数据",
+        "downloadTemplate": "下载模板",
+        "validating": "正在校验...",
+        "validRows": "有效行",
+        "warningRows": "警告行",
+        "errorRows": "错误行",
+        "rowNumber": "行号",
+        "field": "字段",
+        "issue": "问题",
+        "preview": "预览",
+        "autoApprove": "将自动通过",
+        "needsReview": "需人工审核",
+        "toStaging": "进入暂存",
+        "importing": "正在导入 {current}/{total}...",
+        "importSuccess": "导入完成",
+        "imported": "已导入",
+        "skipped": "已跳过",
+        "errors": "错误",
+        "goToQueue": "前往审核队列",
+        "goToHistory": "查看导入历史",
+        "startNew": "开始新导入",
+        "formatHelp": "字段说明",
+        "formatHelpDesc": "CSV 各字段的格式要求和有效值",
+        "fieldName": "字段名",
+        "fieldRequired": "必填",
+        "fieldFormat": "格式",
+        "fieldValidValues": "有效值",
+        "fieldExample": "示例",
+        "required": "必填",
+        "optional": "可选",
+        "table": {
+          "school": "学校"
+        }
+      },
+      "toast": {
+        "approved": "已通过审核",
+        "rejected": "已拒绝",
+        "editApproved": "编辑并通过成功",
+        "batchSuccess": "批量操作完成，成功 {count} 项",
+        "conflict": "该项已被其他管理员处理"
+      },
+      "manualEntry": {
+        "addData": "新增数据",
+        "addCase": "新增录取案例",
+        "addEssayPrompt": "新增文书题目",
+        "caseForm": {
+          "title": "新增录取案例",
+          "school": "学校",
+          "schoolSearch": "搜索学校...",
+          "year": "年份",
+          "result": "录取结果",
+          "round": "申请轮次",
+          "major": "专业",
+          "gpa": "GPA 范围",
+          "sat": "SAT 范围",
+          "toefl": "TOEFL 范围",
+          "tags": "标签（逗号分隔）",
+          "visibility": "可见性",
+          "submit": "提交",
+          "success": "案例创建成功",
+          "scores": "成绩 / Scores",
+          "apCount": "AP 数量",
+          "ibScore": "IB 总分",
+          "apSubjects": "AP 科目（逗号分隔）",
+          "background": "背景 / Background",
+          "hsType": "高中类型",
+          "curriculum": "课程体系",
+          "demographics": "申请人背景标签",
+          "financialAid": "资助情况",
+          "activitiesAwards": "活动 & 奖项 / Activities & Awards",
+          "activities": "活动（每行一项，格式: 类别 - 描述 (角色)）",
+          "awards": "奖项（每行一项）",
+          "other": "其他 / Other",
+          "narrative": "申请叙述 / Narrative",
+          "narrativePlaceholder": "申请故事、特殊背景...",
+          "majorPlaceholder": "如 计算机科学",
+          "act": "ACT 范围",
+          "apSubjectsPlaceholder": "如 Calculus BC, Physics C, Chemistry",
+          "activitiesPlaceholder": "科研 - MIT PRIMES（研究员）\n竞赛 - USACO 白金\n社团 - 机器人社（社长）",
+          "awardsPlaceholder": "USAMO 入围\nIntel ISEF 决赛\nNational Merit 半决赛",
+          "tagsPlaceholder": "如 科研, 竞赛",
+          "cancel": "取消",
+          "validation": {
+            "schoolRequired": "请选择学校"
+          }
+        },
+        "essayForm": {
+          "title": "新增文书题目",
+          "type": "题目类型",
+          "prompt": "题目内容（英文）",
+          "promptZh": "题目内容（中文）",
+          "wordLimit": "字数限制",
+          "isRequired": "必选题",
+          "sourceUrl": "来源 URL",
+          "promptPlaceholder": "什么对你重要，为什么？",
+          "promptZhPlaceholder": "输入题目的中文翻译",
+          "cancel": "取消",
+          "submit": "提交",
+          "success": "文书题目创建成功"
+        }
+      },
+      "pipeline": {
+        "dataFlow": "数据流程",
+        "scrape": "爬取",
+        "staging": "暂存",
+        "review": "审核",
+        "approved": "通过",
+        "startScrape": "启动文书爬取",
+        "syncSchools": "同步学校数据",
+        "goToQueue": "查看审核队列",
+        "scrapeStarted": "文书爬取管线已启动",
+        "syncStarted": "学校数据同步已启动"
+      },
+      "batchEntry": {
+        "title": "批量录入",
+        "description": "使用表格形式批量添加录取案例",
+        "addRow": "添加行",
+        "addRows": "添加5行",
+        "paste": "从剪贴板粘贴",
+        "clear": "清空",
+        "submit": "提交 ({valid}/{total})",
+        "submitting": "提交中...",
+        "school": "学校",
+        "schoolSearch": "搜索...",
+        "year": "年份",
+        "round": "轮次",
+        "result": "结果",
+        "major": "专业",
+        "gpa": "GPA",
+        "sat": "SAT",
+        "act": "ACT",
+        "toefl": "TOEFL",
+        "apCount": "AP数量",
+        "apSubjects": "AP科目",
+        "ibScore": "IB总分",
+        "hsType": "高中类型",
+        "curriculum": "课程体系",
+        "demographics": "背景标签",
+        "activities": "活动",
+        "awards": "奖项",
+        "financialAid": "资助",
+        "enrollment": "入学状态",
+        "narrative": "叙述",
+        "tags": "标签",
+        "actions": "操作",
+        "deleteRow": "删除行",
+        "duplicateRow": "复制行",
+        "noRows": "暂无数据，点击\"添加行\"开始",
+        "validationError": "请先修正验证错误",
+        "submitSuccess": "成功提交 {count} 条案例",
+        "maxRows": "最多允许 {max} 行",
+        "editActivities": "编辑活动 ({count})",
+        "editAwards": "编辑奖项 ({count})",
+        "activitiesEditor": "活动编辑器",
+        "awardsEditor": "奖项编辑器",
+        "addActivity": "添加活动",
+        "addAward": "添加奖项",
+        "category": "类别",
+        "description": "描述",
+        "role": "角色",
+        "tier": "等级",
+        "hoursPerWeek": "每周小时",
+        "weeksPerYear": "每年周数",
+        "name": "名称",
+        "level": "级别",
+        "competition": "比赛",
+        "awardYear": "年份",
+        "pasteTitle": "从表格粘贴",
+        "pasteDescription": "粘贴Excel或Google Sheets中的制表符分隔数据，第一行为表头。",
+        "pasteArea": "在此粘贴数据...",
+        "pasteImport": "导入",
+        "pasteCancel": "取消",
+        "parsedRows": "已解析 {count} 行"
+      }
+    },
     "ban": {
       "banUser": "封禁用户",
       "unbanUser": "解除封禁",
@@ -5525,6 +5950,209 @@
       "filterPending": "待审核",
       "filterApproved": "已通过",
       "filterRejected": "已拒绝"
+    },
+    "team": {
+      "title": "团队管理",
+      "description": "管理管理员团队成员、邀请和角色权限",
+      "tabs": {
+        "members": "成员",
+        "invites": "邀请",
+        "permissions": "权限",
+        "activity": "活动"
+      },
+      "members": {
+        "email": "邮箱",
+        "role": "角色",
+        "casesReviewed": "已审核案例",
+        "casesApproved": "已通过",
+        "casesRejected": "已拒绝",
+        "importsProcessed": "已处理导入",
+        "lastActive": "最近活跃",
+        "viewStats": "统计",
+        "statsTitle": "运营员统计",
+        "empty": "暂无团队成员",
+        "emptyDesc": "尚未添加运营员或管理员。邀请团队成员以开始使用。"
+      },
+      "invites": {
+        "email": "邮箱",
+        "role": "角色",
+        "status": "状态",
+        "sentDate": "日期",
+        "sentBy": "操作人",
+        "create": "添加成员",
+        "createTitle": "添加团队成员",
+        "emailLabel": "邮箱地址",
+        "roleLabel": "角色",
+        "searchButton": "搜索",
+        "searchPlaceholder": "输入已注册用户的邮箱...",
+        "userNotFound": "未找到该用户，需要先注册账号。",
+        "userFound": "已找到用户",
+        "currentRole": "当前角色",
+        "targetRole": "提升为",
+        "sameRole": "用户已经是该角色",
+        "promote": "确认提升",
+        "promoted": "用户角色提升成功",
+        "joinedAt": "注册时间",
+        "pending": "待处理",
+        "accepted": "已接受",
+        "expired": "已过期",
+        "empty": "暂无团队成员",
+        "emptyDesc": "搜索已注册用户的邮箱，将其提升为团队成员。",
+        "tabSearch": "搜索已有用户",
+        "tabInvite": "生成邀请链接",
+        "emailOptional": "邮箱（可选 - 留空则不限制）",
+        "generateLink": "生成邀请链接",
+        "inviteLink": "邀请链接",
+        "copyLink": "复制链接",
+        "linkCopied": "链接已复制！",
+        "linkExpiry": "此链接 7 天内有效",
+        "history": "邀请历史"
+      },
+      "permissions": {
+        "permission": "权限",
+        "guideTitle": "权限系统说明",
+        "guideStep1": "权限控制每个角色可以执行的操作。切换开关以授予或撤销访问权限。",
+        "guideStep2": "运营员权限适用于数据审核人员。管理员权限适用于系统管理员。",
+        "guideStep3": "保存后更改立即生效。所有更改都会记录在审计日志中。",
+        "guideWarning": "超级管理员绕过所有权限检查，无法被限制。",
+        "superAdminTitle": "超级管理员权限",
+        "superAdminDesc": "超级管理员对所有功能拥有无限制的访问权限，无法通过此权限矩阵进行限制。",
+        "saveChanges": "保存更改",
+        "saved": "权限已成功保存",
+        "groups": {
+          "cases": "案例",
+          "essays": "文书",
+          "schools": "学校",
+          "users": "用户",
+          "content": "内容",
+          "data": "数据",
+          "system": "系统",
+          "ai": "AI",
+          "audit": "审计",
+          "notifications": "通知"
+        },
+        "desc": {
+          "case_create": "手动创建新录取案例",
+          "case_review": "审批审核队列中的案例",
+          "case_delete": "永久删除录取案例",
+          "essay_manage": "管理文书题目和内容",
+          "school_edit": "编辑学校信息和详情",
+          "school_review": "审核和批准学校数据更改",
+          "user_view": "查看用户资料和详情",
+          "user_manage": "管理用户账户和角色",
+          "user_delete": "永久删除用户账户",
+          "user_ban": "封禁或解封用户账户",
+          "content_moderate": "审核论坛帖子、评论和聊天",
+          "data_export": "导出 CSV 数据文件",
+          "data_health": "查看数据健康和质量指标",
+          "data_sync": "触发数据同步和抓取任务",
+          "system_settings": "修改全局系统设置",
+          "system_roles": "管理角色和权限",
+          "system_calibration": "创建和编辑学校校准",
+          "ai_config": "配置 AI 智能体行为",
+          "audit_view": "查看审计日志",
+          "notification_broadcast": "发送广播通知"
+        }
+      },
+      "activity": {
+        "time": "时间",
+        "action": "操作",
+        "resource": "资源",
+        "resourceId": "资源 ID",
+        "allMembers": "所有成员",
+        "allActions": "所有操作",
+        "empty": "暂无活动",
+        "emptyDesc": "尚未记录管理员活动。"
+      }
+    },
+    "help": {
+      "permissionMatrix": {
+        "title": "权限矩阵",
+        "description": "权限控制每个角色在管理面板中的操作范围。超级管理员拥有所有权限。更改立即生效。"
+      },
+      "qualityScore": {
+        "title": "质量评分",
+        "description": "质量评分（0-100）基于必填字段、分数有效性和内部一致性衡量数据正确性。"
+      },
+      "dataCompleteness": {
+        "title": "数据完整度",
+        "description": "完整度（0-100%）显示已填写的可选字段比例。部分数据对预测仍然有价值。"
+      },
+      "reviewQueue": {
+        "title": "审核队列",
+        "description": "低质量的导入数据会进入此处等待人工审核。您可以在审批前编辑数据，或附上原因拒绝。"
+      },
+      "importPolicy": {
+        "title": "导入策略",
+        "description": "导入策略控制数据如何通过管道流转。更高的阈值意味着更严格的自动审批。"
+      },
+      "roleHierarchy": {
+        "title": "角色层级",
+        "description": "每个角色继承低级角色的所有权限。操作员可以审核数据，管理员管理一切，超级管理员控制系统设置。"
+      },
+      "aiOperations": {
+        "title": "AI 运维",
+        "description": "监控 AI 系统健康状态，配置智能体行为，跟踪使用指标。"
+      },
+      "memorySystem": {
+        "title": "记忆系统",
+        "description": "AI 记忆系统存储对话上下文以提供个性化响应。记忆会根据相关性随时间衰减。"
+      },
+      "calibrations": {
+        "title": "校准",
+        "description": "校准乘数调整每所学校的预测准确度。更高的乘数意味着更多地依赖历史数据。"
+      }
+    },
+    "tour": {
+      "overview": {
+        "step1": { "title": "仪表盘概览", "desc": "关键指标一目了然。点击任何卡片查看详情。" },
+        "step2": { "title": "快捷操作", "desc": "常用管理操作可从快捷操作面板访问。" },
+        "step3": { "title": "健康状态", "desc": "系统健康指示器显示所有服务的状态。" },
+        "step4": { "title": "最近活动", "desc": "实时跟踪最近的管理操作和数据变更。" }
+      },
+      "dataReview": {
+        "step1": { "title": "统计概览", "desc": "查看有多少项目待审核、已批准或今日被拒绝。" },
+        "step2": { "title": "审核队列", "desc": "所有来源的数据都会出现在此。按类型或来源筛选。" },
+        "step3": {
+          "title": "质量与完整度",
+          "desc": "质量评分衡量正确性，完整度显示数据填充程度。"
+        },
+        "step4": {
+          "title": "批准或拒绝",
+          "desc": "审核每条数据，如需编辑可修改，然后批准或附上原因拒绝。"
+        },
+        "step5": { "title": "批量导入", "desc": "通过 CSV 一次性导入多条数据。请先下载模板。" },
+        "step6": { "title": "数据采集", "desc": "查看和管理自动化数据采集源及其状态。" }
+      },
+      "team": {
+        "step1": { "title": "团队成员", "desc": "查看所有操作员和管理员。监控其审核活动。" },
+        "step2": { "title": "邀请成员", "desc": "发送邀请以添加新的操作员或管理员。" },
+        "step3": { "title": "权限矩阵", "desc": "控制每个角色的操作权限。按角色切换权限。" },
+        "step4": { "title": "活动日志", "desc": "按团队成员筛选跟踪所有管理操作。" }
+      },
+      "aiOperations": {
+        "step1": { "title": "AI 健康", "desc": "AI 系统的整体健康状态和响应时间。" },
+        "step2": { "title": "智能体配置", "desc": "配置 AI 智能体行为、系统提示和模型设置。" },
+        "step3": { "title": "性能指标", "desc": "跟踪 AI 使用量、Token 消耗和响应质量。" },
+        "step4": { "title": "可靠性", "desc": "监控错误率、熔断器状态和降级使用情况。" }
+      }
+    },
+    "dataPipeline": {
+      "title": "数据管道",
+      "description": "配置导入策略、质量阈值和数据源设置",
+      "autoApproveThreshold": "自动审批阈值",
+      "autoApproveDesc": "质量评分高于此阈值的案例将自动审批",
+      "pendingThreshold": "待审核阈值",
+      "pendingDesc": "介于此阈值和自动审批阈值之间的案例需要人工审核",
+      "minQuality": "最低质量",
+      "minQualityDesc": "低于此阈值的案例将被自动拒绝",
+      "policyUpdated": "导入策略已更新",
+      "stats": {
+        "totalImported": "总导入量",
+        "pendingReview": "待审核",
+        "autoApproved": "自动审批",
+        "rejected": "已拒绝"
+      }
     }
   },
   "essayAdmin": {
@@ -5557,6 +6185,7 @@
     "scrapeFailed": "数据抓取失败",
     "verifySuccess": "审核成功",
     "batchVerifySuccess": "批量审核完成",
+    "viewDetail": "查看详情",
     "emptyTitle": "暂无文书数据",
     "emptyDescription": "尝试修改筛选条件或抓取新数据",
     "status": {
@@ -5664,7 +6293,10 @@
     "results": "结果",
     "startedAt": "开始时间",
     "duration": "耗时",
-    "running": "运行中..."
+    "running": "运行中...",
+    "refresh": "刷新",
+    "scrapeStarted": "采集已启动",
+    "savedSuccessfully": "保存成功"
   },
   "dataExport": {
     "title": "导出数据",

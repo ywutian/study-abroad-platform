@@ -9,25 +9,49 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  ActionSheetIOS,
+  Alert,
+  Clipboard,
 } from 'react-native';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { format } from 'date-fns';
+import { format, isToday, isYesterday, isSameDay } from 'date-fns';
+import * as Haptics from 'expo-haptics';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { Avatar, Loading } from '@/components/ui';
+import { useToast } from '@/components/ui/Toast';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
 import { useChatSocket } from '@/hooks/useChatSocket';
-import { useColors, spacing, fontSize, borderRadius } from '@/utils/theme';
+import { useColors, withOpacity, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import type { Conversation, Message } from '@/types';
+
+// Date separator helper
+function formatDateSeparator(dateStr: string, t: (key: string) => string): string {
+  const date = new Date(dateStr);
+  if (isToday(date)) return t('chat.today');
+  if (isYesterday(date)) return t('chat.yesterday');
+  return format(date, 'MMM d, yyyy');
+}
+
+function shouldShowDateSeparator(messages: Message[], index: number): boolean {
+  if (index === 0) return true;
+  const current = new Date(messages[index].createdAt);
+  const previous = new Date(messages[index - 1].createdAt);
+  return !isSameDay(current, previous);
+}
 
 interface MessageBubbleProps {
   item: Message;
   isMe: boolean;
   otherEmail: string | undefined;
   colors: ReturnType<typeof useColors>;
+  onLongPress: (message: Message) => void;
+  showDateSeparator: boolean;
+  dateSeparatorText: string;
 }
 
 const MessageBubble = memo(function MessageBubble({
@@ -35,48 +59,75 @@ const MessageBubble = memo(function MessageBubble({
   isMe,
   otherEmail,
   colors,
+  onLongPress,
+  showDateSeparator,
+  dateSeparatorText,
 }: MessageBubbleProps) {
   return (
-    <View style={[styles.messageContainer, isMe ? styles.myMessage : styles.theirMessage]}>
-      {!isMe && <Avatar source={null} name={otherEmail} size="sm" style={styles.messageAvatar} />}
-      <View
-        style={[
-          styles.messageBubble,
-          {
-            backgroundColor: isMe ? colors.primary : colors.muted,
-          },
-        ]}
-      >
-        <Text
-          style={[
-            styles.messageText,
-            { color: isMe ? colors.primaryForeground : colors.foreground },
-          ]}
-        >
-          {item.content}
-        </Text>
-        <View style={styles.messageFooter}>
+    <>
+      {showDateSeparator && (
+        <View style={styles.dateSeparator}>
+          <View style={[styles.dateSeparatorLine, { backgroundColor: colors.border }]} />
           <Text
             style={[
-              styles.messageTime,
+              styles.dateSeparatorText,
+              { color: colors.foregroundMuted, backgroundColor: colors.background },
+            ]}
+          >
+            {dateSeparatorText}
+          </Text>
+          <View style={[styles.dateSeparatorLine, { backgroundColor: colors.border }]} />
+        </View>
+      )}
+      <TouchableOpacity
+        onLongPress={() => onLongPress(item)}
+        delayLongPress={500}
+        activeOpacity={0.8}
+      >
+        <View style={[styles.messageContainer, isMe ? styles.myMessage : styles.theirMessage]}>
+          {!isMe && (
+            <Avatar source={null} name={otherEmail} size="sm" style={styles.messageAvatar} />
+          )}
+          <View
+            style={[
+              styles.messageBubble,
               {
-                color: isMe ? colors.onGradientMuted : colors.foregroundMuted,
+                backgroundColor: isMe ? colors.primary : colors.muted,
               },
             ]}
           >
-            {format(new Date(item.createdAt), 'HH:mm')}
-          </Text>
-          {isMe && item.read && (
-            <Ionicons
-              name="checkmark-done"
-              size={14}
-              color={colors.onGradientMuted}
-              style={styles.readIcon}
-            />
-          )}
+            <Text
+              style={[
+                styles.messageText,
+                { color: isMe ? colors.primaryForeground : colors.foreground },
+              ]}
+            >
+              {item.content}
+            </Text>
+            <View style={styles.messageFooter}>
+              <Text
+                style={[
+                  styles.messageTime,
+                  {
+                    color: isMe ? colors.onGradientMuted : colors.foregroundMuted,
+                  },
+                ]}
+              >
+                {format(new Date(item.createdAt), 'HH:mm')}
+              </Text>
+              {isMe && item.read && (
+                <Ionicons
+                  name="checkmark-done"
+                  size={14}
+                  color={colors.onGradientMuted}
+                  style={styles.readIcon}
+                />
+              )}
+            </View>
+          </View>
         </View>
-      </View>
-    </View>
+      </TouchableOpacity>
+    </>
   );
 });
 
@@ -86,10 +137,12 @@ export default function ChatScreen() {
   const colors = useColors();
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
+  const toast = useToast();
   const flatListRef = useRef<FlatList>(null);
 
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [showScrollButton, setShowScrollButton] = useState(false);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // WebSocket connection
@@ -201,6 +254,94 @@ export default function ChatScreen() {
     setIsSending(false);
   };
 
+  // Long press message handler
+  const handleMessageLongPress = useCallback(
+    (message: Message) => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      const isMe = message.senderId === user?.id;
+      const options = [t('chat.copy')];
+      if (isMe) {
+        const msgAge = Date.now() - new Date(message.createdAt).getTime();
+        if (msgAge < 2 * 60 * 1000) options.push(t('chat.recall'));
+        options.push(t('chat.delete'));
+      }
+      options.push(t('common.cancel'));
+
+      if (Platform.OS === 'ios') {
+        ActionSheetIOS.showActionSheetWithOptions(
+          {
+            options,
+            cancelButtonIndex: options.length - 1,
+            destructiveButtonIndex: isMe ? options.length - 2 : undefined,
+          },
+          (index) => {
+            if (options[index] === t('chat.copy')) {
+              Clipboard.setString(message.content);
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              toast.show({ type: 'success', message: t('chat.copied') });
+            } else if (options[index] === t('chat.recall')) {
+              apiClient.delete(`/chats/messages/${message.id}`).then(() => {
+                queryClient.invalidateQueries({ queryKey: ['conversation', id] });
+                toast.show({ type: 'success', message: t('chat.recalled') });
+              });
+            } else if (options[index] === t('chat.delete')) {
+              apiClient.delete(`/chats/messages/${message.id}`).then(() => {
+                queryClient.invalidateQueries({ queryKey: ['conversation', id] });
+              });
+            }
+          }
+        );
+      } else {
+        Alert.alert(t('chat.messageActions'), undefined, [
+          {
+            text: t('chat.copy'),
+            onPress: () => {
+              Clipboard.setString(message.content);
+              toast.show({ type: 'success', message: t('chat.copied') });
+            },
+          },
+          ...(isMe
+            ? [
+                {
+                  text: t('chat.delete'),
+                  style: 'destructive' as const,
+                  onPress: () => {
+                    apiClient
+                      .delete(`/chats/messages/${message.id}`)
+                      .then(() =>
+                        queryClient.invalidateQueries({ queryKey: ['conversation', id] })
+                      );
+                  },
+                },
+              ]
+            : []),
+          { text: t('common.cancel'), style: 'cancel' as const },
+        ]);
+      }
+    },
+    [user?.id, id, t, queryClient, toast]
+  );
+
+  const scrollToBottom = useCallback(() => {
+    flatListRef.current?.scrollToEnd({ animated: true });
+    setShowScrollButton(false);
+  }, []);
+
+  const handleScroll = useCallback(
+    (event: {
+      nativeEvent: {
+        contentOffset: { y: number };
+        contentSize: { height: number };
+        layoutMeasurement: { height: number };
+      };
+    }) => {
+      const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+      const distanceFromBottom = contentSize.height - contentOffset.y - layoutMeasurement.height;
+      setShowScrollButton(distanceFromBottom > 200);
+    },
+    []
+  );
+
   // Get other participant
   const otherParticipant = conversation?.participants.find((p) => p.userId !== user?.id)?.user;
   const otherUserId = otherParticipant?.id;
@@ -208,12 +349,17 @@ export default function ChatScreen() {
   const typingUserIds = id ? getTypingUsers(id) : [];
   const isOtherTyping = otherUserId ? typingUserIds.includes(otherUserId) : false;
 
-  const renderMessage = ({ item }: { item: Message }) => (
+  const messages = conversation?.messages ?? [];
+
+  const renderMessage = ({ item, index }: { item: Message; index: number }) => (
     <MessageBubble
       item={item}
       isMe={item.senderId === user?.id}
       otherEmail={otherParticipant?.email}
       colors={colors}
+      onLongPress={handleMessageLongPress}
+      showDateSeparator={shouldShowDateSeparator(messages, index)}
+      dateSeparatorText={formatDateSeparator(item.createdAt, t)}
     />
   );
 
@@ -270,11 +416,13 @@ export default function ChatScreen() {
         {/* Messages List */}
         <FlatList
           ref={flatListRef}
-          data={conversation.messages}
+          data={messages}
           renderItem={renderMessage}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.messagesList}
           showsVerticalScrollIndicator={false}
+          onScroll={handleScroll}
+          scrollEventThrottle={100}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Text style={[styles.emptyText, { color: colors.foregroundMuted }]}>
@@ -283,6 +431,21 @@ export default function ChatScreen() {
             </View>
           }
         />
+
+        {/* Scroll to bottom button */}
+        {showScrollButton && (
+          <Animated.View entering={FadeInDown.duration(200)} style={styles.scrollBottomContainer}>
+            <TouchableOpacity
+              onPress={scrollToBottom}
+              style={[
+                styles.scrollBottomButton,
+                { backgroundColor: colors.card, borderColor: colors.border },
+              ]}
+            >
+              <Ionicons name="chevron-down" size={20} color={colors.primary} />
+            </TouchableOpacity>
+          </Animated.View>
+        )}
 
         {/* Typing indicator */}
         {isOtherTyping && (
@@ -457,5 +620,37 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  dateSeparator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: spacing.md,
+    gap: spacing.sm,
+  },
+  dateSeparatorLine: {
+    flex: 1,
+    height: StyleSheet.hairlineWidth,
+  },
+  dateSeparatorText: {
+    fontSize: fontSize.xs,
+    paddingHorizontal: spacing.sm,
+  },
+  scrollBottomContainer: {
+    position: 'absolute',
+    right: spacing.lg,
+    bottom: 80,
+  },
+  scrollBottomButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    shadowOpacity: 0.1,
+    elevation: 3,
   },
 });

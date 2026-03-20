@@ -30,6 +30,7 @@ import {
   fontSize,
   fontWeight,
   borderRadius,
+  withOpacity,
 } from '@/utils/theme';
 import { getResultBadgeVariant } from '@/utils/case-helpers';
 import type { School, Case, PaginatedResponse } from '@/types';
@@ -64,6 +65,39 @@ export default function HomeScreen() {
       apiClient.get<PaginatedResponse<School>>('/schools', {
         params: { limit: 5, sort: 'usnewsRank', order: 'asc' },
       }),
+  });
+
+  // Fetch profile for grade card
+  const { data: profile } = useQuery({
+    queryKey: ['profile', 'me'],
+    queryFn: () =>
+      apiClient.get<{
+        completionPercentage?: number;
+        gpa?: number;
+        satScore?: number;
+        toeflScore?: number;
+      }>('/profiles/me'),
+    enabled: isAuthenticated,
+  });
+
+  // Fetch school list for tier breakdown
+  const { data: schoolList } = useQuery({
+    queryKey: ['schoolList'],
+    queryFn: () =>
+      apiClient.get<{
+        items: { tier: string }[];
+      }>('/school-lists'),
+    enabled: isAuthenticated,
+  });
+
+  // Fetch upcoming deadlines
+  const { data: deadlines } = useQuery({
+    queryKey: ['deadlines', 'upcoming'],
+    queryFn: () =>
+      apiClient.get<{
+        items: { id: string; schoolName: string; deadline: string; type: string }[];
+      }>('/timelines/overview'),
+    enabled: isAuthenticated,
   });
 
   const [refreshing, setRefreshing] = React.useState(false);
@@ -121,6 +155,31 @@ export default function HomeScreen() {
     ],
     [t, colors.primary, colors.success, colors.warning, colors.info, colors.accent, colors.error]
   );
+
+  const profileGrade = useMemo(() => {
+    const pct = profile?.completionPercentage ?? 0;
+    if (pct >= 90) return { grade: 'A', color: colors.success };
+    if (pct >= 80) return { grade: 'B+', color: '#10b981' };
+    if (pct >= 70) return { grade: 'B', color: colors.info };
+    if (pct >= 50) return { grade: 'C', color: colors.warning };
+    return { grade: 'D', color: colors.error };
+  }, [profile?.completionPercentage, colors]);
+
+  const tierCounts = useMemo(() => {
+    const items = schoolList?.items ?? [];
+    return {
+      reach: items.filter((s) => s.tier === 'REACH').length,
+      target: items.filter((s) => s.tier === 'TARGET').length,
+      safety: items.filter((s) => s.tier === 'SAFETY').length,
+    };
+  }, [schoolList]);
+
+  const upcomingDeadlines = useMemo(() => {
+    return (deadlines?.items ?? [])
+      .filter((d) => new Date(d.deadline) > new Date())
+      .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
+      .slice(0, 5);
+  }, [deadlines]);
 
   return (
     <ScrollView
@@ -229,6 +288,143 @@ export default function HomeScreen() {
           ))}
         </View>
       </View>
+
+      {/* Profile Grade Card */}
+      {isAuthenticated && profile && (
+        <View style={styles.section}>
+          <FadeInView animation="fadeUp" delay={550}>
+            <AnimatedCard onPress={() => router.push('/(tabs)/profile')} style={styles.gradeCard}>
+              <CardContent style={styles.gradeCardContent}>
+                <View style={[styles.gradeCircle, { borderColor: profileGrade.color }]}>
+                  <Text style={[styles.gradeText, { color: profileGrade.color }]}>
+                    {profileGrade.grade}
+                  </Text>
+                </View>
+                <View style={styles.gradeInfo}>
+                  <Text style={[styles.gradeTitle, { color: colors.foreground }]}>
+                    {t('home.profileGrade')}
+                  </Text>
+                  <Text style={[styles.gradeDesc, { color: colors.foregroundMuted }]}>
+                    {t('home.profileCompletion', { pct: profile.completionPercentage ?? 0 })}
+                  </Text>
+                  {/* Progress bar */}
+                  <View style={[styles.progressTrack, { backgroundColor: colors.muted }]}>
+                    <View
+                      style={[
+                        styles.progressFill,
+                        {
+                          width: `${Math.min(profile.completionPercentage ?? 0, 100)}%`,
+                          backgroundColor: profileGrade.color,
+                        },
+                      ]}
+                    />
+                  </View>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={colors.foregroundMuted} />
+              </CardContent>
+            </AnimatedCard>
+          </FadeInView>
+        </View>
+      )}
+
+      {/* School Tier Breakdown */}
+      {isAuthenticated &&
+        schoolList &&
+        tierCounts.reach + tierCounts.target + tierCounts.safety > 0 && (
+          <View style={styles.section}>
+            <FadeInView animation="fadeUp" delay={560}>
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+                {t('home.schoolTiers')}
+              </Text>
+              <View style={styles.tierRow}>
+                <View
+                  style={[styles.tierCard, { backgroundColor: withOpacity(colors.error, 0.1) }]}
+                >
+                  <Ionicons name="arrow-up" size={20} color={colors.error} />
+                  <Text style={[styles.tierValue, { color: colors.error }]}>
+                    {tierCounts.reach}
+                  </Text>
+                  <Text style={[styles.tierLabel, { color: colors.foregroundMuted }]}>
+                    {t('home.tiers.reach')}
+                  </Text>
+                </View>
+                <View
+                  style={[styles.tierCard, { backgroundColor: withOpacity(colors.warning, 0.1) }]}
+                >
+                  <Ionicons name="locate" size={20} color={colors.warning} />
+                  <Text style={[styles.tierValue, { color: colors.warning }]}>
+                    {tierCounts.target}
+                  </Text>
+                  <Text style={[styles.tierLabel, { color: colors.foregroundMuted }]}>
+                    {t('home.tiers.target')}
+                  </Text>
+                </View>
+                <View
+                  style={[styles.tierCard, { backgroundColor: withOpacity(colors.success, 0.1) }]}
+                >
+                  <Ionicons name="shield-checkmark" size={20} color={colors.success} />
+                  <Text style={[styles.tierValue, { color: colors.success }]}>
+                    {tierCounts.safety}
+                  </Text>
+                  <Text style={[styles.tierLabel, { color: colors.foregroundMuted }]}>
+                    {t('home.tiers.safety')}
+                  </Text>
+                </View>
+              </View>
+            </FadeInView>
+          </View>
+        )}
+
+      {/* Upcoming Deadlines */}
+      {isAuthenticated && upcomingDeadlines.length > 0 && (
+        <View style={styles.section}>
+          <FadeInView animation="fadeUp" delay={570}>
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+                {t('home.upcomingDeadlines')}
+              </Text>
+              <AnimatedButton variant="ghost" size="sm" onPress={() => router.push('/timeline')}>
+                {t('home.viewAll')}
+              </AnimatedButton>
+            </View>
+            {upcomingDeadlines.map((dl) => {
+              const daysLeft = Math.ceil((new Date(dl.deadline).getTime() - Date.now()) / 86400000);
+              const urgencyColor =
+                daysLeft <= 3
+                  ? colors.error
+                  : daysLeft <= 7
+                    ? colors.warning
+                    : colors.foregroundMuted;
+              return (
+                <View
+                  key={dl.id}
+                  style={[styles.deadlineItem, { borderBottomColor: colors.border }]}
+                >
+                  <View style={styles.deadlineInfo}>
+                    <Text
+                      style={[styles.deadlineSchool, { color: colors.foreground }]}
+                      numberOfLines={1}
+                    >
+                      {dl.schoolName}
+                    </Text>
+                    <Text style={[styles.deadlineType, { color: colors.foregroundMuted }]}>
+                      {dl.type}
+                    </Text>
+                  </View>
+                  <View style={styles.deadlineDays}>
+                    <Text style={[styles.deadlineDaysValue, { color: urgencyColor }]}>
+                      {daysLeft}
+                    </Text>
+                    <Text style={[styles.deadlineDaysLabel, { color: urgencyColor }]}>
+                      {t('home.daysLeft')}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })}
+          </FadeInView>
+        </View>
+      )}
 
       {/* Top Schools */}
       <View style={styles.section}>
@@ -524,4 +720,57 @@ const styles = StyleSheet.create({
   caseMajor: {
     fontSize: fontSize.sm,
   },
+
+  // Profile Grade Card
+  gradeCard: { marginBottom: 0 },
+  gradeCardContent: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg },
+  gradeCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    borderWidth: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  gradeText: { fontSize: fontSize['2xl'], fontWeight: fontWeight.bold },
+  gradeInfo: { flex: 1 },
+  gradeTitle: {
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.semibold,
+    marginBottom: spacing.xs,
+  },
+  gradeDesc: { fontSize: fontSize.sm, marginBottom: spacing.sm },
+  progressTrack: { height: 4, borderRadius: 2, overflow: 'hidden' },
+  progressFill: { height: '100%', borderRadius: 2 },
+
+  // Tier Breakdown
+  tierRow: { flexDirection: 'row', gap: spacing.md },
+  tierCard: {
+    flex: 1,
+    alignItems: 'center',
+    padding: spacing.lg,
+    borderRadius: borderRadius.xl,
+    gap: spacing.xs,
+  },
+  tierValue: { fontSize: fontSize.xl, fontWeight: fontWeight.bold },
+  tierLabel: { fontSize: fontSize.xs },
+
+  // Deadlines
+  deadlineItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.md,
+    borderBottomWidth: 1,
+  },
+  deadlineInfo: { flex: 1 },
+  deadlineSchool: {
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.medium,
+    marginBottom: spacing.xs,
+  },
+  deadlineType: { fontSize: fontSize.sm },
+  deadlineDays: { alignItems: 'center', marginLeft: spacing.md },
+  deadlineDaysValue: { fontSize: fontSize.xl, fontWeight: fontWeight.bold },
+  deadlineDaysLabel: { fontSize: fontSize.xs },
 });

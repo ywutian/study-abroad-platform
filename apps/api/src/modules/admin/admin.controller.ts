@@ -9,10 +9,16 @@ import {
   Query,
   Res,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { AdminService } from './admin.service';
-import { Roles, CurrentUser } from '../../common/decorators';
+import { Roles, RequirePermission, CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
+import { Permission } from '../../common/constants/permissions';
 import { Role, GlobalEventCategory } from '@prisma/client';
 import {
   ThrottleRelaxed,
@@ -25,7 +31,6 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   UpdateReportDto,
-  UpdateUserRoleDto,
   ReportQueryDto,
   UserQueryDto,
   CreateSchoolDeadlineDto,
@@ -62,27 +67,27 @@ export class AdminController {
 
   // Stats
   @Get('stats')
-  @ApiOperation({ summary: '获取统计数据（增强版）' })
+  @ApiOperation({ summary: 'Get statistics (enhanced)' })
   async getStats() {
     return this.adminService.getStats();
   }
 
   @Get('stats/trends')
-  @ApiOperation({ summary: '获取 30 天趋势数据' })
+  @ApiOperation({ summary: 'Get 30-day trend data' })
   async getTrends() {
     return this.adminService.getTrends();
   }
 
   // Reports
   @Get('reports')
-  @ApiOperation({ summary: '获取举报列表' })
+  @ApiOperation({ summary: 'Get report list' })
   async getReports(@Query() query: ReportQueryDto) {
     const { status, targetType, page = 1, pageSize = 20 } = query;
     return this.adminService.getReports(status, targetType, page, pageSize);
   }
 
   @Put('reports/:id')
-  @ApiOperation({ summary: '更新举报状态' })
+  @ApiOperation({ summary: 'Update report status' })
   async updateReport(
     @CurrentUser() admin: CurrentUserPayload,
     @Param('id') id: string,
@@ -97,7 +102,8 @@ export class AdminController {
   }
 
   @Delete('reports/:id')
-  @ApiOperation({ summary: '删除举报' })
+  @ApiOperation({ summary: 'Delete report' })
+  @RequirePermission(Permission.CONTENT_MODERATE)
   async deleteReport(
     @CurrentUser() admin: CurrentUserPayload,
     @Param('id') id: string,
@@ -108,14 +114,14 @@ export class AdminController {
 
   // Users
   @Get('users')
-  @ApiOperation({ summary: '获取用户列表' })
+  @ApiOperation({ summary: 'Get user list' })
   async getUsers(@Query() query: UserQueryDto) {
     const { search, role, page = 1, pageSize = 20 } = query;
     return this.adminService.getUsers(search, role, page, pageSize);
   }
 
   @Get('users/:id')
-  @ApiOperation({ summary: '获取用户详情' })
+  @ApiOperation({ summary: 'Get user details' })
   async getUser(@Param('id') id: string) {
     return this.prisma.user.findUniqueOrThrow({
       where: { id },
@@ -139,18 +145,11 @@ export class AdminController {
     });
   }
 
-  @Put('users/:id/role')
-  @ApiOperation({ summary: '更新用户角色' })
-  async updateUserRole(
-    @CurrentUser() admin: CurrentUserPayload,
-    @Param('id') id: string,
-    @Body() data: UpdateUserRoleDto,
-  ) {
-    return this.adminService.updateUserRole(admin.id, id, data.role);
-  }
+  // Role changes consolidated to AdminRoleController: POST /admin/roles/users/:id/role
 
   @Post('users/:id/ban')
-  @ApiOperation({ summary: '封禁用户' })
+  @ApiOperation({ summary: 'Ban user' })
+  @RequirePermission(Permission.USER_BAN)
   async banUser(
     @CurrentUser() admin: CurrentUserPayload,
     @Param('id') id: string,
@@ -162,11 +161,13 @@ export class AdminController {
       data.reason,
       data.durationHours,
       data.permanent,
+      admin.role as Role,
     );
   }
 
   @Post('users/:id/unban')
-  @ApiOperation({ summary: '解除封禁' })
+  @ApiOperation({ summary: 'Unban user' })
+  @RequirePermission(Permission.USER_BAN)
   async unbanUser(
     @CurrentUser() admin: CurrentUserPayload,
     @Param('id') id: string,
@@ -175,7 +176,8 @@ export class AdminController {
   }
 
   @Delete('users/:id')
-  @ApiOperation({ summary: '删除用户' })
+  @ApiOperation({ summary: 'Delete user' })
+  @RequirePermission(Permission.USER_DELETE)
   async deleteUser(
     @CurrentUser() admin: CurrentUserPayload,
     @Param('id') id: string,
@@ -186,7 +188,37 @@ export class AdminController {
 
   // Audit Logs
   @Get('audit-logs')
-  @ApiOperation({ summary: '获取审计日志' })
+  @ApiOperation({ summary: 'Get audit logs' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number (default: 1)',
+  })
+  @ApiQuery({
+    name: 'pageSize',
+    required: false,
+    type: Number,
+    description: 'Items per page (default: 50)',
+  })
+  @ApiQuery({
+    name: 'adminId',
+    required: false,
+    type: String,
+    description: 'Filter by admin user ID',
+  })
+  @ApiQuery({
+    name: 'action',
+    required: false,
+    type: String,
+    description: 'Filter by action type',
+  })
+  @ApiQuery({
+    name: 'resource',
+    required: false,
+    type: String,
+    description: 'Filter by resource type',
+  })
   async getAuditLogs(
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
@@ -211,6 +243,7 @@ export class AdminController {
 
   @Post('data-sync/trigger')
   @ApiOperation({ summary: 'Trigger a data-sync job (e.g. COLLEGE_SCORECARD)' })
+  @RequirePermission(Permission.DATA_SYNC)
   async triggerDataSync(
     @CurrentUser() admin: CurrentUserPayload,
     @Body() dto: TriggerDataSyncDto,
@@ -225,7 +258,7 @@ export class AdminController {
   // ============ School Deadlines ============
 
   @Get('school-deadlines')
-  @ApiOperation({ summary: '获取学校截止日期列表' })
+  @ApiOperation({ summary: 'Get school deadline list' })
   async getSchoolDeadlines(
     @Query('schoolId') schoolId?: string,
     @Query('year') year?: number,
@@ -241,13 +274,13 @@ export class AdminController {
   }
 
   @Post('school-deadlines')
-  @ApiOperation({ summary: '创建学校截止日期' })
+  @ApiOperation({ summary: 'Create school deadline' })
   async createSchoolDeadline(@Body() dto: CreateSchoolDeadlineDto) {
     return this.adminService.createSchoolDeadline(dto);
   }
 
   @Put('school-deadlines/:id')
-  @ApiOperation({ summary: '更新学校截止日期' })
+  @ApiOperation({ summary: 'Update school deadline' })
   async updateSchoolDeadline(
     @Param('id') id: string,
     @Body() dto: UpdateSchoolDeadlineDto,
@@ -256,7 +289,7 @@ export class AdminController {
   }
 
   @Delete('school-deadlines/:id')
-  @ApiOperation({ summary: '删除学校截止日期' })
+  @ApiOperation({ summary: 'Delete school deadline' })
   async deleteSchoolDeadline(@Param('id') id: string) {
     await this.adminService.deleteSchoolDeadline(id);
     return { message: 'Deadline deleted' };
@@ -265,7 +298,7 @@ export class AdminController {
   // ============ Global Events ============
 
   @Get('global-events')
-  @ApiOperation({ summary: '获取全局事件列表' })
+  @ApiOperation({ summary: 'Get global event list' })
   async getGlobalEvents(
     @Query('category') category?: GlobalEventCategory,
     @Query('year') year?: number,
@@ -281,13 +314,13 @@ export class AdminController {
   }
 
   @Post('global-events')
-  @ApiOperation({ summary: '创建全局事件' })
+  @ApiOperation({ summary: 'Create global event' })
   async createGlobalEvent(@Body() dto: CreateGlobalEventDto) {
     return this.adminService.createGlobalEvent(dto);
   }
 
   @Put('global-events/:id')
-  @ApiOperation({ summary: '更新全局事件' })
+  @ApiOperation({ summary: 'Update global event' })
   async updateGlobalEvent(
     @Param('id') id: string,
     @Body() dto: UpdateGlobalEventDto,
@@ -296,7 +329,7 @@ export class AdminController {
   }
 
   @Delete('global-events/:id')
-  @ApiOperation({ summary: '删除全局事件' })
+  @ApiOperation({ summary: 'Delete global event' })
   async deleteGlobalEvent(@Param('id') id: string) {
     await this.adminService.deleteGlobalEvent(id);
     return { message: 'Event deleted' };
@@ -305,12 +338,16 @@ export class AdminController {
   // ============ Broadcast Notifications ============
 
   @Post('notifications/broadcast')
-  @ApiOperation({ summary: '广播通知' })
+  @ApiOperation({ summary: 'Broadcast notification' })
+  @RequirePermission(Permission.NOTIFICATION_BROADCAST)
   async broadcastNotification(@Body() body: BroadcastNotificationDto) {
     const roleFilter: any = {};
     if (body.audience === BroadcastAudience.VERIFIED)
-      roleFilter.role = { in: [Role.VERIFIED, Role.ADMIN] };
-    if (body.audience === BroadcastAudience.ADMIN) roleFilter.role = Role.ADMIN;
+      roleFilter.role = {
+        in: [Role.VERIFIED, Role.OPERATOR, Role.ADMIN, Role.SUPER_ADMIN],
+      };
+    if (body.audience === BroadcastAudience.ADMIN)
+      roleFilter.role = { in: [Role.ADMIN, Role.SUPER_ADMIN] };
 
     const users = await this.prisma.user.findMany({
       where: { ...roleFilter, isBanned: false },
@@ -344,7 +381,8 @@ export class AdminController {
   // ============ CSV Export ============
 
   @Get('export/:resource')
-  @ApiOperation({ summary: 'CSV 数据导出' })
+  @ApiOperation({ summary: 'CSV data export' })
+  @RequirePermission(Permission.DATA_EXPORT)
   async exportCsv(@Param('resource') resource: string, @Res() res: Response) {
     let rows: string[][] = [];
     let headers: string[] = [];
@@ -636,6 +674,7 @@ export class AdminController {
   @Post('calibrations')
   @ThrottleSensitive()
   @ApiOperation({ summary: 'Create a school calibration' })
+  @RequirePermission(Permission.SYSTEM_CALIBRATION)
   async createCalibration(
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: CreateSchoolCalibrationDto,
@@ -648,6 +687,7 @@ export class AdminController {
   @Put('calibrations/:id')
   @ThrottleSensitive()
   @ApiOperation({ summary: 'Update a school calibration' })
+  @RequirePermission(Permission.SYSTEM_CALIBRATION)
   async updateCalibration(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
@@ -661,6 +701,7 @@ export class AdminController {
   @Delete('calibrations/:id')
   @ThrottleSensitive()
   @ApiOperation({ summary: 'Delete a school calibration' })
+  @RequirePermission(Permission.SYSTEM_CALIBRATION)
   async deleteCalibration(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,

@@ -8,7 +8,7 @@ export enum ProofType {
 }
 
 export class CreateVerificationDto {
-  @ApiProperty({ description: '案例ID' })
+  @ApiProperty({ description: 'Case ID' })
   @MaxLength(500)
   @IsString()
   caseId: string;

@@ -2,28 +2,18 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { apiClient } from '@/lib/api';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { LoadingState } from '@/components/ui/loading-state';
 import dynamic from 'next/dynamic';
 import { SchoolSelector } from '@/components/features';
-import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { Download, FileText, Save, User, ChevronRight } from 'lucide-react';
+import { Download, FileText, Save, User } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth';
-import { AI_TIMEOUTS } from '@/lib/constants';
 
-// Code-split heavy form components for better initial load performance
 const TestScoreForm = dynamic(
   () => import('@/components/features').then((m) => ({ default: m.TestScoreForm })),
   { ssr: false }
@@ -49,19 +39,10 @@ const DataExportDialog = dynamic(
   { ssr: false }
 );
 
-import { TAB_CONFIG } from './_components/constants';
-import type {
-  ProfileData,
-  ProfileFormData,
-  ProfileUpdatePayload,
-  TestScore,
-  Activity,
-  Award,
-  TargetSchool,
-} from './_components/types';
-
-// Tab content components
+import type { ProfileData, ProfileFormData, TargetSchool } from './_components/types';
 import { ProfileHeader } from './_components/profile-header';
+import { ProfileTabNav } from './_components/ProfileTabNav';
+import { useProfileMutations } from './_components/useProfileMutations';
 import { BasicInfoTab } from './_components/basic-info-tab';
 import { DemographicsTab } from './_components/demographics-tab';
 import { TestScoresTab } from './_components/test-scores-tab';
@@ -73,23 +54,29 @@ import { PrivacyTab } from './_components/privacy-tab';
 
 export default function ProfilePage() {
   const t = useTranslations();
-  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('basic');
-
   const { isInitialized, accessToken } = useAuthStore();
-
-  // Form dialogs state
-  const [scoreFormOpen, setScoreFormOpen] = useState(false);
-  const [activityFormOpen, setActivityFormOpen] = useState(false);
-  const [awardFormOpen, setAwardFormOpen] = useState(false);
-  const [schoolSelectorOpen, setSchoolSelectorOpen] = useState(false);
-  const [defaultRound, setDefaultRound] = useState('RD');
-  const [editingScore, setEditingScore] = useState<TestScore | null>(null);
-  const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
-  const [editingAward, setEditingAward] = useState<Award | null>(null);
-  const [resumeExportOpen, setResumeExportOpen] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [previousCompleteness, setPreviousCompleteness] = useState<number | null>(null);
+
+  const [formData, setFormData] = useState<ProfileFormData>({
+    grade: '',
+    currentSchool: '',
+    gpa: '',
+    gpaScale: '4.0',
+    targetMajor: '',
+    budgetTier: '',
+    visibility: 'PRIVATE',
+    nationality: '',
+    countryOfResidence: '',
+    citizenship: '',
+    educationSystem: '',
+    needsFinancialAid: false,
+    firstGeneration: false,
+    legacy: [],
+    intendedMajor: '',
+    secondMajor: '',
+  });
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ['profile'],
@@ -128,60 +115,6 @@ export default function ProfilePage() {
     prediction: item.prediction,
   }));
 
-  const addSchoolMutation = useMutation({
-    mutationFn: (schoolId: string) =>
-      apiClient.post('/school-lists', { schoolId, tier: 'TARGET', round: defaultRound }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['school-lists'] });
-    },
-  });
-
-  const removeSchoolMutation = useMutation({
-    mutationFn: (listItemId: string) => apiClient.delete(`/school-lists/${listItemId}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['school-lists'] });
-    },
-  });
-
-  const handleSchoolsChange = useCallback(
-    (newSchools: TargetSchool[]) => {
-      const currentIds = new Set(targetSchools.map((s) => s.id));
-      const newIds = new Set(newSchools.map((s) => s.id));
-
-      for (const school of newSchools) {
-        if (!currentIds.has(school.id)) {
-          addSchoolMutation.mutate(school.id);
-        }
-      }
-
-      for (const school of targetSchools) {
-        if (!newIds.has(school.id) && school._listItemId) {
-          removeSchoolMutation.mutate(school._listItemId);
-        }
-      }
-    },
-    [targetSchools, addSchoolMutation, removeSchoolMutation]
-  );
-
-  const [formData, setFormData] = useState<ProfileFormData>({
-    grade: '',
-    currentSchool: '',
-    gpa: '',
-    gpaScale: '4.0',
-    targetMajor: '',
-    budgetTier: '',
-    visibility: 'PRIVATE',
-    nationality: '',
-    countryOfResidence: '',
-    citizenship: '',
-    educationSystem: '',
-    needsFinancialAid: false,
-    firstGeneration: false,
-    legacy: [],
-    intendedMajor: '',
-    secondMajor: '',
-  });
-
   const calculateCompleteness = useCallback(() => {
     let completed = 0;
     const total = 7;
@@ -193,7 +126,7 @@ export default function ProfilePage() {
     if (profile?.activities && profile.activities.length > 0) completed++;
     if (profile?.awards && profile.awards.length > 0) completed++;
     return Math.round((completed / total) * 100);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only recompute when lengths change, not array contents
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only recompute when lengths change
   }, [
     formData.grade,
     formData.currentSchool,
@@ -204,70 +137,12 @@ export default function ProfilePage() {
     profile?.awards?.length,
   ]);
 
-  const updateMutation = useMutation({
-    mutationFn: (data: ProfileUpdatePayload) => apiClient.put('/profiles/me', data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-      toast.success(t('common.success'));
-      const newCompleteness = calculateCompleteness();
-      if (previousCompleteness !== null && newCompleteness > previousCompleteness) {
-        setShowCelebration(true);
-      }
-      setPreviousCompleteness(newCompleteness);
-    },
-  });
-
-  const deleteScoreMutation = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/profiles/me/test-scores/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-      toast.success(t('profile.toast.scoreDeleted'));
-    },
-  });
-
-  const deleteActivityMutation = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/profiles/me/activities/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-      toast.success(t('profile.toast.activityDeleted'));
-    },
-  });
-
-  const reorderActivitiesMutation = useMutation({
-    mutationFn: (activityIds: string[]) =>
-      apiClient.put('/profiles/me/activities/reorder', { ids: activityIds }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-    },
-  });
-
-  const [aiSortResult, setAiSortResult] = useState<{
-    suggestedOrder: Array<{ activityId: string; rank: number; reasoning: string }>;
-    summary: string;
-  } | null>(null);
-
-  const aiSortMutation = useMutation({
-    mutationFn: () =>
-      apiClient.post(
-        '/profiles/me/activities/ai-sort',
-        {},
-        { timeout: AI_TIMEOUTS.AI_REQUEST }
-      ) as Promise<{
-        suggestedOrder: Array<{ activityId: string; rank: number; reasoning: string }>;
-        summary: string;
-      }>,
-    onSuccess: (data) => {
-      setAiSortResult(data);
-    },
-  });
-
-  const deleteAwardMutation = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/profiles/me/awards/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-      toast.success(t('profile.toast.awardDeleted'));
-    },
-  });
+  const m = useProfileMutations(
+    calculateCompleteness,
+    previousCompleteness,
+    setPreviousCompleteness,
+    setShowCelebration
+  );
 
   useEffect(() => {
     if (profile) {
@@ -294,11 +169,11 @@ export default function ProfilePage() {
         setPreviousCompleteness(calculateCompleteness());
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- calculateCompleteness uses formData which is already tracked via profile
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile, previousCompleteness]);
 
   const handleSave = () => {
-    updateMutation.mutate({
+    m.updateMutation.mutate({
       ...formData,
       gpa: formData.gpa ? parseFloat(formData.gpa) : null,
       gpaScale: parseFloat(formData.gpaScale),
@@ -312,21 +187,6 @@ export default function ProfilePage() {
     });
   };
 
-  const handleEditScore = (score: TestScore) => {
-    setEditingScore(score);
-    setScoreFormOpen(true);
-  };
-
-  const handleEditActivity = (activity: Activity) => {
-    setEditingActivity(activity);
-    setActivityFormOpen(true);
-  };
-
-  const handleEditAward = (award: Award) => {
-    setEditingAward(award);
-    setAwardFormOpen(true);
-  };
-
   const completeness = calculateCompleteness();
 
   if (isLoading) {
@@ -336,8 +196,6 @@ export default function ProfilePage() {
       </PageContainer>
     );
   }
-
-  const activeTabConfig = TAB_CONFIG.find((tab) => tab.value === activeTab);
 
   return (
     <PageContainer maxWidth="5xl">
@@ -352,7 +210,7 @@ export default function ProfilePage() {
               variant="outline"
               size="sm"
               className="gap-2"
-              onClick={() => setResumeExportOpen(true)}
+              onClick={() => m.setResumeExportOpen(true)}
             >
               <FileText className="h-4 w-4" />
               {t('profile.exportResume')}
@@ -372,84 +230,13 @@ export default function ProfilePage() {
       <ProfileHeader
         completeness={completeness}
         profile={profile}
-        onOpenResumeExport={() => setResumeExportOpen(true)}
+        onOpenResumeExport={() => m.setResumeExportOpen(true)}
         onSetActiveTab={setActiveTab}
       />
 
-      {/* Main content area */}
       <div className="flex flex-col gap-6 lg:flex-row">
-        {/* Left: Tab navigation */}
-        <div className="lg:w-64 shrink-0">
-          <div className="sticky top-20">
-            {/* Desktop vertical navigation */}
-            <nav className="hidden lg:block space-y-1">
-              {TAB_CONFIG.map((tab, index) => {
-                const isActive = activeTab === tab.value;
-                return (
-                  <motion.button
-                    key={tab.value}
-                    onClick={() => setActiveTab(tab.value)}
-                    className={cn(
-                      'w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200',
-                      isActive
-                        ? 'bg-primary/10 text-primary shadow-sm'
-                        : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
-                    )}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
-                    <div
-                      className={cn(
-                        'flex h-9 w-9 items-center justify-center rounded-lg transition-all',
-                        isActive
-                          ? `bg-gradient-to-br ${tab.color} text-white shadow-md`
-                          : 'bg-muted text-muted-foreground'
-                      )}
-                    >
-                      <tab.icon className="h-4 w-4" />
-                    </div>
-                    <span className="font-medium text-sm">{t(tab.labelKey)}</span>
-                    {isActive && <ChevronRight className="ml-auto h-4 w-4" />}
-                  </motion.button>
-                );
-              })}
-            </nav>
+        <ProfileTabNav activeTab={activeTab} onTabChange={setActiveTab} />
 
-            {/* Mobile selector */}
-            <div className="lg:hidden">
-              <Select value={activeTab} onValueChange={setActiveTab}>
-                <SelectTrigger className="h-12">
-                  <div className="flex items-center gap-3">
-                    {activeTabConfig && (
-                      <div
-                        className={cn(
-                          'flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br text-white',
-                          activeTabConfig.color
-                        )}
-                      >
-                        <activeTabConfig.icon className="h-4 w-4" />
-                      </div>
-                    )}
-                    <SelectValue />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  {TAB_CONFIG.map((tab) => (
-                    <SelectItem key={tab.value} value={tab.value}>
-                      <span className="flex items-center gap-2">
-                        <tab.icon className="h-4 w-4" />
-                        {t(tab.labelKey)}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
-
-        {/* Right: Content area */}
         <div className="flex-1 min-w-0">
           <AnimatePresence mode="wait">
             <motion.div
@@ -462,87 +249,75 @@ export default function ProfilePage() {
               {activeTab === 'basic' && (
                 <BasicInfoTab formData={formData} onFormDataChange={setFormData} />
               )}
-
               {activeTab === 'demographics' && (
                 <DemographicsTab formData={formData} onFormDataChange={setFormData} />
               )}
-
               {activeTab === 'scores' && (
                 <TestScoresTab
                   testScores={profile?.testScores || []}
                   onAddScore={() => {
-                    setEditingScore(null);
-                    setScoreFormOpen(true);
+                    m.setEditingScore(null);
+                    m.setScoreFormOpen(true);
                   }}
-                  onEditScore={handleEditScore}
-                  onDeleteScore={(id) => deleteScoreMutation.mutate(id)}
+                  onEditScore={m.handleEditScore}
+                  onDeleteScore={(id) => m.deleteScoreMutation.mutate(id)}
                 />
               )}
-
               {activeTab === 'gpa' && <GpaTab formData={formData} onFormDataChange={setFormData} />}
-
               {activeTab === 'activities' && (
                 <ActivitiesTab
                   activities={profile?.activities || []}
                   onAddActivity={() => {
-                    setEditingActivity(null);
-                    setActivityFormOpen(true);
+                    m.setEditingActivity(null);
+                    m.setActivityFormOpen(true);
                   }}
-                  onEditActivity={handleEditActivity}
-                  onDeleteActivity={(id) => deleteActivityMutation.mutate(id)}
-                  onReorderActivities={(ids) => reorderActivitiesMutation.mutate(ids)}
-                  aiSortResult={aiSortResult}
-                  aiSortPending={aiSortMutation.isPending}
-                  onAiSort={() => aiSortMutation.mutate()}
-                  onAiSortAccept={(ids) => {
-                    reorderActivitiesMutation.mutate(ids);
-                    setAiSortResult(null);
-                    toast.success(t('profile.aiSortApplied'));
-                  }}
-                  onAiSortDismiss={() => setAiSortResult(null)}
+                  onEditActivity={m.handleEditActivity}
+                  onDeleteActivity={(id) => m.deleteActivityMutation.mutate(id)}
+                  onReorderActivities={(ids) => m.reorderActivitiesMutation.mutate(ids)}
+                  aiSortResult={m.aiSortResult}
+                  aiSortPending={m.aiSortMutation.isPending}
+                  onAiSort={() => m.aiSortMutation.mutate()}
+                  onAiSortAccept={m.handleAiSortAccept}
+                  onAiSortDismiss={() => m.setAiSortResult(null)}
                 />
               )}
-
               {activeTab === 'awards' && (
                 <AwardsTab
                   awards={profile?.awards || []}
                   onAddAward={() => {
-                    setEditingAward(null);
-                    setAwardFormOpen(true);
+                    m.setEditingAward(null);
+                    m.setAwardFormOpen(true);
                   }}
-                  onEditAward={handleEditAward}
-                  onDeleteAward={(id) => deleteAwardMutation.mutate(id)}
+                  onEditAward={m.handleEditAward}
+                  onDeleteAward={(id) => m.deleteAwardMutation.mutate(id)}
                 />
               )}
-
               {activeTab === 'targets' && (
                 <SchoolSelectionTab
                   targetSchools={targetSchools}
-                  defaultRound={defaultRound}
-                  onDefaultRoundChange={setDefaultRound}
-                  onOpenSchoolSelector={() => setSchoolSelectorOpen(true)}
-                  onRemoveSchool={(listItemId) => removeSchoolMutation.mutate(listItemId)}
+                  defaultRound={m.defaultRound}
+                  onDefaultRoundChange={m.setDefaultRound}
+                  onOpenSchoolSelector={() => m.setSchoolSelectorOpen(true)}
+                  onRemoveSchool={(id) => m.removeSchoolMutation.mutate(id)}
                 />
               )}
-
               {activeTab === 'privacy' && (
                 <PrivacyTab formData={formData} onFormDataChange={setFormData} />
               )}
             </motion.div>
           </AnimatePresence>
 
-          {/* Save button */}
           <div className="mt-6 flex justify-end gap-3">
             <Button variant="outline" className="px-6">
               {t('common.cancel')}
             </Button>
             <Button
               onClick={handleSave}
-              disabled={updateMutation.isPending}
+              disabled={m.updateMutation.isPending}
               className="px-6 gap-2 bg-primary hover:opacity-90"
             >
               <Save className="h-4 w-4" />
-              {updateMutation.isPending ? t('common.loading') : t('common.save')}
+              {m.updateMutation.isPending ? t('common.loading') : t('common.save')}
             </Button>
           </div>
         </div>
@@ -550,44 +325,42 @@ export default function ProfilePage() {
 
       {/* Form Dialogs */}
       <TestScoreForm
-        open={scoreFormOpen}
+        open={m.scoreFormOpen}
         onOpenChange={(open) => {
-          setScoreFormOpen(open);
-          if (!open) setEditingScore(null);
+          m.setScoreFormOpen(open);
+          if (!open) m.setEditingScore(null);
         }}
-        editingScore={editingScore}
+        editingScore={m.editingScore}
       />
       <ActivityForm
-        open={activityFormOpen}
+        open={m.activityFormOpen}
         onOpenChange={(open) => {
-          setActivityFormOpen(open);
-          if (!open) setEditingActivity(null);
+          m.setActivityFormOpen(open);
+          if (!open) m.setEditingActivity(null);
         }}
-        editingActivity={editingActivity}
+        editingActivity={m.editingActivity}
       />
       <AwardForm
-        open={awardFormOpen}
+        open={m.awardFormOpen}
         onOpenChange={(open) => {
-          setAwardFormOpen(open);
-          if (!open) setEditingAward(null);
+          m.setAwardFormOpen(open);
+          if (!open) m.setEditingAward(null);
         }}
-        editingAward={editingAward}
+        editingAward={m.editingAward}
       />
       <SchoolSelector
-        open={schoolSelectorOpen}
-        onOpenChange={setSchoolSelectorOpen}
+        open={m.schoolSelectorOpen}
+        onOpenChange={m.setSchoolSelectorOpen}
         selectedSchools={targetSchools}
-        onSelect={handleSchoolsChange}
+        onSelect={(schools) => m.handleSchoolsChange(schools, targetSchools)}
         maxSelection={15}
         title={t('profile.actions.selectSchools')}
       />
-
       <ResumeExportDialog
-        open={resumeExportOpen}
-        onOpenChange={setResumeExportOpen}
+        open={m.resumeExportOpen}
+        onOpenChange={m.setResumeExportOpen}
         profileData={profile}
       />
-
       <MilestoneCelebration
         type="profile_complete"
         show={showCelebration}

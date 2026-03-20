@@ -30,22 +30,22 @@ export class SettingsController {
 
   @Get()
   @Roles(Role.ADMIN)
-  @ApiOperation({ summary: '获取所有系统设置（管理员）' })
-  @ApiResponse({ status: 200, description: '设置列表' })
+  @ApiOperation({ summary: 'Get all system settings (admin)' })
+  @ApiResponse({ status: 200, description: 'Settings list' })
   async getAll() {
     return this.settingsService.getAll();
   }
 
   @Get('category/:category')
   @Roles(Role.ADMIN)
-  @ApiOperation({ summary: '按分类获取设置' })
+  @ApiOperation({ summary: 'Get settings by category' })
   async getByCategory(@Param('category') category: string) {
     return this.settingsService.getByCategory(category);
   }
 
   @Get(':key')
   @Roles(Role.ADMIN)
-  @ApiOperation({ summary: '获取单个设置' })
+  @ApiOperation({ summary: 'Get single setting' })
   async get(@Param('key') key: string) {
     const value = await this.settingsService.get(key);
     return { key, value };
@@ -53,8 +53,8 @@ export class SettingsController {
 
   @Put(':key')
   @Roles(Role.ADMIN)
-  @ApiOperation({ summary: '更新设置（管理员）' })
-  @ApiResponse({ status: 200, description: '更新成功' })
+  @ApiOperation({ summary: 'Update setting (admin)' })
+  @ApiResponse({ status: 200, description: 'Update successful' })
   async update(@Param('key') key: string, @Body() body: UpdateSettingValueDto) {
     await this.settingsService.set(key, body.value, body.description);
     return { success: true };
@@ -62,7 +62,7 @@ export class SettingsController {
 
   @Put()
   @Roles(Role.ADMIN)
-  @ApiOperation({ summary: '批量更新设置（管理员）' })
+  @ApiOperation({ summary: 'Batch update settings (admin)' })
   async updateMany(
     @Body()
     body: UpdateSettingItemDto[] | { settings: UpdateSettingItemDto[] },

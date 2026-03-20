@@ -43,13 +43,16 @@ export class ChatController {
   // ============================================
 
   @Get('conversations')
-  @ApiOperation({ summary: '获取我的会话列表' })
+  @ApiOperation({ summary: 'Get my conversation list' })
   async getConversations(@CurrentUser() user: CurrentUserPayload) {
     return this.chatService.getConversations(user.id);
   }
 
   @Post('conversations')
-  @ApiOperation({ summary: '发起会话（需 VERIFIED/ADMIN 角色 + 互关）' })
+  @ApiOperation({
+    summary:
+      'Start conversation (requires VERIFIED/ADMIN role + mutual follow)',
+  })
   async startConversation(
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: StartConversationDto,
@@ -58,7 +61,7 @@ export class ChatController {
   }
 
   @Get('conversations/:id/messages')
-  @ApiOperation({ summary: '获取会话消息（分页）' })
+  @ApiOperation({ summary: 'Get conversation messages (paginated)' })
   @ApiQuery({ name: 'limit', required: false })
   @ApiQuery({ name: 'before', required: false })
   async getMessages(
@@ -76,7 +79,7 @@ export class ChatController {
   }
 
   @Post('conversations/:id/read')
-  @ApiOperation({ summary: '标记会话已读' })
+  @ApiOperation({ summary: 'Mark conversation as read' })
   async markAsRead(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') conversationId: string,
@@ -86,7 +89,7 @@ export class ChatController {
   }
 
   @Post('conversations/:id/pin')
-  @ApiOperation({ summary: '切换会话置顶' })
+  @ApiOperation({ summary: 'Toggle conversation pin' })
   async togglePin(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') conversationId: string,
@@ -99,7 +102,7 @@ export class ChatController {
   // ============================================
 
   @Delete('messages/:id')
-  @ApiOperation({ summary: '删除消息（软删除）' })
+  @ApiOperation({ summary: 'Delete message (soft delete)' })
   async deleteMessage(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') messageId: string,
@@ -115,7 +118,7 @@ export class ChatController {
   }
 
   @Patch('messages/:id/recall')
-  @ApiOperation({ summary: '撤回消息（2分钟内）' })
+  @ApiOperation({ summary: 'Recall message (within 2 minutes)' })
   async recallMessage(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') messageId: string,
@@ -130,13 +133,13 @@ export class ChatController {
   }
 
   @Get('unread-count')
-  @ApiOperation({ summary: '获取总未读消息数' })
+  @ApiOperation({ summary: 'Get total unread message count' })
   async getUnreadCount(@CurrentUser() user: CurrentUserPayload) {
     return this.chatService.getTotalUnreadCount(user.id);
   }
 
   @Post('conversations/:id/upload')
-  @ApiOperation({ summary: '上传聊天文件/图片' })
+  @ApiOperation({ summary: 'Upload chat file/image' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
@@ -179,7 +182,7 @@ export class ChatController {
   // ============================================
 
   @Post('follow/:userId')
-  @ApiOperation({ summary: '关注用户' })
+  @ApiOperation({ summary: 'Follow user' })
   async followUser(
     @CurrentUser() user: CurrentUserPayload,
     @Param('userId') userId: string,
@@ -189,7 +192,7 @@ export class ChatController {
   }
 
   @Delete('follow/:userId')
-  @ApiOperation({ summary: '取消关注' })
+  @ApiOperation({ summary: 'Unfollow user' })
   async unfollowUser(
     @CurrentUser() user: CurrentUserPayload,
     @Param('userId') userId: string,
@@ -199,19 +202,19 @@ export class ChatController {
   }
 
   @Get('followers')
-  @ApiOperation({ summary: '获取我的粉丝' })
+  @ApiOperation({ summary: 'Get my followers' })
   async getFollowers(@CurrentUser() user: CurrentUserPayload) {
     return this.chatService.getFollowers(user.id);
   }
 
   @Get('following')
-  @ApiOperation({ summary: '获取我关注的人' })
+  @ApiOperation({ summary: 'Get users I follow' })
   async getFollowing(@CurrentUser() user: CurrentUserPayload) {
     return this.chatService.getFollowing(user.id);
   }
 
   @Get('recommendations')
-  @ApiOperation({ summary: '获取推荐关注的用户' })
+  @ApiOperation({ summary: 'Get recommended users to follow' })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   async getRecommendations(
     @CurrentUser() user: CurrentUserPayload,
@@ -228,13 +231,13 @@ export class ChatController {
   // ============================================
 
   @Get('blocked')
-  @ApiOperation({ summary: '获取已屏蔽用户' })
+  @ApiOperation({ summary: 'Get blocked users' })
   async getBlocked(@CurrentUser() user: CurrentUserPayload) {
     return this.chatService.getBlocked(user.id);
   }
 
   @Post('block/:userId')
-  @ApiOperation({ summary: '屏蔽用户' })
+  @ApiOperation({ summary: 'Block user' })
   async blockUser(
     @CurrentUser() user: CurrentUserPayload,
     @Param('userId') userId: string,
@@ -244,7 +247,7 @@ export class ChatController {
   }
 
   @Delete('block/:userId')
-  @ApiOperation({ summary: '解除屏蔽' })
+  @ApiOperation({ summary: 'Unblock user' })
   async unblockUser(
     @CurrentUser() user: CurrentUserPayload,
     @Param('userId') userId: string,
@@ -258,7 +261,7 @@ export class ChatController {
   // ============================================
 
   @Post('report')
-  @ApiOperation({ summary: '举报用户/消息' })
+  @ApiOperation({ summary: 'Report user/message' })
   async report(
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: CreateReportDto,

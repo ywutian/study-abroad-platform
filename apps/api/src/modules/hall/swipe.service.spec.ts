@@ -79,6 +79,7 @@ describe('SwipeService', () => {
     admissionCase: {
       findMany: jest.fn(),
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
       count: jest.fn(),
     },
     caseSwipe: {
@@ -242,7 +243,7 @@ describe('SwipeService', () => {
 
   describe('submitSwipe', () => {
     it('should handle correct prediction', async () => {
-      mockPrisma.admissionCase.findUnique.mockResolvedValue(mockCase);
+      mockPrisma.admissionCase.findFirst.mockResolvedValue(mockCase);
       mockPrisma.swipeStats.upsert.mockResolvedValue(mockStats);
       mockPrisma.$transaction.mockResolvedValue(undefined);
 
@@ -257,7 +258,7 @@ describe('SwipeService', () => {
     });
 
     it('should handle incorrect prediction', async () => {
-      mockPrisma.admissionCase.findUnique.mockResolvedValue(mockCase);
+      mockPrisma.admissionCase.findFirst.mockResolvedValue(mockCase);
       mockPrisma.swipeStats.upsert.mockResolvedValue(mockStats);
       mockPrisma.$transaction.mockResolvedValue(undefined);
 
@@ -272,7 +273,7 @@ describe('SwipeService', () => {
     });
 
     it('should throw NotFoundException when case does not exist', async () => {
-      mockPrisma.admissionCase.findUnique.mockResolvedValue(null);
+      mockPrisma.admissionCase.findFirst.mockResolvedValue(null);
 
       await expect(
         service.submitSwipe('user-1', {
@@ -283,7 +284,7 @@ describe('SwipeService', () => {
     });
 
     it('should throw BadRequestException on duplicate submission (P2002)', async () => {
-      mockPrisma.admissionCase.findUnique.mockResolvedValue(mockCase);
+      mockPrisma.admissionCase.findFirst.mockResolvedValue(mockCase);
       mockPrisma.swipeStats.upsert.mockResolvedValue(mockStats);
 
       const p2002Error = new Prisma.PrismaClientKnownRequestError(
@@ -305,7 +306,7 @@ describe('SwipeService', () => {
     });
 
     it('should re-throw non-P2002 errors', async () => {
-      mockPrisma.admissionCase.findUnique.mockResolvedValue(mockCase);
+      mockPrisma.admissionCase.findFirst.mockResolvedValue(mockCase);
       mockPrisma.swipeStats.upsert.mockResolvedValue(mockStats);
       mockPrisma.$transaction.mockRejectedValue(
         new Error('DB connection lost'),
@@ -321,7 +322,7 @@ describe('SwipeService', () => {
 
     it('should cap points at 20 per swipe', async () => {
       const highStreakStats = { ...mockStats, streak: 20 };
-      mockPrisma.admissionCase.findUnique.mockResolvedValue(mockCase);
+      mockPrisma.admissionCase.findFirst.mockResolvedValue(mockCase);
       mockPrisma.swipeStats.upsert.mockResolvedValue(highStreakStats);
       mockPrisma.$transaction.mockResolvedValue(undefined);
 
@@ -334,7 +335,7 @@ describe('SwipeService', () => {
     });
 
     it('should use upsert for stats instead of find-then-create', async () => {
-      mockPrisma.admissionCase.findUnique.mockResolvedValue(mockCase);
+      mockPrisma.admissionCase.findFirst.mockResolvedValue(mockCase);
       mockPrisma.swipeStats.upsert.mockResolvedValue(mockStats);
       mockPrisma.$transaction.mockResolvedValue(undefined);
 
@@ -469,7 +470,7 @@ describe('SwipeService', () => {
     });
 
     it('should match admit prediction with ADMITTED result', async () => {
-      mockPrisma.admissionCase.findUnique.mockResolvedValue({
+      mockPrisma.admissionCase.findFirst.mockResolvedValue({
         ...mockCase,
         result: 'ADMITTED',
       });
@@ -481,7 +482,7 @@ describe('SwipeService', () => {
     });
 
     it('should match reject prediction with REJECTED result', async () => {
-      mockPrisma.admissionCase.findUnique.mockResolvedValue({
+      mockPrisma.admissionCase.findFirst.mockResolvedValue({
         ...mockCase,
         result: 'REJECTED',
       });
@@ -493,7 +494,7 @@ describe('SwipeService', () => {
     });
 
     it('should match waitlist prediction with WAITLISTED result', async () => {
-      mockPrisma.admissionCase.findUnique.mockResolvedValue({
+      mockPrisma.admissionCase.findFirst.mockResolvedValue({
         ...mockCase,
         result: 'WAITLISTED',
       });
@@ -505,7 +506,7 @@ describe('SwipeService', () => {
     });
 
     it('should treat DEFERRED as WAITLIST', async () => {
-      mockPrisma.admissionCase.findUnique.mockResolvedValue({
+      mockPrisma.admissionCase.findFirst.mockResolvedValue({
         ...mockCase,
         result: 'DEFERRED',
       });
@@ -527,7 +528,7 @@ describe('SwipeService', () => {
         streak: 0,
         badge: 'bronze',
       };
-      mockPrisma.admissionCase.findUnique.mockResolvedValue(mockCase);
+      mockPrisma.admissionCase.findFirst.mockResolvedValue(mockCase);
       mockPrisma.swipeStats.upsert.mockResolvedValue(statsAt19);
       mockPrisma.$transaction.mockResolvedValue(undefined);
 
@@ -548,7 +549,7 @@ describe('SwipeService', () => {
         streak: 0,
         badge: 'bronze',
       };
-      mockPrisma.admissionCase.findUnique.mockResolvedValue(mockCase);
+      mockPrisma.admissionCase.findFirst.mockResolvedValue(mockCase);
       mockPrisma.swipeStats.upsert.mockResolvedValue(statsAt18);
       mockPrisma.$transaction.mockResolvedValue(undefined);
 

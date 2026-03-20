@@ -14,7 +14,33 @@ datasource db {
 enum Role {
   USER
   VERIFIED
-  ADMIN
+  OPERATOR    // 数据录入/审核（实习生）
+  ADMIN       // 管理员
+  SUPER_ADMIN // 超级管理员（全权）
+}
+
+// ============================================
+// Data Enrichment — Review & Staging
+// ============================================
+
+enum DataReviewStatus {
+  AUTO_APPROVED
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum StagingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  MERGED
+}
+
+enum DataType {
+  CASE
+  SCHOOL
+  ESSAY_PROMPT
 }
 
 enum Visibility {
@@ -595,6 +621,10 @@ model Essay {
   wordCount Int?
   schoolId  String? // Optional: linked to specific school
 
+  // Link to verified essay prompt from database
+  essayPromptId String?
+  linkedPrompt  EssayPrompt? @relation(fields: [essayPromptId], references: [id], onDelete: SetNull)
+
   // AI results
   aiResults EssayAIResult[]
 
@@ -602,6 +632,7 @@ model Essay {
   updatedAt DateTime @updatedAt
 
   @@index([profileId])
+  @@index([essayPromptId])
 }
 
 // ============================================
@@ -686,6 +717,10 @@ model School {
 
   // Search aliases (abbreviations, short names, nicknames)
   aliases String[] @default([]) // e.g. ["MIT", "麻省理工", "Mass Tech"]
+
+  // Data enrichment — review tracking
+  lastDataReviewAt DateTime?
+  dataReviewStatus DataReviewStatus @default(AUTO_APPROVED)
 
   // Additional Info
   website       String?
@@ -879,6 +914,7 @@ model SchoolListItem {
   @@unique([userId, schoolId])
   @@index([userId])
   @@index([tier])
+  @@index([userId, tier])
 }
 
 // ============================================
@@ -991,6 +1027,27 @@ model AdmissionCase {
   tags       String[] // ["strong_research", "legacy", "athlete"]
   activityList String? @db.Text // One activity per line, e.g. "Research - XX Lab; Contest - AMC 12"
 
+  // Structured test scores (preferred over range strings)
+  testScores      Json?             // CaseTestScore[] — [{type, score, subscores?, testDate?}]
+  apCount         Int?
+  apSubjects      String[]
+  ibScore         Int?
+  ibPredicted     Boolean?
+
+  // Structured extracurriculars & awards (JSON arrays)
+  activities      Json?             // CaseActivity[] — [{category, description, role?, tier?, hoursPerWeek?, weeksPerYear?}]
+  awards          Json?             // CaseAward[] — [{name, level, competition?, tier?, year?}]
+
+  // Student background
+  highSchoolType  HighSchoolType?
+  curriculumType  EducationSystem?
+  demographicTags String[]          // first_gen, legacy, athlete, recruited, urm, international
+
+  // Application context
+  financialAid     String?          // full_ride, significant, partial, none, merit_only
+  enrollmentStatus String?          // enrolled, declined, gap_year, waitlist_then_enrolled
+  narrative        String? @db.Text // Free-form narrative: application story, special circumstances
+
   // Essay content (for essay gallery)
   essayType    EssayType? // COMMON_APP, UC, SUPPLEMENTAL, WHY_SCHOOL, OTHER
   essayPrompt  String?    @db.Text // Essay prompt/question
@@ -999,6 +1056,14 @@ model AdmissionCase {
 
   // Visibility
   visibility Visibility @default(PRIVATE)
+
+  // Data enrichment — quality & review
+  qualityScore  Int?         @default(0)
+  reviewStatus  DataReviewStatus @default(PENDING_REVIEW)
+  reviewedBy    String?
+  reviewedAt    DateTime?
+  source        String?      // reddit, onepoint3acres, user, manual, csv_import
+  importBatchId String?      // 批次 ID（回滚用）
 
   // Verification
   isVerified            Boolean               @default(false)
@@ -1019,6 +1084,10 @@ model AdmissionCase {
   @@index([visibility])
   @@index([year])
   @@index([essayType])
+  @@index([reviewStatus])
+  @@index([importBatchId])
+  @@index([userId, source, schoolId])    // Dedup query optimization for batch imports
+  @@index([importBatchId, createdAt])    // Batch history query optimization
 }
 
 // ============================================
@@ -1276,6 +1345,67 @@ model AuditLog {
 
   @@index([userId])
   @@index([action])
+  @@index([createdAt])
+}
+
+// ============================================
+// Role Permission System (多级权限)
+// ============================================
+
+model RolePermission {
+  id         String   @id @default(cuid())
+  role       Role
+  permission String   // "case:create", "case:review", "school:edit" 等
+  granted    Boolean  @default(true)
+  grantedBy  String?
+  updatedAt  DateTime @updatedAt
+
+  @@unique([role, permission])
+  @@index([role])
+}
+
+// ============================================
+// Operator Invite (实习生邀请)
+// ============================================
+
+model OperatorInvite {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  email     String?
+  role      Role      @default(OPERATOR)
+  createdBy String
+  usedBy    String?
+  usedAt    DateTime?
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+
+  @@index([token])
+  @@index([expiresAt])
+}
+
+// ============================================
+// Data Import Staging (数据暂存表)
+// ============================================
+
+model DataImportStaging {
+  id            String        @id @default(cuid())
+  dataType      DataType
+  source        String        // reddit, onepoint3acres, manual, csv_import, college_scorecard...
+  rawData       Json          // 标准中间格式 JSON
+  qualityScore  Int
+  status        StagingStatus @default(PENDING)
+  createdBy     String?       // 导入者 ID（自我审核防护用）
+  importBatchId String?       // 批次 ID（回滚用）
+  reviewedBy    String?
+  reviewedAt    DateTime?
+  reviewNote    String?
+  mergedId      String?       // 入库后的正式记录 ID
+  createdAt     DateTime      @default(now())
+
+  @@index([dataType])
+  @@index([status])
+  @@index([importBatchId])
+  @@index([source])
   @@index([createdAt])
 }
 
@@ -2089,9 +2219,15 @@ model EssayPrompt {
   previousYearPromptId String?  // 关联去年同一题目
   changeType           String?  // NEW, UNCHANGED, MODIFIED
 
+  // User essays linked to this prompt
+  essays Essay[]
+
   // 来源
   sources    EssayPromptSource[]
   auditLogs  EssayPromptAudit[]
+
+  // Data enrichment
+  importBatchId String?
 
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())

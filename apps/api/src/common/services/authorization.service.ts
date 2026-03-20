@@ -137,7 +137,7 @@ export class AuthorizationService {
       throw new NotFoundException(`${entityName} not found`);
     }
 
-    const isAdmin = userRole === 'ADMIN';
+    const isAdmin = userRole === 'ADMIN' || userRole === 'SUPER_ADMIN';
     const ownerId = entity[ownerField] as string | undefined;
     const isOwner = ownerId === userId;
 

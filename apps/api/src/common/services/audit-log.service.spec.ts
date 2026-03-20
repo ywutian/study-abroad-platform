@@ -223,8 +223,10 @@ describe('AuditLogService', () => {
         'TEAM_MEMBER_REMOVE',
         'TEAM_TRANSFER_OWNER',
         'TEAM_ACCEPT_INVITE',
+        'ROLE_CHANGE',
+        'PERMISSION_UPDATE',
       ]),
     );
-    expect(Object.values(AuditAction)).toHaveLength(16);
+    expect(Object.values(AuditAction)).toHaveLength(24);
   });
 });

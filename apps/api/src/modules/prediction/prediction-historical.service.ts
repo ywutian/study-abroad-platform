@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
+import { CASE_REVIEW_APPROVED_WHERE } from '../../common/constants/prisma-selects';
 import {
   ProfileMetrics,
   HistoricalDistribution,
@@ -10,6 +11,18 @@ import {
 
 const DISTRIBUTION_CACHE_TTL = 86400; // 24 hours
 const DISTRIBUTION_CACHE_PREFIX = 'school:distribution:';
+const MIN_CASES_FOR_FILTERED = 10;
+
+/**
+ * Optional profile context for dimension-based grouping of historical data.
+ * When provided, the service attempts more specific queries before falling
+ * back to the unfiltered (current) behavior.
+ */
+export interface HistoricalContext {
+  curriculumType?: string;
+  highSchoolType?: string;
+  isInternational?: boolean;
+}
 
 /**
  * Historical admission data service for prediction engines.
@@ -25,6 +38,24 @@ export class PredictionHistoricalService {
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
   ) {}
+
+  /**
+   * Invalidate cached distribution data for a specific school.
+   * Called when new cases are approved for that school so prediction
+   * data stays fresh.
+   */
+  async invalidateSchoolCache(schoolId: string): Promise<void> {
+    const cacheKey = `${DISTRIBUTION_CACHE_PREFIX}${schoolId}`;
+    try {
+      await this.redis.del(cacheKey);
+      this.logger.log(`Invalidated distribution cache for school ${schoolId}`);
+    } catch (error) {
+      this.logger.warn(
+        `Failed to invalidate cache for school ${schoolId}`,
+        error,
+      );
+    }
+  }
 
   /**
    * 获取学校历史录取数据分布
@@ -44,8 +75,21 @@ export class PredictionHistoricalService {
     }
 
     const cases = await this.prisma.admissionCase.findMany({
-      where: { schoolId, result: 'ADMITTED', isVerified: true },
-      select: { satRange: true, gpaRange: true, toeflRange: true },
+      where: {
+        schoolId,
+        result: 'ADMITTED',
+        isVerified: true,
+        ...CASE_REVIEW_APPROVED_WHERE,
+      },
+      select: {
+        satRange: true,
+        gpaRange: true,
+        toeflRange: true,
+        testScores: true,
+        highSchoolType: true,
+        curriculumType: true,
+        demographicTags: true,
+      },
     });
 
     if (cases.length < 30) return null;
@@ -104,36 +148,27 @@ export class PredictionHistoricalService {
   async getHistoricalProbability(
     profileMetrics: ProfileMetrics,
     schoolId: string,
+    context?: HistoricalContext,
   ): Promise<{
     probability: number;
     sampleCount: number;
     confidence: number;
+    filterLevel: 'specific' | 'curriculum' | 'unfiltered';
   } | null> {
     // 构建 GPA 范围匹配
     const normalizedGpa = profileMetrics.gpa
       ? normalizeGpa(profileMetrics.gpa, profileMetrics.gpaScale || 4)
       : null;
 
-    const cases = await this.prisma.admissionCase.findMany({
-      where: {
-        schoolId,
-        isVerified: true,
-      },
-      select: {
-        result: true,
-        gpaRange: true,
-        satRange: true,
-        toeflRange: true,
-      },
-    });
+    const cases = await this.fetchCasesWithFallback(schoolId, context);
 
-    if (cases.length < 10) return null;
+    if (!cases) return null;
 
     // 相似度加权统计
     let totalWeight = 0;
     let admittedWeight = 0;
 
-    for (const c of cases) {
+    for (const c of cases.data) {
       let similarity = 0.5; // 基础相似度
 
       // GPA 匹配
@@ -163,12 +198,134 @@ export class PredictionHistoricalService {
     if (totalWeight === 0) return null;
 
     const probability = admittedWeight / totalWeight;
-    const confidence = Math.min(1, cases.length / 100); // 样本量越大置信度越高
+    const confidence = Math.min(1, cases.data.length / 100); // 样本量越大置信度越高
 
     return {
       probability: Math.max(0.05, Math.min(0.95, probability)),
-      sampleCount: cases.length,
+      sampleCount: cases.data.length,
       confidence,
+      filterLevel: cases.filterLevel,
     };
+  }
+
+  /**
+   * Build a Prisma WHERE clause from HistoricalContext for dimension-based filtering.
+   */
+  private buildContextWhere(
+    context: HistoricalContext,
+  ): Record<string, unknown> {
+    const where: Record<string, unknown> = {};
+
+    if (context.curriculumType) {
+      where.curriculumType = context.curriculumType;
+    }
+    if (context.highSchoolType) {
+      where.highSchoolType = context.highSchoolType;
+    }
+    if (context.isInternational !== undefined) {
+      where.demographicTags = context.isInternational
+        ? { has: 'international' }
+        : { isEmpty: true }; // fallback: no 'international' tag
+    }
+
+    return where;
+  }
+
+  /**
+   * Fetch admission cases with tiered fallback based on context specificity.
+   *
+   * 1. Most specific: curriculumType + highSchoolType (+ isInternational if given)
+   * 2. Medium:        curriculumType only (+ isInternational if given)
+   * 3. Unfiltered:    no context filter (original behavior)
+   *
+   * Falls back to the next tier when the current yields < MIN_CASES_FOR_FILTERED results.
+   * Returns null when even the unfiltered query has < MIN_CASES_FOR_FILTERED results.
+   */
+  private async fetchCasesWithFallback(
+    schoolId: string,
+    context?: HistoricalContext,
+  ): Promise<{
+    data: {
+      result: string;
+      gpaRange: string | null;
+      satRange: string | null;
+      toeflRange: string | null;
+    }[];
+    filterLevel: 'specific' | 'curriculum' | 'unfiltered';
+  } | null> {
+    const baseWhere = {
+      schoolId,
+      isVerified: true,
+      ...CASE_REVIEW_APPROVED_WHERE,
+    };
+
+    const select = {
+      result: true,
+      gpaRange: true,
+      satRange: true,
+      toeflRange: true,
+      testScores: true,
+      highSchoolType: true,
+      curriculumType: true,
+      demographicTags: true,
+    } as const;
+
+    // Tier 1: most specific (curriculumType + highSchoolType)
+    if (context?.curriculumType && context?.highSchoolType) {
+      const specificWhere = this.buildContextWhere(context);
+      const cases = await this.prisma.admissionCase.findMany({
+        where: { ...baseWhere, ...specificWhere },
+        select,
+      });
+
+      if (cases.length >= MIN_CASES_FOR_FILTERED) {
+        this.logger.debug(
+          `Historical: using specific filter (curriculum=${context.curriculumType}, ` +
+            `hs=${context.highSchoolType}) for school ${schoolId}: ${cases.length} cases`,
+        );
+        return { data: cases, filterLevel: 'specific' };
+      }
+    }
+
+    // Tier 2: curriculum only
+    if (context?.curriculumType) {
+      const curriculumWhere: Record<string, unknown> = {
+        curriculumType: context.curriculumType,
+      };
+      if (context.isInternational !== undefined) {
+        curriculumWhere.demographicTags = context.isInternational
+          ? { has: 'international' }
+          : { isEmpty: true };
+      }
+
+      const cases = await this.prisma.admissionCase.findMany({
+        where: { ...baseWhere, ...curriculumWhere },
+        select,
+      });
+
+      if (cases.length >= MIN_CASES_FOR_FILTERED) {
+        this.logger.debug(
+          `Historical: using curriculum filter (${context.curriculumType}) for school ${schoolId}: ${cases.length} cases`,
+        );
+        return { data: cases, filterLevel: 'curriculum' };
+      }
+    }
+
+    // Tier 3: unfiltered (original behavior)
+    const cases = await this.prisma.admissionCase.findMany({
+      where: baseWhere,
+      select,
+    });
+
+    if (cases.length < MIN_CASES_FOR_FILTERED) return null;
+
+    if (context?.curriculumType || context?.highSchoolType) {
+      this.logger.debug(
+        `Historical: fell back to unfiltered for school ${schoolId}: ${cases.length} cases ` +
+          `(requested curriculum=${context.curriculumType}, hs=${context.highSchoolType})`,
+      );
+    }
+
+    return { data: cases, filterLevel: 'unfiltered' };
   }
 }

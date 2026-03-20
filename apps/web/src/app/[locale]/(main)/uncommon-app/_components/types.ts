@@ -49,6 +49,7 @@ export interface SchoolListItem {
     acceptanceRate?: number;
   };
   isAIRecommended: boolean;
+  essayPromptCount?: number;
 }
 
 export interface Profile {

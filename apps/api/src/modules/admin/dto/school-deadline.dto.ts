@@ -11,44 +11,46 @@ import {
 } from 'class-validator';
 
 export class CreateSchoolDeadlineDto {
-  @ApiProperty({ description: '学校ID' })
+  @ApiProperty({ description: 'School ID' })
   @IsString()
   @IsNotEmpty()
   @MaxLength(200)
   schoolId: string;
 
-  @ApiProperty({ description: '申请季年份，如 2026 表示 Fall 2026 入学' })
+  @ApiProperty({
+    description: 'Application cycle year, e.g. 2026 means Fall 2026 enrollment',
+  })
   @IsInt()
   @Min(2020)
   year: number;
 
-  @ApiProperty({ description: '轮次: ED, ED2, EA, REA, RD, Rolling' })
+  @ApiProperty({ description: 'Round: ED, ED2, EA, REA, RD, Rolling' })
   @IsString()
   @IsNotEmpty()
   @MaxLength(200)
   round: string;
 
-  @ApiProperty({ description: '申请截止日期' })
+  @ApiProperty({ description: 'Application deadline' })
   @IsDateString()
   applicationDeadline: string;
 
-  @ApiPropertyOptional({ description: '助学金截止日期' })
+  @ApiPropertyOptional({ description: 'Financial aid deadline' })
   @IsDateString()
   @IsOptional()
   financialAidDeadline?: string;
 
-  @ApiPropertyOptional({ description: '放榜日期' })
+  @ApiPropertyOptional({ description: 'Decision release date' })
   @IsDateString()
   @IsOptional()
   decisionDate?: string;
 
   @ApiPropertyOptional({
-    description: '文书题目 JSON [{prompt, wordLimit, required}]',
+    description: 'Essay prompt JSON [{prompt, wordLimit, required}]',
   })
   @IsOptional()
   essayPrompts?: any;
 
-  @ApiPropertyOptional({ description: '文书数量' })
+  @ApiPropertyOptional({ description: 'Number of essays' })
   @IsInt()
   @IsOptional()
   essayCount?: number;
@@ -63,7 +65,7 @@ export class CreateSchoolDeadlineDto {
   @IsOptional()
   interviewDeadline?: string;
 
-  @ApiPropertyOptional({ description: '申请费（美元）' })
+  @ApiPropertyOptional({ description: 'Application fee (USD)' })
   @IsInt()
   @IsOptional()
   applicationFee?: number;

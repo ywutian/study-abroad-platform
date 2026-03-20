@@ -275,7 +275,7 @@ export class ForumController {
   @Post('posts/:id/report')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: '举报帖子' })
+  @ApiOperation({ summary: 'Report post' })
   async reportPost(
     @Param('id') postId: string,
     @CurrentUser() user: CurrentUserPayload,
@@ -293,7 +293,7 @@ export class ForumController {
   @Post('comments/:id/report')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: '举报评论' })
+  @ApiOperation({ summary: 'Report comment' })
   async reportComment(
     @Param('id') commentId: string,
     @CurrentUser() user: CurrentUserPayload,

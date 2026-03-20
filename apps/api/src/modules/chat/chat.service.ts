@@ -9,7 +9,7 @@ import {
   StorageService,
   StorageFile,
 } from '../../common/storage/storage.service';
-import { Prisma } from '@prisma/client';
+import { Prisma, DataReviewStatus } from '@prisma/client';
 
 /** 用户信息的标准 select（复用） */
 const USER_SELECT = {
@@ -720,7 +720,21 @@ export class ChatService {
             },
           },
         },
-        _count: { select: { followers: true, admissionCases: true } },
+        _count: {
+          select: {
+            followers: true,
+            admissionCases: {
+              where: {
+                reviewStatus: {
+                  in: [
+                    DataReviewStatus.AUTO_APPROVED,
+                    DataReviewStatus.APPROVED,
+                  ],
+                },
+              },
+            },
+          },
+        },
       },
       orderBy: [{ role: 'desc' }, { followers: { _count: 'desc' } }],
       take: limit * 2,

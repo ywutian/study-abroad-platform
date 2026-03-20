@@ -27,6 +27,7 @@ export enum ToolName {
   POLISH_ESSAY = 'polish_essay',
   GENERATE_OUTLINE = 'generate_outline',
   BRAINSTORM_IDEAS = 'brainstorm_ideas',
+  SEARCH_ESSAY_PROMPTS = 'search_essay_prompts',
 
   // 选校工具
   RECOMMEND_SCHOOLS = 'recommend_schools',
@@ -34,6 +35,7 @@ export enum ToolName {
 
   // 案例工具
   SEARCH_CASES = 'search_cases',
+  FIND_SIMILAR_CASES = 'find_similar_cases',
 
   // 时间线工具
   GET_DEADLINES = 'get_deadlines',
@@ -307,6 +309,45 @@ export const TOOLS: ToolDefinition[] = [
     },
   },
 
+  {
+    name: ToolName.SEARCH_ESSAY_PROMPTS,
+    description:
+      '搜索数据库中的文书题目（essay prompts）。当用户询问某所学校的文书要求、想了解需要写什么文书、或需要题目推荐时使用。支持按学校、题目类型、申请年份筛选。返回匹配的题目列表（含题目内容、字数限制、AI写作提示）。不要用于评估或修改已有文书（请用 review_essay 或 polish_essay）。',
+    parameters: {
+      type: 'object',
+      properties: {
+        schoolName: {
+          type: 'string',
+          description: '学校名称',
+        },
+        schoolId: {
+          type: 'string',
+          description: '学校ID（如果已知）',
+        },
+        type: {
+          type: 'string',
+          description: '文书题目类型',
+          enum: [
+            'SUPPLEMENTAL',
+            'SHORT_ANSWER',
+            'PERSONAL_STATEMENT',
+            'WHY_SCHOOL',
+            'ACTIVITY',
+            'OPTIONAL',
+            'OTHER',
+            'COMMON_APP',
+            'UC',
+          ],
+        },
+        year: {
+          type: 'number',
+          description: '申请年份',
+        },
+      },
+      required: [],
+    },
+  },
+
   // ============== 选校工具 ==============
   {
     name: ToolName.RECOMMEND_SCHOOLS,
@@ -370,6 +411,25 @@ export const TOOLS: ToolDefinition[] = [
         gpaRange: {
           type: 'string',
           description: 'GPA范围，如 "3.8-4.0"',
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: ToolName.FIND_SIMILAR_CASES,
+    description:
+      '根据用户档案自动查找背景相似的录取案例。当用户想看"和我背景差不多的人申请了哪些学校"时使用。自动读取用户 GPA 范围和目标专业进行匹配。返回相似案例列表（含结构化活动、奖项、成绩摘要）。不要用于搜索指定学校的案例（请用 search_cases）。',
+    parameters: {
+      type: 'object',
+      properties: {
+        schoolName: {
+          type: 'string',
+          description: '限定学校名称（可选）',
+        },
+        limit: {
+          type: 'number',
+          description: '返回数量限制（默认10，最大20）',
         },
       },
       required: [],

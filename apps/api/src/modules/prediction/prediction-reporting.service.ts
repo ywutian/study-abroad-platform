@@ -1,5 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
+import { MemoryType } from '@prisma/client';
+import { fireAndForget } from '../../common/utils/async.util';
 
 /**
  * Reporting and calibration data service for predictions.
@@ -11,7 +14,10 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class PredictionReportingService {
   private readonly logger = new Logger(PredictionReportingService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Optional() private readonly memoryManager?: MemoryManagerService,
+  ) {}
 
   /**
    * Retrieve the prediction history for a profile, ordered by most recent first.
@@ -55,6 +61,41 @@ export class PredictionReportingService {
       this.logger.log(
         `Recorded actual result ${actualResult} for profile ${profileId}, school ${schoolId}`,
       );
+
+      // Write prediction feedback to memory system
+      if (this.memoryManager) {
+        const [prediction, school] = await Promise.all([
+          this.prisma.predictionResult.findFirst({
+            where: { profileId, schoolId },
+          }),
+          this.prisma.school.findUnique({
+            where: { id: schoolId },
+            select: { name: true },
+          }),
+        ]);
+
+        if (prediction) {
+          const probability = Number(prediction.probability);
+          const isCorrect = (actualResult === 'ADMITTED') === probability > 0.5;
+
+          fireAndForget(
+            this.memoryManager.remember(profileId, {
+              type: MemoryType.FACT,
+              category: 'prediction_feedback',
+              content: `预测结果反馈：${school?.name ?? schoolId} 预测概率 ${Math.round(probability * 100)}%，实际结果 ${actualResult}${isCorrect ? '（预测准确）' : '（预测偏差）'}`,
+              importance: 0.7,
+              metadata: {
+                schoolId,
+                predicted: probability,
+                actual: actualResult,
+                isCorrect,
+              },
+            }),
+            this.logger,
+            'Failed to record prediction feedback to memory',
+          );
+        }
+      }
     } catch (error) {
       this.logger.warn('Failed to report actual result', error);
     }

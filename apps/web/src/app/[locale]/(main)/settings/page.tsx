@@ -285,18 +285,27 @@ export default function SettingsPage() {
           <CardContent className="flex flex-col sm:flex-row items-center gap-4 p-6">
             <Avatar className="h-20 w-20 border-4 border-background shadow-lg">
               <AvatarImage src={undefined} />
-              <AvatarFallback className="text-2xl bg-primary text-white">
+              <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
                 {user.email?.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 text-center sm:text-left">
               <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
                 <h3 className="text-xl font-bold">{user.email?.split('@')[0]}</h3>
+                {user.role === 'SUPER_ADMIN' && (
+                  <Badge variant="purple">
+                    <Sparkles className="h-3 w-3 mr-1" />
+                    {t('common.superAdmin')}
+                  </Badge>
+                )}
                 {user.role === 'ADMIN' && (
                   <Badge variant="purple">
                     <Sparkles className="h-3 w-3 mr-1" />
                     {t('common.administrator')}
                   </Badge>
+                )}
+                {user.role === 'OPERATOR' && (
+                  <Badge variant="warning">{t('common.operator')}</Badge>
                 )}
                 {user.role === 'VERIFIED' && (
                   <Badge variant="success">{t('common.verified')}</Badge>

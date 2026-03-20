@@ -7,8 +7,6 @@ import {
   Body,
   Param,
   Query,
-  HttpCode,
-  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { ProfileService } from './profile.service';
@@ -54,13 +52,13 @@ export class ProfileController {
   // ============================================
 
   @Get('me')
-  @ApiOperation({ summary: '获取当前用户档案' })
+  @ApiOperation({ summary: 'Get current user profile' })
   async getMyProfile(@CurrentUser() user: CurrentUserPayload) {
     return this.profileService.findByUserId(user.id);
   }
 
   @Put('me')
-  @ApiOperation({ summary: '更新当前用户档案' })
+  @ApiOperation({ summary: 'Update current user profile' })
   async updateMyProfile(
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: UpdateProfileDto,
@@ -69,7 +67,7 @@ export class ProfileController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: '获取指定档案（需权限检查）' })
+  @ApiOperation({ summary: 'Get specific profile (with permission check)' })
   async getProfile(
     @Param('id') id: string,
     @CurrentUser() user: CurrentUserPayload,
@@ -86,7 +84,9 @@ export class ProfileController {
   // ============================================
 
   @Get('me/ai-analysis')
-  @ApiOperation({ summary: '获取AI档案分析（红黄绿评分）' })
+  @ApiOperation({
+    summary: 'Get AI profile analysis (red/yellow/green scoring)',
+  })
   async getAIAnalysis(@CurrentUser() user: CurrentUserPayload) {
     // 检查 Redis 缓存
     const cacheKey = `ai:profile-analysis:${user.id}`;
@@ -196,13 +196,13 @@ export class ProfileController {
   // ============================================
 
   @Get('me/test-scores')
-  @ApiOperation({ summary: '获取我的标化成绩' })
+  @ApiOperation({ summary: 'Get my test scores' })
   async getMyTestScores(@CurrentUser() user: CurrentUserPayload) {
     return this.profileService.getTestScores(user.id);
   }
 
   @Post('me/test-scores')
-  @ApiOperation({ summary: '添加标化成绩' })
+  @ApiOperation({ summary: 'Add test score' })
   async createTestScore(
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: CreateTestScoreDto,
@@ -211,7 +211,7 @@ export class ProfileController {
   }
 
   @Put('me/test-scores/:id')
-  @ApiOperation({ summary: '更新标化成绩' })
+  @ApiOperation({ summary: 'Update test score' })
   async updateTestScore(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
@@ -221,13 +221,13 @@ export class ProfileController {
   }
 
   @Delete('me/test-scores/:id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: '删除标化成绩' })
+  @ApiOperation({ summary: 'Delete test score' })
   async deleteTestScore(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
   ) {
     await this.profileService.deleteTestScore(user.id, id);
+    return { message: 'Test score deleted' };
   }
 
   // ============================================
@@ -235,13 +235,13 @@ export class ProfileController {
   // ============================================
 
   @Get('me/activities')
-  @ApiOperation({ summary: '获取我的活动' })
+  @ApiOperation({ summary: 'Get my activities' })
   async getMyActivities(@CurrentUser() user: CurrentUserPayload) {
     return this.profileService.getActivities(user.id);
   }
 
   @Post('me/activities')
-  @ApiOperation({ summary: '添加活动' })
+  @ApiOperation({ summary: 'Add activity' })
   async createActivity(
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: CreateActivityDto,
@@ -251,13 +251,13 @@ export class ProfileController {
 
   @Post('me/activities/ai-sort')
   @ThrottleAI()
-  @ApiOperation({ summary: 'AI智能排序活动' })
+  @ApiOperation({ summary: 'AI smart sort activities' })
   async aiSortActivities(@CurrentUser() user: CurrentUserPayload) {
     return this.profileService.aiSortActivities(user.id, user.locale);
   }
 
   @Put('me/activities/reorder')
-  @ApiOperation({ summary: '重排活动顺序' })
+  @ApiOperation({ summary: 'Reorder activities' })
   async reorderActivities(
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: ReorderIdsDto,
@@ -267,7 +267,7 @@ export class ProfileController {
   }
 
   @Put('me/activities/:id')
-  @ApiOperation({ summary: '更新活动' })
+  @ApiOperation({ summary: 'Update activity' })
   async updateActivity(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
@@ -277,13 +277,13 @@ export class ProfileController {
   }
 
   @Delete('me/activities/:id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: '删除活动' })
+  @ApiOperation({ summary: 'Delete activity' })
   async deleteActivity(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
   ) {
     await this.profileService.deleteActivity(user.id, id);
+    return { message: 'Activity deleted' };
   }
 
   // ============================================
@@ -291,13 +291,13 @@ export class ProfileController {
   // ============================================
 
   @Get('me/awards')
-  @ApiOperation({ summary: '获取我的奖项' })
+  @ApiOperation({ summary: 'Get my awards' })
   async getMyAwards(@CurrentUser() user: CurrentUserPayload) {
     return this.profileService.getAwards(user.id);
   }
 
   @Post('me/awards')
-  @ApiOperation({ summary: '添加奖项' })
+  @ApiOperation({ summary: 'Add award' })
   async createAward(
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: CreateAwardDto,
@@ -306,7 +306,7 @@ export class ProfileController {
   }
 
   @Put('me/awards/reorder')
-  @ApiOperation({ summary: '重排奖项顺序' })
+  @ApiOperation({ summary: 'Reorder awards' })
   async reorderAwards(
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: ReorderIdsDto,
@@ -316,7 +316,7 @@ export class ProfileController {
   }
 
   @Put('me/awards/:id')
-  @ApiOperation({ summary: '更新奖项' })
+  @ApiOperation({ summary: 'Update award' })
   async updateAward(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
@@ -326,13 +326,13 @@ export class ProfileController {
   }
 
   @Delete('me/awards/:id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: '删除奖项' })
+  @ApiOperation({ summary: 'Delete award' })
   async deleteAward(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
   ) {
     await this.profileService.deleteAward(user.id, id);
+    return { message: 'Award deleted' };
   }
 
   // ============================================
@@ -340,13 +340,13 @@ export class ProfileController {
   // ============================================
 
   @Get('me/essays')
-  @ApiOperation({ summary: '获取我的文书' })
+  @ApiOperation({ summary: 'Get my essays' })
   async getMyEssays(@CurrentUser() user: CurrentUserPayload) {
     return this.profileService.getEssays(user.id);
   }
 
   @Get('me/essays/:id')
-  @ApiOperation({ summary: '获取单个文书' })
+  @ApiOperation({ summary: 'Get single essay' })
   async getEssay(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
@@ -355,7 +355,7 @@ export class ProfileController {
   }
 
   @Post('me/essays')
-  @ApiOperation({ summary: '创建文书' })
+  @ApiOperation({ summary: 'Create essay' })
   async createEssay(
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: CreateEssayDto,
@@ -364,7 +364,7 @@ export class ProfileController {
   }
 
   @Put('me/essays/:id')
-  @ApiOperation({ summary: '更新文书' })
+  @ApiOperation({ summary: 'Update essay' })
   async updateEssay(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
@@ -374,13 +374,13 @@ export class ProfileController {
   }
 
   @Delete('me/essays/:id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: '删除文书' })
+  @ApiOperation({ summary: 'Delete essay' })
   async deleteEssay(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
   ) {
     await this.profileService.deleteEssay(user.id, id);
+    return { message: 'Essay deleted' };
   }
 
   // ============================================
@@ -388,13 +388,13 @@ export class ProfileController {
   // ============================================
 
   @Get('me/education')
-  @ApiOperation({ summary: '获取我的教育经历' })
+  @ApiOperation({ summary: 'Get my education history' })
   async getMyEducation(@CurrentUser() user: CurrentUserPayload) {
     return this.profileService.getEducation(user.id);
   }
 
   @Post('me/education')
-  @ApiOperation({ summary: '添加教育经历' })
+  @ApiOperation({ summary: 'Add education entry' })
   async createEducation(
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: CreateEducationDto,
@@ -403,7 +403,7 @@ export class ProfileController {
   }
 
   @Put('me/education/:id')
-  @ApiOperation({ summary: '更新教育经历' })
+  @ApiOperation({ summary: 'Update education entry' })
   async updateEducation(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
@@ -413,13 +413,13 @@ export class ProfileController {
   }
 
   @Delete('me/education/:id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: '删除教育经历' })
+  @ApiOperation({ summary: 'Delete education entry' })
   async deleteEducation(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
   ) {
     await this.profileService.deleteEducation(user.id, id);
+    return { message: 'Education deleted' };
   }
 
   // ============================================
@@ -428,7 +428,7 @@ export class ProfileController {
 
   @Get('me/target-schools')
   @ApiOperation({
-    summary: '获取我的目标学校（代理到 SchoolListItem）',
+    summary: 'Get my target schools (proxied to SchoolListItem)',
     description:
       'This endpoint proxies to SchoolListService. Use /school-lists for direct access.',
   })
@@ -437,7 +437,7 @@ export class ProfileController {
   }
 
   @Put('me/target-schools')
-  @ApiOperation({ summary: '批量设置目标学校列表' })
+  @ApiOperation({ summary: 'Batch set target school list' })
   async setTargetSchools(
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: SetTargetSchoolsDto,
@@ -467,7 +467,7 @@ export class ProfileController {
   }
 
   @Post('me/target-schools/:schoolId')
-  @ApiOperation({ summary: '添加目标学校' })
+  @ApiOperation({ summary: 'Add target school' })
   async addTargetSchool(
     @CurrentUser() user: CurrentUserPayload,
     @Param('schoolId') schoolId: string,
@@ -483,8 +483,7 @@ export class ProfileController {
   }
 
   @Delete('me/target-schools/:schoolId')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: '移除目标学校' })
+  @ApiOperation({ summary: 'Remove target school' })
   async removeTargetSchool(
     @CurrentUser() user: CurrentUserPayload,
     @Param('schoolId') schoolId: string,
@@ -495,6 +494,7 @@ export class ProfileController {
     if (item) {
       await this.schoolListService.removeItem(user.id, item.id);
     }
+    return { message: 'Target school removed' };
   }
 
   // ============================================

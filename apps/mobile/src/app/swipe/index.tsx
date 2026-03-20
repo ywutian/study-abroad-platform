@@ -15,9 +15,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useColors } from '@/utils/theme';
 
-import { ViewMode } from './_components/types';
-import GameView from './_components/GameView';
-import StatsView from './_components/StatsView';
+import { ViewMode } from '@/screens/swipe/types';
+import GameView from '@/screens/swipe/GameView';
+import StatsView from '@/screens/swipe/StatsView';
 
 export default function SwipePage() {
   const { t } = useTranslation();

@@ -114,7 +114,20 @@ export class SchoolToolsService implements IToolHandlerProvider {
           ? `$${(fullSchool as any).salary6YrPostGrad.toLocaleString()}`
           : 'N/A',
       deadlines: metadata.deadlines || {},
-      essayPrompts: metadata.essayPrompts || [],
+      essayPrompts: await this.prisma.essayPrompt.findMany({
+        where: { schoolId: fullSchool.id, isActive: true, status: 'VERIFIED' },
+        orderBy: { sortOrder: 'asc' },
+        select: {
+          id: true,
+          prompt: true,
+          promptZh: true,
+          type: true,
+          wordLimit: true,
+          isRequired: true,
+          aiTips: true,
+          year: true,
+        },
+      }),
       requirements: metadata.requirements || {},
     };
   }

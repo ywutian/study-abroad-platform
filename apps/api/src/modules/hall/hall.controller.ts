@@ -61,8 +61,18 @@ export class HallController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get public profiles for review' })
   @ApiQuery({ name: 'search', required: false })
-  async getPublicProfiles(@Query('search') search?: string) {
-    return this.hallService.getPublicProfiles(search);
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'pageSize', required: false, type: Number })
+  async getPublicProfiles(
+    @Query('search') search?: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
+    return this.hallService.getPublicProfiles(
+      search,
+      page ? parseInt(page) : undefined,
+      pageSize ? parseInt(pageSize) : undefined,
+    );
   }
 
   // ============================================
@@ -319,7 +329,7 @@ export class HallController {
 
   @Get('swipe/batch')
   @ApiBearerAuth()
-  @ApiOperation({ summary: '批量获取案例（预加载）' })
+  @ApiOperation({ summary: 'Batch get cases (preload)' })
   @ApiResponse({ status: 200, type: SwipeBatchResultDto })
   async getNextCases(
     @CurrentUser() user: CurrentUserPayload,
@@ -330,7 +340,7 @@ export class HallController {
 
   @Post('swipe/predict')
   @ApiBearerAuth()
-  @ApiOperation({ summary: '提交滑动预测' })
+  @ApiOperation({ summary: 'Submit swipe prediction' })
   @ApiResponse({ status: 200, type: SwipeResultDto })
   async submitSwipe(
     @CurrentUser() user: CurrentUserPayload,
@@ -341,7 +351,7 @@ export class HallController {
 
   @Get('swipe/stats')
   @ApiBearerAuth()
-  @ApiOperation({ summary: '获取用户滑动统计' })
+  @ApiOperation({ summary: 'Get user swipe statistics' })
   @ApiResponse({ status: 200, type: SwipeStatsDto })
   async getSwipeStats(
     @CurrentUser() user: CurrentUserPayload,
@@ -351,7 +361,7 @@ export class HallController {
 
   @Get('swipe/leaderboard')
   @ApiBearerAuth()
-  @ApiOperation({ summary: '获取排行榜' })
+  @ApiOperation({ summary: 'Get leaderboard' })
   @ApiResponse({ status: 200, type: LeaderboardDto })
   async getLeaderboard(
     @CurrentUser() user: CurrentUserPayload,

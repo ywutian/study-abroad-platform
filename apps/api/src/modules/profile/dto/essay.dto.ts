@@ -2,23 +2,23 @@ import { IsString, IsOptional, MaxLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateEssayDto {
-  @ApiProperty({ description: '文书标题' })
+  @ApiProperty({ description: 'Essay title' })
   @IsString()
   @MaxLength(200)
   title: string;
 
-  @ApiPropertyOptional({ description: '文书题目/Prompt' })
+  @ApiPropertyOptional({ description: 'Essay prompt/Prompt' })
   @IsOptional()
   @IsString()
   @MaxLength(2000)
   prompt?: string;
 
-  @ApiProperty({ description: '文书内容' })
+  @ApiProperty({ description: 'Essay content' })
   @IsString()
   @MaxLength(50000)
   content: string;
 
-  @ApiPropertyOptional({ description: '关联学校ID' })
+  @ApiPropertyOptional({ description: 'Associated school ID' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
@@ -26,25 +26,25 @@ export class CreateEssayDto {
 }
 
 export class UpdateEssayDto {
-  @ApiPropertyOptional({ description: '文书标题' })
+  @ApiPropertyOptional({ description: 'Essay title' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   title?: string;
 
-  @ApiPropertyOptional({ description: '文书题目/Prompt' })
+  @ApiPropertyOptional({ description: 'Essay prompt/Prompt' })
   @IsOptional()
   @IsString()
   @MaxLength(2000)
   prompt?: string;
 
-  @ApiPropertyOptional({ description: '文书内容' })
+  @ApiPropertyOptional({ description: 'Essay content' })
   @IsOptional()
   @IsString()
   @MaxLength(50000)
   content?: string;
 
-  @ApiPropertyOptional({ description: '关联学校ID' })
+  @ApiPropertyOptional({ description: 'Associated school ID' })
   @IsOptional()
   @IsString()
   @MaxLength(200)

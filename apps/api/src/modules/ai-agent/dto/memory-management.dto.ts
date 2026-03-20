@@ -283,7 +283,7 @@ export class SchoolPreferencesDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(500, { each: true })
-  @ArrayMaxSize(10, { message: '地区偏好不能超过10个' })
+  @ArrayMaxSize(10, { message: 'Region preference不能超过10个' })
   regions?: string[];
 
   @ApiPropertyOptional({
@@ -304,7 +304,7 @@ export class SchoolPreferencesDto {
 
   @ApiPropertyOptional({
     type: [String],
-    description: '学校类型偏好',
+    description: 'School type偏好',
     enum: ['public', 'private', 'lac', 'research', 'comprehensive'],
     example: ['private', 'research'],
   })
@@ -315,7 +315,7 @@ export class SchoolPreferencesDto {
   @IsIn(['public', 'private', 'lac', 'research', 'comprehensive'], {
     each: true,
     message:
-      '学校类型必须是 public, private, lac, research, comprehensive 之一',
+      'School type必须是 public, private, lac, research, comprehensive 之一',
   })
   type?: string[];
 }
@@ -358,17 +358,23 @@ export class EssayPreferencesDto {
  * AI 偏好设置 DTO
  */
 export class AIPreferencesDto {
-  @ApiPropertyOptional({ enum: CommunicationStyle, description: '沟通风格' })
+  @ApiPropertyOptional({
+    enum: CommunicationStyle,
+    description: 'Communication style',
+  })
   @IsOptional()
   @IsEnum(CommunicationStyle)
   communicationStyle?: CommunicationStyle;
 
-  @ApiPropertyOptional({ enum: ResponseLength, description: '回复长度偏好' })
+  @ApiPropertyOptional({
+    enum: ResponseLength,
+    description: 'Response length preference',
+  })
   @IsOptional()
   @IsEnum(ResponseLength)
   responseLength?: ResponseLength;
 
-  @ApiPropertyOptional({ description: '语言偏好', example: 'zh' })
+  @ApiPropertyOptional({ description: 'Language preference', example: 'zh' })
   @IsOptional()
   @IsString()
   @Length(2, 10, { message: '语言代码长度应在2-10字符之间' })
@@ -376,7 +382,7 @@ export class AIPreferencesDto {
 
   @ApiPropertyOptional({
     type: SchoolPreferencesDto,
-    description: '学校偏好设置',
+    description: 'School preferences',
   })
   @IsOptional()
   @ValidateNested()
@@ -385,19 +391,19 @@ export class AIPreferencesDto {
 
   @ApiPropertyOptional({
     type: EssayPreferencesDto,
-    description: '文书偏好设置',
+    description: 'Essay preferences',
   })
   @IsOptional()
   @ValidateNested()
   @Type(() => EssayPreferencesDto)
   essayPreferences?: EssayPreferencesDto;
 
-  @ApiPropertyOptional({ description: '是否启用记忆功能' })
+  @ApiPropertyOptional({ description: 'Whether to enable memory' })
   @IsOptional()
   @IsBoolean()
   enableMemory?: boolean;
 
-  @ApiPropertyOptional({ description: '是否启用建议功能' })
+  @ApiPropertyOptional({ description: 'Whether to enable suggestions' })
   @IsOptional()
   @IsBoolean()
   enableSuggestions?: boolean;

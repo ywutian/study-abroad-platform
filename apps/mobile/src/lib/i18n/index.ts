@@ -29,6 +29,7 @@ export async function initI18n(): Promise<typeof i18n> {
   const lng = await getInitialLanguage();
 
   await i18n.use(initReactI18next).init({
+    compatibilityJSON: 'v3',
     resources,
     lng,
     fallbackLng: 'zh',

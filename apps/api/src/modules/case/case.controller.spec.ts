@@ -140,7 +140,12 @@ describe('CaseController', () => {
 
       const result = await controller.create(mockUser as any, dto);
 
-      expect(caseService.create).toHaveBeenCalledWith('user-1', dto, 'zh');
+      expect(caseService.create).toHaveBeenCalledWith(
+        'user-1',
+        dto,
+        'zh',
+        'USER',
+      );
       expect(result).toEqual(mockCase);
     });
   });

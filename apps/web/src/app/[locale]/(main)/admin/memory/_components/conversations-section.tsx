@@ -129,6 +129,7 @@ export function ConversationsSection() {
                           size="icon"
                           className="h-7 w-7"
                           onClick={() => setViewConvId(conv.id)}
+                          aria-label="View conversation"
                         >
                           <Eye className="h-3.5 w-3.5" />
                         </Button>

@@ -24,21 +24,23 @@ export class PointsAdminController {
   constructor(private readonly pointsConfigService: PointsConfigService) {}
 
   @Get('config')
-  @ApiOperation({ summary: '获取积分系统配置（开关 + 所有动作值）' })
-  @ApiResponse({ status: 200, description: '积分配置' })
+  @ApiOperation({
+    summary: 'Get points system config (toggle + all action values)',
+  })
+  @ApiResponse({ status: 200, description: 'Points configuration' })
   async getConfig() {
     return this.pointsConfigService.getFullConfig();
   }
 
   @Put('toggle')
-  @ApiOperation({ summary: '启用/禁用积分系统' })
+  @ApiOperation({ summary: 'Enable/disable points system' })
   async togglePoints(@Body() dto: TogglePointsDto) {
     await this.pointsConfigService.setEnabled(dto.enabled);
     return { success: true, enabled: dto.enabled };
   }
 
   @Put('actions/:action')
-  @ApiOperation({ summary: '修改单个动作的积分值' })
+  @ApiOperation({ summary: 'Update points value for a single action' })
   async updateAction(
     @Param('action') action: string,
     @Body() dto: UpdatePointActionDto,
@@ -52,7 +54,7 @@ export class PointsAdminController {
   }
 
   @Put('actions')
-  @ApiOperation({ summary: '批量修改积分值' })
+  @ApiOperation({ summary: 'Batch update points values' })
   async updateActions(@Body() dto: BatchUpdatePointActionsDto) {
     const results: Array<{
       action: string;
@@ -76,7 +78,7 @@ export class PointsAdminController {
   }
 
   @Post('reset')
-  @ApiOperation({ summary: '重置所有积分配置为默认值' })
+  @ApiOperation({ summary: 'Reset all points config to defaults' })
   async resetToDefaults() {
     await this.pointsConfigService.resetToDefaults();
     return { success: true, message: 'Points config reset to defaults' };

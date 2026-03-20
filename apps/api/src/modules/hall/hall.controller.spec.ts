@@ -78,7 +78,11 @@ describe('HallController', () => {
 
     const result = await controller.getPublicProfiles('Alice');
 
-    expect(hallService.getPublicProfiles).toHaveBeenCalledWith('Alice');
+    expect(hallService.getPublicProfiles).toHaveBeenCalledWith(
+      'Alice',
+      undefined,
+      undefined,
+    );
     expect(result).toEqual(expected);
   });
 

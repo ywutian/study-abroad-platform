@@ -258,7 +258,7 @@ export default function ResumeEditPage() {
       <div className="flex flex-col gap-2 border-b bg-background px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <Link href="/resume">
-            <Button variant="ghost" size="icon" className="h-9 w-9">
+            <Button variant="ghost" size="icon" className="h-9 w-9" aria-label="Go back">
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
@@ -318,7 +318,7 @@ export default function ResumeEditPage() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="h-8 w-8">
+              <Button variant="outline" size="icon" className="h-8 w-8" aria-label="More options">
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>

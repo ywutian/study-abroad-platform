@@ -45,7 +45,7 @@ export default function AdminUsersPage() {
 
   const updateUserRoleMutation = useMutation({
     mutationFn: ({ userId, role }: { userId: string; role: string }) =>
-      apiClient.put(`/admin/users/${userId}/role`, { role }),
+      apiClient.post(`/admin/roles/users/${userId}/role`, { role }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
       toast.success(t('toast.roleUpdated'));

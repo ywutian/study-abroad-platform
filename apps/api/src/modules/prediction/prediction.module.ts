@@ -50,6 +50,6 @@ import { PredictionReportingService } from './prediction-reporting.service';
     ShadowEvaluatorService,
     ModelMonitorService,
   ],
-  exports: [PredictionService],
+  exports: [PredictionService, PredictionHistoricalService],
 })
 export class PredictionModule {}

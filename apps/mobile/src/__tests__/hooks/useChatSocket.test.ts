@@ -13,7 +13,16 @@ const mockEmit = jest.fn();
 const mockConnect = jest.fn();
 const mockDisconnect = jest.fn();
 
-const mockSocket = {
+interface MockSocket {
+  on: jest.Mock;
+  emit: jest.Mock;
+  connect: jest.Mock;
+  disconnect: jest.Mock;
+  connected: boolean;
+  disconnected: boolean;
+}
+
+const mockSocket: MockSocket = {
   on: jest.fn((event: string, handler: SocketEventHandler) => {
     if (!mockSocketHandlers[event]) {
       mockSocketHandlers[event] = [];

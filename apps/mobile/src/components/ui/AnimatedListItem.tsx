@@ -6,6 +6,7 @@ import Animated, {
   withSpring,
   withTiming,
   runOnJS,
+  useReducedMotion,
   FadeInRight,
   FadeOutLeft,
   Layout,
@@ -42,6 +43,7 @@ export function AnimatedListItem({
   accessibilityLabel,
 }: AnimatedListItemProps) {
   const colors = useColors();
+  const reducedMotion = useReducedMotion();
   const scale = useSharedValue(1);
   const translateX = useSharedValue(0);
   const opacity = useSharedValue(1);
@@ -60,12 +62,16 @@ export function AnimatedListItem({
   const tapGesture = Gesture.Tap()
     .enabled(!!onPress)
     .onBegin(() => {
-      scale.value = withSpring(0.98, { damping: 15, stiffness: 400 });
-      opacity.value = withTiming(0.9, { duration: 100 });
+      if (!reducedMotion) {
+        scale.value = withSpring(0.98, { damping: 15, stiffness: 400 });
+        opacity.value = withTiming(0.9, { duration: 100 });
+      }
     })
     .onFinalize(() => {
-      scale.value = withSpring(1, { damping: 15, stiffness: 400 });
-      opacity.value = withTiming(1, { duration: 100 });
+      if (!reducedMotion) {
+        scale.value = withSpring(1, { damping: 15, stiffness: 400 });
+        opacity.value = withTiming(1, { duration: 100 });
+      }
     })
     .onEnd(() => {
       runOnJS(triggerHaptic)();
@@ -100,9 +106,11 @@ export function AnimatedListItem({
     opacity: opacity.value,
   }));
 
-  const enteringAnimation = FadeInRight.delay(index * staggerDelay)
-    .duration(300)
-    .springify();
+  const enteringAnimation = reducedMotion
+    ? undefined
+    : FadeInRight.delay(index * staggerDelay)
+        .duration(300)
+        .springify();
 
   return (
     <GestureDetector gesture={composedGesture}>
@@ -111,7 +119,7 @@ export function AnimatedListItem({
         accessibilityRole={onPress ? 'button' : undefined}
         accessibilityLabel={accessibilityLabel}
         entering={enteringAnimation}
-        layout={Layout.springify()}
+        layout={reducedMotion ? undefined : Layout.springify()}
         style={[
           styles.container,
           {
@@ -148,12 +156,19 @@ interface StaggeredItemProps {
 }
 
 export function StaggeredItem({ children, index, style, staggerDelay = 50 }: StaggeredItemProps) {
-  const enteringAnimation = FadeInRight.delay(index * staggerDelay)
-    .duration(300)
-    .springify();
+  const reducedMotion = useReducedMotion();
+  const enteringAnimation = reducedMotion
+    ? undefined
+    : FadeInRight.delay(index * staggerDelay)
+        .duration(300)
+        .springify();
 
   return (
-    <Animated.View entering={enteringAnimation} layout={Layout.springify()} style={style}>
+    <Animated.View
+      entering={enteringAnimation}
+      layout={reducedMotion ? undefined : Layout.springify()}
+      style={style}
+    >
       {children}
     </Animated.View>
   );

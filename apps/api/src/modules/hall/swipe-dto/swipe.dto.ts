@@ -27,19 +27,19 @@ export enum SwipeBadge {
 // ============ Request DTOs ============
 
 export class SwipeActionDto {
-  @ApiProperty({ description: '案例ID' })
+  @ApiProperty({ description: 'Case ID' })
   @IsString()
   @IsNotEmpty()
   caseId: string;
 
-  @ApiProperty({ enum: SwipePrediction, description: '用户预测' })
+  @ApiProperty({ enum: SwipePrediction, description: 'User prediction' })
   @IsEnum(SwipePrediction)
   prediction: SwipePrediction;
 }
 
 export class SwipeBatchQueryDto {
   @ApiPropertyOptional({
-    description: '获取案例数量',
+    description: 'Number of cases to fetch',
     default: 5,
     minimum: 1,
     maximum: 20,
@@ -54,7 +54,7 @@ export class SwipeBatchQueryDto {
 
 export class LeaderboardQueryDto {
   @ApiPropertyOptional({
-    description: '排行榜条目数量',
+    description: 'Number of leaderboard entries',
     default: 20,
     minimum: 1,
     maximum: 50,
@@ -106,77 +106,79 @@ export class SwipeCaseDto {
   @ApiProperty()
   isVerified: boolean;
 
-  @ApiProperty({ description: '学校US News排名' })
+  @ApiProperty({ description: 'School US News ranking' })
   usNewsRank?: number;
 
-  @ApiProperty({ description: '学校录取率' })
+  @ApiProperty({ description: 'School acceptance rate' })
   acceptanceRate?: number;
 
-  @ApiPropertyOptional({ description: '学校所在州' })
+  @ApiPropertyOptional({ description: 'School state' })
   schoolState?: string;
 
-  @ApiPropertyOptional({ description: '学校所在城市' })
+  @ApiPropertyOptional({ description: 'School city' })
   schoolCity?: string;
 
-  @ApiPropertyOptional({ description: '毕业率 (%)' })
+  @ApiPropertyOptional({ description: 'Graduation rate (%)' })
   graduationRate?: number;
 
-  @ApiPropertyOptional({ description: '学生总数' })
+  @ApiPropertyOptional({ description: 'Total enrollment' })
   totalEnrollment?: number;
 
-  @ApiPropertyOptional({ description: '年学费 (USD)' })
+  @ApiPropertyOptional({ description: 'Annual tuition (USD)' })
   tuition?: number;
 
-  @ApiPropertyOptional({ description: '文书类型' })
+  @ApiPropertyOptional({ description: 'Essay type' })
   essayType?: string;
 
-  @ApiPropertyOptional({ description: '是否为私立学校' })
+  @ApiPropertyOptional({ description: 'Whether private school' })
   isPrivateSchool?: boolean;
 
   // 申请者档案聚合信息 (匿名化)
-  @ApiPropertyOptional({ description: '申请者年级' })
+  @ApiPropertyOptional({ description: 'Applicant grade' })
   applicantGrade?: string;
 
   @ApiPropertyOptional({
-    description: '申请者学校类型 (PUBLIC_US / PRIVATE_US / INTERNATIONAL)',
+    description: '申请者School type (PUBLIC_US / PRIVATE_US / INTERNATIONAL)',
   })
   applicantSchoolType?: string;
 
-  @ApiPropertyOptional({ description: '课外活动数量' })
+  @ApiPropertyOptional({ description: 'Extracurricular activity count' })
   activityCount?: number;
 
   @ApiPropertyOptional({
-    description: '活动类别摘要 (前3个去重类别)',
+    description: 'Activity category摘要 (前3个去重类别)',
     type: [String],
   })
   activityHighlights?: string[];
 
-  @ApiPropertyOptional({ description: '奖项数量' })
+  @ApiPropertyOptional({ description: 'Award count' })
   awardCount?: number;
 
-  @ApiPropertyOptional({ description: '最高奖项级别' })
+  @ApiPropertyOptional({ description: 'Highest award level' })
   highestAwardLevel?: string;
 
-  @ApiPropertyOptional({ description: 'AP/IB 课程数量' })
+  @ApiPropertyOptional({ description: 'AP/IB course count' })
   apCount?: number;
 }
 
 export class SwipeBatchMetaDto {
-  @ApiProperty({ description: '总可用案例数（未滑动的公开案例）' })
+  @ApiProperty({
+    description: 'Total available cases (public cases not yet swiped)',
+  })
   totalAvailable: number;
 
-  @ApiProperty({ description: '用户已滑动总数' })
+  @ApiProperty({ description: 'Total cases swiped by user' })
   totalSwiped: number;
 
-  @ApiProperty({ description: '是否还有更多可用案例' })
+  @ApiProperty({ description: 'Whether more cases are available' })
   hasMore: boolean;
 }
 
 export class SwipeBatchResultDto {
-  @ApiProperty({ type: [SwipeCaseDto], description: '案例列表' })
+  @ApiProperty({ type: [SwipeCaseDto], description: 'Case list' })
   cases: SwipeCaseDto[];
 
-  @ApiProperty({ type: SwipeBatchMetaDto, description: '元信息' })
+  @ApiProperty({ type: SwipeBatchMetaDto, description: 'Metadata' })
   meta: SwipeBatchMetaDto;
 }
 
@@ -187,22 +189,22 @@ export class SwipeResultDto {
   @ApiProperty({ enum: SwipePrediction })
   prediction: SwipePrediction;
 
-  @ApiProperty({ description: '真实结果' })
+  @ApiProperty({ description: 'Actual result' })
   actualResult: string;
 
   @ApiProperty()
   isCorrect: boolean;
 
-  @ApiProperty({ description: '当前连胜' })
+  @ApiProperty({ description: 'Current streak' })
   currentStreak: number;
 
-  @ApiProperty({ description: '获得积分' })
+  @ApiProperty({ description: 'Points earned' })
   pointsEarned: number;
 
-  @ApiProperty({ description: '是否升级徽章' })
+  @ApiProperty({ description: 'Whether badge was upgraded' })
   badgeUpgraded: boolean;
 
-  @ApiProperty({ enum: SwipeBadge, description: '当前徽章' })
+  @ApiProperty({ enum: SwipeBadge, description: 'Current badge' })
   currentBadge: SwipeBadge;
 }
 
@@ -213,7 +215,7 @@ export class SwipeStatsDto {
   @ApiProperty()
   correctCount: number;
 
-  @ApiProperty({ description: '准确率 0-100' })
+  @ApiProperty({ description: 'Accuracy 0-100' })
   accuracy: number;
 
   @ApiProperty()
@@ -225,13 +227,13 @@ export class SwipeStatsDto {
   @ApiProperty({ enum: SwipeBadge })
   badge: SwipeBadge;
 
-  @ApiProperty({ description: '距离下一徽章还需正确数' })
+  @ApiProperty({ description: 'Correct answers needed for next badge' })
   toNextBadge: number;
 
-  @ApiProperty({ description: '今日挑战完成数' })
+  @ApiProperty({ description: 'Daily challenge completions' })
   dailyChallengeCount: number;
 
-  @ApiProperty({ description: '今日挑战目标' })
+  @ApiProperty({ description: 'Daily challenge target' })
   dailyChallengeTarget: number;
 }
 
@@ -265,6 +267,9 @@ export class LeaderboardDto {
   @ApiProperty({ type: [LeaderboardEntryDto] })
   entries: LeaderboardEntryDto[];
 
-  @ApiProperty({ type: LeaderboardEntryDto, description: '当前用户排名' })
+  @ApiProperty({
+    type: LeaderboardEntryDto,
+    description: 'Current user ranking',
+  })
   currentUserEntry?: LeaderboardEntryDto;
 }

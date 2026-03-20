@@ -6,21 +6,23 @@ import {
   IsObject,
   IsArray,
   MaxLength,
+  ArrayMaxSize,
+  Min,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateSchoolEssaySourceDto {
-  @ApiProperty({ description: '学校 ID' })
+  @ApiProperty({ description: 'School ID' })
   @IsString()
   @MaxLength(200)
   schoolId: string;
 
-  @ApiProperty({ description: '来源类型', example: 'OFFICIAL' })
+  @ApiProperty({ description: 'Source type', example: 'OFFICIAL' })
   @IsString()
   @MaxLength(200)
   sourceType: string;
 
-  @ApiProperty({ description: '采集 URL' })
+  @ApiProperty({ description: 'Scraping URL' })
   @IsString()
   @MaxLength(2048)
   url: string;
@@ -32,7 +34,7 @@ export class CreateSchoolEssaySourceDto {
   slug?: string;
 
   @ApiPropertyOptional({
-    description: '采集分组',
+    description: 'Scrape group',
     default: 'GENERIC',
     example: 'COMMON_APP',
   })
@@ -41,13 +43,16 @@ export class CreateSchoolEssaySourceDto {
   @MaxLength(200)
   scrapeGroup?: string;
 
-  @ApiPropertyOptional({ description: '优先级 (高=优先)', default: 0 })
+  @ApiPropertyOptional({
+    description: 'Priority (higher = preferred)',
+    default: 0,
+  })
   @IsOptional()
   @IsInt()
   priority?: number;
 
   @ApiPropertyOptional({
-    description: '针对性采集配置',
+    description: 'Targeted scraping configuration',
     example: {
       cssSelectors: ['.essay-prompt'],
       llmHint: 'Essays listed under h3 headings',
@@ -59,7 +64,7 @@ export class CreateSchoolEssaySourceDto {
 }
 
 export class UpdateSchoolEssaySourceDto {
-  @ApiPropertyOptional({ description: '采集 URL' })
+  @ApiPropertyOptional({ description: 'Scraping URL' })
   @IsOptional()
   @IsString()
   @MaxLength(2048)
@@ -71,50 +76,53 @@ export class UpdateSchoolEssaySourceDto {
   @MaxLength(200)
   slug?: string;
 
-  @ApiPropertyOptional({ description: '采集分组' })
+  @ApiPropertyOptional({ description: 'Scrape group' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   scrapeGroup?: string;
 
-  @ApiPropertyOptional({ description: '是否启用' })
+  @ApiPropertyOptional({ description: 'Whether enabled' })
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
 
-  @ApiPropertyOptional({ description: '优先级' })
+  @ApiPropertyOptional({ description: 'Priority' })
   @IsOptional()
   @IsInt()
   priority?: number;
 
-  @ApiPropertyOptional({ description: '针对性采集配置' })
+  @ApiPropertyOptional({ description: 'Targeted scraping configuration' })
   @IsOptional()
   @IsObject()
   scrapeConfig?: Record<string, any>;
 }
 
 export class TestScrapeDto {
-  @ApiProperty({ description: '学校名称' })
+  @ApiProperty({ description: 'School name' })
   @IsString()
   @MaxLength(200)
   schoolName: string;
 
-  @ApiPropertyOptional({ description: '目标年份' })
+  @ApiPropertyOptional({ description: 'Target year' })
   @IsOptional()
   @IsInt()
   year?: number;
 }
 
 export class ConfirmSaveDto {
-  @ApiProperty({ description: '测试采集返回的完整数据' })
+  @ApiProperty({ description: 'Full data returned from test scrape' })
   @IsObject()
   data: any;
 
   @ApiPropertyOptional({
-    description: '选中的题目索引（不传则全部保存）',
+    description: 'Selected prompt indices (saves all if not provided)',
     type: [Number],
   })
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(500)
+  @IsInt({ each: true })
+  @Min(0, { each: true })
   selectedIndices?: number[];
 }

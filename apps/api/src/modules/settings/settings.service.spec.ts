@@ -90,10 +90,10 @@ describe('SettingsService', () => {
         null,
       );
 
-      // site_name has a default of '留学申请平台'
+      // site_name has a default of 'Study Abroad Platform'
       const result = await service.get('site_name');
 
-      expect(result).toBe('留学申请平台');
+      expect(result).toBe('Study Abroad Platform');
     });
 
     it('should return null for unknown key with no default', async () => {
@@ -246,7 +246,7 @@ describe('SettingsService', () => {
         create: {
           key: 'site_name',
           value: 'New Site Name',
-          description: '网站名称',
+          description: 'Site name',
           category: 'general',
         },
       });
@@ -370,8 +370,8 @@ describe('SettingsService', () => {
       const siteNameEntry = result.find((s) => s.key === 'site_name');
       expect(siteNameEntry).toEqual({
         key: 'site_name',
-        value: '留学申请平台',
-        description: '网站名称',
+        value: 'Study Abroad Platform',
+        description: 'Site name',
         category: 'general',
       });
     });
@@ -532,8 +532,8 @@ describe('SettingsService', () => {
       expect(prismaService.systemSetting.create).toHaveBeenCalledWith({
         data: {
           key: 'site_name',
-          value: '留学申请平台',
-          description: '网站名称',
+          value: 'Study Abroad Platform',
+          description: 'Site name',
           category: 'general',
         },
       });

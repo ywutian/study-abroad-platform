@@ -3,7 +3,7 @@ import { create } from 'zustand';
 interface User {
   id: string;
   email: string;
-  role: 'USER' | 'VERIFIED' | 'ADMIN';
+  role: 'USER' | 'VERIFIED' | 'OPERATOR' | 'ADMIN' | 'SUPER_ADMIN';
   emailVerified: boolean;
   locale: string;
 }

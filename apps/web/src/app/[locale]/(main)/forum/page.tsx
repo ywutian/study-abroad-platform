@@ -34,7 +34,11 @@ export default function ForumPage() {
   const locale = useLocale();
   const format = useFormatter();
   const { user } = useAuthStore();
-  const isVerified = user?.role === 'VERIFIED' || user?.role === 'ADMIN';
+  const isVerified =
+    user?.role === 'VERIFIED' ||
+    user?.role === 'OPERATOR' ||
+    user?.role === 'ADMIN' ||
+    user?.role === 'SUPER_ADMIN';
 
   // States
   const [categories, setCategories] = useState<Category[]>([]);

@@ -4,6 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ERR } from '../../common/constants/error-messages';
 
 @Injectable()
 export class ForumReportService {
@@ -33,12 +34,12 @@ export class ForumReportService {
     });
 
     if (!post) {
-      throw new NotFoundException('帖子不存在');
+      throw new NotFoundException(ERR.NOT_FOUND.post());
     }
 
     // 不能举报自己的帖子
     if (post.authorId === reporterId) {
-      throw new BadRequestException('不能举报自己的帖子');
+      throw new BadRequestException(ERR.BAD_REQUEST.cannotReportOwn());
     }
 
     // 检查是否已举报过
@@ -52,7 +53,7 @@ export class ForumReportService {
     });
 
     if (existingReport) {
-      throw new BadRequestException('您已举报过该帖子');
+      throw new BadRequestException(ERR.BAD_REQUEST.alreadyReportedPost());
     }
 
     return this.prisma.report.create({
@@ -95,12 +96,12 @@ export class ForumReportService {
     });
 
     if (!comment) {
-      throw new NotFoundException('评论不存在');
+      throw new NotFoundException(ERR.NOT_FOUND.comment());
     }
 
     // 不能举报自己的评论
     if (comment.authorId === reporterId) {
-      throw new BadRequestException('不能举报自己的评论');
+      throw new BadRequestException(ERR.BAD_REQUEST.cannotReportOwnComment());
     }
 
     // 检查是否已举报过
@@ -114,7 +115,7 @@ export class ForumReportService {
     });
 
     if (existingReport) {
-      throw new BadRequestException('您已举报过该评论');
+      throw new BadRequestException(ERR.BAD_REQUEST.alreadyReportedComment());
     }
 
     return this.prisma.report.create({

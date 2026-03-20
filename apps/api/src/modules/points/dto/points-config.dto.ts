@@ -10,30 +10,35 @@ import {
 import { Type } from 'class-transformer';
 
 export class TogglePointsDto {
-  @ApiProperty({ description: '是否启用积分系统' })
+  @ApiProperty({ description: 'Whether to enable the points system' })
   @IsBoolean()
   enabled: boolean;
 }
 
 export class UpdatePointActionDto {
-  @ApiProperty({ description: '积分值（正数为奖励，负数为消耗）' })
+  @ApiProperty({
+    description: 'Points value (positive for reward, negative for cost)',
+  })
   @IsNumber()
   points: number;
 }
 
 class PointActionUpdate {
-  @ApiProperty({ description: '动作名称' })
+  @ApiProperty({ description: 'Action name' })
   @IsString()
   @MaxLength(200)
   action: string;
 
-  @ApiProperty({ description: '积分值' })
+  @ApiProperty({ description: 'Points value' })
   @IsNumber()
   points: number;
 }
 
 export class BatchUpdatePointActionsDto {
-  @ApiProperty({ type: [PointActionUpdate], description: '批量更新积分值' })
+  @ApiProperty({
+    type: [PointActionUpdate],
+    description: 'Batch update point values',
+  })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => PointActionUpdate)

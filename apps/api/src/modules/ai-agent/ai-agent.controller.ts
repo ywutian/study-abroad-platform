@@ -36,41 +36,7 @@ import { AgentThrottleGuard, SkipAgentThrottle } from './guards';
 import { CurrentUser } from '../../common/decorators';
 import { ThrottleAI } from '../../common/decorators/throttle.decorator';
 import type { CurrentUserPayload } from '../../common/decorators';
-import { IsString, IsOptional, IsEnum, IsBoolean } from 'class-validator';
-import { AgentType } from './types';
-
-class ChatDto {
-  @IsString()
-  message: string;
-
-  @IsOptional()
-  @IsString()
-  conversationId?: string;
-
-  @IsOptional()
-  @IsBoolean()
-  stream?: boolean;
-
-  @IsOptional()
-  @IsString()
-  locale?: string;
-}
-
-class DirectAgentDto {
-  @IsEnum(AgentType)
-  agent: AgentType;
-
-  @IsString()
-  message: string;
-
-  @IsOptional()
-  @IsString()
-  conversationId?: string;
-
-  @IsOptional()
-  @IsString()
-  locale?: string;
-}
+import { ChatDto, DirectAgentDto } from './dto';
 
 @ApiTags('ai-agent')
 @ApiBearerAuth()
@@ -91,7 +57,7 @@ export class AiAgentController {
    * 与 AI Agent 对话（自动路由）
    */
   @Post('chat')
-  @ApiOperation({ summary: '与 AI Agent 对话' })
+  @ApiOperation({ summary: 'Chat with AI Agent' })
   async chat(
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: ChatDto,
@@ -155,7 +121,7 @@ export class AiAgentController {
    * 直接调用特定 Agent
    */
   @Post('agent')
-  @ApiOperation({ summary: '直接调用特定 Agent' })
+  @ApiOperation({ summary: 'Directly call a specific Agent' })
   async callAgent(
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: DirectAgentDto,
@@ -182,7 +148,7 @@ export class AiAgentController {
    * 获取对话列表
    */
   @Get('conversations')
-  @ApiOperation({ summary: '获取对话列表' })
+  @ApiOperation({ summary: 'Get conversation list' })
   async getConversations(
     @CurrentUser() user: CurrentUserPayload,
     @Query('limit') limit?: number,
@@ -199,7 +165,7 @@ export class AiAgentController {
    * 获取对话历史
    */
   @Get('history')
-  @ApiOperation({ summary: '获取对话历史' })
+  @ApiOperation({ summary: 'Get conversation history' })
   async getHistory(
     @CurrentUser() user: CurrentUserPayload,
     @Query('conversationId') conversationId?: string,
@@ -213,7 +179,7 @@ export class AiAgentController {
    * 清除对话
    */
   @Delete('conversation')
-  @ApiOperation({ summary: '清除对话' })
+  @ApiOperation({ summary: 'Clear conversation' })
   clearConversation(
     @CurrentUser() user: CurrentUserPayload,
     @Query('conversationId') conversationId?: string,
@@ -226,7 +192,7 @@ export class AiAgentController {
    * 刷新用户上下文
    */
   @Post('refresh-context')
-  @ApiOperation({ summary: '刷新用户上下文' })
+  @ApiOperation({ summary: 'Refresh user context' })
   async refreshContext(@CurrentUser() user: CurrentUserPayload) {
     await this.orchestrator.refreshContext(user.id);
     return { success: true };
@@ -241,8 +207,11 @@ export class AiAgentController {
    */
   @Get('usage')
   @SkipAgentThrottle()
-  @ApiOperation({ summary: '获取 Token 使用统计' })
-  @ApiResponse({ status: 200, description: '返回用户的 Token 使用统计' })
+  @ApiOperation({ summary: 'Get token usage statistics' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns user token usage statistics',
+  })
   async getUsage(@CurrentUser() user: CurrentUserPayload) {
     return this.tokenTracker.getUsageStats(user.id);
   }
@@ -252,7 +221,7 @@ export class AiAgentController {
    */
   @Get('rate-limit')
   @SkipAgentThrottle()
-  @ApiOperation({ summary: '获取当前限流状态' })
+  @ApiOperation({ summary: 'Get current rate limit status' })
   getRateLimit(@CurrentUser() user: CurrentUserPayload) {
     return {
       user: this.rateLimiter.getStatus(user.id, 'user'),
@@ -265,7 +234,7 @@ export class AiAgentController {
    */
   @Get('quota')
   @SkipAgentThrottle()
-  @ApiOperation({ summary: '检查使用配额' })
+  @ApiOperation({ summary: 'Check usage quota' })
   async checkQuota(@CurrentUser() user: CurrentUserPayload) {
     return this.tokenTracker.checkQuota(user.id);
   }
@@ -275,7 +244,7 @@ export class AiAgentController {
    */
   @Get('health')
   @SkipAgentThrottle()
-  @ApiOperation({ summary: '获取 AI Agent 服务健康状态' })
+  @ApiOperation({ summary: 'Get AI Agent service health status' })
   @HttpCode(HttpStatus.OK)
   async health() {
     const llmStatus = await this.llm.getServiceStatus();

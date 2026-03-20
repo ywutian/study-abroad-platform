@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { getLocalizedName } from '@/lib/i18n/locale-utils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -94,9 +93,17 @@ export function EssayPromptManager() {
   const [statusFilter, setStatusFilter] = useState<string>('PENDING');
   const [typeFilter, setTypeFilter] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [detailPrompt, setDetailPrompt] = useState<EssayPrompt | null>(null);
   const [rejectReason, setRejectReason] = useState('');
+
+  // Debounce search query (300ms)
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => {
+    debounceRef.current = setTimeout(() => setDebouncedSearch(searchQuery), 300);
+    return () => clearTimeout(debounceRef.current);
+  }, [searchQuery]);
 
   // 获取统计数据
   const { data: stats } = useQuery({
@@ -106,13 +113,13 @@ export function EssayPromptManager() {
 
   // 获取文书列表
   const { data: essaysData, isLoading } = useQuery({
-    queryKey: ['essayPrompts', statusFilter, typeFilter, searchQuery],
+    queryKey: ['essayPrompts', statusFilter, typeFilter, debouncedSearch],
     queryFn: () =>
       apiClient.get<{ data: EssayPrompt[]; total: number }>('/admin/essay-prompts', {
         params: {
           status: statusFilter !== 'ALL' ? statusFilter : undefined,
           type: typeFilter !== 'ALL' ? typeFilter : undefined,
-          search: searchQuery || undefined,
+          search: debouncedSearch || undefined,
           pageSize: 50,
         },
       }),
@@ -134,11 +141,14 @@ export function EssayPromptManager() {
   // 批量审核
   const batchVerifyMutation = useMutation({
     mutationFn: ({ ids, status, reason }: { ids: string[]; status: string; reason?: string }) =>
-      apiClient.post<{ success: number; failed: any[] }>('/admin/essay-prompts/batch-verify', {
-        ids,
-        status,
-        reason,
-      }),
+      apiClient.post<{ success: number; failed: Array<{ id: string; error: string }> }>(
+        '/admin/essay-prompts/batch-verify',
+        {
+          ids,
+          status,
+          reason,
+        }
+      ),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['essayPrompts'] });
       queryClient.invalidateQueries({ queryKey: ['essayPromptStats'] });
@@ -149,11 +159,14 @@ export function EssayPromptManager() {
 
   // 触发爬取
   const scrapeMutation = useMutation({
-    mutationFn: () => apiClient.post<any[]>('/admin/essay-scraper/scrape-all'),
+    mutationFn: () =>
+      apiClient.post<
+        Array<{ schoolName: string; success: boolean; count?: number; error?: string }>
+      >('/admin/essay-scraper/scrape-all'),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['essayPrompts'] });
       queryClient.invalidateQueries({ queryKey: ['essayPromptStats'] });
-      const successCount = data.filter((r: any) => r.success).length;
+      const successCount = data.filter((r) => r.success).length;
       toast.success(t('scrapeSuccess', { success: successCount, total: data.length }));
     },
   });
@@ -418,7 +431,12 @@ export function EssayPromptManager() {
                     <TableCell>{getStatusBadge(essay.status)}</TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => setDetailPrompt(essay)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={t('viewDetail')}
+                          onClick={() => setDetailPrompt(essay)}
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
                         {essay.status === 'PENDING' && (
@@ -426,6 +444,7 @@ export function EssayPromptManager() {
                             <Button
                               variant="ghost"
                               size="icon"
+                              aria-label={t('approve')}
                               onClick={() =>
                                 verifyMutation.mutate({ id: essay.id, status: 'VERIFIED' })
                               }
@@ -436,6 +455,7 @@ export function EssayPromptManager() {
                             <Button
                               variant="ghost"
                               size="icon"
+                              aria-label={t('reject')}
                               onClick={() => setDetailPrompt(essay)}
                               className="text-red-500 hover:text-red-600"
                             >

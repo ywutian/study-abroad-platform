@@ -32,6 +32,18 @@ export class LoggerService implements NestLoggerService {
     return this.request?.correlationId;
   }
 
+  private static readonly SEVERITY_MAP: Record<string, string> = {
+    info: 'INFO',
+    warn: 'WARNING',
+    error: 'ERROR',
+    debug: 'DEBUG',
+    verbose: 'DEBUG',
+  };
+
+  private get isProduction(): boolean {
+    return process.env.NODE_ENV === 'production';
+  }
+
   private formatMessage(
     level: string,
     message: string,
@@ -43,14 +55,15 @@ export class LoggerService implements NestLoggerService {
     const logObject = {
       timestamp,
       level,
+      severity: LoggerService.SEVERITY_MAP[level] || 'DEFAULT',
       correlationId,
       context: this.context,
       message,
       ...context,
     };
 
-    // In production, output JSON for log aggregators
-    if (process.env.NODE_ENV === 'production') {
+    // In production, output JSON for Cloud Logging / log aggregators
+    if (this.isProduction) {
       return JSON.stringify(logObject);
     }
 
@@ -61,27 +74,61 @@ export class LoggerService implements NestLoggerService {
     return `${timestamp} ${level.toUpperCase().padEnd(5)} ${corrIdStr}${contextStr} ${message}${extraStr}`;
   }
 
+  private writeOutput(level: string, formatted: string): void {
+    if (this.isProduction) {
+      // In production, route errors to stderr and everything else to stdout
+      // so Cloud Logging picks up the correct severity
+      if (level === 'error') {
+        process.stderr.write(formatted + '\n');
+      } else {
+        process.stdout.write(formatted + '\n');
+      }
+    } else {
+      // In development, use console methods for colored output
+      switch (level) {
+        case 'error':
+          console.error(formatted);
+          break;
+        case 'warn':
+          console.warn(formatted);
+          break;
+        case 'debug':
+          console.debug(formatted);
+          break;
+        default:
+          console.log(formatted);
+          break;
+      }
+    }
+  }
+
   log(message: string, context?: LogContext) {
-    console.log(this.formatMessage('info', message, context));
+    this.writeOutput('info', this.formatMessage('info', message, context));
   }
 
   error(message: string, trace?: string, context?: LogContext) {
-    console.error(this.formatMessage('error', message, { ...context, trace }));
+    this.writeOutput(
+      'error',
+      this.formatMessage('error', message, { ...context, trace }),
+    );
   }
 
   warn(message: string, context?: LogContext) {
-    console.warn(this.formatMessage('warn', message, context));
+    this.writeOutput('warn', this.formatMessage('warn', message, context));
   }
 
   debug(message: string, context?: LogContext) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.debug(this.formatMessage('debug', message, context));
+    if (!this.isProduction) {
+      this.writeOutput('debug', this.formatMessage('debug', message, context));
     }
   }
 
   verbose(message: string, context?: LogContext) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.log(this.formatMessage('verbose', message, context));
+    if (!this.isProduction) {
+      this.writeOutput(
+        'verbose',
+        this.formatMessage('verbose', message, context),
+      );
     }
   }
 

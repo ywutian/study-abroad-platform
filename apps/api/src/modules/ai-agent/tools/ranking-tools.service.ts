@@ -14,6 +14,19 @@ import { SchoolLookupHelper } from './helpers/school-lookup.helper';
 import { extractJsonFromLlm } from './helpers/llm-json.helper';
 import { formatHighSchoolContext } from './helpers/education-context.helper';
 import { ToolHandler, IToolHandlerProvider } from './tool-handler.interface';
+import { CASE_REVIEW_APPROVED_WHERE } from '../../../common/constants/prisma-selects';
+import {
+  parseCaseTestScores,
+  parseCaseActivities,
+  parseCaseAwards,
+} from '../../../common/constants/data-formats';
+
+function computePercentile(value: number, distribution: number[]): number {
+  if (distribution.length === 0) return 50;
+  const sorted = [...distribution].sort((a, b) => a - b);
+  const below = sorted.filter((v) => v < value).length;
+  return Math.round((below / sorted.length) * 100);
+}
 
 @Injectable()
 export class RankingToolsService implements IToolHandlerProvider {
@@ -317,6 +330,21 @@ ${targetTier ? `Target school tier: ${targetTier}` : ''}`;
           schoolId: school.id,
           result: 'ADMITTED',
           visibility: { in: ['ANONYMOUS', 'VERIFIED_ONLY'] },
+          ...CASE_REVIEW_APPROVED_WHERE,
+        },
+        select: {
+          gpaRange: true,
+          satRange: true,
+          tags: true,
+          gpa9: true,
+          gpa10: true,
+          gpa11: true,
+          testScores: true,
+          activities: true,
+          awards: true,
+          highSchoolType: true,
+          curriculumType: true,
+          demographicTags: true,
         },
         take: 20,
         orderBy: { createdAt: 'desc' },
@@ -345,6 +373,85 @@ ${targetTier ? `Target school tier: ${targetTier}` : ''}`;
       const notFilled = isZh ? '未填' : 'Not provided';
       const insufficient = isZh ? '数据不足' : 'Insufficient data';
 
+      // ── Percentile computation from structured test scores ──
+      const gpaDistribution: number[] = [];
+      const satDistribution: number[] = [];
+      const actDistribution: number[] = [];
+      const admittedActivityCategories = new Set<string>();
+      const admittedAwardTiers: number[] = [];
+
+      for (const c of admittedCases) {
+        // GPA: prefer gpa11 > gpa10 > gpa9 as representative value
+        const representativeGpa = c.gpa11 ?? c.gpa10 ?? c.gpa9;
+        if (representativeGpa != null) gpaDistribution.push(representativeGpa);
+
+        // Test scores from structured JSON field
+        const scores = parseCaseTestScores(c.testScores);
+        for (const s of scores) {
+          if (s.type === 'SAT' && s.score > 0) satDistribution.push(s.score);
+          if (s.type === 'ACT' && s.score > 0) actDistribution.push(s.score);
+        }
+
+        // Activity categories
+        const activities = parseCaseActivities(c.activities);
+        for (const a of activities) {
+          if (a.category)
+            admittedActivityCategories.add(a.category.toLowerCase());
+        }
+
+        // Award tiers
+        const awards = parseCaseAwards(c.awards);
+        for (const a of awards) {
+          if (a.tier != null) admittedAwardTiers.push(a.tier);
+        }
+      }
+
+      // Compute user percentiles
+      const userGpa = profile.gpa as number | undefined;
+      const userTestScores = (profile.testScores || []) as Array<{
+        type: string;
+        score: number;
+      }>;
+      const userSat = userTestScores.find((s) => s.type === 'SAT')?.score;
+      const userAct = userTestScores.find((s) => s.type === 'ACT')?.score;
+
+      const percentiles: Record<string, number> = {};
+      if (userGpa != null && gpaDistribution.length > 0) {
+        percentiles.gpa = computePercentile(userGpa, gpaDistribution);
+      }
+      if (userSat != null && satDistribution.length > 0) {
+        percentiles.sat = computePercentile(userSat, satDistribution);
+      }
+      if (userAct != null && actDistribution.length > 0) {
+        percentiles.act = computePercentile(userAct, actDistribution);
+      }
+
+      // Activity category overlap
+      const userActivities = (profile.activities || []) as Array<{
+        category?: string;
+      }>;
+      const userCategories = new Set(
+        userActivities
+          .map((a) => a.category?.toLowerCase())
+          .filter(Boolean) as string[],
+      );
+      const activityCategoryOverlap = [...userCategories].filter((c) =>
+        admittedActivityCategories.has(c),
+      ).length;
+
+      // Max award tier comparison (lower tier number = more prestigious)
+      const userAwards = (profile.awards || []) as Array<{
+        competition?: { tier?: number };
+        tier?: number;
+      }>;
+      const userAwardTiers = userAwards
+        .map((a) => a.competition?.tier ?? a.tier)
+        .filter((t): t is number => t != null);
+      const userMaxAwardTier =
+        userAwardTiers.length > 0 ? Math.min(...userAwardTiers) : null;
+      const admittedMaxAwardTier =
+        admittedAwardTiers.length > 0 ? Math.min(...admittedAwardTiers) : null;
+
       const systemPrompt = isZh
         ? `你是留学数据分析师。请对比学生档案与该校录取学生的整体情况。`
         : `You are an admissions data analyst. Compare the student's profile with the overall admitted student data for this school.`;
@@ -361,6 +468,15 @@ ${targetTier ? `Target school tier: ${targetTier}` : ''}`;
                 locale,
               );
               const hsLine = hsCtx ? `\n- ${hsCtx}` : '';
+
+              const percLines = Object.entries(percentiles)
+                .map(([k, v]) =>
+                  isZh
+                    ? `  ${k.toUpperCase()} 百分位: ${v}%`
+                    : `  ${k.toUpperCase()} percentile: ${v}%`,
+                )
+                .join('\n');
+
               return isZh
                 ? `
 目标学校：${displayName} (排名 #${school.usNewsRank})
@@ -375,6 +491,11 @@ ${targetTier ? `Target school tier: ${targetTier}` : ''}`;
 - 标化：${profile.testScores?.map((s: any) => `${s.type}: ${s.score}`).join(', ') || notFilled}
 - 活动：${profile.activities?.length || 0}个
 - 奖项：${profile.awards?.length || 0}个
+
+百分位排名（在录取案例中的位置）：
+${percLines || insufficient}
+- 活动类别重合数：${activityCategoryOverlap}/${admittedActivityCategories.size || 0}
+- 最高奖项等级对比：您 ${userMaxAwardTier != null ? `T${userMaxAwardTier}` : notFilled} vs 录取案例 ${admittedMaxAwardTier != null ? `T${admittedMaxAwardTier}` : insufficient}
 
 请分析差距并给出建议。`
                 : `
@@ -391,6 +512,11 @@ Your profile:
 - Activities: ${profile.activities?.length || 0}
 - Awards: ${profile.awards?.length || 0}
 
+Percentile rankings (among admitted cases):
+${percLines || insufficient}
+- Activity category overlap: ${activityCategoryOverlap}/${admittedActivityCategories.size || 0}
+- Max award tier comparison: You ${userMaxAwardTier != null ? `T${userMaxAwardTier}` : notFilled} vs Admitted ${admittedMaxAwardTier != null ? `T${admittedMaxAwardTier}` : insufficient}
+
 Analyze the gaps and provide recommendations.`;
             })(),
           },
@@ -401,6 +527,11 @@ Analyze the gaps and provide recommendations.`;
       return {
         school: displayName,
         admittedCasesCount: admittedCases.length,
+        percentiles,
+        activityCategoryOverlap,
+        admittedActivityCategoryCount: admittedActivityCategories.size,
+        userMaxAwardTier,
+        admittedMaxAwardTier,
         analysis,
       };
     } catch (error) {

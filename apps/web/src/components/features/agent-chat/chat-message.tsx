@@ -4,52 +4,24 @@
  * 聊天消息组件 - 支持 Markdown 渲染、动画和工具状态可视化
  */
 
-import { memo, useMemo, useState } from 'react';
+import { memo, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { cn, getSchoolName, getSchoolSubName } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { getLocalizedName } from '@/lib/i18n/locale-utils';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import {
-  Loader2,
-  Wrench,
-  CheckCircle2,
-  User,
-  Copy,
-  Check,
-  ChevronDown,
-  ChevronUp,
-  Sparkles,
-  Database,
-  Search,
-  FileText,
-  BarChart3,
-  School,
-  Calendar,
-  AlertCircle,
-} from 'lucide-react';
-import { ChatMessage as ChatMessageType, AGENT_INFO, AgentType, ToolCallInfo } from './types';
-import { Streamdown } from 'streamdown';
-import { cjk } from '@streamdown/cjk';
+import { User, Copy, Check, ChevronDown, ChevronUp, Sparkles, Wrench } from 'lucide-react';
+import { ChatMessage as ChatMessageType, AGENT_INFO, AgentType } from './types';
 import { transitions } from '@/lib/motion';
+import { ToolCallCard } from './tool-call-card';
+import { ThinkingIndicator } from './thinking-indicator';
+import { MessageContent } from './message-content';
 
 interface ChatMessageProps {
   message: ChatMessageType;
   isLast?: boolean;
 }
-
-// 工具图标映射
-const TOOL_ICONS: Record<string, React.ReactNode> = {
-  search_schools: <School className="h-3 w-3" />,
-  get_user_profile: <User className="h-3 w-3" />,
-  analyze_profile: <BarChart3 className="h-3 w-3" />,
-  search_cases: <Search className="h-3 w-3" />,
-  get_deadlines: <Calendar className="h-3 w-3" />,
-  review_essay: <FileText className="h-3 w-3" />,
-  query_database: <Database className="h-3 w-3" />,
-};
 
 export const ChatMessage = memo(function ChatMessage({
   message,
@@ -238,7 +210,7 @@ export const ChatMessage = memo(function ChatMessage({
                 isUser ? 'prose-invert' : 'dark:prose-invert'
               )}
             >
-              <MarkdownContent content={message.content} isStreaming={message.isStreaming} />
+              <MessageContent content={message.content} isStreaming={message.isStreaming} />
             </div>
           ) : message.isStreaming ? (
             <ThinkingIndicator thinkingText={t('thinking')} />
@@ -277,344 +249,6 @@ export const ChatMessage = memo(function ChatMessage({
   );
 });
 
-// 工具调用卡片组件
-function ToolCallCard({
-  tool,
-  isUser,
-  index,
-}: {
-  tool: ToolCallInfo;
-  isUser: boolean;
-  index: number;
-}) {
-  const t = useTranslations('agentChat');
-  const isRunning = tool.status === 'running';
-  const isError = tool.status === 'error';
-
-  const formatToolName = (name: string): string => {
-    const labels: Record<string, string> = {
-      search_schools: t('tools.searchSchools'),
-      get_user_profile: t('tools.getProfile'),
-      analyze_profile: t('tools.analyzeProfile'),
-      search_cases: t('tools.searchCases'),
-      get_deadlines: t('tools.getDeadlines'),
-      review_essay: t('tools.reviewEssay'),
-      query_database: t('tools.queryDatabase'),
-      generate_essay_outline: t('tools.generateOutline'),
-      recommend_schools: t('tools.recommendSchools'),
-      analyze_admission_chance: t('tools.analyzeChance'),
-    };
-    return labels[name] || name.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: -8 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.05 }}
-      className={cn(
-        'flex items-center gap-2 text-xs px-2.5 py-1.5 rounded-lg',
-        isUser
-          ? 'bg-primary-foreground/10'
-          : isError
-            ? 'bg-destructive/10 border border-destructive/20'
-            : isRunning
-              ? 'bg-primary/10 border border-primary/20'
-              : 'bg-muted/50 border border-border/50'
-      )}
-    >
-      {/* Status Icon */}
-      {isRunning ? (
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-        >
-          <Loader2 className="h-3 w-3 text-primary" />
-        </motion.div>
-      ) : isError ? (
-        <AlertCircle className="h-3 w-3 text-destructive" />
-      ) : (
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={transitions.springSnappy}
-        >
-          <CheckCircle2 className="h-3 w-3 text-success" />
-        </motion.div>
-      )}
-
-      {/* Tool Icon */}
-      {TOOL_ICONS[tool.name] || <Wrench className="h-3 w-3" />}
-
-      {/* Tool Name */}
-      <span className={cn('font-medium', isRunning && 'text-primary')}>
-        {formatToolName(tool.name)}
-      </span>
-
-      {/* Running Animation */}
-      {isRunning && (
-        <motion.div className="flex gap-0.5 ml-auto">
-          {[0, 1, 2].map((i) => (
-            <motion.span
-              key={i}
-              className="w-1 h-1 rounded-full bg-primary"
-              animate={{ opacity: [0.3, 1, 0.3] }}
-              transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}
-            />
-          ))}
-        </motion.div>
-      )}
-    </motion.div>
-  );
-}
-
-// 思考指示器
-function ThinkingIndicator({ thinkingText }: { thinkingText: string }) {
-  return (
-    <div className="flex items-center gap-2 py-1">
-      <motion.div
-        className="flex items-center gap-1"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
-        {[0, 1, 2].map((i) => (
-          <motion.span
-            key={i}
-            className="w-2 h-2 rounded-full bg-primary/60"
-            animate={{
-              y: [0, -6, 0],
-              scale: [1, 1.1, 1],
-            }}
-            transition={{
-              duration: 0.6,
-              repeat: Infinity,
-              delay: i * 0.15,
-              ease: 'easeInOut',
-            }}
-          />
-        ))}
-      </motion.div>
-      <motion.span
-        className="text-xs text-muted-foreground"
-        animate={{ opacity: [0.5, 1, 0.5] }}
-        transition={{ duration: 1.5, repeat: Infinity }}
-      >
-        {thinkingText}
-      </motion.span>
-    </div>
-  );
-}
-
-// 学校推荐数据类型
-interface SchoolRecommendation {
-  name: string;
-  nameZh: string;
-  tier: 'reach' | 'target' | 'safety';
-  reason: string;
-}
-
-// 学校推荐卡片组件
-function SchoolRecommendationCards({ schools }: { schools: SchoolRecommendation[] }) {
-  const t = useTranslations('agentChat');
-  const locale = useLocale();
-  const tierConfig = {
-    reach: {
-      label: t('tierReach'),
-      color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-      icon: '🎯',
-    },
-    target: {
-      label: t('tierTarget'),
-      color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-      icon: '✅',
-    },
-    safety: {
-      label: t('tierSafety'),
-      color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-      icon: '🛡️',
-    },
-  };
-
-  // 按 tier 分组
-  const grouped = schools.reduce(
-    (acc, school) => {
-      const tier = school.tier || 'target';
-      if (!acc[tier]) acc[tier] = [];
-      acc[tier].push(school);
-      return acc;
-    },
-    {} as Record<string, SchoolRecommendation[]>
-  );
-
-  const tierOrder: Array<'reach' | 'target' | 'safety'> = ['reach', 'target', 'safety'];
-
-  return (
-    <div className="my-3 space-y-3">
-      {tierOrder.map((tier) => {
-        const tierSchools = grouped[tier];
-        if (!tierSchools?.length) return null;
-        const config = tierConfig[tier];
-
-        return (
-          <div key={tier} className="space-y-2">
-            <div className="flex items-center gap-2">
-              <span>{config.icon}</span>
-              <Badge variant="secondary" className={cn('text-xs', config.color)}>
-                {t('tierSchoolCount', { label: config.label, count: tierSchools.length })}
-              </Badge>
-            </div>
-            <div className="grid gap-2">
-              {tierSchools.map((school, idx) => (
-                <motion.div
-                  key={`${school.name}-${idx}`}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.05 }}
-                  className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 border border-border/50 hover:border-primary/30 transition-colors"
-                >
-                  <School className="h-4 w-4 mt-0.5 text-primary shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-medium text-sm">{getSchoolName(school, locale)}</span>
-                      {getSchoolSubName(school, locale) && (
-                        <span className="text-xs text-muted-foreground">
-                          {getSchoolSubName(school, locale)}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                      {school.reason}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// 尝试解析结构化数据
-function tryParseStructuredData(
-  content: string
-): { type: 'schools'; data: SchoolRecommendation[] } | null {
-  // 匹配 JSON 代码块
-  const jsonMatch = content.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
-  if (!jsonMatch) return null;
-
-  try {
-    const parsed = JSON.parse(jsonMatch[1]);
-
-    // 检测学校推荐格式
-    if (parsed.schools && Array.isArray(parsed.schools)) {
-      const schools = parsed.schools.filter((s: SchoolRecommendation) => s.name);
-      if (schools.length > 0) {
-        return { type: 'schools', data: schools };
-      }
-    }
-  } catch {
-    // 解析失败，返回 null
-  }
-
-  return null;
-}
-
-// 共享 Markdown 组件覆盖 — Streamdown components prop
-const markdownComponents = {
-  p: ({ children }: { children?: React.ReactNode }) => (
-    <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>
-  ),
-  ul: ({ children }: { children?: React.ReactNode }) => (
-    <ul className="mb-2 ml-4 list-disc space-y-1">{children}</ul>
-  ),
-  ol: ({ children }: { children?: React.ReactNode }) => (
-    <ol className="mb-2 ml-4 list-decimal space-y-1">{children}</ol>
-  ),
-  li: ({ children }: { children?: React.ReactNode }) => (
-    <li className="leading-relaxed">{children}</li>
-  ),
-  strong: ({ children }: { children?: React.ReactNode }) => (
-    <strong className="font-semibold">{children}</strong>
-  ),
-  code: ({ children, className }: { children?: React.ReactNode; className?: string }) => {
-    const isInline = !className;
-    return isInline ? (
-      <code className="px-1.5 py-0.5 rounded-md bg-black/10 dark:bg-white/10 text-sm font-mono">
-        {children}
-      </code>
-    ) : (
-      <code className="block p-3 rounded-lg bg-black/10 dark:bg-white/10 text-sm font-mono overflow-x-auto">
-        {children}
-      </code>
-    );
-  },
-  pre: ({ children }: { children?: React.ReactNode }) => (
-    <pre className="relative my-2 overflow-hidden rounded-lg">{children}</pre>
-  ),
-  h3: ({ children }: { children?: React.ReactNode }) => (
-    <h3 className="font-semibold text-base mt-4 mb-2">{children}</h3>
-  ),
-  h4: ({ children }: { children?: React.ReactNode }) => (
-    <h4 className="font-medium mt-3 mb-1.5">{children}</h4>
-  ),
-  blockquote: ({ children }: { children?: React.ReactNode }) => (
-    <blockquote className="border-l-2 border-primary/50 pl-3 my-2 italic text-muted-foreground">
-      {children}
-    </blockquote>
-  ),
-  a: ({ href, children }: { href?: string; children?: React.ReactNode }) => (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-primary underline underline-offset-2 hover:text-primary/80"
-    >
-      {children}
-    </a>
-  ),
-};
-
-// Markdown 渲染（Streamdown 统一处理流式与完成态）
-function MarkdownContent({
-  content,
-  isStreaming = false,
-}: {
-  content: string;
-  isStreaming?: boolean;
-}) {
-  // 流式输出时跳过结构化数据解析，避免解析不完整的 JSON
-  const structuredData = useMemo(
-    () => (isStreaming ? null : tryParseStructuredData(content)),
-    [content, isStreaming]
-  );
-
-  const cleanedContent = useMemo(() => {
-    if (structuredData) {
-      // Remove the JSON code block and any introductory line about structured data
-      return content
-        .replace(/```(?:json)?\s*\n?[\s\S]*?\n?```/, '')
-        .replace(/.*结构化数据.*\n?/g, '')
-        .trim();
-    }
-    return content;
-  }, [content, structuredData]);
-
-  return (
-    <>
-      <Streamdown components={markdownComponents} plugins={{ cjk }} isAnimating={isStreaming}>
-        {cleanedContent}
-      </Streamdown>
-
-      {/* 渲染结构化数据 */}
-      {structuredData?.type === 'schools' && (
-        <SchoolRecommendationCards schools={structuredData.data} />
-      )}
-    </>
-  );
-}
-
 // 静态版本（用于 reduced motion）
 function StaticChatMessage({
   message,
@@ -644,15 +278,13 @@ function StaticChatMessage({
             isUser ? 'bg-primary text-primary-foreground rounded-br-sm' : 'bg-muted rounded-bl-sm'
           )}
         >
-          <MarkdownContent content={message.content} isStreaming={false} />
+          <MessageContent content={message.content} isStreaming={false} />
         </div>
         <span className="text-2xs text-muted-foreground px-1">{formatTime(message.timestamp)}</span>
       </div>
     </div>
   );
 }
-
-// Tool name formatting is now handled via translations in component
 
 function formatTime(date: Date): string {
   return new Intl.DateTimeFormat(undefined, {

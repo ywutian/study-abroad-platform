@@ -20,6 +20,7 @@ import {
   calculateTier,
 } from '../../common/utils/scoring';
 import { clampPercentRate } from '../../common/utils/percent.util';
+import { EssayStatus } from '@prisma/client';
 import {
   SCHOOL_LIST_SCHOOL_SELECT,
   AI_RECOMMENDATION_SCHOOL_SELECT,
@@ -95,6 +96,21 @@ export class SchoolListService {
       }
     }
 
+    // 批量查询文书题目数量
+    let essayCountMap = new Map<string, number>();
+    if (items.length > 0) {
+      const counts = await this.prisma.essayPrompt.groupBy({
+        by: ['schoolId'],
+        where: {
+          schoolId: { in: items.map((i) => i.schoolId) },
+          isActive: true,
+          status: EssayStatus.VERIFIED,
+        },
+        _count: true,
+      });
+      essayCountMap = new Map(counts.map((c) => [c.schoolId, c._count]));
+    }
+
     return items.map((item) => ({
       id: item.id,
       schoolId: item.schoolId,
@@ -104,6 +120,7 @@ export class SchoolListService {
       notes: item.notes || undefined,
       isAIRecommended: item.isAIRecommended,
       prediction: predMap.get(item.schoolId) || undefined,
+      essayPromptCount: essayCountMap.get(item.schoolId) || 0,
       createdAt: item.createdAt,
     }));
   }
@@ -154,6 +171,14 @@ export class SchoolListService {
       },
     });
 
+    const essayCount = await this.prisma.essayPrompt.count({
+      where: {
+        schoolId: item.schoolId,
+        isActive: true,
+        status: EssayStatus.VERIFIED,
+      },
+    });
+
     return {
       id: item.id,
       schoolId: item.schoolId,
@@ -162,6 +187,7 @@ export class SchoolListService {
       round: item.round || undefined,
       notes: item.notes || undefined,
       isAIRecommended: item.isAIRecommended,
+      essayPromptCount: essayCount,
       createdAt: item.createdAt,
     };
   }
@@ -197,6 +223,14 @@ export class SchoolListService {
       },
     });
 
+    const essayCount = await this.prisma.essayPrompt.count({
+      where: {
+        schoolId: updated.schoolId,
+        isActive: true,
+        status: EssayStatus.VERIFIED,
+      },
+    });
+
     return {
       id: updated.id,
       schoolId: updated.schoolId,
@@ -205,6 +239,7 @@ export class SchoolListService {
       round: updated.round || undefined,
       notes: updated.notes || undefined,
       isAIRecommended: updated.isAIRecommended,
+      essayPromptCount: essayCount,
       createdAt: updated.createdAt,
     };
   }

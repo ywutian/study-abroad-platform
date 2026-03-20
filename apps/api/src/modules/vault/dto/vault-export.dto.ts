@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty, MaxLength } from 'class-validator';
 
 export class VaultExportDto {
-  @ApiProperty({ description: '用户密码确认' })
+  @ApiProperty({ description: 'User password confirmation' })
   @MaxLength(128)
   @IsString()
   @IsNotEmpty()

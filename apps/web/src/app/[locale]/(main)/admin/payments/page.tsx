@@ -288,7 +288,7 @@ export default function AdminPaymentsPage() {
                               className="h-8 w-8"
                               onClick={() => setRefundTarget(payment.id)}
                               disabled={payment.status !== 'SUCCESS'}
-                              title={t('payments.refund')}
+                              aria-label={t('payments.refund')}
                             >
                               <RotateCcw className="h-4 w-4" />
                             </Button>
@@ -302,7 +302,7 @@ export default function AdminPaymentsPage() {
                                   email: payment.user.email,
                                 })
                               }
-                              title={t('payments.adjustSub')}
+                              aria-label={t('payments.adjustSub')}
                             >
                               <ArrowUpDown className="h-4 w-4" />
                             </Button>

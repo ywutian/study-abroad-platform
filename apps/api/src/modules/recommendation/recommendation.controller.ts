@@ -6,8 +6,6 @@ import {
   Body,
   Param,
   UseGuards,
-  HttpCode,
-  HttpStatus,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -34,7 +32,9 @@ export class RecommendationController {
   constructor(private readonly recommendationService: RecommendationService) {}
 
   @Post()
-  @ApiOperation({ summary: '生成 AI 选校建议 - 消耗25积分' })
+  @ApiOperation({
+    summary: 'Generate AI school recommendation - costs 25 points',
+  })
   @ApiResponse({ status: 200, type: SchoolRecommendationResponseDto })
   async generateRecommendation(
     @CurrentUser() user: CurrentUserPayload,
@@ -48,13 +48,15 @@ export class RecommendationController {
   }
 
   @Get('preflight')
-  @ApiOperation({ summary: '预检查用户是否可以生成选校建议' })
+  @ApiOperation({
+    summary: 'Pre-check if user can generate school recommendation',
+  })
   async preflight(@CurrentUser() user: CurrentUserPayload) {
     return this.recommendationService.checkPreflight(user.id);
   }
 
   @Get('history')
-  @ApiOperation({ summary: '获取选校建议历史' })
+  @ApiOperation({ summary: 'Get school recommendation history' })
   @ApiResponse({ status: 200, type: [SchoolRecommendationResponseDto] })
   async getHistory(
     @CurrentUser() user: CurrentUserPayload,
@@ -63,7 +65,7 @@ export class RecommendationController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: '获取单个推荐详情' })
+  @ApiOperation({ summary: 'Get single recommendation details' })
   @ApiResponse({ status: 200, type: SchoolRecommendationResponseDto })
   async getById(
     @CurrentUser() user: CurrentUserPayload,
@@ -73,13 +75,12 @@ export class RecommendationController {
   }
 
   @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: '删除选校建议记录' })
-  @ApiResponse({ status: 204 })
+  @ApiOperation({ summary: 'Delete school recommendation record' })
   async deleteRecommendation(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
-  ): Promise<void> {
-    return this.recommendationService.deleteRecommendation(user.id, id);
+  ) {
+    await this.recommendationService.deleteRecommendation(user.id, id);
+    return { message: 'Recommendation deleted' };
   }
 }

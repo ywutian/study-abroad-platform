@@ -26,7 +26,7 @@ export class AssessmentController {
 
   @Get(':type')
   @Public()
-  @ApiOperation({ summary: '获取测评题目' })
+  @ApiOperation({ summary: 'Get assessment questions' })
   @ApiParam({ name: 'type', enum: AssessmentTypeEnum })
   @ApiResponse({ status: 200, type: AssessmentDto })
   async getAssessment(
@@ -38,7 +38,7 @@ export class AssessmentController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: '提交测评答案' })
+  @ApiOperation({ summary: 'Submit assessment answers' })
   @ApiResponse({ status: 200, type: AssessmentResultDto })
   async submitAssessment(
     @CurrentUser() user: CurrentUserPayload,
@@ -50,7 +50,7 @@ export class AssessmentController {
   @Get('history/me')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: '获取测评历史' })
+  @ApiOperation({ summary: 'Get assessment history' })
   @ApiResponse({ status: 200, type: [AssessmentResultDto] })
   async getHistory(
     @CurrentUser() user: CurrentUserPayload,
@@ -61,8 +61,8 @@ export class AssessmentController {
   @Get('result/:id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: '获取单个测评结果' })
-  @ApiParam({ name: 'id', description: '结果ID' })
+  @ApiOperation({ summary: 'Get single assessment result' })
+  @ApiParam({ name: 'id', description: 'Result ID' })
   @ApiResponse({ status: 200, type: AssessmentResultDto })
   async getResult(
     @CurrentUser() user: CurrentUserPayload,

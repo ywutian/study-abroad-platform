@@ -1,0 +1,303 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { EssayPromptService } from './essay-prompt.service';
+import { PrismaService } from '../../prisma/prisma.service';
+
+describe('EssayPromptService', () => {
+  let service: EssayPromptService;
+
+  const mockPrisma = {
+    school: {
+      findUnique: jest.fn(),
+      findFirst: jest.fn(),
+    },
+    essayPrompt: {
+      create: jest.fn(),
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      findFirst: jest.fn(),
+      update: jest.fn(),
+      count: jest.fn(),
+      groupBy: jest.fn(),
+    },
+    essayPromptAudit: {
+      create: jest.fn().mockResolvedValue({}),
+    },
+  };
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        EssayPromptService,
+        { provide: PrismaService, useValue: mockPrisma },
+      ],
+    }).compile();
+
+    service = module.get<EssayPromptService>(EssayPromptService);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('create', () => {
+    it('should create an essay prompt successfully', async () => {
+      const dto = {
+        schoolId: 'school-1',
+        year: 2025,
+        type: 'COMMON_APP' as any,
+        prompt: 'Tell us about yourself',
+        sourceType: 'OFFICIAL' as any,
+        sourceUrl: 'https://example.com',
+      };
+
+      mockPrisma.school.findUnique.mockResolvedValue({ id: 'school-1' });
+      mockPrisma.essayPrompt.create.mockResolvedValue({
+        id: 'prompt-1',
+        ...dto,
+        school: { name: 'MIT' },
+        sources: [{ sourceType: 'OFFICIAL' }],
+      });
+
+      const result = await service.create(dto, 'admin-1');
+
+      expect(result.id).toBe('prompt-1');
+      expect(mockPrisma.school.findUnique).toHaveBeenCalledWith({
+        where: { id: 'school-1' },
+      });
+      expect(mockPrisma.essayPromptAudit.create).toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException when school not found', async () => {
+      mockPrisma.school.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.create(
+          {
+            schoolId: 'nonexistent',
+            year: 2025,
+            type: 'COMMON_APP' as any,
+            prompt: 'Test',
+          },
+          'admin-1',
+        ),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('findAll', () => {
+    it('should return paginated essay prompts', async () => {
+      const mockData = [
+        { id: 'p1', prompt: 'Prompt 1', school: { name: 'MIT' } },
+        { id: 'p2', prompt: 'Prompt 2', school: { name: 'Stanford' } },
+      ];
+      mockPrisma.essayPrompt.findMany.mockResolvedValue(mockData);
+      mockPrisma.essayPrompt.count.mockResolvedValue(2);
+
+      const result = await service.findAll({
+        page: 1,
+        pageSize: 20,
+      });
+
+      expect(result.data).toHaveLength(2);
+      expect(result.total).toBe(2);
+      expect(result.page).toBe(1);
+    });
+
+    it('should apply search filter', async () => {
+      mockPrisma.essayPrompt.findMany.mockResolvedValue([]);
+      mockPrisma.essayPrompt.count.mockResolvedValue(0);
+
+      await service.findAll({ search: 'MIT', page: 1, pageSize: 10 });
+
+      expect(mockPrisma.essayPrompt.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            isActive: true,
+            OR: expect.arrayContaining([
+              expect.objectContaining({
+                prompt: { contains: 'MIT', mode: 'insensitive' },
+              }),
+            ]),
+          }),
+        }),
+      );
+    });
+
+    it('should apply year and type filters', async () => {
+      mockPrisma.essayPrompt.findMany.mockResolvedValue([]);
+      mockPrisma.essayPrompt.count.mockResolvedValue(0);
+
+      await service.findAll({
+        year: 2025,
+        type: 'COMMON_APP' as any,
+        page: 1,
+        pageSize: 10,
+      });
+
+      expect(mockPrisma.essayPrompt.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            year: 2025,
+            type: 'COMMON_APP',
+          }),
+        }),
+      );
+    });
+  });
+
+  describe('findOne', () => {
+    it('should return essay prompt by id', async () => {
+      mockPrisma.essayPrompt.findUnique.mockResolvedValue({
+        id: 'p1',
+        prompt: 'Test prompt',
+        school: { name: 'MIT' },
+        sources: [],
+        auditLogs: [],
+      });
+
+      const result = await service.findOne('p1');
+
+      expect(result.id).toBe('p1');
+    });
+
+    it('should throw NotFoundException when not found', async () => {
+      mockPrisma.essayPrompt.findUnique.mockResolvedValue(null);
+
+      await expect(service.findOne('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+  });
+
+  describe('findBySchool', () => {
+    it('should return verified prompts for a school', async () => {
+      mockPrisma.essayPrompt.findMany.mockResolvedValue([
+        { id: 'p1', prompt: 'Prompt 1', status: 'VERIFIED' },
+      ]);
+
+      const result = await service.findBySchool('school-1', 2025);
+
+      expect(result).toHaveLength(1);
+      expect(mockPrisma.essayPrompt.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            schoolId: 'school-1',
+            isActive: true,
+            status: 'VERIFIED',
+            year: 2025,
+          }),
+        }),
+      );
+    });
+  });
+
+  describe('update', () => {
+    it('should update essay prompt', async () => {
+      mockPrisma.essayPrompt.findUnique.mockResolvedValue({
+        id: 'p1',
+        status: 'PENDING',
+        school: { name: 'MIT' },
+        sources: [],
+        auditLogs: [],
+      });
+      mockPrisma.essayPrompt.update.mockResolvedValue({
+        id: 'p1',
+        prompt: 'Updated prompt',
+        school: { name: 'MIT' },
+        sources: [],
+      });
+
+      const result = await service.update(
+        'p1',
+        { prompt: 'Updated prompt' },
+        'admin-1',
+      );
+
+      expect(result.prompt).toBe('Updated prompt');
+      expect(mockPrisma.essayPromptAudit.create).toHaveBeenCalled();
+    });
+  });
+
+  describe('verify', () => {
+    it('should verify essay prompt', async () => {
+      mockPrisma.essayPrompt.findUnique.mockResolvedValue({
+        id: 'p1',
+        status: 'PENDING',
+        school: { name: 'MIT' },
+        sources: [],
+        auditLogs: [],
+      });
+      mockPrisma.essayPrompt.update.mockResolvedValue({
+        id: 'p1',
+        status: 'VERIFIED',
+        school: { name: 'MIT' },
+      });
+
+      const result = await service.verify(
+        'p1',
+        { status: 'VERIFIED' as any },
+        'admin-1',
+      );
+
+      expect(result.status).toBe('VERIFIED');
+    });
+
+    it('should throw BadRequestException when rejecting without reason', async () => {
+      mockPrisma.essayPrompt.findUnique.mockResolvedValue({
+        id: 'p1',
+        status: 'PENDING',
+        school: { name: 'MIT' },
+        sources: [],
+        auditLogs: [],
+      });
+
+      await expect(
+        service.verify('p1', { status: 'REJECTED' as any }, 'admin-1'),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('remove', () => {
+    it('should soft-delete essay prompt', async () => {
+      mockPrisma.essayPrompt.findUnique.mockResolvedValue({
+        id: 'p1',
+        status: 'PENDING',
+        school: { name: 'MIT' },
+        sources: [],
+        auditLogs: [],
+      });
+      mockPrisma.essayPrompt.update.mockResolvedValue({ id: 'p1' });
+
+      const result = await service.remove('p1', 'admin-1');
+
+      expect(result.message).toBe('删除成功');
+      expect(mockPrisma.essayPrompt.update).toHaveBeenCalledWith({
+        where: { id: 'p1' },
+        data: { isActive: false },
+      });
+    });
+  });
+
+  describe('getStats', () => {
+    it('should return review statistics', async () => {
+      mockPrisma.essayPrompt.count
+        .mockResolvedValueOnce(5) // pending
+        .mockResolvedValueOnce(10) // verified
+        .mockResolvedValueOnce(2) // rejected
+        .mockResolvedValueOnce(17); // total
+      mockPrisma.essayPrompt.groupBy.mockResolvedValue([
+        { type: 'COMMON_APP', _count: 8 },
+        { type: 'UC', _count: 2 },
+      ]);
+
+      const result = await service.getStats(2025);
+
+      expect(result.pending).toBe(5);
+      expect(result.verified).toBe(10);
+      expect(result.rejected).toBe(2);
+      expect(result.total).toBe(17);
+      expect(result.byType).toEqual({ COMMON_APP: 8, UC: 2 });
+    });
+  });
+});

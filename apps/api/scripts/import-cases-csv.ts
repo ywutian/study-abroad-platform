@@ -27,6 +27,11 @@
 
 import { PrismaClient } from '@prisma/client';
 import { normalizeSchoolName as normalizeSchoolNameForDb } from '../src/common/utils/school-name.util';
+import { resolveSchoolAlias } from '../src/common/constants/school-aliases';
+import {
+  normalizeResult as sharedNormalizeResult,
+  normalizeRound as sharedNormalizeRound,
+} from '../src/common/utils/import-normalizers';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -49,120 +54,76 @@ interface CsvRow {
   notes: string;
 }
 
-// 解析 CSV
-function parseCsv(content: string): CsvRow[] {
-  const lines = content.trim().split('\n');
-  const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
+// 解析 CSV（支持引号内逗号和换行）
+function parseRawCsv(content: string): string[][] {
+  const lines: string[][] = [];
+  let current: string[] = [];
+  let field = '';
+  let inQuotes = false;
 
-  return lines.slice(1).map((line) => {
-    const values = line.split(',').map((v) => v.trim());
+  for (let i = 0; i < content.length; i++) {
+    const char = content[i];
+    if (inQuotes) {
+      if (char === '"') {
+        if (content[i + 1] === '"') {
+          field += '"';
+          i++;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        field += char;
+      }
+    } else if (char === '"') {
+      inQuotes = true;
+    } else if (char === ',') {
+      current.push(field);
+      field = '';
+    } else if (char === '\n' || (char === '\r' && content[i + 1] === '\n')) {
+      current.push(field);
+      field = '';
+      lines.push(current);
+      current = [];
+      if (char === '\r') i++;
+    } else {
+      field += char;
+    }
+  }
+  if (field || current.length > 0) {
+    current.push(field);
+    lines.push(current);
+  }
+  return lines;
+}
+
+function parseCsv(content: string): CsvRow[] {
+  const rows = parseRawCsv(content);
+  if (rows.length === 0) return [];
+  const headers = rows[0].map((h) => h.trim().toLowerCase());
+
+  return rows.slice(1).map((values) => {
     const row: any = {};
     headers.forEach((h, i) => {
-      row[h] = values[i] || '';
+      row[h] = (values[i] || '').trim();
     });
     return row as CsvRow;
   });
 }
 
-// 标准化学校名称
-const schoolNameMap: Record<string, string> = {
-  mit: 'Massachusetts Institute of Technology',
-  stanford: 'Stanford University',
-  harvard: 'Harvard University',
-  yale: 'Yale University',
-  princeton: 'Princeton University',
-  columbia: 'Columbia University',
-  upenn: 'University of Pennsylvania',
-  penn: 'University of Pennsylvania',
-  duke: 'Duke University',
-  northwestern: 'Northwestern University',
-  caltech: 'California Institute of Technology',
-  uchicago: 'University of Chicago',
-  jhu: 'Johns Hopkins University',
-  cornell: 'Cornell University',
-  brown: 'Brown University',
-  dartmouth: 'Dartmouth College',
-  rice: 'Rice University',
-  vanderbilt: 'Vanderbilt University',
-  'notre dame': 'University of Notre Dame',
-  washu: 'Washington University in St. Louis',
-  emory: 'Emory University',
-  georgetown: 'Georgetown University',
-  ucb: 'University of California, Berkeley',
-  berkeley: 'University of California, Berkeley',
-  ucla: 'University of California, Los Angeles',
-  usc: 'University of Southern California',
-  nyu: 'New York University',
-  cmu: 'Carnegie Mellon University',
-  umich: 'University of Michigan',
-  gatech: 'Georgia Institute of Technology',
-  uiuc: 'University of Illinois Urbana-Champaign',
-  purdue: 'Purdue University',
-  utaustin: 'University of Texas at Austin',
-  uw: 'University of Washington',
-  bu: 'Boston University',
-  bc: 'Boston College',
-  neu: 'Northeastern University',
-  tufts: 'Tufts University',
-  williams: 'Williams College',
-  amherst: 'Amherst College',
-  pomona: 'Pomona College',
-  swarthmore: 'Swarthmore College',
-  wellesley: 'Wellesley College',
-  bowdoin: 'Bowdoin College',
-  middlebury: 'Middlebury College',
-  carleton: 'Carleton College',
-};
-
+// School alias resolution uses shared constant
 function normalizeSchoolName(name: string): string {
-  const lower = name.toLowerCase().trim();
-  return schoolNameMap[lower] || name;
+  return resolveSchoolAlias(name);
 }
 
-// 标准化结果
+// Delegates to shared normalizers from import-normalizers.ts
 function normalizeResult(
   result: string,
-): 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED' {
-  const r = result.toLowerCase().trim();
-  if (
-    ['admitted', 'ad', 'offer', 'accept', 'accepted', '录取', '录了'].includes(
-      r,
-    )
-  ) {
-    return 'ADMITTED';
-  }
-  if (
-    [
-      'rejected',
-      'rej',
-      'reject',
-      'deny',
-      'denied',
-      '拒绝',
-      '拒了',
-      '被拒',
-    ].includes(r)
-  ) {
-    return 'REJECTED';
-  }
-  if (['waitlisted', 'wl', 'waitlist', '候补', '等待'].includes(r)) {
-    return 'WAITLISTED';
-  }
-  if (['deferred', 'defer', '延期'].includes(r)) {
-    return 'DEFERRED';
-  }
-  return 'ADMITTED';
+): 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED' | null {
+  return sharedNormalizeResult(result);
 }
 
-// 标准化轮次
 function normalizeRound(round: string): string {
-  const r = round.toLowerCase().trim();
-  if (['ed', 'ed1', '早申'].includes(r)) return 'ED';
-  if (['ed2'].includes(r)) return 'ED2';
-  if (['ea', '早行动'].includes(r)) return 'EA';
-  if (['rea', 'scea', '限制性早申'].includes(r)) return 'REA';
-  if (['rd', '常规', '常规申请'].includes(r)) return 'RD';
-  return round.toUpperCase();
+  return sharedNormalizeRound(round);
 }
 
 async function importCsv(filePath: string) {
@@ -247,6 +208,14 @@ async function importCsv(filePath: string) {
         tags.push(...hooks);
       }
 
+      // Validate result
+      const result = normalizeResult(row.result);
+      if (!result) {
+        skipped++;
+        errors.push(`${row.school}: Unrecognized result value "${row.result}"`);
+        continue;
+      }
+
       // 创建案例
       await prisma.admissionCase.create({
         data: {
@@ -254,7 +223,7 @@ async function importCsv(filePath: string) {
           schoolId: school.id,
           year: parseInt(row.year) || new Date().getFullYear(),
           round: normalizeRound(row.round),
-          result: normalizeResult(row.result),
+          result,
           major: row.major || null,
           gpaRange: row.gpa || null,
           satRange: row.sat || null,
@@ -262,6 +231,9 @@ async function importCsv(filePath: string) {
           toeflRange: row.toefl || (row.ielts ? `IELTS ${row.ielts}` : null),
           tags: [...new Set(tags)], // 去重
           visibility: 'ANONYMOUS',
+          source: 'csv_import',
+          reviewStatus: 'PENDING_REVIEW',
+          qualityScore: 0,
         },
       });
 

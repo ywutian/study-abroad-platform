@@ -22,6 +22,7 @@ import {
 import type { CurrentUserPayload } from '../../common/decorators';
 import {
   RegisterDto,
+  RegisterWithInviteDto,
   RefreshTokenDto,
   ResendVerificationDto,
   ForgotPasswordDto,
@@ -109,6 +110,34 @@ export class AuthController {
     const result = await this.authService.register(data);
 
     // Set auth cookies (same as login)
+    res.cookie(
+      REFRESH_TOKEN_COOKIE_NAME,
+      result.tokens.refreshToken,
+      REFRESH_TOKEN_COOKIE_OPTIONS,
+    );
+    res.cookie(
+      ACCESS_TOKEN_COOKIE_NAME,
+      result.tokens.accessToken,
+      ACCESS_TOKEN_COOKIE_OPTIONS,
+    );
+
+    return {
+      user: result.user,
+      accessToken: result.tokens.accessToken,
+      message: result.message,
+    };
+  }
+
+  @Post('register/operator')
+  @Public()
+  @ThrottleStrict()
+  @ApiOperation({ summary: 'Register with operator invite token' })
+  async registerWithInvite(
+    @Body() data: RegisterWithInviteDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.registerWithInvite(data);
+
     res.cookie(
       REFRESH_TOKEN_COOKIE_NAME,
       result.tokens.refreshToken,

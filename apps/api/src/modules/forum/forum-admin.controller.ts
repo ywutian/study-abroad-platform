@@ -23,7 +23,7 @@ export class ForumAdminController {
   ) {}
 
   @Get('posts')
-  @ApiOperation({ summary: '管理员查看所有帖子' })
+  @ApiOperation({ summary: 'Admin view all posts' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
   @ApiQuery({ name: 'categoryId', required: false })
@@ -79,7 +79,7 @@ export class ForumAdminController {
   }
 
   @Put('posts/:id/pin')
-  @ApiOperation({ summary: '置顶/取消置顶帖子' })
+  @ApiOperation({ summary: 'Pin/unpin post' })
   async togglePin(@Param('id') id: string) {
     const post = await this.prisma.forumPost.findUniqueOrThrow({
       where: { id },
@@ -93,7 +93,7 @@ export class ForumAdminController {
   }
 
   @Put('posts/:id/lock')
-  @ApiOperation({ summary: '锁定/解锁帖子' })
+  @ApiOperation({ summary: 'Lock/unlock post' })
   async toggleLock(@Param('id') id: string) {
     const post = await this.prisma.forumPost.findUniqueOrThrow({
       where: { id },
@@ -107,21 +107,21 @@ export class ForumAdminController {
   }
 
   @Delete('posts/:id')
-  @ApiOperation({ summary: '管理员删除帖子（绕过 owner 检查）' })
+  @ApiOperation({ summary: 'Admin delete post (bypass owner check)' })
   async deletePost(@Param('id') id: string) {
     await this.prisma.forumPost.delete({ where: { id } });
     return { message: 'Post deleted' };
   }
 
   @Delete('comments/:id')
-  @ApiOperation({ summary: '管理员删除评论' })
+  @ApiOperation({ summary: 'Admin delete comment' })
   async deleteComment(@Param('id') id: string) {
     await this.prisma.forumComment.delete({ where: { id } });
     return { message: 'Comment deleted' };
   }
 
   @Put('categories/:id')
-  @ApiOperation({ summary: '更新论坛分类' })
+  @ApiOperation({ summary: 'Update forum category' })
   async updateCategory(
     @Param('id') id: string,
     @Query('name') name?: string,
@@ -140,7 +140,7 @@ export class ForumAdminController {
   }
 
   @Delete('categories/:id')
-  @ApiOperation({ summary: '删除/归档论坛分类' })
+  @ApiOperation({ summary: 'Delete/archive forum category' })
   async deleteCategory(@Param('id') id: string) {
     // Soft-archive by setting isActive = false instead of hard delete
     return this.prisma.forumCategory.update({

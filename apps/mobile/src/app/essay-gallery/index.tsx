@@ -31,10 +31,16 @@ import {
 } from '@/components/ui';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import { apiClient } from '@/lib/api/client';
-import type { GalleryResponse, GalleryEssay } from './_components/types';
-import { RESULT_COLORS, ESSAY_TYPES, RESULTS, YEARS, PAGE_SIZE } from './_components/types';
-import { EssayCard } from './_components/EssayCard';
-import { DetailSheet } from './_components/DetailSheet';
+import type { GalleryResponse, GalleryEssay } from '@/screens/essay-gallery/types';
+import {
+  RESULT_COLORS,
+  ESSAY_TYPES,
+  RESULTS,
+  YEARS,
+  PAGE_SIZE,
+} from '@/screens/essay-gallery/types';
+import { EssayCard } from '@/screens/essay-gallery/EssayCard';
+import { DetailSheet } from '@/screens/essay-gallery/DetailSheet';
 
 export default function EssayGalleryPage() {
   const { t } = useTranslation();

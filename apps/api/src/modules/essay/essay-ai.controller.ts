@@ -43,7 +43,7 @@ export class EssayAiController {
   ) {}
 
   @Post('polish')
-  @ApiOperation({ summary: 'AI文书润色 - 消耗20积分' })
+  @ApiOperation({ summary: 'AI essay polish - costs 20 points' })
   @ApiResponse({ status: 200, type: EssayPolishResponseDto })
   async polishEssay(
     @CurrentUser() user: CurrentUserPayload,
@@ -53,7 +53,10 @@ export class EssayAiController {
   }
 
   @Post('review')
-  @ApiOperation({ summary: 'AI文书点评（招生官视角） - 消耗30积分' })
+  @ApiOperation({
+    summary:
+      'AI essay review (admissions officer perspective) - costs 30 points',
+  })
   @ApiResponse({ status: 200, type: EssayReviewResponseDto })
   async reviewEssay(
     @CurrentUser() user: CurrentUserPayload,
@@ -63,7 +66,7 @@ export class EssayAiController {
   }
 
   @Post('brainstorm')
-  @ApiOperation({ summary: 'AI文书创意生成 - 消耗15积分' })
+  @ApiOperation({ summary: 'AI essay brainstorm - costs 15 points' })
   @ApiResponse({ status: 200, type: EssayBrainstormResponseDto })
   async brainstormIdeas(
     @CurrentUser() user: CurrentUserPayload,
@@ -75,7 +78,7 @@ export class EssayAiController {
   @Get('history/:essayId')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: '获取文书AI处理历史' })
+  @ApiOperation({ summary: 'Get essay AI processing history' })
   async getHistory(
     @CurrentUser() user: CurrentUserPayload,
     @Param('essayId') essayId: string,
@@ -84,7 +87,9 @@ export class EssayAiController {
   }
 
   @Post('rewrite-paragraph')
-  @ApiOperation({ summary: 'AI段落改写 - 生成3个不同风格版本' })
+  @ApiOperation({
+    summary: 'AI paragraph rewrite - generates 3 different style versions',
+  })
   async rewriteParagraph(
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: RewriteParagraphDto,
@@ -97,7 +102,7 @@ export class EssayAiController {
   }
 
   @Post('continue-writing')
-  @ApiOperation({ summary: 'AI续写文书 - 根据上下文继续写作' })
+  @ApiOperation({ summary: 'AI continue writing essay - based on context' })
   async continueWriting(
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: ContinueWritingDto,
@@ -111,7 +116,7 @@ export class EssayAiController {
   }
 
   @Post('generate-opening')
-  @ApiOperation({ summary: 'AI生成文书开头 - 3个不同风格' })
+  @ApiOperation({ summary: 'AI generate essay opening - 3 different styles' })
   async generateOpening(
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: GenerateOpeningDto,
@@ -127,35 +132,47 @@ export class EssayAiController {
 
   @Get('gallery')
   @Public()
-  @ApiOperation({ summary: '获取公开优秀文书列表' })
-  @ApiQuery({ name: 'school', required: false, description: '学校名称搜索' })
+  @ApiOperation({ summary: 'Get public outstanding essay list' })
+  @ApiQuery({
+    name: 'school',
+    required: false,
+    description: 'Search by school name',
+  })
   @ApiQuery({
     name: 'type',
     required: false,
-    description: '文书类型: COMMON_APP, UC, SUPPLEMENTAL, WHY_SCHOOL, OTHER',
+    description: 'Essay type: COMMON_APP, UC, SUPPLEMENTAL, WHY_SCHOOL, OTHER',
   })
   @ApiQuery({
     name: 'promptNumber',
     required: false,
-    description: 'Common App 1-7 或 UC PIQ 1-4',
+    description: 'Common App 1-7 or UC PIQ 1-4',
   })
-  @ApiQuery({ name: 'year', required: false, description: '申请年份' })
+  @ApiQuery({ name: 'year', required: false, description: 'Application year' })
   @ApiQuery({
     name: 'result',
     required: false,
-    description: '录取结果: ADMITTED, REJECTED, WAITLISTED, DEFERRED',
+    description: 'Admission result: ADMITTED, REJECTED, WAITLISTED, DEFERRED',
   })
-  @ApiQuery({ name: 'rankMin', required: false, description: '学校排名下限' })
-  @ApiQuery({ name: 'rankMax', required: false, description: '学校排名上限' })
+  @ApiQuery({
+    name: 'rankMin',
+    required: false,
+    description: 'Minimum school rank',
+  })
+  @ApiQuery({
+    name: 'rankMax',
+    required: false,
+    description: 'Maximum school rank',
+  })
   @ApiQuery({
     name: 'isVerified',
     required: false,
-    description: '仅显示已验证',
+    description: 'Show verified only',
   })
   @ApiQuery({
     name: 'sortBy',
     required: false,
-    description: '排序: newest, popular',
+    description: 'Sort by: newest, popular',
   })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
@@ -210,7 +227,7 @@ export class EssayAiController {
 
   @Get('gallery/:essayId')
   @Public()
-  @ApiOperation({ summary: '获取单篇公开文书详情' })
+  @ApiOperation({ summary: 'Get single public essay details' })
   async getGalleryEssayDetail(@Param('essayId') essayId: string) {
     return this.essayGalleryService.getGalleryEssayDetail(essayId);
   }
@@ -218,7 +235,10 @@ export class EssayAiController {
   @Post('gallery/:essayId/analyze')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: '逐段分析公开文书 - 消耗20积分' })
+  @ApiOperation({
+    summary:
+      'Paragraph-by-paragraph analysis of public essay - costs 20 points',
+  })
   async analyzeGalleryEssay(
     @CurrentUser() user: CurrentUserPayload,
     @Param('essayId') essayId: string,

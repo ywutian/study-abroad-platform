@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState } from 'react';
@@ -29,7 +28,9 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { apiClient } from '@/lib/api';
 import { toast } from 'sonner';
-import { CheckCircle, Clock, Loader2, FileText, Eye, Check, X, Shield } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { PaginationControls } from '@/app/[locale]/(main)/admin/_components/pagination-controls';
+import { CheckCircle, Clock, Loader2, FileText, Eye, Check, X, Shield, Search } from 'lucide-react';
 
 interface CaseEssay {
   id: string;
@@ -63,9 +64,12 @@ export function EssayCaseReviewManager() {
   const locale = useLocale();
   const t = useTranslations('essayAdmin');
 
+  const PAGE_SIZE = 20;
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [detailCase, setDetailCase] = useState<CaseEssay | null>(null);
   const [rejectReason, setRejectReason] = useState('');
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
 
   // 获取统计数据
   const { data: stats } = useQuery({
@@ -75,11 +79,14 @@ export function EssayCaseReviewManager() {
 
   // 获取待审核列表
   const { data: pendingData, isLoading } = useQuery({
-    queryKey: ['pendingEssays'],
+    queryKey: ['pendingEssays', search, page],
     queryFn: () =>
-      apiClient.get<{ data: CaseEssay[]; total: number }>('/admin/cases/pending-essays', {
-        params: { pageSize: 50 },
-      }),
+      apiClient.get<{ data: CaseEssay[]; total: number; totalPages?: number }>(
+        '/admin/cases/pending-essays',
+        {
+          params: { pageSize: PAGE_SIZE, page, ...(search && { search }) },
+        }
+      ),
   });
 
   // 审核单个
@@ -105,10 +112,13 @@ export function EssayCaseReviewManager() {
   // 批量审核
   const batchReviewMutation = useMutation({
     mutationFn: ({ ids, action }: { ids: string[]; action: 'APPROVE' | 'REJECT' }) =>
-      apiClient.post<{ success: number; failed: any[] }>('/admin/cases/batch-verify', {
-        ids,
-        action,
-      }),
+      apiClient.post<{ success: number; failed: Array<{ id: string; error: string }> }>(
+        '/admin/cases/batch-verify',
+        {
+          ids,
+          action,
+        }
+      ),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['pendingEssays'] });
       queryClient.invalidateQueries({ queryKey: ['adminCaseStats'] });
@@ -190,6 +200,20 @@ export function EssayCaseReviewManager() {
             <div className="text-3xl font-bold text-violet-600">{stats?.total || 0}</div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* 搜索栏 */}
+      <div className="relative max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
+          placeholder={t('searchPlaceholder')}
+          className="pl-9"
+        />
       </div>
 
       {/* 批量操作 */}
@@ -282,9 +306,13 @@ export function EssayCaseReviewManager() {
                         '-'
                       )}
                     </TableCell>
-                    <TableCell className="max-w-[250px]">
-                      <p className="text-sm line-clamp-2">
-                        {caseItem.essayContent?.substring(0, 100)}...
+                    <TableCell className="max-w-[400px]">
+                      <p
+                        className="text-sm line-clamp-3"
+                        title={caseItem.essayContent?.substring(0, 300)}
+                      >
+                        {caseItem.essayContent?.substring(0, 150)}
+                        {caseItem.essayContent && caseItem.essayContent.length > 150 ? '...' : ''}
                       </p>
                     </TableCell>
                     <TableCell>
@@ -295,12 +323,18 @@ export function EssayCaseReviewManager() {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => setDetailCase(caseItem)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={t('viewDetail')}
+                          onClick={() => setDetailCase(caseItem)}
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
+                          aria-label={t('approve')}
                           onClick={() =>
                             reviewMutation.mutate({
                               id: caseItem.id,
@@ -314,6 +348,7 @@ export function EssayCaseReviewManager() {
                         <Button
                           variant="ghost"
                           size="icon"
+                          aria-label={t('reject')}
                           onClick={() => setDetailCase(caseItem)}
                           className="text-red-500 hover:text-red-600"
                         >
@@ -335,6 +370,17 @@ export function EssayCaseReviewManager() {
             <p className="text-sm mt-1">{t('noPendingEssaysDesc')}</p>
           </div>
         </Card>
+      )}
+
+      {/* 分页 */}
+      {pendingData && pendingData.total > PAGE_SIZE && (
+        <PaginationControls
+          page={page}
+          totalPages={pendingData.totalPages || Math.ceil(pendingData.total / PAGE_SIZE)}
+          total={pendingData.total}
+          pageSize={PAGE_SIZE}
+          onPageChange={setPage}
+        />
       )}
 
       {/* 详情弹窗 */}

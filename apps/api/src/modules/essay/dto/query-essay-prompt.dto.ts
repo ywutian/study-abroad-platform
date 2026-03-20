@@ -12,42 +12,42 @@ import { Transform } from 'class-transformer';
 import { EssayType, EssayStatus } from '../../../common/types/enums';
 
 export class QueryEssayPromptDto {
-  @ApiPropertyOptional({ description: '学校ID' })
+  @ApiPropertyOptional({ description: 'School ID' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   schoolId?: string;
 
-  @ApiPropertyOptional({ description: '申请年份' })
+  @ApiPropertyOptional({ description: 'Application year' })
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
   @IsInt()
   year?: number;
 
-  @ApiPropertyOptional({ enum: EssayType, description: '文书类型' })
+  @ApiPropertyOptional({ enum: EssayType, description: 'Essay type' })
   @IsOptional()
   @IsEnum(EssayType)
   type?: EssayType;
 
-  @ApiPropertyOptional({ enum: EssayStatus, description: '审核状态' })
+  @ApiPropertyOptional({ enum: EssayStatus, description: 'Review status' })
   @IsOptional()
   @IsEnum(EssayStatus)
   status?: EssayStatus;
 
-  @ApiPropertyOptional({ description: '搜索关键词' })
+  @ApiPropertyOptional({ description: 'Search keyword' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   search?: string;
 
-  @ApiPropertyOptional({ description: '页码', default: 1 })
+  @ApiPropertyOptional({ description: 'Page number', default: 1 })
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
   @IsInt()
   @Min(1)
   page?: number;
 
-  @ApiPropertyOptional({ description: '每页数量', default: 20 })
+  @ApiPropertyOptional({ description: 'Items per page', default: 20 })
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
   @IsInt()

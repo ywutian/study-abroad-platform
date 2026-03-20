@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -17,7 +9,6 @@ import { VerificationService } from './verification.service';
 import { CreateVerificationDto, ReviewVerificationDto } from './dto';
 import { CurrentUser, Roles } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
-import { RolesGuard } from '../../common/guards/roles.guard';
 import { ThrottleStrict } from '../../common/decorators/throttle.decorator';
 import { Role } from '@prisma/client';
 
@@ -29,8 +20,11 @@ export class VerificationController {
   constructor(private readonly verificationService: VerificationService) {}
 
   @Post()
-  @ApiOperation({ summary: '提交认证申请' })
-  @ApiResponse({ status: 201, description: '认证申请已提交' })
+  @ApiOperation({ summary: 'Submit verification application' })
+  @ApiResponse({
+    status: 201,
+    description: 'Verification application submitted',
+  })
   async submitVerification(
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: CreateVerificationDto,
@@ -39,15 +33,14 @@ export class VerificationController {
   }
 
   @Get('my')
-  @ApiOperation({ summary: '获取我的认证申请' })
+  @ApiOperation({ summary: 'Get my verification applications' })
   async getMyVerifications(@CurrentUser() user: CurrentUserPayload) {
     return this.verificationService.getMyVerifications(user.id);
   }
 
   @Get('pending')
-  @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
-  @ApiOperation({ summary: '获取待审核的认证申请（管理员）' })
+  @ApiOperation({ summary: 'Get pending verification applications (admin)' })
   async getPendingVerifications(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
@@ -59,26 +52,23 @@ export class VerificationController {
   }
 
   @Get('stats')
-  @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
-  @ApiOperation({ summary: '获取认证统计（管理员）' })
+  @ApiOperation({ summary: 'Get verification statistics (admin)' })
   async getVerificationStats() {
     return this.verificationService.getVerificationStats();
   }
 
   @Get(':id')
-  @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
-  @ApiOperation({ summary: '获取认证详情（管理员）' })
+  @ApiOperation({ summary: 'Get verification details (admin)' })
   async getVerificationDetail(@Param('id') id: string) {
     return this.verificationService.getVerificationDetail(id);
   }
 
   @Post(':id/review')
-  @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
-  @ApiOperation({ summary: '审核认证申请（管理员）' })
-  @ApiResponse({ status: 200, description: '审核完成' })
+  @ApiOperation({ summary: 'Review verification application (admin)' })
+  @ApiResponse({ status: 200, description: 'Review completed' })
   async reviewVerification(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,

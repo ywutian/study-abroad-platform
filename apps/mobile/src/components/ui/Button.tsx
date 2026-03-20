@@ -8,9 +8,24 @@ import {
   TextStyle,
   StyleProp,
 } from 'react-native';
-import { useColors, spacing, fontSize, borderRadius, fontWeight } from '@/utils/theme';
+import {
+  useColors,
+  spacing,
+  fontSize,
+  borderRadius,
+  fontWeight,
+  withOpacity,
+  elevation,
+} from '@/utils/theme';
 
-type ButtonVariant = 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+type ButtonVariant =
+  | 'default'
+  | 'destructive'
+  | 'outline'
+  | 'secondary'
+  | 'ghost'
+  | 'link'
+  | 'soft';
 type ButtonSize = 'sm' | 'default' | 'lg' | 'icon';
 
 interface ButtonProps {
@@ -44,7 +59,7 @@ export function Button({
   accessibilityHint,
 }: ButtonProps) {
   const colors = useColors();
-  
+
   const getVariantStyles = (): { container: ViewStyle; text: TextStyle } => {
     switch (variant) {
       case 'destructive':
@@ -54,10 +69,10 @@ export function Button({
         };
       case 'outline':
         return {
-          container: { 
-            backgroundColor: 'transparent', 
-            borderWidth: 1, 
-            borderColor: colors.border 
+          container: {
+            backgroundColor: 'transparent',
+            borderWidth: 1.5,
+            borderColor: colors.border,
           },
           text: { color: colors.foreground },
         };
@@ -70,6 +85,15 @@ export function Button({
         return {
           container: { backgroundColor: 'transparent' },
           text: { color: colors.foreground },
+        };
+      case 'soft':
+        return {
+          container: {
+            backgroundColor: withOpacity(colors.primary, 0.1),
+            borderWidth: 1,
+            borderColor: withOpacity(colors.primary, 0.2),
+          },
+          text: { color: colors.primary },
         };
       case 'link':
         return {
@@ -88,8 +112,8 @@ export function Button({
     switch (size) {
       case 'sm':
         return {
-          container: { 
-            height: 36, 
+          container: {
+            height: 36,
             paddingHorizontal: spacing.md,
             borderRadius: borderRadius.md,
           },
@@ -97,8 +121,8 @@ export function Button({
         };
       case 'lg':
         return {
-          container: { 
-            height: 48, 
+          container: {
+            height: 48,
             paddingHorizontal: spacing.xl,
             borderRadius: borderRadius.lg,
           },
@@ -106,9 +130,9 @@ export function Button({
         };
       case 'icon':
         return {
-          container: { 
-            height: 40, 
-            width: 40, 
+          container: {
+            height: 40,
+            width: 40,
             paddingHorizontal: 0,
             borderRadius: borderRadius.md,
           },
@@ -116,8 +140,8 @@ export function Button({
         };
       default:
         return {
-          container: { 
-            height: 44, 
+          container: {
+            height: 44,
             paddingHorizontal: spacing.lg,
             borderRadius: borderRadius.md,
           },
@@ -158,18 +182,15 @@ export function Button({
       }}
     >
       {loading ? (
-        <ActivityIndicator 
-          color={variantStyles.text.color} 
-          size="small" 
-        />
+        <ActivityIndicator color={variantStyles.text.color} size="small" />
       ) : (
         <>
           {leftIcon}
           {typeof children === 'string' ? (
-            <Text 
+            <Text
               style={[
-                styles.text, 
-                sizeStyles.text, 
+                styles.text,
+                sizeStyles.text,
                 variantStyles.text,
                 leftIcon ? { marginLeft: spacing.sm } : undefined,
                 rightIcon ? { marginRight: spacing.sm } : undefined,
@@ -198,9 +219,6 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.medium,
   },
   disabled: {
-    opacity: 0.5,
+    opacity: 0.38,
   },
 });
-
-
-

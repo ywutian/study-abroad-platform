@@ -21,7 +21,7 @@ export enum BudgetRange {
 export class SchoolRecommendationRequestDto {
   @ApiPropertyOptional({
     type: [String],
-    description: '偏好地区（如：California, New York）',
+    description: 'Preferred regions (e.g. California, New York)',
   })
   @IsArray()
   @IsOptional()
@@ -32,7 +32,7 @@ export class SchoolRecommendationRequestDto {
 
   @ApiPropertyOptional({
     type: [String],
-    description: '意向专业',
+    description: 'Intended major',
     maxItems: 10,
   })
   @IsArray()
@@ -41,13 +41,13 @@ export class SchoolRecommendationRequestDto {
   @ArrayMaxSize(10)
   preferredMajors?: string[];
 
-  @ApiPropertyOptional({ enum: BudgetRange, description: '预算范围' })
+  @ApiPropertyOptional({ enum: BudgetRange, description: 'Budget range' })
   @IsEnum(BudgetRange)
   @IsOptional()
   budget?: BudgetRange;
 
   @ApiPropertyOptional({
-    description: '目标学校数量（默认15，最多30）',
+    description: 'Target school count (default 15, max 30)',
     minimum: 5,
     maximum: 30,
   })
@@ -58,7 +58,7 @@ export class SchoolRecommendationRequestDto {
   schoolCount?: number;
 
   @ApiPropertyOptional({
-    description: '其他偏好说明（最多500字）',
+    description: 'Additional preference notes (max 500 characters)',
     maxLength: 500,
   })
   @IsString()
@@ -77,19 +77,23 @@ export class RecommendedSchoolDto {
   @ApiProperty({ enum: ['reach', 'match', 'safety'] })
   tier: 'reach' | 'match' | 'safety';
 
-  @ApiProperty({ description: '预估录取概率 0-100' })
+  @ApiProperty({ description: 'Estimated admission probability 0-100' })
   estimatedProbability: number;
 
-  @ApiProperty({ description: '契合度评分 0-100' })
+  @ApiProperty({ description: 'Fit score 0-100' })
   fitScore: number;
 
-  @ApiProperty({ type: [String], description: '推荐理由' })
+  @ApiProperty({ type: [String], description: 'Recommendation reasons' })
   reasons: string[];
 
-  @ApiProperty({ type: [String], description: '需要注意的点', required: false })
+  @ApiProperty({
+    type: [String],
+    description: 'Points of concern',
+    required: false,
+  })
   concerns?: string[];
 
-  @ApiPropertyOptional({ description: '匹配到的学校元数据' })
+  @ApiPropertyOptional({ description: 'Matched school metadata' })
   schoolMeta?: {
     nameZh?: string;
     usNewsRank?: number;
@@ -102,6 +106,14 @@ export class RecommendedSchoolDto {
     hasEarlyDecision?: boolean;
     retentionRate?: number;
   };
+
+  @ApiPropertyOptional({ description: 'Number of verified essay prompts' })
+  essayPromptCount?: number;
+
+  @ApiPropertyOptional({
+    description: 'Whether the school has a Why School essay prompt',
+  })
+  hasWhySchool?: boolean;
 }
 
 export class RecommendationAnalysisDto {

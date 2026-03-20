@@ -5,6 +5,7 @@ export interface Essay {
   content: string;
   wordCount?: number;
   schoolId?: string;
+  essayPromptId?: string;
   createdAt: string;
   updatedAt: string;
 }

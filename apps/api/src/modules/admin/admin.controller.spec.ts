@@ -65,9 +65,6 @@ describe('AdminController', () => {
               .mockResolvedValue({ id: 'report-1', status: 'RESOLVED' }),
             deleteReport: jest.fn().mockResolvedValue(undefined),
             getUsers: jest.fn().mockResolvedValue({ data: [], total: 0 }),
-            updateUserRole: jest
-              .fn()
-              .mockResolvedValue({ id: 'user-1', role: Role.ADMIN }),
             banUser: jest
               .fn()
               .mockResolvedValue({ id: 'user-1', banned: true }),
@@ -215,23 +212,6 @@ describe('AdminController', () => {
         1,
         20,
       );
-    });
-  });
-
-  describe('updateUserRole', () => {
-    it('should call updateUserRole with admin id, user id and role', async () => {
-      const result = await controller.updateUserRole(
-        mockAdmin as any,
-        'user-1',
-        { role: Role.ADMIN },
-      );
-
-      expect(adminService.updateUserRole).toHaveBeenCalledWith(
-        'admin-1',
-        'user-1',
-        Role.ADMIN,
-      );
-      expect(result).toEqual({ id: 'user-1', role: Role.ADMIN });
     });
   });
 

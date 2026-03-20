@@ -5,11 +5,11 @@ import { useLocale } from 'next-intl';
 import { useMemo } from 'react';
 import { Link } from '@/lib/i18n/navigation';
 import { motion } from 'framer-motion';
-import { PageContainer } from '@/components/layout';
+import { PageContainer, PageHeader } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
-import { User } from 'lucide-react';
+import { LayoutDashboard, User } from 'lucide-react';
 import { QuickExperience } from '@/components/features/onboarding/quick-experience';
 import { DashboardStats } from './_components/dashboard-stats';
 import { DashboardModules } from './_components/dashboard-modules';
@@ -148,6 +148,14 @@ export default function DashboardPage() {
 
   return (
     <PageContainer>
+      <PageHeader
+        title={t('dashboard.welcome', {
+          name: dashboard?.user.email?.split('@')[0] || t('dashboard.user'),
+        })}
+        description={t('dashboard.subtitle')}
+        icon={LayoutDashboard}
+        color="slate"
+      />
       <QuickExperience />
       <div className="space-y-8">
         {/* Welcome Header */}

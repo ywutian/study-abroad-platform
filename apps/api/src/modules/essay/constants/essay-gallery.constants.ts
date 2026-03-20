@@ -1,9 +1,12 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, DataReviewStatus } from '@prisma/client';
 import { SCHOOL_NAME_RANK_SELECT } from '../../../common/constants/prisma-selects';
 
 export const CASE_PUBLIC_WHERE = {
   visibility: { in: ['PUBLIC', 'ANONYMOUS'] as any },
   essayContent: { not: null },
+  reviewStatus: {
+    in: [DataReviewStatus.AUTO_APPROVED, DataReviewStatus.APPROVED],
+  },
 };
 
 export const GALLERY_LIST_SELECT = {

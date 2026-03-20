@@ -12,38 +12,52 @@ import {
 // ============ Request DTOs ============
 
 export class CreatePeerReviewDto {
-  @ApiPropertyOptional({ description: '是否匿名评价' })
+  @ApiPropertyOptional({
+    description: 'Whether to submit the review anonymously',
+  })
   @IsOptional()
   @IsBoolean()
   isAnonymous?: boolean;
 }
 
 export class SubmitReviewDto {
-  @ApiProperty({ description: '背景真实性评分 (1-5)', minimum: 1, maximum: 5 })
+  @ApiProperty({
+    description: 'Profile authenticity score (1-5)',
+    minimum: 1,
+    maximum: 5,
+  })
   @IsInt()
   @Min(1)
   @Max(5)
   profileScore: number;
 
-  @ApiProperty({ description: '帮助程度评分 (1-5)', minimum: 1, maximum: 5 })
+  @ApiProperty({
+    description: 'Helpfulness score (1-5)',
+    minimum: 1,
+    maximum: 5,
+  })
   @IsInt()
   @Min(1)
   @Max(5)
   helpfulScore: number;
 
-  @ApiProperty({ description: '回复及时性评分 (1-5)', minimum: 1, maximum: 5 })
+  @ApiProperty({
+    description: 'Response timeliness score (1-5)',
+    minimum: 1,
+    maximum: 5,
+  })
   @IsInt()
   @Min(1)
   @Max(5)
   responseScore: number;
 
-  @ApiProperty({ description: '总体评分 (1-5)', minimum: 1, maximum: 5 })
+  @ApiProperty({ description: 'Overall score (1-5)', minimum: 1, maximum: 5 })
   @IsInt()
   @Min(1)
   @Max(5)
   overallScore: number;
 
-  @ApiPropertyOptional({ description: '评价内容' })
+  @ApiPropertyOptional({ description: 'Review comment' })
   @IsOptional()
   @IsString()
   @MaxLength(5000)

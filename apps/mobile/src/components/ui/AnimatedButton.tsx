@@ -1,18 +1,12 @@
 import React from 'react';
-import {
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  ViewStyle,
-  TextStyle,
-  StyleProp,
-} from 'react-native';
+import { Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle, StyleProp } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withTiming,
   runOnJS,
+  useReducedMotion,
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
@@ -54,6 +48,7 @@ export function AnimatedButton({
   accessibilityHint,
 }: AnimatedButtonProps) {
   const colors = useColors();
+  const reducedMotion = useReducedMotion();
   const scale = useSharedValue(1);
   const opacity = useSharedValue(1);
 
@@ -76,12 +71,16 @@ export function AnimatedButton({
   const gesture = Gesture.Tap()
     .enabled(!disabled && !loading)
     .onBegin(() => {
-      scale.value = withSpring(0.96, { damping: 15, stiffness: 400 });
-      opacity.value = withTiming(0.85, { duration: 100 });
+      if (!reducedMotion) {
+        scale.value = withSpring(0.96, { damping: 15, stiffness: 400 });
+        opacity.value = withTiming(0.85, { duration: 100 });
+      }
     })
     .onFinalize(() => {
-      scale.value = withSpring(1, { damping: 15, stiffness: 400 });
-      opacity.value = withTiming(1, { duration: 100 });
+      if (!reducedMotion) {
+        scale.value = withSpring(1, { damping: 15, stiffness: 400 });
+        opacity.value = withTiming(1, { duration: 100 });
+      }
     })
     .onEnd(() => {
       runOnJS(triggerHaptic)();
@@ -243,9 +242,6 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.medium,
   },
   disabled: {
-    opacity: 0.5,
+    opacity: 0.38,
   },
 });
-
-
-

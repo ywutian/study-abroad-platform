@@ -42,6 +42,7 @@ import { ResumeModule } from './modules/resume/resume.module';
 import { TeamModule } from './modules/team/team.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
+import { PermissionGuard } from './common/guards/permission.guard';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
@@ -128,6 +129,10 @@ import { AuditLogModule } from './common/services/audit-log.module';
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: PermissionGuard,
     },
     {
       provide: APP_INTERCEPTOR,

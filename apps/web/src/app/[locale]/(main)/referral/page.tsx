@@ -150,6 +150,7 @@ export default function ReferralPage() {
                           'bg-green-500 text-white border-green-500 hover:bg-green-600 hover:text-white'
                       )}
                       onClick={() => referralData && handleCopy(referralData.referralCode, 'code')}
+                      aria-label="Copy referral code"
                     >
                       {copied === 'code' ? (
                         <Check className="h-4 w-4" />

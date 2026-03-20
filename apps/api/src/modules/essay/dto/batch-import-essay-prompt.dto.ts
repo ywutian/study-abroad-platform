@@ -17,50 +17,52 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EssayType } from '../../../common/types/enums';
 
 export class BatchImportEssayPromptItemDto {
-  @ApiProperty({ description: '学校名称（支持缩写如 MIT, Stanford）' })
+  @ApiProperty({
+    description: 'School name (supports abbreviations like MIT, Stanford)',
+  })
   @IsString()
   @MaxLength(200)
   school: string;
 
-  @ApiProperty({ description: '申请年份', example: 2025 })
+  @ApiProperty({ description: 'Application year', example: 2025 })
   @IsInt()
   @Min(2020)
   @Max(2030)
   year: number;
 
-  @ApiProperty({ enum: EssayType, description: '文书类型' })
+  @ApiProperty({ enum: EssayType, description: 'Essay type' })
   @IsEnum(EssayType)
   type: EssayType;
 
-  @ApiProperty({ description: '英文原文' })
+  @ApiProperty({ description: 'English original text' })
   @IsString()
   @MaxLength(5000)
   prompt: string;
 
-  @ApiPropertyOptional({ description: '中文翻译' })
+  @ApiPropertyOptional({ description: 'Chinese translation' })
   @IsOptional()
   @IsString()
   @MaxLength(5000)
   promptZh?: string;
 
-  @ApiPropertyOptional({ description: '字数限制' })
+  @ApiPropertyOptional({ description: 'Word limit' })
   @IsOptional()
   @IsInt()
   @Min(0)
   @Max(10000)
   wordLimit?: number;
 
-  @ApiPropertyOptional({ description: '是否必填', default: true })
+  @ApiPropertyOptional({ description: 'Whether required', default: true })
   @IsOptional()
   @IsBoolean()
   isRequired?: boolean;
 
-  @ApiPropertyOptional({ description: '排序顺序' })
+  @ApiPropertyOptional({ description: 'Sort order' })
   @IsOptional()
   @IsInt()
   sortOrder?: number;
 
-  @ApiPropertyOptional({ description: '来源URL' })
+  @ApiPropertyOptional({ description: 'Source URL' })
   @IsOptional()
   @IsString()
   @MaxLength(2048)
@@ -70,7 +72,7 @@ export class BatchImportEssayPromptItemDto {
 export class BatchImportEssayPromptDto {
   @ApiProperty({
     type: [BatchImportEssayPromptItemDto],
-    description: '批量导入数据',
+    description: 'Batch import data',
   })
   @IsArray()
   @ValidateNested({ each: true })
@@ -80,7 +82,7 @@ export class BatchImportEssayPromptDto {
   items: BatchImportEssayPromptItemDto[];
 
   @ApiPropertyOptional({
-    description: '是否自动标记为已审核',
+    description: 'Whether to auto-mark as verified',
     default: false,
   })
   @IsOptional()

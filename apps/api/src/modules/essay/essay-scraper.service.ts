@@ -7,6 +7,7 @@ import { CollegeVineScrapeStrategy } from './strategies/collegevine.strategy';
 import { LlmScrapeStrategy } from './strategies/llm.strategy';
 import { CommonAppScrapeStrategy } from './strategies/commonapp.strategy';
 import { AiValidatorService } from './ai-validator.service';
+import { NotificationService } from '../notification/notification.service';
 import { ScrapeResult, ScrapedEssay } from './strategies/base.strategy';
 
 export interface ScrapeJobResult {
@@ -44,6 +45,7 @@ export class EssayScraperService {
     private llmStrategy: LlmScrapeStrategy,
     private commonAppStrategy: CommonAppScrapeStrategy,
     private aiValidator: AiValidatorService,
+    private notificationService: NotificationService,
   ) {}
 
   // ============ Core Scraping ============
@@ -71,6 +73,9 @@ export class EssayScraperService {
           mergedEssays,
           [llmResult],
         );
+        if (savedCount > 0) {
+          await this.notifyUsersAboutNewPrompts(schoolName, savedCount);
+        }
         return { schoolName, success: true, essaysFound: savedCount };
       }
     } catch (error: unknown) {
@@ -126,6 +131,10 @@ export class EssayScraperService {
       mergedEssays,
       results,
     );
+
+    if (savedCount > 0) {
+      await this.notifyUsersAboutNewPrompts(schoolName, savedCount);
+    }
 
     return { schoolName, success: true, essaysFound: savedCount };
   }
@@ -638,6 +647,33 @@ export class EssayScraperService {
     const union = new Set([...wordsA, ...wordsB]);
 
     return union.size > 0 ? intersection.size / union.size : 0;
+  }
+
+  /**
+   * Notify users who have the school in their school list about new essay prompts
+   */
+  private async notifyUsersAboutNewPrompts(
+    schoolName: string,
+    newPromptCount: number,
+  ): Promise<void> {
+    try {
+      const school = await this.prisma.school.findUnique({
+        where: { nameNorm: normalizeSchoolName(schoolName) },
+        select: { id: true, name: true },
+      });
+
+      if (!school) return;
+
+      await this.notificationService.notifyNewEssayPrompts(
+        school.id,
+        school.name,
+        newPromptCount,
+      );
+    } catch (error: unknown) {
+      this.logger.warn(
+        `Failed to send new essay prompt notifications for ${schoolName}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
   }
 
   private delay(ms: number): Promise<void> {

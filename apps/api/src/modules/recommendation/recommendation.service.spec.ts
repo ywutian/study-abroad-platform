@@ -97,6 +97,10 @@ describe('RecommendationService', () => {
             user: {
               findUnique: jest.fn().mockResolvedValue({ points: 100 }),
             },
+            essayPrompt: {
+              groupBy: jest.fn().mockResolvedValue([]),
+              findMany: jest.fn().mockResolvedValue([]),
+            },
           },
         },
         {

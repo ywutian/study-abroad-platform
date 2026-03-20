@@ -36,3 +36,9 @@ export { ConfirmDialog } from './ConfirmDialog';
 export { StatusBadge } from './StatusBadge';
 export { AnimatedCounter, formatCompactNumber, formatPercentage } from './AnimatedCounter';
 export { BlurImage, AvatarImage, CardImage, ThumbnailImage } from './BlurImage';
+
+// Reusable pattern components (P1)
+export { SectionHeader } from './SectionHeader';
+export { StatsRow } from './StatsRow';
+export { IconBadge } from './IconBadge';
+export { ChipScroll } from './ChipScroll';

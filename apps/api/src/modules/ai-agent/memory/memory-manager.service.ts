@@ -973,6 +973,71 @@ export class MemoryManagerService {
         });
       }
 
+      // Case search results (search_cases tool)
+      if (data.cases && Array.isArray(data.cases) && data.cases.length > 0) {
+        const schoolNames = [
+          ...new Set(
+            data.cases
+              .slice(0, 5)
+              .map((c: any) => c.schoolName || c.school?.name)
+              .filter(Boolean),
+          ),
+        ];
+        if (schoolNames.length > 0) {
+          memories.push({
+            type: MemoryType.FACT,
+            category: 'case_research',
+            content: `用户搜索了录取案例: ${schoolNames.join(', ')}，共 ${data.total ?? data.cases.length} 条结果`,
+            importance: 0.5,
+            metadata: {
+              source: 'tool_result',
+              toolName: 'search_cases',
+              schoolNames,
+              resultCount: data.total ?? data.cases.length,
+            },
+          });
+        }
+      }
+
+      // Similar cases results (find_similar_cases tool)
+      if (data.similarCases && Array.isArray(data.similarCases)) {
+        const schools = [
+          ...new Set(
+            data.similarCases
+              .slice(0, 5)
+              .map((c: any) => c.schoolName || c.school?.name)
+              .filter(Boolean),
+          ),
+        ];
+        memories.push({
+          type: MemoryType.FACT,
+          category: 'case_research',
+          content: `用户查找了相似案例，找到 ${data.similarCases.length} 条结果${schools.length > 0 ? `，涉及: ${schools.join(', ')}` : ''}`,
+          importance: 0.6,
+          metadata: {
+            source: 'tool_result',
+            toolName: 'find_similar_cases',
+            transient: true,
+          },
+        });
+      }
+
+      // Case explanation results (explain_case_result tool)
+      if (data.explanation && data.caseId) {
+        const schoolName = data.schoolName || data.school?.name || '未知学校';
+        memories.push({
+          type: MemoryType.FACT,
+          category: 'case_research',
+          content: `AI 分析了 ${schoolName} 的案例结果${data.keyFactors?.length ? `，关键因素: ${data.keyFactors.slice(0, 3).join(', ')}` : ''}`,
+          importance: 0.6,
+          metadata: {
+            source: 'tool_result',
+            toolName: 'explain_case_result',
+            caseId: data.caseId,
+          },
+        });
+      }
+
       // 保存
       if (memories.length > 0) {
         await this.persistent.createMemories(conversation.userId, memories);

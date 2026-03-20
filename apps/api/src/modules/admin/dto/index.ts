@@ -8,3 +8,5 @@ export * from './trigger-data-sync.dto';
 export * from './activity-template.dto';
 export * from './broadcast-notification.dto';
 export * from './school-calibration.dto';
+export * from './role-permission.dto';
+export * from './review.dto';

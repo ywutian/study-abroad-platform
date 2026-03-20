@@ -18,105 +18,105 @@ export enum SchoolType {
 }
 
 export class SchoolQueryDto extends PaginationDto {
-  @ApiPropertyOptional({ description: '国家代码' })
+  @ApiPropertyOptional({ description: 'Country code' })
   @IsOptional()
   @IsString()
   @MaxLength(10)
   country?: string;
 
-  @ApiPropertyOptional({ description: '搜索关键词' })
+  @ApiPropertyOptional({ description: 'Search keyword' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   search?: string;
 
-  @ApiPropertyOptional({ description: '州/省' })
+  @ApiPropertyOptional({ description: 'State/province' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   state?: string;
 
-  @ApiPropertyOptional({ description: '地区 (northeast/midwest/south/west)' })
+  @ApiPropertyOptional({ description: 'Region (northeast/midwest/south/west)' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   region?: string;
 
-  @ApiPropertyOptional({ description: '最低排名' })
+  @ApiPropertyOptional({ description: 'Minimum rank' })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
   @Min(1)
   rankMin?: number;
 
-  @ApiPropertyOptional({ description: '最高排名' })
+  @ApiPropertyOptional({ description: 'Maximum rank' })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
   @Max(500)
   rankMax?: number;
 
-  @ApiPropertyOptional({ description: '最低录取率 (%)' })
+  @ApiPropertyOptional({ description: 'Minimum acceptance rate (%)' })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
   @Min(0)
   acceptanceMin?: number;
 
-  @ApiPropertyOptional({ description: '最高录取率 (%)' })
+  @ApiPropertyOptional({ description: 'Maximum acceptance rate (%)' })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
   @Max(100)
   acceptanceMax?: number;
 
-  @ApiPropertyOptional({ description: '最低学费 (美元)' })
+  @ApiPropertyOptional({ description: 'Minimum tuition (USD)' })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
   @Min(0)
   tuitionMin?: number;
 
-  @ApiPropertyOptional({ description: '最高学费 (美元)' })
+  @ApiPropertyOptional({ description: 'Maximum tuition (USD)' })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
   tuitionMax?: number;
 
-  @ApiPropertyOptional({ description: '最少学生人数' })
+  @ApiPropertyOptional({ description: 'Minimum student count' })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
   @Min(0)
   sizeMin?: number;
 
-  @ApiPropertyOptional({ description: '最多学生人数' })
+  @ApiPropertyOptional({ description: 'Maximum student count' })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
   sizeMax?: number;
 
   @ApiPropertyOptional({
-    description: '学校类型 (public/private)',
+    description: 'School type (public/private)',
     enum: SchoolType,
   })
   @IsOptional()
   @IsEnum(SchoolType)
   schoolType?: SchoolType;
 
-  @ApiPropertyOptional({ description: '是否 Test Optional' })
+  @ApiPropertyOptional({ description: 'Whether test optional' })
   @IsOptional()
   @Transform(({ value }) => value === 'true' || value === true)
   @IsBoolean()
   testOptional?: boolean;
 
-  @ApiPropertyOptional({ description: '是否 Need Blind' })
+  @ApiPropertyOptional({ description: 'Whether need-blind' })
   @IsOptional()
   @Transform(({ value }) => value === 'true' || value === true)
   @IsBoolean()
   needBlind?: boolean;
 
-  @ApiPropertyOptional({ description: '是否提供 Early Decision' })
+  @ApiPropertyOptional({ description: 'Whether Early Decision is offered' })
   @IsOptional()
   @Transform(({ value }) => value === 'true' || value === true)
   @IsBoolean()

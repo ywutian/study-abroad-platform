@@ -19,7 +19,7 @@ export class ChatAdminController {
   constructor(private readonly prisma: PrismaService) {}
 
   @Get('conversations')
-  @ApiOperation({ summary: '管理员查看所有会话' })
+  @ApiOperation({ summary: 'Admin view all conversations' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
   @ApiQuery({ name: 'search', required: false })
@@ -71,7 +71,7 @@ export class ChatAdminController {
   }
 
   @Get('conversations/:id/messages')
-  @ApiOperation({ summary: '管理员查看指定会话的消息' })
+  @ApiOperation({ summary: 'Admin view messages of a specific conversation' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
   async getMessages(
@@ -105,7 +105,7 @@ export class ChatAdminController {
   }
 
   @Delete('messages/:id')
-  @ApiOperation({ summary: '管理员删除消息' })
+  @ApiOperation({ summary: 'Admin delete message' })
   async deleteMessage(@Param('id') id: string) {
     await this.prisma.message.delete({
       where: { id },

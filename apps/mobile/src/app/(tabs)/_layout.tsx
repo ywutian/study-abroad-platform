@@ -29,18 +29,14 @@ export default function TabLayout() {
         name="index"
         options={{
           title: t('tabs.home'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="schools"
         options={{
           title: t('tabs.schools'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="school" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Ionicons name="school" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -56,21 +52,25 @@ export default function TabLayout() {
         name="ai"
         options={{
           title: t('tabs.ai'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="sparkles" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Ionicons name="sparkles" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: t('tabs.profile'),
+          tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="more"
+        options={{
+          title: t('tabs.more'),
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
+            <Ionicons name="grid-outline" size={size} color={color} />
           ),
         }}
       />
     </Tabs>
   );
 }
-

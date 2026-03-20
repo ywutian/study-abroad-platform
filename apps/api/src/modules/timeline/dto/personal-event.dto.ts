@@ -25,12 +25,16 @@ export class CreatePersonalEventDto {
   @IsEnum(PersonalEventCategory)
   category: PersonalEventCategory;
 
-  @ApiPropertyOptional({ description: '主截止日期（如报名截止）' })
+  @ApiPropertyOptional({
+    description: 'Primary deadline (e.g. registration deadline)',
+  })
   @IsDateString()
   @IsOptional()
   deadline?: string;
 
-  @ApiPropertyOptional({ description: '事件日期（如考试日、竞赛日）' })
+  @ApiPropertyOptional({
+    description: 'Event date (e.g. test day, competition day)',
+  })
   @IsDateString()
   @IsOptional()
   eventDate?: string;
@@ -119,7 +123,7 @@ export class UpdatePersonalEventDto {
 }
 
 export class SubscribeGlobalEventDto {
-  @ApiProperty({ description: '全局事件ID' })
+  @ApiProperty({ description: 'Global event ID' })
   @MaxLength(500)
   @IsString()
   @IsNotEmpty()
@@ -176,7 +180,7 @@ export class PersonalEventResponseDto {
 // ============ PersonalTask DTOs ============
 
 export class CreatePersonalTaskDto {
-  @ApiProperty({ description: '所属事件ID' })
+  @ApiProperty({ description: 'Parent event ID' })
   @MaxLength(500)
   @IsString()
   @IsNotEmpty()

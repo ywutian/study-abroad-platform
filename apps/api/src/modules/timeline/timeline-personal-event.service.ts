@@ -5,6 +5,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ERR } from '../../common/constants/error-messages';
 import { PersonalEventStatus, PersonalEventCategory } from '@prisma/client';
 import {
   CreatePersonalEventDto,
@@ -102,7 +103,7 @@ export class TimelinePersonalEventService {
     });
 
     if (!globalEvent) {
-      throw new NotFoundException('全局事件不存在');
+      throw new NotFoundException(ERR.NOT_FOUND.globalEvent());
     }
 
     const existing = await this.prisma.personalEvent.findUnique({
@@ -112,7 +113,7 @@ export class TimelinePersonalEventService {
     });
 
     if (existing) {
-      throw new ConflictException('已订阅该事件');
+      throw new ConflictException(ERR.CONFLICT.alreadySubscribed());
     }
 
     const categoryMap: Record<string, PersonalEventCategory> = {
@@ -172,7 +173,7 @@ export class TimelinePersonalEventService {
     });
 
     if (!event) {
-      throw new NotFoundException('个人事件不存在');
+      throw new NotFoundException(ERR.NOT_FOUND.personalEvent());
     }
 
     return {
@@ -191,7 +192,7 @@ export class TimelinePersonalEventService {
     });
 
     if (!event) {
-      throw new NotFoundException('个人事件不存在');
+      throw new NotFoundException(ERR.NOT_FOUND.personalEvent());
     }
 
     const updated = await this.prisma.personalEvent.update({
@@ -220,7 +221,7 @@ export class TimelinePersonalEventService {
     });
 
     if (!event) {
-      throw new NotFoundException('个人事件不存在');
+      throw new NotFoundException(ERR.NOT_FOUND.personalEvent());
     }
 
     await this.prisma.personalEvent.delete({ where: { id } });
@@ -237,7 +238,7 @@ export class TimelinePersonalEventService {
     });
 
     if (!event) {
-      throw new NotFoundException('个人事件不存在');
+      throw new NotFoundException(ERR.NOT_FOUND.personalEvent());
     }
 
     const maxOrder = await this.prisma.personalTask.findFirst({
@@ -270,7 +271,7 @@ export class TimelinePersonalEventService {
     });
 
     if (!task || task.event.userId !== userId) {
-      throw new NotFoundException('任务不存在');
+      throw new NotFoundException(ERR.NOT_FOUND.task());
     }
 
     const updated = await this.prisma.personalTask.update({
@@ -293,7 +294,7 @@ export class TimelinePersonalEventService {
     });
 
     if (!task || task.event.userId !== userId) {
-      throw new NotFoundException('任务不存在');
+      throw new NotFoundException(ERR.NOT_FOUND.task());
     }
 
     await this.prisma.personalTask.delete({ where: { id: taskId } });

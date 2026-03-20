@@ -32,25 +32,25 @@ export class EssayPromptAdminController {
   constructor(private readonly essayPromptService: EssayPromptService) {}
 
   @Get('stats')
-  @ApiOperation({ summary: '获取审核统计' })
+  @ApiOperation({ summary: 'Get review statistics' })
   async getStats(@Query('year') year?: number) {
     return this.essayPromptService.getStats(year);
   }
 
   @Get()
-  @ApiOperation({ summary: '获取所有文书题目（含待审核）' })
+  @ApiOperation({ summary: 'Get all essay prompts (including pending review)' })
   async findAll(@Query() query: QueryEssayPromptDto) {
     return this.essayPromptService.findAll(query);
   }
 
   @Get(':id')
-  @ApiOperation({ summary: '获取单个文书题目详情' })
+  @ApiOperation({ summary: 'Get single essay prompt details' })
   async findOne(@Param('id') id: string) {
     return this.essayPromptService.findOne(id);
   }
 
   @Post()
-  @ApiOperation({ summary: '创建文书题目' })
+  @ApiOperation({ summary: 'Create essay prompt' })
   async create(
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: CreateEssayPromptDto,
@@ -59,7 +59,7 @@ export class EssayPromptAdminController {
   }
 
   @Put(':id')
-  @ApiOperation({ summary: '更新文书题目' })
+  @ApiOperation({ summary: 'Update essay prompt' })
   async update(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
@@ -69,7 +69,7 @@ export class EssayPromptAdminController {
   }
 
   @Post(':id/verify')
-  @ApiOperation({ summary: '审核文书题目' })
+  @ApiOperation({ summary: 'Review essay prompt' })
   async verify(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
@@ -79,7 +79,7 @@ export class EssayPromptAdminController {
   }
 
   @Post('batch-import')
-  @ApiOperation({ summary: '批量导入文书题目' })
+  @ApiOperation({ summary: 'Batch import essay prompts' })
   async batchImport(
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: BatchImportEssayPromptDto,
@@ -88,7 +88,7 @@ export class EssayPromptAdminController {
   }
 
   @Post('batch-verify')
-  @ApiOperation({ summary: '批量审核' })
+  @ApiOperation({ summary: 'Batch review essay prompts' })
   async batchVerify(
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: BatchVerifyDto,
@@ -102,7 +102,7 @@ export class EssayPromptAdminController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: '删除文书题目' })
+  @ApiOperation({ summary: 'Delete essay prompt' })
   async remove(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,

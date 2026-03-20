@@ -29,8 +29,15 @@ export class HallService {
 
   getPublicProfiles(
     search?: string,
-  ): Promise<{ data: PublicProfileResponse[] }> {
-    return this.ranking.getPublicProfiles(search);
+    page?: number,
+    pageSize?: number,
+  ): Promise<{
+    data: PublicProfileResponse[];
+    total: number;
+    page: number;
+    pageSize: number;
+  }> {
+    return this.ranking.getPublicProfiles(search, page, pageSize);
   }
 
   // ============================================

@@ -13,13 +13,13 @@ import {
 import { GlobalEventCategory } from '@prisma/client';
 
 export class CreateGlobalEventDto {
-  @ApiProperty({ description: '事件标题（英文）' })
+  @ApiProperty({ description: 'Event title (English)' })
   @MaxLength(200)
   @IsString()
   @IsNotEmpty()
   title: string;
 
-  @ApiPropertyOptional({ description: '事件标题（中文）' })
+  @ApiPropertyOptional({ description: 'Event title (Chinese)' })
   @MaxLength(200)
   @IsString()
   @IsOptional()
@@ -29,21 +29,21 @@ export class CreateGlobalEventDto {
   @IsEnum(GlobalEventCategory)
   category: GlobalEventCategory;
 
-  @ApiProperty({ description: '事件日期' })
+  @ApiProperty({ description: 'Event date' })
   @IsDateString()
   eventDate: string;
 
-  @ApiPropertyOptional({ description: '报名截止' })
+  @ApiPropertyOptional({ description: 'Registration deadline' })
   @IsDateString()
   @IsOptional()
   registrationDeadline?: string;
 
-  @ApiPropertyOptional({ description: '晚报名截止' })
+  @ApiPropertyOptional({ description: 'Late registration deadline' })
   @IsDateString()
   @IsOptional()
   lateDeadline?: string;
 
-  @ApiPropertyOptional({ description: '出分日期' })
+  @ApiPropertyOptional({ description: 'Score release date' })
   @IsDateString()
   @IsOptional()
   resultDate?: string;
@@ -66,7 +66,7 @@ export class CreateGlobalEventDto {
   @IsOptional()
   url?: string;
 
-  @ApiProperty({ description: '年份' })
+  @ApiProperty({ description: 'Year' })
   @IsInt()
   @Min(2020)
   year: number;

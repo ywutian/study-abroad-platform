@@ -1,13 +1,19 @@
 /**
  * Case & Game Tools Service
  *
- * Tools: SEARCH_CASES, EXPLAIN_CASE_RESULT, ANALYZE_PREDICTION_ACCURACY,
- *        COMPARE_CASE_WITH_PROFILE
+ * Tools: SEARCH_CASES, FIND_SIMILAR_CASES, EXPLAIN_CASE_RESULT,
+ *        ANALYZE_PREDICTION_ACCURACY, COMPARE_CASE_WITH_PROFILE
  */
 
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { clampPercentRate } from '../../../common/utils/percent.util';
+import { CASE_REVIEW_APPROVED_WHERE } from '../../../common/constants/prisma-selects';
+import {
+  parseCaseActivities,
+  parseCaseAwards,
+  parseCaseTestScores,
+} from '../../../common/constants/data-formats';
 import { LLMService } from '../core/llm.service';
 import { SwipeService } from '../../hall/swipe.service';
 import { ProfileLoaderHelper } from './helpers/profile-loader.helper';
@@ -47,6 +53,11 @@ export class CaseToolsService implements IToolHandlerProvider {
         'compare_case_with_profile',
         (args, userId, _ctx, locale) =>
           this.compareCaseWithProfile(userId, args.caseId, locale),
+      ],
+      [
+        'find_similar_cases',
+        (args, userId, _ctx, locale) =>
+          this.findSimilarCases(userId, args, locale),
       ],
     ]);
   }
@@ -95,6 +106,7 @@ export class CaseToolsService implements IToolHandlerProvider {
     }
 
     where.visibility = { in: ['ANONYMOUS', 'PUBLIC'] };
+    where.reviewStatus = CASE_REVIEW_APPROVED_WHERE.reviewStatus;
 
     const cases = await this.prisma.admissionCase.findMany({
       where,
@@ -113,6 +125,7 @@ export class CaseToolsService implements IToolHandlerProvider {
     return {
       count: cases.length,
       cases: cases.map((c) => ({
+        id: c.id,
         school: this.schoolLookup.displayName(c.school, locale),
         year: c.year,
         round: c.round,
@@ -120,6 +133,24 @@ export class CaseToolsService implements IToolHandlerProvider {
         gpaRange: c.gpaRange,
         satRange: c.satRange,
         tags: c.tags,
+        activitySummary: parseCaseActivities(c.activities).map((a) => ({
+          category: a.category,
+          description: a.description,
+          role: a.role,
+          tier: a.tier,
+        })),
+        awardSummary: parseCaseAwards(c.awards).map((a) => ({
+          name: a.name,
+          level: a.level,
+          tier: a.tier,
+        })),
+        testScoreSummary: parseCaseTestScores(c.testScores).map((t) => ({
+          type: t.type,
+          score: t.score,
+        })),
+        highSchoolType: c.highSchoolType,
+        curriculumType: c.curriculumType,
+        demographicTags: c.demographicTags,
       })),
     };
   }
@@ -127,8 +158,8 @@ export class CaseToolsService implements IToolHandlerProvider {
   async explainCaseResult(caseId: string, locale = 'zh') {
     const isZh = locale === 'zh';
     try {
-      const admissionCase = await this.prisma.admissionCase.findUnique({
-        where: { id: caseId },
+      const admissionCase = await this.prisma.admissionCase.findFirst({
+        where: { id: caseId, ...CASE_REVIEW_APPROVED_WHERE },
         include: { school: true },
       });
 
@@ -285,8 +316,8 @@ Analyze the user's prediction strengths and provide tips to improve accuracy.`,
     const isZh = locale === 'zh';
     try {
       const [admissionCase, profile] = await Promise.all([
-        this.prisma.admissionCase.findUnique({
-          where: { id: caseId },
+        this.prisma.admissionCase.findFirst({
+          where: { id: caseId, ...CASE_REVIEW_APPROVED_WHERE },
           include: { school: true },
         }),
         this.profileLoader.loadProfile(userId, locale),
@@ -313,25 +344,34 @@ Analyze the user's prediction strengths and provide tips to improve accuracy.`,
       const notFilled = isZh ? '未填' : 'Not provided';
       const undecided = isZh ? '未定' : 'Undecided';
 
-      const systemPrompt = isZh
-        ? `你是留学顾问。请对比分析申请者档案与录取案例，找出差距和优势。
+      // Parse structured case data for dimension-by-dimension comparison
+      const caseActivities = parseCaseActivities(admissionCase.activities);
+      const caseAwards = parseCaseAwards(admissionCase.awards);
+      const caseTestScores = parseCaseTestScores(admissionCase.testScores);
 
-分析要点：
-1. 学术成绩对比
-2. 软实力对比（活动、奖项）
-3. 相似点和差异点
-4. 具体改进建议
-5. 录取可能性评估
+      const systemPrompt = isZh
+        ? `你是留学顾问。请对比分析申请者档案与录取案例，按以下维度逐项对比并给出差距评估：
+
+维度对比：
+1. **学术成绩**：GPA、标化考试分数逐项对比
+2. **课外活动**：活动数量、质量等级(tier)、角色级别对比
+3. **学术竞赛与奖项**：奖项级别(校级/地区/州级/国家/国际)对比
+4. **背景特征**：高中类型、课程体系、人口统计标签对比
+5. **综合评估**：整体竞争力差距和录取可能性
+
+每个维度请给出：案例数据 → 用户数据 → 差距评估（领先/持平/落后）
 
 请用中文回答，给出具体可操作的建议。`
-        : `You are an admissions consultant. Compare the applicant's profile with the admission case to identify gaps and strengths.
+        : `You are an admissions consultant. Compare the applicant's profile with the admission case dimension by dimension:
 
-Key points:
-1. Academic comparison
-2. Extracurricular comparison (activities, awards)
-3. Similarities and differences
-4. Specific improvement suggestions
-5. Admission likelihood assessment
+Dimensions:
+1. **Academics**: GPA and test scores item-by-item comparison
+2. **Extracurriculars**: Activity count, quality tier, role level comparison
+3. **Awards & Competitions**: Award level (school/regional/state/national/international) comparison
+4. **Background**: High school type, curriculum, demographic tags comparison
+5. **Overall Assessment**: Competitiveness gap and admission likelihood
+
+For each dimension provide: Case data → User data → Gap assessment (ahead/even/behind)
 
 Provide specific, actionable advice.`;
 
@@ -347,6 +387,30 @@ Provide specific, actionable advice.`;
                 locale,
               );
               const hsLine = hsCtx ? `\n- ${hsCtx}` : '';
+              const caseActivitiesZh = caseActivities.length
+                ? caseActivities
+                    .slice(0, 5)
+                    .map(
+                      (a) =>
+                        `  · ${a.description}${a.role ? `(${a.role})` : ''}${a.tier ? ` [Tier ${a.tier}]` : ''}`,
+                    )
+                    .join('\n')
+                : none;
+              const caseActivitiesEn = caseActivitiesZh; // Same format works for both
+              const caseAwardsZh = caseAwards.length
+                ? caseAwards
+                    .slice(0, 5)
+                    .map(
+                      (a) =>
+                        `  · ${a.name}(${a.level})${a.tier ? ` [Tier ${a.tier}]` : ''}`,
+                    )
+                    .join('\n')
+                : none;
+              const caseAwardsEn = caseAwardsZh;
+              const caseScoresStr = caseTestScores.length
+                ? caseTestScores.map((t) => `${t.type}: ${t.score}`).join(', ')
+                : unknown;
+
               return isZh
                 ? `
 录取案例：
@@ -354,6 +418,14 @@ Provide specific, actionable advice.`;
 - 结果：${admissionCase.result}
 - GPA范围：${admissionCase.gpaRange || unknown}
 - SAT范围：${admissionCase.satRange || unknown}
+- 结构化成绩：${caseScoresStr}
+- 高中类型：${admissionCase.highSchoolType || unknown}
+- 课程体系：${admissionCase.curriculumType || unknown}
+- 人口标签：${admissionCase.demographicTags?.join('、') || none}
+- 活动(${caseActivities.length}项):
+${caseActivitiesZh}
+- 奖项(${caseAwards.length}项):
+${caseAwardsZh}
 - 标签：${admissionCase.tags?.join('、') || none}
 
 您的档案：
@@ -388,6 +460,14 @@ Admission case:
 - Result: ${admissionCase.result}
 - GPA range: ${admissionCase.gpaRange || unknown}
 - SAT range: ${admissionCase.satRange || unknown}
+- Structured scores: ${caseScoresStr}
+- High school type: ${admissionCase.highSchoolType || unknown}
+- Curriculum: ${admissionCase.curriculumType || unknown}
+- Demographic tags: ${admissionCase.demographicTags?.join(', ') || none}
+- Activities (${caseActivities.length}):
+${caseActivitiesEn}
+- Awards (${caseAwards.length}):
+${caseAwardsEn}
 - Tags: ${admissionCase.tags?.join(', ') || none}
 
 Your profile:
@@ -425,11 +505,157 @@ ${
       return {
         caseSchool: schoolName,
         caseResult: admissionCase.result,
+        dimensions: {
+          caseGpaRange: admissionCase.gpaRange,
+          caseSatRange: admissionCase.satRange,
+          caseTestScores: caseTestScores.map((t) => ({
+            type: t.type,
+            score: t.score,
+          })),
+          caseActivityCount: caseActivities.length,
+          caseTopActivityTier: caseActivities.reduce(
+            (best, a) => Math.min(best, a.tier ?? 4),
+            4,
+          ),
+          caseAwardCount: caseAwards.length,
+          caseBestAwardLevel: caseAwards[0]?.level ?? null,
+          caseHighSchoolType: admissionCase.highSchoolType,
+          caseCurriculumType: admissionCase.curriculumType,
+          caseDemographicTags: admissionCase.demographicTags,
+          profileGpa: profile.gpa,
+          profileGpaScale: profile.gpaScale,
+          profileTestScoreCount: profile.testScores?.length ?? 0,
+          profileActivityCount: profile.activities?.length ?? 0,
+          profileAwardCount: profile.awards?.length ?? 0,
+        },
         comparison,
       };
     } catch (error) {
       this.logger.error('Failed to compare case with profile', error);
       return { error: isZh ? '对比分析失败' : 'Failed to compare profiles' };
+    }
+  }
+
+  async findSimilarCases(
+    userId: string,
+    args: { schoolName?: string; limit?: number },
+    locale = 'zh',
+  ) {
+    const isZh = locale === 'zh';
+    try {
+      const profile = await this.profileLoader.loadProfile(userId, locale);
+
+      if (!profile) {
+        return {
+          error: isZh
+            ? '请先完善您的档案信息'
+            : 'Please complete your profile first',
+        };
+      }
+
+      const take = Math.min(args.limit ?? 10, 20);
+      const where: any = {
+        visibility: { in: ['ANONYMOUS', 'PUBLIC'] },
+        reviewStatus: CASE_REVIEW_APPROVED_WHERE.reviewStatus,
+      };
+
+      // Match by GPA range if available
+      if (profile.gpa) {
+        const gpaVal = Number(profile.gpa);
+        if (!isNaN(gpaVal)) {
+          const low = Math.max(0, gpaVal - 0.3).toFixed(1);
+          const high = Math.min(
+            Number(profile.gpaScale) || 4.0,
+            gpaVal + 0.3,
+          ).toFixed(1);
+          where.OR = [
+            { gpaRange: { contains: low, mode: 'insensitive' } },
+            { gpaRange: { contains: high, mode: 'insensitive' } },
+          ];
+        }
+      }
+
+      // Filter by target major if set
+      if (profile.targetMajor) {
+        where.major = { contains: profile.targetMajor, mode: 'insensitive' };
+      }
+
+      // Optionally restrict to a specific school
+      if (args.schoolName) {
+        const searchTerm = args.schoolName.trim();
+        where.school = {
+          OR: [
+            { name: { contains: searchTerm, mode: 'insensitive' } },
+            { nameZh: { contains: searchTerm, mode: 'insensitive' } },
+            {
+              aliases: {
+                hasSome: [
+                  searchTerm,
+                  searchTerm.toUpperCase(),
+                  searchTerm.toLowerCase(),
+                ],
+              },
+            },
+          ],
+        };
+      }
+
+      const cases = await this.prisma.admissionCase.findMany({
+        where,
+        take,
+        orderBy: { createdAt: 'desc' },
+        include: { school: { select: { name: true, nameZh: true } } },
+      });
+
+      if (!cases.length) {
+        return {
+          message: isZh
+            ? '未找到与您背景相似的案例'
+            : 'No similar cases found for your profile',
+        };
+      }
+
+      return {
+        count: cases.length,
+        matchCriteria: {
+          gpa: profile.gpa,
+          targetMajor: profile.targetMajor,
+          schoolFilter: args.schoolName ?? null,
+        },
+        cases: cases.map((c) => ({
+          id: c.id,
+          school: this.schoolLookup.displayName(c.school, locale),
+          year: c.year,
+          round: c.round,
+          result: c.result,
+          gpaRange: c.gpaRange,
+          satRange: c.satRange,
+          tags: c.tags,
+          activitySummary: parseCaseActivities(c.activities).map((a) => ({
+            category: a.category,
+            description: a.description,
+            role: a.role,
+            tier: a.tier,
+          })),
+          awardSummary: parseCaseAwards(c.awards).map((a) => ({
+            name: a.name,
+            level: a.level,
+            tier: a.tier,
+          })),
+          testScoreSummary: parseCaseTestScores(c.testScores).map((t) => ({
+            type: t.type,
+            score: t.score,
+          })),
+          highSchoolType: c.highSchoolType,
+          curriculumType: c.curriculumType,
+          demographicTags: c.demographicTags,
+        })),
+      };
+    } catch (error) {
+      this.logger.error('Failed to find similar cases', error);
+      return {
+        error: isZh ? '查找相似案例失败' : 'Failed to find similar cases',
+      };
     }
   }
 }

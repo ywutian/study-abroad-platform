@@ -11,14 +11,14 @@ import {
 } from 'class-validator';
 
 export class SetTargetSchoolsDto {
-  @ApiProperty({ description: '学校ID列表', type: [String] })
+  @ApiProperty({ description: 'School ID list', type: [String] })
   @IsArray()
   @IsString({ each: true })
   @MaxLength(500, { each: true })
   schoolIds: string[];
 
   @ApiPropertyOptional({
-    description: '优先级映射 (schoolId -> priority 1-3)',
+    description: 'Priority映射 (schoolId -> priority 1-3)',
     example: { 'school-1': 1, 'school-2': 2 },
   })
   @IsOptional()
@@ -28,7 +28,7 @@ export class SetTargetSchoolsDto {
 
 export class AddTargetSchoolDto {
   @ApiPropertyOptional({
-    description: '优先级 (1=Reach, 2=Target, 3=Safety)',
+    description: 'Priority (1=Reach, 2=Target, 3=Safety)',
     minimum: 1,
     maximum: 3,
   })

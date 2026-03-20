@@ -26,7 +26,7 @@ export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
   @Get()
-  @ApiOperation({ summary: '获取通知列表' })
+  @ApiOperation({ summary: 'Get notification list' })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'offset', required: false, type: Number })
   async getNotifications(
@@ -43,14 +43,14 @@ export class NotificationController {
   }
 
   @Get('unread-count')
-  @ApiOperation({ summary: '获取未读通知数量' })
+  @ApiOperation({ summary: 'Get unread notification count' })
   async getUnreadCount(@CurrentUser() user: CurrentUserPayload) {
     const count = await this.notificationService.getUnreadCount(user.id);
     return { count };
   }
 
   @Post(':id/read')
-  @ApiOperation({ summary: '标记单个通知为已读' })
+  @ApiOperation({ summary: 'Mark single notification as read' })
   async markAsRead(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') notificationId: string,
@@ -63,14 +63,14 @@ export class NotificationController {
   }
 
   @Post('read-all')
-  @ApiOperation({ summary: '标记所有通知为已读' })
+  @ApiOperation({ summary: 'Mark all notifications as read' })
   async markAllAsRead(@CurrentUser() user: CurrentUserPayload) {
     const count = await this.notificationService.markAllAsRead(user.id);
     return { count };
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: '删除单个通知' })
+  @ApiOperation({ summary: 'Delete single notification' })
   async deleteNotification(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') notificationId: string,
@@ -83,7 +83,7 @@ export class NotificationController {
   }
 
   @Delete()
-  @ApiOperation({ summary: '清空所有通知' })
+  @ApiOperation({ summary: 'Clear all notifications' })
   async clearAll(@CurrentUser() user: CurrentUserPayload) {
     await this.notificationService.clearAll(user.id);
     return { success: true };

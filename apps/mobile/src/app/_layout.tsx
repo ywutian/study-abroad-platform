@@ -16,6 +16,7 @@ import { initSentry, setUser as setSentryUser, captureException } from '@/lib/se
 import { useAuthStore } from '@/stores';
 import { useThemeStore } from '@/stores/theme';
 import { useChatSocket } from '@/hooks/useChatSocket';
+import { useSessionTimeout } from '@/hooks/useSessionTimeout';
 import { useNotifications, type Notification as AppNotification } from '@/hooks/useNotifications';
 import { useNotificationStore } from '@/stores/notification';
 import { ToastProvider, useToast } from '@/components/ui/Toast';
@@ -116,20 +117,27 @@ const DETAIL_SCREENS = [
   'chat/[id]',
   'ranking',
   'prediction',
-  'recommendation',
+  'recommendation/index',
   'find-college',
   'essays',
-  'essay-gallery',
+  'essay-gallery/index',
   'timeline',
   'assessment',
   'forum',
   'forum/[id]',
   'followers',
-  'hall',
-  'swipe',
+  'hall/index',
+  'swipe/index',
   'uncommon-app',
   'subscription',
   'security',
+  'resume',
+  'vault',
+  'teams',
+  'points',
+  'peer-review',
+  'referral',
+  'verification',
 ] as const;
 
 const DETAIL_SCREEN_OPTIONS = { title: '', headerBackTitle: '' } as const;
@@ -164,6 +172,7 @@ function RootLayoutNav() {
   const colors = useColors();
   const { colorScheme } = useThemeStore();
   useProtectedRoute();
+  useSessionTimeout();
 
   return (
     <>

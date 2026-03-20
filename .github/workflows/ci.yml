@@ -44,7 +44,6 @@ jobs:
 
       - name: Lint Mobile
         run: pnpm --filter mobile lint
-        continue-on-error: true
 
       - name: Check i18n (hardcoded text & key consistency)
         run: pnpm --filter web lint:i18n
@@ -95,7 +94,6 @@ jobs:
 
       - name: Type check Mobile
         run: pnpm --filter mobile exec tsc --noEmit
-        continue-on-error: true
 
   test:
     name: Unit Tests
@@ -303,7 +301,6 @@ jobs:
 
       - name: Type check Mobile
         run: pnpm --filter mobile exec tsc --noEmit
-        continue-on-error: true
 
       - name: Upload API build
         uses: actions/upload-artifact@v4
@@ -322,7 +319,7 @@ jobs:
   docker:
     name: Docker Build
     runs-on: ubuntu-latest
-    needs: [build]
+    needs: [build, security]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       contents: read
@@ -500,7 +497,7 @@ jobs:
             --wait \
             --quiet
 
-      - name: Deploy to Cloud Run
+      - name: Deploy canary (no traffic)
         if: success()
         run: |
           REGION="${{ secrets.GCP_REGION }}"
@@ -511,7 +508,7 @@ jobs:
             --region="$REGION" \
             --platform=managed \
             --max-instances=3 \
-            --min-instances=0 \
+            --min-instances=1 \
             --cpu-throttling \
             --vpc-connector=projects/${{ secrets.GCP_PROJECT_ID }}/locations/$REGION/connectors/study-abroad-connector \
             --vpc-egress=private-ranges-only \
@@ -519,6 +516,42 @@ jobs:
             --set-env-vars="NODE_ENV=production,FRONTEND_URL=https://study-abroad-platform-web.vercel.app,CORS_ORIGINS=https://study-abroad-platform-web.vercel.app,OPENAI_MODEL=gpt-4o-mini" \
             --set-secrets="DATABASE_URL=database-url-proxy:latest,JWT_SECRET=jwt-secret:latest,JWT_REFRESH_SECRET=jwt-refresh-secret:latest,VAULT_ENCRYPTION_KEY=vault-encryption-key:latest,OPENAI_API_KEY=openai-api-key:latest,REDIS_URL=redis-url:latest,RESEND_API_KEY=resend-api-key:latest,TAVILY_API_KEY=tavily-api-key:latest" \
             --timeout=300 \
+            --no-traffic \
+            --tag=canary \
+            --quiet
+
+      - name: Canary smoke test
+        id: canary-smoke
+        run: |
+          REGION="${{ secrets.GCP_REGION }}"
+          CANARY_URL=$(gcloud run services describe study-abroad-api --region=$REGION --format='value(status.traffic[tag=canary].url)' 2>/dev/null || echo "")
+          if [ -z "$CANARY_URL" ]; then
+            echo "::warning::Could not get canary URL, falling back to main URL"
+            CANARY_URL=$(gcloud run services describe study-abroad-api --region=$REGION --format='value(status.url)')
+          fi
+          echo "canary_url=$CANARY_URL" >> $GITHUB_OUTPUT
+          sleep 5
+          for i in 1 2 3; do
+            RESPONSE=$(curl -s "$CANARY_URL/health" --max-time 15 || echo '{}')
+            STATUS=$(curl -s -o /dev/null -w '%{http_code}' "$CANARY_URL/health" --max-time 15 || echo "000")
+            HEALTH=$(echo "$RESPONSE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('data',{}).get('status','unknown'))" 2>/dev/null || echo "unknown")
+            if [ "$STATUS" = "200" ] && [ "$HEALTH" = "ok" -o "$HEALTH" = "degraded" ]; then
+              echo "✅ Canary health check passed (attempt $i)"
+              exit 0
+            fi
+            echo "⏳ Canary check attempt $i: HTTP $STATUS, health=$HEALTH"
+            sleep 5
+          done
+          echo "::error::Canary health check failed"
+          exit 1
+
+      - name: Promote canary to full traffic
+        if: success()
+        run: |
+          REGION="${{ secrets.GCP_REGION }}"
+          gcloud run services update-traffic study-abroad-api \
+            --region="$REGION" \
+            --to-latest \
             --quiet
 
       - name: Smoke test
@@ -531,15 +564,17 @@ jobs:
           # Wait for new revision to stabilize
           sleep 10
 
-          # Health check with retries
+          # Health check with retries (validate response body, not just HTTP 200)
           for i in 1 2 3 4 5; do
+            RESPONSE=$(curl -s "$URL/health" --max-time 15 || echo '{}')
             STATUS=$(curl -s -o /dev/null -w '%{http_code}' "$URL/health" --max-time 15 || echo "000")
-            if [ "$STATUS" = "200" ]; then
-              echo "✅ Health check passed (attempt $i)"
-              echo "::notice title=API deployed::Cloud Run URL: $URL"
+            HEALTH=$(echo "$RESPONSE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('data',{}).get('status','unknown'))" 2>/dev/null || echo "unknown")
+            if [ "$STATUS" = "200" ] && [ "$HEALTH" = "ok" -o "$HEALTH" = "degraded" ]; then
+              echo "✅ Health check passed (attempt $i, status=$HEALTH)"
+              echo "::notice title=API deployed::Cloud Run URL: $URL (health=$HEALTH)"
               exit 0
             fi
-            echo "⏳ Health check attempt $i: HTTP $STATUS"
+            echo "⏳ Health check attempt $i: HTTP $STATUS, health=$HEALTH"
             sleep 5
           done
           echo "::error::Health check failed after 5 attempts"

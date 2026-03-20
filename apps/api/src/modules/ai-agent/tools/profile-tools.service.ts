@@ -54,7 +54,13 @@ export class ProfileToolsService implements IToolHandlerProvider {
     locale = 'zh',
   ) {
     const isZh = locale === 'zh';
-    const allowedFields = ['targetMajor', 'budgetTier'];
+    const allowedFields = [
+      'targetMajor',
+      'budgetTier',
+      'nationality',
+      'grade',
+      'currentSchoolType',
+    ];
 
     if (!allowedFields.includes(field)) {
       return {

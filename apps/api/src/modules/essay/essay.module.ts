@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { AiAgentMemoryModule } from '../ai-agent/memory/memory.module';
 import { PointsModule } from '../points/points.module';
+import { NotificationModule } from '../notification/notification.module';
 
 // Services
 import { EssayAiService } from './essay-ai.service';
@@ -24,7 +25,12 @@ import { EssayPromptAdminController } from './essay-prompt-admin.controller';
 import { EssayScraperController } from './essay-scraper.controller';
 
 @Module({
-  imports: [PrismaModule, AiAgentMemoryModule, PointsModule],
+  imports: [
+    PrismaModule,
+    AiAgentMemoryModule,
+    PointsModule,
+    NotificationModule,
+  ],
   controllers: [
     EssayAiController,
     EssayPromptController,

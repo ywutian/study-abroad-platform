@@ -87,7 +87,7 @@ export function CommandPalette({ customCommands = [] }: CommandPaletteProps) {
   const { theme, setTheme } = useTheme();
   const { user } = useAuthStore();
   const t = useTranslations('ui.command');
-  const isAdmin = user?.role === 'ADMIN';
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
 
   // 默认命令
   const defaultCommands: CommandItem[] = useMemo(

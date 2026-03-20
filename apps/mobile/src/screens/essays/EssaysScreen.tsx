@@ -82,13 +82,13 @@ export default function EssaysScreen() {
     isRefetching,
   } = useQuery({
     queryKey: ['essays'],
-    queryFn: () => apiClient.get<Essay[]>('/profile/essays'),
+    queryFn: () => apiClient.get<Essay[]>('/profiles/me/essays'),
     enabled: isAuthenticated,
   });
 
   // 删除文书
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/profile/essays/${id}`),
+    mutationFn: (id: string) => apiClient.delete(`/profiles/me/essays/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['essays'] });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

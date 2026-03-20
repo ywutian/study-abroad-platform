@@ -380,7 +380,9 @@ function HeaderActions() {
                   <span>{t('nav.referral')}</span>
                 </Link>
               </DropdownMenuItem>
-              {user.role === 'ADMIN' && (
+              {(user.role === 'ADMIN' ||
+                user.role === 'SUPER_ADMIN' ||
+                user.role === 'OPERATOR') && (
                 <DropdownMenuItem asChild>
                   <Link href="/admin" className="flex items-center gap-2.5 px-2 py-1.5">
                     <Shield className="h-4 w-4 text-muted-foreground" />

@@ -26,7 +26,7 @@ export class UserController {
   ) {}
 
   @Get('me/dashboard')
-  @ApiOperation({ summary: '获取用户仪表盘数据' })
+  @ApiOperation({ summary: 'Get user dashboard data' })
   async getDashboard(@CurrentUser() user: CurrentUserPayload) {
     return this.dashboardService.getDashboardSummary(user.id, user.locale);
   }
@@ -72,14 +72,14 @@ export class UserController {
   // ============ 积分系统 API ============
 
   @Get('me/points')
-  @ApiOperation({ summary: '获取当前用户积分' })
+  @ApiOperation({ summary: 'Get current user points' })
   async getMyPoints(@CurrentUser() user: CurrentUserPayload) {
     const points = await this.caseIncentiveService.getUserPoints(user.id);
     return { points };
   }
 
   @Get('me/points/history')
-  @ApiOperation({ summary: '获取积分变动历史' })
+  @ApiOperation({ summary: 'Get points history' })
   @ApiQuery({
     name: 'limit',
     required: false,
@@ -110,7 +110,7 @@ export class UserController {
   }
 
   @Get('me/points/rules')
-  @ApiOperation({ summary: '获取积分规则说明' })
+  @ApiOperation({ summary: 'Get points rules' })
   async getPointRules() {
     const rules = await this.pointsConfigService.getAllRules();
     return {
@@ -147,7 +147,7 @@ export class UserController {
   }
 
   @Get('me/points/summary')
-  @ApiOperation({ summary: '获取积分汇总统计' })
+  @ApiOperation({ summary: 'Get points summary statistics' })
   async getPointSummary(@CurrentUser() user: CurrentUserPayload) {
     const [points, history] = await Promise.all([
       this.caseIncentiveService.getUserPoints(user.id),

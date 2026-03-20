@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OnEvent } from '@nestjs/event-emitter';
 import { RedisService } from '../../common/redis/redis.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import {
   CHAT_MESSAGE_OFFLINE,
   NOTIFICATION_PUSH,
@@ -30,6 +31,13 @@ export enum NotificationType {
   // 提醒类
   DEADLINE_REMINDER = 'DEADLINE_REMINDER',
   PROFILE_INCOMPLETE = 'PROFILE_INCOMPLETE',
+
+  // 审核类
+  CASE_REVIEW_APPROVED = 'CASE_REVIEW_APPROVED',
+  CASE_REVIEW_REJECTED = 'CASE_REVIEW_REJECTED',
+
+  // 文书题目
+  NEW_ESSAY_PROMPTS = 'NEW_ESSAY_PROMPTS',
 
   // 管理员广播
   SYSTEM_BROADCAST = 'SYSTEM_BROADCAST',
@@ -105,6 +113,18 @@ const NOTIFICATION_TEMPLATES: Record<
     title: '完善档案',
     content: '完善你的档案可获得 +30 积分',
   },
+  [NotificationType.CASE_REVIEW_APPROVED]: {
+    title: '案例审核通过',
+    content: '你的案例已通过审核，现在对其他用户可见',
+  },
+  [NotificationType.CASE_REVIEW_REJECTED]: {
+    title: '案例审核未通过',
+    content: '你的案例未通过审核，请查看原因并修正后重新提交',
+  },
+  [NotificationType.NEW_ESSAY_PROMPTS]: {
+    title: '新文书题目',
+    content: '{school} 有 {count} 个新文书题目',
+  },
   [NotificationType.SYSTEM_BROADCAST]: {
     title: '系统通知',
     content: '{message}',
@@ -122,6 +142,7 @@ export class NotificationService {
   constructor(
     private readonly redis: RedisService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly prisma: PrismaService,
   ) {}
 
   /**
@@ -302,6 +323,47 @@ export class NotificationService {
   async clearAll(userId: string): Promise<void> {
     await this.redis.del(this.getNotificationKey(userId));
     await this.redis.set(this.getUnreadCountKey(userId), '0');
+  }
+
+  /**
+   * Notify users who have a school in their school list about new essay prompts
+   */
+  async notifyNewEssayPrompts(
+    schoolId: string,
+    schoolName: string,
+    newPromptCount: number,
+  ): Promise<void> {
+    try {
+      const schoolListItems = await this.prisma.schoolListItem.findMany({
+        where: { schoolId },
+        select: { userId: true },
+      });
+
+      const userIds = [...new Set(schoolListItems.map((i) => i.userId))];
+
+      this.logger.log(
+        `Notifying ${userIds.length} users about ${newPromptCount} new essay prompts for ${schoolName}`,
+      );
+
+      for (const userId of userIds) {
+        await this.createNotification(
+          userId,
+          NotificationType.NEW_ESSAY_PROMPTS,
+          {
+            relatedId: schoolId,
+            relatedType: 'school',
+            data: {
+              school: schoolName,
+              count: String(newPromptCount),
+            },
+          },
+        );
+      }
+    } catch (error: any) {
+      this.logger.error(
+        `Failed to send new essay prompt notifications: ${error?.message}`,
+      );
+    }
   }
 
   private getNotificationKey(userId: string): string {

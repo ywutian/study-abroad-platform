@@ -11,7 +11,7 @@ export class HighSchoolController {
 
   @Get()
   @Public()
-  @ApiOperation({ summary: '搜索高中参考数据' })
+  @ApiOperation({ summary: 'Search high school reference data' })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'country', required: false })
   @ApiQuery({ name: 'type', required: false, enum: HighSchoolType })

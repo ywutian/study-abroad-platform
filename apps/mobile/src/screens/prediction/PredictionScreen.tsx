@@ -3,11 +3,11 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
@@ -21,8 +21,11 @@ import {
   Loading,
   AnimatedCounter,
   Progress,
+  Modal,
+  Segment,
 } from '@/components/ui';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useToast } from '@/components/ui/Toast';
+import { useColors, withOpacity, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
 
@@ -64,11 +67,41 @@ function mapDashboardToPredictions(
   }));
 }
 
+type AdmissionResult = 'admitted' | 'rejected' | 'waitlisted' | 'deferred';
+
 export default function PredictionScreen() {
   const { t } = useTranslation();
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { isAuthenticated } = useAuthStore();
+  const toast = useToast();
+  const queryClient = useQueryClient();
+
+  // Report result state
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [reportSchoolId, setReportSchoolId] = useState<string | null>(null);
+  const [reportResult, setReportResult] = useState<AdmissionResult>('admitted');
+
+  const reportMutation = useMutation({
+    mutationFn: (data: { schoolId: string; result: AdmissionResult }) =>
+      apiClient.post('/predictions/report-result', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['predictions'] });
+      setReportModalVisible(false);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      toast.show({ type: 'success', message: t('prediction.resultReported') });
+    },
+    onError: () => {
+      toast.show({ type: 'error', message: t('prediction.reportFailed') });
+    },
+  });
+
+  const openReportModal = (schoolId: string) => {
+    setReportSchoolId(schoolId);
+    setReportResult('admitted');
+    setReportModalVisible(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
 
   // 获取用户档案完整度
   const { data: profile, isLoading: profileLoading } = useQuery({
@@ -310,9 +343,23 @@ export default function PredictionScreen() {
                     </View>
                   )}
 
-                  <Text style={[styles.confidence, { color: colors.foregroundMuted }]}>
-                    {t('prediction.confidence', { value: prediction.confidence })}
-                  </Text>
+                  <View style={styles.cardFooter}>
+                    <Text style={[styles.confidence, { color: colors.foregroundMuted }]}>
+                      {t('prediction.confidence', { value: prediction.confidence })}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => openReportModal(prediction.schoolId)}
+                      style={[
+                        styles.reportButton,
+                        { backgroundColor: withOpacity(colors.primary, 0.1) },
+                      ]}
+                    >
+                      <Ionicons name="flag-outline" size={14} color={colors.primary} />
+                      <Text style={[styles.reportButtonText, { color: colors.primary }]}>
+                        {t('prediction.reportResult')}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 </CardContent>
               </AnimatedCard>
             </Animated.View>
@@ -340,6 +387,66 @@ export default function PredictionScreen() {
           {t('prediction.addPrediction')}
         </AnimatedButton>
       </View>
+
+      {/* Report Result Modal */}
+      <Modal
+        visible={reportModalVisible}
+        onClose={() => setReportModalVisible(false)}
+        title={t('prediction.reportActualResult')}
+      >
+        <View style={styles.reportContent}>
+          <Text style={[styles.reportLabel, { color: colors.foreground }]}>
+            {t('prediction.selectResult')}
+          </Text>
+          {(['admitted', 'rejected', 'waitlisted', 'deferred'] as AdmissionResult[]).map(
+            (result) => {
+              const isSelected = reportResult === result;
+              const resultColors: Record<AdmissionResult, string> = {
+                admitted: colors.success,
+                rejected: colors.error,
+                waitlisted: colors.warning,
+                deferred: colors.info,
+              };
+              return (
+                <TouchableOpacity
+                  key={result}
+                  onPress={() => setReportResult(result)}
+                  style={[
+                    styles.resultOption,
+                    { borderColor: isSelected ? resultColors[result] : colors.border },
+                    isSelected && { backgroundColor: withOpacity(resultColors[result], 0.1) },
+                  ]}
+                >
+                  <Ionicons
+                    name={isSelected ? 'radio-button-on' : 'radio-button-off'}
+                    size={20}
+                    color={isSelected ? resultColors[result] : colors.foregroundMuted}
+                  />
+                  <Text
+                    style={[
+                      styles.resultOptionText,
+                      { color: isSelected ? resultColors[result] : colors.foreground },
+                    ]}
+                  >
+                    {t(`prediction.results.${result}`)}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+          )}
+          <AnimatedButton
+            onPress={() => {
+              if (reportSchoolId) {
+                reportMutation.mutate({ schoolId: reportSchoolId, result: reportResult });
+              }
+            }}
+            loading={reportMutation.isPending}
+            style={styles.reportSubmitButton}
+          >
+            {t('prediction.submitResult')}
+          </AnimatedButton>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -489,5 +596,47 @@ const styles = StyleSheet.create({
   },
   addButton: {
     width: '100%',
+  },
+  cardFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  reportButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    borderRadius: borderRadius.md,
+  },
+  reportButtonText: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.medium,
+  },
+  reportContent: {
+    paddingHorizontal: spacing.lg,
+    gap: spacing.md,
+  },
+  reportLabel: {
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.semibold,
+    marginBottom: spacing.sm,
+  },
+  resultOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.md,
+    borderWidth: 1.5,
+    borderRadius: borderRadius.lg,
+  },
+  resultOptionText: {
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.medium,
+  },
+  reportSubmitButton: {
+    marginTop: spacing.md,
+    marginBottom: spacing.lg,
   },
 });

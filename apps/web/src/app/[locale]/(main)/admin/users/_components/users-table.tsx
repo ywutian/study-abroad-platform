@@ -19,6 +19,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -30,13 +31,18 @@ import {
   Trash2,
   Ban,
   ShieldOff,
+  Shield,
+  Wrench,
+  Crown,
   Eye,
 } from 'lucide-react';
+import { RoleBadge, getRoleLevel, canAssignRole } from '../../_components/role-badge';
+import { useAuthStore } from '@/stores/auth';
 
 export interface User {
   id: string;
   email: string;
-  role: 'USER' | 'VERIFIED' | 'ADMIN';
+  role: 'USER' | 'VERIFIED' | 'OPERATOR' | 'ADMIN' | 'SUPER_ADMIN';
   emailVerified: boolean;
   locale: string;
   createdAt: string;
@@ -66,17 +72,11 @@ export function UsersTable({
 }: UsersTableProps) {
   const t = useTranslations('admin');
   const fmt = useFormatter();
+  const currentUser = useAuthStore((s) => s.user);
+  const currentRole = currentUser?.role || 'ADMIN';
 
-  const getRoleBadge = (role: string) => {
-    switch (role) {
-      case 'ADMIN':
-        return <Badge variant="purple">{t('roles.admin')}</Badge>;
-      case 'VERIFIED':
-        return <Badge variant="success">{t('roles.verified')}</Badge>;
-      default:
-        return <Badge variant="secondary">{t('roles.user')}</Badge>;
-    }
-  };
+  const isHigherRole = (targetRole: string) => getRoleLevel(currentRole) > getRoleLevel(targetRole);
+  const canModify = (targetRole: string) => isHigherRole(targetRole);
 
   return (
     <Card>
@@ -106,7 +106,9 @@ export function UsersTable({
                     <span className="truncate max-w-[200px]">{u.email}</span>
                   </div>
                 </TableCell>
-                <TableCell>{getRoleBadge(u.role)}</TableCell>
+                <TableCell>
+                  <RoleBadge role={u.role} />
+                </TableCell>
                 <TableCell>
                   {u.emailVerified ? (
                     <Badge variant="outline" className="gap-1">
@@ -152,24 +154,40 @@ export function UsersTable({
                           {t('users.viewDetail')}
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => onUpdateRole(u.id, 'VERIFIED')}
-                        disabled={u.role === 'VERIFIED' || u.role === 'ADMIN'}
-                      >
-                        <UserCheck className="mr-2 h-4 w-4" />
-                        {t('users.setVerified')}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => onUpdateRole(u.id, 'USER')}
-                        disabled={u.role === 'USER' || u.role === 'ADMIN'}
-                      >
-                        <Users className="mr-2 h-4 w-4" />
-                        {t('users.setUser')}
-                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      {u.role !== 'USER' && canModify(u.role) && (
+                        <DropdownMenuItem onClick={() => onUpdateRole(u.id, 'USER')}>
+                          <Users className="mr-2 h-4 w-4" />
+                          {t('users.setUser')}
+                        </DropdownMenuItem>
+                      )}
+                      {u.role !== 'VERIFIED' && canModify(u.role) && (
+                        <DropdownMenuItem onClick={() => onUpdateRole(u.id, 'VERIFIED')}>
+                          <UserCheck className="mr-2 h-4 w-4" />
+                          {t('users.setVerified')}
+                        </DropdownMenuItem>
+                      )}
+                      {u.role !== 'OPERATOR' &&
+                        canAssignRole(currentRole, 'OPERATOR') &&
+                        canModify(u.role) && (
+                          <DropdownMenuItem onClick={() => onUpdateRole(u.id, 'OPERATOR')}>
+                            <Wrench className="mr-2 h-4 w-4" />
+                            {t('roles.setOperator')}
+                          </DropdownMenuItem>
+                        )}
+                      {u.role !== 'ADMIN' &&
+                        canAssignRole(currentRole, 'ADMIN') &&
+                        canModify(u.role) && (
+                          <DropdownMenuItem onClick={() => onUpdateRole(u.id, 'ADMIN')}>
+                            <Shield className="mr-2 h-4 w-4" />
+                            {t('roles.setAdmin')}
+                          </DropdownMenuItem>
+                        )}
+                      <DropdownMenuSeparator />
                       {u.isBanned ? (
                         <DropdownMenuItem
                           onClick={() => onUnbanUser(u.id)}
-                          disabled={u.role === 'ADMIN'}
+                          disabled={!canModify(u.role)}
                         >
                           <ShieldOff className="mr-2 h-4 w-4" />
                           {t('ban.unbanUser')}
@@ -178,7 +196,7 @@ export function UsersTable({
                         <DropdownMenuItem
                           onClick={() => onBanUser(u)}
                           className="text-destructive focus:text-destructive"
-                          disabled={u.role === 'ADMIN'}
+                          disabled={!canModify(u.role)}
                         >
                           <Ban className="mr-2 h-4 w-4" />
                           {t('ban.banUser')}
@@ -187,7 +205,7 @@ export function UsersTable({
                       <DropdownMenuItem
                         onClick={() => onDeleteUser(u.id)}
                         className="text-destructive focus:text-destructive"
-                        disabled={u.role === 'ADMIN'}
+                        disabled={!canModify(u.role)}
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
                         {t('users.delete')}

@@ -6,6 +6,7 @@ import Animated, {
   withSpring,
   withTiming,
   runOnJS,
+  useReducedMotion,
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
@@ -54,6 +55,7 @@ export function AnimatedCard({
   accessibilityLabel,
 }: AnimatedCardProps) {
   const colors = useColors();
+  const reducedMotion = useReducedMotion();
   const scale = useSharedValue(1);
   const shadowOpacity = useSharedValue(0.1);
 
@@ -77,14 +79,16 @@ export function AnimatedCard({
   if (onPress) {
     const gesture = Gesture.Tap()
       .onBegin(() => {
-        if (scaleOnPress) {
+        if (scaleOnPress && !reducedMotion) {
           scale.value = withSpring(0.98, { damping: 15, stiffness: 400 });
           shadowOpacity.value = withTiming(0.15, { duration: 100 });
         }
       })
       .onFinalize(() => {
-        scale.value = withSpring(1, { damping: 15, stiffness: 400 });
-        shadowOpacity.value = withTiming(0.1, { duration: 100 });
+        if (!reducedMotion) {
+          scale.value = withSpring(1, { damping: 15, stiffness: 400 });
+          shadowOpacity.value = withTiming(0.1, { duration: 100 });
+        }
       })
       .onEnd(() => {
         runOnJS(triggerHaptic)();
@@ -157,11 +161,12 @@ export function CardFooter({ children, style }: CardFooterProps) {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: borderRadius.lg,
+    borderRadius: borderRadius.xl,
     borderWidth: 1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 3,
+    shadowOpacity: 0.08,
+    elevation: 2,
   },
   header: {
     padding: spacing.lg,

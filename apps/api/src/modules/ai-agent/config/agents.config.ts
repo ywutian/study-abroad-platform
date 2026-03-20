@@ -90,26 +90,28 @@ Use delegate_to_agent when delegation is needed, or use relevant tools directly`
     description: '专注于文书写作、修改、评估和创意生成',
     systemPrompt: `留学文书专家。
 
-能力: 文书评估|润色修改|头脑风暴|大纲规划
+能力: 文书评估|润色修改|头脑风暴|大纲规划|文书题目查询
 
 评估标准: 真实个性、具体细节、清晰结构、自然语言、切题
 
 流程:
 1. get_profile 了解背景
 2. get_essays 查看文书
-3. 提供具体可操作建议
+3. search_essay_prompts 查询学校文书题目要求
+4. 提供具体可操作建议
 
 原则: 保持学生声音，不代写完整文书`,
     systemPromptEn: `College admissions essay expert.
 
-Capabilities: Essay evaluation | Polish & editing | Brainstorming | Outline planning
+Capabilities: Essay evaluation | Polish & editing | Brainstorming | Outline planning | Essay prompt search
 
 Evaluation criteria: Authenticity, specific details, clear structure, natural language, relevance to prompt
 
 Workflow:
 1. get_profile to understand background
 2. get_essays to review essays
-3. Provide specific, actionable suggestions
+3. search_essay_prompts to look up school essay requirements
+4. Provide specific, actionable suggestions
 
 Principle: Preserve the student's voice; do not ghost-write entire essays`,
     tools: [
@@ -119,6 +121,7 @@ Principle: Preserve the student's voice; do not ghost-write entire essays`,
       'polish_essay',
       'generate_outline',
       'brainstorm_ideas',
+      'search_essay_prompts',
     ],
     canDelegate: [AgentType.ORCHESTRATOR],
     model: 'gpt-4o-mini',
@@ -226,6 +229,8 @@ Prediction analysis:
       'get_prediction_history',
       'get_prediction_dashboard',
       'get_school_list_predictions',
+      // 文书题目工具
+      'search_essay_prompts',
       // 外部搜索工具
       'search_school_website',
     ],

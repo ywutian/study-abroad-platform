@@ -14,8 +14,6 @@ import {
   Body,
   Param,
   Query,
-  HttpCode,
-  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { Roles } from '../../../common/decorators/roles.decorator';
@@ -207,7 +205,7 @@ export class AgentAdminController {
    * 获取完整配置
    */
   @Get('config')
-  @ApiOperation({ summary: '获取完整 Agent 配置' })
+  @ApiOperation({ summary: 'Get full Agent configuration' })
   getConfig() {
     return {
       config: this.configService.getFullConfig(),
@@ -219,7 +217,7 @@ export class AgentAdminController {
    * 获取系统配置
    */
   @Get('config/system')
-  @ApiOperation({ summary: '获取系统配置' })
+  @ApiOperation({ summary: 'Get system configuration' })
   getSystemConfig() {
     return this.configService.getSystemConfig();
   }
@@ -228,7 +226,7 @@ export class AgentAdminController {
    * 更新 LLM 配置（模型、回退模型、重试、超时）
    */
   @Put('config/llm')
-  @ApiOperation({ summary: '更新 LLM 配置' })
+  @ApiOperation({ summary: 'Update LLM configuration' })
   updateLlmConfig(@Body() dto: UpdateLlmConfigDto) {
     const current = this.configService.getSystemConfig();
 
@@ -246,7 +244,7 @@ export class AgentAdminController {
    * 更新配额配置
    */
   @Put('config/quota')
-  @ApiOperation({ summary: '更新 Token 配额配置' })
+  @ApiOperation({ summary: 'Update token quota configuration' })
   updateQuotaConfig(@Body() dto: UpdateQuotaDto) {
     const current = this.configService.getSystemConfig();
 
@@ -268,7 +266,7 @@ export class AgentAdminController {
    * 更新限流配置
    */
   @Put('config/rate-limit/:type')
-  @ApiOperation({ summary: '更新限流配置' })
+  @ApiOperation({ summary: 'Update rate limit configuration' })
   updateRateLimitConfig(
     @Param('type') type: 'user' | 'vip',
     @Body() dto: UpdateRateLimitDto,
@@ -293,7 +291,7 @@ export class AgentAdminController {
    * 获取所有 Agent 配置
    */
   @Get('agents')
-  @ApiOperation({ summary: '获取所有 Agent 配置' })
+  @ApiOperation({ summary: 'Get all Agent configurations' })
   getAllAgents() {
     return this.configService.getAllAgentConfigs();
   }
@@ -302,7 +300,7 @@ export class AgentAdminController {
    * 获取单个 Agent 配置
    */
   @Get('agents/:type')
-  @ApiOperation({ summary: '获取单个 Agent 配置' })
+  @ApiOperation({ summary: 'Get single Agent configuration' })
   getAgent(@Param('type') type: AgentType) {
     return this.configService.getAgentConfig(type);
   }
@@ -311,7 +309,7 @@ export class AgentAdminController {
    * 更新 Agent 配置
    */
   @Put('agents/:type')
-  @ApiOperation({ summary: '更新 Agent 配置' })
+  @ApiOperation({ summary: 'Update Agent configuration' })
   updateAgent(
     @Param('type') type: AgentType,
     @Body() dto: UpdateAgentConfigDto,
@@ -323,7 +321,7 @@ export class AgentAdminController {
    * 启用/禁用 Agent
    */
   @Put('agents/:type/toggle')
-  @ApiOperation({ summary: '启用/禁用 Agent' })
+  @ApiOperation({ summary: 'Enable/disable Agent' })
   toggleAgent(@Param('type') type: AgentType, @Body() dto: UpdateFeatureDto) {
     return this.configService.updateAgentConfig(type, { enabled: dto.enabled });
   }
@@ -334,7 +332,7 @@ export class AgentAdminController {
    * 获取功能开关状态
    */
   @Get('features')
-  @ApiOperation({ summary: '获取功能开关状态' })
+  @ApiOperation({ summary: 'Get feature toggle status' })
   getFeatures() {
     const config = this.configService.getSystemConfig();
     return config.features;
@@ -344,7 +342,7 @@ export class AgentAdminController {
    * 切换功能开关
    */
   @Put('features/:feature')
-  @ApiOperation({ summary: '切换功能开关' })
+  @ApiOperation({ summary: 'Toggle feature switch' })
   toggleFeature(
     @Param('feature')
     feature:
@@ -364,7 +362,7 @@ export class AgentAdminController {
    * 查看用户使用量
    */
   @Get('users/:userId/usage')
-  @ApiOperation({ summary: '查看用户 Token 使用量' })
+  @ApiOperation({ summary: 'View user token usage' })
   async getUserUsage(@Param('userId') userId: string) {
     return this.tokenTracker.getUsageStats(userId);
   }
@@ -373,7 +371,7 @@ export class AgentAdminController {
    * 查看用户限流状态
    */
   @Get('users/:userId/rate-limit')
-  @ApiOperation({ summary: '查看用户限流状态' })
+  @ApiOperation({ summary: 'View user rate limit status' })
   getUserRateLimit(@Param('userId') userId: string) {
     return {
       user: this.rateLimiter.getStatus(userId, 'user'),
@@ -386,12 +384,12 @@ export class AgentAdminController {
    * 重置用户限流
    */
   @Delete('users/:userId/rate-limit')
-  @ApiOperation({ summary: '重置用户限流' })
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Reset user rate limit' })
   resetUserRateLimit(@Param('userId') userId: string) {
     void this.rateLimiter.reset(userId, 'user');
     void this.rateLimiter.reset(userId, 'conversation');
     void this.rateLimiter.reset(userId, 'agent');
+    return { message: 'Rate limit reset' };
   }
 
   // ==================== 监控指标 ====================
@@ -400,7 +398,7 @@ export class AgentAdminController {
    * 获取指标摘要
    */
   @Get('metrics')
-  @ApiOperation({ summary: '获取指标摘要' })
+  @ApiOperation({ summary: 'Get metrics summary' })
   getMetrics() {
     return this.metricsService.getMetrics();
   }
@@ -409,7 +407,7 @@ export class AgentAdminController {
    * 获取 Prometheus 格式指标
    */
   @Get('metrics/prometheus')
-  @ApiOperation({ summary: '获取 Prometheus 格式指标' })
+  @ApiOperation({ summary: 'Get Prometheus format metrics' })
   getPrometheusMetrics() {
     return this.metricsService.getPrometheusFormat();
   }
@@ -418,7 +416,7 @@ export class AgentAdminController {
    * 获取每日 Token 使用趋势
    */
   @Get('metrics/daily')
-  @ApiOperation({ summary: '获取每日 Token 使用趋势' })
+  @ApiOperation({ summary: 'Get daily token usage trends' })
   async getDailyMetrics(@Query('days') days: number = 30) {
     const daysCount = Math.min(Math.max(Number(days) || 30, 1), 90);
     const since = new Date();
@@ -514,10 +512,10 @@ export class AgentAdminController {
    * 重置指标
    */
   @Delete('metrics')
-  @ApiOperation({ summary: '重置指标' })
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Reset metrics' })
   resetMetrics() {
     this.metricsService.reset();
+    return { message: 'Metrics reset' };
   }
 
   // ==================== 追踪信息 ====================
@@ -526,7 +524,7 @@ export class AgentAdminController {
    * 获取最近请求追踪
    */
   @Get('traces/recent')
-  @ApiOperation({ summary: '获取最近请求追踪' })
+  @ApiOperation({ summary: 'Get recent request traces' })
   getRecentTraces(@Query('limit') limit: number = 50) {
     return this.tracingService.getRecentSpans(limit);
   }
@@ -535,7 +533,7 @@ export class AgentAdminController {
    * 获取慢请求
    */
   @Get('traces/slow')
-  @ApiOperation({ summary: '获取慢请求' })
+  @ApiOperation({ summary: 'Get slow requests' })
   getSlowTraces(
     @Query('threshold') threshold: number = 5000,
     @Query('limit') limit: number = 50,
@@ -547,7 +545,7 @@ export class AgentAdminController {
    * 获取错误请求
    */
   @Get('traces/errors')
-  @ApiOperation({ summary: '获取错误请求' })
+  @ApiOperation({ summary: 'Get error requests' })
   getErrorTraces(@Query('limit') limit: number = 50) {
     return this.tracingService.getErrorSpans(limit);
   }
@@ -556,7 +554,7 @@ export class AgentAdminController {
    * 获取单个 Trace
    */
   @Get('traces/:traceId')
-  @ApiOperation({ summary: '获取单个 Trace 详情' })
+  @ApiOperation({ summary: 'Get single trace details' })
   getTrace(@Param('traceId') traceId: string) {
     return this.tracingService.exportJaegerFormat(traceId);
   }
@@ -567,7 +565,7 @@ export class AgentAdminController {
    * 获取熔断器状态
    */
   @Get('circuit-breakers')
-  @ApiOperation({ summary: '获取熔断器状态' })
+  @ApiOperation({ summary: 'Get circuit breaker status' })
   async getCircuitBreakers() {
     return {
       llm: await this.resilience.getCircuitStatus('llm'),
@@ -579,10 +577,10 @@ export class AgentAdminController {
    * 重置熔断器
    */
   @Delete('circuit-breakers/:service')
-  @ApiOperation({ summary: '重置熔断器' })
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Reset circuit breaker' })
   async resetCircuitBreaker(@Param('service') service: string) {
     await this.resilience.resetCircuit(service);
+    return { message: 'Circuit breaker reset' };
   }
 
   // ==================== 健康检查 ====================
@@ -591,7 +589,7 @@ export class AgentAdminController {
    * 系统健康状态
    */
   @Get('health')
-  @ApiOperation({ summary: '获取系统健康状态' })
+  @ApiOperation({ summary: 'Get system health status' })
   async getHealth() {
     const [llmStatus, circuitStatus] = await Promise.all([
       this.llm.getServiceStatus(),
@@ -617,7 +615,7 @@ export class AgentAdminController {
    * 获取安全事件列表
    */
   @Get('security-events')
-  @ApiOperation({ summary: '获取安全事件列表' })
+  @ApiOperation({ summary: 'Get security event list' })
   async getSecurityEvents(
     @Query('page') page: number = 1,
     @Query('pageSize') pageSize: number = 20,
@@ -651,7 +649,7 @@ export class AgentAdminController {
    * 解决安全事件
    */
   @Put('security-events/:id/resolve')
-  @ApiOperation({ summary: '解决安全事件' })
+  @ApiOperation({ summary: 'Resolve security event' })
   async resolveSecurityEvent(
     @Param('id') id: string,
     @Body() body: ResolveSecurityEventDto,
@@ -672,7 +670,7 @@ export class AgentAdminController {
    * 获取 AI Agent 审计日志
    */
   @Get('audit-logs')
-  @ApiOperation({ summary: '获取 AI Agent 审计日志' })
+  @ApiOperation({ summary: 'Get AI Agent audit logs' })
   async getAgentAuditLogs(
     @Query('page') page: number = 1,
     @Query('pageSize') pageSize: number = 50,
@@ -714,7 +712,7 @@ export class AgentAdminController {
    * 全局记忆统计
    */
   @Get('memory/stats')
-  @ApiOperation({ summary: '获取全局记忆统计' })
+  @ApiOperation({ summary: 'Get global memory statistics' })
   async getMemoryStats() {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -780,7 +778,7 @@ export class AgentAdminController {
    * 用户记忆详情
    */
   @Get('memory/users/:userId/stats')
-  @ApiOperation({ summary: '获取用户记忆详情统计' })
+  @ApiOperation({ summary: 'Get user memory detail statistics' })
   async getUserMemoryStats(@Param('userId') userId: string) {
     return this.memoryManager.getEnhancedStats(userId);
   }
@@ -789,7 +787,7 @@ export class AgentAdminController {
    * 浏览记忆
    */
   @Get('memory/browse')
-  @ApiOperation({ summary: '浏览记忆列表' })
+  @ApiOperation({ summary: 'Browse memory list' })
   async browseMemories(
     @Query('userId') userId?: string,
     @Query('type') type?: MemoryType,
@@ -835,17 +833,17 @@ export class AgentAdminController {
    * 删除记忆
    */
   @Delete('memory/:memoryId')
-  @ApiOperation({ summary: '删除单条记忆' })
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete single memory' })
   async deleteMemory(@Param('memoryId') memoryId: string) {
     await this.memoryManager.forget(memoryId);
+    return { message: 'Memory deleted' };
   }
 
   /**
    * 浏览对话
    */
   @Get('memory/conversations')
-  @ApiOperation({ summary: '浏览对话列表' })
+  @ApiOperation({ summary: 'Browse conversation list' })
   async browseConversations(
     @Query('userId') userId?: string,
     @Query('page') page: number = 1,
@@ -891,7 +889,7 @@ export class AgentAdminController {
    * 获取对话消息
    */
   @Get('memory/conversations/:conversationId/messages')
-  @ApiOperation({ summary: '获取对话消息详情' })
+  @ApiOperation({ summary: 'Get conversation message details' })
   async getConversationMessages(
     @Param('conversationId') conversationId: string,
   ) {
@@ -902,7 +900,7 @@ export class AgentAdminController {
    * 浏览实体
    */
   @Get('memory/entities')
-  @ApiOperation({ summary: '浏览实体列表' })
+  @ApiOperation({ summary: 'Browse entity list' })
   async browseEntities(
     @Query('userId') userId?: string,
     @Query('type') type?: EntityType,
@@ -930,7 +928,7 @@ export class AgentAdminController {
    * 获取衰减配置
    */
   @Get('memory/decay/config')
-  @ApiOperation({ summary: '获取记忆衰减配置' })
+  @ApiOperation({ summary: 'Get memory decay configuration' })
   getDecayConfig() {
     return this.memoryDecay.getConfig();
   }
@@ -939,7 +937,7 @@ export class AgentAdminController {
    * 更新衰减配置
    */
   @Put('memory/decay/config')
-  @ApiOperation({ summary: '更新记忆衰减配置' })
+  @ApiOperation({ summary: 'Update memory decay configuration' })
   updateDecayConfig(@Body() dto: UpdateDecayConfigDto) {
     this.memoryDecay.updateConfig(dto);
     return this.memoryDecay.getConfig();
@@ -949,7 +947,7 @@ export class AgentAdminController {
    * 获取衰减统计
    */
   @Get('memory/decay/stats')
-  @ApiOperation({ summary: '获取记忆衰减统计' })
+  @ApiOperation({ summary: 'Get memory decay statistics' })
   async getDecayStats() {
     return this.memoryDecay.getDecayStats();
   }
@@ -958,7 +956,7 @@ export class AgentAdminController {
    * 手动触发衰减
    */
   @Post('memory/decay/trigger')
-  @ApiOperation({ summary: '手动触发记忆衰减' })
+  @ApiOperation({ summary: 'Manually trigger memory decay' })
   async triggerDecay() {
     return this.memoryManager.triggerDecay();
   }
@@ -967,7 +965,7 @@ export class AgentAdminController {
    * 获取待确认冲突
    */
   @Get('memory/conflicts')
-  @ApiOperation({ summary: '获取待确认的记忆冲突' })
+  @ApiOperation({ summary: 'Get pending memory conflicts' })
   async getMemoryConflicts(@Query('userId') userId: string) {
     return this.memoryConflict.getPendingConflicts(userId);
   }

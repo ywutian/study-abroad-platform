@@ -107,6 +107,7 @@ export function ChatInput({
               variant="ghost"
               className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground"
               disabled={disabled || isLoading}
+              aria-label="Attach file"
             >
               <Paperclip className="h-4 w-4" />
             </Button>
@@ -115,6 +116,7 @@ export function ChatInput({
               variant="ghost"
               className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground"
               disabled={disabled || isLoading}
+              aria-label="Voice input"
             >
               <Mic className="h-4 w-4" />
             </Button>
@@ -175,6 +177,7 @@ export function ChatInput({
                   size="icon"
                   variant="ghost"
                   onClick={onStop}
+                  aria-label="Stop generating"
                   className={cn(
                     'h-10 w-10 rounded-full',
                     'bg-destructive/10 hover:bg-destructive/20 text-destructive',

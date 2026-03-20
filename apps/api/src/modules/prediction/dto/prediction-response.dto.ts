@@ -1,71 +1,88 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class PredictionFactor {
-  @ApiProperty({ description: '因素名称', example: 'GPA' })
+  @ApiProperty({ description: 'Factor name', example: 'GPA' })
   name: string;
 
   @ApiProperty({
-    description: '影响类型',
+    description: 'Impact type',
     enum: ['positive', 'negative', 'neutral'],
     example: 'positive',
   })
   impact: 'positive' | 'negative' | 'neutral';
 
-  @ApiProperty({ description: '权重 (0-1)', example: 0.3 })
+  @ApiProperty({ description: 'Weight (0-1)', example: 0.3 })
   weight: number;
 
   @ApiProperty({
-    description: '详细说明',
+    description: 'Detailed description',
     example: 'GPA 3.85 高于该校平均录取学生水平',
   })
   detail: string;
 
   @ApiPropertyOptional({
-    description: '改进建议（仅 negative 时有值）',
+    description: 'Improvement suggestion (only present for negative impact)',
   })
   improvement?: string;
 }
 
 export class PredictionComparison {
-  @ApiProperty({ description: 'GPA 百分位排名', example: 75 })
+  @ApiProperty({ description: 'GPA percentile ranking', example: 75 })
   gpaPercentile: number;
 
-  @ApiProperty({ description: '标化成绩百分位排名', example: 60 })
+  @ApiProperty({
+    description: 'Standardized test score percentile ranking',
+    example: 60,
+  })
   testScorePercentile: number;
 
   @ApiProperty({
-    description: '活动强度',
+    description: 'Activity strength',
     enum: ['weak', 'average', 'strong'],
     example: 'average',
   })
   activityStrength: 'weak' | 'average' | 'strong';
 }
 
-/** 多引擎分数明细 */
+/** Multi-engine score breakdown */
 export class EngineScores {
-  @ApiProperty({ description: '统计引擎概率 (0-1)', example: 0.35 })
+  @ApiProperty({
+    description: 'Statistical engine probability (0-1)',
+    example: 0.35,
+  })
   stats: number;
 
-  @ApiPropertyOptional({ description: 'AI 引擎概率 (0-1)', example: 0.28 })
+  @ApiPropertyOptional({
+    description: 'AI engine probability (0-1)',
+    example: 0.28,
+  })
   ai?: number;
 
-  @ApiPropertyOptional({ description: '历史数据引擎概率 (0-1)', example: 0.32 })
+  @ApiPropertyOptional({
+    description: 'Historical data engine probability (0-1)',
+    example: 0.32,
+  })
   historical?: number;
 
-  @ApiPropertyOptional({ description: 'ML 模型引擎概率 (0-1)', example: 0.31 })
+  @ApiPropertyOptional({
+    description: 'ML model engine probability (0-1)',
+    example: 0.31,
+  })
   ml?: number;
 
-  @ApiPropertyOptional({ description: '记忆增强调整值 (-0.1 to 0.1)' })
+  @ApiPropertyOptional({
+    description: 'Memory enhancement adjustment (-0.1 to 0.1)',
+  })
   memoryAdjustment?: number;
 
   @ApiProperty({
-    description: '各引擎权重',
+    description: 'Engine weights',
     example: { stats: 0.1, ai: 0.25, historical: 0.25, ml: 0.4 },
   })
   weights: Record<string, number>;
 
   @ApiProperty({
-    description: '最终融合方法',
+    description: 'Final fusion method',
     example: 'weighted_ensemble_4_stats_ai_hist_ml',
   })
   fusionMethod: string;
@@ -88,57 +105,75 @@ export class EngineScores {
 }
 
 export class PredictionResultDto {
-  @ApiProperty({ description: '学校ID' })
+  @ApiProperty({ description: 'School ID' })
   schoolId: string;
 
-  @ApiProperty({ description: '学校名称' })
+  @ApiProperty({ description: 'School name' })
   schoolName: string;
 
-  @ApiProperty({ description: '录取概率 (0-1)', example: 0.35 })
+  @ApiProperty({ description: 'Admission probability (0-1)', example: 0.35 })
   probability: number;
 
-  @ApiPropertyOptional({ description: '置信区间下界 (0-1)', example: 0.25 })
+  @ApiPropertyOptional({
+    description: 'Confidence interval lower bound (0-1)',
+    example: 0.25,
+  })
   probabilityLow?: number;
 
-  @ApiPropertyOptional({ description: '置信区间上界 (0-1)', example: 0.45 })
+  @ApiPropertyOptional({
+    description: 'Confidence interval upper bound (0-1)',
+    example: 0.45,
+  })
   probabilityHigh?: number;
 
   @ApiProperty({
-    description: '预测置信度',
+    description: 'Prediction confidence',
     enum: ['low', 'medium', 'high'],
     example: 'medium',
   })
   confidence: 'low' | 'medium' | 'high';
 
   @ApiProperty({
-    description: '学校分类',
+    description: 'School tier classification',
     enum: ['reach', 'match', 'safety'],
     example: 'reach',
   })
   tier: 'reach' | 'match' | 'safety';
 
-  @ApiProperty({ description: '影响因素列表', type: [PredictionFactor] })
+  @ApiProperty({
+    description: 'List of impact factors',
+    type: [PredictionFactor],
+  })
   factors: PredictionFactor[];
 
-  @ApiProperty({ description: '改进建议列表', type: [String] })
+  @ApiProperty({
+    description: 'List of improvement suggestions',
+    type: [String],
+  })
   suggestions: string[];
 
-  @ApiProperty({ description: '对比数据', type: PredictionComparison })
+  @ApiProperty({ description: 'Comparison data', type: PredictionComparison })
   comparison: PredictionComparison;
 
-  @ApiPropertyOptional({ description: '多引擎分数明细', type: EngineScores })
+  @ApiPropertyOptional({
+    description: 'Multi-engine score breakdown',
+    type: EngineScores,
+  })
   engineScores?: EngineScores;
 
-  @ApiPropertyOptional({ description: '是否来自缓存' })
+  @ApiPropertyOptional({ description: 'Whether from cache' })
   fromCache?: boolean;
 
-  @ApiPropertyOptional({ description: '缓存时间 (ISO string)' })
+  @ApiPropertyOptional({ description: 'Cache time (ISO string)' })
   cachedAt?: string;
 
-  @ApiPropertyOptional({ description: '模型版本', example: 'v3-enterprise' })
+  @ApiPropertyOptional({
+    description: 'Model version',
+    example: 'v3-enterprise',
+  })
   modelVersion?: string;
 
-  @ApiPropertyOptional({ description: '学校元数据' })
+  @ApiPropertyOptional({ description: 'School metadata' })
   schoolMeta?: {
     usNewsRank?: number;
     acceptanceRate?: number;
@@ -151,7 +186,7 @@ export class PredictionResultDto {
     sat75?: number;
   };
 
-  @ApiPropertyOptional({ description: '专业竞争度分析' })
+  @ApiPropertyOptional({ description: 'Major competitiveness analysis' })
   majorBreakdown?: {
     majorName: string;
     majorNameZh?: string;
@@ -162,35 +197,38 @@ export class PredictionResultDto {
     adjustedProbability: number;
   };
 
-  @ApiPropertyOptional({ description: '社区案例数据' })
+  @ApiPropertyOptional({ description: 'Community case data' })
   communityInsight?: {
     majorAdmitRate: number;
     totalCases: number;
     major: string;
   };
 
-  @ApiPropertyOptional({ description: '跨引擎一致性 (0-1)' })
+  @ApiPropertyOptional({ description: 'Cross-engine consistency (0-1)' })
   crossEngineConsistency?: number;
 }
 
 export class PredictionResponseDto {
-  @ApiProperty({ description: '预测结果列表', type: [PredictionResultDto] })
+  @ApiProperty({
+    description: 'Prediction results list',
+    type: [PredictionResultDto],
+  })
   results: PredictionResultDto[];
 
-  @ApiPropertyOptional({ description: '处理耗时(ms)' })
+  @ApiPropertyOptional({ description: 'Processing time (ms)' })
   processingTime?: number;
 
-  @ApiPropertyOptional({ description: '数据完整度评估 (0-100)' })
+  @ApiPropertyOptional({ description: 'Data completeness assessment (0-100)' })
   dataCompleteness?: number;
 
-  @ApiPropertyOptional({ description: '记忆增强信息' })
+  @ApiPropertyOptional({ description: 'Memory enhancement info' })
   memoryContext?: {
     previousPredictions: number;
     knownPreferences: string[];
     dataPoints: number;
   };
 
-  @ApiPropertyOptional({ description: '验证摘要' })
+  @ApiPropertyOptional({ description: 'Validation summary' })
   validationSummary?: {
     violations: string[];
     warnings: string[];
@@ -198,7 +236,7 @@ export class PredictionResponseDto {
 
   @ApiPropertyOptional({
     description:
-      '当用户选择了任意 UC 校区时，已自动扩展为全部 9 所 UC 校区比较',
+      'When the user selects any UC campus, it is automatically expanded to a comparison of all 9 UC campuses',
   })
   ucComparisonExpanded?: boolean;
 }

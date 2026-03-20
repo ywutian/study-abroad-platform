@@ -17,60 +17,68 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Visibility } from '@prisma/client';
 
 export class BatchImportCaseItemDto {
-  @ApiProperty({ description: '学校名称（支持缩写如 MIT, Stanford）' })
+  @ApiProperty({
+    description: 'School name (supports abbreviations like MIT, Stanford)',
+  })
   @IsString()
   @MaxLength(200)
   school: string;
 
-  @ApiPropertyOptional({ description: '申请专业' })
+  @ApiPropertyOptional({ description: 'Applied major' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   major?: string;
 
-  @ApiProperty({ description: '申请年份', example: 2025 })
+  @ApiProperty({ description: 'Application year', example: 2025 })
   @IsInt()
   @Min(2000)
   @Max(2100)
   year: number;
 
-  @ApiPropertyOptional({ description: '申请轮次 ED/EA/RD 等' })
+  @ApiPropertyOptional({ description: 'Application round (ED/EA/RD, etc.)' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   round?: string;
 
-  @ApiProperty({ description: '录取结果（支持中英文缩写）' })
+  @ApiProperty({
+    description:
+      'Admission result (supports Chinese and English abbreviations)',
+  })
   @IsString()
   @MaxLength(200)
   result: string;
 
-  @ApiPropertyOptional({ description: 'GPA 或范围', example: '3.9-4.0' })
+  @ApiPropertyOptional({ description: 'GPA or range', example: '3.9-4.0' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   gpa?: string;
 
-  @ApiPropertyOptional({ description: 'SAT 成绩或范围', example: '1550-1600' })
+  @ApiPropertyOptional({
+    description: 'SAT score or range',
+    example: '1550-1600',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   sat?: string;
 
-  @ApiPropertyOptional({ description: 'ACT 成绩或范围' })
+  @ApiPropertyOptional({ description: 'ACT score or range' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   act?: string;
 
-  @ApiPropertyOptional({ description: 'TOEFL 成绩或范围' })
+  @ApiPropertyOptional({ description: 'TOEFL score or range' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   toefl?: string;
 
   @ApiPropertyOptional({
-    description: '标签，分号分隔',
+    description: 'Tags, semicolon-separated',
     example: 'research;olympiad',
   })
   @IsOptional()
@@ -78,29 +86,120 @@ export class BatchImportCaseItemDto {
   @MaxLength(500)
   tags?: string;
 
-  @ApiPropertyOptional({ description: '文书类型' })
+  @ApiPropertyOptional({ description: 'Essay type' })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   essayType?: string;
 
-  @ApiPropertyOptional({ description: '文书题目' })
+  @ApiPropertyOptional({ description: 'Essay prompt' })
   @IsOptional()
   @IsString()
   @MaxLength(5000)
   essayPrompt?: string;
 
-  @ApiPropertyOptional({ description: '文书内容' })
+  @ApiPropertyOptional({ description: 'Essay content' })
   @IsOptional()
   @IsString()
   @MaxLength(50000)
   essayContent?: string;
+
+  // ============ Enrichment fields (structured JSON or semicolon-separated text) ============
+
+  @ApiPropertyOptional({ description: 'AP course count' })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(30)
+  apCount?: number;
+
+  @ApiPropertyOptional({
+    description: 'AP subjects, semicolon-separated',
+    example: 'Calculus BC;Physics C;Chemistry',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  apSubjects?: string;
+
+  @ApiPropertyOptional({ description: 'IB total score' })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(45)
+  ibScore?: number;
+
+  @ApiPropertyOptional({
+    description: 'High school type',
+    example: 'PUBLIC_US',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  highSchoolType?: string;
+
+  @ApiPropertyOptional({ description: 'Curriculum system', example: 'AP' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  curriculum?: string;
+
+  @ApiPropertyOptional({
+    description: 'Demographic tags, semicolon-separated',
+    example: 'international;first_gen',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  demographicTags?: string;
+
+  @ApiPropertyOptional({
+    description: 'Activities list, semicolon-separated',
+    example: 'Research - MIT PRIMES; Club - Debate Captain',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(5000)
+  activities?: string;
+
+  @ApiPropertyOptional({
+    description: 'Awards list, semicolon-separated',
+    example: 'USAMO Qualifier; Intel ISEF Finalist',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(5000)
+  awards?: string;
+
+  @ApiPropertyOptional({
+    description: 'Financial aid status',
+    example: 'full_ride',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  financialAid?: string;
+
+  @ApiPropertyOptional({
+    description: 'Enrollment status',
+    example: 'enrolled',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  enrollmentStatus?: string;
+
+  @ApiPropertyOptional({ description: 'Application narrative/story' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(10000)
+  narrative?: string;
 }
 
 export class BatchImportCaseDto {
   @ApiProperty({
     type: [BatchImportCaseItemDto],
-    description: '批量导入数据',
+    description: 'Batch import data',
   })
   @IsArray()
   @ValidateNested({ each: true })
@@ -111,7 +210,7 @@ export class BatchImportCaseDto {
 
   @ApiPropertyOptional({
     enum: Visibility,
-    description: '默认可见性',
+    description: '默认Visibility',
     default: 'ANONYMOUS',
   })
   @IsOptional()
@@ -119,7 +218,7 @@ export class BatchImportCaseDto {
   visibility?: Visibility;
 
   @ApiPropertyOptional({
-    description: '是否自动标记为已验证',
+    description: 'Whether to auto-mark as verified',
     default: false,
   })
   @IsOptional()
@@ -130,13 +229,13 @@ export class BatchImportCaseDto {
 export class ReviewCaseEssayDto {
   @ApiProperty({
     enum: ['APPROVE', 'REJECT'],
-    description: '审核操作',
+    description: 'Review action',
   })
   @IsString()
   @MaxLength(200)
   action: 'APPROVE' | 'REJECT';
 
-  @ApiPropertyOptional({ description: '拒绝原因' })
+  @ApiPropertyOptional({ description: 'Rejection reason' })
   @IsOptional()
   @IsString()
   @MaxLength(500)
@@ -144,7 +243,7 @@ export class ReviewCaseEssayDto {
 }
 
 export class BatchVerifyCaseDto {
-  @ApiProperty({ description: '案例 ID 列表' })
+  @ApiProperty({ description: 'Case ID list' })
   @IsArray()
   @IsString({ each: true })
   @MaxLength(500, { each: true })
@@ -153,13 +252,13 @@ export class BatchVerifyCaseDto {
 
   @ApiProperty({
     enum: ['APPROVE', 'REJECT'],
-    description: '审核操作',
+    description: 'Review action',
   })
   @IsString()
   @MaxLength(200)
   action: 'APPROVE' | 'REJECT';
 
-  @ApiPropertyOptional({ description: '原因' })
+  @ApiPropertyOptional({ description: 'Reason' })
   @IsOptional()
   @IsString()
   @MaxLength(500)

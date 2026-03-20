@@ -170,7 +170,7 @@ export default function SubscriptionPage() {
 
                 {plan.popular && (
                   <div className="absolute -top-0 right-4">
-                    <Badge className="rounded-t-none bg-primary text-white shadow-md">
+                    <Badge className="rounded-t-none bg-primary text-primary-foreground shadow-md">
                       <Star className="h-3 w-3 mr-1 fill-current" />
                       {t('mostPopular')}
                     </Badge>
@@ -228,7 +228,7 @@ export default function SubscriptionPage() {
                   <Button
                     className={cn(
                       'w-full gap-2',
-                      plan.popular && 'bg-primary hover:opacity-90 text-white '
+                      plan.popular && 'bg-primary hover:opacity-90 text-primary-foreground '
                     )}
                     variant={plan.popular ? 'default' : 'outline'}
                     disabled={isCurrentPlan || isUpgrading}

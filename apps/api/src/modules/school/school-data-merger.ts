@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { DataReviewStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
 import { normalizeSchoolName } from '../../common/utils/school-name.util';
@@ -195,6 +196,8 @@ export class SchoolDataMerger {
         data: {
           ...updateData,
           metadata: { ...metadata, provenance } as any,
+          dataReviewStatus: DataReviewStatus.AUTO_APPROVED,
+          lastDataReviewAt: new Date(),
         },
       });
 

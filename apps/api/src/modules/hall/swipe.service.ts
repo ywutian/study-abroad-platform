@@ -8,7 +8,14 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { fireAndForget } from '../../common/utils/async.util';
 import { clampPercentRate } from '../../common/utils/percent.util';
-import { Prisma, Visibility, MemoryType } from '@prisma/client';
+import {
+  Prisma,
+  Visibility,
+  MemoryType,
+  DataReviewStatus,
+} from '@prisma/client';
+import { CASE_REVIEW_APPROVED_WHERE } from '../../common/constants/prisma-selects';
+import { ERR } from '../../common/constants/error-messages';
 import {
   SwipeActionDto,
   SwipeCaseDto,
@@ -107,6 +114,7 @@ export class SwipeService {
     const cases = await this.prisma.admissionCase.findMany({
       where: {
         visibility: { in: [Visibility.ANONYMOUS, Visibility.VERIFIED_ONLY] },
+        ...CASE_REVIEW_APPROVED_WHERE,
         userId: { not: userId }, // 不显示自己的案例
         swipes: { none: { userId } }, // 未被该用户滑动过
       },
@@ -122,6 +130,7 @@ export class SwipeService {
       this.prisma.admissionCase.count({
         where: {
           visibility: { in: [Visibility.ANONYMOUS, Visibility.VERIFIED_ONLY] },
+          ...CASE_REVIEW_APPROVED_WHERE,
           userId: { not: userId },
         },
       }),
@@ -152,13 +161,13 @@ export class SwipeService {
     userId: string,
     dto: SwipeActionDto,
   ): Promise<SwipeResultDto> {
-    // 检查案例是否存在
-    const admissionCase = await this.prisma.admissionCase.findUnique({
-      where: { id: dto.caseId },
+    // 检查案例是否存在且已审核通过
+    const admissionCase = await this.prisma.admissionCase.findFirst({
+      where: { id: dto.caseId, ...CASE_REVIEW_APPROVED_WHERE },
     });
 
     if (!admissionCase) {
-      throw new NotFoundException('案例不存在');
+      throw new NotFoundException(ERR.NOT_FOUND.case());
     }
 
     // 判断是否正确
@@ -244,7 +253,7 @@ export class SwipeService {
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2002'
       ) {
-        throw new BadRequestException('已经对此案例进行过预测');
+        throw new BadRequestException(ERR.BAD_REQUEST.alreadyPredicted());
       }
       throw error;
     }
@@ -634,6 +643,7 @@ export class SwipeService {
       by: ['userId'],
       where: {
         visibility: { in: [Visibility.ANONYMOUS, Visibility.VERIFIED_ONLY] },
+        ...CASE_REVIEW_APPROVED_WHERE,
         userId: { not: userId },
       },
       _count: { id: true },
@@ -651,6 +661,7 @@ export class SwipeService {
       where: {
         userId: randomApplicant.userId,
         visibility: { in: [Visibility.ANONYMOUS, Visibility.VERIFIED_ONLY] },
+        ...CASE_REVIEW_APPROVED_WHERE,
       },
       include: SWIPE_CASE_INCLUDE,
       take: 10,
@@ -691,7 +702,7 @@ export class SwipeService {
   async submitChallenge(userId: string, guesses: Record<string, string>) {
     const caseIds = Object.keys(guesses);
     const cases = await this.prisma.admissionCase.findMany({
-      where: { id: { in: caseIds } },
+      where: { id: { in: caseIds }, ...CASE_REVIEW_APPROVED_WHERE },
       select: { id: true, result: true, school: { select: { name: true } } },
     });
 

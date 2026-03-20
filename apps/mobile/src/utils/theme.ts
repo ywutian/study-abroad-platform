@@ -196,6 +196,13 @@ export const animation = {
     normal: 50,
     slow: 80,
   },
+  // 按钮按下缩放
+  pressScale: {
+    button: 0.96,
+    card: 0.98,
+    icon: 0.9,
+    tab: 0.92,
+  },
 } as const;
 
 // ==================== 阴影 ====================
@@ -224,6 +231,80 @@ export const shadows = {
     shadowOpacity: 0.15,
     elevation: 8,
   },
+} as const;
+
+// ==================== 层次阴影系统 ====================
+export const elevation = {
+  none: {
+    shadowColor: 'transparent',
+    shadowOffset: { width: 0, height: 0 },
+    shadowRadius: 0,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  sm: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 3,
+    shadowOpacity: 0.08,
+    elevation: 2,
+  },
+  md: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 12,
+    shadowOpacity: 0.1,
+    elevation: 4,
+  },
+  lg: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowRadius: 24,
+    shadowOpacity: 0.12,
+    elevation: 8,
+  },
+  xl: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 16 },
+    shadowRadius: 48,
+    shadowOpacity: 0.16,
+    elevation: 16,
+  },
+} as const;
+
+export const darkElevation = {
+  sm: { ...elevation.sm, shadowOpacity: 0.2 },
+  md: { ...elevation.md, shadowOpacity: 0.28 },
+  lg: { ...elevation.lg, shadowOpacity: 0.32 },
+  xl: { ...elevation.xl, shadowOpacity: 0.4 },
+} as const;
+
+// ==================== 组件尺寸 ====================
+export const componentSize = {
+  avatarXs: 24,
+  avatarSm: 32,
+  avatarMd: 40,
+  avatarLg: 56,
+  avatarXl: 80,
+  iconSm: 36,
+  iconMd: 44,
+  iconLg: 56,
+  buttonSm: 36,
+  buttonMd: 44,
+  buttonLg: 52,
+  touchTarget: 44,
+} as const;
+
+// ==================== 透明度预设 ====================
+export const opacity = {
+  '05': 0.05,
+  '08': 0.08,
+  '10': 0.1,
+  '15': 0.15,
+  '20': 0.2,
+  '30': 0.3,
+  '50': 0.5,
+  '70': 0.7,
 } as const;
 
 // ==================== Utilities ====================

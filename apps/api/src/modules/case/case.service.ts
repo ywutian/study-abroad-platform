@@ -5,9 +5,12 @@ import {
   Logger,
   Optional,
 } from '@nestjs/common';
+import { randomUUID } from 'crypto';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   AdmissionCase,
+  DataReviewStatus,
   Prisma,
   Visibility,
   Role,
@@ -25,6 +28,10 @@ import {
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
 import { CaseIncentiveService, PointAction } from '../points/incentive.service';
 import {
+  AuditLogService,
+  AuditAction,
+} from '../../common/services/audit-log.service';
+import {
   BatchImportCaseDto,
   ReviewCaseEssayDto,
   BatchVerifyCaseDto,
@@ -35,12 +42,26 @@ import {
   normalizeRound,
   normalizeEssayType,
   parseTags,
+  parseActivitiesText,
+  parseAwardsText,
+  parseTestScoresFromRanges,
+  normalizeHighSchoolType,
+  normalizeCurriculum,
   type BatchImportResult,
 } from '../../common/utils/import-normalizers';
 import {
   SCHOOL_NAME_SELECT,
   SCHOOL_NAME_RANK_SELECT,
+  CASE_REVIEW_APPROVED_WHERE,
 } from '../../common/constants/prisma-selects';
+import {
+  computeCaseQualityScore,
+  parseCaseActivities,
+  parseCaseAwards,
+  parseCaseTestScores,
+  QUALITY_THRESHOLDS,
+} from '../../common/constants/data-formats';
+import { RedisService } from '../../common/redis/redis.service';
 
 interface CaseFilters {
   schoolId?: string;
@@ -63,6 +84,8 @@ export class CaseService {
 
   constructor(
     private prisma: PrismaService,
+    private auditLog: AuditLogService,
+    private redis: RedisService,
     @Optional()
     private memoryManager?: MemoryManagerService,
     @Optional()
@@ -110,8 +133,15 @@ export class CaseService {
       ];
     }
 
+    // Data review filter: non-admin users only see approved cases
+    if (requesterRole !== Role.ADMIN && requesterRole !== Role.SUPER_ADMIN) {
+      where.reviewStatus = {
+        in: [DataReviewStatus.AUTO_APPROVED, DataReviewStatus.APPROVED],
+      };
+    }
+
     // Visibility filter based on requester role
-    if (requesterRole === Role.ADMIN) {
+    if (requesterRole === Role.ADMIN || requesterRole === Role.SUPER_ADMIN) {
       // Admin sees all
     } else if (requesterRole === Role.VERIFIED && requesterId) {
       where.AND = [
@@ -200,12 +230,21 @@ export class CaseService {
       throw new NotFoundException('Case not found');
     }
 
-    // Check visibility
-    if (
-      requesterId &&
-      (caseItem.userId === requesterId || requesterRole === Role.ADMIN)
-    ) {
+    // Owner and admin bypass all checks
+    const isOwner = requesterId && caseItem.userId === requesterId;
+    const isAdmin =
+      requesterRole === Role.ADMIN || requesterRole === Role.SUPER_ADMIN;
+
+    if (isOwner || isAdmin) {
       return caseItem;
+    }
+
+    // Non-admin, non-owner: block unreviewed cases
+    if (
+      caseItem.reviewStatus !== DataReviewStatus.AUTO_APPROVED &&
+      caseItem.reviewStatus !== DataReviewStatus.APPROVED
+    ) {
+      throw new NotFoundException('Case not found');
     }
 
     if (caseItem.visibility === Visibility.PRIVATE) {
@@ -266,6 +305,20 @@ export class CaseService {
       tags?: string[];
       activityList?: string;
       visibility?: 'PRIVATE' | 'PUBLIC' | 'ANONYMOUS' | 'VERIFIED_ONLY';
+      // Structured enrichment fields
+      testScores?: any[];
+      activities?: any[];
+      awards?: any[];
+      apCount?: number;
+      apSubjects?: string[];
+      ibScore?: number;
+      ibPredicted?: boolean;
+      highSchoolType?: string;
+      curriculumType?: string;
+      demographicTags?: string[];
+      financialAid?: string;
+      enrollmentStatus?: string;
+      narrative?: string;
       // Essay fields
       essayType?: EssayType;
       essayPrompt?: string;
@@ -273,13 +326,102 @@ export class CaseService {
       promptNumber?: number;
     },
     locale = 'zh',
+    userRole: Role = Role.USER,
   ): Promise<AdmissionCase> {
-    const { schoolId, essayType, ...rest } = data;
+    const {
+      schoolId,
+      essayType,
+      testScores,
+      activities: activitiesJson,
+      awards: awardsJson,
+      apCount,
+      apSubjects,
+      ibScore,
+      ibPredicted,
+      highSchoolType,
+      curriculumType,
+      demographicTags,
+      financialAid,
+      enrollmentStatus,
+      narrative,
+      ...rest
+    } = data;
+
+    // Compute quality score for review routing
+    const qualityScore = computeCaseQualityScore({
+      source: 'user_submit',
+      schoolName: schoolId,
+      year: rest.year,
+      result: rest.result as any,
+      round: rest.round as any,
+      major: rest.major || undefined,
+      gpa: rest.gpaRange ? { range: rest.gpaRange, scale: 4 } : undefined,
+      sat: rest.satRange ? { range: rest.satRange } : undefined,
+      act: rest.actRange ? { range: rest.actRange } : undefined,
+      toefl: rest.toeflRange ? { range: rest.toeflRange } : undefined,
+      tags: rest.tags,
+      testScores: testScores as any,
+      activities: activitiesJson as any,
+      awards: awardsJson as any,
+      ap: apCount ? { count: apCount, subjects: apSubjects } : undefined,
+      ib: ibScore ? { score: ibScore, predicted: ibPredicted } : undefined,
+      highSchoolType,
+      curriculumType,
+      demographicTags,
+      narrative,
+    });
+
+    // Sync activityList fallback from structured activities
+    const activityListFallback =
+      rest.activityList ||
+      (activitiesJson?.length
+        ? activitiesJson
+            .map((a: any) =>
+              a.category
+                ? `${a.category} - ${a.description}${a.role ? ` (${a.role})` : ''}`
+                : a.description,
+            )
+            .join('\n')
+        : undefined);
+
+    // Trusted roles get auto-approved; regular users go through review
+    const isTrusted =
+      userRole === Role.VERIFIED ||
+      userRole === Role.ADMIN ||
+      userRole === Role.SUPER_ADMIN;
+    const reviewStatus = isTrusted
+      ? DataReviewStatus.AUTO_APPROVED
+      : DataReviewStatus.PENDING_REVIEW;
+
     const admissionCase = await this.prisma.admissionCase.create({
       data: {
         ...rest,
+        ...(activityListFallback && { activityList: activityListFallback }),
         result: rest.result as AdmissionCase['result'],
         ...(essayType && { essayType }),
+        // Structured enrichment fields (cast to Prisma JSON)
+        ...(testScores?.length && {
+          testScores: testScores as unknown as Prisma.InputJsonValue,
+        }),
+        ...(activitiesJson?.length && {
+          activities: activitiesJson as unknown as Prisma.InputJsonValue,
+        }),
+        ...(awardsJson?.length && {
+          awards: awardsJson as unknown as Prisma.InputJsonValue,
+        }),
+        ...(apCount !== undefined && { apCount }),
+        ...(apSubjects?.length && { apSubjects }),
+        ...(ibScore !== undefined && { ibScore }),
+        ...(ibPredicted !== undefined && { ibPredicted }),
+        ...(highSchoolType && { highSchoolType: highSchoolType as any }),
+        ...(curriculumType && { curriculumType: curriculumType as any }),
+        ...(demographicTags?.length && { demographicTags }),
+        ...(financialAid && { financialAid }),
+        ...(enrollmentStatus && { enrollmentStatus }),
+        ...(narrative && { narrative }),
+        source: 'user_submit',
+        qualityScore,
+        reviewStatus,
         user: { connect: { id: userId } },
         school: { connect: { id: schoolId } },
       },
@@ -337,6 +479,20 @@ export class CaseService {
       tags: string[];
       activityList: string;
       visibility: 'PRIVATE' | 'PUBLIC' | 'ANONYMOUS' | 'VERIFIED_ONLY';
+      // Structured enrichment fields
+      testScores: any[];
+      activities: any[];
+      awards: any[];
+      apCount: number;
+      apSubjects: string[];
+      ibScore: number;
+      ibPredicted: boolean;
+      highSchoolType: string;
+      curriculumType: string;
+      demographicTags: string[];
+      financialAid: string;
+      enrollmentStatus: string;
+      narrative: string;
       // Essay fields
       essayType: EssayType;
       essayPrompt: string;
@@ -352,7 +508,19 @@ export class CaseService {
       throw new NotFoundException('Case not found');
     }
 
-    const { schoolId, result, visibility, essayType, ...rest } = data;
+    const {
+      schoolId,
+      result,
+      visibility,
+      essayType,
+      testScores,
+      activities: activitiesJson,
+      awards: awardsJson,
+      highSchoolType,
+      curriculumType,
+      ...rest
+    } = data;
+
     return this.prisma.admissionCase.update({
       where: { id },
       data: {
@@ -363,6 +531,21 @@ export class CaseService {
         }),
         ...(essayType && { essayType }),
         ...(schoolId && { school: { connect: { id: schoolId } } }),
+        ...(testScores !== undefined && {
+          testScores: testScores as unknown as Prisma.InputJsonValue,
+        }),
+        ...(activitiesJson !== undefined && {
+          activities: activitiesJson as unknown as Prisma.InputJsonValue,
+        }),
+        ...(awardsJson !== undefined && {
+          awards: awardsJson as unknown as Prisma.InputJsonValue,
+        }),
+        ...(highSchoolType !== undefined && {
+          highSchoolType: highSchoolType as any,
+        }),
+        ...(curriculumType !== undefined && {
+          curriculumType: curriculumType as any,
+        }),
       },
     });
   }
@@ -401,6 +584,119 @@ export class CaseService {
       },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  // ============ Profile-to-Case Prefill ============
+
+  /**
+   * Extract prefillable fields from user's profile for case creation.
+   * Maps profile test scores, activities, awards, education to case DTO format.
+   */
+  async getPrefillFromProfile(userId: string) {
+    const profile = await this.prisma.profile.findUnique({
+      where: { userId },
+      include: {
+        testScores: true,
+        activities: { orderBy: { order: 'asc' } },
+        awards: {
+          include: { competition: { select: { name: true, tier: true } } },
+          orderBy: { order: 'asc' },
+        },
+        education: true,
+      },
+    });
+
+    if (!profile) {
+      return {};
+    }
+
+    // Map test scores → CaseTestScoreDto format
+    const testScores = profile.testScores.map((ts) => ({
+      type: ts.type as string,
+      score: ts.score,
+      subscores: ts.subScores as Record<string, number> | undefined,
+      testDate: ts.testDate?.toISOString(),
+    }));
+
+    // Build GPA range from profile
+    const gpaRange = profile.gpa ? String(profile.gpa) : undefined;
+    const gpaScale = profile.gpaScale ? Number(profile.gpaScale) : undefined;
+
+    // Map activities → CaseActivityDto format
+    const activities = profile.activities.map((a) => ({
+      category: a.category,
+      description: a.name + (a.organization ? ` @ ${a.organization}` : ''),
+      role: a.role || undefined,
+      hoursPerWeek: a.hoursPerWeek ?? undefined,
+      weeksPerYear: a.weeksPerYear ?? undefined,
+    }));
+
+    // Map awards → CaseAwardDto format
+    const awards = profile.awards.map((a) => ({
+      name: a.name,
+      level: a.level.toLowerCase() as any,
+      competition: (a.competition as any)?.name,
+      tier: (a.competition as any)?.tier ?? undefined,
+      year: a.year ?? undefined,
+    }));
+
+    // Extract AP/IB info from test scores
+    const apScores = testScores.filter((t) => t.type === 'AP');
+    const ibScores = testScores.filter((t) => t.type === 'IB');
+
+    // Build demographic tags
+    const demographicTags: string[] = [];
+    if (profile.firstGeneration) demographicTags.push('first_gen');
+    if (profile.legacy?.length) demographicTags.push('legacy');
+    if (
+      profile.nationality &&
+      profile.nationality !== 'US' &&
+      profile.nationality !== 'USA'
+    ) {
+      demographicTags.push('international');
+    }
+
+    // Extract high school type from profile
+    const highSchoolType = profile.currentSchoolType || undefined;
+    const curriculumType = profile.educationSystem || undefined;
+
+    // Financial aid
+    const financialAid = profile.needsFinancialAid
+      ? 'needs_aid'
+      : profile.needsFinancialAid === false
+        ? 'none'
+        : undefined;
+
+    return {
+      gpaRange,
+      gpaScale,
+      major: profile.targetMajor || profile.intendedMajor || undefined,
+      testScores: testScores.length > 0 ? testScores : undefined,
+      activities: activities.length > 0 ? activities : undefined,
+      awards: awards.length > 0 ? awards : undefined,
+      apCount: apScores.length > 0 ? apScores.length : undefined,
+      apSubjects:
+        apScores.length > 0
+          ? apScores
+              .map((s) => s.subscores?.subject || `AP #${s.score}`)
+              .filter(Boolean)
+          : undefined,
+      ibScore: ibScores.length > 0 ? ibScores[0].score : undefined,
+      highSchoolType,
+      curriculumType,
+      demographicTags: demographicTags.length > 0 ? demographicTags : undefined,
+      financialAid,
+      // Generate activityList fallback
+      activityList:
+        activities.length > 0
+          ? activities
+              .map(
+                (a) =>
+                  `${a.category} - ${a.description}${a.role ? ` (${a.role})` : ''}`,
+              )
+              .join('\n')
+          : undefined,
+    };
   }
 
   // ============ Admin Methods ============
@@ -468,9 +764,9 @@ export class CaseService {
    */
   async batchImport(
     dto: BatchImportCaseDto,
-    _operatorId: string,
+    operatorId: string,
   ): Promise<BatchImportResult> {
-    const result: BatchImportResult = { imported: 0, skipped: 0, errors: [] };
+    const importBatchId = randomUUID();
 
     // 获取或创建系统导入用户
     let importUser = await this.prisma.user.findFirst({
@@ -480,7 +776,7 @@ export class CaseService {
       importUser = await this.prisma.user.create({
         data: {
           email: 'import@system.local',
-          passwordHash: 'imported',
+          passwordHash: await bcrypt.hash(randomUUID(), 12),
           role: 'USER',
         },
       });
@@ -488,65 +784,291 @@ export class CaseService {
 
     const defaultVisibility = dto.visibility || Visibility.ANONYMOUS;
 
+    // Pre-resolve schools outside transaction — batch by unique name to avoid N+1
+    const uniqueSchoolNames = [...new Set(dto.items.map((i) => i.school))];
+    const schoolMap = new Map<string, { id: string }>();
+    for (const name of uniqueSchoolNames) {
+      const school = await resolveSchoolId(this.prisma, name);
+      if (school) schoolMap.set(name, school);
+    }
+
+    const resolvedItems: {
+      index: number;
+      item: (typeof dto.items)[0];
+      school: { id: string };
+    }[] = [];
+    const preErrors: BatchImportResult['errors'] = [];
+
     for (let i = 0; i < dto.items.length; i++) {
       const item = dto.items[i];
-      try {
-        // 解析学校名
-        const school = await resolveSchoolId(this.prisma, item.school);
-        if (!school) {
-          result.skipped++;
-          result.errors.push({
-            row: i + 1,
-            school: item.school,
-            message: `学校未找到: ${item.school}`,
-          });
-          continue;
-        }
-
-        // 处理标签
-        const tags = parseTags(item.tags || '');
-        if (item.toefl && !tags.includes('international')) {
-          tags.push('international');
-        }
-
-        // 标准化文书类型
-        const essayType = normalizeEssayType(item.essayType || '');
-
-        // 创建案例
-        await this.prisma.admissionCase.create({
-          data: {
-            userId: importUser.id,
-            schoolId: school.id,
-            year: item.year,
-            round: normalizeRound(item.round || ''),
-            result: normalizeResult(item.result) as any,
-            major: item.major || null,
-            gpaRange: item.gpa || null,
-            satRange: item.sat || null,
-            actRange: item.act || null,
-            toeflRange: item.toefl || null,
-            tags,
-            visibility: defaultVisibility,
-            isVerified: dto.autoVerify || false,
-            ...(dto.autoVerify && { verifiedAt: new Date() }),
-            ...(essayType && { essayType: essayType as any }),
-            ...(item.essayPrompt && { essayPrompt: item.essayPrompt }),
-            ...(item.essayContent && { essayContent: item.essayContent }),
-          },
-        });
-
-        result.imported++;
-      } catch (e: any) {
-        result.skipped++;
-        result.errors.push({
+      const school = schoolMap.get(item.school);
+      if (!school) {
+        preErrors.push({
           row: i + 1,
           school: item.school,
-          message: e.message,
+          message: `School not found: ${item.school}`,
         });
+      } else {
+        resolvedItems.push({ index: i, item, school });
       }
     }
 
-    return result;
+    if (resolvedItems.length === 0) {
+      return {
+        imported: 0,
+        skipped: preErrors.length,
+        errors: preErrors,
+        importBatchId,
+      };
+    }
+
+    // Atomic transaction: all-or-nothing import
+    const imported = await this.prisma.$transaction(
+      async (tx) => {
+        // Build dedup set: skip cases already imported with same key fields
+        const existingCases = await tx.admissionCase.findMany({
+          where: {
+            userId: importUser!.id,
+            source: 'csv_import',
+            schoolId: { in: resolvedItems.map((r) => r.school.id) },
+          },
+          select: { schoolId: true, year: true, result: true, major: true },
+        });
+        const existingKeys = new Set(
+          existingCases.map(
+            (c) => `${c.schoolId}|${c.year}|${c.result}|${c.major ?? ''}`,
+          ),
+        );
+
+        const results = [];
+        let processedCount = 0;
+        for (const { index, item, school } of resolvedItems) {
+          // Validate result value
+          const normalizedResult = normalizeResult(item.result);
+          if (!normalizedResult) {
+            preErrors.push({
+              row: index + 1,
+              school: item.school,
+              message: `Unrecognized result value: ${item.result}`,
+            });
+            continue;
+          }
+          const dedupKey = `${school.id}|${item.year}|${normalizedResult}|${item.major ?? ''}`;
+          if (existingKeys.has(dedupKey)) {
+            preErrors.push({
+              row: index + 1,
+              school: item.school,
+              message: `Duplicate case skipped: ${item.school} ${item.year} ${normalizedResult}`,
+            });
+            continue;
+          }
+          existingKeys.add(dedupKey); // Prevent intra-batch duplicates too
+          const tags = parseTags(item.tags || '');
+          if (item.toefl && !tags.includes('international')) {
+            tags.push('international');
+          }
+          const essayType = normalizeEssayType(item.essayType || '');
+
+          // Parse enrichment fields from batch import text
+          const testScores = parseTestScoresFromRanges(
+            item.sat,
+            item.act,
+            item.toefl,
+          );
+          const activities = parseActivitiesText(item.activities || '');
+          const awards = parseAwardsText(item.awards || '');
+          const hsType = normalizeHighSchoolType(item.highSchoolType || '');
+          const curriculum = normalizeCurriculum(item.curriculum || '');
+          const demographicTags = item.demographicTags
+            ? item.demographicTags
+                .split(';')
+                .map((t: string) => t.trim())
+                .filter(Boolean)
+            : [];
+          const apSubjects = item.apSubjects
+            ? item.apSubjects
+                .split(';')
+                .map((s: string) => s.trim())
+                .filter(Boolean)
+            : [];
+
+          // Generate activityList fallback from structured activities
+          const activityList =
+            activities.length > 0
+              ? activities
+                  .map((a) =>
+                    a.category
+                      ? `${a.category} - ${a.description}`
+                      : a.description,
+                  )
+                  .join('\n')
+              : null;
+
+          const qualityScore = computeCaseQualityScore({
+            source: 'csv_import',
+            schoolName: school?.id ?? '',
+            year: item.year,
+            result: normalizedResult as any,
+            round: normalizeRound(item.round || '') as any,
+            major: item.major || undefined,
+            gpa: item.gpa ? { range: item.gpa, scale: 4 } : undefined,
+            sat: item.sat ? { range: item.sat } : undefined,
+            act: item.act ? { range: item.act } : undefined,
+            toefl: item.toefl ? { range: item.toefl } : undefined,
+            tags,
+            testScores: testScores.length > 0 ? testScores : undefined,
+            activities: activities.length > 0 ? activities : undefined,
+            awards: awards.length > 0 ? awards : undefined,
+            ap: item.apCount ? { count: item.apCount } : undefined,
+            ib: item.ibScore ? { score: item.ibScore } : undefined,
+            highSchoolType: hsType || undefined,
+            curriculumType: curriculum || undefined,
+            demographicTags:
+              demographicTags.length > 0 ? demographicTags : undefined,
+          });
+
+          // Determine review status: autoVerify only applies if quality >= threshold
+          const canAutoVerify =
+            dto.autoVerify && qualityScore >= QUALITY_THRESHOLDS.PENDING_REVIEW;
+          const reviewStatus = canAutoVerify
+            ? DataReviewStatus.AUTO_APPROVED
+            : DataReviewStatus.PENDING_REVIEW;
+
+          const created = await tx.admissionCase.create({
+            data: {
+              userId: importUser!.id,
+              schoolId: school!.id,
+              year: item.year,
+              round: normalizeRound(item.round || ''),
+              result: normalizedResult as any,
+              major: item.major || null,
+              gpaRange: item.gpa || null,
+              satRange: item.sat || null,
+              actRange: item.act || null,
+              toeflRange: item.toefl || null,
+              tags,
+              ...(activityList && { activityList }),
+              visibility: defaultVisibility,
+              isVerified: canAutoVerify,
+              ...(canAutoVerify && { verifiedAt: new Date() }),
+              ...(essayType && { essayType: essayType as any }),
+              ...(item.essayPrompt && { essayPrompt: item.essayPrompt }),
+              ...(item.essayContent && { essayContent: item.essayContent }),
+              // Structured enrichment fields
+              ...(testScores.length > 0 && {
+                testScores: testScores as unknown as Prisma.InputJsonValue,
+              }),
+              ...(activities.length > 0 && {
+                activities: activities as unknown as Prisma.InputJsonValue,
+              }),
+              ...(awards.length > 0 && {
+                awards: awards as unknown as Prisma.InputJsonValue,
+              }),
+              ...(item.apCount !== undefined && { apCount: item.apCount }),
+              ...(apSubjects.length > 0 && { apSubjects }),
+              ...(item.ibScore !== undefined && { ibScore: item.ibScore }),
+              ...(hsType && { highSchoolType: hsType }),
+              ...(curriculum && { curriculumType: curriculum }),
+              ...(demographicTags.length > 0 && { demographicTags }),
+              ...(item.financialAid && { financialAid: item.financialAid }),
+              ...(item.enrollmentStatus && {
+                enrollmentStatus: item.enrollmentStatus,
+              }),
+              ...(item.narrative && { narrative: item.narrative }),
+              source: 'csv_import',
+              qualityScore,
+              reviewStatus,
+              importBatchId,
+            },
+          });
+          results.push(created);
+
+          // Update progress in Redis every 50 items
+          processedCount++;
+          if (processedCount % 50 === 0) {
+            fireAndForget(
+              this.redis.set(
+                `import:progress:${importBatchId}`,
+                JSON.stringify({
+                  processed: processedCount,
+                  total: resolvedItems.length,
+                }),
+                300,
+              ),
+              this.logger,
+              'import progress update',
+            );
+          }
+        }
+        return results;
+      },
+      { timeout: 120000 },
+    );
+
+    // Audit log: record who imported what
+    fireAndForget(
+      this.auditLog.log({
+        userId: operatorId,
+        action: AuditAction.CASE_BATCH_IMPORTED,
+        resource: 'case',
+        resourceId: importBatchId,
+        metadata: {
+          count: imported.length,
+          skipped: preErrors.length,
+          errorCount: preErrors.length,
+          autoVerify: dto.autoVerify || false,
+          visibility: dto.visibility || 'ANONYMOUS',
+        },
+      }),
+      this.logger,
+      'batchImport audit log',
+    );
+
+    return {
+      imported: imported.length,
+      skipped: preErrors.length,
+      errors: preErrors,
+      importBatchId,
+    };
+  }
+
+  /**
+   * Get import batch history grouped by importBatchId
+   */
+  async getBatchHistory(page = 1, limit = 20) {
+    const batches = await this.prisma.admissionCase.groupBy({
+      by: ['importBatchId', 'source'],
+      where: { importBatchId: { not: null } },
+      _count: true,
+      _min: { createdAt: true },
+      orderBy: { _min: { createdAt: 'desc' } },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    return {
+      data: batches.map((b) => ({
+        importBatchId: b.importBatchId,
+        source: b.source,
+        count: b._count,
+        createdAt: b._min.createdAt,
+      })),
+      page,
+      limit,
+    };
+  }
+
+  /**
+   * Get import progress for a batch from Redis
+   */
+  async getImportProgress(batchId: string) {
+    const data = await this.redis.get(`import:progress:${batchId}`);
+    if (!data) return { status: 'not_found' };
+    try {
+      return { status: 'in_progress', ...JSON.parse(data) };
+    } catch {
+      return { status: 'unknown' };
+    }
   }
 
   /**
@@ -571,17 +1093,21 @@ export class CaseService {
         data: {
           isVerified: true,
           verifiedAt: new Date(),
+          reviewStatus: DataReviewStatus.APPROVED,
+          reviewedAt: new Date(),
         },
         include: {
           school: { select: SCHOOL_NAME_SELECT },
         },
       });
     } else {
-      // REJECT: 将可见性设为 PRIVATE，从 gallery 隐藏
+      // REJECT: hide from gallery and record rejection status
       return this.prisma.admissionCase.update({
         where: { id },
         data: {
           visibility: Visibility.PRIVATE,
+          reviewStatus: DataReviewStatus.REJECTED,
+          reviewedAt: new Date(),
         },
         include: {
           school: { select: SCHOOL_NAME_SELECT },
@@ -596,17 +1122,20 @@ export class CaseService {
    * @returns Summary with the count of successfully processed cases and an array of failed cases with error details
    */
   async batchVerifyCases(dto: BatchVerifyCaseDto) {
-    const results = await Promise.all(
-      dto.ids.map((id) =>
-        this.reviewCaseEssay(id, {
+    const results: Array<AdmissionCase | { id: string; error: string }> = [];
+
+    // Process sequentially to avoid connection pool exhaustion
+    for (const id of dto.ids) {
+      try {
+        const result = await this.reviewCaseEssay(id, {
           action: dto.action,
           reason: dto.reason,
-        }).catch((e) => ({
-          id,
-          error: e.message,
-        })),
-      ),
-    );
+        });
+        results.push(result);
+      } catch (e: any) {
+        results.push({ id, error: e.message });
+      }
+    }
 
     const success = results.filter((r) => !('error' in r));
     const failed = results.filter((r) => 'error' in r);
@@ -626,6 +1155,8 @@ export class CaseService {
     locale = 'zh',
   ): Promise<void> {
     if (!this.memoryManager) return;
+    // Skip memory for bulk imports — too noisy
+    if (data.source === 'csv_import' || data.source === 'reddit') return;
 
     try {
       const isZh = locale === 'zh';
@@ -644,13 +1175,62 @@ export class CaseService {
               : data.result
         : data.result.toLowerCase();
 
-      // 记录录取决策
+      // Parse structured fields for rich memory content
+      const activities = parseCaseActivities(admissionCase.activities);
+      const awards = parseCaseAwards(admissionCase.awards);
+      const testScores = parseCaseTestScores(admissionCase.testScores);
+      const satScore = testScores.find((t: any) => t.type === 'SAT');
+      const actScore = testScores.find((t: any) => t.type === 'ACT');
+
+      // Build rich memory content
+      const parts = isZh
+        ? [
+            `用户分享了${data.year}年${schoolName}的${resultText}案例`,
+            data.major && `专业：${data.major}`,
+            data.gpaRange && `GPA：${data.gpaRange}`,
+            satScore && `SAT：${satScore.score}`,
+            actScore && `ACT：${actScore.score}`,
+            activities.length > 0 &&
+              `活动：${activities.length}项 (${activities
+                .slice(0, 3)
+                .map((a: any) => a.description)
+                .join('、')})`,
+            awards.length > 0 &&
+              `奖项：${awards.length}项 (${awards
+                .slice(0, 3)
+                .map((a: any) => a.name)
+                .join('、')})`,
+            admissionCase.highSchoolType &&
+              `高中类型：${admissionCase.highSchoolType}`,
+            admissionCase.curriculumType &&
+              `课程体系：${admissionCase.curriculumType}`,
+          ]
+        : [
+            `User shared a ${data.year} ${resultText} case for ${schoolName}`,
+            data.major && `Major: ${data.major}`,
+            data.gpaRange && `GPA: ${data.gpaRange}`,
+            satScore && `SAT: ${satScore.score}`,
+            actScore && `ACT: ${actScore.score}`,
+            activities.length > 0 &&
+              `Activities: ${activities.length} (${activities
+                .slice(0, 3)
+                .map((a: any) => a.description)
+                .join(', ')})`,
+            awards.length > 0 &&
+              `Awards: ${awards.length} (${awards
+                .slice(0, 3)
+                .map((a: any) => a.name)
+                .join(', ')})`,
+            admissionCase.highSchoolType &&
+              `HS Type: ${admissionCase.highSchoolType}`,
+            admissionCase.curriculumType &&
+              `Curriculum: ${admissionCase.curriculumType}`,
+          ];
+
       await this.memoryManager.remember(userId, {
         type: MemoryType.DECISION,
         category: 'admission_case',
-        content: isZh
-          ? `用户分享了${data.year}年${schoolName}的${resultText}案例${data.major ? `，专业：${data.major}` : ''}`
-          : `User shared a ${data.year} ${resultText} case for ${schoolName}${data.major ? `, major: ${data.major}` : ''}`,
+        content: parts.filter(Boolean).join(isZh ? '。' : '. '),
         importance: 0.8,
         metadata: {
           caseId: admissionCase.id,
@@ -659,6 +1239,13 @@ export class CaseService {
           result: data.result,
           major: data.major,
           round: data.round,
+          gpaRange: data.gpaRange,
+          satScore: satScore?.score,
+          activityCount: activities.length,
+          awardCount: awards.length,
+          highSchoolType: admissionCase.highSchoolType,
+          curriculumType: admissionCase.curriculumType,
+          demographicTags: admissionCase.demographicTags,
         },
       });
 

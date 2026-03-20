@@ -1,7 +1,7 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
-import { MemoryType } from '@prisma/client';
+import { MemoryType, EntityType } from '@prisma/client';
 import { CreatePostDto } from './dto';
 
 @Injectable()
@@ -56,6 +56,9 @@ export class ForumMemoryService {
     } catch (error) {
       this.logger.warn('Failed to save forum post to memory', error);
     }
+
+    // Extract school knowledge from post tags/content
+    await this.extractSchoolKnowledge(userId, data);
   }
 
   /**
@@ -170,6 +173,46 @@ export class ForumMemoryService {
       });
     } catch (error) {
       this.logger.warn('Failed to record team application to memory', error);
+    }
+  }
+
+  /**
+   * Extract school names from forum post tags and save as ENTITY memories.
+   * This builds up a knowledge graph of schools discussed in the community.
+   */
+  private async extractSchoolKnowledge(
+    userId: string,
+    data: CreatePostDto,
+  ): Promise<void> {
+    if (!this.memoryManager) return;
+    if (!data.tags || data.tags.length === 0) return;
+
+    try {
+      // Match tags against known schools
+      const matchedSchools = await this.prisma.school.findMany({
+        where: {
+          OR: data.tags.map((tag) => ({
+            nameNorm: { contains: tag.toLowerCase() },
+          })),
+        },
+        select: { id: true, name: true },
+        take: 5,
+      });
+
+      for (const school of matchedSchools) {
+        await this.memoryManager.recordEntity(userId, {
+          type: EntityType.SCHOOL,
+          name: school.name,
+          description: `学校在论坛帖子"${data.title}"中被讨论`,
+          attributes: {
+            schoolId: school.id,
+            discussionContext: data.title.slice(0, 100),
+            tags: data.tags,
+          },
+        });
+      }
+    } catch (error) {
+      this.logger.warn('Failed to extract school knowledge', error);
     }
   }
 }

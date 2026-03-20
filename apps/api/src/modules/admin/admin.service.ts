@@ -6,11 +6,14 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ERR } from '../../common/constants/error-messages';
 import {
   Role,
   ReportStatus,
   Prisma,
   GlobalEventCategory,
+  DataReviewStatus,
+  StagingStatus,
 } from '@prisma/client';
 import {
   CreateSchoolDeadlineDto,
@@ -276,6 +279,7 @@ export class AdminService {
     reason: string,
     durationHours?: number,
     permanent?: boolean,
+    adminRole?: Role,
   ) {
     if (adminId === userId) {
       throw new ForbiddenException('Cannot ban your own account');
@@ -290,8 +294,22 @@ export class AdminService {
       throw new NotFoundException('User not found');
     }
 
-    if (user.role === Role.ADMIN) {
-      throw new ForbiddenException('Cannot ban an admin user');
+    if (user.role === Role.SUPER_ADMIN) {
+      throw new ForbiddenException('Cannot ban a super admin user');
+    }
+
+    if (user.role === Role.ADMIN && adminRole !== Role.SUPER_ADMIN) {
+      throw new ForbiddenException('Only super admin can ban admin users');
+    }
+
+    if (
+      user.role === Role.OPERATOR &&
+      adminRole !== Role.SUPER_ADMIN &&
+      adminRole !== Role.ADMIN
+    ) {
+      throw new ForbiddenException(
+        'Only admin or super admin can ban operator users',
+      );
     }
 
     if (user.isBanned) {
@@ -424,6 +442,8 @@ export class AdminService {
       totalRevenueResult,
       monthlyRevenueResult,
       pendingPayments,
+      pendingStagingCount,
+      pendingCasesCount,
     ] = await Promise.all([
       this.prisma.user.count({ where: { deletedAt: null } }),
       this.prisma.user.count({
@@ -472,6 +492,12 @@ export class AdminService {
         _sum: { amount: true },
       }),
       this.prisma.payment.count({ where: { status: 'PENDING' } }),
+      this.prisma.dataImportStaging.count({
+        where: { status: StagingStatus.PENDING },
+      }),
+      this.prisma.admissionCase.count({
+        where: { reviewStatus: DataReviewStatus.PENDING_REVIEW },
+      }),
     ]);
 
     return {
@@ -500,6 +526,8 @@ export class AdminService {
       freeUsers,
       proUsers,
       premiumUsers: adminUsers, // ADMIN role maps to premium
+      // Data review
+      pendingReview: pendingStagingCount + pendingCasesCount,
     };
   }
 
@@ -653,7 +681,7 @@ export class AdminService {
     const school = await this.prisma.school.findUnique({
       where: { id: dto.schoolId },
     });
-    if (!school) throw new NotFoundException('学校不存在');
+    if (!school) throw new NotFoundException(ERR.NOT_FOUND.school());
 
     const existing = await this.prisma.schoolDeadline.findUnique({
       where: {
@@ -664,8 +692,7 @@ export class AdminService {
         },
       },
     });
-    if (existing)
-      throw new ConflictException('该学校此年度轮次的截止日期已存在');
+    if (existing) throw new ConflictException(ERR.CONFLICT.duplicateDeadline());
 
     return this.prisma.schoolDeadline.create({
       data: {
@@ -695,7 +722,7 @@ export class AdminService {
     const deadline = await this.prisma.schoolDeadline.findUnique({
       where: { id },
     });
-    if (!deadline) throw new NotFoundException('截止日期记录不存在');
+    if (!deadline) throw new NotFoundException(ERR.NOT_FOUND.deadline());
 
     return this.prisma.schoolDeadline.update({
       where: { id },
@@ -724,7 +751,7 @@ export class AdminService {
     const deadline = await this.prisma.schoolDeadline.findUnique({
       where: { id },
     });
-    if (!deadline) throw new NotFoundException('截止日期记录不存在');
+    if (!deadline) throw new NotFoundException(ERR.NOT_FOUND.deadline());
     await this.prisma.schoolDeadline.delete({ where: { id } });
   }
 
@@ -784,7 +811,7 @@ export class AdminService {
 
   async updateGlobalEvent(id: string, dto: UpdateGlobalEventDto) {
     const event = await this.prisma.globalEvent.findUnique({ where: { id } });
-    if (!event) throw new NotFoundException('全局事件不存在');
+    if (!event) throw new NotFoundException(ERR.NOT_FOUND.globalEvent());
 
     return this.prisma.globalEvent.update({
       where: { id },
@@ -810,7 +837,7 @@ export class AdminService {
 
   async deleteGlobalEvent(id: string) {
     const event = await this.prisma.globalEvent.findUnique({ where: { id } });
-    if (!event) throw new NotFoundException('全局事件不存在');
+    if (!event) throw new NotFoundException(ERR.NOT_FOUND.globalEvent());
     await this.prisma.globalEvent.delete({ where: { id } });
   }
 

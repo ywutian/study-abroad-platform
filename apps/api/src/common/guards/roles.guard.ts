@@ -8,6 +8,18 @@ import { Reflector } from '@nestjs/core';
 import { Role } from '@prisma/client';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 
+/**
+ * Role hierarchy: SUPER_ADMIN > ADMIN > OPERATOR > VERIFIED > USER
+ * Higher roles automatically satisfy lower role requirements.
+ */
+const ROLE_HIERARCHY: Record<Role, number> = {
+  [Role.USER]: 0,
+  [Role.VERIFIED]: 1,
+  [Role.OPERATOR]: 2,
+  [Role.ADMIN]: 3,
+  [Role.SUPER_ADMIN]: 4,
+};
+
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
@@ -28,19 +40,16 @@ export class RolesGuard implements CanActivate {
       throw new ForbiddenException('User not found');
     }
 
-    // ADMIN has access to everything
-    if (user.role === Role.ADMIN) {
+    // SUPER_ADMIN has access to everything
+    if (user.role === Role.SUPER_ADMIN) {
       return true;
     }
 
-    // VERIFIED has access to USER + VERIFIED
-    if (user.role === Role.VERIFIED) {
-      return requiredRoles.some(
-        (role) => role === Role.USER || role === Role.VERIFIED,
-      );
-    }
+    const userLevel = ROLE_HIERARCHY[user.role as Role] ?? 0;
 
-    // USER only has access to USER
-    return requiredRoles.includes(user.role);
+    // User passes if their level >= the minimum required role level
+    return requiredRoles.some(
+      (role) => userLevel >= (ROLE_HIERARCHY[role] ?? 0),
+    );
   }
 }
