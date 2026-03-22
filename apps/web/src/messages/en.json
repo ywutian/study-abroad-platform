@@ -5076,7 +5076,10 @@
         "curveDesc": "Shows how auto-calibration adjusts predictions. The dashed line represents no adjustment.",
         "retrain": "Retrain Now",
         "retrainSuccess": "Cache cleared. Auto-calibration will retrain on next prediction.",
-        "autoUpdateNote": "Parameters update automatically every 24 hours."
+        "autoUpdateNote": "Parameters update automatically every 24 hours.",
+        "axisOriginal": "Original Prediction",
+        "tooltipOriginal": "Original",
+        "lineCalibrated": "Calibrated Prediction"
       }
     },
     "calendar": {

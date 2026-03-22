@@ -12,6 +12,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -80,12 +81,14 @@ interface AggregatedAlert {
 }
 
 @Injectable()
-export class AlertChannelService implements OnModuleInit {
+export class AlertChannelService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(AlertChannelService.name);
   private config: AlertConfig;
   private alertBuffer: Map<string, AggregatedAlert> = new Map();
   private alertCountPerMinute = 0;
   private lastMinuteReset = Date.now();
+  private flushInterval?: ReturnType<typeof setInterval>;
+  private resetInterval?: ReturnType<typeof setInterval>;
 
   constructor(
     private configService: ConfigService,
@@ -118,13 +121,18 @@ export class AlertChannelService implements OnModuleInit {
     this.logger.log('AlertChannelService initialized');
 
     // 定期刷新聚合告警
-    setInterval(() => this.flushAggregatedAlerts(), 30000);
+    this.flushInterval = setInterval(() => this.flushAggregatedAlerts(), 30000);
 
     // 重置每分钟告警计数
-    setInterval(() => {
+    this.resetInterval = setInterval(() => {
       this.alertCountPerMinute = 0;
       this.lastMinuteReset = Date.now();
     }, 60000);
+  }
+
+  onModuleDestroy() {
+    if (this.flushInterval) clearInterval(this.flushInterval);
+    if (this.resetInterval) clearInterval(this.resetInterval);
   }
 
   /**

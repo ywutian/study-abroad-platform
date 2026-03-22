@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, Brain, CheckCircle2, Clock, Loader2, RefreshCw } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import {
   CartesianGrid,
@@ -31,7 +31,6 @@ interface PlattStatus {
 
 export function SystemCalibrationTab() {
   const t = useTranslations('admin.calibrations.system');
-  const locale = useLocale();
   const queryClient = useQueryClient();
 
   const { data: status, isLoading } = useQuery<PlattStatus>({
@@ -180,7 +179,7 @@ export function SystemCalibrationTab() {
                   tickFormatter={(v: number) => `${v}%`}
                   className="text-xs"
                   label={{
-                    value: locale === 'zh' ? '原始预测' : 'Original Prediction',
+                    value: t('axisOriginal'),
                     position: 'insideBottom',
                     offset: -5,
                     className: 'text-xs fill-muted-foreground',
@@ -193,7 +192,7 @@ export function SystemCalibrationTab() {
                 />
                 <Tooltip
                   formatter={(value) => [`${typeof value === 'number' ? value : String(value)}%`]}
-                  labelFormatter={(label) => `${locale === 'zh' ? '原始' : 'Original'}: ${label}%`}
+                  labelFormatter={(label) => `${t('tooltipOriginal')}: ${label}%`}
                   contentStyle={{
                     backgroundColor: 'hsl(var(--card))',
                     border: '1px solid hsl(var(--border))',
@@ -217,7 +216,7 @@ export function SystemCalibrationTab() {
                   stroke="hsl(var(--primary))"
                   strokeWidth={2}
                   dot={{ r: 3, fill: 'hsl(var(--primary))' }}
-                  name={locale === 'zh' ? '校准后预测' : 'Calibrated Prediction'}
+                  name={t('lineCalibrated')}
                 />
               </LineChart>
             </ResponsiveContainer>

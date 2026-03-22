@@ -4,7 +4,12 @@
  * 收集关键业务和性能指标
  */
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 // ==================== 指标类型 ====================
 
 interface Histogram {
@@ -59,17 +64,22 @@ export interface AgentMetrics {
 }
 
 @Injectable()
-export class MetricsService implements OnModuleInit {
+export class MetricsService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(MetricsService.name);
 
   private metrics: AgentMetrics = this.createEmptyMetrics();
   private startTime = Date.now();
+  private summaryInterval?: ReturnType<typeof setInterval>;
 
   onModuleInit() {
     // 定期打印指标摘要
-    setInterval(() => {
+    this.summaryInterval = setInterval(() => {
       this.logMetricsSummary();
     }, 60000);
+  }
+
+  onModuleDestroy() {
+    if (this.summaryInterval) clearInterval(this.summaryInterval);
   }
 
   // ==================== 请求指标 ====================

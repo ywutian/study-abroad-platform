@@ -29,6 +29,11 @@ const EXEMPT_FILES = [
   'admin/activity-templates/_components/template-form-dialog.tsx', // 管理面板，含中英文 placeholder 示例
   'admin/activity-templates/_components/templates-table.tsx', // 管理面板，EmptyState 组件标题
   'admin/schools/_components/data-quality-tab.tsx', // 管理面板字段映射，使用 { en, zh } 双语对象
+  'admin/_components/role-badge.tsx', // 双语 labelZh 数据，根据 locale 选择显示
+  'admin/data-review/_components/batch-entry-tab.tsx', // 中文 CSV header aliases（解析粘贴的中文 CSV 数据）
+  'admin/data-review/_components/bulk-import-tab.tsx', // CSV 模板含中文 essay prompt 示例数据
+  'admin/high-schools/_components/tier-overview-tab.tsx', // 中文省份名（地理数据）
+  'profile/_components/constants.ts', // 双语 labelZh 数据（tier badge 配置）
 ];
 
 /** 豁免行模式（匹配到则跳过该行） */

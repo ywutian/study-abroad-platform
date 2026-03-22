@@ -1,10 +1,16 @@
-import { Module, Global, OnModuleInit, Logger } from '@nestjs/common';
+import {
+  Module,
+  Global,
+  OnModuleInit,
+  OnModuleDestroy,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as Sentry from '@sentry/node';
 
 @Global()
 @Module({})
-export class SentryModule implements OnModuleInit {
+export class SentryModule implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(SentryModule.name);
 
   constructor(private configService: ConfigService) {}
@@ -87,5 +93,9 @@ export class SentryModule implements OnModuleInit {
     } else {
       this.logger.warn('SENTRY_DSN not configured — error tracking disabled');
     }
+  }
+
+  async onModuleDestroy() {
+    await Sentry.close(2000);
   }
 }

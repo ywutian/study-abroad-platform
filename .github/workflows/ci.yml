@@ -183,8 +183,8 @@ jobs:
       - name: Enable pgvector extension
         run: PGPASSWORD=postgres psql -h localhost -U postgres -d studyabroad_test -c "CREATE EXTENSION IF NOT EXISTS vector;"
 
-      - name: Push schema to database
-        run: pnpm --filter api exec prisma db push --skip-generate
+      - name: Apply migrations to database
+        run: pnpm --filter api exec prisma migrate deploy
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_test?schema=public
 
