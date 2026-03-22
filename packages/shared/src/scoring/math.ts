@@ -61,10 +61,94 @@ export function parseRange(range: string): number | null {
 }
 
 /**
+ * Non-linear GPA normalization by named grading system (WES-style piecewise mappings).
+ * Result is always clamped to [0.0, 4.0].
+ */
+export function normalizeBySystem(gpa: number, gpaSystem: string): number {
+  let result: number;
+
+  switch (gpaSystem) {
+    case 'SCALE_4_UW':
+      result = gpa;
+      break;
+
+    case 'SCALE_4_W':
+      result = Math.min((gpa / 5.0) * 4.0, 4.0);
+      break;
+
+    case 'SCALE_5':
+      result = (gpa / 5.0) * 4.0;
+      break;
+
+    case 'PCT_100':
+      if (gpa >= 95) result = 4.0;
+      else if (gpa >= 90) result = 3.7 + ((gpa - 90) / 5) * 0.3;
+      else if (gpa >= 85) result = 3.3 + ((gpa - 85) / 5) * 0.4;
+      else if (gpa >= 80) result = 3.0 + ((gpa - 80) / 5) * 0.3;
+      else if (gpa >= 75) result = 2.7 + ((gpa - 75) / 5) * 0.3;
+      else if (gpa >= 70) result = 2.3 + ((gpa - 70) / 5) * 0.4;
+      else result = 2.0;
+      break;
+
+    case 'IB_45':
+      if (gpa >= 42) result = 4.0;
+      else if (gpa >= 38) result = 3.7 + ((gpa - 38) / 4) * 0.3;
+      else if (gpa >= 35) result = 3.3 + ((gpa - 35) / 3) * 0.4;
+      else if (gpa >= 30) result = 3.0 + ((gpa - 30) / 5) * 0.3;
+      else if (gpa >= 24) result = 2.5 + ((gpa - 24) / 6) * 0.5;
+      else result = 2.0;
+      break;
+
+    case 'A_LEVEL': {
+      // Input: numeric 1-6 (6=A*, 5=A, 4=B, 3=C, 2=D, 1=E)
+      // Linear interpolation between defined points
+      const points: [number, number][] = [
+        [1, 1.3],
+        [2, 2.0],
+        [3, 2.7],
+        [4, 3.3],
+        [5, 3.7],
+        [6, 4.0],
+      ];
+
+      if (gpa <= points[0][0]) {
+        result = points[0][1];
+      } else if (gpa >= points[points.length - 1][0]) {
+        result = points[points.length - 1][1];
+      } else {
+        // Find the two surrounding points and interpolate
+        let lower = points[0];
+        let upper = points[1];
+        for (let i = 1; i < points.length; i++) {
+          if (gpa <= points[i][0]) {
+            lower = points[i - 1];
+            upper = points[i];
+            break;
+          }
+        }
+        const t = (gpa - lower[0]) / (upper[0] - lower[0]);
+        result = lower[1] + t * (upper[1] - lower[1]);
+      }
+      break;
+    }
+
+    default:
+      result = gpa;
+      break;
+  }
+
+  return Math.max(0.0, Math.min(4.0, result));
+}
+
+/**
  * 归一化 GPA 到 4.0 制
  * 支持 4.0, 5.0, 100 分制
+ * 可选 gpaSystem 参数启用非线性分段映射（WES 标准）
  */
-export function normalizeGpa(gpa: number, scale: number): number {
+export function normalizeGpa(gpa: number, scale: number, gpaSystem?: string): number {
+  if (gpaSystem) {
+    return normalizeBySystem(gpa, gpaSystem);
+  }
   if (scale === 4.0) return gpa;
   if (scale === 5.0) return (gpa / 5.0) * 4.0;
   if (scale === 100) return (gpa / 100) * 4.0;

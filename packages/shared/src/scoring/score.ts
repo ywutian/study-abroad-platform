@@ -21,6 +21,8 @@ import type {
   SelectivityOptions,
 } from './types';
 import { calculatePercentile, empiricalPercentile, normalizeGpa } from './math';
+import { evaluateHsConfidence, type HsConfidenceResult } from './hs-confidence';
+import { computeTierFromPartial } from './tier';
 
 // ============================================
 // Component Scores (0-100 each)
@@ -42,8 +44,16 @@ export function calculateAcademicScore(
   let score = ACADEMIC_CONFIG.baseScore;
 
   if (profile.gpa) {
-    const normalizedGpa = normalizeGpa(profile.gpa, profile.gpaScale ?? 4.0);
-    const gpaScore = (normalizedGpa / 4.0) * ACADEMIC_CONFIG.gpaMaxBonus;
+    const normalizedGpa = normalizeGpa(profile.gpa, profile.gpaScale ?? 4.0, profile.gpaSystem);
+    const normalizedGpa4 = normalizedGpa / 4.0;
+    const { gpaAdjustment } = getGpaWeight(
+      profile.highSchoolRecognition,
+      profile.highSchoolAcademicRigor,
+      profile.highSchoolGradeInflation
+    );
+    const adjustedGpa4 = Math.min(normalizedGpa4 * gpaAdjustment, 1.0);
+    const gpaScore = adjustedGpa4 * ACADEMIC_CONFIG.gpaMaxBonus;
+
     score += gpaScore - ACADEMIC_CONFIG.gpaBaseline;
   }
 
@@ -204,17 +214,154 @@ export function calculateAwardScore(profile: ProfileMetrics): number {
 }
 
 // ============================================
+// High School Evaluation Utilities
+// ============================================
+
+/**
+ * Compute tier from the 5 standardized evaluation dimensions.
+ *
+ * @deprecated Use `computeTierFromPartial()` from `./tier` instead,
+ * which supports partial dimension inputs.
+ */
+export function computeTierFromDimensions(
+  recognition: number,
+  academicRigor: number,
+  placementRecord: number,
+  studentQuality: number,
+  resources: number
+): number {
+  // Delegate to the unified implementation
+  return computeTierFromPartial({
+    recognition,
+    academicRigor,
+    placementRecord,
+    studentQuality,
+    resources,
+  })!;
+}
+
+/**
+ * GPA trust weight based on high school recognition, academic rigor,
+ * and grade inflation signal.
+ *
+ * Higher recognition → AOs trust the GPA more → GPA gets more weight.
+ * Higher rigor → grade deflation likely → GPA value adjusted upward.
+ * Explicit gradeInflation signal fine-tunes the rigor-based adjustment.
+ */
+export function getGpaWeight(
+  recognition?: number,
+  academicRigor?: number,
+  gradeInflation?: string
+): { gpaWeight: number; testWeight: number; gpaAdjustment: number } {
+  // GPA weight: recognition drives trust in GPA
+  // Without recognition, default 0.5 weight
+  const gpaWeight = recognition ? 0.35 + recognition * 0.05 : 0.5;
+  const testWeight = 1.0 - gpaWeight;
+
+  // GPA value adjustment: rigor and gradeInflation are INDEPENDENT
+  // Either can work alone — gradeInflation no longer requires recognition
+  let gpaAdjustment = 1.0;
+
+  // rigor 1→0.97, 3→1.03, 5→1.09  (grade-deflated schools get GPA bump)
+  if (academicRigor) {
+    gpaAdjustment = 0.94 + academicRigor * 0.03;
+  }
+
+  // gradeInflation fine-tunes: explicit signal adjusts rigor-inferred value
+  // deflation → bump GPA value (+0.03), inflation → discount (-0.03)
+  // Works even without recognition/rigor — an explicit inflation signal
+  // is valuable data on its own
+  if (gradeInflation === 'deflation') {
+    gpaAdjustment += 0.03;
+  } else if (gradeInflation === 'inflation') {
+    gpaAdjustment -= 0.03;
+  }
+
+  return { gpaWeight, testWeight, gpaAdjustment };
+}
+
+/**
+ * Context-aware HS impact multiplier.
+ *
+ * Key insight: HS background matters more for highly selective schools.
+ * Harvard's AOs know Phillips Exeter; UT Austin's care less.
+ *
+ * @param tier - High school tier (1-5)
+ * @param recognition - AO recognition score (1-5)
+ * @param schoolSelectivity - Target school selectivity index (0-1)
+ * @param placementRecord - College placement record score (1-5)
+ * @param hsConfidenceScale - Confidence scaling factor (0-1) from evaluateHsConfidence.
+ *                            Low-confidence HS data gets attenuated rather than dropped.
+ */
+export function calculateHsImpact(
+  tier: number | undefined,
+  recognition: number | undefined,
+  schoolSelectivity: number,
+  placementRecord?: number,
+  hsConfidenceScale = 1.0
+): number {
+  if (!tier) return 1.0;
+
+  // Scale effect by target school selectivity: [0.3, 1.0]
+  const selectivityScale = 0.3 + schoolSelectivity * 0.7;
+
+  // Base tier effect — continuous mapping so tier 3 has a small positive effect:
+  //   tier 1→-0.06, 2→-0.03, 3→+0.003, 4→+0.033, 5→+0.063
+  // This fixes the previous (tier-3)*0.03 = 0 for tier 3, which made
+  // ~50% of schools' HS data irrelevant.
+  const baseTierEffect = tier <= 2 ? (tier - 3) * 0.03 : (tier - 2.9) * 0.03;
+
+  // Extra bump if AOs specifically recognize this school
+  const recognitionBonus =
+    recognition && recognition >= 4 ? (recognition - 3) * 0.01 * selectivityScale : 0;
+
+  // Placement record bonus: strong feeder schools (4-5) get an edge at selective targets
+  // placementRecord 5→+0.02, 4→+0.01, ≤3→0
+  const placementBonus =
+    placementRecord && placementRecord >= 4 ? (placementRecord - 3) * 0.01 * selectivityScale : 0;
+
+  const rawImpact = baseTierEffect * selectivityScale + recognitionBonus + placementBonus;
+
+  // Confidence scaling: low-confidence HS data gets attenuated
+  return 1.0 + rawImpact * hsConfidenceScale;
+}
+
+// ============================================
 // Overall Score
 // ============================================
 
 /**
  * 计算综合分数 (0-100)
+ *
+ * Integrates HS confidence scaling — low-confidence HS data is attenuated.
+ * For the full breakdown including hsConfidence metadata, use
+ * `calculateOverallScoreDetailed()`.
  */
 export function calculateOverallScore(
   profile: ProfileMetrics,
   school: SchoolMetrics = {},
   historicalDistribution?: HistoricalDistribution
 ): number {
+  return calculateOverallScoreDetailed(profile, school, historicalDistribution).score;
+}
+
+export interface OverallScoreResult {
+  score: number;
+  hsConfidence: HsConfidenceResult;
+  hsImpact: number;
+}
+
+/**
+ * 计算综合分数 with full breakdown including HS confidence.
+ *
+ * Use this when you need to propagate HS confidence to the user
+ * (e.g. in the prediction pipeline or statistical engine).
+ */
+export function calculateOverallScoreDetailed(
+  profile: ProfileMetrics,
+  school: SchoolMetrics = {},
+  historicalDistribution?: HistoricalDistribution
+): OverallScoreResult {
   const academic = calculateAcademicScore(profile, school, historicalDistribution);
   const activity = calculateActivityScore(profile);
   const award = calculateAwardScore(profile);
@@ -224,12 +371,21 @@ export function calculateOverallScore(
     activity * SCORING_WEIGHTS.activity +
     award * SCORING_WEIGHTS.award;
 
-  const HS_TIER_MULTIPLIER: Record<number, number> = { 5: 1.08, 4: 1.04, 3: 1.0, 2: 0.98, 1: 0.96 };
-  const hsTierBonus = profile.highSchoolTier
-    ? (HS_TIER_MULTIPLIER[profile.highSchoolTier] ?? 1.0)
-    : 1.0;
+  const hsConf = evaluateHsConfidence(profile);
+  const selectivity = calculateSelectivityIndex(school);
+  const hsImpactValue = calculateHsImpact(
+    profile.highSchoolTier,
+    profile.highSchoolRecognition,
+    selectivity,
+    profile.highSchoolPlacementRecord,
+    hsConf.hsImpactScale
+  );
 
-  return rawScore * hsTierBonus;
+  return {
+    score: rawScore * hsImpactValue,
+    hsConfidence: hsConf,
+    hsImpact: hsImpactValue,
+  };
 }
 
 /**

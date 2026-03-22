@@ -5,6 +5,7 @@
 export interface ProfileMetrics {
   gpa?: number;
   gpaScale?: number;
+  gpaSystem?: string;
   satScore?: number;
   actScore?: number;
   toeflScore?: number;
@@ -24,6 +25,20 @@ export interface ProfileMetrics {
   }>;
   /** High school tier (1-5) from HighSchool model */
   highSchoolTier?: number;
+  /** High school type (HighSchoolType enum value) */
+  highSchoolType?: string;
+  /** AO recognition score (1-5) from HighSchool evaluation */
+  highSchoolRecognition?: number;
+  /** Academic rigor score (1-5) from HighSchool evaluation */
+  highSchoolAcademicRigor?: number;
+  /** Placement record score (1-5) — historical college placement to top US universities */
+  highSchoolPlacementRecord?: number;
+  /** Student quality score (1-5) — competitiveness of student body */
+  highSchoolStudentQuality?: number;
+  /** Resources score (1-5) — counseling, alumni network, AO relationships */
+  highSchoolResources?: number;
+  /** Grade inflation indicator */
+  highSchoolGradeInflation?: string;
   /** Target major category for spike alignment detection */
   targetMajorCategory?: string;
 }

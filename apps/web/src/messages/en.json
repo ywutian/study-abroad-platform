@@ -815,7 +815,19 @@
       "scale4": "4.0 Scale",
       "scale5": "5.0 Scale",
       "scale100": "100 Scale",
+      "scale45": "45 (IB)",
+      "scale6": "6 (A-Level)",
       "scale": "Out of {max}"
+    },
+    "gpaSystem": {
+      "label": "GPA System",
+      "placeholder": "Select GPA system",
+      "SCALE_4_UW": "4.0 Scale (Unweighted)",
+      "SCALE_4_W": "4.0+ Scale (Weighted)",
+      "SCALE_5": "5.0 Scale",
+      "PCT_100": "Percentage (100)",
+      "IB_45": "IB (45 points)",
+      "A_LEVEL": "A-Level"
     },
     "empty": {
       "noScores": "No test scores yet",
@@ -976,12 +988,16 @@
       "typeToSearch": "Type to search high schools",
       "searching": "Searching...",
       "customHighSchool": "Or type school name manually",
+      "suggestSchool": "Suggest this school",
+      "schoolSuggested": "School suggestion submitted! We'll review it soon.",
+      "schoolSuggestFailed": "Failed to submit suggestion. Please try again.",
       "schoolType": "School Type",
       "selectType": "Select school type",
       "degree": "Degree",
       "degreePlaceholder": "Enter degree",
       "major": "Major",
       "majorPlaceholder": "Enter major",
+      "gpaSystem": "GPA System",
       "gpaMax": "GPA Maximum",
       "description": "Description",
       "descriptionPlaceholder": "Describe...",
@@ -1202,6 +1218,10 @@
       "improveChancesPrompt": "How can I improve my admission chances based on these predictions?\n{results}",
       "recommendSchools": "Recommend Schools",
       "recommendSchoolsPrompt": "Please recommend schools based on my profile"
+    },
+    "hint": {
+      "addHighSchool": "Add your high school in your profile for more accurate predictions",
+      "goToProfile": "Go to Profile"
     }
   },
   "cases": {
@@ -1797,7 +1817,8 @@
     },
     "toast": {
       "success": "Case submitted successfully! Essays will be reviewed before appearing in the gallery.",
-      "requiredFields": "Please fill in required fields"
+      "requiredFields": "Please fill in required fields",
+      "inviteSchoolmates": "Your case has been shared! Invite classmates from your high school to share theirs — more data means better predictions."
     }
   },
   "ui": {
@@ -4699,8 +4720,9 @@
       "moderation": "Moderation",
       "payments": "Payments",
       "analytics": "Analytics",
-      "calibrations": "Calibrations",
+      "calibrations": "Prediction Calibration",
       "activityTemplates": "Activity Templates",
+      "highSchools": "High Schools",
       "dataReview": "Data Review",
       "settings": "Settings",
       "verifications": "Verifications",
@@ -4968,15 +4990,47 @@
       }
     },
     "calibrations": {
-      "title": "School Calibrations",
-      "description": "Adjust admission probability multipliers per school",
+      "title": "Prediction Calibration",
+      "description": "Monitor prediction accuracy and adjust per-school predictions",
+      "tabs": {
+        "diagnosis": "Prediction Diagnosis",
+        "schoolCalibrations": "School Calibrations",
+        "systemCalibration": "Auto Calibration"
+      },
+      "stats": {
+        "calibratedSchools": "Calibrated Schools",
+        "predictionsWithOutcomes": "Predictions with Outcomes",
+        "overallAccuracy": "Overall Accuracy",
+        "schoolsNeedingAttention": "Schools Needing Attention"
+      },
+      "charts": {
+        "accuracyTitle": "Prediction Accuracy by Range",
+        "predicted": "Expected Midpoint",
+        "actual": "Actual Admit Rate",
+        "count": "Predictions"
+      },
+      "suggestions": {
+        "title": "Schools Needing Calibration",
+        "description": "Schools where predictions deviate significantly from actual outcomes",
+        "predictionCount": "Predictions",
+        "avgPredicted": "Avg Predicted",
+        "actualRate": "Actual Rate",
+        "drift": "Drift",
+        "quickCalibrate": "Quick Calibrate",
+        "allAccurate": "All predictions are well-calibrated",
+        "tooHigh": "Predictions too high",
+        "tooLow": "Predictions too low"
+      },
       "create": "Add Calibration",
       "editTitle": "Edit Calibration",
       "school": "School",
-      "multiplier": "Multiplier",
+      "adjustment": "Adjustment",
       "reason": "Reason",
       "actions": "Actions",
-      "multiplierHelper": "Range 0.5–2.0. Values above 1.0 boost probability, below 1.0 reduce it.",
+      "adjustmentHelper": "Slide to adjust: positive values boost predictions, negative values reduce them.",
+      "preview": "Effect Preview",
+      "previewBefore": "Original prediction",
+      "previewAfter": "After adjustment",
       "searchSchool": "Search school...",
       "save": "Save",
       "cancel": "Cancel",
@@ -4986,7 +5040,44 @@
       "deleted": "Calibration deleted",
       "confirmDelete": "Delete Calibration",
       "confirmDeleteDesc": "Are you sure you want to delete this calibration? The school's prediction will revert to default.",
-      "noCalibrations": "No calibrations configured yet"
+      "noCalibrations": "No calibrations configured yet",
+      "emptyState": {
+        "title": "No School Calibrations Yet",
+        "description": "Go to the \"Prediction Diagnosis\" tab to see which schools need adjustment."
+      },
+      "filter": {
+        "all": "All",
+        "boosted": "Boosted",
+        "reduced": "Reduced"
+      },
+      "sort": {
+        "school": "School Name",
+        "adjustment": "Adjustment",
+        "updatedAt": "Last Updated"
+      },
+      "bulk": {
+        "import": "Bulk Import",
+        "importTitle": "Bulk Import Calibrations",
+        "importDesc": "Paste JSON array of calibrations. Each item needs: schoolId, multiplier (0.5–2.0), reason (optional).",
+        "importSuccess": "Imported: {created} created, {updated} updated",
+        "importFailed": "{failed} items failed"
+      },
+      "system": {
+        "title": "Auto Calibration",
+        "description": "The system automatically learns from actual admission outcomes to improve prediction accuracy. Once enough outcome data is collected, auto-calibration activates automatically.",
+        "status": "Status",
+        "enabled": "Active",
+        "disabled": "Inactive",
+        "insufficientData": "Insufficient Data",
+        "insufficientDataDesc": "Need at least {min} predictions with actual outcomes. Currently have {current}.",
+        "trainingData": "Training Data",
+        "progress": "{current} / {min} outcomes collected",
+        "curveTitle": "Calibration Curve",
+        "curveDesc": "Shows how auto-calibration adjusts predictions. The dashed line represents no adjustment.",
+        "retrain": "Retrain Now",
+        "retrainSuccess": "Cache cleared. Auto-calibration will retrain on next prediction.",
+        "autoUpdateNote": "Parameters update automatically every 24 hours."
+      }
     },
     "calendar": {
       "description": "Manage application deadlines and global events"
@@ -5229,6 +5320,246 @@
       "decayDeleted": "Deleted",
       "decayErrors": "Errors",
       "decayDuration": "Duration"
+    },
+    "highSchools": {
+      "title": "High School Management",
+      "description": "Manage high school database, evaluate school tiers, and review suggestions",
+      "tabs": {
+        "list": "School List",
+        "tiers": "Tier Overview",
+        "suggestions": "Suggestions",
+        "review": "Review Needed",
+        "import": "Batch Import"
+      },
+      "filters": {
+        "searchPlaceholder": "Search by name...",
+        "country": "Country",
+        "state": "State",
+        "type": "Type",
+        "tier": "Tier",
+        "allCountries": "All Countries",
+        "allStates": "All States",
+        "allTypes": "All Types",
+        "allTiers": "All Tiers",
+        "tierN": "Tier {n}",
+        "clear": "Clear"
+      },
+      "tierLabels": {
+        "5": "Elite",
+        "4": "Strong",
+        "3": "Solid",
+        "2": "Developing",
+        "1": "Emerging"
+      },
+      "table": {
+        "name": "Name",
+        "chineseName": "Chinese Name",
+        "country": "Country",
+        "type": "Type",
+        "tier": "Tier",
+        "recognition": "Recognition",
+        "rigor": "Rigor",
+        "evaluated": "Evaluated",
+        "actions": "Actions",
+        "lastEvaluated": "Last Evaluated",
+        "schoolName": "School Name",
+        "submittedBy": "Submitted By",
+        "created": "Created"
+      },
+      "messages": {
+        "schoolUpdated": "School updated successfully",
+        "loadingSchools": "Loading schools...",
+        "noSchoolsFound": "No schools found",
+        "noSchoolsFiltered": "No schools found for the selected filters.",
+        "noSchoolsInTier": "No schools in this tier.",
+        "showingTruncated": "Showing first 200 of {total} schools. Narrow your filters to see more.",
+        "schoolsFound": "{count} school(s) found",
+        "schoolsCount": "{count} schools · {evaluated} evaluated",
+        "unevaluated": "Unevaluated",
+        "never": "Never",
+        "addSchool": "Add School"
+      },
+      "suggestions": {
+        "pendingCount": "{count} pending suggestion(s)",
+        "noPending": "No pending suggestions",
+        "approveSuccess": "Suggestion approved and school created",
+        "rejectSuccess": "Suggestion rejected",
+        "approveTitle": "Approve Suggestion",
+        "approveDescription": "Approve {name} and add it to the high school database.",
+        "schoolType": "School Type",
+        "approve": "Approve"
+      },
+      "review": {
+        "needsReEvaluation": "{count} school(s) need re-evaluation",
+        "allUpToDate": "All schools are up to date"
+      },
+      "import": {
+        "title": "Batch Import High Schools",
+        "description": "Import high schools from a JSON file. Each entry needs at minimum: <name>name</name>, <country>country</country>, <type>type</type>. Optionally include evaluation dimensions (recognition, academicRigor, etc.).",
+        "loadJsonFile": "Load JSON File",
+        "schoolsParsed": "{count} schools parsed",
+        "importButton": "Import {count} Schools",
+        "invalidJsonFormat": "Invalid JSON format",
+        "invalidJson": "Invalid JSON",
+        "mustBeArray": "JSON must be an array or object with \"schools\" array",
+        "missingFields": "{count} entries missing required fields (name, country, type)",
+        "importComplete": "Import complete: {created} created, {updated} updated",
+        "resultsTitle": "Import Results",
+        "created": "created",
+        "updated": "updated",
+        "skipped": "skipped",
+        "errorsCount": "{count} errors",
+        "pipelineTitle": "Pipeline Instructions",
+        "pipelineIntro": "3-step import pipeline:",
+        "step1Label": "Scrape:",
+        "step1Command": "npx ts-node scripts/scrape-niche-high-schools.ts",
+        "step1Output": "Outputs: scripts/data/scraped-high-schools.json",
+        "step2Label": "Import:",
+        "step2Command": "npx ts-node scripts/import-high-schools.ts --apply",
+        "step2Alt": "Or paste JSON above and click Import",
+        "step3Label": "AI Evaluate:",
+        "step3Command": "npx ts-node scripts/ai-evaluate-high-schools.ts --apply",
+        "step3Output": "Generates five-dimension scores (marked as ai-draft, needs admin review)"
+      },
+      "dialog": {
+        "editTitle": "Edit High School",
+        "basicInfo": "Basic Information",
+        "name": "Name",
+        "chineseName": "Chinese Name",
+        "country": "Country",
+        "type": "Type",
+        "selectType": "Select type",
+        "dimensions": "Evaluation Dimensions",
+        "computedTier": "Computed Tier:",
+        "supplementary": "Supplementary Data",
+        "avgSatScore": "Avg SAT Score",
+        "avgIbScore": "Avg IB Score",
+        "annualTop30Count": "Annual Top 30 Count",
+        "gradeInflation": "Grade Inflation",
+        "selectLevel": "Select level",
+        "evaluationNotes": "Evaluation Notes",
+        "notesPlaceholder": "Add notes about this school's evaluation...",
+        "criteria": "Criteria:",
+        "reference": "Reference:"
+      },
+      "rubric": {
+        "recognition": {
+          "label": "Recognition",
+          "labelFull": "AO Recognition",
+          "weight": "30%",
+          "5": {
+            "criteria": "Top 30 AOs universally recognize, active recruiting relationship",
+            "examples": "Exeter, Andover, BNDS Intl, Eton"
+          },
+          "4": {
+            "criteria": "Most Top 30 AOs know it, stable application history",
+            "examples": "Hotchkiss, WFLA, Sevenoaks, SCIE"
+          },
+          "3": {
+            "criteria": "Some AOs know it (depends on alumni/historical apps)",
+            "examples": "Nanjing FLS, Concord Academy, Chengdu No.7"
+          },
+          "2": {
+            "criteria": "Few AOs know it, relies on school profile",
+            "examples": "Provincial key HS, regular US private"
+          },
+          "1": {
+            "criteria": "AOs basically don't know it, fully relies on test scores",
+            "examples": "Regular public HS, no international program"
+          }
+        },
+        "academicRigor": {
+          "label": "Academic Rigor",
+          "labelFull": "Academic Rigor",
+          "weight": "25%",
+          "5": {
+            "criteria": "Known grade deflation, extremely challenging (IB avg <36, AP 15+)",
+            "examples": "Exeter, SPS, UWC Atlantic"
+          },
+          "4": {
+            "criteria": "Rigorous curriculum, high standards (IB 36-38, many AP)",
+            "examples": "Deerfield, SHSID, Dulwich"
+          },
+          "3": {
+            "criteria": "Standard difficulty, fair grading",
+            "examples": "Regular AP/IB schools, most international schools"
+          },
+          "2": {
+            "criteria": "Easier curriculum or lenient grading (high 4.0 rate)",
+            "examples": "Some private day schools, limited curriculum"
+          },
+          "1": {
+            "criteria": "Clear grade inflation (almost everyone >3.5)",
+            "examples": "Very lenient grading schools"
+          }
+        },
+        "placementRecord": {
+          "label": "Placement Record",
+          "labelFull": "Placement Record",
+          "weight": "25%",
+          "5": {
+            "criteria": "10+ students to Top 20 annually",
+            "examples": "Exeter, Andover, BNDS, SCIE"
+          },
+          "4": {
+            "criteria": "5-10 students to Top 30 annually",
+            "examples": "Taft, Pinghe, Harrow, WFLA"
+          },
+          "3": {
+            "criteria": "3-5 students to Top 50 annually",
+            "examples": "Provincial key HS intl dept, Concord, NFLS"
+          },
+          "2": {
+            "criteria": "Occasional Top 50 (1-2/year)",
+            "examples": "Regular intl school, regular US high"
+          },
+          "1": { "criteria": "Rarely Top 100", "examples": "Regular public HS" }
+        },
+        "studentQuality": {
+          "label": "Student Quality",
+          "labelFull": "Student Quality",
+          "weight": "10%",
+          "5": {
+            "criteria": "Extremely competitive (<15% acceptance, avg SAT >1500)",
+            "examples": "Exeter, Andover, SCIE"
+          },
+          "4": {
+            "criteria": "Competitive (15-30%, SAT 1400-1500)",
+            "examples": "Deerfield, SHSID"
+          },
+          "3": {
+            "criteria": "Moderate selectivity (SAT 1300-1400)",
+            "examples": "Most well-known international schools"
+          },
+          "2": {
+            "criteria": "Light selectivity, average scores",
+            "examples": "Regular private schools"
+          },
+          "1": { "criteria": "No entrance barrier", "examples": "Public district schools" }
+        },
+        "resources": {
+          "label": "Resources",
+          "labelFull": "Resources & Support",
+          "weight": "10%",
+          "5": {
+            "criteria": "Professional counseling team with direct AO relationships, strong alumni network",
+            "examples": "Exeter, Eton, BNDS"
+          },
+          "4": {
+            "criteria": "Dedicated counselors, regular university visits",
+            "examples": "Hotchkiss, WFLA, Sevenoaks"
+          },
+          "3": {
+            "criteria": "Some counseling but not specialized",
+            "examples": "Most intl schools, provincial key HS intl dept"
+          },
+          "2": {
+            "criteria": "Limited college support",
+            "examples": "Small private, newly established"
+          },
+          "1": { "criteria": "No college counseling", "examples": "Regular public" }
+        }
+      }
     },
     "dataReview": {
       "title": "Data Review",
@@ -5509,7 +5840,9 @@
           "ibScore": "IB Score",
           "apSubjects": "AP Subjects (comma separated)",
           "background": "Background",
-          "hsType": "High School Type",
+          "highSchool": "High School",
+          "highSchoolSearch": "Search high school name...",
+          "highSchoolTier": "Tier {tier}",
           "curriculum": "Curriculum",
           "demographics": "Applicant Background Tags",
           "financialAid": "Financial Aid",

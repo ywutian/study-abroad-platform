@@ -27,11 +27,19 @@ export class PredictionTransformerService {
    * @returns Normalized ProfileInput for prediction calculations
    */
   profileToInput(profile: ProfileWithRelations): ProfileInput {
-    // Extract high school education entry (first HIGH_SCHOOL type)
-    const hsEducation = (profile as any).education?.find(
-      (e: any) => e.schoolType === 'HIGH_SCHOOL',
-    );
-    const hs = hsEducation?.highSchool;
+    // Extract the most recent high school education entry.
+    // Sort by createdAt desc to pick the latest when multiple exist.
+    const hsEducations = ((profile as any).education || [])
+      .filter((e: any) => e.schoolType === 'HIGH_SCHOOL')
+      .sort((a: any, b: any) => {
+        const da = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const db = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return db - da;
+      });
+    const hsEducation = hsEducations[0];
+    const hsRaw = hsEducation?.highSchool;
+    // Quality gate: D-grade schools (hsImpactEnabled=false) are excluded from predictions
+    const hs = hsRaw?.hsImpactEnabled === false ? undefined : hsRaw;
 
     const intlContext = detectInternationalStatus({
       nationality: (profile as any).nationality,
@@ -44,6 +52,7 @@ export class PredictionTransformerService {
     return {
       gpa: profile.gpa ? Number(profile.gpa) : undefined,
       gpaScale: profile.gpaScale ? Number(profile.gpaScale) : 4.0,
+      gpaSystem: hsEducation?.gpaSystem,
       grade: profile.grade ?? undefined,
       currentSchoolType: profile.currentSchoolType ?? undefined,
       targetMajor: profile.targetMajor ?? undefined,
@@ -51,10 +60,17 @@ export class PredictionTransformerService {
       nationality: (profile as any).nationality ?? undefined,
       educationSystem: (profile as any).educationSystem ?? undefined,
       needsFinancialAid: (profile as any).needsFinancialAid ?? undefined,
+      highSchoolId: hs?.id ?? undefined,
       highSchoolName: hsEducation?.schoolName ?? undefined,
       highSchoolTier: hs?.tier ?? undefined,
       highSchoolType: hs?.type ?? undefined,
       highSchoolLocation: hs?.state || hs?.country || undefined,
+      highSchoolRecognition: hs?.recognition ?? undefined,
+      highSchoolAcademicRigor: hs?.academicRigor ?? undefined,
+      highSchoolPlacementRecord: hs?.placementRecord ?? undefined,
+      highSchoolStudentQuality: hs?.studentQuality ?? undefined,
+      highSchoolResources: hs?.resources ?? undefined,
+      highSchoolGradeInflation: hs?.gradeInflation ?? undefined,
       testScores: (profile.testScores || []).map((s) => ({
         type: s.type,
         score: s.score,
@@ -137,6 +153,7 @@ export class PredictionTransformerService {
     return {
       gpa: profile.gpa,
       gpaScale: profile.gpaScale,
+      gpaSystem: profile.gpaSystem,
       satScore,
       actScore,
       toeflScore,
@@ -155,6 +172,13 @@ export class PredictionTransformerService {
       ).length,
       awardTierScores,
       highSchoolTier: profile.highSchoolTier,
+      highSchoolType: profile.highSchoolType,
+      highSchoolRecognition: profile.highSchoolRecognition,
+      highSchoolAcademicRigor: profile.highSchoolAcademicRigor,
+      highSchoolPlacementRecord: profile.highSchoolPlacementRecord,
+      highSchoolStudentQuality: profile.highSchoolStudentQuality,
+      highSchoolResources: profile.highSchoolResources,
+      highSchoolGradeInflation: profile.highSchoolGradeInflation,
     };
   }
 
@@ -181,9 +205,12 @@ export class PredictionTransformerService {
   /**
    * Evaluate how complete the available profile and school data is on a 0-100 scale.
    *
-   * Profile data contributes up to 60 points: GPA (15), SAT/ACT (15), TOEFL (5),
-   * activities (10), awards (10), target major (5). School data contributes up to
-   * 40 points: acceptance rate (10), ranking (10), SAT range (10), ACT range (10).
+   * Profile data contributes up to 68 points: GPA (15), GPA system (3),
+   * SAT/ACT (15), TOEFL (5), activities (10), awards (10), target major (5),
+   * high school background (5). School data contributes up to 40 points:
+   * acceptance rate (10), ranking (10), SAT range (10), ACT range (10).
+   *
+   * Raw score is normalized to 0-100 from a max of 108.
    *
    * @param profile - Normalized profile input
    * @param school - Normalized school input
@@ -191,16 +218,18 @@ export class PredictionTransformerService {
    */
   evaluateDataCompleteness(profile: ProfileInput, school: SchoolInput): number {
     let score = 0;
-    const maxScore = 100;
+    const maxScore = 108;
 
-    // Profile 数据 (60 分)
+    // Profile 数据 (68 分)
     if (profile.gpa) score += 15;
+    if (profile.gpaSystem) score += 3;
     if (profile.testScores.some((s) => s.type === 'SAT' || s.type === 'ACT'))
       score += 15;
     if (profile.testScores.some((s) => s.type === 'TOEFL')) score += 5;
     if (profile.activities.length > 0) score += 10;
     if (profile.awards.length > 0) score += 10;
     if (profile.targetMajor) score += 5;
+    if (profile.highSchoolTier || profile.highSchoolName) score += 5;
 
     // School 数据 (40 分)
     if (school.acceptanceRate) score += 10;
@@ -208,6 +237,6 @@ export class PredictionTransformerService {
     if (school.satAvg || (school.sat25 && school.sat75)) score += 10;
     if (school.actAvg || (school.act25 && school.act75)) score += 10;
 
-    return Math.min(maxScore, score);
+    return Math.min(100, Math.round((score / maxScore) * 100));
   }
 }

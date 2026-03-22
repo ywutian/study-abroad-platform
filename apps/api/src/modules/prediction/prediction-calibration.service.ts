@@ -168,4 +168,190 @@ export class PredictionCalibrationService {
     const calibrated = 1 / (1 + Math.exp(-z));
     return Math.max(0.05, Math.min(0.95, calibrated));
   }
+
+  /**
+   * Aggregate calibration statistics for admin overview.
+   */
+  async getCalibrationStats(): Promise<{
+    totalCalibrations: number;
+    averageMultiplier: number;
+    boostedCount: number;
+    reducedCount: number;
+    distribution: Array<{ range: string; count: number }>;
+  }> {
+    const calibrations = await this.prisma.schoolCalibration.findMany({
+      select: { multiplier: true },
+    });
+
+    const total = calibrations.length;
+    if (total === 0) {
+      return {
+        totalCalibrations: 0,
+        averageMultiplier: 1.0,
+        boostedCount: 0,
+        reducedCount: 0,
+        distribution: [],
+      };
+    }
+
+    const multipliers = calibrations.map((c) => Number(c.multiplier));
+    const avg = multipliers.reduce((s, m) => s + m, 0) / total;
+    const boosted = multipliers.filter((m) => m > 1.0).length;
+    const reduced = multipliers.filter((m) => m < 1.0).length;
+
+    const buckets = [
+      { min: 0.5, max: 0.7, label: '0.5–0.7' },
+      { min: 0.7, max: 0.9, label: '0.7–0.9' },
+      { min: 0.9, max: 1.1, label: '0.9–1.1' },
+      { min: 1.1, max: 1.3, label: '1.1–1.3' },
+      { min: 1.3, max: 1.5, label: '1.3–1.5' },
+      { min: 1.5, max: 2.01, label: '1.5–2.0' },
+    ];
+
+    const distribution = buckets.map((b) => ({
+      range: b.label,
+      count: multipliers.filter((m) => m >= b.min && m < b.max).length,
+    }));
+
+    return {
+      totalCalibrations: total,
+      averageMultiplier: Math.round(avg * 1000) / 1000,
+      boostedCount: boosted,
+      reducedCount: reduced,
+      distribution,
+    };
+  }
+
+  /**
+   * Identify schools where predicted probability diverges significantly from actual outcomes.
+   * Returns schools needing calibration, sorted by drift magnitude.
+   */
+  async getSchoolsNeedingCalibration(limit = 20): Promise<
+    Array<{
+      schoolId: string;
+      schoolName: string;
+      schoolNameZh: string | null;
+      usNewsRank: number | null;
+      predictionCount: number;
+      avgPredicted: number;
+      actualAdmitRate: number;
+      drift: number;
+      suggestedMultiplier: number;
+    }>
+  > {
+    // Get schools already calibrated to exclude them
+    const existingCalibrations = await this.prisma.schoolCalibration.findMany({
+      select: { schoolId: true },
+    });
+    const calibratedIds = new Set(existingCalibrations.map((c) => c.schoolId));
+
+    // Get all predictions with actual outcomes
+    const results = await this.prisma.predictionResult.findMany({
+      where: { actualResult: { not: null } },
+      select: {
+        schoolId: true,
+        probability: true,
+        actualResult: true,
+      },
+    });
+
+    // Group by school
+    const schoolMap = new Map<
+      string,
+      { probabilities: number[]; admitted: number }
+    >();
+    for (const r of results) {
+      if (calibratedIds.has(r.schoolId)) continue;
+      const entry = schoolMap.get(r.schoolId) ?? {
+        probabilities: [],
+        admitted: 0,
+      };
+      entry.probabilities.push(Number(r.probability));
+      if (r.actualResult === 'ADMITTED') entry.admitted++;
+      schoolMap.set(r.schoolId, entry);
+    }
+
+    // Filter schools with >= 5 results and > 10pp drift
+    const candidates: Array<{
+      schoolId: string;
+      predictionCount: number;
+      avgPredicted: number;
+      actualAdmitRate: number;
+      drift: number;
+      suggestedMultiplier: number;
+    }> = [];
+
+    for (const [schoolId, data] of schoolMap) {
+      if (data.probabilities.length < 5) continue;
+
+      const avgPredicted =
+        data.probabilities.reduce((s, p) => s + p, 0) /
+        data.probabilities.length;
+      const actualRate = data.admitted / data.probabilities.length;
+      const drift = actualRate - avgPredicted;
+
+      if (Math.abs(drift) < 0.1) continue; // < 10pp drift is acceptable
+
+      const suggested =
+        avgPredicted > 0
+          ? Math.max(0.5, Math.min(2.0, actualRate / avgPredicted))
+          : 1.0;
+
+      candidates.push({
+        schoolId,
+        predictionCount: data.probabilities.length,
+        avgPredicted: Math.round(avgPredicted * 1000) / 1000,
+        actualAdmitRate: Math.round(actualRate * 1000) / 1000,
+        drift: Math.round(drift * 1000) / 1000,
+        suggestedMultiplier: Math.round(suggested * 1000) / 1000,
+      });
+    }
+
+    // Sort by absolute drift descending
+    candidates.sort((a, b) => Math.abs(b.drift) - Math.abs(a.drift));
+    const topCandidates = candidates.slice(0, limit);
+
+    if (topCandidates.length === 0) return [];
+
+    // Fetch school details
+    const schoolIds = topCandidates.map((c) => c.schoolId);
+    const schools = await this.prisma.school.findMany({
+      where: { id: { in: schoolIds } },
+      select: { id: true, name: true, nameZh: true, usNewsRank: true },
+    });
+    const schoolLookup = new Map(schools.map((s) => [s.id, s]));
+
+    return topCandidates.map((c) => {
+      const school = schoolLookup.get(c.schoolId);
+      return {
+        ...c,
+        schoolName: school?.name ?? 'Unknown',
+        schoolNameZh: school?.nameZh ?? null,
+        usNewsRank: school?.usNewsRank ?? null,
+      };
+    });
+  }
+
+  /**
+   * Get Platt scaling status for admin display.
+   */
+  async getPlattStatus(): Promise<{
+    enabled: boolean;
+    params: { a: number; b: number } | null;
+    trainingDataCount: number;
+    minRequired: number;
+  }> {
+    const trainingDataCount = await this.prisma.predictionResult.count({
+      where: { actualResult: { not: null } },
+    });
+
+    const params = await this.getPlattCalibration();
+
+    return {
+      enabled: params !== null,
+      params,
+      trainingDataCount,
+      minRequired: 50,
+    };
+  }
 }

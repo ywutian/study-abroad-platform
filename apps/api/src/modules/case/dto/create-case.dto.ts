@@ -315,6 +315,14 @@ export class CreateCaseDto {
   ibPredicted?: boolean;
 
   @ApiPropertyOptional({
+    description: 'High school ID (from HighSchool database)',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  highSchoolId?: string;
+
+  @ApiPropertyOptional({
     enum: HighSchoolType,
     description: 'High school type',
   })

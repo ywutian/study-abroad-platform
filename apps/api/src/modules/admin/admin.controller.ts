@@ -46,9 +46,12 @@ import {
   BroadcastAudience,
   CreateSchoolCalibrationDto,
   UpdateSchoolCalibrationDto,
+  BulkCreateCalibrationDto,
 } from './dto';
 import { AdminDataSyncService } from './admin-data-sync.service';
 import { PredictionService } from '../prediction/prediction.service';
+import { PredictionCalibrationService } from '../prediction/prediction-calibration.service';
+import { PredictionReportingService } from '../prediction/prediction-reporting.service';
 import type { Response } from 'express';
 
 @ApiTags('admin')
@@ -63,6 +66,8 @@ export class AdminController {
     private readonly notificationService: NotificationService,
     private readonly prisma: PrismaService,
     private readonly predictionService: PredictionService,
+    private readonly calibrationService: PredictionCalibrationService,
+    private readonly reportingService: PredictionReportingService,
   ) {}
 
   // Stats
@@ -669,6 +674,55 @@ export class AdminController {
   @ApiOperation({ summary: 'List all school calibrations' })
   async getCalibrations() {
     return this.adminService.getCalibrations();
+  }
+
+  @Get('calibrations/stats')
+  @ApiOperation({ summary: 'Get calibration statistics and accuracy data' })
+  async getCalibrationStats() {
+    const [stats, accuracy] = await Promise.all([
+      this.calibrationService.getCalibrationStats(),
+      this.reportingService.getCalibrationData(),
+    ]);
+    return { ...stats, ...accuracy };
+  }
+
+  @Get('calibrations/suggestions')
+  @ApiOperation({
+    summary: 'Get schools needing calibration based on prediction drift',
+  })
+  async getCalibrationSuggestions() {
+    return this.calibrationService.getSchoolsNeedingCalibration();
+  }
+
+  @Get('calibrations/platt-status')
+  @ApiOperation({ summary: 'Get auto-calibration (Platt scaling) status' })
+  async getPlattStatus() {
+    return this.calibrationService.getPlattStatus();
+  }
+
+  @Post('calibrations/retrain')
+  @ThrottleSensitive()
+  @ApiOperation({ summary: 'Clear Platt scaling cache to force retrain' })
+  @RequirePermission(Permission.SYSTEM_CALIBRATION)
+  async retrainPlattCalibration() {
+    await this.calibrationService.invalidateCalibrationCache();
+    return { success: true };
+  }
+
+  @Post('calibrations/bulk')
+  @ThrottleSensitive()
+  @ApiOperation({ summary: 'Bulk create or update calibrations' })
+  @RequirePermission(Permission.SYSTEM_CALIBRATION)
+  async bulkCreateCalibrations(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: BulkCreateCalibrationDto,
+  ) {
+    const result = await this.adminService.bulkCreateCalibrations(
+      user.id,
+      dto.items,
+    );
+    await this.predictionService.invalidateCalibrationCache();
+    return result;
   }
 
   @Post('calibrations')

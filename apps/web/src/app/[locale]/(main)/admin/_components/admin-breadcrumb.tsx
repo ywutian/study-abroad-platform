@@ -36,6 +36,7 @@ export function AdminBreadcrumb() {
     settings: t('sidebar.settings'),
     'data-review': t('sidebar.dataReview'),
     team: t('sidebar.team'),
+    'high-schools': t('sidebar.highSchools'),
   };
 
   const crumbs: { label: string; href: string }[] = [

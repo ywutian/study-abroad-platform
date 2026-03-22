@@ -8,6 +8,7 @@ import { AdminOperatorService } from './admin-operator.service';
 import { AdminReviewService } from './admin-review.service';
 import { AdminReviewController } from './admin-review.controller';
 import { AdminDataPipelineController } from './admin-data-pipeline.controller';
+import { AdminHighSchoolController } from './admin-high-school.controller';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { RedisModule } from '../../common/redis/redis.module';
 import { NotificationModule } from '../notification/notification.module';
@@ -27,6 +28,7 @@ import { PredictionModule } from '../prediction/prediction.module';
     AdminRoleController,
     AdminReviewController,
     AdminDataPipelineController,
+    AdminHighSchoolController,
   ],
   providers: [
     AdminService,

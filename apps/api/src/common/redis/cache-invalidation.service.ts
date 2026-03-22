@@ -86,4 +86,47 @@ export class CacheInvalidationService {
       );
     }
   }
+
+  /**
+   * Invalidate caches when a high school's evaluation changes.
+   * Clears prediction caches for ALL users linked to this high school
+   * via their Education records.
+   */
+  async onHighSchoolChange(highSchoolId: string): Promise<void> {
+    try {
+      // Find all users linked to this high school via Education → Profile → User
+      const educations = await this.prisma.education.findMany({
+        where: { highSchoolId },
+        select: { profile: { select: { userId: true } } },
+      });
+
+      const userIds = [
+        ...new Set(
+          educations
+            .map((e) => e.profile?.userId)
+            .filter((id): id is string => !!id),
+        ),
+      ];
+
+      if (userIds.length === 0) {
+        this.logger.debug(
+          `No users linked to high school ${highSchoolId}, skipping cache invalidation`,
+        );
+        return;
+      }
+
+      // Invalidate prediction caches for each affected user
+      await Promise.all(
+        userIds.map((uid) => this.invalidatePredictionCaches(uid)),
+      );
+
+      this.logger.debug(
+        `Invalidated prediction caches for ${userIds.length} users linked to high school ${highSchoolId}`,
+      );
+    } catch (error) {
+      this.logger.warn(
+        `Failed to invalidate caches for high school ${highSchoolId}: ${String(error instanceof Error ? error.message : error)}`,
+      );
+    }
+  }
 }

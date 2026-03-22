@@ -42,6 +42,9 @@ describe('CaseService', () => {
               count: jest.fn(),
               groupBy: jest.fn().mockResolvedValue([]),
             },
+            education: {
+              findFirst: jest.fn().mockResolvedValue(null),
+            },
           },
         },
         {

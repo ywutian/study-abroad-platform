@@ -191,7 +191,10 @@ export function extractFeatureVector(
   opts: FeatureExtractionOptions = {}
 ): FeatureVector {
   // ---------- Academic features ----------
-  const gpa4 = profile.gpa != null ? normalizeGpa(profile.gpa, profile.gpaScale ?? 4.0) / 4.0 : NaN;
+  const gpa4 =
+    profile.gpa != null
+      ? normalizeGpa(profile.gpa, profile.gpaScale ?? 4.0, profile.gpaSystem) / 4.0
+      : NaN;
   const satNorm = profile.satScore != null ? profile.satScore / 1600 : NaN;
   const actNorm = profile.actScore != null ? profile.actScore / 36 : NaN;
   const toeflNorm = profile.toeflScore != null ? profile.toeflScore / 120 : NaN;

@@ -575,6 +575,7 @@ model Education {
   description   String?
   highSchoolId  String?
   highSchool    HighSchool? @relation(fields: [highSchoolId], references: [id], onDelete: SetNull)
+  gpaSystem     String?    // "SCALE_4_UW" | "SCALE_4_W" | "SCALE_5" | "PCT_100" | "IB_45" | "A_LEVEL"
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -596,11 +597,37 @@ model HighSchool {
   state         String?
   city          String?
   type          HighSchoolType
-  tier          Int // 1-5 (5 = top feeder, consistent with Competition.tier)
+  tier          Int // 1-5 (5 = top feeder, computed from evaluation dimensions)
   description   String?        @db.Text
   isActive      Boolean        @default(true)
 
+  // === Standardized Evaluation Dimensions (1-5) ===
+  recognition     Int?    // AO 认可度: AO familiarity with this school
+  academicRigor   Int?    // 学术严格度: course difficulty, grade deflation
+  placementRecord Int?    // 升学表现: historical placement at top universities
+  studentQuality  Int?    // 生源质量: student body competitiveness
+  resources       Int?    // 资源与支持: counseling, alumni network, AO relationships
+
+  // === Evaluation Metadata ===
+  evaluatedAt     DateTime?  // Last evaluation timestamp
+  evaluatedBy     String?    // Evaluator: admin userId or "system" or "ai-draft"
+  evaluationNotes String?  @db.Text  // Evaluation notes / justification
+
+  // === Supplementary Data ===
+  avgSatScore      Int?       // Average SAT of graduates
+  avgIbScore       Int?       // Average IB score (if applicable)
+  annualTop30Count Int?       // Estimated annual admits to US Top 30
+  annualApplicants Int?       // Estimated annual US college applicants
+  gradeInflation   String?    // "deflation" | "neutral" | "inflation"
+  website          String?    // Official website URL
+
+  // === Quality Gate (Layer 1) ===
+  qualityScore    Int?       // 0-100, computed by computeHsQualityScore()
+  qualityGrade    String?    // A/B/C/D — determines routing
+  hsImpactEnabled Boolean    @default(true)  // D-grade schools do not participate in prediction scoring
+
   educations Education[]
+  cases      AdmissionCase[]
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -608,6 +635,22 @@ model HighSchool {
   @@index([country])
   @@index([tier])
   @@index([type])
+}
+
+model HighSchoolSuggestion {
+  id          String   @id @default(cuid())
+  name        String
+  country     String
+  state       String?
+  city        String?
+  submittedBy String[] // userIds who suggested this school
+  status      String   @default("pending") // pending | approved | rejected | merged
+  mergedInto  String?  // highSchoolId if merged into existing
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([name, country])
+  @@index([status])
 }
 
 model Essay {
@@ -1039,6 +1082,8 @@ model AdmissionCase {
   awards          Json?             // CaseAward[] — [{name, level, competition?, tier?, year?}]
 
   // Student background
+  highSchoolId    String?
+  highSchool      HighSchool?       @relation(fields: [highSchoolId], references: [id], onDelete: SetNull)
   highSchoolType  HighSchoolType?
   curriculumType  EducationSystem?
   demographicTags String[]          // first_gen, legacy, athlete, recruited, urm, international
@@ -1088,6 +1133,7 @@ model AdmissionCase {
   @@index([importBatchId])
   @@index([userId, source, schoolId])    // Dedup query optimization for batch imports
   @@index([importBatchId, createdAt])    // Batch history query optimization
+  @@index([highSchoolId])
 }
 
 // ============================================

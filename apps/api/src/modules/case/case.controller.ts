@@ -37,10 +37,11 @@ export class CaseController {
     @CurrentUser() user: CurrentUserPayload | null,
     @Query() query: CaseQueryDto,
   ) {
-    const { page, pageSize, schoolId, year, result, search } = query;
+    const { page, pageSize, schoolId, year, result, search, highSchoolId } =
+      query;
     return this.caseService.findAll(
       { page, pageSize },
-      { schoolId, year, result, search },
+      { schoolId, year, result, search, highSchoolId },
       user?.id,
       (user?.role as Role) || null,
     );

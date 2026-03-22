@@ -157,7 +157,11 @@ export class PredictionHistoricalService {
   } | null> {
     // 构建 GPA 范围匹配
     const normalizedGpa = profileMetrics.gpa
-      ? normalizeGpa(profileMetrics.gpa, profileMetrics.gpaScale || 4)
+      ? normalizeGpa(
+          profileMetrics.gpa,
+          profileMetrics.gpaScale || 4,
+          profileMetrics.gpaSystem,
+        )
       : null;
 
     const cases = await this.fetchCasesWithFallback(schoolId, context);
@@ -327,5 +331,63 @@ export class PredictionHistoricalService {
     }
 
     return { data: cases, filterLevel: 'unfiltered' };
+  }
+
+  /**
+   * Detect whether a high school is a "feeder" school for a given university.
+   *
+   * A feeder relationship exists when the admit rate from this high school
+   * exceeds the university's overall acceptance rate by ≥ 1.5x, with at least
+   * 5 verified cases from that high school.
+   *
+   * @param highSchoolId - The high school identifier
+   * @param schoolId - The target university identifier
+   * @param overallAcceptanceRate - The university's published acceptance rate (0-100)
+   * @returns Feeder signal with stats, or null if insufficient data
+   */
+  async getFeederSignal(
+    highSchoolId: string,
+    schoolId: string,
+    overallAcceptanceRate?: number,
+  ): Promise<{
+    admitRate: number;
+    sampleCount: number;
+    admittedCount: number;
+    isFeeder: boolean;
+    confidence: number;
+  } | null> {
+    const MIN_FEEDER_CASES = 5;
+
+    const cases = await this.prisma.admissionCase.findMany({
+      where: {
+        schoolId,
+        highSchoolId,
+        isVerified: true,
+        ...CASE_REVIEW_APPROVED_WHERE,
+      },
+      select: { result: true },
+    });
+
+    if (cases.length < MIN_FEEDER_CASES) return null;
+
+    const admittedCount = cases.filter((c) => c.result === 'ADMITTED').length;
+    const admitRate = admittedCount / cases.length;
+
+    // Feeder: HS-specific admit rate > 1.5× overall rate (or > 30% if no rate available)
+    const threshold = overallAcceptanceRate
+      ? (overallAcceptanceRate / 100) * 1.5
+      : 0.3;
+    const isFeeder = admitRate > threshold;
+
+    // Confidence scales with sample size (saturates at 30 cases)
+    const confidence = Math.min(1, cases.length / 30);
+
+    return {
+      admitRate: Math.round(admitRate * 1000) / 1000, // 3 decimal places
+      sampleCount: cases.length,
+      admittedCount,
+      isFeeder,
+      confidence,
+    };
   }
 }

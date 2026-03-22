@@ -28,22 +28,12 @@ import { toast } from 'sonner';
 import { Loader2, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSchoolSearch } from '@/hooks/use-school-search';
+import { useHighSchoolSearch } from '@/hooks/use-high-school-search';
 
 const YEARS = Array.from({ length: 11 }, (_, i) => 2020 + i);
 const RESULTS = ['ADMITTED', 'REJECTED', 'WAITLISTED', 'DEFERRED'] as const;
 const ROUNDS = ['ED', 'ED2', 'EA', 'REA', 'RD', 'ROLLING'] as const;
 const VISIBILITIES = ['ANONYMOUS', 'PUBLIC', 'VERIFIED_ONLY'] as const;
-const HS_TYPES = [
-  'PUBLIC_US',
-  'PRIVATE_US',
-  'BOARDING_US',
-  'INTL_CN',
-  'PUBLIC_CN',
-  'PRIVATE_CN',
-  'INTL_OTHER',
-  'PUBLIC_OTHER',
-  'PRIVATE_OTHER',
-] as const;
 const CURRICULA = ['AP', 'IB', 'A_LEVEL', 'GAOKAO', 'CANADIAN', 'AUSTRALIAN', 'OTHER'] as const;
 const AID_OPTIONS = [
   'no_aid',
@@ -101,8 +91,11 @@ export function CreateCaseDialog({ open, onOpenChange }: Props) {
   const [apSubjects, setApSubjects] = useState('');
   const [ibScore, setIbScore] = useState('');
 
-  // Background
-  const [hsType, setHsType] = useState('');
+  // Background — high school search
+  const [hsQuery, setHsQuery] = useState('');
+  const [highSchoolId, setHighSchoolId] = useState('');
+  const [highSchoolName, setHighSchoolName] = useState('');
+  const [showHsDropdown, setShowHsDropdown] = useState(false);
   const [curriculum, setCurriculum] = useState('');
   const [demographics, setDemographics] = useState<Set<string>>(new Set());
 
@@ -126,6 +119,7 @@ export function CreateCaseDialog({ open, onOpenChange }: Props) {
   const [contextOpen, setContextOpen] = useState(false);
 
   const { data: schools } = useSchoolSearch(schoolQuery, open);
+  const { data: highSchools } = useHighSchoolSearch(hsQuery, open);
 
   const mutation = useMutation({
     mutationFn: (body: Record<string, unknown>) => apiClient.post('/cases', body),
@@ -154,7 +148,9 @@ export function CreateCaseDialog({ open, onOpenChange }: Props) {
     setApCount('');
     setApSubjects('');
     setIbScore('');
-    setHsType('');
+    setHsQuery('');
+    setHighSchoolId('');
+    setHighSchoolName('');
     setCurriculum('');
     setDemographics(new Set());
     setActivityList('');
@@ -221,7 +217,7 @@ export function CreateCaseDialog({ open, onOpenChange }: Props) {
             .filter(Boolean)
         : undefined,
       ibScore: ibScore ? parseInt(ibScore) : undefined,
-      highSchoolType: hsType || undefined,
+      highSchoolId: highSchoolId || undefined,
       curriculumType: curriculum || undefined,
       demographicTags: demographics.size > 0 ? [...demographics] : undefined,
       financialAid: financialAid || undefined,
@@ -453,37 +449,76 @@ export function CreateCaseDialog({ open, onOpenChange }: Props) {
               </button>
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-2 space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label>{t('hsType')}</Label>
-                  <Select value={hsType} onValueChange={setHsType}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="—" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {HS_TYPES.map((h) => (
-                        <SelectItem key={h} value={h}>
-                          {te(`hsType.${h}`)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label>{t('curriculum')}</Label>
-                  <Select value={curriculum} onValueChange={setCurriculum}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="—" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CURRICULA.map((c) => (
-                        <SelectItem key={c} value={c}>
-                          {te(`curriculum.${c}`)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              {/* High school search */}
+              <div className="space-y-1.5 relative">
+                <Label>{t('highSchool')}</Label>
+                <Input
+                  placeholder={t('highSchoolSearch')}
+                  value={highSchoolId ? highSchoolName : hsQuery}
+                  onChange={(e) => {
+                    setHsQuery(e.target.value);
+                    setHighSchoolId('');
+                    setHighSchoolName('');
+                    setShowHsDropdown(true);
+                  }}
+                  onFocus={() => setShowHsDropdown(true)}
+                />
+                {showHsDropdown && highSchools && highSchools.length > 0 && !highSchoolId && (
+                  <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border rounded-md shadow-md max-h-[200px] overflow-y-auto">
+                    {highSchools.map((hs) => (
+                      <button
+                        key={hs.id}
+                        type="button"
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors"
+                        onClick={() => {
+                          setHighSchoolId(hs.id);
+                          setHighSchoolName(locale === 'zh' && hs.nameZh ? hs.nameZh : hs.name);
+                          setShowHsDropdown(false);
+                        }}
+                      >
+                        <span className="font-medium">
+                          {locale === 'zh' && hs.nameZh ? hs.nameZh : hs.name}
+                        </span>
+                        {hs.tier && (
+                          <span className="text-muted-foreground ml-2 text-xs">T{hs.tier}</span>
+                        )}
+                        {(hs.city || hs.state) && (
+                          <span className="text-muted-foreground ml-1 text-xs">
+                            · {[hs.city, hs.state].filter(Boolean).join(', ')}
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {highSchoolId && (
+                  <button
+                    type="button"
+                    className="absolute right-2 top-[calc(50%+4px)] text-muted-foreground hover:text-foreground text-xs"
+                    onClick={() => {
+                      setHighSchoolId('');
+                      setHighSchoolName('');
+                      setHsQuery('');
+                    }}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <Label>{t('curriculum')}</Label>
+                <Select value={curriculum} onValueChange={setCurriculum}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="—" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CURRICULA.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {te(`curriculum.${c}`)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-1.5">
                 <Label>{t('financialAid')}</Label>

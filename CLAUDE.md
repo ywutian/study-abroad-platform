@@ -346,6 +346,23 @@ Also renders: `<Toaster>` (sonner), `<OfflineIndicator>`, `<FeedbackWidget>`.
 
 `next-intl` with `{en, zh}` locales. Messages in `apps/web/src/messages/{en,zh}.json`. Use `Link`/`useRouter` from `@/lib/i18n/navigation`.
 
+#### i18n Check System (5 Layers)
+
+| Layer | Script                       | Checks                           | Integration              |
+| ----- | ---------------------------- | -------------------------------- | ------------------------ |
+| 1     | `check-i18n.ts`              | Hardcoded Chinese in TSX         | pre-commit + CI          |
+| 2     | `check-missing-keys.ts`      | `t()` calls without matching key | pre-commit + CI          |
+| 3     | `check-translation-keys.ts`  | en/zh key consistency            | pre-commit + CI          |
+| 4     | `check-wrong-language.ts`    | Wrong language in locale files   | pre-commit + CI          |
+| 5     | `check-hardcoded-english.ts` | Hardcoded English (audit tool)   | manual / CI non-blocking |
+
+**Full i18n audit workflow**:
+
+1. `npx tsx scripts/check-hardcoded-english.ts --path <module>` — triage
+2. Follow `scripts/i18n-audit-skill.md` for AI-guided per-file review
+3. Add keys to `en.json` + `zh.json`, update components with `t()`
+4. `pnpm --filter web lint:i18n` — verify layers 1–4
+
 ### CSS Design System (`globals.css`)
 
 OKLCH color system with 50+ CSS custom properties per theme (light/dark). Three subsystems: Core (`--primary`, `--success`, etc.), Auth (`--auth-*`, 30 vars), Hero/Landing (`--hero-*`, `--stat-*`, `--cta-*`).

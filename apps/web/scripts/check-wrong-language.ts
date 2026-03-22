@@ -139,6 +139,13 @@ const EXEMPT_KEYS = new Set([
   'submitCase.ucUncappedGpaLabel',
   // 教育体系名称含跨语言注释
   'profile.demographics.educationSystems.GAOKAO',
+  // 高中管理：CLI 命令不翻译
+  'admin.highSchools.import.step1Command',
+  'admin.highSchools.import.step2Command',
+  'admin.highSchools.import.step3Command',
+  // 高中管理：rubric 参考学校名（专有名词）
+  'admin.highSchools.rubric.academicRigor.5.examples',
+  'admin.highSchools.rubric.resources.5.examples',
 ]);
 
 interface WrongLangIssue {

@@ -117,22 +117,34 @@ export const ACTIVITY_CATEGORY_KEYS: Record<string, string> = {
   OTHER: 'profile.activityCategories.other',
 };
 
-export const TIER_BADGE_CONFIG: Record<number, { label: string; className: string }> = {
+export const TIER_BADGE_CONFIG: Record<
+  number,
+  { label: string; labelZh: string; className: string }
+> = {
   1: {
-    label: 'T1',
+    label: 'T1 · Basic',
+    labelZh: 'T1 · 基础',
     className: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
   },
   2: {
-    label: 'T2',
+    label: 'T2 · Moderate',
+    labelZh: 'T2 · 一般',
     className: 'bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground',
   },
   3: {
-    label: 'T3',
+    label: 'T3 · Standard',
+    labelZh: 'T3 · 标准',
     className: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
   },
   4: {
-    label: 'T4',
-    className: 'bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground',
+    label: 'T4 · Competitive',
+    labelZh: 'T4 · 有竞争力',
+    className: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+  },
+  5: {
+    label: 'T5 · Top Feeder',
+    labelZh: 'T5 · 顶尖',
+    className: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400',
   },
 };
 

@@ -10,6 +10,8 @@ import { SchoolScraperScheduler } from './school-scraper.scheduler';
 import { DataSyncScheduler } from './data-sync.scheduler';
 import { HighSchoolService } from './high-school.service';
 import { HighSchoolController } from './high-school.controller';
+import { HsCalibrationScheduler } from './hs-calibration.scheduler';
+import { HighSchoolEventListener } from './high-school-event.listener';
 import { IpedsDataService } from './ipeds-data.service';
 import { UrbanInstituteDataService } from './urban-institute-data.service';
 import { BigFutureScrapeService } from './scrapers/bigfuture.scraper';
@@ -30,6 +32,8 @@ import { SchoolListModule } from '../school-list/school-list.module';
     SchoolScraperScheduler,
     DataSyncScheduler,
     HighSchoolService,
+    HsCalibrationScheduler,
+    HighSchoolEventListener,
     IpedsDataService,
     UrbanInstituteDataService,
     BigFutureScrapeService,

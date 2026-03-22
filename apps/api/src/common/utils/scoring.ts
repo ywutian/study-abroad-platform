@@ -30,6 +30,8 @@ export {
   calculateActivityScore,
   calculateAwardScore,
   calculateOverallScore,
+  calculateOverallScoreDetailed,
+  type OverallScoreResult,
   calculateScoreBreakdown,
   calculateProbability,
   calculateTier,

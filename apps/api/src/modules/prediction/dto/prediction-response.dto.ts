@@ -206,6 +206,15 @@ export class PredictionResultDto {
 
   @ApiPropertyOptional({ description: 'Cross-engine consistency (0-1)' })
   crossEngineConsistency?: number;
+
+  @ApiPropertyOptional({
+    description: 'High school data confidence assessment',
+  })
+  hsConfidence?: {
+    level: 'high' | 'medium' | 'low' | 'none';
+    dimensionsAvailable: number;
+    improvementTip?: string;
+  };
 }
 
 export class PredictionResponseDto {

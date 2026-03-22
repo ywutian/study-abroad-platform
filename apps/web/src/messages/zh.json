@@ -828,7 +828,19 @@
       "scale4": "4.0 制",
       "scale5": "5.0 制",
       "scale100": "100 分制",
+      "scale45": "45分制 (IB)",
+      "scale6": "6分制 (A-Level)",
       "scale": "满分 {max}"
+    },
+    "gpaSystem": {
+      "label": "GPA体系",
+      "placeholder": "选择GPA体系",
+      "SCALE_4_UW": "4.0制（未加权）",
+      "SCALE_4_W": "4.0+制（加权）",
+      "SCALE_5": "5.0制",
+      "PCT_100": "百分制",
+      "IB_45": "IB（45分制）",
+      "A_LEVEL": "A-Level"
     },
     "selector": {
       "searchPlaceholder": "搜索档案...",
@@ -921,12 +933,16 @@
       "typeToSearch": "输入关键字搜索高中",
       "searching": "搜索中...",
       "customHighSchool": "或手动输入学校名称",
+      "suggestSchool": "建议添加此学校",
+      "schoolSuggested": "学校建议已提交！我们会尽快审核。",
+      "schoolSuggestFailed": "提交建议失败，请重试。",
       "schoolType": "学校类型",
       "selectType": "选择学校类型",
       "degree": "学位",
       "degreePlaceholder": "请输入学位",
       "major": "专业",
       "majorPlaceholder": "请输入专业",
+      "gpaSystem": "GPA 制度",
       "gpaMax": "GPA 满分",
       "description": "描述",
       "descriptionPlaceholder": "请描述...",
@@ -1202,6 +1218,10 @@
       "improveChancesPrompt": "根据以下预测结果，我该如何提升录取概率？\n{results}",
       "recommendSchools": "推荐学校",
       "recommendSchoolsPrompt": "请根据我的背景推荐适合的学校"
+    },
+    "hint": {
+      "addHighSchool": "在个人资料中补充高中信息可提升预测准确度",
+      "goToProfile": "前往个人资料"
     }
   },
   "cases": {
@@ -1797,7 +1817,8 @@
     },
     "toast": {
       "success": "案例提交成功！文书将在审核通过后显示在文书库中。",
-      "requiredFields": "请填写必填字段"
+      "requiredFields": "请填写必填字段",
+      "inviteSchoolmates": "案例已分享！邀请你高中的同学也来分享，数据越多预测越准。"
     }
   },
   "ui": {
@@ -4694,8 +4715,9 @@
       "moderation": "内容审核",
       "payments": "支付管理",
       "analytics": "数据分析",
-      "calibrations": "学校校准",
+      "calibrations": "预测校准",
       "activityTemplates": "活动模板",
+      "highSchools": "高中管理",
       "dataReview": "数据审核",
       "settings": "系统设置",
       "verifications": "身份认证",
@@ -4963,15 +4985,47 @@
       }
     },
     "calibrations": {
-      "title": "学校校准",
-      "description": "按学校调整录取概率乘数",
+      "title": "预测校准",
+      "description": "监控预测准确度，按学校调整录取预测",
+      "tabs": {
+        "diagnosis": "预测诊断",
+        "schoolCalibrations": "学校校准",
+        "systemCalibration": "自动校准"
+      },
+      "stats": {
+        "calibratedSchools": "已校准学校",
+        "predictionsWithOutcomes": "有录取结果的预测",
+        "overallAccuracy": "整体准确度",
+        "schoolsNeedingAttention": "需要关注的学校"
+      },
+      "charts": {
+        "accuracyTitle": "各概率区间预测准确度",
+        "predicted": "预测中位数",
+        "actual": "实际录取率",
+        "count": "预测数"
+      },
+      "suggestions": {
+        "title": "需要校准的学校",
+        "description": "这些学校的预测与实际录取结果偏差较大",
+        "predictionCount": "预测数",
+        "avgPredicted": "平均预测",
+        "actualRate": "实际录取率",
+        "drift": "偏差",
+        "quickCalibrate": "一键校准",
+        "allAccurate": "所有学校的预测都很准确",
+        "tooHigh": "预测偏高",
+        "tooLow": "预测偏低"
+      },
       "create": "添加校准",
       "editTitle": "编辑校准",
       "school": "学校",
-      "multiplier": "乘数",
+      "adjustment": "调整幅度",
       "reason": "原因",
       "actions": "操作",
-      "multiplierHelper": "范围 0.5–2.0。大于 1.0 提升概率，小于 1.0 降低概率。",
+      "adjustmentHelper": "滑动调整：正值提升预测概率，负值降低预测概率。",
+      "preview": "效果预览",
+      "previewBefore": "原始预测",
+      "previewAfter": "调整后",
       "searchSchool": "搜索学校...",
       "save": "保存",
       "cancel": "取消",
@@ -4981,7 +5035,44 @@
       "deleted": "校准已删除",
       "confirmDelete": "删除校准",
       "confirmDeleteDesc": "确定要删除此校准吗？该学校的预测将恢复为默认值。",
-      "noCalibrations": "暂无校准配置"
+      "noCalibrations": "暂无校准配置",
+      "emptyState": {
+        "title": "还没有手动校准",
+        "description": "前往「预测诊断」标签查看哪些学校需要调整。"
+      },
+      "filter": {
+        "all": "全部",
+        "boosted": "调高的",
+        "reduced": "调低的"
+      },
+      "sort": {
+        "school": "学校名称",
+        "adjustment": "调整幅度",
+        "updatedAt": "最近修改"
+      },
+      "bulk": {
+        "import": "批量导入",
+        "importTitle": "批量导入校准",
+        "importDesc": "粘贴 JSON 数组。每项需要：schoolId、multiplier（0.5–2.0）、reason（可选）。",
+        "importSuccess": "导入完成：新增 {created} 个，更新 {updated} 个",
+        "importFailed": "{failed} 项失败"
+      },
+      "system": {
+        "title": "自动校准",
+        "description": "系统会根据已知的录取结果自动学习和修正预测偏差。收集足够的实际录取数据后，自动校准将自动启用。",
+        "status": "状态",
+        "enabled": "已启用",
+        "disabled": "未启用",
+        "insufficientData": "数据不足",
+        "insufficientDataDesc": "需要至少 {min} 条有实际录取结果的预测，目前有 {current} 条。",
+        "trainingData": "训练数据",
+        "progress": "已收集 {current} / {min} 条录取结果",
+        "curveTitle": "校准曲线",
+        "curveDesc": "展示自动校准如何调整预测概率。虚线表示不做调整。",
+        "retrain": "重新训练",
+        "retrainSuccess": "缓存已清除，下次预测时将重新训练。",
+        "autoUpdateNote": "参数每 24 小时自动更新。"
+      }
     },
     "calendar": {
       "description": "管理申请截止日期和全局事件"
@@ -5224,6 +5315,228 @@
       "decayDeleted": "删除数量",
       "decayErrors": "错误数量",
       "decayDuration": "耗时"
+    },
+    "highSchools": {
+      "title": "高中管理",
+      "description": "管理高中数据库、评估学校梯队、审核用户建议",
+      "tabs": {
+        "list": "学校列表",
+        "tiers": "梯队总览",
+        "suggestions": "用户建议",
+        "review": "待审核",
+        "import": "批量导入"
+      },
+      "filters": {
+        "searchPlaceholder": "按名称搜索...",
+        "country": "国家",
+        "state": "省/州",
+        "type": "类型",
+        "tier": "梯队",
+        "allCountries": "所有国家",
+        "allStates": "所有省/州",
+        "allTypes": "所有类型",
+        "allTiers": "所有梯队",
+        "tierN": "梯队 {n}",
+        "clear": "清除"
+      },
+      "tierLabels": {
+        "5": "顶尖",
+        "4": "强劲",
+        "3": "扎实",
+        "2": "发展中",
+        "1": "新兴"
+      },
+      "table": {
+        "name": "名称",
+        "chineseName": "中文名",
+        "country": "国家",
+        "type": "类型",
+        "tier": "梯队",
+        "recognition": "认可度",
+        "rigor": "严格度",
+        "evaluated": "评估时间",
+        "actions": "操作",
+        "lastEvaluated": "上次评估",
+        "schoolName": "学校名称",
+        "submittedBy": "提交人数",
+        "created": "创建时间"
+      },
+      "messages": {
+        "schoolUpdated": "学校信息已更新",
+        "loadingSchools": "加载学校中...",
+        "noSchoolsFound": "未找到学校",
+        "noSchoolsFiltered": "当前筛选条件下没有学校。",
+        "noSchoolsInTier": "该梯队暂无学校。",
+        "showingTruncated": "显示前 200 所，共 {total} 所。请缩小筛选范围查看更多。",
+        "schoolsFound": "找到 {count} 所学校",
+        "schoolsCount": "{count} 所学校 · {evaluated} 所已评估",
+        "unevaluated": "未评估",
+        "never": "从未",
+        "addSchool": "添加学校"
+      },
+      "suggestions": {
+        "pendingCount": "{count} 条待处理建议",
+        "noPending": "暂无待处理建议",
+        "approveSuccess": "建议已批准，学校已创建",
+        "rejectSuccess": "建议已拒绝",
+        "approveTitle": "批准建议",
+        "approveDescription": "批准 {name} 并添加到高中数据库。",
+        "schoolType": "学校类型",
+        "approve": "批准"
+      },
+      "review": {
+        "needsReEvaluation": "{count} 所学校需要重新评估",
+        "allUpToDate": "所有学校均已更新"
+      },
+      "import": {
+        "title": "批量导入高中",
+        "description": "从 JSON 文件导入高中。每条数据至少需要：<name>name</name>、<country>country</country>、<type>type</type>。可选包含评估维度（recognition、academicRigor 等）。",
+        "loadJsonFile": "加载 JSON 文件",
+        "schoolsParsed": "已解析 {count} 所学校",
+        "importButton": "导入 {count} 所学校",
+        "invalidJsonFormat": "JSON 格式无效",
+        "invalidJson": "JSON 无效",
+        "mustBeArray": "JSON 必须是数组或包含 \"schools\" 数组的对象",
+        "missingFields": "{count} 条数据缺少必填字段（name、country、type）",
+        "importComplete": "导入完成：新建 {created} 所，更新 {updated} 所",
+        "resultsTitle": "导入结果",
+        "created": "新建",
+        "updated": "更新",
+        "skipped": "跳过",
+        "errorsCount": "{count} 个错误",
+        "pipelineTitle": "导入流程说明",
+        "pipelineIntro": "三步导入流程：",
+        "step1Label": "抓取：",
+        "step1Command": "npx ts-node scripts/scrape-niche-high-schools.ts",
+        "step1Output": "输出：scripts/data/scraped-high-schools.json",
+        "step2Label": "导入：",
+        "step2Command": "npx ts-node scripts/import-high-schools.ts --apply",
+        "step2Alt": "或在上方粘贴 JSON 后点击导入",
+        "step3Label": "AI 评估：",
+        "step3Command": "npx ts-node scripts/ai-evaluate-high-schools.ts --apply",
+        "step3Output": "生成五维评估分数（标记为 ai-draft，需管理员审核）"
+      },
+      "dialog": {
+        "editTitle": "编辑高中",
+        "basicInfo": "基本信息",
+        "name": "名称",
+        "chineseName": "中文名",
+        "country": "国家",
+        "type": "类型",
+        "selectType": "选择类型",
+        "dimensions": "评估维度",
+        "computedTier": "计算梯队：",
+        "supplementary": "补充数据",
+        "avgSatScore": "平均 SAT 成绩",
+        "avgIbScore": "平均 IB 成绩",
+        "annualTop30Count": "每年 Top 30 录取人数",
+        "gradeInflation": "成绩膨胀",
+        "selectLevel": "选择等级",
+        "evaluationNotes": "评估备注",
+        "notesPlaceholder": "添加关于此学校评估的备注...",
+        "criteria": "标准：",
+        "reference": "参照："
+      },
+      "rubric": {
+        "recognition": {
+          "label": "认可度",
+          "labelFull": "招生官认可度",
+          "weight": "30%",
+          "5": {
+            "criteria": "Top 30 AO 普遍认识，有主动招生关系",
+            "examples": "Exeter, Andover, 北师大实验国际部, Eton"
+          },
+          "4": {
+            "criteria": "Top 30 AO 大部分认识，有稳定申请记录",
+            "examples": "Hotchkiss, 上海世外, Sevenoaks, 深国交"
+          },
+          "3": {
+            "criteria": "部分 AO 认识（取决于校友/历史申请）",
+            "examples": "南京外国语, Concord Academy, 成都七中"
+          },
+          "2": {
+            "criteria": "少数 AO 认识，主要靠 school profile",
+            "examples": "省级重点中学, 普通美国私立"
+          },
+          "1": {
+            "criteria": "AO 基本不认识，完全依赖标化",
+            "examples": "普通公立高中, 无国际项目的学校"
+          }
+        },
+        "academicRigor": {
+          "label": "学术严格度",
+          "labelFull": "学术严格度",
+          "weight": "25%",
+          "5": {
+            "criteria": "公认 grade deflation，课程极难 (IB avg <36, AP 15+门)",
+            "examples": "Exeter, SPS, UWC Atlantic"
+          },
+          "4": {
+            "criteria": "课程体系严格，评分标准高 (IB 36-38, 大量AP)",
+            "examples": "Deerfield, 上中国际部, Dulwich"
+          },
+          "3": { "criteria": "标准难度，评分公正", "examples": "普通 AP/IB 学校, 多数国际学校" },
+          "2": {
+            "criteria": "课程偏容易或评分偏松 (GPA 4.0 比例高)",
+            "examples": "部分私立走读, 课程设置有限的学校"
+          },
+          "1": {
+            "criteria": "明显 grade inflation (几乎所有人 >3.5)",
+            "examples": "评分极松的学校"
+          }
+        },
+        "placementRecord": {
+          "label": "升学表现",
+          "labelFull": "升学表现",
+          "weight": "25%",
+          "5": {
+            "criteria": "每年稳定 10+ 人进 Top 20",
+            "examples": "Exeter, Andover, 北师大实验, 深国交"
+          },
+          "4": {
+            "criteria": "每年 5-10 人进 Top 30",
+            "examples": "Taft, 上海平和, Harrow, 上海世外"
+          },
+          "3": {
+            "criteria": "每年 3-5 人进 Top 50",
+            "examples": "部分省重点国际部, Concord, 南外"
+          },
+          "2": { "criteria": "偶尔有人进 Top 50 (1-2人/年)", "examples": "普通国际学校, 普通美高" },
+          "1": { "criteria": "极少有 Top 100 录取", "examples": "普通公立高中" }
+        },
+        "studentQuality": {
+          "label": "生源质量",
+          "labelFull": "生源质量",
+          "weight": "10%",
+          "5": {
+            "criteria": "入学极其竞争 (录取率 <15%), 平均 SAT >1500",
+            "examples": "Exeter, Andover, 深国交"
+          },
+          "4": {
+            "criteria": "入学竞争 (录取率 15-30%), 平均 SAT 1400-1500",
+            "examples": "Deerfield, 上中国际部"
+          },
+          "3": { "criteria": "中等选拔, 平均 SAT 1300-1400", "examples": "多数知名国际学校" },
+          "2": { "criteria": "轻度选拔或无选拔, 标化一般", "examples": "普通私立学校" },
+          "1": { "criteria": "无入学门槛", "examples": "公立学区学校" }
+        },
+        "resources": {
+          "label": "资源与支持",
+          "labelFull": "资源与支持",
+          "weight": "10%",
+          "5": {
+            "criteria": "专业升学团队，counselor 与 AO 有直接关系，校友网络强",
+            "examples": "Exeter, Eton, BNDS"
+          },
+          "4": {
+            "criteria": "专职升学顾问，定期有大学来校招生",
+            "examples": "Hotchkiss, 上海世外, Sevenoaks"
+          },
+          "3": { "criteria": "有升学指导但非专业化", "examples": "多数国际学校, 省重点国际部" },
+          "2": { "criteria": "有限的升学支持", "examples": "小型私立, 新建校" },
+          "1": { "criteria": "无升学指导", "examples": "普通公立" }
+        }
+      }
     },
     "dataReview": {
       "title": "数据审核",
@@ -5504,7 +5817,9 @@
           "ibScore": "IB 总分",
           "apSubjects": "AP 科目（逗号分隔）",
           "background": "背景 / Background",
-          "hsType": "高中类型",
+          "highSchool": "高中",
+          "highSchoolSearch": "搜索高中名称...",
+          "highSchoolTier": "梯队 {tier}",
           "curriculum": "课程体系",
           "demographics": "申请人背景标签",
           "financialAid": "资助情况",

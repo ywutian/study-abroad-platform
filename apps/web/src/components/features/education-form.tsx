@@ -37,6 +37,15 @@ import { toast } from 'sonner';
 import { Loader2, Save, ChevronsUpDown, Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+const GPA_SYSTEM_OPTIONS = [
+  { value: 'SCALE_4_UW', label: '4.0 Scale (Unweighted)', gpaScale: '4.0' },
+  { value: 'SCALE_4_W', label: '4.0+ Scale (Weighted)', gpaScale: '4.0' },
+  { value: 'SCALE_5', label: '5.0 Scale', gpaScale: '5.0' },
+  { value: 'PCT_100', label: 'Percentage (100)', gpaScale: '100' },
+  { value: 'IB_45', label: 'IB (45 points)', gpaScale: '45' },
+  { value: 'A_LEVEL', label: 'A-Level', gpaScale: '6' },
+];
+
 const SCHOOL_TYPE_KEYS = [
   { value: 'HIGH_SCHOOL', labelKey: 'highSchool' },
   { value: 'COLLEGE', labelKey: 'college' },
@@ -122,6 +131,7 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
     endDate: '',
     gpa: '',
     gpaScale: '4.0',
+    gpaSystem: '' as string,
     description: '',
     highSchoolId: '' as string | undefined,
   });
@@ -143,6 +153,7 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
         endDate: education.endDate?.slice(0, 10) || '',
         gpa: education.gpa?.toString() || '',
         gpaScale: education.gpaScale?.toString() || '4.0',
+        gpaSystem: '',
         description: education.description || '',
         highSchoolId: education.highSchoolId || undefined,
       });
@@ -156,6 +167,7 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
         endDate: '',
         gpa: '',
         gpaScale: '4.0',
+        gpaSystem: '',
         description: '',
         highSchoolId: undefined,
       });
@@ -192,6 +204,7 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
       endDate: formData.endDate || undefined,
       gpa: formData.gpa ? parseFloat(formData.gpa) : undefined,
       gpaScale: formData.gpaScale ? parseFloat(formData.gpaScale) : undefined,
+      gpaSystem: formData.gpaSystem || undefined,
       description: formData.description || undefined,
     };
 
@@ -225,6 +238,15 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
       schoolType: value,
       // Clear highSchoolId when switching away from HIGH_SCHOOL
       highSchoolId: value === 'HIGH_SCHOOL' ? formData.highSchoolId : undefined,
+    });
+  };
+
+  const handleGpaSystemChange = (value: string) => {
+    const option = GPA_SYSTEM_OPTIONS.find((o) => o.value === value);
+    setFormData({
+      ...formData,
+      gpaSystem: value,
+      gpaScale: option?.gpaScale || formData.gpaScale,
     });
   };
 
@@ -300,11 +322,32 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
                       />
                       <CommandList>
                         <CommandEmpty>
-                          {loading
-                            ? t('form.searching')
-                            : search.length > 0
-                              ? t('form.noHighSchoolFound')
-                              : t('form.typeToSearch')}
+                          {loading ? (
+                            t('form.searching')
+                          ) : search.length > 0 ? (
+                            <div className="flex flex-col items-center gap-2 py-1">
+                              <span>{t('form.noHighSchoolFound')}</span>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={async () => {
+                                  try {
+                                    await apiClient.post('/high-schools/suggest', {
+                                      name: search,
+                                      country: formData.schoolCountry || 'Unknown',
+                                    });
+                                    toast.success(t('form.schoolSuggested'));
+                                  } catch {
+                                    toast.error(t('form.schoolSuggestFailed'));
+                                  }
+                                }}
+                              >
+                                {t('form.suggestSchool')}
+                              </Button>
+                            </div>
+                          ) : (
+                            t('form.typeToSearch')
+                          )}
                         </CommandEmpty>
                         {results.length > 0 && (
                           <CommandGroup>
@@ -405,7 +448,7 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-2">
               <Label>GPA</Label>
               <Input
@@ -415,6 +458,22 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
                 value={formData.gpa}
                 onChange={(e) => setFormData({ ...formData, gpa: e.target.value })}
               />
+            </div>
+            <div className="space-y-2">
+              {/* TODO: add i18n key for "GPA System" */}
+              <Label>{t('form.gpaSystem')}</Label>
+              <Select value={formData.gpaSystem} onValueChange={handleGpaSystemChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t('form.selectType')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {GPA_SYSTEM_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label>{t('form.gpaMax')}</Label>

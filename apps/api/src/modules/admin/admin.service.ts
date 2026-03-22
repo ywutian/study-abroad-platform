@@ -966,4 +966,68 @@ export class AdminService {
       },
     );
   }
+
+  async bulkCreateCalibrations(
+    adminId: string,
+    items: CreateSchoolCalibrationDto[],
+  ): Promise<{ created: number; updated: number; failed: number }> {
+    let created = 0;
+    let updated = 0;
+    let failed = 0;
+
+    await this.prisma.$transaction(async (tx) => {
+      for (const item of items) {
+        try {
+          const school = await tx.school.findUnique({
+            where: { id: item.schoolId },
+            select: { name: true },
+          });
+          if (!school) {
+            failed++;
+            continue;
+          }
+
+          const existing = await tx.schoolCalibration.findUnique({
+            where: { schoolId: item.schoolId },
+          });
+
+          await tx.schoolCalibration.upsert({
+            where: { schoolId: item.schoolId },
+            create: {
+              schoolId: item.schoolId,
+              multiplier: item.multiplier,
+              reason: item.reason,
+            },
+            update: {
+              multiplier: item.multiplier,
+              reason: item.reason,
+            },
+          });
+
+          if (existing) {
+            updated++;
+          } else {
+            created++;
+          }
+
+          await this.logAudit(
+            adminId,
+            existing ? 'UPDATE_CALIBRATION' : 'CREATE_CALIBRATION',
+            'schoolCalibration',
+            item.schoolId,
+            {
+              schoolName: school.name,
+              multiplier: item.multiplier,
+              reason: item.reason,
+              bulk: true,
+            },
+          );
+        } catch {
+          failed++;
+        }
+      }
+    });
+
+    return { created, updated, failed };
+  }
 }

@@ -69,6 +69,7 @@ interface CaseFilters {
   result?: string;
   search?: string;
   visibility?: Visibility;
+  highSchoolId?: string;
 }
 
 // 标准化统计数据类型
@@ -121,6 +122,10 @@ export class CaseService {
 
     if (filters.result) {
       where.result = filters.result as any;
+    }
+
+    if (filters.highSchoolId) {
+      where.highSchoolId = filters.highSchoolId;
     }
 
     if (filters.search) {
@@ -338,6 +343,7 @@ export class CaseService {
       apSubjects,
       ibScore,
       ibPredicted,
+      highSchoolId: _explicitHsId,
       highSchoolType,
       curriculumType,
       demographicTags,
@@ -393,6 +399,30 @@ export class CaseService {
       ? DataReviewStatus.AUTO_APPROVED
       : DataReviewStatus.PENDING_REVIEW;
 
+    // Use explicit highSchoolId if provided, otherwise auto-fill from profile
+    let resolvedHighSchoolId = data.highSchoolId as string | undefined;
+    if (!resolvedHighSchoolId) {
+      const profileHighSchoolEdu = await this.prisma.education.findFirst({
+        where: {
+          profile: { userId },
+          schoolType: 'HIGH_SCHOOL',
+          highSchoolId: { not: null },
+        },
+        select: { highSchoolId: true },
+      });
+      resolvedHighSchoolId = profileHighSchoolEdu?.highSchoolId || undefined;
+    }
+
+    // Auto-fill highSchoolType from HighSchool record if not provided
+    let resolvedHsType = highSchoolType;
+    if (!resolvedHsType && resolvedHighSchoolId) {
+      const hs = await this.prisma.highSchool.findUnique({
+        where: { id: resolvedHighSchoolId },
+        select: { type: true },
+      });
+      if (hs?.type) resolvedHsType = hs.type;
+    }
+
     const admissionCase = await this.prisma.admissionCase.create({
       data: {
         ...rest,
@@ -413,7 +443,8 @@ export class CaseService {
         ...(apSubjects?.length && { apSubjects }),
         ...(ibScore !== undefined && { ibScore }),
         ...(ibPredicted !== undefined && { ibPredicted }),
-        ...(highSchoolType && { highSchoolType: highSchoolType as any }),
+        ...(resolvedHsType && { highSchoolType: resolvedHsType as any }),
+        ...(resolvedHighSchoolId && { highSchoolId: resolvedHighSchoolId }),
         ...(curriculumType && { curriculumType: curriculumType as any }),
         ...(demographicTags?.length && { demographicTags }),
         ...(financialAid && { financialAid }),
@@ -602,7 +633,7 @@ export class CaseService {
           include: { competition: { select: { name: true, tier: true } } },
           orderBy: { order: 'asc' },
         },
-        education: true,
+        education: { include: { highSchool: true } },
       },
     });
 
@@ -656,9 +687,13 @@ export class CaseService {
       demographicTags.push('international');
     }
 
-    // Extract high school type from profile
+    // Extract high school type and highSchoolId from profile
     const highSchoolType = profile.currentSchoolType || undefined;
     const curriculumType = profile.educationSystem || undefined;
+    const highSchoolEdu = profile.education.find(
+      (e) => e.schoolType === 'HIGH_SCHOOL' && e.highSchoolId,
+    );
+    const highSchoolId = highSchoolEdu?.highSchoolId || undefined;
 
     // Financial aid
     const financialAid = profile.needsFinancialAid
@@ -682,6 +717,7 @@ export class CaseService {
               .filter(Boolean)
           : undefined,
       ibScore: ibScores.length > 0 ? ibScores[0].score : undefined,
+      highSchoolId,
       highSchoolType,
       curriculumType,
       demographicTags: demographicTags.length > 0 ? demographicTags : undefined,

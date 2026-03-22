@@ -3,10 +3,11 @@ import { ProfileInput, SchoolInput } from './prediction.prompts';
 import { PredictionFactor, PredictionComparison } from './dto';
 import {
   HistoricalDistribution,
-  calculateOverallScore,
+  calculateOverallScoreDetailed,
   calculateProbability,
   normalizeGpa,
 } from './utils/score-calculator';
+import type { HsConfidenceResult } from '@study-abroad/shared/scoring';
 import { PredictionTransformerService } from './prediction-transformer.service';
 
 /**
@@ -39,12 +40,21 @@ export class PredictionStatisticalEngine {
     probability: number;
     factors: PredictionFactor[];
     comparison: PredictionComparison;
+    hsConfidence?: {
+      level: 'high' | 'medium' | 'low' | 'none';
+      dimensionsAvailable: number;
+      improvementTip?: string;
+    };
   } {
     const isZh = locale === 'zh';
     const profileMetrics = this.transformer.extractProfileMetrics(profile);
     const schoolMetrics = this.transformer.extractSchoolMetrics(school);
 
-    const overallScore = calculateOverallScore(
+    const {
+      score: overallScore,
+      hsConfidence,
+      hsImpact,
+    } = calculateOverallScoreDetailed(
       profileMetrics,
       schoolMetrics,
       historicalDistribution,
@@ -66,6 +76,7 @@ export class PredictionStatisticalEngine {
       const normalizedGpa = normalizeGpa(
         profileMetrics.gpa,
         profileMetrics.gpaScale || 4,
+        profileMetrics.gpaSystem,
       );
       const isGood = normalizedGpa >= 3.7;
       factors.push({
@@ -280,13 +291,135 @@ export class PredictionStatisticalEngine {
       }
     }
 
+    // 高中背景 — 5-dimension evaluation summary with quantified impact
+    if (profileMetrics.highSchoolTier) {
+      const tier = profileMetrics.highSchoolTier;
+      const recognition = profileMetrics.highSchoolRecognition;
+      const rigor = profileMetrics.highSchoolAcademicRigor;
+      const placement = profileMetrics.highSchoolPlacementRecord;
+      const resources = profileMetrics.highSchoolResources;
+
+      // Quantify impact percentage for transparency
+      const impactPct = ((hsImpact - 1.0) * 100).toFixed(1);
+      const impactSign = hsImpact >= 1.0 ? '+' : '';
+
+      let detail: string;
+      if (recognition && rigor) {
+        const recDescZh: Record<number, string> = {
+          5: '在顶尖大学招生官中具有很高的认可度',
+          4: '在多数大学招生官中具有良好认可度',
+          3: '在部分大学招生官中有一定认可度',
+          2: '招生官认可度有限',
+          1: '招生官认可度较低',
+        };
+        const recDescEn: Record<number, string> = {
+          5: 'highly recognized by top university admissions officers',
+          4: 'well recognized by most admissions officers',
+          3: 'recognized by some admissions officers',
+          2: 'limited recognition among admissions officers',
+          1: 'minimal recognition among admissions officers',
+        };
+        const rigorDescZh: Record<number, string> = {
+          5: '学术要求极其严格，GPA含金量很高',
+          4: '学术要求严格，GPA含金量较高',
+          3: '学术要求适中',
+          2: '学术要求偏宽松',
+          1: '学术要求较低',
+        };
+        const rigorDescEn: Record<number, string> = {
+          5: 'extremely rigorous academics with highly credible GPA',
+          4: 'rigorous academics with credible GPA',
+          3: 'moderate academic rigor',
+          2: 'relatively lenient academics',
+          1: 'low academic rigor',
+        };
+
+        const parts: string[] = [];
+        if (isZh) {
+          parts.push(
+            `${recDescZh[recognition] ?? recDescZh[3]}，${rigorDescZh[rigor] ?? rigorDescZh[3]}`,
+          );
+          if (placement && placement >= 4) parts.push('升学表现突出');
+          if (resources && resources >= 4) parts.push('升学资源丰富');
+        } else {
+          parts.push(
+            `${recDescEn[recognition] ?? recDescEn[3]}, ${rigorDescEn[rigor] ?? rigorDescEn[3]}`,
+          );
+          if (placement && placement >= 4)
+            parts.push('strong college placement track record');
+          if (resources && resources >= 4)
+            parts.push('excellent counseling resources');
+        }
+
+        detail = isZh
+          ? `你的高中背景（Tier ${tier}/5）为本校预测提供了约${impactSign}${impactPct}%的调整。${parts.join('，')}`
+          : `Your school background (Tier ${tier}/5) provides approximately ${impactSign}${impactPct}% adjustment. ${parts.join('; ')}`;
+      } else {
+        const tierLabelZh: Record<number, string> = {
+          5: '顶尖',
+          4: '有竞争力',
+          3: '标准',
+          2: '一般',
+          1: '基础',
+        };
+        const tierLabelEn: Record<number, string> = {
+          5: 'Top Feeder',
+          4: 'Competitive',
+          3: 'Standard',
+          2: 'Moderate',
+          1: 'Basic',
+        };
+        detail = isZh
+          ? `你的高中背景（Tier ${tier} · ${tierLabelZh[tier] ?? '标准'}）为本校预测提供了约${impactSign}${impactPct}%的调整`
+          : `Your school background (Tier ${tier} · ${tierLabelEn[tier] ?? 'Standard'}) provides approximately ${impactSign}${impactPct}% adjustment`;
+      }
+
+      // Confidence-based improvement tip
+      let improvement: string | undefined;
+      if (hsConfidence.level === 'low' || hsConfidence.level === 'medium') {
+        improvement = isZh
+          ? `当前高中数据置信度为"${hsConfidence.level === 'low' ? '低' : '中'}"（${hsConfidence.dimensionsAvailable}/5维度），补充更多高中信息可提升预测准确度`
+          : `HS data confidence is "${hsConfidence.level}" (${hsConfidence.dimensionsAvailable}/5 dimensions). Adding more school details improves accuracy`;
+      }
+
+      // Weight reflects actual multiplier impact
+      const effectiveWeight = tier >= 4 ? 0.08 : tier <= 2 ? 0.06 : 0.05;
+
+      // Never mark tier 1-2 as "negative" — HS background is immutable,
+      // so negative labels cause anxiety without actionable recourse.
+      // Tier 4-5 → positive (earned advantage), all others → neutral.
+      factors.push({
+        name: isZh ? '高中背景' : 'High School Background',
+        impact: tier >= 4 ? 'positive' : 'neutral',
+        weight: effectiveWeight,
+        detail,
+        improvement,
+      });
+    } else {
+      factors.push({
+        name: isZh ? '高中背景' : 'High School Background',
+        impact: 'neutral',
+        weight: 0.05,
+        detail: isZh
+          ? '未提供高中信息，预测仅基于学术数据'
+          : 'No high school information provided — prediction based on academic metrics only',
+        improvement: isZh
+          ? '在个人资料中补充高中信息可提升预测准确度'
+          : 'Add your high school in your profile for more accurate predictions',
+      });
+    }
+
     // 对比数据
     const comparison: PredictionComparison = {
       gpaPercentile: profileMetrics.gpa
         ? Math.min(
             99,
             Math.round(
-              (normalizeGpa(profileMetrics.gpa, profileMetrics.gpaScale || 4) /
+              (normalizeGpa(
+                profileMetrics.gpa,
+                profileMetrics.gpaScale || 4,
+                profileMetrics.gpaSystem,
+              ) /
                 4) *
                 100,
             ),
@@ -309,6 +442,32 @@ export class PredictionStatisticalEngine {
             : 'weak',
     };
 
-    return { probability, factors, comparison };
+    // Build HS confidence response
+    const hsConfidenceResponse =
+      hsConfidence.level !== 'none'
+        ? {
+            level: hsConfidence.level,
+            dimensionsAvailable: hsConfidence.dimensionsAvailable,
+            improvementTip:
+              hsConfidence.level === 'low' || hsConfidence.level === 'medium'
+                ? isZh
+                  ? '补充高中信息可获得更准确的预测'
+                  : 'Add high school details for more accurate predictions'
+                : undefined,
+          }
+        : {
+            level: 'none' as const,
+            dimensionsAvailable: 0,
+            improvementTip: isZh
+              ? '添加高中信息可提升预测准确度'
+              : 'Add your high school for more accurate predictions',
+          };
+
+    return {
+      probability,
+      factors,
+      comparison,
+      hsConfidence: hsConfidenceResponse,
+    };
   }
 }

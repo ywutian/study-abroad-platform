@@ -28,4 +28,10 @@ export class CaseQueryDto extends PaginationDto {
   @IsString()
   @MaxLength(200)
   search?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  highSchoolId?: string;
 }

@@ -121,6 +121,12 @@ export function AdminSidebar() {
           label: t('sidebar.schools'),
           minRole: 'ADMIN',
         },
+        {
+          href: '/admin/high-schools',
+          icon: GraduationCap,
+          label: t('sidebar.highSchools'),
+          minRole: 'ADMIN',
+        },
         { href: '/admin/calendar', icon: Calendar, label: t('sidebar.calendar'), minRole: 'ADMIN' },
         {
           href: '/admin/calibrations',

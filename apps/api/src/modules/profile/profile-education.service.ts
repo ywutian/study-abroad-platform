@@ -53,6 +53,7 @@ export class ProfileEducationService {
         gpaScale: data.gpaScale ? new Prisma.Decimal(data.gpaScale) : null,
         description: data.description,
         highSchoolId: data.highSchoolId || null,
+        gpaSystem: data.gpaSystem || null,
       },
     });
 
@@ -104,6 +105,8 @@ export class ProfileEducationService {
           data.highSchoolId !== undefined
             ? data.highSchoolId || null
             : undefined,
+        gpaSystem:
+          data.gpaSystem !== undefined ? data.gpaSystem || null : undefined,
       },
     });
 

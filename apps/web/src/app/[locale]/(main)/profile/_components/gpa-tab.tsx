@@ -60,6 +60,8 @@ export function GpaTab({ formData, onFormDataChange }: GpaTabProps) {
                 <SelectItem value="4.0">{t('profile.gpaScales.scale4')}</SelectItem>
                 <SelectItem value="5.0">{t('profile.gpaScales.scale5')}</SelectItem>
                 <SelectItem value="100">{t('profile.gpaScales.scale100')}</SelectItem>
+                <SelectItem value="45">{t('profile.gpaScales.scale45')}</SelectItem>
+                <SelectItem value="6">{t('profile.gpaScales.scale6')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -77,9 +79,13 @@ export function GpaTab({ formData, onFormDataChange }: GpaTabProps) {
                     'profile.gpaScales.scale' +
                       (formData.gpaScale === '100'
                         ? '100'
-                        : formData.gpaScale === '5.0'
-                          ? '5'
-                          : '4')
+                        : formData.gpaScale === '45'
+                          ? '45'
+                          : formData.gpaScale === '6'
+                            ? '6'
+                            : formData.gpaScale === '5.0'
+                              ? '5'
+                              : '4')
                   )}
                 </p>
               </div>

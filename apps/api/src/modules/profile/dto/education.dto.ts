@@ -72,6 +72,15 @@ export class CreateEducationDto {
   @IsString()
   @MaxLength(200)
   highSchoolId?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'GPA system (SCALE_4_UW, SCALE_4_W, SCALE_5, PCT_100, IB_45, A_LEVEL)',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  gpaSystem?: string;
 }
 
 export class UpdateEducationDto {
@@ -136,4 +145,13 @@ export class UpdateEducationDto {
   @IsString()
   @MaxLength(200)
   highSchoolId?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'GPA system (SCALE_4_UW, SCALE_4_W, SCALE_5, PCT_100, IB_45, A_LEVEL)',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  gpaSystem?: string;
 }

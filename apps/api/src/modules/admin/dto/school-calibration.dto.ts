@@ -4,10 +4,14 @@ import {
   IsNotEmpty,
   IsNumber,
   IsOptional,
+  IsArray,
   MaxLength,
+  ArrayMaxSize,
   Min,
   Max,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateSchoolCalibrationDto {
   @ApiProperty({ description: 'School ID to calibrate' })
@@ -33,6 +37,18 @@ export class CreateSchoolCalibrationDto {
   @IsString()
   @MaxLength(1000)
   reason?: string;
+}
+
+export class BulkCreateCalibrationDto {
+  @ApiProperty({
+    description: 'Array of calibration items to create or update',
+    type: [CreateSchoolCalibrationDto],
+  })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateSchoolCalibrationDto)
+  @ArrayMaxSize(50)
+  items: CreateSchoolCalibrationDto[];
 }
 
 export class UpdateSchoolCalibrationDto {

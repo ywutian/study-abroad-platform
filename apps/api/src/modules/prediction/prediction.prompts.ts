@@ -5,13 +5,21 @@
 export interface ProfileInput {
   gpa?: number;
   gpaScale?: number;
+  gpaSystem?: string;
   grade?: string;
   currentSchoolType?: string;
   targetMajor?: string;
+  highSchoolId?: string;
   highSchoolName?: string;
   highSchoolTier?: number;
   highSchoolType?: string;
   highSchoolLocation?: string;
+  highSchoolRecognition?: number;
+  highSchoolAcademicRigor?: number;
+  highSchoolPlacementRecord?: number;
+  highSchoolStudentQuality?: number;
+  highSchoolResources?: number;
+  highSchoolGradeInflation?: string;
   isInternational?: boolean;
   nationality?: string;
   educationSystem?: string;
@@ -143,6 +151,66 @@ function formatActivities(
   return header + '\n' + lines.join('\n');
 }
 
+function formatHighSchoolContext(profile: ProfileInput, isZh: boolean): string {
+  if (!profile.highSchoolName) return '';
+
+  const lines: string[] = [];
+  const name = profile.highSchoolName;
+  const tier = profile.highSchoolTier;
+
+  if (profile.highSchoolRecognition) {
+    // Structured evaluation available — use detailed format
+    const r = profile.highSchoolRecognition;
+    const a = profile.highSchoolAcademicRigor;
+    const p = profile.highSchoolPlacementRecord;
+    const gi = profile.highSchoolGradeInflation;
+
+    const sq = profile.highSchoolStudentQuality;
+    const res = profile.highSchoolResources;
+
+    if (isZh) {
+      lines.push(
+        `- 高中: ${name} (Tier ${tier ?? '?'}/5, ${profile.highSchoolType || ''})`,
+      );
+      lines.push(
+        `  - 招生官认可度: ${r}/5${r >= 4 ? '（AO 普遍认识）' : r >= 3 ? '（部分 AO 认识）' : '（认知度较低）'}`,
+      );
+      if (a)
+        lines.push(
+          `  - 学术严格度: ${a}/5${gi === 'deflation' ? '（grade deflation）' : gi === 'inflation' ? '（grade inflation）' : ''}`,
+        );
+      if (p) lines.push(`  - 升学表现: ${p}/5`);
+      if (sq) lines.push(`  - 生源质量: ${sq}/5`);
+      if (res) lines.push(`  - 资源支持: ${res}/5`);
+    } else {
+      lines.push(
+        `- High School: ${name} (Tier ${tier ?? '?'}/5, ${profile.highSchoolType || ''})`,
+      );
+      lines.push(
+        `  - AO Recognition: ${r}/5${r >= 4 ? ' (widely known)' : r >= 3 ? ' (known to some AOs)' : ' (limited recognition)'}`,
+      );
+      if (a)
+        lines.push(
+          `  - Academic Rigor: ${a}/5${gi === 'deflation' ? ' (grade deflation)' : gi === 'inflation' ? ' (grade inflation)' : ''}`,
+        );
+      if (p) lines.push(`  - Placement Record: ${p}/5`);
+      if (sq) lines.push(`  - Student Quality: ${sq}/5`);
+      if (res) lines.push(`  - Resources & Support: ${res}/5`);
+    }
+  } else {
+    // Fallback — basic info only
+    if (isZh) {
+      lines.push(`- 高中: ${name}${tier ? ` (Tier ${tier})` : ' (未评估)'}`);
+    } else {
+      lines.push(
+        `- High School: ${name}${tier ? ` (Tier ${tier})` : ' (not evaluated)'}`,
+      );
+    }
+  }
+
+  return lines.join('\n');
+}
+
 /**
  * 构建预测 Prompt
  */
@@ -153,7 +221,7 @@ export function buildPredictionPrompt(
 ): string {
   const isZh = locale === 'zh';
   const gpaText = profile.gpa
-    ? `${profile.gpa}/${profile.gpaScale || 4.0}`
+    ? `${profile.gpa}/${profile.gpaScale || 4.0}${profile.gpaSystem ? ` (${profile.gpaSystem})` : ''}`
     : isZh
       ? '未提供'
       : 'Not provided';
@@ -168,7 +236,8 @@ export function buildPredictionPrompt(
 
 ## 学生档案
 - GPA: ${gpaText}
-- 年级: ${profile.grade || unknown}${profile.highSchoolName ? `\n- 高中背景: ${profile.highSchoolName}${profile.highSchoolTier ? ` (Tier ${profile.highSchoolTier}${profile.highSchoolType ? `, ${profile.highSchoolType}` : ''}${profile.highSchoolLocation ? `, ${profile.highSchoolLocation}` : ''})` : ' (用户自填)'}` : ''}
+- 年级: ${profile.grade || unknown}
+${formatHighSchoolContext(profile, true)}
 - 标化成绩: ${formatTestScores(profile.testScores, true)}
 - 目标专业: ${profile.targetMajor || '未确定'}${profile.majorCompetitiveness ? `（该校竞争度: ${profile.majorCompetitiveness.level}/5${profile.majorCompetitiveness.schoolEstimate ? `，预估专业录取率 ~${profile.majorCompetitiveness.schoolEstimate}%` : ''}）` : ''}
 - 活动经历: ${formatActivities(profile.activities, true)}
@@ -185,6 +254,11 @@ export function buildPredictionPrompt(
 1. 综合评估学生竞争力与学校录取标准的匹配度
 2. 考虑标化成绩、GPA、活动、奖项等多维度因素
 3. 给出具体、可操作的改进建议
+5. 分析学生档案时，基于高中评估维度自然融入高中背景：
+   - 高认可度学校（4-5/5）：GPA 可信度高，可作为重要参考依据
+   - 低认可度学校（1-2/5）：应更依赖标化成绩作为客观基准
+   - 学术严格度高且有 grade deflation 的学校：即使 GPA 不是最高也反映强学术能力
+   - 使用定性描述（"有竞争力的"、"优势明显"等）而非具体百分比加成
 4. **关键**: probability 必须基于该校的录取率和学生竞争力综合计算，不同学校应有明显差异
    - 录取率 < 10% 的顶尖学校（如 MIT、Stanford），即使学生优秀，probability 通常在 0.05-0.25 之间
    - 录取率 10%-30% 的选择性学校，probability 通常在 0.15-0.50 之间
@@ -231,7 +305,8 @@ export function buildPredictionPrompt(
 
 ## Student Profile
 - GPA: ${gpaText}
-- Grade: ${profile.grade || unknown}${profile.highSchoolName ? `\n- High School: ${profile.highSchoolName}${profile.highSchoolTier ? ` (Tier ${profile.highSchoolTier}${profile.highSchoolType ? `, ${profile.highSchoolType}` : ''}${profile.highSchoolLocation ? `, ${profile.highSchoolLocation}` : ''})` : ' (user-provided)'}` : ''}
+- Grade: ${profile.grade || unknown}
+${formatHighSchoolContext(profile, false)}
 - Test Scores: ${formatTestScores(profile.testScores, false)}
 - Target Major: ${profile.targetMajor || 'Undecided'}${profile.majorCompetitiveness ? ` (competitiveness at this school: ${profile.majorCompetitiveness.level}/5${profile.majorCompetitiveness.schoolEstimate ? `, estimated major acceptance ~${profile.majorCompetitiveness.schoolEstimate}%` : ''})` : ''}
 - Activities: ${formatActivities(profile.activities, false)}
@@ -248,6 +323,11 @@ export function buildPredictionPrompt(
 1. Evaluate the student's competitiveness against the school's admission standards
 2. Consider test scores, GPA, activities, and awards holistically
 3. Provide specific, actionable improvement suggestions
+5. When analyzing the student's profile, use the high school evaluation dimensions:
+   - High recognition (4-5/5): GPA is highly credible, treat as a strong reference
+   - Low recognition (1-2/5): Lean more on standardized test scores as objective benchmarks
+   - High academic rigor with grade deflation: Even a moderate GPA reflects strong academic ability
+   - Use qualitative language ("competitive", "strong", "advantageous") rather than specific percentage boosts
 4. **CRITICAL**: Probability must reflect the school's acceptance rate and student competitiveness. Different schools must show significant variation:
    - Top schools with <10% acceptance (e.g., MIT, Stanford): probability typically 0.05-0.25 even for strong students
    - Selective schools with 10%-30% acceptance: typically 0.15-0.50
@@ -299,7 +379,7 @@ export function buildBatchPredictionPrompt(
 ): string {
   const isZh = locale === 'zh';
   const gpaText = profile.gpa
-    ? `${profile.gpa}/${profile.gpaScale || 4.0}`
+    ? `${profile.gpa}/${profile.gpaScale || 4.0}${profile.gpaSystem ? ` (${profile.gpaSystem})` : ''}`
     : isZh
       ? '未提供'
       : 'N/A';
@@ -324,7 +404,8 @@ export function buildBatchPredictionPrompt(
     return `你是资深美国大学招生顾问。根据学生档案，快速评估多所学校的录取概率。请用中文回复。
 
 ## 学生档案
-- GPA: ${gpaText}${profile.highSchoolName ? `\n- 高中: ${profile.highSchoolName}${profile.highSchoolTier ? ` (Tier ${profile.highSchoolTier})` : ''}` : ''}
+- GPA: ${gpaText}
+${formatHighSchoolContext(profile, true)}
 - 标化: ${formatTestScores(profile.testScores, true)}
 - 活动: ${profile.activities?.length || 0}项
 - 奖项: ${profile.awards?.length || 0}项
@@ -349,8 +430,8 @@ ${schoolsList}
   return `You are an expert US college admissions consultant. Based on the student profile, quickly evaluate admission probability for multiple schools. Respond in English.
 
 ## Student Profile
-- GPA: ${gpaText}${profile.highSchoolName ? `\n- High School: ${profile.highSchoolName}${profile.highSchoolTier ? ` (Tier ${profile.highSchoolTier})` : ''}` : ''}
-- Test Scores: ${formatTestScores(profile.testScores, false)}
+- GPA: ${gpaText}
+${formatHighSchoolContext(profile, false)}- Test Scores: ${formatTestScores(profile.testScores, false)}
 - Activities: ${profile.activities?.length || 0}
 - Awards: ${profile.awards?.length || 0}
 

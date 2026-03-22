@@ -158,6 +158,9 @@ export function SubmitCaseDialog({
       onOpenChange(false);
       resetForm();
       toast.success(t('toast.success'));
+      setTimeout(() => {
+        toast(t('toast.inviteSchoolmates'), { duration: 5000 });
+      }, 1500);
       onSuccess?.();
     },
   });

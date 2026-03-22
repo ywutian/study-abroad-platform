@@ -820,6 +820,16 @@ export class PredictionService {
       school.id,
     );
 
+    // === Feeder 信号 ===
+    const feederSignal =
+      profileInput.highSchoolId && schoolInput.acceptanceRate
+        ? await this.historicalService.getFeederSignal(
+            profileInput.highSchoolId,
+            school.id,
+            schoolInput.acceptanceRate,
+          )
+        : null;
+
     // === 引擎 4: ML Model (Tier 2+) ===
     let mlResult: {
       probability: number;
@@ -1004,6 +1014,33 @@ export class PredictionService {
       };
     }
 
+    // Feeder signal → adjust probability + add factor
+    if (feederSignal?.isFeeder) {
+      // Feeder schools have a demonstrably higher admit rate for their students.
+      // Boost scales with confidence (sample count) and strength of feeder signal.
+      // admitRate / schoolRate ratio capped at 2x → max boost ~6%
+      const feederRatio = Math.min(
+        feederSignal.admitRate / (schoolInput.acceptanceRate! / 100),
+        2.0,
+      );
+      const confidenceFactor = Math.min(feederSignal.sampleCount / 20, 1.0);
+      const feederBoost = (feederRatio - 1) * 0.06 * confidenceFactor;
+      if (feederBoost > 0) {
+        fusedResult.probability = Math.min(
+          0.95,
+          fusedResult.probability + feederBoost,
+        );
+        fusedResult.probabilityLow = Math.min(
+          fusedResult.probability,
+          fusedResult.probabilityLow + feederBoost * 0.5,
+        );
+        fusedResult.probabilityHigh = Math.min(
+          0.99,
+          fusedResult.probabilityHigh + feederBoost,
+        );
+      }
+    }
+
     // 确定 tier
     const tier = calculateTier(fusedResult.probability, schoolMetrics);
 
@@ -1011,6 +1048,19 @@ export class PredictionService {
     const factors = aiResult?.factors?.length
       ? aiResult.factors
       : statsResult.factors;
+
+    // Feeder signal → 追加 factor
+    if (feederSignal?.isFeeder) {
+      const isZh = locale === 'zh';
+      factors.push({
+        name: isZh ? 'Feeder 学校优势' : 'Feeder School Advantage',
+        impact: 'positive' as const,
+        weight: 0.05,
+        detail: isZh
+          ? `你的高中历史上有 ${feederSignal.sampleCount} 人申请此校，录取率 ${Math.round(feederSignal.admitRate * 100)}%，高于学校整体录取率`
+          : `Your high school has ${feederSignal.sampleCount} historical applicants to this university with a ${Math.round(feederSignal.admitRate * 100)}% admit rate, above the school average`,
+      });
+    }
 
     // 合并建议
     const suggestions = this.generateSuggestions(

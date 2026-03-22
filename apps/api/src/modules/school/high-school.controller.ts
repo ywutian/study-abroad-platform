@@ -1,8 +1,39 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
+import { ThrottleSensitive } from '../../common/decorators/throttle.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import type { CurrentUserPayload } from '../../common/decorators/current-user.decorator';
 import { HighSchoolService } from './high-school.service';
 import { HighSchoolType } from '@prisma/client';
+import { IsString, IsNotEmpty, IsOptional, MaxLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
+class SuggestHighSchoolDto {
+  @ApiProperty({ maxLength: 200 })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(200)
+  name: string;
+
+  @ApiProperty({ maxLength: 100 })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  country: string;
+
+  @ApiPropertyOptional({ maxLength: 100 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  state?: string;
+
+  @ApiPropertyOptional({ maxLength: 100 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  city?: string;
+}
 
 @ApiTags('High Schools')
 @Controller('high-schools')
@@ -31,5 +62,15 @@ export class HighSchoolController {
       tier: tier ? parseInt(tier, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : 20,
     });
+  }
+
+  @Post('suggest')
+  @ThrottleSensitive()
+  @ApiOperation({ summary: 'Suggest a new high school to be added' })
+  async suggest(
+    @Body() dto: SuggestHighSchoolDto,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.highSchoolService.submitSuggestion(dto, user.id);
   }
 }

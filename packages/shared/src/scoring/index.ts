@@ -6,3 +6,6 @@ export * from './features';
 export * from './ml';
 export * from './international';
 export * from './major-lookup';
+export * from './tier';
+export * from './hs-quality';
+export * from './hs-confidence';
