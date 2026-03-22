@@ -51,8 +51,9 @@ export default function AdminOverviewPage() {
   });
 
   const permissions = myPerms?.permissions ?? [];
-  const hasAiConfig = permissions.includes('ai:config');
-  const hasAuditView = permissions.includes('audit:view');
+  const isSuperAdmin = myPerms?.role === 'SUPER_ADMIN';
+  const hasAiConfig = isSuperAdmin || permissions.includes('ai:config');
+  const hasAuditView = isSuperAdmin || permissions.includes('audit:view');
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['adminStats'],

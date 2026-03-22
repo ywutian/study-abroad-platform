@@ -82,6 +82,8 @@ function hasAccess(
   permissions: string[],
   item: { minRole?: AdminRole; requiredPermission?: string }
 ): boolean {
+  // SUPER_ADMIN sees everything
+  if (userRole === 'SUPER_ADMIN') return true;
   // Permission-based check takes priority
   if (item.requiredPermission) {
     return permissions.includes(item.requiredPermission);
