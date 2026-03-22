@@ -117,7 +117,7 @@ export function ReviewTab() {
                         size="icon"
                         className="h-8 w-8"
                         onClick={() => openEdit(school)}
-                        aria-label={`Edit ${school.name}`}
+                        aria-label={t('tierOverview.editAriaLabel', { name: school.name })}
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>

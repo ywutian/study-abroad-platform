@@ -347,6 +347,9 @@ model User {
   // Verification
   verificationRequests VerificationRequest[]
 
+  // Permissions (per-user overrides)
+  userPermissions UserPermission[]
+
   // Referral system
   referralCode    String?   @unique
   referredById    String?
@@ -1408,6 +1411,23 @@ model RolePermission {
 
   @@unique([role, permission])
   @@index([role])
+}
+
+// ============================================
+// User Permission (per-user overrides)
+// ============================================
+
+model UserPermission {
+  id         String   @id @default(cuid())
+  userId     String
+  permission String
+  granted    Boolean  @default(true)
+  grantedBy  String?
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, permission])
+  @@index([userId])
 }
 
 // ============================================

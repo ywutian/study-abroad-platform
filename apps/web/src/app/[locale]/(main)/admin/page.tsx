@@ -31,13 +31,28 @@ interface AdminStats {
 interface TrendData {
   date: string;
   newUsers: number;
-  payments: number;
-  revenue: number;
+  payments?: number;
+  revenue?: number;
   posts: number;
+}
+
+interface MyPermissionsResponse {
+  permissions: string[];
+  role: string;
 }
 
 export default function AdminOverviewPage() {
   const t = useTranslations('admin');
+
+  const { data: myPerms } = useQuery({
+    queryKey: ['adminMyPermissions'],
+    queryFn: () => apiClient.get<MyPermissionsResponse>('/admin/roles/my-permissions'),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const permissions = myPerms?.permissions ?? [];
+  const hasAiConfig = permissions.includes('ai:config');
+  const hasAuditView = permissions.includes('audit:view');
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['adminStats'],
@@ -57,6 +72,7 @@ export default function AdminOverviewPage() {
         components: Record<string, { status: string; details?: any }>;
       }>('/admin/ai-agent/health'),
     refetchInterval: 30000,
+    enabled: hasAiConfig,
   });
 
   const { data: recentActivity } = useQuery({
@@ -72,6 +88,7 @@ export default function AdminOverviewPage() {
           admin?: { displayName?: string };
         }>;
       }>('/admin/audit-logs', { params: { pageSize: '8' } }),
+    enabled: hasAuditView,
   });
 
   return (
@@ -87,16 +104,18 @@ export default function AdminOverviewPage() {
         </div>
       ) : stats ? (
         <div className="space-y-6 mt-6">
-          <AdminStatsCards stats={stats} />
+          <AdminStatsCards stats={stats} permissions={permissions} />
 
           {/* Trends */}
           {trends && trends.length > 0 && <AdminChartSection trends={trends} />}
 
-          {/* Health + Recent Activity */}
-          <div className="grid gap-4 lg:grid-cols-2">
-            <AdminHealthIndicator health={health} />
-            <AdminRecentActivity recentActivity={recentActivity} />
-          </div>
+          {/* Health + Recent Activity (permission-driven) */}
+          {(hasAiConfig || hasAuditView) && (
+            <div className="grid gap-4 lg:grid-cols-2">
+              {hasAiConfig && <AdminHealthIndicator health={health} />}
+              {hasAuditView && <AdminRecentActivity recentActivity={recentActivity} />}
+            </div>
+          )}
         </div>
       ) : null}
     </>

@@ -16,9 +16,10 @@ import {
   ApiOperation,
   ApiQuery,
 } from '@nestjs/swagger';
-import { Roles, CurrentUser } from '../../common/decorators';
+import { Roles, CurrentUser, RequirePermission } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { Role, PaymentStatus, Prisma } from '@prisma/client';
+import { Permission } from '../../common/constants/permissions';
 import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SubscriptionPlan } from '@study-abroad/shared';
@@ -31,11 +32,12 @@ import {
 @ApiBearerAuth()
 @ThrottleRelaxed()
 @Controller('admin/payments')
-@Roles(Role.ADMIN)
+@Roles(Role.OPERATOR)
 export class PaymentAdminController {
   constructor(private readonly prisma: PrismaService) {}
 
   @Get()
+  @RequirePermission(Permission.PAYMENT_VIEW)
   @ApiOperation({ summary: 'View all payment records' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
@@ -81,6 +83,7 @@ export class PaymentAdminController {
   }
 
   @Get('stats')
+  @RequirePermission(Permission.PAYMENT_VIEW)
   @ApiOperation({ summary: 'Payment statistics' })
   async getStats() {
     const now = new Date();
@@ -139,6 +142,7 @@ export class PaymentAdminController {
   }
 
   @Get(':id')
+  @RequirePermission(Permission.PAYMENT_VIEW)
   @ApiOperation({ summary: 'Payment details' })
   async getPayment(@Param('id') id: string) {
     const payment = await this.prisma.payment.findUnique({
@@ -152,6 +156,7 @@ export class PaymentAdminController {
   }
 
   @Post(':id/refund')
+  @RequirePermission(Permission.PAYMENT_MANAGE)
   @ApiOperation({ summary: 'Manual refund' })
   async refundPayment(@Param('id') id: string, @Body() dto: RefundPaymentDto) {
     const payment = await this.prisma.payment.findUnique({
@@ -202,6 +207,7 @@ export class PaymentAdminController {
   }
 
   @Put('users/:userId/subscription')
+  @RequirePermission(Permission.PAYMENT_MANAGE)
   @ApiOperation({ summary: 'Manually adjust user subscription tier' })
   async updateSubscription(
     @Param('userId') userId: string,

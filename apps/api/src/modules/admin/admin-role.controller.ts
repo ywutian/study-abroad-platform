@@ -3,6 +3,7 @@ import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { Roles, RequirePermission, CurrentUser } from '../../common/decorators';
 import { Permission } from '../../common/constants/permissions';
+import { PermissionGuard } from '../../common/guards/permission.guard';
 import { AdminRoleService } from './admin-role.service';
 import { AdminOperatorService } from './admin-operator.service';
 import {
@@ -11,6 +12,7 @@ import {
   UpdateUserRoleDto,
   SearchUserQueryDto,
   PromoteUserByEmailDto,
+  SetUserPermissionsDto,
 } from './dto';
 
 @ApiTags('Admin Roles')
@@ -21,7 +23,31 @@ export class AdminRoleController {
   constructor(
     private readonly roleService: AdminRoleService,
     private readonly operatorService: AdminOperatorService,
+    private readonly permissionGuard: PermissionGuard,
   ) {}
+
+  // ============================================
+  // Current user permissions (OPERATOR+ accessible)
+  // ============================================
+
+  @Get('my-permissions')
+  @Roles(Role.OPERATOR)
+  @ApiOperation({ summary: 'Get current user effective permissions' })
+  async getMyPermissions(@CurrentUser() user: { id: string; role: Role }) {
+    // SUPER_ADMIN has all permissions
+    if (user.role === Role.SUPER_ADMIN) {
+      return { permissions: Object.values(Permission), role: user.role };
+    }
+    const permissions = await this.permissionGuard.getEffectivePermissions(
+      user.id,
+      user.role,
+    );
+    return { permissions, role: user.role };
+  }
+
+  // ============================================
+  // Role-level permissions (ADMIN+ only)
+  // ============================================
 
   @Get('permissions')
   @ApiOperation({ summary: 'Get all role permissions' })
@@ -79,12 +105,14 @@ export class AdminRoleController {
 
   @Get('operators')
   @ApiOperation({ summary: 'List operators with stats' })
+  @RequirePermission(Permission.SYSTEM_ROLES)
   async getOperators() {
     return this.roleService.getOperators();
   }
 
   @Get('operators/:id/stats')
   @ApiOperation({ summary: 'Get operator work stats' })
+  @RequirePermission(Permission.SYSTEM_ROLES)
   async getOperatorStats(@Param('id') operatorId: string) {
     return this.operatorService.getOperatorStats(operatorId);
   }
@@ -104,5 +132,31 @@ export class AdminRoleController {
   @RequirePermission(Permission.SYSTEM_ROLES)
   async listInvites() {
     return this.operatorService.listInvites();
+  }
+
+  // ============================================
+  // User-level permission overrides
+  // ============================================
+
+  @Get('users/:id/permissions')
+  @ApiOperation({ summary: 'Get user permission overrides' })
+  @RequirePermission(Permission.SYSTEM_ROLES)
+  async getUserPermissions(@Param('id') userId: string) {
+    return this.roleService.getUserPermissions(userId);
+  }
+
+  @Put('users/:id/permissions')
+  @ApiOperation({ summary: 'Set user permission overrides (replaces all)' })
+  @RequirePermission(Permission.SYSTEM_ROLES)
+  async setUserPermissions(
+    @Param('id') userId: string,
+    @Body() dto: SetUserPermissionsDto,
+    @CurrentUser() user: { id: string },
+  ) {
+    return this.roleService.setUserPermissions(
+      userId,
+      dto.permissions,
+      user.id,
+    );
   }
 }

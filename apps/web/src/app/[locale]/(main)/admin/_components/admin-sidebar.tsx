@@ -53,13 +53,21 @@ interface AdminStats {
   pendingReview?: number;
 }
 
+interface MyPermissionsResponse {
+  permissions: string[];
+  role: string;
+}
+
 interface NavItem {
   href: string;
   icon: LucideIcon;
   label: string;
   exact?: boolean;
   badge?: number;
+  /** Legacy role check — used as fallback when no permission specified */
   minRole?: AdminRole;
+  /** Permission-based access: item shown if user has this permission */
+  requiredPermission?: string;
 }
 
 interface NavGroup {
@@ -69,9 +77,18 @@ interface NavGroup {
   minRole?: AdminRole;
 }
 
-function hasAccess(userRole: AdminRole, minRole?: AdminRole): boolean {
-  if (!minRole) return true;
-  return (ROLE_LEVEL[userRole] ?? -1) >= ROLE_LEVEL[minRole];
+function hasAccess(
+  userRole: AdminRole,
+  permissions: string[],
+  item: { minRole?: AdminRole; requiredPermission?: string }
+): boolean {
+  // Permission-based check takes priority
+  if (item.requiredPermission) {
+    return permissions.includes(item.requiredPermission);
+  }
+  // Fallback to role-based check
+  if (!item.minRole) return true;
+  return (ROLE_LEVEL[userRole] ?? -1) >= ROLE_LEVEL[item.minRole];
 }
 
 export function AdminSidebar() {
@@ -87,6 +104,14 @@ export function AdminSidebar() {
     refetchInterval: 60000,
   });
 
+  const { data: myPerms } = useQuery({
+    queryKey: ['adminMyPermissions'],
+    queryFn: () => apiClient.get<MyPermissionsResponse>('/admin/roles/my-permissions'),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const permissions = myPerms?.permissions ?? [];
+
   const navGroups: NavGroup[] = [
     {
       title: t('sidebar.groups.overview'),
@@ -95,14 +120,19 @@ export function AdminSidebar() {
     },
     {
       title: t('sidebar.groups.users'),
-      minRole: 'ADMIN',
       items: [
-        { href: '/admin/users', icon: Users, label: t('sidebar.users') },
+        {
+          href: '/admin/users',
+          icon: Users,
+          label: t('sidebar.users'),
+          requiredPermission: 'user:manage',
+        },
         {
           href: '/admin/verifications',
           icon: FileCheck,
           label: t('sidebar.verifications'),
           badge: stats?.pendingVerifications,
+          requiredPermission: 'verification:review',
         },
       ],
     },
@@ -114,57 +144,87 @@ export function AdminSidebar() {
           icon: ClipboardCheck,
           label: t('sidebar.dataReview'),
           badge: stats?.pendingReview,
+          requiredPermission: 'case:review',
         },
         {
           href: '/admin/schools',
           icon: GraduationCap,
           label: t('sidebar.schools'),
-          minRole: 'ADMIN',
+          requiredPermission: 'school:edit',
         },
         {
           href: '/admin/high-schools',
           icon: GraduationCap,
           label: t('sidebar.highSchools'),
-          minRole: 'ADMIN',
+          requiredPermission: 'highschool:manage',
         },
-        { href: '/admin/calendar', icon: Calendar, label: t('sidebar.calendar'), minRole: 'ADMIN' },
+        {
+          href: '/admin/calendar',
+          icon: Calendar,
+          label: t('sidebar.calendar'),
+          requiredPermission: 'calendar:manage',
+        },
         {
           href: '/admin/calibrations',
           icon: SlidersHorizontal,
           label: t('sidebar.calibrations'),
-          minRole: 'ADMIN',
+          requiredPermission: 'system:calibration',
         },
-        { href: '/admin/essays', icon: PenTool, label: t('sidebar.essays'), minRole: 'ADMIN' },
+        {
+          href: '/admin/essays',
+          icon: PenTool,
+          label: t('sidebar.essays'),
+          requiredPermission: 'essay:manage',
+        },
         {
           href: '/admin/activity-templates',
           icon: Layers,
           label: t('sidebar.activityTemplates'),
-          minRole: 'ADMIN',
+          requiredPermission: 'data:health',
         },
         { href: '/admin/points', icon: Coins, label: t('sidebar.points'), minRole: 'ADMIN' },
       ],
     },
     {
       title: t('sidebar.groups.management'),
-      minRole: 'ADMIN',
       items: [
-        { href: '/admin/team', icon: UsersRound, label: t('sidebar.team') },
+        { href: '/admin/team', icon: UsersRound, label: t('sidebar.team'), minRole: 'ADMIN' },
         {
           href: '/admin/moderation',
           icon: ShieldCheck,
           label: t('sidebar.moderation'),
           badge: stats?.pendingReports,
+          requiredPermission: 'content:moderate',
         },
-        { href: '/admin/payments', icon: CreditCard, label: t('sidebar.payments') },
-        { href: '/admin/audit-logs', icon: ScrollText, label: t('sidebar.auditLogs') },
+        {
+          href: '/admin/payments',
+          icon: CreditCard,
+          label: t('sidebar.payments'),
+          requiredPermission: 'payment:view',
+        },
+        {
+          href: '/admin/audit-logs',
+          icon: ScrollText,
+          label: t('sidebar.auditLogs'),
+          requiredPermission: 'audit:view',
+        },
       ],
     },
     {
       title: t('sidebar.groups.ai'),
-      minRole: 'ADMIN',
       items: [
-        { href: '/admin/ai-operations', icon: Bot, label: t('sidebar.aiOps') },
-        { href: '/admin/memory', icon: Brain, label: t('sidebar.memory') },
+        {
+          href: '/admin/ai-operations',
+          icon: Bot,
+          label: t('sidebar.aiOps'),
+          requiredPermission: 'ai:config',
+        },
+        {
+          href: '/admin/memory',
+          icon: Brain,
+          label: t('sidebar.memory'),
+          requiredPermission: 'ai:config',
+        },
       ],
     },
     {
@@ -174,12 +234,12 @@ export function AdminSidebar() {
     },
   ];
 
-  // Filter groups and items by role
+  // Filter groups and items by permissions (with role fallback)
   const filteredGroups = navGroups
-    .filter((group) => hasAccess(userRole, group.minRole))
+    .filter((group) => hasAccess(userRole, permissions, group))
     .map((group) => ({
       ...group,
-      items: group.items.filter((item) => hasAccess(userRole, item.minRole)),
+      items: group.items.filter((item) => hasAccess(userRole, permissions, item)),
     }))
     .filter((group) => group.items.length > 0);
 

@@ -5,8 +5,9 @@ import {
   ApiOperation,
   ApiQuery,
 } from '@nestjs/swagger';
-import { Roles } from '../../common/decorators';
+import { Roles, RequirePermission } from '../../common/decorators';
 import { Role } from '@prisma/client';
+import { Permission } from '../../common/constants/permissions';
 import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -14,7 +15,8 @@ import { PrismaService } from '../../prisma/prisma.service';
 @ApiBearerAuth()
 @ThrottleRelaxed()
 @Controller('admin/chats')
-@Roles(Role.ADMIN)
+@Roles(Role.OPERATOR)
+@RequirePermission(Permission.CONTENT_MODERATE)
 export class ChatAdminController {
   constructor(private readonly prisma: PrismaService) {}
 

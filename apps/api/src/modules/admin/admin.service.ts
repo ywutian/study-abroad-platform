@@ -412,7 +412,7 @@ export class AdminService {
     });
   }
 
-  async getStats() {
+  async getStats(userRole: Role = Role.ADMIN, hasFullDashboard = false) {
     const now = new Date();
     const todayStart = new Date(
       now.getFullYear(),
@@ -500,41 +500,43 @@ export class AdminService {
       }),
     ]);
 
+    const showFull =
+      hasFullDashboard ||
+      userRole === Role.ADMIN ||
+      userRole === Role.SUPER_ADMIN;
+
+    // Full dashboard shows all stats; limited shows basic metrics only
     return {
-      // Existing
       totalUsers,
       verifiedUsers,
       totalCases,
       pendingReports,
       totalReviews,
-      // Users
-      newUsersToday,
-      newUsersThisWeek,
-      activeUsersToday,
-      bannedUsers,
-      // Revenue
-      totalRevenue: totalRevenueResult._sum.amount || 0,
-      monthlyRevenue: monthlyRevenueResult._sum.amount || 0,
-      pendingPayments,
-      // Content
       totalForumPosts,
-      totalConversations,
-      totalMessages,
-      // Moderation
-      pendingVerifications,
-      // Subscription distribution
-      freeUsers,
-      proUsers,
-      premiumUsers: adminUsers, // ADMIN role maps to premium
-      // Data review
       pendingReview: pendingStagingCount + pendingCasesCount,
+      // Full dashboard fields
+      ...(showFull && {
+        newUsersToday,
+        newUsersThisWeek,
+        activeUsersToday,
+        bannedUsers,
+        totalRevenue: totalRevenueResult._sum.amount || 0,
+        monthlyRevenue: monthlyRevenueResult._sum.amount || 0,
+        pendingPayments,
+        totalConversations,
+        totalMessages,
+        pendingVerifications,
+        freeUsers,
+        proUsers,
+        premiumUsers: adminUsers,
+      }),
     };
   }
 
   /**
    * Get 30-day trends for key metrics
    */
-  async getTrends() {
+  async getTrends(userRole: Role = Role.ADMIN, hasFullDashboard = false) {
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
@@ -594,6 +596,20 @@ export class AdminService {
     for (const p of posts) {
       const key = p.createdAt.toISOString().split('T')[0];
       if (days[key]) days[key].posts++;
+    }
+
+    const showFull =
+      hasFullDashboard ||
+      userRole === Role.ADMIN ||
+      userRole === Role.SUPER_ADMIN;
+
+    // Limited dashboard: exclude revenue/payment data
+    if (!showFull) {
+      return Object.values(days).map(({ date, newUsers, posts }) => ({
+        date,
+        newUsers,
+        posts,
+      }));
     }
 
     return Object.values(days);

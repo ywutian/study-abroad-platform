@@ -9,6 +9,7 @@ import { AdminReviewService } from './admin-review.service';
 import { AdminReviewController } from './admin-review.controller';
 import { AdminDataPipelineController } from './admin-data-pipeline.controller';
 import { AdminHighSchoolController } from './admin-high-school.controller';
+import { PermissionGuard } from '../../common/guards/permission.guard';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { RedisModule } from '../../common/redis/redis.module';
 import { NotificationModule } from '../notification/notification.module';
@@ -36,6 +37,7 @@ import { PredictionModule } from '../prediction/prediction.module';
     AdminRoleService,
     AdminOperatorService,
     AdminReviewService,
+    PermissionGuard,
   ],
   exports: [AdminService, AdminReviewService],
 })

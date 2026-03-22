@@ -11,3 +11,4 @@ export * from './school-calibration.dto';
 export * from './role-permission.dto';
 export * from './review.dto';
 export * from './high-school.dto';
+export * from './user-permission.dto';

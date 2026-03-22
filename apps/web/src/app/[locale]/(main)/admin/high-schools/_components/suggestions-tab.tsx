@@ -139,7 +139,7 @@ export function SuggestionsTab() {
                             setSelectedType('private');
                           }}
                           disabled={approveMutation.isPending}
-                          aria-label={`Approve ${suggestion.name}`}
+                          aria-label={t('suggestions.approveAriaLabel', { name: suggestion.name })}
                         >
                           <Check className="h-4 w-4" />
                         </Button>
@@ -149,7 +149,7 @@ export function SuggestionsTab() {
                           className="h-8 w-8 text-destructive hover:text-destructive"
                           onClick={() => rejectMutation.mutate(suggestion.id)}
                           disabled={rejectMutation.isPending}
-                          aria-label={`Reject ${suggestion.name}`}
+                          aria-label={t('suggestions.rejectAriaLabel', { name: suggestion.name })}
                         >
                           <X className="h-4 w-4" />
                         </Button>
@@ -182,9 +182,9 @@ export function SuggestionsTab() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {SCHOOL_TYPES.map((t) => (
-                    <SelectItem key={t} value={t}>
-                      {t.charAt(0).toUpperCase() + t.slice(1)}
+                  {SCHOOL_TYPES.map((st) => (
+                    <SelectItem key={st} value={st}>
+                      {t(`schoolTypes.${st}` as any)}
                     </SelectItem>
                   ))}
                 </SelectContent>

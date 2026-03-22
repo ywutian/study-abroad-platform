@@ -15,9 +15,10 @@ import {
   BatchVerifyCaseDto,
 } from './dto/batch-import-case.dto';
 import { AdminReviewService } from '../admin/admin-review.service';
-import { Roles, CurrentUser } from '../../common/decorators';
+import { Roles, CurrentUser, RequirePermission } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { Role } from '@prisma/client';
+import { Permission } from '../../common/constants/permissions';
 import {
   ThrottleRelaxed,
   ThrottleSensitive,
@@ -27,7 +28,8 @@ import {
 @ApiBearerAuth()
 @ThrottleRelaxed()
 @Controller('admin/cases')
-@Roles(Role.ADMIN)
+@Roles(Role.OPERATOR)
+@RequirePermission(Permission.CASE_REVIEW)
 export class CaseAdminController {
   constructor(
     private readonly caseService: CaseService,

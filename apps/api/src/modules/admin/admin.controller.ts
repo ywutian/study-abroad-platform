@@ -19,6 +19,7 @@ import { AdminService } from './admin.service';
 import { Roles, RequirePermission, CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { Permission } from '../../common/constants/permissions';
+import { PermissionGuard } from '../../common/guards/permission.guard';
 import { Role, GlobalEventCategory } from '@prisma/client';
 import {
   ThrottleRelaxed,
@@ -58,7 +59,7 @@ import type { Response } from 'express';
 @ApiBearerAuth()
 @ThrottleRelaxed()
 @Controller('admin')
-@Roles(Role.ADMIN)
+@Roles(Role.OPERATOR)
 export class AdminController {
   constructor(
     private readonly adminService: AdminService,
@@ -68,23 +69,35 @@ export class AdminController {
     private readonly predictionService: PredictionService,
     private readonly calibrationService: PredictionCalibrationService,
     private readonly reportingService: PredictionReportingService,
+    private readonly permissionGuard: PermissionGuard,
   ) {}
 
-  // Stats
+  // Stats (all OPERATOR+ can access; service filters data by effective permissions)
   @Get('stats')
-  @ApiOperation({ summary: 'Get statistics (enhanced)' })
-  async getStats() {
-    return this.adminService.getStats();
+  @ApiOperation({ summary: 'Get statistics (permission-filtered)' })
+  async getStats(@CurrentUser() user: CurrentUserPayload) {
+    const perms = await this.permissionGuard.getEffectivePermissions(
+      user.id,
+      user.role as Role,
+    );
+    const hasFullDashboard = perms.includes(Permission.DASHBOARD_FULL);
+    return this.adminService.getStats(user.role as Role, hasFullDashboard);
   }
 
   @Get('stats/trends')
-  @ApiOperation({ summary: 'Get 30-day trend data' })
-  async getTrends() {
-    return this.adminService.getTrends();
+  @ApiOperation({ summary: 'Get 30-day trend data (permission-filtered)' })
+  async getTrends(@CurrentUser() user: CurrentUserPayload) {
+    const perms = await this.permissionGuard.getEffectivePermissions(
+      user.id,
+      user.role as Role,
+    );
+    const hasFullDashboard = perms.includes(Permission.DASHBOARD_FULL);
+    return this.adminService.getTrends(user.role as Role, hasFullDashboard);
   }
 
   // Reports
   @Get('reports')
+  @RequirePermission(Permission.CONTENT_MODERATE)
   @ApiOperation({ summary: 'Get report list' })
   async getReports(@Query() query: ReportQueryDto) {
     const { status, targetType, page = 1, pageSize = 20 } = query;
@@ -92,6 +105,7 @@ export class AdminController {
   }
 
   @Put('reports/:id')
+  @RequirePermission(Permission.CONTENT_MODERATE)
   @ApiOperation({ summary: 'Update report status' })
   async updateReport(
     @CurrentUser() admin: CurrentUserPayload,
@@ -119,6 +133,7 @@ export class AdminController {
 
   // Users
   @Get('users')
+  @RequirePermission(Permission.USER_VIEW)
   @ApiOperation({ summary: 'Get user list' })
   async getUsers(@Query() query: UserQueryDto) {
     const { search, role, page = 1, pageSize = 20 } = query;
@@ -126,6 +141,7 @@ export class AdminController {
   }
 
   @Get('users/:id')
+  @RequirePermission(Permission.USER_VIEW)
   @ApiOperation({ summary: 'Get user details' })
   async getUser(@Param('id') id: string) {
     return this.prisma.user.findUniqueOrThrow({
@@ -193,6 +209,7 @@ export class AdminController {
 
   // Audit Logs
   @Get('audit-logs')
+  @RequirePermission(Permission.AUDIT_VIEW)
   @ApiOperation({ summary: 'Get audit logs' })
   @ApiQuery({
     name: 'page',
@@ -241,6 +258,7 @@ export class AdminController {
   // ============ Data Sync (admin update mechanism) ============
 
   @Get('data-sync/jobs')
+  @RequirePermission(Permission.DATA_SYNC)
   @ApiOperation({ summary: 'List data-sync jobs with last run status' })
   async getDataSyncJobs() {
     return this.adminDataSyncService.getDataSyncJobs();
@@ -263,6 +281,7 @@ export class AdminController {
   // ============ School Deadlines ============
 
   @Get('school-deadlines')
+  @RequirePermission(Permission.CALENDAR_MANAGE)
   @ApiOperation({ summary: 'Get school deadline list' })
   async getSchoolDeadlines(
     @Query('schoolId') schoolId?: string,
@@ -279,12 +298,14 @@ export class AdminController {
   }
 
   @Post('school-deadlines')
+  @RequirePermission(Permission.CALENDAR_MANAGE)
   @ApiOperation({ summary: 'Create school deadline' })
   async createSchoolDeadline(@Body() dto: CreateSchoolDeadlineDto) {
     return this.adminService.createSchoolDeadline(dto);
   }
 
   @Put('school-deadlines/:id')
+  @RequirePermission(Permission.CALENDAR_MANAGE)
   @ApiOperation({ summary: 'Update school deadline' })
   async updateSchoolDeadline(
     @Param('id') id: string,
@@ -294,6 +315,7 @@ export class AdminController {
   }
 
   @Delete('school-deadlines/:id')
+  @RequirePermission(Permission.CALENDAR_MANAGE)
   @ApiOperation({ summary: 'Delete school deadline' })
   async deleteSchoolDeadline(@Param('id') id: string) {
     await this.adminService.deleteSchoolDeadline(id);
@@ -303,6 +325,7 @@ export class AdminController {
   // ============ Global Events ============
 
   @Get('global-events')
+  @RequirePermission(Permission.CALENDAR_MANAGE)
   @ApiOperation({ summary: 'Get global event list' })
   async getGlobalEvents(
     @Query('category') category?: GlobalEventCategory,
@@ -319,12 +342,14 @@ export class AdminController {
   }
 
   @Post('global-events')
+  @RequirePermission(Permission.CALENDAR_MANAGE)
   @ApiOperation({ summary: 'Create global event' })
   async createGlobalEvent(@Body() dto: CreateGlobalEventDto) {
     return this.adminService.createGlobalEvent(dto);
   }
 
   @Put('global-events/:id')
+  @RequirePermission(Permission.CALENDAR_MANAGE)
   @ApiOperation({ summary: 'Update global event' })
   async updateGlobalEvent(
     @Param('id') id: string,
@@ -334,6 +359,7 @@ export class AdminController {
   }
 
   @Delete('global-events/:id')
+  @RequirePermission(Permission.CALENDAR_MANAGE)
   @ApiOperation({ summary: 'Delete global event' })
   async deleteGlobalEvent(@Param('id') id: string) {
     await this.adminService.deleteGlobalEvent(id);
@@ -499,6 +525,7 @@ export class AdminController {
   // ============================================
 
   @Get('users/:id/profile')
+  @RequirePermission(Permission.USER_VIEW)
   @ApiOperation({
     summary: 'Get full user profile with activities, awards, education',
   })
@@ -529,6 +556,7 @@ export class AdminController {
   // ============================================
 
   @Get('stats/activities')
+  @RequirePermission(Permission.DATA_HEALTH)
   @ApiOperation({ summary: 'Get activity statistics across all students' })
   async getActivityStats() {
     const [totalActivities, categoryDist, avgPerStudent, tierDist] =
@@ -577,6 +605,7 @@ export class AdminController {
   @ApiOperation({
     summary: 'List activity templates with pagination and filters',
   })
+  @RequirePermission(Permission.DATA_HEALTH)
   async listActivityTemplates(@Query() query: ActivityTemplateQueryDto) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
@@ -607,12 +636,14 @@ export class AdminController {
 
   @Get('activity-templates/:id')
   @ApiOperation({ summary: 'Get single activity template' })
+  @RequirePermission(Permission.DATA_HEALTH)
   async getActivityTemplate(@Param('id') id: string) {
     return this.prisma.activityTemplate.findUniqueOrThrow({ where: { id } });
   }
 
   @Post('activity-templates')
   @ApiOperation({ summary: 'Create activity template' })
+  @RequirePermission(Permission.DATA_HEALTH)
   async createActivityTemplate(@Body() dto: CreateActivityTemplateDto) {
     return this.prisma.activityTemplate.create({
       data: {
@@ -628,6 +659,7 @@ export class AdminController {
 
   @Put('activity-templates/:id')
   @ApiOperation({ summary: 'Update activity template' })
+  @RequirePermission(Permission.DATA_HEALTH)
   async updateActivityTemplate(
     @Param('id') id: string,
     @Body() dto: UpdateActivityTemplateDto,
@@ -640,6 +672,7 @@ export class AdminController {
 
   @Delete('activity-templates/:id')
   @ApiOperation({ summary: 'Soft-delete activity template' })
+  @RequirePermission(Permission.DATA_HEALTH)
   async deleteActivityTemplate(@Param('id') id: string) {
     return this.prisma.activityTemplate.update({
       where: { id },
@@ -653,6 +686,7 @@ export class AdminController {
 
   @Get('competitions')
   @ApiOperation({ summary: 'List all competitions with tier info' })
+  @RequirePermission(Permission.DATA_HEALTH)
   async listCompetitions(@Query('page') page = 1, @Query('limit') limit = 50) {
     const [items, total] = await Promise.all([
       this.prisma.competition.findMany({
@@ -672,12 +706,14 @@ export class AdminController {
 
   @Get('calibrations')
   @ApiOperation({ summary: 'List all school calibrations' })
+  @RequirePermission(Permission.SYSTEM_CALIBRATION)
   async getCalibrations() {
     return this.adminService.getCalibrations();
   }
 
   @Get('calibrations/stats')
   @ApiOperation({ summary: 'Get calibration statistics and accuracy data' })
+  @RequirePermission(Permission.SYSTEM_CALIBRATION)
   async getCalibrationStats() {
     const [stats, accuracy] = await Promise.all([
       this.calibrationService.getCalibrationStats(),
@@ -690,12 +726,14 @@ export class AdminController {
   @ApiOperation({
     summary: 'Get schools needing calibration based on prediction drift',
   })
+  @RequirePermission(Permission.SYSTEM_CALIBRATION)
   async getCalibrationSuggestions() {
     return this.calibrationService.getSchoolsNeedingCalibration();
   }
 
   @Get('calibrations/platt-status')
   @ApiOperation({ summary: 'Get auto-calibration (Platt scaling) status' })
+  @RequirePermission(Permission.SYSTEM_CALIBRATION)
   async getPlattStatus() {
     return this.calibrationService.getPlattStatus();
   }

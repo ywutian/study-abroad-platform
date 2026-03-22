@@ -7,11 +7,13 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { PredictionService } from '../prediction/prediction.service';
 import { PredictionCalibrationService } from '../prediction/prediction-calibration.service';
 import { PredictionReportingService } from '../prediction/prediction-reporting.service';
+import { PermissionGuard } from '../../common/guards/permission.guard';
 import { Role, GlobalEventCategory } from '@prisma/client';
 
 describe('AdminController', () => {
   let controller: AdminController;
   let adminService: jest.Mocked<AdminService>;
+  let permissionGuard: jest.Mocked<PermissionGuard>;
 
   const mockAdmin = {
     id: 'admin-1',
@@ -68,6 +70,14 @@ describe('AdminController', () => {
           },
         },
         {
+          provide: PermissionGuard,
+          useValue: {
+            getEffectivePermissions: jest
+              .fn()
+              .mockResolvedValue(['dashboard:full', 'case:review']),
+          },
+        },
+        {
           provide: AdminService,
           useValue: {
             getStats: jest.fn().mockResolvedValue({ users: 100, reports: 5 }),
@@ -111,6 +121,7 @@ describe('AdminController', () => {
 
     controller = module.get<AdminController>(AdminController);
     adminService = module.get(AdminService);
+    permissionGuard = module.get(PermissionGuard);
   });
 
   afterEach(() => {
@@ -120,19 +131,39 @@ describe('AdminController', () => {
   // ========== Stats ==========
 
   describe('getStats', () => {
-    it('should return stats from adminService', async () => {
-      const result = await controller.getStats();
+    it('should return stats with permission-based filtering', async () => {
+      const mockUser = {
+        id: '1',
+        email: 'admin@test.com',
+        role: 'ADMIN',
+        locale: 'en',
+      } as any;
+      const result = await controller.getStats(mockUser);
 
-      expect(adminService.getStats).toHaveBeenCalled();
+      expect(permissionGuard.getEffectivePermissions).toHaveBeenCalledWith(
+        '1',
+        'ADMIN',
+      );
+      expect(adminService.getStats).toHaveBeenCalledWith('ADMIN', true);
       expect(result).toEqual({ users: 100, reports: 5 });
     });
   });
 
   describe('getTrends', () => {
-    it('should return trends from adminService', async () => {
-      const result = await controller.getTrends();
+    it('should return trends with permission-based filtering', async () => {
+      const mockUser = {
+        id: '1',
+        email: 'admin@test.com',
+        role: 'ADMIN',
+        locale: 'en',
+      } as any;
+      const result = await controller.getTrends(mockUser);
 
-      expect(adminService.getTrends).toHaveBeenCalled();
+      expect(permissionGuard.getEffectivePermissions).toHaveBeenCalledWith(
+        '1',
+        'ADMIN',
+      );
+      expect(adminService.getTrends).toHaveBeenCalledWith('ADMIN', true);
       expect(result).toEqual([{ date: '2025-01-01', count: 10 }]);
     });
   });

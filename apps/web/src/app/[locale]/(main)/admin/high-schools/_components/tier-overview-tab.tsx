@@ -156,7 +156,7 @@ export function TierOverviewTab() {
             <SelectItem value="all">{t('filters.allCountries')}</SelectItem>
             {COUNTRIES.map((c) => (
               <SelectItem key={c} value={c}>
-                {c}
+                {t(`countries.${c}` as any)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -186,7 +186,7 @@ export function TierOverviewTab() {
             <SelectItem value="all">{t('filters.allTypes')}</SelectItem>
             {TYPES.map((tp) => (
               <SelectItem key={tp} value={tp}>
-                {tp}
+                {t(`schoolTypes.${tp}` as any)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -272,10 +272,14 @@ function TierSection({
         <CollapsibleTrigger asChild>
           <button
             className="flex w-full items-center justify-between text-left"
-            aria-label={`Tier ${tier} ${tierLabel}, ${schools.length} schools`}
+            aria-label={t('tierOverview.tierAriaLabel', {
+              tier,
+              label: tierLabel,
+              count: schools.length,
+            })}
           >
             <h3 className="text-base font-semibold">
-              Tier {tier} — {tierLabel} {style.stars}
+              {t('tierOverview.tierLabel', { tier, label: tierLabel, stars: style.stars })}
             </h3>
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground">
@@ -319,7 +323,7 @@ function SchoolCard({
       className="group relative cursor-pointer transition-shadow hover:shadow-md hover:border-primary/50"
       role="button"
       tabIndex={0}
-      aria-label={`Tier ${school.tier} school: ${school.name}`}
+      aria-label={t('tierOverview.schoolAriaLabel', { tier: school.tier ?? 0, name: school.name })}
       onClick={() => onEdit(school)}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -367,7 +371,7 @@ function SchoolCard({
             e.stopPropagation();
             onEdit(school);
           }}
-          aria-label={`Edit ${school.name}`}
+          aria-label={t('tierOverview.editAriaLabel', { name: school.name })}
         >
           <Pencil className="h-3 w-3" />
         </Button>

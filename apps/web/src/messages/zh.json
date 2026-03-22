@@ -5382,7 +5382,9 @@
         "approveTitle": "批准建议",
         "approveDescription": "批准 {name} 并添加到高中数据库。",
         "schoolType": "学校类型",
-        "approve": "批准"
+        "approve": "批准",
+        "approveAriaLabel": "批准 {name}",
+        "rejectAriaLabel": "拒绝 {name}"
       },
       "review": {
         "needsReEvaluation": "{count} 所学校需要重新评估",
@@ -5435,7 +5437,41 @@
         "evaluationNotes": "评估备注",
         "notesPlaceholder": "添加关于此学校评估的备注...",
         "criteria": "标准：",
-        "reference": "参照："
+        "reference": "参照：",
+        "egPrefix": "例如",
+        "helpFor": "{label} 帮助"
+      },
+      "schoolTypes": {
+        "PUBLIC_US": "美国公立",
+        "PRIVATE_US": "美国私立",
+        "BOARDING_US": "美国寄宿",
+        "INTL_CN": "中国国际",
+        "PUBLIC_CN": "中国公立",
+        "PRIVATE_CN": "中国私立",
+        "INTL_OTHER": "其他国际",
+        "PUBLIC_OTHER": "其他公立",
+        "PRIVATE_OTHER": "其他私立"
+      },
+      "gradeInflationOptions": {
+        "deflation": "成绩紧缩",
+        "neutral": "中性",
+        "inflation": "成绩膨胀"
+      },
+      "countries": {
+        "US": "美国",
+        "CN": "中国",
+        "UK": "英国",
+        "CA": "加拿大",
+        "AU": "澳大利亚",
+        "SG": "新加坡",
+        "HK": "香港",
+        "OTHER": "其他"
+      },
+      "tierOverview": {
+        "tierLabel": "梯队 {tier} — {label} {stars}",
+        "tierAriaLabel": "梯队 {tier} {label}，{count} 所学校",
+        "schoolAriaLabel": "梯队 {tier} 学校：{name}",
+        "editAriaLabel": "编辑 {name}"
       },
       "rubric": {
         "recognition": {
@@ -6344,7 +6380,12 @@
           "system": "系统",
           "ai": "AI",
           "audit": "审计",
-          "notifications": "通知"
+          "notifications": "通知",
+          "highschool": "高中",
+          "calendar": "校历",
+          "verification": "认证",
+          "payment": "支付",
+          "dashboard": "仪表盘"
         },
         "desc": {
           "case_create": "手动创建新录取案例",
@@ -6366,8 +6407,23 @@
           "system_calibration": "创建和编辑学校校准",
           "ai_config": "配置 AI 智能体行为",
           "audit_view": "查看审计日志",
-          "notification_broadcast": "发送广播通知"
-        }
+          "notification_broadcast": "发送广播通知",
+          "payment_view": "查看支付记录",
+          "payment_manage": "管理支付和退款",
+          "verification_review": "审核身份认证",
+          "calendar_manage": "管理校历和截止日期",
+          "highschool_manage": "管理高中数据",
+          "dashboard_full": "查看完整仪表盘（含收入数据）"
+        },
+        "userOverrides": "用户权限覆盖",
+        "userOverridesDesc": "为个别用户覆盖角色默认权限。适用于限制实习生权限或授予额外访问权限。",
+        "selectUser": "选择用户...",
+        "applyPreset": "应用预设...",
+        "clearOverrides": "恢复默认",
+        "override": "覆盖",
+        "granted": "已授权",
+        "denied": "已拒绝",
+        "inherit": "继承"
       },
       "activity": {
         "time": "时间",

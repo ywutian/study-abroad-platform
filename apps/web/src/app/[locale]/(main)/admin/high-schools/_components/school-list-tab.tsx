@@ -140,7 +140,7 @@ export function SchoolListTab() {
             <SelectItem value="all">{t('filters.allCountries')}</SelectItem>
             {COUNTRIES.map((c) => (
               <SelectItem key={c} value={c}>
-                {c}
+                {t(`countries.${c}` as any)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -157,9 +157,9 @@ export function SchoolListTab() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t('filters.allTypes')}</SelectItem>
-            {TYPES.map((t) => (
-              <SelectItem key={t} value={t}>
-                {t.charAt(0).toUpperCase() + t.slice(1)}
+            {TYPES.map((tp) => (
+              <SelectItem key={tp} value={tp}>
+                {t(`schoolTypes.${tp}` as any)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -269,7 +269,7 @@ export function SchoolListTab() {
                         size="icon"
                         className="h-8 w-8"
                         onClick={() => openEdit(school)}
-                        aria-label={`Edit ${school.name}`}
+                        aria-label={t('tierOverview.editAriaLabel', { name: school.name })}
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>

@@ -167,6 +167,9 @@ export class AdminRoleService {
       select: { id: true, email: true, role: true },
     });
 
+    // Invalidate permission cache — role changed, so cached permissions are stale
+    await this.redis.del(`user_perms:${userId}`);
+
     await this.auditLog.log({
       userId: callerId,
       action: AuditAction.ROLE_CHANGE,
@@ -184,6 +187,90 @@ export class AdminRoleService {
       `User ${user.email} role changed: ${oldRole} → ${newRole} by ${callerId}`,
     );
     return updated;
+  }
+
+  // ============================================
+  // User-level Permission Overrides
+  // ============================================
+
+  /**
+   * Get a user's individual permission overrides
+   */
+  async getUserPermissions(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, role: true },
+    });
+    if (!user) throw new NotFoundException('User not found');
+
+    const overrides = await this.prisma.userPermission.findMany({
+      where: { userId },
+      select: {
+        permission: true,
+        granted: true,
+        grantedBy: true,
+        updatedAt: true,
+      },
+      orderBy: { permission: 'asc' },
+    });
+
+    return { user, overrides };
+  }
+
+  /**
+   * Set user-level permission overrides (replaces all existing overrides).
+   * Empty array clears all overrides → user falls back to role defaults.
+   */
+  async setUserPermissions(
+    userId: string,
+    permissions: { permission: string; granted: boolean }[],
+    grantedBy: string,
+  ) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, role: true },
+    });
+    if (!user) throw new NotFoundException('User not found');
+
+    // Replace all overrides in a transaction
+    await this.prisma.$transaction(async (tx) => {
+      // Delete existing overrides
+      await tx.userPermission.deleteMany({ where: { userId } });
+
+      // Create new overrides (skip empty array → clears all)
+      if (permissions.length > 0) {
+        await tx.userPermission.createMany({
+          data: permissions.map((p) => ({
+            userId,
+            permission: p.permission,
+            granted: p.granted,
+            grantedBy,
+          })),
+        });
+      }
+    });
+
+    // Invalidate user permission cache
+    await this.redis.del(`user_perms:${userId}`);
+
+    await this.auditLog.log({
+      userId: grantedBy,
+      action: AuditAction.PERMISSION_UPDATE,
+      resource: 'user_permission',
+      resourceId: userId,
+      metadata: {
+        targetUserEmail: user.email,
+        targetUserRole: user.role,
+        overridesCount: permissions.length,
+        permissions: permissions.map((p) => `${p.permission}:${p.granted}`),
+      },
+    });
+
+    this.logger.log(
+      `Set ${permissions.length} permission overrides for user ${user.email} by ${grantedBy}`,
+    );
+
+    return { userId, overridesCount: permissions.length };
   }
 
   /**

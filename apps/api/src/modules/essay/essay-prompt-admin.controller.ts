@@ -18,16 +18,18 @@ import {
   BatchVerifyDto,
   BatchImportEssayPromptDto,
 } from './dto';
-import { Roles, CurrentUser } from '../../common/decorators';
+import { Roles, CurrentUser, RequirePermission } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { Role } from '@prisma/client';
+import { Permission } from '../../common/constants/permissions';
 import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 
 @ApiTags('admin/essay-prompts')
 @ApiBearerAuth()
 @ThrottleRelaxed()
 @Controller('admin/essay-prompts')
-@Roles(Role.ADMIN)
+@Roles(Role.OPERATOR)
+@RequirePermission(Permission.ESSAY_MANAGE)
 export class EssayPromptAdminController {
   constructor(private readonly essayPromptService: EssayPromptService) {}
 

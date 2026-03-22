@@ -5,7 +5,8 @@ import {
   ApiOperation,
   ApiResponse,
 } from '@nestjs/swagger';
-import { Roles } from '../../common/decorators';
+import { Roles, RequirePermission } from '../../common/decorators';
+import { Permission } from '../../common/constants/permissions';
 import { Role } from '@prisma/client';
 import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 import { PointsConfigService, PointAction } from './points-config.service';
@@ -20,6 +21,7 @@ import {
 @ThrottleRelaxed()
 @Controller('admin/points')
 @Roles(Role.ADMIN)
+@RequirePermission(Permission.SYSTEM_SETTINGS)
 export class PointsAdminController {
   constructor(private readonly pointsConfigService: PointsConfigService) {}
 

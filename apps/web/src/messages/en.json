@@ -5387,7 +5387,9 @@
         "approveTitle": "Approve Suggestion",
         "approveDescription": "Approve {name} and add it to the high school database.",
         "schoolType": "School Type",
-        "approve": "Approve"
+        "approve": "Approve",
+        "approveAriaLabel": "Approve {name}",
+        "rejectAriaLabel": "Reject {name}"
       },
       "review": {
         "needsReEvaluation": "{count} school(s) need re-evaluation",
@@ -5440,7 +5442,41 @@
         "evaluationNotes": "Evaluation Notes",
         "notesPlaceholder": "Add notes about this school's evaluation...",
         "criteria": "Criteria:",
-        "reference": "Reference:"
+        "reference": "Reference:",
+        "egPrefix": "e.g.",
+        "helpFor": "Help for {label}"
+      },
+      "schoolTypes": {
+        "PUBLIC_US": "US Public",
+        "PRIVATE_US": "US Private",
+        "BOARDING_US": "US Boarding",
+        "INTL_CN": "China International",
+        "PUBLIC_CN": "China Public",
+        "PRIVATE_CN": "China Private",
+        "INTL_OTHER": "Other International",
+        "PUBLIC_OTHER": "Other Public",
+        "PRIVATE_OTHER": "Other Private"
+      },
+      "gradeInflationOptions": {
+        "deflation": "Deflation",
+        "neutral": "Neutral",
+        "inflation": "Inflation"
+      },
+      "countries": {
+        "US": "United States",
+        "CN": "China",
+        "UK": "United Kingdom",
+        "CA": "Canada",
+        "AU": "Australia",
+        "SG": "Singapore",
+        "HK": "Hong Kong",
+        "OTHER": "Other"
+      },
+      "tierOverview": {
+        "tierLabel": "Tier {tier} — {label} {stars}",
+        "tierAriaLabel": "Tier {tier} {label}, {count} schools",
+        "schoolAriaLabel": "Tier {tier} school: {name}",
+        "editAriaLabel": "Edit {name}"
       },
       "rubric": {
         "recognition": {
@@ -6367,7 +6403,12 @@
           "system": "System",
           "ai": "AI",
           "audit": "Audit",
-          "notifications": "Notifications"
+          "notifications": "Notifications",
+          "highschool": "High School",
+          "calendar": "Calendar",
+          "verification": "Verification",
+          "payment": "Payment",
+          "dashboard": "Dashboard"
         },
         "desc": {
           "case_create": "Create new admission cases manually",
@@ -6389,8 +6430,23 @@
           "system_calibration": "Create and edit school calibrations",
           "ai_config": "Configure AI agent behavior",
           "audit_view": "View audit logs",
-          "notification_broadcast": "Send broadcast notifications"
-        }
+          "notification_broadcast": "Send broadcast notifications",
+          "payment_view": "View payment records",
+          "payment_manage": "Manage payments and refunds",
+          "verification_review": "Review identity verifications",
+          "calendar_manage": "Manage calendar and deadlines",
+          "highschool_manage": "Manage high school data",
+          "dashboard_full": "Access full dashboard with revenue data"
+        },
+        "userOverrides": "User Permission Overrides",
+        "userOverridesDesc": "Override role defaults for individual users. Useful for restricting interns or granting extra access.",
+        "selectUser": "Select a user...",
+        "applyPreset": "Apply preset...",
+        "clearOverrides": "Reset to defaults",
+        "override": "Override",
+        "granted": "Granted",
+        "denied": "Denied",
+        "inherit": "Inherit"
       },
       "activity": {
         "time": "Time",

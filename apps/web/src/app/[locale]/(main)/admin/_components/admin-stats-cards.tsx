@@ -18,7 +18,6 @@ import {
   PenTool,
   Globe,
   Bot,
-  Coins,
   ShieldCheck,
   CreditCard,
 } from 'lucide-react';
@@ -35,9 +34,12 @@ interface AdminStats {
 
 interface AdminStatsCardsProps {
   stats: AdminStats;
+  /** @deprecated Use permissions instead */
+  isAdmin?: boolean;
+  permissions?: string[];
 }
 
-export function AdminStatsCards({ stats }: AdminStatsCardsProps) {
+export function AdminStatsCards({ stats, isAdmin = true, permissions = [] }: AdminStatsCardsProps) {
   const t = useTranslations('admin');
 
   const statCards = [
@@ -93,6 +95,88 @@ export function AdminStatsCards({ stats }: AdminStatsCardsProps) {
         ]
       : []),
   ];
+
+  const has = (perm: string) => permissions.includes(perm);
+
+  const allQuickActions = [
+    // Urgent: pending reports
+    stats.pendingReports > 0 &&
+      has('content:moderate') && {
+        href: '/admin/moderation?tab=reports',
+        icon: AlertTriangle,
+        iconBg: 'bg-amber-500/10',
+        iconColor: 'text-amber-500',
+        title: `${stats.pendingReports} ${t('overview.pendingReports')}`,
+        desc: t('overview.needsAttention'),
+        urgent: true,
+      },
+    has('school:edit') && {
+      href: '/admin/schools',
+      icon: Database,
+      iconBg: 'bg-emerald-500/10',
+      iconColor: 'text-emerald-500',
+      title: t('overview.dataManagement'),
+      desc: t('overview.schoolsDataDesc'),
+    },
+    has('calendar:manage') && {
+      href: '/admin/calendar',
+      icon: Calendar,
+      iconBg: 'bg-blue-500/10',
+      iconColor: 'text-blue-500',
+      title: t('sidebar.deadlines'),
+      desc: t('overview.deadlinesDesc'),
+    },
+    has('essay:manage') && {
+      href: '/admin/essays',
+      icon: PenTool,
+      iconBg: 'bg-pink-500/10',
+      iconColor: 'text-pink-500',
+      title: t('sidebar.essays'),
+      desc: t('overview.essayDesc'),
+    },
+    has('calendar:manage') && {
+      href: '/admin/calendar?tab=events',
+      icon: Globe,
+      iconBg: 'bg-violet-500/10',
+      iconColor: 'text-violet-500',
+      title: t('sidebar.events'),
+      desc: t('overview.eventsDesc'),
+    },
+    has('ai:config') && {
+      href: '/admin/ai-operations',
+      icon: Bot,
+      iconBg: 'bg-cyan-500/10',
+      iconColor: 'text-cyan-500',
+      title: t('sidebar.aiAgent'),
+      desc: t('overview.aiAgentDesc'),
+    },
+    has('content:moderate') && {
+      href: '/admin/moderation',
+      icon: ShieldCheck,
+      iconBg: 'bg-teal-500/10',
+      iconColor: 'text-teal-500',
+      title: t('sidebar.content'),
+      desc: t('contentMod.description'),
+    },
+    has('payment:view') && {
+      href: '/admin/payments',
+      icon: CreditCard,
+      iconBg: 'bg-indigo-500/10',
+      iconColor: 'text-indigo-500',
+      title: t('sidebar.payments'),
+      desc: t('payments.description'),
+    },
+  ];
+
+  const quickActions = allQuickActions.filter(Boolean) as Array<{
+    href: string;
+    icon: typeof AlertTriangle;
+    iconBg: string;
+    iconColor: string;
+    title: string;
+    desc: string;
+    urgent?: boolean;
+  }>;
 
   return (
     <>
@@ -158,201 +242,51 @@ export function AdminStatsCards({ stats }: AdminStatsCardsProps) {
         })}
       </div>
 
-      {/* Quick actions */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {stats.pendingReports > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            <Card className="border-amber-500/30 bg-amber-500/5">
-              <CardContent className="flex items-center gap-4 p-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10">
-                  <AlertTriangle className="h-6 w-6 text-amber-500" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-semibold text-amber-700 dark:text-amber-400">
-                    {stats.pendingReports} {t('overview.pendingReports')}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{t('overview.needsAttention')}</p>
-                </div>
-                <Button size="sm" variant="outline" asChild>
-                  <Link href="/admin/moderation?tab=reports">{t('overview.handle')}</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-        >
-          <Card>
-            <CardContent className="flex items-center gap-4 p-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10">
-                <Database className="h-6 w-6 text-emerald-500" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold">{t('overview.dataManagement')}</p>
-                <p className="text-xs text-muted-foreground">{t('overview.schoolsDataDesc')}</p>
-              </div>
-              <Button size="sm" variant="outline" asChild>
-                <Link href="/admin/schools">{t('overview.manage')}</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.65 }}
-        >
-          <Card>
-            <CardContent className="flex items-center gap-4 p-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10">
-                <Calendar className="h-6 w-6 text-blue-500" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold">{t('sidebar.deadlines')}</p>
-                <p className="text-xs text-muted-foreground">{t('overview.deadlinesDesc')}</p>
-              </div>
-              <Button size="sm" variant="outline" asChild>
-                <Link href="/admin/calendar">{t('overview.manage')}</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-        >
-          <Card>
-            <CardContent className="flex items-center gap-4 p-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-pink-500/10">
-                <PenTool className="h-6 w-6 text-pink-500" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold">{t('sidebar.essays')}</p>
-                <p className="text-xs text-muted-foreground">{t('overview.essayDesc')}</p>
-              </div>
-              <Button size="sm" variant="outline" asChild>
-                <Link href="/admin/essays">{t('overview.manage')}</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.75 }}
-        >
-          <Card>
-            <CardContent className="flex items-center gap-4 p-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-500/10">
-                <Globe className="h-6 w-6 text-violet-500" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold">{t('sidebar.events')}</p>
-                <p className="text-xs text-muted-foreground">{t('overview.eventsDesc')}</p>
-              </div>
-              <Button size="sm" variant="outline" asChild>
-                <Link href="/admin/calendar?tab=events">{t('overview.manage')}</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-        >
-          <Card>
-            <CardContent className="flex items-center gap-4 p-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/10">
-                <Bot className="h-6 w-6 text-cyan-500" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold">{t('sidebar.aiAgent')}</p>
-                <p className="text-xs text-muted-foreground">{t('overview.aiAgentDesc')}</p>
-              </div>
-              <Button size="sm" variant="outline" asChild>
-                <Link href="/admin/ai-operations">{t('overview.manage')}</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.85 }}
-        >
-          <Card>
-            <CardContent className="flex items-center gap-4 p-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10">
-                <Coins className="h-6 w-6 text-amber-500" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold">{t('sidebar.points')}</p>
-                <p className="text-xs text-muted-foreground">{t('points.description')}</p>
-              </div>
-              <Button size="sm" variant="outline" asChild>
-                <Link href="/admin/points">{t('overview.manage')}</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9 }}
-        >
-          <Card>
-            <CardContent className="flex items-center gap-4 p-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-teal-500/10">
-                <ShieldCheck className="h-6 w-6 text-teal-500" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold">{t('sidebar.content')}</p>
-                <p className="text-xs text-muted-foreground">{t('contentMod.description')}</p>
-              </div>
-              <Button size="sm" variant="outline" asChild>
-                <Link href="/admin/moderation">{t('overview.manage')}</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.95 }}
-        >
-          <Card>
-            <CardContent className="flex items-center gap-4 p-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/10">
-                <CreditCard className="h-6 w-6 text-indigo-500" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold">{t('sidebar.payments')}</p>
-                <p className="text-xs text-muted-foreground">{t('payments.description')}</p>
-              </div>
-              <Button size="sm" variant="outline" asChild>
-                <Link href="/admin/payments">{t('overview.manage')}</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
+      {/* Quick actions — shown based on effective permissions */}
+      {quickActions.length > 0 && (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {quickActions.map((action, index) => {
+            const ActionIcon = action.icon;
+            return (
+              <motion.div
+                key={action.href}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 + index * 0.05 }}
+              >
+                <Card className={action.urgent ? 'border-amber-500/30 bg-amber-500/5' : undefined}>
+                  <CardContent className="flex items-center gap-4 p-4">
+                    <div
+                      className={cn(
+                        'flex h-12 w-12 items-center justify-center rounded-xl',
+                        action.iconBg
+                      )}
+                    >
+                      <ActionIcon className={cn('h-6 w-6', action.iconColor)} />
+                    </div>
+                    <div className="flex-1">
+                      <p
+                        className={cn(
+                          'font-semibold',
+                          action.urgent && 'text-amber-700 dark:text-amber-400'
+                        )}
+                      >
+                        {action.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{action.desc}</p>
+                    </div>
+                    <Button size="sm" variant="outline" asChild>
+                      <Link href={action.href}>
+                        {action.urgent ? t('overview.handle') : t('overview.manage')}
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
     </>
   );
 }

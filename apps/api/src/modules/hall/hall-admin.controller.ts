@@ -5,7 +5,8 @@ import {
   ApiOperation,
   ApiQuery,
 } from '@nestjs/swagger';
-import { Roles } from '../../common/decorators';
+import { Roles, RequirePermission } from '../../common/decorators';
+import { Permission } from '../../common/constants/permissions';
 import { Role, ReviewStatus } from '@prisma/client';
 import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -15,6 +16,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 @ThrottleRelaxed()
 @Controller('admin/reviews')
 @Roles(Role.ADMIN)
+@RequirePermission(Permission.CONTENT_MODERATE)
 export class HallAdminController {
   constructor(private readonly prisma: PrismaService) {}
 

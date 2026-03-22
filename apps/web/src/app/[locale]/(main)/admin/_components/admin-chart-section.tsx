@@ -17,8 +17,8 @@ import {
 interface TrendData {
   date: string;
   newUsers: number;
-  payments: number;
-  revenue: number;
+  payments?: number;
+  revenue?: number;
   posts: number;
 }
 
@@ -28,6 +28,7 @@ interface AdminChartSectionProps {
 
 export function AdminChartSection({ trends }: AdminChartSectionProps) {
   const t = useTranslations('admin');
+  const hasRevenue = trends.some((d) => d.revenue !== undefined);
 
   return (
     <motion.div
@@ -44,19 +45,21 @@ export function AdminChartSection({ trends }: AdminChartSectionProps) {
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-            <div className="grid grid-cols-3 gap-4 mb-4">
+            <div className={`grid gap-4 mb-4 ${hasRevenue ? 'grid-cols-3' : 'grid-cols-2'}`}>
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">{t('dashboard.newUsers')}</p>
                 <p className="text-2xl font-bold text-blue-600">
                   {trends.reduce((sum, d) => sum + d.newUsers, 0)}
                 </p>
               </div>
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground">{t('dashboard.revenue')}</p>
-                <p className="text-2xl font-bold text-emerald-600">
-                  ${trends.reduce((sum, d) => sum + (Number(d.revenue) || 0), 0).toFixed(0)}
-                </p>
-              </div>
+              {hasRevenue && (
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground">{t('dashboard.revenue')}</p>
+                  <p className="text-2xl font-bold text-emerald-600">
+                    ${trends.reduce((sum, d) => sum + (Number(d.revenue) || 0), 0).toFixed(0)}
+                  </p>
+                </div>
+              )}
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">{t('dashboard.posts')}</p>
                 <p className="text-2xl font-bold text-violet-600">

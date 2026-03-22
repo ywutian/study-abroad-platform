@@ -1,8 +1,9 @@
 import { Controller, Get, Post, Put, Body, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
-import { Roles, CurrentUser } from '../../common/decorators';
+import { Roles, CurrentUser, RequirePermission } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
+import { Permission } from '../../common/constants/permissions';
 import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 import { HighSchoolService } from '../school/high-school.service';
 import {
@@ -16,7 +17,8 @@ import {
 @ApiTags('Admin High Schools')
 @ApiBearerAuth()
 @Controller('admin/high-schools')
-@Roles(Role.ADMIN)
+@Roles(Role.OPERATOR)
+@RequirePermission(Permission.HIGHSCHOOL_MANAGE)
 export class AdminHighSchoolController {
   constructor(private readonly highSchoolService: HighSchoolService) {}
 

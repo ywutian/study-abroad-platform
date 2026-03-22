@@ -209,9 +209,9 @@ export function SchoolEditDialog({
                     <SelectValue placeholder={t('dialog.selectType')} />
                   </SelectTrigger>
                   <SelectContent>
-                    {SCHOOL_TYPES.map((t) => (
-                      <SelectItem key={t} value={t}>
-                        {t.charAt(0).toUpperCase() + t.slice(1)}
+                    {SCHOOL_TYPES.map((st) => (
+                      <SelectItem key={st} value={st}>
+                        {t(`schoolTypes.${st}` as any)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -249,7 +249,9 @@ export function SchoolEditDialog({
                             <button
                               type="button"
                               className="text-muted-foreground hover:text-foreground"
-                              aria-label={`Help for ${t(`rubric.${dimKey}.label` as any)}`}
+                              aria-label={t('dialog.helpFor', {
+                                label: t(`rubric.${dimKey}.label` as any),
+                              })}
                             >
                               <HelpCircle className="h-3.5 w-3.5" />
                             </button>
@@ -267,7 +269,8 @@ export function SchoolEditDialog({
                                   {t(`rubric.${dimKey}.${score}.criteria` as any)}
                                   <br />
                                   <span className="italic">
-                                    e.g. {t(`rubric.${dimKey}.${score}.examples` as any)}
+                                    {t('dialog.egPrefix')}{' '}
+                                    {t(`rubric.${dimKey}.${score}.examples` as any)}
                                   </span>
                                 </div>
                               ))}
@@ -316,7 +319,7 @@ export function SchoolEditDialog({
                   type="number"
                   value={form.avgSatScore}
                   onChange={(e) => setField('avgSatScore', e.target.value)}
-                  placeholder="e.g. 1450"
+                  placeholder={`${t('dialog.egPrefix')} 1450`}
                 />
               </div>
               <div className="space-y-2">
@@ -325,7 +328,7 @@ export function SchoolEditDialog({
                   type="number"
                   value={form.avgIbScore}
                   onChange={(e) => setField('avgIbScore', e.target.value)}
-                  placeholder="e.g. 38"
+                  placeholder={`${t('dialog.egPrefix')} 38`}
                 />
               </div>
               <div className="space-y-2">
@@ -334,7 +337,7 @@ export function SchoolEditDialog({
                   type="number"
                   value={form.annualTop30Count}
                   onChange={(e) => setField('annualTop30Count', e.target.value)}
-                  placeholder="e.g. 15"
+                  placeholder={`${t('dialog.egPrefix')} 15`}
                 />
               </div>
               <div className="space-y-2">
@@ -349,7 +352,7 @@ export function SchoolEditDialog({
                   <SelectContent>
                     {GRADE_INFLATION_OPTIONS.map((opt) => (
                       <SelectItem key={opt} value={opt}>
-                        {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                        {t(`gradeInflationOptions.${opt}` as any)}
                       </SelectItem>
                     ))}
                   </SelectContent>

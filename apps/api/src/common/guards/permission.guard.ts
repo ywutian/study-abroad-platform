@@ -12,7 +12,8 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 
 const CACHE_TTL = 300; // 5 minutes
-const CACHE_PREFIX = 'role_perms:';
+const ROLE_CACHE_PREFIX = 'role_perms:';
+const USER_CACHE_PREFIX = 'user_perms:';
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
@@ -45,7 +46,10 @@ export class PermissionGuard implements CanActivate {
       return true;
     }
 
-    const grantedPermissions = await this.getPermissionsForRole(user.role);
+    const grantedPermissions = await this.getEffectivePermissions(
+      user.id,
+      user.role,
+    );
 
     const hasAll = requiredPermissions.every((p) =>
       grantedPermissions.includes(p),
@@ -61,8 +65,57 @@ export class PermissionGuard implements CanActivate {
     return true;
   }
 
+  /**
+   * Resolve effective permissions: UserPermission overrides RolePermission.
+   *
+   * Logic: Start with role-level granted permissions, then apply user-level overrides.
+   * - UserPermission(granted=true) adds a permission even if role doesn't have it
+   * - UserPermission(granted=false) removes a permission even if role grants it
+   */
+  async getEffectivePermissions(userId: string, role: Role): Promise<string[]> {
+    const cacheKey = `${USER_CACHE_PREFIX}${userId}`;
+
+    // Try user-specific cache first
+    const cached = await this.redis.get(cacheKey);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+
+    // Get role-level permissions
+    const rolePerms = await this.getPermissionsForRole(role);
+
+    // Get user-level overrides
+    const userOverrides = await this.prisma.userPermission.findMany({
+      where: { userId },
+      select: { permission: true, granted: true },
+    });
+
+    // If no user overrides, just return role permissions
+    if (userOverrides.length === 0) {
+      return rolePerms;
+    }
+
+    // Apply overrides: start from role permissions set
+    const permSet = new Set(rolePerms);
+
+    for (const override of userOverrides) {
+      if (override.granted) {
+        permSet.add(override.permission);
+      } else {
+        permSet.delete(override.permission);
+      }
+    }
+
+    const effectivePerms = Array.from(permSet);
+
+    // Cache with user-specific key
+    await this.redis.set(cacheKey, JSON.stringify(effectivePerms), CACHE_TTL);
+
+    return effectivePerms;
+  }
+
   private async getPermissionsForRole(role: Role): Promise<string[]> {
-    const cacheKey = `${CACHE_PREFIX}${role}`;
+    const cacheKey = `${ROLE_CACHE_PREFIX}${role}`;
 
     // Try Redis cache
     const cached = await this.redis.get(cacheKey);
