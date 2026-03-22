@@ -6419,6 +6419,13 @@
         "userOverridesDesc": "为个别用户覆盖角色默认权限。适用于限制实习生权限或授予额外访问权限。",
         "selectUser": "选择用户...",
         "applyPreset": "应用预设...",
+        "presetNames": {
+          "dataOps": "数据运营",
+          "contentMod": "内容审核",
+          "userOps": "用户运营",
+          "techOps": "技术运营",
+          "intern": "实习生"
+        },
         "clearOverrides": "恢复默认",
         "override": "覆盖",
         "granted": "已授权",

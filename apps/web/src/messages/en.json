@@ -6442,6 +6442,13 @@
         "userOverridesDesc": "Override role defaults for individual users. Useful for restricting interns or granting extra access.",
         "selectUser": "Select a user...",
         "applyPreset": "Apply preset...",
+        "presetNames": {
+          "dataOps": "Data Operations",
+          "contentMod": "Content Moderation",
+          "userOps": "User Operations",
+          "techOps": "Tech Operations",
+          "intern": "Intern"
+        },
         "clearOverrides": "Reset to defaults",
         "override": "Override",
         "granted": "Granted",

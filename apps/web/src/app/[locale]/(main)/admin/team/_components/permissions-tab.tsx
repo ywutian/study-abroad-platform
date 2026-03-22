@@ -225,9 +225,9 @@ interface UserPermissionOverride {
   updatedAt?: string;
 }
 
-const PERMISSION_PRESETS: Record<string, { name: string; permissions: string[] }> = {
+const PERMISSION_PRESETS: Record<string, { nameKey: string; permissions: string[] }> = {
   DATA_OPS: {
-    name: '数据运营',
+    nameKey: 'team.permissions.presetNames.dataOps',
     permissions: [
       'case:create',
       'case:review',
@@ -240,11 +240,11 @@ const PERMISSION_PRESETS: Record<string, { name: string; permissions: string[] }
     ],
   },
   CONTENT_MOD: {
-    name: '内容审核',
+    nameKey: 'team.permissions.presetNames.contentMod',
     permissions: ['content:moderate', 'case:review', 'user:view', 'audit:view'],
   },
   USER_OPS: {
-    name: '用户运营',
+    nameKey: 'team.permissions.presetNames.userOps',
     permissions: [
       'user:view',
       'verification:review',
@@ -254,11 +254,11 @@ const PERMISSION_PRESETS: Record<string, { name: string; permissions: string[] }
     ],
   },
   TECH_OPS: {
-    name: '技术运营',
+    nameKey: 'team.permissions.presetNames.techOps',
     permissions: ['ai:config', 'system:calibration', 'data:sync', 'data:health', 'audit:view'],
   },
   INTERN: {
-    name: '实习生',
+    nameKey: 'team.permissions.presetNames.intern',
     permissions: ['case:create', 'school:edit', 'data:health'],
   },
 };
@@ -413,7 +413,7 @@ function UserPermissionEditor() {
               <SelectContent>
                 {Object.entries(PERMISSION_PRESETS).map(([key, preset]) => (
                   <SelectItem key={key} value={key}>
-                    {preset.name}
+                    {t(preset.nameKey)}
                   </SelectItem>
                 ))}
               </SelectContent>
