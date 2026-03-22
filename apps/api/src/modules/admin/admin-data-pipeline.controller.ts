@@ -91,7 +91,7 @@ export class AdminDataPipelineController {
     @CurrentUser() admin: CurrentUserPayload,
     @Body() dto: UpdateImportPolicyDto,
   ) {
-    const current = await this.getImportPolicy();
+    const current = (await this.getImportPolicy()) as Record<string, unknown>;
     const merged = { ...current, ...dto };
 
     await this.prisma.systemSetting.upsert({

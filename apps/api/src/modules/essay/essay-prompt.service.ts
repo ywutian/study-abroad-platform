@@ -387,7 +387,7 @@ export class EssayPromptService {
           where: {
             schoolId: school.id,
             year: item.year,
-            type: item.type as EssayType,
+            type: item.type,
             prompt: { startsWith: promptPrefix },
             isActive: true,
           },
@@ -412,7 +412,7 @@ export class EssayPromptService {
           data: {
             schoolId: school.id,
             year: item.year,
-            type: item.type as EssayType,
+            type: item.type,
             prompt: item.prompt,
             promptZh: item.promptZh,
             wordLimit: item.wordLimit,

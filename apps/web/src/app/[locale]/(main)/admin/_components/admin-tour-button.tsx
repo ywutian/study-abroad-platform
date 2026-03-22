@@ -38,6 +38,7 @@ export function AdminTourButton({ tourId, label, tourConfig }: AdminTourButtonPr
   const handleStartTour = () => {
     if (!tourProviderModule) return;
     try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { driver } = require('driver.js');
       const driverInstance = driver({
         showProgress: true,

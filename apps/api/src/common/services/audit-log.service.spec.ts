@@ -223,10 +223,20 @@ describe('AuditLogService', () => {
         'TEAM_MEMBER_REMOVE',
         'TEAM_TRANSFER_OWNER',
         'TEAM_ACCEPT_INVITE',
+        'CASE_REVIEW_APPROVED',
+        'CASE_REVIEW_REJECTED',
+        'CASE_BATCH_IMPORTED',
+        'CASE_BATCH_ROLLBACK',
+        'STAGING_APPROVED',
+        'STAGING_REJECTED',
         'ROLE_CHANGE',
         'PERMISSION_UPDATE',
+        'HIGH_SCHOOL_EVALUATED',
+        'HIGH_SCHOOL_APPROVED',
+        'HIGH_SCHOOL_CALIBRATED',
+        'HIGH_SCHOOL_TIER_CHANGED',
       ]),
     );
-    expect(Object.values(AuditAction)).toHaveLength(24);
+    expect(Object.values(AuditAction)).toHaveLength(28);
   });
 });

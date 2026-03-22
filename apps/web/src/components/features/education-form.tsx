@@ -334,7 +334,7 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
                                   try {
                                     await apiClient.post('/high-schools/suggest', {
                                       name: search,
-                                      country: formData.schoolCountry || 'Unknown',
+                                      country: 'Unknown',
                                     });
                                     toast.success(t('form.schoolSuggested'));
                                   } catch {

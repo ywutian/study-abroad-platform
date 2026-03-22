@@ -318,6 +318,7 @@ export class CaseService {
       apSubjects?: string[];
       ibScore?: number;
       ibPredicted?: boolean;
+      highSchoolId?: string;
       highSchoolType?: string;
       curriculumType?: string;
       demographicTags?: string[];
@@ -400,7 +401,7 @@ export class CaseService {
       : DataReviewStatus.PENDING_REVIEW;
 
     // Use explicit highSchoolId if provided, otherwise auto-fill from profile
-    let resolvedHighSchoolId = data.highSchoolId as string | undefined;
+    let resolvedHighSchoolId = data.highSchoolId;
     if (!resolvedHighSchoolId) {
       const profileHighSchoolEdu = await this.prisma.education.findFirst({
         where: {
@@ -444,7 +445,9 @@ export class CaseService {
         ...(ibScore !== undefined && { ibScore }),
         ...(ibPredicted !== undefined && { ibPredicted }),
         ...(resolvedHsType && { highSchoolType: resolvedHsType as any }),
-        ...(resolvedHighSchoolId && { highSchoolId: resolvedHighSchoolId }),
+        ...(resolvedHighSchoolId && {
+          highSchool: { connect: { id: resolvedHighSchoolId } },
+        }),
         ...(curriculumType && { curriculumType: curriculumType as any }),
         ...(demographicTags?.length && { demographicTags }),
         ...(financialAid && { financialAid }),
@@ -864,7 +867,7 @@ export class CaseService {
         // Build dedup set: skip cases already imported with same key fields
         const existingCases = await tx.admissionCase.findMany({
           where: {
-            userId: importUser!.id,
+            userId: importUser.id,
             source: 'csv_import',
             schoolId: { in: resolvedItems.map((r) => r.school.id) },
           },
@@ -972,8 +975,8 @@ export class CaseService {
 
           const created = await tx.admissionCase.create({
             data: {
-              userId: importUser!.id,
-              schoolId: school!.id,
+              userId: importUser.id,
+              schoolId: school.id,
               year: item.year,
               round: normalizeRound(item.round || ''),
               result: normalizedResult as any,

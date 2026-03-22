@@ -5,6 +5,8 @@ import { AdminDataSyncService } from './admin-data-sync.service';
 import { NotificationService } from '../notification/notification.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PredictionService } from '../prediction/prediction.service';
+import { PredictionCalibrationService } from '../prediction/prediction-calibration.service';
+import { PredictionReportingService } from '../prediction/prediction-reporting.service';
 import { Role, GlobalEventCategory } from '@prisma/client';
 
 describe('AdminController', () => {
@@ -50,6 +52,19 @@ describe('AdminController', () => {
           provide: PredictionService,
           useValue: {
             invalidateCalibrationCache: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: PredictionCalibrationService,
+          useValue: {
+            getCalibrationData: jest.fn().mockResolvedValue([]),
+            runCalibration: jest.fn().mockResolvedValue({ adjustments: [] }),
+          },
+        },
+        {
+          provide: PredictionReportingService,
+          useValue: {
+            getAccuracyReport: jest.fn().mockResolvedValue({}),
           },
         },
         {
@@ -230,6 +245,7 @@ describe('AdminController', () => {
         'Spamming',
         24,
         false,
+        'ADMIN',
       );
       expect(result).toEqual({ id: 'user-1', banned: true });
     });

@@ -294,12 +294,12 @@ function SidebarGroup({
   isGroupActive: boolean;
   children: React.ReactNode;
 }) {
+  const [open, setOpen] = useState(group.defaultOpen ?? isGroupActive ?? true);
+
   // Single-item groups (Overview, System) render without collapsible header
   if (group.items.length === 1) {
     return <div className="mb-1">{children}</div>;
   }
-
-  const [open, setOpen] = useState(group.defaultOpen ?? isGroupActive ?? true);
 
   return (
     <div className="mb-1">
