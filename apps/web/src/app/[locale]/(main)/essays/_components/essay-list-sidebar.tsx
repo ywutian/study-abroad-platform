@@ -4,12 +4,17 @@ import { useTranslations, useFormatter } from 'next-intl';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { FileText, Calendar } from 'lucide-react';
+import { FileText, Calendar, Target, Search, BookOpen, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Link } from '@/lib/i18n/navigation';
 import { LoadingState } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import type { Essay } from '@/types/essay';
+
+const STEP_ICONS = [Target, Search, BookOpen] as const;
+const STEP_LINKS = ['/profile?tab=schools', 'action:create', '/cases?tab=essays'] as const;
 
 interface EssayListSidebarProps {
   essays: Essay[] | undefined;
@@ -17,6 +22,7 @@ interface EssayListSidebarProps {
   selectedEssayId: string | null;
   onSelect: (essay: Essay) => void;
   getWordCount: (text: string) => number;
+  onCreate?: () => void;
 }
 
 export function EssayListSidebar({
@@ -25,6 +31,7 @@ export function EssayListSidebar({
   selectedEssayId,
   onSelect,
   getWordCount,
+  onCreate,
 }: EssayListSidebarProps) {
   const t = useTranslations();
   const fmt = useFormatter();
@@ -78,12 +85,72 @@ export function EssayListSidebar({
               </div>
             </ScrollArea>
           ) : (
-            <EmptyState
-              icon={<FileText className="h-12 w-12" />}
-              title={t('essays.empty.title')}
-              description={t('essays.empty.description')}
-              className="py-8"
-            />
+            <div className="py-6">
+              <EmptyState
+                icon={<FileText className="h-12 w-12" />}
+                title={t('essays.empty.title')}
+                description={t('essays.empty.description')}
+                className="pb-4"
+              />
+              <div className="px-2 mb-3">
+                <Link href="/profile?tab=schools">
+                  <Button variant="default" className="w-full" size="sm">
+                    <Target className="h-4 w-4 mr-2" />
+                    {t('essays.startFromTargetSchool')}
+                  </Button>
+                </Link>
+                <p className="text-xs text-muted-foreground text-center mt-1.5">
+                  {t('essays.targetSchoolHint')}
+                </p>
+              </div>
+              <div className="space-y-2 px-2" data-tour="essay-sidebar-tips">
+                {([1, 2, 3] as const).map((step) => {
+                  const Icon = STEP_ICONS[step - 1];
+                  const link = STEP_LINKS[step - 1];
+                  const isAction = link?.startsWith('action:');
+                  const content = (
+                    <div
+                      className={cn(
+                        'flex items-start gap-2.5 rounded-lg bg-muted/50 p-2.5 text-xs',
+                        (link || isAction) && 'cursor-pointer transition-colors hover:bg-muted'
+                      )}
+                    >
+                      <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                        <Icon className="h-3 w-3 text-primary" />
+                      </div>
+                      <span className="flex-1 text-muted-foreground">
+                        {t(`essays.tips.step${step}`)}
+                      </span>
+                      {link && (
+                        <ArrowRight className="mt-0.5 h-3 w-3 shrink-0 text-muted-foreground" />
+                      )}
+                    </div>
+                  );
+
+                  if (isAction && onCreate) {
+                    return (
+                      <button
+                        key={step}
+                        type="button"
+                        onClick={onCreate}
+                        className="w-full text-left"
+                        aria-label={t(`essays.tips.step${step}`)}
+                      >
+                        {content}
+                      </button>
+                    );
+                  }
+
+                  return link && !isAction ? (
+                    <Link key={step} href={link}>
+                      {content}
+                    </Link>
+                  ) : (
+                    <div key={step}>{content}</div>
+                  );
+                })}
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>

@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  Plus,
   Sparkles,
   Pencil,
   Trash2,
@@ -17,7 +16,9 @@ import {
   Lightbulb,
   Calendar,
   Hash,
+  BookOpen,
 } from 'lucide-react';
+import { Link } from '@/lib/i18n/navigation';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +32,7 @@ interface EssayDetailViewProps {
   selectedEssay: Essay | null;
   getWordCount: (text: string) => number;
   onCreate: () => void;
+  onCreateFromPrompt: () => void;
   onEdit: (essay: Essay) => void;
   onDelete: (id: string) => void;
   onReview: (essay: Essay) => void;
@@ -50,6 +52,7 @@ export function EssayDetailView({
   selectedEssay,
   getWordCount,
   onCreate,
+  onCreateFromPrompt,
   onEdit,
   onDelete,
   onReview,
@@ -70,7 +73,7 @@ export function EssayDetailView({
   return (
     <div className="lg:col-span-2">
       <Card className="h-full overflow-hidden">
-        <div className="h-1 bg-primary dark:bg-primary" />
+        <div className="h-1 bg-primary" />
         {selectedEssay ? (
           <>
             <CardHeader className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
@@ -181,13 +184,49 @@ export function EssayDetailView({
             <p className="mt-2 text-sm text-muted-foreground max-w-sm">
               {t('essays.clickNewToCreate')}
             </p>
-            <Button
-              className="mt-6 gap-2 bg-primary dark:bg-primary hover:opacity-90 text-primary-foreground"
-              onClick={onCreate}
+
+            <div
+              data-tour="essay-empty-cards"
+              className="mt-6 grid w-full max-w-lg grid-cols-1 gap-3 sm:grid-cols-2"
             >
-              <Plus className="h-4 w-4" />
-              {t('essays.new')}
-            </Button>
+              <button
+                type="button"
+                onClick={onCreateFromPrompt}
+                aria-label={t('essays.onboarding.fromPromptTitle')}
+                className="group flex flex-col items-start gap-2 rounded-xl border border-border p-4 text-left transition-all hover:border-primary/40 hover:bg-primary/5 hover:shadow-sm"
+              >
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-primary/20">
+                  <BookOpen className="h-4 w-4 text-primary" />
+                </div>
+                <h4 className="text-sm font-semibold">{t('essays.onboarding.fromPromptTitle')}</h4>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {t('essays.onboarding.fromPromptDesc')}
+                </p>
+              </button>
+              <button
+                type="button"
+                onClick={onCreate}
+                aria-label={t('essays.onboarding.freeWriteTitle')}
+                className="group flex flex-col items-start gap-2 rounded-xl border border-border p-4 text-left transition-all hover:border-primary/40 hover:bg-primary/5 hover:shadow-sm"
+              >
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-primary/20">
+                  <Pencil className="h-4 w-4 text-primary" />
+                </div>
+                <h4 className="text-sm font-semibold">{t('essays.onboarding.freeWriteTitle')}</h4>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {t('essays.onboarding.freeWriteDesc')}
+                </p>
+              </button>
+            </div>
+
+            <div className="mt-4">
+              <Button variant="outline" className="gap-2" asChild>
+                <Link href="/cases?tab=essays">
+                  <BookOpen className="h-4 w-4" />
+                  {t('essays.action.browseExamples')}
+                </Link>
+              </Button>
+            </div>
           </div>
         )}
       </Card>

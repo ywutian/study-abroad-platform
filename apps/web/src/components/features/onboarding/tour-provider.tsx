@@ -1,11 +1,12 @@
 'use client';
 
 import React, { createContext, useContext, useCallback, useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { driver, Driver, DriveStep, Config } from 'driver.js';
 import 'driver.js/dist/driver.css';
 
 // Tour 步骤定义
-interface TourStep extends DriveStep {
+export interface TourStep extends DriveStep {
   id: string;
 }
 
@@ -33,6 +34,7 @@ const TourContext = createContext<TourContextValue | null>(null);
 const TOUR_STORAGE_KEY = 'completed_tours';
 
 export function TourProvider({ children }: { children: React.ReactNode }) {
+  const t = useTranslations('tour');
   const [tours, setTours] = useState<Map<string, TourConfig>>(new Map());
   const [currentTourId, setCurrentTourId] = useState<string | null>(null);
   const [driverInstance, setDriverInstance] = useState<Driver | null>(null);
@@ -121,9 +123,9 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
         stageRadius: 8,
         popoverClass: 'tour-popover',
         progressText: '{{current}} / {{total}}',
-        nextBtnText: 'Next',
-        prevBtnText: 'Previous',
-        doneBtnText: 'Done',
+        nextBtnText: t('next'),
+        prevBtnText: t('previous'),
+        doneBtnText: t('done'),
         steps: tour.steps,
         onDestroyed: () => {
           setCurrentTourId(null);
@@ -140,7 +142,7 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
       setCurrentTourId(tourId);
       newDriver.drive();
     },
-    [tours, driverInstance, markTourComplete]
+    [tours, driverInstance, markTourComplete, t]
   );
 
   return (
@@ -289,6 +291,9 @@ export const TOURS = {
   PROFILE: 'profile',
   AI_CHAT: 'ai_chat',
   SCHOOLS: 'schools',
+  CASES: 'cases',
+  ESSAYS_PAGE: 'essays_page',
+  ESSAYS_FORM: 'essays_form',
 } as const;
 
 // 欢迎 tour 步骤 - 使用英文作为默认值，运行时会通过翻译函数获取本地化文本
@@ -342,6 +347,42 @@ export const welcomeTourSteps: TourStep[] = [
     popover: {
       title: 'Profile',
       description: 'Manage your personal profile, application progress, and preference settings.',
+      side: 'bottom',
+      align: 'end',
+    },
+  },
+];
+
+// Case Library tour steps
+export const casesTourSteps: TourStep[] = [
+  {
+    id: 'cases-filters',
+    element: '[data-tour="cases-filters"]',
+    popover: {
+      title: 'Filter Cases',
+      description:
+        'Filter by school, year, admission result, and nationality to find cases relevant to your background.',
+      side: 'bottom',
+      align: 'start',
+    },
+  },
+  {
+    id: 'cases-grid',
+    element: '[data-tour="cases-grid"]',
+    popover: {
+      title: 'Browse Cases',
+      description:
+        "Each card shows a real applicant's GPA, test scores, and admission outcome. Click to view their full profile.",
+      side: 'top',
+      align: 'center',
+    },
+  },
+  {
+    id: 'cases-share',
+    element: '[data-tour="cases-share"]',
+    popover: {
+      title: 'Share Your Case',
+      description: 'Contribute your admission results to help others and earn platform points.',
       side: 'bottom',
       align: 'end',
     },

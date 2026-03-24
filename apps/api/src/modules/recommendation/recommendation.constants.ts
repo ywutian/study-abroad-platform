@@ -19,6 +19,9 @@ export type RecommendationSchoolResult = Prisma.SchoolGetPayload<{
   select: typeof RECOMMENDATION_SCHOOL_SELECT;
 }>;
 
+/** Mapped school metadata shape for recommendation responses. */
+export type RecommendationSchoolMeta = ReturnType<typeof mapSchoolMeta>;
+
 /**
  * Maps matched school to schoolMeta for recommendation response.
  */
@@ -36,5 +39,15 @@ export function mapSchoolMeta(school: RecommendationSchoolResult) {
     retentionRate:
       school.retentionRate != null ? Number(school.retentionRate) : undefined,
     logoUrl: school.logoUrl || undefined,
+    website: school.website || undefined,
+    sourceUrls: {
+      collegeScorecardUrl: school.scorecardId
+        ? `https://collegescorecard.ed.gov/school/?${school.scorecardId}`
+        : undefined,
+      ipedsUrl: school.ipedsId
+        ? `https://nces.ed.gov/ipeds/datacenter/institutionprofile.aspx?unitId=${school.ipedsId}`
+        : undefined,
+      websiteUrl: school.website || undefined,
+    },
   };
 }

@@ -64,6 +64,7 @@ Use delegate_to_agent when delegation is needed, or use relevant tools directly`
       'explain_case_result',
       'analyze_prediction_accuracy',
       'compare_case_with_profile',
+      'analyze_intl_competitiveness',
       // 档案排名工具
       'analyze_profile_ranking',
       'suggest_profile_improvements',
@@ -225,6 +226,7 @@ Prediction analysis:
       'compare_schools',
       'recommend_schools',
       'analyze_admission_chance',
+      'analyze_intl_competitiveness',
       // 预测数据工具
       'get_prediction_history',
       'get_prediction_dashboard',

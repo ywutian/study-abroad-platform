@@ -23,11 +23,41 @@ import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import { getResultBadgeVariant } from '@/utils/case-helpers';
 import { formatAcceptanceRate } from '@/utils/format';
+import { DATA_SOURCE_LABELS } from '@study-abroad/shared';
+import { isSafeUrl } from '@study-abroad/shared/utils';
 import type { School, Case, PaginatedResponse } from '@/types';
+
+function DataSourceLabel({
+  field,
+  provenance,
+  locale,
+  colors,
+}: {
+  field: string;
+  provenance?: Record<string, { source: string; at: string }>;
+  locale: string;
+  colors: ReturnType<typeof useColors>;
+}) {
+  const { t } = useTranslation();
+  const prov = provenance?.[field];
+  if (!prov) return null;
+  const label = DATA_SOURCE_LABELS[prov.source]?.[locale === 'zh' ? 'zh' : 'en'] ?? prov.source;
+  const date = new Date(prov.at);
+  const freshness = date.toLocaleDateString(locale, { month: 'short', year: 'numeric' });
+  return (
+    <Text
+      style={{ fontSize: fontSize.xs - 2, color: colors.foregroundMuted, marginTop: 2 }}
+      numberOfLines={1}
+    >
+      {t('schools.detail.dataSource', { source: label })} ·{' '}
+      {t('schools.detail.updatedAt', { date: freshness })}
+    </Text>
+  );
+}
 
 export default function SchoolDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const colors = useColors();
 
   const {
@@ -97,11 +127,26 @@ export default function SchoolDetailScreen() {
     return formatAcceptanceRate(value);
   };
 
+  const provenance = school.metadata?.provenance;
+  const locale = i18n.language?.startsWith('zh') ? 'zh' : 'en';
+
   const stats = [
-    { label: t('schools.detail.acceptanceRate'), value: formatPercent(school.acceptanceRate) },
-    { label: t('schools.detail.tuition'), value: formatCurrency(school.tuition) },
-    { label: t('schools.detail.avgSalary'), value: formatCurrency(school.avgSalary) },
-    { label: t('schools.detail.students'), value: school.totalEnrollment?.toLocaleString() || '-' },
+    {
+      label: t('schools.detail.acceptanceRate'),
+      value: formatPercent(school.acceptanceRate),
+      field: 'acceptanceRate',
+    },
+    { label: t('schools.detail.tuition'), value: formatCurrency(school.tuition), field: 'tuition' },
+    {
+      label: t('schools.detail.avgSalary'),
+      value: formatCurrency(school.avgSalary),
+      field: 'avgSalary',
+    },
+    {
+      label: t('schools.detail.students'),
+      value: school.totalEnrollment?.toLocaleString() || '-',
+      field: 'totalEnrollment',
+    },
   ];
 
   const tabContent = [
@@ -136,6 +181,12 @@ export default function SchoolDetailScreen() {
                     <Text style={[styles.rankLabel, { color: colors.foregroundMuted }]}>
                       {t('schools.detail.usnewsRank')}
                     </Text>
+                    <DataSourceLabel
+                      field="usNewsRank"
+                      provenance={provenance}
+                      locale={locale}
+                      colors={colors}
+                    />
                   </View>
                 )}
                 {school.qsRank && (
@@ -146,6 +197,12 @@ export default function SchoolDetailScreen() {
                     <Text style={[styles.rankLabel, { color: colors.foregroundMuted }]}>
                       {t('schools.detail.qsRank')}
                     </Text>
+                    <DataSourceLabel
+                      field="qsRank"
+                      provenance={provenance}
+                      locale={locale}
+                      colors={colors}
+                    />
                   </View>
                 )}
               </View>
@@ -153,10 +210,12 @@ export default function SchoolDetailScreen() {
           </Card>
 
           {/* Website */}
-          {school.website && (
+          {isSafeUrl(school.website) && (
             <Button
               variant="outline"
-              onPress={() => Linking.openURL(school.website!)}
+              onPress={() => {
+                Linking.openURL(school.website!).catch(() => {});
+              }}
               leftIcon={<Ionicons name="globe-outline" size={18} color={colors.primary} />}
               style={styles.websiteButton}
             >
@@ -322,6 +381,12 @@ export default function SchoolDetailScreen() {
               <Text style={[styles.statLabel, { color: colors.foregroundMuted }]}>
                 {stat.label}
               </Text>
+              <DataSourceLabel
+                field={stat.field}
+                provenance={provenance}
+                locale={locale}
+                colors={colors}
+              />
             </View>
           ))}
         </Animated.View>

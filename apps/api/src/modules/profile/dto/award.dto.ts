@@ -18,6 +18,23 @@ const AWARD_LEVELS = [
   'INTERNATIONAL',
 ] as const;
 
+const AWARD_CATEGORIES = [
+  'STEM',
+  'MATH',
+  'SCIENCE',
+  'COMPUTER_SCIENCE',
+  'ENGINEERING',
+  'BUSINESS',
+  'ARTS',
+  'HUMANITIES',
+  'SOCIAL_SCIENCE',
+  'LANGUAGE',
+  'SPORTS',
+  'COMMUNITY_SERVICE',
+  'LEADERSHIP',
+  'OTHER',
+] as const;
+
 export class CreateAwardDto {
   @ApiProperty({ description: 'Award name', example: 'AMC 12 Perfect Score' })
   @IsString()
@@ -49,6 +66,14 @@ export class CreateAwardDto {
   @IsString()
   @MaxLength(200)
   competitionId?: string;
+
+  @ApiPropertyOptional({
+    enum: AWARD_CATEGORIES,
+    description: 'Award category',
+  })
+  @IsOptional()
+  @IsIn(AWARD_CATEGORIES)
+  category?: string;
 
   @ApiPropertyOptional({ description: 'Sort order' })
   @IsOptional()
@@ -91,6 +116,14 @@ export class UpdateAwardDto {
   @IsString()
   @MaxLength(200)
   competitionId?: string;
+
+  @ApiPropertyOptional({
+    enum: AWARD_CATEGORIES,
+    description: 'Award category',
+  })
+  @IsOptional()
+  @IsIn(AWARD_CATEGORIES)
+  category?: string;
 
   @ApiPropertyOptional({ description: 'Sort order' })
   @IsOptional()

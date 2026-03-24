@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Trophy, Plus, Pencil, Trash2 } from 'lucide-react';
-import { AWARD_LEVEL_KEYS } from './constants';
+import { AWARD_LEVEL_KEYS, AWARD_CATEGORY_KEYS } from './constants';
 import type { Award } from './types';
 
 interface AwardsTabProps {
@@ -68,6 +68,11 @@ export function AwardsTab({ awards, onAddAward, onEditAward, onDeleteAward }: Aw
                         >
                           {t(AWARD_LEVEL_KEYS[award.level] || 'profile.awardLevels.school')}
                         </Badge>
+                        {award.category && AWARD_CATEGORY_KEYS[award.category] && (
+                          <Badge variant="outline" className="text-xs">
+                            {t(AWARD_CATEGORY_KEYS[award.category])}
+                          </Badge>
+                        )}
                       </div>
                       {award.year && <p className="text-sm text-muted-foreground">{award.year}</p>}
                       {award.description && (

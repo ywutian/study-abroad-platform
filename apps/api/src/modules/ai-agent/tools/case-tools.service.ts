@@ -59,6 +59,14 @@ export class CaseToolsService implements IToolHandlerProvider {
         (args, userId, _ctx, locale) =>
           this.findSimilarCases(userId, args, locale),
       ],
+      [
+        'analyze_intl_competitiveness',
+        (args, _userId, _ctx, locale) =>
+          this.analyzeIntlCompetitiveness(
+            args as { schoolId: string; nationality: string },
+            locale,
+          ),
+      ],
     ]);
   }
 
@@ -68,6 +76,7 @@ export class CaseToolsService implements IToolHandlerProvider {
       major?: string;
       year?: number;
       gpaRange?: string;
+      nationality?: string;
     },
     locale = 'zh',
   ) {
@@ -103,6 +112,10 @@ export class CaseToolsService implements IToolHandlerProvider {
 
     if (args.gpaRange) {
       where.gpaRange = args.gpaRange;
+    }
+
+    if (args.nationality) {
+      where.nationality = { equals: args.nationality, mode: 'insensitive' };
     }
 
     where.visibility = { in: ['ANONYMOUS', 'PUBLIC'] };
@@ -151,6 +164,7 @@ export class CaseToolsService implements IToolHandlerProvider {
         highSchoolType: c.highSchoolType,
         curriculumType: c.curriculumType,
         demographicTags: c.demographicTags,
+        nationality: c.nationality,
       })),
     };
   }
@@ -356,7 +370,7 @@ Analyze the user's prediction strengths and provide tips to improve accuracy.`,
 1. **学术成绩**：GPA、标化考试分数逐项对比
 2. **课外活动**：活动数量、质量等级(tier)、角色级别对比
 3. **学术竞赛与奖项**：奖项级别(校级/地区/州级/国家/国际)对比
-4. **背景特征**：高中类型、课程体系、人口统计标签对比
+4. **背景特征**：高中类型、课程体系、国籍/身份、人口统计标签对比
 5. **综合评估**：整体竞争力差距和录取可能性
 
 每个维度请给出：案例数据 → 用户数据 → 差距评估（领先/持平/落后）
@@ -368,7 +382,7 @@ Dimensions:
 1. **Academics**: GPA and test scores item-by-item comparison
 2. **Extracurriculars**: Activity count, quality tier, role level comparison
 3. **Awards & Competitions**: Award level (school/regional/state/national/international) comparison
-4. **Background**: High school type, curriculum, demographic tags comparison
+4. **Background**: High school type, curriculum, nationality/identity, demographic tags comparison
 5. **Overall Assessment**: Competitiveness gap and admission likelihood
 
 For each dimension provide: Case data → User data → Gap assessment (ahead/even/behind)
@@ -421,6 +435,7 @@ Provide specific, actionable advice.`;
 - 结构化成绩：${caseScoresStr}
 - 高中类型：${admissionCase.highSchoolType || unknown}
 - 课程体系：${admissionCase.curriculumType || unknown}
+- 国籍：${admissionCase.nationality || unknown}
 - 人口标签：${admissionCase.demographicTags?.join('、') || none}
 - 活动(${caseActivities.length}项):
 ${caseActivitiesZh}
@@ -453,6 +468,7 @@ ${
     })
     .join('\n') || none
 }
+- 国籍：${profile.nationality || notFilled}
 - 目标专业：${profile.targetMajor || undecided}`
                 : `
 Admission case:
@@ -463,6 +479,7 @@ Admission case:
 - Structured scores: ${caseScoresStr}
 - High school type: ${admissionCase.highSchoolType || unknown}
 - Curriculum: ${admissionCase.curriculumType || unknown}
+- Nationality: ${admissionCase.nationality || unknown}
 - Demographic tags: ${admissionCase.demographicTags?.join(', ') || none}
 - Activities (${caseActivities.length}):
 ${caseActivitiesEn}
@@ -495,6 +512,7 @@ ${
     })
     .join('\n') || none
 }
+- Nationality: ${profile.nationality || notFilled}
 - Target major: ${profile.targetMajor || undecided}`;
             })(),
           },
@@ -522,11 +540,13 @@ ${
           caseHighSchoolType: admissionCase.highSchoolType,
           caseCurriculumType: admissionCase.curriculumType,
           caseDemographicTags: admissionCase.demographicTags,
+          caseNationality: admissionCase.nationality,
           profileGpa: profile.gpa,
           profileGpaScale: profile.gpaScale,
           profileTestScoreCount: profile.testScores?.length ?? 0,
           profileActivityCount: profile.activities?.length ?? 0,
           profileAwardCount: profile.awards?.length ?? 0,
+          profileNationality: profile.nationality,
         },
         comparison,
       };
@@ -600,12 +620,51 @@ ${
         };
       }
 
-      const cases = await this.prisma.admissionCase.findMany({
-        where,
-        take,
-        orderBy: { createdAt: 'desc' },
-        include: { school: { select: { name: true, nameZh: true } } },
-      });
+      // Nationality-aware matching: prefer same-nationality cases, fallback to all
+      let cases: any[];
+      let nationalityMatched = false;
+
+      if (profile.nationality) {
+        const nationalityWhere = {
+          ...where,
+          nationality: {
+            equals: profile.nationality,
+            mode: 'insensitive' as const,
+          },
+        };
+        cases = await this.prisma.admissionCase.findMany({
+          where: nationalityWhere,
+          take,
+          orderBy: { createdAt: 'desc' },
+          include: { school: { select: { name: true, nameZh: true } } },
+        });
+
+        if (cases.length >= take) {
+          nationalityMatched = true;
+        } else {
+          // Not enough same-nationality cases — fill remaining slots with any cases
+          const remaining = take - cases.length;
+          const sameIds = cases.map((c: any) => c.id);
+          const fallbackCases = await this.prisma.admissionCase.findMany({
+            where: {
+              ...where,
+              id: { notIn: sameIds },
+            },
+            take: remaining,
+            orderBy: { createdAt: 'desc' },
+            include: { school: { select: { name: true, nameZh: true } } },
+          });
+          cases = [...cases, ...fallbackCases];
+          nationalityMatched = cases.length > 0 && sameIds.length > 0;
+        }
+      } else {
+        cases = await this.prisma.admissionCase.findMany({
+          where,
+          take,
+          orderBy: { createdAt: 'desc' },
+          include: { school: { select: { name: true, nameZh: true } } },
+        });
+      }
 
       if (!cases.length) {
         return {
@@ -620,6 +679,8 @@ ${
         matchCriteria: {
           gpa: profile.gpa,
           targetMajor: profile.targetMajor,
+          nationality: profile.nationality ?? null,
+          nationalityMatched,
           schoolFilter: args.schoolName ?? null,
         },
         cases: cases.map((c) => ({
@@ -649,12 +710,97 @@ ${
           highSchoolType: c.highSchoolType,
           curriculumType: c.curriculumType,
           demographicTags: c.demographicTags,
+          nationality: c.nationality,
         })),
       };
     } catch (error) {
       this.logger.error('Failed to find similar cases', error);
       return {
         error: isZh ? '查找相似案例失败' : 'Failed to find similar cases',
+      };
+    }
+  }
+
+  async analyzeIntlCompetitiveness(
+    args: { schoolId: string; nationality: string },
+    locale = 'zh',
+  ) {
+    const isZh = locale === 'zh';
+    try {
+      const { schoolId, nationality } = args;
+
+      // Query cases for the specific nationality at this school
+      const nationalityCases = await this.prisma.admissionCase.findMany({
+        where: {
+          schoolId,
+          nationality: { equals: nationality, mode: 'insensitive' },
+          ...CASE_REVIEW_APPROVED_WHERE,
+        },
+        select: { result: true },
+      });
+
+      const natTotal = nationalityCases.length;
+      const natAdmit = nationalityCases.filter(
+        (c) => c.result === 'ADMITTED',
+      ).length;
+      const natReject = nationalityCases.filter(
+        (c) => c.result === 'REJECTED',
+      ).length;
+      const natAdmitRate =
+        natTotal > 0 ? ((natAdmit / natTotal) * 100).toFixed(1) : null;
+
+      // Query all international student cases at this school
+      const intlCases = await this.prisma.admissionCase.findMany({
+        where: {
+          schoolId,
+          demographicTags: { has: 'international' },
+          ...CASE_REVIEW_APPROVED_WHERE,
+        },
+        select: { result: true },
+      });
+
+      const intlTotal = intlCases.length;
+      const intlAdmit = intlCases.filter((c) => c.result === 'ADMITTED').length;
+      const intlReject = intlCases.filter(
+        (c) => c.result === 'REJECTED',
+      ).length;
+      const intlAdmitRate =
+        intlTotal > 0 ? ((intlAdmit / intlTotal) * 100).toFixed(1) : null;
+
+      if (natTotal === 0 && intlTotal === 0) {
+        return {
+          message: isZh
+            ? `未找到该学校的国际生录取案例数据`
+            : `No international student admission case data found for this school`,
+        };
+      }
+
+      return {
+        nationality: {
+          country: nationality,
+          totalCases: natTotal,
+          admitted: natAdmit,
+          rejected: natReject,
+          waitlistedOrDeferred: natTotal - natAdmit - natReject,
+          admitRate: natAdmitRate ? `${natAdmitRate}%` : 'N/A',
+        },
+        allInternational: {
+          totalCases: intlTotal,
+          admitted: intlAdmit,
+          rejected: intlReject,
+          waitlistedOrDeferred: intlTotal - intlAdmit - intlReject,
+          admitRate: intlAdmitRate ? `${intlAdmitRate}%` : 'N/A',
+        },
+        summary: isZh
+          ? `${nationality}申请者: ${natTotal}例, 录取${natAdmit}例(${natAdmitRate ?? 'N/A'}%); 全部国际生: ${intlTotal}例, 录取${intlAdmit}例(${intlAdmitRate ?? 'N/A'}%)`
+          : `${nationality} applicants: ${natTotal} cases, ${natAdmit} admitted (${natAdmitRate ?? 'N/A'}%); All international: ${intlTotal} cases, ${intlAdmit} admitted (${intlAdmitRate ?? 'N/A'}%)`,
+      };
+    } catch (error) {
+      this.logger.error('Failed to analyze intl competitiveness', error);
+      return {
+        error: isZh
+          ? '分析国际生竞争力失败'
+          : 'Failed to analyze international competitiveness',
       };
     }
   }

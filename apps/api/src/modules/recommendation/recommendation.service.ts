@@ -124,10 +124,52 @@ export class RecommendationService {
       );
     }
 
+    // Fetch assessment data (MBTI / Holland) for richer context
+    const assessmentResults = await this.prisma.assessmentResult.findMany({
+      where: { userId },
+      include: { assessment: { select: { type: true } } },
+      orderBy: { completedAt: 'desc' },
+    });
+    const mbtiResult = assessmentResults.find(
+      (r) => r.assessment.type === 'MBTI',
+    );
+    const hollandResult = assessmentResults.find(
+      (r) => r.assessment.type === 'HOLLAND',
+    );
+    const assessmentData =
+      mbtiResult || hollandResult
+        ? {
+            mbtiType: (mbtiResult?.result as any)?.mbtiType as
+              | string
+              | undefined,
+            hollandCodes: (hollandResult?.result as any)?.hollandCodes as
+              | string[]
+              | undefined,
+          }
+        : undefined;
+
     // Build AI prompt
     const schoolCount = dto.schoolCount || 15;
     const systemPrompt = buildRecommendationSystemPrompt(locale, schoolCount);
-    const userPrompt = buildRecommendationUserPrompt(profile, dto, locale);
+
+    // Extract nationality context for international student awareness
+    const nationalityContext =
+      (profile as any).nationality || (profile as any).isInternational
+        ? {
+            nationality: (profile as any).nationality as string | undefined,
+            isInternational: (profile as any).isInternational as
+              | boolean
+              | undefined,
+          }
+        : undefined;
+
+    const userPrompt = buildRecommendationUserPrompt(
+      profile,
+      dto,
+      locale,
+      assessmentData,
+      nationalityContext,
+    );
 
     try {
       const result = await this.llmService.chatSimple(
@@ -158,6 +200,9 @@ export class RecommendationService {
             Math.max(0, Number(r.estimatedProbability) || 50),
           ),
           fitScore: Math.min(100, Math.max(0, Number(r.fitScore) || 50)),
+          recommendedMajors: Array.isArray(r.recommendedMajors)
+            ? r.recommendedMajors.slice(0, 3)
+            : [],
           reasons: Array.isArray(r.reasons) ? r.reasons : [],
           concerns: Array.isArray(r.concerns) ? r.concerns : [],
         }));
@@ -194,7 +239,10 @@ export class RecommendationService {
               additional: dto.additionalPreferences,
             },
             recommendations: recommendations as any,
-            analysis: parsed.analysis,
+            analysis: {
+              ...parsed.analysis,
+              summerPrograms: parsed.summerPrograms || [],
+            },
             summary: parsed.summary,
             tokenUsed,
           },
@@ -205,6 +253,7 @@ export class RecommendationService {
         id: savedRecommendation.id,
         recommendations,
         analysis: parsed.analysis,
+        summerPrograms: parsed.summerPrograms || [],
         summary: parsed.summary,
         tokenUsed,
         createdAt: savedRecommendation.createdAt,
@@ -255,14 +304,19 @@ export class RecommendationService {
       take: 10,
     });
 
-    return recommendations.map((r) => ({
-      id: r.id,
-      recommendations: r.recommendations as unknown as RecommendedSchoolDto[],
-      analysis: r.analysis as unknown as RecommendationAnalysisDto,
-      summary: r.summary || '',
-      tokenUsed: r.tokenUsed,
-      createdAt: r.createdAt,
-    }));
+    return recommendations.map((r) => {
+      const analysisData = r.analysis as any;
+      const { summerPrograms, ...analysis } = analysisData || {};
+      return {
+        id: r.id,
+        recommendations: r.recommendations as unknown as RecommendedSchoolDto[],
+        analysis: analysis as unknown as RecommendationAnalysisDto,
+        summerPrograms: summerPrograms || [],
+        summary: r.summary || '',
+        tokenUsed: r.tokenUsed,
+        createdAt: r.createdAt,
+      };
+    });
   }
 
   /**
@@ -287,11 +341,14 @@ export class RecommendationService {
       'Failed to record view to memory',
     );
 
+    const analysisData = recommendation.analysis as any;
+    const { summerPrograms, ...analysis } = analysisData || {};
     return {
       id: recommendation.id,
       recommendations:
         recommendation.recommendations as unknown as RecommendedSchoolDto[],
-      analysis: recommendation.analysis as unknown as RecommendationAnalysisDto,
+      analysis: analysis as unknown as RecommendationAnalysisDto,
+      summerPrograms: summerPrograms || [],
       summary: recommendation.summary || '',
       tokenUsed: recommendation.tokenUsed,
       createdAt: recommendation.createdAt,

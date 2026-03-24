@@ -2,13 +2,18 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
 import { CacheInvalidationService } from '../../common/redis/cache-invalidation.service';
 import { Profile, Prisma, Visibility, Role } from '@prisma/client';
-import { UpdateProfileDto } from './dto';
+import {
+  UpdateProfileDto,
+  CreateRecommendationLetterDto,
+  UpdateRecommendationLetterDto,
+} from './dto';
 
 /**
  * Handles core profile CRUD operations: find, create, update, upsert,
@@ -49,6 +54,7 @@ export class ProfileCrudService {
         awards: { orderBy: { order: 'asc' }, include: { competition: true } },
         education: { include: { highSchool: true } },
         essays: true,
+        semesterGpas: { orderBy: { order: 'asc' } },
       },
     });
 
@@ -91,6 +97,7 @@ export class ProfileCrudService {
           include: { activityTemplate: true },
         },
         awards: { orderBy: { order: 'asc' }, include: { competition: true } },
+        semesterGpas: { orderBy: { order: 'asc' } },
         user: { select: { id: true } },
       },
     });
@@ -236,5 +243,60 @@ export class ProfileCrudService {
     await this.cacheInvalidation.onProfileChange(userId);
 
     return profile;
+  }
+
+  // ============================================
+  // Recommendation Letters CRUD
+  // ============================================
+
+  async getRecommendationLetters(userId: string) {
+    return this.prisma.recommendationLetter.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async createRecommendationLetter(
+    userId: string,
+    data: CreateRecommendationLetterDto,
+  ) {
+    return this.prisma.recommendationLetter.create({
+      data: {
+        ...data,
+        dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
+        user: { connect: { id: userId } },
+      },
+    });
+  }
+
+  async updateRecommendationLetter(
+    userId: string,
+    id: string,
+    data: UpdateRecommendationLetterDto,
+  ) {
+    const letter = await this.prisma.recommendationLetter.findFirst({
+      where: { id, userId },
+    });
+    if (!letter) {
+      throw new NotFoundException('Recommendation letter not found');
+    }
+    return this.prisma.recommendationLetter.update({
+      where: { id },
+      data: {
+        ...data,
+        dueDate: data.dueDate ? new Date(data.dueDate) : data.dueDate,
+      },
+    });
+  }
+
+  async deleteRecommendationLetter(userId: string, id: string) {
+    const letter = await this.prisma.recommendationLetter.findFirst({
+      where: { id, userId },
+    });
+    if (!letter) {
+      throw new NotFoundException('Recommendation letter not found');
+    }
+    await this.prisma.recommendationLetter.delete({ where: { id } });
+    return { success: true };
   }
 }

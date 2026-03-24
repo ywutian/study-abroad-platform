@@ -97,6 +97,7 @@ export function CreateCaseDialog({ open, onOpenChange }: Props) {
   const [highSchoolName, setHighSchoolName] = useState('');
   const [showHsDropdown, setShowHsDropdown] = useState(false);
   const [curriculum, setCurriculum] = useState('');
+  const [nationality, setNationality] = useState('');
   const [demographics, setDemographics] = useState<Set<string>>(new Set());
 
   // Activities & Awards (text-based for single entry)
@@ -152,6 +153,7 @@ export function CreateCaseDialog({ open, onOpenChange }: Props) {
     setHighSchoolId('');
     setHighSchoolName('');
     setCurriculum('');
+    setNationality('');
     setDemographics(new Set());
     setActivityList('');
     setAwardsList('');
@@ -220,6 +222,7 @@ export function CreateCaseDialog({ open, onOpenChange }: Props) {
       highSchoolId: highSchoolId || undefined,
       curriculumType: curriculum || undefined,
       demographicTags: demographics.size > 0 ? [...demographics] : undefined,
+      nationality: nationality || undefined,
       financialAid: financialAid || undefined,
       narrative: narrative || undefined,
       activityList: activityList || undefined,
@@ -504,6 +507,14 @@ export function CreateCaseDialog({ open, onOpenChange }: Props) {
                     ✕
                   </button>
                 )}
+              </div>
+              <div className="space-y-1.5">
+                <Label>{t('nationality')}</Label>
+                <Input
+                  value={nationality}
+                  onChange={(e) => setNationality(e.target.value)}
+                  placeholder={te('nationalityPlaceholder')}
+                />
               </div>
               <div className="space-y-1.5">
                 <Label>{t('curriculum')}</Label>

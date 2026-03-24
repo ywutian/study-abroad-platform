@@ -27,6 +27,7 @@ export const SETTING_KEYS = {
   POINTS_ACTION_AI_ESSAY_GALLERY: 'points_action_AI_ESSAY_GALLERY',
   POINTS_ACTION_AI_SCHOOL_RECOMMENDATION:
     'points_action_AI_SCHOOL_RECOMMENDATION',
+  POINTS_ACTION_AI_ACTIVITY_REFINE: 'points_action_AI_ACTIVITY_REFINE',
   // Subscription pricing
   SUBSCRIPTION_PRO_PRICE: 'subscription_pro_price',
   SUBSCRIPTION_PREMIUM_PRICE: 'subscription_premium_price',
@@ -149,6 +150,11 @@ const DEFAULT_SETTINGS: Record<
   [SETTING_KEYS.POINTS_ACTION_AI_SCHOOL_RECOMMENDATION]: {
     value: '-25',
     description: 'Points consumed for AI school recommendation',
+    category: 'points',
+  },
+  [SETTING_KEYS.POINTS_ACTION_AI_ACTIVITY_REFINE]: {
+    value: '-15',
+    description: 'Points consumed for AI activity description refinement',
     category: 'points',
   },
   // Subscription pricing defaults

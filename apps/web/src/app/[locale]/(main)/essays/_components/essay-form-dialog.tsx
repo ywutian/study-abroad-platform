@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { useTour, TOURS, type TourStep } from '@/components/features/onboarding/tour-provider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -40,6 +41,8 @@ interface EssayFormDialogProps {
   getWordCount: (text: string) => number;
   essayPromptId?: string | null;
   onEssayPromptIdChange?: (id: string | null) => void;
+  initialSchoolId?: string | null;
+  autoOpenPromptSelector?: boolean;
 }
 
 export function EssayFormDialog({
@@ -52,10 +55,51 @@ export function EssayFormDialog({
   getWordCount,
   essayPromptId,
   onEssayPromptIdChange,
+  initialSchoolId,
+  autoOpenPromptSelector,
 }: EssayFormDialogProps) {
   const t = useTranslations();
+  const { registerTour, startTour, hasCompletedTour } = useTour();
 
   const [selectedPrompt, setSelectedPrompt] = useState<SelectedPrompt | null>(null);
+
+  // Register Essay Form Tour
+  useEffect(() => {
+    const steps: TourStep[] = [
+      {
+        id: 'essay-prompt-selector',
+        element: '[data-tour="essay-prompt-selector"]',
+        popover: {
+          title: t('essays.tour.form.step1.title'),
+          description: t('essays.tour.form.step1.desc'),
+          side: 'bottom',
+          align: 'start',
+        },
+      },
+      {
+        id: 'essay-content',
+        element: '[data-tour="essay-content"]',
+        popover: {
+          title: t('essays.tour.form.step2.title'),
+          description: t('essays.tour.form.step2.desc'),
+          side: 'top',
+          align: 'center',
+        },
+      },
+    ];
+    registerTour({
+      id: TOURS.ESSAYS_FORM,
+      steps,
+    });
+  }, [registerTour, t]);
+
+  // Auto-start Tour B when dialog opens for the first time
+  useEffect(() => {
+    if (isFormOpen && !hasCompletedTour(TOURS.ESSAYS_FORM)) {
+      const timer = setTimeout(() => startTour(TOURS.ESSAYS_FORM), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isFormOpen, hasCompletedTour, startTour]);
 
   const handlePromptSelect = useCallback(
     (prompt: SelectedPrompt) => {
@@ -63,10 +107,21 @@ export function EssayFormDialog({
       onEssayPromptIdChange?.(prompt.id);
 
       // Auto-fill title with school + type
-      const typeLabel = prompt.type
-        .split('_')
-        .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
-        .join(' ');
+      const typeLabels: Record<string, string> = {
+        PERSONAL_STATEMENT: t('essays.promptSelector.types.PERSONAL_STATEMENT'),
+        WHY_SCHOOL: t('essays.promptSelector.types.WHY_SCHOOL'),
+        SUPPLEMENTAL: t('essays.promptSelector.types.SUPPLEMENTAL'),
+        SHORT_ANSWER: t('essays.promptSelector.types.SHORT_ANSWER'),
+        ACTIVITY: t('essays.promptSelector.types.ACTIVITY'),
+        OPTIONAL: t('essays.promptSelector.types.OPTIONAL'),
+        OTHER: t('essays.promptSelector.types.OTHER'),
+      };
+      const typeLabel =
+        typeLabels[prompt.type] ??
+        prompt.type
+          .split('_')
+          .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
+          .join(' ');
       const currentTitle = essayForm.getValues('title');
       if (!currentTitle) {
         essayForm.setValue('title', `${prompt.schoolName} - ${typeLabel}`);
@@ -75,7 +130,7 @@ export function EssayFormDialog({
       // Auto-fill prompt text
       essayForm.setValue('prompt', prompt.prompt);
     },
-    [essayForm, onEssayPromptIdChange]
+    [essayForm, onEssayPromptIdChange, t]
   );
 
   const handlePromptClear = useCallback(() => {
@@ -129,11 +184,13 @@ export function EssayFormDialog({
           </div>
 
           {/* Prompt Selector */}
-          <div className="space-y-2">
+          <div className="space-y-2" data-tour="essay-prompt-selector">
             <PromptSelector
               onSelect={handlePromptSelect}
               onClear={handlePromptClear}
               selectedPrompt={selectedPrompt}
+              initialSchoolId={initialSchoolId}
+              autoOpen={autoOpenPromptSelector}
             />
           </div>
 
@@ -147,7 +204,7 @@ export function EssayFormDialog({
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2" data-tour="essay-content">
             <div className="flex items-center justify-between">
               <Label>{t('essays.label.content')}</Label>
               <span className="text-xs text-muted-foreground">

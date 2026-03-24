@@ -16,6 +16,14 @@ export const CASE_REVIEW_APPROVED_WHERE = {
  * School basic fields — shared across school-list, recommendation, hall, case, swipe.
  * When adding fields here, also update mapSchoolBasic() in common/mappers/school.mapper.ts.
  */
+export const SCHOOL_RANKING_SELECT = {
+  source: true,
+  list: true,
+  rank: true,
+  year: true,
+  sourceUrl: true,
+} as const satisfies Prisma.SchoolRankingSelect;
+
 export const SCHOOL_BASIC_SELECT = {
   id: true,
   name: true,
@@ -26,6 +34,11 @@ export const SCHOOL_BASIC_SELECT = {
   city: true,
   state: true,
   logoUrl: true,
+  website: true,
+  scorecardId: true,
+  ipedsId: true,
+  transferAcceptanceRate: true,
+  rankings: { select: SCHOOL_RANKING_SELECT },
 } as const satisfies Prisma.SchoolSelect;
 
 /**

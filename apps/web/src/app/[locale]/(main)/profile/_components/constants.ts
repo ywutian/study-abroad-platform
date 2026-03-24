@@ -8,6 +8,7 @@ import {
   Target,
   Shield,
   Check,
+  Mail,
 } from 'lucide-react';
 import type { TabConfig } from './types';
 
@@ -96,6 +97,12 @@ export const TAB_CONFIG: TabConfig[] = [
   },
   { value: 'targets', labelKey: 'profile.steps.targets', icon: Target, color: 'bg-destructive' },
   {
+    value: 'recLetters',
+    labelKey: 'profile.steps.recLetters',
+    icon: Mail,
+    color: 'from-violet-500 to-purple-500',
+  },
+  {
     value: 'privacy',
     labelKey: 'profile.steps.privacy',
     icon: Shield,
@@ -154,4 +161,21 @@ export const AWARD_LEVEL_KEYS: Record<string, string> = {
   STATE: 'profile.awardLevels.state',
   NATIONAL: 'profile.awardLevels.national',
   INTERNATIONAL: 'profile.awardLevels.international',
+};
+
+export const AWARD_CATEGORY_KEYS: Record<string, string> = {
+  STEM: 'profile.awardCategories.stem',
+  MATH: 'profile.awardCategories.math',
+  SCIENCE: 'profile.awardCategories.science',
+  COMPUTER_SCIENCE: 'profile.awardCategories.computerScience',
+  ENGINEERING: 'profile.awardCategories.engineering',
+  BUSINESS: 'profile.awardCategories.business',
+  ARTS: 'profile.awardCategories.arts',
+  HUMANITIES: 'profile.awardCategories.humanities',
+  SOCIAL_SCIENCE: 'profile.awardCategories.socialScience',
+  LANGUAGE: 'profile.awardCategories.language',
+  SPORTS: 'profile.awardCategories.sports',
+  COMMUNITY_SERVICE: 'profile.awardCategories.communityService',
+  LEADERSHIP: 'profile.awardCategories.leadership',
+  OTHER: 'profile.awardCategories.other',
 };

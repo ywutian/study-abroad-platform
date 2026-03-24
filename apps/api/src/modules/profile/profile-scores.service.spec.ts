@@ -4,7 +4,12 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CacheInvalidationService } from '../../common/redis/cache-invalidation.service';
 import { LLMService } from '../ai-agent/core/llm.service';
 import { ProfileHelpersService } from './profile-helpers.service';
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { CaseIncentiveService } from '../points/incentive.service';
+import {
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 
 describe('ProfileScoresService', () => {
   let service: ProfileScoresService;
@@ -19,6 +24,7 @@ describe('ProfileScoresService', () => {
     activity: {
       create: jest.fn(),
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
       findMany: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
@@ -30,8 +36,15 @@ describe('ProfileScoresService', () => {
       update: jest.fn(),
       delete: jest.fn(),
     },
+    semesterGpa: {
+      create: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    },
     profile: {
       findUnique: jest.fn(),
+      update: jest.fn(),
     },
     $transaction: jest.fn(),
   };
@@ -49,6 +62,10 @@ describe('ProfileScoresService', () => {
     verifyProfileOwnership: jest.fn(),
   };
 
+  const mockCaseIncentiveService = {
+    charge: jest.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -57,6 +74,7 @@ describe('ProfileScoresService', () => {
         { provide: CacheInvalidationService, useValue: mockCacheInvalidation },
         { provide: LLMService, useValue: mockLLMService },
         { provide: ProfileHelpersService, useValue: mockHelpers },
+        { provide: CaseIncentiveService, useValue: mockCaseIncentiveService },
       ],
     }).compile();
 
@@ -329,6 +347,501 @@ describe('ProfileScoresService', () => {
 
       expect(result.suggestedOrder).toHaveLength(2);
       expect(result.summary).toContain('unavailable');
+    });
+  });
+
+  // ============================================
+  // Semester GPA CRUD
+  // ============================================
+
+  describe('getSemesterGpas', () => {
+    it('should return semester GPAs for a user', async () => {
+      const gpas = [
+        { id: 'sg-1', semester: 'g9fall', gpa: 3.8 },
+        { id: 'sg-2', semester: 'g9spring', gpa: 3.9 },
+      ];
+      mockPrisma.profile.findUnique.mockResolvedValue({ semesterGpas: gpas });
+
+      const result = await service.getSemesterGpas('user-1');
+
+      expect(result).toHaveLength(2);
+    });
+
+    it('should return empty array when no profile exists', async () => {
+      mockPrisma.profile.findUnique.mockResolvedValue(null);
+
+      const result = await service.getSemesterGpas('nonexistent');
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('createSemesterGpa', () => {
+    it('should create a semester GPA and trigger recalculation', async () => {
+      const created = {
+        id: 'sg-1',
+        profileId: 'profile-1',
+        semester: 'g9fall',
+        gpa: 3.8,
+      };
+      mockPrisma.semesterGpa.create.mockResolvedValue(created);
+      // recalculateGpa will call profile.findUnique
+      mockPrisma.profile.findUnique.mockResolvedValue({
+        gpa9: null,
+        gpa10: null,
+        gpa11: null,
+        gpa12: null,
+        semesterGpas: [
+          { semester: 'g9fall', gpa: 3.8, gpaScale: 4.0, credits: null },
+        ],
+      });
+      mockPrisma.profile.update.mockResolvedValue({});
+
+      const result = await service.createSemesterGpa('user-1', {
+        semester: 'g9fall',
+        year: 2024,
+        gpa: 3.8,
+        gpaScale: 4.0,
+      } as any);
+
+      expect(result).toEqual(created);
+      expect(mockPrisma.profile.update).toHaveBeenCalled();
+      expect(mockCacheInvalidation.onProfileChange).toHaveBeenCalledWith(
+        'user-1',
+      );
+    });
+  });
+
+  describe('updateSemesterGpa', () => {
+    it('should update semester GPA after verifying ownership', async () => {
+      mockPrisma.semesterGpa.findUnique.mockResolvedValue({
+        id: 'sg-1',
+        profile: { id: 'profile-1', userId: 'user-1' },
+      });
+      mockPrisma.semesterGpa.update.mockResolvedValue({
+        id: 'sg-1',
+        gpa: 3.9,
+      });
+      // recalculateGpa
+      mockPrisma.profile.findUnique.mockResolvedValue({
+        gpa9: null,
+        gpa10: null,
+        gpa11: null,
+        gpa12: null,
+        semesterGpas: [],
+      });
+
+      const result = await service.updateSemesterGpa('user-1', 'sg-1', {
+        gpa: 3.9,
+      } as any);
+
+      expect(result.gpa).toBe(3.9);
+    });
+
+    it('should throw NotFoundException when semester GPA does not exist', async () => {
+      mockPrisma.semesterGpa.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.updateSemesterGpa('user-1', 'nonexistent', {} as any),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw ForbiddenException when semester GPA belongs to another user', async () => {
+      mockPrisma.semesterGpa.findUnique.mockResolvedValue({
+        id: 'sg-1',
+        profile: { id: 'profile-2', userId: 'other-user' },
+      });
+
+      await expect(
+        service.updateSemesterGpa('user-1', 'sg-1', {} as any),
+      ).rejects.toThrow(ForbiddenException);
+    });
+  });
+
+  describe('deleteSemesterGpa', () => {
+    it('should delete semester GPA and trigger recalculation', async () => {
+      mockPrisma.semesterGpa.findUnique.mockResolvedValue({
+        id: 'sg-1',
+        profile: { id: 'profile-1', userId: 'user-1' },
+      });
+      mockPrisma.semesterGpa.delete.mockResolvedValue({});
+      // recalculateGpa
+      mockPrisma.profile.findUnique.mockResolvedValue({
+        gpa9: null,
+        gpa10: null,
+        gpa11: null,
+        gpa12: null,
+        semesterGpas: [],
+      });
+
+      await service.deleteSemesterGpa('user-1', 'sg-1');
+
+      expect(mockPrisma.semesterGpa.delete).toHaveBeenCalledWith({
+        where: { id: 'sg-1' },
+      });
+      expect(mockCacheInvalidation.onProfileChange).toHaveBeenCalledWith(
+        'user-1',
+      );
+    });
+
+    it('should throw NotFoundException when semester GPA does not exist', async () => {
+      mockPrisma.semesterGpa.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.deleteSemesterGpa('user-1', 'nonexistent'),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw ForbiddenException when semester GPA belongs to another user', async () => {
+      mockPrisma.semesterGpa.findUnique.mockResolvedValue({
+        id: 'sg-1',
+        profile: { id: 'profile-2', userId: 'other-user' },
+      });
+
+      await expect(service.deleteSemesterGpa('user-1', 'sg-1')).rejects.toThrow(
+        ForbiddenException,
+      );
+    });
+  });
+
+  // ============================================
+  // GPA Recalculation (via updateGpaByGrade / createSemesterGpa)
+  // ============================================
+
+  describe('recalculateGpa (via updateGpaByGrade)', () => {
+    it('should compute weighted average from grade-level GPAs only', async () => {
+      // updateGpaByGrade calls profile.update then recalculateGpa
+      mockPrisma.profile.update.mockResolvedValue({});
+      // First call: updateGpaByGrade's own update
+      // Second call inside recalculateGpa: findUnique returns grade GPAs
+      mockPrisma.profile.findUnique.mockResolvedValue({
+        gpa9: 3.5,
+        gpa10: 3.7,
+        gpa11: 3.9,
+        gpa12: 4.0,
+        semesterGpas: [],
+      });
+
+      await service.updateGpaByGrade('user-1', {
+        gpa9: 3.5,
+        gpa10: 3.7,
+        gpa11: 3.9,
+        gpa12: 4.0,
+      });
+
+      // Weighted: 3.5*0.15 + 3.7*0.25 + 3.9*0.35 + 4.0*0.25 = 0.525 + 0.925 + 1.365 + 1.0 = 3.815
+      // Rounded to 2 decimals: 3.82 (3.815 rounds to 3.82)
+      const updateCalls = mockPrisma.profile.update.mock.calls;
+      const recalcCall = updateCalls.find(
+        (call: any[]) => call[0].data?.gpa !== undefined,
+      );
+      expect(recalcCall).toBeDefined();
+      expect(recalcCall[0].data.gpa).toBe(3.82);
+    });
+
+    it('should compute weighted average with only some grade GPAs', async () => {
+      mockPrisma.profile.update.mockResolvedValue({});
+      // Only gpa9 and gpa11 provided
+      mockPrisma.profile.findUnique.mockResolvedValue({
+        gpa9: 3.5,
+        gpa10: null,
+        gpa11: 3.9,
+        gpa12: null,
+        semesterGpas: [],
+      });
+
+      await service.updateGpaByGrade('user-1', { gpa9: 3.5, gpa11: 3.9 });
+
+      // Weights: 9=0.15, 11=0.35. totalWeight=0.50
+      // weightedSum = 3.5*0.15 + 3.9*0.35 = 0.525 + 1.365 = 1.89
+      // gpa = 1.89 / 0.50 = 3.78
+      const updateCalls = mockPrisma.profile.update.mock.calls;
+      const recalcCall = updateCalls.find(
+        (call: any[]) => call[0].data?.gpa !== undefined,
+      );
+      expect(recalcCall).toBeDefined();
+      expect(recalcCall[0].data.gpa).toBe(3.78);
+    });
+
+    it('should prioritize grade-level GPAs over semester GPAs', async () => {
+      mockPrisma.profile.update.mockResolvedValue({});
+      mockPrisma.profile.findUnique.mockResolvedValue({
+        gpa9: 3.5,
+        gpa10: null,
+        gpa11: null,
+        gpa12: null,
+        semesterGpas: [
+          { semester: 'g10fall', gpa: 4.0, gpaScale: 4.0, credits: null },
+        ],
+      });
+
+      await service.updateGpaByGrade('user-1', { gpa9: 3.5 });
+
+      // Should use grade-level (3.5), NOT semester GPAs
+      const updateCalls = mockPrisma.profile.update.mock.calls;
+      const recalcCall = updateCalls.find(
+        (call: any[]) => call[0].data?.gpa !== undefined,
+      );
+      expect(recalcCall).toBeDefined();
+      expect(recalcCall[0].data.gpa).toBe(3.5);
+    });
+
+    it('should not overwrite GPA when neither grade-level nor semester GPAs exist', async () => {
+      mockPrisma.profile.update.mockResolvedValue({});
+      mockPrisma.profile.findUnique.mockResolvedValue({
+        gpa9: null,
+        gpa10: null,
+        gpa11: null,
+        gpa12: null,
+        semesterGpas: [],
+      });
+
+      await service.updateGpaByGrade('user-1', {});
+
+      // profile.update called once for the grade fields, but NOT for gpa recalc
+      const updateCalls = mockPrisma.profile.update.mock.calls;
+      const recalcCall = updateCalls.find(
+        (call: any[]) => call[0].data?.gpa !== undefined,
+      );
+      expect(recalcCall).toBeUndefined();
+    });
+  });
+
+  describe('recalculateGpa from semester GPAs (via createSemesterGpa)', () => {
+    it('should aggregate semester GPAs to grade level with simple average (no credits)', async () => {
+      mockPrisma.semesterGpa.create.mockResolvedValue({ id: 'sg-1' });
+      mockPrisma.profile.findUnique.mockResolvedValue({
+        gpa9: null,
+        gpa10: null,
+        gpa11: null,
+        gpa12: null,
+        semesterGpas: [
+          { semester: 'g9fall', gpa: 3.6, gpaScale: 4.0, credits: null },
+          { semester: 'g9spring', gpa: 3.8, gpaScale: 4.0, credits: null },
+          { semester: 'g10fall', gpa: 3.7, gpaScale: 4.0, credits: null },
+        ],
+      });
+      mockPrisma.profile.update.mockResolvedValue({});
+
+      await service.createSemesterGpa('user-1', {
+        semester: 'g10fall',
+        year: 2024,
+        gpa: 3.7,
+        gpaScale: 4.0,
+      } as any);
+
+      // Grade 9: (3.6/4*4 + 3.8/4*4) / 2 = (3.6 + 3.8) / 2 = 3.7
+      // Grade 10: 3.7/4*4 = 3.7
+      // Weights: 9=0.15, 10=0.25. totalWeight=0.40
+      // weightedSum = 3.7*0.15 + 3.7*0.25 = 0.555 + 0.925 = 1.48
+      // gpa = 1.48 / 0.40 = 3.70
+      const updateCalls = mockPrisma.profile.update.mock.calls;
+      const recalcCall = updateCalls.find(
+        (call: any[]) => call[0].data?.gpa !== undefined,
+      );
+      expect(recalcCall).toBeDefined();
+      expect(recalcCall[0].data.gpa).toBe(3.7);
+    });
+
+    it('should use credit-weighted average when all semesters have credits', async () => {
+      mockPrisma.semesterGpa.create.mockResolvedValue({ id: 'sg-1' });
+      mockPrisma.profile.findUnique.mockResolvedValue({
+        gpa9: null,
+        gpa10: null,
+        gpa11: null,
+        gpa12: null,
+        semesterGpas: [
+          { semester: 'g9fall', gpa: 3.5, gpaScale: 4.0, credits: 15 },
+          { semester: 'g9spring', gpa: 4.0, gpaScale: 4.0, credits: 18 },
+        ],
+      });
+      mockPrisma.profile.update.mockResolvedValue({});
+
+      await service.createSemesterGpa('user-1', {
+        semester: 'g9spring',
+        year: 2024,
+        gpa: 4.0,
+        gpaScale: 4.0,
+        credits: 18,
+      } as any);
+
+      // Grade 9 credit-weighted: (3.5/4*4*15 + 4.0/4*4*18) / (15+18) = (52.5 + 72) / 33 = 124.5/33 = 3.7727...
+      // Rounded: 3.77
+      const updateCalls = mockPrisma.profile.update.mock.calls;
+      const recalcCall = updateCalls.find(
+        (call: any[]) => call[0].data?.gpa !== undefined,
+      );
+      expect(recalcCall).toBeDefined();
+      expect(recalcCall[0].data.gpa).toBe(3.77);
+    });
+
+    it('should normalize different gpaScale values to 4.0 scale', async () => {
+      mockPrisma.semesterGpa.create.mockResolvedValue({ id: 'sg-1' });
+      mockPrisma.profile.findUnique.mockResolvedValue({
+        gpa9: null,
+        gpa10: null,
+        gpa11: null,
+        gpa12: null,
+        semesterGpas: [
+          { semester: 'g9fall', gpa: 4.5, gpaScale: 5.0, credits: null },
+          { semester: 'g10fall', gpa: 90, gpaScale: 100, credits: null },
+        ],
+      });
+      mockPrisma.profile.update.mockResolvedValue({});
+
+      await service.createSemesterGpa('user-1', {
+        semester: 'g10fall',
+        year: 2024,
+        gpa: 90,
+        gpaScale: 100,
+      } as any);
+
+      // Grade 9: 4.5/5*4 = 3.6
+      // Grade 10: 90/100*4 = 3.6
+      // Weights: 9=0.15, 10=0.25, totalWeight=0.40
+      // weightedSum = 3.6*0.15 + 3.6*0.25 = 0.54 + 0.9 = 1.44
+      // gpa = 1.44/0.40 = 3.60
+      const updateCalls = mockPrisma.profile.update.mock.calls;
+      const recalcCall = updateCalls.find(
+        (call: any[]) => call[0].data?.gpa !== undefined,
+      );
+      expect(recalcCall).toBeDefined();
+      expect(recalcCall[0].data.gpa).toBe(3.6);
+    });
+
+    it('should fall back to simple average when some semesters lack credits', async () => {
+      mockPrisma.semesterGpa.create.mockResolvedValue({ id: 'sg-1' });
+      mockPrisma.profile.findUnique.mockResolvedValue({
+        gpa9: null,
+        gpa10: null,
+        gpa11: null,
+        gpa12: null,
+        semesterGpas: [
+          { semester: 'g9fall', gpa: 3.5, gpaScale: 4.0, credits: 15 },
+          { semester: 'g9spring', gpa: 4.0, gpaScale: 4.0, credits: null },
+        ],
+      });
+      mockPrisma.profile.update.mockResolvedValue({});
+
+      await service.createSemesterGpa('user-1', {
+        semester: 'g9spring',
+        year: 2024,
+        gpa: 4.0,
+        gpaScale: 4.0,
+      } as any);
+
+      // Simple average (not credit-weighted because one has null credits):
+      // (3.5/4*4 + 4.0/4*4) / 2 = (3.5+4.0)/2 = 3.75
+      const updateCalls = mockPrisma.profile.update.mock.calls;
+      const recalcCall = updateCalls.find(
+        (call: any[]) => call[0].data?.gpa !== undefined,
+      );
+      expect(recalcCall).toBeDefined();
+      expect(recalcCall[0].data.gpa).toBe(3.75);
+    });
+
+    it('should not crash and should skip semesters with non-matching format', async () => {
+      mockPrisma.semesterGpa.create.mockResolvedValue({ id: 'sg-1' });
+      mockPrisma.profile.findUnique.mockResolvedValue({
+        gpa9: null,
+        gpa10: null,
+        gpa11: null,
+        gpa12: null,
+        semesterGpas: [
+          { semester: 'fall2024', gpa: 3.8, gpaScale: 4.0, credits: null },
+          { semester: 'spring2025', gpa: 3.9, gpaScale: 4.0, credits: null },
+        ],
+      });
+      mockPrisma.profile.update.mockResolvedValue({});
+
+      await service.createSemesterGpa('user-1', {
+        semester: 'fall2024',
+        year: 2024,
+        gpa: 3.8,
+        gpaScale: 4.0,
+      } as any);
+
+      // None match g\d+ pattern, so gradeGpas map is empty, no recalc happens
+      const updateCalls = mockPrisma.profile.update.mock.calls;
+      const recalcCall = updateCalls.find(
+        (call: any[]) => call[0].data?.gpa !== undefined,
+      );
+      expect(recalcCall).toBeUndefined();
+    });
+
+    it('should handle mixed matching and non-matching semester formats', async () => {
+      mockPrisma.semesterGpa.create.mockResolvedValue({ id: 'sg-1' });
+      mockPrisma.profile.findUnique.mockResolvedValue({
+        gpa9: null,
+        gpa10: null,
+        gpa11: null,
+        gpa12: null,
+        semesterGpas: [
+          { semester: 'g9fall', gpa: 3.8, gpaScale: 4.0, credits: null },
+          { semester: 'fall2024', gpa: 3.9, gpaScale: 4.0, credits: null },
+        ],
+      });
+      mockPrisma.profile.update.mockResolvedValue({});
+
+      await service.createSemesterGpa('user-1', {
+        semester: 'g9fall',
+        year: 2024,
+        gpa: 3.8,
+        gpaScale: 4.0,
+      } as any);
+
+      // Only g9fall matches, fall2024 is skipped
+      // Grade 9: 3.8/4*4 = 3.8
+      const updateCalls = mockPrisma.profile.update.mock.calls;
+      const recalcCall = updateCalls.find(
+        (call: any[]) => call[0].data?.gpa !== undefined,
+      );
+      expect(recalcCall).toBeDefined();
+      expect(recalcCall[0].data.gpa).toBe(3.8);
+    });
+
+    it('should handle case-insensitive semester names (G9Fall)', async () => {
+      mockPrisma.semesterGpa.create.mockResolvedValue({ id: 'sg-1' });
+      mockPrisma.profile.findUnique.mockResolvedValue({
+        gpa9: null,
+        gpa10: null,
+        gpa11: null,
+        gpa12: null,
+        semesterGpas: [
+          { semester: 'G9Fall', gpa: 3.8, gpaScale: 4.0, credits: null },
+        ],
+      });
+      mockPrisma.profile.update.mockResolvedValue({});
+
+      await service.createSemesterGpa('user-1', {
+        semester: 'G9Fall',
+        year: 2024,
+        gpa: 3.8,
+        gpaScale: 4.0,
+      } as any);
+
+      const updateCalls = mockPrisma.profile.update.mock.calls;
+      const recalcCall = updateCalls.find(
+        (call: any[]) => call[0].data?.gpa !== undefined,
+      );
+      expect(recalcCall).toBeDefined();
+      expect(recalcCall[0].data.gpa).toBe(3.8);
+    });
+
+    it('should not recalculate when profile is not found', async () => {
+      mockPrisma.semesterGpa.create.mockResolvedValue({ id: 'sg-1' });
+      mockPrisma.profile.findUnique.mockResolvedValue(null);
+
+      await service.createSemesterGpa('user-1', {
+        semester: 'g9fall',
+        year: 2024,
+        gpa: 3.8,
+        gpaScale: 4.0,
+      } as any);
+
+      // profile.update should not be called for gpa recalc
+      const updateCalls = mockPrisma.profile.update.mock.calls;
+      expect(updateCalls).toHaveLength(0);
     });
   });
 });

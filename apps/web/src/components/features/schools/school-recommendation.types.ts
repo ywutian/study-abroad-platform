@@ -4,6 +4,12 @@ export interface SchoolInfo {
   nameZh?: string;
   usNewsRank?: number;
   acceptanceRate?: number;
+  website?: string;
+  sourceUrls?: {
+    collegeScorecardUrl?: string;
+    ipedsUrl?: string;
+    websiteUrl?: string;
+  };
 }
 
 export interface RecommendationItem {
@@ -11,13 +17,21 @@ export interface RecommendationItem {
   probability: number;
   reason: string;
   highlights: string[];
+  dataPoints?: string[];
+  recommendedMajors?: string[];
   school?: SchoolInfo;
+}
+
+export interface SummerProgram {
+  name: string;
+  reason: string;
 }
 
 export interface RecommendationResponse {
   reach: RecommendationItem[];
   target: RecommendationItem[];
   safety: RecommendationItem[];
+  summerPrograms?: SummerProgram[];
   summary: string;
   status?: 'cached' | 'profile_incomplete' | 'ai_error';
 }

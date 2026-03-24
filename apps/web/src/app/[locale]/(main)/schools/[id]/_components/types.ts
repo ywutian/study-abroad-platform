@@ -26,6 +26,8 @@ export interface SchoolDetail {
   graduationRate?: number;
   isPrivate?: boolean;
   logoUrl?: string;
+  scorecardId?: string;
+  ipedsId?: string;
   nicheSafetyGrade?: string;
   nicheLifeGrade?: string;
   nicheFoodGrade?: string;
@@ -78,6 +80,7 @@ export interface SchoolDetail {
       applicationFee?: number;
     };
     essayPrompts?: Array<{ id: number; prompt: string; year: number }>;
+    provenance?: import('@study-abroad/shared').ProvenanceRecord;
   };
   cases?: Array<{
     id: string;

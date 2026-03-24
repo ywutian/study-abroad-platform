@@ -58,6 +58,8 @@ export enum TestType {
   IELTS = 'IELTS',
   AP = 'AP',
   IB = 'IB',
+  A_LEVEL = 'A_LEVEL',
+  IGCSE = 'IGCSE',
 }
 
 export interface TestScore {
@@ -93,11 +95,29 @@ export enum ActivityCategory {
   OTHER = 'OTHER',
 }
 
+export enum AwardCategory {
+  STEM = 'STEM',
+  MATH = 'MATH',
+  SCIENCE = 'SCIENCE',
+  COMPUTER_SCIENCE = 'COMPUTER_SCIENCE',
+  ENGINEERING = 'ENGINEERING',
+  BUSINESS = 'BUSINESS',
+  ARTS = 'ARTS',
+  HUMANITIES = 'HUMANITIES',
+  SOCIAL_SCIENCE = 'SOCIAL_SCIENCE',
+  LANGUAGE = 'LANGUAGE',
+  SPORTS = 'SPORTS',
+  COMMUNITY_SERVICE = 'COMMUNITY_SERVICE',
+  LEADERSHIP = 'LEADERSHIP',
+  OTHER = 'OTHER',
+}
+
 export interface Award {
   id: string;
   profileId: string;
   name: string;
   level: AwardLevel;
+  category?: AwardCategory;
   year?: number;
   description?: string;
 }
@@ -396,6 +416,11 @@ export interface SchoolMeta {
   state?: string;
   tuition?: number;
   isPrivate?: boolean;
+  testOptional?: boolean;
+  hasEarlyDecision?: boolean;
+  retentionRate?: number;
+  logoUrl?: string;
+  website?: string;
 }
 
 export interface RecommendedSchool {
@@ -404,8 +429,10 @@ export interface RecommendedSchool {
   tier: 'reach' | 'match' | 'safety';
   estimatedProbability: number;
   fitScore: number;
+  recommendedMajors?: string[];
   reasons: string[];
   concerns?: string[];
+  dataPoints?: string[];
   schoolMeta?: SchoolMeta;
 }
 
@@ -415,10 +442,16 @@ export interface RecommendationAnalysis {
   improvementTips: string[];
 }
 
+export interface SummerProgramRecommendation {
+  name: string;
+  reason: string;
+}
+
 export interface RecommendationResult {
   id: string;
   recommendations: RecommendedSchool[];
   analysis: RecommendationAnalysis;
+  summerPrograms?: SummerProgramRecommendation[];
   summary: string;
   tokenUsed: number;
   createdAt: string;
@@ -445,6 +478,31 @@ export interface HealthStatus {
     database: 'ok' | 'error';
   };
 }
+
+// Data Provenance
+export interface FieldProvenance {
+  source: string;
+  at: string;
+}
+export type ProvenanceRecord = Record<string, FieldProvenance>;
+
+/** Human-readable labels for school data sources */
+export const DATA_SOURCE_LABELS: Record<string, { en: string; zh: string }> = {
+  COLLEGE_SCORECARD: { en: 'US Dept. of Education', zh: '美国教育部' },
+  URBAN_INSTITUTE: {
+    en: 'Urban Institute (Federal Data)',
+    zh: 'Urban Institute (联邦教育数据)',
+  },
+  BIGFUTURE: { en: 'College Board', zh: 'College Board' },
+  APPILY: { en: 'Appily (data aggregator)', zh: 'Appily (数据聚合平台)' },
+  IPEDS: {
+    en: 'US Federal Statistics (IPEDS)',
+    zh: '美国联邦教育统计 (IPEDS)',
+  },
+  MANUAL_ADMIN: { en: 'Platform verified', zh: '平台审核' },
+  SEED: { en: 'Initial dataset', zh: '初始数据' },
+  SCRAPER: { en: 'School website', zh: '学校官网' },
+};
 
 // Competition
 export enum CompetitionCategory {
@@ -509,6 +567,7 @@ export interface Essay {
   content: string;
   wordCount?: number;
   schoolId?: string;
+  essayPromptId?: string;
   promptType?: string;
   status: 'DRAFT' | 'IN_REVIEW' | 'FINAL';
   createdAt: string;

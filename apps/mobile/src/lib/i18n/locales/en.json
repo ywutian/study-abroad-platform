@@ -228,7 +228,9 @@
       "gre": "GRE",
       "gmat": "GMAT",
       "ap": "AP",
-      "ib": "IB"
+      "ib": "IB",
+      "a_level": "A-Level",
+      "igcse": "IGCSE"
     },
     "addScore": "Add Score",
     "addActivity": "Add Activity",
@@ -256,6 +258,17 @@
     "enterScore": "Enter your score",
     "enterValidScore": "Please enter a valid score",
     "testDateLabel": "Test Date (optional)",
+    "subjectLabel": "Subject",
+    "selectSubject": "Select subject",
+    "subScoresLabel": "Sub-scores",
+    "subScore": {
+      "readingEBRW": "Reading / EBRW",
+      "math": "Math",
+      "reading": "Reading",
+      "listening": "Listening",
+      "speaking": "Speaking",
+      "writing": "Writing"
+    },
     "editScore": "Edit Score",
     "deleteScoreConfirm": "Are you sure you want to delete this test score?",
     "activityName": "Activity Name",
@@ -337,7 +350,9 @@
       "tuition": "Tuition/Year",
       "avgSalary": "Avg Graduate Salary",
       "usnewsRank": "US News Rank",
-      "qsRank": "QS Rank"
+      "qsRank": "QS Rank",
+      "dataSource": "Source: {{source}}",
+      "updatedAt": "Updated {{date}}"
     },
     "noResults": "No schools found"
   },
@@ -390,6 +405,8 @@
       "satPlaceholder": "400-1600",
       "actPlaceholder": "1-36",
       "toeflPlaceholder": "0-120",
+      "nationalityLabel": "Nationality",
+      "nationalityPlaceholder": "e.g., China, US, India",
       "ieltsPlaceholder": "0-9",
       "gpaRange": "GPA must be between 0-5",
       "satRange": "SAT must be between 400-1600",
@@ -1111,7 +1128,8 @@
     "reach": "Reach",
     "match": "Match",
     "safety": "Safety",
-    "schools": "{count} schools"
+    "schools": "{count} schools",
+    "visitWebsite": "Visit official website"
   },
   "findCollege": {
     "title": "Find College",

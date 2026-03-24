@@ -13,6 +13,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import type { VaultItemDetail, CredentialData } from './vault-types';
+import { isSafeUrl } from '@/lib/utils/url';
 import { typeIcons, typeColors, typeBgColors } from './vault-constants';
 
 interface VaultViewDialogProps {
@@ -83,14 +84,18 @@ export function VaultViewDialog({ item, onClose, onEdit, onDelete }: VaultViewDi
                           <div className="bg-muted rounded-lg p-3">
                             <label className="text-xs text-muted-foreground">{t('website')}</label>
                             <div className="flex items-center justify-between mt-1">
-                              <a
-                                href={cred.website}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-emerald-600 dark:text-emerald-400 hover:underline"
-                              >
-                                {cred.website}
-                              </a>
+                              {isSafeUrl(cred.website) ? (
+                                <a
+                                  href={cred.website}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-emerald-600 dark:text-emerald-400 hover:underline"
+                                >
+                                  {cred.website}
+                                </a>
+                              ) : (
+                                <span className="text-foreground">{cred.website}</span>
+                              )}
                               <Button
                                 size="icon"
                                 variant="ghost"

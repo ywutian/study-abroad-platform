@@ -231,6 +231,9 @@ describe('PredictionService', () => {
               findMany: jest.fn().mockResolvedValue([]),
               upsert: jest.fn().mockResolvedValue({ id: 'pred-1' }),
             },
+            assessmentResult: {
+              findMany: jest.fn().mockResolvedValue([]),
+            },
           },
         },
         {

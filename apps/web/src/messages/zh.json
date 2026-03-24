@@ -56,6 +56,8 @@
     "verified": "已认证",
     "words": "字",
     "optional": "（选填）",
+    "yes": "是",
+    "no": "否",
     "notAvailable": "暂无数据",
     "home": "首页",
     "schools": "学校",
@@ -716,12 +718,110 @@
     "gpaDesc": "记录你的 GPA 信息",
     "gpaScale": "GPA 制式",
     "yourGpa": "你的 GPA",
+    "gpaByGrade": "分年级 GPA",
+    "gpaByGradeDesc": "招生官非常关注各年级 GPA 变化趋势",
+    "gpa9": "九年级 GPA",
+    "gpa10": "十年级 GPA",
+    "gpa11": "十一年级 GPA",
+    "gpa12": "十二年级 GPA",
+    "calculatedGpa": "综合 GPA（自动计算）",
+    "gpaSimpleMode": "简单模式",
+    "gpaDetailedMode": "详细模式",
+    "semesterGpa": "学期 GPA",
+    "semesterGpaDesc": "可选：按学期追踪 GPA 以获取更细粒度数据",
+    "addSemester": "添加学期",
+    "semesterName": "学期",
+    "semesterYear": "年份",
+    "credits": "学分",
+    "weightedAverage": "加权平均",
+    "semesterGpaOptional": "（可选）",
+    "semesterGpaHelper": "部分美国大学会要求逐学期成绩单，在此记录可帮助系统提供更精准的分析。",
+    "gpaFromSemesters": "整体 GPA 将根据学期数据自动计算。",
+    "semesterOptions": {
+      "fall": "秋季",
+      "spring": "春季",
+      "summer": "夏季",
+      "g9fall": "9年级上（初三秋）",
+      "g9spring": "9年级下（初三春）",
+      "g10fall": "10年级上（高一秋）",
+      "g10spring": "10年级下（高一春）",
+      "g11fall": "11年级上（高二秋）",
+      "g11spring": "11年级下（高二春）",
+      "g12fall": "12年级上（高三秋）",
+      "g12spring": "12年级下（高三春）"
+    },
+    "editSemester": "编辑",
+    "deleteSemester": "删除",
+    "saveSemester": "保存",
+    "cancelSemester": "取消",
+    "advancedOptions": "高级选项",
+    "noSemesterGpas": "暂无学期 GPA 记录",
+    "noSemesterGpasHint": "按学期追踪 GPA，更详细展示学术表现趋势",
+    "semesterGpaAdded": "学期 GPA 已添加",
+    "semesterGpaUpdated": "学期 GPA 已更新",
+    "semesterGpaDeleted": "学期 GPA 已删除",
     "activities": "活动经历",
     "activitiesDesc": "记录你的活动经历",
     "awards": "荣誉奖项",
     "awardsDesc": "记录你的荣誉奖项",
     "targetSchools": "目标院校",
     "targetSchoolsDesc": "选择你的目标院校",
+    "schoolSelection": {
+      "roundFilter": "按轮次筛选",
+      "allRounds": "全部轮次",
+      "dataDisclaimer": "学校数据来源于公开数据库，可能未反映最新更新。请以学校官方网站信息为准。",
+      "essayPrompts": "文书题目",
+      "noPrompts": "暂无文书题目",
+      "wordLimit": "字数限制",
+      "deadlines": "截止日期",
+      "interviewRequired": "该校需要面试",
+      "financialAid": "助学金信息",
+      "avgAid": "平均助学金",
+      "netPrice": "净费用",
+      "needMet": "需求满足率",
+      "bindingConflict": "你已有一个{round}申请到{school}，只允许一所绑定轮次学校。",
+      "essayRequirements": "文书要求",
+      "noEssayPrompts": "暂无该校文书题目",
+      "startWriting": "开始写作",
+      "words": "字",
+      "optional": "选填",
+      "aidComparison": "助学金对比",
+      "aidComparisonDesc": "对比目标院校的助学金数据，帮助你做出更明智的选择。",
+      "schools": "所学校",
+      "school": "学校",
+      "needBlind": "Need-Blind",
+      "perYear": "年",
+      "interview": "面试",
+      "interviewFormat": {
+        "ALUMNI": "校友面试",
+        "ADMISSIONS_OFFICER": "招生官面试",
+        "INITIALVIEW": "InitialView",
+        "VERICANT": "维立克",
+        "KIRA": "Kira Talent",
+        "GROUP": "群面",
+        "OPTIONAL": "可选面试",
+        "NOT_OFFERED": "不提供面试"
+      },
+      "interviewTip": {
+        "ALUMNI": "与毕业校友进行对话式面试。保持自然真诚，准备一些关于他们经历的问题。",
+        "ADMISSIONS_OFFICER": "与招生官的正式面试。准备讨论你的申请材料和目标。",
+        "INITIALVIEW": "第三方视频面试平台。在限定时间内录制对问题的回答。",
+        "VERICANT": "维立克面试，中国申请者常用的第三方视频面试平台，包含写作部分。",
+        "KIRA": "在线视频评估，限时回答问题。建议提前用模拟面试练习。",
+        "GROUP": "与其他申请者一起面试。展现团队合作能力的同时突出个人特色。",
+        "OPTIONAL": "非必须但建议参加。参与面试可以展示对学校的兴趣。",
+        "NOT_OFFERED": "该校不提供面试。"
+      },
+      "essayType": {
+        "PERSONAL_STATEMENT": "个人陈述",
+        "WHY_SCHOOL": "Why School",
+        "SUPPLEMENTAL": "补充文书",
+        "SHORT_ANSWER": "简答",
+        "ACTIVITY": "活动",
+        "OPTIONAL": "可选",
+        "OTHER": "其他"
+      }
+    },
     "visibility": "隐私设置",
     "visibilityDesc": {
       "title": "设置你的档案可见性",
@@ -751,6 +851,7 @@
       "activities": "活动",
       "awards": "奖项",
       "targets": "目标院校",
+      "recLetters": "推荐信",
       "privacy": "隐私设置",
       "demographics": "背景信息"
     },
@@ -859,7 +960,8 @@
       "cancel": "取消",
       "edit": "编辑",
       "delete": "删除",
-      "addEducation": "添加教育经历"
+      "addEducation": "添加教育经历",
+      "writeEssay": "撰写文书"
     },
     "aiSort": "AI 排序",
     "aiSorting": "排序中...",
@@ -868,6 +970,14 @@
     "aiSortAccept": "应用排序",
     "aiSortReject": "取消",
     "aiSortApplied": "已应用 AI 建议排序",
+    "caPreview": {
+      "title": "Common App 预览",
+      "desc": "在 Common App 上显示的前 10 项活动",
+      "charWarning": "超出 150 字符",
+      "totalActivities": "{count}/10 项活动",
+      "totalHours": "共 {hours} 小时/周",
+      "noActivities": "暂无活动"
+    },
     "activityCategories": {
       "academic": "学术",
       "arts": "艺术",
@@ -888,6 +998,22 @@
       "national": "国家级",
       "international": "国际级"
     },
+    "awardCategories": {
+      "stem": "STEM",
+      "math": "数学",
+      "science": "科学",
+      "computerScience": "计算机科学",
+      "engineering": "工程",
+      "business": "商科",
+      "arts": "艺术",
+      "humanities": "人文",
+      "socialScience": "社会科学",
+      "language": "语言",
+      "sports": "体育",
+      "communityService": "社区服务",
+      "leadership": "领导力",
+      "other": "其他"
+    },
     "form": {
       "addScore": "添加成绩",
       "testType": "考试类型",
@@ -904,8 +1030,31 @@
       "rolePlaceholder": "输入你的角色",
       "organization": "组织",
       "organizationPlaceholder": "输入组织名称",
+      "detailedDescription": "详细描述",
+      "detailedDescriptionHelper": "用于文书素材和详细记录",
       "activityDescription": "描述",
-      "activityDescPlaceholder": "描述这项活动",
+      "activityDescPlaceholder": "详细描述你的角色、成就和影响...（可先详写，申请时再精炼）",
+      "activityCharCount": "{count}/{max} 字符",
+      "activityDescTooltip": "大部分美国大学申请系统限制活动描述为 150 字符。在这里可以先详写（最多 500 字符），申请时再精炼。",
+      "activityDescHelperEmpty": "详细描述你的角色、成就和影响",
+      "activityDescHelperWithin": "当前长度适合直接用于申请表",
+      "activityDescHelperOver": "已超出申请表长度，申请时需精简",
+      "aiRefineDesc": "AI 精简至 ≤150 字符",
+      "commonAppDescription": "Common App 描述",
+      "commonAppDescriptionPlaceholder": "Common App 精简描述（最多 150 字符）...",
+      "commonAppDescriptionHelper": "此描述将用于你的 Common App 申请提交",
+      "aiGenerate": "AI 生成 Common App 描述",
+      "aiGenerateSuccess": "Common App 描述生成成功",
+      "gradeLevels": "年级",
+      "grade9": "9年级",
+      "grade10": "10年级",
+      "grade11": "11年级",
+      "grade12": "12年级",
+      "timing": "时间安排",
+      "selectTiming": "选择时间安排",
+      "timingSchoolYear": "学年期间",
+      "timingSchoolBreak": "假期期间",
+      "timingAllYear": "全年",
       "startDate": "开始日期",
       "endDate": "结束日期",
       "ongoing": "进行中",
@@ -915,6 +1064,8 @@
       "awardName": "奖项名称",
       "awardNamePlaceholder": "输入奖项名称",
       "awardLevel": "级别",
+      "awardCategory": "学科类别",
+      "selectCategory": "选择类别",
       "selectLevel": "选择级别",
       "awardDate": "获奖日期",
       "awardDescription": "描述",
@@ -955,6 +1106,9 @@
       "speaking": "口语",
       "writing": "写作",
       "math": "数学",
+      "subjects": "科目",
+      "selectSubject": "选择科目",
+      "addSubject": "添加科目",
       "educationTypes": {
         "highSchool": "高中",
         "college": "本科",
@@ -983,7 +1137,14 @@
       "educationAdded": "教育经历已添加",
       "educationUpdated": "教育经历已更新",
       "scoreAdded": "成绩已添加",
-      "scoreUpdated": "成绩已更新"
+      "scoreUpdated": "成绩已更新",
+      "activityRefined": "描述已精简至 ≤150 字符",
+      "schoolAdded": "学校已添加",
+      "schoolsAdded": "已添加 {count} 所学校",
+      "schoolsPartialAdd": "已添加 {added} 所，{failed} 所失败",
+      "schoolsAddFailed": "{count} 所学校添加失败",
+      "schoolRemoved": "学校已移除",
+      "roundUpdated": "轮次已更新"
     },
     "visibilityOptions": {
       "private": "仅自己可见",
@@ -1021,6 +1182,51 @@
       "activityRequired": "请填写活动信息",
       "awardRequired": "请填写奖项信息",
       "scoreRequired": "请填写成绩信息"
+    },
+    "recLetter": {
+      "title": "推荐信",
+      "desc": "管理推荐信并追踪状态",
+      "add": "添加推荐信",
+      "addTitle": "添加推荐信",
+      "editTitle": "编辑推荐信",
+      "field": {
+        "name": "推荐人姓名",
+        "namePlaceholder": "如：张老师",
+        "email": "邮箱",
+        "emailPlaceholder": "recommender@school.edu",
+        "role": "角色",
+        "selectRole": "选择角色",
+        "status": "状态",
+        "subject": "科目/课程",
+        "subjectPlaceholder": "如：AP 物理",
+        "dueDate": "截止日期",
+        "notes": "备注",
+        "notesPlaceholder": "关于这封推荐信的备注..."
+      },
+      "role": {
+        "TEACHER": "老师",
+        "COUNSELOR": "升学顾问",
+        "COACH": "教练",
+        "EMPLOYER": "雇主",
+        "OTHER": "其他"
+      },
+      "status": {
+        "NOT_REQUESTED": "未请求",
+        "REQUESTED": "已请求",
+        "IN_PROGRESS": "撰写中",
+        "SUBMITTED": "已提交",
+        "CONFIRMED": "已确认"
+      },
+      "toast": {
+        "created": "推荐信已添加",
+        "updated": "推荐信已更新",
+        "deleted": "推荐信已删除"
+      },
+      "validation": {
+        "required": "请填写推荐人姓名和角色"
+      },
+      "empty": "暂无推荐信",
+      "emptyHint": "添加推荐人以追踪推荐信状态"
     }
   },
   "ranking": {
@@ -1154,6 +1360,12 @@
     "collapse": "收起详情",
     "factorsCount": "个因素",
     "suggestionsCount": "条建议",
+    "suggestionCategories": {
+      "summerProgram": "暑期项目",
+      "competition": "竞赛",
+      "research": "科研机会",
+      "general": "综合建议"
+    },
     "impactFactors": "影响因素分析",
     "factorsDisclaimer": "注意：本预测未包含文书质量、推荐信和面试表现的评估",
     "source": {
@@ -1226,10 +1438,10 @@
   },
   "cases": {
     "title": "案例库",
-    "description": "浏览真实申请案例，参考成功经验",
+    "description": "查看往届录取者的申请背景、标化成绩、课外活动和文书",
     "tabs": {
       "cases": "案例",
-      "essays": "文书"
+      "essays": "优秀文书"
     },
     "shareCase": "分享案例",
     "searchPlaceholder": "搜索案例...",
@@ -1243,7 +1455,10 @@
       "year": "申请年份",
       "result": "申请结果",
       "allYears": "全部年份",
-      "allResults": "全部结果"
+      "allResults": "全部结果",
+      "round": "轮次",
+      "allRounds": "全部轮次",
+      "nationality": "国籍"
     },
     "activeFilters": "当前筛选",
     "result": {
@@ -1276,7 +1491,30 @@
       "essayContent": "文书内容",
       "gpaByYear": "分年级 GPA（9–12）",
       "viewEssays": "查看文书",
-      "applicationDetails": "申请信息"
+      "applicationDetails": "申请信息",
+      "nationality": "国籍",
+      "ucCappedGpa": "UC 封顶加权 GPA",
+      "ucUncappedGpa": "UC 未封顶加权 GPA",
+      "apCourses": "AP 课程（{count} 门）",
+      "ibScore": "IB 总分",
+      "applicantBackground": "申请人背景",
+      "applicationStory": "申请故事"
+    },
+    "guide": {
+      "title": "看看和你背景相似的同学都录了哪里",
+      "bullet1": "真实录取结果——查看被录取和被拒学生的 GPA、标化和活动",
+      "bullet2": "按学校、年份、轮次和结果筛选，找到与你背景相似的案例",
+      "bullet3": "阅读帮助学生成功录取的真实文书",
+      "bullet4": "案例数据由用户自行填报，已认证案例会显示 ✓ 标识",
+      "dismiss": "知道了"
+    },
+    "emptyState": {
+      "title": "暂无案例",
+      "description": "成为第一个分享者！你的贡献将帮助整个社区，同时提升你自己的选校推荐精准度。",
+      "bullet1": "分享你的录取结果，系统会为你匹配更精准的选校建议",
+      "bullet2": "通过认证的贡献获得积分和徽章",
+      "bullet3": "将你的档案与目标学校已录取的学生进行比较",
+      "startTour": "30秒了解如何使用"
     }
   },
   "chat": {
@@ -1777,8 +2015,30 @@
     "tagsPlaceholder": "用逗号分隔，如：科研, 竞赛",
     "activityListLabel": "活动与亮点",
     "activityListPlaceholder": "每行一项，如：科研 - XX 实验室；竞赛 - AMC 12；社团 - 学生会主席",
-    "reflectionLabel": "申请反思",
-    "reflectionPlaceholder": "分享你的申请经验和建议...",
+    "detailsToggle": "更多详情（国籍、AP/IB、背景...）",
+    "nationalityLabel": "国籍",
+    "nationalityPlaceholder": "如：中国、美国、印度",
+    "actLabel": "ACT 区间",
+    "actPlaceholder": "如：34-36",
+    "apCountLabel": "AP 课程数",
+    "apSubjectsLabel": "AP 科目",
+    "apSubjectsPlaceholder": "用逗号分隔，如：Calculus BC, Physics C",
+    "ibScoreLabel": "IB 总分",
+    "demographicTagsLabel": "申请人背景标签",
+    "demographic": {
+      "international": "国际学生",
+      "first_gen": "第一代大学生",
+      "legacy": "校友子女 (Legacy)",
+      "urm": "URM (少数族裔)",
+      "recruited_athlete": "被招募运动员",
+      "low_income": "低收入家庭",
+      "transfer": "转学生",
+      "homeschool": "在家教育",
+      "military": "军人家庭",
+      "gap_year": "Gap Year"
+    },
+    "narrativeLabel": "申请故事",
+    "narrativePlaceholder": "分享你的申请经历、特殊情况和建议...",
     "submitButton": "提交案例",
     "rounds": {
       "ED": "早决定 (ED)",
@@ -1792,8 +2052,8 @@
     "gpa10Label": "10年级 GPA",
     "gpa11Label": "11年级 GPA",
     "gpa12Label": "12年级 GPA",
-    "ucCappedGpaLabel": "UC Capped Weighted GPA",
-    "ucUncappedGpaLabel": "UC Uncapped Weighted GPA",
+    "ucCappedGpaLabel": "UC 封顶加权 GPA",
+    "ucUncappedGpaLabel": "UC 未封顶加权 GPA",
     "results": {
       "admitted": "录取",
       "rejected": "拒绝",
@@ -2118,7 +2378,21 @@
     "noResultsHint": "尝试使用不同的关键词",
     "acceptanceRate": "录取率",
     "selectedCount": "已选择 {count}/{max}",
-    "confirmSelection": "确认选择"
+    "confirmSelection": "确认选择",
+    "maxSelectionReached": "最多可选择 {max} 所学校",
+    "rankingList": {
+      "nationalUniversity": "综合",
+      "liberalArts": "文理",
+      "artDesign": "艺术设计",
+      "engineering": "工程",
+      "cs": "计算机",
+      "business": "商科"
+    },
+    "dataSourceInfo": "数据来源：IPEDS / College Scorecard，请以各校官网信息为准。",
+    "transferRate": "Transfer 录取率",
+    "rankingTooltip": "{source} {year} 排名",
+    "rankingTooltipOverall": "US News 全美大学综合排名",
+    "visitWebsite": "访问{school}官方网站"
   },
   "createList": {
     "title": "创建榜单",
@@ -2787,8 +3061,8 @@
     "description": "管理您的申请文书，使用 AI 功能提升写作质量",
     "new": "新建文书",
     "list": "文书列表",
-    "selectToView": "选择一篇文书查看",
-    "clickNewToCreate": "点击「新建文书」开始创作",
+    "selectToView": "欢迎来到文书工作台",
+    "clickNewToCreate": "开始创作能展现你独特故事的申请文书",
     "edit": "编辑文书",
     "create": "创建文书",
     "editDesc": "编辑您的文书内容",
@@ -2849,6 +3123,25 @@
       "title": "暂无文书",
       "description": "点击「新建文书」开始创作您的申请文书"
     },
+    "startFromTargetSchool": "从目标学校开始",
+    "targetSchoolHint": "先添加目标学校，再根据学校文书题目写作",
+    "tips": {
+      "step1": "前往「个人档案 > 选校」添加目标院校，解锁院校专属文书题目",
+      "step2": "点击「新建文书」，使用「选择院校题目」查找各学校要求的具体文书题",
+      "step3": "在「案例库」浏览获录文书，学习成功文书的结构和主题"
+    },
+    "action": {
+      "browseExamples": "浏览范文"
+    },
+    "onboarding": {
+      "fromPromptTitle": "从院校题目开始",
+      "fromPromptDesc": "点击「新建文书」并选择院校题目，针对特定学校的文书要求撰写回应。",
+      "freeWriteTitle": "自由创作",
+      "freeWriteDesc": "从空白文书开始，撰写个人陈述、Common App 文书，或就任何主题练习写作。"
+    },
+    "form": {
+      "selectSchoolPrompt": "选择院校题目"
+    },
     "tabs": {
       "details": "详细评分",
       "polishedResult": "润色结果",
@@ -2882,7 +3175,7 @@
       "polish": "请润色这篇文书"
     },
     "promptSelector": {
-      "linkPrompt": "关联文书题目",
+      "linkPrompt": "选择院校题目",
       "searchSchool": "搜索学校...",
       "selectPrompt": "选择题目",
       "clearLink": "取消关联",
@@ -2890,7 +3183,42 @@
       "required": "必选",
       "optional": "选答",
       "linked": "已关联题目",
-      "noPrompts": "该学校暂无已验证的文书题目"
+      "noPrompts": "该学校暂无已验证的文书题目",
+      "types": {
+        "PERSONAL_STATEMENT": "个人陈述",
+        "WHY_SCHOOL": "Why School",
+        "SUPPLEMENTAL": "补充文书",
+        "SHORT_ANSWER": "简答题",
+        "ACTIVITY": "活动文书",
+        "OPTIONAL": "选答题",
+        "OTHER": "其他"
+      }
+    },
+    "tour": {
+      "page": {
+        "step1": {
+          "title": "创建你的第一篇文书",
+          "desc": "选择「选择院校题目」为特定学校写文书，或「自由创作」从空白开始。"
+        },
+        "step2": {
+          "title": "随时新建文书",
+          "desc": "你可以随时在这里新建文书。"
+        },
+        "step3": {
+          "title": "按步骤操作",
+          "desc": "先添加目标学校，学校的文书题目就会出现在这里供你写作。"
+        }
+      },
+      "form": {
+        "step1": {
+          "title": "选择学校文书题目",
+          "desc": "搜索目标学校并选择文书题目，标题和题目会自动填充。"
+        },
+        "step2": {
+          "title": "开始写作",
+          "desc": "在这里写文书。大部分 AI 工具在你有初稿后效果更好。"
+        }
+      }
     }
   },
   "resume": {
@@ -3642,6 +3970,9 @@
       "monthlyLoan": "月贷款还款额"
     },
     "about": "学校简介",
+    "dataSource": "来源：{source}",
+    "updatedAt": "更新于 {date}",
+    "viewSource": "查看官方数据源",
     "deadlines": {
       "title": "申请截止日期",
       "cycle": "申请季",
@@ -3675,7 +4006,8 @@
       "newTag": "新题",
       "modifiedTag": "已修改",
       "noData": "暂无文书题目",
-      "updateHint": "文书题目通常在每年8月更新"
+      "updateHint": "文书题目通常在每年8月更新",
+      "startWriting": "撰写文书"
     },
     "cases": {
       "title": "录取案例",
@@ -3930,9 +4262,13 @@
     "strategyTitle": "选校策略",
     "schoolCount": "{count} 所",
     "unknownSchool": "未知学校",
+    "visitWebsite": "访问官方网站",
+    "viewScorecard": "在 College Scorecard 查看",
+    "viewIPEDS": "查看联邦教育数据 (IPEDS)",
     "admissionChance": "录取概率",
     "noSchoolsInCategory": "暂无{category}推荐，请完善档案信息",
     "disclaimer": "推荐结果基于AI分析，仅供参考。实际录取受多种因素影响。",
+    "summerPrograms": "推荐暑期项目",
     "result": "推荐结果",
     "newRecommendation": "重新推荐",
     "success": "推荐完成",
@@ -5093,6 +5429,9 @@
       "essayCount": "文书数量",
       "appFee": "申请费",
       "interviewRequired": "需要面试",
+      "interviewFormat": "面试形式",
+      "interviewDeadline": "面试截止日期",
+      "selectFormat": "选择面试形式...",
       "notes": "备注",
       "actions": "操作",
       "create": "创建",
@@ -5595,6 +5934,7 @@
         "rejectedToday": "今日拒绝"
       },
       "enums": {
+        "nationalityPlaceholder": "如：中国、美国、印度",
         "hsType": {
           "PUBLIC_US": "美国公立",
           "PRIVATE_US": "美国私立",
@@ -5859,6 +6199,7 @@
           "highSchool": "高中",
           "highSchoolSearch": "搜索高中名称...",
           "highSchoolTier": "梯队 {tier}",
+          "nationality": "国籍",
           "curriculum": "课程体系",
           "demographics": "申请人背景标签",
           "financialAid": "资助情况",
@@ -6804,5 +7145,10 @@
     },
     "emailSubject": "和我一起使用留学平台",
     "emailBody": "嗨！我一直在用这个很棒的留学平台。用我的邀请码 {code} 注册，我们都能获得50积分！{link}"
+  },
+  "tour": {
+    "next": "下一步",
+    "previous": "上一步",
+    "done": "完成"
   }
 }

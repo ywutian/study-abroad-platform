@@ -1,7 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { LLMService } from '../ai-agent/core/llm.service';
 import { extractJsonFromLlm } from '../../common/utils/llm-json.util';
-import { ProfileInput, SchoolInput } from './prediction.prompts';
+import {
+  ProfileInput,
+  SchoolInput,
+  NationalityStats,
+} from './prediction.prompts';
 import { buildPredictionPrompt } from './prediction.prompts';
 import { PredictionFactor, PredictionComparison } from './dto';
 import { calculateSelectivityIndex } from './utils/score-calculator';
@@ -56,13 +60,19 @@ export class PredictionAiEngine {
     memoryInsights: string[],
     locale = 'zh',
     profileId?: string,
+    nationalityStats?: NationalityStats,
   ): Promise<{
     probability: number;
     factors: PredictionFactor[];
     suggestions: string[];
     comparison: PredictionComparison;
   } | null> {
-    const prompt = buildPredictionPrompt(profile, school, locale);
+    const prompt = buildPredictionPrompt(
+      profile,
+      school,
+      locale,
+      nationalityStats,
+    );
 
     // 注入统计校准锚点和记忆洞察
     let enhancedPrompt = prompt;
@@ -107,7 +117,7 @@ export class PredictionAiEngine {
         ],
         {
           temperature: 0,
-          maxTokens: 1500,
+          maxTokens: 2500,
           ...(profileId && { seed: this.computeSeed(profileId, school.id) }),
         },
       );
@@ -115,7 +125,13 @@ export class PredictionAiEngine {
       const parsed = extractJsonFromLlm<{
         probability: number;
         reasoning?: string;
-        factors?: string[];
+        factors?: Array<{
+          name: string;
+          impact: string;
+          weight: number;
+          detail: string;
+          improvement?: string;
+        }>;
         suggestions?: string[];
         comparison?: Record<string, unknown>;
       }>(response);

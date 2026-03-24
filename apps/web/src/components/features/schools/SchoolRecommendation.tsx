@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { cn, getSchoolName, getSchoolSubName } from '@/lib/utils';
+import { isSafeUrl } from '@/lib/utils/url';
 import { apiClient, STALE_TIME } from '@/lib/api';
 import { AI_TIMEOUTS } from '@/lib/constants';
 import { GC_TIME } from '@/lib/constants';
@@ -24,6 +25,8 @@ import {
   TrendingUp,
   Star,
   Info,
+  Globe,
+  Database,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -276,11 +279,49 @@ export function SchoolRecommendation({ className }: SchoolRecommendationProps) {
                                   >
                                     {getSchoolName(item.school, locale) || t('unknownSchool')}
                                   </Link>
+                                  {isSafeUrl(item.school?.website) && (
+                                    <a
+                                      href={item.school.website}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      onClick={(e) => e.stopPropagation()}
+                                      aria-label={t('visitWebsite')}
+                                      title={t('visitWebsite')}
+                                      className="text-muted-foreground hover:text-primary shrink-0 p-1 -m-1 rounded-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                    >
+                                      <Globe className="h-3.5 w-3.5" />
+                                    </a>
+                                  )}
+                                  {item.school?.sourceUrls?.collegeScorecardUrl && (
+                                    <a
+                                      href={item.school.sourceUrls.collegeScorecardUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      onClick={(e) => e.stopPropagation()}
+                                      aria-label={t('viewScorecard')}
+                                      title={t('viewScorecard')}
+                                      className="text-muted-foreground hover:text-primary shrink-0 p-1 -m-1 rounded-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                    >
+                                      <Database className="h-3.5 w-3.5" />
+                                    </a>
+                                  )}
                                 </div>
                                 {getSchoolSubName(item.school, locale) && (
                                   <p className="text-xs text-muted-foreground truncate">
                                     {getSchoolSubName(item.school, locale)}
                                   </p>
+                                )}
+                                {item.recommendedMajors && item.recommendedMajors.length > 0 && (
+                                  <div className="flex flex-wrap gap-1 mt-1">
+                                    {item.recommendedMajors.map((major, i) => (
+                                      <Badge
+                                        key={i}
+                                        className="text-xs bg-primary/10 text-primary hover:bg-primary/20 border-0"
+                                      >
+                                        {major}
+                                      </Badge>
+                                    ))}
+                                  </div>
                                 )}
                                 <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                                   {item.reason}
@@ -291,6 +332,19 @@ export function SchoolRecommendation({ className }: SchoolRecommendationProps) {
                                       <Badge key={i} variant="secondary" className="text-xs">
                                         <Star className="h-3 w-3 mr-1" />
                                         {h}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                )}
+                                {item.dataPoints && item.dataPoints.length > 0 && (
+                                  <div className="flex flex-wrap gap-1 mt-1.5">
+                                    {item.dataPoints.map((dp, i) => (
+                                      <Badge
+                                        key={i}
+                                        variant="outline"
+                                        className="text-xs font-mono"
+                                      >
+                                        {dp}
                                       </Badge>
                                     ))}
                                   </div>
@@ -326,6 +380,26 @@ export function SchoolRecommendation({ className }: SchoolRecommendationProps) {
             );
           })}
         </div>
+
+        {/* 推荐夏校项目 */}
+        {data.summerPrograms && data.summerPrograms.length > 0 && (
+          <div className="rounded-xl border p-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <Star className="h-4 w-4 text-amber-500" />
+              <span className="font-semibold text-sm">{t('summerPrograms')}</span>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {data.summerPrograms.map((prog, i) => (
+                <div key={i} className="flex items-start gap-2 text-sm">
+                  <Badge variant="outline" className="shrink-0 text-xs mt-0.5">
+                    {prog.name}
+                  </Badge>
+                  <span className="text-muted-foreground">{prog.reason}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* 底部提示 */}
         <p className="text-xs text-muted-foreground text-center pt-2">💡 {t('disclaimer')}</p>

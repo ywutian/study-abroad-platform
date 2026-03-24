@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient, STALE_TIME } from '@/lib/api';
@@ -40,6 +40,8 @@ interface PromptSelectorProps {
   onSelect: (prompt: SelectedPrompt) => void;
   onClear: () => void;
   selectedPrompt?: SelectedPrompt | null;
+  initialSchoolId?: string | null;
+  autoOpen?: boolean;
 }
 
 const TYPE_VARIANT_MAP: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
@@ -52,16 +54,48 @@ const TYPE_VARIANT_MAP: Record<string, 'default' | 'secondary' | 'outline' | 'de
   OTHER: 'outline',
 };
 
-export function PromptSelector({ onSelect, onClear, selectedPrompt }: PromptSelectorProps) {
+export function PromptSelector({
+  onSelect,
+  onClear,
+  selectedPrompt,
+  initialSchoolId,
+  autoOpen,
+}: PromptSelectorProps) {
   const t = useTranslations('essays.promptSelector');
   const locale = useLocale();
 
   const [open, setOpen] = useState(false);
   const [schoolQuery, setSchoolQuery] = useState('');
-  const [selectedSchoolId, setSelectedSchoolId] = useState<string | null>(null);
+  const [selectedSchoolId, setSelectedSchoolId] = useState<string | null>(initialSchoolId ?? null);
   const [selectedSchoolName, setSelectedSchoolName] = useState('');
+  const [initialHandled, setInitialHandled] = useState(false);
 
   const { data: schools, isLoading: isSearching } = useSchoolSearch(schoolQuery, open);
+
+  // When initialSchoolId is provided, fetch the school name and auto-open the popover
+  const { data: initialSchool } = useQuery<{ name: string; nameZh?: string }>({
+    queryKey: ['school-detail', initialSchoolId],
+    queryFn: () => apiClient.get(`/schools/${initialSchoolId}`),
+    enabled: !!initialSchoolId && !initialHandled,
+  });
+
+  useEffect(() => {
+    if (initialSchool && initialSchoolId && !initialHandled) {
+      const name = getLocalizedName(initialSchool.nameZh, initialSchool.name, locale);
+      setSelectedSchoolId(initialSchoolId);
+      setSelectedSchoolName(name);
+      setOpen(true);
+      setInitialHandled(true);
+    }
+  }, [initialSchool, initialSchoolId, initialHandled, locale]);
+
+  // Auto-open popover when triggered from "Start from School Prompt" card
+  useEffect(() => {
+    if (autoOpen && !initialSchoolId && !initialHandled) {
+      setOpen(true);
+      setInitialHandled(true);
+    }
+  }, [autoOpen, initialSchoolId, initialHandled]);
 
   const { data: prompts, isLoading: isLoadingPrompts } = useQuery<EssayPrompt[]>({
     queryKey: ['essay-prompts-by-school', selectedSchoolId],
@@ -103,11 +137,24 @@ export function PromptSelector({ onSelect, onClear, selectedPrompt }: PromptSele
     setSchoolQuery('');
   };
 
+  const typeLabels: Record<string, string> = {
+    PERSONAL_STATEMENT: t('types.PERSONAL_STATEMENT'),
+    WHY_SCHOOL: t('types.WHY_SCHOOL'),
+    SUPPLEMENTAL: t('types.SUPPLEMENTAL'),
+    SHORT_ANSWER: t('types.SHORT_ANSWER'),
+    ACTIVITY: t('types.ACTIVITY'),
+    OPTIONAL: t('types.OPTIONAL'),
+    OTHER: t('types.OTHER'),
+  };
+
   const formatType = (type: string) => {
-    return type
-      .split('_')
-      .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
-      .join(' ');
+    return (
+      typeLabels[type] ??
+      type
+        .split('_')
+        .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
+        .join(' ')
+    );
   };
 
   // Show selected prompt card
@@ -152,13 +199,18 @@ export function PromptSelector({ onSelect, onClear, selectedPrompt }: PromptSele
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button type="button" variant="outline" size="sm" className="gap-1.5 text-xs">
-          <Link2 className="h-3.5 w-3.5" />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="gap-1.5 text-xs border-primary/20 bg-primary/10 text-primary hover:bg-primary/15"
+        >
+          <Search className="h-3.5 w-3.5" />
           {t('linkPrompt')}
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className="w-[380px] p-0" align="start">
+      <PopoverContent className="w-[380px] max-w-[calc(100vw-2rem)] p-0" align="start">
         {!selectedSchoolId ? (
           // Step 1: School search
           <div className="p-3">
@@ -221,6 +273,7 @@ export function PromptSelector({ onSelect, onClear, selectedPrompt }: PromptSele
                 size="icon"
                 className="h-6 w-6 shrink-0"
                 onClick={handleBack}
+                aria-label={t('searchSchool')}
               >
                 <X className="h-3.5 w-3.5" />
               </Button>

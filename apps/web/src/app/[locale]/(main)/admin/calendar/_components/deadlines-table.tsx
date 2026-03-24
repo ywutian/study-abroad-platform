@@ -28,6 +28,8 @@ export interface SchoolDeadline {
   decisionDate?: string;
   essayCount?: number;
   interviewRequired: boolean;
+  interviewFormat?: string;
+  interviewDeadline?: string;
   applicationFee?: number;
   notes?: string;
   school: { id: string; name: string; nameZh?: string };

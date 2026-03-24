@@ -65,6 +65,14 @@ export class CreateSchoolDeadlineDto {
   @IsOptional()
   interviewDeadline?: string;
 
+  @ApiPropertyOptional({
+    description: 'Interview format (e.g. ALUMNI, INITIALVIEW, VERICANT)',
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(200)
+  interviewFormat?: string;
+
   @ApiPropertyOptional({ description: 'Application fee (USD)' })
   @IsInt()
   @IsOptional()
@@ -111,6 +119,14 @@ export class UpdateSchoolDeadlineDto {
   @IsDateString()
   @IsOptional()
   interviewDeadline?: string;
+
+  @ApiPropertyOptional({
+    description: 'Interview format (e.g. ALUMNI, INITIALVIEW, VERICANT)',
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(200)
+  interviewFormat?: string;
 
   @ApiPropertyOptional()
   @IsInt()

@@ -167,7 +167,7 @@ export class TimelineApplicationService {
 
               const parsedDate =
                 this.parseMetadataDate(dateStr, applicationYear) ??
-                new Date(applicationYear, 0, 1);
+                new Date(applicationYear, 0, 15); // Jan 15 typical RD fallback
               const verifiedPrompts = await this.prisma.essayPrompt.findMany({
                 where: { schoolId, isActive: true, status: 'VERIFIED' },
                 orderBy: { sortOrder: 'asc' },
@@ -199,7 +199,7 @@ export class TimelineApplicationService {
           created.filter((r) => r.schoolId === schoolId).length === 0 &&
           !existingRounds.has('RD')
         ) {
-          const defaultDeadline = new Date(applicationYear, 0, 1);
+          const defaultDeadline = new Date(applicationYear, 0, 15); // Jan 15 typical RD
           const timeline = await this.prisma.applicationTimeline.create({
             data: {
               userId,

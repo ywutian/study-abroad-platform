@@ -26,7 +26,10 @@ export class PredictionTransformerService {
    * @param profile - Prisma profile with testScores, activities, and awards relations
    * @returns Normalized ProfileInput for prediction calculations
    */
-  profileToInput(profile: ProfileWithRelations): ProfileInput {
+  profileToInput(
+    profile: ProfileWithRelations,
+    assessmentData?: { mbtiType?: string; hollandCodes?: string[] },
+  ): ProfileInput {
     // Extract the most recent high school education entry.
     // Sort by createdAt desc to pick the latest when multiple exist.
     const hsEducations = ((profile as any).education || [])
@@ -90,6 +93,7 @@ export class PredictionTransformerService {
         tier: a.competition?.tier ?? undefined,
         competitionName: a.competition?.name ?? undefined,
       })),
+      assessment: assessmentData,
     };
   }
 

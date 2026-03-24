@@ -34,6 +34,90 @@ export class SchoolListService {
   constructor(private prisma: PrismaService) {}
 
   /**
+   * Get available application rounds for a school from deadline data
+   */
+  async getAvailableRounds(schoolId: string): Promise<string[]> {
+    const deadlines = await this.prisma.schoolDeadline.findMany({
+      where: { schoolId },
+      select: { round: true },
+      distinct: ['round'],
+    });
+    return deadlines.map((d) => d.round);
+  }
+
+  /**
+   * Validate round for binding exclusivity and availability.
+   * Shared by addSchool() and updateItem().
+   */
+  private async validateRound(
+    userId: string,
+    schoolId: string,
+    round: string,
+    excludeItemId?: string,
+  ): Promise<void> {
+    const roundUpper = round.toUpperCase();
+    const BINDING_ROUNDS = ['ED', 'ED2', 'REA', 'SCEA'];
+    const excludeFilter = excludeItemId ? { id: { not: excludeItemId } } : {};
+
+    if (BINDING_ROUNDS.includes(roundUpper)) {
+      // 1. Same binding round — only one school allowed
+      const existingBinding = await this.prisma.schoolListItem.findFirst({
+        where: {
+          userId,
+          round: { in: [roundUpper, roundUpper.toLowerCase()] },
+          ...excludeFilter,
+        },
+        include: { school: { select: { name: true } } },
+      });
+
+      if (existingBinding) {
+        throw new ConflictException(
+          `You already have an ${roundUpper} application to ${existingBinding.school.name}. ${roundUpper} is binding — only one school allowed.`,
+        );
+      }
+
+      // 2. ED/ED2 ↔ REA/SCEA mutual exclusion
+      if (['ED', 'ED2'].includes(roundUpper)) {
+        const conflictItem = await this.prisma.schoolListItem.findFirst({
+          where: {
+            userId,
+            round: { in: ['REA', 'SCEA', 'rea', 'scea'] },
+            ...excludeFilter,
+          },
+          include: { school: { select: { name: true } } },
+        });
+        if (conflictItem) {
+          throw new ConflictException(
+            `Cannot apply ${roundUpper} because you have a ${conflictItem.round} application to ${conflictItem.school.name}. ED/ED2 and REA/SCEA are mutually exclusive.`,
+          );
+        }
+      } else if (['REA', 'SCEA'].includes(roundUpper)) {
+        const conflictItem = await this.prisma.schoolListItem.findFirst({
+          where: {
+            userId,
+            round: { in: ['ED', 'ED2', 'ed', 'ed2'] },
+            ...excludeFilter,
+          },
+          include: { school: { select: { name: true } } },
+        });
+        if (conflictItem) {
+          throw new ConflictException(
+            `Cannot apply ${roundUpper} because you have a ${conflictItem.round} application to ${conflictItem.school.name}. ED/ED2 and REA/SCEA are mutually exclusive.`,
+          );
+        }
+      }
+    }
+
+    // 3. Round availability check (only if school has deadline data)
+    const available = await this.getAvailableRounds(schoolId);
+    if (available.length > 0 && !available.includes(round)) {
+      throw new BadRequestException(
+        `Round "${round}" is not available for this school. Available rounds: ${available.join(', ')}`,
+      );
+    }
+  }
+
+  /**
    * Get all school list items for a user
    */
   async getUserSchoolList(
@@ -111,6 +195,53 @@ export class SchoolListService {
       essayCountMap = new Map(counts.map((c) => [c.schoolId, c._count]));
     }
 
+    // 批量查询截止日期 (当前申请年份)
+    const deadlineMap = new Map<
+      string,
+      Array<{
+        round: string;
+        applicationDeadline: string;
+        financialAidDeadline?: string;
+        interviewRequired: boolean;
+        interviewDeadline?: string;
+        interviewFormat?: string;
+      }>
+    >();
+    if (items.length > 0) {
+      const currentYear = new Date().getFullYear();
+      const applicationYear =
+        new Date().getMonth() >= 7 ? currentYear + 1 : currentYear;
+      const deadlines = await this.prisma.schoolDeadline.findMany({
+        where: {
+          schoolId: { in: items.map((i) => i.schoolId) },
+          year: applicationYear,
+        },
+        select: {
+          schoolId: true,
+          round: true,
+          applicationDeadline: true,
+          financialAidDeadline: true,
+          interviewRequired: true,
+          interviewDeadline: true,
+          interviewFormat: true,
+        },
+        orderBy: { applicationDeadline: 'asc' },
+      });
+
+      for (const dl of deadlines) {
+        const existing = deadlineMap.get(dl.schoolId) || [];
+        existing.push({
+          round: dl.round,
+          applicationDeadline: dl.applicationDeadline.toISOString(),
+          financialAidDeadline: dl.financialAidDeadline?.toISOString(),
+          interviewRequired: dl.interviewRequired,
+          interviewDeadline: dl.interviewDeadline?.toISOString(),
+          interviewFormat: dl.interviewFormat || undefined,
+        });
+        deadlineMap.set(dl.schoolId, existing);
+      }
+    }
+
     return items.map((item) => ({
       id: item.id,
       schoolId: item.schoolId,
@@ -121,6 +252,7 @@ export class SchoolListService {
       isAIRecommended: item.isAIRecommended,
       prediction: predMap.get(item.schoolId) || undefined,
       essayPromptCount: essayCountMap.get(item.schoolId) || 0,
+      deadlines: deadlineMap.get(item.schoolId) || [],
       createdAt: item.createdAt,
     }));
   }
@@ -154,6 +286,11 @@ export class SchoolListService {
 
     if (existing) {
       throw new ConflictException('School already exists in your list');
+    }
+
+    // Validate round: binding exclusivity + availability
+    if (dto.round) {
+      await this.validateRound(userId, dto.schoolId, dto.round);
     }
 
     // Create the item
@@ -209,6 +346,11 @@ export class SchoolListService {
 
     if (!item) {
       throw new NotFoundException('School list item not found');
+    }
+
+    // Validate round: binding exclusivity + availability
+    if (dto.round) {
+      await this.validateRound(userId, item.schoolId, dto.round, itemId);
     }
 
     const updated = await this.prisma.schoolListItem.update({

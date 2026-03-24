@@ -1,12 +1,15 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import { Plus, PenTool, Sparkles, Wand2, Lightbulb, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { AIErrorBoundary } from '@/components/features/ai-error-boundary';
 import { AiAssistantPanel } from '@/components/features/agent-chat';
 import { EssayBrainstormDialog } from '@/components/features/essay-ai';
+import { useTour, TOURS, type TourStep } from '@/components/features/onboarding/tour-provider';
 import { toast } from 'sonner';
 
 import { useEssayManager } from './_components/use-essay-manager';
@@ -17,7 +20,58 @@ import { EssayFormDialog, EssayDeleteDialog } from './_components/essay-form-dia
 
 export default function EssaysPage() {
   const t = useTranslations();
-  const mgr = useEssayManager();
+  const searchParams = useSearchParams();
+  const schoolId = searchParams.get('schoolId');
+  const promptId = searchParams.get('promptId');
+  const mgr = useEssayManager(schoolId, promptId);
+  const { registerTour, startTour, hasCompletedTour } = useTour();
+
+  // Register and auto-start Essay Page Tour
+  useEffect(() => {
+    const steps: TourStep[] = [
+      {
+        id: 'essay-empty-cards',
+        element: '[data-tour="essay-empty-cards"]',
+        popover: {
+          title: t('essays.tour.page.step1.title'),
+          description: t('essays.tour.page.step1.desc'),
+          side: 'top',
+          align: 'center',
+        },
+      },
+      {
+        id: 'essay-new',
+        element: '[data-tour="essay-new"]',
+        popover: {
+          title: t('essays.tour.page.step2.title'),
+          description: t('essays.tour.page.step2.desc'),
+          side: 'bottom',
+          align: 'end',
+        },
+      },
+      {
+        id: 'essay-sidebar-tips',
+        element: '[data-tour="essay-sidebar-tips"]',
+        popover: {
+          title: t('essays.tour.page.step3.title'),
+          description: t('essays.tour.page.step3.desc'),
+          side: 'right',
+          align: 'start',
+        },
+      },
+    ];
+    registerTour({
+      id: TOURS.ESSAYS_PAGE,
+      steps,
+    });
+  }, [registerTour, t]);
+
+  useEffect(() => {
+    if (!schoolId && !hasCompletedTour(TOURS.ESSAYS_PAGE) && !mgr.isLoading) {
+      const timer = setTimeout(() => startTour(TOURS.ESSAYS_PAGE), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [schoolId, hasCompletedTour, mgr.isLoading, startTour]);
 
   const handleRewriteSelected = () => {
     const selection = window.getSelection()?.toString();
@@ -39,6 +93,7 @@ export default function EssaysPage() {
         color="rose"
         actions={
           <Button
+            data-tour="essay-new"
             onClick={mgr.handleCreate}
             className="gap-2 bg-destructive hover:opacity-90 text-destructive-foreground shadow-md"
           >
@@ -55,12 +110,14 @@ export default function EssaysPage() {
           selectedEssayId={mgr.selectedEssay?.id ?? null}
           onSelect={mgr.setSelectedEssay}
           getWordCount={mgr.getWordCount}
+          onCreate={mgr.handleCreate}
         />
 
         <EssayDetailView
           selectedEssay={mgr.selectedEssay}
           getWordCount={mgr.getWordCount}
           onCreate={mgr.handleCreate}
+          onCreateFromPrompt={mgr.handleCreateFromPrompt}
           onEdit={mgr.handleEdit}
           onDelete={mgr.handleDelete}
           onReview={mgr.handleReview}
@@ -87,6 +144,8 @@ export default function EssaysPage() {
         getWordCount={mgr.getWordCount}
         essayPromptId={mgr.essayPromptId}
         onEssayPromptIdChange={mgr.setEssayPromptId}
+        initialSchoolId={mgr.initialSchoolId}
+        autoOpenPromptSelector={mgr.autoOpenPromptSelector}
       />
 
       <EssayDeleteDialog

@@ -23,6 +23,7 @@ export interface Activity {
   role: string;
   organization?: string;
   description?: string;
+  commonAppDescription?: string;
   startDate?: string;
   endDate?: string;
   hoursPerWeek?: number;
@@ -38,9 +39,17 @@ export interface Award {
   id: string;
   name: string;
   level: string;
+  category?: string;
   year?: number;
   description?: string;
   competitionId?: string;
+}
+
+export interface SchoolRanking {
+  source: string;
+  list: string;
+  rank: number;
+  year: number;
 }
 
 export interface School {
@@ -51,11 +60,33 @@ export interface School {
   state?: string;
   usNewsRank?: number;
   acceptanceRate?: number;
+  website?: string;
+  scorecardId?: string;
+  ipedsId?: string;
+  transferAcceptanceRate?: number;
+  needBlindInternational?: boolean;
+  percentNeedMet?: number;
+  averageAidPackage?: number;
+  averageNetPrice?: number;
+  rankings?: SchoolRanking[];
+}
+
+export interface SchoolDeadlineInfo {
+  round: string;
+  applicationDeadline: string;
+  financialAidDeadline?: string;
+  interviewRequired: boolean;
+  interviewDeadline?: string;
+  interviewFormat?: string;
 }
 
 export interface TargetSchool extends School {
   _listItemId?: string;
   tier?: string;
+  round?: string;
+  essayPromptCount?: number;
+  hasEarlyDecision?: boolean;
+  deadlines?: SchoolDeadlineInfo[];
   prediction?: {
     tier?: string;
     probability: number;
@@ -79,6 +110,20 @@ export interface ProfileFormData {
   legacy: string[];
   intendedMajor: string;
   secondMajor: string;
+  gpa9: string;
+  gpa10: string;
+  gpa11: string;
+  gpa12: string;
+}
+
+export interface SemesterGpa {
+  id: string;
+  semester: string;
+  year: number;
+  gpa: number;
+  gpaScale: number;
+  credits?: number;
+  order: number;
 }
 
 export interface ProfileData {
@@ -87,6 +132,11 @@ export interface ProfileData {
   currentSchool?: string;
   gpa?: number;
   gpaScale?: number;
+  gpa9?: number;
+  gpa10?: number;
+  gpa11?: number;
+  gpa12?: number;
+  semesterGpas?: SemesterGpa[];
   targetMajor?: string;
   budgetTier?: string;
   visibility?: string;
@@ -128,4 +178,8 @@ export interface ProfileUpdatePayload {
   legacy?: string[];
   intendedMajor?: string;
   secondMajor?: string;
+  gpa9?: number | null;
+  gpa10?: number | null;
+  gpa11?: number | null;
+  gpa12?: number | null;
 }

@@ -26,7 +26,7 @@ import {
 import { apiClient } from '@/lib/api';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Send, GraduationCap, PenTool, Upload, FileText } from 'lucide-react';
+import { Loader2, Send, GraduationCap, PenTool, Upload, FileText, ChevronDown } from 'lucide-react';
 import { getSchoolName } from '@/lib/utils';
 import { SchoolSelector } from './school-selector';
 
@@ -53,6 +53,19 @@ const RESULT_KEYS = [
   { value: 'WAITLISTED', labelKey: 'waitlisted' },
   { value: 'DEFERRED', labelKey: 'deferred' },
 ];
+
+const DEMOGRAPHIC_OPTIONS = [
+  'international',
+  'first_gen',
+  'legacy',
+  'urm',
+  'recruited_athlete',
+  'low_income',
+  'transfer',
+  'homeschool',
+  'military',
+  'gap_year',
+] as const;
 
 const ROUND_KEYS = [
   { value: 'ED', labelKey: 'ED' },
@@ -126,6 +139,8 @@ export function SubmitCaseDialog({
   }, []);
 
   const [includeEssay, setIncludeEssay] = useState(defaultIncludeEssay);
+  const [showDetails, setShowDetails] = useState(false);
+  const [demographicTags, setDemographicTags] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     year: new Date().getFullYear().toString(),
     round: '',
@@ -140,10 +155,15 @@ export function SubmitCaseDialog({
     ucUncappedGpa: '',
     gpaScale: '4.0',
     satRange: '',
+    actRange: '',
     toeflRange: '',
+    nationality: '',
+    apCount: '',
+    apSubjects: '',
+    ibScore: '',
+    narrative: '',
     tags: '',
     activityList: '',
-    reflection: '',
     // Essay fields
     essayType: '',
     essayPrompt: '',
@@ -180,17 +200,24 @@ export function SubmitCaseDialog({
       ucUncappedGpa: '',
       gpaScale: '4.0',
       satRange: '',
+      actRange: '',
       toeflRange: '',
+      nationality: '',
+      apCount: '',
+      apSubjects: '',
+      ibScore: '',
+      narrative: '',
       tags: '',
       activityList: '',
-      reflection: '',
       essayType: '',
       essayPrompt: '',
       essayContent: '',
       visibility: 'ANONYMOUS',
     });
+    setDemographicTags([]);
     setSelectedSchool(null);
     setIncludeEssay(defaultIncludeEssay);
+    setShowDetails(false);
   };
 
   const handleSubmit = () => {
@@ -214,7 +241,19 @@ export function SubmitCaseDialog({
       ucUncappedGpa: formData.ucUncappedGpa ? parseFloat(formData.ucUncappedGpa) : undefined,
       gpaScale: formData.gpaScale ? parseFloat(formData.gpaScale) : undefined,
       satRange: formData.satRange || undefined,
+      actRange: formData.actRange || undefined,
       toeflRange: formData.toeflRange || undefined,
+      nationality: formData.nationality || undefined,
+      apCount: formData.apCount ? parseInt(formData.apCount) : undefined,
+      apSubjects: formData.apSubjects
+        ? formData.apSubjects
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : undefined,
+      ibScore: formData.ibScore ? parseInt(formData.ibScore) : undefined,
+      narrative: formData.narrative?.trim() || undefined,
+      demographicTags: demographicTags.length > 0 ? demographicTags : undefined,
       tags: formData.tags
         ? formData.tags
             .split(',')
@@ -222,7 +261,6 @@ export function SubmitCaseDialog({
             .filter(Boolean)
         : undefined,
       activityList: formData.activityList?.trim() || undefined,
-      reflection: formData.reflection || undefined,
       visibility: formData.visibility || 'ANONYMOUS',
     };
 
@@ -460,14 +498,112 @@ export function SubmitCaseDialog({
               />
             </div>
 
-            <div className="space-y-2">
-              <Label>{t('reflectionLabel')}</Label>
-              <Textarea
-                placeholder={t('reflectionPlaceholder')}
-                value={formData.reflection}
-                onChange={(e) => setFormData({ ...formData, reflection: e.target.value })}
-                rows={4}
-              />
+            {/* Collapsible Details Section */}
+            <div className="border-t pt-3">
+              <button
+                type="button"
+                className="flex w-full items-center justify-between text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => setShowDetails(!showDetails)}
+              >
+                {t('detailsToggle')}
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform ${showDetails ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              {showDetails && (
+                <div className="mt-3 space-y-4">
+                  {/* Nationality + ACT */}
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>{t('nationalityLabel')}</Label>
+                      <Input
+                        placeholder={t('nationalityPlaceholder')}
+                        value={formData.nationality}
+                        onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('actLabel')}</Label>
+                      <Input
+                        placeholder={t('actPlaceholder')}
+                        value={formData.actRange}
+                        onChange={(e) => setFormData({ ...formData, actRange: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  {/* AP/IB */}
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <div className="space-y-2">
+                      <Label>{t('apCountLabel')}</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="30"
+                        placeholder="0"
+                        value={formData.apCount}
+                        onChange={(e) => setFormData({ ...formData, apCount: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('apSubjectsLabel')}</Label>
+                      <Input
+                        placeholder={t('apSubjectsPlaceholder')}
+                        value={formData.apSubjects}
+                        onChange={(e) => setFormData({ ...formData, apSubjects: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('ibScoreLabel')}</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="45"
+                        placeholder="0-45"
+                        value={formData.ibScore}
+                        onChange={(e) => setFormData({ ...formData, ibScore: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Demographic Tags */}
+                  <div className="space-y-2">
+                    <Label>{t('demographicTagsLabel')}</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {DEMOGRAPHIC_OPTIONS.map((tag) => (
+                        <button
+                          key={tag}
+                          type="button"
+                          className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                            demographicTags.includes(tag)
+                              ? 'border-primary bg-primary/10 text-primary'
+                              : 'border-border text-muted-foreground hover:border-primary/50'
+                          }`}
+                          onClick={() =>
+                            setDemographicTags((prev) =>
+                              prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+                            )
+                          }
+                        >
+                          {t(`demographic.${tag}`)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Narrative */}
+                  <div className="space-y-2">
+                    <Label>{t('narrativeLabel')}</Label>
+                    <Textarea
+                      placeholder={t('narrativePlaceholder')}
+                      value={formData.narrative}
+                      onChange={(e) => setFormData({ ...formData, narrative: e.target.value })}
+                      rows={4}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Essay Section */}

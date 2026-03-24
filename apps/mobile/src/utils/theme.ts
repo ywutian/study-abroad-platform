@@ -327,8 +327,12 @@ export function withOpacity(color: string, opacity: number): string {
  * 获取当前主题颜色
  */
 export function useColors() {
-  const colorScheme = useThemeStore((state) => state.colorScheme);
-  return colorScheme === 'dark' ? colors.dark : colors.light;
+  try {
+    const colorScheme = useThemeStore((state) => state.colorScheme);
+    return colorScheme === 'dark' ? colors.dark : colors.light;
+  } catch {
+    return colors.light;
+  }
 }
 
 /**

@@ -47,6 +47,8 @@ const emptyForm: DeadlineFormData = {
   decisionDate: '',
   essayCount: 0,
   interviewRequired: false,
+  interviewFormat: '',
+  interviewDeadline: '',
   applicationFee: 0,
   notes: '',
 };
@@ -136,6 +138,8 @@ export function DeadlinesTab() {
       decisionDate: d.decisionDate?.split('T')[0] || '',
       essayCount: d.essayCount || 0,
       interviewRequired: d.interviewRequired,
+      interviewFormat: d.interviewFormat || '',
+      interviewDeadline: d.interviewDeadline?.split('T')[0] || '',
       applicationFee: d.applicationFee || 0,
       notes: d.notes || '',
     });

@@ -22,6 +22,17 @@ import {
 } from '@/components/ui/dialog';
 import { Loader2 } from 'lucide-react';
 
+const INTERVIEW_FORMATS = [
+  'ALUMNI',
+  'ADMISSIONS_OFFICER',
+  'INITIALVIEW',
+  'VERICANT',
+  'KIRA',
+  'GROUP',
+  'OPTIONAL',
+  'NOT_OFFERED',
+] as const;
+
 export interface DeadlineFormData {
   schoolId: string;
   year: number;
@@ -31,6 +42,8 @@ export interface DeadlineFormData {
   decisionDate: string;
   essayCount: number;
   interviewRequired: boolean;
+  interviewFormat: string;
+  interviewDeadline: string;
   applicationFee: number;
   notes: string;
 }
@@ -205,6 +218,36 @@ export function DeadlineFormDialog({
             />
             <Label>{t('deadlines.interviewRequired')}</Label>
           </div>
+          {form.interviewRequired && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>{t('deadlines.interviewFormat')}</Label>
+                <Select
+                  value={form.interviewFormat}
+                  onValueChange={(v) => onFormChange({ ...form, interviewFormat: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('deadlines.selectFormat')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {INTERVIEW_FORMATS.map((f) => (
+                      <SelectItem key={f} value={f}>
+                        {f}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>{t('deadlines.interviewDeadline')}</Label>
+                <Input
+                  type="date"
+                  value={form.interviewDeadline}
+                  onChange={(e) => onFormChange({ ...form, interviewDeadline: e.target.value })}
+                />
+              </div>
+            </div>
+          )}
           <div className="space-y-2">
             <Label>{t('deadlines.notes')}</Label>
             <Input

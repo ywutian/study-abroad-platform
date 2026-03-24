@@ -289,6 +289,7 @@ export class ProfileEducationService {
         content: data.content,
         wordCount,
         schoolId: data.schoolId,
+        essayPromptId: data.essayPromptId,
       },
     });
 
@@ -334,6 +335,7 @@ export class ProfileEducationService {
         content: data.content,
         wordCount,
         schoolId: data.schoolId,
+        essayPromptId: data.essayPromptId,
       },
     });
     await this.cacheInvalidation.onProfileChange(userId);

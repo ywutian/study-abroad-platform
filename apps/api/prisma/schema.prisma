@@ -64,6 +64,8 @@ enum TestType {
   IELTS
   AP
   IB
+  A_LEVEL
+  IGCSE
 }
 
 enum ActivityCategory {
@@ -102,6 +104,23 @@ enum AwardLevel {
   STATE
   NATIONAL
   INTERNATIONAL
+}
+
+enum AwardCategory {
+  STEM
+  MATH
+  SCIENCE
+  COMPUTER_SCIENCE
+  ENGINEERING
+  BUSINESS
+  ARTS
+  HUMANITIES
+  SOCIAL_SCIENCE
+  LANGUAGE
+  SPORTS
+  COMMUNITY_SERVICE
+  LEADERSHIP
+  OTHER
 }
 
 enum CompetitionCategory {
@@ -328,6 +347,9 @@ model User {
   // Assessment (测评)
   assessmentResults AssessmentResult[]
 
+  // Recommendation Letters (推荐信)
+  recommendationLetters RecommendationLetter[]
+
   // Vault (密码保险库)
   vaultItems VaultItem[]
 
@@ -409,8 +431,12 @@ model Profile {
   onboardingCompleted Boolean   @default(false)
 
   // Sensitive - Optional anonymized
-  gpa               Decimal? @db.Decimal(3, 2)
-  gpaScale          Decimal  @default(4.0) @db.Decimal(3, 2)
+  gpa               Decimal? @db.Decimal(5, 2)
+  gpaScale          Decimal  @default(4.0) @db.Decimal(5, 2)
+  gpa9              Decimal? @db.Decimal(5, 2)
+  gpa10             Decimal? @db.Decimal(5, 2)
+  gpa11             Decimal? @db.Decimal(5, 2)
+  gpa12             Decimal? @db.Decimal(5, 2)
   currentSchool     String?
   currentSchoolType String? // PUBLIC_US / PRIVATE_US / INTERNATIONAL / etc.
   grade             String? // FRESHMAN / SOPHOMORE / JUNIOR / SENIOR / GAP_YEAR
@@ -439,12 +465,13 @@ model Profile {
   visibility Visibility @default(PRIVATE)
 
   // Relations
-  testScores  TestScore[]
-  activities  Activity[]
-  awards      Award[]
-  education   Education[]
-  essays      Essay[]
-  predictions PredictionResult[]
+  testScores   TestScore[]
+  activities   Activity[]
+  awards       Award[]
+  education    Education[]
+  essays       Essay[]
+  predictions  PredictionResult[]
+  semesterGpas SemesterGpa[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -452,6 +479,25 @@ model Profile {
   @@index([userId])
   @@index([visibility])
   @@index([onboardingCompleted])
+}
+
+model SemesterGpa {
+  id        String  @id @default(cuid())
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  semester String  // e.g. "Fall 2024", "Spring 2025", "Grade 9", "Grade 10"
+  year     Int     // academic year, e.g. 2024
+  gpa      Decimal @db.Decimal(5, 2)
+  gpaScale Decimal @default(4.0) @db.Decimal(5, 2)
+  credits  Decimal? @db.Decimal(5, 1) // optional: credit hours for weighted avg
+  order    Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([profileId, semester, year])
+  @@index([profileId])
 }
 
 model TestScore {
@@ -479,8 +525,9 @@ model Activity {
   category           ActivityCategory
   role               String
   organization       String?
-  description        String?          @db.Text
-  startDate          DateTime?
+  description           String?          @db.Text
+  commonAppDescription  String?          @db.VarChar(150)
+  startDate             DateTime?
   endDate            DateTime?
   hoursPerWeek       Int?
   weeksPerYear       Int?
@@ -523,6 +570,7 @@ model Award {
 
   name        String
   level       AwardLevel
+  category    AwardCategory?
   year        Int?
   description String?
   order       Int        @default(0)
@@ -535,6 +583,7 @@ model Award {
 
   @@index([profileId])
   @@index([competitionId])
+  @@index([category])
 }
 
 // ============================================
@@ -728,6 +777,9 @@ model School {
   intlStudentPct         Decimal? @db.Decimal(5, 2)
   intlAcceptanceRate     Decimal? @db.Decimal(5, 2)
 
+  // Transfer student info
+  transferAcceptanceRate Decimal? @db.Decimal(5, 2) // Transfer admission rate %
+
   // Niche Grades (A+, A, A-, B+, B, B-, C+, C, C-, D+, D, D-, F)
   nicheSafetyGrade  String? // Safety/Crime index
   nicheLifeGrade    String? // Student Life/Happiness index
@@ -787,6 +839,7 @@ model School {
   timelines     ApplicationTimeline[]
   teams         Team[]
   calibration   SchoolCalibration?
+  rankings      SchoolRanking[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -798,6 +851,24 @@ model School {
   @@index([testOptional])
   @@index([hasEarlyDecision])
   @@index([country, usNewsRank])
+}
+
+// Multi-source ranking: one school can appear in multiple ranking lists
+model SchoolRanking {
+  id       String @id @default(cuid())
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  source    String // "US_NEWS", "QS", "NICHE", "FORBES", "THE"
+  list      String // "NATIONAL_UNIVERSITY", "LIBERAL_ARTS", "ENGINEERING_NO_PHD", "ART_DESIGN", "CS", "BUSINESS"
+  rank      Int
+  year      Int
+  sourceUrl String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([schoolId, source, list, year])
+  @@index([source, list, year, rank])
 }
 
 model SchoolMetric {
@@ -1090,6 +1161,7 @@ model AdmissionCase {
   highSchoolType  HighSchoolType?
   curriculumType  EducationSystem?
   demographicTags String[]          // first_gen, legacy, athlete, recruited, urm, international
+  nationality     String?           // Applicant nationality/citizenship (e.g., "China", "US")
 
   // Application context
   financialAid     String?          // full_ride, significant, partial, none, merit_only
@@ -2096,6 +2168,7 @@ model SchoolDeadline {
   // 额外信息
   interviewRequired Boolean   @default(false)
   interviewDeadline DateTime?
+  interviewFormat   String? // e.g. ALUMNI, ADMISSIONS_OFFICER, INITIALVIEW, VERICANT, GROUP, OPTIONAL
   applicationFee    Int? // 申请费（美元）
   notes             String?   @db.Text
 
@@ -2416,6 +2489,39 @@ model AssessmentResult {
 
   @@index([userId])
   @@index([assessmentId])
+}
+
+enum RecommenderRole {
+  TEACHER
+  COUNSELOR
+  COACH
+  EMPLOYER
+  OTHER
+}
+
+enum RecommendationLetterStatus {
+  NOT_REQUESTED
+  REQUESTED
+  IN_PROGRESS
+  SUBMITTED
+  CONFIRMED
+}
+
+model RecommendationLetter {
+  id               String                     @id @default(cuid())
+  userId           String
+  user             User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recommenderName  String                     @db.VarChar(200)
+  recommenderEmail String?                    @db.VarChar(200)
+  recommenderRole  RecommenderRole
+  subject          String?                    @db.VarChar(200)
+  status           RecommendationLetterStatus @default(NOT_REQUESTED)
+  dueDate          DateTime?
+  notes            String?                    @db.Text
+  createdAt        DateTime                   @default(now())
+  updatedAt        DateTime                   @updatedAt
+
+  @@index([userId])
 }
 
 model EssayPromptAudit {

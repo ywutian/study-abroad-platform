@@ -29,7 +29,8 @@
     "sbom:generate": "cdxgen -o sbom/bom.json --deep -t js --spec-version 1.5",
     "sbom:verify": "node -e \"const s=require('./sbom/bom.json'); if(!s.specVersion||!(s.components||[]).length){process.exit(1)} console.log('SBOM OK — specVersion:', s.specVersion, '| components:', s.components.length);\"",
     "lint:all": "pnpm lint && pnpm --filter web lint:quality && pnpm --filter api lint:quality && pnpm --filter web lint:i18n",
-    "check": "pnpm lint:all && pnpm test"
+    "check": "pnpm lint:all && pnpm test",
+    "prepush": "pnpm --filter api db:generate && pnpm --filter api exec tsc --noEmit --project tsconfig.build.json && pnpm --filter web exec tsc --noEmit && pnpm --filter mobile exec tsc --noEmit && pnpm test"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.4.1",
@@ -92,7 +93,7 @@
       "jws@4.0.0": ">=4.0.1",
       "sequelize@>=6.0.0 <=6.37.7": ">=6.37.8 <7",
       "flatted@<=3.4.1": ">=3.4.2",
-      "undici@>=6.0.0 <6.24.0": ">=6.24.0 <7",
+      "undici@>=5.0.0 <6.24.0": ">=6.24.0 <7",
       "undici@>=7.0.0 <7.24.0": ">=7.24.0 <8",
       "socket.io-parser@>=4.0.0 <4.2.6": ">=4.2.6"
     }

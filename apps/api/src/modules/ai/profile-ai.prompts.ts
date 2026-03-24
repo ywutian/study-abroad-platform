@@ -193,3 +193,112 @@ export function buildProfileAnalysisUserPrompt(
 
   return parts.join('\n');
 }
+
+/**
+ * Build system prompt for activity description refinement
+ */
+export function buildActivityRefineSystemPrompt(locale: string): string {
+  if (locale === 'zh') {
+    return `你是美国大学申请活动描述精简专家。你的任务是将活动描述精简到150字符以内，同时保留最关键的成就和影响。
+
+规则：
+1. 输出必须≤150字符（英文）
+2. 使用主动语态和动作动词开头
+3. 量化成就（数字、百分比、人数）
+4. 去除冗余形容词和背景信息
+5. 保留最有竞争力的信息
+6. 输出纯英文（Common App要求）
+
+返回 JSON 格式：
+{"refined": "精简后的描述", "tips": "给用户的优化建议"}`;
+  }
+
+  return `You are an expert at refining college application activity descriptions to fit within the 150-character Common App limit while maximizing impact.
+
+Rules:
+1. Output MUST be ≤150 characters
+2. Start with strong action verbs
+3. Quantify achievements (numbers, percentages, people impacted)
+4. Remove filler words, adjectives, and background context
+5. Keep the most competitive information
+6. Output in English (Common App requirement)
+
+Return JSON format:
+{"refined": "the refined description", "tips": "optimization advice for the user"}`;
+}
+
+/**
+ * Build user prompt for activity description refinement
+ */
+export function buildActivityRefineUserPrompt(
+  activityName: string,
+  role: string,
+  description: string,
+  locale: string,
+): string {
+  return `Activity: ${activityName}
+Role: ${role}
+Original description (${description.length} chars):
+${description}
+
+${locale === 'zh' ? '请精简到150字符以内，返回JSON。' : 'Refine to ≤150 characters. Return JSON.'}`;
+}
+
+/**
+ * Build system prompt for generating Common App activity description from detailed description
+ */
+export function buildGenerateCommonAppSystemPrompt(locale: string): string {
+  if (locale === 'zh') {
+    return `你是美国大学申请活动描述撰写专家。根据用户提供的详细活动描述，生成一段适合 Common App 的精炼英文描述，控制在150字符以内。
+
+规则：
+1. 输出必须≤150个英文字符（含空格和标点）
+2. 使用主动语态，以动作动词开头
+3. 量化成就（数字、百分比、影响人数）
+4. 突出最有竞争力和最独特的信息
+5. 去除冗余背景和形容词
+6. 输出纯英文（Common App 要求）
+7. 确保描述完整、可独立理解
+8. 只使用用户提供的信息，不要编造任何成就、数字或事实
+
+只返回以下 JSON 格式，不要添加任何解释或额外文本：
+{"commonAppDescription": "生成的Common App描述"}`;
+  }
+
+  return `You are an expert college application counselor specializing in writing impactful Common App activity descriptions. Generate a concise, compelling description (≤150 characters) from the detailed activity information provided.
+
+Rules:
+1. Output MUST be ≤150 characters including spaces and punctuation
+2. Use active voice, start with strong action verbs
+3. Quantify achievements (numbers, percentages, people impacted)
+4. Highlight the most competitive and unique information
+5. Remove filler words, adjectives, and background context
+6. Output in English (Common App requirement)
+7. Ensure the description is self-contained and understandable
+8. Use ONLY information provided by the user. Do NOT fabricate achievements, numbers, or facts.
+
+Return ONLY the JSON below. Do not include any explanation or additional text.
+{"commonAppDescription": "the generated Common App description"}`;
+}
+
+/**
+ * Build user prompt for generating Common App activity description
+ */
+export function buildGenerateCommonAppUserPrompt(
+  activityName: string,
+  role: string,
+  description: string,
+  locale: string,
+): string {
+  const lines = [`Activity: ${activityName}`];
+  if (role) lines.push(`Role: ${role}`);
+  lines.push(`Detailed description (${description.length} chars):`);
+  lines.push(description);
+  lines.push('');
+  lines.push(
+    locale === 'zh'
+      ? '请生成一段≤150字符的 Common App 活动描述，返回JSON。'
+      : 'Generate a ≤150 character Common App activity description. Return JSON.',
+  );
+  return lines.join('\n');
+}

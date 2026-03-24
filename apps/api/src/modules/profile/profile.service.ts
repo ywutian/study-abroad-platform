@@ -21,6 +21,10 @@ import {
   UpdateEssayDto,
   CreateEducationDto,
   UpdateEducationDto,
+  CreateRecommendationLetterDto,
+  UpdateRecommendationLetterDto,
+  CreateSemesterGpaDto,
+  UpdateSemesterGpaDto,
 } from './dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ProfileCrudService } from './profile-crud.service';
@@ -203,6 +207,30 @@ export class ProfileService {
     return this.scoresService.aiSortActivities(userId, locale);
   }
 
+  async refineActivityDescription(
+    userId: string,
+    activityId: string,
+    locale: string,
+  ) {
+    return this.scoresService.refineActivityDescription(
+      userId,
+      activityId,
+      locale,
+    );
+  }
+
+  async generateCommonAppDescription(
+    userId: string,
+    activityId: string,
+    locale: string,
+  ) {
+    return this.scoresService.generateCommonAppDescription(
+      userId,
+      activityId,
+      locale,
+    );
+  }
+
   // ============================================
   // Awards CRUD (delegated to ProfileScoresService)
   // ============================================
@@ -238,6 +266,41 @@ export class ProfileService {
 
   async reorderAwards(userId: string, awardIds: string[]): Promise<void> {
     return this.scoresService.reorderAwards(userId, awardIds);
+  }
+
+  // ============================================
+  // Semester GPAs (delegated to ProfileScoresService)
+  // ============================================
+
+  async getSemesterGpas(userId: string) {
+    return this.scoresService.getSemesterGpas(userId);
+  }
+
+  async createSemesterGpa(userId: string, data: CreateSemesterGpaDto) {
+    return this.scoresService.createSemesterGpa(userId, data);
+  }
+
+  async updateSemesterGpa(
+    userId: string,
+    id: string,
+    data: UpdateSemesterGpaDto,
+  ) {
+    return this.scoresService.updateSemesterGpa(userId, id, data);
+  }
+
+  async deleteSemesterGpa(userId: string, id: string): Promise<void> {
+    return this.scoresService.deleteSemesterGpa(userId, id);
+  }
+
+  // ============================================
+  // GPA by Grade (delegated to ProfileScoresService)
+  // ============================================
+
+  async updateGpaByGrade(
+    userId: string,
+    data: { gpa9?: number; gpa10?: number; gpa11?: number; gpa12?: number },
+  ) {
+    return this.scoresService.updateGpaByGrade(userId, data);
   }
 
   // ============================================
@@ -419,5 +482,32 @@ export class ProfileService {
       orderBy: [{ tier: 'asc' }, { sortOrder: 'asc' }],
       take: limit,
     });
+  }
+
+  // ============================================
+  // Recommendation Letters (delegated to ProfileCrudService)
+  // ============================================
+
+  async getRecommendationLetters(userId: string) {
+    return this.crudService.getRecommendationLetters(userId);
+  }
+
+  async createRecommendationLetter(
+    userId: string,
+    data: CreateRecommendationLetterDto,
+  ) {
+    return this.crudService.createRecommendationLetter(userId, data);
+  }
+
+  async updateRecommendationLetter(
+    userId: string,
+    id: string,
+    data: UpdateRecommendationLetterDto,
+  ) {
+    return this.crudService.updateRecommendationLetter(userId, id, data);
+  }
+
+  async deleteRecommendationLetter(userId: string, id: string) {
+    return this.crudService.deleteRecommendationLetter(userId, id);
   }
 }

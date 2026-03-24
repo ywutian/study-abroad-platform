@@ -61,9 +61,9 @@ describe('Admin (e2e)', () => {
         .expect(403);
     });
 
-    it('PUT /admin/users/:id/role should reject non-admin user', async () => {
+    it('POST /admin/roles/users/:id/role should reject non-admin user', async () => {
       await request(app.getHttpServer())
-        .put('/admin/users/some-user-id/role')
+        .post('/admin/roles/users/some-user-id/role')
         .set('Authorization', `Bearer ${userToken}`)
         .send({ role: 'ADMIN' })
         .expect(403);

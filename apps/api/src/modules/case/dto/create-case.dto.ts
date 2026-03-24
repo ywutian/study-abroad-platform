@@ -349,6 +349,15 @@ export class CreateCaseDto {
   demographicTags?: string[];
 
   @ApiPropertyOptional({
+    description: 'Applicant nationality',
+    example: 'China',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  nationality?: string;
+
+  @ApiPropertyOptional({
     description: 'Financial aid status',
     example: 'full_ride',
   })

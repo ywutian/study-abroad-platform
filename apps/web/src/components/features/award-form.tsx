@@ -33,10 +33,28 @@ const AWARD_LEVEL_KEYS = [
   { value: 'INTERNATIONAL', labelKey: 'international' },
 ];
 
+const AWARD_CATEGORIES = [
+  { value: 'STEM', labelKey: 'stem' },
+  { value: 'MATH', labelKey: 'math' },
+  { value: 'SCIENCE', labelKey: 'science' },
+  { value: 'COMPUTER_SCIENCE', labelKey: 'computerScience' },
+  { value: 'ENGINEERING', labelKey: 'engineering' },
+  { value: 'BUSINESS', labelKey: 'business' },
+  { value: 'ARTS', labelKey: 'arts' },
+  { value: 'HUMANITIES', labelKey: 'humanities' },
+  { value: 'SOCIAL_SCIENCE', labelKey: 'socialScience' },
+  { value: 'LANGUAGE', labelKey: 'language' },
+  { value: 'SPORTS', labelKey: 'sports' },
+  { value: 'COMMUNITY_SERVICE', labelKey: 'communityService' },
+  { value: 'LEADERSHIP', labelKey: 'leadership' },
+  { value: 'OTHER', labelKey: 'other' },
+];
+
 interface Award {
   id: string;
   name: string;
   level: string;
+  category?: string;
   year?: number;
   description?: string;
   competitionId?: string;
@@ -57,6 +75,7 @@ export function AwardForm({ open, onOpenChange, editingAward }: AwardFormProps) 
   const [formData, setFormData] = useState({
     name: editingAward?.name || '',
     level: editingAward?.level || '',
+    category: editingAward?.category || '',
     year: editingAward?.year?.toString() || '',
     description: editingAward?.description || '',
   });
@@ -84,6 +103,7 @@ export function AwardForm({ open, onOpenChange, editingAward }: AwardFormProps) 
     setFormData({
       name: '',
       level: '',
+      category: '',
       year: '',
       description: '',
     });
@@ -98,6 +118,7 @@ export function AwardForm({ open, onOpenChange, editingAward }: AwardFormProps) 
     const data = {
       name: formData.name,
       level: formData.level,
+      category: formData.category || undefined,
       year: formData.year ? parseInt(formData.year) : undefined,
       description: formData.description || undefined,
     };
@@ -150,16 +171,35 @@ export function AwardForm({ open, onOpenChange, editingAward }: AwardFormProps) 
             </div>
 
             <div className="space-y-2">
-              <Label>{t('form.awardYear')}</Label>
-              <Input
-                type="number"
-                value={formData.year}
-                onChange={(e) => setFormData((p) => ({ ...p, year: e.target.value }))}
-                placeholder="2025"
-                min={2000}
-                max={2030}
-              />
+              <Label>{t('form.awardCategory')}</Label>
+              <Select
+                value={formData.category}
+                onValueChange={(v) => setFormData((p) => ({ ...p, category: v }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t('form.selectCategory')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {AWARD_CATEGORIES.map((c) => (
+                    <SelectItem key={c.value} value={c.value}>
+                      {t(`awardCategories.${c.labelKey}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>{t('form.awardYear')}</Label>
+            <Input
+              type="number"
+              value={formData.year}
+              onChange={(e) => setFormData((p) => ({ ...p, year: e.target.value }))}
+              placeholder="2025"
+              min={2000}
+              max={2030}
+            />
           </div>
 
           <div className="space-y-2">

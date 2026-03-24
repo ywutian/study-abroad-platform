@@ -13,10 +13,18 @@ export interface RecommendedSchool {
   reasons: string[];
   concerns?: string[];
   schoolMeta?: {
+    nameZh?: string;
     usNewsRank?: number;
     acceptanceRate?: number;
-    location?: string;
+    city?: string;
+    state?: string;
     tuition?: number;
+    isPrivate?: boolean;
+    testOptional?: boolean;
+    hasEarlyDecision?: boolean;
+    retentionRate?: number;
+    logoUrl?: string;
+    website?: string;
   };
 }
 
