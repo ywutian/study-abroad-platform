@@ -47,5 +47,24 @@ ALTER TABLE "Activity" ADD COLUMN "commonAppDescription" VARCHAR(150);
 -- AlterTable: School - add transferAcceptanceRate
 ALTER TABLE "School" ADD COLUMN "transferAcceptanceRate" DECIMAL(5,2);
 
--- AlterTable: SchoolRanking - add sourceUrl
-ALTER TABLE "SchoolRanking" ADD COLUMN "sourceUrl" TEXT;
+-- CreateTable: SchoolRanking (multi-source rankings)
+CREATE TABLE "SchoolRanking" (
+    "id" TEXT NOT NULL,
+    "schoolId" TEXT NOT NULL,
+    "source" TEXT NOT NULL,
+    "list" TEXT NOT NULL,
+    "rank" INTEGER NOT NULL,
+    "year" INTEGER NOT NULL,
+    "sourceUrl" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "SchoolRanking_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex: SchoolRanking
+CREATE UNIQUE INDEX "SchoolRanking_schoolId_source_list_year_key" ON "SchoolRanking"("schoolId", "source", "list", "year");
+CREATE INDEX "SchoolRanking_source_list_year_rank_idx" ON "SchoolRanking"("source", "list", "year", "rank");
+
+-- AddForeignKey: SchoolRanking -> School
+ALTER TABLE "SchoolRanking" ADD CONSTRAINT "SchoolRanking_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE;

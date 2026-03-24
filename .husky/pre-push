@@ -1,0 +1,24 @@
+#!/usr/bin/env sh
+
+echo ""
+echo "🚀 Running pre-push checks (typecheck + test)..."
+echo ""
+
+# Step 1: Generate Prisma client (needed for type resolution)
+echo "📦 Generating Prisma client..."
+pnpm --filter api db:generate || exit 1
+
+# Step 2: Typecheck all apps
+echo ""
+echo "🔍 Running typecheck..."
+pnpm --filter api exec tsc --noEmit --project tsconfig.build.json && \
+pnpm --filter web exec tsc --noEmit && \
+pnpm --filter mobile exec tsc --noEmit || exit 1
+
+# Step 3: Run tests
+echo ""
+echo "🧪 Running tests..."
+pnpm test || exit 1
+
+echo ""
+echo "✅ Pre-push checks passed!"
