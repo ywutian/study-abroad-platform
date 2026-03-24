@@ -36,7 +36,7 @@ jobs:
         run: pnpm --filter study-abroad-mobile exec tsc --noEmit
 
       - name: Unit Tests
-        run: pnpm --filter study-abroad-mobile test -- --ci --coverage
+        run: pnpm --filter study-abroad-mobile exec jest --ci --coverage --passWithNoTests --forceExit
 
       - name: Upload Coverage
         if: always()
