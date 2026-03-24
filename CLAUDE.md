@@ -1,5 +1,59 @@
 # Study Abroad Platform — Development Guide
 
+## Agent 工作流（必须遵守）
+
+每次开发任务 **必须** 启动以下 Agent 进行审查，不可跳过：
+
+| #   | Agent          | 文件                                    | 职责                                                    |
+| --- | -------------- | --------------------------------------- | ------------------------------------------------------- |
+| 1   | **留学专家**   | `.claude/agents/study-abroad-expert.md` | 验证业务逻辑符合真实美本申请实践                        |
+| 2   | **申请者模拟** | `.claude/agents/applicant-simulator.md` | 以高中生+家长视角审查易用性和实用性                     |
+| 3   | **设计审查**   | `.claude/agents/design-reviewer.md`     | UI/UX、暗色模式、响应式、无障碍审查                     |
+| 4   | **架构师**     | `.claude/agents/architect.md`           | 系统架构、API 设计、模块依赖、性能                      |
+| 5   | **闭环检查**   | `.claude/agents/integration-checker.md` | 前后端对接、类型一致、权限、错误处理、文档更新          |
+| 6   | **数据模型**   | `.claude/agents/data-model-reviewer.md` | Schema→DTO→Select→Mapper→共享类型→前端 全链路一致性     |
+| 7   | **安全审查**   | `.claude/agents/security-reviewer.md`   | 认证授权、注入防护、数据泄露、隐私合规、OWASP Top 10    |
+| 8   | **AI Prompt**  | `.claude/agents/ai-prompt-engineer.md`  | Prompt 质量、幻觉控制、token 效率、输出可靠性           |
+| 9   | **i18n 专家**  | `.claude/agents/i18n-specialist.md`     | 翻译质量、术语一致、key 完整性、中英文布局适配          |
+| 10  | **测试工程**   | `.claude/agents/test-engineer.md`       | 测试覆盖、测试质量、边界用例、回归验证                  |
+| 11  | **移动端专家** | `.claude/agents/mobile-specialist.md`   | Expo/RN 兼容性、移动性能、离线、原生功能、与 web 一致性 |
+
+### 三阶段工作流
+
+#### 阶段一：方案制定（全员审查）
+
+每次制定实现方案时，**必须并行启动全部 11 个 Agent**，让每个 Agent 从各自专业视角对方案进行审查和补充。方案必须包含每个 Agent 的审查意见，综合所有意见后形成最终方案。**不允许跳过任何 Agent**。
+
+#### 阶段二：开发执行（按变更类型分组）
+
+按变更内容启动对应 Agent 组，陪伴开发过程实时审查：
+
+| 变更类型         | 必启 Agent                                                | 按需叠加                                                               |
+| ---------------- | --------------------------------------------------------- | ---------------------------------------------------------------------- |
+| **后端开发**     | 架构师、数据模型、安全审查、测试工程                      | AI Prompt（涉及 LLM 调用时）                                           |
+| **前端开发**     | 设计审查、i18n 专家、申请者模拟、测试工程                 | —                                                                      |
+| **移动端开发**   | 移动端专家、i18n 专家、申请者模拟、测试工程               | —                                                                      |
+| **AI 功能**      | AI Prompt、留学专家、安全审查、测试工程                   | —                                                                      |
+| **全栈功能**     | 架构师、数据模型、设计审查、i18n 专家、安全审查、测试工程 | 留学专家（涉及业务）、AI Prompt（涉及 LLM）、移动端专家（涉及 mobile） |
+| **数据库变更**   | 数据模型、架构师、安全审查                                | —                                                                      |
+| **留学业务逻辑** | 留学专家、申请者模拟                                      | + 对应开发类型的 Agent 组                                              |
+
+#### 阶段三：验收闭环（强制）
+
+开发完成后 **必须** 执行：
+
+1. **闭环检查** `integration-checker` — 验证前后端对接、类型一致、i18n 覆盖、权限、错误处理
+2. **测试工程** `test-engineer` — 运行测试、补充缺失测试、验证通过
+3. **闭环检查**负责更新 CLAUDE.md / MEMORY.md 文档
+
+### 规则
+
+- 可并行的 Agent **必须并行启动**，提高效率
+- 方案阶段不允许跳过任何 Agent，执行阶段按表格分组启动
+- 每个 Agent 的意见都必须在最终方案/代码中有体现或有明确回应
+- **Prisma Model 变更必须执行消费者扫描**：当计划涉及增/改 Prisma Model 字段时，架构师和数据模型 Agent 必须在 Phase 1 执行 `grep -r "ModelName" --include="*.ts" --include="*.tsx"` 全量扫描，列出所有读写该 Model 的消费者（后端 Service、Admin 表单、用户端 UI、Mobile），逐一标注"需更新"或"无需更新（原因）"。计划中的文件清单必须**影响面驱动**而非仅需求驱动。
+- **新增 nullable 字段的前端处理**：新增字段在前端渲染时，**禁止**用 `|| '某个具体枚举值'` 作为默认值（因为现有数据全是 null，会误导用户）。必须显示通用/未知状态，明确区分"已标注"和"未标注"。
+
 ## Architecture Overview
 
 Turbo monorepo with pnpm workspaces:
