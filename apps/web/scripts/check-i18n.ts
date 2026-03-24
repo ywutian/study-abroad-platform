@@ -34,6 +34,8 @@ const EXEMPT_FILES = [
   'admin/data-review/_components/bulk-import-tab.tsx', // CSV 模板含中文 essay prompt 示例数据
   'admin/high-schools/_components/tier-overview-tab.tsx', // 中文省份名（地理数据）
   'profile/_components/constants.ts', // 双语 labelZh 数据（tier badge 配置）
+  'prediction/SuggestionsPanel.tsx', // 中文关键字常量用于 AI 建议分类匹配
+  'prediction/SuggestionsPanel.test.ts', // 上述分类匹配的测试用例
 ];
 
 /** 豁免行模式（匹配到则跳过该行） */
