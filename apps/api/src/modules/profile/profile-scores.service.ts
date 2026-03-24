@@ -23,6 +23,12 @@ import {
 import { ProfileHelpersService } from './profile-helpers.service';
 import { CaseIncentiveService, PointAction } from '../points/incentive.service';
 import { safeRefund } from '../points/refund.helper';
+import {
+  buildActivityRefineSystemPrompt,
+  buildActivityRefineUserPrompt,
+  buildGenerateCommonAppSystemPrompt,
+  buildGenerateCommonAppUserPrompt,
+} from '../ai/profile-ai.prompts';
 
 /**
  * Handles test scores, activities, and awards CRUD operations.
@@ -535,9 +541,6 @@ ${JSON.stringify(activitiesJson, null, 2)}`;
       );
     }
 
-    const { buildActivityRefineSystemPrompt, buildActivityRefineUserPrompt } =
-      await import('../ai/profile-ai.prompts');
-
     const messages: ChatSimpleMessage[] = [
       { role: 'system', content: buildActivityRefineSystemPrompt(locale) },
       {
@@ -613,11 +616,6 @@ ${JSON.stringify(activitiesJson, null, 2)}`;
           : 'Description is already within 150 characters',
       );
     }
-
-    const {
-      buildGenerateCommonAppSystemPrompt,
-      buildGenerateCommonAppUserPrompt,
-    } = await import('../ai/profile-ai.prompts');
 
     const messages: ChatSimpleMessage[] = [
       {

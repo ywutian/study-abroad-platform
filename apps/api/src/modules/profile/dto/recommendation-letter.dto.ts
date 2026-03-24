@@ -6,22 +6,10 @@ import {
   MaxLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { RecommenderRole, RecommendationLetterStatus } from '@prisma/client';
 
-const RECOMMENDER_ROLES = [
-  'TEACHER',
-  'COUNSELOR',
-  'COACH',
-  'EMPLOYER',
-  'OTHER',
-] as const;
-
-const LETTER_STATUSES = [
-  'NOT_REQUESTED',
-  'REQUESTED',
-  'IN_PROGRESS',
-  'SUBMITTED',
-  'CONFIRMED',
-] as const;
+const RECOMMENDER_ROLES = Object.values(RecommenderRole);
+const LETTER_STATUSES = Object.values(RecommendationLetterStatus);
 
 export class CreateRecommendationLetterDto {
   @ApiProperty({ description: 'Recommender name', example: 'Dr. Smith' })
@@ -35,9 +23,9 @@ export class CreateRecommendationLetterDto {
   @MaxLength(200)
   recommenderEmail?: string;
 
-  @ApiProperty({ enum: RECOMMENDER_ROLES })
+  @ApiProperty({ enum: RecommenderRole })
   @IsIn(RECOMMENDER_ROLES)
-  recommenderRole: string;
+  recommenderRole: RecommenderRole;
 
   @ApiPropertyOptional({ description: 'Subject taught or relationship' })
   @IsOptional()
@@ -45,10 +33,10 @@ export class CreateRecommendationLetterDto {
   @MaxLength(200)
   subject?: string;
 
-  @ApiPropertyOptional({ enum: LETTER_STATUSES })
+  @ApiPropertyOptional({ enum: RecommendationLetterStatus })
   @IsOptional()
   @IsIn(LETTER_STATUSES)
-  status?: string;
+  status?: RecommendationLetterStatus;
 
   @ApiPropertyOptional({ description: 'Due date for the letter' })
   @IsOptional()
@@ -75,10 +63,10 @@ export class UpdateRecommendationLetterDto {
   @MaxLength(200)
   recommenderEmail?: string;
 
-  @ApiPropertyOptional({ enum: RECOMMENDER_ROLES })
+  @ApiPropertyOptional({ enum: RecommenderRole })
   @IsOptional()
   @IsIn(RECOMMENDER_ROLES)
-  recommenderRole?: string;
+  recommenderRole?: RecommenderRole;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -86,10 +74,10 @@ export class UpdateRecommendationLetterDto {
   @MaxLength(200)
   subject?: string;
 
-  @ApiPropertyOptional({ enum: LETTER_STATUSES })
+  @ApiPropertyOptional({ enum: RecommendationLetterStatus })
   @IsOptional()
   @IsIn(LETTER_STATUSES)
-  status?: string;
+  status?: RecommendationLetterStatus;
 
   @ApiPropertyOptional()
   @IsOptional()
