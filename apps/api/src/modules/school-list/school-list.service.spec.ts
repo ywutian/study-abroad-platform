@@ -77,6 +77,9 @@ describe('SchoolListService', () => {
               groupBy: jest.fn().mockResolvedValue([]),
               count: jest.fn().mockResolvedValue(0),
             },
+            schoolDeadline: {
+              findMany: jest.fn().mockResolvedValue([]),
+            },
           },
         },
       ],
