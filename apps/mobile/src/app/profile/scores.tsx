@@ -1,13 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  RefreshControl,
-  TouchableOpacity,
-  Alert,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -19,7 +11,6 @@ import {
   Select,
   Loading,
   EmptyState,
-  Badge,
   Card,
   CardContent,
 } from '@/components/ui';
@@ -27,9 +18,106 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useToast } from '@/components/ui/Toast';
 import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
-import type { Profile, TestScore } from '@/types';
+import type { TestScore } from '@/types';
 
-const TEST_TYPES = ['SAT', 'ACT', 'TOEFL', 'IELTS', 'AP', 'IB'];
+const TEST_TYPES = ['SAT', 'ACT', 'TOEFL', 'IELTS', 'AP', 'IB', 'A_LEVEL', 'IGCSE'];
+
+const SUBJECT_MAP: Record<string, string[]> = {
+  AP: [
+    'Calculus AB',
+    'Calculus BC',
+    'Statistics',
+    'Physics C: Mechanics',
+    'Physics C: E&M',
+    'Physics 1',
+    'Physics 2',
+    'Chemistry',
+    'Biology',
+    'Computer Science A',
+    'CS Principles',
+    'English Language',
+    'English Literature',
+    'US History',
+    'World History',
+    'European History',
+    'Psychology',
+    'Macroeconomics',
+    'Microeconomics',
+    'Environmental Science',
+    'Chinese Language',
+    'Spanish Language',
+  ],
+  IB: [
+    'English A',
+    'Chinese A',
+    'English B',
+    'Chinese B',
+    'Spanish B',
+    'French B',
+    'History',
+    'Economics',
+    'Psychology',
+    'Geography',
+    'Business Management',
+    'Physics',
+    'Chemistry',
+    'Biology',
+    'Computer Science',
+    'ESS',
+    'Mathematics AA',
+    'Mathematics AI',
+    'Visual Arts',
+    'Music',
+  ],
+  A_LEVEL: [
+    'Mathematics',
+    'Further Mathematics',
+    'Physics',
+    'Chemistry',
+    'Biology',
+    'Computer Science',
+    'Economics',
+    'Business',
+    'Accounting',
+    'History',
+    'Geography',
+    'Psychology',
+    'Sociology',
+    'English Literature',
+    'Chinese',
+    'French',
+    'Spanish',
+    'Art & Design',
+  ],
+  IGCSE: [
+    'Mathematics',
+    'Additional Math',
+    'English Language',
+    'English Literature',
+    'Physics',
+    'Chemistry',
+    'Biology',
+    'Combined Science',
+    'Chinese (First Language)',
+    'Chinese (Second Language)',
+    'French',
+    'Spanish',
+    'History',
+    'Geography',
+    'Economics',
+    'Business Studies',
+    'Computer Science',
+    'Accounting',
+    'Art & Design',
+    'Music',
+  ],
+};
+
+const NEEDS_SUBJECT = ['AP', 'IB', 'A_LEVEL', 'IGCSE'];
+const NEEDS_SUBSCORES: Record<string, string[]> = {
+  SAT: ['readingEBRW', 'math'],
+  TOEFL: ['reading', 'listening', 'speaking', 'writing'],
+};
 
 export default function ScoresScreen() {
   const { t } = useTranslation();
@@ -46,22 +134,33 @@ export default function ScoresScreen() {
   const [testType, setTestType] = useState('');
   const [totalScore, setTotalScore] = useState('');
   const [testDate, setTestDate] = useState('');
+  const [subject, setSubject] = useState('');
+  const [subScores, setSubScores] = useState<Record<string, string>>({});
 
   const {
-    data: profile,
+    data: scores = [],
     isLoading,
     refetch,
     isRefetching,
   } = useQuery({
-    queryKey: ['profile'],
-    queryFn: () => apiClient.get<Profile>('/profile'),
+    queryKey: ['test-scores'],
+    queryFn: () => apiClient.get<TestScore[]>('/profiles/me/test-scores'),
   });
 
-  const saveMutation = useMutation({
-    mutationFn: (updatedScores: Partial<TestScore>[]) =>
-      apiClient.put<Profile>('/profile', { testScores: updatedScores }),
+  const invalidateScores = () => {
+    queryClient.invalidateQueries({ queryKey: ['test-scores'] });
+    queryClient.invalidateQueries({ queryKey: ['profile'] });
+  };
+
+  const createMutation = useMutation({
+    mutationFn: (data: {
+      type: string;
+      score: number;
+      testDate?: string;
+      subScores?: Record<string, number | string>;
+    }) => apiClient.post<TestScore>('/profiles/me/test-scores', data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      invalidateScores();
       toast.success(t('profileEdit.saveSuccess'));
       closeModal();
     },
@@ -69,6 +168,43 @@ export default function ScoresScreen() {
       toast.error(t('profileEdit.saveFailed'));
     },
   });
+
+  const updateMutation = useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: {
+        type?: string;
+        score?: number;
+        testDate?: string;
+        subScores?: Record<string, number | string>;
+      };
+    }) => apiClient.put<TestScore>(`/profiles/me/test-scores/${id}`, data),
+    onSuccess: () => {
+      invalidateScores();
+      toast.success(t('profileEdit.saveSuccess'));
+      closeModal();
+    },
+    onError: () => {
+      toast.error(t('profileEdit.saveFailed'));
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => apiClient.delete(`/profiles/me/test-scores/${id}`),
+    onSuccess: () => {
+      invalidateScores();
+      toast.success(t('profileEdit.saveSuccess'));
+      setDeleteTarget(null);
+    },
+    onError: () => {
+      toast.error(t('profileEdit.saveFailed'));
+    },
+  });
+
+  const isSaving = createMutation.isPending || updateMutation.isPending;
 
   const testTypeOptions = TEST_TYPES.map((type) => ({
     value: type,
@@ -79,6 +215,8 @@ export default function ScoresScreen() {
     setTestType('');
     setTotalScore('');
     setTestDate('');
+    setSubject('');
+    setSubScores({});
     setEditingScore(null);
   }, []);
 
@@ -94,11 +232,34 @@ export default function ScoresScreen() {
 
   const openEditModal = useCallback((score: TestScore) => {
     setEditingScore(score);
-    setTestType(score.testType);
-    setTotalScore(score.totalScore?.toString() || '');
+    setTestType(score.type);
+    setTotalScore(score.score?.toString() || '');
     setTestDate(score.testDate || '');
+    setSubject(score.subScores?.subject?.toString() || '');
+    const restored: Record<string, string> = {};
+    if (score.subScores) {
+      Object.entries(score.subScores).forEach(([k, v]) => {
+        if (k !== 'subject') restored[k] = String(v);
+      });
+    }
+    setSubScores(restored);
     setModalVisible(true);
   }, []);
+
+  const buildSubScoresPayload = useCallback((): Record<string, number | string> | undefined => {
+    const payload: Record<string, number | string> = {};
+    if (NEEDS_SUBJECT.includes(testType) && subject) {
+      payload.subject = subject;
+    }
+    if (NEEDS_SUBSCORES[testType]) {
+      NEEDS_SUBSCORES[testType].forEach((key) => {
+        if (subScores[key] && !isNaN(Number(subScores[key]))) {
+          payload[key] = Number(subScores[key]);
+        }
+      });
+    }
+    return Object.keys(payload).length > 0 ? payload : undefined;
+  }, [testType, subject, subScores]);
 
   const handleSave = useCallback(() => {
     if (!testType) {
@@ -110,35 +271,42 @@ export default function ScoresScreen() {
       return;
     }
 
-    const currentScores = profile?.testScores || [];
-    const newScore: Partial<TestScore> = {
-      testType,
-      totalScore: Number(totalScore),
-      testDate: testDate || undefined,
-    };
-
-    let updatedScores: Partial<TestScore>[];
+    const subScoresPayload = buildSubScoresPayload();
 
     if (editingScore) {
-      updatedScores = currentScores.map((s) =>
-        s.id === editingScore.id ? { ...s, ...newScore } : s
-      );
+      updateMutation.mutate({
+        id: editingScore.id,
+        data: {
+          type: testType,
+          score: Number(totalScore),
+          testDate: testDate || undefined,
+          subScores: subScoresPayload,
+        },
+      });
     } else {
-      updatedScores = [...currentScores, newScore];
+      createMutation.mutate({
+        type: testType,
+        score: Number(totalScore),
+        testDate: testDate || undefined,
+        subScores: subScoresPayload,
+      });
     }
-
-    saveMutation.mutate(updatedScores);
-  }, [testType, totalScore, testDate, editingScore, profile, saveMutation, toast, t]);
+  }, [
+    testType,
+    totalScore,
+    testDate,
+    editingScore,
+    createMutation,
+    updateMutation,
+    toast,
+    t,
+    buildSubScoresPayload,
+  ]);
 
   const handleDelete = useCallback(() => {
     if (!deleteTarget) return;
-
-    const currentScores = profile?.testScores || [];
-    const updatedScores = currentScores.filter((s) => s.id !== deleteTarget.id);
-
-    saveMutation.mutate(updatedScores);
-    setDeleteTarget(null);
-  }, [deleteTarget, profile, saveMutation]);
+    deleteMutation.mutate(deleteTarget.id);
+  }, [deleteTarget, deleteMutation]);
 
   const getScoreColor = (type: string) => {
     switch (type) {
@@ -154,6 +322,10 @@ export default function ScoresScreen() {
         return '#3b82f6';
       case 'IB':
         return '#8b5cf6';
+      case 'A_LEVEL':
+        return '#059669';
+      case 'IGCSE':
+        return '#0891b2';
       default:
         return colors.primary;
     }
@@ -166,8 +338,6 @@ export default function ScoresScreen() {
       </View>
     );
   }
-
-  const scores = profile?.testScores || [];
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -197,15 +367,18 @@ export default function ScoresScreen() {
                       <View
                         style={[
                           styles.scoreTypeBadge,
-                          { backgroundColor: getScoreColor(score.testType) + '20' },
+                          { backgroundColor: getScoreColor(score.type) + '20' },
                         ]}
                       >
-                        <Text
-                          style={[styles.scoreTypeText, { color: getScoreColor(score.testType) }]}
-                        >
-                          {t(`profile.testTypes.${score.testType.toLowerCase()}`, score.testType)}
+                        <Text style={[styles.scoreTypeText, { color: getScoreColor(score.type) }]}>
+                          {t(`profile.testTypes.${score.type.toLowerCase()}`, score.type)}
                         </Text>
                       </View>
+                      {score.subScores?.subject && (
+                        <Text style={[styles.scoreSubject, { color: colors.foregroundMuted }]}>
+                          {String(score.subScores.subject)}
+                        </Text>
+                      )}
                       {score.testDate && (
                         <Text style={[styles.scoreDate, { color: colors.foregroundMuted }]}>
                           {score.testDate}
@@ -230,7 +403,7 @@ export default function ScoresScreen() {
                     </View>
                   </View>
                   <Text style={[styles.scoreValue, { color: colors.foreground }]}>
-                    {score.totalScore}
+                    {score.score}
                   </Text>
                 </CardContent>
               </Card>
@@ -260,12 +433,8 @@ export default function ScoresScreen() {
             <Button variant="outline" onPress={closeModal} style={styles.modalButton}>
               {t('common.cancel')}
             </Button>
-            <Button
-              onPress={handleSave}
-              style={styles.modalButton}
-              disabled={saveMutation.isPending}
-            >
-              {saveMutation.isPending ? t('common.loading') : t('common.save')}
+            <Button onPress={handleSave} style={styles.modalButton} disabled={isSaving}>
+              {isSaving ? t('common.loading') : t('common.save')}
             </Button>
           </View>
         }
@@ -276,8 +445,22 @@ export default function ScoresScreen() {
             placeholder={t('profileEdit.selectTestType')}
             options={testTypeOptions}
             value={testType}
-            onChange={setTestType}
+            onChange={(val) => {
+              setTestType(val);
+              setSubject('');
+              setSubScores({});
+            }}
           />
+
+          {NEEDS_SUBJECT.includes(testType) && SUBJECT_MAP[testType] && (
+            <Select
+              label={t('profileEdit.subjectLabel')}
+              placeholder={t('profileEdit.selectSubject')}
+              options={SUBJECT_MAP[testType].map((s) => ({ value: s, label: s }))}
+              value={subject}
+              onChange={setSubject}
+            />
+          )}
 
           <Input
             label={t('profileEdit.scoreLabel')}
@@ -286,6 +469,24 @@ export default function ScoresScreen() {
             onChangeText={setTotalScore}
             keyboardType="numeric"
           />
+
+          {NEEDS_SUBSCORES[testType] && (
+            <View style={styles.subScoresContainer}>
+              <Text style={[styles.subScoresTitle, { color: colors.foregroundMuted }]}>
+                {t('profileEdit.subScoresLabel')}
+              </Text>
+              {NEEDS_SUBSCORES[testType].map((key) => (
+                <Input
+                  key={key}
+                  label={t(`profileEdit.subScore.${key}`, key)}
+                  placeholder={t('profileEdit.enterScore')}
+                  value={subScores[key] || ''}
+                  onChangeText={(val) => setSubScores((prev) => ({ ...prev, [key]: val }))}
+                  keyboardType="numeric"
+                />
+              ))}
+            </View>
+          )}
 
           <Input
             label={t('profileEdit.testDateLabel')}
@@ -304,7 +505,7 @@ export default function ScoresScreen() {
         title={t('profileEdit.deleteConfirmTitle')}
         message={t('profileEdit.deleteScoreConfirm')}
         variant="destructive"
-        loading={saveMutation.isPending}
+        loading={deleteMutation.isPending}
       />
     </View>
   );
@@ -354,6 +555,10 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     fontWeight: fontWeight.semibold,
   },
+  scoreSubject: {
+    fontSize: fontSize.sm,
+    marginTop: spacing.xs,
+  },
   scoreDate: {
     fontSize: fontSize.xs,
     marginTop: spacing.xs,
@@ -386,6 +591,14 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     paddingBottom: spacing.md,
+  },
+  subScoresContainer: {
+    gap: spacing.xs,
+  },
+  subScoresTitle: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.medium,
+    marginTop: spacing.xs,
   },
   modalFooter: {
     flexDirection: 'row',

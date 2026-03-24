@@ -32,12 +32,13 @@ interface CaseFormData {
   year: string;
   result: CaseResult | '';
   round: string;
-  // Step 2: Scores
+  // Step 2: Scores & Background
   gpa: string;
   gpaScale: string;
   satScore: string;
   actScore: string;
   toeflScore: string;
+  nationality: string;
 }
 
 const INITIAL_FORM: CaseFormData = {
@@ -52,6 +53,7 @@ const INITIAL_FORM: CaseFormData = {
   satScore: '',
   actScore: '',
   toeflScore: '',
+  nationality: '',
 };
 
 const TOTAL_STEPS = 2;
@@ -252,6 +254,7 @@ export function SubmitCaseModal({ visible, onClose, onSuccess }: SubmitCaseModal
         const toefl = Number(form.toeflScore);
         payload.toeflRange = `${Math.max(0, toefl - 3)}-${Math.min(120, toefl + 3)}`;
       }
+      if (form.nationality) payload.nationality = form.nationality;
 
       await apiClient.post('/cases', payload);
 
@@ -469,6 +472,13 @@ export function SubmitCaseModal({ visible, onClose, onSuccess }: SubmitCaseModal
         placeholder={t('cases.submit.toeflPlaceholder')}
         keyboardType="number-pad"
         error={errors.toeflScore}
+      />
+
+      <Input
+        label={t('cases.submit.nationalityLabel')}
+        value={form.nationality}
+        onChangeText={(text) => updateField('nationality', text)}
+        placeholder={t('cases.submit.nationalityPlaceholder')}
       />
     </View>
   );

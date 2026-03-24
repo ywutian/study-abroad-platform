@@ -1,11 +1,13 @@
 import React, { memo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Linking, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 
 import { AnimatedCard, CardContent, Badge, Progress, AnimatedCounter } from '@/components/ui';
 import { spacing, fontSize, fontWeight } from '@/utils/theme';
 import { formatAcceptanceRate } from '@/utils/format';
+
+import { isSafeUrl } from '@study-abroad/shared/utils';
 
 import {
   RecommendedSchool,
@@ -40,9 +42,27 @@ export const SchoolCard = memo(function SchoolCard({ school, colors }: SchoolCar
       <CardContent>
         <View style={styles.schoolCardHeader}>
           <View style={styles.schoolCardInfo}>
-            <Text style={[styles.schoolName, { color: colors.foreground }]} numberOfLines={2}>
-              {school.schoolName}
-            </Text>
+            <View style={styles.schoolNameRow}>
+              <Text
+                style={[styles.schoolName, { color: colors.foreground, flex: 1 }]}
+                numberOfLines={2}
+              >
+                {school.schoolName}
+              </Text>
+              {isSafeUrl(school.schoolMeta?.website) && (
+                <TouchableOpacity
+                  onPress={() => {
+                    Linking.openURL(school.schoolMeta!.website!).catch(() => {});
+                  }}
+                  accessibilityLabel={t('recommendation.visitWebsite')}
+                  accessibilityRole="link"
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                  style={styles.websiteButton}
+                >
+                  <Ionicons name="globe-outline" size={16} color={colors.primary} />
+                </TouchableOpacity>
+              )}
+            </View>
             <View style={styles.schoolMetaRow}>
               <Badge variant={getTierBadgeVariant(school.tier)}>{getTierLabel(school.tier)}</Badge>
               {school.schoolMeta?.usNewsRank && (
@@ -83,11 +103,11 @@ export const SchoolCard = memo(function SchoolCard({ school, colors }: SchoolCar
 
         {school.schoolMeta && (
           <View style={styles.schoolMetaDetails}>
-            {school.schoolMeta.location && (
+            {(school.schoolMeta.city || school.schoolMeta.state) && (
               <View style={styles.metaItem}>
                 <Ionicons name="location-outline" size={14} color={colors.foregroundMuted} />
                 <Text style={[styles.metaText, { color: colors.foregroundMuted }]}>
-                  {school.schoolMeta.location}
+                  {[school.schoolMeta.city, school.schoolMeta.state].filter(Boolean).join(', ')}
                 </Text>
               </View>
             )}
@@ -155,6 +175,14 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: spacing.md,
     gap: spacing.sm,
+  },
+  schoolNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  websiteButton: {
+    padding: 2,
   },
   schoolName: {
     fontSize: fontSize.base,

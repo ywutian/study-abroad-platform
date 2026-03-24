@@ -84,11 +84,17 @@ export type SchoolType = 'PUBLIC_SCHOOL' | 'PRIVATE_SCHOOL' | 'INTERNATIONAL';
 export interface TestScore {
   id: string;
   profileId: string;
-  testType: string;
-  totalScore?: number;
-  subScores?: Record<string, number>;
+  type: string;
+  score: number;
+  subScores?: Record<string, number | string>;
   testDate?: string;
 }
+
+/** @deprecated Use `type` and `score` fields instead */
+export type LegacyTestScore = TestScore & {
+  testType?: string;
+  totalScore?: number;
+};
 
 export interface Activity {
   id: string;
@@ -174,6 +180,10 @@ export interface School {
   essayPrompts?: import('@study-abroad/shared/types').EssayPrompt[];
   deadlines?: import('@study-abroad/shared/types').SchoolDeadline[];
   metrics?: import('@study-abroad/shared/types').SchoolMetric[];
+  metadata?: {
+    provenance?: import('@study-abroad/shared').ProvenanceRecord;
+    [key: string]: unknown;
+  };
   createdAt: string;
   updatedAt: string;
 }
