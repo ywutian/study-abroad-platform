@@ -10,10 +10,12 @@ import { renderHook } from '@testing-library/react-native';
 
 // The global jest.setup.js has a default mock for @/stores/theme.
 // We override it here so we can control colorScheme per test.
+// Mock useThemeStore as a Zustand-style hook that accepts a selector
+const mockState = { colorScheme: 'light' as string | null };
 jest.mock('@/stores/theme', () => ({
-  useThemeStore: jest.fn(() => ({
-    colorScheme: 'light',
-  })),
+  useThemeStore: jest.fn((selector?: (s: typeof mockState) => unknown) =>
+    selector ? selector(mockState) : mockState
+  ),
 }));
 
 import { useThemeStore } from '@/stores/theme';
@@ -131,10 +133,13 @@ describe('colors', () => {
 // useColors hook
 // ======================================================================
 describe('useColors', () => {
+  afterEach(() => {
+    mockState.colorScheme = 'light';
+    jest.restoreAllMocks();
+  });
+
   it('returns light colors when colorScheme is light', () => {
-    (useThemeStore as unknown as jest.Mock).mockReturnValue({
-      colorScheme: 'light',
-    });
+    mockState.colorScheme = 'light';
 
     const { result } = renderHook(() => useColors());
 
@@ -144,9 +149,7 @@ describe('useColors', () => {
   });
 
   it('returns dark colors when colorScheme is dark', () => {
-    (useThemeStore as unknown as jest.Mock).mockReturnValue({
-      colorScheme: 'dark',
-    });
+    mockState.colorScheme = 'dark';
 
     const { result } = renderHook(() => useColors());
 
@@ -156,9 +159,7 @@ describe('useColors', () => {
   });
 
   it('falls back to light colors when colorScheme is null (system)', () => {
-    (useThemeStore as unknown as jest.Mock).mockReturnValue({
-      colorScheme: null,
-    });
+    mockState.colorScheme = null;
 
     const { result } = renderHook(() => useColors());
 
