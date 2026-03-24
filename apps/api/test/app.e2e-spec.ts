@@ -295,9 +295,9 @@ describe('App (e2e)', () => {
         .expect(401);
     });
 
-    it('/ai/analyze-profile (POST) should require authentication', () => {
+    it('/ai-agent/chat (POST) should require authentication', () => {
       return request(app.getHttpServer())
-        .post('/ai/analyze-profile')
+        .post('/ai-agent/chat')
         .send({})
         .expect(401);
     });
