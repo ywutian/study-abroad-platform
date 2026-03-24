@@ -170,6 +170,72 @@ describe('EssayPromptService', () => {
     });
   });
 
+  describe('findOnePublic', () => {
+    it('should return essay prompt without auditLogs and sources', async () => {
+      mockPrisma.essayPrompt.findUnique.mockResolvedValue({
+        id: 'p1',
+        schoolId: 'school-1',
+        type: 'COMMON_APP',
+        prompt: 'Tell us about yourself',
+        promptZh: '请介绍你自己',
+        wordLimit: 650,
+        isRequired: true,
+        year: 2025,
+        school: {
+          id: 'school-1',
+          name: 'MIT',
+          nameZh: '麻省理工',
+          usNewsRank: 1,
+        },
+      });
+
+      const result = await service.findOnePublic('p1');
+
+      expect(result.id).toBe('p1');
+      expect(result.prompt).toBe('Tell us about yourself');
+      expect(result.year).toBe(2025);
+      // Must NOT contain auditLogs or sources
+      expect(result).not.toHaveProperty('auditLogs');
+      expect(result).not.toHaveProperty('sources');
+    });
+
+    it('should throw NotFoundException when essay prompt does not exist', async () => {
+      mockPrisma.essayPrompt.findUnique.mockResolvedValue(null);
+
+      await expect(service.findOnePublic('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('should use select (not include) to exclude sensitive fields at query level', async () => {
+      mockPrisma.essayPrompt.findUnique.mockResolvedValue({
+        id: 'p1',
+        schoolId: 'school-1',
+        type: 'COMMON_APP',
+        prompt: 'Test',
+        promptZh: null,
+        wordLimit: null,
+        isRequired: true,
+        year: 2025,
+        school: {
+          id: 'school-1',
+          name: 'MIT',
+          nameZh: '麻省理工',
+          usNewsRank: 1,
+        },
+      });
+
+      await service.findOnePublic('p1');
+
+      // Verify the query uses select (not include) — which means auditLogs
+      // and sources are excluded at the database query level
+      const callArgs = mockPrisma.essayPrompt.findUnique.mock.calls[0][0];
+      expect(callArgs).toHaveProperty('select');
+      expect(callArgs.select).not.toHaveProperty('auditLogs');
+      expect(callArgs.select).not.toHaveProperty('sources');
+    });
+  });
+
   describe('findBySchool', () => {
     it('should return verified prompts for a school', async () => {
       mockPrisma.essayPrompt.findMany.mockResolvedValue([

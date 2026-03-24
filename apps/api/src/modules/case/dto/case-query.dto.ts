@@ -34,4 +34,24 @@ export class CaseQueryDto extends PaginationDto {
   @IsString()
   @MaxLength(200)
   highSchoolId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filter by application round (ED/EA/RD/UC etc.)',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  round?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by major' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  major?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by nationality' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  nationality?: string;
 }

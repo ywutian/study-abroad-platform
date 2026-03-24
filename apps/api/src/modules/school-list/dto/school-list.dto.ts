@@ -113,6 +113,18 @@ export class SchoolListItemResponseDto {
   @ApiProperty({ description: 'Number of verified essay prompts' })
   essayPromptCount: number;
 
+  @ApiPropertyOptional({
+    description: 'School deadlines for current application year',
+  })
+  deadlines?: Array<{
+    round: string;
+    applicationDeadline: string;
+    financialAidDeadline?: string;
+    interviewRequired: boolean;
+    interviewDeadline?: string;
+    interviewFormat?: string;
+  }>;
+
   @ApiProperty()
   createdAt: Date;
 }

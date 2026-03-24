@@ -12,6 +12,10 @@ export const SCHOOL_LIST_SCHOOL_SELECT = {
   testOptional: true,
   hasEarlyDecision: true,
   acceptsCommonApp: true,
+  needBlindInternational: true,
+  percentNeedMet: true,
+  averageAidPackage: true,
+  averageNetPrice: true,
 } as const satisfies Prisma.SchoolSelect;
 
 export type SchoolListSchoolResult = Prisma.SchoolGetPayload<{
@@ -38,7 +42,20 @@ export function mapSchoolForList(school: SchoolListSchoolResult) {
     testOptional: school.testOptional ?? undefined,
     hasEarlyDecision: school.hasEarlyDecision ?? undefined,
     acceptsCommonApp: school.acceptsCommonApp ?? undefined,
+    needBlindInternational: school.needBlindInternational || false,
+    percentNeedMet: school.percentNeedMet
+      ? clampPercentRate(school.percentNeedMet)
+      : undefined,
+    averageAidPackage: school.averageAidPackage || undefined,
+    averageNetPrice: school.averageNetPrice || undefined,
     logoUrl: school.logoUrl || undefined,
+    website: school.website || undefined,
+    scorecardId: school.scorecardId || undefined,
+    ipedsId: school.ipedsId || undefined,
+    transferAcceptanceRate: school.transferAcceptanceRate
+      ? clampPercentRate(school.transferAcceptanceRate)
+      : undefined,
+    rankings: school.rankings || [],
   };
 }
 

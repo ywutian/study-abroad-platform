@@ -40,6 +40,15 @@ describe('RecommendationService', () => {
     state: 'MA',
     tuition: 55000,
     isPrivate: true,
+    testOptional: true,
+    hasEarlyDecision: true,
+    retentionRate: 98.5,
+    logoUrl: 'https://img.logo.dev/mit.edu',
+    website: 'https://mit.edu',
+    scorecardId: null,
+    ipedsId: null,
+    transferAcceptanceRate: null,
+    rankings: [],
   };
 
   const mockAIResponseJson = {
@@ -99,6 +108,9 @@ describe('RecommendationService', () => {
             },
             essayPrompt: {
               groupBy: jest.fn().mockResolvedValue([]),
+              findMany: jest.fn().mockResolvedValue([]),
+            },
+            assessmentResult: {
               findMany: jest.fn().mockResolvedValue([]),
             },
           },

@@ -48,6 +48,10 @@ export interface ProfileInput {
     tier?: number;
     competitionName?: string;
   }>;
+  assessment?: {
+    mbtiType?: string;
+    hollandCodes?: string[];
+  };
 }
 
 export interface SchoolInput {
@@ -125,8 +129,123 @@ function formatAwards(awards: ProfileInput['awards'], isZh: boolean): string {
   return header + '\n' + lines.join('\n');
 }
 
+/** Sanitize user-provided text before injecting into prompts. */
+function sanitizeForPrompt(s: string): string {
+  return s.replace(/[<>{}]/g, '').replace(/\n{2,}/g, '\n');
+}
+
+/** MBTI context labels for assessment interpretation. */
+const MBTI_CONTEXT: Record<string, { zh: string; en: string }> = {
+  INTJ: {
+    zh: '适合研究密集型学术环境，独立思考能力强',
+    en: 'Thrives in research-intensive environments, strong independent thinker',
+  },
+  INTP: {
+    zh: '适合理论研究和探索型学习环境',
+    en: 'Suits theoretical research and exploratory learning',
+  },
+  ENTJ: {
+    zh: '适合领导力培养和竞争性学术环境',
+    en: 'Fits leadership development and competitive academic settings',
+  },
+  ENTP: {
+    zh: '适合创新驱动、跨学科的学习环境',
+    en: 'Excels in innovation-driven, interdisciplinary settings',
+  },
+  ENFP: {
+    zh: '适合多元化、创新和自由探索的环境',
+    en: 'Excels in diverse, innovative campuses with flexibility',
+  },
+  ENFJ: {
+    zh: '适合注重社区和协作学习的环境',
+    en: 'Thrives in community-focused, collaborative institutions',
+  },
+  INFJ: {
+    zh: '适合注重人文关怀和使命感的学术环境',
+    en: 'Fits mission-driven institutions with strong humanities',
+  },
+  INFP: {
+    zh: '适合重视个性表达和创意写作的环境',
+    en: 'Suits creative, expressive academic communities',
+  },
+  ISTJ: {
+    zh: '适合结构化、学术传统强的环境',
+    en: 'Suits structured, traditionally rigorous institutions',
+  },
+  ISFJ: {
+    zh: '适合支持性强、注重关怀的学术社区',
+    en: 'Fits supportive, caring academic communities',
+  },
+  ESTJ: {
+    zh: '适合重视组织能力和实践导向的环境',
+    en: 'Suits practically-oriented, well-organized programs',
+  },
+  ESFJ: {
+    zh: '适合社交活跃、注重团队合作的校园',
+    en: 'Thrives in socially active, team-oriented campuses',
+  },
+  ISTP: {
+    zh: '适合动手实践和技术导向的学习环境',
+    en: 'Suits hands-on, technically-oriented programs',
+  },
+  ISFP: {
+    zh: '适合注重艺术表达和个人创作的环境',
+    en: 'Fits artistic, individually creative environments',
+  },
+  ESTP: {
+    zh: '适合实践性强、节奏快的学习环境',
+    en: 'Excels in fast-paced, practical learning environments',
+  },
+  ESFP: {
+    zh: '适合社交丰富、体验式学习的校园',
+    en: 'Suits experiential, socially vibrant campuses',
+  },
+};
+
+/** Holland RIASEC code labels. */
+const HOLLAND_LABELS: Record<string, { zh: string; en: string }> = {
+  R: { zh: '实际型', en: 'Realistic' },
+  I: { zh: '研究型', en: 'Investigative' },
+  A: { zh: '艺术型', en: 'Artistic' },
+  S: { zh: '社会型', en: 'Social' },
+  E: { zh: '企业型', en: 'Enterprising' },
+  C: { zh: '常规型', en: 'Conventional' },
+};
+
+/**
+ * Format assessment context with human-readable labels.
+ * Marked as "reference only" — does not directly affect admission probability.
+ */
+function formatAssessmentContext(
+  assessment: ProfileInput['assessment'],
+  isZh: boolean,
+): string {
+  if (!assessment?.mbtiType && !assessment?.hollandCodes) return '';
+  const lines: string[] = [];
+  if (assessment.mbtiType) {
+    const ctx = MBTI_CONTEXT[assessment.mbtiType];
+    lines.push(
+      `- MBTI: ${assessment.mbtiType}${ctx ? ` — ${isZh ? ctx.zh : ctx.en}` : ''}`,
+    );
+  }
+  if (assessment.hollandCodes?.length) {
+    const labels = assessment.hollandCodes
+      .map((c) => {
+        const l = HOLLAND_LABELS[c];
+        return l ? `${c}(${isZh ? l.zh : l.en})` : c;
+      })
+      .join(' ');
+    lines.push(`- Holland: ${labels}`);
+  }
+  const header = isZh
+    ? '性格/兴趣评估 (仅供参考，不直接影响录取概率):'
+    : 'Personality/Interest Assessment (reference only, does not directly affect admission probability):';
+  return header + '\n' + lines.join('\n');
+}
+
 /**
  * 格式化活动情况 — 包含描述和时间投入以供 AI 评估
+ * Top 5 activities get expanded descriptions (300 chars), rest get 120 chars.
  */
 function formatActivities(
   activities: ProfileInput['activities'],
@@ -134,13 +253,16 @@ function formatActivities(
 ): string {
   if (!activities || activities.length === 0) return isZh ? '无' : 'None';
 
-  const lines = activities.slice(0, 10).map((a) => {
+  const lines = activities.slice(0, 10).map((a, i) => {
     let line = `- ${a.name || a.category} (${a.category})`;
     if (a.role) line += ` | ${isZh ? '角色' : 'Role'}: ${a.role}`;
-    if ((a as any).description)
-      line += ` | ${(a as any).description.slice(0, 120)}`;
+    if (a.description) {
+      const limit = i < 5 ? 300 : 120;
+      line += ` | ${sanitizeForPrompt(a.description).slice(0, limit)}`;
+    }
     if (a.hoursPerWeek && a.weeksPerYear) {
-      line += ` | ${a.hoursPerWeek}h/${isZh ? '周' : 'wk'}, ${a.weeksPerYear}${isZh ? '周/年' : 'wk/yr'}`;
+      const annualHours = a.hoursPerWeek * a.weeksPerYear;
+      line += ` | ${a.hoursPerWeek}h/${isZh ? '周' : 'wk'}, ${a.weeksPerYear}${isZh ? '周/年' : 'wk/yr'} (${annualHours}h/${isZh ? '年' : 'yr'})`;
     }
     return line;
   });
@@ -212,12 +334,25 @@ function formatHighSchoolContext(profile: ProfileInput, isZh: boolean): string {
 }
 
 /**
+ * Nationality-specific historical admission statistics.
+ * Passed into the prediction prompt when the applicant is international
+ * and matching case data exists.
+ */
+export interface NationalityStats {
+  nationality: string;
+  totalCases: number;
+  admittedCases: number;
+  admitRate: number; // 0-100 percentage
+}
+
+/**
  * 构建预测 Prompt
  */
 export function buildPredictionPrompt(
   profile: ProfileInput,
   school: SchoolInput,
   locale = 'zh',
+  nationalityStats?: NationalityStats,
 ): string {
   const isZh = locale === 'zh';
   const gpaText = profile.gpa
@@ -241,14 +376,15 @@ ${formatHighSchoolContext(profile, true)}
 - 标化成绩: ${formatTestScores(profile.testScores, true)}
 - 目标专业: ${profile.targetMajor || '未确定'}${profile.majorCompetitiveness ? `（该校竞争度: ${profile.majorCompetitiveness.level}/5${profile.majorCompetitiveness.schoolEstimate ? `，预估专业录取率 ~${profile.majorCompetitiveness.schoolEstimate}%` : ''}）` : ''}
 - 活动经历: ${formatActivities(profile.activities, true)}
-- 获奖情况: ${formatAwards(profile.awards, true)}${profile.isInternational ? `\n- 申请者身份: 国际生${profile.nationality ? `（${profile.nationality}）` : ''}${profile.educationSystem ? `，${profile.educationSystem}体系` : ''}${profile.needsFinancialAid ? '，需要助学金' : ''}` : ''}
+- 获奖情况: ${formatAwards(profile.awards, true)}
+${formatAssessmentContext(profile.assessment, true)}${profile.isInternational ? `\n- 申请者身份: 国际生${profile.nationality ? `（${profile.nationality}）` : ''}${profile.educationSystem ? `，${profile.educationSystem}体系` : ''}${profile.needsFinancialAid ? '，需要助学金' : ''}` : ''}
 
 ## 目标学校: ${schoolName}
 - US News 排名: ${school.usNewsRank ? `#${school.usNewsRank}` : unknown}
 - 录取率: ${school.acceptanceRate ? `${school.acceptanceRate}%` : unknown}${school.intlAcceptanceRate ? `\n- 国际生录取率: ${school.intlAcceptanceRate}%` : ''}${school.intlStudentPct ? `\n- 国际生比例: ${school.intlStudentPct}%` : ''}${school.needBlindInternational ? '\n- Need-Blind政策: 对国际生Need-Blind' : ''}
 - 毕业率: ${school.graduationRate ? `${school.graduationRate}%` : unknown}
 - 平均 SAT: ${school.satAvg || unknown}${school.sat25 && school.sat75 ? ` (25th-75th: ${school.sat25}-${school.sat75})` : ''}
-- 平均 ACT: ${school.actAvg || unknown}${school.act25 && school.act75 ? ` (25th-75th: ${school.act25}-${school.act75})` : ''}${school.retentionRate ? `\n- 新生留存率: ${school.retentionRate}%` : ''}${school.studentFacultyRatio ? `\n- 师生比: ${school.studentFacultyRatio}:1` : ''}${school.percentNeedMet ? `\n- 助学金满足率: ${school.percentNeedMet}%` : ''}${school.averageNetPrice ? `\n- 平均净费用: $${school.averageNetPrice.toLocaleString()}` : ''}${school.testOptional === true ? '\n- 标化政策: Test Optional' : ''}${school.hasEarlyDecision ? '\n- 提前决定: 有ED轮次' : ''}
+- 平均 ACT: ${school.actAvg || unknown}${school.act25 && school.act75 ? ` (25th-75th: ${school.act25}-${school.act75})` : ''}${school.retentionRate ? `\n- 新生留存率: ${school.retentionRate}%` : ''}${school.studentFacultyRatio ? `\n- 师生比: ${school.studentFacultyRatio}:1` : ''}${school.percentNeedMet ? `\n- 助学金满足率: ${school.percentNeedMet}%` : ''}${school.averageNetPrice ? `\n- 平均净费用: $${school.averageNetPrice.toLocaleString()}` : ''}${school.testOptional === true ? '\n- 标化政策: Test Optional' : ''}${school.hasEarlyDecision ? '\n- 提前决定: 有ED轮次' : ''}${nationalityStats && profile.isInternational ? `\n\n## 国籍维度历史数据\n- 该校来自${nationalityStats.nationality}的历史申请者录取率: ${nationalityStats.admitRate.toFixed(1)}% (基于${nationalityStats.totalCases}个案例)\n- 请将此数据作为国际生录取概率评估的重要参考` : ''}
 
 ## 分析要求
 1. 综合评估学生竞争力与学校录取标准的匹配度
@@ -265,6 +401,11 @@ ${formatHighSchoolContext(profile, true)}
    - 录取率 > 30% 的学校，probability 通常在 0.30-0.80 之间
    - 缺少标化成绩会显著降低竞争力（降低 10-20 个百分点）
    - 缺少课外活动和奖项也会降低竞争力
+6. **建议必须具体、可执行，包含具体项目名称**：
+   - 推荐具体的暑期项目、竞赛和科研机会，使用真实项目名称（如 RSI、MOSTEC、SAMS、LaunchX、YYGS、Clark Scholars、USAMO、Science Olympiad、DECA 等）
+   - 根据学生的目标专业和现有活动量身定制建议
+   - 每条建议至少提及 2-3 个具体项目名称，而非仅给出泛泛的类别描述
+   - 只推荐真实存在且仍在运行的项目。如不确定，则给出类别建议而非编造项目名
 
 ## 返回格式（严格 JSON）
 {
@@ -281,8 +422,8 @@ ${formatHighSchoolContext(profile, true)}
     }
   ],
   "suggestions": [
-    "建议1（中文）",
-    "建议2（中文）"
+    "包含具体项目名称的建议1（中文，如推荐 RSI、MOSTEC 等具体项目）",
+    "包含具体项目名称的建议2（中文，根据目标专业推荐 2-3 个具体项目）"
   ],
   "comparison": {
     "gpaPercentile": <0-100的整数>,
@@ -310,14 +451,15 @@ ${formatHighSchoolContext(profile, false)}
 - Test Scores: ${formatTestScores(profile.testScores, false)}
 - Target Major: ${profile.targetMajor || 'Undecided'}${profile.majorCompetitiveness ? ` (competitiveness at this school: ${profile.majorCompetitiveness.level}/5${profile.majorCompetitiveness.schoolEstimate ? `, estimated major acceptance ~${profile.majorCompetitiveness.schoolEstimate}%` : ''})` : ''}
 - Activities: ${formatActivities(profile.activities, false)}
-- Awards: ${formatAwards(profile.awards, false)}${profile.isInternational ? `\n- Applicant Status: International student${profile.nationality ? ` (${profile.nationality})` : ''}${profile.educationSystem ? `, ${profile.educationSystem} curriculum` : ''}${profile.needsFinancialAid ? ', needs financial aid' : ''}` : ''}
+- Awards: ${formatAwards(profile.awards, false)}
+${formatAssessmentContext(profile.assessment, false)}${profile.isInternational ? `\n- Applicant Status: International student${profile.nationality ? ` (${profile.nationality})` : ''}${profile.educationSystem ? `, ${profile.educationSystem} curriculum` : ''}${profile.needsFinancialAid ? ', needs financial aid' : ''}` : ''}
 
 ## Target School: ${schoolName}
 - US News Rank: ${school.usNewsRank ? `#${school.usNewsRank}` : unknown}
 - Acceptance Rate: ${school.acceptanceRate ? `${school.acceptanceRate}%` : unknown}${school.intlAcceptanceRate ? `\n- International Acceptance Rate: ${school.intlAcceptanceRate}%` : ''}${school.intlStudentPct ? `\n- International Student %: ${school.intlStudentPct}%` : ''}${school.needBlindInternational ? '\n- Need-Blind for International Students: Yes' : ''}
 - Graduation Rate: ${school.graduationRate ? `${school.graduationRate}%` : unknown}
 - Average SAT: ${school.satAvg || unknown}${school.sat25 && school.sat75 ? ` (25th-75th: ${school.sat25}-${school.sat75})` : ''}
-- Average ACT: ${school.actAvg || unknown}${school.act25 && school.act75 ? ` (25th-75th: ${school.act25}-${school.act75})` : ''}${school.retentionRate ? `\n- Retention Rate: ${school.retentionRate}%` : ''}${school.studentFacultyRatio ? `\n- Student-Faculty Ratio: ${school.studentFacultyRatio}:1` : ''}${school.percentNeedMet ? `\n- % Need Met: ${school.percentNeedMet}%` : ''}${school.averageNetPrice ? `\n- Avg Net Price: $${school.averageNetPrice.toLocaleString()}` : ''}${school.testOptional === true ? '\n- Test Policy: Test Optional' : ''}${school.hasEarlyDecision ? '\n- Early Decision: Available' : ''}
+- Average ACT: ${school.actAvg || unknown}${school.act25 && school.act75 ? ` (25th-75th: ${school.act25}-${school.act75})` : ''}${school.retentionRate ? `\n- Retention Rate: ${school.retentionRate}%` : ''}${school.studentFacultyRatio ? `\n- Student-Faculty Ratio: ${school.studentFacultyRatio}:1` : ''}${school.percentNeedMet ? `\n- % Need Met: ${school.percentNeedMet}%` : ''}${school.averageNetPrice ? `\n- Avg Net Price: $${school.averageNetPrice.toLocaleString()}` : ''}${school.testOptional === true ? '\n- Test Policy: Test Optional' : ''}${school.hasEarlyDecision ? '\n- Early Decision: Available' : ''}${nationalityStats && profile.isInternational ? `\n\n## Nationality-Specific Historical Data\n- Historical admission rate for ${nationalityStats.nationality} applicants at this school: ${nationalityStats.admitRate.toFixed(1)}% (based on ${nationalityStats.totalCases} cases)\n- Use this data as an important reference for international student probability estimation` : ''}
 
 ## Analysis Requirements
 1. Evaluate the student's competitiveness against the school's admission standards
@@ -334,6 +476,11 @@ ${formatHighSchoolContext(profile, false)}
    - Schools with >30% acceptance: typically 0.30-0.80
    - Missing test scores significantly reduce competitiveness (10-20 percentage points)
    - Missing extracurriculars and awards also lower competitiveness
+6. **Suggestions MUST be specific and include named programs**:
+   - Recommend SPECIFIC summer programs, competitions, and research opportunities by name (e.g., RSI, MOSTEC, SAMS, LaunchX, YYGS, Clark Scholars, USAMO, Science Olympiad, DECA)
+   - Tailor recommendations to the student's target major and existing activities
+   - Name 2-3 specific programs per suggestion, not just generic categories
+   - Only recommend real, currently-running programs. When unsure, give category suggestions instead of fabricating program names
 
 ## Response Format (strict JSON)
 {
@@ -350,8 +497,8 @@ ${formatHighSchoolContext(profile, false)}
     }
   ],
   "suggestions": [
-    "Suggestion 1 (English)",
-    "Suggestion 2 (English)"
+    "Suggestion 1 with specific named programs (e.g., recommend RSI, MOSTEC, etc.)",
+    "Suggestion 2 with specific named programs (tailored to target major, name 2-3 programs)"
   ],
   "comparison": {
     "gpaPercentile": <integer 0-100>,
@@ -477,6 +624,7 @@ export function buildStableSystemPrompt(locale = 'zh'): string {
 - 录取率 > 30%: probability 通常 0.30-0.80
 - 缺少标化成绩降低 10-20 个百分点
 - factors 的 weight 之和应接近1
+- suggestions 必须包含具体的项目名称（如 RSI、MOSTEC、USAMO、DECA、Science Olympiad 等），每条建议包含2-3个具体的夏校/竞赛/科研项目，针对学生的目标专业和现有活动定制
 - 只返回 JSON，不要其他内容`;
   }
 
@@ -499,6 +647,7 @@ Key rules:
 - >30% acceptance: typically 0.30-0.80
 - Missing test scores reduce by 10-20 percentage points
 - Factor weights should sum close to 1
+- Suggestions MUST name specific programs (e.g., RSI, MOSTEC, USAMO, DECA, Science Olympiad). Each suggestion should include 2-3 specific summer programs, competitions, or research opportunities tailored to the student's target major and existing activities
 - Return JSON only, no other content`;
 }
 

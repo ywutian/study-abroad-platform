@@ -23,6 +23,7 @@ export enum PointAction {
   AI_ESSAY_BRAINSTORM = 'AI_ESSAY_BRAINSTORM',
   AI_ESSAY_GALLERY = 'AI_ESSAY_GALLERY',
   AI_SCHOOL_RECOMMENDATION = 'AI_SCHOOL_RECOMMENDATION',
+  AI_ACTIVITY_REFINE = 'AI_ACTIVITY_REFINE',
 }
 
 export interface PointRule {
@@ -132,6 +133,12 @@ const POINT_ACTION_REGISTRY: Record<
     settingKey: SETTING_KEYS.POINTS_ACTION_AI_SCHOOL_RECOMMENDATION,
     defaultPoints: -25,
     description: 'AI选校推荐',
+    type: 'spend',
+  },
+  [PointAction.AI_ACTIVITY_REFINE]: {
+    settingKey: SETTING_KEYS.POINTS_ACTION_AI_ACTIVITY_REFINE,
+    defaultPoints: -15,
+    description: 'AI活动描述精简',
     type: 'spend',
   },
 };

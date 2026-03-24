@@ -218,8 +218,11 @@ export class PredictionService {
   // ==================== 数据转换 (delegated to PredictionTransformerService) ====================
 
   /** @deprecated Use PredictionTransformerService.profileToInput() directly */
-  private profileToInput(profile: any): ProfileInput {
-    return this.transformer.profileToInput(profile);
+  private profileToInput(
+    profile: any,
+    assessmentData?: { mbtiType?: string; hollandCodes?: string[] },
+  ): ProfileInput {
+    return this.transformer.profileToInput(profile, assessmentData);
   }
 
   /** @deprecated Use PredictionTransformerService.schoolToInput() directly */
@@ -272,6 +275,7 @@ export class PredictionService {
     memoryInsights: string[],
     locale = 'zh',
     profileId?: string,
+    nationalityStats?: import('./prediction.prompts').NationalityStats,
   ) {
     return this.aiEngine.predictWithAI(
       profile,
@@ -280,6 +284,7 @@ export class PredictionService {
       memoryInsights,
       locale,
       profileId,
+      nationalityStats,
     );
   }
 
@@ -550,7 +555,27 @@ export class PredictionService {
       where: { id: { in: schoolIds } },
     });
 
-    const profileInput = this.profileToInput(profile);
+    // Fetch latest MBTI and Holland assessment results for profile enrichment
+    const assessmentResults = await this.prisma.assessmentResult.findMany({
+      where: { userId: profile.userId },
+      include: { assessment: { select: { type: true } } },
+      orderBy: { completedAt: 'desc' },
+    });
+    const mbtiResult = assessmentResults.find(
+      (r) => r.assessment.type === 'MBTI',
+    );
+    const hollandResult = assessmentResults.find(
+      (r) => r.assessment.type === 'HOLLAND',
+    );
+    const assessmentData =
+      mbtiResult || hollandResult
+        ? {
+            mbtiType: (mbtiResult?.result as any)?.mbtiType,
+            hollandCodes: (hollandResult?.result as any)?.hollandCodes,
+          }
+        : undefined;
+
+    const profileInput = this.profileToInput(profile, assessmentData);
     const profileMetrics = this.extractProfileMetrics(profileInput);
     const profileHash = this.hashProfileData(profile);
 
@@ -796,6 +821,15 @@ export class PredictionService {
       locale,
     );
 
+    // === Nationality-specific historical stats (for international students) ===
+    const nationalityStats =
+      profileInput.isInternational && profileInput.nationality
+        ? await this.historicalService.getNationalityStats(
+            school.id,
+            profileInput.nationality,
+          )
+        : null;
+
     // === 引擎 2: AI 预测 (may fail → null, resilience handled by LLMService) ===
     let aiResult: Awaited<ReturnType<typeof this.predictWithAI>> = null;
     try {
@@ -806,6 +840,7 @@ export class PredictionService {
         memoryContext.profileInsights,
         locale,
         profileId,
+        nationalityStats ?? undefined,
       );
     } catch (err: any) {
       this.logger.warn(
@@ -1186,12 +1221,16 @@ export class PredictionService {
     const isZh = locale === 'zh';
     const suggestions: string[] = [];
 
-    // AI 建议优先
+    // AI 建议优先 — 如果 AI 给出了足够多的具体建议，不再补充通用建议
     if (aiSuggestions?.length) {
-      suggestions.push(...aiSuggestions.slice(0, 3));
+      suggestions.push(...aiSuggestions.slice(0, 5));
     }
 
-    // 补充通用建议
+    // 仅在 AI 建议不足时补充通用建议
+    if (suggestions.length >= 3) {
+      return suggestions.slice(0, 5);
+    }
+
     if (tier === 'reach') {
       const essayKw = isZh ? '文书' : 'essay';
       if (!suggestions.some((s) => s.toLowerCase().includes(essayKw))) {
@@ -1205,8 +1244,8 @@ export class PredictionService {
       if (!suggestions.some((s) => s.includes(edKw))) {
         suggestions.push(
           isZh
-            ? '考虑通过ED/EA早申请增加录取机会'
-            : 'Consider applying ED/EA to improve your chances',
+            ? '考虑通过ED/EA早申请以最大化录取机会，同时利用暑期参加 RSI、MOSTEC、SAMS 等学术项目增强竞争力'
+            : 'Consider applying Early Decision to maximize admission chances, and strengthen your profile through summer programs like RSI, MOSTEC, or SAMS',
         );
       }
     } else if (tier === 'match') {
@@ -1214,8 +1253,8 @@ export class PredictionService {
       if (!suggestions.some((s) => s.toLowerCase().includes(matchKw))) {
         suggestions.push(
           isZh
-            ? '作为匹配校，保持现有优势的同时完善申请材料'
-            : 'As a match school, maintain your strengths while polishing application materials',
+            ? '作为匹配校，保持现有优势的同时，通过竞赛项目（如 USAMO、Science Olympiad、DECA）或暑期项目（如 LaunchX、YYGS）进一步提升竞争力'
+            : 'As a match school, maintain your strengths while boosting competitiveness through competitions (e.g., USAMO, Science Olympiad, DECA) or summer programs (e.g., LaunchX, YYGS)',
         );
       }
     } else {
@@ -1244,8 +1283,8 @@ export class PredictionService {
       if (!suggestions.some((s) => s.includes(testKw))) {
         suggestions.push(
           isZh
-            ? '添加标化成绩（SAT/ACT）可大幅提高预测准确性'
-            : 'Adding SAT/ACT scores can significantly improve prediction accuracy',
+            ? '添加标化成绩（SAT/ACT）可大幅提高预测准确性。同时考虑参加 RSI、MOSTEC 或 Clark Scholars 等暑期学术项目来增强学术背景'
+            : 'Adding SAT/ACT scores can significantly improve prediction accuracy. Also consider summer academic programs like RSI, MOSTEC, or Clark Scholars to strengthen your academic profile',
         );
       }
     }

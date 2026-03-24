@@ -226,6 +226,11 @@ export class SchoolService {
         skip,
         take: pageSize,
         orderBy: { usNewsRank: 'asc' },
+        include: {
+          rankings: {
+            select: { source: true, list: true, rank: true, year: true },
+          },
+        },
       }),
       this.prisma.school.count({ where }),
     ]);

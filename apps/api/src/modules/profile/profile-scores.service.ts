@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   ForbiddenException,
+  NotFoundException,
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -16,8 +17,12 @@ import {
   UpdateActivityDto,
   CreateAwardDto,
   UpdateAwardDto,
+  CreateSemesterGpaDto,
+  UpdateSemesterGpaDto,
 } from './dto';
 import { ProfileHelpersService } from './profile-helpers.service';
+import { CaseIncentiveService, PointAction } from '../points/incentive.service';
+import { safeRefund } from '../points/refund.helper';
 
 /**
  * Handles test scores, activities, and awards CRUD operations.
@@ -32,6 +37,7 @@ export class ProfileScoresService {
     private cacheInvalidation: CacheInvalidationService,
     private llmService: LLMService,
     private helpers: ProfileHelpersService,
+    private caseIncentiveService: CaseIncentiveService,
   ) {}
 
   // ============================================
@@ -176,6 +182,7 @@ export class ProfileScoresService {
         gradeLevels: data.gradeLevels ?? [],
         timing: data.timing as any,
         activityTemplateId: data.activityTemplateId || null,
+        commonAppDescription: data.commonAppDescription,
       },
       include: { activityTemplate: true },
     });
@@ -226,6 +233,7 @@ export class ProfileScoresService {
         gradeLevels: data.gradeLevels,
         timing: data.timing as any,
         activityTemplateId: data.activityTemplateId,
+        commonAppDescription: data.commonAppDescription,
       },
       include: { activityTemplate: true },
     });
@@ -479,6 +487,196 @@ ${JSON.stringify(activitiesJson, null, 2)}`;
     };
   }
 
+  /**
+   * Use AI to refine an activity description to fit Common App's 150-char limit.
+   */
+  async refineActivityDescription(
+    userId: string,
+    activityId: string,
+    locale: string,
+  ): Promise<{
+    refined: string;
+    tips: string;
+    originalLength: number;
+    refinedLength: number;
+  }> {
+    // Charge points before performing AI call
+    await this.caseIncentiveService.charge(
+      userId,
+      PointAction.AI_ACTIVITY_REFINE,
+    );
+
+    const activity = await this.prisma.activity.findFirst({
+      where: { id: activityId, profile: { userId } },
+      select: { name: true, role: true, description: true },
+    });
+
+    if (!activity) {
+      await safeRefund(
+        this.caseIncentiveService,
+        userId,
+        PointAction.AI_ACTIVITY_REFINE,
+        this.logger,
+      );
+      throw new BadRequestException('Activity not found');
+    }
+
+    if (!activity.description || activity.description.length <= 150) {
+      await safeRefund(
+        this.caseIncentiveService,
+        userId,
+        PointAction.AI_ACTIVITY_REFINE,
+        this.logger,
+      );
+      throw new BadRequestException(
+        locale === 'zh'
+          ? '描述已在150字符以内，无需精简'
+          : 'Description is already within 150 characters',
+      );
+    }
+
+    const { buildActivityRefineSystemPrompt, buildActivityRefineUserPrompt } =
+      await import('../ai/profile-ai.prompts');
+
+    const messages: ChatSimpleMessage[] = [
+      { role: 'system', content: buildActivityRefineSystemPrompt(locale) },
+      {
+        role: 'user',
+        content: buildActivityRefineUserPrompt(
+          activity.name,
+          activity.role,
+          activity.description,
+          locale,
+        ),
+      },
+    ];
+
+    const response = await this.llmService.chatSimple(messages, {
+      temperature: 0.7,
+      maxTokens: 300,
+    });
+
+    const parsed = extractJsonFromLlm<{ refined: string; tips: string }>(
+      response,
+    );
+
+    if (!parsed?.refined) {
+      throw new BadRequestException('AI refinement failed');
+    }
+
+    return {
+      refined: parsed.refined.slice(0, 150),
+      tips: parsed.tips || '',
+      originalLength: activity.description.length,
+      refinedLength: parsed.refined.length,
+    };
+  }
+
+  /**
+   * Use AI to generate a Common App activity description (≤150 chars) from detailed description.
+   */
+  async generateCommonAppDescription(
+    userId: string,
+    activityId: string,
+    locale: string,
+  ): Promise<{ commonAppDescription: string }> {
+    await this.caseIncentiveService.charge(
+      userId,
+      PointAction.AI_ACTIVITY_REFINE,
+    );
+
+    const activity = await this.prisma.activity.findFirst({
+      where: { id: activityId, profile: { userId } },
+      select: { id: true, name: true, role: true, description: true },
+    });
+
+    if (!activity) {
+      await safeRefund(
+        this.caseIncentiveService,
+        userId,
+        PointAction.AI_ACTIVITY_REFINE,
+        this.logger,
+      );
+      throw new BadRequestException('Activity not found');
+    }
+
+    if (!activity.description || activity.description.length <= 150) {
+      await safeRefund(
+        this.caseIncentiveService,
+        userId,
+        PointAction.AI_ACTIVITY_REFINE,
+        this.logger,
+      );
+      throw new BadRequestException(
+        locale === 'zh'
+          ? '描述已在150字符以内，无需生成'
+          : 'Description is already within 150 characters',
+      );
+    }
+
+    const {
+      buildGenerateCommonAppSystemPrompt,
+      buildGenerateCommonAppUserPrompt,
+    } = await import('../ai/profile-ai.prompts');
+
+    const messages: ChatSimpleMessage[] = [
+      {
+        role: 'system',
+        content: buildGenerateCommonAppSystemPrompt(locale),
+      },
+      {
+        role: 'user',
+        content: buildGenerateCommonAppUserPrompt(
+          activity.name,
+          activity.role || '',
+          activity.description,
+          locale,
+        ),
+      },
+    ];
+
+    let response: string;
+    try {
+      response = await this.llmService.chatSimple(messages, {
+        temperature: 0.7,
+        maxTokens: 300,
+      });
+    } catch (error) {
+      await safeRefund(
+        this.caseIncentiveService,
+        userId,
+        PointAction.AI_ACTIVITY_REFINE,
+        this.logger,
+      );
+      throw error;
+    }
+
+    const parsed = extractJsonFromLlm<{ commonAppDescription: string }>(
+      response,
+    );
+
+    if (!parsed?.commonAppDescription) {
+      await safeRefund(
+        this.caseIncentiveService,
+        userId,
+        PointAction.AI_ACTIVITY_REFINE,
+        this.logger,
+      );
+      throw new BadRequestException('AI generation failed');
+    }
+
+    const commonAppDescription = parsed.commonAppDescription.slice(0, 150);
+
+    await this.prisma.activity.update({
+      where: { id: activityId },
+      data: { commonAppDescription },
+    });
+
+    await this.cacheInvalidation.onProfileChange(userId);
+
+    return { commonAppDescription };
+  }
+
   // ============================================
   // Awards CRUD
   // ============================================
@@ -500,6 +698,7 @@ ${JSON.stringify(activitiesJson, null, 2)}`;
         level: data.level as any,
         year: data.year,
         description: data.description,
+        category: data.category as any,
         order: data.order ?? 0,
       },
     });
@@ -540,6 +739,7 @@ ${JSON.stringify(activitiesJson, null, 2)}`;
         level: data.level as any,
         year: data.year,
         description: data.description,
+        category: data.category as any,
         order: data.order,
       },
     });
@@ -621,5 +821,287 @@ ${JSON.stringify(activitiesJson, null, 2)}`;
       ),
     );
     await this.cacheInvalidation.onProfileChange(userId);
+  }
+
+  // ============================================
+  // Semester GPA CRUD
+  // ============================================
+
+  /**
+   * Get all semester GPAs for a user, ordered by order ascending.
+   *
+   * @param userId - The user identifier
+   * @returns Array of SemesterGpa records
+   */
+  async getSemesterGpas(userId: string) {
+    const profile = await this.prisma.profile.findUnique({
+      where: { userId },
+      include: { semesterGpas: { orderBy: { order: 'asc' } } },
+    });
+
+    return profile?.semesterGpas || [];
+  }
+
+  /**
+   * Create a new semester GPA record. Auto-creates profile if needed.
+   *
+   * @param userId - The user identifier
+   * @param data - Semester GPA creation DTO
+   * @returns The created SemesterGpa record
+   */
+  async createSemesterGpa(userId: string, data: CreateSemesterGpaDto) {
+    const profileId = await this.helpers.getProfileId(userId);
+
+    const semesterGpa = await this.prisma.semesterGpa.create({
+      data: {
+        profileId,
+        semester: data.semester,
+        year: data.year,
+        gpa: data.gpa,
+        gpaScale: data.gpaScale,
+        credits: data.credits,
+        order: data.order ?? 0,
+      },
+    });
+
+    await this.recalculateGpa(profileId);
+    await this.cacheInvalidation.onProfileChange(userId);
+
+    return semesterGpa;
+  }
+
+  /**
+   * Update an existing semester GPA after verifying ownership.
+   *
+   * @param userId - The requesting user's ID
+   * @param id - The semester GPA ID to update
+   * @param data - Partial semester GPA update DTO
+   * @returns The updated SemesterGpa record
+   * @throws {NotFoundException} When the semester GPA does not exist
+   * @throws {ForbiddenException} When the semester GPA does not belong to the user
+   */
+  async updateSemesterGpa(
+    userId: string,
+    id: string,
+    data: UpdateSemesterGpaDto,
+  ) {
+    const existing = await this.prisma.semesterGpa.findUnique({
+      where: { id },
+      include: { profile: { select: { id: true, userId: true } } },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Semester GPA not found');
+    }
+
+    if (existing.profile.userId !== userId) {
+      throw new ForbiddenException(
+        'Cannot update semester GPA that does not belong to you',
+      );
+    }
+
+    const result = await this.prisma.semesterGpa.update({
+      where: { id },
+      data: {
+        semester: data.semester,
+        year: data.year,
+        gpa: data.gpa,
+        gpaScale: data.gpaScale,
+        credits: data.credits,
+        order: data.order,
+      },
+    });
+
+    await this.recalculateGpa(existing.profile.id);
+    await this.cacheInvalidation.onProfileChange(userId);
+
+    return result;
+  }
+
+  /**
+   * Delete a semester GPA by ID after verifying ownership.
+   *
+   * @param userId - The requesting user's ID
+   * @param id - The semester GPA ID to delete
+   * @throws {NotFoundException} When the semester GPA does not exist
+   * @throws {ForbiddenException} When the semester GPA does not belong to the user
+   */
+  async deleteSemesterGpa(userId: string, id: string): Promise<void> {
+    const existing = await this.prisma.semesterGpa.findUnique({
+      where: { id },
+      include: { profile: { select: { id: true, userId: true } } },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Semester GPA not found');
+    }
+
+    if (existing.profile.userId !== userId) {
+      throw new ForbiddenException(
+        'Cannot delete semester GPA that does not belong to you',
+      );
+    }
+
+    await this.prisma.semesterGpa.delete({ where: { id } });
+
+    await this.recalculateGpa(existing.profile.id);
+    await this.cacheInvalidation.onProfileChange(userId);
+  }
+
+  // ============================================
+  // GPA by Grade
+  // ============================================
+
+  /**
+   * Update per-grade GPA values and recalculate overall GPA.
+   *
+   * @param userId - The user identifier
+   * @param data - Grade-level GPA values (gpa9, gpa10, gpa11, gpa12)
+   * @returns The updated Profile record
+   */
+  async updateGpaByGrade(
+    userId: string,
+    data: { gpa9?: number; gpa10?: number; gpa11?: number; gpa12?: number },
+  ) {
+    const profileId = await this.helpers.getProfileId(userId);
+
+    const profile = await this.prisma.profile.update({
+      where: { id: profileId },
+      data: {
+        gpa9: data.gpa9,
+        gpa10: data.gpa10,
+        gpa11: data.gpa11,
+        gpa12: data.gpa12,
+      },
+    });
+
+    await this.recalculateGpa(profileId);
+    await this.cacheInvalidation.onProfileChange(userId);
+
+    return profile;
+  }
+
+  /**
+   * Recalculate overall GPA as a weighted average.
+   * Priority 1: grade-level GPAs (gpa9-12) with weights 0.15/0.25/0.35/0.25.
+   * Priority 2: semester GPAs aggregated to grade level, then weighted.
+   * If neither exists, does not overwrite manually entered GPA.
+   */
+  private async recalculateGpa(profileId: string): Promise<void> {
+    const profile = await this.prisma.profile.findUnique({
+      where: { id: profileId },
+      select: {
+        gpa9: true,
+        gpa10: true,
+        gpa11: true,
+        gpa12: true,
+        semesterGpas: { orderBy: { order: 'asc' } },
+      },
+    });
+
+    if (!profile) return;
+
+    const GRADE_WEIGHTS: Record<string, number> = {
+      '9': 0.15,
+      '10': 0.25,
+      '11': 0.35,
+      '12': 0.25,
+    };
+
+    // Priority 1: grade-level GPAs
+    const gradeEntries = [
+      { grade: '9', gpa: profile.gpa9 },
+      { grade: '10', gpa: profile.gpa10 },
+      { grade: '11', gpa: profile.gpa11 },
+      { grade: '12', gpa: profile.gpa12 },
+    ].filter((e) => e.gpa != null);
+
+    if (gradeEntries.length > 0) {
+      const totalWeight = gradeEntries.reduce(
+        (s, e) => s + GRADE_WEIGHTS[e.grade],
+        0,
+      );
+      const weightedSum = gradeEntries.reduce(
+        (s, e) => s + Number(e.gpa) * GRADE_WEIGHTS[e.grade],
+        0,
+      );
+      await this.prisma.profile.update({
+        where: { id: profileId },
+        data: { gpa: Math.round((weightedSum / totalWeight) * 100) / 100 },
+      });
+      return;
+    }
+
+    // Priority 2: semester GPAs → aggregate to grade → weighted average
+    if (profile.semesterGpas.length > 0) {
+      const gradeGpas = this.aggregateSemesterToGrade(profile.semesterGpas);
+      if (gradeGpas.size === 0) return;
+
+      let totalWeight = 0;
+      let weightedSum = 0;
+      for (const [grade, gpa] of gradeGpas) {
+        const w = GRADE_WEIGHTS[grade] || 0.25;
+        totalWeight += w;
+        weightedSum += gpa * w;
+      }
+      await this.prisma.profile.update({
+        where: { id: profileId },
+        data: { gpa: Math.round((weightedSum / totalWeight) * 100) / 100 },
+      });
+    }
+    // Neither grade-level nor semester GPAs → don't overwrite manual GPA
+  }
+
+  /**
+   * Aggregate semester GPAs to grade-level GPAs.
+   * Semester name format: g9fall, g9spring, g10fall, etc.
+   * Uses credit-weighted average when all semesters have credits, simple average otherwise.
+   * All values normalized to 4.0 scale.
+   */
+  private aggregateSemesterToGrade(
+    semesterGpas: Array<{
+      semester: string;
+      gpa: any;
+      gpaScale: any;
+      credits: any;
+    }>,
+  ): Map<string, number> {
+    const gradeMap = new Map<
+      string,
+      Array<{ gpa: number; scale: number; credits: number | null }>
+    >();
+
+    for (const sg of semesterGpas) {
+      const match = sg.semester.match(/^g(\d+)/i);
+      if (!match) continue;
+      const grade = match[1];
+      if (!gradeMap.has(grade)) gradeMap.set(grade, []);
+      gradeMap.get(grade)!.push({
+        gpa: Number(sg.gpa),
+        scale: Number(sg.gpaScale),
+        credits: sg.credits != null ? Number(sg.credits) : null,
+      });
+    }
+
+    const result = new Map<string, number>();
+    for (const [grade, semesters] of gradeMap) {
+      const hasAllCredits = semesters.every(
+        (s) => s.credits != null && s.credits > 0,
+      );
+      if (hasAllCredits) {
+        // Credit-weighted average (normalized to 4.0 scale)
+        const totalCredits = semesters.reduce((s, v) => s + v.credits!, 0);
+        const wSum = semesters.reduce(
+          (s, v) => s + (v.gpa / v.scale) * 4.0 * v.credits!,
+          0,
+        );
+        result.set(grade, wSum / totalCredits);
+      } else {
+        // Simple average (normalized to 4.0 scale)
+        const sum = semesters.reduce((s, v) => s + (v.gpa / v.scale) * 4.0, 0);
+        result.set(grade, sum / semesters.length);
+      }
+    }
+    return result;
   }
 }

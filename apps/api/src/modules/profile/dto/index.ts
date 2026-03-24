@@ -6,3 +6,5 @@ export * from './essay.dto';
 export * from './education.dto';
 export * from './onboarding.dto';
 export * from './target-schools.dto';
+export * from './recommendation-letter.dto';
+export * from './semester-gpa.dto';

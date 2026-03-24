@@ -11,9 +11,10 @@ import { ProfileEnrichmentService } from './profile-enrichment.service';
 import { AiModule } from '../ai/ai.module';
 import { AiAgentMemoryModule } from '../ai-agent/memory/memory.module';
 import { SchoolListModule } from '../school-list/school-list.module';
+import { PointsModule } from '../points/points.module';
 
 @Module({
-  imports: [AiModule, AiAgentMemoryModule, SchoolListModule],
+  imports: [AiModule, AiAgentMemoryModule, SchoolListModule, PointsModule],
   controllers: [ProfileController],
   providers: [
     ProfileHelpersService,

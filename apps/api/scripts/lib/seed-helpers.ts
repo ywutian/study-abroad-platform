@@ -37,6 +37,21 @@ export interface SeedSchoolData {
   description?: string;
   descriptionZh?: string;
   aliases?: string[];
+  /** External data source IDs */
+  scorecardId?: string;
+  ipedsId?: string;
+  /** Promoted fields from schema */
+  retentionRate?: number;
+  studentFacultyRatio?: number;
+  testOptional?: boolean;
+  hasEarlyDecision?: boolean;
+  totalEnrollment?: number;
+  satMath25?: number;
+  satMath75?: number;
+  satReading25?: number;
+  satReading75?: number;
+  /** Logo URL */
+  logoUrl?: string;
   /** 额外 metadata 字段（deadlines, essayCount 等） */
   metadata?: Record<string, unknown>;
 }
@@ -85,6 +100,22 @@ export async function upsertSchoolFromSeed(
   if (data.descriptionZh !== undefined)
     fields.descriptionZh = data.descriptionZh;
   if (data.aliases !== undefined) fields.aliases = data.aliases;
+  if (data.scorecardId !== undefined) fields.scorecardId = data.scorecardId;
+  if (data.ipedsId !== undefined) fields.ipedsId = data.ipedsId;
+  if (data.retentionRate !== undefined)
+    fields.retentionRate = data.retentionRate;
+  if (data.studentFacultyRatio !== undefined)
+    fields.studentFacultyRatio = data.studentFacultyRatio;
+  if (data.testOptional !== undefined) fields.testOptional = data.testOptional;
+  if (data.hasEarlyDecision !== undefined)
+    fields.hasEarlyDecision = data.hasEarlyDecision;
+  if (data.totalEnrollment !== undefined)
+    fields.totalEnrollment = data.totalEnrollment;
+  if (data.satMath25 !== undefined) fields.satMath25 = data.satMath25;
+  if (data.satMath75 !== undefined) fields.satMath75 = data.satMath75;
+  if (data.satReading25 !== undefined) fields.satReading25 = data.satReading25;
+  if (data.satReading75 !== undefined) fields.satReading75 = data.satReading75;
+  if (data.logoUrl !== undefined) fields.logoUrl = data.logoUrl;
 
   if (existing) {
     // 合并 metadata：保留 DB 已有的 metadata，用种子的覆盖/补充

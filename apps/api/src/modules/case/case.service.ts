@@ -70,6 +70,9 @@ interface CaseFilters {
   search?: string;
   visibility?: Visibility;
   highSchoolId?: string;
+  round?: string;
+  major?: string;
+  nationality?: string;
 }
 
 // 标准化统计数据类型
@@ -126,6 +129,21 @@ export class CaseService {
 
     if (filters.highSchoolId) {
       where.highSchoolId = filters.highSchoolId;
+    }
+
+    if (filters.round) {
+      where.round = filters.round;
+    }
+
+    if (filters.major) {
+      where.major = { contains: filters.major, mode: 'insensitive' };
+    }
+
+    if (filters.nationality) {
+      where.nationality = {
+        contains: filters.nationality,
+        mode: 'insensitive',
+      };
     }
 
     if (filters.search) {
@@ -322,6 +340,7 @@ export class CaseService {
       highSchoolType?: string;
       curriculumType?: string;
       demographicTags?: string[];
+      nationality?: string;
       financialAid?: string;
       enrollmentStatus?: string;
       narrative?: string;
@@ -348,6 +367,7 @@ export class CaseService {
       highSchoolType,
       curriculumType,
       demographicTags,
+      nationality,
       financialAid,
       enrollmentStatus,
       narrative,
@@ -450,6 +470,7 @@ export class CaseService {
         }),
         ...(curriculumType && { curriculumType: curriculumType as any }),
         ...(demographicTags?.length && { demographicTags }),
+        ...(nationality && { nationality }),
         ...(financialAid && { financialAid }),
         ...(enrollmentStatus && { enrollmentStatus }),
         ...(narrative && { narrative }),
@@ -724,6 +745,7 @@ export class CaseService {
       highSchoolType,
       curriculumType,
       demographicTags: demographicTags.length > 0 ? demographicTags : undefined,
+      nationality: profile.nationality || undefined,
       financialAid,
       // Generate activityList fallback
       activityList:

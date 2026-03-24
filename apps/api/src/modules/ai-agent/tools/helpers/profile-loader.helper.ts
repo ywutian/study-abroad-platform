@@ -47,6 +47,7 @@ export interface LoadedProfile {
     schoolType: string | null;
     highSchoolId: string | null;
   }>;
+  nationality: string | null;
   /** Convenience: first HIGH_SCHOOL education's linked HighSchool, if any */
   highSchool: LoadedHighSchool | null;
 }
@@ -86,6 +87,7 @@ export class ProfileLoaderHelper {
       intendedMajor: profile.intendedMajor,
       secondMajor: profile.secondMajor,
       grade: profile.grade,
+      nationality: profile.nationality ?? null,
       budgetTier: profile.budgetTier,
       testScores:
         profile.testScores?.map((s) => ({

@@ -22,6 +22,7 @@ export interface HistoricalContext {
   curriculumType?: string;
   highSchoolType?: string;
   isInternational?: boolean;
+  nationality?: string;
 }
 
 /**
@@ -153,7 +154,7 @@ export class PredictionHistoricalService {
     probability: number;
     sampleCount: number;
     confidence: number;
-    filterLevel: 'specific' | 'curriculum' | 'unfiltered';
+    filterLevel: 'nationality' | 'specific' | 'curriculum' | 'unfiltered';
   } | null> {
     // 构建 GPA 范围匹配
     const normalizedGpa = profileMetrics.gpa
@@ -238,7 +239,8 @@ export class PredictionHistoricalService {
   /**
    * Fetch admission cases with tiered fallback based on context specificity.
    *
-   * 1. Most specific: curriculumType + highSchoolType (+ isInternational if given)
+   * 0. Most specific: curriculumType + highSchoolType + nationality (non-US only)
+   * 1. Specific:      curriculumType + highSchoolType (+ isInternational if given)
    * 2. Medium:        curriculumType only (+ isInternational if given)
    * 3. Unfiltered:    no context filter (original behavior)
    *
@@ -255,7 +257,7 @@ export class PredictionHistoricalService {
       satRange: string | null;
       toeflRange: string | null;
     }[];
-    filterLevel: 'specific' | 'curriculum' | 'unfiltered';
+    filterLevel: 'nationality' | 'specific' | 'curriculum' | 'unfiltered';
   } | null> {
     const baseWhere = {
       schoolId,
@@ -274,7 +276,36 @@ export class PredictionHistoricalService {
       demographicTags: true,
     } as const;
 
-    // Tier 1: most specific (curriculumType + highSchoolType)
+    // Tier 0: most specific (curriculumType + highSchoolType + nationality)
+    // Only for non-US nationalities where nationality-specific data is meaningful
+    if (
+      context?.curriculumType &&
+      context?.highSchoolType &&
+      context?.nationality &&
+      context.nationality.toUpperCase() !== 'US' &&
+      context.nationality.toUpperCase() !== 'USA' &&
+      context.nationality.toUpperCase() !== 'UNITED STATES'
+    ) {
+      const nationalityWhere = {
+        ...this.buildContextWhere(context),
+        nationality: context.nationality,
+      };
+      const cases = await this.prisma.admissionCase.findMany({
+        where: { ...baseWhere, ...nationalityWhere },
+        select,
+      });
+
+      if (cases.length >= MIN_CASES_FOR_FILTERED) {
+        this.logger.debug(
+          `Historical: using nationality filter (curriculum=${context.curriculumType}, ` +
+            `hs=${context.highSchoolType}, nationality=${context.nationality}) ` +
+            `for school ${schoolId}: ${cases.length} cases`,
+        );
+        return { data: cases, filterLevel: 'nationality' };
+      }
+    }
+
+    // Tier 1: specific (curriculumType + highSchoolType)
     if (context?.curriculumType && context?.highSchoolType) {
       const specificWhere = this.buildContextWhere(context);
       const cases = await this.prisma.admissionCase.findMany({
@@ -331,6 +362,50 @@ export class PredictionHistoricalService {
     }
 
     return { data: cases, filterLevel: 'unfiltered' };
+  }
+
+  /**
+   * Get nationality-specific admission statistics for a school.
+   *
+   * Returns the admit rate and case count for applicants of a given nationality
+   * at the target school. Returns null if fewer than 3 cases exist.
+   *
+   * @param schoolId - The target school identifier
+   * @param nationality - The applicant's nationality (e.g., "China", "India")
+   * @returns NationalityStats or null if insufficient data
+   */
+  async getNationalityStats(
+    schoolId: string,
+    nationality: string,
+  ): Promise<{
+    nationality: string;
+    totalCases: number;
+    admittedCases: number;
+    admitRate: number;
+  } | null> {
+    const MIN_NATIONALITY_CASES = 3;
+
+    const cases = await this.prisma.admissionCase.findMany({
+      where: {
+        schoolId,
+        nationality,
+        isVerified: true,
+        ...CASE_REVIEW_APPROVED_WHERE,
+      },
+      select: { result: true },
+    });
+
+    if (cases.length < MIN_NATIONALITY_CASES) return null;
+
+    const admittedCases = cases.filter((c) => c.result === 'ADMITTED').length;
+    const admitRate = (admittedCases / cases.length) * 100;
+
+    return {
+      nationality,
+      totalCases: cases.length,
+      admittedCases,
+      admitRate: Math.round(admitRate * 10) / 10, // 1 decimal place
+    };
   }
 
   /**

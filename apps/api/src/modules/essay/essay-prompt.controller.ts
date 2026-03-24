@@ -39,6 +39,6 @@ export class EssayPromptController {
   @Public()
   @ApiOperation({ summary: 'Get single essay prompt' })
   async findOne(@Param('id') id: string) {
-    return this.essayPromptService.findOne(id);
+    return this.essayPromptService.findOnePublic(id);
   }
 }

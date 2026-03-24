@@ -110,6 +110,15 @@ export class CreateActivityDto {
   @IsString()
   @MaxLength(200)
   activityTemplateId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Common App activity description (max 150 chars)',
+    example: 'Led team of 20 to design and build competition robot',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(150)
+  commonAppDescription?: string;
 }
 
 export class UpdateActivityDto {
@@ -196,6 +205,15 @@ export class UpdateActivityDto {
   @IsString()
   @MaxLength(200)
   activityTemplateId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Common App activity description (max 150 chars)',
+    example: 'Led team of 20 to design and build competition robot',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(150)
+  commonAppDescription?: string;
 }
 
 export class ReorderIdsDto {

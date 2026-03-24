@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Body,
   Param,
@@ -34,6 +35,11 @@ import {
   ProfileGradeResponseDto,
   SetTargetSchoolsDto,
   AddTargetSchoolDto,
+  CreateRecommendationLetterDto,
+  UpdateRecommendationLetterDto,
+  CreateSemesterGpaDto,
+  UpdateSemesterGpaDto,
+  UpdateGpaByGradeDto,
 } from './dto';
 
 @ApiTags('profiles')
@@ -254,6 +260,36 @@ export class ProfileController {
   @ApiOperation({ summary: 'AI smart sort activities' })
   async aiSortActivities(@CurrentUser() user: CurrentUserPayload) {
     return this.profileService.aiSortActivities(user.id, user.locale);
+  }
+
+  @Post('me/activities/:id/refine')
+  @ThrottleAI()
+  @ApiOperation({ summary: 'AI refine activity description to ≤150 chars' })
+  async refineActivityDescription(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') activityId: string,
+  ) {
+    return this.profileService.refineActivityDescription(
+      user.id,
+      activityId,
+      user.locale,
+    );
+  }
+
+  @Post('me/activities/:id/generate-common-app-description')
+  @ThrottleAI()
+  @ApiOperation({
+    summary: 'AI generate Common App activity description (≤150 chars)',
+  })
+  async generateCommonAppDescription(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') activityId: string,
+  ) {
+    return this.profileService.generateCommonAppDescription(
+      user.id,
+      activityId,
+      user.locale,
+    );
   }
 
   @Put('me/activities/reorder')
@@ -511,5 +547,95 @@ export class ProfileController {
       query,
       limit ? parseInt(limit) : 10,
     );
+  }
+
+  // ============================================
+  // Semester GPAs
+  // ============================================
+
+  @Get('me/semester-gpas')
+  @ApiOperation({ summary: 'Get my semester GPAs' })
+  async getMySemesterGpas(@CurrentUser() user: CurrentUserPayload) {
+    return this.profileService.getSemesterGpas(user.id);
+  }
+
+  @Post('me/semester-gpas')
+  @ApiOperation({ summary: 'Add semester GPA' })
+  async createSemesterGpa(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() data: CreateSemesterGpaDto,
+  ) {
+    return this.profileService.createSemesterGpa(user.id, data);
+  }
+
+  @Put('me/semester-gpas/:id')
+  @ApiOperation({ summary: 'Update semester GPA' })
+  async updateSemesterGpa(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() data: UpdateSemesterGpaDto,
+  ) {
+    return this.profileService.updateSemesterGpa(user.id, id, data);
+  }
+
+  @Delete('me/semester-gpas/:id')
+  @ApiOperation({ summary: 'Delete semester GPA' })
+  async deleteSemesterGpa(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+  ) {
+    await this.profileService.deleteSemesterGpa(user.id, id);
+    return { message: 'Semester GPA deleted' };
+  }
+
+  // ============================================
+  // GPA by Grade
+  // ============================================
+
+  @Patch('me/gpa-by-grade')
+  @ApiOperation({ summary: 'Update GPA by grade level (9-12)' })
+  async updateGpaByGrade(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() data: UpdateGpaByGradeDto,
+  ) {
+    return this.profileService.updateGpaByGrade(user.id, data);
+  }
+
+  // ============================================
+  // Recommendation Letters CRUD
+  // ============================================
+
+  @Get('me/recommendation-letters')
+  @ApiOperation({ summary: 'Get recommendation letters' })
+  async getRecommendationLetters(@CurrentUser() user: CurrentUserPayload) {
+    return this.profileService.getRecommendationLetters(user.id);
+  }
+
+  @Post('me/recommendation-letters')
+  @ApiOperation({ summary: 'Create recommendation letter' })
+  async createRecommendationLetter(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() data: CreateRecommendationLetterDto,
+  ) {
+    return this.profileService.createRecommendationLetter(user.id, data);
+  }
+
+  @Put('me/recommendation-letters/:id')
+  @ApiOperation({ summary: 'Update recommendation letter' })
+  async updateRecommendationLetter(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() data: UpdateRecommendationLetterDto,
+  ) {
+    return this.profileService.updateRecommendationLetter(user.id, id, data);
+  }
+
+  @Delete('me/recommendation-letters/:id')
+  @ApiOperation({ summary: 'Delete recommendation letter' })
+  async deleteRecommendationLetter(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+  ) {
+    return this.profileService.deleteRecommendationLetter(user.id, id);
   }
 }

@@ -155,6 +155,37 @@ export class EssayPromptService {
   }
 
   /**
+   * Public-safe version of findOne — excludes auditLogs and sources.
+   */
+  async findOnePublic(id: string) {
+    const essayPrompt = await this.prisma.essayPrompt.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        schoolId: true,
+        type: true,
+        prompt: true,
+        promptZh: true,
+        wordLimit: true,
+        isRequired: true,
+        year: true,
+        school: {
+          select: SCHOOL_NAME_RANK_SELECT,
+        },
+      },
+    });
+
+    if (!essayPrompt) {
+      throw new NotFoundException(ERR.NOT_FOUND.essayPrompt());
+    }
+
+    return {
+      ...essayPrompt,
+      schoolName: essayPrompt.school?.name || essayPrompt.school?.nameZh,
+    };
+  }
+
+  /**
    * 获取学校的文书题目
    */
   async findBySchool(schoolId: string, year?: number) {

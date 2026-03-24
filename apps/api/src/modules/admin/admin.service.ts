@@ -726,6 +726,7 @@ export class AdminService {
         interviewDeadline: dto.interviewDeadline
           ? new Date(dto.interviewDeadline)
           : undefined,
+        interviewFormat: dto.interviewFormat,
         applicationFee: dto.applicationFee,
         notes: dto.notes,
         source: 'MANUAL',
@@ -756,6 +757,7 @@ export class AdminService {
         interviewDeadline: dto.interviewDeadline
           ? new Date(dto.interviewDeadline)
           : undefined,
+        interviewFormat: dto.interviewFormat,
         applicationFee: dto.applicationFee,
         notes: dto.notes,
       },

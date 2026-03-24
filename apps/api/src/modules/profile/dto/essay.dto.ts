@@ -23,6 +23,12 @@ export class CreateEssayDto {
   @IsString()
   @MaxLength(200)
   schoolId?: string;
+
+  @ApiPropertyOptional({ description: 'Linked essay prompt ID' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  essayPromptId?: string;
 }
 
 export class UpdateEssayDto {
@@ -49,4 +55,10 @@ export class UpdateEssayDto {
   @IsString()
   @MaxLength(200)
   schoolId?: string;
+
+  @ApiPropertyOptional({ description: 'Linked essay prompt ID' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  essayPromptId?: string;
 }

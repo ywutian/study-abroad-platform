@@ -57,6 +57,7 @@ export enum ToolName {
   EXPLAIN_CASE_RESULT = 'explain_case_result',
   ANALYZE_PREDICTION_ACCURACY = 'analyze_prediction_accuracy',
   COMPARE_CASE_WITH_PROFILE = 'compare_case_with_profile',
+  ANALYZE_INTL_COMPETITIVENESS = 'analyze_intl_competitiveness',
 
   // 档案排名工具
   ANALYZE_PROFILE_RANKING = 'analyze_profile_ranking',
@@ -740,6 +741,25 @@ export const TOOLS: ToolDefinition[] = [
         },
       },
       required: ['caseId'],
+    },
+  },
+  {
+    name: ToolName.ANALYZE_INTL_COMPETITIVENESS,
+    description:
+      'Analyze admission competitiveness for international students from a specific country at a given school. Returns nationality-specific and overall international admit rates. Use when a user asks about competitiveness for applicants from a particular country.',
+    parameters: {
+      type: 'object',
+      properties: {
+        schoolId: {
+          type: 'string',
+          description: 'School ID',
+        },
+        nationality: {
+          type: 'string',
+          description: 'Applicant nationality (e.g., China, India)',
+        },
+      },
+      required: ['schoolId', 'nationality'],
     },
   },
 

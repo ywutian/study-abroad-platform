@@ -83,6 +83,12 @@ export class RecommendedSchoolDto {
   @ApiProperty({ description: 'Fit score 0-100' })
   fitScore: number;
 
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'Recommended majors at this school based on student profile',
+  })
+  recommendedMajors?: string[];
+
   @ApiProperty({ type: [String], description: 'Recommendation reasons' })
   reasons: string[];
 
@@ -92,6 +98,13 @@ export class RecommendedSchoolDto {
     required: false,
   })
   concerns?: string[];
+
+  @ApiPropertyOptional({
+    type: [String],
+    description:
+      'Data points supporting the recommendation (e.g., "US News #12", "5.2% acceptance rate")',
+  })
+  dataPoints?: string[];
 
   @ApiPropertyOptional({ description: 'Matched school metadata' })
   schoolMeta?: {
@@ -105,6 +118,13 @@ export class RecommendedSchoolDto {
     testOptional?: boolean;
     hasEarlyDecision?: boolean;
     retentionRate?: number;
+    logoUrl?: string;
+    website?: string;
+    sourceUrls?: {
+      collegeScorecardUrl?: string;
+      ipedsUrl?: string;
+      websiteUrl?: string;
+    };
   };
 
   @ApiPropertyOptional({ description: 'Number of verified essay prompts' })
@@ -127,6 +147,14 @@ export class RecommendationAnalysisDto {
   improvementTips: string[];
 }
 
+export class SummerProgramDto {
+  @ApiProperty({ description: 'Program name' })
+  name: string;
+
+  @ApiProperty({ description: 'Why this program is recommended' })
+  reason: string;
+}
+
 export class SchoolRecommendationResponseDto {
   @ApiProperty()
   id: string;
@@ -136,6 +164,12 @@ export class SchoolRecommendationResponseDto {
 
   @ApiProperty({ type: RecommendationAnalysisDto })
   analysis: RecommendationAnalysisDto;
+
+  @ApiPropertyOptional({
+    type: [SummerProgramDto],
+    description: 'Recommended summer programs based on student profile',
+  })
+  summerPrograms?: SummerProgramDto[];
 
   @ApiProperty()
   summary: string;

@@ -10,7 +10,16 @@ import {
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
-const TEST_TYPES = ['SAT', 'ACT', 'TOEFL', 'IELTS', 'AP', 'IB'] as const;
+const TEST_TYPES = [
+  'SAT',
+  'ACT',
+  'TOEFL',
+  'IELTS',
+  'AP',
+  'IB',
+  'A_LEVEL',
+  'IGCSE',
+] as const;
 
 export class CreateTestScoreDto {
   @ApiProperty({ enum: TEST_TYPES, description: 'Test type' })
@@ -30,7 +39,7 @@ export class CreateTestScoreDto {
   })
   @IsOptional()
   @IsObject()
-  subScores?: Record<string, number>;
+  subScores?: Record<string, number | string>;
 
   @ApiPropertyOptional({ description: 'Test date' })
   @IsOptional()
@@ -55,7 +64,7 @@ export class UpdateTestScoreDto {
   @ApiPropertyOptional({ description: 'Sub-scores' })
   @IsOptional()
   @IsObject()
-  subScores?: Record<string, number>;
+  subScores?: Record<string, number | string>;
 
   @ApiPropertyOptional({ description: 'Test date' })
   @IsOptional()
