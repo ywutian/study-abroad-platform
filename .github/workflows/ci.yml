@@ -54,6 +54,7 @@ jobs:
       - name: Check commit messages
         if: github.event_name == 'pull_request'
         run: |
+          git fetch --unshallow || true
           pnpm exec commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }}
 
       - name: Dependency audit
