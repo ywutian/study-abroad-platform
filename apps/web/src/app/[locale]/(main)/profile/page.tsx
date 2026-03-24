@@ -51,6 +51,7 @@ import { ActivitiesTab } from './_components/activities-tab';
 import { AwardsTab } from './_components/awards-tab';
 import { SchoolSelectionTab } from './_components/school-selection-tab';
 import { PrivacyTab } from './_components/privacy-tab';
+import { RecommendationLettersTab } from './_components/recommendation-letters-tab';
 
 export default function ProfilePage() {
   const t = useTranslations();
@@ -76,6 +77,10 @@ export default function ProfilePage() {
     legacy: [],
     intendedMajor: '',
     secondMajor: '',
+    gpa9: '',
+    gpa10: '',
+    gpa11: '',
+    gpa12: '',
   });
 
   const { data: profile, isLoading } = useQuery({
@@ -99,8 +104,26 @@ export default function ProfilePage() {
             state?: string;
             usNewsRank?: number;
             acceptanceRate?: number;
+            website?: string;
+            scorecardId?: string;
+            hasEarlyDecision?: boolean;
+            transferAcceptanceRate?: number;
+            needBlindInternational?: boolean;
+            percentNeedMet?: number;
+            averageAidPackage?: number;
+            averageNetPrice?: number;
+            rankings?: Array<{ source: string; list: string; rank: number; year: number }>;
           };
           tier?: string;
+          round?: string;
+          essayPromptCount?: number;
+          deadlines?: Array<{
+            round: string;
+            applicationDeadline: string;
+            financialAidDeadline?: string;
+            interviewRequired: boolean;
+            interviewDeadline?: string;
+          }>;
           prediction?: { tier?: string; probability: number };
         }>
       >('/school-lists'),
@@ -112,6 +135,9 @@ export default function ProfilePage() {
     id: item.schoolId,
     _listItemId: item.id,
     tier: item.tier,
+    round: item.round,
+    essayPromptCount: item.essayPromptCount,
+    deadlines: item.deadlines,
     prediction: item.prediction,
   }));
 
@@ -164,6 +190,10 @@ export default function ProfilePage() {
         legacy: profile.legacy || [],
         intendedMajor: profile.intendedMajor || '',
         secondMajor: profile.secondMajor || '',
+        gpa9: profile.gpa9?.toString() || '',
+        gpa10: profile.gpa10?.toString() || '',
+        gpa11: profile.gpa11?.toString() || '',
+        gpa12: profile.gpa12?.toString() || '',
       }));
       if (previousCompleteness === null) {
         setPreviousCompleteness(calculateCompleteness());
@@ -184,6 +214,10 @@ export default function ProfilePage() {
       legacy: formData.legacy.length > 0 ? formData.legacy : undefined,
       intendedMajor: formData.intendedMajor || undefined,
       secondMajor: formData.secondMajor || undefined,
+      gpa9: formData.gpa9 ? parseFloat(formData.gpa9) : null,
+      gpa10: formData.gpa10 ? parseFloat(formData.gpa10) : null,
+      gpa11: formData.gpa11 ? parseFloat(formData.gpa11) : null,
+      gpa12: formData.gpa12 ? parseFloat(formData.gpa12) : null,
     });
   };
 
@@ -263,7 +297,23 @@ export default function ProfilePage() {
                   onDeleteScore={(id) => m.deleteScoreMutation.mutate(id)}
                 />
               )}
-              {activeTab === 'gpa' && <GpaTab formData={formData} onFormDataChange={setFormData} />}
+              {activeTab === 'gpa' && (
+                <GpaTab
+                  formData={formData}
+                  onFormDataChange={setFormData}
+                  semesterGpas={profile?.semesterGpas || []}
+                  onCreateSemesterGpa={(data) => m.createSemesterGpaMutation.mutate(data)}
+                  onUpdateSemesterGpa={(id, data) =>
+                    m.updateSemesterGpaMutation.mutate({ id, ...data })
+                  }
+                  onDeleteSemesterGpa={(id) => m.deleteSemesterGpaMutation.mutate(id)}
+                  isSemesterMutating={
+                    m.createSemesterGpaMutation.isPending ||
+                    m.updateSemesterGpaMutation.isPending ||
+                    m.deleteSemesterGpaMutation.isPending
+                  }
+                />
+              )}
               {activeTab === 'activities' && (
                 <ActivitiesTab
                   activities={profile?.activities || []}
@@ -299,8 +349,12 @@ export default function ProfilePage() {
                   onDefaultRoundChange={m.setDefaultRound}
                   onOpenSchoolSelector={() => m.setSchoolSelectorOpen(true)}
                   onRemoveSchool={(id) => m.removeSchoolMutation.mutate(id)}
+                  onUpdateRound={(listItemId, round) =>
+                    m.updateRoundMutation.mutate({ listItemId, round })
+                  }
                 />
               )}
+              {activeTab === 'recLetters' && <RecommendationLettersTab />}
               {activeTab === 'privacy' && (
                 <PrivacyTab formData={formData} onFormDataChange={setFormData} />
               )}

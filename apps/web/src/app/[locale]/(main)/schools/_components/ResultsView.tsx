@@ -2,13 +2,14 @@
 
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
-import { RotateCcw, Plus } from 'lucide-react';
+import { RotateCcw, Plus, Star, Globe } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAddToSchoolList } from '@/hooks/use-recommendation';
 import type { RecommendationResult, RecommendedSchool } from '@study-abroad/shared';
+import { isSafeUrl } from '@/lib/utils/url';
 
 const TIER_COLORS = {
   reach: 'bg-red-500/10 text-red-600 dark:text-red-400',
@@ -61,12 +62,25 @@ export function ResultsView({ result, schoolList, onReset }: ResultsViewProps) {
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-1">
-                    <CardTitle className="text-base">
-                      {school.schoolName}
+                    <CardTitle className="text-base flex items-center gap-1.5">
+                      <span>{school.schoolName}</span>
                       {school.schoolMeta?.nameZh && (
-                        <span className="ml-2 text-sm font-normal text-muted-foreground">
+                        <span className="text-sm font-normal text-muted-foreground">
                           {school.schoolMeta.nameZh}
                         </span>
+                      )}
+                      {isSafeUrl(school.schoolMeta?.website) && (
+                        <a
+                          href={school.schoolMeta.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          aria-label={t('visitWebsite')}
+                          title={t('visitWebsite')}
+                          className="text-muted-foreground hover:text-primary shrink-0 p-1 -m-1 rounded-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        >
+                          <Globe className="h-3.5 w-3.5" />
+                        </a>
                       )}
                     </CardTitle>
                     <div className="flex items-center gap-2 flex-wrap">
@@ -157,6 +171,30 @@ export function ResultsView({ result, schoolList, onReset }: ResultsViewProps) {
                 </ul>
               </div>
             )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Summer Programs */}
+      {result.summerPrograms && result.summerPrograms.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Star className="h-4 w-4 text-amber-500" />
+              {t('summerPrograms')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {result.summerPrograms.map((prog, i) => (
+                <div key={i} className="flex items-start gap-2 text-sm">
+                  <Badge variant="outline" className="shrink-0 text-xs mt-0.5">
+                    {prog.name}
+                  </Badge>
+                  <span className="text-muted-foreground">{prog.reason}</span>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       )}

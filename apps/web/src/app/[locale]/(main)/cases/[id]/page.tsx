@@ -186,6 +186,13 @@ export default function CaseDetailPage() {
                     label={t('cases.detail.schoolRanking')}
                     value={caseData.school?.usNewsRank ? `#${caseData.school.usNewsRank}` : '-'}
                   />
+                  {caseData.nationality && (
+                    <InfoItem
+                      icon={Flag}
+                      label={t('cases.detail.nationality')}
+                      value={caseData.nationality}
+                    />
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -274,6 +281,20 @@ export default function CaseDetailPage() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Narrative / Application Story */}
+            {caseData.narrative?.trim() && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">{t('cases.detail.applicationStory')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">
+                    {caseData.narrative}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* ── 右栏：Score Dashboard + 操作 ── */}
@@ -319,6 +340,69 @@ export default function CaseDetailPage() {
                 )}
                 {caseData.toeflRange && (
                   <ScoreItem label="TOEFL" value={caseData.toeflRange} max="120" color="amber" />
+                )}
+                {/* UC GPA */}
+                {(caseData.ucCappedGpa != null || caseData.ucUncappedGpa != null) && (
+                  <div className="space-y-1">
+                    {caseData.ucCappedGpa != null && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          {t('cases.detail.ucCappedGpa')}
+                        </span>
+                        <span className="font-medium">
+                          {Number(caseData.ucCappedGpa).toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+                    {caseData.ucUncappedGpa != null && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          {t('cases.detail.ucUncappedGpa')}
+                        </span>
+                        <span className="font-medium">
+                          {Number(caseData.ucUncappedGpa).toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {/* AP/IB */}
+                {(caseData.apCount > 0 || caseData.ibScore > 0) && (
+                  <div className="space-y-1">
+                    {caseData.apCount > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          {t('cases.detail.apCourses', { count: caseData.apCount })}
+                        </span>
+                        {caseData.apSubjects?.length > 0 && (
+                          <span className="text-xs text-muted-foreground truncate max-w-[150px]">
+                            {caseData.apSubjects.join(', ')}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    {caseData.ibScore > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">{t('cases.detail.ibScore')}</span>
+                        <span className="font-medium">{caseData.ibScore}/45</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {/* Demographic Tags */}
+                {caseData.demographicTags?.length > 0 && (
+                  <div className="space-y-1.5">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      {t('cases.detail.applicantBackground')}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {caseData.demographicTags.map((tag: string) => (
+                        <Badge key={tag} variant="secondary" className="text-xs">
+                          {tag.replace(/_/g, ' ')}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
                 )}
                 {!caseData.gpaRange &&
                   caseData.gpa9 == null &&

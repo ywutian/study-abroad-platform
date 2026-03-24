@@ -4,6 +4,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { cn, getSchoolName, getSchoolSubName } from '@/lib/utils';
+import { isSafeUrl } from '@/lib/utils/url';
 import { SchoolLogo } from '@/components/features';
 import { MapPin, Star, Target, Globe, ExternalLink } from 'lucide-react';
 
@@ -108,9 +109,7 @@ export function SchoolHeroHeader({
               </span>
               {school.website && (
                 <a
-                  href={
-                    school.website.startsWith('http') ? school.website : `https://${school.website}`
-                  }
+                  href={isSafeUrl(school.website) ? school.website : `https://${school.website}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1.5 hover:text-primary transition-colors"

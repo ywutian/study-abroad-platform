@@ -13,8 +13,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { BookOpen, Plus, Pencil, Trash2, GripVertical, Sparkles, Loader2 } from 'lucide-react';
+import { BookOpen, Plus, Pencil, Trash2, GripVertical, Sparkles, Loader2, Eye } from 'lucide-react';
 import { ACTIVITY_CATEGORY_KEYS, TIER_BADGE_CONFIG } from './constants';
+import { ActivitiesCommonAppPreview } from './activities-common-app-preview';
 import type { Activity } from './types';
 
 interface AiSortResult {
@@ -53,6 +54,7 @@ export function ActivitiesTab({
 }: ActivitiesTabProps) {
   const t = useTranslations();
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [caPreviewOpen, setCaPreviewOpen] = useState(false);
 
   // Build sorted preview from AI result (spread to avoid mutating state)
   const sortedPreview = aiSortResult?.suggestedOrder
@@ -77,6 +79,12 @@ export function ActivitiesTab({
           <CardDescription>{t('profile.activitiesDesc')}</CardDescription>
         </div>
         <div className="flex gap-2">
+          {activities.length > 0 && (
+            <Button variant="outline" onClick={() => setCaPreviewOpen(true)} className="gap-2">
+              <Eye className="h-4 w-4" />
+              {t('profile.caPreview.title')}
+            </Button>
+          )}
           {onAiSort && (
             <Button
               variant="outline"
@@ -98,6 +106,13 @@ export function ActivitiesTab({
           </Button>
         </div>
       </CardHeader>
+
+      {/* Common App Preview Dialog */}
+      <ActivitiesCommonAppPreview
+        open={caPreviewOpen}
+        onOpenChange={setCaPreviewOpen}
+        activities={activities}
+      />
 
       {/* AI Sort Preview Dialog */}
       <Dialog

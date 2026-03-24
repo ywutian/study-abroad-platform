@@ -3,6 +3,7 @@ import { Text, View, StyleSheet } from '@react-pdf/renderer';
 import type { SectionRendererProps } from '../types';
 import { ContactRow } from '../primitives/contact-item';
 import type { HeaderContent } from '@study-abroad/shared';
+import { isSafeUrl } from '@/lib/utils/url';
 
 export function HeaderSection({ section, theme }: SectionRendererProps) {
   const data = section.content as unknown as HeaderContent;
@@ -12,9 +13,12 @@ export function HeaderSection({ section, theme }: SectionRendererProps) {
     data.email && { value: data.email, href: `mailto:${data.email}` },
     data.phone && { value: data.phone },
     data.address && { value: data.address },
-    data.linkedIn && { value: 'LinkedIn', href: data.linkedIn },
-    data.github && { value: 'GitHub', href: data.github },
-    data.website && { value: 'Website', href: data.website },
+    data.linkedIn && {
+      value: 'LinkedIn',
+      href: isSafeUrl(data.linkedIn) ? data.linkedIn : undefined,
+    },
+    data.github && { value: 'GitHub', href: isSafeUrl(data.github) ? data.github : undefined },
+    data.website && { value: 'Website', href: isSafeUrl(data.website) ? data.website : undefined },
   ].filter(Boolean) as Array<{ value: string; href?: string }>;
 
   return (
@@ -46,9 +50,21 @@ export function HeaderSectionSidebar({ section, theme }: SectionRendererProps) {
     data.email && { label: 'Email', value: data.email, href: `mailto:${data.email}` },
     data.phone && { label: 'Phone', value: data.phone },
     data.address && { label: 'Location', value: data.address },
-    data.linkedIn && { label: 'LinkedIn', value: data.linkedIn, href: data.linkedIn },
-    data.github && { label: 'GitHub', value: data.github, href: data.github },
-    data.website && { label: 'Website', value: data.website, href: data.website },
+    data.linkedIn && {
+      label: 'LinkedIn',
+      value: data.linkedIn,
+      href: isSafeUrl(data.linkedIn) ? data.linkedIn : undefined,
+    },
+    data.github && {
+      label: 'GitHub',
+      value: data.github,
+      href: isSafeUrl(data.github) ? data.github : undefined,
+    },
+    data.website && {
+      label: 'Website',
+      value: data.website,
+      href: isSafeUrl(data.website) ? data.website : undefined,
+    },
   ].filter(Boolean) as Array<{ label: string; value: string; href?: string }>;
 
   return (
@@ -91,9 +107,12 @@ export function HeaderSectionBanner({ section, theme }: SectionRendererProps) {
     data.email && { value: data.email, href: `mailto:${data.email}` },
     data.phone && { value: data.phone },
     data.address && { value: data.address },
-    data.linkedIn && { value: 'LinkedIn', href: data.linkedIn },
-    data.github && { value: 'GitHub', href: data.github },
-    data.website && { value: 'Website', href: data.website },
+    data.linkedIn && {
+      value: 'LinkedIn',
+      href: isSafeUrl(data.linkedIn) ? data.linkedIn : undefined,
+    },
+    data.github && { value: 'GitHub', href: isSafeUrl(data.github) ? data.github : undefined },
+    data.website && { value: 'Website', href: isSafeUrl(data.website) ? data.website : undefined },
   ].filter(Boolean) as Array<{ value: string; href?: string }>;
 
   // Banner uses headerBg + headerText colors — with fallbacks

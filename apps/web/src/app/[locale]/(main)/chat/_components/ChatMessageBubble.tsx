@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
+import { isSafeUrl } from '@/lib/utils/url';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -160,7 +161,7 @@ export const ChatMessageBubble = memo(function ChatMessageBubble({
                   unoptimized
                 />
               )}
-              {message.mediaUrl && message.mediaType === 'file' && (
+              {message.mediaUrl && message.mediaType === 'file' && isSafeUrl(message.mediaUrl) && (
                 <a
                   href={message.mediaUrl}
                   target="_blank"

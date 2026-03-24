@@ -146,6 +146,13 @@ const EXEMPT_KEYS = new Set([
   // 高中管理：rubric 参考学校名（专有名词）
   'admin.highSchools.rubric.academicRigor.5.examples',
   'admin.highSchools.rubric.resources.5.examples',
+  // 面试平台品牌名保留英文
+  'profile.schoolSelection.interviewFormat.INITIALVIEW',
+  // 推荐人邮箱占位符
+  'profile.recLetter.field.emailPlaceholder',
+  // UC GPA 标准术语
+  'cases.detail.ucCappedGpa',
+  'cases.detail.ucUncappedGpa',
 ]);
 
 interface WrongLangIssue {

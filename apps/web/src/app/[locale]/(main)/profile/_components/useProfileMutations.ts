@@ -96,17 +96,64 @@ export function useProfileMutations(
   });
 
   const addSchoolMutation = useMutation({
-    mutationFn: (schoolId: string) =>
-      apiClient.post('/school-lists', { schoolId, tier: 'TARGET', round: defaultRound }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['school-lists'] });
-    },
+    mutationFn: ({ schoolId, round }: { schoolId: string; round: string }) =>
+      apiClient.post('/school-lists', { schoolId, tier: 'TARGET', round }),
+    meta: { skipGlobalErrorToast: true },
   });
 
   const removeSchoolMutation = useMutation({
     mutationFn: (listItemId: string) => apiClient.delete(`/school-lists/${listItemId}`),
+  });
+
+  const updateRoundMutation = useMutation({
+    mutationFn: ({ listItemId, round }: { listItemId: string; round: string }) =>
+      apiClient.put(`/school-lists/${listItemId}`, { round }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['school-lists'] });
+      toast.success(t('profile.toast.roundUpdated'));
+    },
+  });
+
+  // Semester GPA mutations
+  const createSemesterGpaMutation = useMutation({
+    mutationFn: (data: {
+      semester: string;
+      year: number;
+      gpa: number;
+      gpaScale: number;
+      credits?: number;
+      order?: number;
+    }) => apiClient.post('/profiles/me/semester-gpas', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      toast.success(t('profile.semesterGpaAdded'));
+    },
+  });
+
+  const updateSemesterGpaMutation = useMutation({
+    mutationFn: ({
+      id,
+      ...data
+    }: {
+      id: string;
+      semester?: string;
+      year?: number;
+      gpa?: number;
+      gpaScale?: number;
+      credits?: number;
+      order?: number;
+    }) => apiClient.put(`/profiles/me/semester-gpas/${id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      toast.success(t('profile.semesterGpaUpdated'));
+    },
+  });
+
+  const deleteSemesterGpaMutation = useMutation({
+    mutationFn: (id: string) => apiClient.delete(`/profiles/me/semester-gpas/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      toast.success(t('profile.semesterGpaDeleted'));
     },
   });
 
@@ -127,23 +174,56 @@ export function useProfileMutations(
   }, []);
 
   const handleSchoolsChange = useCallback(
-    (newSchools: TargetSchool[], currentSchools: TargetSchool[]) => {
+    async (newSchools: TargetSchool[], currentSchools: TargetSchool[]) => {
       const currentIds = new Set(currentSchools.map((s) => s.id));
       const newIds = new Set(newSchools.map((s) => s.id));
 
-      for (const school of newSchools) {
-        if (!currentIds.has(school.id)) {
-          addSchoolMutation.mutate(school.id);
-        }
-      }
+      const toAdd = newSchools.filter((s) => !currentIds.has(s.id));
+      const toRemove = currentSchools.filter((s) => !newIds.has(s.id) && s._listItemId);
 
-      for (const school of currentSchools) {
-        if (!newIds.has(school.id) && school._listItemId) {
-          removeSchoolMutation.mutate(school._listItemId);
-        }
+      // Add new schools in parallel — use defaultRound with 'RD' fallback
+      const addResults = await Promise.allSettled(
+        toAdd.map(async (school) => {
+          try {
+            await addSchoolMutation.mutateAsync({
+              schoolId: school.id,
+              round: defaultRound,
+            });
+          } catch {
+            if (defaultRound !== 'RD') {
+              await addSchoolMutation.mutateAsync({ schoolId: school.id, round: 'RD' });
+              return;
+            }
+            throw new Error('failed');
+          }
+        })
+      );
+      const addedCount = addResults.filter((r) => r.status === 'fulfilled').length;
+      const failedCount = addResults.filter((r) => r.status === 'rejected').length;
+
+      // Remove schools in parallel
+      await Promise.allSettled(
+        toRemove.map((school) => removeSchoolMutation.mutateAsync(school._listItemId!))
+      );
+
+      // Batch invalidation — single refetch after all mutations
+      queryClient.invalidateQueries({ queryKey: ['school-lists'] });
+
+      // Summary toast
+      if (addedCount > 0 && failedCount === 0) {
+        toast.success(t('profile.toast.schoolsAdded', { count: addedCount }));
+      } else if (addedCount > 0 && failedCount > 0) {
+        toast.warning(
+          t('profile.toast.schoolsPartialAdd', { added: addedCount, failed: failedCount })
+        );
+      } else if (failedCount > 0 && addedCount === 0) {
+        toast.error(t('profile.toast.schoolsAddFailed', { count: failedCount }));
+      }
+      if (toRemove.length > 0 && toAdd.length === 0) {
+        toast.success(t('profile.toast.schoolRemoved'));
       }
     },
-    [addSchoolMutation, removeSchoolMutation]
+    [addSchoolMutation, removeSchoolMutation, defaultRound, queryClient, t]
   );
 
   const handleAiSortAccept = useCallback(
@@ -187,6 +267,10 @@ export function useProfileMutations(
     deleteAwardMutation,
     addSchoolMutation,
     removeSchoolMutation,
+    updateRoundMutation,
+    createSemesterGpaMutation,
+    updateSemesterGpaMutation,
+    deleteSemesterGpaMutation,
     // Handlers
     handleEditScore,
     handleEditActivity,

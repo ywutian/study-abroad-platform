@@ -56,6 +56,8 @@
     "verified": "Verified",
     "words": "words",
     "optional": "(Optional)",
+    "yes": "Yes",
+    "no": "No",
     "notAvailable": "N/A",
     "home": "Home",
     "schools": "Schools",
@@ -713,12 +715,110 @@
     "gpaDesc": "Record your GPA information",
     "gpaScale": "GPA Scale",
     "yourGpa": "Your GPA",
+    "gpaByGrade": "GPA by Grade Level",
+    "gpaByGradeDesc": "Admission officers closely track GPA trends across grade levels",
+    "gpa9": "Grade 9 GPA",
+    "gpa10": "Grade 10 GPA",
+    "gpa11": "Grade 11 GPA",
+    "gpa12": "Grade 12 GPA",
+    "calculatedGpa": "Calculated Overall GPA",
+    "gpaSimpleMode": "Simple Mode",
+    "gpaDetailedMode": "Detailed Mode",
+    "semesterGpa": "Semester GPAs",
+    "semesterGpaDesc": "Optional: Track GPA by semester for more granularity",
+    "addSemester": "Add Semester",
+    "semesterName": "Semester",
+    "semesterYear": "Year",
+    "credits": "Credit Hours",
+    "weightedAverage": "Weighted Average",
+    "semesterGpaOptional": "(Optional)",
+    "semesterGpaHelper": "Some US universities request semester-by-semester transcripts. Recording here helps the system provide more accurate analysis.",
+    "gpaFromSemesters": "Overall GPA will be calculated automatically from your semester data.",
+    "semesterOptions": {
+      "fall": "Fall",
+      "spring": "Spring",
+      "summer": "Summer",
+      "g9fall": "Grade 9 Fall",
+      "g9spring": "Grade 9 Spring",
+      "g10fall": "Grade 10 Fall",
+      "g10spring": "Grade 10 Spring",
+      "g11fall": "Grade 11 Fall",
+      "g11spring": "Grade 11 Spring",
+      "g12fall": "Grade 12 Fall",
+      "g12spring": "Grade 12 Spring"
+    },
+    "editSemester": "Edit",
+    "deleteSemester": "Delete",
+    "saveSemester": "Save",
+    "cancelSemester": "Cancel",
+    "advancedOptions": "Advanced Options",
+    "noSemesterGpas": "No semester GPAs recorded yet",
+    "noSemesterGpasHint": "Track your GPA by semester for a more detailed academic picture",
+    "semesterGpaAdded": "Semester GPA added",
+    "semesterGpaUpdated": "Semester GPA updated",
+    "semesterGpaDeleted": "Semester GPA deleted",
     "activities": "Activities",
     "activitiesDesc": "Record your extracurricular activities",
     "awards": "Awards",
     "awardsDesc": "Record your honors and awards",
     "targetSchools": "Target Schools",
     "targetSchoolsDesc": "Select your target schools",
+    "schoolSelection": {
+      "roundFilter": "Filter by Round",
+      "allRounds": "All Rounds",
+      "dataDisclaimer": "School data is sourced from public databases and may not reflect the most recent updates. Please verify with official school websites.",
+      "essayPrompts": "Essay Prompts",
+      "noPrompts": "No essay prompts available",
+      "wordLimit": "Word Limit",
+      "deadlines": "Deadlines",
+      "interviewRequired": "Interview required for this school",
+      "financialAid": "Financial Aid",
+      "avgAid": "Avg Aid",
+      "netPrice": "Net Price",
+      "needMet": "Need Met",
+      "bindingConflict": "You already have a {round} application to {school}. Only one binding-round school allowed.",
+      "essayRequirements": "Essay Requirements",
+      "noEssayPrompts": "No essay prompts available for this school",
+      "startWriting": "Start writing this essay",
+      "words": "words",
+      "optional": "Optional",
+      "aidComparison": "Financial Aid Comparison",
+      "aidComparisonDesc": "Compare financial aid data across your target schools to help with decision-making.",
+      "schools": "schools",
+      "school": "School",
+      "needBlind": "Need-Blind",
+      "perYear": "yr",
+      "interview": "Interview",
+      "interviewFormat": {
+        "ALUMNI": "Alumni Interview",
+        "ADMISSIONS_OFFICER": "Admissions Officer",
+        "INITIALVIEW": "InitialView",
+        "VERICANT": "Vericant",
+        "KIRA": "Kira Talent",
+        "GROUP": "Group Interview",
+        "OPTIONAL": "Optional",
+        "NOT_OFFERED": "Not Offered"
+      },
+      "interviewTip": {
+        "ALUMNI": "Conversational style with a graduate. Be yourself and prepare thoughtful questions about their experience.",
+        "ADMISSIONS_OFFICER": "Formal interview with an admissions officer. Prepare to discuss your application and goals.",
+        "INITIALVIEW": "Third-party video interview platform. Record responses to prompts within time limits.",
+        "VERICANT": "Third-party video interview popular with Chinese applicants. Includes a writing sample.",
+        "KIRA": "Online video assessment with timed questions. Practice with mock interviews beforehand.",
+        "GROUP": "Interview with other applicants. Show collaboration skills while standing out.",
+        "OPTIONAL": "Not required but recommended. Participating shows demonstrated interest.",
+        "NOT_OFFERED": "This school does not offer interviews."
+      },
+      "essayType": {
+        "PERSONAL_STATEMENT": "Personal Statement",
+        "WHY_SCHOOL": "Why School",
+        "SUPPLEMENTAL": "Supplemental",
+        "SHORT_ANSWER": "Short Answer",
+        "ACTIVITY": "Activity",
+        "OPTIONAL": "Optional",
+        "OTHER": "Other"
+      }
+    },
     "visibility": "Privacy Settings",
     "visibilityDesc": {
       "title": "Set your profile visibility",
@@ -751,6 +851,7 @@
       "activities": "Activities",
       "awards": "Awards",
       "targets": "Target Schools",
+      "recLetters": "Rec Letters",
       "privacy": "Privacy",
       "demographics": "Background"
     },
@@ -850,7 +951,14 @@
       "educationAdded": "Education added",
       "educationUpdated": "Education updated",
       "scoreAdded": "Score added",
-      "scoreUpdated": "Score updated"
+      "scoreUpdated": "Score updated",
+      "activityRefined": "Description refined to ≤150 characters",
+      "schoolAdded": "School added to list",
+      "schoolsAdded": "{count, plural, =1 {1 school added} other {# schools added}}",
+      "schoolsPartialAdd": "{added, plural, =1 {1 school added} other {# schools added}}, {failed, plural, =1 {1 failed} other {# failed}}",
+      "schoolsAddFailed": "Failed to add {count, plural, =1 {1 school} other {# schools}}",
+      "schoolRemoved": "School removed from list",
+      "roundUpdated": "Round updated"
     },
     "grades": {
       "freshman": "Freshman",
@@ -914,7 +1022,8 @@
       "addActivity": "Add Activity",
       "addAward": "Add Award",
       "addSchool": "Add School",
-      "addEducation": "Add Education"
+      "addEducation": "Add Education",
+      "writeEssay": "Write Essay"
     },
     "aiSort": "AI Sort",
     "aiSorting": "Sorting...",
@@ -923,6 +1032,14 @@
     "aiSortAccept": "Apply Order",
     "aiSortReject": "Cancel",
     "aiSortApplied": "AI suggested order applied",
+    "caPreview": {
+      "title": "Common App Preview",
+      "desc": "First 10 activities as they appear on Common App",
+      "charWarning": "Over 150 chars",
+      "totalActivities": "{count}/10 activities",
+      "totalHours": "{hours} hrs/week total",
+      "noActivities": "No activities yet"
+    },
     "activityCategories": {
       "academic": "Academic",
       "arts": "Arts",
@@ -943,6 +1060,22 @@
       "national": "National",
       "international": "International"
     },
+    "awardCategories": {
+      "stem": "STEM",
+      "math": "Mathematics",
+      "science": "Science",
+      "computerScience": "Computer Science",
+      "engineering": "Engineering",
+      "business": "Business",
+      "arts": "Arts",
+      "humanities": "Humanities",
+      "socialScience": "Social Science",
+      "language": "Language",
+      "sports": "Sports",
+      "communityService": "Community Service",
+      "leadership": "Leadership",
+      "other": "Other"
+    },
     "form": {
       "addScore": "Add Score",
       "testType": "Test Type",
@@ -959,8 +1092,31 @@
       "rolePlaceholder": "Enter your role",
       "organization": "Organization",
       "organizationPlaceholder": "Enter organization name",
+      "detailedDescription": "Detailed Description",
+      "detailedDescriptionHelper": "For essay material and detailed records",
       "activityDescription": "Description",
-      "activityDescPlaceholder": "Describe this activity",
+      "activityDescPlaceholder": "Describe your role, achievements, and impact in detail...",
+      "activityCharCount": "{count}/{max} characters",
+      "activityDescTooltip": "Most US college applications limit activity descriptions to 150 characters. Write in full detail here (up to 500), then condense when applying.",
+      "activityDescHelperEmpty": "Describe your role, achievements, and impact",
+      "activityDescHelperWithin": "Current length fits application forms directly",
+      "activityDescHelperOver": "Exceeds application form limit — condense when applying",
+      "aiRefineDesc": "AI Refine to ≤150 chars",
+      "commonAppDescription": "Common App Description",
+      "commonAppDescriptionPlaceholder": "Concise description for Common App (max 150 characters)...",
+      "commonAppDescriptionHelper": "This will be used for your Common App submission",
+      "aiGenerate": "AI Generate Common App Description",
+      "aiGenerateSuccess": "Common App description generated successfully",
+      "gradeLevels": "Grade Levels",
+      "grade9": "9th",
+      "grade10": "10th",
+      "grade11": "11th",
+      "grade12": "12th",
+      "timing": "Timing",
+      "selectTiming": "Select timing",
+      "timingSchoolYear": "School Year",
+      "timingSchoolBreak": "School Break",
+      "timingAllYear": "All Year",
       "startDate": "Start Date",
       "endDate": "End Date",
       "ongoing": "Ongoing",
@@ -970,6 +1126,8 @@
       "awardName": "Award Name",
       "awardNamePlaceholder": "Enter award name",
       "awardLevel": "Level",
+      "awardCategory": "Category",
+      "selectCategory": "Select category",
       "selectLevel": "Select level",
       "awardDate": "Award Date",
       "awardDescription": "Description",
@@ -1010,6 +1168,9 @@
       "speaking": "Speaking",
       "writing": "Writing",
       "math": "Math",
+      "subjects": "Subjects",
+      "selectSubject": "Select subject",
+      "addSubject": "Add Subject",
       "educationTypes": {
         "highSchool": "High School",
         "college": "College",
@@ -1021,6 +1182,51 @@
       "activityRequired": "Please fill in activity details",
       "awardRequired": "Please fill in award details",
       "scoreRequired": "Please fill in score details"
+    },
+    "recLetter": {
+      "title": "Recommendation Letters",
+      "desc": "Manage your recommendation letters and track their status",
+      "add": "Add Letter",
+      "addTitle": "Add Recommendation Letter",
+      "editTitle": "Edit Recommendation Letter",
+      "field": {
+        "name": "Recommender Name",
+        "namePlaceholder": "e.g. Dr. Smith",
+        "email": "Email",
+        "emailPlaceholder": "recommender@school.edu",
+        "role": "Role",
+        "selectRole": "Select role",
+        "status": "Status",
+        "subject": "Subject/Class",
+        "subjectPlaceholder": "e.g. AP Physics",
+        "dueDate": "Due Date",
+        "notes": "Notes",
+        "notesPlaceholder": "Any notes about this letter..."
+      },
+      "role": {
+        "TEACHER": "Teacher",
+        "COUNSELOR": "Counselor",
+        "COACH": "Coach",
+        "EMPLOYER": "Employer",
+        "OTHER": "Other"
+      },
+      "status": {
+        "NOT_REQUESTED": "Not Requested",
+        "REQUESTED": "Requested",
+        "IN_PROGRESS": "In Progress",
+        "SUBMITTED": "Submitted",
+        "CONFIRMED": "Confirmed"
+      },
+      "toast": {
+        "created": "Recommendation letter added",
+        "updated": "Recommendation letter updated",
+        "deleted": "Recommendation letter deleted"
+      },
+      "validation": {
+        "required": "Recommender name and role are required"
+      },
+      "empty": "No recommendation letters yet",
+      "emptyHint": "Add your recommenders to track letter status"
     }
   },
   "ranking": {
@@ -1154,6 +1360,12 @@
     "collapse": "Hide Details",
     "factorsCount": "factors",
     "suggestionsCount": "suggestions",
+    "suggestionCategories": {
+      "summerProgram": "Summer Programs",
+      "competition": "Competitions",
+      "research": "Research Opportunities",
+      "general": "General Suggestions"
+    },
     "impactFactors": "Impact Factors",
     "factorsDisclaimer": "Note: This prediction does not account for essay quality, recommendation letters, or interview performance",
     "source": {
@@ -1226,10 +1438,10 @@
   },
   "cases": {
     "title": "Case Library",
-    "description": "Browse real application cases and learn from success stories",
+    "description": "Explore real admission profiles, test scores, activities, and winning essays from accepted students",
     "tabs": {
       "cases": "Cases",
-      "essays": "Essays"
+      "essays": "Winning Essays"
     },
     "shareCase": "Share Case",
     "searchPlaceholder": "Search cases...",
@@ -1243,7 +1455,10 @@
       "year": "Application Year",
       "result": "Result",
       "allYears": "All Years",
-      "allResults": "All Results"
+      "allResults": "All Results",
+      "round": "Round",
+      "allRounds": "All Rounds",
+      "nationality": "Nationality"
     },
     "activeFilters": "Active Filters",
     "result": {
@@ -1276,7 +1491,30 @@
       "essayContent": "Essay Content",
       "gpaByYear": "GPA by year (9–12)",
       "viewEssays": "View Essays",
-      "applicationDetails": "Application Details"
+      "applicationDetails": "Application Details",
+      "nationality": "Nationality",
+      "ucCappedGpa": "UC Capped Weighted GPA",
+      "ucUncappedGpa": "UC Uncapped Weighted GPA",
+      "apCourses": "AP Courses ({count})",
+      "ibScore": "IB Score",
+      "applicantBackground": "Applicant Background",
+      "applicationStory": "Application Story"
+    },
+    "guide": {
+      "title": "See where students like you got accepted",
+      "bullet1": "Real admission results — see GPA, scores, and activities of accepted and rejected students",
+      "bullet2": "Filter by school, year, round, and result to find cases like yours",
+      "bullet3": "Read actual essays that helped students get accepted",
+      "bullet4": "Cases are self-reported. Verified cases show a ✓ badge.",
+      "dismiss": "Got it"
+    },
+    "emptyState": {
+      "title": "No cases yet",
+      "description": "Be the first to share! Your contribution helps the community and improves your own recommendations.",
+      "bullet1": "Share your results to get more accurate school recommendations",
+      "bullet2": "Earn points and verification badges for your contributions",
+      "bullet3": "Compare your profile against admitted students at your target schools",
+      "startTour": "Learn how to use in 30 seconds"
     }
   },
   "chat": {
@@ -1777,8 +2015,30 @@
     "tagsPlaceholder": "Comma separated, e.g., Research, Competition",
     "activityListLabel": "Activities & Highlights",
     "activityListPlaceholder": "One per line, e.g.: Research - XX Lab; Contest - AMC 12; Club - Student Council President",
-    "reflectionLabel": "Reflection",
-    "reflectionPlaceholder": "Share your application experience and advice...",
+    "detailsToggle": "More Details (Nationality, AP/IB, Background...)",
+    "nationalityLabel": "Nationality",
+    "nationalityPlaceholder": "e.g., China, United States, India",
+    "actLabel": "ACT Range",
+    "actPlaceholder": "e.g., 34-36",
+    "apCountLabel": "AP Courses",
+    "apSubjectsLabel": "AP Subjects",
+    "apSubjectsPlaceholder": "Comma separated, e.g., Calculus BC, Physics C",
+    "ibScoreLabel": "IB Score",
+    "demographicTagsLabel": "Applicant Background",
+    "demographic": {
+      "international": "International Student",
+      "first_gen": "First-generation",
+      "legacy": "Legacy",
+      "urm": "URM (Underrepresented Minority)",
+      "recruited_athlete": "Recruited Athlete",
+      "low_income": "Low-income Family",
+      "transfer": "Transfer Student",
+      "homeschool": "Homeschooled",
+      "military": "Military Family",
+      "gap_year": "Gap Year"
+    },
+    "narrativeLabel": "Application Story",
+    "narrativePlaceholder": "Share your application experience, special circumstances, and advice...",
     "submitButton": "Submit Case",
     "rounds": {
       "ED": "Early Decision (ED)",
@@ -2118,7 +2378,21 @@
     "noResultsHint": "Try using different keywords",
     "acceptanceRate": "Acceptance Rate",
     "selectedCount": "Selected {count}/{max}",
-    "confirmSelection": "Confirm Selection"
+    "confirmSelection": "Confirm Selection",
+    "maxSelectionReached": "Maximum {max} schools can be selected",
+    "rankingList": {
+      "nationalUniversity": "National",
+      "liberalArts": "Liberal Arts",
+      "artDesign": "Art & Design",
+      "engineering": "Engineering",
+      "cs": "CS",
+      "business": "Business"
+    },
+    "dataSourceInfo": "Data sourced from IPEDS / College Scorecard. Verify on each school's official website.",
+    "transferRate": "Transfer Rate",
+    "rankingTooltip": "{source} {year} Ranking",
+    "rankingTooltipOverall": "US News National University Overall Ranking",
+    "visitWebsite": "Visit {school} official website"
   },
   "createList": {
     "title": "Create List",
@@ -2792,8 +3066,8 @@
     "description": "Manage your application essays with AI-powered writing assistance",
     "new": "New Essay",
     "list": "Essay List",
-    "selectToView": "Select an essay to view",
-    "clickNewToCreate": "Click \"New Essay\" to start writing",
+    "selectToView": "Welcome to Your Essay Workshop",
+    "clickNewToCreate": "Start crafting compelling essays that tell your unique story",
     "edit": "Edit Essay",
     "create": "Create Essay",
     "editDesc": "Edit your essay content",
@@ -2854,6 +3128,25 @@
       "title": "No Essays Yet",
       "description": "Click \"New Essay\" to start writing your application essays"
     },
+    "startFromTargetSchool": "Start from Target Schools",
+    "targetSchoolHint": "Add target schools first, then write essays based on their prompts",
+    "tips": {
+      "step1": "Add your target schools in Profile > School Selection to unlock school-specific essay prompts",
+      "step2": "Click \"New Essay\" and use \"Select School Prompt\" to find the exact prompts required by each school",
+      "step3": "Browse winning essays in the Case Library to study successful structures and themes"
+    },
+    "action": {
+      "browseExamples": "Browse Examples"
+    },
+    "onboarding": {
+      "fromPromptTitle": "Start from School Prompt",
+      "fromPromptDesc": "Click \"New Essay\" and select a school prompt to write a targeted response for a specific school's essay question.",
+      "freeWriteTitle": "Free Write",
+      "freeWriteDesc": "Start with a blank essay to draft your personal statement, Common App essay, or practice writing on any topic."
+    },
+    "form": {
+      "selectSchoolPrompt": "Select School Prompt"
+    },
     "tabs": {
       "details": "Detailed Scores",
       "polishedResult": "Polished Result",
@@ -2887,7 +3180,7 @@
       "polish": "Please polish this essay"
     },
     "promptSelector": {
-      "linkPrompt": "Link to essay prompt",
+      "linkPrompt": "Find School Essay",
       "searchSchool": "Search for a school...",
       "selectPrompt": "Select a prompt",
       "clearLink": "Clear linked prompt",
@@ -2895,7 +3188,42 @@
       "required": "Required",
       "optional": "Optional",
       "linked": "Linked to prompt",
-      "noPrompts": "No verified prompts found for this school"
+      "noPrompts": "No verified prompts found for this school",
+      "types": {
+        "PERSONAL_STATEMENT": "Personal Statement",
+        "WHY_SCHOOL": "Why School",
+        "SUPPLEMENTAL": "Supplemental",
+        "SHORT_ANSWER": "Short Answer",
+        "ACTIVITY": "Activity",
+        "OPTIONAL": "Optional",
+        "OTHER": "Other"
+      }
+    },
+    "tour": {
+      "page": {
+        "step1": {
+          "title": "Create Your First Essay",
+          "desc": "Choose \"Find School Essay\" to write for a specific school, or \"Free Write\" to start with a blank canvas."
+        },
+        "step2": {
+          "title": "Create More Essays",
+          "desc": "You can always create more essays here."
+        },
+        "step3": {
+          "title": "Follow These Steps",
+          "desc": "Add target schools first, then their essay prompts will appear for you to write."
+        }
+      },
+      "form": {
+        "step1": {
+          "title": "Find Your School's Essay",
+          "desc": "Search for your target school and select its specific essay prompt. Title and topic will auto-fill."
+        },
+        "step2": {
+          "title": "Write Your Essay",
+          "desc": "Write your essay here. Most AI tools work best when you have a draft to improve."
+        }
+      }
     }
   },
   "resume": {
@@ -3647,6 +3975,9 @@
       "monthlyLoan": "Monthly Loan Payment"
     },
     "about": "About",
+    "dataSource": "Source: {source}",
+    "updatedAt": "Updated {date}",
+    "viewSource": "View official source",
     "deadlines": {
       "title": "Application Deadlines",
       "cycle": "Cycle",
@@ -3680,7 +4011,8 @@
       "newTag": "New",
       "modifiedTag": "Modified",
       "noData": "No essay prompts available",
-      "updateHint": "Essay prompts are typically updated in August"
+      "updateHint": "Essay prompts are typically updated in August",
+      "startWriting": "Start Writing"
     },
     "cases": {
       "title": "Admission Cases",
@@ -3935,9 +4267,13 @@
     "strategyTitle": "Selection Strategy",
     "schoolCount": "{count} schools",
     "unknownSchool": "Unknown School",
+    "visitWebsite": "Visit official website",
+    "viewScorecard": "View on College Scorecard",
+    "viewIPEDS": "View federal data (IPEDS)",
     "admissionChance": "Admission Chance",
     "noSchoolsInCategory": "No {category} recommendations, please complete your profile",
     "disclaimer": "Recommendations are based on AI analysis for reference only. Actual admission depends on multiple factors.",
+    "summerPrograms": "Recommended Summer Programs",
     "result": "Recommendation Results",
     "newRecommendation": "New Recommendation",
     "success": "Recommendation complete",
@@ -5098,6 +5434,9 @@
       "essayCount": "Essay Count",
       "appFee": "Application Fee",
       "interviewRequired": "Interview Required",
+      "interviewFormat": "Interview Format",
+      "interviewDeadline": "Interview Deadline",
+      "selectFormat": "Select format...",
       "notes": "Notes",
       "actions": "Actions",
       "create": "Create",
@@ -5618,6 +5957,7 @@
         "rejectedToday": "Rejected Today"
       },
       "enums": {
+        "nationalityPlaceholder": "e.g., China, US, India",
         "hsType": {
           "PUBLIC_US": "US Public",
           "PRIVATE_US": "US Private",
@@ -5882,6 +6222,7 @@
           "highSchool": "High School",
           "highSchoolSearch": "Search high school name...",
           "highSchoolTier": "Tier {tier}",
+          "nationality": "Nationality",
           "curriculum": "Curriculum",
           "demographics": "Applicant Background Tags",
           "financialAid": "Financial Aid",
@@ -6875,5 +7216,10 @@
     },
     "emailSubject": "Join me on StudyAbroad Platform",
     "emailBody": "Hey! I've been using this amazing study abroad platform. Sign up with my referral code {code} and we'll both earn 50 points! {link}"
+  },
+  "tour": {
+    "next": "Next",
+    "previous": "Previous",
+    "done": "Done"
   }
 }

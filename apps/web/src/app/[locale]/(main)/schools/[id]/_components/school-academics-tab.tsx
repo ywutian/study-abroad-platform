@@ -8,7 +8,9 @@ import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { FileText, Sparkles, CheckCircle, Clock } from 'lucide-react';
+import { FileText, Sparkles, CheckCircle, Clock, PenLine } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Link } from '@/lib/i18n/navigation';
 
 import type { SchoolDetail, EssayPrompt } from './types';
 
@@ -288,6 +290,16 @@ export function SchoolEssaysTab({ school, essayPrompts }: SchoolEssaysTabProps) 
                         {essay.aiCategory}
                       </Badge>
                     </div>
+                  )}
+
+                  {/* Start Writing CTA — only for DB verified prompts (string id) */}
+                  {typeof essay.id === 'string' && (
+                    <Button variant="outline" size="sm" className="mt-3 gap-1.5" asChild>
+                      <Link href={`/essays?schoolId=${school.id}&promptId=${essay.id}`}>
+                        <PenLine className="h-3.5 w-3.5" />
+                        {t('school.essays.startWriting')}
+                      </Link>
+                    </Button>
                   )}
                 </motion.div>
               ))}

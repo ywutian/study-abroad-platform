@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
@@ -24,12 +24,35 @@ import type {
 } from '@/types/essay';
 import { toast } from 'sonner';
 
-export function useEssayManager() {
+export function useEssayManager(initialSchoolId?: string | null, initialPromptId?: string | null) {
   const t = useTranslations();
   const queryClient = useQueryClient();
 
   const [selectedEssay, setSelectedEssay] = useState<Essay | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+
+  // Fetch prompt data when navigated with promptId
+  const { data: initialPrompt } = useQuery({
+    queryKey: ['essayPrompt', initialPromptId],
+    queryFn: () =>
+      apiClient.get<{
+        id: string;
+        schoolId?: string;
+        schoolName?: string;
+        type?: string;
+        prompt?: string;
+        promptZh?: string;
+        wordLimit?: number;
+      }>(`/essay-prompts/${initialPromptId}`),
+    enabled: !!initialPromptId,
+  });
+
+  // Auto-open create form when navigated with schoolId (but not promptId — that has its own effect)
+  useEffect(() => {
+    if (initialSchoolId && !initialPromptId) {
+      setIsFormOpen(true);
+    }
+  }, [initialSchoolId, initialPromptId]);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [essayToDelete, setEssayToDelete] = useState<string | null>(null);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
@@ -51,11 +74,26 @@ export function useEssayManager() {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [isBrainstormOpen, setIsBrainstormOpen] = useState(false);
   const [essayPromptId, setEssayPromptId] = useState<string | null>(null);
+  const [autoOpenPromptSelector, setAutoOpenPromptSelector] = useState(false);
 
   const essayForm = useForm<EssayFormData>({
     resolver: zodResolver(createEssaySchema(t)),
     defaultValues: { title: '', prompt: '', content: '' },
   });
+
+  // Auto-fill form when navigated with promptId and prompt data loads
+  useEffect(() => {
+    if (initialPrompt && initialPromptId) {
+      setIsFormOpen(true);
+      setEssayPromptId(initialPromptId);
+      const typeLabel = initialPrompt.type || '';
+      essayForm.setValue(
+        'title',
+        `${initialPrompt.schoolName || ''} - ${typeLabel}`.trim().replace(/^- /, '')
+      );
+      essayForm.setValue('prompt', initialPrompt.prompt || '');
+    }
+  }, [initialPrompt, initialPromptId, essayForm]);
 
   const randomOffsetsRef = useRef({
     originality: Math.random() * 2,
@@ -156,6 +194,15 @@ export function useEssayManager() {
     essayForm.reset({ title: '', prompt: '', content: '' });
     setSelectedEssay(null);
     setEssayPromptId(null);
+    setAutoOpenPromptSelector(false);
+    setIsFormOpen(true);
+  };
+
+  const handleCreateFromPrompt = () => {
+    essayForm.reset({ title: '', prompt: '', content: '' });
+    setSelectedEssay(null);
+    setEssayPromptId(null);
+    setAutoOpenPromptSelector(true);
     setIsFormOpen(true);
   };
 
@@ -285,6 +332,7 @@ export function useEssayManager() {
     // Prompt linking
     essayPromptId,
     setEssayPromptId,
+    initialSchoolId: initialSchoolId ?? null,
 
     // Form dialogs
     isFormOpen,
@@ -293,6 +341,8 @@ export function useEssayManager() {
     setIsDeleteOpen,
     essayToDelete,
     handleCreate,
+    handleCreateFromPrompt,
+    autoOpenPromptSelector,
     handleEdit,
     handleDelete,
     handleSubmit,

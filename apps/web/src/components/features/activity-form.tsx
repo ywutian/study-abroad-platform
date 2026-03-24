@@ -25,7 +25,8 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
-import { Save, Loader2, Sparkles } from 'lucide-react';
+import { Save, Loader2, Sparkles, HelpCircle } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const ACTIVITY_CATEGORY_KEYS = [
   { value: 'ACADEMIC', labelKey: 'academic' },
@@ -42,10 +43,10 @@ const ACTIVITY_CATEGORY_KEYS = [
 ];
 
 const GRADE_LEVELS = [
-  { value: 9, label: '9th' },
-  { value: 10, label: '10th' },
-  { value: 11, label: '11th' },
-  { value: 12, label: '12th' },
+  { value: 9, labelKey: 'grade9' },
+  { value: 10, labelKey: 'grade10' },
+  { value: 11, labelKey: 'grade11' },
+  { value: 12, labelKey: 'grade12' },
 ];
 
 const TIMING_OPTIONS = [
@@ -88,6 +89,7 @@ interface Activity {
   role: string;
   organization?: string;
   description?: string;
+  commonAppDescription?: string;
   startDate?: string;
   endDate?: string;
   hoursPerWeek?: number;
@@ -117,6 +119,7 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
     role: '',
     organization: '',
     description: '',
+    commonAppDescription: '',
     startDate: '',
     endDate: '',
     hoursPerWeek: '',
@@ -141,6 +144,7 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
         role: editingActivity.role || '',
         organization: editingActivity.organization || '',
         description: editingActivity.description || '',
+        commonAppDescription: editingActivity.commonAppDescription || '',
         startDate: editingActivity.startDate?.slice(0, 10) || '',
         endDate: editingActivity.endDate?.slice(0, 10) || '',
         hoursPerWeek: editingActivity.hoursPerWeek?.toString() || '',
@@ -233,6 +237,33 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
     },
   });
 
+  const refineMutation = useMutation({
+    mutationFn: (activityId: string) =>
+      apiClient.post<{ refined: string; tips: string }>(
+        `/profiles/me/activities/${activityId}/refine`
+      ),
+    onSuccess: (data) => {
+      setFormData((p) => ({ ...p, description: data.refined }));
+      if (data.tips) {
+        toast.success(data.tips);
+      } else {
+        toast.success(t('toast.activityRefined'));
+      }
+    },
+  });
+
+  const generateCommonAppMutation = useMutation({
+    mutationFn: (activityId: string) =>
+      apiClient.post<{ commonAppDescription: string }>(
+        `/profiles/me/activities/${activityId}/generate-common-app-description`,
+        { description: formData.description }
+      ),
+    onSuccess: (data) => {
+      setFormData((p) => ({ ...p, commonAppDescription: data.commonAppDescription }));
+      toast.success(t('form.aiGenerateSuccess'));
+    },
+  });
+
   const resetForm = () => {
     setFormData({
       name: '',
@@ -240,6 +271,7 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
       role: '',
       organization: '',
       description: '',
+      commonAppDescription: '',
       startDate: '',
       endDate: '',
       hoursPerWeek: '',
@@ -266,6 +298,7 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
       role: formData.role,
       organization: formData.organization || undefined,
       description: formData.description || undefined,
+      commonAppDescription: formData.commonAppDescription || undefined,
       startDate: formData.startDate || undefined,
       endDate: formData.isOngoing ? undefined : formData.endDate || undefined,
       hoursPerWeek: formData.hoursPerWeek ? parseInt(formData.hoursPerWeek) : undefined,
@@ -391,7 +424,23 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
           </div>
 
           <div className="space-y-2">
-            <Label>{t('form.activityDescription')}</Label>
+            <div className="flex items-center gap-1.5">
+              <Label>{t('form.detailedDescription')}</Label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="top"
+                    className="max-w-xs bg-popover text-popover-foreground border shadow-md"
+                  >
+                    <p className="text-xs">{t('form.activityDescTooltip')}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <p className="text-xs text-muted-foreground">{t('form.detailedDescriptionHelper')}</p>
             <Textarea
               value={formData.description}
               onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
@@ -399,12 +448,118 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
               rows={3}
               maxLength={500}
             />
-            <p className="text-xs text-muted-foreground">{formData.description.length}/500</p>
+            {/* Segmented indicator bar: green up to 150/500 (30%) */}
+            <div className="h-0.5 w-full rounded-full bg-muted overflow-hidden">
+              <div className="relative h-full">
+                <div
+                  className="absolute h-full bg-success rounded-full transition-all"
+                  style={{ width: `${Math.min((formData.description.length / 500) * 100, 30)}%` }}
+                />
+                {formData.description.length > 150 && (
+                  <div
+                    className={`absolute h-full rounded-r-full transition-all ${formData.description.length > 400 ? 'bg-warning' : 'bg-muted-foreground/30'}`}
+                    style={{
+                      left: '30%',
+                      width: `${Math.min(((formData.description.length - 150) / 500) * 100, 70)}%`,
+                    }}
+                  />
+                )}
+                {/* 150-char marker */}
+                <div className="absolute top-0 h-full w-px bg-border" style={{ left: '30%' }} />
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">
+                {formData.description.length === 0
+                  ? t('form.activityDescHelperEmpty')
+                  : formData.description.length <= 150
+                    ? t('form.activityDescHelperWithin')
+                    : t('form.activityDescHelperOver')}
+              </p>
+              <p
+                className={`text-xs tabular-nums ${
+                  formData.description.length === 0
+                    ? 'text-muted-foreground'
+                    : formData.description.length <= 150
+                      ? 'text-success'
+                      : formData.description.length > 400
+                        ? 'text-warning'
+                        : 'text-muted-foreground'
+                }`}
+              >
+                {t('form.activityCharCount', { count: formData.description.length, max: 500 })}
+              </p>
+            </div>
+            {isEditing && editingActivity && formData.description.length > 150 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-1.5 text-xs w-full"
+                onClick={() => refineMutation.mutate(editingActivity.id)}
+                disabled={refineMutation.isPending}
+              >
+                {refineMutation.isPending ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Sparkles className="h-3.5 w-3.5" />
+                )}
+                {t('form.aiRefineDesc')}
+              </Button>
+            )}
+          </div>
+
+          {/* AI Generate Common App Description */}
+          {isEditing && editingActivity && formData.description.length > 150 && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-xs w-full"
+              onClick={() => generateCommonAppMutation.mutate(editingActivity.id)}
+              disabled={generateCommonAppMutation.isPending}
+            >
+              {generateCommonAppMutation.isPending ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Sparkles className="h-3.5 w-3.5" />
+              )}
+              {t('form.aiGenerate')}
+            </Button>
+          )}
+
+          {/* Common App Description */}
+          <div className="space-y-2">
+            <Label>{t('form.commonAppDescription')}</Label>
+            <p className="text-xs text-muted-foreground">{t('form.commonAppDescriptionHelper')}</p>
+            <Textarea
+              value={formData.commonAppDescription}
+              onChange={(e) => setFormData((p) => ({ ...p, commonAppDescription: e.target.value }))}
+              placeholder={t('form.commonAppDescriptionPlaceholder')}
+              rows={2}
+              maxLength={150}
+            />
+            <div className="flex items-center justify-end">
+              <p
+                className={`text-xs tabular-nums ${
+                  formData.commonAppDescription.length === 0
+                    ? 'text-muted-foreground'
+                    : formData.commonAppDescription.length <= 150
+                      ? 'text-success'
+                      : 'text-warning'
+                }`}
+              >
+                {t('form.activityCharCount', {
+                  count: formData.commonAppDescription.length,
+                  max: 150,
+                })}
+              </p>
+            </div>
           </div>
 
           {/* Grade Levels */}
           <div className="space-y-2">
-            <Label>Grade Levels</Label>
+            <Label>{t('form.gradeLevels')}</Label>
             <div className="flex gap-2">
               {GRADE_LEVELS.map((gl) => (
                 <button
@@ -417,7 +572,7 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
                       : 'border-border text-muted-foreground hover:border-primary/50'
                   }`}
                 >
-                  {gl.label}
+                  {t(`form.${gl.labelKey}`)}
                 </button>
               ))}
             </div>
@@ -425,22 +580,20 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
 
           {/* Timing */}
           <div className="space-y-2">
-            <Label>Timing</Label>
+            <Label>{t('form.timing')}</Label>
             <Select
               value={formData.timing}
               onValueChange={(v) => setFormData((p) => ({ ...p, timing: v }))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select timing" />
+                <SelectValue placeholder={t('form.selectTiming')} />
               </SelectTrigger>
               <SelectContent>
                 {TIMING_OPTIONS.map((opt) => (
                   <SelectItem key={opt.value} value={opt.value}>
-                    {opt.value === 'SCHOOL_YEAR'
-                      ? 'School Year'
-                      : opt.value === 'SCHOOL_BREAK'
-                        ? 'School Break'
-                        : 'All Year'}
+                    {t(
+                      `form.timing${opt.value === 'SCHOOL_YEAR' ? 'SchoolYear' : opt.value === 'SCHOOL_BREAK' ? 'SchoolBreak' : 'AllYear'}`
+                    )}
                   </SelectItem>
                 ))}
               </SelectContent>
