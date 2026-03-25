@@ -1,0 +1,45 @@
+name: PR Preview Cleanup
+
+# Remove the Cloud Run traffic tag when a PR is closed or merged.
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    # Only run if preview was potentially deployed (API/shared changes)
+    if: >-
+      contains(join(github.event.pull_request.labels.*.name, ','), 'preview') ||
+      true
+    environment: staging
+    steps:
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account: github-actions-deploy@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Remove preview tag
+        run: |
+          REGION="${{ secrets.GCP_REGION }}"
+          TAG="pr-${{ github.event.pull_request.number }}"
+
+          # Remove the traffic tag (this removes the tagged URL)
+          gcloud run services update-traffic study-abroad-api-staging \
+            --region="${REGION}" \
+            --remove-tags="${TAG}" \
+            --quiet 2>/dev/null || echo "Tag ${TAG} not found — may not have been deployed."
+
+          echo "✅ Preview tag ${TAG} removed."

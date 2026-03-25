@@ -5,6 +5,13 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main, develop, 'feature/**', 'fix/**', 'release/**']
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: 'Deploy to GCP after CI passes'
+        required: false
+        type: boolean
+        default: true
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -14,9 +21,48 @@ env:
   NODE_VERSION: '20'
 
 jobs:
+  # ── Change Detection ─────────────────────────────────────
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      api: ${{ steps.filter.outputs.api }}
+      web: ${{ steps.filter.outputs.web }}
+      mobile: ${{ steps.filter.outputs.mobile }}
+      shared: ${{ steps.filter.outputs.shared }}
+      ci: ${{ steps.filter.outputs.ci }}
+      any_app: ${{ steps.filter.outputs.api == 'true' || steps.filter.outputs.web == 'true' || steps.filter.outputs.mobile == 'true' || steps.filter.outputs.shared == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            api:
+              - 'apps/api/**'
+              - 'packages/shared/**'
+              - 'pnpm-lock.yaml'
+            web:
+              - 'apps/web/**'
+              - 'packages/shared/**'
+              - 'pnpm-lock.yaml'
+            mobile:
+              - 'apps/mobile/**'
+              - 'packages/shared/**'
+              - 'pnpm-lock.yaml'
+            shared:
+              - 'packages/shared/**'
+            ci:
+              - '.github/workflows/**'
+              - 'turbo.json'
+              - 'package.json'
+
+  # ── Lint ──────────────────────────────────────────────────
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.any_app == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,23 +79,46 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Lint API
-        run: pnpm --filter api lint
+      - name: Setup Turbo Cache
+        uses: dtinth/setup-github-actions-caching-for-turbo@v1
 
-      - name: Lint Web
-        run: pnpm --filter web lint
+      - name: Lint all apps (parallel)
+        run: |
+          FAIL=0
+          if [[ "${{ needs.detect-changes.outputs.api }}" == "true" || "${{ needs.detect-changes.outputs.ci }}" == "true" || "${{ github.event_name }}" == "push" ]]; then
+            pnpm --filter api lint &
+            PID_API=$!
+          fi
+          if [[ "${{ needs.detect-changes.outputs.web }}" == "true" || "${{ needs.detect-changes.outputs.ci }}" == "true" || "${{ github.event_name }}" == "push" ]]; then
+            pnpm --filter web lint &
+            PID_WEB=$!
+          fi
+          if [[ "${{ needs.detect-changes.outputs.mobile }}" == "true" || "${{ needs.detect-changes.outputs.ci }}" == "true" || "${{ github.event_name }}" == "push" ]]; then
+            pnpm --filter mobile lint &
+            PID_MOBILE=$!
+          fi
+          [ -n "${PID_API:-}" ] && { wait $PID_API || FAIL=1; }
+          [ -n "${PID_WEB:-}" ] && { wait $PID_WEB || FAIL=1; }
+          [ -n "${PID_MOBILE:-}" ] && { wait $PID_MOBILE || FAIL=1; }
+          exit $FAIL
 
-      - name: Lint Mobile
-        run: pnpm --filter mobile lint
-
-      - name: Check i18n (hardcoded text & key consistency)
-        run: pnpm --filter web lint:i18n
-
-      - name: Check code quality (Tailwind, console, page size)
-        run: pnpm --filter web lint:quality
-
-      - name: Check API quality (DTO, throttle, throw)
-        run: pnpm --filter api lint:quality
+      - name: Quality & i18n checks (parallel)
+        run: |
+          FAIL=0
+          if [[ "${{ needs.detect-changes.outputs.web }}" == "true" || "${{ needs.detect-changes.outputs.ci }}" == "true" || "${{ github.event_name }}" == "push" ]]; then
+            pnpm --filter web lint:i18n &
+            PID_I18N=$!
+            pnpm --filter web lint:quality &
+            PID_WQ=$!
+          fi
+          if [[ "${{ needs.detect-changes.outputs.api }}" == "true" || "${{ needs.detect-changes.outputs.ci }}" == "true" || "${{ github.event_name }}" == "push" ]]; then
+            pnpm --filter api lint:quality &
+            PID_AQ=$!
+          fi
+          [ -n "${PID_I18N:-}" ] && { wait $PID_I18N || FAIL=1; }
+          [ -n "${PID_WQ:-}" ] && { wait $PID_WQ || FAIL=1; }
+          [ -n "${PID_AQ:-}" ] && { wait $PID_AQ || FAIL=1; }
+          exit $FAIL
 
       - name: Check commit messages
         if: github.event_name == 'pull_request'
@@ -60,9 +129,12 @@ jobs:
       - name: Dependency audit
         run: pnpm audit --audit-level=high --registry=https://registry.npmjs.org
 
+  # ── Type Check ────────────────────────────────────────────
   typecheck:
     name: Type Check
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.any_app == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -78,22 +150,39 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Setup Turbo Cache
+        uses: dtinth/setup-github-actions-caching-for-turbo@v1
 
       - name: Generate Prisma Client
         run: pnpm --filter api exec prisma generate
 
-      - name: Type check API
-        run: pnpm --filter api exec tsc --noEmit --project tsconfig.build.json
+      - name: Type check all apps (parallel)
+        run: |
+          FAIL=0
+          if [[ "${{ needs.detect-changes.outputs.api }}" == "true" || "${{ needs.detect-changes.outputs.ci }}" == "true" || "${{ github.event_name }}" == "push" ]]; then
+            pnpm --filter api exec tsc --noEmit --project tsconfig.build.json &
+            PID_API=$!
+          fi
+          if [[ "${{ needs.detect-changes.outputs.web }}" == "true" || "${{ needs.detect-changes.outputs.ci }}" == "true" || "${{ github.event_name }}" == "push" ]]; then
+            pnpm --filter web exec tsc --noEmit &
+            PID_WEB=$!
+          fi
+          if [[ "${{ needs.detect-changes.outputs.mobile }}" == "true" || "${{ needs.detect-changes.outputs.ci }}" == "true" || "${{ github.event_name }}" == "push" ]]; then
+            pnpm --filter mobile exec tsc --noEmit &
+            PID_MOBILE=$!
+          fi
+          [ -n "${PID_API:-}" ] && { wait $PID_API || FAIL=1; }
+          [ -n "${PID_WEB:-}" ] && { wait $PID_WEB || FAIL=1; }
+          [ -n "${PID_MOBILE:-}" ] && { wait $PID_MOBILE || FAIL=1; }
+          exit $FAIL
 
-      - name: Type check Web
-        run: pnpm --filter web exec tsc --noEmit
-
-      - name: Type check Mobile
-        run: pnpm --filter mobile exec tsc --noEmit
-
+  # ── Unit Tests ────────────────────────────────────────────
   test:
     name: Unit Tests
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.any_app == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -109,14 +198,19 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Setup Turbo Cache
+        uses: dtinth/setup-github-actions-caching-for-turbo@v1
 
       - name: Generate Prisma Client
         run: pnpm --filter api exec prisma generate
 
       - name: Run API tests
+        if: needs.detect-changes.outputs.api == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
         run: pnpm --filter api exec jest --coverage --passWithNoTests --forceExit
 
       - name: Upload API coverage
+        if: needs.detect-changes.outputs.api == 'true' || github.event_name == 'push'
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -125,11 +219,19 @@ jobs:
           fail_ci_if_error: false
 
       - name: Run Web tests
+        if: needs.detect-changes.outputs.web == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
         run: pnpm --filter web test
 
+      - name: Run Mobile tests
+        if: needs.detect-changes.outputs.mobile == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
+        run: pnpm --filter mobile test -- --passWithNoTests --forceExit
+
+  # ── E2E Tests ─────────────────────────────────────────────
   e2e:
     name: E2E Tests
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.api == 'true' || needs.detect-changes.outputs.shared == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
     services:
       postgres:
         image: pgvector/pgvector:pg16
@@ -181,6 +283,12 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_test?schema=public
 
+      - name: Check migration safety
+        run: |
+          if [ -f scripts/check-migration-safety.ts ]; then
+            npx tsx scripts/check-migration-safety.ts
+          fi
+
       - name: Enable pgvector extension
         run: PGPASSWORD=postgres psql -h localhost -U postgres -d studyabroad_test -c "CREATE EXTENSION IF NOT EXISTS vector;"
 
@@ -208,6 +316,7 @@ jobs:
           JWT_EXPIRES_IN: 15m
           JWT_REFRESH_EXPIRES_IN: 7d
 
+  # ── Documentation Check ───────────────────────────────────
   doc-check:
     name: Documentation Check
     runs-on: ubuntu-latest
@@ -258,6 +367,72 @@ jobs:
             echo "::warning::Found $BROKEN potentially broken documentation links"
           fi
 
+  # ── Secret Scan ───────────────────────────────────────────
+  secret-scan:
+    name: Secret Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ── SAST Scan ─────────────────────────────────────────────
+  sast:
+    name: SAST Scan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/javascript
+            p/typescript
+            p/nodejs
+            p/owasp-top-ten
+          generateSarif: '1'
+
+      - name: Upload SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
+
+  # ── Security Scan ─────────────────────────────────────────
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+          ignore-unfixed: true
+          trivyignores: '.trivyignore'
+          skip-dirs: 'node_modules,.next,dist,coverage'
+
+  # ── Build ─────────────────────────────────────────────────
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -277,6 +452,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Setup Turbo Cache
+        uses: dtinth/setup-github-actions-caching-for-turbo@v1
 
       - name: Generate Prisma Client
         run: pnpm --filter api exec prisma generate
@@ -306,6 +484,7 @@ jobs:
           path: apps/web/.next
           retention-days: 7
 
+  # ── Docker Build ──────────────────────────────────────────
   docker:
     name: Docker Build
     runs-on: ubuntu-latest
@@ -348,6 +527,7 @@ jobs:
           exit-code: '1'
           ignore-unfixed: true
 
+  # ── SBOM Generation ───────────────────────────────────────
   sbom:
     name: SBOM Generation
     runs-on: ubuntu-latest
@@ -384,32 +564,12 @@ jobs:
           path: sbom/bom.json
           retention-days: 90
 
-  security:
-    name: Security Scan
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      security-events: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          severity: 'CRITICAL,HIGH'
-          exit-code: '1'
-          ignore-unfixed: true
-          trivyignores: '.trivyignore'
-          skip-dirs: 'node_modules,.next,dist,coverage'
-
+  # ── Deploy to GCP ─────────────────────────────────────────
   deploy-gcp:
     name: Deploy to GCP
     runs-on: ubuntu-latest
     needs: [build, e2e, security]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.deploy == true)
     permissions:
       contents: read
       id-token: write
