@@ -1,17 +1,18 @@
+import { API_ROUTES, hallRoutes } from '@study-abroad/shared';
 import { apiClient } from '../client';
 
 export const hallService = {
   getRankings: (params?: Record<string, string | number | boolean | undefined>) =>
-    apiClient.get('/hall/rankings', { params }),
+    apiClient.get(`${API_ROUTES.HALLS}/rankings`, { params }),
   getReviews: (params?: Record<string, string | number | boolean | undefined>) =>
-    apiClient.get('/hall/reviews', { params }),
+    apiClient.get(hallRoutes.reviews(), { params }),
   createReview: (data: Record<string, string | number | boolean | undefined>) =>
-    apiClient.post('/hall/reviews', data),
+    apiClient.post(hallRoutes.reviews(), data),
   getLists: (params?: Record<string, string | number | boolean | undefined>) =>
-    apiClient.get('/hall/lists', { params }),
+    apiClient.get(hallRoutes.lists(), { params }),
   getVerified: (params?: Record<string, string | number | boolean | undefined>) =>
-    apiClient.get('/hall/verified', { params }),
-  getSwipeCard: () => apiClient.get('/hall/swipe'),
+    apiClient.get(hallRoutes.verified(), { params }),
+  getSwipeCard: () => apiClient.get(hallRoutes.swipe()),
   submitSwipe: (caseId: string, prediction: string) =>
-    apiClient.post('/hall/swipe', { caseId, prediction }),
+    apiClient.post(hallRoutes.swipe(), { caseId, prediction }),
 };

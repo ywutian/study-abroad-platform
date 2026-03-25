@@ -37,14 +37,14 @@ export default function StatsView({ onBack }: StatsViewProps) {
 
   const { data: stats, isLoading: statsLoading } = useQuery<SwipeStatsDto>({
     queryKey: ['swipe', 'stats'],
-    queryFn: () => apiClient.get<SwipeStatsDto>('/swipe/stats'),
+    queryFn: () => apiClient.get<SwipeStatsDto>('/halls/swipe/stats'),
     staleTime: 30_000,
   });
 
   const { data: leaderboard, isLoading: leaderboardLoading } = useQuery<LeaderboardEntryDto[]>({
     queryKey: ['swipe', 'leaderboard'],
     queryFn: () =>
-      apiClient.get<LeaderboardEntryDto[]>('/swipe/leaderboard', {
+      apiClient.get<LeaderboardEntryDto[]>('/halls/swipe/leaderboard', {
         params: { limit: 20 },
       }),
     staleTime: 60_000,

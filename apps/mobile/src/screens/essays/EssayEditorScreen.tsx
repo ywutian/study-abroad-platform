@@ -168,7 +168,7 @@ export default function EssayEditorScreen() {
   // AI mutations
   const reviewMutation = useMutation({
     mutationFn: () =>
-      apiClient.post<AIReviewResult>(`/essays/${id}/ai-review`, {}, { timeout: 60000 }),
+      apiClient.post<AIReviewResult>('/essay-ai/review', { essayId: id }, { timeout: 60000 }),
     onSuccess: (data) => {
       setAiResult(data);
       setActiveTool('review');
@@ -178,7 +178,7 @@ export default function EssayEditorScreen() {
 
   const polishMutation = useMutation({
     mutationFn: () =>
-      apiClient.post<AIPolishResult>(`/essays/${id}/ai-polish`, {}, { timeout: 60000 }),
+      apiClient.post<AIPolishResult>('/essay-ai/polish', { essayId: id }, { timeout: 60000 }),
     onSuccess: (data) => {
       setAiResult(data);
       setActiveTool('polish');
@@ -189,7 +189,7 @@ export default function EssayEditorScreen() {
   const brainstormMutation = useMutation({
     mutationFn: () =>
       apiClient.post<AIBrainstormResult>(
-        '/essays/ai-brainstorm',
+        '/essay-ai/brainstorm',
         { topic: title || content.slice(0, 200) },
         { timeout: 60000 }
       ),
@@ -202,7 +202,11 @@ export default function EssayEditorScreen() {
 
   const continueMutation = useMutation({
     mutationFn: () =>
-      apiClient.post<AIContinueResult>(`/essays/${id}/ai-continue`, {}, { timeout: 60000 }),
+      apiClient.post<AIContinueResult>(
+        '/essay-ai/continue-writing',
+        { essayId: id, content },
+        { timeout: 60000 }
+      ),
     onSuccess: (data) => {
       setAiResult(data);
       setActiveTool('continue');
@@ -212,7 +216,11 @@ export default function EssayEditorScreen() {
 
   const openingMutation = useMutation({
     mutationFn: () =>
-      apiClient.post<AIOpeningResult>(`/essays/${id}/ai-opening`, {}, { timeout: 60000 }),
+      apiClient.post<AIOpeningResult>(
+        '/essay-ai/generate-opening',
+        { prompt: title },
+        { timeout: 60000 }
+      ),
     onSuccess: (data) => {
       setAiResult(data);
       setActiveTool('opening');
@@ -223,8 +231,8 @@ export default function EssayEditorScreen() {
   const rewriteMutation = useMutation({
     mutationFn: (instructions: string) =>
       apiClient.post<AIRewriteResult>(
-        `/essays/${id}/ai-rewrite`,
-        { instructions },
+        '/essay-ai/rewrite-paragraph',
+        { paragraph: instructions },
         { timeout: 60000 }
       ),
     onSuccess: (data) => {

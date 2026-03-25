@@ -18,7 +18,7 @@ export default function ExportScreen() {
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ['profile'],
-    queryFn: () => apiClient.get<Profile>('/profile'),
+    queryFn: () => apiClient.get<Profile>('/profiles/me'),
   });
 
   const handleExportJson = async () => {

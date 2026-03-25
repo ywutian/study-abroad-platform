@@ -20,7 +20,7 @@ export default function ReferralScreen() {
 
   const { data: referralData, isLoading } = useQuery({
     queryKey: ['referral'],
-    queryFn: () => apiClient.get('/referral/code'),
+    queryFn: () => apiClient.get('/users/me/referral'),
   });
 
   const handleCopy = async () => {

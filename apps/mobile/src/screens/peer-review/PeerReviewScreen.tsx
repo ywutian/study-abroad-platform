@@ -14,7 +14,7 @@ export default function PeerReviewScreen() {
 
   const { data: reviews, isLoading } = useQuery({
     queryKey: ['peer-review', 'available'],
-    queryFn: () => apiClient.get('/peer-review/available'),
+    queryFn: () => apiClient.get('/peer-reviews/available'),
   });
 
   return (

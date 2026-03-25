@@ -36,14 +36,14 @@ export default function ProfileScreen() {
     isRefetching,
   } = useQuery({
     queryKey: ['profile'],
-    queryFn: () => apiClient.get<Profile>('/profile'),
+    queryFn: () => apiClient.get<Profile>('/profiles/me'),
     enabled: isAuthenticated,
   });
 
   const { data: verificationData } = useQuery({
     queryKey: ['verification', 'status'],
     queryFn: () =>
-      apiClient.get<{ emailVerified: boolean; identityVerified: boolean }>('/verification/status'),
+      apiClient.get<{ emailVerified: boolean; identityVerified: boolean }>('/verifications/status'),
     enabled: isAuthenticated,
   });
 

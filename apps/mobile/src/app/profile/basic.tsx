@@ -56,7 +56,7 @@ export default function BasicInfoScreen() {
     isRefetching,
   } = useQuery({
     queryKey: ['profile'],
-    queryFn: () => apiClient.get<Profile>('/profile'),
+    queryFn: () => apiClient.get<Profile>('/profiles/me'),
   });
 
   const [grade, setGrade] = useState('');
@@ -82,7 +82,7 @@ export default function BasicInfoScreen() {
   }, [profile]);
 
   const saveMutation = useMutation({
-    mutationFn: (data: Record<string, unknown>) => apiClient.put<Profile>('/profile', data),
+    mutationFn: (data: Record<string, unknown>) => apiClient.put<Profile>('/profiles/me', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.show({ type: 'success', message: t('profileEdit.saveSuccess') });

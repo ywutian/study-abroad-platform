@@ -14,7 +14,7 @@ export default function VaultScreen() {
 
   const { data: items, isLoading } = useQuery({
     queryKey: ['vault'],
-    queryFn: () => apiClient.get('/vault'),
+    queryFn: () => apiClient.get('/vaults'),
   });
 
   return (

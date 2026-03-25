@@ -28,7 +28,7 @@ export default function EssaysScreen() {
     isRefetching,
   } = useQuery({
     queryKey: ['profile'],
-    queryFn: () => apiClient.get<Profile>('/profile'),
+    queryFn: () => apiClient.get<Profile>('/profiles/me'),
   });
 
   const essays = (profile?.essays || []) as Essay[];

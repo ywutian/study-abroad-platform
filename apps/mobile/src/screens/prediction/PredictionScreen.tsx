@@ -106,7 +106,7 @@ export default function PredictionScreen() {
   // 获取用户档案完整度
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ['profile'],
-    queryFn: () => apiClient.get<{ completeness?: number }>('/profile'),
+    queryFn: () => apiClient.get<{ completeness?: number }>('/profiles/me'),
     enabled: isAuthenticated,
   });
 

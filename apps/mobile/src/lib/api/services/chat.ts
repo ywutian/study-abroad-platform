@@ -1,16 +1,18 @@
+import { API_ROUTES, chatRoutes } from '@study-abroad/shared';
 import { apiClient } from '../client';
 
 export const chatService = {
-  getConversations: () => apiClient.get('/chat/conversations'),
+  getConversations: () => apiClient.get(chatRoutes.conversations()),
   getMessages: (
     conversationId: string,
     params?: Record<string, string | number | boolean | undefined>
-  ) => apiClient.get(`/chat/conversations/${conversationId}/messages`, { params }),
+  ) => apiClient.get(`${API_ROUTES.CHATS}/conversations/${conversationId}/messages`, { params }),
   createConversation: (userId: string) =>
-    apiClient.post('/chat/conversations', { participantId: userId }),
-  pinConversation: (id: string) => apiClient.post(`/chat/conversations/${id}/pin`),
-  unpinConversation: (id: string) => apiClient.delete(`/chat/conversations/${id}/pin`),
-  blockUser: (userId: string) => apiClient.post(`/chat/block/${userId}`),
+    apiClient.post(chatRoutes.conversations(), { participantId: userId }),
+  pinConversation: (id: string) => apiClient.post(`${API_ROUTES.CHATS}/conversations/${id}/pin`),
+  unpinConversation: (id: string) =>
+    apiClient.delete(`${API_ROUTES.CHATS}/conversations/${id}/pin`),
+  blockUser: (userId: string) => apiClient.post(chatRoutes.block(userId)),
   reportMessage: (messageId: string, reason: string) =>
-    apiClient.post(`/chat/messages/${messageId}/report`, { reason }),
+    apiClient.post(`${API_ROUTES.CHATS}/messages/${messageId}/report`, { reason }),
 };

@@ -38,12 +38,12 @@ export default function EducationScreen() {
     isRefetching,
   } = useQuery({
     queryKey: ['profile'],
-    queryFn: () => apiClient.get<Profile>('/profile'),
+    queryFn: () => apiClient.get<Profile>('/profiles/me'),
   });
 
   const saveMutation = useMutation({
     mutationFn: (updatedEducation: Partial<Education>[]) =>
-      apiClient.put<Profile>('/profile', { education: updatedEducation }),
+      apiClient.put<Profile>('/profiles/me', { education: updatedEducation }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(t('profileEdit.saveSuccess'));

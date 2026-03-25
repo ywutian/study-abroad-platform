@@ -57,12 +57,12 @@ export default function ActivitiesScreen() {
     isRefetching,
   } = useQuery({
     queryKey: ['profile'],
-    queryFn: () => apiClient.get<Profile>('/profile'),
+    queryFn: () => apiClient.get<Profile>('/profiles/me'),
   });
 
   const saveMutation = useMutation({
     mutationFn: (updatedActivities: Partial<Activity>[]) =>
-      apiClient.put<Profile>('/profile', { activities: updatedActivities }),
+      apiClient.put<Profile>('/profiles/me', { activities: updatedActivities }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(t('profileEdit.saveSuccess'));

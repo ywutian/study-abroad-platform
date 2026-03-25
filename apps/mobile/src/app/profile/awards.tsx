@@ -47,12 +47,12 @@ export default function AwardsScreen() {
     isRefetching,
   } = useQuery({
     queryKey: ['profile'],
-    queryFn: () => apiClient.get<Profile>('/profile'),
+    queryFn: () => apiClient.get<Profile>('/profiles/me'),
   });
 
   const saveMutation = useMutation({
     mutationFn: (updatedAwards: Partial<Award>[]) =>
-      apiClient.put<Profile>('/profile', { awards: updatedAwards }),
+      apiClient.put<Profile>('/profiles/me', { awards: updatedAwards }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(t('profileEdit.saveSuccess'));

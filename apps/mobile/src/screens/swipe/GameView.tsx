@@ -69,7 +69,7 @@ export default function GameView({ onShowStats }: GameViewProps) {
   // ── Batch loading ─────────────────────────────────────
   const loadBatch = useCallback(async () => {
     try {
-      const batch = await apiClient.get<SwipeCaseDto[]>('/swipe/batch', {
+      const batch = await apiClient.get<SwipeCaseDto[]>('/halls/swipe/batch', {
         params: { count: BATCH_SIZE },
       });
       setCases((prev) => [...prev, ...batch]);
@@ -100,7 +100,7 @@ export default function GameView({ onShowStats }: GameViewProps) {
     { caseId: string; prediction: PredictionType }
   >({
     mutationFn: ({ caseId, prediction }) =>
-      apiClient.post<SwipeResultDto>('/swipe/predict', { caseId, prediction }),
+      apiClient.post<SwipeResultDto>('/halls/swipe/predict', { caseId, prediction }),
     onSuccess: (result) => {
       if (result.isCorrect) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

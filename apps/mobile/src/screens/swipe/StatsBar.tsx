@@ -25,7 +25,7 @@ export default function StatsBar({ onShowStats }: StatsBarProps) {
 
   const { data: stats } = useQuery<SwipeStatsDto>({
     queryKey: ['swipe', 'stats'],
-    queryFn: () => apiClient.get<SwipeStatsDto>('/swipe/stats'),
+    queryFn: () => apiClient.get<SwipeStatsDto>('/halls/swipe/stats'),
     staleTime: 30_000,
   });
 

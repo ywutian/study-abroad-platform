@@ -14,7 +14,7 @@ export default function VerificationScreen() {
 
   const { data: status, isLoading } = useQuery({
     queryKey: ['verification', 'status'],
-    queryFn: () => apiClient.get('/verification/status'),
+    queryFn: () => apiClient.get('/verifications/status'),
   });
 
   return (

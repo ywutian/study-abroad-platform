@@ -14,7 +14,7 @@ export default function ResumeScreen() {
 
   const { data: resumes, isLoading } = useQuery({
     queryKey: ['resumes'],
-    queryFn: () => apiClient.get('/resume'),
+    queryFn: () => apiClient.get('/resumes'),
   });
 
   return (
