@@ -70,6 +70,8 @@ const envSchema = z.object({
   // --- Observability ---
   APP_NAME: z.string().default('api'),
   METRICS_ENABLED: z.enum(['true', 'false']).default('true'),
+  OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url().optional(),
+  OTEL_SERVICE_NAME: z.string().default('study-abroad-api'),
 
   // --- College Scorecard (Optional) ---
   COLLEGE_SCORECARD_API_KEY: z.string().optional(),

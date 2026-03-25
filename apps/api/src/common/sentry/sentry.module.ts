@@ -26,9 +26,14 @@ export class SentryModule implements OnModuleInit, OnModuleDestroy {
       this.configService.get<string>('VERCEL_GIT_COMMIT_SHA');
 
     if (dsn) {
+      // When OTel SDK is active, disable Sentry's built-in OTel integration
+      // to prevent double tracing. Sentry continues to capture errors normally.
+      const otelActive = !!process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
+
       Sentry.init({
         dsn,
         environment: nodeEnv,
+        skipOpenTelemetrySetup: otelActive,
 
         // Release tracking — ties errors to specific deployments
         release: commitSha ? `api@${commitSha.substring(0, 8)}` : undefined,
