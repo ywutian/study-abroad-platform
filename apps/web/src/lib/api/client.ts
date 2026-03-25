@@ -156,6 +156,8 @@ class ApiClient {
           const error = await response.json().catch(() => ({ message: 'Request failed' }));
           const rawMsg = error.error?.message || error.message || `HTTP ${response.status}`;
           const errorMessage = Array.isArray(rawMsg) ? rawMsg.join(', ') : rawMsg;
+          const errorCode = error.error?.code as string | undefined;
+          const errorDetails = error.error?.details as Record<string, unknown> | undefined;
 
           const locale = getApiLocale();
           const i18n = API_I18N[locale];
@@ -175,7 +177,13 @@ class ApiClient {
             ? (API_ERROR_MESSAGES[locale][errorKey] ?? i18n.operationFailed)
             : i18n.operationFailed;
 
-          throw new ApiError(errorMessage, displayMessage, response.status);
+          throw new ApiError(
+            errorMessage,
+            displayMessage,
+            response.status,
+            errorCode,
+            errorDetails
+          );
         }
 
         // 处理空响应

@@ -7,11 +7,23 @@ export class ApiError extends Error {
   displayMessage: string;
   /** HTTP status code */
   statusCode: number;
+  /** Structured error code from backend (e.g. SCHOOL_LIST_DUPLICATE) */
+  code?: string;
+  /** Additional error details from backend */
+  details?: Record<string, unknown>;
 
-  constructor(rawMessage: string, displayMessage: string, statusCode: number) {
+  constructor(
+    rawMessage: string,
+    displayMessage: string,
+    statusCode: number,
+    code?: string,
+    details?: Record<string, unknown>
+  ) {
     super(rawMessage);
     this.name = 'ApiError';
     this.displayMessage = displayMessage;
     this.statusCode = statusCode;
+    this.code = code;
+    this.details = details;
   }
 }

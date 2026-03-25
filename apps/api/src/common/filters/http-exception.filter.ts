@@ -17,13 +17,16 @@ interface ErrorResponseBody {
     timestamp: string;
     path: string;
     correlationId?: string;
+    details?: Record<string, unknown>;
   };
 }
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name);
-  private readonly isProduction = process.env.NODE_ENV === 'production';
+  private readonly isProduction = ['production', 'staging'].includes(
+    process.env.NODE_ENV ?? '',
+  );
 
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
@@ -34,6 +37,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message: string | string[] = 'Internal server error';
     let code = 'INTERNAL_ERROR';
+    let details: Record<string, unknown> | undefined;
 
     // --- HttpException (NestJS built-in) ---
     if (exception instanceof HttpException) {
@@ -44,6 +48,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
         const res = exceptionResponse as Record<string, unknown>;
         message = (res.message as string | string[]) || exception.message;
         code = (res.code as string) || this.getCodeFromStatus(status);
+        if (res.details && typeof res.details === 'object') {
+          details = res.details as Record<string, unknown>;
+        }
       } else {
         message = String(exceptionResponse);
         code = this.getCodeFromStatus(status);
@@ -102,6 +109,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         timestamp: new Date().toISOString(),
         path: request.url,
         ...(correlationId && { correlationId }),
+        ...(details && { details }),
       },
     };
 
