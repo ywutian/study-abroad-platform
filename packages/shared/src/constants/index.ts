@@ -154,5 +154,8 @@ export * from './subscription';
 // 推荐功能
 export * from './recommendation';
 
+// API 路由常量
+export * from './api-routes';
+
 // 共享枚举
 export * from './enums';

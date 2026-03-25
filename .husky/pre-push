@@ -11,14 +11,19 @@ echo ""
 echo "📦 Generating Prisma client..."
 pnpm --filter api db:generate || exit 1
 
-# Step 2: Typecheck all apps
+# Step 2: Check API route consistency
+echo ""
+echo "🔗 Checking API route consistency..."
+pnpm lint:routes || exit 1
+
+# Step 3: Typecheck all apps
 echo ""
 echo "🔍 Running typecheck..."
 pnpm --filter api exec tsc --noEmit --project tsconfig.build.json && \
 pnpm --filter web exec tsc --noEmit && \
 pnpm --filter mobile exec tsc --noEmit || exit 1
 
-# Step 3: Run tests
+# Step 4: Run tests
 echo ""
 echo "🧪 Running tests..."
 pnpm test || exit 1
