@@ -95,23 +95,25 @@ function ProvenanceBadge({
   }
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          type="button"
-          className="inline-flex items-center cursor-help ml-1 rounded-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          aria-label={t('school.dataSource', { source: label })}
-        >
-          <Info className="h-3 w-3 text-muted-foreground/60" />
-        </button>
-      </TooltipTrigger>
-      <TooltipContent>
-        <p className="text-xs">{t('school.dataSource', { source: label })}</p>
-        <p className="text-xs text-muted-foreground">
-          {t('school.updatedAt', { date: freshness })}
-        </p>
-      </TooltipContent>
-    </Tooltip>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            className="inline-flex items-center cursor-help ml-1 rounded-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            aria-label={t('school.dataSource', { source: label })}
+          >
+            <Info className="h-3 w-3 text-muted-foreground/60" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p className="text-xs">{t('school.dataSource', { source: label })}</p>
+          <p className="text-xs text-muted-foreground">
+            {t('school.updatedAt', { date: freshness })}
+          </p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 

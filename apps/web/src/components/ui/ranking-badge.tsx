@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type SchoolRanking, RANKING_LIST_KEYS, getDisplayRankings } from '@/lib/utils/ranking';
@@ -41,7 +41,7 @@ export function RankingBadge({
 
   if (displayRankings.length > 0) {
     return (
-      <>
+      <TooltipProvider>
         {displayRankings.slice(0, maxBadges).map((r) => (
           <Tooltip key={`${r.source}-${r.list}`}>
             <TooltipTrigger asChild>
@@ -56,23 +56,25 @@ export function RankingBadge({
             </TooltipContent>
           </Tooltip>
         ))}
-      </>
+      </TooltipProvider>
     );
   }
 
   if (usNewsRank) {
     return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Badge variant="outline" className={badgeClassName}>
-            {variant === 'amber' && <Trophy className="h-3 w-3" />}
-            US News #{usNewsRank}
-          </Badge>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>{t('rankingTooltipOverall')}</p>
-        </TooltipContent>
-      </Tooltip>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge variant="outline" className={badgeClassName}>
+              {variant === 'amber' && <Trophy className="h-3 w-3" />}
+              US News #{usNewsRank}
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{t('rankingTooltipOverall')}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     );
   }
 
