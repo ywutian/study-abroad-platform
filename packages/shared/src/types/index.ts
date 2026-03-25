@@ -429,7 +429,7 @@ export interface RecommendedSchool {
   tier: 'reach' | 'match' | 'safety';
   estimatedProbability: number;
   fitScore: number;
-  recommendedMajors?: string[];
+  recommendedMajors?: (string | { name: string; reason: string })[];
   reasons: string[];
   concerns?: string[];
   dataPoints?: string[];

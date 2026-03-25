@@ -5,6 +5,7 @@ export interface SchoolInfo {
   usNewsRank?: number;
   acceptanceRate?: number;
   website?: string;
+  rankings?: { source: string; list: string; rank: number; year: number }[];
   sourceUrls?: {
     collegeScorecardUrl?: string;
     ipedsUrl?: string;
@@ -18,7 +19,7 @@ export interface RecommendationItem {
   reason: string;
   highlights: string[];
   dataPoints?: string[];
-  recommendedMajors?: string[];
+  recommendedMajors?: (string | { name: string; reason: string })[];
   school?: SchoolInfo;
 }
 

@@ -7,6 +7,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { RankingBadge } from '@/components/ui/ranking-badge';
 import { Progress } from '@/components/ui/progress';
 import { cn, getSchoolName, getSchoolSubName } from '@/lib/utils';
 import { isSafeUrl } from '@/lib/utils/url';
@@ -268,11 +269,11 @@ export function SchoolRecommendation({ className }: SchoolRecommendationProps) {
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap">
-                                  {item.school?.usNewsRank && (
-                                    <Badge variant="outline" className="text-xs font-mono">
-                                      #{item.school.usNewsRank}
-                                    </Badge>
-                                  )}
+                                  <RankingBadge
+                                    rankings={item.school?.rankings}
+                                    usNewsRank={item.school?.usNewsRank}
+                                    className="font-mono"
+                                  />
                                   <Link
                                     href={`/schools/${item.schoolId}`}
                                     className="font-medium hover:underline truncate"
@@ -313,14 +314,19 @@ export function SchoolRecommendation({ className }: SchoolRecommendationProps) {
                                 )}
                                 {item.recommendedMajors && item.recommendedMajors.length > 0 && (
                                   <div className="flex flex-wrap gap-1 mt-1">
-                                    {item.recommendedMajors.map((major, i) => (
-                                      <Badge
-                                        key={i}
-                                        className="text-xs bg-primary/10 text-primary hover:bg-primary/20 border-0"
-                                      >
-                                        {major}
-                                      </Badge>
-                                    ))}
+                                    {item.recommendedMajors.map((major, i) => {
+                                      const name = typeof major === 'string' ? major : major.name;
+                                      const reason = typeof major === 'string' ? '' : major.reason;
+                                      return (
+                                        <Badge
+                                          key={i}
+                                          className="text-xs bg-primary/10 text-primary hover:bg-primary/20 border-0"
+                                          title={reason || undefined}
+                                        >
+                                          {name}
+                                        </Badge>
+                                      );
+                                    })}
                                   </div>
                                 )}
                                 <p className="text-xs text-muted-foreground mt-1 line-clamp-2">

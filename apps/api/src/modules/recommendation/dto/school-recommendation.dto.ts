@@ -84,10 +84,9 @@ export class RecommendedSchoolDto {
   fitScore: number;
 
   @ApiPropertyOptional({
-    type: [String],
     description: 'Recommended majors at this school based on student profile',
   })
-  recommendedMajors?: string[];
+  recommendedMajors?: (string | { name: string; reason: string })[];
 
   @ApiProperty({ type: [String], description: 'Recommendation reasons' })
   reasons: string[];

@@ -201,7 +201,11 @@ export class RecommendationService {
           ),
           fitScore: Math.min(100, Math.max(0, Number(r.fitScore) || 50)),
           recommendedMajors: Array.isArray(r.recommendedMajors)
-            ? r.recommendedMajors.slice(0, 3)
+            ? r.recommendedMajors
+                .slice(0, 3)
+                .map((m: unknown) =>
+                  typeof m === 'string' ? { name: m, reason: '' } : m,
+                )
             : [],
           reasons: Array.isArray(r.reasons) ? r.reasons : [],
           concerns: Array.isArray(r.concerns) ? r.concerns : [],
