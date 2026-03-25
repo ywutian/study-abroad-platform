@@ -1,5 +1,18 @@
 pnpm exec lint-staged
 
+# ── Secret scanning (if gitleaks installed) ───────────────
+if command -v gitleaks &> /dev/null; then
+  echo ""
+  echo "🔐 Running secret scan..."
+  if ! gitleaks protect --staged --no-banner; then
+    echo ""
+    echo "❌ Secret scan failed: potential secrets detected in staged files."
+    echo "   Review the findings above and remove any secrets before committing."
+    echo ""
+    exit 1
+  fi
+fi
+
 # ── i18n 自动校验 ──────────────────────────────────────────
 # 当 web 应用的源码或翻译文件有变动时，自动运行 i18n 检查
 STAGED_FILES=$(git diff --cached --name-only)

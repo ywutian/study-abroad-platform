@@ -1,0 +1,22 @@
+[extend]
+# Use the default gitleaks config as base
+useDefault = true
+
+# Allowlist for known test/CI secrets
+[allowlist]
+description = "Known safe patterns"
+paths = [
+  '''\.env\.example$''',
+  '''\.env\.test$''',
+  '''jest\.config''',
+  '''vitest\.config''',
+  '''vitest\.setup''',
+]
+regexTarget = "line"
+regexes = [
+  # CI E2E test secrets (not real credentials)
+  '''test-secret-key-for-ci''',
+  '''test-refresh-secret-key-for-ci''',
+  # Prisma example connection strings
+  '''postgresql://postgres:postgres@localhost''',
+]
