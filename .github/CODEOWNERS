@@ -1,0 +1,22 @@
+# Default — all PRs require owner review
+* @ywutian
+
+# Backend
+apps/api/ @ywutian
+packages/shared/ @ywutian
+
+# Frontend
+apps/web/ @ywutian
+apps/mobile/ @ywutian
+
+# Infrastructure & CI
+.github/ @ywutian
+docker-compose.yml @ywutian
+Dockerfile @ywutian
+
+# Database
+apps/api/prisma/ @ywutian
+
+# Documentation
+CLAUDE.md @ywutian
+docs/ @ywutian

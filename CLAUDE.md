@@ -2,7 +2,7 @@
 
 ## Agent 工作流（必须遵守）
 
-每次开发任务 **必须** 启动以下 Agent 进行审查，不可跳过：
+12 个专项 Agent 覆盖不同审查维度。每个 Agent 内置 **Step 0 相关性判断**：明确无关时快速返回 N/A，不确定时继续审查（宁可多审不可漏审）。
 
 | #   | Agent          | 文件                                    | 职责                                                    |
 | --- | -------------- | --------------------------------------- | ------------------------------------------------------- |
@@ -17,28 +17,26 @@
 | 9   | **i18n 专家**  | `.claude/agents/i18n-specialist.md`     | 翻译质量、术语一致、key 完整性、中英文布局适配          |
 | 10  | **测试工程**   | `.claude/agents/test-engineer.md`       | 测试覆盖、测试质量、边界用例、回归验证                  |
 | 11  | **移动端专家** | `.claude/agents/mobile-specialist.md`   | Expo/RN 兼容性、移动性能、离线、原生功能、与 web 一致性 |
+| 12  | **反馈处理**   | `.claude/agents/feedback-processor.md`  | 外部反馈分诊、根因分类、验收标准、防止返工              |
 
-### 三阶段工作流
+### 两阶段工作流
 
-#### 阶段一：方案制定（全员审查）
+#### 阶段一：方案审查（按变更类型分组）
 
-每次制定实现方案时，**必须并行启动全部 11 个 Agent**，让每个 Agent 从各自专业视角对方案进行审查和补充。方案必须包含每个 Agent 的审查意见，综合所有意见后形成最终方案。**不允许跳过任何 Agent**。
+制定实现方案时，按下表启动对应 Agent 组进行并行审查。**判断不准时宁可多启动**——Agent 内置 Step 0 会自动过滤无关审查，多启动的成本很低（N/A 早退 ~10 秒）。
 
-#### 阶段二：开发执行（按变更类型分组）
+| 变更类型                                | 启动 Agent                                                | 按需叠加                                                               |
+| --------------------------------------- | --------------------------------------------------------- | ---------------------------------------------------------------------- |
+| **后端开发**                            | 架构师、数据模型、安全审查、测试工程                      | AI Prompt（涉及 LLM 调用时）                                           |
+| **前端开发**                            | 设计审查、i18n 专家、申请者模拟、测试工程                 | —                                                                      |
+| **移动端开发**                          | 移动端专家、i18n 专家、申请者模拟、测试工程               | —                                                                      |
+| **AI 功能**                             | AI Prompt、留学专家、安全审查、测试工程                   | —                                                                      |
+| **全栈功能**                            | 架构师、数据模型、设计审查、i18n 专家、安全审查、测试工程 | 留学专家（涉及业务）、AI Prompt（涉及 LLM）、移动端专家（涉及 mobile） |
+| **数据库变更**                          | 数据模型、架构师、安全审查                                | —                                                                      |
+| **留学业务逻辑**                        | 留学专家、申请者模拟                                      | + 对应开发类型的 Agent 组                                              |
+| **大型变更**（新模块/架构重构/DB 迁移） | **全部 12 个 Agent 并行**                                 | —                                                                      |
 
-按变更内容启动对应 Agent 组，陪伴开发过程实时审查：
-
-| 变更类型         | 必启 Agent                                                | 按需叠加                                                               |
-| ---------------- | --------------------------------------------------------- | ---------------------------------------------------------------------- |
-| **后端开发**     | 架构师、数据模型、安全审查、测试工程                      | AI Prompt（涉及 LLM 调用时）                                           |
-| **前端开发**     | 设计审查、i18n 专家、申请者模拟、测试工程                 | —                                                                      |
-| **移动端开发**   | 移动端专家、i18n 专家、申请者模拟、测试工程               | —                                                                      |
-| **AI 功能**      | AI Prompt、留学专家、安全审查、测试工程                   | —                                                                      |
-| **全栈功能**     | 架构师、数据模型、设计审查、i18n 专家、安全审查、测试工程 | 留学专家（涉及业务）、AI Prompt（涉及 LLM）、移动端专家（涉及 mobile） |
-| **数据库变更**   | 数据模型、架构师、安全审查                                | —                                                                      |
-| **留学业务逻辑** | 留学专家、申请者模拟                                      | + 对应开发类型的 Agent 组                                              |
-
-#### 阶段三：验收闭环（强制）
+#### 阶段二：验收闭环（强制）
 
 开发完成后 **必须** 执行：
 
@@ -49,10 +47,78 @@
 ### 规则
 
 - 可并行的 Agent **必须并行启动**，提高效率
-- 方案阶段不允许跳过任何 Agent，执行阶段按表格分组启动
 - 每个 Agent 的意见都必须在最终方案/代码中有体现或有明确回应
-- **Prisma Model 变更必须执行消费者扫描**：当计划涉及增/改 Prisma Model 字段时，架构师和数据模型 Agent 必须在 Phase 1 执行 `grep -r "ModelName" --include="*.ts" --include="*.tsx"` 全量扫描，列出所有读写该 Model 的消费者（后端 Service、Admin 表单、用户端 UI、Mobile），逐一标注"需更新"或"无需更新（原因）"。计划中的文件清单必须**影响面驱动**而非仅需求驱动。
+- Agent 返回 N/A 视为该维度审查通过，无需额外回应
+- **Prisma Model 变更必须执行消费者扫描**：当计划涉及增/改 Prisma Model 字段时，架构师和数据模型 Agent 必须执行 `grep -r "ModelName" --include="*.ts" --include="*.tsx"` 全量扫描，列出所有读写该 Model 的消费者（后端 Service、Admin 表单、用户端 UI、Mobile），逐一标注"需更新"或"无需更新（原因）"。计划中的文件清单必须**影响面驱动**而非仅需求驱动。
 - **新增 nullable 字段的前端处理**：新增字段在前端渲染时，**禁止**用 `|| '某个具体枚举值'` 作为默认值（因为现有数据全是 null，会误导用户）。必须显示通用/未知状态，明确区分"已标注"和"未标注"。
+
+### 边界案例判断规则（变更类型交叉时）
+
+当变更跨越多个关注点时，除了变更类型表中的基础 Agent 组，还需按以下规则追加 Agent：
+
+- Prisma Model 字段出现在前端 UI 渲染中 → 追加**设计审查**
+- 改变 LLM 输出结构（JSON schema、返回字段） → 追加**数据模型**
+- 改变 API 错误码或错误响应结构 → 追加**闭环检查**
+- 改变 `packages/shared` 中的类型定义 → 追加**移动端专家**（如 mobile 使用该类型）
+- 新增 nullable 字段且有前端展示 → 追加**申请者模拟**（确认"未知"状态对用户是否清晰）
+- prompt 输出结果用于业务决策（如录取预测） → 追加**留学专家**（确认业务合理性）
+
+## Feedback Processing Workflow (外部反馈处理)
+
+收到外部用户/测试者反馈时，**必须**按以下流程处理，不允许跳过分诊直接编码。
+
+### 5 阶段流程
+
+#### 阶段一：分诊与分类
+
+使用 `docs/templates/feedback-triage.md` 模板，逐条反馈执行：
+
+1. 归类为 5 类之一：`CODE_BUG` | `DATA_ISSUE` | `UX_CONFUSION` | `NEW_FEATURE` | `INDUSTRY_SUGGESTION`
+2. 分析技术根因（具体到文件名 + 行号）
+3. 定义验收标准（**必须是用户可见结果**，不是"代码改了"）
+4. 有歧义的条目 → 问用户做决定，不自行假设
+
+启动 `feedback-processor` Agent 辅助分诊。
+
+#### 阶段二：批次规划（每批 ≤ 3 条）
+
+按相关性分组，每批最多 3 条。每批方案按变更类型启动对应 Agent 组审查（同阶段一工作流）。
+
+#### 阶段三：增量实现
+
+每个批次：
+
+1. 实现代码变更
+2. 提交前运行 `npx tsx scripts/verify-gate.ts --staged`
+3. 全部 gate 通过后才提交
+
+#### 阶段四：验收验证
+
+逐条验证验收标准（不只是"编译通过"）：
+
+- `CODE_BUG`：复现场景 → 确认输出正确
+- `DATA_ISSUE`：用真实数据测试 → 确认输出有意义
+- `UX_CONFUSION`：以新用户视角审查 → 确认无歧义
+- `NEW_FEATURE`：端到端演示完整功能
+- `INDUSTRY_SUGGESTION`：留学专家 Agent 确认业务准确性
+
+**核心原则：代码改了 ≠ 问题解决了**。状态保持 `open` 直到验收通过。
+
+#### 阶段五：发布与记录
+
+1. 全部 pre-push gate 通过后推送
+2. 更新 `docs/USER_FEEDBACK_ANALYSIS_*.md` 记录解决方案
+3. 分诊表中标记 `verified`
+
+### 验证门控脚本
+
+```bash
+npx tsx scripts/verify-gate.ts            # 检查所有未提交变更
+npx tsx scripts/verify-gate.ts --staged   # 仅检查已暂存文件
+npx tsx scripts/verify-gate.ts --verbose  # 显示跳过的检查及原因
+```
+
+自动检测受影响的 app（api/web/mobile/shared），仅运行相关的 typecheck + test + lint:routes + lint:i18n。
 
 ## Architecture Overview
 
@@ -63,127 +129,35 @@ Turbo monorepo with pnpm workspaces:
 - `apps/mobile` — Expo 54 (React Native)
 - `packages/shared` — Shared types, constants, scoring algorithms
 
-## Backend Module Map
+## Backend Modules
 
-29 domain modules in `apps/api/src/modules/` (see `app.module.ts`):
-
-**Core Business:**
-
-- `auth` — JWT auth, refresh token rotation, brute force protection, email verification
-- `user` — User CRUD, dashboard, soft delete
-- `profile` — Student profiles; thin facade delegates to 5 sub-services (ProfileCrudService, ProfileScoresService, ProfileEducationService, ProfileAnalysisService, ProfileMemoryService)
-- `school` — School database (3000+ institutions), scraping, data sync
-- `school-list` — User school lists with application tracking
-- `prediction` — Admission probability (v3-enterprise); orchestrator + 13 sub-services (Transformer, StatisticalEngine, AiEngine, FusionEngine, Cache, Calibration, Historical, Memory, Persistence, Reporting, Validator, Insights, Suggestion)
-- `case` — Admission case gallery, incentive system, verification
-- `ranking` — Custom school rankings, weighted scoring
-- `points` — Points system, incentives, badges
-
-**Content & Social:**
-
-- `chat` — Real-time messaging (WebSocket gateway at `/chat` namespace)
-- `forum` — Discussion forums; thin facade delegates to 6 sub-services (ForumPostService, ForumCommentService, ForumTeamService, ForumCategoryService, ForumReportService, ForumMemoryService) + ForumModerationService
-- `hall` — Hall of Fame + case swiping; thin facade delegates to 4 sub-services (HallRankingService, HallReviewService, HallListService, HallVerifiedService) + SwipeService
-- `peer-review` — Peer essay review system with ratings
-- `team` — Team formation and management
-
-**Essay & AI:**
-
-- `essay` — Consolidated essay module; sub-services: EssayAiService (review/polish/brainstorm), EssayPromptService (prompt DB), EssayScraperService (scraping pipeline), EssayGalleryService (gallery)
-- `ai` — AI sub-services: ProfileAiService (profile analysis), ResumeAiService (resume review/optimize/suggest)
-- `ai-agent` — Enterprise multi-agent system (see `memory/ai-system.md`)
-- `recommendation` — AI school recommendations
-- `assessment` — MBTI/Holland/Strength assessments
-
-**Platform:**
-
-- `timeline` — Deadlines, personal events, global events; thin facade delegates to TimelineApplicationService + TimelinePersonalEventService
-- `resume` — Resume builder with AI review
-- `notification` — Push notifications, email digests, broadcast
-- `subscription` — Payment plans, invoicing
-- `vault` — Encrypted document storage (AES-256)
-- `verification` — Identity & admission verification
-- `settings` — System settings
-- `admin` — Admin panel API (stats, user mgmt, reports, CRUD)
-- `health` — Health check (`/health`)
-
-**Infrastructure** (`apps/api/src/common/`):
-`prisma/` (global DB), `redis/` (global cache), `logger/` (global structured logging), `email/` (SMTP), `storage/` (S3/OSS/COS), `sentry/` (error tracking), `services/authorization` (global RBAC), `services/audit-log` (global audit)
+29 domain modules in `apps/api/src/modules/` — see `app.module.ts` for the full list and registration order. Key architectural patterns: thin facade services (profile, forum, hall, timeline), enterprise sub-service orchestration (prediction: 13 sub-services), WebSocket gateway (`chat` at `/chat` namespace). Infrastructure in `apps/api/src/common/`: prisma, redis, logger, email, storage, sentry, feature-flags, authorization, audit-log — all `@Global()`.
 
 ## Request Lifecycle
 
-Every HTTP request passes through this pipeline (defined in `app.module.ts`):
-
-**Middleware** (applied to all routes):
-
-1. `CorrelationIdMiddleware` — assigns `X-Correlation-ID` (UUID) for tracing
-2. `TimeoutMiddleware` — enforces `REQUEST_TIMEOUT_MS` (30s default, 120s AI routes)
-
-**Guards** (registration order): 3. `ThrottlerGuard` — rate limiting (default: 100 req / 60s per IP) 4. `JwtAuthGuard` — JWT Bearer token validation; skip with `@Public()` decorator 5. `RolesGuard` — role check via `@Roles(Role.ADMIN)` decorator
-
-**Interceptors** (registration order): 6. `SanitizeInterceptor` — strips HTML from request body (XSS prevention) 7. `SentryInterceptor` — captures exceptions to Sentry 8. `TransformInterceptor` — wraps response in `{ success, data, meta }` envelope 9. `LoggingInterceptor` — logs request/response with timing, masks PII
-
-**Exception Filter:** 10. `AllExceptionsFilter` — catches all errors → standardized `{ success: false, error }` JSON
+Pipeline order (defined in `app.module.ts`): Middleware (CorrelationId → Timeout) → Guards (Throttler → JwtAuth → Roles → Permission → FeatureFlag) → Interceptors (Sanitize → Sentry → Transform → Logging) → AllExceptionsFilter. See `app.module.ts` for registration details.
 
 ## Authentication & Authorization
 
-### JWT Token Flow
+### Role Hierarchy: `ADMIN` > `VERIFIED` > `USER`. ADMIN overrides all checks.
 
-- **Access token**: JWT signed with `JWT_SECRET`, 15m expiry, payload: `{ sub, email, role }`
-- **Refresh token**: Random 64-byte hex, stored in `RefreshToken` table, 7d expiry
-- **Token rotation**: Each refresh invalidates old token, issues new pair
-- **Brute force**: `BruteForceService` locks account after repeated login failures (Redis-backed)
-- Password hashing: bcrypt with 12 rounds
-
-### Role Hierarchy
-
-| Role       | Access                   | Notes                                                 |
-| ---------- | ------------------------ | ----------------------------------------------------- |
-| `USER`     | Basic features           | Default on registration                               |
-| `VERIFIED` | USER + verified features | After email verification + admin approval             |
-| `ADMIN`    | Everything               | `RolesGuard` grants full access, overrides all checks |
-
-### Decorators
+### Decorators (Rules)
 
 - `@Public()` — skip JWT auth (used on login, register, health, verify-email)
 - `@Roles(Role.ADMIN)` — require specific role
 - `@CurrentUser()` — extract user from request: `{ id, email, role, locale }`
 
-### Frontend Auth Pattern
+### Frontend Auth Rules
 
 - Access token stored **in-memory only** (Zustand store — never localStorage)
-- Refresh token in **httpOnly cookie** (set by API, inaccessible to JS)
-- `AuthInitializer` component calls `/auth/refresh` on app mount to restore session
-- `apiClient` auto-retries on 401 with token refresh, then redirects to login on failure
+- Refresh token in **httpOnly cookie** — inaccessible to JS
+- Only `AuthInitializer` owns the refresh interval — not `setAuthFromLogin`
 
 ## Response Format
 
-**Success** (`TransformInterceptor`):
-
-```json
-{ "success": true, "data": { ... }, "meta": { "timestamp": "ISO8601", "correlationId": "uuid", "responseTimeMs": 42 } }
-```
-
-**Error** (`AllExceptionsFilter`):
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "NOT_FOUND",
-    "message": "...",
-    "timestamp": "ISO8601",
-    "path": "/api/v1/...",
-    "correlationId": "uuid"
-  }
-}
-```
-
-Error codes: `BAD_REQUEST`, `UNAUTHORIZED`, `FORBIDDEN`, `NOT_FOUND`, `CONFLICT`, `DUPLICATE_ENTRY`, `RATE_LIMIT_EXCEEDED`, `INTERNAL_ERROR`, `DATABASE_UNAVAILABLE`, `QUERY_TIMEOUT`.
-
-Prisma error mapping: P2002 → `DUPLICATE_ENTRY` (409), P2025 → `NOT_FOUND` (404), P2003 → `FOREIGN_KEY_ERROR` (400), P1001/P1002 → `DATABASE_UNAVAILABLE` (503), P2024 → `QUERY_TIMEOUT` (504).
-
-**Frontend note**: `apiClient` unwraps `response.data` automatically — component code receives the inner `data` object directly.
+- `TransformInterceptor` wraps all responses as `{ success, data, meta }` — **never manually build this envelope**
+- `AllExceptionsFilter` maps errors to `{ success: false, error: { code, message, ... } }` — see filter for Prisma error mappings
+- Frontend `apiClient` unwraps `response.data` automatically — component code receives inner object directly
 
 ## AI System Architecture
 
@@ -295,6 +269,47 @@ Shared constants in `common/constants/prisma-selects.ts`: `SCHOOL_BASIC_SELECT`,
 - Service methods: throw NestJS exceptions (`BadRequestException`, `NotFoundException`, etc.) — **never** `throw new Error()`
 - Exception: startup validators (`config-validator.service.ts`, `encryption.service.ts`) may use `throw new Error()` to crash the process
 
+## OpenTelemetry (Distributed Tracing)
+
+- `apps/api/src/tracing.ts` — OTel SDK initialization, imported as first line in `main.ts`
+- **Conditionally enabled**: Only active when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. Zero overhead when disabled.
+- Auto-instruments: HTTP, Express, ioredis, Prisma queries
+- Exports traces + metrics via OTLP HTTP to any compatible collector (Jaeger, GCP Cloud Trace, Datadog)
+- Local testing: `docker run -d -p 4318:4318 -p 16686:16686 jaegertracing/all-in-one` → set `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318`
+
+## Feature Flags
+
+Database-backed feature flag system with Redis caching (60s TTL) and graceful degradation.
+
+### Usage
+
+```typescript
+// Endpoint-level: entire route gated by flag
+@FeatureFlag('prediction-v4')
+@Post('prediction/v4')
+async predictV4(@CurrentUser() user) { ... }
+
+// Service-level: conditional logic within code
+const enabled = await this.featureFlagService.isEnabled('new-algo', {
+  userId: user.id,
+  role: user.role,
+});
+```
+
+### Key files
+
+- `common/feature-flags/` — `@Global()` module, service (Redis + DB), guard, decorator
+- `modules/admin/admin-feature-flag.controller.ts` — Admin CRUD (`/admin/feature-flags`)
+- Prisma model: `FeatureFlag` → `feature_flags` table
+
+### Rules JSON
+
+```json
+{ "roles": ["ADMIN"], "userIds": ["uuid-1"], "percentage": 50 }
+```
+
+Evaluation: roles → userIds → percentage (any match = enabled). `rules: null` + `enabled: true` = global rollout.
+
 ## Module Dependency Rules
 
 ```
@@ -340,35 +355,11 @@ Examples: `ai/profile-ai.prompts.ts`, `ai/resume-ai.prompts.ts`, `recommendation
   - Migration files are auto-deployed via Cloud Run Job (`migrate.sh` → `prisma migrate deploy`)
   - All new columns must be **nullable** or have a **default** to avoid downtime (metadata-only ALTER on PostgreSQL)
   - If promoting fields from `metadata` JSON to schema columns, create a data backfill script in `apps/api/scripts/` with `--apply` flag pattern
-  - CI/CD handles migration execution automatically — deploy-gcp.yml runs `prisma migrate deploy` before service update, with auto-rollback on failure
+  - CI/CD handles migration execution automatically — ci.yml deploy-gcp job runs `prisma migrate deploy` before service update, with auto-rollback on failure
 
 ## Environment Variables
 
-Full Zod validation in `common/config/env.validation.ts`. Key variables:
-
-| Category       | Variable                                           | Required | Default                     | Notes                                               |
-| -------------- | -------------------------------------------------- | -------- | --------------------------- | --------------------------------------------------- |
-| **Core**       | `PORT`                                             | No       | `4101`                      | API server port                                     |
-|                | `NODE_ENV`                                         | No       | `development`               | development / production / staging / test           |
-| **Database**   | `DATABASE_URL`                                     | Yes      | —                           | PostgreSQL connection (`postgresql://...`)          |
-| **JWT**        | `JWT_SECRET`                                       | Yes      | —                           | Min 16 chars, access token signing                  |
-|                | `JWT_REFRESH_SECRET`                               | Yes      | —                           | Min 16 chars, refresh token signing                 |
-|                | `JWT_EXPIRES_IN`                                   | No       | `15m`                       | Access token lifetime                               |
-|                | `JWT_REFRESH_EXPIRES_IN`                           | No       | `7d`                        | Refresh token lifetime                              |
-| **Redis**      | `REDIS_URL`                                        | No       | —                           | Falls back to in-memory if unset                    |
-| **CORS**       | `CORS_ORIGINS`                                     | Prod     | —                           | Comma-separated origins. **Required in production** |
-| **Email**      | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` | No       | —                           | For verification/welcome/reset emails               |
-|                | `FRONTEND_URL`                                     | Prod     | —                           | Used in email links. **Required in production**     |
-| **AI**         | `OPENAI_API_KEY`                                   | No       | —                           | OpenAI/DeepSeek API key                             |
-|                | `OPENAI_BASE_URL`                                  | No       | `https://api.openai.com/v1` | Compatible endpoint                                 |
-|                | `OPENAI_MODEL`                                     | No       | `gpt-4o-mini`               | Default chat model                                  |
-|                | `LLM_PROVIDER`                                     | No       | `openai`                    | Provider selection                                  |
-| **Storage**    | `STORAGE_TYPE`                                     | No       | `local`                     | `local` / `s3` / `oss` / `cos`                      |
-| **Security**   | `VAULT_ENCRYPTION_KEY`                             | Prod     | —                           | Min 32 chars. **Required in production**            |
-| **Monitoring** | `SENTRY_DSN`                                       | No       | —                           | Error tracking                                      |
-| **Rate Limit** | `THROTTLE_TTL` / `THROTTLE_LIMIT`                  | No       | `60` / `100`                | Per-IP (seconds / count)                            |
-| **Timeouts**   | `REQUEST_TIMEOUT_MS`                               | No       | `30000`                     | General request timeout                             |
-|                | `AI_REQUEST_TIMEOUT_MS`                            | No       | `120000`                    | AI endpoint timeout                                 |
+Full Zod schema and defaults in `common/config/env.validation.ts` (source of truth). See `apps/api/.env.example` for all variables with comments. Required in production: `DATABASE_URL`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `CORS_ORIGINS`, `FRONTEND_URL`, `VAULT_ENCRYPTION_KEY`.
 
 ## Frontend Architecture
 
@@ -482,9 +473,18 @@ Key utility classes: `zone-tinted`/`zone-dark` (section backgrounds), `glass`/`g
 
 ### GitHub Actions
 
-- `ci.yml` (on push/PR): lint (ESLint + i18n + code quality) → typecheck → test → build (parallel jobs)
-- `deploy-gcp.yml` (manual): Build → push to Artifact Registry → deploy to Cloud Run → smoke test → auto-rollback on failure
+- `ci.yml` (on push/PR): detect-changes → lint / typecheck / test / e2e / secret-scan / sast / security (parallel) → build → docker / sbom / deploy-gcp
+  - **Affected-only**: `dorny/paths-filter` detects which apps changed; jobs skip unaffected apps (push to main always runs all)
+  - **Parallel steps**: lint/typecheck/test steps within each job run in parallel via `&` + `wait`
+  - **Turbo remote cache**: `dtinth/setup-github-actions-caching-for-turbo` enables cross-run caching
+  - **Security**: Trivy (CVE scan) + gitleaks (secret scan) + Semgrep (SAST, PR-only) + pnpm audit
+  - **Migration safety**: `scripts/check-migration-safety.ts` runs in E2E job, catches dangerous SQL (NOT NULL without DEFAULT, non-concurrent indexes, etc.)
+- `ci.yml` deploy-gcp job also supports `workflow_dispatch` for manual deploys (with same canary safety)
+- `deploy-staging.yml` (auto on develop): Staging environment with reduced resources
+- `preview.yml` (on PR): API preview deployment to Cloud Run via tagged revision (`--no-traffic --tag=pr-{N}`), comments preview URL on PR
+- `preview-cleanup.yml` (on PR close): Removes the Cloud Run traffic tag for the closed PR
 - E2E uses `pgvector/pgvector:pg16` + `redis:7-alpine` service containers
+- **Dependabot**: `.github/dependabot.yml` — weekly npm (grouped by dev/prod), weekly GitHub Actions, monthly Docker
 
 ### Commit Convention (commitlint)
 
@@ -495,17 +495,18 @@ Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`
 #### Pre-commit (lint-staged, ~5-10s)
 
 1. **Prettier + ESLint** on staged `.ts/.tsx` files (includes import sorting via `simple-import-sort`)
-2. **i18n checks** (when `apps/web/src/` changed): missing keys, key consistency, wrong-language detection
-3. **Frontend quality checks** (when `apps/web/src/` changed): 7 rules — dynamic Tailwind, hardcoded colors, console.log, page size, loading.tsx, error.tsx
-4. **Backend quality checks** (when `apps/api/src/` changed): 5 rules — inline body, throttle, throw, maxlength, tests
+2. **gitleaks** secret scan on staged files (if installed locally)
+3. **i18n checks** (when `apps/web/src/` changed): missing keys, key consistency, wrong-language detection
+4. **Frontend quality checks** (when `apps/web/src/` changed): 7 rules — dynamic Tailwind, hardcoded colors, console.log, page size, loading.tsx, error.tsx
+5. **Backend quality checks** (when `apps/api/src/` changed): 7 rules — inline body, throttle, throw, maxlength, tests, duplicated select, select-mapping drift
 
-#### Pre-push (~30-60s, catches CI failures locally)
+#### Pre-push (~20-40s, catches CI failures locally)
 
 `.husky/pre-push` runs before every `git push`:
 
 1. **Prisma generate** — ensures client matches schema (prevents typecheck failures)
 2. **API route check** — `pnpm lint:routes` verifies client API paths match backend controllers
-3. **Typecheck** — `tsc --noEmit` for API, Web, Mobile (all 3 apps)
+3. **Typecheck** — `tsc --noEmit` for API, Web, Mobile (**3 apps in parallel**)
 4. **Unit tests** — `pnpm test` (API Jest + Web Vitest + Mobile Jest)
 
 Manual equivalent: `pnpm prepush`
@@ -519,7 +520,11 @@ Manual equivalent: `pnpm prepush`
 | **Unit Tests**                             | pre-push + `pnpm test`                                                                               | Missing Prisma mock models, coverage threshold too high, Zustand selector mock pattern      |
 | **E2E Tests**                              | `pnpm test:e2e` (requires Docker PG + Redis)                                                         | Renamed/removed API routes not updated in e2e specs, migration drift                        |
 | **Mobile CI** (Lint & Test)                | pre-push                                                                                             | Coverage thresholds, pnpm version mismatch in workflow                                      |
+| **Secret Scan** (gitleaks)                 | pre-commit (if gitleaks installed locally)                                                           | Accidental secrets in code (API keys, tokens, passwords)                                    |
+| **SAST Scan** (Semgrep)                    | N/A (CI-only, PR only)                                                                               | Code-level vulnerabilities: injection, XSS, eval(), unsafe deserialization                  |
 | **Security Scan** (Trivy)                  | N/A (CI-only)                                                                                        | CVEs in container image                                                                     |
+| **Dead Code** (Knip)                       | `pnpm lint:dead-code`                                                                                | Unused files, exports, dependencies — config in `knip.json`                                 |
+| **Migration Safety**                       | `npx tsx scripts/check-migration-safety.ts`                                                          | NOT NULL without DEFAULT, non-concurrent indexes, DROP TABLE/COLUMN                         |
 | **Dependency Audit**                       | `pnpm audit --audit-level=high --registry=https://registry.npmjs.org`                                | Transitive dependency CVEs — fix with `pnpm.overrides` in root package.json                 |
 | **Route Check**                            | pre-push + `pnpm lint:routes`                                                                        | Client API path prefix not matching any backend `@Controller()` decorator                   |
 | **Build**                                  | `pnpm build`                                                                                         | Subset of typecheck issues                                                                  |
@@ -572,10 +577,15 @@ pnpm lint:routes                       # API route consistency (client paths vs 
 pnpm prepush                           # Typecheck + tests (same as pre-push hook)
 pnpm check                             # lint:all + test (full local CI equivalent)
 pnpm audit --audit-level=high --registry=https://registry.npmjs.org  # Dependency CVE scan
+pnpm lint:dead-code                    # Knip dead code detection (unused files, exports, deps)
 pnpm --filter web lint:quality         # Frontend quality (7 rules)
-pnpm --filter api lint:quality         # Backend quality (5 rules)
+pnpm --filter api lint:quality         # Backend quality (7 rules)
 pnpm --filter web lint:i18n            # i18n checks
 pnpm test:e2e                          # E2E tests (requires Docker PG + Redis running)
+npx tsx scripts/verify-gate.ts         # Per-commit verification (auto-detects affected apps)
+npx tsx scripts/verify-gate.ts --staged # Same but only staged files
+npx tsx scripts/check-migration-safety.ts          # Check all migrations for dangerous SQL
+npx tsx scripts/check-migration-safety.ts --new-only # Only check uncommitted migrations
 ```
 
 Exemption lists in each script for known-safe patterns.
@@ -584,7 +594,7 @@ Exemption lists in each script for known-safe patterns.
 
 ### Architecture
 
-- 9 active pages under `apps/web/src/app/[locale]/(main)/admin/` (merged from 16 via tab consolidation)
+- 20 active pages under `apps/web/src/app/[locale]/(main)/admin/`
 - Dashboard uses **recharts** for AreaChart visualizations + health indicator
 - Large pages split into `_components/` with self-contained `useQuery` per section
 - i18n: `admin.*` keys in `apps/web/src/messages/{en,zh}.json`
@@ -595,11 +605,11 @@ Exemption lists in each script for known-safe patterns.
 ### Pages
 
 **Overview**: Dashboard (recharts AreaChart, health, recent activity)
-**User Mgmt**: Users (search, role, ban, CSV export), User Detail (AI usage, rate limits)
-**Content**: Moderation (5 tabs: Forum/Chat/Reviews/AI Moderation/Reports), Essays
-**Academic**: Schools (3 tabs: search/quality/data-sync), Calendar (2 tabs: Deadlines/Events), Calibrations, Points, Activity Templates
+**Users**: Users (search, role, ban, CSV export), User Detail (`users/[id]` — AI usage, rate limits), Verifications (4 tabs)
+**Academic**: Data Review (6 tabs), Schools (3 tabs: search/quality/data-sync), High Schools (5 tabs), Calendar (2 tabs: Deadlines/Events), Calibrations (3 tabs), Essays (3 tabs), Activity Templates, Points
+**Management**: Team (4 tabs), Moderation (5 tabs: Forum/Chat/Reviews/AI Moderation/Reports), Payments, Audit Logs (2 tabs: Admin/AI Agent)
 **AI System**: AI Operations (5 tabs: Overview/Config/Performance/Reliability/Engagement), Memory (6 sections)
-**Platform**: Payments, Audit Logs (2 tabs: Admin/AI Agent), Verifications (4 tabs), Settings
+**System**: Settings, Feature Flags (CRUD + cache invalidation)
 
 ### Patterns
 
@@ -649,8 +659,10 @@ pnpm lint:all    # ESLint + frontend quality + backend quality + i18n
 | **Auth**     | `api/src/modules/auth/auth.service.ts`                      | JWT, refresh rotation, brute force                    |
 |              | `api/src/common/guards/jwt-auth.guard.ts`                   | Global JWT guard (`@Public()` to skip)                |
 |              | `api/src/common/guards/roles.guard.ts`                      | Role-based access control                             |
-| **Pipeline** | `api/src/common/interceptors/transform.interceptor.ts`      | Response envelope wrapping                            |
+| **Pipeline** | `api/src/tracing.ts`                                        | OTel SDK init (first import in main.ts)               |
+|              | `api/src/common/interceptors/transform.interceptor.ts`      | Response envelope wrapping                            |
 |              | `api/src/common/filters/http-exception.filter.ts`           | Global error handling                                 |
+|              | `api/src/common/feature-flags/`                             | Feature flag module, service, guard, decorator        |
 | **AI**       | `api/src/modules/ai-agent/core/llm.service.ts`              | Unified LLM service (chatSimple + call + callStream)  |
 |              | `api/src/modules/ai-agent/core/orchestrator.service.ts`     | Multi-agent orchestrator                              |
 |              | `api/src/modules/ai-agent/config/agents.config.ts`          | Agent definitions                                     |

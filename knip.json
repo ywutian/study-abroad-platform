@@ -1,0 +1,66 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "ignoreDependencies": [
+    "@radix-ui/react-alert-dialog",
+    "@sentry/nestjs",
+    "@sentry/nextjs",
+    "@sentry/node",
+    "date-fns",
+    "framer-motion",
+    "remark-gfm",
+    "socket.io-client"
+  ],
+  "ignoreBinaries": ["tsx", "docker-compose", "wrangler"],
+  "exclude": ["enumMembers", "classMembers"],
+  "workspaces": {
+    "apps/api": {
+      "entry": [
+        "src/main.ts",
+        "src/**/*.module.ts",
+        "src/**/*.controller.ts",
+        "src/**/*.service.ts",
+        "src/**/*.guard.ts",
+        "src/**/*.interceptor.ts",
+        "src/**/*.filter.ts",
+        "src/**/*.middleware.ts",
+        "src/**/*.gateway.ts",
+        "src/**/*.decorator.ts",
+        "src/**/*.strategy.ts"
+      ],
+      "project": ["src/**/*.ts"],
+      "ignoreDependencies": ["@nestjs/bullmq", "bullmq", "@sentry/nestjs"]
+    },
+    "apps/web": {
+      "entry": [
+        "src/app/**/page.tsx",
+        "src/app/**/layout.tsx",
+        "src/app/**/loading.tsx",
+        "src/app/**/error.tsx",
+        "src/app/**/not-found.tsx",
+        "src/components/**/*.{ts,tsx}",
+        "src/lib/**/*.{ts,tsx}",
+        "src/stores/**/*.ts",
+        "src/hooks/**/*.ts"
+      ],
+      "project": ["src/**/*.{ts,tsx}"],
+      "ignoreDependencies": ["postcss", "react-countup"]
+    },
+    "apps/mobile": {
+      "entry": [
+        "src/app/**/*.tsx",
+        "src/components/**/*.{ts,tsx}",
+        "src/lib/**/*.{ts,tsx}",
+        "src/screens/**/*.{ts,tsx}",
+        "src/stores/**/*.ts",
+        "src/hooks/**/*.ts",
+        "src/utils/**/*.ts"
+      ],
+      "project": ["src/**/*.{ts,tsx}"],
+      "ignoreDependencies": ["expo-system-ui", "@react-navigation/native-stack"]
+    },
+    "packages/shared": {
+      "entry": ["src/**/*.ts"],
+      "project": ["src/**/*.ts"]
+    }
+  }
+}
