@@ -234,3 +234,9 @@ export const settingsRoutes = {
 export const rankingRoutes = {
   list: () => API_ROUTES.RANKINGS,
 };
+
+export const adminFeatureFlagRoutes = {
+  list: () => `${API_ROUTES.ADMIN}/feature-flags`,
+  byId: (id: string) => `${API_ROUTES.ADMIN}/feature-flags/${id}`,
+  invalidateCache: (id: string) => `${API_ROUTES.ADMIN}/feature-flags/${id}/invalidate-cache`,
+};

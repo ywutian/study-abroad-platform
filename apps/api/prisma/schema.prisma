@@ -2764,3 +2764,16 @@ model PredictionModel {
   @@index([status])
   @@index([tier, selectivityBand])
 }
+
+// ── Feature Flags ────────────────────────────────────────
+model FeatureFlag {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  enabled     Boolean  @default(false)
+  description String?
+  rules       Json?    @db.JsonB
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("feature_flags")
+}

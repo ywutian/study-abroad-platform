@@ -10,6 +10,7 @@ import { AdminReviewController } from './admin-review.controller';
 import { AdminDataPipelineController } from './admin-data-pipeline.controller';
 import { AdminHighSchoolController } from './admin-high-school.controller';
 import { PermissionGuard } from '../../common/guards/permission.guard';
+import { AdminFeatureFlagController } from './admin-feature-flag.controller';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { RedisModule } from '../../common/redis/redis.module';
 import { NotificationModule } from '../notification/notification.module';
@@ -30,6 +31,7 @@ import { PredictionModule } from '../prediction/prediction.module';
     AdminReviewController,
     AdminDataPipelineController,
     AdminHighSchoolController,
+    AdminFeatureFlagController,
   ],
   providers: [
     AdminService,

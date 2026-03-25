@@ -5076,6 +5076,7 @@
       "verifications": "身份认证",
       "health": "系统健康",
       "team": "团队",
+      "featureFlags": "功能开关",
       "menu": "菜单",
       "adminNav": "管理导航",
       "groups": {
@@ -6510,6 +6511,46 @@
         "AI_QUOTA_DEFAULT_DAILY": "默认每日配额",
         "AI_QUOTA_PRO_DAILY": "Pro 每日配额",
         "AI_QUOTA_PREMIUM_DAILY": "Premium 每日配额"
+      }
+    },
+    "featureFlags": {
+      "title": "功能开关",
+      "description": "管理功能开关，支持灰度发布和 A/B 测试",
+      "key": "标识符",
+      "descriptionCol": "描述",
+      "status": "状态",
+      "rules": "规则",
+      "actions": "操作",
+      "enabled": "已启用",
+      "disabled": "已禁用",
+      "globalRollout": "全量",
+      "create": "创建开关",
+      "edit": "编辑",
+      "save": "保存",
+      "cancel": "取消",
+      "delete": "删除",
+      "invalidateCache": "清除缓存",
+      "created": "功能开关已创建",
+      "updated": "功能开关已更新",
+      "deleted": "功能开关已删除",
+      "cacheInvalidated": "缓存已清除",
+      "invalidJson": "规则字段 JSON 格式无效",
+      "noFlags": "暂无功能开关",
+      "noFlagsDesc": "创建第一个功能开关来控制功能发布",
+      "deleteConfirm": "删除功能开关",
+      "deleteConfirmDesc": "此操作不可撤销，该功能开关将被永久删除。",
+      "createDialog": {
+        "title": "创建功能开关",
+        "keyLabel": "开关标识符",
+        "keyPlaceholder": "例如 prediction-v4",
+        "descriptionLabel": "描述",
+        "descriptionPlaceholder": "该开关控制什么功能？",
+        "enabledLabel": "立即启用",
+        "rulesLabel": "定向规则 (JSON)",
+        "rulesHint": "可选。支持：roles（角色数组）、userIds（用户ID数组）、percentage（0-100灰度百分比）"
+      },
+      "editDialog": {
+        "title": "编辑功能开关"
       }
     },
     "dashboard": {

@@ -51,6 +51,8 @@ import { SentryInterceptor } from './common/sentry/sentry.interceptor';
 import { StorageModule } from './common/storage/storage.module';
 import { AuthorizationModule } from './common/services/authorization.module';
 import { AuditLogModule } from './common/services/audit-log.module';
+import { FeatureFlagModule } from './common/feature-flags';
+import { FeatureFlagGuard } from './common/feature-flags';
 
 @Module({
   imports: [
@@ -97,6 +99,7 @@ import { AuditLogModule } from './common/services/audit-log.module';
     AiModule,
     AiAgentModule,
     AgentSecurityModule, // 企业级安全模块（Prompt 注入防护、内容审核、审计）
+    FeatureFlagModule,
     AdminModule,
     SubscriptionModule,
     VerificationModule,
@@ -133,6 +136,10 @@ import { AuditLogModule } from './common/services/audit-log.module';
     {
       provide: APP_GUARD,
       useClass: PermissionGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: FeatureFlagGuard,
     },
     {
       provide: APP_INTERCEPTOR,

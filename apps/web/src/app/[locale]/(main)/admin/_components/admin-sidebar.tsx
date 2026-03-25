@@ -29,6 +29,7 @@ import {
   Layers,
   SlidersHorizontal,
   ClipboardCheck,
+  ToggleRight,
   ChevronDown,
   Menu,
   type LucideIcon,
@@ -232,7 +233,10 @@ export function AdminSidebar() {
     {
       title: t('sidebar.groups.system'),
       minRole: 'SUPER_ADMIN',
-      items: [{ href: '/admin/settings', icon: Settings, label: t('sidebar.settings') }],
+      items: [
+        { href: '/admin/settings', icon: Settings, label: t('sidebar.settings') },
+        { href: '/admin/feature-flags', icon: ToggleRight, label: t('sidebar.featureFlags') },
+      ],
     },
   ];
 

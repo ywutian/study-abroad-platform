@@ -5081,6 +5081,7 @@
       "verifications": "Verifications",
       "health": "System Health",
       "team": "Team",
+      "featureFlags": "Feature Flags",
       "menu": "Menu",
       "adminNav": "Admin Navigation",
       "groups": {
@@ -6533,6 +6534,46 @@
         "AI_QUOTA_DEFAULT_DAILY": "Default Daily Quota",
         "AI_QUOTA_PRO_DAILY": "Pro Daily Quota",
         "AI_QUOTA_PREMIUM_DAILY": "Premium Daily Quota"
+      }
+    },
+    "featureFlags": {
+      "title": "Feature Flags",
+      "description": "Manage feature flags for gradual rollout and A/B testing",
+      "key": "Key",
+      "descriptionCol": "Description",
+      "status": "Status",
+      "rules": "Rules",
+      "actions": "Actions",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "globalRollout": "Global",
+      "create": "Create Flag",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "invalidateCache": "Invalidate Cache",
+      "created": "Feature flag created",
+      "updated": "Feature flag updated",
+      "deleted": "Feature flag deleted",
+      "cacheInvalidated": "Cache invalidated",
+      "invalidJson": "Invalid JSON in rules field",
+      "noFlags": "No feature flags",
+      "noFlagsDesc": "Create your first feature flag to control feature rollout",
+      "deleteConfirm": "Delete Feature Flag",
+      "deleteConfirmDesc": "This action cannot be undone. The flag will be permanently deleted.",
+      "createDialog": {
+        "title": "Create Feature Flag",
+        "keyLabel": "Flag Key",
+        "keyPlaceholder": "e.g. prediction-v4",
+        "descriptionLabel": "Description",
+        "descriptionPlaceholder": "What does this flag control?",
+        "enabledLabel": "Enable immediately",
+        "rulesLabel": "Targeting Rules (JSON)",
+        "rulesHint": "Optional. Supports: roles (array), userIds (array), percentage (0-100)"
+      },
+      "editDialog": {
+        "title": "Edit Feature Flag"
       }
     },
     "dashboard": {
