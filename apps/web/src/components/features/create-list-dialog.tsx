@@ -27,6 +27,7 @@ import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
 import { Save, Loader2, Plus, X, GraduationCap } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { RankingBadge } from '@/components/ui/ranking-badge';
 import { getSchoolName } from '@/lib/utils';
 import { SchoolSelector } from './school-selector';
 
@@ -45,6 +46,7 @@ interface School {
   state?: string;
   usNewsRank?: number;
   acceptanceRate?: number;
+  rankings?: { source: string; list: string; rank: number; year: number }[];
 }
 
 interface CreateListDialogProps {
@@ -213,11 +215,7 @@ export function CreateListDialog({ open, onOpenChange }: CreateListDialogProps) 
                         </span>
                         <GraduationCap className="h-4 w-4 text-muted-foreground" />
                         <span className="flex-1 text-sm">{getSchoolName(school, locale)}</span>
-                        {school.usNewsRank && (
-                          <Badge variant="outline" className="text-xs">
-                            #{school.usNewsRank}
-                          </Badge>
-                        )}
+                        <RankingBadge rankings={school.rankings} usNewsRank={school.usNewsRank} />
                         <button
                           onClick={() => removeSchool(school.id)}
                           className="rounded-full p-1 hover:bg-muted"

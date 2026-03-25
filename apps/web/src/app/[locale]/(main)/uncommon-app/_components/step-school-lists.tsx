@@ -78,8 +78,8 @@ export function StepSchoolLists({
                           className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 group"
                         >
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium w-8">
-                              #{item.school.usNewsRank || '-'}
+                            <span className="text-xs font-medium text-muted-foreground shrink-0">
+                              {item.school.usNewsRank ? `US News #${item.school.usNewsRank}` : '-'}
                             </span>
                             <span className="text-sm">{getSchoolName(item.school, locale)}</span>
                             {item.isAIRecommended && (

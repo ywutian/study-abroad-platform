@@ -37,31 +37,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { toast } from 'sonner';
 import { useRouter } from '@/lib/i18n/navigation';
 import { apiClient } from '@/lib/api';
-import type { TargetSchool, SchoolRanking } from './types';
+import { RankingBadge } from '@/components/ui/ranking-badge';
+import { getDisplayRankings, RANKING_LIST_KEYS } from '@/lib/utils/ranking';
+import type { TargetSchool } from './types';
 import { FinancialAidComparison } from './financial-aid-comparison';
-
-/** Ranking list label map — keys match backend SchoolRanking.list values */
-const RANKING_LIST_KEYS: Record<string, string> = {
-  NATIONAL_UNIVERSITY: 'nationalUniversity',
-  LIBERAL_ARTS: 'liberalArts',
-  ART_DESIGN: 'artDesign',
-  ENGINEERING_NO_PHD: 'engineering',
-  CS: 'cs',
-  BUSINESS: 'business',
-};
-
-/** Get the best (lowest rank) ranking per list for display */
-function getDisplayRankings(rankings?: SchoolRanking[]): SchoolRanking[] {
-  if (!rankings?.length) return [];
-  const bestByList = new Map<string, SchoolRanking>();
-  for (const r of rankings) {
-    const existing = bestByList.get(r.list);
-    if (!existing || r.rank < existing.rank) {
-      bestByList.set(r.list, r);
-    }
-  }
-  return Array.from(bestByList.values()).sort((a, b) => a.rank - b.rank);
-}
 
 interface EssayPrompt {
   id: string;
@@ -96,17 +75,21 @@ const INTERVIEW_FORMAT_STYLES: Record<string, string> = {
 };
 
 const ROUNDS = ['ED', 'ED2', 'EA', 'REA', 'SCEA', 'RD', 'ROLLING'] as const;
+const COMMON_ROUNDS = ['ED', 'EA', 'RD', 'ROLLING'] as const;
 
 const BINDING_ROUNDS = ['ED', 'ED2', 'REA', 'SCEA'];
 const EARLY_DECISION_GROUP = ['ED', 'ED2'];
 const RESTRICTIVE_EA_GROUP = ['REA', 'SCEA'];
 
-/** Get available rounds for a school from its deadline data, fallback to all */
-function getSchoolAvailableRounds(school: TargetSchool): string[] {
+/** Get available rounds for a school from its deadline data, fallback to common rounds */
+function getSchoolAvailableRounds(school: TargetSchool): {
+  rounds: string[];
+  hasDeadlineData: boolean;
+} {
   if (school.deadlines && school.deadlines.length > 0) {
-    return [...new Set(school.deadlines.map((d) => d.round))];
+    return { rounds: [...new Set(school.deadlines.map((d) => d.round))], hasDeadlineData: true };
   }
-  return [...ROUNDS];
+  return { rounds: [...COMMON_ROUNDS], hasDeadlineData: false };
 }
 
 /** Check binding round conflict, return conflicting school name or null */
@@ -196,12 +179,12 @@ function SchoolEssayPrompts({ schoolId }: { schoolId: string }) {
           </div>
           <Button
             variant="ghost"
-            size="icon"
-            className="h-6 w-6 shrink-0 text-primary"
+            size="sm"
+            className="h-6 shrink-0 text-primary gap-1 px-1.5"
             onClick={() => router.push(`/essays?schoolId=${schoolId}&promptId=${prompt.id}`)}
-            aria-label={t('profile.schoolSelection.startWriting')}
           >
             <PenLine className="h-3 w-3" />
+            <span className="text-xs">{t('profile.schoolSelection.writeEssay')}</span>
           </Button>
         </div>
       ))}
@@ -262,7 +245,7 @@ export function SchoolSelectionTab({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {ROUNDS.map((r) => (
+              {COMMON_ROUNDS.map((r) => (
                 <SelectItem key={r} value={r}>
                   {r}
                 </SelectItem>
@@ -320,7 +303,16 @@ export function SchoolSelectionTab({
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-destructive/10 text-destructive font-bold text-xs">
+                    <div
+                      className="flex h-11 w-11 items-center justify-center rounded-xl bg-destructive/10 text-destructive font-bold text-xs"
+                      title={
+                        getDisplayRankings(school.rankings).length > 0
+                          ? `${getDisplayRankings(school.rankings)[0].source} ${RANKING_LIST_KEYS[getDisplayRankings(school.rankings)[0].list] || ''}`
+                          : school.usNewsRank
+                            ? 'US News'
+                            : undefined
+                      }
+                    >
                       {getDisplayRankings(school.rankings).length > 0
                         ? `#${getDisplayRankings(school.rankings)[0].rank}`
                         : school.usNewsRank
@@ -371,67 +363,83 @@ export function SchoolSelectionTab({
                             {school.essayPromptCount}
                           </Badge>
                         )}
-                        {getDisplayRankings(school.rankings)
-                          .slice(0, 2)
-                          .map((r) => (
-                            <Badge
-                              key={`${r.source}-${r.list}`}
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              {t(
-                                `school.rankingList.${RANKING_LIST_KEYS[r.list] || 'nationalUniversity'}`
-                              )}{' '}
-                              #{r.rank}
-                            </Badge>
-                          ))}
+                        <RankingBadge
+                          rankings={school.rankings}
+                          usNewsRank={school.usNewsRank}
+                          maxBadges={2}
+                        />
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Select
-                      value={school.round || 'RD'}
-                      onValueChange={(newRound) => {
-                        const conflict = getBindingConflict(
-                          targetSchools,
-                          newRound,
-                          school.id,
-                          locale
-                        );
-                        if (conflict) {
-                          toast.error(
-                            t('profile.schoolSelection.bindingConflict', {
-                              round: newRound,
-                              school: conflict,
-                            })
-                          );
-                          return;
-                        }
-                        if (school._listItemId) {
-                          onUpdateRound(school._listItemId, newRound);
-                        }
-                      }}
-                    >
-                      <SelectTrigger className="h-7 w-[72px] text-xs font-medium">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getSchoolAvailableRounds(school).map((r) => (
-                          <SelectItem key={r} value={r}>
-                            {r}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    {(() => {
+                      const availableRounds = getSchoolAvailableRounds(school);
+                      return (
+                        <>
+                          <Select
+                            value={school.round || 'RD'}
+                            onValueChange={(newRound) => {
+                              const conflict = getBindingConflict(
+                                targetSchools,
+                                newRound,
+                                school.id,
+                                locale
+                              );
+                              if (conflict) {
+                                toast.error(
+                                  t('profile.schoolSelection.bindingConflict', {
+                                    round: newRound,
+                                    school: conflict,
+                                  })
+                                );
+                                return;
+                              }
+                              if (school._listItemId) {
+                                onUpdateRound(school._listItemId, newRound);
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="h-7 w-[72px] text-xs font-medium">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {availableRounds.rounds.map((r) => (
+                                <SelectItem key={r} value={r}>
+                                  {r}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {!availableRounds.hasDeadlineData && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Info
+                                    className="h-3.5 w-3.5 text-amber-500 dark:text-amber-400 shrink-0 cursor-help"
+                                    aria-label={t('profile.schoolSelection.roundsNoDeadlineData')}
+                                    role="img"
+                                  />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="text-xs max-w-[200px]">
+                                    {t('profile.schoolSelection.roundsNoDeadlineData')}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                        </>
+                      );
+                    })()}
                     {(school.essayPromptCount ?? 0) > 0 && (
                       <Button
                         variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-primary"
+                        size="sm"
+                        className="h-8 text-primary gap-1 px-2"
                         onClick={() => router.push(`/essays?schoolId=${school.id}`)}
-                        aria-label={t('profile.actions.writeEssay')}
                       >
                         <PenLine className="h-3.5 w-3.5" />
+                        <span className="text-xs">{t('profile.schoolSelection.writeEssay')}</span>
                       </Button>
                     )}
                     <Button

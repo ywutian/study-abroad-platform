@@ -7,6 +7,7 @@ import { apiClient, STALE_TIME } from '@/lib/api';
 import { useSchoolSearch } from '@/hooks/use-school-search';
 import { getLocalizedName } from '@/lib/i18n/locale-utils';
 import { Badge } from '@/components/ui/badge';
+import { RankingBadge } from '@/components/ui/ranking-badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -244,11 +245,11 @@ export function PromptSelector({
                         onClick={() => handleSchoolSelect(school.id, name)}
                       >
                         <span className="font-medium truncate">{name}</span>
-                        {school.usNewsRank && (
-                          <span className="ml-2 shrink-0 text-xs text-muted-foreground">
-                            #{school.usNewsRank}
-                          </span>
-                        )}
+                        <RankingBadge
+                          rankings={school.rankings}
+                          usNewsRank={school.usNewsRank}
+                          className="ml-2"
+                        />
                       </button>
                     );
                   })}

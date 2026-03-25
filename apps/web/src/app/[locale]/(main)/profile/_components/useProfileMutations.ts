@@ -3,10 +3,53 @@
 import { useState, useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
+import { ApiError } from '@/lib/api/api-error';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { AI_TIMEOUTS } from '@/lib/constants';
 import type { ProfileUpdatePayload, TestScore, Activity, Award, TargetSchool } from './types';
+
+type AddErrorType = 'duplicate' | 'binding' | 'unavailable' | 'unknown';
+
+function classifyAddError(error: unknown): AddErrorType {
+  if (error instanceof ApiError && error.code) {
+    switch (error.code) {
+      case 'SCHOOL_LIST_DUPLICATE':
+        return 'duplicate';
+      case 'SCHOOL_LIST_BINDING_CONFLICT':
+        return 'binding';
+      case 'SCHOOL_LIST_ROUND_UNAVAILABLE':
+        return 'unavailable';
+      default:
+        return 'unknown';
+    }
+  }
+  return 'unknown';
+}
+
+function getAddErrorMessage(
+  t: ReturnType<typeof useTranslations>,
+  errorType: AddErrorType,
+  school: string,
+  details?: Record<string, unknown>
+): string {
+  switch (errorType) {
+    case 'duplicate':
+      return t('profile.toast.addErrorDuplicate', { school });
+    case 'binding':
+      return t('profile.toast.addErrorBinding', {
+        school,
+        round: (details?.round as string) || (details?.conflictingRound as string) || 'ED',
+      });
+    case 'unavailable':
+      return t('profile.toast.addErrorUnavailable', {
+        school,
+        round: (details?.round as string) || '',
+      });
+    default:
+      return t('profile.toast.addErrorGeneric', { school });
+  }
+}
 
 export function useProfileMutations(
   calculateCompleteness: () => number,
@@ -181,20 +224,38 @@ export function useProfileMutations(
       const toAdd = newSchools.filter((s) => !currentIds.has(s.id));
       const toRemove = currentSchools.filter((s) => !newIds.has(s.id) && s._listItemId);
 
-      // Add new schools in parallel — use defaultRound with 'RD' fallback
+      // Add new schools in parallel — capture per-school errors
+      const failures: { school: string; reason: string }[] = [];
       const addResults = await Promise.allSettled(
         toAdd.map(async (school) => {
+          const schoolName = school.nameZh || school.name;
           try {
             await addSchoolMutation.mutateAsync({
               schoolId: school.id,
               round: defaultRound,
             });
-          } catch {
+          } catch (err) {
             if (defaultRound !== 'RD') {
-              await addSchoolMutation.mutateAsync({ schoolId: school.id, round: 'RD' });
-              return;
+              try {
+                await addSchoolMutation.mutateAsync({ schoolId: school.id, round: 'RD' });
+                return;
+              } catch (retryErr) {
+                const errorType = classifyAddError(retryErr);
+                const details = retryErr instanceof ApiError ? retryErr.details : undefined;
+                failures.push({
+                  school: schoolName,
+                  reason: getAddErrorMessage(t, errorType, schoolName, details),
+                });
+                throw retryErr;
+              }
             }
-            throw new Error('failed');
+            const errorType = classifyAddError(err);
+            const details = err instanceof ApiError ? err.details : undefined;
+            failures.push({
+              school: schoolName,
+              reason: getAddErrorMessage(t, errorType, schoolName, details),
+            });
+            throw err;
           }
         })
       );
@@ -209,15 +270,28 @@ export function useProfileMutations(
       // Batch invalidation — single refetch after all mutations
       queryClient.invalidateQueries({ queryKey: ['school-lists'] });
 
-      // Summary toast
+      // Summary toast with per-school error details
       if (addedCount > 0 && failedCount === 0) {
         toast.success(t('profile.toast.schoolsAdded', { count: addedCount }));
-      } else if (addedCount > 0 && failedCount > 0) {
-        toast.warning(
-          t('profile.toast.schoolsPartialAdd', { added: addedCount, failed: failedCount })
-        );
-      } else if (failedCount > 0 && addedCount === 0) {
-        toast.error(t('profile.toast.schoolsAddFailed', { count: failedCount }));
+      } else if (failedCount > 0) {
+        const toastFn = addedCount > 0 ? toast.warning : toast.error;
+        const title =
+          addedCount > 0
+            ? t('profile.toast.schoolsPartialAdd', { added: addedCount, failed: failedCount })
+            : t('profile.toast.schoolsAddFailed', { count: failedCount });
+
+        if (failures.length > 0) {
+          const displayFailures = failures.slice(0, 3);
+          const remaining = failures.length - 3;
+          toastFn(title, {
+            description:
+              displayFailures.map((f) => f.reason).join(' · ') +
+              (remaining > 0 ? ` (+${remaining} more)` : ''),
+            duration: Math.min(Math.max(5000, failedCount * 3000), 15000),
+          });
+        } else {
+          toastFn(title);
+        }
       }
       if (toRemove.length > 0 && toAdd.length === 0) {
         toast.success(t('profile.toast.schoolRemoved'));

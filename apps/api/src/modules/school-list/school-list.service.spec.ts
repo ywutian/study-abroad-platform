@@ -278,4 +278,112 @@ describe('SchoolListService', () => {
       );
     });
   });
+
+  describe('validateRound (via addSchool)', () => {
+    const baseDto = {
+      schoolId: 'school-1',
+      tier: 'REACH' as any,
+      round: 'ED',
+      notes: '',
+    };
+
+    beforeEach(() => {
+      (prisma.school.findUnique as jest.Mock).mockResolvedValue(mockSchool);
+      (prisma.schoolListItem.findUnique as jest.Mock).mockResolvedValue(null); // no duplicate
+      (prisma.schoolDeadline.findMany as jest.Mock).mockResolvedValue([]); // no deadline data → skip availability check
+    });
+
+    it('should reject ED + ED (same binding round conflict)', async () => {
+      (prisma.schoolListItem.findFirst as jest.Mock).mockResolvedValue({
+        ...mockListItem,
+        round: 'ED',
+        school: { name: 'Harvard' },
+      });
+
+      await expect(
+        service.addSchool('user-1', { ...baseDto, round: 'ED' }),
+      ).rejects.toThrow(ConflictException);
+    });
+
+    it('should reject ED + REA (cross binding conflict)', async () => {
+      // First call: same binding round check → no conflict
+      // Second call: cross-binding check (ED already exists)
+      (prisma.schoolListItem.findFirst as jest.Mock)
+        .mockResolvedValueOnce(null) // no same round
+        .mockResolvedValueOnce(null); // no REA/SCEA
+      (prisma.schoolListItem.create as jest.Mock).mockResolvedValue(
+        mockListItem,
+      );
+
+      // Now try to add REA when ED exists
+      (prisma.schoolListItem.findFirst as jest.Mock)
+        .mockReset()
+        .mockResolvedValueOnce(null) // REA not yet applied
+        .mockResolvedValueOnce({
+          ...mockListItem,
+          round: 'ED',
+          school: { name: 'MIT' },
+        }); // ED exists → conflict
+
+      await expect(
+        service.addSchool('user-1', { ...baseDto, round: 'REA' }),
+      ).rejects.toThrow(ConflictException);
+    });
+
+    it('should reject ED2 + SCEA (cross binding conflict)', async () => {
+      (prisma.schoolListItem.findFirst as jest.Mock)
+        .mockResolvedValueOnce(null) // no same round
+        .mockResolvedValueOnce({
+          ...mockListItem,
+          round: 'SCEA',
+          school: { name: 'Stanford' },
+        }); // SCEA exists
+
+      await expect(
+        service.addSchool('user-1', { ...baseDto, round: 'ED2' }),
+      ).rejects.toThrow(ConflictException);
+    });
+
+    it('should allow RD + RD (non-binding rounds)', async () => {
+      (prisma.schoolListItem.findFirst as jest.Mock).mockResolvedValue(null);
+      (prisma.schoolListItem.create as jest.Mock).mockResolvedValue({
+        ...mockListItem,
+        round: 'RD',
+      });
+
+      const result = await service.addSchool('user-1', {
+        ...baseDto,
+        round: 'RD',
+      });
+      expect(result).toBeDefined();
+    });
+
+    it('should reject round not in available list', async () => {
+      (prisma.schoolListItem.findFirst as jest.Mock).mockResolvedValue(null);
+      // School has specific deadline data — EA is not among them
+      (prisma.schoolDeadline.findMany as jest.Mock).mockResolvedValue([
+        { round: 'ED', deadline: new Date() },
+        { round: 'RD', deadline: new Date() },
+      ]);
+
+      await expect(
+        service.addSchool('user-1', { ...baseDto, round: 'EA' }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should skip availability check when no deadline data', async () => {
+      (prisma.schoolListItem.findFirst as jest.Mock).mockResolvedValue(null);
+      (prisma.schoolDeadline.findMany as jest.Mock).mockResolvedValue([]); // no data
+      (prisma.schoolListItem.create as jest.Mock).mockResolvedValue({
+        ...mockListItem,
+        round: 'EA',
+      });
+
+      const result = await service.addSchool('user-1', {
+        ...baseDto,
+        round: 'EA',
+      });
+      expect(result).toBeDefined();
+    });
+  });
 });

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, ListPlus, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { RankingBadge } from '@/components/ui/ranking-badge';
 import {
   Select,
   SelectContent,
@@ -207,8 +208,11 @@ export function FloatingAddButton({
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       {/* 排名 */}
-                      <div className="shrink-0 w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
-                        #{school.usNewsRank || '-'}
+                      <div
+                        className="shrink-0 w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center text-xs font-bold text-primary"
+                        title={school.usNewsRank ? 'US News' : undefined}
+                      >
+                        {school.usNewsRank ? `#${school.usNewsRank}` : '-'}
                       </div>
                       {/* 名称 */}
                       <div className="min-w-0">

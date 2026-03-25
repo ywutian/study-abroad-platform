@@ -242,7 +242,7 @@ export function SchoolCalibrationsTab() {
                           <p className="font-medium">{getSchoolName(cal.school, locale)}</p>
                           {cal.school.usNewsRank && (
                             <span className="text-xs text-muted-foreground">
-                              #{cal.school.usNewsRank}
+                              US News #{cal.school.usNewsRank}
                             </span>
                           )}
                         </div>

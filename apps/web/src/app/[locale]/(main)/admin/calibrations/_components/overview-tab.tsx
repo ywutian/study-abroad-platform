@@ -296,7 +296,9 @@ export function OverviewTab() {
                               )}
                             </p>
                             {s.usNewsRank && (
-                              <span className="text-xs text-muted-foreground">#{s.usNewsRank}</span>
+                              <span className="text-xs text-muted-foreground">
+                                US News #{s.usNewsRank}
+                              </span>
                             )}
                           </div>
                         </td>

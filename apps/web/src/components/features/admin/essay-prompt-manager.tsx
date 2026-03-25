@@ -400,7 +400,7 @@ export function EssayPromptManager() {
                     </TableCell>
                     <TableCell>
                       {essay.school.usNewsRank ? (
-                        <Badge variant="outline">#{essay.school.usNewsRank}</Badge>
+                        <Badge variant="outline">US News #{essay.school.usNewsRank}</Badge>
                       ) : (
                         '-'
                       )}

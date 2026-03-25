@@ -235,7 +235,7 @@ export function DataQualityTab({ qualityData, isLoading, onRefresh }: DataQualit
                         <TableRow key={school.id}>
                           <TableCell>
                             {school.usNewsRank ? (
-                              <Badge variant="outline">#{school.usNewsRank}</Badge>
+                              <Badge variant="outline">US News #{school.usNewsRank}</Badge>
                             ) : (
                               <span className="text-muted-foreground">-</span>
                             )}

@@ -292,7 +292,9 @@ export function CreateCaseDialog({ open, onOpenChange }: Props) {
                       {getLocalizedName(s.nameZh, s.name, locale)}
                     </span>
                     {s.usNewsRank && (
-                      <span className="text-muted-foreground ml-2 text-xs">#{s.usNewsRank}</span>
+                      <span className="text-muted-foreground ml-2 text-xs">
+                        US News #{s.usNewsRank}
+                      </span>
                     )}
                   </button>
                 ))}

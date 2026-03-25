@@ -471,6 +471,7 @@ Key utility classes: `zone-tinted`/`zone-dark` (section backgrounds), `glass`/`g
 | `pnpm --filter web lint:quality` | Code quality checks (Tailwind, console) |
 | `pnpm test`                      | Unit tests (API: Jest, Web: Vitest)     |
 | `pnpm test:e2e`                  | E2E tests (requires running DB + Redis) |
+| `pnpm lint:routes`               | API route consistency check             |
 | `pnpm format`                    | Prettier format all files               |
 
 ### URLs
@@ -489,12 +490,51 @@ Key utility classes: `zone-tinted`/`zone-dark` (section backgrounds), `glass`/`g
 
 Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`
 
-### Pre-commit Hooks (Husky + lint-staged)
+### Git Hooks (Husky)
+
+#### Pre-commit (lint-staged, ~5-10s)
 
 1. **Prettier + ESLint** on staged `.ts/.tsx` files (includes import sorting via `simple-import-sort`)
 2. **i18n checks** (when `apps/web/src/` changed): missing keys, key consistency, wrong-language detection
 3. **Frontend quality checks** (when `apps/web/src/` changed): 7 rules — dynamic Tailwind, hardcoded colors, console.log, page size, loading.tsx, error.tsx
 4. **Backend quality checks** (when `apps/api/src/` changed): 5 rules — inline body, throttle, throw, maxlength, tests
+
+#### Pre-push (~30-60s, catches CI failures locally)
+
+`.husky/pre-push` runs before every `git push`:
+
+1. **Prisma generate** — ensures client matches schema (prevents typecheck failures)
+2. **API route check** — `pnpm lint:routes` verifies client API paths match backend controllers
+3. **Typecheck** — `tsc --noEmit` for API, Web, Mobile (all 3 apps)
+4. **Unit tests** — `pnpm test` (API Jest + Web Vitest + Mobile Jest)
+
+Manual equivalent: `pnpm prepush`
+
+### CI ↔ Local Check Mapping
+
+| CI Job                                     | Local Hook / Command                                                                                 | Common Failure Causes                                                                       |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| **Lint** (ESLint + i18n + quality + audit) | pre-commit + `pnpm lint:all` + `pnpm audit --audit-level=high --registry=https://registry.npmjs.org` | i18n wrong-language, missing dark: variants, CVE in dependencies                            |
+| **Type Check** (API + Web + Mobile)        | pre-push + `pnpm --filter <app> exec tsc --noEmit`                                                   | Dynamic imports with nodenext resolution, wrong enum types in DTOs, missing Prisma generate |
+| **Unit Tests**                             | pre-push + `pnpm test`                                                                               | Missing Prisma mock models, coverage threshold too high, Zustand selector mock pattern      |
+| **E2E Tests**                              | `pnpm test:e2e` (requires Docker PG + Redis)                                                         | Renamed/removed API routes not updated in e2e specs, migration drift                        |
+| **Mobile CI** (Lint & Test)                | pre-push                                                                                             | Coverage thresholds, pnpm version mismatch in workflow                                      |
+| **Security Scan** (Trivy)                  | N/A (CI-only)                                                                                        | CVEs in container image                                                                     |
+| **Dependency Audit**                       | `pnpm audit --audit-level=high --registry=https://registry.npmjs.org`                                | Transitive dependency CVEs — fix with `pnpm.overrides` in root package.json                 |
+| **Route Check**                            | pre-push + `pnpm lint:routes`                                                                        | Client API path prefix not matching any backend `@Controller()` decorator                   |
+| **Build**                                  | `pnpm build`                                                                                         | Subset of typecheck issues                                                                  |
+
+### Lessons Learned (Push Failures)
+
+- **Prisma schema 变更后**：必须 `pnpm --filter api db:generate` 再 typecheck，否则类型不匹配
+- **DTO 字段类型**：使用 Prisma 枚举类型（`import { MyEnum } from '@prisma/client'`），不要用 `string`
+- **nodenext 模块解析**：跨模块引用必须用静态 `import`，不能用 `await import()`
+- **测试 mock**：新增 Prisma model 后，所有 `PrismaService` mock 需要补充对应的 model mock
+- **Zustand hook mock**：必须用 selector 模式 `jest.fn((selector) => selector ? selector(state) : state)`
+- **Coverage 阈值**：新 app 初期阈值设低（3-5%），随测试增加逐步提高
+- **依赖审计 CVE**：用 `pnpm.overrides` 修复传递依赖的 CVE，注意区分 major 版本范围
+- **E2E 测试**：API 路由重命名/删除时，同步更新 `apps/api/test/*.e2e-spec.ts`
+- **CI workflow**：`pnpm/action-setup@v4` 自动读取 `packageManager` 字段，不要手动指定 `version`
 
 ### Code Quality Checks (`check-code-quality.ts`)
 
@@ -527,10 +567,15 @@ Backend static analysis (7 rules) integrated into pre-commit and CI:
 ### Quick Check Commands
 
 ```bash
-pnpm lint:all                          # One command: ESLint + quality + i18n
+pnpm lint:all                          # One command: ESLint + quality + i18n + route check
+pnpm lint:routes                       # API route consistency (client paths vs backend controllers)
+pnpm prepush                           # Typecheck + tests (same as pre-push hook)
+pnpm check                             # lint:all + test (full local CI equivalent)
+pnpm audit --audit-level=high --registry=https://registry.npmjs.org  # Dependency CVE scan
 pnpm --filter web lint:quality         # Frontend quality (7 rules)
 pnpm --filter api lint:quality         # Backend quality (5 rules)
 pnpm --filter web lint:i18n            # i18n checks
+pnpm test:e2e                          # E2E tests (requires Docker PG + Redis running)
 ```
 
 Exemption lists in each script for known-safe patterns.
@@ -575,8 +620,9 @@ After writing code, verify these items. `[AUTO]` items are enforced by tooling; 
 3. `[AUTO]` AI routes have `@ThrottleAI()`
 4. `[AUTO]` No `throw new Error()` in services
 5. `[AUTO]` Service has `.spec.ts` test file
-6. `[MANUAL]` Sensitive endpoints have `@Roles(Role.ADMIN)`
-7. `[MANUAL]` DTO fields have `@ApiProperty()` for Swagger
+6. `[AUTO]` API routes use shared constants (`packages/shared/src/constants/api-routes.ts`)
+7. `[MANUAL]` Sensitive endpoints have `@Roles(Role.ADMIN)`
+8. `[MANUAL]` DTO fields have `@ApiProperty()` for Swagger
 
 ### Frontend PR
 

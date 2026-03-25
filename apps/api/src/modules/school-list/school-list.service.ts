@@ -71,9 +71,14 @@ export class SchoolListService {
       });
 
       if (existingBinding) {
-        throw new ConflictException(
-          `You already have an ${roundUpper} application to ${existingBinding.school.name}. ${roundUpper} is binding — only one school allowed.`,
-        );
+        throw new ConflictException({
+          code: 'SCHOOL_LIST_BINDING_CONFLICT',
+          message: `You already have an ${roundUpper} application to ${existingBinding.school.name}. ${roundUpper} is binding — only one school allowed.`,
+          details: {
+            round: roundUpper,
+            conflictingSchool: existingBinding.school.name,
+          },
+        });
       }
 
       // 2. ED/ED2 ↔ REA/SCEA mutual exclusion
@@ -87,9 +92,15 @@ export class SchoolListService {
           include: { school: { select: { name: true } } },
         });
         if (conflictItem) {
-          throw new ConflictException(
-            `Cannot apply ${roundUpper} because you have a ${conflictItem.round} application to ${conflictItem.school.name}. ED/ED2 and REA/SCEA are mutually exclusive.`,
-          );
+          throw new ConflictException({
+            code: 'SCHOOL_LIST_BINDING_CONFLICT',
+            message: `Cannot apply ${roundUpper} because you have a ${conflictItem.round} application to ${conflictItem.school.name}. ED/ED2 and REA/SCEA are mutually exclusive.`,
+            details: {
+              round: roundUpper,
+              conflictingRound: conflictItem.round,
+              conflictingSchool: conflictItem.school.name,
+            },
+          });
         }
       } else if (['REA', 'SCEA'].includes(roundUpper)) {
         const conflictItem = await this.prisma.schoolListItem.findFirst({
@@ -101,9 +112,15 @@ export class SchoolListService {
           include: { school: { select: { name: true } } },
         });
         if (conflictItem) {
-          throw new ConflictException(
-            `Cannot apply ${roundUpper} because you have a ${conflictItem.round} application to ${conflictItem.school.name}. ED/ED2 and REA/SCEA are mutually exclusive.`,
-          );
+          throw new ConflictException({
+            code: 'SCHOOL_LIST_BINDING_CONFLICT',
+            message: `Cannot apply ${roundUpper} because you have a ${conflictItem.round} application to ${conflictItem.school.name}. ED/ED2 and REA/SCEA are mutually exclusive.`,
+            details: {
+              round: roundUpper,
+              conflictingRound: conflictItem.round,
+              conflictingSchool: conflictItem.school.name,
+            },
+          });
         }
       }
     }
@@ -111,9 +128,11 @@ export class SchoolListService {
     // 3. Round availability check (only if school has deadline data)
     const available = await this.getAvailableRounds(schoolId);
     if (available.length > 0 && !available.includes(round)) {
-      throw new BadRequestException(
-        `Round "${round}" is not available for this school. Available rounds: ${available.join(', ')}`,
-      );
+      throw new BadRequestException({
+        code: 'SCHOOL_LIST_ROUND_UNAVAILABLE',
+        message: `Round "${round}" is not available for this school. Available rounds: ${available.join(', ')}`,
+        details: { round, availableRounds: available },
+      });
     }
   }
 
@@ -285,7 +304,10 @@ export class SchoolListService {
     });
 
     if (existing) {
-      throw new ConflictException('School already exists in your list');
+      throw new ConflictException({
+        code: 'SCHOOL_LIST_DUPLICATE',
+        message: 'School already exists in your list',
+      });
     }
 
     // Validate round: binding exclusivity + availability
