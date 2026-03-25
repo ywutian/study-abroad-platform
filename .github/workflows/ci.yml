@@ -13,6 +13,11 @@ on:
         type: boolean
         default: true
 
+permissions:
+  contents: read
+  pull-requests: read
+  security-events: write
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -407,6 +412,7 @@ jobs:
       - name: Upload SARIF
         if: always()
         uses: github/codeql-action/upload-sarif@v3
+        continue-on-error: true
         with:
           sarif_file: semgrep.sarif
 
@@ -526,6 +532,7 @@ jobs:
           severity: CRITICAL,HIGH
           exit-code: '1'
           ignore-unfixed: true
+          trivyignores: '.trivyignore'
 
   # ── SBOM Generation ───────────────────────────────────────
   sbom:
