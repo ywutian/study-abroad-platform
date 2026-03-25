@@ -412,6 +412,7 @@ jobs:
       - name: Upload SARIF
         if: always()
         uses: github/codeql-action/upload-sarif@v3
+        continue-on-error: true
         with:
           sarif_file: semgrep.sarif
 
