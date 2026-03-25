@@ -58,6 +58,7 @@ interface PredictionResultCardProps {
   onRefresh?: (schoolId: string) => void;
   isRefreshing?: boolean;
   isInternational?: boolean;
+  dataCompleteness?: number;
 }
 
 /** Compute relative time string (e.g. "5 min ago") */
@@ -103,6 +104,7 @@ export const PredictionResultCard = memo(
     onRefresh,
     isRefreshing,
     isInternational,
+    dataCompleteness,
   }: PredictionResultCardProps) {
     const t = useTranslations('prediction');
     const expandedRef = useRef<HTMLDivElement>(null);
@@ -396,7 +398,10 @@ export const PredictionResultCard = memo(
 
                   {/* Suggestions */}
                   {result.suggestions.length > 0 && (
-                    <SuggestionsPanel suggestions={result.suggestions} />
+                    <SuggestionsPanel
+                      suggestions={result.suggestions}
+                      dataCompleteness={dataCompleteness}
+                    />
                   )}
 
                   {/* Prediction history trend */}

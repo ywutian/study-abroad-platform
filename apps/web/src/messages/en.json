@@ -1382,6 +1382,7 @@
       "research": "Research Opportunities",
       "general": "General Suggestions"
     },
+    "suggestionsGenericHint": "These suggestions are based on your target major. Add activities and awards for more personalized recommendations.",
     "impactFactors": "Impact Factors",
     "factorsDisclaimer": "Note: This prediction does not account for essay quality, recommendation letters, or interview performance",
     "source": {

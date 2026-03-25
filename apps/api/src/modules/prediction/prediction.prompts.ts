@@ -2,6 +2,8 @@
  * 预测 Prompt 构建器 (i18n-aware)
  */
 
+import { classifyMajor, MAJOR_CATEGORY_PROGRAMS } from './prediction.constants';
+
 export interface ProfileInput {
   gpa?: number;
   gpaScale?: number;
@@ -346,6 +348,68 @@ export interface NationalityStats {
 }
 
 /**
+ * Build missing-data guidance when activities/awards are empty.
+ * Injects major-specific program recommendations so the LLM can still
+ * give concrete suggestions even without activity data.
+ */
+export function buildMissingDataGuidance(
+  profile: ProfileInput,
+  isZh: boolean,
+): string {
+  const hasActivities = profile.activities && profile.activities.length > 0;
+  const hasAwards = profile.awards && profile.awards.length > 0;
+
+  // No guidance needed when both are present
+  if (hasActivities) return '';
+
+  const category = classifyMajor(profile.targetMajor);
+  const programs = MAJOR_CATEGORY_PROGRAMS[category];
+  const majorLabel = profile.targetMajor || (isZh ? '未确定' : 'Undecided');
+
+  const summerNames = programs.summer
+    .map((p) => (isZh ? `${p.name}（${p.zh}）` : p.name))
+    .join(', ');
+  const competitionNames = programs.competition
+    .map((p) => (isZh ? `${p.name}（${p.zh}）` : p.name))
+    .join(', ');
+
+  if (!hasActivities && !hasAwards) {
+    return isZh
+      ? `\n\n## 数据缺失指导
+该学生未填写活动经历和获奖情况。
+- 不要引用"现有活动"——学生没有填写任何活动
+- 建议仍必须包含具体项目名称，从以下与目标专业（${majorLabel} → ${category}）相关的项目中推荐：
+  暑期项目：${summerNames}
+  竞赛：${competitionNames}
+- 每条建议说明该项目为什么适合该专业方向
+- 在建议开头加注：由于缺少活动信息，以下建议基于目标专业的通用推荐`
+      : `\n\n## Missing Data Guidance
+This student has not listed any activities or awards.
+- Do NOT reference "existing activities" — the student has none listed
+- Suggestions MUST still include specific program names. Recommend from these programs relevant to the target major (${majorLabel} → ${category}):
+  Summer programs: ${summerNames}
+  Competitions: ${competitionNames}
+- Explain why each program suits this major direction
+- Prefix suggestions with a note: these recommendations are based on the target major since no activity data was provided`;
+  }
+
+  // Activities empty but has awards
+  return isZh
+    ? `\n\n## 数据缺失指导
+该学生未填写活动经历（但有获奖记录）。
+- 不要引用"现有活动"——学生没有填写活动
+- 可以参考获奖方向来推荐活动，同时推荐与目标专业（${majorLabel} → ${category}）相关的项目：
+  暑期项目：${summerNames}
+  竞赛：${competitionNames}`
+    : `\n\n## Missing Data Guidance
+This student has not listed activities (but has awards).
+- Do NOT reference "existing activities" — none listed
+- Use award themes to guide activity recommendations. Also recommend programs relevant to the target major (${majorLabel} → ${category}):
+  Summer programs: ${summerNames}
+  Competitions: ${competitionNames}`;
+}
+
+/**
  * 构建预测 Prompt
  */
 export function buildPredictionPrompt(
@@ -384,7 +448,7 @@ ${formatAssessmentContext(profile.assessment, true)}${profile.isInternational ? 
 - 录取率: ${school.acceptanceRate ? `${school.acceptanceRate}%` : unknown}${school.intlAcceptanceRate ? `\n- 国际生录取率: ${school.intlAcceptanceRate}%` : ''}${school.intlStudentPct ? `\n- 国际生比例: ${school.intlStudentPct}%` : ''}${school.needBlindInternational ? '\n- Need-Blind政策: 对国际生Need-Blind' : ''}
 - 毕业率: ${school.graduationRate ? `${school.graduationRate}%` : unknown}
 - 平均 SAT: ${school.satAvg || unknown}${school.sat25 && school.sat75 ? ` (25th-75th: ${school.sat25}-${school.sat75})` : ''}
-- 平均 ACT: ${school.actAvg || unknown}${school.act25 && school.act75 ? ` (25th-75th: ${school.act25}-${school.act75})` : ''}${school.retentionRate ? `\n- 新生留存率: ${school.retentionRate}%` : ''}${school.studentFacultyRatio ? `\n- 师生比: ${school.studentFacultyRatio}:1` : ''}${school.percentNeedMet ? `\n- 助学金满足率: ${school.percentNeedMet}%` : ''}${school.averageNetPrice ? `\n- 平均净费用: $${school.averageNetPrice.toLocaleString()}` : ''}${school.testOptional === true ? '\n- 标化政策: Test Optional' : ''}${school.hasEarlyDecision ? '\n- 提前决定: 有ED轮次' : ''}${nationalityStats && profile.isInternational ? `\n\n## 国籍维度历史数据\n- 该校来自${nationalityStats.nationality}的历史申请者录取率: ${nationalityStats.admitRate.toFixed(1)}% (基于${nationalityStats.totalCases}个案例)\n- 请将此数据作为国际生录取概率评估的重要参考` : ''}
+- 平均 ACT: ${school.actAvg || unknown}${school.act25 && school.act75 ? ` (25th-75th: ${school.act25}-${school.act75})` : ''}${school.retentionRate ? `\n- 新生留存率: ${school.retentionRate}%` : ''}${school.studentFacultyRatio ? `\n- 师生比: ${school.studentFacultyRatio}:1` : ''}${school.percentNeedMet ? `\n- 助学金满足率: ${school.percentNeedMet}%` : ''}${school.averageNetPrice ? `\n- 平均净费用: $${school.averageNetPrice.toLocaleString()}` : ''}${school.testOptional === true ? '\n- 标化政策: Test Optional' : ''}${school.hasEarlyDecision ? '\n- 提前决定: 有ED轮次' : ''}${nationalityStats && profile.isInternational ? `\n\n## 国籍维度历史数据\n- 该校来自${nationalityStats.nationality}的历史申请者录取率: ${nationalityStats.admitRate.toFixed(1)}% (基于${nationalityStats.totalCases}个案例)\n- 请将此数据作为国际生录取概率评估的重要参考` : ''}${buildMissingDataGuidance(profile, true)}
 
 ## 分析要求
 1. 综合评估学生竞争力与学校录取标准的匹配度
@@ -466,7 +530,7 @@ ${formatAssessmentContext(profile.assessment, false)}${profile.isInternational ?
 - Acceptance Rate: ${school.acceptanceRate ? `${school.acceptanceRate}%` : unknown}${school.intlAcceptanceRate ? `\n- International Acceptance Rate: ${school.intlAcceptanceRate}%` : ''}${school.intlStudentPct ? `\n- International Student %: ${school.intlStudentPct}%` : ''}${school.needBlindInternational ? '\n- Need-Blind for International Students: Yes' : ''}
 - Graduation Rate: ${school.graduationRate ? `${school.graduationRate}%` : unknown}
 - Average SAT: ${school.satAvg || unknown}${school.sat25 && school.sat75 ? ` (25th-75th: ${school.sat25}-${school.sat75})` : ''}
-- Average ACT: ${school.actAvg || unknown}${school.act25 && school.act75 ? ` (25th-75th: ${school.act25}-${school.act75})` : ''}${school.retentionRate ? `\n- Retention Rate: ${school.retentionRate}%` : ''}${school.studentFacultyRatio ? `\n- Student-Faculty Ratio: ${school.studentFacultyRatio}:1` : ''}${school.percentNeedMet ? `\n- % Need Met: ${school.percentNeedMet}%` : ''}${school.averageNetPrice ? `\n- Avg Net Price: $${school.averageNetPrice.toLocaleString()}` : ''}${school.testOptional === true ? '\n- Test Policy: Test Optional' : ''}${school.hasEarlyDecision ? '\n- Early Decision: Available' : ''}${nationalityStats && profile.isInternational ? `\n\n## Nationality-Specific Historical Data\n- Historical admission rate for ${nationalityStats.nationality} applicants at this school: ${nationalityStats.admitRate.toFixed(1)}% (based on ${nationalityStats.totalCases} cases)\n- Use this data as an important reference for international student probability estimation` : ''}
+- Average ACT: ${school.actAvg || unknown}${school.act25 && school.act75 ? ` (25th-75th: ${school.act25}-${school.act75})` : ''}${school.retentionRate ? `\n- Retention Rate: ${school.retentionRate}%` : ''}${school.studentFacultyRatio ? `\n- Student-Faculty Ratio: ${school.studentFacultyRatio}:1` : ''}${school.percentNeedMet ? `\n- % Need Met: ${school.percentNeedMet}%` : ''}${school.averageNetPrice ? `\n- Avg Net Price: $${school.averageNetPrice.toLocaleString()}` : ''}${school.testOptional === true ? '\n- Test Policy: Test Optional' : ''}${school.hasEarlyDecision ? '\n- Early Decision: Available' : ''}${nationalityStats && profile.isInternational ? `\n\n## Nationality-Specific Historical Data\n- Historical admission rate for ${nationalityStats.nationality} applicants at this school: ${nationalityStats.admitRate.toFixed(1)}% (based on ${nationalityStats.totalCases} cases)\n- Use this data as an important reference for international student probability estimation` : ''}${buildMissingDataGuidance(profile, false)}
 
 ## Analysis Requirements
 1. Evaluate the student's competitiveness against the school's admission standards

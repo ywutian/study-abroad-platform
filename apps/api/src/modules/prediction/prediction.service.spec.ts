@@ -442,6 +442,10 @@ describe('PredictionService', () => {
       expect(output.results).toHaveLength(1);
       // AI should have been called (not short-circuited by cache)
       expect(aiEngine.predictWithAI).toHaveBeenCalled();
+      // dataCompleteness should be threaded through to the AI engine
+      const callArgs = (aiEngine.predictWithAI as jest.Mock).mock.calls[0];
+      const lastArg = callArgs[callArgs.length - 1];
+      expect(typeof lastArg).toBe('number');
     });
 
     it('should include tier classification (reach/match/safety)', async () => {

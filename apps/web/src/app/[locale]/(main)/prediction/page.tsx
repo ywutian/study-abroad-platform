@@ -278,6 +278,7 @@ export default function PredictionPage() {
               onRefresh={handleRefreshSchool}
               refreshingSchoolId={refreshingSchoolId}
               isInternational={isInternational}
+              dataCompleteness={responseMetadata.dataCompleteness}
             />
             <AIErrorBoundary feature="recommendation">
               <RecommendedSchoolsBlock />

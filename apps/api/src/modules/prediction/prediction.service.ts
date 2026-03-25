@@ -277,6 +277,7 @@ export class PredictionService {
     locale = 'zh',
     profileId?: string,
     nationalityStats?: import('./prediction.prompts').NationalityStats,
+    dataCompleteness?: number,
   ) {
     return this.aiEngine.predictWithAI(
       profile,
@@ -286,6 +287,7 @@ export class PredictionService {
       locale,
       profileId,
       nationalityStats,
+      dataCompleteness,
     );
   }
 
@@ -698,6 +700,7 @@ export class PredictionService {
             plattParams,
             profileHash,
             programMap.get(school.id),
+            dataCompleteness,
           ),
         ),
       );
@@ -792,6 +795,7 @@ export class PredictionService {
     plattParams?: { a: number; b: number } | null,
     profileHash?: string,
     programData?: any,
+    dataCompleteness?: number,
   ): Promise<PredictionResultDto> {
     const schoolInput = this.schoolToInput(school);
     const schoolMetrics = this.extractSchoolMetrics(schoolInput);
@@ -842,6 +846,7 @@ export class PredictionService {
         locale,
         profileId,
         nationalityStats ?? undefined,
+        dataCompleteness,
       );
     } catch (err: any) {
       this.logger.warn(

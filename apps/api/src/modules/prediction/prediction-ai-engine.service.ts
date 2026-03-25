@@ -61,6 +61,7 @@ export class PredictionAiEngine {
     locale = 'zh',
     profileId?: string,
     nationalityStats?: NationalityStats,
+    dataCompleteness?: number,
   ): Promise<{
     probability: number;
     factors: PredictionFactor[];
@@ -99,6 +100,13 @@ export class PredictionAiEngine {
         locale === 'zh'
           ? `\n\n## 用户已知背景信息\n${insightsText}\n\n请将这些额外信息纳入分析。`
           : `\n\n## Known User Background\n${insightsText}\n\nIncorporate this information into your analysis.`;
+    }
+
+    if (dataCompleteness !== undefined && dataCompleteness < 70) {
+      enhancedPrompt +=
+        locale === 'zh'
+          ? `\n\n## 数据完整度: ${dataCompleteness}%\n数据不完整。建议中请指出哪些缺失数据最影响预测准确性，并降低 confidence 评级。`
+          : `\n\n## Data Completeness: ${dataCompleteness}%\nProfile data is incomplete. Note which missing data most affects prediction accuracy and lower the confidence rating accordingly.`;
     }
 
     const systemPrompt =

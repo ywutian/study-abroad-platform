@@ -1382,6 +1382,7 @@
       "research": "科研机会",
       "general": "综合建议"
     },
+    "suggestionsGenericHint": "这些建议基于您的目标专业。添加活动和奖项可获得更个性化的推荐。",
     "impactFactors": "影响因素分析",
     "factorsDisclaimer": "注意：本预测未包含文书质量、推荐信和面试表现的评估",
     "source": {

@@ -19,6 +19,7 @@ interface PredictionResultListProps {
   onRefresh?: (schoolId: string) => void;
   refreshingSchoolId?: string | null;
   isInternational?: boolean;
+  dataCompleteness?: number;
 }
 
 type SortBy = 'probability' | 'tier' | 'confidence';
@@ -37,6 +38,7 @@ export function PredictionResultList({
   onRefresh,
   refreshingSchoolId,
   isInternational,
+  dataCompleteness,
 }: PredictionResultListProps) {
   const t = useTranslations('prediction');
   const [sortBy, setSortBy] = useState<SortBy>('probability');
@@ -160,6 +162,7 @@ export function PredictionResultList({
           onRefresh={onRefresh}
           refreshingSchoolId={refreshingSchoolId}
           isInternational={isInternational}
+          dataCompleteness={dataCompleteness}
         />
       ) : (
         <StaggerContainer staggerDelay={0.05} className="space-y-4">
@@ -173,6 +176,7 @@ export function PredictionResultList({
                 onRefresh={onRefresh}
                 isRefreshing={refreshingSchoolId === result.schoolId}
                 isInternational={isInternational}
+                dataCompleteness={dataCompleteness}
               />
             </StaggerItem>
           ))}
@@ -195,6 +199,7 @@ function VirtualizedResultList({
   onRefresh,
   refreshingSchoolId,
   isInternational,
+  dataCompleteness,
 }: {
   items: PredictionResult[];
   expandedId: string | null;
@@ -203,6 +208,7 @@ function VirtualizedResultList({
   onRefresh?: (schoolId: string) => void;
   refreshingSchoolId?: string | null;
   isInternational?: boolean;
+  dataCompleteness?: number;
 }) {
   const parentRef = useRef<HTMLDivElement>(null);
 
@@ -249,6 +255,7 @@ function VirtualizedResultList({
                 onRefresh={onRefresh}
                 isRefreshing={refreshingSchoolId === result.schoolId}
                 isInternational={isInternational}
+                dataCompleteness={dataCompleteness}
               />
             </div>
           );

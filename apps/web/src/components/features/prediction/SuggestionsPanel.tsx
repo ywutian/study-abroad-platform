@@ -3,7 +3,8 @@
 import { memo, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { MAJOR_CATEGORY_PROGRAMS } from '@study-abroad/shared';
-import { Sun, Trophy, FlaskConical, Lightbulb } from 'lucide-react';
+import { Sun, Trophy, FlaskConical, Lightbulb, Info } from 'lucide-react';
+import { Link } from '@/lib/i18n/navigation';
 
 export type SuggestionCategory = 'summer_program' | 'competition' | 'research' | 'general';
 
@@ -128,12 +129,15 @@ export function categorizeSuggestion(text: string): SuggestionCategory {
 
 interface SuggestionsPanelProps {
   suggestions: string[];
+  dataCompleteness?: number;
 }
 
 export const SuggestionsPanel = memo(function SuggestionsPanel({
   suggestions,
+  dataCompleteness,
 }: SuggestionsPanelProps) {
   const t = useTranslations('prediction');
+  const showGenericHint = dataCompleteness !== undefined && dataCompleteness < 40;
 
   const groupedWithIndex = useMemo(() => {
     const groups: Record<SuggestionCategory, string[]> = {
@@ -155,9 +159,22 @@ export const SuggestionsPanel = memo(function SuggestionsPanel({
 
   if (suggestions.length === 0) return null;
 
+  const genericHintBanner = showGenericHint ? (
+    <div className="flex items-start gap-2 rounded-md bg-muted/50 p-2.5 mb-3">
+      <Info className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" aria-hidden="true" />
+      <p className="text-xs text-muted-foreground">
+        {t('suggestionsGenericHint')}{' '}
+        <Link href="/profile" className="underline hover:text-foreground transition-colors">
+          {t('completeProfile')}
+        </Link>
+      </p>
+    </div>
+  ) : null;
+
   if (groupedWithIndex.activeCategories <= 1) {
     return (
       <div className="space-y-2">
+        {genericHintBanner}
         <p className="text-overline text-muted-foreground">{t('suggestions')}</p>
         <ul className="space-y-2">
           {suggestions.map((suggestion, index) => (
@@ -175,6 +192,7 @@ export const SuggestionsPanel = memo(function SuggestionsPanel({
 
   return (
     <div className="space-y-4">
+      {genericHintBanner}
       <p className="text-overline text-muted-foreground">{t('suggestions')}</p>
       {groupedWithIndex.sections.map(({ category, items }) => {
         const config = CATEGORY_CONFIG[category];
