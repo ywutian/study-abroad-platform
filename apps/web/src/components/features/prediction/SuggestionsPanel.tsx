@@ -18,6 +18,11 @@ const CATEGORY_KEYWORDS: Record<Exclude<SuggestionCategory, 'general'>, string[]
     'summer',
     'pre-college',
     'Governor',
+    // Programs not in MAJOR_CATEGORY_PROGRAMS but still recognized
+    'SAMS',
+    'SSP',
+    'PROMYS',
+    'SUMaC',
     // Chinese keywords
     '暑期',
     '夏校',

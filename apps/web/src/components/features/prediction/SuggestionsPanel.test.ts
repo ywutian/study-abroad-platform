@@ -22,6 +22,7 @@ describe('categorizeSuggestion', () => {
       ['Telluride Association Summer Program', 'Telluride'],
       ["Apply to Governor's School", 'Governor'],
       ['Try a pre-college course at Harvard', 'pre-college'],
+      ['Apply to Clark Scholars', 'Clark Scholars'],
     ])('matches English keyword "%s" (keyword: %s)', (text: string) => {
       expect(categorizeSuggestion(text)).toBe('summer_program');
     });
@@ -81,7 +82,6 @@ describe('categorizeSuggestion', () => {
       ['Work in a college lab', 'lab'],
       ['Write and submit a paper', 'paper'],
       ['Try to publish your findings', 'publish'],
-      ['Apply to Clark Scholars', 'Clark Scholars'],
       ['MIT PRIMES math research', 'PRIMES'],
       ['SPARK program at Stanford', 'SPARK'],
       ['Find a mentor in your field', 'mentor'],
