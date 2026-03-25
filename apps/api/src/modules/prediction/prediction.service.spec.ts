@@ -734,4 +734,113 @@ describe('PredictionService', () => {
       expect(output.results).toHaveLength(1);
     });
   });
+
+  describe('generateSuggestions (private)', () => {
+    const baseProfile = {
+      gpa: 3.9,
+      testScores: [{ type: 'SAT', score: 1500 }],
+      activities: [],
+      awards: [],
+      targetMajor: undefined,
+    } as any;
+
+    const baseSchool = { name: 'MIT', acceptanceRate: 0.04 } as any;
+
+    it('returns AI suggestions when >= 3 are provided', () => {
+      const aiSuggestions = [
+        'suggestion 1',
+        'suggestion 2',
+        'suggestion 3',
+        'suggestion 4',
+      ];
+      const result = service['generateSuggestions'](
+        'reach',
+        'high',
+        baseProfile,
+        baseSchool,
+        aiSuggestions,
+        'en',
+      );
+      expect(result).toEqual(aiSuggestions.slice(0, 4));
+      // Should not contain fallback templates
+      expect(
+        result.every((s: string) => !s.includes('USACO') && !s.includes('RSI')),
+      ).toBe(true);
+    });
+
+    it('uses CS programs for CS student reach tier', () => {
+      const csProfile = { ...baseProfile, targetMajor: 'Computer Science' };
+      const result = service['generateSuggestions'](
+        'reach',
+        'medium',
+        csProfile,
+        baseSchool,
+        [],
+        'en',
+      );
+      // Should contain CS-specific programs
+      const joined = result.join(' ');
+      expect(joined).toMatch(/MITES|Google CSSI|COSMOS/);
+    });
+
+    it('uses humanities programs for humanities student match tier', () => {
+      const humProfile = { ...baseProfile, targetMajor: 'English Literature' };
+      const result = service['generateSuggestions'](
+        'match',
+        'medium',
+        humProfile,
+        baseSchool,
+        [],
+        'en',
+      );
+      const joined = result.join(' ');
+      expect(joined).toMatch(/TASP|Scholastic|John Locke|Concord Review/);
+    });
+
+    it('deduplicates programs already in activities', () => {
+      const csProfile = {
+        ...baseProfile,
+        targetMajor: 'Computer Science',
+        activities: [{ name: 'USACO', category: 'COMPETITION' }],
+      };
+      const result = service['generateSuggestions'](
+        'reach',
+        'medium',
+        csProfile,
+        baseSchool,
+        [],
+        'en',
+      );
+      const joined = result.join(' ');
+      // USACO should not appear since student already does it
+      expect(joined).not.toContain('USACO');
+    });
+
+    it('returns GENERAL programs when no targetMajor', () => {
+      const result = service['generateSuggestions'](
+        'reach',
+        'medium',
+        baseProfile,
+        baseSchool,
+        [],
+        'en',
+      );
+      const joined = result.join(' ');
+      expect(joined).toMatch(/YYGS|MITES|MOSTEC/);
+    });
+
+    it('returns zh content when locale is zh', () => {
+      const csProfile = { ...baseProfile, targetMajor: 'Computer Science' };
+      const result = service['generateSuggestions'](
+        'reach',
+        'medium',
+        csProfile,
+        baseSchool,
+        [],
+        'zh',
+      );
+      const joined = result.join(' ');
+      expect(joined).toMatch(/冲刺校|文书|早申/);
+    });
+  });
 });

@@ -157,5 +157,8 @@ export * from './recommendation';
 // API 路由常量
 export * from './api-routes';
 
+// 预测功能常量
+export * from './prediction';
+
 // 共享枚举
 export * from './enums';

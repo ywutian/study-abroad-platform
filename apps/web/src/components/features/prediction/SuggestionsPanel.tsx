@@ -2,60 +2,58 @@
 
 import { memo, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
+import { MAJOR_CATEGORY_PROGRAMS } from '@study-abroad/shared';
 import { Sun, Trophy, FlaskConical, Lightbulb } from 'lucide-react';
 
 export type SuggestionCategory = 'summer_program' | 'competition' | 'research' | 'general';
 
+/**
+ * Keywords for categorizing suggestions into display groups.
+ * Program names are auto-derived from MAJOR_CATEGORY_PROGRAMS (shared package).
+ * Only generic keywords and Chinese terms need manual maintenance here.
+ */
 const CATEGORY_KEYWORDS: Record<Exclude<SuggestionCategory, 'general'>, string[]> = {
   summer_program: [
+    // Generic keywords
     'summer',
-    'RSI',
-    'MOSTEC',
-    'SAMS',
-    'LaunchX',
-    'YYGS',
-    'SSP',
-    'PROMYS',
-    'SUMaC',
-    'MITES',
-    'TASP',
-    'Telluride',
-    'Governor',
     'pre-college',
+    'Governor',
+    // Chinese keywords
     '暑期',
     '夏校',
     '夏令营',
     '暑假项目',
+    '青年作家工坊',
+    // Auto-derived from shared constants — adding a program to MAJOR_CATEGORY_PROGRAMS
+    // automatically makes it categorizable here
+    ...Object.values(MAJOR_CATEGORY_PROGRAMS).flatMap((c) => c.summer.map((p) => p.name)),
   ],
   competition: [
+    // Generic keywords
     'competition',
     'olympiad',
     'contest',
-    'USAMO',
     'AMC',
     'AIME',
-    'DECA',
-    'FBLA',
     'Science Bowl',
-    'Science Olympiad',
     'ISEF',
     'Regeneron',
-    'Siemens',
     'MATHCOUNTS',
-    'USABO',
-    'USACO',
-    'USAPHO',
     'Physics Bowl',
+    // Chinese keywords
     '竞赛',
     '奥赛',
     '奥林匹克',
+    '写作奖',
+    '论文竞赛',
+    // Auto-derived from shared constants
+    ...Object.values(MAJOR_CATEGORY_PROGRAMS).flatMap((c) => c.competition.map((p) => p.name)),
   ],
   research: [
     'research',
     'lab',
     'paper',
     'publish',
-    'Clark Scholars',
     'PRIMES',
     'SPARK',
     'mentor',

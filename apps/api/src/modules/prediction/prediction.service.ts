@@ -15,6 +15,7 @@ import { PREDICTION_LOCK_TTL } from './prediction-error';
 import { PredictionResultDto } from './dto';
 import { clampPercentRate } from '../../common/utils/percent.util';
 import { ProfileInput, SchoolInput } from './prediction.prompts';
+import { classifyMajor, MAJOR_CATEGORY_PROGRAMS } from './prediction.constants';
 import {
   ProfileMetrics,
   SchoolMetrics,
@@ -1208,7 +1209,7 @@ export class PredictionService {
    * @returns Array of suggestion strings (max 5)
    */
   /**
-   * 生成智能建议
+   * 生成智能建议 — 基于专业分类的个性化推荐
    */
   private generateSuggestions(
     tier: 'reach' | 'match' | 'safety',
@@ -1231,6 +1232,26 @@ export class PredictionService {
       return suggestions.slice(0, 5);
     }
 
+    // 专业分类 + 活动去重
+    const majorCategory = classifyMajor(profile.targetMajor);
+    const programs = MAJOR_CATEGORY_PROGRAMS[majorCategory];
+    const existingNames = new Set(
+      (profile.activities || []).map((a) => (a.name || '').toLowerCase()),
+    );
+    const relevantSummer = programs.summer
+      .filter((p) => !existingNames.has(p.name.toLowerCase()))
+      .slice(0, 3);
+    const relevantCompetitions = programs.competition
+      .filter((p) => !existingNames.has(p.name.toLowerCase()))
+      .slice(0, 3);
+
+    const summerNames = relevantSummer
+      .map((p) => (isZh ? p.zh : p.name))
+      .join(isZh ? '、' : ', ');
+    const competitionNames = relevantCompetitions
+      .map((p) => (isZh ? p.zh : p.name))
+      .join(isZh ? '、' : ', ');
+
     if (tier === 'reach') {
       const essayKw = isZh ? '文书' : 'essay';
       if (!suggestions.some((s) => s.toLowerCase().includes(essayKw))) {
@@ -1244,17 +1265,36 @@ export class PredictionService {
       if (!suggestions.some((s) => s.includes(edKw))) {
         suggestions.push(
           isZh
-            ? '考虑通过ED/EA早申请以最大化录取机会，同时利用暑期参加 RSI、MOSTEC、SAMS 等学术项目增强竞争力'
-            : 'Consider applying Early Decision to maximize admission chances, and strengthen your profile through summer programs like RSI, MOSTEC, or SAMS',
+            ? `考虑通过ED/EA早申请以最大化录取机会${summerNames ? `，同时利用暑期参加 ${summerNames} 等学术项目增强竞争力` : ''}`
+            : `Consider applying Early Decision to maximize admission chances${summerNames ? `, and strengthen your profile through summer programs like ${summerNames}` : ''}`,
         );
       }
     } else if (tier === 'match') {
       const matchKw = isZh ? '优势' : 'strength';
       if (!suggestions.some((s) => s.toLowerCase().includes(matchKw))) {
+        const parts: string[] = [];
+        if (competitionNames)
+          parts.push(
+            isZh
+              ? `竞赛项目（如 ${competitionNames}）`
+              : `competitions (e.g., ${competitionNames})`,
+          );
+        if (summerNames)
+          parts.push(
+            isZh
+              ? `暑期项目（如 ${summerNames}）`
+              : `summer programs (e.g., ${summerNames})`,
+          );
+        const programText =
+          parts.length > 0
+            ? isZh
+              ? `，通过${parts.join('或')}进一步提升竞争力`
+              : `, while boosting competitiveness through ${parts.join(' or ')}`
+            : '';
         suggestions.push(
           isZh
-            ? '作为匹配校，保持现有优势的同时，通过竞赛项目（如 USAMO、Science Olympiad、DECA）或暑期项目（如 LaunchX、YYGS）进一步提升竞争力'
-            : 'As a match school, maintain your strengths while boosting competitiveness through competitions (e.g., USAMO, Science Olympiad, DECA) or summer programs (e.g., LaunchX, YYGS)',
+            ? `作为匹配校，保持现有优势的同时${programText}`
+            : `As a match school, maintain your strengths${programText}`,
         );
       }
     } else {
@@ -1283,8 +1323,8 @@ export class PredictionService {
       if (!suggestions.some((s) => s.includes(testKw))) {
         suggestions.push(
           isZh
-            ? '添加标化成绩（SAT/ACT）可大幅提高预测准确性。同时考虑参加 RSI、MOSTEC 或 Clark Scholars 等暑期学术项目来增强学术背景'
-            : 'Adding SAT/ACT scores can significantly improve prediction accuracy. Also consider summer academic programs like RSI, MOSTEC, or Clark Scholars to strengthen your academic profile',
+            ? `添加标化成绩（SAT/ACT）可大幅提高预测准确性${summerNames ? `。同时考虑参加 ${summerNames} 等暑期学术项目来增强学术背景` : ''}`
+            : `Adding SAT/ACT scores can significantly improve prediction accuracy${summerNames ? `. Also consider summer academic programs like ${summerNames} to strengthen your academic profile` : ''}`,
         );
       }
     }
