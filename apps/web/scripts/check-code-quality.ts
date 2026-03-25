@@ -9,6 +9,7 @@
  * 5. console.log/error in production code (except error boundaries)
  * 6. Pages missing sibling loading.tsx skeleton
  * 7. Route groups missing error.tsx boundary
+ * 8. Tooltip used without TooltipProvider (runtime crash)
  *
  * Usage:
  *   npx tsx scripts/check-code-quality.ts           # Check all
@@ -333,6 +334,45 @@ function checkMissingErrorBoundary(filePath: string): Issue[] {
   return issues;
 }
 
+function checkTooltipWithoutProvider(filePath: string, content: string): Issue[] {
+  const issues: Issue[] = [];
+  if (!filePath.endsWith('.tsx')) return issues;
+  // Skip the tooltip component definition itself
+  if (filePath.includes('components/ui/tooltip.tsx')) return issues;
+
+  // File imports Tooltip but not TooltipProvider
+  const importsTooltip =
+    /import\s+\{[^}]*\bTooltip\b[^}]*\}\s+from\s+['"]@\/components\/ui\/tooltip['"]/.test(content);
+  if (!importsTooltip) return issues;
+
+  const importsProvider =
+    /import\s+\{[^}]*\bTooltipProvider\b[^}]*\}\s+from\s+['"]@\/components\/ui\/tooltip['"]/.test(
+      content
+    );
+  if (importsProvider) return issues;
+
+  // Find the line with the import
+  const lines = content.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    if (
+      lines[i].includes('Tooltip') &&
+      lines[i].includes('from') &&
+      lines[i].includes('@/components/ui/tooltip')
+    ) {
+      issues.push({
+        file: relativePath(filePath),
+        line: i + 1,
+        rule: 'no-tooltip-without-provider',
+        message:
+          'Imports Tooltip but not TooltipProvider — will crash at runtime. Add TooltipProvider wrapper.',
+        severity: 'error',
+      });
+      break;
+    }
+  }
+  return issues;
+}
+
 // ── Main ───────────────────────────────────────────────────
 
 function main() {
@@ -357,7 +397,8 @@ function main() {
       ...checkPageSize(filePath, lines),
       ...checkConsole(filePath, lines),
       ...checkMissingLoading(filePath),
-      ...checkMissingErrorBoundary(filePath)
+      ...checkMissingErrorBoundary(filePath),
+      ...checkTooltipWithoutProvider(filePath, content)
     );
   }
 

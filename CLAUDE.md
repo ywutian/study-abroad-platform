@@ -497,7 +497,7 @@ Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`
 1. **Prettier + ESLint** on staged `.ts/.tsx` files (includes import sorting via `simple-import-sort`)
 2. **gitleaks** secret scan on staged files (if installed locally)
 3. **i18n checks** (when `apps/web/src/` changed): missing keys, key consistency, wrong-language detection
-4. **Frontend quality checks** (when `apps/web/src/` changed): 7 rules — dynamic Tailwind, hardcoded colors, console.log, page size, loading.tsx, error.tsx
+4. **Frontend quality checks** (when `apps/web/src/` changed): 8 rules — dynamic Tailwind, hardcoded colors, console.log, page size, loading.tsx, error.tsx, tooltip-provider
 5. **Backend quality checks** (when `apps/api/src/` changed): 7 rules — inline body, throttle, throw, maxlength, tests, duplicated select, select-mapping drift
 
 #### Pre-push (~20-50s, catches CI failures locally)
@@ -543,17 +543,18 @@ Manual equivalent: `pnpm prepush`
 
 ### Code Quality Checks (`check-code-quality.ts`)
 
-Custom static analysis (7 rules) that catches issues ESLint can't:
+Custom static analysis (8 rules) that catches issues ESLint can't:
 
-| Rule                        | Severity                     | What it catches                                | Fix                                                                       |
-| --------------------------- | ---------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------- |
-| `no-dynamic-tailwind`       | **error** (blocks commit/CI) | `` `bg-${color}-500` `` — purged in production | Use static class map (`COLOR_CLASSES[color].bg`)                          |
-| `no-hardcoded-dark-bg`      | warning                      | `bg-slate-800` without `dark:` variant         | Use CSS vars (`bg-background`) or add `dark:`                             |
-| `no-hardcoded-gray`         | warning                      | `bg-gray-100`, `text-gray-600` without `dark:` | Use semantic classes (`bg-muted`, `text-muted-foreground`) or add `dark:` |
-| `page-size-limit`           | warning                      | `page.tsx` >500 lines without `_components/`   | Split into thin orchestrator + `_components/`                             |
-| `no-console-in-prod`        | warning                      | `console.log/error` in production code         | Use `toast` for user errors, remove debug logs                            |
-| `no-missing-loading`        | warning                      | `page.tsx` without sibling `loading.tsx`       | Create Skeleton loading file                                              |
-| `no-missing-error-boundary` | warning                      | Route group without `error.tsx`                | Add error.tsx at route group level                                        |
+| Rule                          | Severity                     | What it catches                                | Fix                                                                       |
+| ----------------------------- | ---------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------- |
+| `no-dynamic-tailwind`         | **error** (blocks commit/CI) | `` `bg-${color}-500` `` — purged in production | Use static class map (`COLOR_CLASSES[color].bg`)                          |
+| `no-hardcoded-dark-bg`        | warning                      | `bg-slate-800` without `dark:` variant         | Use CSS vars (`bg-background`) or add `dark:`                             |
+| `no-hardcoded-gray`           | warning                      | `bg-gray-100`, `text-gray-600` without `dark:` | Use semantic classes (`bg-muted`, `text-muted-foreground`) or add `dark:` |
+| `page-size-limit`             | warning                      | `page.tsx` >500 lines without `_components/`   | Split into thin orchestrator + `_components/`                             |
+| `no-console-in-prod`          | warning                      | `console.log/error` in production code         | Use `toast` for user errors, remove debug logs                            |
+| `no-missing-loading`          | warning                      | `page.tsx` without sibling `loading.tsx`       | Create Skeleton loading file                                              |
+| `no-missing-error-boundary`   | warning                      | Route group without `error.tsx`                | Add error.tsx at route group level                                        |
+| `no-tooltip-without-provider` | **error** (blocks commit/CI) | `Tooltip` imported without `TooltipProvider`   | Add `TooltipProvider` wrapper around `Tooltip` usage                      |
 
 ### API Quality Checks (`check-api-quality.ts`)
 
@@ -640,10 +641,11 @@ After writing code, verify these items. `[AUTO]` items are enforced by tooling; 
 2. `[AUTO]` Hardcoded colors have `dark:` variant
 3. `[AUTO]` New page has sibling `loading.tsx`
 4. `[AUTO]` No `console.log` in production code
-5. `[AUTO]` Accessibility: images have alt, elements focusable
-6. `[MANUAL]` Icon buttons have `aria-label`
-7. `[MANUAL]` Uses `PageHeader` + `PageContainer` pattern
-8. `[MANUAL]` No hardcoded user-facing strings (use i18n)
+5. `[AUTO]` `Tooltip` must be wrapped in `TooltipProvider`
+6. `[AUTO]` Accessibility: images have alt, elements focusable
+7. `[MANUAL]` Icon buttons have `aria-label`
+8. `[MANUAL]` Uses `PageHeader` + `PageContainer` pattern
+9. `[MANUAL]` No hardcoded user-facing strings (use i18n)
 
 ### Run All Checks
 
