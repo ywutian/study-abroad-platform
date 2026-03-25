@@ -20,4 +20,5 @@ export interface SchoolSearchItem {
   usNewsRank?: number;
   /** 0–100 percentage (e.g. 4.0 means 4%) */
   acceptanceRate?: number | null;
+  rankings?: { source: string; list: string; rank: number; year: number }[];
 }

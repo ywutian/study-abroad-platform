@@ -382,6 +382,7 @@ export function CasesTab() {
                   toefl={caseItem.toeflRange}
                   tags={caseItem.tags}
                   rank={caseItem.school?.usNewsRank}
+                  rankings={caseItem.school?.rankings}
                   isVerified={caseItem.isVerified}
                   hasEssay={!!caseItem.essayContent}
                   onClick={() => router.push(`/${locale}/cases/${caseItem.id}`)}

@@ -18,6 +18,7 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { RankingBadge } from '@/components/ui/ranking-badge';
 import { LoadingState } from '@/components/ui/loading-state';
 import {
   Select,
@@ -254,11 +255,7 @@ export function RankingTab() {
                       className="flex items-center justify-between rounded-lg bg-warning/5 px-3 py-2 text-sm"
                     >
                       <span className="truncate">{getSchoolName(school, locale)}</span>
-                      {school.usNewsRank && (
-                        <Badge variant="outline" className="shrink-0">
-                          #{school.usNewsRank}
-                        </Badge>
-                      )}
+                      <RankingBadge rankings={school.rankings} usNewsRank={school.usNewsRank} />
                     </motion.div>
                   ))}
                   {selectedSchools.length > 5 && (

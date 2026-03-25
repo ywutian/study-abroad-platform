@@ -5,13 +5,15 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { CountBadge } from '@/components/ui/count-badge';
 import { TouchCard } from '@/components/ui/touch-card';
-import { BadgeCheck, FileText, Trophy } from 'lucide-react';
+import { RankingBadge } from '@/components/ui/ranking-badge';
+import { BadgeCheck, FileText } from 'lucide-react';
 import {
   getResultBarColor,
   getResultBadgeClass,
   getResultLabel,
   VERIFIED_BADGE_CLASS,
 } from '@/lib/utils/admission';
+import { type SchoolRanking } from '@/lib/utils/ranking';
 
 type CaseResult = 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED';
 
@@ -26,6 +28,7 @@ interface CaseCardProps {
   toefl?: string;
   tags?: string[];
   rank?: number;
+  rankings?: SchoolRanking[];
   isVerified?: boolean;
   hasEssay?: boolean;
   className?: string;
@@ -46,6 +49,7 @@ export function CaseCard({
   toefl,
   tags,
   rank,
+  rankings,
   isVerified = false,
   hasEssay = false,
   className,
@@ -78,11 +82,12 @@ export function CaseCard({
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <h3 className="truncate font-semibold text-sm">{schoolName}</h3>
-              {rank && (
-                <Badge className="shrink-0 gap-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 text-xs px-1.5 py-0">
-                  <Trophy className="h-3 w-3" />#{rank}
-                </Badge>
-              )}
+              <RankingBadge
+                rankings={rankings}
+                usNewsRank={rank}
+                variant="amber"
+                className="px-1.5 py-0"
+              />
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
               {year} · {round} · {major || tc('notSpecified')}

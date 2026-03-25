@@ -52,6 +52,8 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/auth';
 import { apiClient, STALE_TIME } from '@/lib/api';
 import { ApiError } from '@/lib/api/api-error';
+import { RankingBadge } from '@/components/ui/ranking-badge';
+import { type SchoolRanking } from '@/lib/utils/ranking';
 import { cn, getSchoolName, getSchoolSubName, formatAcceptanceRate } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -79,6 +81,7 @@ interface School {
   testOptional?: boolean;
   hasEarlyDecision?: boolean;
   acceptsCommonApp?: boolean;
+  rankings?: SchoolRanking[];
 }
 
 interface Filters {
@@ -642,16 +645,11 @@ export function BrowseTab() {
                             <h3 className="font-semibold text-base leading-tight group-hover:text-primary transition-colors line-clamp-2">
                               {getSchoolName(school, locale)}
                             </h3>
-                            {school.usNewsRank && (
-                              <Badge
-                                className={cn(
-                                  'shrink-0 gap-0.5',
-                                  getRankBadgeStyle(school.usNewsRank)
-                                )}
-                              >
-                                <Trophy className="h-3 w-3" />#{school.usNewsRank}
-                              </Badge>
-                            )}
+                            <RankingBadge
+                              rankings={school.rankings}
+                              usNewsRank={school.usNewsRank}
+                              variant="amber"
+                            />
                           </div>
                           {getSchoolSubName(school, locale) && (
                             <p className="text-xs text-muted-foreground truncate mt-0.5">

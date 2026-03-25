@@ -8,6 +8,7 @@ import { apiClient } from '@/lib/api/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { RankingBadge } from '@/components/ui/ranking-badge';
 import { LoadingState } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import {
@@ -54,6 +55,7 @@ interface ChallengeCase {
     acceptanceRate?: number;
     major?: string;
     round?: string;
+    rankings?: { source: string; list: string; rank: number; year: number }[];
   }>;
 }
 
@@ -269,11 +271,7 @@ export function ChallengeTab() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="font-medium truncate">{school.schoolName}</p>
-                    {school.usNewsRank && (
-                      <Badge variant="outline" className="text-xs shrink-0">
-                        #{school.usNewsRank}
-                      </Badge>
-                    )}
+                    <RankingBadge rankings={school.rankings} usNewsRank={school.usNewsRank} />
                   </div>
                   <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
                     {school.major && <span>{school.major}</span>}

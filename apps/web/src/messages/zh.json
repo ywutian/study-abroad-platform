@@ -81,7 +81,17 @@
       "profile": "档案,个人",
       "theme": "主题,暗色,亮色",
       "help": "帮助,支持"
-    }
+    },
+    "rankingList": {
+      "nationalUniversity": "综合",
+      "liberalArts": "文理",
+      "artDesign": "艺术设计",
+      "engineering": "工程",
+      "cs": "计算机",
+      "business": "商科"
+    },
+    "rankingTooltip": "{source} {year} 排名",
+    "rankingTooltipOverall": "US News 全美大学综合排名"
   },
   "dashboard": {
     "welcome": "欢迎回来，{name}",

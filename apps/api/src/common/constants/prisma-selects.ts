@@ -61,11 +61,12 @@ export const SCHOOL_NAME_SELECT = {
 } as const satisfies Prisma.SchoolSelect;
 
 /**
- * School name + rank — used in essay-prompt listings.
+ * School name + rank + rankings — used in essay-prompt listings, case detail, etc.
  */
 export const SCHOOL_NAME_RANK_SELECT = {
   ...SCHOOL_NAME_SELECT,
   usNewsRank: true,
+  rankings: { select: SCHOOL_RANKING_SELECT },
 } as const satisfies Prisma.SchoolSelect;
 
 // Prisma-inferred types

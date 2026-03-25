@@ -16,18 +16,13 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { RankingBadge } from '@/components/ui/ranking-badge';
 import { apiClient } from '@/lib/api';
 import { Search, GraduationCap, X, Loader2, Globe } from 'lucide-react';
 import { toast } from 'sonner';
 import { getSchoolName, getSchoolSubName, formatAcceptanceRate } from '@/lib/utils';
-
-interface SchoolRanking {
-  source: string;
-  list: string;
-  rank: number;
-  year: number;
-}
+import { type SchoolRanking } from '@/lib/utils/ranking';
 
 interface School {
   id: string;
@@ -39,30 +34,6 @@ interface School {
   acceptanceRate?: number;
   website?: string;
   rankings?: SchoolRanking[];
-}
-
-/** Ranking list label map — keys match backend SchoolRanking.list values */
-const RANKING_LIST_KEYS: Record<string, string> = {
-  NATIONAL_UNIVERSITY: 'nationalUniversity',
-  LIBERAL_ARTS: 'liberalArts',
-  ART_DESIGN: 'artDesign',
-  ENGINEERING_NO_PHD: 'engineering',
-  CS: 'cs',
-  BUSINESS: 'business',
-};
-
-/** Get the best (lowest rank) ranking per list for display */
-function getDisplayRankings(rankings?: SchoolRanking[]): SchoolRanking[] {
-  if (!rankings?.length) return [];
-  // Group by list, keep best rank per list
-  const bestByList = new Map<string, SchoolRanking>();
-  for (const r of rankings) {
-    const existing = bestByList.get(r.list);
-    if (!existing || r.rank < existing.rank) {
-      bestByList.set(r.list, r);
-    }
-  }
-  return Array.from(bestByList.values()).sort((a, b) => a.rank - b.rank);
 }
 
 interface SchoolSelectorProps {
@@ -223,36 +194,11 @@ export function SchoolSelector({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="font-medium truncate">{getSchoolName(school, locale)}</p>
-                        {getDisplayRankings(school.rankings).length > 0 ? (
-                          getDisplayRankings(school.rankings)
-                            .slice(0, 2)
-                            .map((r) => (
-                              <Tooltip key={`${r.source}-${r.list}`}>
-                                <TooltipTrigger asChild>
-                                  <Badge variant="outline" className="text-xs shrink-0">
-                                    {t(
-                                      `rankingList.${RANKING_LIST_KEYS[r.list] || 'nationalUniversity'}`
-                                    )}{' '}
-                                    #{r.rank}
-                                  </Badge>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>{t('rankingTooltip', { source: r.source, year: r.year })}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            ))
-                        ) : school.usNewsRank ? (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Badge variant="outline" className="text-xs shrink-0">
-                                #{school.usNewsRank}
-                              </Badge>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>{t('rankingTooltipOverall')}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        ) : null}
+                        <RankingBadge
+                          rankings={school.rankings}
+                          usNewsRank={school.usNewsRank}
+                          maxBadges={2}
+                        />
                         {isSafeUrl(school.website) && (
                           <a
                             href={school.website}

@@ -203,7 +203,7 @@ export class CaseService {
         take: pageSize,
         orderBy: { createdAt: 'desc' },
         include: {
-          school: { select: SCHOOL_NAME_SELECT },
+          school: { select: SCHOOL_NAME_RANK_SELECT },
         },
       }),
       this.prisma.admissionCase.count({ where }),
@@ -635,7 +635,7 @@ export class CaseService {
     return this.prisma.admissionCase.findMany({
       where: { userId },
       include: {
-        school: { select: SCHOOL_NAME_SELECT },
+        school: { select: SCHOOL_NAME_RANK_SELECT },
       },
       orderBy: { createdAt: 'desc' },
     });

@@ -345,7 +345,23 @@ describe('CaseService', () => {
       expect(prismaService.admissionCase.findMany).toHaveBeenCalledWith({
         where: { userId: 'user-123' },
         include: {
-          school: { select: { id: true, name: true, nameZh: true } },
+          school: {
+            select: {
+              id: true,
+              name: true,
+              nameZh: true,
+              usNewsRank: true,
+              rankings: {
+                select: {
+                  source: true,
+                  list: true,
+                  rank: true,
+                  year: true,
+                  sourceUrl: true,
+                },
+              },
+            },
+          },
         },
         orderBy: { createdAt: 'desc' },
       });

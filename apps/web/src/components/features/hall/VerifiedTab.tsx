@@ -308,7 +308,7 @@ export function VerifiedTab() {
                           {getLocalizedName(user.schoolNameZh, user.schoolName, locale)}
                           {user.schoolRank && (
                             <Badge variant="outline" className="ml-1 text-xs">
-                              #{user.schoolRank}
+                              US News #{user.schoolRank}
                             </Badge>
                           )}
                         </span>

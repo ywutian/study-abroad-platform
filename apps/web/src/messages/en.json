@@ -81,7 +81,17 @@
       "profile": "profile,personal",
       "theme": "theme,dark,light",
       "help": "help,support"
-    }
+    },
+    "rankingList": {
+      "nationalUniversity": "National",
+      "liberalArts": "Liberal Arts",
+      "artDesign": "Art & Design",
+      "engineering": "Engineering",
+      "cs": "CS",
+      "business": "Business"
+    },
+    "rankingTooltip": "{source} {year} Ranking",
+    "rankingTooltipOverall": "US News National University Overall Ranking"
   },
   "dashboard": {
     "welcome": "Welcome back, {name}",

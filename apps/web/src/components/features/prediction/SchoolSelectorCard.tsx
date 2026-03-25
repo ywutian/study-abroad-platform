@@ -89,7 +89,7 @@ export function SchoolSelectorCard({
                           <div>
                             <p className="font-medium">{getSchoolName(school, locale)}</p>
                             <p className="text-xs text-muted-foreground">
-                              {school.usNewsRank && `#${school.usNewsRank}`}
+                              {school.usNewsRank && `US News #${school.usNewsRank}`}
                               {school.acceptanceRate &&
                                 ` · ${t('prediction.acceptanceRateLabel', { rate: formatAcceptanceRate(school.acceptanceRate).replace('%', '') })}`}
                             </p>
@@ -124,7 +124,7 @@ export function SchoolSelectorCard({
                 >
                   {getSchoolName(school, locale)}
                   {school.usNewsRank && (
-                    <span className="text-xs opacity-70">#{school.usNewsRank}</span>
+                    <span className="text-xs opacity-70">US News #{school.usNewsRank}</span>
                   )}
                   <button
                     onClick={() => onRemove(school.id)}

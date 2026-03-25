@@ -2,10 +2,11 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { FileText, Trophy, CheckCircle2 } from 'lucide-react';
+import { FileText, CheckCircle2 } from 'lucide-react';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { RankingBadge } from '@/components/ui/ranking-badge';
 import { cn, getSchoolName } from '@/lib/utils';
 import {
   getResultBarColor,
@@ -13,6 +14,7 @@ import {
   getEssayTypeBadgeClass,
   VERIFIED_BADGE_CLASS,
 } from '@/lib/utils/admission';
+import { type SchoolRanking } from '@/lib/utils/ranking';
 
 export interface GalleryEssay {
   id: string;
@@ -28,6 +30,7 @@ export interface GalleryEssay {
     name: string;
     nameZh?: string;
     usNewsRank?: number;
+    rankings?: SchoolRanking[];
   } | null;
   tags: string[];
   isVerified: boolean;
@@ -74,14 +77,12 @@ export function EssayCard({
               <h3 className="font-semibold text-sm truncate">
                 {getSchoolName(essay.school, locale) || t('unknownSchool')}
               </h3>
-              {essay.school?.usNewsRank && (
-                <Badge
-                  variant="outline"
-                  className="shrink-0 gap-0.5 text-[10px] h-5 bg-amber-500/10 text-amber-600 border-amber-500/20"
-                >
-                  <Trophy className="h-3 w-3" />#{essay.school.usNewsRank}
-                </Badge>
-              )}
+              <RankingBadge
+                rankings={essay.school?.rankings}
+                usNewsRank={essay.school?.usNewsRank}
+                variant="amber"
+                className="text-[10px] h-5"
+              />
             </div>
             <Badge className={cn('shrink-0 text-[11px]', resultBadgeClass)}>
               {getResultLabel(essay.result)}

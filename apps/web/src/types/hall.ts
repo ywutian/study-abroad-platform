@@ -43,6 +43,7 @@ export interface School {
   state?: string;
   usNewsRank?: number;
   acceptanceRate?: number;
+  rankings?: { source: string; list: string; rank: number; year: number }[];
 }
 
 // ============================================

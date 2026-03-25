@@ -6,7 +6,6 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FileText,
-  Trophy,
   CheckCircle2,
   AlertCircle,
   Clock,
@@ -28,11 +27,13 @@ import { useRouter } from '@/lib/i18n/navigation';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { RankingBadge } from '@/components/ui/ranking-badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CompactScore } from '@/components/ui/score-item';
 import { apiClient } from '@/lib/api/client';
+import { type SchoolRanking } from '@/lib/utils/ranking';
 import { cn, getSchoolName } from '@/lib/utils';
 import { getResultBadgeClass, getResultLabel, VERIFIED_BADGE_CLASS } from '@/lib/utils/admission';
 import { toast } from 'sonner';
@@ -53,6 +54,7 @@ interface EssayDetail {
     name: string;
     nameZh?: string;
     usNewsRank?: number;
+    rankings?: SchoolRanking[];
   } | null;
   tags: string[];
   isVerified: boolean;
@@ -185,11 +187,11 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
       {/* ── 固定头部 ── */}
       <div className="shrink-0 border-b px-6 pt-6 pb-4 space-y-1.5">
         <h2 className="text-xl font-semibold tracking-tight flex items-center gap-2.5">
-          {essay.school?.usNewsRank && (
-            <Badge className="bg-amber-500 text-white border-0 text-xs shrink-0">
-              <Trophy className="h-3 w-3 mr-0.5" />#{essay.school.usNewsRank}
-            </Badge>
-          )}
+          <RankingBadge
+            rankings={essay.school?.rankings}
+            usNewsRank={essay.school?.usNewsRank}
+            variant="amber"
+          />
           {getSchoolName(essay.school, locale) || t('unknownSchool')}
         </h2>
         <div className="flex items-center gap-2 flex-wrap">
