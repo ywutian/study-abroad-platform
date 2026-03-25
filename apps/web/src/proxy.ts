@@ -69,7 +69,9 @@ function buildCspHeader(_nonce: string): string {
     // Next.js App Router generates inline scripts (hydration, RSC payload) that
     // cannot reliably receive nonce attributes when combined with next-intl middleware.
     // 'unsafe-inline' is needed for these framework scripts in both dev and prod.
-    isDev ? `script-src 'self' 'unsafe-eval' 'unsafe-inline'` : `script-src 'self' 'unsafe-inline'`,
+    isDev
+      ? `script-src 'self' 'unsafe-eval' 'unsafe-inline'`
+      : `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'`,
     `style-src 'self' 'unsafe-inline'`,
     "img-src 'self' data: https:",
     `connect-src ${connectSrcParts.join(' ')} data:`,

@@ -5,6 +5,7 @@ import { ThemeProvider } from 'next-themes';
 import { QueryProvider } from './query-provider';
 import { ProgressProvider } from './progress-provider';
 import { SmoothScrollProvider } from './smooth-scroll-provider';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/sonner';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { OfflineIndicator } from '@/components/ui/offline-indicator';
@@ -52,12 +53,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <ErrorBoundary>
           <QueryProvider>
             <ProgressProvider>
-              <TourProvider>
-                <AuthInitializer>{children}</AuthInitializer>
-                <Toaster position="top-center" richColors />
-                <OfflineIndicator />
-                <FeedbackWidget />
-              </TourProvider>
+              <TooltipProvider>
+                <TourProvider>
+                  <AuthInitializer>{children}</AuthInitializer>
+                  <Toaster position="top-center" richColors />
+                  <OfflineIndicator />
+                  <FeedbackWidget />
+                </TourProvider>
+              </TooltipProvider>
             </ProgressProvider>
           </QueryProvider>
         </ErrorBoundary>
