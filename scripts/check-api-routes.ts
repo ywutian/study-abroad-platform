@@ -311,9 +311,72 @@ function checkClientFiles(clientFiles: string[], controllerPrefixes: Set<string>
   return issues;
 }
 
+// ── Hardcoded Route Detection ────────────────────────────────
+
+/**
+ * Detect apiClient calls using hardcoded string literals instead of API_ROUTES constants.
+ * A call is considered "hardcoded" when the first argument is a plain string literal
+ * (single-quoted, double-quoted, or template literal starting with '/') rather than
+ * a variable, function call, or expression using API_ROUTES.
+ */
+function checkHardcodedRoutes(clientFiles: string[]): Issue[] {
+  const issues: Issue[] = [];
+
+  // Match apiClient.method('/path') or apiClient.method(`/path`)
+  // but NOT apiClient.method(someVar) or apiClient.method(`${API_ROUTES.X}/path`)
+  const hardcodedPatterns = [
+    /apiClient\.(?:get|post|put|patch|delete|upload)\s*(?:<[^>]*>)?\(\s*'(\/[^']+)'/g,
+    /apiClient\.(?:get|post|put|patch|delete|upload)\s*(?:<[^>]*>)?\(\s*"(\/[^"]+)"/g,
+  ];
+
+  // Template literals starting with a bare / are hardcoded; those starting with ${ are dynamic
+  const hardcodedTemplateLiteral =
+    /apiClient\.(?:get|post|put|patch|delete|upload)\s*(?:<[^>]*>)?\(\s*`(\/[^`$]+)`/g;
+
+  for (const filePath of clientFiles) {
+    if (!fs.existsSync(filePath)) continue;
+    if (shouldSkipFile(filePath)) continue;
+
+    const content = fs.readFileSync(filePath, 'utf8');
+    if (!content.includes('apiClient.')) continue;
+
+    // Skip files that already import API_ROUTES (they may still have some hardcoded, but lower priority)
+    const hasApiRoutesImport =
+      content.includes('API_ROUTES') ||
+      content.includes('Routes') ||
+      content.includes("from '@study-abroad/shared'");
+
+    const lines = content.split('\n');
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const trimmed = line.trim();
+      if (trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*')) continue;
+
+      for (const pattern of [...hardcodedPatterns, hardcodedTemplateLiteral]) {
+        const regex = new RegExp(pattern.source, pattern.flags);
+        let match: RegExpExecArray | null;
+
+        while ((match = regex.exec(line)) !== null) {
+          issues.push({
+            file: relativePath(filePath),
+            line: i + 1,
+            path: match[1],
+            prefix: extractPrefix(match[1]) || 'unknown',
+            message: `Hardcoded route '${match[1]}' — use API_ROUTES constant or route helper instead${hasApiRoutesImport ? ' (file already imports shared)' : ''}`,
+          });
+        }
+      }
+    }
+  }
+
+  return issues;
+}
+
 // ── Entry Point ─────────────────────────────────────────────
 
 function main() {
+  const warnHardcoded = process.argv.includes('--warn-hardcoded');
   console.log(
     stagedOnly ? '🔍 Checking staged client files...' : '🔍 Checking all client files...'
   );
@@ -345,29 +408,48 @@ function main() {
   console.log(`📂 Scanning ${clientFiles.length} client file(s)...`);
   console.log('');
 
-  // Step 3: Check client files
+  // Step 3: Check client files for prefix mismatches (ERROR — blocks CI)
   const issues = checkClientFiles(clientFiles, controllerPrefixes);
 
-  if (issues.length === 0) {
+  if (issues.length > 0) {
     console.log(
-      '✅ API route consistency check passed! All client paths match backend controllers.'
+      `❌ route-prefix-mismatch (${issues.length} issue${issues.length > 1 ? 's' : ''}):`
     );
-    process.exit(0);
+    for (const issue of issues.slice(0, 20)) {
+      console.log(`   ${issue.file}:${issue.line} — ${issue.message}`);
+    }
+    if (issues.length > 20) {
+      console.log(`   ... and ${issues.length - 20} more`);
+    }
+    console.log('');
+    console.log(`Total: ${issues.length} error(s)`);
+    console.log('');
+    process.exit(1);
   }
 
-  // Step 4: Report issues
-  console.log(`❌ route-prefix-mismatch (${issues.length} issue${issues.length > 1 ? 's' : ''}):`);
-  for (const issue of issues.slice(0, 20)) {
-    console.log(`   ${issue.file}:${issue.line} — ${issue.message}`);
+  // Step 4: Check for hardcoded routes (WARNING — non-blocking, opt-in)
+  if (warnHardcoded) {
+    const hardcodedIssues = checkHardcodedRoutes(clientFiles);
+    if (hardcodedIssues.length > 0) {
+      console.log(
+        `⚠️  hardcoded-route (${hardcodedIssues.length} warning${hardcodedIssues.length > 1 ? 's' : ''}):`
+      );
+      for (const issue of hardcodedIssues.slice(0, 30)) {
+        console.log(`   ${issue.file}:${issue.line} — ${issue.message}`);
+      }
+      if (hardcodedIssues.length > 30) {
+        console.log(`   ... and ${hardcodedIssues.length - 30} more`);
+      }
+      console.log('');
+      console.log(
+        `Total: ${hardcodedIssues.length} hardcoded route(s). Run migration to use API_ROUTES constants.`
+      );
+      console.log('');
+    }
   }
-  if (issues.length > 20) {
-    console.log(`   ... and ${issues.length - 20} more`);
-  }
-  console.log('');
-  console.log(`Total: ${issues.length} error(s)`);
-  console.log('');
 
-  process.exit(1);
+  console.log('✅ API route consistency check passed! All client paths match backend controllers.');
+  process.exit(0);
 }
 
 main();

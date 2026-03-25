@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/navigation';
 import { Button } from '@/components/ui/button';
 import { apiClient } from '@/lib/api';
+import { authRoutes } from '@study-abroad/shared';
 import { CheckCircle, AlertCircle, Loader2, ArrowRight } from 'lucide-react';
 
 type VerifyState = 'loading' | 'success' | 'error';
@@ -27,7 +28,7 @@ export default function VerifyEmailCallbackPage() {
 
     const verify = async () => {
       try {
-        await apiClient.get('/auth/verify-email', {
+        await apiClient.get(authRoutes.verifyEmail(), {
           params: { token },
           skipAuth: true,
         });

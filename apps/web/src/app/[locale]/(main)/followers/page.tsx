@@ -26,6 +26,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { RecommendedUsers, UserProfilePreview } from '@/components/features';
 import { useAuthStore } from '@/stores';
 import { toast } from 'sonner';
+import { chatRoutes } from '@study-abroad/shared';
 import { Users, Search, Shield, Loader2, UserCheck, Heart, X } from 'lucide-react';
 import { useRouter } from '@/lib/i18n/navigation';
 import { UserCard, type User } from './_components/user-card';
@@ -79,7 +80,7 @@ export default function FollowersPage() {
 
   // ---- Mutations ----
   const followMutation = useMutation({
-    mutationFn: (userId: string) => apiClient.post(`/chats/follow/${userId}`),
+    mutationFn: (userId: string) => apiClient.post(chatRoutes.follow(userId)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['followers'] });
       queryClient.invalidateQueries({ queryKey: ['following'] });
@@ -88,7 +89,7 @@ export default function FollowersPage() {
   });
 
   const unfollowMutation = useMutation({
-    mutationFn: (userId: string) => apiClient.delete(`/chats/follow/${userId}`),
+    mutationFn: (userId: string) => apiClient.delete(chatRoutes.follow(userId)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['following'] });
       setUserToUnfollow(null);
@@ -97,7 +98,7 @@ export default function FollowersPage() {
   });
 
   const _blockMutation = useMutation({
-    mutationFn: (userId: string) => apiClient.post(`/chats/block/${userId}`),
+    mutationFn: (userId: string) => apiClient.post(chatRoutes.block(userId)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['blocked'] });
       queryClient.invalidateQueries({ queryKey: ['followers'] });
@@ -107,7 +108,7 @@ export default function FollowersPage() {
   });
 
   const unblockMutation = useMutation({
-    mutationFn: (userId: string) => apiClient.delete(`/chats/block/${userId}`),
+    mutationFn: (userId: string) => apiClient.delete(chatRoutes.block(userId)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['blocked'] });
       setUserToUnblock(null);

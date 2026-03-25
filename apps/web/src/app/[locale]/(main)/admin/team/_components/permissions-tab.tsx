@@ -4,6 +4,7 @@ import { useState, useEffect, Fragment } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -83,7 +84,7 @@ export function PermissionsTab() {
 
   const saveMutation = useMutation({
     mutationFn: (data: { permissions: RolePermissionEntry[] }) =>
-      apiClient.put('/admin/roles/permissions', data),
+      apiClient.put(`${API_ROUTES.ADMIN}/roles/permissions`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminPermissions'] });
       setIsDirty(false);
@@ -299,7 +300,7 @@ function UserPermissionEditor() {
 
   const saveUserPermsMutation = useMutation({
     mutationFn: (data: { permissions: Array<{ permission: string; granted: boolean }> }) =>
-      apiClient.put(`/admin/roles/users/${selectedUserId}/permissions`, data),
+      apiClient.put(`${API_ROUTES.ADMIN}/roles/users/${selectedUserId}/permissions`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminUserPermissions', selectedUserId] });
       setIsUserDirty(false);

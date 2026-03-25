@@ -55,6 +55,7 @@ import { ApiError } from '@/lib/api/api-error';
 import { RankingBadge } from '@/components/ui/ranking-badge';
 import { type SchoolRanking } from '@/lib/utils/ranking';
 import { cn, getSchoolName, getSchoolSubName, formatAcceptanceRate } from '@/lib/utils';
+import { schoolRoutes, schoolListRoutes, API_ROUTES } from '@study-abroad/shared';
 import { toast } from 'sonner';
 
 interface School {
@@ -207,7 +208,7 @@ export function BrowseTab() {
       if (advancedFilters.testOptional) params.testOptional = 'true';
       if (advancedFilters.needBlind) params.needBlind = 'true';
       if (advancedFilters.hasEarlyDecision) params.hasEarlyDecision = 'true';
-      return apiClient.get<{ items: School[]; total: number }>('/schools', { params });
+      return apiClient.get<{ items: School[]; total: number }>(schoolRoutes.list(), { params });
     },
     staleTime: STALE_TIME.DYNAMIC,
     retry: 2,
@@ -217,7 +218,7 @@ export function BrowseTab() {
   // Add single school to list
   const addToListMutation = useMutation({
     mutationFn: ({ schoolId, round }: { schoolId: string; round: string }) =>
-      apiClient.post('/school-lists', { schoolId, tier: 'TARGET', round }),
+      apiClient.post(schoolListRoutes.list(), { schoolId, tier: 'TARGET', round }),
     onSuccess: (_, { schoolId }) => {
       setAddedSchools((prev) => new Set([...prev, schoolId]));
       toast.success(t('addedToList'));
@@ -244,7 +245,7 @@ export function BrowseTab() {
     }) => {
       const results = await Promise.allSettled(
         schoolIds.map((schoolId) =>
-          apiClient.post('/school-lists', { schoolId, tier, ...(round && { round }) })
+          apiClient.post(schoolListRoutes.list(), { schoolId, tier, ...(round && { round }) })
         )
       );
       const successCount = results.filter((r) => r.status === 'fulfilled').length;
@@ -261,7 +262,7 @@ export function BrowseTab() {
         const tlResult = await apiClient.post<{
           created: any[];
           failed: Array<{ schoolId: string; reason: string }>;
-        }>('/timelines/generate', { schoolIds });
+        }>(`${API_ROUTES.TIMELINES}/generate`, { schoolIds });
         queryClient.invalidateQueries({ queryKey: ['timelines'] });
 
         if (tlResult.failed && tlResult.failed.length > 0) {

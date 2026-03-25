@@ -23,6 +23,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Plus, Loader2 } from 'lucide-react';
 import { DeadlineFormDialog } from './deadline-form-dialog';
@@ -87,7 +88,8 @@ export function DeadlinesTab() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: DeadlineFormData) => apiClient.post('/admin/school-deadlines', data),
+    mutationFn: (data: DeadlineFormData) =>
+      apiClient.post(`${API_ROUTES.ADMIN}/school-deadlines`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminDeadlines'] });
       setDialogOpen(false);
@@ -98,7 +100,7 @@ export function DeadlinesTab() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<DeadlineFormData> }) =>
-      apiClient.put(`/admin/school-deadlines/${id}`, data),
+      apiClient.put(`${API_ROUTES.ADMIN}/school-deadlines/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminDeadlines'] });
       setDialogOpen(false);
@@ -108,7 +110,7 @@ export function DeadlinesTab() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/admin/school-deadlines/${id}`),
+    mutationFn: (id: string) => apiClient.delete(`${API_ROUTES.ADMIN}/school-deadlines/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminDeadlines'] });
       setDeleteId(null);

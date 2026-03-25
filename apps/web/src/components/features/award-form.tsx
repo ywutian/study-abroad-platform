@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
+import { profileRoutes } from '@study-abroad/shared';
 import { Save, Loader2 } from 'lucide-react';
 
 const AWARD_LEVEL_KEYS = [
@@ -81,7 +82,7 @@ export function AwardForm({ open, onOpenChange, editingAward }: AwardFormProps) 
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: unknown) => apiClient.post('/profiles/me/awards', data),
+    mutationFn: (data: unknown) => apiClient.post(profileRoutes.awards(), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(t('toast.awardAdded'));
@@ -91,7 +92,7 @@ export function AwardForm({ open, onOpenChange, editingAward }: AwardFormProps) 
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data: unknown) => apiClient.put(`/profiles/me/awards/${editingAward?.id}`, data),
+    mutationFn: (data: unknown) => apiClient.put(profileRoutes.award(editingAward!.id), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(t('toast.awardUpdated'));

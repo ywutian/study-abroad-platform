@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -129,7 +130,7 @@ export function InvitesTab() {
 
   const promoteMutation = useMutation({
     mutationFn: (data: { email: string; role: string }) =>
-      apiClient.post('/admin/roles/users/promote', data),
+      apiClient.post(`${API_ROUTES.ADMIN}/roles/users/promote`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminOperators'] });
       toast.success(t('team.invites.promoted'));

@@ -46,6 +46,7 @@ import { useRouter, usePathname } from '@/lib/i18n/navigation';
 import { Link } from '@/lib/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { apiClient } from '@/lib/api';
+import { userRoutes } from '@study-abroad/shared';
 
 interface SettingSection {
   id: string;
@@ -89,7 +90,7 @@ export default function SettingsPage() {
   };
 
   const deleteAccountMutation = useMutation({
-    mutationFn: () => apiClient.delete('/users/me'),
+    mutationFn: () => apiClient.delete(userRoutes.me()),
     onSuccess: () => {
       setDeleteDialogOpen(false);
       toast.success(t('settings.toast.accountDeleted'));

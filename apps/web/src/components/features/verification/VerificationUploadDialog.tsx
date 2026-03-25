@@ -27,6 +27,7 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
+import { verificationRoutes } from '@study-abroad/shared';
 import { cn } from '@/lib/utils';
 import {
   Upload,
@@ -127,7 +128,7 @@ export function VerificationUploadDialog({
       setUploadProgress(100);
 
       // 提交认证申请
-      return apiClient.post('/verifications', {
+      return apiClient.post(verificationRoutes.submit(), {
         caseId,
         proofType,
         proofUrl: uploadRes.url,

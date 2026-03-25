@@ -18,6 +18,7 @@ import { RatingInput } from './RatingInput';
 import { Loader2, Star, BadgeCheck } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
+import { peerReviewRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 
@@ -56,7 +57,7 @@ export function ReviewDialog({
   const requestMutation = useMutation({
     mutationFn: async () => {
       if (!targetUser) throw new Error('No target user');
-      return apiClient.post(`/peer-reviews/request/${targetUser.id}`, {
+      return apiClient.post(peerReviewRoutes.request(targetUser.id), {
         isAnonymous,
       });
     },
@@ -72,7 +73,7 @@ export function ReviewDialog({
   const submitMutation = useMutation({
     mutationFn: async () => {
       if (!reviewId) throw new Error('No review ID');
-      return apiClient.post(`/peer-reviews/${reviewId}/submit`, {
+      return apiClient.post(peerReviewRoutes.submit(reviewId!), {
         profileScore,
         helpfulScore,
         responseScore,

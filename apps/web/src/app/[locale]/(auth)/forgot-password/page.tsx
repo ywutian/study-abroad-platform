@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Link } from '@/lib/i18n/navigation';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
+import { authRoutes } from '@study-abroad/shared';
 import { Mail, ArrowLeft, Loader2, CheckCircle, Send } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
@@ -18,7 +19,7 @@ export default function ForgotPasswordPage() {
 
   const mutation = useMutation({
     mutationFn: (email: string) =>
-      apiClient.post('/auth/forgot-password', { email }, { skipAuth: true }),
+      apiClient.post(authRoutes.forgotPassword(), { email }, { skipAuth: true }),
     onSuccess: () => {
       setSubmitted(true);
     },

@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
+import { hallRoutes } from '@study-abroad/shared';
 import { Save, Loader2, Plus, X, GraduationCap } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { RankingBadge } from '@/components/ui/ranking-badge';
@@ -76,7 +77,7 @@ export function CreateListDialog({ open, onOpenChange }: CreateListDialogProps) 
       category: string;
       isPublic: boolean;
       items: unknown[];
-    }) => apiClient.post('/halls/lists', data),
+    }) => apiClient.post(hallRoutes.lists(), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['publicLists'] });
       queryClient.invalidateQueries({ queryKey: ['myLists'] });

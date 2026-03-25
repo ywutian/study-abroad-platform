@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Link, useRouter } from '@/lib/i18n/navigation';
 import { useLocale } from 'next-intl';
 import { apiClient } from '@/lib/api';
+import { teamRoutes } from '@study-abroad/shared';
 import { useAuthStore } from '@/stores';
 import { TeamCard, type TeamCardData } from '@/components/features';
 import { toast } from 'sonner';
@@ -48,7 +49,7 @@ export function TeamsPageClient() {
   const isLoggedIn = useAuthStore((s) => !!s.accessToken);
 
   const joinMutation = useMutation({
-    mutationFn: (teamId: string) => apiClient.post(`/teams/${teamId}/join`),
+    mutationFn: (teamId: string) => apiClient.post(teamRoutes.join(teamId)),
     onSuccess: (_, teamId) => {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
       toast.success('Joined');

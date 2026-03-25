@@ -3,6 +3,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api';
 import {
   useEssayReview,
@@ -114,7 +115,7 @@ export function useEssayManager(initialSchoolId?: string | null, initialPromptId
   // Queries & Mutations
   const { data: essays, isLoading } = useQuery({
     queryKey: ['essays'],
-    queryFn: () => apiClient.get<Essay[]>('/profiles/me/essays'),
+    queryFn: () => apiClient.get<Essay[]>(`${profileRoutes.me()}/essays`),
   });
 
   const createMutation = useMutation({
@@ -123,7 +124,7 @@ export function useEssayManager(initialSchoolId?: string | null, initialPromptId
       prompt?: string;
       content: string;
       essayPromptId?: string;
-    }) => apiClient.post<Essay>('/profiles/me/essays', data),
+    }) => apiClient.post<Essay>(`${profileRoutes.me()}/essays`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['essays'] });
       setIsFormOpen(false);
@@ -140,7 +141,7 @@ export function useEssayManager(initialSchoolId?: string | null, initialPromptId
     }: {
       id: string;
       data: { title: string; prompt?: string; content: string; essayPromptId?: string };
-    }) => apiClient.put<Essay>(`/profiles/me/essays/${id}`, data),
+    }) => apiClient.put<Essay>(`${profileRoutes.me()}/essays/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['essays'] });
       setIsFormOpen(false);
@@ -152,7 +153,7 @@ export function useEssayManager(initialSchoolId?: string | null, initialPromptId
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/profiles/me/essays/${id}`),
+    mutationFn: (id: string) => apiClient.delete(`${profileRoutes.me()}/essays/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['essays'] });
       setIsDeleteOpen(false);

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Zap, Cpu, Pencil } from 'lucide-react';
@@ -33,7 +34,7 @@ export function AgentsSection() {
 
   const toggleAgentMutation = useMutation({
     mutationFn: ({ type, enabled }: { type: string; enabled: boolean }) =>
-      apiClient.put(`/admin/ai-agent/agents/${type}/toggle`, { enabled }),
+      apiClient.put(`${API_ROUTES.ADMIN}/ai-agent/agents/${type}/toggle`, { enabled }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['aiAgentAgents'] });
       toast.success(t('agentUpdated'));

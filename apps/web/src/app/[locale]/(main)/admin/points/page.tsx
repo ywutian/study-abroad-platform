@@ -29,6 +29,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Coins, Loader2, RotateCcw, Save, TrendingUp, TrendingDown } from 'lucide-react';
 
@@ -56,7 +57,8 @@ export default function AdminPointsPage() {
   });
 
   const toggleMutation = useMutation({
-    mutationFn: (enabled: boolean) => apiClient.put('/admin/points/toggle', { enabled }),
+    mutationFn: (enabled: boolean) =>
+      apiClient.put(`${API_ROUTES.ADMIN}/points/toggle`, { enabled }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminPointsConfig'] });
     },
@@ -64,7 +66,7 @@ export default function AdminPointsPage() {
 
   const batchUpdateMutation = useMutation({
     mutationFn: (actions: { action: string; points: number }[]) =>
-      apiClient.put('/admin/points/actions', { actions }),
+      apiClient.put(`${API_ROUTES.ADMIN}/points/actions`, { actions }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminPointsConfig'] });
       setEditedValues({});
@@ -73,7 +75,7 @@ export default function AdminPointsPage() {
   });
 
   const resetMutation = useMutation({
-    mutationFn: () => apiClient.post('/admin/points/reset'),
+    mutationFn: () => apiClient.post(`${API_ROUTES.ADMIN}/points/reset`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminPointsConfig'] });
       setEditedValues({});

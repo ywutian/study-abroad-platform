@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { API_ROUTES, predictionRoutes } from '@study-abroad/shared';
 import { apiClient, STALE_TIME } from '@/lib/api';
 import { AI_TIMEOUTS } from '@/lib/constants';
 import type { PredictionResponse } from '@/components/features/prediction/types';
@@ -73,7 +74,7 @@ export interface PredictionDashboardData {
 export function useSchoolPrediction(schoolId: string, enabled = true) {
   return useQuery<SchoolPredictionData>({
     queryKey: predictionKeys.school(schoolId),
-    queryFn: () => apiClient.get(`/predictions/school/${schoolId}`),
+    queryFn: () => apiClient.get(`${API_ROUTES.PREDICTIONS}/school/${schoolId}`),
     staleTime: STALE_TIME.MODERATE,
     enabled: enabled && !!schoolId,
   });
@@ -83,7 +84,7 @@ export function useSchoolPrediction(schoolId: string, enabled = true) {
 export function usePredictionDashboard() {
   return useQuery<PredictionDashboardData>({
     queryKey: predictionKeys.dashboard(),
-    queryFn: () => apiClient.get('/predictions/dashboard'),
+    queryFn: () => apiClient.get(`${API_ROUTES.PREDICTIONS}/dashboard`),
     staleTime: STALE_TIME.MODERATE,
   });
 }
@@ -93,7 +94,9 @@ export function useRunPrediction() {
   const queryClient = useQueryClient();
   return useMutation<PredictionResponse, Error, { schoolIds: string[]; forceRefresh?: boolean }>({
     mutationFn: (dto) =>
-      apiClient.post<PredictionResponse>('/predictions', dto, { timeout: AI_TIMEOUTS.AI_REQUEST }),
+      apiClient.post<PredictionResponse>(predictionRoutes.predict(), dto, {
+        timeout: AI_TIMEOUTS.AI_REQUEST,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: predictionKeys.all });
     },
@@ -109,7 +112,7 @@ export function useReportResult() {
     { schoolId: string; result: 'ADMITTED' | 'REJECTED' | 'WAITLISTED' }
   >({
     mutationFn: ({ schoolId, result }) =>
-      apiClient.patch(`/predictions/${schoolId}/result`, { result }),
+      apiClient.patch(`${API_ROUTES.PREDICTIONS}/${schoolId}/result`, { result }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: predictionKeys.all });
     },
@@ -120,7 +123,7 @@ export function useReportResult() {
 export function usePredictionHistory(enabled = true) {
   return useQuery({
     queryKey: predictionKeys.history(),
-    queryFn: () => apiClient.get('/predictions/history'),
+    queryFn: () => apiClient.get(predictionRoutes.history()),
     staleTime: STALE_TIME.MODERATE,
     enabled,
   });

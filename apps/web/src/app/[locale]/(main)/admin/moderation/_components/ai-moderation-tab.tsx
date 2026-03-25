@@ -25,6 +25,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { PaginationControls } from '../../_components/pagination-controls';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { ShieldAlert, CheckCircle2, XCircle, Loader2, AlertTriangle } from 'lucide-react';
@@ -80,7 +81,10 @@ export function AiModerationTab() {
 
   const resolveMutation = useMutation({
     mutationFn: ({ id, action, reason }: { id: string; action: string; reason?: string }) =>
-      apiClient.put(`/admin/ai-agent/security-events/${id}/resolve`, { action, reason }),
+      apiClient.put(`${API_ROUTES.ADMIN}/ai-agent/security-events/${id}/resolve`, {
+        action,
+        reason,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['securityEvents'] });
       toast.success(t('moderation.resolved'));

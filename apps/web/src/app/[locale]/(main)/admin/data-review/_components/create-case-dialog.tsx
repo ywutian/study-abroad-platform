@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { apiClient } from '@/lib/api';
+import { caseRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Loader2, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -123,7 +124,7 @@ export function CreateCaseDialog({ open, onOpenChange }: Props) {
   const { data: highSchools } = useHighSchoolSearch(hsQuery, open);
 
   const mutation = useMutation({
-    mutationFn: (body: Record<string, unknown>) => apiClient.post('/cases', body),
+    mutationFn: (body: Record<string, unknown>) => apiClient.post(caseRoutes.list(), body),
     onSuccess: () => {
       toast.success(t('success'));
       queryClient.invalidateQueries({ queryKey: ['reviewQueue'] });

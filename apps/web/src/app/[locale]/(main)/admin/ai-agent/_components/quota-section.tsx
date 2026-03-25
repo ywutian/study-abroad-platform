@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Settings, Loader2 } from 'lucide-react';
@@ -30,7 +31,7 @@ export function QuotaSection() {
   });
 
   const updateQuotaMutation = useMutation({
-    mutationFn: (data: any) => apiClient.put('/admin/ai-agent/config/quota', data),
+    mutationFn: (data: any) => apiClient.put(`${API_ROUTES.ADMIN}/ai-agent/config/quota`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['aiAgentConfig'] });
       toast.success(t('quotaUpdated'));

@@ -45,6 +45,7 @@ import { CardSkeleton, ListSkeleton } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PaginationControls } from '../_components/pagination-controls';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import {
   CreditCard,
@@ -108,7 +109,8 @@ export default function AdminPaymentsPage() {
   });
 
   const refundMutation = useMutation({
-    mutationFn: (paymentId: string) => apiClient.post(`/admin/payments/${paymentId}/refund`),
+    mutationFn: (paymentId: string) =>
+      apiClient.post(`${API_ROUTES.ADMIN}/payments/${paymentId}/refund`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminPayments'] });
       queryClient.invalidateQueries({ queryKey: ['adminPaymentStats'] });
@@ -119,7 +121,7 @@ export default function AdminPaymentsPage() {
 
   const adjustMutation = useMutation({
     mutationFn: ({ userId, plan }: { userId: string; plan: string }) =>
-      apiClient.put(`/admin/payments/users/${userId}/subscription`, { plan }),
+      apiClient.put(`${API_ROUTES.ADMIN}/payments/users/${userId}/subscription`, { plan }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminPayments'] });
       setAdjustTarget(null);

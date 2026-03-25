@@ -23,6 +23,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Plus, Loader2 } from 'lucide-react';
 import { EventsTable } from './events-table';
@@ -103,7 +104,8 @@ export function EventsTab() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: typeof emptyForm) => apiClient.post('/admin/global-events', data),
+    mutationFn: (data: typeof emptyForm) =>
+      apiClient.post(`${API_ROUTES.ADMIN}/global-events`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminEvents'] });
       setDialogOpen(false);
@@ -114,7 +116,7 @@ export function EventsTab() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<typeof emptyForm> }) =>
-      apiClient.put(`/admin/global-events/${id}`, data),
+      apiClient.put(`${API_ROUTES.ADMIN}/global-events/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminEvents'] });
       setDialogOpen(false);
@@ -124,7 +126,7 @@ export function EventsTab() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/admin/global-events/${id}`),
+    mutationFn: (id: string) => apiClient.delete(`${API_ROUTES.ADMIN}/global-events/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminEvents'] });
       setDeleteId(null);

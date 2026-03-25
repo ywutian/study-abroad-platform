@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@/lib/i18n/navigation';
 import { apiClient } from '@/lib/api';
+import { resumeRoutes } from '@study-abroad/shared';
 import { PageContainer } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -118,12 +119,12 @@ export default function ResumeEditPage() {
     error,
   } = useQuery({
     queryKey: ['resume', resumeId],
-    queryFn: () => apiClient.get<Resume>(`/resumes/${resumeId}`),
+    queryFn: () => apiClient.get<Resume>(resumeRoutes.byId(resumeId)),
   });
 
   const updateResumeMutation = useMutation({
     mutationFn: (dto: Partial<Pick<Resume, 'title' | 'status' | 'templateId' | 'settings'>>) =>
-      apiClient.put(`/resumes/${resumeId}`, dto),
+      apiClient.put(resumeRoutes.byId(resumeId), dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['resume', resumeId] });
       setEditingTitle(false);
@@ -137,7 +138,7 @@ export default function ResumeEditPage() {
     }: {
       sectionId: string;
       dto: { title?: string; content?: unknown; isVisible?: boolean };
-    }) => apiClient.put(`/resumes/${resumeId}/sections/${sectionId}`, dto),
+    }) => apiClient.put(resumeRoutes.section(resumeId, sectionId), dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['resume', resumeId] });
     },
@@ -145,7 +146,7 @@ export default function ResumeEditPage() {
 
   const addSectionMutation = useMutation({
     mutationFn: (dto: { type: string; title?: string }) =>
-      apiClient.post(`/resumes/${resumeId}/sections`, dto),
+      apiClient.post(resumeRoutes.sections(resumeId), dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['resume', resumeId] });
       setAddSectionOpen(false);
@@ -154,8 +155,7 @@ export default function ResumeEditPage() {
   });
 
   const deleteSectionMutation = useMutation({
-    mutationFn: (sectionId: string) =>
-      apiClient.delete(`/resumes/${resumeId}/sections/${sectionId}`),
+    mutationFn: (sectionId: string) => apiClient.delete(resumeRoutes.section(resumeId, sectionId)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['resume', resumeId] });
       toast.success(tc('success'));
@@ -163,7 +163,7 @@ export default function ResumeEditPage() {
   });
 
   const importProfileMutation = useMutation({
-    mutationFn: () => apiClient.post(`/resumes/${resumeId}/import-profile`),
+    mutationFn: () => apiClient.post(resumeRoutes.importProfile(resumeId)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['resume', resumeId] });
       toast.success(tc('success'));
@@ -171,7 +171,7 @@ export default function ResumeEditPage() {
   });
 
   const duplicateMutation = useMutation({
-    mutationFn: () => apiClient.post<Resume>(`/resumes/${resumeId}/duplicate`),
+    mutationFn: () => apiClient.post<Resume>(resumeRoutes.duplicate(resumeId)),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['resumes'] });
       router.push(`/resume/${data.id}`);
@@ -181,7 +181,7 @@ export default function ResumeEditPage() {
 
   const snapshotMutation = useMutation({
     mutationFn: (description?: string) =>
-      apiClient.post(`/resumes/${resumeId}/snapshots`, { description }),
+      apiClient.post(resumeRoutes.snapshots(resumeId), { description }),
     onSuccess: () => {
       toast.success(tc('success'));
     },
@@ -190,7 +190,7 @@ export default function ResumeEditPage() {
   const aiReviewMutation = useMutation({
     mutationFn: (dto?: { targetSchool?: string; targetMajor?: string }) =>
       apiClient.post<{ output: Record<string, unknown>; overallScore: number | null }>(
-        `/resumes/${resumeId}/ai/review`,
+        resumeRoutes.aiReview(resumeId),
         dto ?? {}
       ),
     onSuccess: (data) => {

@@ -8,6 +8,7 @@ import { GraduationCap } from 'lucide-react';
 import { PageContainer } from '@/components/layout';
 import { PageHeader } from '@/components/layout/page-header';
 import { apiClient } from '@/lib/api';
+import { schoolListRoutes } from '@study-abroad/shared';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { AIErrorBoundary } from '@/components/features/ai-error-boundary';
@@ -42,7 +43,7 @@ export default function UncommonAppPage() {
   // Fetch user's school list
   const { data: schoolList, isLoading: listLoading } = useQuery({
     queryKey: ['school-lists'],
-    queryFn: () => apiClient.get<SchoolListItem[]>('/school-lists'),
+    queryFn: () => apiClient.get<SchoolListItem[]>(schoolListRoutes.list()),
   });
 
   // Fetch profile
@@ -53,7 +54,7 @@ export default function UncommonAppPage() {
 
   // Delete from list mutation
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/school-lists/${id}`),
+    mutationFn: (id: string) => apiClient.delete(schoolListRoutes.byId(id)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['school-lists'] });
       toast.success(t('removedFromList'));

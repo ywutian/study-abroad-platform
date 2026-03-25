@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/lib/i18n/navigation';
 import { apiClient } from '@/lib/api';
+import { authRoutes } from '@study-abroad/shared';
 import { ApiError } from '@/lib/api/api-error';
 import { toastSuccess, toastError } from '@/components/ui/sonner';
 import { Mail, ArrowLeft, RefreshCw, Loader2 } from 'lucide-react';
@@ -32,7 +33,7 @@ export default function VerifyEmailPage() {
 
     setIsResending(true);
     try {
-      await apiClient.post('/auth/resend-verification', { email }, { skipAuth: true });
+      await apiClient.post(authRoutes.resendVerification(), { email }, { skipAuth: true });
       toastSuccess(t('auth.verifyEmail.resendSuccess'));
       setCooldown(RESEND_COOLDOWN);
     } catch (err) {

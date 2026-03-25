@@ -25,6 +25,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { apiClient } from '@/lib/api/client';
+import { API_ROUTES } from '@study-abroad/shared';
 
 // ============ Types ============
 
@@ -230,7 +231,7 @@ export function BatchEntryTab() {
         tags: row.tags || undefined,
       }));
 
-      return apiClient.post('/admin/cases/batch-import', {
+      return apiClient.post(`${API_ROUTES.ADMIN}/cases/batch-import`, {
         items: payload,
         visibility: 'ANONYMOUS',
         autoVerify: false,

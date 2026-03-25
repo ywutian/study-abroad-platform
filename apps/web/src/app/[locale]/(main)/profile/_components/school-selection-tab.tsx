@@ -37,6 +37,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { toast } from 'sonner';
 import { useRouter } from '@/lib/i18n/navigation';
 import { apiClient } from '@/lib/api';
+import { essayPromptRoutes } from '@study-abroad/shared';
 import { RankingBadge } from '@/components/ui/ranking-badge';
 import { getDisplayRankings, RANKING_LIST_KEYS } from '@/lib/utils/ranking';
 import type { TargetSchool } from './types';
@@ -127,7 +128,7 @@ function SchoolEssayPrompts({ schoolId }: { schoolId: string }) {
 
   const { data: prompts, isLoading } = useQuery<EssayPrompt[]>({
     queryKey: ['essay-prompts-by-school', schoolId],
-    queryFn: () => apiClient.get(`/essay-prompts/by-school/${schoolId}`),
+    queryFn: () => apiClient.get(essayPromptRoutes.bySchool(schoolId)),
     staleTime: 5 * 60 * 1000,
   });
 

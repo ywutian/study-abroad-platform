@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
+import { verificationRoutes } from '@study-abroad/shared';
 import { cn } from '@/lib/utils';
 import {
   Upload,
@@ -77,7 +78,7 @@ export function VerificationDialog({
 
   const submitMutation = useMutation({
     mutationFn: async (data: { caseId: string; proofType: string; proofData: string }) => {
-      return apiClient.post('/verifications', data);
+      return apiClient.post(verificationRoutes.submit(), data);
     },
     onSuccess: () => {
       toast.success(t('verification.submitSuccess'));

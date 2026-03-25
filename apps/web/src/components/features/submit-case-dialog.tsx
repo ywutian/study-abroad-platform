@@ -24,6 +24,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { apiClient } from '@/lib/api';
+import { caseRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { Loader2, Send, GraduationCap, PenTool, Upload, FileText, ChevronDown } from 'lucide-react';
@@ -172,7 +173,7 @@ export function SubmitCaseDialog({
   });
 
   const submitMutation = useMutation({
-    mutationFn: (data: any) => apiClient.post('/cases', data),
+    mutationFn: (data: any) => apiClient.post(caseRoutes.list(), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cases'] });
       onOpenChange(false);

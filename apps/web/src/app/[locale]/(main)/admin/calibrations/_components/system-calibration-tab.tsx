@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 
 interface PlattStatus {
   enabled: boolean;
@@ -35,11 +36,11 @@ export function SystemCalibrationTab() {
 
   const { data: status, isLoading } = useQuery<PlattStatus>({
     queryKey: ['adminPlattStatus'],
-    queryFn: () => apiClient.get('/admin/calibrations/platt-status'),
+    queryFn: () => apiClient.get(`${API_ROUTES.ADMIN}/calibrations/platt-status`),
   });
 
   const retrainMutation = useMutation({
-    mutationFn: () => apiClient.post('/admin/calibrations/retrain'),
+    mutationFn: () => apiClient.post(`${API_ROUTES.ADMIN}/calibrations/retrain`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminPlattStatus'] });
       toast.success(t('retrainSuccess'));

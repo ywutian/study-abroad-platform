@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { highSchoolRoutes } from '@study-abroad/shared';
 import { apiClient, STALE_TIME } from '@/lib/api';
 
 export interface HighSchoolSearchItem {
@@ -26,7 +27,7 @@ export function useHighSchoolSearch(query: string, enabled = true) {
   return useQuery<HighSchoolSearchItem[]>({
     queryKey: ['high-schools-search', debouncedQuery],
     queryFn: () =>
-      apiClient.get('/high-schools', {
+      apiClient.get(highSchoolRoutes.list(), {
         params: { search: debouncedQuery, pageSize: '15' },
       }),
     enabled: enabled && debouncedQuery.length >= 1,

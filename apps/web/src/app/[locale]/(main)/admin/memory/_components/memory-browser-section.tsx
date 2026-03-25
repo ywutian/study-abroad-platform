@@ -42,6 +42,7 @@ import {
 } from '@/components/ui/table';
 import { PaginationControls } from '../../_components/pagination-controls';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -80,7 +81,7 @@ export function MemoryBrowserSection() {
   const [deleteMemoryId, setDeleteMemoryId] = useState<string | null>(null);
 
   const deleteMemoryMutation = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/admin/ai-agent/memory/${id}`),
+    mutationFn: (id: string) => apiClient.delete(`${API_ROUTES.ADMIN}/ai-agent/memory/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['memoryBrowse'] });
       queryClient.invalidateQueries({ queryKey: ['memoryGlobalStats'] });

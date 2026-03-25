@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Link } from '@/lib/i18n/navigation';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
+import { authRoutes } from '@study-abroad/shared';
 import {
   KeyRound,
   ArrowLeft,
@@ -36,7 +37,7 @@ export default function ResetPasswordPage() {
 
   const mutation = useMutation({
     mutationFn: (data: { token: string; newPassword: string }) =>
-      apiClient.post('/auth/reset-password', data, { skipAuth: true }),
+      apiClient.post(authRoutes.resetPassword(), data, { skipAuth: true }),
     onSuccess: () => {
       setSuccess(true);
     },

@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
+import { assessmentRoutes, API_ROUTES } from '@study-abroad/shared';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { cn } from '@/lib/utils';
 import { AiAssistantPanel, type ContextAction } from '@/components/features/agent-chat';
@@ -41,28 +42,28 @@ export default function AssessmentPage() {
   // Fetch MBTI questions
   const { data: mbtiAssessment, isLoading: mbtiLoading } = useQuery<Assessment>({
     queryKey: ['assessment', 'MBTI'],
-    queryFn: () => apiClient.get('/assessments/MBTI'),
+    queryFn: () => apiClient.get(assessmentRoutes.start('MBTI')),
     enabled: activeTab === 'mbti' && !showResult,
   });
 
   // Fetch Holland questions
   const { data: hollandAssessment, isLoading: hollandLoading } = useQuery<Assessment>({
     queryKey: ['assessment', 'HOLLAND'],
-    queryFn: () => apiClient.get('/assessments/HOLLAND'),
+    queryFn: () => apiClient.get(assessmentRoutes.start('HOLLAND')),
     enabled: activeTab === 'holland' && !showResult,
   });
 
   // Fetch history
   const { data: history, refetch: refetchHistory } = useQuery<AssessmentResult[]>({
     queryKey: ['assessment-history'],
-    queryFn: () => apiClient.get('/assessments/history/me'),
+    queryFn: () => apiClient.get(`${API_ROUTES.ASSESSMENTS}/history/me`),
     enabled: activeTab === 'history',
   });
 
   // Submit assessment
   const submitMutation = useMutation({
     mutationFn: (data: { type: string; answers: { questionId: string; answer: string }[] }) =>
-      apiClient.post<AssessmentResult>('/assessments', data),
+      apiClient.post<AssessmentResult>(API_ROUTES.ASSESSMENTS, data),
     onSuccess: (data) => {
       setCurrentResult(data);
       setShowResult(true);

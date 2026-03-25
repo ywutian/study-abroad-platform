@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { ToggleLeft } from 'lucide-react';
@@ -20,7 +21,7 @@ export function FeaturesSection() {
 
   const toggleFeatureMutation = useMutation({
     mutationFn: ({ feature, enabled }: { feature: string; enabled: boolean }) =>
-      apiClient.put(`/admin/ai-agent/features/${feature}`, { enabled }),
+      apiClient.put(`${API_ROUTES.ADMIN}/ai-agent/features/${feature}`, { enabled }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['aiAgentFeatures'] });
       toast.success(t('featureUpdated'));

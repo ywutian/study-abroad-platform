@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient, STALE_TIME } from '@/lib/api';
+import { schoolRoutes, essayPromptRoutes } from '@study-abroad/shared';
 import { useSchoolSearch } from '@/hooks/use-school-search';
 import { getLocalizedName } from '@/lib/i18n/locale-utils';
 import { Badge } from '@/components/ui/badge';
@@ -76,7 +77,7 @@ export function PromptSelector({
   // When initialSchoolId is provided, fetch the school name and auto-open the popover
   const { data: initialSchool } = useQuery<{ name: string; nameZh?: string }>({
     queryKey: ['school-detail', initialSchoolId],
-    queryFn: () => apiClient.get(`/schools/${initialSchoolId}`),
+    queryFn: () => apiClient.get(schoolRoutes.byId(initialSchoolId!)),
     enabled: !!initialSchoolId && !initialHandled,
   });
 
@@ -100,7 +101,7 @@ export function PromptSelector({
 
   const { data: prompts, isLoading: isLoadingPrompts } = useQuery<EssayPrompt[]>({
     queryKey: ['essay-prompts-by-school', selectedSchoolId],
-    queryFn: () => apiClient.get(`/essay-prompts/by-school/${selectedSchoolId}`),
+    queryFn: () => apiClient.get(essayPromptRoutes.bySchool(selectedSchoolId!)),
     enabled: !!selectedSchoolId,
     staleTime: STALE_TIME.DYNAMIC,
   });

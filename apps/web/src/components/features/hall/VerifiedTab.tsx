@@ -33,6 +33,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { cn } from '@/lib/utils';
 
 interface VerifiedUser {
@@ -104,13 +105,13 @@ export function VerifiedTab() {
 
   const { data: years } = useQuery<number[]>({
     queryKey: ['verified-ranking-years'],
-    queryFn: () => apiClient.get('/halls/verified-ranking/years'),
+    queryFn: () => apiClient.get(`${API_ROUTES.HALLS}/verified-ranking/years`),
   });
 
   const { data, isLoading, isFetching } = useQuery<VerifiedRankingResponse>({
     queryKey: ['verified-ranking', filter, year, offset],
     queryFn: () =>
-      apiClient.get('/halls/verified-ranking', {
+      apiClient.get(`${API_ROUTES.HALLS}/verified-ranking`, {
         params: {
           filter,
           ...(year && { year }),

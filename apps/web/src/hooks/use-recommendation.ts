@@ -8,9 +8,15 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  API_ROUTES,
+  recommendationRoutes,
+  schoolListRoutes,
+  type RecommendationResult,
+  type RecommendationPreflight,
+} from '@study-abroad/shared';
 import { apiClient, STALE_TIME } from '@/lib/api';
 import { AI_TIMEOUTS } from '@/lib/constants';
-import type { RecommendationResult, RecommendationPreflight } from '@study-abroad/shared';
 
 // ============================================
 // Query Keys — 统一管理，防止拼写错误
@@ -41,7 +47,7 @@ export interface GenerateRecommendationDto {
 export function useRecommendationPreflight() {
   return useQuery<RecommendationPreflight>({
     queryKey: recommendationKeys.preflight(),
-    queryFn: () => apiClient.get('/recommendations/preflight'),
+    queryFn: () => apiClient.get(recommendationRoutes.preflight()),
     staleTime: STALE_TIME.MODERATE,
   });
 }
@@ -51,7 +57,7 @@ export function useGenerateRecommendation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (dto: GenerateRecommendationDto) =>
-      apiClient.post<RecommendationResult>('/recommendations', dto, {
+      apiClient.post<RecommendationResult>(recommendationRoutes.generate(), dto, {
         timeout: AI_TIMEOUTS.AI_REQUEST,
       }),
     onSuccess: () => {
@@ -69,7 +75,7 @@ export function useGenerateRecommendation() {
 export function useRecommendationHistory(enabled: boolean) {
   return useQuery<RecommendationResult[]>({
     queryKey: recommendationKeys.history(),
-    queryFn: () => apiClient.get('/recommendations/history'),
+    queryFn: () => apiClient.get(recommendationRoutes.history()),
     enabled,
     staleTime: STALE_TIME.MODERATE,
   });
@@ -79,7 +85,7 @@ export function useRecommendationHistory(enabled: boolean) {
 export function useDeleteRecommendation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/recommendations/${id}`),
+    mutationFn: (id: string) => apiClient.delete(`${API_ROUTES.RECOMMENDATIONS}/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: recommendationKeys.history(),
@@ -97,7 +103,11 @@ export function useAddToSchoolList() {
       tier: string;
       round?: string;
       isAIRecommended?: boolean;
-    }) => apiClient.post('/school-lists', { ...dto, isAIRecommended: dto.isAIRecommended ?? true }),
+    }) =>
+      apiClient.post(schoolListRoutes.list(), {
+        ...dto,
+        isAIRecommended: dto.isAIRecommended ?? true,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['school-lists'] });
       queryClient.invalidateQueries({ queryKey: ['school-list'] });

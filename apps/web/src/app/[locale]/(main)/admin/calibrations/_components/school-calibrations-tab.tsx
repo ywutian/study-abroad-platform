@@ -31,6 +31,7 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { getSchoolName } from '@/lib/utils';
 
 import { CalibrationFormDialog } from './calibration-form-dialog';
@@ -72,11 +73,11 @@ export function SchoolCalibrationsTab() {
 
   const { data: calibrations = [], isLoading } = useQuery<SchoolCalibration[]>({
     queryKey: ['adminCalibrations'],
-    queryFn: () => apiClient.get('/admin/calibrations'),
+    queryFn: () => apiClient.get(`${API_ROUTES.ADMIN}/calibrations`),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/admin/calibrations/${id}`),
+    mutationFn: (id: string) => apiClient.delete(`${API_ROUTES.ADMIN}/calibrations/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminCalibrations'] });
       queryClient.invalidateQueries({ queryKey: ['adminCalibrationStats'] });
@@ -88,7 +89,7 @@ export function SchoolCalibrationsTab() {
 
   const bulkMutation = useMutation({
     mutationFn: async (items: Array<{ schoolId: string; multiplier: number; reason?: string }>) => {
-      const result = await apiClient.post('/admin/calibrations/bulk', { items });
+      const result = await apiClient.post(`${API_ROUTES.ADMIN}/calibrations/bulk`, { items });
       return result as { created: number; updated: number; failed: number };
     },
     onSuccess: (data) => {

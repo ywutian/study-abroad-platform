@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { getSchoolName } from '@/lib/utils';
 
 import { CalibrationFormDialog } from './calibration-form-dialog';
@@ -72,12 +73,12 @@ export function OverviewTab() {
 
   const { data: stats, isLoading: statsLoading } = useQuery<CalibrationStats>({
     queryKey: ['adminCalibrationStats'],
-    queryFn: () => apiClient.get('/admin/calibrations/stats'),
+    queryFn: () => apiClient.get(`${API_ROUTES.ADMIN}/calibrations/stats`),
   });
 
   const { data: suggestions = [], isLoading: suggestionsLoading } = useQuery<Suggestion[]>({
     queryKey: ['adminCalibrationSuggestions'],
-    queryFn: () => apiClient.get('/admin/calibrations/suggestions'),
+    queryFn: () => apiClient.get(`${API_ROUTES.ADMIN}/calibrations/suggestions`),
   });
 
   function handleQuickCalibrate(s: Suggestion) {

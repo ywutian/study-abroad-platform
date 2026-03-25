@@ -29,6 +29,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Check, X, Loader2 } from 'lucide-react';
 
@@ -66,7 +67,7 @@ export function SuggestionsTab() {
 
   const approveMutation = useMutation({
     mutationFn: ({ id, type }: { id: string; type: string }) =>
-      apiClient.post(`/admin/high-schools/suggestions/${id}/approve`, { type }),
+      apiClient.post(`${API_ROUTES.ADMIN}/high-schools/suggestions/${id}/approve`, { type }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminHsSuggestions'] });
       queryClient.invalidateQueries({ queryKey: ['adminHighSchools'] });
@@ -76,7 +77,8 @@ export function SuggestionsTab() {
   });
 
   const rejectMutation = useMutation({
-    mutationFn: (id: string) => apiClient.post(`/admin/high-schools/suggestions/${id}/reject`),
+    mutationFn: (id: string) =>
+      apiClient.post(`${API_ROUTES.ADMIN}/high-schools/suggestions/${id}/reject`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminHsSuggestions'] });
       toast.success(t('suggestions.rejectSuccess'));

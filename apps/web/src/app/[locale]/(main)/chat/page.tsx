@@ -18,6 +18,7 @@ import { MessageInput } from '@/components/features';
 import { useChatSocket } from '@/hooks/use-chat-socket';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { API_ROUTES, chatRoutes } from '@study-abroad/shared';
 import { MessageSquare, Wifi, WifiOff } from 'lucide-react';
 
 import type { Message, Conversation, ReportTarget } from './_components/types';
@@ -139,7 +140,7 @@ export default function ChatPage() {
 
   // ── Mutations ─────────────────────────────────────────────
   const blockMutation = useMutation({
-    mutationFn: (userId: string) => apiClient.post(`/chats/block/${userId}`),
+    mutationFn: (userId: string) => apiClient.post(chatRoutes.block(userId)),
     onSuccess: () => {
       toast.success(t('chat.blockSuccess'));
       setBlockDialogOpen(false);
@@ -151,7 +152,7 @@ export default function ChatPage() {
 
   const reportMutation = useMutation({
     mutationFn: (data: { targetType: string; targetId: string; reason: string; detail?: string }) =>
-      apiClient.post('/chats/report', data),
+      apiClient.post(`${API_ROUTES.CHATS}/report`, data),
     onSuccess: () => {
       toast.success(t('chat.reportSuccess'));
       setReportDialogOpen(false);
@@ -160,7 +161,7 @@ export default function ChatPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (messageId: string) => apiClient.delete(`/chats/messages/${messageId}`),
+    mutationFn: (messageId: string) => apiClient.delete(chatRoutes.messages(messageId)),
     onSuccess: (_data, messageId) => {
       queryClient.setQueryData<InfiniteData<Message[], string | undefined>>(
         ['messages', selectedConversation],
@@ -178,7 +179,7 @@ export default function ChatPage() {
   });
 
   const recallMutation = useMutation({
-    mutationFn: (messageId: string) => apiClient.patch(`/chats/messages/${messageId}/recall`),
+    mutationFn: (messageId: string) => apiClient.patch(`${chatRoutes.messages(messageId)}/recall`),
     onSuccess: (_data, messageId) => {
       queryClient.setQueryData<InfiniteData<Message[], string | undefined>>(
         ['messages', selectedConversation],

@@ -27,6 +27,7 @@ import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { apiClient } from '@/lib/api';
+import { hallRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 
 interface ProfileData {
@@ -99,7 +100,7 @@ export function SwipeReviewMode({ profile, onClose, onComplete }: SwipeReviewMod
       awardScore: number;
       overallScore: number;
       comment?: string;
-    }) => apiClient.post('/halls/reviews', data),
+    }) => apiClient.post(hallRoutes.reviews(), data),
     onSuccess: () => {
       toast.success(t('review.submitSuccess'));
       onComplete?.();

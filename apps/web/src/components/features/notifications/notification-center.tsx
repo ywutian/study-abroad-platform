@@ -32,6 +32,7 @@ import { Badge } from '@/components/ui/badge';
 import { CountBadge } from '@/components/ui/count-badge';
 import { cn } from '@/lib/utils';
 import { apiClient } from '@/lib/api';
+import { notificationRoutes } from '@study-abroad/shared';
 import { formatDistanceToNow } from 'date-fns';
 import { zhCN, enUS } from 'date-fns/locale';
 import Link from 'next/link';
@@ -246,7 +247,7 @@ export function NotificationCenter() {
 
   // 标记已读
   const markAsReadMutation = useMutation({
-    mutationFn: (id: string) => apiClient.post(`/notifications/${id}/read`),
+    mutationFn: (id: string) => apiClient.post(notificationRoutes.markRead(id)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
@@ -255,7 +256,7 @@ export function NotificationCenter() {
 
   // 标记全部已读
   const markAllAsReadMutation = useMutation({
-    mutationFn: () => apiClient.post('/notifications/read-all'),
+    mutationFn: () => apiClient.post(notificationRoutes.readAll()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
@@ -264,7 +265,7 @@ export function NotificationCenter() {
 
   // 删除通知
   const deleteNotificationMutation = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/notifications/${id}`),
+    mutationFn: (id: string) => apiClient.delete(notificationRoutes.byId(id)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
@@ -273,7 +274,7 @@ export function NotificationCenter() {
 
   // 清空所有
   const clearAllMutation = useMutation({
-    mutationFn: () => apiClient.delete('/notifications'),
+    mutationFn: () => apiClient.delete(notificationRoutes.list()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });

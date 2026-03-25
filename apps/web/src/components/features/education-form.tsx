@@ -33,6 +33,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { apiClient } from '@/lib/api';
+import { profileRoutes, highSchoolRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Loader2, Save, ChevronsUpDown, Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -175,7 +176,7 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
   }, [education, open]);
 
   const createMutation = useMutation({
-    mutationFn: (data: any) => apiClient.post('/profiles/me/education', data),
+    mutationFn: (data: any) => apiClient.post(`${profileRoutes.me()}/education`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       onOpenChange(false);
@@ -185,7 +186,8 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data: any) => apiClient.put(`/profiles/me/education/${education?.id}`, data),
+    mutationFn: (data: any) =>
+      apiClient.put(`${profileRoutes.me()}/education/${education?.id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       onOpenChange(false);
@@ -332,7 +334,7 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
                                 size="sm"
                                 onClick={async () => {
                                   try {
-                                    await apiClient.post('/high-schools/suggest', {
+                                    await apiClient.post(highSchoolRoutes.suggest(), {
                                       name: search,
                                       country: 'Unknown',
                                     });

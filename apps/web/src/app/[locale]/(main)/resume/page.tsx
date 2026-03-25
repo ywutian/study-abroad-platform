@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@/lib/i18n/navigation';
 import { apiClient } from '@/lib/api';
+import { resumeRoutes } from '@study-abroad/shared';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -83,12 +84,12 @@ export default function ResumePage() {
 
   const { data: resumes, isLoading } = useQuery({
     queryKey: ['resumes'],
-    queryFn: () => apiClient.get<ResumeItem[]>('/resumes'),
+    queryFn: () => apiClient.get<ResumeItem[]>(resumeRoutes.list()),
   });
 
   const createMutation = useMutation({
     mutationFn: (dto: { title: string; type: ResumeType; importFromProfile: boolean }) =>
-      apiClient.post<ResumeItem>('/resumes', dto),
+      apiClient.post<ResumeItem>(resumeRoutes.list(), dto),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['resumes'] });
       setCreateOpen(false);
@@ -97,7 +98,7 @@ export default function ResumePage() {
   });
 
   const duplicateMutation = useMutation({
-    mutationFn: (id: string) => apiClient.post<ResumeItem>(`/resumes/${id}/duplicate`),
+    mutationFn: (id: string) => apiClient.post<ResumeItem>(resumeRoutes.duplicate(id)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['resumes'] });
       toast.success(tc('success'));
@@ -105,7 +106,7 @@ export default function ResumePage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/resumes/${id}`),
+    mutationFn: (id: string) => apiClient.delete(resumeRoutes.byId(id)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['resumes'] });
       toast.success(tc('success'));

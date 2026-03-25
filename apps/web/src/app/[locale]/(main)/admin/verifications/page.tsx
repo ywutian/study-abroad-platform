@@ -21,6 +21,7 @@ import { VerificationStatsCards } from './_components/verification-stats-cards';
 import { VerificationDetailDialog } from './_components/verification-detail-dialog';
 import { VerificationConfirmDialog } from './_components/verification-confirm-dialog';
 import { apiClient } from '@/lib/api';
+import { verificationRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { ShieldCheck, Clock, CheckCircle, XCircle, FileText, GraduationCap } from 'lucide-react';
 
@@ -126,7 +127,7 @@ export default function AdminVerificationsPage() {
   // Review mutation
   const reviewMutation = useMutation({
     mutationFn: ({ id, action, note }: { id: string; action: string; note?: string }) =>
-      apiClient.post(`/verifications/${id}/review`, { action, note: note || undefined }),
+      apiClient.post(verificationRoutes.review(id), { action, note: note || undefined }),
     onSuccess: (_data, variables) => {
       const isApproved = variables.action === 'APPROVE';
       toast.success(t(isApproved ? 'verifications.approved' : 'verifications.rejected'));

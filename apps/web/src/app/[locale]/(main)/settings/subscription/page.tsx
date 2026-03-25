@@ -31,6 +31,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES, subscriptionRoutes } from '@study-abroad/shared';
 
 // UI-specific props (icon, color, gradient) stay in frontend
 const PLAN_UI: Record<string, { icon: typeof Gift; color: string; gradient: string }> = {
@@ -70,18 +71,18 @@ export default function SubscriptionPage() {
 
   const { data: subscription } = useQuery<SubscriptionData>({
     queryKey: ['subscription-me'],
-    queryFn: () => apiClient.get('/subscriptions/me'),
+    queryFn: () => apiClient.get(`${API_ROUTES.SUBSCRIPTIONS}/me`),
   });
 
   const { data: billingHistory = [] } = useQuery<BillingHistoryItem[]>({
     queryKey: ['billing-history'],
-    queryFn: () => apiClient.get('/subscriptions/billing-history'),
+    queryFn: () => apiClient.get(`${API_ROUTES.SUBSCRIPTIONS}/billing-history`),
   });
 
   const currentPlan = subscription?.plan?.toLowerCase() ?? 'free';
 
   const upgradeMutation = useMutation({
-    mutationFn: (plan: string) => apiClient.post('/subscriptions/subscribe', { plan }),
+    mutationFn: (plan: string) => apiClient.post(subscriptionRoutes.subscribe(), { plan }),
     onSuccess: () => {
       toast.success(t('upgradeSuccess'));
     },

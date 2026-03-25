@@ -20,6 +20,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Clock, Loader2, Play } from 'lucide-react';
@@ -45,7 +46,7 @@ export function DecaySection() {
 
   const updateDecayMutation = useMutation({
     mutationFn: (data: Partial<DecayConfig>) =>
-      apiClient.put('/admin/ai-agent/memory/decay/config', data),
+      apiClient.put(`${API_ROUTES.ADMIN}/ai-agent/memory/decay/config`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['memoryDecayConfig'] });
       toast.success(t('configSaved'));

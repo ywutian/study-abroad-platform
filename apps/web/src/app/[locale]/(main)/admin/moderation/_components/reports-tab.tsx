@@ -29,6 +29,7 @@ import { CardSkeleton } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PaginationControls } from '../../_components/pagination-controls';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { AlertTriangle, CheckCircle, Clock, Loader2 } from 'lucide-react';
 
@@ -71,7 +72,7 @@ export function ReportsTab() {
 
   const updateReportMutation = useMutation({
     mutationFn: ({ id, status, resolution }: { id: string; status: string; resolution?: string }) =>
-      apiClient.put(`/admin/reports/${id}`, { status, resolution }),
+      apiClient.put(`${API_ROUTES.ADMIN}/reports/${id}`, { status, resolution }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminReports'] });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });

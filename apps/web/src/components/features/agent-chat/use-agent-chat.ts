@@ -8,6 +8,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
+import { API_ROUTES } from '@study-abroad/shared';
 import { useAuth } from '@/hooks/use-auth';
 import { useAuthStore } from '@/stores/auth';
 import { apiClient } from '@/lib/api';
@@ -392,7 +393,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
 
     if (oldConversationId) {
       try {
-        await apiClient.delete('/ai-agent/conversation', {
+        await apiClient.delete(`${API_ROUTES.AI_AGENT}/conversation`, {
           params: { conversationId: oldConversationId },
         });
         invalidateConversations();
@@ -419,7 +420,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
             toolCalls?: ChatMessage['toolCalls'];
             createdAt: string;
           }>;
-        }>('/ai-agent/history', {
+        }>(`${API_ROUTES.AI_AGENT}/history`, {
           params: { conversationId: targetConversationId },
         });
 

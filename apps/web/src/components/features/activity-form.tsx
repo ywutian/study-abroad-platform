@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
+import { profileRoutes } from '@study-abroad/shared';
 import { Save, Loader2, Sparkles, HelpCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -217,7 +218,7 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
   };
 
   const createMutation = useMutation({
-    mutationFn: (data: unknown) => apiClient.post('/profiles/me/activities', data),
+    mutationFn: (data: unknown) => apiClient.post(profileRoutes.activities(), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(t('toast.activityAdded'));
@@ -227,8 +228,7 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data: unknown) =>
-      apiClient.put(`/profiles/me/activities/${editingActivity?.id}`, data),
+    mutationFn: (data: unknown) => apiClient.put(profileRoutes.activity(editingActivity!.id), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(t('toast.activityUpdated'));

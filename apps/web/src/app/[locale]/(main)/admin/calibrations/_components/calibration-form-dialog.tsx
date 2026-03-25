@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES, schoolRoutes } from '@study-abroad/shared';
 import { getSchoolName } from '@/lib/utils';
 
 interface SchoolOption {
@@ -92,7 +93,7 @@ export function CalibrationFormDialog({
   const { data: schoolOptions = [] } = useQuery<SchoolOption[]>({
     queryKey: ['schoolSearch', schoolQuery],
     queryFn: async () => {
-      const r = (await apiClient.get('/schools', {
+      const r = (await apiClient.get(schoolRoutes.list(), {
         params: { search: schoolQuery, pageSize: 10 },
       })) as { items?: SchoolOption[] };
       return r.items ?? (r as unknown as SchoolOption[]);
@@ -102,7 +103,7 @@ export function CalibrationFormDialog({
 
   const createMutation = useMutation({
     mutationFn: (data: { schoolId: string; multiplier: number; reason?: string }) =>
-      apiClient.post('/admin/calibrations', data),
+      apiClient.post(`${API_ROUTES.ADMIN}/calibrations`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminCalibrations'] });
       queryClient.invalidateQueries({ queryKey: ['adminCalibrationStats'] });
@@ -115,7 +116,7 @@ export function CalibrationFormDialog({
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: { multiplier?: number; reason?: string } }) =>
-      apiClient.put(`/admin/calibrations/${id}`, data),
+      apiClient.put(`${API_ROUTES.ADMIN}/calibrations/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminCalibrations'] });
       queryClient.invalidateQueries({ queryKey: ['adminCalibrationStats'] });

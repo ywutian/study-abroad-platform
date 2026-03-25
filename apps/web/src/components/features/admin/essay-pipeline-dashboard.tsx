@@ -25,6 +25,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { apiClient } from '@/lib/api/client';
+import { API_ROUTES } from '@study-abroad/shared';
 import { Play, Search, Eye, RefreshCw, Loader2 } from 'lucide-react';
 
 import type {
@@ -117,7 +118,9 @@ export function EssayPipelineDashboard() {
 
   const handleSingleScrape = async (schoolName: string) => {
     try {
-      await apiClient.post('/admin/essay-scraper/pipeline/scrape-school', { schoolName });
+      await apiClient.post(`${API_ROUTES.ADMIN}/essay-scraper/pipeline/scrape-school`, {
+        schoolName,
+      });
       toast.success(t('scrapeStarted'));
       setTimeout(fetchData, 2000);
     } catch {
@@ -130,7 +133,7 @@ export function EssayPipelineDashboard() {
     setSavingConfirm(true);
     try {
       const essays = selectedIndexes.map((i) => testScrapeResult.essays[i]);
-      await apiClient.post('/admin/essay-scraper/confirm-save', {
+      await apiClient.post(`${API_ROUTES.ADMIN}/essay-scraper/confirm-save`, {
         schoolId: testScrapeResult.schoolId,
         schoolName: testScrapeResult.school,
         essays,

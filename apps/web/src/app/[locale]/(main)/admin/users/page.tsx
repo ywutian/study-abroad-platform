@@ -8,6 +8,7 @@ import { ListSkeleton } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PaginationControls } from '../_components/pagination-controls';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Users } from 'lucide-react';
 
@@ -45,7 +46,7 @@ export default function AdminUsersPage() {
 
   const updateUserRoleMutation = useMutation({
     mutationFn: ({ userId, role }: { userId: string; role: string }) =>
-      apiClient.post(`/admin/roles/users/${userId}/role`, { role }),
+      apiClient.post(`${API_ROUTES.ADMIN}/roles/users/${userId}/role`, { role }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
       toast.success(t('toast.roleUpdated'));
@@ -53,7 +54,7 @@ export default function AdminUsersPage() {
   });
 
   const deleteUserMutation = useMutation({
-    mutationFn: (userId: string) => apiClient.delete(`/admin/users/${userId}`),
+    mutationFn: (userId: string) => apiClient.delete(`${API_ROUTES.ADMIN}/users/${userId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
@@ -73,7 +74,12 @@ export default function AdminUsersPage() {
       reason: string;
       durationHours?: number;
       permanent?: boolean;
-    }) => apiClient.post(`/admin/users/${userId}/ban`, { reason, durationHours, permanent }),
+    }) =>
+      apiClient.post(`${API_ROUTES.ADMIN}/users/${userId}/ban`, {
+        reason,
+        durationHours,
+        permanent,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
       setUserToBan(null);
@@ -85,7 +91,7 @@ export default function AdminUsersPage() {
   });
 
   const unbanUserMutation = useMutation({
-    mutationFn: (userId: string) => apiClient.post(`/admin/users/${userId}/unban`),
+    mutationFn: (userId: string) => apiClient.post(`${API_ROUTES.ADMIN}/users/${userId}/unban`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
       setUserToUnban(null);

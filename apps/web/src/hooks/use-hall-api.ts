@@ -8,6 +8,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { hallRoutes, API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api';
 import type {
   SwipeBatchResponse,
@@ -39,7 +40,7 @@ export const hallKeys = {
 export function useSwipeCases(enabled: boolean) {
   return useQuery({
     queryKey: hallKeys.swipeCases(),
-    queryFn: () => apiClient.get<SwipeBatchResponse>('/halls/swipe/batch?count=10'),
+    queryFn: () => apiClient.get<SwipeBatchResponse>(`${hallRoutes.swipe()}/batch?count=10`),
     enabled,
   });
 }
@@ -48,7 +49,7 @@ export function useSwipeCases(enabled: boolean) {
 export function useSwipeStats(enabled: boolean) {
   return useQuery({
     queryKey: hallKeys.swipeStats(),
-    queryFn: () => apiClient.get<SwipeStats>('/halls/swipe/stats'),
+    queryFn: () => apiClient.get<SwipeStats>(`${hallRoutes.swipe()}/stats`),
     enabled,
   });
 }
@@ -57,7 +58,7 @@ export function useSwipeStats(enabled: boolean) {
 export function useLeaderboard(enabled: boolean) {
   return useQuery({
     queryKey: hallKeys.leaderboard(),
-    queryFn: () => apiClient.get<LeaderboardResponse>('/halls/swipe/leaderboard?limit=20'),
+    queryFn: () => apiClient.get<LeaderboardResponse>(`${hallRoutes.swipe()}/leaderboard?limit=20`),
     enabled,
   });
 }
@@ -68,7 +69,7 @@ export function useSwipeMutation() {
 
   return useMutation({
     mutationFn: (data: { caseId: string; prediction: 'admit' | 'reject' | 'waitlist' }) =>
-      apiClient.post<SwipeResult>('/halls/swipe/predict', data),
+      apiClient.post<SwipeResult>(`${hallRoutes.swipe()}/predict`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: hallKeys.swipeStats() });
       queryClient.invalidateQueries({ queryKey: hallKeys.leaderboard() });
@@ -86,7 +87,7 @@ export function useTargetRanking(enabled: boolean) {
     queryKey: hallKeys.targetRanking(),
     queryFn: () =>
       apiClient.get<{ rankings: RankingResult[]; totalTargetSchools: number }>(
-        '/halls/target-ranking'
+        `${API_ROUTES.HALLS}/target-ranking`
       ),
     enabled,
   });
@@ -96,7 +97,8 @@ export function useTargetRanking(enabled: boolean) {
 export function useSchoolRanking(schoolIds: string[]) {
   return useQuery({
     queryKey: hallKeys.ranking(schoolIds),
-    queryFn: () => apiClient.post<{ rankings: RankingResult[] }>('/halls/ranking', { schoolIds }),
+    queryFn: () =>
+      apiClient.post<{ rankings: RankingResult[] }>(`${API_ROUTES.HALLS}/ranking`, { schoolIds }),
     enabled: false, // 手动触发
   });
 }
@@ -105,7 +107,7 @@ export function useSchoolRanking(schoolIds: string[]) {
 export function useAiAnalysis() {
   return useMutation({
     mutationFn: (schoolId: string) =>
-      apiClient.post<AiAnalysisResult>('/halls/ranking-analysis', { schoolId }),
+      apiClient.post<AiAnalysisResult>(`${API_ROUTES.HALLS}/ranking-analysis`, { schoolId }),
   });
 }
 
@@ -138,7 +140,7 @@ export function useSubmitReview() {
       awardComment?: string;
       tags?: string[];
       status?: 'DRAFT' | 'PUBLISHED';
-    }) => apiClient.post('/halls/reviews', data),
+    }) => apiClient.post(hallRoutes.reviews(), data),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: hallKeys.publicLists() });
       queryClient.invalidateQueries({ queryKey: reviewKeys.reviews(variables.profileUserId) });
@@ -152,7 +154,7 @@ export function useSubmitReview() {
 export function useReviews(profileUserId: string, enabled = true) {
   return useQuery({
     queryKey: reviewKeys.reviews(profileUserId),
-    queryFn: () => apiClient.get(`/halls/reviews/${profileUserId}`),
+    queryFn: () => apiClient.get(`${hallRoutes.reviews()}/${profileUserId}`),
     enabled: !!profileUserId && enabled,
   });
 }
@@ -161,7 +163,7 @@ export function useReviews(profileUserId: string, enabled = true) {
 export function useReviewStats(profileUserId: string, enabled = true) {
   return useQuery({
     queryKey: reviewKeys.reviewStats(profileUserId),
-    queryFn: () => apiClient.get(`/halls/reviews/${profileUserId}/stats`),
+    queryFn: () => apiClient.get(`${hallRoutes.reviews()}/${profileUserId}/stats`),
     enabled: !!profileUserId && enabled,
   });
 }
@@ -172,7 +174,7 @@ export function useReactToReview() {
 
   return useMutation({
     mutationFn: (data: { reviewId: string; type: 'helpful' | 'insightful' }) =>
-      apiClient.post(`/halls/reviews/${data.reviewId}/react`, { type: data.type }),
+      apiClient.post(hallRoutes.reviewReact(data.reviewId), { type: data.type }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: hallKeys.all });
     },
@@ -188,7 +190,7 @@ export function usePublicLists(enabled: boolean) {
   return useQuery({
     queryKey: hallKeys.publicLists(),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    queryFn: () => apiClient.get<{ items: any[] }>('/halls/lists'),
+    queryFn: () => apiClient.get<{ items: any[] }>(hallRoutes.lists()),
     enabled,
   });
 }

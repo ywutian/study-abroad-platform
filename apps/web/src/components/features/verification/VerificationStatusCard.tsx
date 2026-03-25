@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { apiClient } from '@/lib/api';
+import { verificationRoutes } from '@study-abroad/shared';
 import { cn, getSchoolName } from '@/lib/utils';
 import { VerificationUploadDialog } from './VerificationUploadDialog';
 import { VerificationBadge } from './VerificationBadge';
@@ -61,7 +62,7 @@ export function VerificationStatusCard({
 
   const { data: verifications } = useQuery<VerificationRequest[]>({
     queryKey: ['myVerifications', userId],
-    queryFn: () => apiClient.get('/verifications/my'),
+    queryFn: () => apiClient.get(verificationRoutes.my()),
     enabled: !!userId,
   });
 

@@ -26,6 +26,7 @@ import { ListSkeleton } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PaginationControls } from '../../_components/pagination-controls';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Star, Eye, EyeOff, Trash2 } from 'lucide-react';
 
@@ -68,7 +69,7 @@ export function ReviewsContentTab({ pageSize, onDeleteRequest }: ReviewsContentT
   });
 
   const hideReviewMutation = useMutation({
-    mutationFn: (id: string) => apiClient.put(`/admin/reviews/${id}/hide`),
+    mutationFn: (id: string) => apiClient.put(`${API_ROUTES.ADMIN}/reviews/${id}/hide`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminReviews'] });
       toast.success(t('contentMod.reviewHidden'));
@@ -76,7 +77,7 @@ export function ReviewsContentTab({ pageSize, onDeleteRequest }: ReviewsContentT
   });
 
   const unhideReviewMutation = useMutation({
-    mutationFn: (id: string) => apiClient.put(`/admin/reviews/${id}/unhide`),
+    mutationFn: (id: string) => apiClient.put(`${API_ROUTES.ADMIN}/reviews/${id}/unhide`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminReviews'] });
       toast.success(t('contentMod.reviewShown'));

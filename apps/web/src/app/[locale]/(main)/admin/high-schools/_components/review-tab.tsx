@@ -15,6 +15,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Pencil, Loader2 } from 'lucide-react';
 import { SchoolEditDialog, type HighSchool } from './school-edit-dialog';
@@ -43,7 +44,7 @@ export function ReviewTab() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data: body }: { id: string; data: Record<string, unknown> }) =>
-      apiClient.put(`/admin/high-schools/${id}`, body),
+      apiClient.put(`${API_ROUTES.ADMIN}/high-schools/${id}`, body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminHsReviewNeeded'] });
       queryClient.invalidateQueries({ queryKey: ['adminHighSchools'] });

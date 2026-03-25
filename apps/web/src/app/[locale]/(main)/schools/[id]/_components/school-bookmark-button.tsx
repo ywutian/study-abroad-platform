@@ -15,6 +15,7 @@ import { apiClient } from '@/lib/api';
 import { ApiError } from '@/lib/api/api-error';
 import { useRouter } from '@/lib/i18n/navigation';
 import { useAuthStore } from '@/stores/auth';
+import { schoolListRoutes } from '@study-abroad/shared';
 import { Bookmark, Share2, Link2 } from 'lucide-react';
 
 interface SchoolBookmarkButtonProps {
@@ -30,7 +31,7 @@ export function SchoolBookmarkButton({ schoolId, canShare }: SchoolBookmarkButto
 
   const { data: schoolListData } = useQuery({
     queryKey: ['school-lists'],
-    queryFn: () => apiClient.get<any[]>('/school-lists'),
+    queryFn: () => apiClient.get<any[]>(schoolListRoutes.list()),
     enabled: isInitialized && !!accessToken,
   });
 
@@ -47,7 +48,7 @@ export function SchoolBookmarkButton({ schoolId, canShare }: SchoolBookmarkButto
       tier?: string;
       round?: string;
     }) =>
-      apiClient.post('/school-lists', {
+      apiClient.post(schoolListRoutes.list(), {
         schoolId: sid,
         tier,
         ...(round && { round }),
@@ -65,7 +66,7 @@ export function SchoolBookmarkButton({ schoolId, canShare }: SchoolBookmarkButto
   });
 
   const removeBookmarkMutation = useMutation({
-    mutationFn: (listItemId: string) => apiClient.delete(`/school-lists/${listItemId}`),
+    mutationFn: (listItemId: string) => apiClient.delete(schoolListRoutes.byId(listItemId)),
     onSuccess: () => {
       toast.success(t('school.bookmarkRemoved'));
       queryClient.invalidateQueries({ queryKey: ['school-lists'] });

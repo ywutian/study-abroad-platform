@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/layout';
 import { Link } from '@/lib/i18n/navigation';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import {
   User,
@@ -77,7 +78,7 @@ export default function AdminUserDetailPage() {
   });
 
   const resetRateLimitMutation = useMutation({
-    mutationFn: () => apiClient.delete(`/admin/ai-agent/users/${userId}/rate-limit`),
+    mutationFn: () => apiClient.delete(`${API_ROUTES.ADMIN}/ai-agent/users/${userId}/rate-limit`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminUserRateLimit', userId] });
       toast.success(t('userDetail.rateLimitReset'));

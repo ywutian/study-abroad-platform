@@ -28,6 +28,7 @@ import { PaginationControls } from '../../_components/pagination-controls';
 import { QualityScoreBadge } from './quality-score-badge';
 import { RejectReasonDialog } from './reject-reason-dialog';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Separator } from '@/components/ui/separator';
 import { Check, X, Eye, Loader2, FileCheck, GraduationCap } from 'lucide-react';
@@ -130,7 +131,8 @@ export function PendingCasesTab() {
 
   // Mutations
   const approveMutation = useMutation({
-    mutationFn: (id: string) => apiClient.post(`/admin/review/cases/${id}/approve`, {}),
+    mutationFn: (id: string) =>
+      apiClient.post(`${API_ROUTES.ADMIN}/review/cases/${id}/approve`, {}),
     onSuccess: () => {
       toast.success(t('toast.approved'));
       invalidateAll();
@@ -143,7 +145,7 @@ export function PendingCasesTab() {
 
   const rejectMutation = useMutation({
     mutationFn: ({ id, reason }: { id: string; reason: string }) =>
-      apiClient.post(`/admin/review/cases/${id}/reject`, { reason }),
+      apiClient.post(`${API_ROUTES.ADMIN}/review/cases/${id}/reject`, { reason }),
     onSuccess: () => {
       toast.success(t('toast.rejected'));
       invalidateAll();
@@ -164,7 +166,7 @@ export function PendingCasesTab() {
       ids: string[];
       action: 'approve' | 'reject';
       reason?: string;
-    }) => apiClient.post('/admin/review/batch', { ids, action, reason }),
+    }) => apiClient.post(`${API_ROUTES.ADMIN}/review/batch`, { ids, action, reason }),
     onSuccess: (_data, vars) => {
       toast.success(t('toast.batchSuccess', { count: vars.ids.length }));
       invalidateAll();

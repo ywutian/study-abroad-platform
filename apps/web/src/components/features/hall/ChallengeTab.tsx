@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/client';
+import { hallRoutes } from '@study-abroad/shared';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -86,12 +87,12 @@ export function ChallengeTab() {
     refetch,
   } = useQuery<ChallengeCase>({
     queryKey: ['hall-challenge'],
-    queryFn: () => apiClient.get('/halls/swipe/challenge'),
+    queryFn: () => apiClient.get(`${hallRoutes.swipe()}/challenge`),
   });
 
   const submitMutation = useMutation({
     mutationFn: (guessData: Record<string, string>) =>
-      apiClient.post<ChallengeResult>('/halls/swipe/challenge', { guesses: guessData }),
+      apiClient.post<ChallengeResult>(`${hallRoutes.swipe()}/challenge`, { guesses: guessData }),
     onSuccess: (data) => {
       setResult(data);
     },

@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
+import { profileRoutes } from '@study-abroad/shared';
 import { Save, Loader2, Plus, Trash2 } from 'lucide-react';
 
 const TEST_TYPES = [
@@ -256,7 +257,7 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: unknown) => apiClient.post('/profiles/me/test-scores', data),
+    mutationFn: (data: unknown) => apiClient.post(profileRoutes.testScores(), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(t('toast.scoreAdded'));
@@ -266,8 +267,7 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data: unknown) =>
-      apiClient.put(`/profiles/me/test-scores/${editingScore?.id}`, data),
+    mutationFn: (data: unknown) => apiClient.put(profileRoutes.testScore(editingScore!.id), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(t('toast.scoreUpdated'));

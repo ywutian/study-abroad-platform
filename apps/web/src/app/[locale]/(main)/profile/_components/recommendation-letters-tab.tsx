@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
+import { profileRoutes } from '@study-abroad/shared';
 import { motion } from 'framer-motion';
 import { Mail, Plus, Pencil, Trash2, Save, Loader2 } from 'lucide-react';
 
@@ -75,12 +76,12 @@ export function RecommendationLettersTab() {
 
   const { data: letters = [] } = useQuery<RecommendationLetter[]>({
     queryKey: ['recommendation-letters'],
-    queryFn: () => apiClient.get('/profiles/me/recommendation-letters'),
+    queryFn: () => apiClient.get(profileRoutes.recommendationLetters()),
   });
 
   const createMutation = useMutation({
     mutationFn: (data: Record<string, unknown>) =>
-      apiClient.post('/profiles/me/recommendation-letters', data),
+      apiClient.post(profileRoutes.recommendationLetters(), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recommendation-letters'] });
       toast.success(t('recLetter.toast.created'));
@@ -90,7 +91,7 @@ export function RecommendationLettersTab() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
-      apiClient.put(`/profiles/me/recommendation-letters/${id}`, data),
+      apiClient.put(profileRoutes.recommendationLetter(id), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recommendation-letters'] });
       toast.success(t('recLetter.toast.updated'));
@@ -99,7 +100,7 @@ export function RecommendationLettersTab() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/profiles/me/recommendation-letters/${id}`),
+    mutationFn: (id: string) => apiClient.delete(profileRoutes.recommendationLetter(id)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recommendation-letters'] });
       toast.success(t('recLetter.toast.deleted'));

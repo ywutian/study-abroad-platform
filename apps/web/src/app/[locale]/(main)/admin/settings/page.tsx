@@ -18,6 +18,7 @@ import {
 import { PageHeader } from '@/components/layout';
 import { CardSkeleton } from '@/components/ui/loading-state';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Settings, Save, Loader2 } from 'lucide-react';
 
@@ -86,7 +87,7 @@ export default function AdminSettingsPage() {
 
   const updateMutation = useMutation({
     mutationFn: ({ key, value }: { key: string; value: string }) =>
-      apiClient.put(`/settings/${key}`, { value }),
+      apiClient.put(`${API_ROUTES.SETTINGS}/${key}`, { value }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminSettings'] });
       toast.success(t('settings.saved'));
@@ -95,7 +96,7 @@ export default function AdminSettingsPage() {
 
   const batchUpdateMutation = useMutation({
     mutationFn: (settings: { key: string; value: string }[]) =>
-      apiClient.put('/settings', settings),
+      apiClient.put(API_ROUTES.SETTINGS, settings),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminSettings'] });
       setEditedValues({});

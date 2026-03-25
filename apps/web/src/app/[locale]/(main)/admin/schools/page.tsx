@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/layout';
 import { apiClient, STALE_TIME } from '@/lib/api';
+import { schoolRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import {
   GraduationCap,
@@ -128,7 +129,7 @@ export default function AdminSchoolsPage() {
 
   const updateSchoolMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
-      apiClient.put(`/schools/${id}`, data),
+      apiClient.put(schoolRoutes.byId(id), data),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['adminSchools'] });
       queryClient.invalidateQueries({ queryKey: ['school', id] });

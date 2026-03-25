@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Cpu, Loader2 } from 'lucide-react';
@@ -32,7 +33,7 @@ export function LlmConfigSection() {
   });
 
   const updateLlmMutation = useMutation({
-    mutationFn: (data: any) => apiClient.put('/admin/ai-agent/config/llm', data),
+    mutationFn: (data: any) => apiClient.put(`${API_ROUTES.ADMIN}/ai-agent/config/llm`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['aiAgentConfig'] });
       toast.success(t('llmUpdated'));

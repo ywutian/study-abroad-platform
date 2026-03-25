@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { PaginationControls } from '@/app/[locale]/(main)/admin/_components/pagination-controls';
@@ -99,7 +100,7 @@ export function EssayCaseReviewManager() {
       id: string;
       action: 'APPROVE' | 'REJECT';
       reason?: string;
-    }) => apiClient.post(`/admin/cases/${id}/review-essay`, { action, reason }),
+    }) => apiClient.post(`${API_ROUTES.ADMIN}/cases/${id}/review-essay`, { action, reason }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingEssays'] });
       queryClient.invalidateQueries({ queryKey: ['adminCaseStats'] });

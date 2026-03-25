@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Link, useRouter } from '@/lib/i18n/navigation';
 import { useLocale } from 'next-intl';
 import { apiClient } from '@/lib/api';
+import { teamRoutes } from '@study-abroad/shared';
 import { useAuthStore } from '@/stores';
 import { getSchoolName } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -67,7 +68,7 @@ export default function TeamDetailPage() {
   const [disbandOpen, setDisbandOpen] = useState(false);
 
   const leaveMutation = useMutation({
-    mutationFn: () => apiClient.post(`/teams/${id}/leave`),
+    mutationFn: () => apiClient.post(teamRoutes.leave(id)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
       toast.success(t('toast.left'));
@@ -81,7 +82,7 @@ export default function TeamDetailPage() {
   });
 
   const disbandMutation = useMutation({
-    mutationFn: () => apiClient.delete(`/teams/${id}`),
+    mutationFn: () => apiClient.delete(teamRoutes.byId(id)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
       toast.success(t('toast.disbanded'));
@@ -113,7 +114,7 @@ export default function TeamDetailPage() {
       return;
     }
     try {
-      await apiClient.post(`/teams/${id}/join`);
+      await apiClient.post(teamRoutes.join(id));
       toast.success(t('toast.joined'));
       queryClient.invalidateQueries({ queryKey: ['teams'] });
     } catch (e: unknown) {

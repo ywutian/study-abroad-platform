@@ -11,6 +11,7 @@
 
 import { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api';
 import type { ConversationSummary } from './types';
 
@@ -31,7 +32,7 @@ export function useConversationList() {
     queryKey: chatHistoryKeys.conversations(),
     queryFn: async () => {
       const res = await apiClient.get<{ conversations: ConversationSummary[] }>(
-        '/ai-agent/conversations'
+        `${API_ROUTES.AI_AGENT}/conversations`
       );
       return res.conversations ?? [];
     },
@@ -51,7 +52,7 @@ export function useDeleteConversation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (conversationId: string) =>
-      apiClient.delete(`/ai-agent/conversation`, {
+      apiClient.delete(`${API_ROUTES.AI_AGENT}/conversation`, {
         params: { conversationId },
       }),
     onMutate: async (conversationId) => {

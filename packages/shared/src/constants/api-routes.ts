@@ -53,6 +53,9 @@ export const API_ROUTES = {
   POINTS: '/points',
   SETTINGS: '/settings',
   HEALTH: '/health',
+
+  // Admin
+  ADMIN: '/admin',
 } as const;
 
 export type ApiRoutePrefix = (typeof API_ROUTES)[keyof typeof API_ROUTES];
@@ -130,4 +133,104 @@ export const timelineRoutes = {
   global: () => `${API_ROUTES.TIMELINES}/global`,
   tasks: () => `${API_ROUTES.TIMELINES}/tasks`,
   taskToggle: (id: string) => `${API_ROUTES.TIMELINES}/tasks/${id}/toggle`,
+};
+
+export const authRoutes = {
+  login: () => `${API_ROUTES.AUTH}/login`,
+  register: () => `${API_ROUTES.AUTH}/register`,
+  refresh: () => `${API_ROUTES.AUTH}/refresh`,
+  logout: () => `${API_ROUTES.AUTH}/logout`,
+  verifyEmail: () => `${API_ROUTES.AUTH}/verify-email`,
+  changePassword: () => `${API_ROUTES.AUTH}/change-password`,
+  forgotPassword: () => `${API_ROUTES.AUTH}/forgot-password`,
+  resetPassword: () => `${API_ROUTES.AUTH}/reset-password`,
+  resendVerification: () => `${API_ROUTES.AUTH}/resend-verification`,
+};
+
+export const essayAiRoutes = {
+  review: () => `${API_ROUTES.ESSAY_AI}/review`,
+  polish: () => `${API_ROUTES.ESSAY_AI}/polish`,
+  brainstorm: () => `${API_ROUTES.ESSAY_AI}/brainstorm`,
+  continueWriting: () => `${API_ROUTES.ESSAY_AI}/continue-writing`,
+  generateOpening: () => `${API_ROUTES.ESSAY_AI}/generate-opening`,
+  rewriteParagraph: () => `${API_ROUTES.ESSAY_AI}/rewrite-paragraph`,
+  gallery: () => `${API_ROUTES.ESSAY_AI}/gallery`,
+};
+
+export const resumeRoutes = {
+  list: () => API_ROUTES.RESUMES,
+  byId: (id: string) => `${API_ROUTES.RESUMES}/${id}`,
+  duplicate: (id: string) => `${API_ROUTES.RESUMES}/${id}/duplicate`,
+  sections: (resumeId: string) => `${API_ROUTES.RESUMES}/${resumeId}/sections`,
+  section: (resumeId: string, sectionId: string) =>
+    `${API_ROUTES.RESUMES}/${resumeId}/sections/${sectionId}`,
+  importProfile: (resumeId: string) => `${API_ROUTES.RESUMES}/${resumeId}/import-profile`,
+  snapshots: (resumeId: string) => `${API_ROUTES.RESUMES}/${resumeId}/snapshots`,
+  aiReview: (id: string) => `${API_ROUTES.RESUMES}/${id}/ai/review`,
+  aiOptimize: (id: string) => `${API_ROUTES.RESUMES}/${id}/ai/optimize-bullets`,
+  aiSuggest: (id: string) => `${API_ROUTES.RESUMES}/${id}/ai/suggest`,
+};
+
+export const schoolRoutes = {
+  list: () => API_ROUTES.SCHOOLS,
+  byId: (id: string) => `${API_ROUTES.SCHOOLS}/${id}`,
+};
+
+export const highSchoolRoutes = {
+  list: () => API_ROUTES.HIGH_SCHOOLS,
+  suggest: () => `${API_ROUTES.HIGH_SCHOOLS}/suggest`,
+};
+
+export const schoolListRoutes = {
+  list: () => API_ROUTES.SCHOOL_LISTS,
+  byId: (id: string) => `${API_ROUTES.SCHOOL_LISTS}/${id}`,
+};
+
+export const caseRoutes = {
+  list: () => API_ROUTES.CASES,
+  byId: (id: string) => `${API_ROUTES.CASES}/${id}`,
+};
+
+export const notificationRoutes = {
+  list: () => API_ROUTES.NOTIFICATIONS,
+  byId: (id: string) => `${API_ROUTES.NOTIFICATIONS}/${id}`,
+  markRead: (id: string) => `${API_ROUTES.NOTIFICATIONS}/${id}/read`,
+  readAll: () => `${API_ROUTES.NOTIFICATIONS}/read-all`,
+};
+
+export const verificationRoutes = {
+  submit: () => API_ROUTES.VERIFICATIONS,
+  my: () => `${API_ROUTES.VERIFICATIONS}/my`,
+  history: () => `${API_ROUTES.VERIFICATIONS}/history`,
+  status: () => `${API_ROUTES.VERIFICATIONS}/status`,
+  review: (id: string) => `${API_ROUTES.VERIFICATIONS}/${id}/review`,
+};
+
+export const peerReviewRoutes = {
+  request: (targetUserId: string) => `${API_ROUTES.PEER_REVIEWS}/request/${targetUserId}`,
+  submit: (reviewId: string) => `${API_ROUTES.PEER_REVIEWS}/${reviewId}/submit`,
+};
+
+export const teamRoutes = {
+  list: () => API_ROUTES.TEAMS,
+  byId: (id: string) => `${API_ROUTES.TEAMS}/${id}`,
+  join: (id: string) => `${API_ROUTES.TEAMS}/${id}/join`,
+  leave: (id: string) => `${API_ROUTES.TEAMS}/${id}/leave`,
+};
+
+export const userRoutes = {
+  me: () => `${API_ROUTES.USERS}/me`,
+};
+
+export const essayPromptRoutes = {
+  bySchool: (schoolId: string) => `${API_ROUTES.ESSAY_PROMPTS}/by-school/${schoolId}`,
+};
+
+export const settingsRoutes = {
+  list: () => API_ROUTES.SETTINGS,
+  byKey: (key: string) => `${API_ROUTES.SETTINGS}/${key}`,
+};
+
+export const rankingRoutes = {
+  list: () => API_ROUTES.RANKINGS,
 };

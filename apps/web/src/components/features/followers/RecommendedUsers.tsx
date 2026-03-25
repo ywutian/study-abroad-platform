@@ -11,6 +11,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { apiClient } from '@/lib/api';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { chatRoutes } from '@study-abroad/shared';
 import {
   UserPlus,
   Sparkles,
@@ -61,7 +62,7 @@ export function RecommendedUsers({ className }: RecommendedUsersProps) {
   });
 
   const followMutation = useMutation({
-    mutationFn: (userId: string) => apiClient.post(`/chats/follow/${userId}`),
+    mutationFn: (userId: string) => apiClient.post(chatRoutes.follow(userId)),
     onSuccess: (_, userId) => {
       queryClient.setQueryData(['recommended-users'], (old: RecommendedUser[] | undefined) =>
         old?.filter((u) => u.id !== userId)

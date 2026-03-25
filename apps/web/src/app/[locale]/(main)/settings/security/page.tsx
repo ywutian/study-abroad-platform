@@ -25,6 +25,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { apiClient } from '@/lib/api';
+import { authRoutes } from '@study-abroad/shared';
 
 export default function SecurityPage() {
   const t = useTranslations('security');
@@ -38,7 +39,7 @@ export default function SecurityPage() {
 
   const changePasswordMutation = useMutation({
     mutationFn: (data: { currentPassword: string; newPassword: string }) =>
-      apiClient.post('/auth/change-password', data),
+      apiClient.post(authRoutes.changePassword(), data),
     onSuccess: () => {
       toast.success(t('passwordChanged'));
       setCurrentPassword('');

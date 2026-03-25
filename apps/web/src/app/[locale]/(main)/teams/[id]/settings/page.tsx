@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Link } from '@/lib/i18n/navigation';
 import { apiClient } from '@/lib/api';
+import { teamRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
@@ -66,7 +67,7 @@ export default function TeamSettingsPage() {
       visibility: string;
       joinPolicy: string;
       maxMembers?: number;
-    }) => apiClient.patch(`/teams/${id}`, body),
+    }) => apiClient.patch(teamRoutes.byId(id), body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
       toast.success(t('toast.settingsSaved'));
@@ -78,7 +79,7 @@ export default function TeamSettingsPage() {
   });
 
   const disbandMutation = useMutation({
-    mutationFn: () => apiClient.delete(`/teams/${id}`),
+    mutationFn: () => apiClient.delete(teamRoutes.byId(id)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
       toast.success(t('toast.disbanded'));

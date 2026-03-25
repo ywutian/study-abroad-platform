@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Gauge, Loader2, RefreshCw } from 'lucide-react';
@@ -20,7 +21,7 @@ export function MetricsSection() {
   });
 
   const resetMetricsMutation = useMutation({
-    mutationFn: () => apiClient.delete('/admin/ai-agent/metrics'),
+    mutationFn: () => apiClient.delete(`${API_ROUTES.ADMIN}/ai-agent/metrics`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['aiAgentMetrics'] });
       toast.success(t('metricsReset'));

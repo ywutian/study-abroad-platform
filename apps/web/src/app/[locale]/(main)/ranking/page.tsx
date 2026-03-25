@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
+import { rankingRoutes } from '@study-abroad/shared';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { Trophy } from 'lucide-react';
 
@@ -48,13 +49,13 @@ export default function RankingPage() {
           score: number;
           rank: number;
         }>
-      >('/rankings/calculate', weights),
+      >(`${rankingRoutes.list()}/calculate`, weights),
     enabled: false,
   });
 
   const saveMutation = useMutation({
     mutationFn: (data: { name: string; isPublic: boolean } & RankingWeights) =>
-      apiClient.post('/rankings', data),
+      apiClient.post(rankingRoutes.list(), data),
     onSuccess: () => {
       toast.success(t('ranking.toast.saved'));
       setRankingName('');

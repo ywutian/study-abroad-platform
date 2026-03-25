@@ -35,6 +35,7 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { ListSkeleton } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toast } from 'sonner';
@@ -128,7 +129,7 @@ export function EssayPromptManager() {
   // 审核单个
   const verifyMutation = useMutation({
     mutationFn: ({ id, status, reason }: { id: string; status: string; reason?: string }) =>
-      apiClient.post(`/admin/essay-prompts/${id}/verify`, { status, reason }),
+      apiClient.post(`${API_ROUTES.ADMIN}/essay-prompts/${id}/verify`, { status, reason }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['essayPrompts'] });
       queryClient.invalidateQueries({ queryKey: ['essayPromptStats'] });

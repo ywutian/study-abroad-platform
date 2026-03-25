@@ -12,6 +12,7 @@ import { apiClient } from '@/lib/api';
 import { ApiError } from '@/lib/api/api-error';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { chatRoutes } from '@study-abroad/shared';
 import {
   UserPlus,
   UserMinus,
@@ -87,7 +88,7 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
   });
 
   const followMutation = useMutation({
-    mutationFn: () => apiClient.post(`/chats/follow/${userId}`),
+    mutationFn: () => apiClient.post(chatRoutes.follow(userId!)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-preview', userId] });
       queryClient.invalidateQueries({ queryKey: ['following'] });
@@ -97,7 +98,7 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
   });
 
   const unfollowMutation = useMutation({
-    mutationFn: () => apiClient.delete(`/chats/follow/${userId}`),
+    mutationFn: () => apiClient.delete(chatRoutes.follow(userId!)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-preview', userId] });
       queryClient.invalidateQueries({ queryKey: ['following'] });

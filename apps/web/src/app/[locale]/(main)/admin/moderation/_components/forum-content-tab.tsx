@@ -20,6 +20,7 @@ import { ListSkeleton } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PaginationControls } from '../../_components/pagination-controls';
 import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Search, Pin, Lock, Trash2, MessageSquare } from 'lucide-react';
 
@@ -63,7 +64,7 @@ export function ForumContentTab({ pageSize, onDeleteRequest }: ForumContentTabPr
   });
 
   const pinMutation = useMutation({
-    mutationFn: (postId: string) => apiClient.put(`/admin/forums/posts/${postId}/pin`),
+    mutationFn: (postId: string) => apiClient.put(`${API_ROUTES.ADMIN}/forums/posts/${postId}/pin`),
     onSuccess: (_, postId) => {
       queryClient.invalidateQueries({ queryKey: ['adminForumPosts'] });
       const post = postsData?.data.find((p) => p.id === postId);
@@ -72,7 +73,8 @@ export function ForumContentTab({ pageSize, onDeleteRequest }: ForumContentTabPr
   });
 
   const lockMutation = useMutation({
-    mutationFn: (postId: string) => apiClient.put(`/admin/forums/posts/${postId}/lock`),
+    mutationFn: (postId: string) =>
+      apiClient.put(`${API_ROUTES.ADMIN}/forums/posts/${postId}/lock`),
     onSuccess: (_, postId) => {
       queryClient.invalidateQueries({ queryKey: ['adminForumPosts'] });
       const post = postsData?.data.find((p) => p.id === postId);
