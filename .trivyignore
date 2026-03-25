@@ -40,3 +40,15 @@ CVE-2026-27904
 
 # zlib memory corruption — Node.js built-in, mitigated by container isolation
 CVE-2026-22184
+
+# ===================================================================
+# tar (node-tar) v6.2.1 in Docker image — pnpm deploy --prod resolves
+# an older version despite pnpm.overrides. Not exploitable: tar is only
+# used at install time (extracting packages), not at runtime.
+# ===================================================================
+CVE-2026-23745
+CVE-2026-23950
+CVE-2026-24842
+CVE-2026-26960
+CVE-2026-29786
+CVE-2026-31802
