@@ -26,17 +26,17 @@ if [ "$WEB_SRC_CHANGED" -gt "0" ]; then
   echo ""
 
   # 1. 检查源码中使用的 key 是否在 zh.json 中存在
-  if ! pnpm --filter web exec npx tsx scripts/check-missing-keys.ts; then
+  if ! pnpm --filter web exec tsx scripts/check-missing-keys.ts; then
     echo ""
     echo "❌ i18n check failed: missing translation keys detected."
-    echo "   Run 'pnpm --filter web exec npx tsx scripts/check-missing-keys.ts --fix'"
+    echo "   Run 'pnpm --filter web exec tsx scripts/check-missing-keys.ts --fix'"
     echo "   to auto-generate placeholder translations, then replace [TODO] values."
     echo ""
     exit 1
   fi
 
   # 2. 检查 zh.json 和 en.json 的 key 一致性
-  if ! pnpm --filter web exec npx tsx scripts/check-translation-keys.ts; then
+  if ! pnpm --filter web exec tsx scripts/check-translation-keys.ts; then
     echo ""
     echo "❌ i18n check failed: zh.json and en.json keys are inconsistent."
     echo ""
@@ -44,7 +44,7 @@ if [ "$WEB_SRC_CHANGED" -gt "0" ]; then
   fi
 
   # 3. 检查翻译值的语言是否正确
-  if ! pnpm --filter web exec npx tsx scripts/check-wrong-language.ts; then
+  if ! pnpm --filter web exec tsx scripts/check-wrong-language.ts; then
     echo ""
     echo "❌ i18n check failed: wrong-language translations detected."
     echo ""
@@ -63,7 +63,7 @@ if [ "$WEB_SRC_CHANGED" -gt "0" ]; then
   echo "🔍 Running code quality checks..."
   echo ""
 
-  if ! pnpm --filter web exec npx tsx scripts/check-code-quality.ts --staged; then
+  if ! pnpm --filter web exec tsx scripts/check-code-quality.ts --staged; then
     echo ""
     echo "❌ Code quality check failed. See issues above."
     echo ""
@@ -80,7 +80,7 @@ if [ "$API_SRC_CHANGED" -gt "0" ]; then
   echo "🔍 Running API quality checks..."
   echo ""
 
-  if ! pnpm --filter api exec npx tsx scripts/check-api-quality.ts --staged; then
+  if ! pnpm --filter api exec tsx scripts/check-api-quality.ts --staged; then
     echo ""
     echo "❌ API quality check failed. See issues above."
     echo ""

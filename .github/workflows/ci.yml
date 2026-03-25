@@ -286,7 +286,7 @@ jobs:
       - name: Check migration safety
         run: |
           if [ -f scripts/check-migration-safety.ts ]; then
-            npx tsx scripts/check-migration-safety.ts
+            pnpm exec tsx scripts/check-migration-safety.ts
           fi
 
       - name: Enable pgvector extension
