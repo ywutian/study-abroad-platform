@@ -134,6 +134,10 @@ jobs:
       - name: Dependency audit
         run: pnpm audit --audit-level=high --registry=https://registry.npmjs.org
 
+      - name: Dead code check (knip)
+        run: pnpm lint:dead-code
+        continue-on-error: true
+
   # ── Type Check ────────────────────────────────────────────
   typecheck:
     name: Type Check

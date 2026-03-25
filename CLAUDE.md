@@ -500,34 +500,34 @@ Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`
 4. **Frontend quality checks** (when `apps/web/src/` changed): 7 rules — dynamic Tailwind, hardcoded colors, console.log, page size, loading.tsx, error.tsx
 5. **Backend quality checks** (when `apps/api/src/` changed): 7 rules — inline body, throttle, throw, maxlength, tests, duplicated select, select-mapping drift
 
-#### Pre-push (~20-40s, catches CI failures locally)
+#### Pre-push (~20-50s, catches CI failures locally)
 
 `.husky/pre-push` runs before every `git push`:
 
 1. **Prisma generate** — ensures client matches schema (prevents typecheck failures)
-2. **API route check** — `pnpm lint:routes` verifies client API paths match backend controllers
-3. **Typecheck** — `tsc --noEmit` for API, Web, Mobile (**3 apps in parallel**)
-4. **Unit tests** — `pnpm test` (API Jest + Web Vitest + Mobile Jest)
+2. **Smart verification gate** (`verify-gate.ts`) — typecheck, tests, lint:routes, lint:i18n scoped to affected apps
+3. **Migration safety** (conditional) — only if `prisma/migrations/` files changed, checks for dangerous SQL
+4. **Dependency audit** — `pnpm audit --audit-level=high` catches CVEs before CI does
 
 Manual equivalent: `pnpm prepush`
 
 ### CI ↔ Local Check Mapping
 
-| CI Job                                     | Local Hook / Command                                                                                 | Common Failure Causes                                                                       |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| **Lint** (ESLint + i18n + quality + audit) | pre-commit + `pnpm lint:all` + `pnpm audit --audit-level=high --registry=https://registry.npmjs.org` | i18n wrong-language, missing dark: variants, CVE in dependencies                            |
-| **Type Check** (API + Web + Mobile)        | pre-push + `pnpm --filter <app> exec tsc --noEmit`                                                   | Dynamic imports with nodenext resolution, wrong enum types in DTOs, missing Prisma generate |
-| **Unit Tests**                             | pre-push + `pnpm test`                                                                               | Missing Prisma mock models, coverage threshold too high, Zustand selector mock pattern      |
-| **E2E Tests**                              | `pnpm test:e2e` (requires Docker PG + Redis)                                                         | Renamed/removed API routes not updated in e2e specs, migration drift                        |
-| **Mobile CI** (Lint & Test)                | pre-push                                                                                             | Coverage thresholds, pnpm version mismatch in workflow                                      |
-| **Secret Scan** (gitleaks)                 | pre-commit (if gitleaks installed locally)                                                           | Accidental secrets in code (API keys, tokens, passwords)                                    |
-| **SAST Scan** (Semgrep)                    | N/A (CI-only, PR only)                                                                               | Code-level vulnerabilities: injection, XSS, eval(), unsafe deserialization                  |
-| **Security Scan** (Trivy)                  | N/A (CI-only)                                                                                        | CVEs in container image                                                                     |
-| **Dead Code** (Knip)                       | `pnpm lint:dead-code`                                                                                | Unused files, exports, dependencies — config in `knip.json`                                 |
-| **Migration Safety**                       | `npx tsx scripts/check-migration-safety.ts`                                                          | NOT NULL without DEFAULT, non-concurrent indexes, DROP TABLE/COLUMN                         |
-| **Dependency Audit**                       | `pnpm audit --audit-level=high --registry=https://registry.npmjs.org`                                | Transitive dependency CVEs — fix with `pnpm.overrides` in root package.json                 |
-| **Route Check**                            | pre-push + `pnpm lint:routes`                                                                        | Client API path prefix not matching any backend `@Controller()` decorator                   |
-| **Build**                                  | `pnpm build`                                                                                         | Subset of typecheck issues                                                                  |
+| CI Job                                     | Local Hook / Command                                                                 | Common Failure Causes                                                                       |
+| ------------------------------------------ | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| **Lint** (ESLint + i18n + quality + audit) | pre-commit + `pnpm lint:all`                                                         | i18n wrong-language, missing dark: variants, CVE in dependencies                            |
+| **Type Check** (API + Web + Mobile)        | pre-push + `pnpm --filter <app> exec tsc --noEmit`                                   | Dynamic imports with nodenext resolution, wrong enum types in DTOs, missing Prisma generate |
+| **Unit Tests**                             | pre-push + `pnpm test`                                                               | Missing Prisma mock models, coverage threshold too high, Zustand selector mock pattern      |
+| **E2E Tests**                              | `pnpm test:e2e` (requires Docker PG + Redis)                                         | Renamed/removed API routes not updated in e2e specs, migration drift                        |
+| **Mobile CI** (Lint & Test)                | pre-push                                                                             | Coverage thresholds, pnpm version mismatch in workflow                                      |
+| **Secret Scan** (gitleaks)                 | pre-commit (if gitleaks installed locally)                                           | Accidental secrets in code (API keys, tokens, passwords)                                    |
+| **SAST Scan** (Semgrep)                    | N/A (CI-only, PR only)                                                               | Code-level vulnerabilities: injection, XSS, eval(), unsafe deserialization                  |
+| **Security Scan** (Trivy)                  | N/A (CI-only)                                                                        | CVEs in container image, Docker image CVEs — use `.trivyignore` to suppress                 |
+| **Dead Code** (Knip)                       | `pnpm lint:dead-code` (CI: warning only, non-blocking)                               | Unused files, exports, dependencies — config in `knip.json`                                 |
+| **Migration Safety**                       | pre-push (if migrations changed) + `pnpm exec tsx scripts/check-migration-safety.ts` | NOT NULL without DEFAULT, non-concurrent indexes, DROP TABLE/COLUMN                         |
+| **Dependency Audit**                       | pre-push + `pnpm audit --audit-level=high --registry=https://registry.npmjs.org`     | Transitive dependency CVEs — fix with `pnpm.overrides` in root package.json                 |
+| **Route Check**                            | pre-push + `pnpm lint:routes`                                                        | Client API path prefix not matching any backend `@Controller()` decorator                   |
+| **Build**                                  | `pnpm build`                                                                         | Subset of typecheck issues                                                                  |
 
 ### Lessons Learned (Push Failures)
 

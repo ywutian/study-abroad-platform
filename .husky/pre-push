@@ -16,5 +16,18 @@ pnpm --filter api db:generate || exit 1
 echo ""
 pnpm exec tsx scripts/verify-gate.ts --verbose || exit 1
 
+# Step 3: Migration safety check (only if migration files changed)
+CHANGED=$(git diff --name-only origin/main...HEAD 2>/dev/null || git diff --name-only HEAD~1)
+if echo "$CHANGED" | grep -q "prisma/migrations/"; then
+  echo ""
+  echo "🔍 Checking migration safety..."
+  pnpm exec tsx scripts/check-migration-safety.ts --new-only || exit 1
+fi
+
+# Step 4: Dependency audit (~3s)
+echo ""
+echo "🔍 Running dependency audit..."
+pnpm audit --audit-level=high --registry=https://registry.npmjs.org || exit 1
+
 echo ""
 echo "✅ Pre-push checks passed!"
