@@ -92,6 +92,7 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-preview', userId] });
       queryClient.invalidateQueries({ queryKey: ['following'] });
+      queryClient.invalidateQueries({ queryKey: ['followers'] });
       queryClient.invalidateQueries({ queryKey: ['recommended-users'] });
       toast.success(t('followers.toast.followSuccess'));
     },
@@ -102,6 +103,7 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-preview', userId] });
       queryClient.invalidateQueries({ queryKey: ['following'] });
+      queryClient.invalidateQueries({ queryKey: ['followers'] });
       toast.success(t('followers.toast.unfollowSuccess'));
     },
   });

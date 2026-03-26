@@ -177,12 +177,12 @@ export default function ActivitiesScreen() {
 
   const getCategoryColor = (activityRole: string) => {
     const lower = activityRole?.toLowerCase() || '';
-    if (lower.includes('academic') || lower.includes('research')) return '#6366f1';
-    if (lower.includes('sport') || lower.includes('athlete')) return '#ef4444';
-    if (lower.includes('art') || lower.includes('music')) return '#ec4899';
-    if (lower.includes('community') || lower.includes('volunteer')) return '#10b981';
-    if (lower.includes('leader') || lower.includes('president')) return '#f59e0b';
-    if (lower.includes('work') || lower.includes('intern')) return '#3b82f6';
+    if (lower.includes('academic') || lower.includes('research')) return colors.primary;
+    if (lower.includes('sport') || lower.includes('athlete')) return colors.error;
+    if (lower.includes('art') || lower.includes('music')) return colors.pink;
+    if (lower.includes('community') || lower.includes('volunteer')) return colors.success;
+    if (lower.includes('leader') || lower.includes('president')) return colors.warning;
+    if (lower.includes('work') || lower.includes('intern')) return colors.info;
     return colors.foregroundMuted;
   };
 

@@ -2,93 +2,20 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
-import { useTranslations, useLocale, useFormatter } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
-import {
-  Search,
-  MapPin,
-  Trophy,
-  GraduationCap,
-  ChevronRight,
-  SlidersHorizontal,
-  Plus,
-  Check,
-  Filter,
-  Globe,
-  Users,
-  Award,
-  X,
-} from 'lucide-react';
-
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { EmptyState } from '@/components/ui/empty-state';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
-import { AdvancedSchoolFilter, SchoolFilters, SchoolLogo } from '@/components/features';
-import { IndexGroup, IndexLegend } from '@/components/features/schools/IndexIndicators';
-import { FloatingAddButton, SelectedSchool } from '@/components/features/schools/FloatingAddButton';
-import { Link } from '@/lib/i18n/navigation';
-import { useRouter } from 'next/navigation';
+import { SchoolFilters } from '@/components/features';
+import { type SelectedSchool } from '@/components/features/schools/FloatingAddButton';
+import { useRouter } from '@/lib/i18n/navigation';
 import { useAuthStore } from '@/stores/auth';
 import { apiClient, STALE_TIME } from '@/lib/api';
 import { ApiError } from '@/lib/api/api-error';
-import { RankingBadge } from '@/components/ui/ranking-badge';
-import { type SchoolRanking } from '@/lib/utils/ranking';
-import { cn, getSchoolName, getSchoolSubName, formatAcceptanceRate } from '@/lib/utils';
 import { schoolRoutes, schoolListRoutes, API_ROUTES } from '@study-abroad/shared';
 import { toast } from 'sonner';
 
-interface School {
-  id: string;
-  name: string;
-  nameZh?: string;
-  country: string;
-  state?: string;
-  city?: string;
-  usNewsRank?: number;
-  qsRank?: number;
-  acceptanceRate?: number;
-  tuition?: number;
-  studentCount?: number;
-  website?: string;
-  logoUrl?: string;
-  avgSalary?: number;
-  totalEnrollment?: number;
-  isPrivate?: boolean;
-  nicheSafetyGrade?: string;
-  nicheLifeGrade?: string;
-  nicheFoodGrade?: string;
-  nicheOverallGrade?: string;
-  testOptional?: boolean;
-  hasEarlyDecision?: boolean;
-  acceptsCommonApp?: boolean;
-  rankings?: SchoolRanking[];
-}
-
-interface Filters {
-  schoolType: 'ALL' | 'PUBLIC' | 'PRIVATE';
-  tuitionRange: string;
-}
+import { SchoolFilterBar } from './SchoolFilterBar';
+import { SchoolGrid } from './SchoolGrid';
+import { type School, type Filters } from './schools-types';
 
 interface WeightPreset {
   ranking: number;
@@ -103,51 +30,27 @@ const WEIGHT_PRESETS: Record<string, WeightPreset> = {
   employment: { ranking: 20, acceptanceRate: 10, tuition: 15, salary: 55 },
 };
 
-const countries = [
-  { value: 'ALL', labelKey: 'all' },
-  { value: 'US', labelKey: 'us' },
-  { value: 'UK', labelKey: 'uk' },
-  { value: 'CA', labelKey: 'canada' },
-  { value: 'AU', labelKey: 'australia' },
-  { value: 'DE', labelKey: 'germany' },
-  { value: 'JP', labelKey: 'japan' },
-];
-
-const tuitionRanges = [
-  { value: 'ALL', labelKey: 'all' },
-  { value: '20-30', labelKey: '20k-30k' },
-  { value: '30-40', labelKey: '30k-40k' },
-  { value: '40-50', labelKey: '40k-50k' },
-  { value: '50+', labelKey: '50k+' },
-];
-
-const getRankBadgeStyle = (rank: number) => {
-  if (rank <= 10) return 'bg-warning text-white';
-  if (rank <= 30) return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20';
-  if (rank <= 50) return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20';
-  return 'bg-muted text-muted-foreground';
-};
-
 const defaultAdvancedFilters: SchoolFilters = {};
 
 export function BrowseTab() {
   const t = useTranslations('schools');
-  const tc = useTranslations('common');
-  const locale = useLocale();
-  const format = useFormatter();
   const queryClient = useQueryClient();
   const router = useRouter();
   const { accessToken } = useAuthStore();
 
+  // Filter state
   const [search, setSearch] = useState('');
   const [country, setCountry] = useState('ALL');
   const [sortBy, setSortBy] = useState<'rank' | 'name' | 'acceptance' | 'weighted'>('rank');
   const [advancedFilters, setAdvancedFilters] = useState<SchoolFilters>(defaultAdvancedFilters);
   const [filters, setFilters] = useState<Filters>({ schoolType: 'ALL', tuitionRange: 'ALL' });
   const [activePreset, setActivePreset] = useState<string>('selectivity');
+
+  // Selection state
   const [addedSchools, setAddedSchools] = useState<Set<string>>(new Set());
   const [selectedSchools, setSelectedSchools] = useState<SelectedSchool[]>([]);
 
+  // Derived filter counts
   const activeAdvancedFilterCount = useMemo(() => {
     let count = 0;
     if (advancedFilters.rankMin || advancedFilters.rankMax) count++;
@@ -165,6 +68,9 @@ export function BrowseTab() {
 
   const activeFilterCount =
     (filters.schoolType !== 'ALL' ? 1 : 0) + (filters.tuitionRange !== 'ALL' ? 1 : 0);
+
+  const hasFilters =
+    !!search || country !== 'ALL' || activeAdvancedFilterCount > 0 || activeFilterCount > 0;
 
   // Fetch schools
   const {
@@ -268,7 +174,7 @@ export function BrowseTab() {
         if (tlResult.failed && tlResult.failed.length > 0) {
           if (tlResult.created.length > 0) {
             toast.warning(t('timelinePartialFail', { failed: tlResult.failed.length }), {
-              action: { label: t('viewTimeline'), onClick: () => router.push('timeline') },
+              action: { label: t('viewTimeline'), onClick: () => router.push('/timeline') },
             });
           } else {
             toast.warning(t('timelineGenerateFailed'));
@@ -276,7 +182,7 @@ export function BrowseTab() {
         } else {
           toast.success(t('batchAddSuccess', { count: successCount }), {
             description: t('timelineGenerated'),
-            action: { label: t('viewTimeline'), onClick: () => router.push('timeline') },
+            action: { label: t('viewTimeline'), onClick: () => router.push('/timeline') },
           });
         }
       } catch {
@@ -290,14 +196,10 @@ export function BrowseTab() {
     },
   });
 
+  // Sorted schools
   const schools = useMemo(() => schoolsData?.items || [], [schoolsData?.items]);
   const total = schoolsData?.total || 0;
-  const hasFilters =
-    search || country !== 'ALL' || activeAdvancedFilterCount > 0 || activeFilterCount > 0;
 
-  const resetAdvancedFilters = () => setAdvancedFilters(defaultAdvancedFilters);
-
-  // Sort schools
   const sortedSchools = useMemo(() => {
     if (!schools.length) return [];
     const sorted = [...schools];
@@ -343,6 +245,7 @@ export function BrowseTab() {
     }
   }, [schools, sortBy, activePreset]);
 
+  // Callbacks
   const toggleSchoolSelection = useCallback((school: School, checked: boolean) => {
     if (checked) {
       setSelectedSchools((prev) => [
@@ -366,463 +269,53 @@ export function BrowseTab() {
     [batchAddMutation]
   );
 
+  const resetAllFilters = useCallback(() => {
+    setSearch('');
+    setCountry('ALL');
+    setFilters({ schoolType: 'ALL', tuitionRange: 'ALL' });
+    setAdvancedFilters(defaultAdvancedFilters);
+  }, []);
+
   return (
     <div className="space-y-6">
-      {/* Filters Section */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
-            {/* Search */}
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder={t('searchPlaceholder')}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9"
-              />
-            </div>
+      <SchoolFilterBar
+        search={search}
+        onSearchChange={setSearch}
+        country={country}
+        onCountryChange={setCountry}
+        sortBy={sortBy}
+        onSortByChange={(v) => setSortBy(v as any)}
+        filters={filters}
+        onFiltersChange={setFilters}
+        advancedFilters={advancedFilters}
+        onAdvancedFiltersChange={setAdvancedFilters}
+        onResetAdvancedFilters={() => setAdvancedFilters(defaultAdvancedFilters)}
+        activeAdvancedFilterCount={activeAdvancedFilterCount}
+        activeFilterCount={activeFilterCount}
+        activePreset={activePreset}
+        onActivePresetChange={setActivePreset}
+        weightPresetKeys={Object.keys(WEIGHT_PRESETS)}
+      />
 
-            {/* Country Filter */}
-            <Select value={country} onValueChange={setCountry}>
-              <SelectTrigger className="w-full md:w-[180px]">
-                <Globe className="h-4 w-4 mr-2 text-muted-foreground" />
-                <SelectValue placeholder={t('country')} />
-              </SelectTrigger>
-              <SelectContent>
-                {countries.map((c) => (
-                  <SelectItem key={c.value} value={c.value}>
-                    {t(`countries.${c.labelKey}`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* Sort */}
-            <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
-              <SelectTrigger className="w-full md:w-[150px]">
-                <SlidersHorizontal className="h-4 w-4 mr-2 text-muted-foreground" />
-                <SelectValue placeholder={t('sortBy')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="rank">{t('sort.rank')}</SelectItem>
-                <SelectItem value="name">{t('sort.name')}</SelectItem>
-                <SelectItem value="acceptance">{t('sort.acceptance')}</SelectItem>
-                <SelectItem value="weighted">{t('weightSort')}</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Quick Filters Popover */}
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="gap-2">
-                  <Filter className="h-4 w-4" />
-                  {t('allFilters')}
-                  {activeFilterCount > 0 && (
-                    <Badge variant="secondary" className="ml-1 h-5 w-5 rounded-full p-0 text-xs">
-                      {activeFilterCount}
-                    </Badge>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80" align="end">
-                <div className="space-y-4">
-                  <h4 className="font-medium">{t('filterOptions')}</h4>
-                  <div className="space-y-2">
-                    <Label>{t('schoolType')}</Label>
-                    <Select
-                      value={filters.schoolType}
-                      onValueChange={(v) =>
-                        setFilters((prev) => ({ ...prev, schoolType: v as any }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="ALL">{tc('all')}</SelectItem>
-                        <SelectItem value="PUBLIC">{t('public')}</SelectItem>
-                        <SelectItem value="PRIVATE">{t('private')}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>{t('tuitionRange')}</Label>
-                    <Select
-                      value={filters.tuitionRange}
-                      onValueChange={(v) => setFilters((prev) => ({ ...prev, tuitionRange: v }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {tuitionRanges.map((range) => (
-                          <SelectItem key={range.value} value={range.value}>
-                            {t(`tuition.${range.labelKey}`)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full"
-                    onClick={() => setFilters({ schoolType: 'ALL', tuitionRange: 'ALL' })}
-                  >
-                    {t('resetFilters')}
-                  </Button>
-                </div>
-              </PopoverContent>
-            </Popover>
-
-            {/* Advanced Filter */}
-            <AdvancedSchoolFilter
-              filters={advancedFilters}
-              onChange={setAdvancedFilters}
-              onReset={resetAdvancedFilters}
-              activeCount={activeAdvancedFilterCount}
-            />
-          </div>
-
-          {/* Active Filters */}
-          {(search || country !== 'ALL') && (
-            <div className="flex flex-wrap gap-2 mt-4">
-              {search && (
-                <Badge variant="secondary" className="gap-1 pr-1">
-                  <Search className="h-3 w-3" />
-                  {search}
-                  <button
-                    onClick={() => setSearch('')}
-                    className="ml-1 rounded-full hover:bg-muted p-0.5"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              )}
-              {country !== 'ALL' && (
-                <Badge variant="secondary" className="gap-1 pr-1">
-                  <Globe className="h-3 w-3" />
-                  {t(`countries.${countries.find((c) => c.value === country)?.labelKey}`)}
-                  <button
-                    onClick={() => setCountry('ALL')}
-                    className="ml-1 rounded-full hover:bg-muted p-0.5"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              )}
-            </div>
-          )}
-
-          {/* Weight Presets (shown when weighted sort is selected) */}
-          <Collapsible open={sortBy === 'weighted'}>
-            <CollapsibleContent>
-              <div className="mt-6 pt-6 border-t">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 rounded-lg bg-amber-500/10">
-                    <SlidersHorizontal className="h-5 w-5 text-amber-500" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-sm">{t('presets.title')}</h4>
-                    <p className="text-xs text-muted-foreground">{t('presets.description')}</p>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {Object.keys(WEIGHT_PRESETS).map((key) => (
-                    <Button
-                      key={key}
-                      variant={activePreset === key ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setActivePreset(key)}
-                    >
-                      {t(`presets.${key}`)}
-                    </Button>
-                  ))}
-                  <Button variant="ghost" size="sm" className="gap-1" asChild>
-                    <Link href="/ranking">
-                      {t('presets.customRanking')}
-                      <ChevronRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-        </CardContent>
-      </Card>
-
-      {/* Index Legend */}
-      {accessToken && <IndexLegend className="mb-0" />}
-
-      {/* Results Count */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">{t('resultsCount', { count: total })}</p>
-        {selectedSchools.length > 0 && (
-          <Badge variant="secondary" className="gap-1">
-            {t('selectedCount', { count: selectedSchools.length })}
-          </Badge>
-        )}
-      </div>
-
-      {/* Schools Grid */}
-      {isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[...Array(6)].map((_, i) => (
-            <Card key={i} className="overflow-hidden animate-pulse">
-              <div className="h-1 bg-primary/20" />
-              <CardContent className="pt-4">
-                <div className="flex items-start gap-3 mb-3">
-                  <Skeleton className="h-12 w-12 rounded-xl" />
-                  <div className="flex-1">
-                    <Skeleton className="h-5 w-3/4 mb-2" />
-                    <Skeleton className="h-3 w-1/2" />
-                  </div>
-                </div>
-                <Skeleton className="h-4 w-2/3 mb-3" />
-                <Skeleton className="h-16 w-full rounded-lg" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : isError ? (
-        <Card className="overflow-hidden">
-          <div className="h-1 bg-destructive" />
-          <CardContent className="py-8">
-            <EmptyState
-              type="error"
-              title={t('loadError')}
-              description={t('loadErrorDesc')}
-              action={{ label: tc('retry'), onClick: () => refetch() }}
-              size="lg"
-            />
-          </CardContent>
-        </Card>
-      ) : sortedSchools.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {sortedSchools.map((school, index) => {
-            const isSelected = isSchoolSelected(school.id);
-            const isAdded = addedSchools.has(school.id);
-
-            return (
-              <motion.div
-                key={school.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: Math.min(index * 0.03, 0.3) }}
-              >
-                <Card
-                  className={cn(
-                    'h-full hover:shadow-lg transition-all duration-300 hover:border-primary/50 cursor-pointer group overflow-hidden',
-                    isSelected && 'ring-2 ring-primary/50 bg-primary/5'
-                  )}
-                >
-                  <div className="h-1 bg-primary group-hover:h-1.5 transition-all" />
-                  <CardContent className="pt-4">
-                    {/* Batch selection checkbox */}
-                    {accessToken && (
-                      <div className="flex items-center justify-end mb-2">
-                        <Checkbox
-                          checked={isSelected}
-                          onCheckedChange={(checked) =>
-                            toggleSchoolSelection(school, checked as boolean)
-                          }
-                          disabled={isAdded}
-                          className="shrink-0"
-                        />
-                      </div>
-                    )}
-
-                    <Link href={`/schools/${school.id}`}>
-                      <div className="flex items-start gap-3 mb-3">
-                        <SchoolLogo
-                          logoUrl={school.logoUrl}
-                          name={getSchoolName(school, locale)}
-                          size="md"
-                          className="border-violet-500/20 group-hover:border-violet-500/40 group-hover:scale-105 transition-all"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <h3 className="font-semibold text-base leading-tight group-hover:text-primary transition-colors line-clamp-2">
-                              {getSchoolName(school, locale)}
-                            </h3>
-                            <RankingBadge
-                              rankings={school.rankings}
-                              usNewsRank={school.usNewsRank}
-                              variant="amber"
-                            />
-                          </div>
-                          {getSchoolSubName(school, locale) && (
-                            <p className="text-xs text-muted-foreground truncate mt-0.5">
-                              {getSchoolSubName(school, locale)}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      {(school.testOptional || school.hasEarlyDecision) && (
-                        <div className="flex flex-wrap gap-1 mb-2">
-                          {school.testOptional && (
-                            <Badge variant="outline" className="text-xs">
-                              {t('specialConditions.testOptional')}
-                            </Badge>
-                          )}
-                          {school.hasEarlyDecision && (
-                            <Badge variant="outline" className="text-xs">
-                              ED
-                            </Badge>
-                          )}
-                        </div>
-                      )}
-
-                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-3">
-                        <MapPin className="h-3.5 w-3.5 shrink-0 text-rose-500" />
-                        <span className="truncate">
-                          {school.city && `${school.city}, `}
-                          {school.state && `${school.state}, `}
-                          {school.country}
-                        </span>
-                      </div>
-
-                      {/* Data metrics */}
-                      <div className="grid grid-cols-2 gap-2 p-3 rounded-xl bg-muted/50 group-hover:bg-muted/70 transition-colors">
-                        <div className="text-center">
-                          <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mb-1">
-                            <Award className="h-3 w-3" />
-                            {t('acceptanceRate')}
-                          </div>
-                          <div
-                            className={cn(
-                              'font-semibold text-sm',
-                              school.acceptanceRate && school.acceptanceRate < 15
-                                ? 'text-rose-500'
-                                : school.acceptanceRate && school.acceptanceRate < 30
-                                  ? 'text-amber-500'
-                                  : ''
-                            )}
-                          >
-                            {formatAcceptanceRate(school.acceptanceRate)}
-                          </div>
-                        </div>
-                        <div className="text-center border-l border-border">
-                          <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mb-1">
-                            <Users className="h-3 w-3" />
-                            {t('students')}
-                          </div>
-                          <div className="font-semibold text-sm">
-                            {school.studentCount
-                              ? format.number(school.studentCount, 'standard')
-                              : '-'}
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-
-                    {/* Add to List Button */}
-                    {accessToken && (
-                      <div className="mt-3 flex items-center justify-between">
-                        <IndexGroup
-                          safetyGrade={school.nicheSafetyGrade}
-                          lifeGrade={school.nicheLifeGrade}
-                          foodGrade={school.nicheFoodGrade}
-                          className="flex"
-                        />
-                        {isAdded ? (
-                          <Button variant="secondary" size="sm" disabled>
-                            <Check className="h-4 w-4 mr-1" />
-                            {t('added')}
-                          </Button>
-                        ) : (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                disabled={addToListMutation.isPending}
-                              >
-                                <Plus className="h-4 w-4 mr-1" />
-                                {t('addToList')}
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48">
-                              {(['ED', 'ED2', 'EA', 'REA', 'RD', 'ROLLING'] as const).map((r) => (
-                                <DropdownMenuItem
-                                  key={r}
-                                  onClick={() =>
-                                    addToListMutation.mutate({ schoolId: school.id, round: r })
-                                  }
-                                  disabled={addToListMutation.isPending}
-                                >
-                                  {t('rounds.' + r)}
-                                </DropdownMenuItem>
-                              ))}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        )}
-                      </div>
-                    )}
-
-                    {!accessToken && (
-                      <div className="mt-3 flex items-center justify-end text-sm text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                        {t('viewDetails')}
-                        <ChevronRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </motion.div>
-            );
-          })}
-        </div>
-      ) : (
-        <Card className="overflow-hidden">
-          <div className="h-1 bg-primary/40" />
-          <CardContent className="py-8">
-            {hasFilters ? (
-              <EmptyState
-                type="no-results"
-                title={t('noResults')}
-                description={t('noResultsDesc')}
-                action={{
-                  label: t('resetFilters'),
-                  onClick: () => {
-                    setSearch('');
-                    setCountry('ALL');
-                    setFilters({ schoolType: 'ALL', tuitionRange: 'ALL' });
-                    resetAdvancedFilters();
-                  },
-                  variant: 'outline',
-                  icon: <X className="h-4 w-4" />,
-                }}
-                size="lg"
-              />
-            ) : (
-              <EmptyState
-                type="schools"
-                title={t('noResults')}
-                description={t('noResultsDesc')}
-                action={{
-                  label: tc('retry'),
-                  onClick: () => refetch(),
-                  icon: <GraduationCap className="h-4 w-4" />,
-                }}
-                size="lg"
-              />
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Bottom spacer for floating bar */}
-      {selectedSchools.length > 0 && <div className="h-16" />}
-
-      {/* Floating batch add bar */}
-      <FloatingAddButton
+      <SchoolGrid
+        schools={sortedSchools}
+        total={total}
+        isLoading={isLoading}
+        isError={isError}
+        onRefetch={() => refetch()}
+        hasAuth={!!accessToken}
         selectedSchools={selectedSchools}
-        onAdd={handleBatchAdd}
-        onRemove={(id) => setSelectedSchools((prev) => prev.filter((s) => s.id !== id))}
-        onClear={() => setSelectedSchools([])}
-        isAdding={batchAddMutation.isPending}
+        onToggleSelection={toggleSchoolSelection}
+        isSchoolSelected={isSchoolSelected}
+        addedSchools={addedSchools}
+        onAddToList={(schoolId, round) => addToListMutation.mutate({ schoolId, round })}
+        isAddingToList={addToListMutation.isPending}
+        hasFilters={hasFilters}
+        onResetAllFilters={resetAllFilters}
+        onBatchAdd={handleBatchAdd}
+        onRemoveSelected={(id) => setSelectedSchools((prev) => prev.filter((s) => s.id !== id))}
+        onClearSelected={() => setSelectedSchools([])}
+        isBatchAdding={batchAddMutation.isPending}
       />
     </div>
   );

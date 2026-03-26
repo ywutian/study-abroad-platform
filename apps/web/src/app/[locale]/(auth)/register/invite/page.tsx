@@ -25,7 +25,7 @@ const createSchema = (t: ReturnType<typeof useTranslations>) =>
       password: z
         .string()
         .min(8, { message: t('validation.passwordMin') })
-        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])/, {
+        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/, {
           message: t('validation.passwordStrength'),
         }),
       confirmPassword: z.string().min(8, { message: t('validation.passwordMin') }),

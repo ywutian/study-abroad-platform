@@ -95,7 +95,9 @@ export const hallRoutes = {
 
 export const chatRoutes = {
   conversations: () => `${API_ROUTES.CHATS}/conversations`,
-  messages: (conversationId: string) => `${API_ROUTES.CHATS}/messages/${conversationId}`,
+  conversation: (id: string) => `${API_ROUTES.CHATS}/conversations/${id}`,
+  conversationMessages: (id: string) => `${API_ROUTES.CHATS}/conversations/${id}/messages`,
+  message: (messageId: string) => `${API_ROUTES.CHATS}/messages/${messageId}`,
   follow: (userId: string) => `${API_ROUTES.CHATS}/follow/${userId}`,
   block: (userId: string) => `${API_ROUTES.CHATS}/block/${userId}`,
   unblock: (userId: string) => `${API_ROUTES.CHATS}/unblock/${userId}`,
@@ -115,16 +117,16 @@ export const recommendationRoutes = {
 
 export const assessmentRoutes = {
   start: (type: string) => `${API_ROUTES.ASSESSMENTS}/${type}`,
-  submit: (type: string) => `${API_ROUTES.ASSESSMENTS}/${type}/submit`,
+  submit: () => API_ROUTES.ASSESSMENTS,
   results: () => `${API_ROUTES.ASSESSMENTS}/results`,
 };
 
 export const subscriptionRoutes = {
   plans: () => `${API_ROUTES.SUBSCRIPTIONS}/plans`,
-  current: () => API_ROUTES.SUBSCRIPTIONS,
-  invoices: () => `${API_ROUTES.SUBSCRIPTIONS}/invoices`,
-  subscribe: () => API_ROUTES.SUBSCRIPTIONS,
-  cancel: () => API_ROUTES.SUBSCRIPTIONS,
+  current: () => `${API_ROUTES.SUBSCRIPTIONS}/me`,
+  invoices: () => `${API_ROUTES.SUBSCRIPTIONS}/billing-history`,
+  subscribe: () => `${API_ROUTES.SUBSCRIPTIONS}/subscribe`,
+  cancel: () => `${API_ROUTES.SUBSCRIPTIONS}/cancel`,
 };
 
 export const timelineRoutes = {

@@ -17,7 +17,7 @@ const requirementTests = [
   { id: 'lowercase', labelKey: 'lowercase', test: (p: string) => /[a-z]/.test(p) },
   { id: 'uppercase', labelKey: 'uppercase', test: (p: string) => /[A-Z]/.test(p) },
   { id: 'number', labelKey: 'number', test: (p: string) => /\d/.test(p) },
-  { id: 'special', labelKey: 'special', test: (p: string) => /[!@#$%^&*(),.?":{}|<>]/.test(p) },
+  { id: 'special', labelKey: 'special', test: (p: string) => /[@$!%*#?&]/.test(p) },
 ];
 
 // 强度级别 - only styles, labels will be translated
@@ -125,14 +125,16 @@ export function PasswordStrength({
   );
 }
 
-// Must match backend regex: lowercase + uppercase + digit + special char, min 8
+// Must match backend regex: lowercase + uppercase + digit + special char from allowed set, min 8
+// Backend allowed chars: [A-Za-z\d@$!%*#?&]
 export function isPasswordValid(password: string): boolean {
   return (
     password.length >= 8 &&
     /[a-z]/.test(password) &&
     /[A-Z]/.test(password) &&
     /\d/.test(password) &&
-    /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    /[@$!%*#?&]/.test(password) &&
+    /^[A-Za-z\d@$!%*#?&]+$/.test(password)
   );
 }
 

@@ -47,8 +47,11 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
           onError: (error, _variables, _context, mutation) => {
             // 组件通过 meta.skipGlobalErrorToast 跳过全局 toast
             if (mutation.options.meta?.skipGlobalErrorToast) return;
-            // 403/500 已在 client.ts 弹过 toast，不重复
-            if (error instanceof ApiError && (error.statusCode === 403 || error.statusCode >= 500))
+            // 403/429/500 已在 client.ts 弹过 toast，不重复
+            if (
+              error instanceof ApiError &&
+              (error.statusCode === 403 || error.statusCode === 429 || error.statusCode >= 500)
+            )
               return;
             toast.error(getErrorMessage(error));
           },

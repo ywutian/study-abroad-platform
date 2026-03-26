@@ -124,7 +124,7 @@ export default function StatsView({ onBack }: StatsViewProps) {
               </Text>
             </View>
             <View style={[styles.statsCard, { backgroundColor: c.card, borderColor: c.border }]}>
-              <Text style={[styles.statsCardValue, { color: '#10b981' }]}>
+              <Text style={[styles.statsCardValue, { color: c.success }]}>
                 {Math.round(stats.accuracy)}%
               </Text>
               <Text style={[styles.statsCardLabel, { color: c.foregroundMuted }]}>
@@ -132,7 +132,7 @@ export default function StatsView({ onBack }: StatsViewProps) {
               </Text>
             </View>
             <View style={[styles.statsCard, { backgroundColor: c.card, borderColor: c.border }]}>
-              <Text style={[styles.statsCardValue, { color: '#f59e0b' }]}>
+              <Text style={[styles.statsCardValue, { color: c.warning }]}>
                 {stats.currentStreak}
               </Text>
               <Text style={[styles.statsCardLabel, { color: c.foregroundMuted }]}>
@@ -140,7 +140,7 @@ export default function StatsView({ onBack }: StatsViewProps) {
               </Text>
             </View>
             <View style={[styles.statsCard, { backgroundColor: c.card, borderColor: c.border }]}>
-              <Text style={[styles.statsCardValue, { color: '#8b5cf6' }]}>{stats.bestStreak}</Text>
+              <Text style={[styles.statsCardValue, { color: c.violet }]}>{stats.bestStreak}</Text>
               <Text style={[styles.statsCardLabel, { color: c.foregroundMuted }]}>
                 {t('swipe.bestStreak')}
               </Text>
@@ -162,7 +162,7 @@ export default function StatsView({ onBack }: StatsViewProps) {
               value={stats.dailyChallengeCount}
               max={stats.dailyChallengeTarget}
               color={
-                stats.dailyChallengeCount >= stats.dailyChallengeTarget ? '#10b981' : c.primary
+                stats.dailyChallengeCount >= stats.dailyChallengeTarget ? c.success : c.primary
               }
               label={`${stats.dailyChallengeCount} / ${stats.dailyChallengeTarget}`}
               showValue
@@ -170,8 +170,8 @@ export default function StatsView({ onBack }: StatsViewProps) {
             />
             {stats.dailyChallengeCount >= stats.dailyChallengeTarget && (
               <View style={styles.challengeComplete}>
-                <Ionicons name="checkmark-circle" size={18} color="#10b981" />
-                <Text style={[styles.challengeCompleteText, { color: '#10b981' }]}>
+                <Ionicons name="checkmark-circle" size={18} color={c.success} />
+                <Text style={[styles.challengeCompleteText, { color: c.success }]}>
                   {t('swipe.challengeComplete')}
                 </Text>
               </View>

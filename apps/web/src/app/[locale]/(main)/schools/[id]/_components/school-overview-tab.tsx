@@ -19,6 +19,7 @@ import { ExternalLink } from 'lucide-react';
 import { DATA_SOURCE_LABELS } from '@study-abroad/shared';
 
 import type { SchoolDetail } from './types';
+import { getSourceUrl } from './source-utils';
 
 interface SchoolOverviewTabProps {
   school: SchoolDetail;
@@ -54,13 +55,7 @@ function ProvenanceBadge({
   const date = new Date(prov.at);
   const freshness = date.toLocaleDateString(locale, { month: 'short', year: 'numeric' });
 
-  const sourceUrl = (() => {
-    if (prov.source === 'COLLEGE_SCORECARD' && scorecardId)
-      return `https://collegescorecard.ed.gov/school/?${scorecardId}`;
-    if ((prov.source === 'IPEDS' || prov.source === 'URBAN_INSTITUTE') && ipedsId)
-      return `https://nces.ed.gov/ipeds/datacenter/institutionprofile.aspx?unitId=${ipedsId}`;
-    return null;
-  })();
+  const sourceUrl = getSourceUrl(prov.source, { scorecardId, ipedsId });
 
   // Use Popover when there's a clickable link, Tooltip otherwise
   if (sourceUrl) {

@@ -49,8 +49,8 @@ export default function StatsBar({ onShowStats }: StatsBarProps) {
 
       <View style={styles.statItem}>
         <View style={styles.streakRow}>
-          <Ionicons name="flame" size={16} color="#f59e0b" />
-          <Text style={[styles.statValue, { color: '#f59e0b' }]}>{stats?.currentStreak ?? 0}</Text>
+          <Ionicons name="flame" size={16} color={c.warning} />
+          <Text style={[styles.statValue, { color: c.warning }]}>{stats?.currentStreak ?? 0}</Text>
         </View>
         <Text style={[styles.statLabel, { color: c.foregroundMuted }]}>{t('swipe.streak')}</Text>
       </View>

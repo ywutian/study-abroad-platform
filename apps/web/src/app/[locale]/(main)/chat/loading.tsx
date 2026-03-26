@@ -6,7 +6,7 @@ export default function ChatLoading() {
     <PageContainer>
       <div className="flex h-[calc(100vh-8rem)] gap-4">
         {/* Conversation list sidebar */}
-        <div className="hidden w-80 shrink-0 space-y-3 rounded-xl border bg-card p-4 md:block">
+        <div className="hidden w-80 shrink-0 space-y-3 rounded-xl border bg-card p-4 lg:block">
           <Skeleton className="h-10 w-full rounded-md" />
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="flex items-center gap-3 rounded-lg p-3">

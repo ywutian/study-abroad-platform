@@ -23,16 +23,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -58,6 +48,7 @@ import {
   ArrowUpDown,
 } from 'lucide-react';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 interface Payment {
   id: string;
@@ -86,6 +77,7 @@ export default function AdminPaymentsPage() {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [planFilter, setPlanFilter] = useState('ALL');
   const [refundTarget, setRefundTarget] = useState<string | null>(null);
+  const [refundReason, setRefundReason] = useState('');
   const [adjustTarget, setAdjustTarget] = useState<{ userId: string; email: string } | null>(null);
   const [newPlan, setNewPlan] = useState('PRO');
   const pageSize = 20;
@@ -109,12 +101,13 @@ export default function AdminPaymentsPage() {
   });
 
   const refundMutation = useMutation({
-    mutationFn: (paymentId: string) =>
-      apiClient.post(`${API_ROUTES.ADMIN}/payments/${paymentId}/refund`),
+    mutationFn: ({ paymentId, reason }: { paymentId: string; reason: string }) =>
+      apiClient.post(`${API_ROUTES.ADMIN}/payments/${paymentId}/refund`, { reason }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminPayments'] });
       queryClient.invalidateQueries({ queryKey: ['adminPaymentStats'] });
       setRefundTarget(null);
+      setRefundReason('');
       toast.success(t('payments.refunded'));
     },
   });
@@ -334,24 +327,53 @@ export default function AdminPaymentsPage() {
       </div>
 
       {/* Refund Dialog */}
-      <AlertDialog open={!!refundTarget} onOpenChange={() => setRefundTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('payments.refundConfirm')}</AlertDialogTitle>
-            <AlertDialogDescription>{t('payments.refundDesc')}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('dialogs.cancel')}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => refundTarget && refundMutation.mutate(refundTarget)}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+      <Dialog
+        open={!!refundTarget}
+        onOpenChange={(open) => {
+          if (!open) {
+            setRefundTarget(null);
+            setRefundReason('');
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('payments.refundConfirm')}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">{t('payments.refundDesc')}</p>
+          <div className="space-y-2">
+            <Label>{t('payments.refundReason')}</Label>
+            <Textarea
+              value={refundReason}
+              onChange={(e) => setRefundReason(e.target.value)}
+              placeholder={t('payments.refundReasonPlaceholder')}
+              rows={3}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setRefundTarget(null);
+                setRefundReason('');
+              }}
+            >
+              {t('dialogs.cancel')}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() =>
+                refundTarget &&
+                refundMutation.mutate({ paymentId: refundTarget, reason: refundReason })
+              }
+              disabled={!refundReason.trim() || refundMutation.isPending}
             >
               {refundMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t('payments.refund')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Adjust Subscription Dialog */}
       <Dialog open={!!adjustTarget} onOpenChange={() => setAdjustTarget(null)}>

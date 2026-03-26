@@ -127,8 +127,10 @@ class AppilyParser extends BaseSchoolScraper {
     }
 
     // Average salary post-graduation (Appily unique)
+    // Matches: "Salary 6 Years After: $52,000", "Median Earnings: $65,000",
+    // "Average Earnings After School: $48,000", "Salary After Graduation: $55,000"
     const salaryMatch = pageText.match(
-      /(?:average\s*)?(?:salary|earnings?)\s*(?:6\s*years?\s*(?:after|post).*?|after\s*(?:6|six)\s*years?.*?)[:\s]*\$?([\d,]+)/i,
+      /(?:median|average)?\s*(?:salary|earnings?|income)\s*(?:6\s*years?\s*(?:after|post).*?|after\s*(?:6|six)\s*years?.*?|after\s*(?:school|graduation).*?)?[:\s]*\$?([\d,]+)/i,
     );
     if (salaryMatch) {
       const salary = parseInt(salaryMatch[1].replace(/,/g, ''));

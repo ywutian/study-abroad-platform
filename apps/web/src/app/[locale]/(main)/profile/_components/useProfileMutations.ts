@@ -52,12 +52,7 @@ function getAddErrorMessage(
   }
 }
 
-export function useProfileMutations(
-  calculateCompleteness: () => number,
-  previousCompleteness: number | null,
-  setPreviousCompleteness: (v: number) => void,
-  setShowCelebration: (v: boolean) => void
-) {
+export function useProfileMutations() {
   const t = useTranslations();
   const queryClient = useQueryClient();
 
@@ -83,12 +78,9 @@ export function useProfileMutations(
     mutationFn: (data: ProfileUpdatePayload) => apiClient.put(profileRoutes.me(), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['predictions'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       toast.success(t('common.success'));
-      const newCompleteness = calculateCompleteness();
-      if (previousCompleteness !== null && newCompleteness > previousCompleteness) {
-        setShowCelebration(true);
-      }
-      setPreviousCompleteness(newCompleteness);
     },
   });
 

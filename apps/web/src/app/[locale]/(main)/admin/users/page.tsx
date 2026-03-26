@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PageHeader } from '@/components/layout';
@@ -31,6 +31,8 @@ export default function AdminUsersPage() {
   const [banDuration, setBanDuration] = useState(24);
   const [banPermanent, setBanPermanent] = useState(false);
   const [userToUnban, setUserToUnban] = useState<string | null>(null);
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+  const [bulkBanOpen, setBulkBanOpen] = useState(false);
 
   const { data: usersData, isLoading } = useQuery({
     queryKey: ['adminUsers', userSearch, userRoleFilter, page],
@@ -102,15 +104,97 @@ export default function AdminUsersPage() {
   const handleSearchChange = (value: string) => {
     setUserSearch(value);
     setPage(1);
+    setSelectedUsers(new Set());
   };
 
   const handleRoleFilterChange = (value: string) => {
     setUserRoleFilter(value);
     setPage(1);
+    setSelectedUsers(new Set());
   };
 
+  // Bulk operations
+  const bulkRoleMutation = useMutation({
+    mutationFn: async ({ userIds, role }: { userIds: string[]; role: string }) => {
+      const results = await Promise.allSettled(
+        userIds.map((userId) =>
+          apiClient.post(`${API_ROUTES.ADMIN}/roles/users/${userId}/role`, { role })
+        )
+      );
+      const successCount = results.filter((r) => r.status === 'fulfilled').length;
+      return { successCount, total: userIds.length };
+    },
+    onSuccess: ({ successCount, total }) => {
+      queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+      setSelectedUsers(new Set());
+      toast.success(t('users.bulkRoleSuccess', { count: successCount, total }));
+    },
+  });
+
+  const bulkBanMutation = useMutation({
+    mutationFn: async (userIds: string[]) => {
+      const results = await Promise.allSettled(
+        userIds.map((userId) =>
+          apiClient.post(`${API_ROUTES.ADMIN}/users/${userId}/ban`, {
+            reason: banReason,
+            permanent: banPermanent,
+            ...(banPermanent ? {} : { durationHours: banDuration }),
+          })
+        )
+      );
+      const successCount = results.filter((r) => r.status === 'fulfilled').length;
+      return { successCount, total: userIds.length };
+    },
+    onSuccess: ({ successCount, total }) => {
+      queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+      setSelectedUsers(new Set());
+      setUserToBan(null);
+      setBanReason('');
+      setBanDuration(24);
+      setBanPermanent(false);
+      toast.success(t('users.bulkBanSuccess', { count: successCount, total }));
+    },
+  });
+
+  const handleToggleUser = useCallback((userId: string, checked: boolean) => {
+    setSelectedUsers((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(userId);
+      else next.delete(userId);
+      return next;
+    });
+  }, []);
+
+  const handleToggleAll = useCallback(
+    (checked: boolean) => {
+      if (checked && usersData?.data) {
+        setSelectedUsers(new Set(usersData.data.map((u) => u.id)));
+      } else {
+        setSelectedUsers(new Set());
+      }
+    },
+    [usersData?.data]
+  );
+
+  const handleBulkRole = useCallback(
+    (role: string) => {
+      const userIds = Array.from(selectedUsers);
+      if (userIds.length > 0) bulkRoleMutation.mutate({ userIds, role });
+    },
+    [selectedUsers, bulkRoleMutation]
+  );
+
+  const handleBulkBan = useCallback(() => {
+    if (selectedUsers.size > 0) {
+      setBulkBanOpen(true);
+    }
+  }, [selectedUsers]);
+
   const handleConfirmBan = () => {
-    if (userToBan) {
+    if (bulkBanOpen) {
+      bulkBanMutation.mutate(Array.from(selectedUsers));
+      setBulkBanOpen(false);
+    } else if (userToBan) {
       banUserMutation.mutate({
         userId: userToBan.id,
         reason: banReason,
@@ -119,6 +203,8 @@ export default function AdminUsersPage() {
       });
     }
   };
+
+  const isBulkPending = bulkRoleMutation.isPending || bulkBanMutation.isPending;
 
   return (
     <>
@@ -135,6 +221,11 @@ export default function AdminUsersPage() {
           onSearchChange={handleSearchChange}
           roleFilter={userRoleFilter}
           onRoleFilterChange={handleRoleFilterChange}
+          selectedCount={selectedUsers.size}
+          onBulkRole={handleBulkRole}
+          onBulkBan={handleBulkBan}
+          onClearSelection={() => setSelectedUsers(new Set())}
+          isBulkPending={isBulkPending}
         />
 
         {isLoading ? (
@@ -147,13 +238,19 @@ export default function AdminUsersPage() {
               onBanUser={setUserToBan}
               onUnbanUser={setUserToUnban}
               onDeleteUser={setUserToDelete}
+              selectedUsers={selectedUsers}
+              onToggleUser={handleToggleUser}
+              onToggleAll={handleToggleAll}
             />
             <PaginationControls
               page={page}
               totalPages={usersData.totalPages ?? 1}
               total={usersData.total ?? 0}
               pageSize={pageSize}
-              onPageChange={setPage}
+              onPageChange={(p) => {
+                setPage(p);
+                setSelectedUsers(new Set());
+              }}
             />
           </>
         ) : (
@@ -173,8 +270,15 @@ export default function AdminUsersPage() {
       />
 
       <BanUserDialog
-        userToBan={userToBan}
-        onClose={() => setUserToBan(null)}
+        userToBan={
+          bulkBanOpen
+            ? ({ id: '', email: t('users.selectedCount', { count: selectedUsers.size }) } as User)
+            : userToBan
+        }
+        onClose={() => {
+          setUserToBan(null);
+          setBulkBanOpen(false);
+        }}
         banReason={banReason}
         onBanReasonChange={setBanReason}
         banDuration={banDuration}
@@ -182,7 +286,7 @@ export default function AdminUsersPage() {
         banPermanent={banPermanent}
         onBanPermanentChange={setBanPermanent}
         onConfirmBan={handleConfirmBan}
-        isPending={banUserMutation.isPending}
+        isPending={banUserMutation.isPending || bulkBanMutation.isPending}
       />
 
       <UnbanUserDialog

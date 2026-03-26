@@ -29,9 +29,12 @@ import {
   Sparkles,
   BarChart3,
   School,
+  ExternalLink,
 } from 'lucide-react';
 
+import { DATA_SOURCE_LABELS } from '@study-abroad/shared';
 import type { SchoolDetail, EssayPrompt } from './_components/types';
+import { getSourceUrl } from './_components/source-utils';
 import { SchoolHeroHeader } from './_components/school-hero-header';
 import { SchoolOverviewTab } from './_components/school-overview-tab';
 import { SchoolAcademicsTab, SchoolEssaysTab } from './_components/school-academics-tab';
@@ -168,84 +171,116 @@ export default function SchoolDetailPage() {
 
       {/* Key Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        {[
-          {
-            icon: Target,
-            label: t('school.stats.acceptanceRate'),
-            value: school.acceptanceRate
-              ? formatAcceptanceRate(school.acceptanceRate)
-              : tc('notAvailable'),
-            color: 'rose',
-          },
-          {
-            icon: DollarSign,
-            label: t('school.stats.tuition'),
-            value: school.tuition ? format.number(school.tuition, 'currency') : tc('notAvailable'),
-            color: 'emerald',
-          },
-          {
-            icon: TrendingUp,
-            label: t('school.stats.avgSalary'),
-            value: school.avgSalary
-              ? format.number(school.avgSalary, 'currency')
-              : tc('notAvailable'),
-            color: 'blue',
-          },
-          {
-            icon: Users,
-            label: t('school.stats.studentCount'),
-            value: school.studentCount
-              ? format.number(school.studentCount, 'standard')
-              : tc('notAvailable'),
-            color: 'violet',
-          },
-        ].map((stat, index) => {
-          const StatIcon = stat.icon;
-          return (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Card className="overflow-hidden hover:shadow-md transition-shadow">
-                <div
-                  className={cn('h-1 bg-gradient-to-r', {
-                    'bg-destructive': stat.color === 'rose',
-                    'bg-success': stat.color === 'emerald',
-                    'bg-primary': stat.color === 'blue' || stat.color === 'violet',
-                  })}
-                />
-                <CardContent className="pt-4 pb-4">
-                  <div className="flex items-center gap-2 mb-2">
+        {(() => {
+          const provenance = school.metadata?.provenance as
+            | Record<string, { source: string; at: string }>
+            | undefined;
+          const localeKey = locale === 'zh' ? 'zh' : 'en';
+          return [
+            {
+              icon: Target,
+              label: t('school.stats.acceptanceRate'),
+              value: school.acceptanceRate
+                ? formatAcceptanceRate(school.acceptanceRate)
+                : tc('notAvailable'),
+              color: 'rose',
+              source: provenance?.acceptanceRate?.source,
+            },
+            {
+              icon: DollarSign,
+              label: t('school.stats.tuition'),
+              value: school.tuition
+                ? format.number(school.tuition, 'currency')
+                : tc('notAvailable'),
+              color: 'emerald',
+              source: provenance?.tuition?.source,
+            },
+            {
+              icon: TrendingUp,
+              label: t('school.stats.avgSalary'),
+              value: school.avgSalary
+                ? format.number(school.avgSalary, 'currency')
+                : tc('notAvailable'),
+              color: 'blue',
+              source: provenance?.avgSalary?.source,
+            },
+            {
+              icon: Users,
+              label: t('school.stats.studentCount'),
+              value: school.studentCount
+                ? format.number(school.studentCount, 'standard')
+                : tc('notAvailable'),
+              color: 'violet',
+              source: provenance?.studentCount?.source,
+            },
+          ].map((stat, index) => {
+            const StatIcon = stat.icon;
+            const sourceLabel = stat.source
+              ? DATA_SOURCE_LABELS[stat.source]?.[localeKey]
+              : undefined;
+            return (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Card className="overflow-hidden hover:shadow-md transition-shadow">
+                  <div
+                    className={cn('h-1 bg-gradient-to-r', {
+                      'bg-destructive': stat.color === 'rose',
+                      'bg-success': stat.color === 'emerald',
+                      'bg-primary': stat.color === 'blue' || stat.color === 'violet',
+                    })}
+                  />
+                  <CardContent className="pt-4 pb-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div
+                        className={cn('flex h-8 w-8 items-center justify-center rounded-lg', {
+                          'bg-rose-500/10 text-rose-500 dark:text-rose-400': stat.color === 'rose',
+                          'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400':
+                            stat.color === 'emerald',
+                          'bg-blue-500/10 text-blue-500 dark:text-blue-400': stat.color === 'blue',
+                          'bg-primary/10 text-primary': stat.color === 'violet',
+                        })}
+                      >
+                        <StatIcon className="h-4 w-4" />
+                      </div>
+                      <span className="text-sm text-muted-foreground">{stat.label}</span>
+                    </div>
                     <div
-                      className={cn('flex h-8 w-8 items-center justify-center rounded-lg', {
-                        'bg-rose-500/10 text-rose-500 dark:text-rose-400': stat.color === 'rose',
-                        'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400':
-                          stat.color === 'emerald',
-                        'bg-blue-500/10 text-blue-500 dark:text-blue-400': stat.color === 'blue',
-                        'bg-primary/10 text-primary': stat.color === 'violet',
+                      className={cn('text-2xl font-bold', {
+                        'text-rose-600 dark:text-rose-400': stat.color === 'rose',
+                        'text-emerald-600 dark:text-emerald-400': stat.color === 'emerald',
+                        'text-blue-600 dark:text-blue-400': stat.color === 'blue',
+                        'text-primary': stat.color === 'violet',
                       })}
                     >
-                      <StatIcon className="h-4 w-4" />
+                      {stat.value}
                     </div>
-                    <span className="text-sm text-muted-foreground">{stat.label}</span>
-                  </div>
-                  <div
-                    className={cn('text-2xl font-bold', {
-                      'text-rose-600 dark:text-rose-400': stat.color === 'rose',
-                      'text-emerald-600 dark:text-emerald-400': stat.color === 'emerald',
-                      'text-blue-600 dark:text-blue-400': stat.color === 'blue',
-                      'text-primary': stat.color === 'violet',
-                    })}
-                  >
-                    {stat.value}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          );
-        })}
+                    {sourceLabel &&
+                      (() => {
+                        const url = stat.source ? getSourceUrl(stat.source, school) : null;
+                        return url ? (
+                          <a
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-muted-foreground mt-1 hover:text-primary hover:underline inline-flex items-center gap-0.5"
+                          >
+                            {sourceLabel}
+                            <ExternalLink className="h-2.5 w-2.5" />
+                          </a>
+                        ) : (
+                          <div className="text-xs text-muted-foreground mt-1">{sourceLabel}</div>
+                        );
+                      })()}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            );
+          });
+        })()}
       </div>
 
       {/* AI Context Actions */}
@@ -339,6 +374,54 @@ export default function SchoolDetailPage() {
           <SchoolCasesTab school={school} />
         </TabsContent>
       </Tabs>
+
+      {/* Data Sources Footer */}
+      {(() => {
+        const prov = school.metadata?.provenance as
+          | Record<string, { source: string; at: string }>
+          | undefined;
+        if (!prov || Object.keys(prov).length === 0) return null;
+        const lk = locale === 'zh' ? 'zh' : 'en';
+        const seen = new Set<string>();
+        const uniqueSourceEntries: { source: string; label: string }[] = [];
+        for (const p of Object.values(prov)) {
+          const label = DATA_SOURCE_LABELS[p.source]?.[lk];
+          if (label && !seen.has(p.source)) {
+            seen.add(p.source);
+            uniqueSourceEntries.push({ source: p.source, label });
+          }
+        }
+        if (uniqueSourceEntries.length === 0) return null;
+        return (
+          <div className="mt-8 p-4 rounded-lg bg-muted/50 text-sm text-muted-foreground">
+            <p className="font-medium mb-1">{t('school.dataSources')}</p>
+            <p className="flex flex-wrap gap-x-1 gap-y-1">
+              {uniqueSourceEntries.map((entry, i) => {
+                const url = getSourceUrl(entry.source, school);
+                return (
+                  <span key={entry.source} className="inline-flex items-center">
+                    {i > 0 && <span className="text-muted-foreground/50 mx-1">·</span>}
+                    {url ? (
+                      <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-primary hover:underline inline-flex items-center gap-0.5"
+                      >
+                        {entry.label}
+                        <ExternalLink className="h-2.5 w-2.5" />
+                      </a>
+                    ) : (
+                      entry.label
+                    )}
+                  </span>
+                );
+              })}
+            </p>
+            <p className="text-xs mt-1">{t('school.dataDisclaimer')}</p>
+          </div>
+        );
+      })()}
     </PageContainer>
   );
 }

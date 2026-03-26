@@ -311,21 +311,21 @@ export default function ScoresScreen() {
   const getScoreColor = (type: string) => {
     switch (type) {
       case 'SAT':
-        return '#6366f1';
+        return colors.primary;
       case 'ACT':
-        return '#ec4899';
+        return colors.pink;
       case 'TOEFL':
-        return '#f59e0b';
+        return colors.warning;
       case 'IELTS':
-        return '#10b981';
+        return colors.success;
       case 'AP':
-        return '#3b82f6';
+        return colors.info;
       case 'IB':
-        return '#8b5cf6';
+        return colors.violet;
       case 'A_LEVEL':
-        return '#059669';
+        return colors.success;
       case 'IGCSE':
-        return '#0891b2';
+        return colors.info;
       default:
         return colors.primary;
     }

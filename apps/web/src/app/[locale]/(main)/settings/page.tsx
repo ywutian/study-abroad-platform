@@ -362,7 +362,7 @@ export default function SettingsPage() {
                   {section.items.map((item, itemIndex) => (
                     <div key={item.id}>
                       {itemIndex > 0 && <Separator className="my-2" />}
-                      <SettingItemRow item={item} />
+                      <SettingItemRow item={item} disabled={section.comingSoon} />
                     </div>
                   ))}
                 </CardContent>
@@ -394,16 +394,23 @@ export default function SettingsPage() {
   );
 }
 
-function SettingItemRow({ item }: { item: SettingItem }) {
+function SettingItemRow({ item, disabled }: { item: SettingItem; disabled?: boolean }) {
+  const t = useTranslations();
   const Icon = item.icon;
 
   const content = (
     <div
       className={cn(
         'flex items-center gap-3 rounded-xl p-3 transition-all duration-200',
-        (item.type === 'link' || item.type === 'action') && 'hover:bg-muted cursor-pointer',
-        item.danger && 'text-destructive hover:bg-destructive/5'
+        disabled && 'cursor-not-allowed',
+        !disabled &&
+          (item.type === 'link' || item.type === 'action') &&
+          'hover:bg-muted cursor-pointer',
+        item.danger && !disabled && 'text-destructive hover:bg-destructive/5'
       )}
+      role={disabled ? 'group' : undefined}
+      aria-disabled={disabled || undefined}
+      title={disabled ? t('settings.comingSoonHint') : undefined}
     >
       <div
         className={cn(
@@ -421,11 +428,15 @@ function SettingItemRow({ item }: { item: SettingItem }) {
       </div>
 
       {item.type === 'toggle' && (
-        <Switch checked={item.value as boolean} onCheckedChange={item.onToggle} />
+        <Switch
+          checked={item.value as boolean}
+          onCheckedChange={item.onToggle}
+          disabled={disabled}
+        />
       )}
 
       {item.type === 'select' && (
-        <Select value={item.value as string} onValueChange={item.onSelect}>
+        <Select value={item.value as string} onValueChange={item.onSelect} disabled={disabled}>
           <SelectTrigger className="w-28 h-9">
             <SelectValue />
           </SelectTrigger>
@@ -444,6 +455,10 @@ function SettingItemRow({ item }: { item: SettingItem }) {
       )}
     </div>
   );
+
+  if (disabled) {
+    return content;
+  }
 
   if (item.type === 'link' && item.href) {
     return <Link href={item.href}>{content}</Link>;

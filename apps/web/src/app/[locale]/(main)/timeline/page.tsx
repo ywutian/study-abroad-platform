@@ -8,7 +8,8 @@ import { API_ROUTES, schoolListRoutes, timelineRoutes } from '@study-abroad/shar
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Calendar, Plus, GraduationCap, Loader2, Info } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { useRouter } from '@/lib/i18n/navigation';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
@@ -287,7 +288,7 @@ export default function TimelinePage() {
               <Plus className="h-4 w-4 mr-1" />
               {t('personalEvents.create')}
             </Button>
-            <Button onClick={() => router.push('schools')} size="sm">
+            <Button onClick={() => router.push('/schools')} size="sm">
               <Plus className="h-4 w-4 mr-1" />
               {t('addSchool')}
             </Button>
@@ -327,7 +328,7 @@ export default function TimelinePage() {
                 <Plus className="h-4 w-4 mr-1" />
                 {t('personalEvents.create')}
               </Button>
-              <Button onClick={() => router.push('schools')}>
+              <Button onClick={() => router.push('/schools')}>
                 <Plus className="h-4 w-4 mr-1" />
                 {t('empty.action')}
               </Button>

@@ -281,7 +281,46 @@ export class SchoolController {
     @Body() data: UpdateSchoolDto,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    const school = await this.schoolService.update(id, data);
+    // Extract metadata sub-fields that are stored in JSON, not as schema columns
+    const { toeflMin, ieltsMin, essayCount, ...schemaFields } = data;
+
+    if (
+      toeflMin !== undefined ||
+      ieltsMin !== undefined ||
+      essayCount !== undefined
+    ) {
+      const existing = await this.schoolService.findById(id);
+      const existingMeta = (existing.metadata as Record<string, unknown>) || {};
+      const existingReqs =
+        (existingMeta.requirements as Record<string, unknown>) || {};
+      const existingProv =
+        (existingMeta.provenance as Record<string, unknown>) || {};
+      const now = new Date().toISOString();
+
+      const updatedReqs = { ...existingReqs };
+      const updatedProv = { ...existingProv };
+
+      if (toeflMin !== undefined) {
+        updatedReqs.toeflMin = toeflMin;
+        updatedProv.toeflMin = { source: 'MANUAL_ADMIN', at: now };
+      }
+      if (ieltsMin !== undefined) {
+        updatedReqs.ieltsMin = ieltsMin;
+        updatedProv.ieltsMin = { source: 'MANUAL_ADMIN', at: now };
+      }
+      if (essayCount !== undefined) {
+        updatedProv.essayCount = { source: 'MANUAL_ADMIN', at: now };
+      }
+
+      (schemaFields as Record<string, unknown>).metadata = {
+        ...existingMeta,
+        requirements: updatedReqs,
+        provenance: updatedProv,
+        ...(essayCount !== undefined ? { essayCount } : {}),
+      };
+    }
+
+    const school = await this.schoolService.update(id, schemaFields);
     await this.schoolService.invalidateSchoolCache(id);
     await this.auditLogService.log({
       userId: user.id,

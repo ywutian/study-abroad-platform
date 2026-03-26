@@ -1291,7 +1291,8 @@
     "runPrediction": "开始预测",
     "ucOneClick": "UC 一键预测",
     "ucOneClickUnavailable": "暂无法获取 UC 学校列表",
-    "ucComparisonExpanded": "已为您加入全部 9 所 UC 校区进行对比",
+    "ucExpandedDesc": "因为你选了 UC 学校，我们自动加入了全部 9 所 UC 校区进行对比。UC 各校使用同一套申请系统，这样你可以看到哪些校区最有可能录取你。",
+    "ucCollapseToOriginal": "只看我原来选的学校",
     "recommendedSchoolsTitle": "你也可能感兴趣的学校",
     "recommendedSchoolsLoading": "加载推荐中...",
     "majorSpecificComingSoon": "专业录取率和地区数据即将推出",
@@ -1997,6 +1998,7 @@
       "deleteAccount": "删除账户",
       "deleteAccountDesc": "永久删除您的账户和数据"
     },
+    "comingSoonHint": "此功能即将上线",
     "dialogs": {
       "logoutTitle": "退出登录",
       "logoutDesc": "确定要退出登录吗？",
@@ -3935,6 +3937,8 @@
       "avgSalary": "毕业薪资",
       "studentCount": "学生人数"
     },
+    "dataSources": "数据来源",
+    "dataDisclaimer": "数据来自官方数据库，可能存在更新延迟。请以学校官方网站为准。",
     "tabs": {
       "overview": "概览",
       "admission": "录取",
@@ -4548,6 +4552,8 @@
     "applicationPlaceholder": "介绍一下你自己...",
     "apply": "申请加入",
     "likes": "赞",
+    "likePost": "点赞此帖",
+    "reportPost": "举报此帖",
     "views": "浏览",
     "comments": "评论",
     "writeComment": "写下你的评论...",
@@ -5032,7 +5038,16 @@
     "operationFailed": "操作失败，请重试",
     "dataUpdateFailed": "数据更新失败: {message}",
     "unauthorized": "请先登录",
-    "forbidden": "无权访问"
+    "forbidden": "无权访问",
+    "route": {
+      "title": "出错了",
+      "tryAgain": "重试",
+      "backHome": "返回首页",
+      "ai": "AI 服务暂时不可用，请稍后重试。",
+      "data": "数据加载失败，请重试。",
+      "content": "内容加载失败，您的数据是安全的，请重试。",
+      "generic": "发生了意外错误，请重试。"
+    }
   },
   "admin": {
     "title": "管理后台",
@@ -5164,7 +5179,15 @@
       "allRoles": "全部角色",
       "pageDesc": "管理平台用户和角色",
       "viewDetail": "查看详情",
-      "exportCsv": "导出 CSV"
+      "exportCsv": "导出 CSV",
+      "selectAll": "全选用户",
+      "selectUser": "选择用户",
+      "selectedCount": "已选择 {count} 个用户",
+      "bulkSetVerified": "批量设为已验证",
+      "bulkSetUser": "批量设为用户",
+      "bulkBan": "批量封禁",
+      "bulkRoleSuccess": "已更新 {count}/{total} 个用户",
+      "bulkBanSuccess": "已封禁 {count}/{total} 个用户"
     },
     "userDetail": {
       "back": "返回用户列表",
@@ -5259,6 +5282,11 @@
       "averageNetPrice": "平均净费用",
       "roomAndBoard": "食宿费",
       "percentNeedMet": "助学金满足率",
+      "avgSalary": "平均薪资",
+      "salary6YrPostGrad": "毕业6年薪资",
+      "toeflMin": "托福最低分",
+      "ieltsMin": "雅思最低分",
+      "essayCount": "文书数量",
       "tabs": {
         "basic": "基础信息",
         "rankings": "排名录取",
@@ -6476,6 +6504,8 @@
       "refundConfirm": "确认退款",
       "refundDesc": "这将退还付款并降级用户的订阅。",
       "refunded": "已退款",
+      "refundReason": "退款原因",
+      "refundReasonPlaceholder": "请输入退款原因（审计必填）",
       "adjustSub": "调整订阅",
       "adjustSubDesc": "手动更改用户订阅级别",
       "newPlan": "新方案",
@@ -6546,8 +6576,15 @@
         "descriptionLabel": "描述",
         "descriptionPlaceholder": "该开关控制什么功能？",
         "enabledLabel": "立即启用",
-        "rulesLabel": "定向规则 (JSON)",
-        "rulesHint": "可选。支持：roles（角色数组）、userIds（用户ID数组）、percentage（0-100灰度百分比）"
+        "rulesLabel": "定向规则",
+        "rulesHint": "可选。支持：roles（角色数组）、userIds（用户ID数组）、percentage（0-100灰度百分比）",
+        "visualMode": "可视化",
+        "jsonMode": "JSON",
+        "roles": "角色",
+        "userIds": "用户 ID",
+        "userIdPlaceholder": "粘贴 UUID 或按 Enter 添加",
+        "percentage": "灰度百分比",
+        "percentageOff": "未启用"
       },
       "editDialog": {
         "title": "编辑功能开关"
@@ -6702,7 +6739,14 @@
       "filterAll": "所有状态",
       "filterPending": "待审核",
       "filterApproved": "已通过",
-      "filterRejected": "已拒绝"
+      "filterRejected": "已拒绝",
+      "selectAll": "全选",
+      "selectItem": "选择",
+      "selectedCount": "已选择 {count} 项",
+      "bulkApprove": "批量通过",
+      "bulkReject": "批量拒绝",
+      "bulkApproved": "已通过 {count}/{total} 项认证",
+      "bulkRejected": "已拒绝 {count}/{total} 项认证"
     },
     "team": {
       "title": "团队管理",

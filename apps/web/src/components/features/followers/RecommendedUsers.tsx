@@ -68,6 +68,7 @@ export function RecommendedUsers({ className }: RecommendedUsersProps) {
         old?.filter((u) => u.id !== userId)
       );
       queryClient.invalidateQueries({ queryKey: ['following'] });
+      queryClient.invalidateQueries({ queryKey: ['followers'] });
       toast.success(t('followers.toast.followSuccess'));
     },
   });

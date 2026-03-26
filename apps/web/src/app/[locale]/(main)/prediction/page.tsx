@@ -5,6 +5,7 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { Info } from 'lucide-react';
 import { PageContainer } from '@/components/layout';
 import { EmptyState } from '@/components/ui/empty-state';
 import { apiClient } from '@/lib/api/client';
@@ -75,6 +76,7 @@ export default function PredictionPage() {
   // UI state
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [refreshingSchoolId, setRefreshingSchoolId] = useState<string | null>(null);
+  const [ucExpandedFrom, setUcExpandedFrom] = useState<SchoolSearchItem[] | null>(null);
 
   // Data fetching
   const { data: dashboardData } = usePredictionDashboard();
@@ -122,7 +124,9 @@ export default function PredictionPage() {
     const hasAnyUc = ucIds.length > 0 && selectedIds.some((id) => ucIds.includes(id));
     const schoolIdsToUse = hasAnyUc ? ucIds : selectedIds;
     if (hasAnyUc) {
-      toast.info(t('prediction.ucComparisonExpanded'));
+      setUcExpandedFrom([...selectedSchools]);
+    } else {
+      setUcExpandedFrom(null);
     }
     predictMutation.mutate(
       { schoolIds: schoolIdsToUse, forceRefresh: true },
@@ -150,7 +154,7 @@ export default function PredictionPage() {
               }))
             );
             if (expandedByBackend && !hasAnyUc) {
-              toast.info(t('prediction.ucComparisonExpanded'));
+              setUcExpandedFrom([...selectedSchools]);
             }
           }
           if (predictionResults.length > 0) {
@@ -233,6 +237,16 @@ export default function PredictionPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- predictMutation.mutate is stable
   }, [ucIdsData?.schoolIds, predictMutation.mutate, t]);
 
+  const handleCollapseUc = useCallback(() => {
+    if (!ucExpandedFrom) return;
+    setSelectedSchools(ucExpandedFrom);
+    setResults((prev) => {
+      const originalIds = new Set(ucExpandedFrom.map((s) => s.id));
+      return prev.filter((r) => originalIds.has(r.schoolId));
+    });
+    setUcExpandedFrom(null);
+  }, [ucExpandedFrom]);
+
   return (
     <AIErrorBoundary feature="prediction">
       <PageContainer maxWidth="default">
@@ -270,6 +284,24 @@ export default function PredictionPage() {
 
         {results.length > 0 ? (
           <>
+            {ucExpandedFrom && (
+              <div className="mb-4 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-start gap-3">
+                <Info className="h-4 w-4 mt-1 text-blue-600 dark:text-blue-400 shrink-0" />
+                <div className="flex-1 text-sm">
+                  <p className="text-blue-900 dark:text-blue-100">
+                    {t('prediction.ucExpandedDesc')}
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCollapseUc}
+                  className="shrink-0 text-blue-600 dark:text-blue-400 border-blue-500/30 hover:bg-blue-500/10"
+                >
+                  {t('prediction.ucCollapseToOriginal')}
+                </Button>
+              </div>
+            )}
             <PredictionResultList
               results={results}
               expandedId={expandedId}

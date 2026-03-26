@@ -28,7 +28,7 @@ const createRegisterSchema = (t: ReturnType<typeof useTranslations>) =>
       password: z
         .string()
         .min(8, { message: t('validation.passwordMin') })
-        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])/, {
+        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/, {
           message: t('validation.passwordStrength'),
         }),
       confirmPassword: z.string().min(8, { message: t('validation.passwordMin') }),
@@ -154,7 +154,7 @@ export default function RegisterPage() {
         user: {
           id: string;
           email: string;
-          role: 'USER' | 'VERIFIED' | 'ADMIN';
+          role: 'USER' | 'VERIFIED' | 'OPERATOR' | 'ADMIN' | 'SUPER_ADMIN';
           emailVerified: boolean;
           locale: string;
         };
@@ -190,7 +190,11 @@ export default function RegisterPage() {
       }
 
       toast.success(t('auth.register.success'));
-      router.push('/dashboard');
+      const callbackUrl = searchParams.get('callbackUrl');
+      const rawPath = callbackUrl?.replace(/^\/(zh|en)/, '') || '';
+      const targetPath =
+        rawPath && /^\/[\w\-/]*(\?[\w\-=&%.]*)?$/.test(rawPath) ? rawPath : '/dashboard';
+      router.push(targetPath);
     } catch (error) {
       const msg =
         error instanceof ApiError

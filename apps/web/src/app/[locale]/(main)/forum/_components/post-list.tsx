@@ -141,7 +141,10 @@ export function PostList({
                 </Badge>
               )}
               {showTeamOnly && (
-                <Badge variant="secondary" className="gap-1 bg-amber-100 text-amber-700">
+                <Badge
+                  variant="secondary"
+                  className="gap-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"
+                >
                   {t('teamPosts')}
                   <X className="h-3 w-3 cursor-pointer" onClick={onClearTeamOnly} />
                 </Badge>
@@ -188,7 +191,9 @@ export function PostList({
               >
                 <Card
                   className={`overflow-hidden hover:shadow-md transition-all cursor-pointer group ${
-                    post.isPinned ? 'ring-1 ring-amber-300 bg-amber-50/30' : ''
+                    post.isPinned
+                      ? 'ring-1 ring-amber-300 dark:ring-amber-600 bg-amber-50/30 dark:bg-amber-950/20'
+                      : ''
                   }`}
                   onClick={() => onViewPost(post)}
                 >
@@ -197,7 +202,7 @@ export function PostList({
                       {/* Avatar */}
                       <Avatar className="h-10 w-10 shrink-0">
                         <AvatarImage src={post.author.avatar || ''} />
-                        <AvatarFallback className="bg-gradient-to-br from-primary to-blue-600 text-white text-sm">
+                        <AvatarFallback className="bg-gradient-to-br from-primary to-blue-600 text-primary-foreground text-sm">
                           {(post.author.name || 'U').charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
@@ -209,7 +214,7 @@ export function PostList({
                           {post.isPinned && (
                             <Badge
                               variant="outline"
-                              className="bg-amber-50 text-amber-600 border-amber-200 text-xs py-0"
+                              className="bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-700 text-xs py-0"
                             >
                               {t('pinned')}
                             </Badge>
@@ -283,6 +288,7 @@ export function PostList({
                             <button
                               className={`flex items-center gap-1 transition-colors ${post.isLiked ? 'text-red-500' : 'hover:text-red-500'}`}
                               onClick={(e) => onLike(post.id, e)}
+                              aria-label={t('likePost')}
                             >
                               <Heart
                                 className={`h-3.5 w-3.5 ${post.isLiked ? 'fill-current' : ''}`}
@@ -294,13 +300,14 @@ export function PostList({
                       </div>
 
                       {/* Actions */}
-                      <div className="flex flex-col items-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex flex-col items-end gap-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
                         <button
                           className="p-1.5 rounded-lg hover:bg-muted transition-colors"
                           onClick={(e) => {
                             e.stopPropagation();
                             onReport({ type: 'POST', id: post.id });
                           }}
+                          aria-label={t('reportPost')}
                         >
                           <Flag className="h-4 w-4 text-muted-foreground/70 hover:text-red-500" />
                         </button>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
@@ -23,7 +23,18 @@ import { VerificationConfirmDialog } from './_components/verification-confirm-di
 import { apiClient } from '@/lib/api';
 import { verificationRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
-import { ShieldCheck, Clock, CheckCircle, XCircle, FileText, GraduationCap } from 'lucide-react';
+import {
+  ShieldCheck,
+  Clock,
+  CheckCircle,
+  XCircle,
+  FileText,
+  GraduationCap,
+  Loader2,
+  X,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -97,6 +108,7 @@ export default function AdminVerificationsPage() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [reviewNote, setReviewNote] = useState('');
   const [confirmAction, setConfirmAction] = useState<'APPROVE' | 'REJECT' | null>(null);
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 
   // Stats
   const { data: stats } = useQuery<VerificationStats>({
@@ -141,6 +153,62 @@ export default function AdminVerificationsPage() {
     },
   });
 
+  // Bulk review mutation
+  const bulkReviewMutation = useMutation({
+    mutationFn: async ({ ids, action }: { ids: string[]; action: string }) => {
+      const results = await Promise.allSettled(
+        ids.map((id) => apiClient.post(verificationRoutes.review(id), { action, note: undefined }))
+      );
+      const successCount = results.filter((r) => r.status === 'fulfilled').length;
+      return { successCount, total: ids.length };
+    },
+    onSuccess: ({ successCount, total }, { action }) => {
+      const isApproved = action === 'APPROVE';
+      toast.success(
+        t(isApproved ? 'verifications.bulkApproved' : 'verifications.bulkRejected', {
+          count: successCount,
+          total,
+        })
+      );
+      queryClient.invalidateQueries({ queryKey: ['adminVerifications'] });
+      queryClient.invalidateQueries({ queryKey: ['adminVerificationStats'] });
+      queryClient.invalidateQueries({ queryKey: ['adminStats'] });
+      setSelectedItems(new Set());
+    },
+  });
+
+  const items = useMemo(() => listData?.items || [], [listData?.items]);
+  const totalPages = listData?.totalPages || 0;
+  const total = listData?.total || 0;
+
+  const handleToggleItem = useCallback((id: string, checked: boolean) => {
+    setSelectedItems((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  }, []);
+
+  const handleToggleAll = useCallback(
+    (checked: boolean) => {
+      if (checked) {
+        setSelectedItems(new Set(items.map((item) => item.id)));
+      } else {
+        setSelectedItems(new Set());
+      }
+    },
+    [items]
+  );
+
+  const handleBulkReview = useCallback(
+    (action: 'APPROVE' | 'REJECT') => {
+      const ids = Array.from(selectedItems);
+      if (ids.length > 0) bulkReviewMutation.mutate({ ids, action });
+    },
+    [selectedItems, bulkReviewMutation]
+  );
+
   const openDetail = useCallback((id: string) => {
     setSelectedId(id);
     setReviewNote('');
@@ -161,10 +229,6 @@ export default function AdminVerificationsPage() {
     if (!open) setConfirmAction(null);
   }, []);
 
-  const items = listData?.items || [];
-  const totalPages = listData?.totalPages || 0;
-  const total = listData?.total || 0;
-
   return (
     <div>
       <PageHeader
@@ -177,13 +241,14 @@ export default function AdminVerificationsPage() {
       {/* Stats Cards */}
       {stats && <VerificationStatsCards stats={stats} />}
 
-      {/* Filter */}
+      {/* Filter + Bulk Actions */}
       <div className="flex items-center gap-3 mb-4">
         <Select
           value={statusFilter}
           onValueChange={(v) => {
             setStatusFilter(v as StatusFilter);
             setPage(1);
+            setSelectedItems(new Set());
           }}
         >
           <SelectTrigger className="w-[180px]">
@@ -196,7 +261,49 @@ export default function AdminVerificationsPage() {
             <SelectItem value="REJECTED">{t('verifications.filterRejected')}</SelectItem>
           </SelectContent>
         </Select>
+        {items.length > 0 && (
+          <Checkbox
+            checked={items.length > 0 && items.every((item) => selectedItems.has(item.id))}
+            onCheckedChange={(checked) => handleToggleAll(!!checked)}
+            aria-label={t('verifications.selectAll')}
+          />
+        )}
       </div>
+
+      {selectedItems.size > 0 && (
+        <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-4 py-2 mb-4">
+          {bulkReviewMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+          <span className="text-sm font-medium">
+            {t('verifications.selectedCount', { count: selectedItems.size })}
+          </span>
+          <div className="flex-1" />
+          <Button
+            size="sm"
+            onClick={() => handleBulkReview('APPROVE')}
+            disabled={bulkReviewMutation.isPending}
+          >
+            <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
+            {t('verifications.bulkApprove')}
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => handleBulkReview('REJECT')}
+            disabled={bulkReviewMutation.isPending}
+          >
+            <XCircle className="h-3.5 w-3.5 mr-1.5" />
+            {t('verifications.bulkReject')}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => setSelectedItems(new Set())}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
 
       {/* List */}
       {isLoading ? (
@@ -226,6 +333,12 @@ export default function AdminVerificationsPage() {
                 onClick={() => openDetail(item.id)}
               >
                 <CardContent className="py-4 flex items-center gap-4">
+                  <Checkbox
+                    checked={selectedItems.has(item.id)}
+                    onCheckedChange={(checked) => handleToggleItem(item.id, !!checked)}
+                    onClick={(e) => e.stopPropagation()}
+                    aria-label={`${t('verifications.selectItem')} ${userName}`}
+                  />
                   <Avatar className="h-9 w-9 shrink-0">
                     <AvatarImage src={item.user?.profile?.avatarUrl} />
                     <AvatarFallback className="text-xs">
@@ -273,7 +386,10 @@ export default function AdminVerificationsPage() {
             totalPages={totalPages}
             total={total}
             pageSize={PAGE_SIZE}
-            onPageChange={setPage}
+            onPageChange={(p) => {
+              setPage(p);
+              setSelectedItems(new Set());
+            }}
           />
         </div>
       )}

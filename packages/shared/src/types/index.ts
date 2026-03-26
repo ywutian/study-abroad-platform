@@ -2,7 +2,9 @@
 export enum Role {
   USER = 'USER',
   VERIFIED = 'VERIFIED',
+  OPERATOR = 'OPERATOR',
   ADMIN = 'ADMIN',
+  SUPER_ADMIN = 'SUPER_ADMIN',
 }
 
 export enum Visibility {

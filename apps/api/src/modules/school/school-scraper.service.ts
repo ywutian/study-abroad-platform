@@ -344,16 +344,20 @@ export class SchoolScraperService {
       requirements.gpaMin = gpaMatch[1];
     }
 
-    // TOEFL 要求
-    const toeflMatch = text.match(/TOEFL[:\s]*(\d{2,3})/i);
+    // TOEFL 要求 — matches: "TOEFL: 100", "TOEFL iBT: 100", "minimum TOEFL score of 100", "TOEFL (minimum): 100"
+    const toeflMatch = text.match(
+      /TOEFL\s*(?:iBT)?[:\s]*(?:minimum\s*(?:score\s*(?:of\s*)?)?)?(\d{2,3})|minimum\s+TOEFL\s*(?:score\s*(?:of\s*)?)?\s*(\d{2,3})/i,
+    );
     if (toeflMatch) {
-      requirements.toeflMin = parseInt(toeflMatch[1]);
+      requirements.toeflMin = parseInt(toeflMatch[1] || toeflMatch[2]);
     }
 
-    // IELTS 要求
-    const ieltsMatch = text.match(/IELTS[:\s]*([\d.]+)/i);
+    // IELTS 要求 — matches: "IELTS: 7.0", "minimum IELTS: 7.0", "IELTS overall band score of 7.0"
+    const ieltsMatch = text.match(
+      /IELTS\s*(?:overall\s*(?:band\s*)?(?:score\s*)?)?[:\s]*(?:minimum\s*(?:of\s*)?)?([\d.]+)|minimum\s+IELTS\s*(?:of\s*)?([\d.]+)/i,
+    );
     if (ieltsMatch) {
-      requirements.ieltsMin = parseFloat(ieltsMatch[1]);
+      requirements.ieltsMin = parseFloat(ieltsMatch[1] || ieltsMatch[2]);
     }
 
     // 申请费

@@ -1,5 +1,11 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsEnum, MaxLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsNotEmpty,
+  MaxLength,
+} from 'class-validator';
 import { PaymentStatus, Role } from '@prisma/client';
 import { SubscriptionPlan } from '@study-abroad/shared';
 
@@ -31,11 +37,11 @@ export class PaymentQueryDto {
 }
 
 export class RefundPaymentDto {
-  @ApiPropertyOptional({ description: 'Refund reason' })
-  @IsOptional()
-  @MaxLength(2000)
+  @ApiProperty({ description: 'Refund reason (required for audit trail)' })
   @IsString()
-  reason?: string;
+  @IsNotEmpty()
+  @MaxLength(2000)
+  reason: string;
 }
 
 export class UpdateSubscriptionDto {

@@ -1,9 +1,10 @@
 import { create } from 'zustand';
+import type { Role } from '@study-abroad/shared';
 
 interface User {
   id: string;
   email: string;
-  role: 'USER' | 'VERIFIED' | 'OPERATOR' | 'ADMIN' | 'SUPER_ADMIN';
+  role: `${Role}`;
   emailVerified: boolean;
   locale: string;
 }
