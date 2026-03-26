@@ -140,25 +140,25 @@ export default function AwardsScreen() {
     switch (awardLevel?.toLowerCase()) {
       case 'international':
         return {
-          color: '#f59e0b',
+          color: colors.warning,
           icon: 'globe-outline' as const,
           label: t('profileEdit.awardLevels.international'),
         };
       case 'national':
         return {
-          color: '#ef4444',
+          color: colors.error,
           icon: 'flag-outline' as const,
           label: t('profileEdit.awardLevels.national'),
         };
       case 'regional':
         return {
-          color: '#3b82f6',
+          color: colors.info,
           icon: 'map-outline' as const,
           label: t('profileEdit.awardLevels.regional'),
         };
       case 'school':
         return {
-          color: '#10b981',
+          color: colors.success,
           icon: 'school-outline' as const,
           label: t('profileEdit.awardLevels.school'),
         };

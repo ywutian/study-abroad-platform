@@ -79,7 +79,7 @@ export function CreateListDialog({ open, onOpenChange }: CreateListDialogProps) 
       items: unknown[];
     }) => apiClient.post(hallRoutes.lists(), data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['publicLists'] });
+      queryClient.invalidateQueries({ queryKey: ['hall', 'publicLists'] });
       queryClient.invalidateQueries({ queryKey: ['myLists'] });
       toast.success(t('toast.success'));
       onOpenChange(false);

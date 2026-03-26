@@ -118,10 +118,7 @@ export function VerificationUploadDialog({
 
       const uploadRes = await apiClient.post<{ url: string; key: string }>(
         '/verifications/upload',
-        formData,
-        {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        }
+        formData
       );
 
       clearInterval(progressInterval);

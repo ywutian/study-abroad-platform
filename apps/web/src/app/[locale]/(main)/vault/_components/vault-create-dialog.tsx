@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { Lock, Eye, EyeOff, RefreshCw, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,77 +14,173 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import type { VaultItemType, VaultItemDetail } from './vault-types';
+import { toast } from 'sonner';
+import { apiClient as api } from '@/lib/api';
+import type { VaultItemType, VaultItemDetail, CredentialData, ApiResponse } from './vault-types';
 import { typeIcons, typeColors, VAULT_ITEM_TYPES } from './vault-constants';
 
 interface VaultCreateDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   editingItem: VaultItemDetail | null;
-  // Form state
-  formType: VaultItemType;
-  formTitle: string;
-  formCategory: string;
-  formTags: string[];
-  formTagInput: string;
-  formData: string;
-  formUsername: string;
-  formPassword: string;
-  formWebsite: string;
-  formNotes: string;
-  showPassword: boolean;
-  submitting: boolean;
-  // Callbacks
-  onFormTypeChange: (type: VaultItemType) => void;
-  onFormTitleChange: (title: string) => void;
-  onFormCategoryChange: (category: string) => void;
-  onFormTagInputChange: (input: string) => void;
-  onFormDataChange: (data: string) => void;
-  onFormUsernameChange: (username: string) => void;
-  onFormPasswordChange: (password: string) => void;
-  onFormWebsiteChange: (website: string) => void;
-  onFormNotesChange: (notes: string) => void;
-  onToggleShowPassword: () => void;
-  onTagInput: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-  onRemoveTag: (tag: string) => void;
-  onGeneratePassword: () => void;
-  onSave: () => void;
-  onCancel: () => void;
+  onSaved: () => void;
+}
+
+function parseCredentialData(data: string): CredentialData {
+  try {
+    return JSON.parse(data);
+  } catch {
+    return { notes: data };
+  }
 }
 
 export function VaultCreateDialog({
   open,
   onOpenChange,
   editingItem,
-  formType,
-  formTitle,
-  formCategory,
-  formTags,
-  formTagInput,
-  formData,
-  formUsername,
-  formPassword,
-  formWebsite,
-  formNotes,
-  showPassword,
-  submitting,
-  onFormTypeChange,
-  onFormTitleChange,
-  onFormCategoryChange,
-  onFormTagInputChange,
-  onFormDataChange,
-  onFormUsernameChange,
-  onFormPasswordChange,
-  onFormWebsiteChange,
-  onFormNotesChange,
-  onToggleShowPassword,
-  onTagInput,
-  onRemoveTag,
-  onGeneratePassword,
-  onSave,
-  onCancel,
+  onSaved,
 }: VaultCreateDialogProps) {
   const t = useTranslations('vault');
+
+  // All form state is internal
+  const [formType, setFormType] = useState<VaultItemType>('CREDENTIAL');
+  const [formTitle, setFormTitle] = useState('');
+  const [formCategory, setFormCategory] = useState('');
+  const [formTags, setFormTags] = useState<string[]>([]);
+  const [formTagInput, setFormTagInput] = useState('');
+  const [formData, setFormData] = useState('');
+
+  // Credential specific
+  const [formUsername, setFormUsername] = useState('');
+  const [formPassword, setFormPassword] = useState('');
+  const [formWebsite, setFormWebsite] = useState('');
+  const [formNotes, setFormNotes] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  const [submitting, setSubmitting] = useState(false);
+
+  // Populate form when editingItem changes
+  useEffect(() => {
+    if (!open) return;
+
+    if (editingItem) {
+      setFormType(editingItem.type);
+      setFormTitle(editingItem.title);
+      setFormCategory(editingItem.category || '');
+      setFormTags(editingItem.tags);
+
+      if (editingItem.type === 'CREDENTIAL') {
+        const credData = parseCredentialData(editingItem.data);
+        setFormUsername(credData.username || '');
+        setFormPassword(credData.password || '');
+        setFormWebsite(credData.website || '');
+        setFormNotes(credData.notes || '');
+      } else {
+        setFormData(editingItem.data);
+      }
+    } else {
+      // Reset for create mode
+      setFormType('CREDENTIAL');
+      setFormTitle('');
+      setFormCategory('');
+      setFormTags([]);
+      setFormTagInput('');
+      setFormData('');
+      setFormUsername('');
+      setFormPassword('');
+      setFormWebsite('');
+      setFormNotes('');
+      setShowPassword(false);
+    }
+  }, [open, editingItem]);
+
+  const handleTagInput = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter' && formTagInput.trim()) {
+        e.preventDefault();
+        if (!formTags.includes(formTagInput.trim())) {
+          setFormTags((prev) => [...prev, formTagInput.trim()]);
+        }
+        setFormTagInput('');
+      }
+    },
+    [formTagInput, formTags]
+  );
+
+  const removeTag = useCallback((tag: string) => {
+    setFormTags((prev) => prev.filter((t) => t !== tag));
+  }, []);
+
+  const generatePassword = useCallback(async () => {
+    try {
+      const res = await api.get<ApiResponse<{ password: string }>>(
+        '/vaults/generate-password?length=16'
+      );
+      if (res.success) {
+        setFormPassword(res.data.password);
+      }
+    } catch {
+      const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+      let pass = '';
+      for (let i = 0; i < 16; i++) {
+        pass += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      setFormPassword(pass);
+    }
+  }, []);
+
+  const handleSave = useCallback(async () => {
+    if (!formTitle.trim()) return;
+
+    setSubmitting(true);
+    try {
+      let dataToSave = formData;
+
+      if (formType === 'CREDENTIAL') {
+        dataToSave = JSON.stringify({
+          username: formUsername,
+          password: formPassword,
+          website: formWebsite,
+          notes: formNotes,
+        });
+      }
+
+      const payload = {
+        type: formType,
+        title: formTitle,
+        data: dataToSave,
+        category: formCategory || undefined,
+        tags: formTags,
+      };
+
+      if (editingItem) {
+        await api.put(`/vaults/${editingItem.id}`, payload);
+      } else {
+        await api.post('/vaults', payload);
+      }
+
+      onOpenChange(false);
+      onSaved();
+    } catch {
+      toast.error(t('saveError'));
+    } finally {
+      setSubmitting(false);
+    }
+  }, [
+    formTitle,
+    formData,
+    formType,
+    formUsername,
+    formPassword,
+    formWebsite,
+    formNotes,
+    formCategory,
+    formTags,
+    editingItem,
+    onOpenChange,
+    onSaved,
+    t,
+  ]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -107,7 +204,7 @@ export function VaultCreateDialog({
                       ? `bg-gradient-to-r ${typeColors[type]} border-0 text-white`
                       : 'border-border text-muted-foreground hover:bg-muted'
                   }`}
-                  onClick={() => onFormTypeChange(type)}
+                  onClick={() => setFormType(type)}
                 >
                   {typeIcons[type]}
                   <span className="text-xs">{t(type.toLowerCase())}</span>
@@ -121,7 +218,7 @@ export function VaultCreateDialog({
             <label className="text-sm font-medium text-muted-foreground">{t('itemTitle')}</label>
             <Input
               value={formTitle}
-              onChange={(e) => onFormTitleChange(e.target.value)}
+              onChange={(e) => setFormTitle(e.target.value)}
               placeholder={t('itemTitlePlaceholder')}
               className="mt-1 bg-muted border-border text-foreground"
             />
@@ -132,7 +229,7 @@ export function VaultCreateDialog({
             <label className="text-sm font-medium text-muted-foreground">{t('itemCategory')}</label>
             <Input
               value={formCategory}
-              onChange={(e) => onFormCategoryChange(e.target.value)}
+              onChange={(e) => setFormCategory(e.target.value)}
               placeholder={t('itemCategoryPlaceholder')}
               className="mt-1 bg-muted border-border text-foreground"
             />
@@ -145,7 +242,7 @@ export function VaultCreateDialog({
               {formTags.map((tag) => (
                 <Badge key={tag} variant="secondary" className="bg-muted pl-2 pr-1 py-1">
                   {tag}
-                  <button onClick={() => onRemoveTag(tag)} className="ml-1 hover:text-destructive">
+                  <button onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive">
                     <X className="h-3 w-3" />
                   </button>
                 </Badge>
@@ -153,8 +250,8 @@ export function VaultCreateDialog({
             </div>
             <Input
               value={formTagInput}
-              onChange={(e) => onFormTagInputChange(e.target.value)}
-              onKeyDown={onTagInput}
+              onChange={(e) => setFormTagInput(e.target.value)}
+              onKeyDown={handleTagInput}
               placeholder={t('itemTagsPlaceholder')}
               className="mt-2 bg-muted border-border text-foreground"
             />
@@ -167,7 +264,7 @@ export function VaultCreateDialog({
                 <label className="text-sm font-medium text-muted-foreground">{t('website')}</label>
                 <Input
                   value={formWebsite}
-                  onChange={(e) => onFormWebsiteChange(e.target.value)}
+                  onChange={(e) => setFormWebsite(e.target.value)}
                   placeholder={t('websitePlaceholder')}
                   className="mt-1 bg-muted border-border text-foreground"
                 />
@@ -176,7 +273,7 @@ export function VaultCreateDialog({
                 <label className="text-sm font-medium text-muted-foreground">{t('username')}</label>
                 <Input
                   value={formUsername}
-                  onChange={(e) => onFormUsernameChange(e.target.value)}
+                  onChange={(e) => setFormUsername(e.target.value)}
                   placeholder={t('usernamePlaceholder')}
                   className="mt-1 bg-muted border-border text-foreground"
                 />
@@ -188,13 +285,13 @@ export function VaultCreateDialog({
                     <Input
                       type={showPassword ? 'text' : 'password'}
                       value={formPassword}
-                      onChange={(e) => onFormPasswordChange(e.target.value)}
+                      onChange={(e) => setFormPassword(e.target.value)}
                       placeholder={t('passwordPlaceholder')}
                       className="bg-muted border-border text-foreground pr-10"
                     />
                     <button
                       type="button"
-                      onClick={onToggleShowPassword}
+                      onClick={() => setShowPassword((prev) => !prev)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -203,7 +300,7 @@ export function VaultCreateDialog({
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={onGeneratePassword}
+                    onClick={generatePassword}
                     className="border-border text-muted-foreground hover:bg-muted"
                   >
                     <RefreshCw className="h-4 w-4" />
@@ -214,7 +311,7 @@ export function VaultCreateDialog({
                 <label className="text-sm font-medium text-muted-foreground">{t('notes')}</label>
                 <Textarea
                   value={formNotes}
-                  onChange={(e) => onFormNotesChange(e.target.value)}
+                  onChange={(e) => setFormNotes(e.target.value)}
                   placeholder={t('notesPlaceholder')}
                   className="mt-1 bg-muted border-border text-foreground min-h-[80px]"
                 />
@@ -225,7 +322,7 @@ export function VaultCreateDialog({
               <label className="text-sm font-medium text-muted-foreground">{t('itemData')}</label>
               <Textarea
                 value={formData}
-                onChange={(e) => onFormDataChange(e.target.value)}
+                onChange={(e) => setFormData(e.target.value)}
                 placeholder={t('itemDataPlaceholder')}
                 className="mt-1 bg-muted border-border text-foreground min-h-[150px]"
               />
@@ -235,13 +332,13 @@ export function VaultCreateDialog({
           <DialogFooter className="gap-2">
             <Button
               variant="outline"
-              onClick={onCancel}
+              onClick={() => onOpenChange(false)}
               className="border-border text-muted-foreground"
             >
               {t('cancel')}
             </Button>
             <Button
-              onClick={onSave}
+              onClick={handleSave}
               disabled={submitting || !formTitle.trim()}
               className="bg-success"
             >

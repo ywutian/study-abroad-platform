@@ -19,6 +19,9 @@ const PROTECTED_PATTERNS = [
   '/chat',
   '/settings',
   '/teams/create', // 组队创建页需登录；/teams 和 /teams/[id] 保持公开
+  '/vault',
+  '/uncommon-app',
+  '/followers',
 ];
 
 /** Routes that require admin role (additional cookie check) */

@@ -359,4 +359,31 @@ export class CreateSchoolDto {
   @IsInt()
   @Min(0)
   studentOrgsCount?: number;
+
+  // Admission Requirements (stored in metadata JSON)
+  @ApiPropertyOptional({ description: 'Minimum TOEFL score required' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(120)
+  toeflMin?: number;
+
+  @ApiPropertyOptional({ description: 'Minimum IELTS score required' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @Max(9)
+  ieltsMin?: number;
+
+  @ApiPropertyOptional({
+    description: 'Number of supplemental essays required',
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(30)
+  essayCount?: number;
 }

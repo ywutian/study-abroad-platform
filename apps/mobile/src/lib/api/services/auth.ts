@@ -12,6 +12,6 @@ export const authService = {
     apiClient.post('/auth/verify-email', { token }, { skipAuth: true }),
   forgotPassword: (email: string) =>
     apiClient.post('/auth/forgot-password', { email }, { skipAuth: true }),
-  resetPassword: (token: string, password: string) =>
-    apiClient.post('/auth/reset-password', { token, password }, { skipAuth: true }),
+  resetPassword: (token: string, newPassword: string) =>
+    apiClient.post('/auth/reset-password', { token, newPassword }, { skipAuth: true }),
 };

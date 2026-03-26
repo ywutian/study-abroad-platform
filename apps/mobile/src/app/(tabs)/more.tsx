@@ -25,23 +25,28 @@ export default function MoreScreen() {
   const insets = useSafeAreaInsets();
 
   const items: MoreItem[] = [
-    { icon: 'document-text', label: t('more.resume'), route: '/resume', color: '#6366f1' },
-    { icon: 'lock-closed', label: t('more.vault'), route: '/vault', color: '#10b981' },
-    { icon: 'people', label: t('more.teams'), route: '/teams', color: '#3b82f6' },
-    { icon: 'trophy', label: t('more.points'), route: '/points', color: '#f59e0b' },
-    { icon: 'star', label: t('more.peerReview'), route: '/peer-review', color: '#8b5cf6' },
-    { icon: 'gift', label: t('more.referral'), route: '/referral', color: '#f59e0b' },
+    { icon: 'document-text', label: t('more.resume'), route: '/resume', color: colors.primary },
+    { icon: 'lock-closed', label: t('more.vault'), route: '/vault', color: colors.success },
+    { icon: 'people', label: t('more.teams'), route: '/teams', color: colors.info },
+    { icon: 'trophy', label: t('more.points'), route: '/points', color: colors.warning },
+    { icon: 'star', label: t('more.peerReview'), route: '/peer-review', color: colors.violet },
+    { icon: 'gift', label: t('more.referral'), route: '/referral', color: colors.warning },
     {
       icon: 'shield-checkmark',
       label: t('more.verification'),
       route: '/verification',
-      color: '#10b981',
+      color: colors.success,
     },
-    { icon: 'podium', label: t('more.ranking'), route: '/ranking', color: '#3b82f6' },
-    { icon: 'clipboard', label: t('more.assessment'), route: '/assessment', color: '#ec4899' },
-    { icon: 'settings', label: t('more.settings'), route: '/settings', color: '#64748b' },
-    { icon: 'calendar', label: t('more.timeline'), route: '/timeline', color: '#6366f1' },
-    { icon: 'chatbubbles', label: t('more.chat'), route: '/chat', color: '#3b82f6' },
+    { icon: 'podium', label: t('more.ranking'), route: '/ranking', color: colors.info },
+    { icon: 'clipboard', label: t('more.assessment'), route: '/assessment', color: colors.pink },
+    {
+      icon: 'settings',
+      label: t('more.settings'),
+      route: '/settings',
+      color: colors.mutedForeground,
+    },
+    { icon: 'calendar', label: t('more.timeline'), route: '/timeline', color: colors.primary },
+    { icon: 'chatbubbles', label: t('more.chat'), route: '/chat', color: colors.info },
   ];
 
   return (

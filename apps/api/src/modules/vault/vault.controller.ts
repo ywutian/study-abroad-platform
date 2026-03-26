@@ -35,12 +35,12 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import {
   ThrottleSensitive,
   ThrottleStrict,
+  ThrottleRelaxed,
 } from '../../common/decorators/throttle.decorator';
 import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
 
 @ApiTags('vault')
-@ThrottleSensitive()
 @Controller('vaults')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -55,6 +55,7 @@ export class VaultController {
   // ============================================
 
   @Post()
+  @ThrottleSensitive()
   @ApiOperation({ summary: 'Create a new vault item' })
   @ApiResponse({ status: 201, type: VaultItemDto })
   async create(
@@ -65,6 +66,7 @@ export class VaultController {
   }
 
   @Get()
+  @ThrottleRelaxed()
   @ApiOperation({ summary: 'Get all vault items' })
   @ApiResponse({ status: 200, type: [VaultItemDto] })
   async findAll(
@@ -75,6 +77,7 @@ export class VaultController {
   }
 
   @Get('stats')
+  @ThrottleRelaxed()
   @ApiOperation({ summary: 'Get vault statistics' })
   @ApiResponse({ status: 200, type: VaultStatsDto })
   async getStats(
@@ -84,6 +87,7 @@ export class VaultController {
   }
 
   @Get('generate-password')
+  @ThrottleRelaxed()
   @ApiOperation({ summary: 'Generate a secure password' })
   @ApiResponse({
     status: 200,
@@ -125,6 +129,7 @@ export class VaultController {
   }
 
   @Get(':id')
+  @ThrottleRelaxed()
   @ApiOperation({ summary: 'Get a vault item with decrypted data' })
   @ApiResponse({ status: 200, type: VaultItemDetailDto })
   async findOne(
@@ -135,6 +140,7 @@ export class VaultController {
   }
 
   @Put(':id')
+  @ThrottleSensitive()
   @ApiOperation({ summary: 'Update a vault item' })
   @ApiResponse({ status: 200, type: VaultItemDto })
   async update(
@@ -146,6 +152,7 @@ export class VaultController {
   }
 
   @Delete(':id')
+  @ThrottleSensitive()
   @ApiOperation({ summary: 'Delete a vault item' })
   @ApiResponse({
     status: 200,
@@ -164,6 +171,7 @@ export class VaultController {
   // ============================================
 
   @Delete()
+  @ThrottleStrict()
   @ApiOperation({ summary: 'Delete all vault items' })
   @ApiResponse({
     status: 200,

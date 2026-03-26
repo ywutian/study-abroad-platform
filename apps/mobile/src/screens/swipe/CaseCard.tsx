@@ -48,7 +48,7 @@ export default function CaseCard({
               <Ionicons
                 name="checkmark-circle"
                 size={18}
-                color="#10b981"
+                color={c.success}
                 style={{ marginLeft: spacing.xs }}
               />
             )}
@@ -150,7 +150,7 @@ export default function CaseCard({
         )}
         {caseData.awardCount != null && caseData.awardCount > 0 && (
           <View style={styles.summaryRow}>
-            <Ionicons name="trophy-outline" size={16} color="#f59e0b" />
+            <Ionicons name="trophy-outline" size={16} color={c.warning} />
             <Text style={[styles.summaryText, { color: c.foregroundSecondary }]}>
               {t('swipe.awards', { count: caseData.awardCount })}
               {caseData.highestAwardLevel ? ` (${caseData.highestAwardLevel})` : ''}
@@ -175,31 +175,43 @@ export default function CaseCard({
         <>
           {/* ADMIT overlay (right) */}
           <Animated.View
-            style={[styles.directionOverlay, styles.admitOverlay, admitOverlayStyle]}
+            style={[
+              styles.directionOverlay,
+              { backgroundColor: c.success + '15' },
+              admitOverlayStyle,
+            ]}
             pointerEvents="none"
           >
-            <View style={[styles.overlayBadge, { borderColor: '#10b981' }]}>
-              <Text style={[styles.overlayText, { color: '#10b981' }]}>{t('swipe.admit')}</Text>
+            <View style={[styles.overlayBadge, { borderColor: c.success }]}>
+              <Text style={[styles.overlayText, { color: c.success }]}>{t('swipe.admit')}</Text>
             </View>
           </Animated.View>
 
           {/* REJECT overlay (left) */}
           <Animated.View
-            style={[styles.directionOverlay, styles.rejectOverlay, rejectOverlayStyle]}
+            style={[
+              styles.directionOverlay,
+              { backgroundColor: c.error + '15' },
+              rejectOverlayStyle,
+            ]}
             pointerEvents="none"
           >
-            <View style={[styles.overlayBadge, { borderColor: '#ef4444' }]}>
-              <Text style={[styles.overlayText, { color: '#ef4444' }]}>{t('swipe.reject')}</Text>
+            <View style={[styles.overlayBadge, { borderColor: c.error }]}>
+              <Text style={[styles.overlayText, { color: c.error }]}>{t('swipe.reject')}</Text>
             </View>
           </Animated.View>
 
           {/* WAITLIST overlay (down) */}
           <Animated.View
-            style={[styles.directionOverlay, styles.waitlistOverlay, waitlistOverlayStyle]}
+            style={[
+              styles.directionOverlay,
+              { backgroundColor: c.warning + '15' },
+              waitlistOverlayStyle,
+            ]}
             pointerEvents="none"
           >
-            <View style={[styles.overlayBadge, { borderColor: '#f59e0b' }]}>
-              <Text style={[styles.overlayText, { color: '#f59e0b' }]}>{t('swipe.waitlist')}</Text>
+            <View style={[styles.overlayBadge, { borderColor: c.warning }]}>
+              <Text style={[styles.overlayText, { color: c.warning }]}>{t('swipe.waitlist')}</Text>
             </View>
           </Animated.View>
         </>
@@ -335,15 +347,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: borderRadius.xl,
-  },
-  admitOverlay: {
-    backgroundColor: '#10b981' + '15',
-  },
-  rejectOverlay: {
-    backgroundColor: '#ef4444' + '15',
-  },
-  waitlistOverlay: {
-    backgroundColor: '#f59e0b' + '15',
   },
   overlayBadge: {
     borderWidth: 3,

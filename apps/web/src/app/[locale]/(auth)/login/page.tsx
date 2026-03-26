@@ -71,7 +71,7 @@ export default function LoginPage() {
         user: {
           id: string;
           email: string;
-          role: 'USER' | 'VERIFIED' | 'ADMIN';
+          role: 'USER' | 'VERIFIED' | 'OPERATOR' | 'ADMIN' | 'SUPER_ADMIN';
           emailVerified: boolean;
           locale: string;
         };
@@ -119,9 +119,10 @@ export default function LoginPage() {
       const callbackUrl = searchParams.get('callbackUrl');
       const adminRoles = ['OPERATOR', 'ADMIN', 'SUPER_ADMIN'];
       const defaultPath = adminRoles.includes(response.user.role) ? '/admin' : '/dashboard';
-      // 提取路径（去掉 locale 前缀），严格校验只允许站内相对路径
+      // 提取路径（去掉 locale 前缀），严格校验只允许站内相对路径（含 query params）
       const rawPath = callbackUrl?.replace(/^\/(zh|en)/, '') || '';
-      const targetPath = rawPath && /^\/[\w\-/]*$/.test(rawPath) ? rawPath : defaultPath;
+      const targetPath =
+        rawPath && /^\/[\w\-/]*(\?[\w\-=&%.]*)?$/.test(rawPath) ? rawPath : defaultPath;
 
       // 延迟跳转，让用户看到欢迎提示
       setTimeout(() => {

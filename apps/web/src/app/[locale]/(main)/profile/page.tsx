@@ -141,34 +141,20 @@ export default function ProfilePage() {
     prediction: item.prediction,
   }));
 
+  // Completeness from backend (weighted 6-category system)
+  const { data: dashboardData } = useQuery({
+    queryKey: ['dashboard'],
+    queryFn: () =>
+      apiClient.get<{ profile: { completeness: number }; pendingTasks: { profileGaps: string[] } }>(
+        '/users/me/dashboard'
+      ),
+    enabled: isInitialized && !!accessToken,
+  });
   const calculateCompleteness = useCallback(() => {
-    let completed = 0;
-    const total = 7;
-    if (formData.grade) completed++;
-    if (formData.currentSchool) completed++;
-    if (formData.gpa) completed++;
-    if (formData.targetMajor) completed++;
-    if (profile?.testScores && profile.testScores.length > 0) completed++;
-    if (profile?.activities && profile.activities.length > 0) completed++;
-    if (profile?.awards && profile.awards.length > 0) completed++;
-    return Math.round((completed / total) * 100);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only recompute when lengths change
-  }, [
-    formData.grade,
-    formData.currentSchool,
-    formData.gpa,
-    formData.targetMajor,
-    profile?.testScores?.length,
-    profile?.activities?.length,
-    profile?.awards?.length,
-  ]);
+    return dashboardData?.profile?.completeness ?? 0;
+  }, [dashboardData?.profile?.completeness]);
 
-  const m = useProfileMutations(
-    calculateCompleteness,
-    previousCompleteness,
-    setPreviousCompleteness,
-    setShowCelebration
-  );
+  const m = useProfileMutations();
 
   useEffect(() => {
     if (profile) {
@@ -195,12 +181,21 @@ export default function ProfilePage() {
         gpa11: profile.gpa11?.toString() || '',
         gpa12: profile.gpa12?.toString() || '',
       }));
-      if (previousCompleteness === null) {
-        setPreviousCompleteness(calculateCompleteness());
-      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile, previousCompleteness]);
+  }, [profile]);
+
+  // Track completeness changes for milestone celebration
+  const currentCompleteness = calculateCompleteness();
+  useEffect(() => {
+    if (currentCompleteness > 0 && previousCompleteness === null) {
+      setPreviousCompleteness(currentCompleteness);
+    } else if (previousCompleteness !== null && currentCompleteness > previousCompleteness) {
+      setShowCelebration(true);
+      setPreviousCompleteness(currentCompleteness);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentCompleteness]);
 
   const handleSave = () => {
     m.updateMutation.mutate({

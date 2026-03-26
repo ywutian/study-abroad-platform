@@ -43,6 +43,12 @@ interface School {
   acceptsCoalition?: boolean;
   feeWaiverAvailable?: boolean;
   needBlindInternational?: boolean;
+  avgSalary?: number;
+  salary6YrPostGrad?: number;
+  metadata?: {
+    requirements?: { toeflMin?: number; ieltsMin?: number };
+    essayCount?: number;
+  };
 }
 
 interface EditSchoolDialogProps {
@@ -77,6 +83,11 @@ interface FormState {
   acceptsCoalition: boolean;
   feeWaiverAvailable: boolean;
   needBlindInternational: boolean;
+  avgSalary: string;
+  salary6YrPostGrad: string;
+  toeflMin: string;
+  ieltsMin: string;
+  essayCount: string;
 }
 
 function schoolToForm(school: School | null): FormState {
@@ -101,6 +112,11 @@ function schoolToForm(school: School | null): FormState {
     acceptsCoalition: school?.acceptsCoalition ?? false,
     feeWaiverAvailable: school?.feeWaiverAvailable ?? false,
     needBlindInternational: school?.needBlindInternational ?? false,
+    avgSalary: school?.avgSalary?.toString() ?? '',
+    salary6YrPostGrad: school?.salary6YrPostGrad?.toString() ?? '',
+    toeflMin: school?.metadata?.requirements?.toeflMin?.toString() ?? '',
+    ieltsMin: school?.metadata?.requirements?.ieltsMin?.toString() ?? '',
+    essayCount: school?.metadata?.essayCount?.toString() ?? '',
   };
 }
 
@@ -227,6 +243,22 @@ export function EditSchoolDialog({
     numDiff('averageNetPrice', 'averageNetPrice');
     numDiff('roomAndBoard', 'roomAndBoard');
     numDiff('percentNeedMet', 'percentNeedMet');
+    numDiff('avgSalary', 'avgSalary');
+    numDiff('salary6YrPostGrad', 'salary6YrPostGrad');
+
+    // Metadata fields (sent as top-level DTO fields, backend merges into metadata JSON)
+    const metaNumDiff = (
+      formKey: keyof FormState,
+      payloadKey: string,
+      origVal: number | undefined
+    ) => {
+      const formVal = form[formKey] as string;
+      const parsed = formVal.trim() === '' ? null : Number(formVal);
+      if (parsed !== (origVal ?? null)) payload[payloadKey] = parsed;
+    };
+    metaNumDiff('toeflMin', 'toeflMin', school.metadata?.requirements?.toeflMin);
+    metaNumDiff('ieltsMin', 'ieltsMin', school.metadata?.requirements?.ieltsMin);
+    metaNumDiff('essayCount', 'essayCount', school.metadata?.essayCount);
 
     // Boolean fields
     const boolDiff = (key: keyof FormState & keyof School) => {
@@ -432,6 +464,20 @@ export function EditSchoolDialog({
                 onChange={(v) => setField('percentNeedMet', v)}
                 suffix="%"
               />
+              <NumberInput
+                id="edit-avgSalary"
+                label={t('schools.avgSalary')}
+                value={form.avgSalary}
+                onChange={(v) => setField('avgSalary', v)}
+                prefix="$"
+              />
+              <NumberInput
+                id="edit-salary6YrPostGrad"
+                label={t('schools.salary6YrPostGrad')}
+                value={form.salary6YrPostGrad}
+                onChange={(v) => setField('salary6YrPostGrad', v)}
+                prefix="$"
+              />
             </div>
           </TabsContent>
 
@@ -473,6 +519,26 @@ export function EditSchoolDialog({
                 label="Need Blind (Intl)"
                 checked={form.needBlindInternational}
                 onChange={(v) => setField('needBlindInternational', v)}
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-4 pt-2">
+              <NumberInput
+                id="edit-toeflMin"
+                label={t('schools.toeflMin')}
+                value={form.toeflMin}
+                onChange={(v) => setField('toeflMin', v)}
+              />
+              <NumberInput
+                id="edit-ieltsMin"
+                label={t('schools.ieltsMin')}
+                value={form.ieltsMin}
+                onChange={(v) => setField('ieltsMin', v)}
+              />
+              <NumberInput
+                id="edit-essayCount"
+                label={t('schools.essayCount')}
+                value={form.essayCount}
+                onChange={(v) => setField('essayCount', v)}
               />
             </div>
           </TabsContent>

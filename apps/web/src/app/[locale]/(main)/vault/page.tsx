@@ -9,11 +9,9 @@ import { toast } from 'sonner';
 import { apiClient as api } from '@/lib/api';
 
 import type {
-  VaultItemType,
   VaultItem,
   VaultItemDetail,
   VaultStats as VaultStatsType,
-  CredentialData,
   ApiResponse,
 } from './_components/vault-types';
 import { VaultStats } from './_components/vault-stats';
@@ -30,7 +28,7 @@ export default function VaultPage() {
   const [items, setItems] = useState<VaultItem[]>([]);
   const [stats, setStats] = useState<VaultStatsType | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedType, setSelectedType] = useState<VaultItemType | 'ALL'>('ALL');
+  const [selectedType, setSelectedType] = useState<'ALL' | VaultItem['type']>('ALL');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -39,32 +37,6 @@ export default function VaultPage() {
   const [showViewDialog, setShowViewDialog] = useState<VaultItemDetail | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<VaultItemDetail | null>(null);
-
-  // Form states
-  const [formType, setFormType] = useState<VaultItemType>('CREDENTIAL');
-  const [formTitle, setFormTitle] = useState('');
-  const [formCategory, setFormCategory] = useState('');
-  const [formTags, setFormTags] = useState<string[]>([]);
-  const [formTagInput, setFormTagInput] = useState('');
-  const [formData, setFormData] = useState('');
-
-  // Credential specific
-  const [formUsername, setFormUsername] = useState('');
-  const [formPassword, setFormPassword] = useState('');
-  const [formWebsite, setFormWebsite] = useState('');
-  const [formNotes, setFormNotes] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-
-  const [submitting, setSubmitting] = useState(false);
-
-  // Parse credential data
-  const parseCredentialData = (data: string): CredentialData => {
-    try {
-      return JSON.parse(data);
-    } catch {
-      return { notes: data };
-    }
-  };
 
   // Fetch items and stats
   const fetchData = useCallback(async () => {
@@ -88,7 +60,6 @@ export default function VaultPage() {
       }
     } catch (_error) {
       // Fetch failed — fall back to demo data
-      // Demo data
       setItems([
         {
           id: '1',
@@ -166,47 +137,6 @@ export default function VaultPage() {
     }
   };
 
-  // Create/Update item
-  const handleSave = async () => {
-    if (!formTitle.trim()) return;
-
-    setSubmitting(true);
-    try {
-      let dataToSave = formData;
-
-      if (formType === 'CREDENTIAL') {
-        dataToSave = JSON.stringify({
-          username: formUsername,
-          password: formPassword,
-          website: formWebsite,
-          notes: formNotes,
-        });
-      }
-
-      const payload = {
-        type: formType,
-        title: formTitle,
-        data: dataToSave,
-        category: formCategory || undefined,
-        tags: formTags,
-      };
-
-      if (editingItem) {
-        await api.put(`/vaults/${editingItem.id}`, payload);
-      } else {
-        await api.post('/vaults', payload);
-      }
-
-      setShowCreateDialog(false);
-      resetForm();
-      fetchData();
-    } catch (_error) {
-      toast.error(t('saveError'));
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   // Delete item
   const handleDelete = async (itemId: string) => {
     try {
@@ -219,75 +149,11 @@ export default function VaultPage() {
     }
   };
 
-  // Generate password
-  const generatePassword = async () => {
-    try {
-      const res = await api.get<ApiResponse<{ password: string }>>(
-        '/vaults/generate-password?length=16'
-      );
-      if (res.success) {
-        setFormPassword(res.data.password);
-      }
-    } catch (_error) {
-      const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
-      let pass = '';
-      for (let i = 0; i < 16; i++) {
-        pass += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      setFormPassword(pass);
-    }
-  };
-
-  // Reset form
-  const resetForm = () => {
-    setFormType('CREDENTIAL');
-    setFormTitle('');
-    setFormCategory('');
-    setFormTags([]);
-    setFormTagInput('');
-    setFormData('');
-    setFormUsername('');
-    setFormPassword('');
-    setFormWebsite('');
-    setFormNotes('');
-    setShowPassword(false);
-    setEditingItem(null);
-  };
-
-  // Open edit dialog
+  // Open edit dialog from view dialog
   const openEditDialog = (item: VaultItemDetail) => {
     setEditingItem(item);
-    setFormType(item.type);
-    setFormTitle(item.title);
-    setFormCategory(item.category || '');
-    setFormTags(item.tags);
-
-    if (item.type === 'CREDENTIAL') {
-      const credData = parseCredentialData(item.data);
-      setFormUsername(credData.username || '');
-      setFormPassword(credData.password || '');
-      setFormWebsite(credData.website || '');
-      setFormNotes(credData.notes || '');
-    } else {
-      setFormData(item.data);
-    }
-
     setShowViewDialog(null);
     setShowCreateDialog(true);
-  };
-
-  const handleTagInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && formTagInput.trim()) {
-      e.preventDefault();
-      if (!formTags.includes(formTagInput.trim())) {
-        setFormTags([...formTags, formTagInput.trim()]);
-      }
-      setFormTagInput('');
-    }
-  };
-
-  const removeTag = (tag: string) => {
-    setFormTags(formTags.filter((t) => t !== tag));
   };
 
   return (
@@ -333,46 +199,15 @@ export default function VaultPage() {
         </div>
       </PageContainer>
 
-      {/* Create/Edit Dialog */}
+      {/* Create/Edit Dialog — self-contained, manages own form state */}
       <VaultCreateDialog
         open={showCreateDialog}
         onOpenChange={(open) => {
-          if (!open) {
-            setShowCreateDialog(false);
-            resetForm();
-          }
+          setShowCreateDialog(open);
+          if (!open) setEditingItem(null);
         }}
         editingItem={editingItem}
-        formType={formType}
-        formTitle={formTitle}
-        formCategory={formCategory}
-        formTags={formTags}
-        formTagInput={formTagInput}
-        formData={formData}
-        formUsername={formUsername}
-        formPassword={formPassword}
-        formWebsite={formWebsite}
-        formNotes={formNotes}
-        showPassword={showPassword}
-        submitting={submitting}
-        onFormTypeChange={setFormType}
-        onFormTitleChange={setFormTitle}
-        onFormCategoryChange={setFormCategory}
-        onFormTagInputChange={setFormTagInput}
-        onFormDataChange={setFormData}
-        onFormUsernameChange={setFormUsername}
-        onFormPasswordChange={setFormPassword}
-        onFormWebsiteChange={setFormWebsite}
-        onFormNotesChange={setFormNotes}
-        onToggleShowPassword={() => setShowPassword(!showPassword)}
-        onTagInput={handleTagInput}
-        onRemoveTag={removeTag}
-        onGeneratePassword={generatePassword}
-        onSave={handleSave}
-        onCancel={() => {
-          setShowCreateDialog(false);
-          resetForm();
-        }}
+        onSaved={fetchData}
       />
 
       {/* View Dialog */}

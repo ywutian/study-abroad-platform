@@ -44,15 +44,15 @@ export function ChatConversationList({
   return (
     <Card
       className={cn(
-        'md:col-span-1 overflow-hidden flex flex-col min-h-0 py-0 gap-0',
-        !showConversations && 'hidden md:flex'
+        'lg:col-span-1 overflow-hidden flex flex-col min-h-0 py-0 gap-0',
+        !showConversations && 'hidden lg:flex'
       )}
     >
       <div className="h-1 bg-primary shrink-0" />
       <div className="border-b px-4 py-3 space-y-3 shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-blue-500" />
+            <Users className="h-5 w-5 text-primary" />
             <span className="text-lg font-semibold">{t('chat.conversations')}</span>
           </div>
           <CountBadge count={totalUnread} variant="primary" size="sm" />
@@ -151,8 +151,8 @@ export function ChatConversationList({
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-12 px-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-blue-500/10 mb-4">
-                <MessageSquare className="h-8 w-8 text-blue-500/50" />
+              <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-primary/10 mb-4">
+                <MessageSquare className="h-8 w-8 text-primary/50" />
               </div>
               <p className="font-medium text-center">{t('chat.noMessages')}</p>
               <p className="text-sm text-muted-foreground text-center mt-1">

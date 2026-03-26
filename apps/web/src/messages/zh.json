@@ -1077,7 +1077,6 @@
       "awardNamePlaceholder": "输入奖项名称",
       "awardLevel": "级别",
       "awardCategory": "学科类别",
-      "selectCategory": "选择类别",
       "selectLevel": "选择级别",
       "awardDate": "获奖日期",
       "awardDescription": "描述",
@@ -1291,7 +1290,8 @@
     "runPrediction": "开始预测",
     "ucOneClick": "UC 一键预测",
     "ucOneClickUnavailable": "暂无法获取 UC 学校列表",
-    "ucComparisonExpanded": "已为您加入全部 9 所 UC 校区进行对比",
+    "ucExpandedDesc": "因为你选了 UC 学校，我们自动加入了全部 9 所 UC 校区进行对比。UC 各校使用同一套申请系统，这样你可以看到哪些校区最有可能录取你。",
+    "ucCollapseToOriginal": "只看我原来选的学校",
     "recommendedSchoolsTitle": "你也可能感兴趣的学校",
     "recommendedSchoolsLoading": "加载推荐中...",
     "majorSpecificComingSoon": "专业录取率和地区数据即将推出",
@@ -1997,6 +1997,7 @@
       "deleteAccount": "删除账户",
       "deleteAccountDesc": "永久删除您的账户和数据"
     },
+    "comingSoonHint": "此功能即将上线",
     "dialogs": {
       "logoutTitle": "退出登录",
       "logoutDesc": "确定要退出登录吗？",
@@ -3935,6 +3936,8 @@
       "avgSalary": "毕业薪资",
       "studentCount": "学生人数"
     },
+    "dataSources": "数据来源",
+    "dataDisclaimer": "数据来自官方数据库，可能存在更新延迟。请以学校官方网站为准。",
     "tabs": {
       "overview": "概览",
       "admission": "录取",
@@ -4548,6 +4551,8 @@
     "applicationPlaceholder": "介绍一下你自己...",
     "apply": "申请加入",
     "likes": "赞",
+    "likePost": "点赞此帖",
+    "reportPost": "举报此帖",
     "views": "浏览",
     "comments": "评论",
     "writeComment": "写下你的评论...",
@@ -5032,7 +5037,16 @@
     "operationFailed": "操作失败，请重试",
     "dataUpdateFailed": "数据更新失败: {message}",
     "unauthorized": "请先登录",
-    "forbidden": "无权访问"
+    "forbidden": "无权访问",
+    "route": {
+      "title": "出错了",
+      "tryAgain": "重试",
+      "backHome": "返回首页",
+      "ai": "AI 服务暂时不可用，请稍后重试。",
+      "data": "数据加载失败，请重试。",
+      "content": "内容加载失败，您的数据是安全的，请重试。",
+      "generic": "发生了意外错误，请重试。"
+    }
   },
   "admin": {
     "title": "管理后台",
@@ -5164,7 +5178,15 @@
       "allRoles": "全部角色",
       "pageDesc": "管理平台用户和角色",
       "viewDetail": "查看详情",
-      "exportCsv": "导出 CSV"
+      "exportCsv": "导出 CSV",
+      "selectAll": "全选用户",
+      "selectUser": "选择用户",
+      "selectedCount": "已选择 {count} 个用户",
+      "bulkSetVerified": "批量设为已验证",
+      "bulkSetUser": "批量设为用户",
+      "bulkBan": "批量封禁",
+      "bulkRoleSuccess": "已更新 {count}/{total} 个用户",
+      "bulkBanSuccess": "已封禁 {count}/{total} 个用户"
     },
     "userDetail": {
       "back": "返回用户列表",
@@ -5259,6 +5281,11 @@
       "averageNetPrice": "平均净费用",
       "roomAndBoard": "食宿费",
       "percentNeedMet": "助学金满足率",
+      "avgSalary": "平均薪资",
+      "salary6YrPostGrad": "毕业6年薪资",
+      "toeflMin": "托福最低分",
+      "ieltsMin": "雅思最低分",
+      "essayCount": "文书数量",
       "tabs": {
         "basic": "基础信息",
         "rankings": "排名录取",
@@ -5700,11 +5727,11 @@
         "clear": "清除"
       },
       "tierLabels": {
-        "5": "顶尖",
-        "4": "强劲",
-        "3": "扎实",
+        "1": "新兴",
         "2": "发展中",
-        "1": "新兴"
+        "3": "扎实",
+        "4": "强劲",
+        "5": "顶尖"
       },
       "table": {
         "name": "名称",
@@ -5835,102 +5862,129 @@
       },
       "rubric": {
         "recognition": {
-          "label": "认可度",
-          "labelFull": "招生官认可度",
-          "weight": "30%",
-          "5": {
-            "criteria": "Top 30 AO 普遍认识，有主动招生关系",
-            "examples": "Exeter, Andover, 北师大实验国际部, Eton"
-          },
-          "4": {
-            "criteria": "Top 30 AO 大部分认识，有稳定申请记录",
-            "examples": "Hotchkiss, 上海世外, Sevenoaks, 深国交"
-          },
-          "3": {
-            "criteria": "部分 AO 认识（取决于校友/历史申请）",
-            "examples": "南京外国语, Concord Academy, 成都七中"
+          "1": {
+            "criteria": "AO 基本不认识，完全依赖标化",
+            "examples": "普通公立高中, 无国际项目的学校"
           },
           "2": {
             "criteria": "少数 AO 认识，主要靠 school profile",
             "examples": "省级重点中学, 普通美国私立"
           },
-          "1": {
-            "criteria": "AO 基本不认识，完全依赖标化",
-            "examples": "普通公立高中, 无国际项目的学校"
-          }
+          "3": {
+            "criteria": "部分 AO 认识（取决于校友/历史申请）",
+            "examples": "南京外国语, Concord Academy, 成都七中"
+          },
+          "4": {
+            "criteria": "Top 30 AO 大部分认识，有稳定申请记录",
+            "examples": "Hotchkiss, 上海世外, Sevenoaks, 深国交"
+          },
+          "5": {
+            "criteria": "Top 30 AO 普遍认识，有主动招生关系",
+            "examples": "Exeter, Andover, 北师大实验国际部, Eton"
+          },
+          "label": "认可度",
+          "labelFull": "招生官认可度",
+          "weight": "30%"
         },
         "academicRigor": {
-          "label": "学术严格度",
-          "labelFull": "学术严格度",
-          "weight": "25%",
-          "5": {
-            "criteria": "公认 grade deflation，课程极难 (IB avg <36, AP 15+门)",
-            "examples": "Exeter, SPS, UWC Atlantic"
+          "1": {
+            "criteria": "明显 grade inflation (几乎所有人 >3.5)",
+            "examples": "评分极松的学校"
+          },
+          "2": {
+            "criteria": "课程偏容易或评分偏松 (GPA 4.0 比例高)",
+            "examples": "部分私立走读, 课程设置有限的学校"
+          },
+          "3": {
+            "criteria": "标准难度，评分公正",
+            "examples": "普通 AP/IB 学校, 多数国际学校"
           },
           "4": {
             "criteria": "课程体系严格，评分标准高 (IB 36-38, 大量AP)",
             "examples": "Deerfield, 上中国际部, Dulwich"
           },
-          "3": { "criteria": "标准难度，评分公正", "examples": "普通 AP/IB 学校, 多数国际学校" },
-          "2": {
-            "criteria": "课程偏容易或评分偏松 (GPA 4.0 比例高)",
-            "examples": "部分私立走读, 课程设置有限的学校"
+          "5": {
+            "criteria": "公认 grade deflation，课程极难 (IB avg <36, AP 15+门)",
+            "examples": "Exeter, SPS, UWC Atlantic"
           },
-          "1": {
-            "criteria": "明显 grade inflation (几乎所有人 >3.5)",
-            "examples": "评分极松的学校"
-          }
+          "label": "学术严格度",
+          "labelFull": "学术严格度",
+          "weight": "25%"
         },
         "placementRecord": {
-          "label": "升学表现",
-          "labelFull": "升学表现",
-          "weight": "25%",
-          "5": {
-            "criteria": "每年稳定 10+ 人进 Top 20",
-            "examples": "Exeter, Andover, 北师大实验, 深国交"
+          "1": {
+            "criteria": "极少有 Top 100 录取",
+            "examples": "普通公立高中"
           },
-          "4": {
-            "criteria": "每年 5-10 人进 Top 30",
-            "examples": "Taft, 上海平和, Harrow, 上海世外"
+          "2": {
+            "criteria": "偶尔有人进 Top 50 (1-2人/年)",
+            "examples": "普通国际学校, 普通美高"
           },
           "3": {
             "criteria": "每年 3-5 人进 Top 50",
             "examples": "部分省重点国际部, Concord, 南外"
           },
-          "2": { "criteria": "偶尔有人进 Top 50 (1-2人/年)", "examples": "普通国际学校, 普通美高" },
-          "1": { "criteria": "极少有 Top 100 录取", "examples": "普通公立高中" }
+          "4": {
+            "criteria": "每年 5-10 人进 Top 30",
+            "examples": "Taft, 上海平和, Harrow, 上海世外"
+          },
+          "5": {
+            "criteria": "每年稳定 10+ 人进 Top 20",
+            "examples": "Exeter, Andover, 北师大实验, 深国交"
+          },
+          "label": "升学表现",
+          "labelFull": "升学表现",
+          "weight": "25%"
         },
         "studentQuality": {
-          "label": "生源质量",
-          "labelFull": "生源质量",
-          "weight": "10%",
-          "5": {
-            "criteria": "入学极其竞争 (录取率 <15%), 平均 SAT >1500",
-            "examples": "Exeter, Andover, 深国交"
+          "1": {
+            "criteria": "无入学门槛",
+            "examples": "公立学区学校"
+          },
+          "2": {
+            "criteria": "轻度选拔或无选拔, 标化一般",
+            "examples": "普通私立学校"
+          },
+          "3": {
+            "criteria": "中等选拔, 平均 SAT 1300-1400",
+            "examples": "多数知名国际学校"
           },
           "4": {
             "criteria": "入学竞争 (录取率 15-30%), 平均 SAT 1400-1500",
             "examples": "Deerfield, 上中国际部"
           },
-          "3": { "criteria": "中等选拔, 平均 SAT 1300-1400", "examples": "多数知名国际学校" },
-          "2": { "criteria": "轻度选拔或无选拔, 标化一般", "examples": "普通私立学校" },
-          "1": { "criteria": "无入学门槛", "examples": "公立学区学校" }
+          "5": {
+            "criteria": "入学极其竞争 (录取率 <15%), 平均 SAT >1500",
+            "examples": "Exeter, Andover, 深国交"
+          },
+          "label": "生源质量",
+          "labelFull": "生源质量",
+          "weight": "10%"
         },
         "resources": {
-          "label": "资源与支持",
-          "labelFull": "资源与支持",
-          "weight": "10%",
-          "5": {
-            "criteria": "专业升学团队，counselor 与 AO 有直接关系，校友网络强",
-            "examples": "Exeter, Eton, BNDS"
+          "1": {
+            "criteria": "无升学指导",
+            "examples": "普通公立"
+          },
+          "2": {
+            "criteria": "有限的升学支持",
+            "examples": "小型私立, 新建校"
+          },
+          "3": {
+            "criteria": "有升学指导但非专业化",
+            "examples": "多数国际学校, 省重点国际部"
           },
           "4": {
             "criteria": "专职升学顾问，定期有大学来校招生",
             "examples": "Hotchkiss, 上海世外, Sevenoaks"
           },
-          "3": { "criteria": "有升学指导但非专业化", "examples": "多数国际学校, 省重点国际部" },
-          "2": { "criteria": "有限的升学支持", "examples": "小型私立, 新建校" },
-          "1": { "criteria": "无升学指导", "examples": "普通公立" }
+          "5": {
+            "criteria": "专业升学团队，counselor 与 AO 有直接关系，校友网络强",
+            "examples": "Exeter, Eton, BNDS"
+          },
+          "label": "资源与支持",
+          "labelFull": "资源与支持",
+          "weight": "10%"
         }
       }
     },
@@ -6267,7 +6321,7 @@
       },
       "batchEntry": {
         "title": "批量录入",
-        "description": "使用表格形式批量添加录取案例",
+        "description": "描述",
         "addRow": "添加行",
         "addRows": "添加5行",
         "paste": "从剪贴板粘贴",
@@ -6310,7 +6364,6 @@
         "addActivity": "添加活动",
         "addAward": "添加奖项",
         "category": "类别",
-        "description": "描述",
         "role": "角色",
         "tier": "等级",
         "hoursPerWeek": "每周小时",
@@ -6476,6 +6529,8 @@
       "refundConfirm": "确认退款",
       "refundDesc": "这将退还付款并降级用户的订阅。",
       "refunded": "已退款",
+      "refundReason": "退款原因",
+      "refundReasonPlaceholder": "请输入退款原因（审计必填）",
       "adjustSub": "调整订阅",
       "adjustSubDesc": "手动更改用户订阅级别",
       "newPlan": "新方案",
@@ -6546,8 +6601,15 @@
         "descriptionLabel": "描述",
         "descriptionPlaceholder": "该开关控制什么功能？",
         "enabledLabel": "立即启用",
-        "rulesLabel": "定向规则 (JSON)",
-        "rulesHint": "可选。支持：roles（角色数组）、userIds（用户ID数组）、percentage（0-100灰度百分比）"
+        "rulesLabel": "定向规则",
+        "rulesHint": "可选。支持：roles（角色数组）、userIds（用户ID数组）、percentage（0-100灰度百分比）",
+        "visualMode": "可视化",
+        "jsonMode": "JSON",
+        "roles": "角色",
+        "userIds": "用户 ID",
+        "userIdPlaceholder": "粘贴 UUID 或按 Enter 添加",
+        "percentage": "灰度百分比",
+        "percentageOff": "未启用"
       },
       "editDialog": {
         "title": "编辑功能开关"
@@ -6702,7 +6764,14 @@
       "filterAll": "所有状态",
       "filterPending": "待审核",
       "filterApproved": "已通过",
-      "filterRejected": "已拒绝"
+      "filterRejected": "已拒绝",
+      "selectAll": "全选",
+      "selectItem": "选择",
+      "selectedCount": "已选择 {count} 项",
+      "bulkApprove": "批量通过",
+      "bulkReject": "批量拒绝",
+      "bulkApproved": "已通过 {count}/{total} 项认证",
+      "bulkRejected": "已拒绝 {count}/{total} 项认证"
     },
     "team": {
       "title": "团队管理",
@@ -6885,14 +6954,32 @@
     },
     "tour": {
       "overview": {
-        "step1": { "title": "仪表盘概览", "desc": "关键指标一目了然。点击任何卡片查看详情。" },
-        "step2": { "title": "快捷操作", "desc": "常用管理操作可从快捷操作面板访问。" },
-        "step3": { "title": "健康状态", "desc": "系统健康指示器显示所有服务的状态。" },
-        "step4": { "title": "最近活动", "desc": "实时跟踪最近的管理操作和数据变更。" }
+        "step1": {
+          "title": "仪表盘概览",
+          "desc": "关键指标一目了然。点击任何卡片查看详情。"
+        },
+        "step2": {
+          "title": "快捷操作",
+          "desc": "常用管理操作可从快捷操作面板访问。"
+        },
+        "step3": {
+          "title": "健康状态",
+          "desc": "系统健康指示器显示所有服务的状态。"
+        },
+        "step4": {
+          "title": "最近活动",
+          "desc": "实时跟踪最近的管理操作和数据变更。"
+        }
       },
       "dataReview": {
-        "step1": { "title": "统计概览", "desc": "查看有多少项目待审核、已批准或今日被拒绝。" },
-        "step2": { "title": "审核队列", "desc": "所有来源的数据都会出现在此。按类型或来源筛选。" },
+        "step1": {
+          "title": "统计概览",
+          "desc": "查看有多少项目待审核、已批准或今日被拒绝。"
+        },
+        "step2": {
+          "title": "审核队列",
+          "desc": "所有来源的数据都会出现在此。按类型或来源筛选。"
+        },
         "step3": {
           "title": "质量与完整度",
           "desc": "质量评分衡量正确性，完整度显示数据填充程度。"
@@ -6901,20 +6988,50 @@
           "title": "批准或拒绝",
           "desc": "审核每条数据，如需编辑可修改，然后批准或附上原因拒绝。"
         },
-        "step5": { "title": "批量导入", "desc": "通过 CSV 一次性导入多条数据。请先下载模板。" },
-        "step6": { "title": "数据采集", "desc": "查看和管理自动化数据采集源及其状态。" }
+        "step5": {
+          "title": "批量导入",
+          "desc": "通过 CSV 一次性导入多条数据。请先下载模板。"
+        },
+        "step6": {
+          "title": "数据采集",
+          "desc": "查看和管理自动化数据采集源及其状态。"
+        }
       },
       "team": {
-        "step1": { "title": "团队成员", "desc": "查看所有操作员和管理员。监控其审核活动。" },
-        "step2": { "title": "邀请成员", "desc": "发送邀请以添加新的操作员或管理员。" },
-        "step3": { "title": "权限矩阵", "desc": "控制每个角色的操作权限。按角色切换权限。" },
-        "step4": { "title": "活动日志", "desc": "按团队成员筛选跟踪所有管理操作。" }
+        "step1": {
+          "title": "团队成员",
+          "desc": "查看所有操作员和管理员。监控其审核活动。"
+        },
+        "step2": {
+          "title": "邀请成员",
+          "desc": "发送邀请以添加新的操作员或管理员。"
+        },
+        "step3": {
+          "title": "权限矩阵",
+          "desc": "控制每个角色的操作权限。按角色切换权限。"
+        },
+        "step4": {
+          "title": "活动日志",
+          "desc": "按团队成员筛选跟踪所有管理操作。"
+        }
       },
       "aiOperations": {
-        "step1": { "title": "AI 健康", "desc": "AI 系统的整体健康状态和响应时间。" },
-        "step2": { "title": "智能体配置", "desc": "配置 AI 智能体行为、系统提示和模型设置。" },
-        "step3": { "title": "性能指标", "desc": "跟踪 AI 使用量、Token 消耗和响应质量。" },
-        "step4": { "title": "可靠性", "desc": "监控错误率、熔断器状态和降级使用情况。" }
+        "step1": {
+          "title": "AI 健康",
+          "desc": "AI 系统的整体健康状态和响应时间。"
+        },
+        "step2": {
+          "title": "智能体配置",
+          "desc": "配置 AI 智能体行为、系统提示和模型设置。"
+        },
+        "step3": {
+          "title": "性能指标",
+          "desc": "跟踪 AI 使用量、Token 消耗和响应质量。"
+        },
+        "step4": {
+          "title": "可靠性",
+          "desc": "监控错误率、熔断器状态和降级使用情况。"
+        }
       }
     },
     "dataPipeline": {
@@ -7207,6 +7324,26 @@
   "tour": {
     "next": "下一步",
     "previous": "上一步",
-    "done": "完成"
+    "done": "完成",
+    "welcome": {
+      "title": "欢迎来到留学平台",
+      "description": "这是你的主页，可以快速访问平台功能和最新动态。",
+      "schools": "学校",
+      "schoolsDesc": "浏览全球顶尖大学信息，了解录取要求和截止日期。",
+      "cases": "案例库",
+      "casesDesc": "查看真实申请案例，借鉴成功申请者的背景和经验。",
+      "ai": "AI 助手",
+      "aiDesc": "与 AI 助手聊天，获取个性化的留学规划建议。",
+      "profile": "个人资料",
+      "profileDesc": "管理你的个人信息、申请进度和偏好设置。"
+    },
+    "cases": {
+      "filter": "筛选案例",
+      "filterDesc": "按学校、年份、录取结果和国籍筛选，找到与你背景相关的案例。",
+      "browse": "浏览案例",
+      "browseDesc": "每张卡片展示真实申请者的 GPA、标化成绩和录取结果。点击查看完整档案。",
+      "share": "分享案例",
+      "shareDesc": "贡献你的录取结果，帮助他人的同时赚取平台积分。"
+    }
   }
 }

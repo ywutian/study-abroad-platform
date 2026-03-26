@@ -379,11 +379,16 @@ const EXPANDED_SCHOOLS = [
     actAvg: 30,
     studentCount: 2500,
     graduationRate: 87,
+    avgSalary: 42000,
     website: 'https://www.risd.edu',
     description:
       "RISD is one of the world's top art and design schools, with cross-registration at Brown University.",
     descriptionZh:
       '罗德岛设计学院是世界顶尖的艺术与设计学院，可在布朗大学跨校选课。',
+    metadata: {
+      requirements: { toeflMin: 93, ieltsMin: 6.5 },
+      essayCount: 3,
+    },
   },
   {
     name: 'Pratt Institute',

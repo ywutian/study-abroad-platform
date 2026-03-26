@@ -44,7 +44,7 @@ export function ChatHeader({
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
+            className="lg:hidden"
             onClick={onBack}
             aria-label={t('common.back')}
           >

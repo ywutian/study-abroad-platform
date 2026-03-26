@@ -10,6 +10,7 @@ import { API_ERROR_MESSAGES } from './api-error-i18n';
 const API_I18N = {
   zh: {
     forbidden: '没有权限执行此操作',
+    rateLimited: '请求过于频繁，请稍后再试',
     serverError: '服务器错误，请稍后重试',
     requestTimeout: '请求超时 ({seconds}s)',
     networkError: '网络连接失败，正在重试...',
@@ -17,6 +18,7 @@ const API_I18N = {
   },
   en: {
     forbidden: 'You do not have permission to perform this action',
+    rateLimited: 'Too many requests, please try again later',
     serverError: 'Server error, please try again later',
     requestTimeout: 'Request timed out ({seconds}s)',
     networkError: 'Network connection failed, retrying...',
@@ -162,11 +164,13 @@ class ApiClient {
           const locale = getApiLocale();
           const i18n = API_I18N[locale];
 
-          // 403/500 由 API client 直接弹 toast（全局处理器会跳过这些状态码）
+          // 特定状态码由 API client 直接弹 toast（全局处理器会跳过这些状态码）
           if (response.status === 403) {
             toast.error(i18n.forbidden);
           } else if (response.status === 404) {
             // 404 不显示 toast
+          } else if (response.status === 429) {
+            toast.error(i18n.rateLimited);
           } else if (response.status >= 500) {
             toast.error(i18n.serverError);
           }

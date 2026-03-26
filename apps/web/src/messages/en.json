@@ -1143,7 +1143,6 @@
       "awardNamePlaceholder": "Enter award name",
       "awardLevel": "Level",
       "awardCategory": "Category",
-      "selectCategory": "Select category",
       "selectLevel": "Select level",
       "awardDate": "Award Date",
       "awardDescription": "Description",
@@ -1291,7 +1290,8 @@
     "runPrediction": "Run Prediction",
     "ucOneClick": "UC One-Click Prediction",
     "ucOneClickUnavailable": "UC school list is not available",
-    "ucComparisonExpanded": "We have included all 9 UC campuses for comparison.",
+    "ucExpandedDesc": "Since you selected a UC school, we automatically included all 9 UC campuses for comparison. UC schools share the same application system, so you can see which campuses are most likely to admit you.",
+    "ucCollapseToOriginal": "Show only my original selection",
     "recommendedSchoolsTitle": "You may also like",
     "recommendedSchoolsLoading": "Loading recommendations...",
     "majorSpecificComingSoon": "Major-specific and regional acceptance data coming soon",
@@ -1997,6 +1997,7 @@
       "deleteAccount": "Delete Account",
       "deleteAccountDesc": "Permanently delete your account and data"
     },
+    "comingSoonHint": "This feature is coming soon",
     "dialogs": {
       "logoutTitle": "Logout",
       "logoutDesc": "Are you sure you want to logout?",
@@ -3940,6 +3941,8 @@
       "avgSalary": "Avg Salary",
       "studentCount": "Students"
     },
+    "dataSources": "Data Sources",
+    "dataDisclaimer": "Data is sourced from official databases and may be subject to update cycles. Please verify with official school websites.",
     "tabs": {
       "overview": "Overview",
       "admission": "Admission",
@@ -4553,6 +4556,8 @@
     "applicationPlaceholder": "Introduce yourself...",
     "apply": "Apply",
     "likes": "likes",
+    "likePost": "Like this post",
+    "reportPost": "Report this post",
     "views": "views",
     "comments": "Comments",
     "writeComment": "Write a comment...",
@@ -5037,7 +5042,16 @@
     "operationFailed": "Operation failed, please try again",
     "dataUpdateFailed": "Data update failed: {message}",
     "unauthorized": "Please login first",
-    "forbidden": "Access denied"
+    "forbidden": "Access denied",
+    "route": {
+      "title": "Something went wrong",
+      "tryAgain": "Try again",
+      "backHome": "Back to Home",
+      "ai": "AI service is temporarily unavailable. Please try again later.",
+      "data": "Failed to load data. Please try again.",
+      "content": "Failed to load your content. Your data is safe — please try again.",
+      "generic": "An unexpected error occurred. Please try again."
+    }
   },
   "admin": {
     "title": "Admin Panel",
@@ -5169,7 +5183,15 @@
       "allRoles": "All Roles",
       "pageDesc": "Manage platform users and roles",
       "viewDetail": "View Details",
-      "exportCsv": "Export CSV"
+      "exportCsv": "Export CSV",
+      "selectAll": "Select all users",
+      "selectUser": "Select user",
+      "selectedCount": "{count} user(s) selected",
+      "bulkSetVerified": "Set Verified",
+      "bulkSetUser": "Set User",
+      "bulkBan": "Ban Selected",
+      "bulkRoleSuccess": "{count} of {total} users updated",
+      "bulkBanSuccess": "{count} of {total} users banned"
     },
     "userDetail": {
       "back": "Back to Users",
@@ -5264,6 +5286,11 @@
       "averageNetPrice": "Average Net Price",
       "roomAndBoard": "Room & Board",
       "percentNeedMet": "% Need Met",
+      "avgSalary": "Avg Salary",
+      "salary6YrPostGrad": "Salary (6yr Post-Grad)",
+      "toeflMin": "Min TOEFL Score",
+      "ieltsMin": "Min IELTS Score",
+      "essayCount": "Essay Count",
       "tabs": {
         "basic": "Basic Info",
         "rankings": "Rankings",
@@ -5705,11 +5732,11 @@
         "clear": "Clear"
       },
       "tierLabels": {
-        "5": "Elite",
-        "4": "Strong",
-        "3": "Solid",
+        "1": "Emerging",
         "2": "Developing",
-        "1": "Emerging"
+        "3": "Solid",
+        "4": "Strong",
+        "5": "Elite"
       },
       "table": {
         "name": "Name",
@@ -5840,120 +5867,129 @@
       },
       "rubric": {
         "recognition": {
-          "label": "Recognition",
-          "labelFull": "AO Recognition",
-          "weight": "30%",
-          "5": {
-            "criteria": "Top 30 AOs universally recognize, active recruiting relationship",
-            "examples": "Exeter, Andover, BNDS Intl, Eton"
-          },
-          "4": {
-            "criteria": "Most Top 30 AOs know it, stable application history",
-            "examples": "Hotchkiss, WFLA, Sevenoaks, SCIE"
-          },
-          "3": {
-            "criteria": "Some AOs know it (depends on alumni/historical apps)",
-            "examples": "Nanjing FLS, Concord Academy, Chengdu No.7"
+          "1": {
+            "criteria": "AOs basically don't know it, fully relies on test scores",
+            "examples": "Regular public HS, no international program"
           },
           "2": {
             "criteria": "Few AOs know it, relies on school profile",
             "examples": "Provincial key HS, regular US private"
           },
-          "1": {
-            "criteria": "AOs basically don't know it, fully relies on test scores",
-            "examples": "Regular public HS, no international program"
-          }
-        },
-        "academicRigor": {
-          "label": "Academic Rigor",
-          "labelFull": "Academic Rigor",
-          "weight": "25%",
-          "5": {
-            "criteria": "Known grade deflation, extremely challenging (IB avg <36, AP 15+)",
-            "examples": "Exeter, SPS, UWC Atlantic"
+          "3": {
+            "criteria": "Some AOs know it (depends on alumni/historical apps)",
+            "examples": "Nanjing FLS, Concord Academy, Chengdu No.7"
           },
           "4": {
-            "criteria": "Rigorous curriculum, high standards (IB 36-38, many AP)",
-            "examples": "Deerfield, SHSID, Dulwich"
+            "criteria": "Most Top 30 AOs know it, stable application history",
+            "examples": "Hotchkiss, WFLA, Sevenoaks, SCIE"
           },
-          "3": {
-            "criteria": "Standard difficulty, fair grading",
-            "examples": "Regular AP/IB schools, most international schools"
+          "5": {
+            "criteria": "Top 30 AOs universally recognize, active recruiting relationship",
+            "examples": "Exeter, Andover, BNDS Intl, Eton"
+          },
+          "label": "Recognition",
+          "labelFull": "AO Recognition",
+          "weight": "30%"
+        },
+        "academicRigor": {
+          "1": {
+            "criteria": "Clear grade inflation (almost everyone >3.5)",
+            "examples": "Very lenient grading schools"
           },
           "2": {
             "criteria": "Easier curriculum or lenient grading (high 4.0 rate)",
             "examples": "Some private day schools, limited curriculum"
           },
-          "1": {
-            "criteria": "Clear grade inflation (almost everyone >3.5)",
-            "examples": "Very lenient grading schools"
-          }
-        },
-        "placementRecord": {
-          "label": "Placement Record",
-          "labelFull": "Placement Record",
-          "weight": "25%",
-          "5": {
-            "criteria": "10+ students to Top 20 annually",
-            "examples": "Exeter, Andover, BNDS, SCIE"
+          "3": {
+            "criteria": "Standard difficulty, fair grading",
+            "examples": "Regular AP/IB schools, most international schools"
           },
           "4": {
-            "criteria": "5-10 students to Top 30 annually",
-            "examples": "Taft, Pinghe, Harrow, WFLA"
+            "criteria": "Rigorous curriculum, high standards (IB 36-38, many AP)",
+            "examples": "Deerfield, SHSID, Dulwich"
           },
-          "3": {
-            "criteria": "3-5 students to Top 50 annually",
-            "examples": "Provincial key HS intl dept, Concord, NFLS"
+          "5": {
+            "criteria": "Known grade deflation, extremely challenging (IB avg <36, AP 15+)",
+            "examples": "Exeter, SPS, UWC Atlantic"
+          },
+          "label": "Academic Rigor",
+          "labelFull": "Academic Rigor",
+          "weight": "25%"
+        },
+        "placementRecord": {
+          "1": {
+            "criteria": "Rarely Top 100",
+            "examples": "Regular public HS"
           },
           "2": {
             "criteria": "Occasional Top 50 (1-2/year)",
             "examples": "Regular intl school, regular US high"
           },
-          "1": { "criteria": "Rarely Top 100", "examples": "Regular public HS" }
-        },
-        "studentQuality": {
-          "label": "Student Quality",
-          "labelFull": "Student Quality",
-          "weight": "10%",
-          "5": {
-            "criteria": "Extremely competitive (<15% acceptance, avg SAT >1500)",
-            "examples": "Exeter, Andover, SCIE"
+          "3": {
+            "criteria": "3-5 students to Top 50 annually",
+            "examples": "Provincial key HS intl dept, Concord, NFLS"
           },
           "4": {
-            "criteria": "Competitive (15-30%, SAT 1400-1500)",
-            "examples": "Deerfield, SHSID"
+            "criteria": "5-10 students to Top 30 annually",
+            "examples": "Taft, Pinghe, Harrow, WFLA"
           },
-          "3": {
-            "criteria": "Moderate selectivity (SAT 1300-1400)",
-            "examples": "Most well-known international schools"
+          "5": {
+            "criteria": "10+ students to Top 20 annually",
+            "examples": "Exeter, Andover, BNDS, SCIE"
+          },
+          "label": "Placement Record",
+          "labelFull": "Placement Record",
+          "weight": "25%"
+        },
+        "studentQuality": {
+          "1": {
+            "criteria": "No entrance barrier",
+            "examples": "Public district schools"
           },
           "2": {
             "criteria": "Light selectivity, average scores",
             "examples": "Regular private schools"
           },
-          "1": { "criteria": "No entrance barrier", "examples": "Public district schools" }
-        },
-        "resources": {
-          "label": "Resources",
-          "labelFull": "Resources & Support",
-          "weight": "10%",
-          "5": {
-            "criteria": "Professional counseling team with direct AO relationships, strong alumni network",
-            "examples": "Exeter, Eton, BNDS"
+          "3": {
+            "criteria": "Moderate selectivity (SAT 1300-1400)",
+            "examples": "Most well-known international schools"
           },
           "4": {
-            "criteria": "Dedicated counselors, regular university visits",
-            "examples": "Hotchkiss, WFLA, Sevenoaks"
+            "criteria": "Competitive (15-30%, SAT 1400-1500)",
+            "examples": "Deerfield, SHSID"
           },
-          "3": {
-            "criteria": "Some counseling but not specialized",
-            "examples": "Most intl schools, provincial key HS intl dept"
+          "5": {
+            "criteria": "Extremely competitive (<15% acceptance, avg SAT >1500)",
+            "examples": "Exeter, Andover, SCIE"
+          },
+          "label": "Student Quality",
+          "labelFull": "Student Quality",
+          "weight": "10%"
+        },
+        "resources": {
+          "1": {
+            "criteria": "No college counseling",
+            "examples": "Regular public"
           },
           "2": {
             "criteria": "Limited college support",
             "examples": "Small private, newly established"
           },
-          "1": { "criteria": "No college counseling", "examples": "Regular public" }
+          "3": {
+            "criteria": "Some counseling but not specialized",
+            "examples": "Most intl schools, provincial key HS intl dept"
+          },
+          "4": {
+            "criteria": "Dedicated counselors, regular university visits",
+            "examples": "Hotchkiss, WFLA, Sevenoaks"
+          },
+          "5": {
+            "criteria": "Professional counseling team with direct AO relationships, strong alumni network",
+            "examples": "Exeter, Eton, BNDS"
+          },
+          "label": "Resources",
+          "labelFull": "Resources & Support",
+          "weight": "10%"
         }
       }
     },
@@ -6290,7 +6326,7 @@
       },
       "batchEntry": {
         "title": "Batch Entry",
-        "description": "Add multiple admission cases at once using a spreadsheet-style table",
+        "description": "Description",
         "addRow": "Add Row",
         "addRows": "Add 5 Rows",
         "paste": "Paste from Clipboard",
@@ -6333,7 +6369,6 @@
         "addActivity": "Add Activity",
         "addAward": "Add Award",
         "category": "Category",
-        "description": "Description",
         "role": "Role",
         "tier": "Tier",
         "hoursPerWeek": "Hours/Week",
@@ -6499,6 +6534,8 @@
       "refundConfirm": "Confirm Refund",
       "refundDesc": "This will refund the payment and downgrade the user's subscription.",
       "refunded": "Payment refunded",
+      "refundReason": "Refund Reason",
+      "refundReasonPlaceholder": "Enter the reason for this refund (required for audit trail)",
       "adjustSub": "Adjust Subscription",
       "adjustSubDesc": "Manually change user subscription level",
       "newPlan": "New Plan",
@@ -6569,8 +6606,15 @@
         "descriptionLabel": "Description",
         "descriptionPlaceholder": "What does this flag control?",
         "enabledLabel": "Enable immediately",
-        "rulesLabel": "Targeting Rules (JSON)",
-        "rulesHint": "Optional. Supports: roles (array), userIds (array), percentage (0-100)"
+        "rulesLabel": "Targeting Rules",
+        "rulesHint": "Optional. Supports: roles (array), userIds (array), percentage (0-100)",
+        "visualMode": "Visual",
+        "jsonMode": "JSON",
+        "roles": "Roles",
+        "userIds": "User IDs",
+        "userIdPlaceholder": "Paste UUID or press Enter to add",
+        "percentage": "Rollout Percentage",
+        "percentageOff": "Disabled"
       },
       "editDialog": {
         "title": "Edit Feature Flag"
@@ -6725,7 +6769,14 @@
       "filterAll": "All Statuses",
       "filterPending": "Pending",
       "filterApproved": "Approved",
-      "filterRejected": "Rejected"
+      "filterRejected": "Rejected",
+      "selectAll": "Select all items",
+      "selectItem": "Select item",
+      "selectedCount": "{count} item(s) selected",
+      "bulkApprove": "Approve All",
+      "bulkReject": "Reject All",
+      "bulkApproved": "{count} of {total} verifications approved",
+      "bulkRejected": "{count} of {total} verifications rejected"
     },
     "team": {
       "title": "Team Management",
@@ -7278,6 +7329,26 @@
   "tour": {
     "next": "Next",
     "previous": "Previous",
-    "done": "Done"
+    "done": "Done",
+    "welcome": {
+      "title": "Welcome to Study Abroad Platform",
+      "description": "This is your homepage where you can quickly access platform features and latest updates.",
+      "schools": "Schools",
+      "schoolsDesc": "Browse information about top universities worldwide, learn about admission requirements and deadlines.",
+      "cases": "Case Library",
+      "casesDesc": "View real application cases to learn from successful applicants' backgrounds and experiences.",
+      "ai": "AI Assistant",
+      "aiDesc": "Chat with the AI assistant to get personalized study abroad planning advice.",
+      "profile": "Profile",
+      "profileDesc": "Manage your personal profile, application progress, and preference settings."
+    },
+    "cases": {
+      "filter": "Filter Cases",
+      "filterDesc": "Filter by school, year, admission result, and nationality to find cases relevant to your background.",
+      "browse": "Browse Cases",
+      "browseDesc": "Each card shows a real applicant's GPA, test scores, and admission outcome. Click to view their full profile.",
+      "share": "Share Your Case",
+      "shareDesc": "Contribute your admission results to help others and earn platform points."
+    }
   }
 }

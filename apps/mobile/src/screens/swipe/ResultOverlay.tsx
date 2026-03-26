@@ -21,8 +21,8 @@ export default function ResultOverlay({ result }: ResultOverlayProps) {
   const c = useColors();
 
   const isCorrect = result.isCorrect;
-  const bgColor = isCorrect ? '#10b981' + '20' : '#ef4444' + '20';
-  const fgColor = isCorrect ? '#10b981' : '#ef4444';
+  const bgColor = isCorrect ? c.success + '20' : c.error + '20';
+  const fgColor = isCorrect ? c.success : c.error;
   const icon = isCorrect ? 'checkmark-circle' : 'close-circle';
 
   return (
@@ -41,8 +41,8 @@ export default function ResultOverlay({ result }: ResultOverlayProps) {
             +{result.pointsEarned} {t('swipe.points')}
           </Text>
           <View style={styles.resultStreakRow}>
-            <Ionicons name="flame" size={20} color="#f59e0b" />
-            <Text style={[styles.resultStreak, { color: '#f59e0b' }]}>{result.currentStreak}</Text>
+            <Ionicons name="flame" size={20} color={c.warning} />
+            <Text style={[styles.resultStreak, { color: c.warning }]}>{result.currentStreak}</Text>
           </View>
           {result.badgeUpgraded && (
             <View

@@ -58,6 +58,10 @@ export const colors = {
     muted: '#f1f5f9',
     mutedForeground: '#64748b',
 
+    // Extended palette
+    violet: '#8b5cf6',
+    pink: '#ec4899',
+
     // Overlay & Shadow
     overlay: 'rgba(0, 0, 0, 0.5)',
     shadow: 'rgba(0, 0, 0, 0.1)',
@@ -111,6 +115,10 @@ export const colors = {
     accentForeground: '#0f172a',
     muted: '#1e293b',
     mutedForeground: '#94a3b8',
+
+    // Extended palette
+    violet: '#a78bfa',
+    pink: '#f472b6',
 
     // Overlay & Shadow
     overlay: 'rgba(0, 0, 0, 0.7)',

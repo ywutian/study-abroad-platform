@@ -344,13 +344,13 @@ export default function GameView({ onShowStats }: GameViewProps) {
           style={[
             styles.actionBtn,
             styles.rejectBtn,
-            { backgroundColor: '#ef4444' + '15', borderColor: '#ef4444' + '40' },
+            { backgroundColor: c.error + '15', borderColor: c.error + '40' },
             disabled && styles.actionBtnDisabled,
           ]}
           activeOpacity={0.7}
         >
-          <Ionicons name="thumbs-down" size={28} color={disabled ? c.foregroundMuted : '#ef4444'} />
-          <Text style={[styles.actionLabel, { color: disabled ? c.foregroundMuted : '#ef4444' }]}>
+          <Ionicons name="thumbs-down" size={28} color={disabled ? c.foregroundMuted : c.error} />
+          <Text style={[styles.actionLabel, { color: disabled ? c.foregroundMuted : c.error }]}>
             {t('swipe.reject')}
           </Text>
         </TouchableOpacity>
@@ -362,13 +362,13 @@ export default function GameView({ onShowStats }: GameViewProps) {
           style={[
             styles.actionBtn,
             styles.waitlistBtn,
-            { backgroundColor: '#f59e0b' + '15', borderColor: '#f59e0b' + '40' },
+            { backgroundColor: c.warning + '15', borderColor: c.warning + '40' },
             disabled && styles.actionBtnDisabled,
           ]}
           activeOpacity={0.7}
         >
-          <Ionicons name="pause" size={24} color={disabled ? c.foregroundMuted : '#f59e0b'} />
-          <Text style={[styles.actionLabel, { color: disabled ? c.foregroundMuted : '#f59e0b' }]}>
+          <Ionicons name="pause" size={24} color={disabled ? c.foregroundMuted : c.warning} />
+          <Text style={[styles.actionLabel, { color: disabled ? c.foregroundMuted : c.warning }]}>
             {t('swipe.waitlist')}
           </Text>
         </TouchableOpacity>
@@ -380,13 +380,13 @@ export default function GameView({ onShowStats }: GameViewProps) {
           style={[
             styles.actionBtn,
             styles.admitBtn,
-            { backgroundColor: '#10b981' + '15', borderColor: '#10b981' + '40' },
+            { backgroundColor: c.success + '15', borderColor: c.success + '40' },
             disabled && styles.actionBtnDisabled,
           ]}
           activeOpacity={0.7}
         >
-          <Ionicons name="thumbs-up" size={28} color={disabled ? c.foregroundMuted : '#10b981'} />
-          <Text style={[styles.actionLabel, { color: disabled ? c.foregroundMuted : '#10b981' }]}>
+          <Ionicons name="thumbs-up" size={28} color={disabled ? c.foregroundMuted : c.success} />
+          <Text style={[styles.actionLabel, { color: disabled ? c.foregroundMuted : c.success }]}>
             {t('swipe.admit')}
           </Text>
         </TouchableOpacity>

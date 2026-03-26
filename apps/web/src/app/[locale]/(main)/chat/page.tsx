@@ -161,7 +161,7 @@ export default function ChatPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (messageId: string) => apiClient.delete(chatRoutes.messages(messageId)),
+    mutationFn: (messageId: string) => apiClient.delete(chatRoutes.message(messageId)),
     onSuccess: (_data, messageId) => {
       queryClient.setQueryData<InfiniteData<Message[], string | undefined>>(
         ['messages', selectedConversation],
@@ -179,7 +179,7 @@ export default function ChatPage() {
   });
 
   const recallMutation = useMutation({
-    mutationFn: (messageId: string) => apiClient.patch(`${chatRoutes.messages(messageId)}/recall`),
+    mutationFn: (messageId: string) => apiClient.patch(`${chatRoutes.message(messageId)}/recall`),
     onSuccess: (_data, messageId) => {
       queryClient.setQueryData<InfiniteData<Message[], string | undefined>>(
         ['messages', selectedConversation],
@@ -368,8 +368,8 @@ export default function ChatPage() {
             className={cn(
               'gap-1.5',
               isConnected
-                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
-                : 'bg-red-500/10 text-red-600 border-red-500/20'
+                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                : 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20'
             )}
           >
             {isConnected ? (
@@ -387,7 +387,7 @@ export default function ChatPage() {
         </div>
       </div>
 
-      <div className="grid min-h-[500px] gap-4 md:grid-cols-3 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
+      <div className="grid min-h-[500px] gap-4 lg:grid-cols-3 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
         {/* 会话列表 */}
         <ChatConversationList
           conversations={sortedConversations}
@@ -404,8 +404,8 @@ export default function ChatPage() {
         {/* 消息区域 */}
         <Card
           className={cn(
-            'flex flex-col md:col-span-2 overflow-hidden min-h-0 py-0 gap-0',
-            showConversations && 'hidden md:flex'
+            'flex flex-col lg:col-span-2 overflow-hidden min-h-0 py-0 gap-0',
+            showConversations && 'hidden lg:flex'
           )}
         >
           <div className="h-1 bg-gradient-to-r bg-primary shrink-0" />
@@ -455,7 +455,7 @@ export default function ChatPage() {
             <div className="flex flex-1 items-center justify-center p-8">
               <div className="text-center">
                 <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-lg bg-primary/10">
-                  <MessageSquare className="h-10 w-10 text-blue-500/50" />
+                  <MessageSquare className="h-10 w-10 text-primary/50" />
                 </div>
                 <h3 className="text-lg font-semibold">{t('chat.selectConversation')}</h3>
                 <p className="mt-2 text-muted-foreground max-w-sm">

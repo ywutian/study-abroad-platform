@@ -26,12 +26,33 @@ interface School {
   name: string;
   nameZh?: string;
   usNewsRank?: number;
+  qsRank?: number;
   state?: string;
   acceptanceRate?: number;
+  graduationRate?: number;
+  retentionRate?: number;
+  studentFacultyRatio?: number;
+  tuition?: number;
+  applicationFee?: number;
+  averageAidPackage?: number;
+  averageNetPrice?: number;
+  roomAndBoard?: number;
+  percentNeedMet?: number;
+  testOptional?: boolean;
+  hasEarlyDecision?: boolean;
+  acceptsCommonApp?: boolean;
+  acceptsCoalition?: boolean;
+  feeWaiverAvailable?: boolean;
+  needBlindInternational?: boolean;
+  avgSalary?: number;
+  salary6YrPostGrad?: number;
+  website?: string;
   logoUrl?: string;
   metadata?: {
     deadlines?: Record<string, string>;
     applicationType?: string;
+    essayCount?: number;
+    requirements?: { toeflMin?: number; ieltsMin?: number };
   };
 }
 

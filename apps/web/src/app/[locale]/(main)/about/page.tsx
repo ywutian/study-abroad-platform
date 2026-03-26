@@ -313,58 +313,71 @@ export default function AboutPage() {
           <h2 className="text-subtitle">{t('timeline.title')}</h2>
         </motion.div>
         <div className="relative max-w-3xl mx-auto">
-          <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-0.5 bg-gradient-to-b from-blue-500 via-violet-500 to-amber-500" />
+          <div className="absolute left-4 sm:left-1/2 sm:-translate-x-1/2 h-full w-0.5 bg-gradient-to-b from-blue-500 via-violet-500 to-amber-500" />
           <div className="space-y-8">
-            {timeline.map((item, index) => (
-              <motion.div
-                key={item.year}
-                initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.5 + index * 0.1 }}
-                className={`flex items-center ${index % 2 === 0 ? 'flex-row' : 'flex-row-reverse'}`}
-              >
-                <div className={`w-1/2 ${index % 2 === 0 ? 'pr-8 text-right' : 'pl-8'}`}>
-                  <Card className="overflow-hidden hover:shadow-md transition-shadow">
-                    <div
-                      className={cn('h-1 bg-gradient-to-r', {
-                        'bg-primary': item.color === 'blue' || item.color === 'violet',
-                        'bg-success': item.color === 'emerald',
-                        'bg-warning': item.color === 'amber',
-                      })}
-                    />
-                    <CardContent className="pt-4 pb-4">
-                      <Badge
-                        variant="outline"
-                        className={cn('mb-2', {
-                          'border-blue-500/30 text-blue-600 bg-blue-500/5': item.color === 'blue',
-                          'border-emerald-500/30 text-emerald-600 bg-emerald-500/5':
-                            item.color === 'emerald',
-                          'border-violet-500/30 text-primary bg-primary/5': item.color === 'violet',
-                          'border-amber-500/30 text-amber-600 bg-amber-500/5':
-                            item.color === 'amber',
-                        })}
-                      >
-                        {item.year}
-                      </Badge>
-                      <h3 className="font-semibold">{t(item.titleKey)}</h3>
-                      <p className="text-sm text-muted-foreground">{t(item.descKey)}</p>
-                    </CardContent>
-                  </Card>
-                </div>
-                <div
+            {timeline.map((item, index) => {
+              const isEven = index % 2 === 0;
+              return (
+                <motion.div
+                  key={item.year}
+                  initial={{ opacity: 0, x: isEven ? -20 : 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.5 + index * 0.1 }}
                   className={cn(
-                    'relative z-10 flex items-center justify-center w-4 h-4 rounded-full border-4 border-background',
-                    {
-                      'bg-blue-500': item.color === 'blue',
-                      'bg-emerald-500': item.color === 'emerald',
-                      'bg-primary': item.color === 'violet',
-                      'bg-amber-500': item.color === 'amber',
-                    }
+                    'flex items-center',
+                    isEven ? 'sm:flex-row' : 'sm:flex-row-reverse'
                   )}
-                />
-                <div className="w-1/2" />
-              </motion.div>
-            ))}
+                >
+                  <div
+                    className={cn(
+                      'w-full pl-10 sm:w-1/2 sm:pl-0',
+                      isEven ? 'sm:pr-8 sm:text-right' : 'sm:pl-8'
+                    )}
+                  >
+                    <Card className="overflow-hidden hover:shadow-md transition-shadow">
+                      <div
+                        className={cn('h-1 bg-gradient-to-r', {
+                          'bg-primary': item.color === 'blue' || item.color === 'violet',
+                          'bg-success': item.color === 'emerald',
+                          'bg-warning': item.color === 'amber',
+                        })}
+                      />
+                      <CardContent className="pt-4 pb-4">
+                        <Badge
+                          variant="outline"
+                          className={cn('mb-2', {
+                            'border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500/5':
+                              item.color === 'blue',
+                            'border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5':
+                              item.color === 'emerald',
+                            'border-violet-500/30 text-primary bg-primary/5':
+                              item.color === 'violet',
+                            'border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/5':
+                              item.color === 'amber',
+                          })}
+                        >
+                          {item.year}
+                        </Badge>
+                        <h3 className="font-semibold">{t(item.titleKey)}</h3>
+                        <p className="text-sm text-muted-foreground">{t(item.descKey)}</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  <div
+                    className={cn(
+                      'absolute left-2 sm:relative sm:left-auto z-10 flex items-center justify-center w-4 h-4 rounded-full border-4 border-background',
+                      {
+                        'bg-blue-500': item.color === 'blue',
+                        'bg-emerald-500': item.color === 'emerald',
+                        'bg-primary': item.color === 'violet',
+                        'bg-amber-500': item.color === 'amber',
+                      }
+                    )}
+                  />
+                  <div className="hidden sm:block sm:w-1/2" />
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </div>

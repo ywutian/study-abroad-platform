@@ -1761,13 +1761,175 @@ const schools = [
   },
 ];
 
+// Admission requirements & essay counts for Top 50 schools
+// Source: College official admissions pages (2025-2026 cycle)
+const requirementsData: Record<
+  string,
+  { toeflMin?: number; ieltsMin?: number; essayCount?: number }
+> = {
+  'Princeton University': { toeflMin: 100, ieltsMin: 7.0, essayCount: 4 },
+  'Massachusetts Institute of Technology': {
+    toeflMin: 100,
+    ieltsMin: 7.0,
+    essayCount: 5,
+  },
+  'Harvard University': { toeflMin: 100, ieltsMin: 7.0, essayCount: 5 },
+  'Stanford University': { toeflMin: 100, ieltsMin: 7.0, essayCount: 3 },
+  'Yale University': { toeflMin: 100, ieltsMin: 7.0, essayCount: 4 },
+  'University of Pennsylvania': { toeflMin: 100, ieltsMin: 7.0, essayCount: 3 },
+  'California Institute of Technology': {
+    toeflMin: 100,
+    ieltsMin: 7.0,
+    essayCount: 4,
+  },
+  'Duke University': { toeflMin: 100, ieltsMin: 7.0, essayCount: 2 },
+  'Brown University': { toeflMin: 100, ieltsMin: 7.0, essayCount: 3 },
+  'Johns Hopkins University': { toeflMin: 100, ieltsMin: 7.0, essayCount: 2 },
+  'Northwestern University': { toeflMin: 100, ieltsMin: 7.0, essayCount: 2 },
+  'Columbia University': { toeflMin: 100, ieltsMin: 7.0, essayCount: 4 },
+  'Cornell University': { toeflMin: 100, ieltsMin: 7.0, essayCount: 2 },
+  'University of Chicago': { toeflMin: 100, ieltsMin: 7.0, essayCount: 3 },
+  'University of California, Berkeley': {
+    toeflMin: 80,
+    ieltsMin: 6.5,
+    essayCount: 4,
+  },
+  'University of California, Los Angeles': {
+    toeflMin: 80,
+    ieltsMin: 6.5,
+    essayCount: 4,
+  },
+  'Rice University': { toeflMin: 100, ieltsMin: 7.0, essayCount: 3 },
+  'Dartmouth College': { toeflMin: 100, ieltsMin: 7.0, essayCount: 3 },
+  'Vanderbilt University': { toeflMin: 100, ieltsMin: 7.0, essayCount: 2 },
+  'University of Notre Dame': { toeflMin: 100, ieltsMin: 7.0, essayCount: 3 },
+  'University of Michigan, Ann Arbor': {
+    toeflMin: 100,
+    ieltsMin: 7.0,
+    essayCount: 2,
+  },
+  'Georgetown University': { toeflMin: 100, ieltsMin: 7.0, essayCount: 3 },
+  'University of North Carolina at Chapel Hill': {
+    toeflMin: 100,
+    ieltsMin: 7.0,
+    essayCount: 2,
+  },
+  'Carnegie Mellon University': { toeflMin: 102, ieltsMin: 7.5, essayCount: 3 },
+  'Emory University': { toeflMin: 100, ieltsMin: 7.0, essayCount: 2 },
+  'University of Virginia': { toeflMin: 90, ieltsMin: 7.0, essayCount: 2 },
+  'Washington University in St. Louis': {
+    toeflMin: 100,
+    ieltsMin: 7.0,
+    essayCount: 2,
+  },
+  'University of California, Davis': {
+    toeflMin: 80,
+    ieltsMin: 6.5,
+    essayCount: 4,
+  },
+  'University of California, San Diego': {
+    toeflMin: 83,
+    ieltsMin: 7.0,
+    essayCount: 4,
+  },
+  'University of Florida': { toeflMin: 80, ieltsMin: 6.0, essayCount: 1 },
+  'University of Southern California': {
+    toeflMin: 100,
+    ieltsMin: 7.0,
+    essayCount: 2,
+  },
+  'University of Texas at Austin': {
+    toeflMin: 79,
+    ieltsMin: 6.5,
+    essayCount: 3,
+  },
+  'Georgia Institute of Technology': {
+    toeflMin: 90,
+    ieltsMin: 7.0,
+    essayCount: 2,
+  },
+  'University of California, Irvine': {
+    toeflMin: 80,
+    ieltsMin: 6.5,
+    essayCount: 4,
+  },
+  'New York University': { toeflMin: 100, ieltsMin: 7.5, essayCount: 2 },
+  'University of California, Santa Barbara': {
+    toeflMin: 80,
+    ieltsMin: 6.5,
+    essayCount: 4,
+  },
+  'University of Illinois Urbana-Champaign': {
+    toeflMin: 80,
+    ieltsMin: 6.5,
+    essayCount: 1,
+  },
+  'University of Wisconsin-Madison': {
+    toeflMin: 80,
+    ieltsMin: 6.5,
+    essayCount: 2,
+  },
+  'Boston College': { toeflMin: 100, ieltsMin: 7.5, essayCount: 2 },
+  'Rutgers University-New Brunswick': {
+    toeflMin: 79,
+    ieltsMin: 7.0,
+    essayCount: 1,
+  },
+  'Tufts University': { toeflMin: 100, ieltsMin: 7.0, essayCount: 3 },
+  'University of Washington': { toeflMin: 76, ieltsMin: 6.0, essayCount: 2 },
+  'Boston University': { toeflMin: 90, ieltsMin: 7.0, essayCount: 2 },
+  'Ohio State University': { toeflMin: 79, ieltsMin: 6.5, essayCount: 1 },
+  'Purdue University': { toeflMin: 80, ieltsMin: 6.5, essayCount: 1 },
+  'University of Maryland, College Park': {
+    toeflMin: 100,
+    ieltsMin: 7.0,
+    essayCount: 2,
+  },
+  'Lehigh University': { toeflMin: 90, ieltsMin: 7.0, essayCount: 1 },
+  'Texas A&M University': { toeflMin: 80, ieltsMin: 6.0, essayCount: 2 },
+  'University of Georgia': { toeflMin: 80, ieltsMin: 6.5, essayCount: 1 },
+  'Wake Forest University': { toeflMin: 100, ieltsMin: 7.0, essayCount: 2 },
+};
+
+// Merge requirements into each school's metadata (with provenance tracking)
+const enrichedSchools = schools.map((s) => {
+  const reqs = requirementsData[s.name];
+  if (!reqs) return s;
+  const existingMeta = (s.metadata ?? {}) as Record<string, unknown>;
+  const existingProv =
+    (existingMeta.provenance as Record<string, unknown>) || {};
+  return {
+    ...s,
+    metadata: {
+      ...existingMeta,
+      requirements: {
+        ...(reqs.toeflMin !== undefined ? { toeflMin: reqs.toeflMin } : {}),
+        ...(reqs.ieltsMin !== undefined ? { ieltsMin: reqs.ieltsMin } : {}),
+      },
+      ...(reqs.essayCount !== undefined ? { essayCount: reqs.essayCount } : {}),
+      provenance: {
+        ...existingProv,
+        ...(reqs.toeflMin !== undefined
+          ? { toeflMin: { source: 'SEED', at: '2026-03-25' } }
+          : {}),
+        ...(reqs.ieltsMin !== undefined
+          ? { ieltsMin: { source: 'SEED', at: '2026-03-25' } }
+          : {}),
+        ...(reqs.essayCount !== undefined
+          ? { essayCount: { source: 'SEED', at: '2026-03-25' } }
+          : {}),
+      },
+    },
+  };
+});
+
 async function main() {
   console.log('🌱 Starting database seed...');
 
   // Upsert schools using shared helper (idempotent)
   await batchUpsertSchools(
     prisma,
-    schools as SeedSchoolData[],
+    enrichedSchools as SeedSchoolData[],
     'Top 50 US Universities',
   );
 

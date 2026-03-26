@@ -5,6 +5,7 @@ import { Link } from '@/lib/i18n/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -33,7 +34,6 @@ import {
   ShieldOff,
   Shield,
   Wrench,
-  Crown,
   Eye,
 } from 'lucide-react';
 import { RoleBadge, getRoleLevel, canAssignRole } from '../../_components/role-badge';
@@ -61,6 +61,9 @@ interface UsersTableProps {
   onBanUser: (user: User) => void;
   onUnbanUser: (userId: string) => void;
   onDeleteUser: (userId: string) => void;
+  selectedUsers: Set<string>;
+  onToggleUser: (userId: string, checked: boolean) => void;
+  onToggleAll: (checked: boolean) => void;
 }
 
 export function UsersTable({
@@ -69,6 +72,9 @@ export function UsersTable({
   onBanUser,
   onUnbanUser,
   onDeleteUser,
+  selectedUsers,
+  onToggleUser,
+  onToggleAll,
 }: UsersTableProps) {
   const t = useTranslations('admin');
   const fmt = useFormatter();
@@ -84,6 +90,13 @@ export function UsersTable({
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[40px]">
+                <Checkbox
+                  checked={users.length > 0 && users.every((u) => selectedUsers.has(u.id))}
+                  onCheckedChange={(checked) => onToggleAll(!!checked)}
+                  aria-label={t('users.selectAll')}
+                />
+              </TableHead>
               <TableHead>{t('users.email')}</TableHead>
               <TableHead>{t('users.role')}</TableHead>
               <TableHead>{t('users.status')}</TableHead>
@@ -97,7 +110,14 @@ export function UsersTable({
           </TableHeader>
           <TableBody>
             {users.map((u) => (
-              <TableRow key={u.id}>
+              <TableRow key={u.id} data-selected={selectedUsers.has(u.id) || undefined}>
+                <TableCell>
+                  <Checkbox
+                    checked={selectedUsers.has(u.id)}
+                    onCheckedChange={(checked) => onToggleUser(u.id, !!checked)}
+                    aria-label={`${t('users.selectUser')} ${u.email}`}
+                  />
+                </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <Avatar className="h-8 w-8">

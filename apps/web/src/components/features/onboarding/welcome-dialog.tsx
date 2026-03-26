@@ -7,7 +7,7 @@ import { Rocket, GraduationCap, Brain, Target, ChevronRight, ChevronLeft, X } fr
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useTour, TOURS, welcomeTourSteps } from './tour-provider';
+import { useTour, TOURS, getWelcomeTourSteps } from './tour-provider';
 
 // 欢迎步骤数据 - 静态配置，文本通过翻译函数获取
 const welcomeStepConfigs = [
@@ -48,6 +48,7 @@ interface WelcomeDialogProps {
 
 export function WelcomeDialog({ forceShow = false, onClose }: WelcomeDialogProps) {
   const t = useTranslations('welcome');
+  const tTour = useTranslations('tour');
   const [open, setOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const { registerTour, startTour, hasCompletedTour: _hasCompletedTour } = useTour();
@@ -73,7 +74,7 @@ export function WelcomeDialog({ forceShow = false, onClose }: WelcomeDialogProps
   useEffect(() => {
     registerTour({
       id: TOURS.WELCOME,
-      steps: welcomeTourSteps,
+      steps: getWelcomeTourSteps(tTour),
       onComplete: () => {},
     });
   }, [registerTour]);

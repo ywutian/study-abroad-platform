@@ -5,8 +5,6 @@ import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -24,7 +22,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
 import { PageHeader } from '@/components/layout';
 import { CardSkeleton } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -33,38 +30,8 @@ import { adminFeatureFlagRoutes } from '@study-abroad/shared/constants';
 import { toast } from 'sonner';
 import { ToggleRight, Plus, Pencil, Trash2, RefreshCw, Loader2 } from 'lucide-react';
 
-interface FeatureFlag {
-  id: string;
-  key: string;
-  description: string | null;
-  enabled: boolean;
-  rules: {
-    roles?: string[];
-    userIds?: string[];
-    percentage?: number;
-  } | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface FlagFormData {
-  key: string;
-  description: string;
-  enabled: boolean;
-  rulesJson: string;
-}
-
-const EMPTY_FORM: FlagFormData = {
-  key: '',
-  description: '',
-  enabled: false,
-  rulesJson: '',
-};
-
-function parseRulesJson(json: string): Record<string, unknown> | undefined {
-  if (!json.trim()) return undefined;
-  return JSON.parse(json);
-}
+import { FlagFormDialog } from './_components/flag-form-dialog';
+import { type FeatureFlag } from './_components/feature-flag-types';
 
 function formatRules(rules: FeatureFlag['rules']): string {
   if (!rules) return '';
@@ -78,40 +45,13 @@ function formatRules(rules: FeatureFlag['rules']): string {
 export default function AdminFeatureFlagsPage() {
   const t = useTranslations('admin.featureFlags');
   const queryClient = useQueryClient();
-  const [showCreate, setShowCreate] = useState(false);
+  const [showFormDialog, setShowFormDialog] = useState(false);
   const [editingFlag, setEditingFlag] = useState<FeatureFlag | null>(null);
-  const [form, setForm] = useState<FlagFormData>(EMPTY_FORM);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const { data: flags, isLoading } = useQuery({
     queryKey: ['adminFeatureFlags'],
     queryFn: () => apiClient.get<FeatureFlag[]>(adminFeatureFlagRoutes.list()),
-  });
-
-  const createMutation = useMutation({
-    mutationFn: (data: {
-      key: string;
-      description?: string;
-      enabled?: boolean;
-      rules?: Record<string, unknown>;
-    }) => apiClient.post(adminFeatureFlagRoutes.list(), data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['adminFeatureFlags'] });
-      setShowCreate(false);
-      setForm(EMPTY_FORM);
-      toast.success(t('created'));
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
-      apiClient.put(adminFeatureFlagRoutes.byId(id), data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['adminFeatureFlags'] });
-      setEditingFlag(null);
-      setForm(EMPTY_FORM);
-      toast.success(t('updated'));
-    },
   });
 
   const deleteMutation = useMutation({
@@ -139,42 +79,14 @@ export default function AdminFeatureFlagsPage() {
   });
 
   const openCreate = () => {
-    setForm(EMPTY_FORM);
-    setShowCreate(true);
+    setEditingFlag(null);
+    setShowFormDialog(true);
   };
 
   const openEdit = (flag: FeatureFlag) => {
-    setForm({
-      key: flag.key,
-      description: flag.description ?? '',
-      enabled: flag.enabled,
-      rulesJson: flag.rules ? JSON.stringify(flag.rules, null, 2) : '',
-    });
     setEditingFlag(flag);
+    setShowFormDialog(true);
   };
-
-  const handleSubmit = () => {
-    try {
-      const rules = parseRulesJson(form.rulesJson);
-      const data = {
-        key: form.key,
-        description: form.description || undefined,
-        enabled: form.enabled,
-        rules,
-      };
-
-      if (editingFlag) {
-        updateMutation.mutate({ id: editingFlag.id, data });
-      } else {
-        createMutation.mutate(data);
-      }
-    } catch {
-      toast.error(t('invalidJson'));
-    }
-  };
-
-  const isDialogOpen = showCreate || !!editingFlag;
-  const isPending = createMutation.isPending || updateMutation.isPending;
 
   return (
     <>
@@ -271,77 +183,15 @@ export default function AdminFeatureFlagsPage() {
         )}
       </div>
 
-      {/* Create / Edit Dialog */}
-      <Dialog
-        open={isDialogOpen}
+      <FlagFormDialog
+        open={showFormDialog}
         onOpenChange={(open) => {
-          if (!open) {
-            setShowCreate(false);
-            setEditingFlag(null);
-            setForm(EMPTY_FORM);
-          }
+          setShowFormDialog(open);
+          if (!open) setEditingFlag(null);
         }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {editingFlag ? t('editDialog.title') : t('createDialog.title')}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <Label>{t('createDialog.keyLabel')}</Label>
-              <Input
-                value={form.key}
-                onChange={(e) => setForm((f) => ({ ...f, key: e.target.value }))}
-                placeholder={t('createDialog.keyPlaceholder')}
-                disabled={!!editingFlag}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>{t('createDialog.descriptionLabel')}</Label>
-              <Input
-                value={form.description}
-                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                placeholder={t('createDialog.descriptionPlaceholder')}
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={form.enabled}
-                onCheckedChange={(checked) => setForm((f) => ({ ...f, enabled: checked }))}
-              />
-              <Label>{t('createDialog.enabledLabel')}</Label>
-            </div>
-            <div className="space-y-2">
-              <Label>{t('createDialog.rulesLabel')}</Label>
-              <Textarea
-                value={form.rulesJson}
-                onChange={(e) => setForm((f) => ({ ...f, rulesJson: e.target.value }))}
-                placeholder='{"roles": ["ADMIN"], "percentage": 50}'
-                className="font-mono text-sm"
-                rows={4}
-              />
-              <p className="text-xs text-muted-foreground">{t('createDialog.rulesHint')}</p>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowCreate(false);
-                setEditingFlag(null);
-              }}
-            >
-              {t('cancel')}
-            </Button>
-            <Button onClick={handleSubmit} disabled={!form.key.trim() || isPending}>
-              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {editingFlag ? t('save') : t('create')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        editingFlag={editingFlag}
+        onSaved={() => queryClient.invalidateQueries({ queryKey: ['adminFeatureFlags'] })}
+      />
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
