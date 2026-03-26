@@ -22,8 +22,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Badge } from '@/components/ui/badge';
 import { Search, Plus, CheckCircle, XCircle, Clock, Sparkles, X, BookOpen } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { useTour } from '@/components/features/onboarding/tour-provider';
-import { TOURS, casesTourSteps } from '@/components/features/onboarding/tour-provider';
+import { useTour, TOURS, getCasesTourSteps } from '@/components/features/onboarding/tour-provider';
 
 const GUIDE_VISIT_KEY = 'case-library-visit-count';
 
@@ -59,6 +58,7 @@ function useGuideBanner() {
 
 export function CasesTab() {
   const t = useTranslations();
+  const tTour = useTranslations('tour');
   const router = useRouter();
   const locale = useLocale();
   const { registerTour, startTour, hasCompletedTour } = useTour();
@@ -75,8 +75,8 @@ export function CasesTab() {
 
   // Register cases tour
   useEffect(() => {
-    registerTour({ id: TOURS.CASES, steps: casesTourSteps });
-  }, [registerTour]);
+    registerTour({ id: TOURS.CASES, steps: getCasesTourSteps(tTour) });
+  }, [registerTour, tTour]);
 
   const {
     data: cases,

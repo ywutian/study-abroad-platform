@@ -296,95 +296,95 @@ export const TOURS = {
   ESSAYS_FORM: 'essays_form',
 } as const;
 
-// 欢迎 tour 步骤 - 使用英文作为默认值，运行时会通过翻译函数获取本地化文本
-export const welcomeTourSteps: TourStep[] = [
-  {
-    id: 'nav-home',
-    element: '[data-tour="nav-home"]',
-    popover: {
-      title: 'Welcome to Study Abroad Platform',
-      description:
-        'This is your homepage where you can quickly access platform features and latest updates.',
-      side: 'bottom',
-      align: 'start',
-    },
-  },
-  {
-    id: 'nav-schools',
-    element: '[data-tour="nav-schools"]',
-    popover: {
-      title: 'Schools',
-      description:
-        'Browse information about top universities worldwide, learn about admission requirements and deadlines.',
-      side: 'bottom',
-      align: 'center',
-    },
-  },
-  {
-    id: 'nav-cases',
-    element: '[data-tour="nav-cases"]',
-    popover: {
-      title: 'Case Library',
-      description:
-        "View real application cases to learn from successful applicants' backgrounds and experiences.",
-      side: 'bottom',
-      align: 'center',
-    },
-  },
-  {
-    id: 'nav-ai',
-    element: '[data-tour="nav-ai"]',
-    popover: {
-      title: 'AI Assistant',
-      description: 'Chat with the AI assistant to get personalized study abroad planning advice.',
-      side: 'bottom',
-      align: 'center',
-    },
-  },
-  {
-    id: 'user-menu',
-    element: '[data-tour="user-menu"]',
-    popover: {
-      title: 'Profile',
-      description: 'Manage your personal profile, application progress, and preference settings.',
-      side: 'bottom',
-      align: 'end',
-    },
-  },
-];
+// Tour step builder functions — accept `t` from useTranslations('tour')
+type TourT = (key: string) => string;
 
-// Case Library tour steps
-export const casesTourSteps: TourStep[] = [
-  {
-    id: 'cases-filters',
-    element: '[data-tour="cases-filters"]',
-    popover: {
-      title: 'Filter Cases',
-      description:
-        'Filter by school, year, admission result, and nationality to find cases relevant to your background.',
-      side: 'bottom',
-      align: 'start',
+export function getWelcomeTourSteps(t: TourT): TourStep[] {
+  return [
+    {
+      id: 'nav-home',
+      element: '[data-tour="nav-home"]',
+      popover: {
+        title: t('welcome.title'),
+        description: t('welcome.description'),
+        side: 'bottom',
+        align: 'start',
+      },
     },
-  },
-  {
-    id: 'cases-grid',
-    element: '[data-tour="cases-grid"]',
-    popover: {
-      title: 'Browse Cases',
-      description:
-        "Each card shows a real applicant's GPA, test scores, and admission outcome. Click to view their full profile.",
-      side: 'top',
-      align: 'center',
+    {
+      id: 'nav-schools',
+      element: '[data-tour="nav-schools"]',
+      popover: {
+        title: t('welcome.schools'),
+        description: t('welcome.schoolsDesc'),
+        side: 'bottom',
+        align: 'center',
+      },
     },
-  },
-  {
-    id: 'cases-share',
-    element: '[data-tour="cases-share"]',
-    popover: {
-      title: 'Share Your Case',
-      description: 'Contribute your admission results to help others and earn platform points.',
-      side: 'bottom',
-      align: 'end',
+    {
+      id: 'nav-cases',
+      element: '[data-tour="nav-cases"]',
+      popover: {
+        title: t('welcome.cases'),
+        description: t('welcome.casesDesc'),
+        side: 'bottom',
+        align: 'center',
+      },
     },
-  },
-];
+    {
+      id: 'nav-ai',
+      element: '[data-tour="nav-ai"]',
+      popover: {
+        title: t('welcome.ai'),
+        description: t('welcome.aiDesc'),
+        side: 'bottom',
+        align: 'center',
+      },
+    },
+    {
+      id: 'user-menu',
+      element: '[data-tour="user-menu"]',
+      popover: {
+        title: t('welcome.profile'),
+        description: t('welcome.profileDesc'),
+        side: 'bottom',
+        align: 'end',
+      },
+    },
+  ];
+}
+
+export function getCasesTourSteps(t: TourT): TourStep[] {
+  return [
+    {
+      id: 'cases-filters',
+      element: '[data-tour="cases-filters"]',
+      popover: {
+        title: t('cases.filter'),
+        description: t('cases.filterDesc'),
+        side: 'bottom',
+        align: 'start',
+      },
+    },
+    {
+      id: 'cases-grid',
+      element: '[data-tour="cases-grid"]',
+      popover: {
+        title: t('cases.browse'),
+        description: t('cases.browseDesc'),
+        side: 'top',
+        align: 'center',
+      },
+    },
+    {
+      id: 'cases-share',
+      element: '[data-tour="cases-share"]',
+      popover: {
+        title: t('cases.share'),
+        description: t('cases.shareDesc'),
+        side: 'bottom',
+        align: 'end',
+      },
+    },
+  ];
+}

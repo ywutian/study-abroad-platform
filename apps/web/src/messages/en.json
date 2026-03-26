@@ -1143,7 +1143,6 @@
       "awardNamePlaceholder": "Enter award name",
       "awardLevel": "Level",
       "awardCategory": "Category",
-      "selectCategory": "Select category",
       "selectLevel": "Select level",
       "awardDate": "Award Date",
       "awardDescription": "Description",
@@ -5733,11 +5732,11 @@
         "clear": "Clear"
       },
       "tierLabels": {
-        "5": "Elite",
-        "4": "Strong",
-        "3": "Solid",
+        "1": "Emerging",
         "2": "Developing",
-        "1": "Emerging"
+        "3": "Solid",
+        "4": "Strong",
+        "5": "Elite"
       },
       "table": {
         "name": "Name",
@@ -5868,120 +5867,129 @@
       },
       "rubric": {
         "recognition": {
-          "label": "Recognition",
-          "labelFull": "AO Recognition",
-          "weight": "30%",
-          "5": {
-            "criteria": "Top 30 AOs universally recognize, active recruiting relationship",
-            "examples": "Exeter, Andover, BNDS Intl, Eton"
-          },
-          "4": {
-            "criteria": "Most Top 30 AOs know it, stable application history",
-            "examples": "Hotchkiss, WFLA, Sevenoaks, SCIE"
-          },
-          "3": {
-            "criteria": "Some AOs know it (depends on alumni/historical apps)",
-            "examples": "Nanjing FLS, Concord Academy, Chengdu No.7"
+          "1": {
+            "criteria": "AOs basically don't know it, fully relies on test scores",
+            "examples": "Regular public HS, no international program"
           },
           "2": {
             "criteria": "Few AOs know it, relies on school profile",
             "examples": "Provincial key HS, regular US private"
           },
-          "1": {
-            "criteria": "AOs basically don't know it, fully relies on test scores",
-            "examples": "Regular public HS, no international program"
-          }
-        },
-        "academicRigor": {
-          "label": "Academic Rigor",
-          "labelFull": "Academic Rigor",
-          "weight": "25%",
-          "5": {
-            "criteria": "Known grade deflation, extremely challenging (IB avg <36, AP 15+)",
-            "examples": "Exeter, SPS, UWC Atlantic"
+          "3": {
+            "criteria": "Some AOs know it (depends on alumni/historical apps)",
+            "examples": "Nanjing FLS, Concord Academy, Chengdu No.7"
           },
           "4": {
-            "criteria": "Rigorous curriculum, high standards (IB 36-38, many AP)",
-            "examples": "Deerfield, SHSID, Dulwich"
+            "criteria": "Most Top 30 AOs know it, stable application history",
+            "examples": "Hotchkiss, WFLA, Sevenoaks, SCIE"
           },
-          "3": {
-            "criteria": "Standard difficulty, fair grading",
-            "examples": "Regular AP/IB schools, most international schools"
+          "5": {
+            "criteria": "Top 30 AOs universally recognize, active recruiting relationship",
+            "examples": "Exeter, Andover, BNDS Intl, Eton"
+          },
+          "label": "Recognition",
+          "labelFull": "AO Recognition",
+          "weight": "30%"
+        },
+        "academicRigor": {
+          "1": {
+            "criteria": "Clear grade inflation (almost everyone >3.5)",
+            "examples": "Very lenient grading schools"
           },
           "2": {
             "criteria": "Easier curriculum or lenient grading (high 4.0 rate)",
             "examples": "Some private day schools, limited curriculum"
           },
-          "1": {
-            "criteria": "Clear grade inflation (almost everyone >3.5)",
-            "examples": "Very lenient grading schools"
-          }
-        },
-        "placementRecord": {
-          "label": "Placement Record",
-          "labelFull": "Placement Record",
-          "weight": "25%",
-          "5": {
-            "criteria": "10+ students to Top 20 annually",
-            "examples": "Exeter, Andover, BNDS, SCIE"
+          "3": {
+            "criteria": "Standard difficulty, fair grading",
+            "examples": "Regular AP/IB schools, most international schools"
           },
           "4": {
-            "criteria": "5-10 students to Top 30 annually",
-            "examples": "Taft, Pinghe, Harrow, WFLA"
+            "criteria": "Rigorous curriculum, high standards (IB 36-38, many AP)",
+            "examples": "Deerfield, SHSID, Dulwich"
           },
-          "3": {
-            "criteria": "3-5 students to Top 50 annually",
-            "examples": "Provincial key HS intl dept, Concord, NFLS"
+          "5": {
+            "criteria": "Known grade deflation, extremely challenging (IB avg <36, AP 15+)",
+            "examples": "Exeter, SPS, UWC Atlantic"
+          },
+          "label": "Academic Rigor",
+          "labelFull": "Academic Rigor",
+          "weight": "25%"
+        },
+        "placementRecord": {
+          "1": {
+            "criteria": "Rarely Top 100",
+            "examples": "Regular public HS"
           },
           "2": {
             "criteria": "Occasional Top 50 (1-2/year)",
             "examples": "Regular intl school, regular US high"
           },
-          "1": { "criteria": "Rarely Top 100", "examples": "Regular public HS" }
-        },
-        "studentQuality": {
-          "label": "Student Quality",
-          "labelFull": "Student Quality",
-          "weight": "10%",
-          "5": {
-            "criteria": "Extremely competitive (<15% acceptance, avg SAT >1500)",
-            "examples": "Exeter, Andover, SCIE"
+          "3": {
+            "criteria": "3-5 students to Top 50 annually",
+            "examples": "Provincial key HS intl dept, Concord, NFLS"
           },
           "4": {
-            "criteria": "Competitive (15-30%, SAT 1400-1500)",
-            "examples": "Deerfield, SHSID"
+            "criteria": "5-10 students to Top 30 annually",
+            "examples": "Taft, Pinghe, Harrow, WFLA"
           },
-          "3": {
-            "criteria": "Moderate selectivity (SAT 1300-1400)",
-            "examples": "Most well-known international schools"
+          "5": {
+            "criteria": "10+ students to Top 20 annually",
+            "examples": "Exeter, Andover, BNDS, SCIE"
+          },
+          "label": "Placement Record",
+          "labelFull": "Placement Record",
+          "weight": "25%"
+        },
+        "studentQuality": {
+          "1": {
+            "criteria": "No entrance barrier",
+            "examples": "Public district schools"
           },
           "2": {
             "criteria": "Light selectivity, average scores",
             "examples": "Regular private schools"
           },
-          "1": { "criteria": "No entrance barrier", "examples": "Public district schools" }
-        },
-        "resources": {
-          "label": "Resources",
-          "labelFull": "Resources & Support",
-          "weight": "10%",
-          "5": {
-            "criteria": "Professional counseling team with direct AO relationships, strong alumni network",
-            "examples": "Exeter, Eton, BNDS"
+          "3": {
+            "criteria": "Moderate selectivity (SAT 1300-1400)",
+            "examples": "Most well-known international schools"
           },
           "4": {
-            "criteria": "Dedicated counselors, regular university visits",
-            "examples": "Hotchkiss, WFLA, Sevenoaks"
+            "criteria": "Competitive (15-30%, SAT 1400-1500)",
+            "examples": "Deerfield, SHSID"
           },
-          "3": {
-            "criteria": "Some counseling but not specialized",
-            "examples": "Most intl schools, provincial key HS intl dept"
+          "5": {
+            "criteria": "Extremely competitive (<15% acceptance, avg SAT >1500)",
+            "examples": "Exeter, Andover, SCIE"
+          },
+          "label": "Student Quality",
+          "labelFull": "Student Quality",
+          "weight": "10%"
+        },
+        "resources": {
+          "1": {
+            "criteria": "No college counseling",
+            "examples": "Regular public"
           },
           "2": {
             "criteria": "Limited college support",
             "examples": "Small private, newly established"
           },
-          "1": { "criteria": "No college counseling", "examples": "Regular public" }
+          "3": {
+            "criteria": "Some counseling but not specialized",
+            "examples": "Most intl schools, provincial key HS intl dept"
+          },
+          "4": {
+            "criteria": "Dedicated counselors, regular university visits",
+            "examples": "Hotchkiss, WFLA, Sevenoaks"
+          },
+          "5": {
+            "criteria": "Professional counseling team with direct AO relationships, strong alumni network",
+            "examples": "Exeter, Eton, BNDS"
+          },
+          "label": "Resources",
+          "labelFull": "Resources & Support",
+          "weight": "10%"
         }
       }
     },
@@ -6318,7 +6326,7 @@
       },
       "batchEntry": {
         "title": "Batch Entry",
-        "description": "Add multiple admission cases at once using a spreadsheet-style table",
+        "description": "Description",
         "addRow": "Add Row",
         "addRows": "Add 5 Rows",
         "paste": "Paste from Clipboard",
@@ -6361,7 +6369,6 @@
         "addActivity": "Add Activity",
         "addAward": "Add Award",
         "category": "Category",
-        "description": "Description",
         "role": "Role",
         "tier": "Tier",
         "hoursPerWeek": "Hours/Week",
@@ -7322,6 +7329,26 @@
   "tour": {
     "next": "Next",
     "previous": "Previous",
-    "done": "Done"
+    "done": "Done",
+    "welcome": {
+      "title": "Welcome to Study Abroad Platform",
+      "description": "This is your homepage where you can quickly access platform features and latest updates.",
+      "schools": "Schools",
+      "schoolsDesc": "Browse information about top universities worldwide, learn about admission requirements and deadlines.",
+      "cases": "Case Library",
+      "casesDesc": "View real application cases to learn from successful applicants' backgrounds and experiences.",
+      "ai": "AI Assistant",
+      "aiDesc": "Chat with the AI assistant to get personalized study abroad planning advice.",
+      "profile": "Profile",
+      "profileDesc": "Manage your personal profile, application progress, and preference settings."
+    },
+    "cases": {
+      "filter": "Filter Cases",
+      "filterDesc": "Filter by school, year, admission result, and nationality to find cases relevant to your background.",
+      "browse": "Browse Cases",
+      "browseDesc": "Each card shows a real applicant's GPA, test scores, and admission outcome. Click to view their full profile.",
+      "share": "Share Your Case",
+      "shareDesc": "Contribute your admission results to help others and earn platform points."
+    }
   }
 }
