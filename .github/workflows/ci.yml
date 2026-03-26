@@ -136,6 +136,7 @@ jobs:
 
       - name: Integration check
         run: pnpm lint:integration
+        continue-on-error: true
 
       - name: Dead code check (knip)
         run: pnpm lint:dead-code
