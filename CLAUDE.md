@@ -527,6 +527,7 @@ Manual equivalent: `pnpm prepush`
 | **Migration Safety**                       | pre-push (if migrations changed) + `pnpm exec tsx scripts/check-migration-safety.ts` | NOT NULL without DEFAULT, non-concurrent indexes, DROP TABLE/COLUMN                         |
 | **Dependency Audit**                       | pre-push + `pnpm audit --audit-level=high --registry=https://registry.npmjs.org`     | Transitive dependency CVEs — fix with `pnpm.overrides` in root package.json                 |
 | **Route Check**                            | pre-push + `pnpm lint:routes`                                                        | Client API path prefix not matching any backend `@Controller()` decorator                   |
+| **Integration Check**                      | `pnpm lint:integration` (16 rules across 4 domains)                                  | Enum drift, dead route helpers, missing module imports, hardcoded API paths, stub services  |
 | **Build**                                  | `pnpm build`                                                                         | Subset of typecheck issues                                                                  |
 
 ### Lessons Learned (Push Failures)
@@ -573,13 +574,16 @@ Backend static analysis (7 rules) integrated into pre-commit and CI:
 ### Quick Check Commands
 
 ```bash
-pnpm lint:all                          # One command: ESLint + quality + i18n + route check
+pnpm lint:all                          # One command: ESLint + quality + i18n + routes + integration
 pnpm lint:routes                       # API route consistency (client paths vs backend controllers)
+pnpm lint:integration                  # Cross-layer integration (16 rules: enums, routes, AI, security)
+pnpm lint:integration --domain=ai      # Integration check by domain (types|routes|ai|backend)
+pnpm lint:integration --only=enum-consistency  # Integration check single rule
 pnpm prepush                           # Typecheck + tests (same as pre-push hook)
 pnpm check                             # lint:all + test (full local CI equivalent)
 pnpm audit --audit-level=high --registry=https://registry.npmjs.org  # Dependency CVE scan
 pnpm lint:dead-code                    # Knip dead code detection (unused files, exports, deps)
-pnpm --filter web lint:quality         # Frontend quality (7 rules)
+pnpm --filter web lint:quality         # Frontend quality (8 rules)
 pnpm --filter api lint:quality         # Backend quality (7 rules)
 pnpm --filter web lint:i18n            # i18n checks
 pnpm test:e2e                          # E2E tests (requires Docker PG + Redis running)
