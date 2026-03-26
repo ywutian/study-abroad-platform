@@ -134,6 +134,9 @@ jobs:
       - name: Dependency audit
         run: pnpm audit --audit-level=high --registry=https://registry.npmjs.org
 
+      - name: Integration check
+        run: pnpm lint:integration
+
       - name: Dead code check (knip)
         run: pnpm lint:dead-code
         continue-on-error: true
