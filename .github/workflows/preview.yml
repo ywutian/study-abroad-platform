@@ -22,6 +22,9 @@ permissions:
 
 jobs:
   deploy-preview:
+    # Disabled: staging service not configured yet (missing env vars)
+    # Re-enable when study-abroad-api-staging is set up in GCP
+    if: false
     runs-on: ubuntu-latest
     environment: staging
     steps:
@@ -68,15 +71,31 @@ jobs:
           TAG="pr-${{ github.event.pull_request.number }}"
           IMAGE="${REGION}-docker.pkg.dev/${PROJECT}/study-abroad/api:${TAG}"
 
-          # Deploy as a tagged revision with no traffic
-          gcloud run deploy study-abroad-api-staging \
-            --image="${IMAGE}" \
-            --region="${REGION}" \
-            --no-traffic \
-            --tag="${TAG}" \
-            --set-env-vars="NODE_ENV=staging" \
-            --vpc-connector=projects/${PROJECT}/locations/${REGION}/connectors/study-abroad-connector \
-            --quiet
+          # Check if service exists; --no-traffic only works on existing services
+          SERVICE_EXISTS=$(gcloud run services describe study-abroad-api-staging \
+            --region="${REGION}" --format="value(status.url)" 2>/dev/null || echo "")
+
+          if [ -n "$SERVICE_EXISTS" ]; then
+            # Service exists: deploy as tagged revision with no traffic
+            gcloud run deploy study-abroad-api-staging \
+              --image="${IMAGE}" \
+              --region="${REGION}" \
+              --no-traffic \
+              --tag="${TAG}" \
+              --set-env-vars="NODE_ENV=staging" \
+              --vpc-connector=projects/${PROJECT}/locations/${REGION}/connectors/study-abroad-connector \
+              --quiet
+          else
+            # Service doesn't exist: create it (first deploy gets all traffic)
+            gcloud run deploy study-abroad-api-staging \
+              --image="${IMAGE}" \
+              --region="${REGION}" \
+              --tag="${TAG}" \
+              --set-env-vars="NODE_ENV=staging" \
+              --vpc-connector=projects/${PROJECT}/locations/${REGION}/connectors/study-abroad-connector \
+              --allow-unauthenticated \
+              --quiet
+          fi
 
           # Get the preview URL from the tag
           PREVIEW_URL=$(gcloud run services describe study-abroad-api-staging \

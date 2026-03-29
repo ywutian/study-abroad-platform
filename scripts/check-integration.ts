@@ -2,12 +2,14 @@
  * Cross-layer integration checker.
  * Verifies end-to-end consistency across Prisma, Shared types, Backend, Frontend, and Mobile.
  *
- * 16 rules across 4 domains:
+ * 21 rules across 5 domains:
  *   A. Type consistency (enum-consistency, password-regex-sync, form-validation-sync)
  *   B. Route & API (route-helper-sync, hardcoded-api-routes, route-protection-audit, mobile-endpoint-consistency)
  *   C. AI system (ai-tool-registration, streaming-event-coverage, websocket-event-coverage)
  *   D. Backend & frontend integration (admin-guard-coverage, email-method-existence,
  *      module-dependency-check, stub-service-audit, cache-invalidation-audit, llm-json-import-check)
+ *   E. Governance (governance-optional-security, governance-nl-endpoint-coverage,
+ *      governance-config-consistency, governance-user-data-isolation, governance-dead-provider)
  *
  * Usage:
  *   npx tsx scripts/check-integration.ts                         # All 16 rules
@@ -59,7 +61,12 @@ type RuleName =
   | 'module-dependency-check'
   | 'stub-service-audit'
   | 'cache-invalidation-audit'
-  | 'llm-json-import-check';
+  | 'llm-json-import-check'
+  | 'governance-optional-security'
+  | 'governance-nl-endpoint-coverage'
+  | 'governance-config-consistency'
+  | 'governance-user-data-isolation'
+  | 'governance-dead-provider';
 
 const DOMAINS: Record<string, RuleName[]> = {
   types: ['enum-consistency', 'password-regex-sync', 'form-validation-sync'],
@@ -77,6 +84,13 @@ const DOMAINS: Record<string, RuleName[]> = {
     'stub-service-audit',
     'cache-invalidation-audit',
     'llm-json-import-check',
+  ],
+  governance: [
+    'governance-optional-security',
+    'governance-nl-endpoint-coverage',
+    'governance-config-consistency',
+    'governance-user-data-isolation',
+    'governance-dead-provider',
   ],
 };
 
@@ -1339,6 +1353,51 @@ function getSummary(issues: Issue[]): { errors: number; warnings: number; infos:
   };
 }
 
+// ── Governance bridge ─────────────────────────────────────
+
+import { execSync } from 'child_process';
+
+function runGovernanceRule(governanceRuleId: string): Issue[] {
+  try {
+    const output = execSync(
+      `npx tsx scripts/governance/index.ts --rule=${governanceRuleId} --json`,
+      { cwd: ROOT, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }
+    );
+    const result = JSON.parse(output);
+    return (result.issues || []).map((i: any) => ({
+      rule: `governance-${i.rule}` as RuleName,
+      severity: i.severity as Severity,
+      file: i.file ? rel(i.file) : 'scripts/governance',
+      line: i.line,
+      message: i.message,
+    }));
+  } catch (err: any) {
+    // If the governance CLI exits with code 1, it still outputs JSON on stdout
+    if (err.stdout) {
+      try {
+        const result = JSON.parse(err.stdout);
+        return (result.issues || []).map((i: any) => ({
+          rule: `governance-${i.rule}` as RuleName,
+          severity: i.severity as Severity,
+          file: i.file ? rel(i.file) : 'scripts/governance',
+          line: i.line,
+          message: i.message,
+        }));
+      } catch {
+        // JSON parse failed
+      }
+    }
+    return [
+      {
+        rule: `governance-${governanceRuleId}` as RuleName,
+        severity: 'error' as Severity,
+        file: 'scripts/governance',
+        message: `Governance rule '${governanceRuleId}' failed to execute: ${err.message}`,
+      },
+    ];
+  }
+}
+
 // ── Main ────────────────────────────────────────────────────
 
 const RULE_MAP: Record<RuleName, () => Issue[]> = {
@@ -1358,6 +1417,11 @@ const RULE_MAP: Record<RuleName, () => Issue[]> = {
   'stub-service-audit': checkStubServiceAudit,
   'cache-invalidation-audit': checkCacheInvalidation,
   'llm-json-import-check': checkLlmJsonImport,
+  'governance-optional-security': () => runGovernanceRule('optional-security'),
+  'governance-nl-endpoint-coverage': () => runGovernanceRule('nl-endpoint-coverage'),
+  'governance-config-consistency': () => runGovernanceRule('config-consistency'),
+  'governance-user-data-isolation': () => runGovernanceRule('user-data-isolation'),
+  'governance-dead-provider': () => runGovernanceRule('dead-provider'),
 };
 
 function main(): void {

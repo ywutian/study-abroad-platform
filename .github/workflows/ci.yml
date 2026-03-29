@@ -135,8 +135,10 @@ jobs:
         run: pnpm audit --audit-level=high --registry=https://registry.npmjs.org
 
       - name: Integration check
-        run: pnpm lint:integration
-        continue-on-error: true
+        run: pnpm lint:integration --verbose
+
+      - name: Governance check (blocking)
+        run: pnpm lint:integration --domain=governance
 
       - name: Dead code check (knip)
         run: pnpm lint:dead-code

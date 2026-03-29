@@ -1,0 +1,23 @@
+{
+  "description": "Natural language endpoints that accept user-generated content and require AgentSecurityMiddleware coverage",
+  "http": [
+    {
+      "route": "ai-agent/chat",
+      "method": "POST",
+      "description": "Streaming chat endpoint"
+    },
+    {
+      "route": "ai-agent/agent",
+      "method": "POST",
+      "description": "Non-streaming agent endpoint"
+    }
+  ],
+  "websocket": [
+    {
+      "gateway": "AiAgentGateway",
+      "handler": "handleSendMessage",
+      "securityService": "PromptGuardService",
+      "description": "WebSocket message handler"
+    }
+  ]
+}
