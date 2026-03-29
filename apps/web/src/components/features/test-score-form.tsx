@@ -460,7 +460,7 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
                   selectedType ? `0 - ${selectedType.maxScore}` : t('form.scorePlaceholder')
                 }
                 max={selectedType?.maxScore}
-                min={0}
+                min={formData.type === 'SAT' ? 400 : formData.type === 'ACT' ? 1 : 0}
               />
             </div>
           )}

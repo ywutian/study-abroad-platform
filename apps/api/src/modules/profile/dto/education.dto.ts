@@ -49,7 +49,7 @@ export class CreateEducationDto {
   @IsOptional()
   @IsNumber()
   @Min(0)
-  @Max(5)
+  @Max(100)
   gpa?: number;
 
   @ApiPropertyOptional({ description: 'GPA scale maximum' })
@@ -122,7 +122,7 @@ export class UpdateEducationDto {
   @IsOptional()
   @IsNumber()
   @Min(0)
-  @Max(5)
+  @Max(100)
   gpa?: number;
 
   @ApiPropertyOptional({ description: 'GPA scale maximum' })

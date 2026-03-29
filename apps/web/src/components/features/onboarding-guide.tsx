@@ -42,7 +42,14 @@ export function OnboardingGuide({
   onDismiss,
 }: OnboardingGuideProps) {
   const t = useTranslations('dashboard.onboarding');
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return localStorage.getItem('onboarding-guide-dismissed') === 'true';
+    } catch {
+      return false;
+    }
+  });
 
   const steps: OnboardingStep[] = [
     {
@@ -86,6 +93,11 @@ export function OnboardingGuide({
 
   const handleDismiss = () => {
     setDismissed(true);
+    try {
+      localStorage.setItem('onboarding-guide-dismissed', 'true');
+    } catch {
+      // Private browsing or storage full
+    }
     onDismiss?.();
   };
 
