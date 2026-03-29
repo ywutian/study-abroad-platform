@@ -110,11 +110,11 @@
 | ID    | 旅程 | 问题                               | 严重性   | 状态                                         |
 | ----- | ---- | ---------------------------------- | -------- | -------------------------------------------- |
 | GAP-1 | A11  | ~~移动端缺功能~~                   | ~~HIGH~~ | **closed（误报）**：移动端功能完整           |
-| GAP-2 | B1   | 系统无 PARENT 角色，家长旅程不存在 | HIGH     | open（需产品决策）                           |
+| GAP-2 | B1   | 系统无 PARENT 角色，家长旅程不存在 | HIGH     | **wontfix**：产品决策不做家长角色            |
 | GAP-3 | A1   | 新手引导可跳过                     | MEDIUM   | **fixed**（Batch 8：localStorage 持久化）    |
 | GAP-4 | A2   | 档案 GPA 校验 bug                  | MEDIUM   | **fixed**（Batch 9：@Max(100) + scale 修复） |
 | GAP-5 | C4   | 内容审核无批量操作                 | MEDIUM   | **fixed**（Batch 10：batch endpoint + UI）   |
-| GAP-6 | B3   | 无家长账号关联机制                 | MEDIUM   | open（依赖 GAP-2）                           |
+| GAP-6 | B3   | 无家长账号关联机制                 | MEDIUM   | **wontfix**：依赖 GAP-2，已决策不做          |
 | GAP-7 | C5   | 学校数据管理                       | LOW      | **closed**：审计完成，4/5 PASS               |
 
 ### 覆盖率更新

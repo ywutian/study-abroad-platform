@@ -197,14 +197,41 @@ export class RecommendationService {
                 )
               : null;
 
+            // Query full outcome distribution (admitted + rejected + waitlisted)
+            const outcomes = await this.prisma.admissionCase.groupBy({
+              by: ['result'],
+              where: { schoolId: school.id, isVerified: true },
+              _count: true,
+            });
+            const outcomeMap: Record<string, number> = {};
+            for (const o of outcomes) {
+              outcomeMap[o.result] = o._count;
+            }
+            const totalCases = Object.values(outcomeMap).reduce(
+              (a, b) => a + b,
+              0,
+            );
+
             const parts = [`### ${school.name}`];
+            if (totalCases >= 5) {
+              const admitted = outcomeMap['ADMITTED'] || 0;
+              const rejected = outcomeMap['REJECTED'] || 0;
+              const waitlisted = outcomeMap['WAITLISTED'] || 0;
+              parts.push(
+                `- Total verified cases: ${totalCases} (admitted: ${admitted}, rejected: ${rejected}, waitlisted: ${waitlisted})`,
+              );
+              if (admitted > 0 && rejected > 0) {
+                parts.push(
+                  `- Platform admit rate: ${((admitted / totalCases) * 100).toFixed(1)}%`,
+                );
+              }
+            }
             if (dist) {
               const satMedian = dist.satValues.length
                 ? dist.satValues.sort((a, b) => a - b)[
                     Math.floor(dist.satValues.length / 2)
                   ]
                 : null;
-              parts.push(`- Verified cases: ${dist.sampleCount}`);
               if (satMedian) parts.push(`- Admitted SAT median: ${satMedian}`);
             }
             if (natStats && natStats.totalCases >= 3) {
@@ -225,8 +252,8 @@ export class RecommendationService {
             : '\n\n## Historical Admission Data (from verified platform cases, for reference)\n';
         const footer =
           locale === 'zh'
-            ? '\n\n注意：历史数据仅供参考，不代表未来录取标准。'
-            : '\n\nNote: Historical data is for reference only and does not guarantee future outcomes.';
+            ? '\n\n使用以上数据时请：1. 分析录取者与拒绝者的差异特征 2. 用"背景信息"框架呈现（非判决）3. 数据量<5时注明样本有限\n历史数据仅供参考，不代表未来录取标准。'
+            : '\n\nWhen using this data: 1. Analyze what differentiates admitted vs rejected students 2. Present as context (not verdict) 3. Note when sample size <5\nHistorical data is for reference only.';
         userPrompt += header + historicalLines.join('\n\n') + footer;
       }
     }
