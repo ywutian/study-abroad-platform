@@ -33,7 +33,7 @@ export class ProfileAiService {
     const userPrompt = buildProfileAnalysisUserPrompt(request, locale);
 
     try {
-      const result = await this.llmService.chatSimple(
+      const result = await this.llmService.chatSimpleGuarded(
         [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },

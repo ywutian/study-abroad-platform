@@ -188,7 +188,8 @@ export interface ILongTermMemory {
     memory: Omit<MemoryRecord, 'id' | 'createdAt' | 'updatedAt'>,
   ): Promise<MemoryRecord>;
   recall(userId: string, options?: MemoryQueryOptions): Promise<MemoryRecord[]>;
-  forget(memoryId: string): Promise<void>;
+  /** Admin-only memory deletion. No userId check — caller must be @Roles(ADMIN). */
+  forgetAdmin(memoryId: string): Promise<void>;
   updateImportance(memoryId: string, importance: number): Promise<void>;
 
   // 实体管理

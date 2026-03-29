@@ -6,6 +6,7 @@
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { MemoryManagerService } from './memory-manager.service';
+import { RedisService } from '../../../common/redis/redis.service';
 import { RedisCacheService } from './redis-cache.service';
 import { PersistentMemoryService } from './persistent-memory.service';
 import { EmbeddingService } from './embedding.service';
@@ -75,6 +76,15 @@ describe('MemoryManagerService', () => {
           },
         },
         {
+          provide: RedisService,
+          useValue: {
+            getClient: jest.fn().mockReturnValue({
+              set: jest.fn().mockResolvedValue('OK'),
+            }),
+            connected: true,
+          },
+        },
+        {
           provide: SummarizerService,
           useValue: {
             summarizeConversation: jest.fn(),
@@ -135,6 +145,56 @@ describe('MemoryManagerService', () => {
 
       expect(cache.getConversationMeta).toHaveBeenCalledWith('conv_1');
       expect(result.id).toBe('conv_1');
+    });
+
+    it('should reject when cached conversation belongs to another user', async () => {
+      cache.getConversationMeta.mockResolvedValue({
+        id: 'conv_victim',
+        userId: 'user_victim',
+        messageCount: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      await expect(
+        service.getOrCreateConversation('user_attacker', 'conv_victim'),
+      ).rejects.toThrow('Conversation not found');
+      expect(persistent.getConversation).not.toHaveBeenCalled();
+    });
+
+    it('should fall back to DB when cache has id but no userId', async () => {
+      cache.getConversationMeta.mockResolvedValue({
+        id: 'conv_1',
+        title: 'partial meta',
+      });
+      persistent.getConversation.mockResolvedValue({
+        id: 'conv_1',
+        userId: 'user_1',
+        messageCount: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      const result = await service.getOrCreateConversation('user_1', 'conv_1');
+
+      expect(persistent.getConversation).toHaveBeenCalledWith('conv_1');
+      expect(result.userId).toBe('user_1');
+      expect(cache.cacheConversation).toHaveBeenCalled();
+    });
+
+    it('should reject when DB conversation belongs to another user', async () => {
+      cache.getConversationMeta.mockResolvedValue(null);
+      persistent.getConversation.mockResolvedValue({
+        id: 'conv_victim',
+        userId: 'user_victim',
+        messageCount: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      await expect(
+        service.getOrCreateConversation('user_attacker', 'conv_victim'),
+      ).rejects.toThrow('Conversation not found');
     });
 
     it('should create new conversation if not exists', async () => {
@@ -252,7 +312,7 @@ describe('MemoryManagerService', () => {
       expect(persistent.searchMemories).toHaveBeenCalledWith(
         'user_1',
         'GPA',
-        expect.objectContaining({ limit: 10, minSimilarity: 0.5 }),
+        expect.objectContaining({ limit: 20 }),
       );
       expect(result.length).toBeGreaterThan(0);
     });
@@ -352,6 +412,64 @@ describe('MemoryManagerService', () => {
 
       expect(persistent.cleanupExpiredMemories).toHaveBeenCalled();
       expect(result.expiredMemories).toBe(5);
+    });
+  });
+
+  describe('getConversation', () => {
+    it('should delegate to persistent.getConversation', async () => {
+      const mockConversation = {
+        id: 'conv_1',
+        userId: 'user_1',
+        messageCount: 5,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      persistent.getConversation.mockResolvedValue(mockConversation);
+
+      const result = await service.getConversation('conv_1');
+
+      expect(persistent.getConversation).toHaveBeenCalledWith('conv_1');
+      expect(result).toEqual(mockConversation);
+    });
+
+    it('should return null for non-existent conversation', async () => {
+      persistent.getConversation.mockResolvedValue(null);
+
+      const result = await service.getConversation('conv_nonexistent');
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('getMessages (Gateway)', () => {
+    it('should delegate to persistent.getMessages with limit', async () => {
+      const mockMessages = [
+        {
+          id: 'msg_1',
+          conversationId: 'conv_1',
+          role: 'user',
+          content: 'Hello',
+          createdAt: new Date(),
+        },
+      ];
+      persistent.getMessages.mockResolvedValue(mockMessages);
+
+      const result = await service.getMessages('conv_1', 20);
+
+      expect(persistent.getMessages).toHaveBeenCalledWith('conv_1', {
+        limit: 20,
+      });
+      expect(result).toEqual(mockMessages);
+    });
+
+    it('should use default limit of 50', async () => {
+      persistent.getMessages.mockResolvedValue([]);
+
+      await service.getMessages('conv_1');
+
+      expect(persistent.getMessages).toHaveBeenCalledWith('conv_1', {
+        limit: 50,
+      });
     });
   });
 

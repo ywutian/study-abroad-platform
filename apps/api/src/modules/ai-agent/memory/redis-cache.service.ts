@@ -37,9 +37,14 @@ export class RedisCacheService {
       50,
     );
 
-    this.logger.log(
-      `RedisCacheService initialized (Redis ${this.redis.connected ? 'connected' : 'fallback to memory'})`,
-    );
+    if (this.redis.connected) {
+      this.logger.log('RedisCacheService initialized (Redis connected)');
+    } else {
+      this.logger.warn(
+        'RedisCacheService initialized — Redis unavailable, using in-process Map fallback. ' +
+          'Data will NOT be shared across pods.',
+      );
+    }
   }
 
   // ==================== 对话缓存 ====================

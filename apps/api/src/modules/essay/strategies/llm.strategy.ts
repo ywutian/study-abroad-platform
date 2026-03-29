@@ -174,7 +174,7 @@ export class LlmScrapeStrategy extends BaseScrapeStrategy {
       : '';
 
     try {
-      const content = await this.llmService.chatSimple(
+      const content = await this.llmService.chatSimpleGuarded(
         [
           {
             role: 'system',

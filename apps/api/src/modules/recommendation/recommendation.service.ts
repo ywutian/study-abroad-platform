@@ -172,12 +172,20 @@ export class RecommendationService {
     );
 
     try {
-      const result = await this.llmService.chatSimple(
+      const result = await this.llmService.chatSimpleGuarded(
         [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
-        { temperature: 0.6, maxTokens: 4000 },
+        {
+          temperature: 0.6,
+          maxTokens: 4000,
+          providerOptions: {
+            response_format: {
+              type: 'json_object',
+            },
+          },
+        },
       );
 
       const parsed: any = extractJsonFromLlm(result);

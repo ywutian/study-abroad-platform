@@ -94,6 +94,9 @@ export enum ActivityCategory {
   LEADERSHIP = 'LEADERSHIP',
   WORK = 'WORK',
   RESEARCH = 'RESEARCH',
+  INTERNSHIP = 'INTERNSHIP',
+  CLUB = 'CLUB',
+  HOBBY = 'HOBBY',
   OTHER = 'OTHER',
 }
 
@@ -307,6 +310,8 @@ export enum ReportTargetType {
   MESSAGE = 'MESSAGE',
   CASE = 'CASE',
   REVIEW = 'REVIEW',
+  POST = 'POST',
+  COMMENT = 'COMMENT',
 }
 
 export enum ReportStatus {
@@ -745,6 +750,14 @@ export enum VerificationStatus {
   PENDING = 'PENDING',
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
+}
+
+export enum RecommendationLetterStatus {
+  NOT_REQUESTED = 'NOT_REQUESTED',
+  REQUESTED = 'REQUESTED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  SUBMITTED = 'SUBMITTED',
+  CONFIRMED = 'CONFIRMED',
 }
 
 export enum ApplicationStatus {

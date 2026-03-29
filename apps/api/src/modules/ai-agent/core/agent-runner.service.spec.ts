@@ -96,12 +96,10 @@ describe('AgentRunnerService', () => {
       const result = await service.run(
         AgentType.ORCHESTRATOR,
         mockConversation,
-        '你好',
       );
 
       expect(result.message).toBe('你好！我可以帮助你进行留学申请。');
       expect(result.agentType).toBe(AgentType.ORCHESTRATOR);
-      expect(memory.addMessage).toHaveBeenCalled();
     });
 
     it('should include tools used from workflow result', async () => {
@@ -121,11 +119,7 @@ describe('AgentRunnerService', () => {
         timing: { planMs: 50, executeMs: 30, solveMs: 20, totalMs: 100 },
       });
 
-      const result = await service.run(
-        AgentType.PROFILE,
-        mockConversation,
-        '查看我的档案',
-      );
+      const result = await service.run(AgentType.PROFILE, mockConversation);
 
       expect(result.toolsUsed).toContain('get_profile');
     });
@@ -146,7 +140,6 @@ describe('AgentRunnerService', () => {
       const result = await service.run(
         AgentType.ORCHESTRATOR,
         mockConversation,
-        '帮我写文书',
       );
 
       expect(result.delegatedTo).toBe(AgentType.ESSAY);
@@ -160,11 +153,7 @@ describe('AgentRunnerService', () => {
         timing: { planMs: 50, executeMs: 30, solveMs: 20, totalMs: 100 },
       });
 
-      const result = await service.run(
-        AgentType.SCHOOL,
-        mockConversation,
-        '搜索 MIT',
-      );
+      const result = await service.run(AgentType.SCHOOL, mockConversation);
 
       expect(result.message).toContain('抱歉');
     });
@@ -182,11 +171,7 @@ describe('AgentRunnerService', () => {
         timing: { planMs: 50, executeMs: 0, solveMs: 20, totalMs: 70 },
       });
 
-      const result = await service.run(
-        AgentType.PROFILE,
-        mockConversation,
-        '分析我的背景',
-      );
+      const result = await service.run(AgentType.PROFILE, mockConversation);
 
       expect(result.suggestions).toBeDefined();
       expect(result.suggestions?.length).toBeGreaterThan(0);
@@ -205,7 +190,6 @@ describe('AgentRunnerService', () => {
       const result = await service.run(
         AgentType.ORCHESTRATOR,
         mockConversation,
-        '我该怎么开始',
       );
 
       expect(result.actions).toBeDefined();

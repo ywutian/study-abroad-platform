@@ -42,6 +42,7 @@ describe('EssayAiService', () => {
 
   const mockLLMService = {
     chatSimple: jest.fn(),
+    chatSimpleGuarded: jest.fn(),
   };
 
   const mockIncentiveService = {
@@ -98,7 +99,7 @@ describe('EssayAiService', () => {
         verdict: 'Strong essay',
       };
 
-      mockLLMService.chatSimple.mockResolvedValue('{}');
+      mockLLMService.chatSimpleGuarded.mockResolvedValue('{}');
       (extractJsonFromLlm as jest.Mock).mockReturnValue(parsedResult);
       mockPrisma.essayAIResult.create.mockResolvedValue({
         id: 'result-1',
@@ -146,7 +147,9 @@ describe('EssayAiService', () => {
       });
       mockPrisma.profile.findFirst.mockResolvedValue({ id: 'profile-1' });
       mockPrisma.school.findFirst.mockResolvedValue(null);
-      mockLLMService.chatSimple.mockRejectedValue(new Error('LLM error'));
+      mockLLMService.chatSimpleGuarded.mockRejectedValue(
+        new Error('LLM error'),
+      );
 
       await expect(service.reviewEssay(userId, dto, 'en')).rejects.toThrow(
         BadRequestException,
@@ -179,7 +182,7 @@ describe('EssayAiService', () => {
         overallAdvice: 'Focus on personal growth.',
       };
 
-      mockLLMService.chatSimple.mockResolvedValue('{}');
+      mockLLMService.chatSimpleGuarded.mockResolvedValue('{}');
       (extractJsonFromLlm as jest.Mock).mockReturnValue(parsedResult);
 
       const result = await service.brainstormIdeas(userId, dto, 'en');
@@ -194,7 +197,7 @@ describe('EssayAiService', () => {
 
     it('should refund points and throw when LLM fails', async () => {
       mockPrisma.school.findFirst.mockResolvedValue(null);
-      mockLLMService.chatSimple.mockRejectedValue(new Error('timeout'));
+      mockLLMService.chatSimpleGuarded.mockRejectedValue(new Error('timeout'));
 
       await expect(service.brainstormIdeas(userId, dto, 'en')).rejects.toThrow(
         BadRequestException,
@@ -257,7 +260,7 @@ describe('EssayAiService', () => {
           { text: 'Version 2', style: 'Vivid' },
         ],
       };
-      mockLLMService.chatSimple.mockResolvedValue('{}');
+      mockLLMService.chatSimpleGuarded.mockResolvedValue('{}');
       (extractJsonFromLlm as jest.Mock).mockReturnValue(parsedResult);
 
       const result = await service.rewriteParagraph(
@@ -271,7 +274,7 @@ describe('EssayAiService', () => {
     });
 
     it('should throw BadRequestException when LLM fails', async () => {
-      mockLLMService.chatSimple.mockRejectedValue(new Error('fail'));
+      mockLLMService.chatSimpleGuarded.mockRejectedValue(new Error('fail'));
 
       await expect(
         service.rewriteParagraph('text', undefined, 'en'),
@@ -317,7 +320,7 @@ describe('EssayAiService', () => {
         summary: 'Overall decent essay.',
       };
 
-      mockLLMService.chatSimple.mockResolvedValue('{}');
+      mockLLMService.chatSimpleGuarded.mockResolvedValue('{}');
       (extractJsonFromLlm as jest.Mock).mockReturnValue(parsedResult);
 
       const result = await service.analyzeEssayParagraphs(

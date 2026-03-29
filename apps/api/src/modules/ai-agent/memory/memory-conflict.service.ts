@@ -8,10 +8,16 @@
  * 4. 管理去重键
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { MemoryType } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { EmbeddingService } from './embedding.service';
+import { PersistentMemoryService } from './persistent-memory.service';
 import { MemoryMetadata } from './types';
 
 // ==================== 类型定义 ====================
@@ -172,6 +178,7 @@ export class MemoryConflictService {
   constructor(
     private prisma: PrismaService,
     private embedding: EmbeddingService,
+    private persistent: PersistentMemoryService,
   ) {}
 
   // ==================== 冲突检测 ====================
@@ -652,5 +659,88 @@ export class MemoryConflictService {
       metadata: m.metadata as MemoryMetadata | undefined,
       createdAt: m.createdAt,
     }));
+  }
+
+  /**
+   * Resolve a pending memory conflict by admin action.
+   */
+  async resolveConflictById(
+    memoryId: string,
+    action: 'keep_new' | 'keep_existing' | 'merge',
+    mergedContent?: string,
+  ): Promise<{ resolved: boolean }> {
+    const memory = await this.prisma.memory.findUnique({
+      where: { id: memoryId },
+    });
+    if (!memory) {
+      throw new NotFoundException(`Memory ${memoryId} not found`);
+    }
+
+    const metadata = (memory.metadata as Record<string, any>) || {};
+    if (!metadata.pendingConflict) {
+      throw new BadRequestException(
+        'Memory has no pending conflict to resolve',
+      );
+    }
+
+    const conflictWithId = metadata.conflictWith as string | undefined;
+
+    switch (action) {
+      case 'keep_new': {
+        // Remove pending flag, keep this memory's content
+        const { pendingConflict, conflictWith, ...cleanMetadata } = metadata;
+        await this.prisma.memory.update({
+          where: { id: memoryId },
+          data: {
+            metadata: {
+              ...cleanMetadata,
+              resolvedAt: new Date().toISOString(),
+            },
+          },
+        });
+        // Delete the conflicting memory if referenced
+        if (conflictWithId) {
+          await this.prisma.memory.deleteMany({
+            where: { id: conflictWithId },
+          });
+        }
+        break;
+      }
+
+      case 'keep_existing': {
+        // Delete the pending memory, the existing one stays
+        await this.prisma.memory.delete({ where: { id: memoryId } });
+        break;
+      }
+
+      case 'merge': {
+        if (!mergedContent) {
+          throw new BadRequestException(
+            'mergedContent is required for merge action',
+          );
+        }
+        // Update via PersistentMemoryService to trigger embedding re-computation
+        const { pendingConflict, conflictWith, ...cleanMetadata } = metadata;
+        await this.persistent.updateMemory(memoryId, {
+          content: mergedContent,
+          metadata: {
+            ...cleanMetadata,
+            mergedAt: new Date().toISOString(),
+          },
+        });
+        // Delete the conflicting memory if referenced
+        if (conflictWithId) {
+          await this.prisma.memory.deleteMany({
+            where: { id: conflictWithId },
+          });
+        }
+        break;
+      }
+    }
+
+    this.logger.log(
+      `Conflict resolved for memory ${memoryId}: action=${action}`,
+    );
+    return { resolved: true };
   }
 }

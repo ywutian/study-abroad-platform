@@ -28,7 +28,7 @@ export class AiValidatorService {
     }
 
     try {
-      const content = await this.llmService.chatSimple(
+      const content = await this.llmService.chatSimpleGuarded(
         [
           {
             role: 'system',
@@ -82,7 +82,7 @@ export class AiValidatorService {
     }
 
     try {
-      const content = await this.llmService.chatSimple(
+      const content = await this.llmService.chatSimpleGuarded(
         [
           {
             role: 'system',

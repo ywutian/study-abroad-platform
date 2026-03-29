@@ -1191,11 +1191,11 @@ apps/api/src/modules/ai-agent/
 │   ├── memory-scorer.service.ts    # 记忆评分
 │   ├── memory-decay.service.ts     # 记忆衰减
 │   ├── memory-conflict.service.ts  # 冲突处理
-│   ├── memory-extractor.service.ts # 记忆提取
+│   ├── # memory-extractor.service.ts — 已删除，提取由 SummarizerService.extractFromMessage 承担
 │   ├── memory-compaction.service.ts# 记忆压缩
 │   ├── sanitizer.service.ts        # 敏感数据脱敏
 │   ├── user-data.service.ts        # 用户数据管理
-│   ├── extraction-rules.ts         # 提取规则定义
+│   ├── # extraction-rules.ts — 已删除
 │   ├── types.ts                    # 记忆类型定义
 │   └── prisma-types.ts             # Prisma查询类型
 │
@@ -1735,57 +1735,12 @@ async detectConflict(newMemory: MemoryInput): Promise<ConflictDetectionResult> {
 }
 ```
 
-### 8.7 MemoryExtractorService (记忆提取服务)
+### 8.7 ~~MemoryExtractorService~~ (已删除)
 
-**位置**: `memory/memory-extractor.service.ts`
-
-**提取流程 (混合规则+LLM)**:
-
-```typescript
-async extract(message: string, context: ExtractionContext): Promise<ExtractionResult> {
-  const stats = { ruleMatches: 0, llmExtractions: 0, duplicatesRemoved: 0, validationFailed: 0 };
-
-  // 1. 规则提取（优先，低延迟）
-  const ruleMemories = this.extractByRules(message);
-  stats.ruleMatches = ruleMemories.length;
-
-  // 2. LLM提取（补充，高准确率）
-  const llmResult = await this.summarizer.extractFromMessage(message, context);
-  stats.llmExtractions = llmResult.memories.length;
-
-  // 3. 合并去重
-  const merged = this.mergeAndDedupe([...ruleMemories, ...llmResult.memories]);
-  stats.duplicatesRemoved = ruleMemories.length + llmResult.memories.length - merged.length;
-
-  // 4. 验证
-  const validated = merged.filter(m => this.validate(m));
-  stats.validationFailed = merged.length - validated.length;
-
-  return { memories: validated, entities: llmResult.entities, stats };
-}
-```
-
-**规则定义示例**:
-
-```typescript
-const EXTRACTION_RULES: ExtractionRule[] = [
-  {
-    id: 'gpa',
-    name: '学术成绩-GPA',
-    type: MemoryType.FACT,
-    patterns: [/(?:我的)?gpa[是为]?\s*(\d+\.?\d*)/i, /(?:成绩|绩点)[是为]?\s*(\d+\.?\d*)/i],
-    baseImportance: 0.85,
-    validator: (value) => {
-      const gpa = parseFloat(value);
-      return { valid: gpa >= 0 && gpa <= 5, normalizedValue: gpa.toFixed(2) };
-    },
-    dedupeKey: (value) => `gpa:${value}`,
-    conflictStrategy: ConflictStrategy.KEEP_LATEST,
-    ttlDays: 365,
-  },
-  // ... 更多规则
-];
-```
+> **Status**: 文件 `memory-extractor.service.ts` 及 `extraction-rules.ts` 已删除。
+> 记忆提取功能由 `SummarizerService.extractFromMessage()` 承担，通过 `MemoryManagerService.extractAndSaveMemory()` 异步调用。
+>
+> **注意**: 访问强化（recordAccess）的运行时实现在 `MemoryDecayService`，不在 `PersistentMemoryService`。
 
 ### 8.8 MemoryCompactionService (记忆压缩服务)
 
@@ -1889,8 +1844,8 @@ const SENSITIVE_PATTERNS = {
                                                │
                                                ▼
                            ┌──────────────────────────────────────────┐
-                           │         MemoryExtractorService           │
-                           │    (规则提取 + LLM提取 + 验证去重)        │
+                           │    SummarizerService.extractFromMessage   │
+                           │    (LLM提取 + 结构校验)                  │
                            └───────────────────┬──────────────────────┘
                                                │
                                                ▼
@@ -2407,6 +2362,8 @@ interface DecayStats {
 │  Step 2: 获取/创建对话                                              │
 │  if (useEnterpriseMemory) {                                         │
 │    conversation = MemoryManager.getOrCreateConversation()           │
+│    // 缓存和数据库两层均校验 userId 归属，                              │
+│    // 不匹配时抛出 NotFoundException (避免枚举他人会话 ID)             │
 │    // 同时初始化 Redis 缓存和 PostgreSQL 记录                         │
 │  } else {                                                           │
 │    conversation = MemoryService.getOrCreateConversation()           │
@@ -2469,44 +2426,79 @@ interface DecayStats {
 ┌─────────────────────────────────────────────────────────────────────┐
 │  MemoryManager.addMessage() 触发异步提取                            │
 └─────────────────────────────────────────────────────────────────────┘
-                                  │
-                                  │ fire-and-forget Promise (extractWithRetry)
-                                  ▼
+                    │
+        ┌───────────┴───────────┐
+        │ role='user'           │ role='tool'
+        ▼                       ▼
+┌───────────────────┐   ┌───────────────────────────────────────────┐
+│ extractAndSave    │   │ extractToolResultMemory                   │
+│ Memory            │   │ JSON 模式匹配 (事件/学校/时间线/预测/案例)│
+│ SummarizerService │   │ 上限: MAX_TOOL_RESULT_BYTES=50KB         │
+│ .extractFrom      │   │       MAX_EXTRACTED_ITEMS=10             │
+│  Message (LLM)    │   └───────────────────────────────────────────┘
+└───────────────────┘                   │
+        │                               │
+        └───────────┬───────────────────┘
+                    │ MemoryInput[]
+                    ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│  summarizer.extractFromMessage() + extractToolResultMemory()        │
+│  Promise.allSettled → remember(userId, memory)                     │
+│  （ConflictService / ScorerService 为 @Optional，以运行时装配为准）│
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │ 1. ConflictService.detectConflict (key → exact → semantic) │   │
+│  │    语义阈值: semanticThreshold（硬编码 0.9）               │   │
+│  │    → SKIP / UPDATE / MERGE / PENDING / CREATE              │   │
+│  ├─────────────────────────────────────────────────────────────┤   │
+│  │ 2. ScorerService.score                                     │   │
+│  │    DECISION → 强制 LONG tier                               │   │
+│  │    FACT → base=0.8，通常不会被低分过滤                     │   │
+│  │    评分主要用于 metadata 标注（scoreTier/scoreDetails）     │   │
+│  ├─────────────────────────────────────────────────────────────┤   │
+│  │ 3. PersistentMemory.createMemory（含 embedding 向量）      │   │
+│  │    embed() 有 Redis 缓存（24h TTL）+ 进程内 LRU            │   │
+│  └─────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────┘
-                                  │
-          ┌───────────────────────┼───────────────────────┐
-          │                       │                       │
-          ▼                       ▼                       ▼
-  ┌───────────────┐       ┌───────────────┐       ┌───────────────┐
-  │  规则提取      │       │  LLM 提取     │       │  验证去重     │
-  │  (低延迟)     │       │  (高准确率)   │       │              │
-  └───────────────┘       └───────────────┘       └───────────────┘
-          │                       │                       │
-          └───────────────────────┼───────────────────────┘
-                                  │
-                                  ▼
+                    │
+                    ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│  for each memory in extractedMemories:                              │
-│    conflict = MemoryConflict.detectConflict(memory)                │
-│    if (conflict.hasConflict) {                                      │
-│      resolved = MemoryConflict.resolveConflict(memory, conflict)    │
-│      if (resolved.action === 'PENDING') continue                    │
-│    }                                                                │
-│    score = MemoryScorer.score(memory)                               │
-│    memory.metadata.scoreTier = score.tier                           │
-│    PersistentMemory.createMemory(memory)                            │
-│  end for                                                            │
-└─────────────────────────────────────────────────────────────────────┘
-                                  │
-                                  ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│  for each entity in extractedEntities:                              │
-│    PersistentMemory.upsertEntity(entity)                            │
-│  end for                                                            │
+│  Promise.allSettled → PersistentMemory.upsertEntity               │
+│  (唯一键 userId+type+name，upsert 天然幂等)                       │
 └─────────────────────────────────────────────────────────────────────┘
 ```
+
+#### `extractToolResultMemory` 模式匹配表
+
+以下模式通过 JSON 字段存在性判断触发，与工具名的对应为启发式推断。
+代码中部分分支已在 `metadata.toolName` 标注实际工具名，未标注的分支仅依赖形状匹配。
+实际工具名以 `tools.config.ts` 中的 handler 注册为准。
+
+| 模式         | JSON 条件                                     | type     | category          | importance | metadata.toolName             |
+| ------------ | --------------------------------------------- | -------- | ----------------- | ---------- | ----------------------------- |
+| 个人事件创建 | `data.success && data.event`                  | DECISION | timeline          | 0.75       | —                             |
+| 学校信息查询 | `Array[0]?.schoolName`                        | FACT     | school            | 0.5        | —                             |
+| 时间线生成   | `data.timeline \|\| data.keyDates`            | DECISION | timeline          | 0.7        | —                             |
+| 个人事件列表 | `Array[0]?.category && Array[0]?.tasks`       | FACT     | timeline          | 0.4        | —                             |
+| 预测历史     | `data.current && data.history && data.school` | FACT     | school_prediction | 0.6        | `get_prediction_history`      |
+| 预测仪表盘   | `data.totalSchools && data.tierDistribution`  | FACT     | school_prediction | 0.5        | `get_prediction_dashboard`    |
+| 选校清单预测 | `Array[0]?.prediction !== undefined`          | FACT     | school_prediction | 0.5        | `get_school_list_predictions` |
+| 案例搜索     | `data.cases && Array.isArray`                 | FACT     | case_research     | 0.5        | `search_cases`                |
+| 相似案例     | `data.similarCases && Array.isArray`          | FACT     | case_research     | 0.6        | `find_similar_cases`          |
+| 案例解读     | `data.explanation && data.caseId`             | FACT     | case_research     | 0.6        | `explain_case_result`         |
+
+#### 会话安全模式
+
+仅指 ai-agent 模块的 AgentConversation / MemoryManagerService，与 chat 模块的用户间私信会话无关。
+
+- **用户侧**：采用"入口校验，后续信任"（validate-once-operate-on-object）模式。
+  `getOrCreateConversation(userId, conversationId)` 是归属校验入口；下游方法
+  （`addMessage`、`getConversationHistory`、`getRetrievalContext`）信任调用方已完成校验。
+  所有用户侧公开入口（Gateway `sendMessage`、Controller `POST /chat`）
+  均在调用链最前端经过 `getOrCreateConversation` 或显式 `getConversation + userId 比对`。
+  **禁止新增绕过 `getOrCreateConversation` / `getConversation + userId 校验` 的用户侧 API。**
+
+- **Admin 侧**：`AgentAdminController` 是跨用户运维接口，通过 `@Roles(Role.ADMIN)` 强制
+  管理员权限，**不经过与普通用户相同的会话归属校验链**。Admin 操作（如 `browseMemories`、
+  `forgetAdmin`）有独立的审计日志记录。
 
 ### 11.5 记忆 API 接口规范
 

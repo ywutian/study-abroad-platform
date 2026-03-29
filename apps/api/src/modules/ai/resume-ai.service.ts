@@ -42,7 +42,7 @@ Resume Type: ${resumeData.resumeType}
 ${sectionsText}`;
 
     try {
-      const result = await this.llmService.chatSimple(
+      const result = await this.llmService.chatSimpleGuarded(
         [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
@@ -278,7 +278,7 @@ Bullets to optimize:
 ${bullets.map((b, i) => `${i + 1}. ${b}`).join('\n')}`;
 
     try {
-      const result = await this.llmService.chatSimple(
+      const result = await this.llmService.chatSimpleGuarded(
         [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
@@ -358,7 +358,7 @@ ${
 }`;
 
     try {
-      const result = await this.llmService.chatSimple(
+      const result = await this.llmService.chatSimpleGuarded(
         [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },

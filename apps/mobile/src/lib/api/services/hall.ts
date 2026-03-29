@@ -11,7 +11,7 @@ export const hallService = {
   getLists: (params?: Record<string, string | number | boolean | undefined>) =>
     apiClient.get(hallRoutes.lists(), { params }),
   getVerified: (params?: Record<string, string | number | boolean | undefined>) =>
-    apiClient.get(hallRoutes.verified(), { params }),
+    apiClient.get(hallRoutes.verifiedRanking(), { params }),
   getSwipeCard: () => apiClient.get(hallRoutes.swipe()),
   submitSwipe: (caseId: string, prediction: string) =>
     apiClient.post(hallRoutes.swipe(), { caseId, prediction }),

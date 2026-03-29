@@ -51,6 +51,7 @@ describe('HallRankingService', () => {
 
   const mockLLMService = {
     chatSimple: jest.fn(),
+    chatSimpleGuarded: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -305,7 +306,9 @@ describe('HallRankingService', () => {
         acceptanceRate: 3.5,
       });
       mockPrisma.profile.findMany.mockResolvedValue([]);
-      mockLLMService.chatSimple.mockRejectedValue(new Error('LLM error'));
+      mockLLMService.chatSimpleGuarded.mockRejectedValue(
+        new Error('LLM error'),
+      );
 
       const result = await service.getRankingAnalysis(
         'user-1',

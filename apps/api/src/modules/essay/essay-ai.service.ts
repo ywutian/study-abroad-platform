@@ -181,7 +181,7 @@ export class EssayAiService {
     );
 
     try {
-      const result = await this.llmService.chatSimple(
+      const result = await this.llmService.chatSimpleGuarded(
         [
           { role: 'system', content: systemPrompt },
           {
@@ -415,7 +415,7 @@ export class EssayAiService {
         ? `题目：${dto.prompt}${dto.background ? `\n学生背景：${dto.background}` : ''}`
         : `Prompt: ${dto.prompt}${dto.background ? `\nStudent background: ${dto.background}` : ''}`;
 
-      const result = await this.llmService.chatSimple(
+      const result = await this.llmService.chatSimpleGuarded(
         [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userContent },
@@ -541,7 +541,7 @@ export class EssayAiService {
     const systemPrompt = buildReviewSystemPrompt(locale);
 
     try {
-      const result = await this.llmService.chatSimple(
+      const result = await this.llmService.chatSimpleGuarded(
         [
           { role: 'system', content: systemPrompt },
           {
@@ -611,7 +611,7 @@ export class EssayAiService {
         ? `题目：${prompt}${background ? `\n学生背景：${background}` : ''}`
         : `Prompt: ${prompt}${background ? `\nStudent background: ${background}` : ''}`;
 
-      const result = await this.llmService.chatSimple(
+      const result = await this.llmService.chatSimpleGuarded(
         [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userContent },
@@ -691,7 +691,7 @@ Return JSON format:
 style field must be in English.`;
 
     try {
-      const result = await this.llmService.chatSimple(
+      const result = await this.llmService.chatSimpleGuarded(
         [
           { role: 'system', content: systemPrompt },
           {
@@ -766,7 +766,7 @@ Return JSON format:
 suggestions field must be in English.`;
 
     try {
-      const result = await this.llmService.chatSimple(
+      const result = await this.llmService.chatSimpleGuarded(
         [
           { role: 'system', content: systemPrompt },
           {
@@ -854,7 +854,7 @@ ${background ? `Background: ${background}` : ''}
 Please generate 3 compelling openings:`;
 
     try {
-      const result = await this.llmService.chatSimple(
+      const result = await this.llmService.chatSimpleGuarded(
         [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
@@ -972,7 +972,7 @@ All text fields must be in English.`;
       .join('\n\n');
 
     try {
-      const result = await this.llmService.chatSimple(
+      const result = await this.llmService.chatSimpleGuarded(
         [
           { role: 'system', content: systemPrompt },
           {
@@ -1061,7 +1061,7 @@ Return JSON format:
 Only list major changes (5-10), not every small edit. All reason fields must be in English.`;
 
     try {
-      const result = await this.llmService.chatSimple(
+      const result = await this.llmService.chatSimpleGuarded(
         [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: `请润色以下文书:\n\n${content}` },

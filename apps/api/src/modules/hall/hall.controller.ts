@@ -20,7 +20,10 @@ import { HallService } from './hall.service';
 import { SwipeService } from './swipe.service';
 import { CurrentUser, Public } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
-import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
+import {
+  ThrottleRelaxed,
+  ThrottleAI,
+} from '../../common/decorators/throttle.decorator';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import {
   CreateReviewDto,
@@ -207,6 +210,7 @@ export class HallController {
   }
 
   @Post('ranking-analysis')
+  @ThrottleAI()
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get AI analysis for ranking at a specific school' })
   async getRankingAnalysis(

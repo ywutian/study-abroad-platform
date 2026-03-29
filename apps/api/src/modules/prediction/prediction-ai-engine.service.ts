@@ -115,7 +115,7 @@ export class PredictionAiEngine {
         : 'You are an expert college admissions consultant with 20 years of experience. Always respond in English with valid JSON only. CRITICAL: Your probability estimates MUST vary significantly based on school selectivity — a top-5 school with 3% acceptance rate should have MUCH lower probability than a top-50 school with 25% acceptance rate for the same student profile. Never give the same probability for schools with different selectivity levels.';
 
     try {
-      const response = await this.llmService.chatSimple(
+      const response = await this.llmService.chatSimpleGuarded(
         [
           {
             role: 'system',
@@ -127,6 +127,11 @@ export class PredictionAiEngine {
           temperature: 0,
           maxTokens: 2500,
           ...(profileId && { seed: this.computeSeed(profileId, school.id) }),
+          providerOptions: {
+            response_format: {
+              type: 'json_object',
+            },
+          },
         },
       );
 

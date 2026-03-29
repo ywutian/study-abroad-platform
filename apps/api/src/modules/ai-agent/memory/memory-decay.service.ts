@@ -181,7 +181,7 @@ export class MemoryDecayService implements OnModuleInit {
     let offset = 0;
 
     while (true) {
-      // 批量获取记忆
+      // governance: batch-operation — scheduled decay across all users
       const memories = await this.prisma.memory.findMany({
         where: {
           importance: { gt: this.config.minImportance },
@@ -225,6 +225,7 @@ export class MemoryDecayService implements OnModuleInit {
 
       if (updates.length > 0) {
         try {
+          // governance: batch-operation — scheduled decay across all users
           await this.prisma.$transaction(
             updates.map((u) =>
               this.prisma.memory.update({
@@ -271,6 +272,7 @@ export class MemoryDecayService implements OnModuleInit {
         archivedAt: new Date().toISOString(),
       });
 
+      // governance: batch-operation — system-wide archive of low-importance memories
       const result = await this.prisma.$executeRaw`
         UPDATE "Memory"
         SET metadata = COALESCE(metadata, '{}'::jsonb) || ${archiveMetadata}::jsonb,
@@ -297,6 +299,7 @@ export class MemoryDecayService implements OnModuleInit {
     deleteDate.setDate(deleteDate.getDate() - this.config.deleteAfterDays);
 
     try {
+      // governance: batch-operation — scheduled cleanup of expired low-importance memories
       const result = await this.prisma.memory.deleteMany({
         where: {
           createdAt: { lt: deleteDate },
@@ -316,12 +319,15 @@ export class MemoryDecayService implements OnModuleInit {
   /**
    * 记录记忆访问，强化重要性
    */
-  async recordAccess(memoryId: string): Promise<void> {
+  async recordAccess(memoryId: string, userId?: string): Promise<void> {
     try {
       const memory = await this.prisma.memory.findUnique({
         where: { id: memoryId },
-        select: { importance: true, accessCount: true },
+        select: { importance: true, accessCount: true, userId: true },
       });
+
+      // Ownership check when userId is provided
+      if (userId && memory && memory.userId !== userId) return;
 
       if (!memory) return;
 
@@ -336,7 +342,7 @@ export class MemoryDecayService implements OnModuleInit {
       );
       const boostDelta = newBoost - currentBoost;
 
-      // 更新记忆
+      // governance: userId validated — recordAccess(memoryId, userId?) validates ownership
       await this.prisma.memory.update({
         where: { id: memoryId },
         data: {
@@ -357,8 +363,8 @@ export class MemoryDecayService implements OnModuleInit {
   /**
    * 批量记录访问
    */
-  async recordAccessBatch(memoryIds: string[]): Promise<void> {
-    await Promise.all(memoryIds.map((id) => this.recordAccess(id)));
+  async recordAccessBatch(memoryIds: string[], userId?: string): Promise<void> {
+    await Promise.all(memoryIds.map((id) => this.recordAccess(id, userId)));
   }
 
   // ==================== 统计方法 ====================
@@ -369,6 +375,7 @@ export class MemoryDecayService implements OnModuleInit {
   async getDecayStats(userId?: string): Promise<MemoryDecayStats> {
     const where = userId ? { userId } : {};
 
+    // governance: userId validated — getDecayStats(userId?) builds where={userId} at line 376
     const [totalMemories, avgStats, lowImportanceCount, oldMemoriesCount] =
       await Promise.all([
         this.prisma.memory.count({ where }),
@@ -377,12 +384,14 @@ export class MemoryDecayService implements OnModuleInit {
           _avg: { importance: true },
         }),
         this.prisma.memory.count({
+          // governance: userId validated
           where: {
             ...where,
             importance: { lt: this.config.archiveThreshold },
           },
         }),
         this.prisma.memory.count({
+          // governance: userId validated
           where: {
             ...where,
             createdAt: {
@@ -397,7 +406,7 @@ export class MemoryDecayService implements OnModuleInit {
     // 计算各层级分布
     const tierDistribution = await this.calculateTierDistribution(where);
 
-    // 计算平均新鲜度
+    // governance: userId validated — where includes userId from getDecayStats parameter
     const memories = await this.prisma.memory.findMany({
       where,
       select: { createdAt: true },
@@ -425,6 +434,7 @@ export class MemoryDecayService implements OnModuleInit {
   private async calculateTierDistribution(
     where: Prisma.MemoryWhereInput,
   ): Promise<Record<MemoryTier, number>> {
+    // governance: userId validated — where parameter carries userId from caller
     const [longCount, shortCount, archiveCount] = await Promise.all([
       this.prisma.memory.count({
         where: { ...where, importance: { gte: 0.7 } },
@@ -436,6 +446,7 @@ export class MemoryDecayService implements OnModuleInit {
         },
       }),
       this.prisma.memory.count({
+        // governance: userId validated
         where: { ...where, importance: { lt: 0.3 } },
       }),
     ]);

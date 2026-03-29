@@ -18,6 +18,7 @@ describe('AiValidatorService', () => {
 
   const mockLlmService = {
     chatSimple: jest.fn(),
+    chatSimpleGuarded: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -53,7 +54,7 @@ describe('AiValidatorService', () => {
         issues: [],
       };
 
-      mockLlmService.chatSimple.mockResolvedValue('{"some":"json"}');
+      mockLlmService.chatSimpleGuarded.mockResolvedValue('{"some":"json"}');
       mockExtractJsonFromLlm.mockReturnValue(llmResult);
 
       const result = await service.validateAndEnhance(baseEssay, 'MIT');
@@ -64,7 +65,7 @@ describe('AiValidatorService', () => {
       expect(result.aiTips).toBe('聚焦个人成长与反思');
       expect(result.aiCategory).toBe('个人成长');
       expect(result.issues).toEqual([]);
-      expect(mockLlmService.chatSimple).toHaveBeenCalledWith(
+      expect(mockLlmService.chatSimpleGuarded).toHaveBeenCalledWith(
         expect.arrayContaining([
           expect.objectContaining({ role: 'system' }),
           expect.objectContaining({ role: 'user' }),
@@ -77,7 +78,7 @@ describe('AiValidatorService', () => {
     });
 
     it('should use default values when LLM returns partial result', async () => {
-      mockLlmService.chatSimple.mockResolvedValue('{}');
+      mockLlmService.chatSimpleGuarded.mockResolvedValue('{}');
       mockExtractJsonFromLlm.mockReturnValue({});
 
       const result = await service.validateAndEnhance(baseEssay, 'Stanford');
@@ -98,7 +99,7 @@ describe('AiValidatorService', () => {
         issues: ['Not a valid essay prompt', 'Appears to be navigation text'],
       };
 
-      mockLlmService.chatSimple.mockResolvedValue('{"some":"json"}');
+      mockLlmService.chatSimpleGuarded.mockResolvedValue('{"some":"json"}');
       mockExtractJsonFromLlm.mockReturnValue(llmResult);
 
       const result = await service.validateAndEnhance(baseEssay, 'Harvard');
@@ -109,7 +110,7 @@ describe('AiValidatorService', () => {
     });
 
     it('should gracefully degrade when LLM throws an error', async () => {
-      mockLlmService.chatSimple.mockRejectedValue(
+      mockLlmService.chatSimpleGuarded.mockRejectedValue(
         new Error('LLM service timeout'),
       );
 
@@ -122,7 +123,7 @@ describe('AiValidatorService', () => {
     });
 
     it('should gracefully degrade when extractJsonFromLlm throws', async () => {
-      mockLlmService.chatSimple.mockResolvedValue('not valid json');
+      mockLlmService.chatSimpleGuarded.mockResolvedValue('not valid json');
       mockExtractJsonFromLlm.mockImplementation(() => {
         throw new Error('Failed to extract JSON');
       });
@@ -149,7 +150,7 @@ describe('AiValidatorService', () => {
 
       expect(result.isValid).toBe(true);
       expect(result.confidence).toBe(0.8);
-      expect(mockLlmService.chatSimple).not.toHaveBeenCalled();
+      expect(mockLlmService.chatSimpleGuarded).not.toHaveBeenCalled();
     });
 
     it('should default confidence to 0.5 when essay has no confidence and LLM unavailable', async () => {
@@ -172,12 +173,12 @@ describe('AiValidatorService', () => {
     });
 
     it('should include school name and essay details in LLM prompt', async () => {
-      mockLlmService.chatSimple.mockResolvedValue('{}');
+      mockLlmService.chatSimpleGuarded.mockResolvedValue('{}');
       mockExtractJsonFromLlm.mockReturnValue({});
 
       await service.validateAndEnhance(baseEssay, 'Stanford University');
 
-      const callArgs = mockLlmService.chatSimple.mock.calls[0];
+      const callArgs = mockLlmService.chatSimpleGuarded.mock.calls[0];
       const userMessage = callArgs[0][1].content as string;
 
       expect(userMessage).toContain('Stanford University');
@@ -199,15 +200,17 @@ describe('AiValidatorService', () => {
         '描述你面对的一个挑战。',
       ];
 
-      mockLlmService.chatSimple.mockResolvedValue('{"translations":[...]}');
+      mockLlmService.chatSimpleGuarded.mockResolvedValue(
+        '{"translations":[...]}',
+      );
       mockExtractJsonFromLlm.mockReturnValue({ translations });
 
       const result = await service.batchTranslate(prompts);
 
       expect(result).toEqual(translations);
       expect(result).toHaveLength(3);
-      expect(mockLlmService.chatSimple).toHaveBeenCalledTimes(1);
-      expect(mockLlmService.chatSimple).toHaveBeenCalledWith(
+      expect(mockLlmService.chatSimpleGuarded).toHaveBeenCalledTimes(1);
+      expect(mockLlmService.chatSimpleGuarded).toHaveBeenCalledWith(
         expect.arrayContaining([
           expect.objectContaining({ role: 'system' }),
           expect.objectContaining({ role: 'user' }),
@@ -219,7 +222,7 @@ describe('AiValidatorService', () => {
     });
 
     it('should return empty strings when LLM returns no translations', async () => {
-      mockLlmService.chatSimple.mockResolvedValue('{}');
+      mockLlmService.chatSimpleGuarded.mockResolvedValue('{}');
       mockExtractJsonFromLlm.mockReturnValue({});
 
       const result = await service.batchTranslate(['Prompt 1', 'Prompt 2']);
@@ -231,11 +234,11 @@ describe('AiValidatorService', () => {
       const result = await service.batchTranslate([]);
 
       expect(result).toEqual([]);
-      expect(mockLlmService.chatSimple).not.toHaveBeenCalled();
+      expect(mockLlmService.chatSimpleGuarded).not.toHaveBeenCalled();
     });
 
     it('should return empty strings when LLM throws an error', async () => {
-      mockLlmService.chatSimple.mockRejectedValue(
+      mockLlmService.chatSimpleGuarded.mockRejectedValue(
         new Error('API rate limit exceeded'),
       );
 
@@ -266,12 +269,12 @@ describe('AiValidatorService', () => {
 
     it('should include all prompts in the LLM request', async () => {
       const prompts = ['First prompt', 'Second prompt'];
-      mockLlmService.chatSimple.mockResolvedValue('{}');
+      mockLlmService.chatSimpleGuarded.mockResolvedValue('{}');
       mockExtractJsonFromLlm.mockReturnValue({ translations: ['一', '二'] });
 
       await service.batchTranslate(prompts);
 
-      const callArgs = mockLlmService.chatSimple.mock.calls[0];
+      const callArgs = mockLlmService.chatSimpleGuarded.mock.calls[0];
       const userMessage = callArgs[0][1].content as string;
 
       expect(userMessage).toContain('1. First prompt');

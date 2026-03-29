@@ -89,7 +89,7 @@ export const hallRoutes = {
   listVote: (id: string) => `${API_ROUTES.HALLS}/lists/${id}/vote`,
   reviews: () => `${API_ROUTES.HALLS}/reviews`,
   reviewReact: (id: string) => `${API_ROUTES.HALLS}/reviews/${id}/react`,
-  verified: () => `${API_ROUTES.HALLS}/verified`,
+  verifiedRanking: () => `${API_ROUTES.HALLS}/verified-ranking`,
   swipe: () => `${API_ROUTES.HALLS}/swipe`,
 };
 
@@ -100,7 +100,6 @@ export const chatRoutes = {
   message: (messageId: string) => `${API_ROUTES.CHATS}/messages/${messageId}`,
   follow: (userId: string) => `${API_ROUTES.CHATS}/follow/${userId}`,
   block: (userId: string) => `${API_ROUTES.CHATS}/block/${userId}`,
-  unblock: (userId: string) => `${API_ROUTES.CHATS}/unblock/${userId}`,
 };
 
 export const predictionRoutes = {

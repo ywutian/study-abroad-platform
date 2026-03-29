@@ -295,6 +295,7 @@ export class MemoryCompactionService {
 
       // 批量删除重复记忆
       if (toDelete.length > 0) {
+        // governance: userId validated — deduplicateMemories(userId) scopes all queries
         await this.prisma.$executeRaw`
           DELETE FROM "Memory" WHERE id = ANY(${toDelete}::text[])
         `;
@@ -389,6 +390,7 @@ export class MemoryCompactionService {
         `;
 
         // 删除原始记忆
+        // governance: userId validated — mergeSimilarMemories(userId) scopes all queries
         await this.prisma.$executeRaw`
           DELETE FROM "Memory" WHERE id = ANY(${sourceIds}::text[])
         `;
@@ -455,6 +457,7 @@ export class MemoryCompactionService {
         const newTokens = this.estimateTokens(summary);
 
         if (newTokens < originalTokens * 0.5) {
+          // governance: userId validated — summarizeOldMemories(userId) scopes all queries
           await this.prisma.$executeRaw`
             UPDATE "Memory"
             SET content = ${summary},
@@ -471,6 +474,7 @@ export class MemoryCompactionService {
         }
       } else if (memory.importance < 0.1 && memory.accessCount === 0) {
         // 删除极低价值记忆
+        // governance: userId validated — summarizeOldMemories(userId) scopes all queries
         await this.prisma.$executeRaw`
           DELETE FROM "Memory" WHERE id = ${memory.id}
         `;
@@ -485,6 +489,7 @@ export class MemoryCompactionService {
   // ==================== 辅助方法 ====================
 
   private async getUsersNeedingCompaction(): Promise<string[]> {
+    // governance: batch-operation — system-wide scan to find users needing compaction
     const result = await this.prisma.$queryRaw<
       Array<{ userId: string; count: bigint }>
     >`

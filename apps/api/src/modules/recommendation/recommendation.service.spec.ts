@@ -119,6 +119,7 @@ describe('RecommendationService', () => {
           provide: LLMService,
           useValue: {
             chatSimple: jest.fn().mockResolvedValue(mockAIResponse),
+            chatSimpleGuarded: jest.fn().mockResolvedValue(mockAIResponse),
           },
         },
         {
@@ -180,7 +181,7 @@ describe('RecommendationService', () => {
 
       expect(result).toBeDefined();
       expect(result.recommendations).toBeDefined();
-      expect(llmService.chatSimple).toHaveBeenCalled();
+      expect(llmService.chatSimpleGuarded).toHaveBeenCalled();
     });
 
     it('should throw NotFoundException and refund if profile not found', async () => {
@@ -194,7 +195,7 @@ describe('RecommendationService', () => {
 
     it('should refund points if AI service fails', async () => {
       (prisma.profile.findFirst as jest.Mock).mockResolvedValue(mockProfile);
-      (llmService.chatSimple as jest.Mock).mockRejectedValue(
+      (llmService.chatSimpleGuarded as jest.Mock).mockRejectedValue(
         new Error('AI service timeout'),
       );
 
@@ -234,7 +235,7 @@ describe('RecommendationService', () => {
 
     it('should refund and throw on non-JSON AI response', async () => {
       (prisma.profile.findFirst as jest.Mock).mockResolvedValue(mockProfile);
-      (llmService.chatSimple as jest.Mock).mockResolvedValue(
+      (llmService.chatSimpleGuarded as jest.Mock).mockResolvedValue(
         'This is not valid JSON',
       );
 

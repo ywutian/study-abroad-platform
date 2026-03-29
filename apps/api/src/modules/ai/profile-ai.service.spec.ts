@@ -14,6 +14,7 @@ describe('ProfileAiService', () => {
 
   const mockLLMService = {
     chatSimple: jest.fn(),
+    chatSimpleGuarded: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -91,14 +92,14 @@ describe('ProfileAiService', () => {
         summary: 'Strong profile overall.',
       });
 
-      mockLLMService.chatSimple.mockResolvedValue(mockLlmResult);
+      mockLLMService.chatSimpleGuarded.mockResolvedValue(mockLlmResult);
       (extractJsonFromLlm as jest.Mock).mockReturnValue(
         JSON.parse(mockLlmResult),
       );
 
       const result = await service.analyzeProfileDetailed(mockRequest, 'en');
 
-      expect(mockLLMService.chatSimple).toHaveBeenCalledWith(
+      expect(mockLLMService.chatSimpleGuarded).toHaveBeenCalledWith(
         expect.arrayContaining([
           expect.objectContaining({ role: 'system' }),
           expect.objectContaining({ role: 'user' }),
@@ -113,7 +114,9 @@ describe('ProfileAiService', () => {
     });
 
     it('should return default analysis when LLM call fails', async () => {
-      mockLLMService.chatSimple.mockRejectedValue(new Error('LLM timeout'));
+      mockLLMService.chatSimpleGuarded.mockRejectedValue(
+        new Error('LLM timeout'),
+      );
 
       const result = await service.analyzeProfileDetailed(mockRequest, 'en');
 
@@ -168,7 +171,7 @@ describe('ProfileAiService', () => {
         summary: 'Test',
       };
 
-      mockLLMService.chatSimple.mockResolvedValue('{}');
+      mockLLMService.chatSimpleGuarded.mockResolvedValue('{}');
       (extractJsonFromLlm as jest.Mock).mockReturnValue(parsedResult);
 
       const result = await service.analyzeProfileDetailed(mockRequest, 'zh');
@@ -183,7 +186,7 @@ describe('ProfileAiService', () => {
     });
 
     it('should use zh locale for default analysis', async () => {
-      mockLLMService.chatSimple.mockRejectedValue(new Error('fail'));
+      mockLLMService.chatSimpleGuarded.mockRejectedValue(new Error('fail'));
 
       const result = await service.analyzeProfileDetailed(mockRequest);
 

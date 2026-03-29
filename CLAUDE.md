@@ -183,7 +183,7 @@ All LLM calls go through `LLMService` (globally provided by `LLMProvidersModule.
 
 ### Tool System
 
-11 domain tool services implementing `IToolHandlerProvider`. See `memory/ai-system.md` for full list and how to add new tools.
+12 domain tool services implementing `IToolHandlerProvider`. See `memory/ai-system.md` for full list and how to add new tools.
 
 ### Memory System
 
@@ -656,6 +656,58 @@ After writing code, verify these items. `[AUTO]` items are enforced by tooling; 
 ```bash
 pnpm lint:all    # ESLint + frontend quality + backend quality + i18n
 ```
+
+## Architecture Governance (Automated Enforcement)
+
+Multi-layer governance system for the AI Agent module. See ADR 0010-0015 for design decisions.
+
+### Governance CLI
+
+```bash
+npx tsx scripts/governance/index.ts --all              # Run all 5 rules
+npx tsx scripts/governance/index.ts --all --json       # JSON output (for CI/Jest)
+npx tsx scripts/governance/index.ts --rules=optional-security,config-consistency
+npx tsx scripts/governance/index.ts --verify-project   # Verify ts-morph project setup
+pnpm lint:integration --domain=governance              # Via check-integration.ts
+```
+
+### Rules
+
+| Rule | ID                     | Severity  | What it catches                                        |
+| ---- | ---------------------- | --------- | ------------------------------------------------------ |
+| G1   | `optional-security`    | **error** | `@Optional()` on PromptGuard/ContentModeration/Audit   |
+| G2   | `nl-endpoint-coverage` | **error** | NL endpoint missing `AgentSecurityMiddleware` coverage |
+| G3   | `config-consistency`   | **error** | Direct `AGENT_CONFIGS[...]` read outside validator     |
+| G4   | `user-data-isolation`  | warning   | Prisma query missing `userId` filter in ai-agent code  |
+| G5   | `dead-provider`        | warning   | Unused provider in `ai-agent.module.ts`                |
+
+### Adding New NL Endpoints
+
+When adding a new endpoint that accepts user-generated natural language:
+
+1. Add route to `AgentSecurityMiddleware.forRoutes()` in `ai-agent.module.ts`
+2. Add entry to `scripts/governance/nl-endpoints.json`
+3. Run `npx tsx scripts/governance/index.ts --rule=nl-endpoint-coverage` to verify
+
+### Runtime Validation
+
+`ArchitectureValidatorService` runs on startup (`OnModuleInit`):
+
+- **production/staging**: Missing security services → startup fails
+- **development/test**: Missing security services → warn only
+- Health endpoint `/health/detailed` reports `aiSecurity` status + `embeddingConsistency`
+- `/health/ready` returns 503 when `aiSecurity === 'degraded'` in production/staging
+
+### Coverage Matrix
+
+| Gap               | Static (G1-G5) | Runtime          | Jest                 | ADR  |
+| ----------------- | -------------- | ---------------- | -------------------- | ---- |
+| Security coverage | G1, G2 (error) | Startup + Health | architecture.spec    | 0010 |
+| @Optional abuse   | G1 (error)     | Startup          | architecture.spec    | 0011 |
+| Config drift      | G3 (error)     | Startup          | architecture.spec    | 0010 |
+| Observability     | —              | Health degraded  | aiSecurity assertion | 0010 |
+| Multi-tenant      | G4 (warning)   | —                | —                    | 0010 |
+| Dead code         | G5 (warning)   | —                | —                    | 0015 |
 
 ## File Index
 

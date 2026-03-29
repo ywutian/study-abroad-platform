@@ -599,7 +599,7 @@ Output in JSON format:
 Output only JSON, nothing else.`;
 
     try {
-      const response = await this.llmService.chatSimple([
+      const response = await this.llmService.chatSimpleGuarded([
         { role: 'user', content: prompt },
       ]);
 

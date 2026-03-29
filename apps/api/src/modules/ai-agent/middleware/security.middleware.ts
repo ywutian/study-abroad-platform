@@ -33,7 +33,9 @@ export class AgentSecurityMiddleware implements NestMiddleware {
     const startTime = Date.now();
 
     try {
-      // 检查请求体中的消息内容
+      // All agent DTOs (ChatDto, DirectAgentDto) use `message` as the user text field.
+      // If new DTOs introduce other user-facing text fields, add them here.
+      // Non-agent LLM endpoints are guarded at the LLMService layer (chatSimpleGuarded).
       const message = req.body?.message || req.body?.content;
 
       if (message && typeof message === 'string') {
