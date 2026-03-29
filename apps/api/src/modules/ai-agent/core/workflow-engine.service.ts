@@ -40,6 +40,9 @@ import {
 } from '../types';
 import { ToolExecutionResult } from './types';
 import { getLocalizedSystemPrompt } from '../config/agents.config';
+import { TOOL_READONLY } from '../config/tools.config';
+import { extractJsonFromLlm } from '../../../common/utils/llm-json.util';
+import { MetricsService } from '../infrastructure/observability/metrics.service';
 
 // ==================== 工作流类型定义 ====================
 
@@ -134,7 +137,14 @@ Important rules:
 - Think carefully, then list all tool calls at once
 - Each tool should be called at most once
 - If no tools are needed, reply to the user directly
-- Do not explain which tools you are calling; just call them`;
+- Do not explain which tools you are calling; just call them
+
+## Tool Selection Principles
+- Prefer local database tools (get_school_details, get_profile, search_cases, get_deadlines, etc.)
+- Only use web_search or search_school_website when local tools clearly cannot answer (latest policies, current dates, information unlikely in the database)
+- search_schools / get_school_details: school basic info from database
+- search_school_website: school's official latest info (e.g., confirming deadline changes)
+- web_search: only for cross-school general timely information (policies, visas, trends)`;
   }
   return `
 
@@ -148,7 +158,14 @@ Important rules:
 - 仔细思考后，一次性列出所有需要的工具调用
 - 每种工具最多调用一次
 - 如果不需要任何工具，直接回复用户即可
-- 不要在回复中解释"我要调用什么工具"，直接调用即可`;
+- 不要在回复中解释"我要调用什么工具"，直接调用即可
+
+## 工具选择原则
+- 优先使用本地数据库工具（get_school_details, get_profile, search_cases, get_deadlines 等）
+- 仅当本地工具明确不足以回答时（最新政策、当前日期、数据库不太可能有的信息），才使用 web_search 或 search_school_website
+- search_schools / get_school_details：获取学校基本信息
+- search_school_website：获取学校官方最新信息（如确认截止日期变更）
+- web_search：仅用于跨学校的通用时效性信息（政策、签证、趋势）`;
 }
 
 function getSolveSystemSuffix(locale: string): string {
@@ -162,7 +179,7 @@ Your task is: Based on all tool results, generate a complete, friendly, well-org
 Important rules:
 - **Never** call any tools again
 - Generate the response directly based on existing tool results
-- If a tool failed, skip that content or inform the user
+- If a tool returned an error, inform the user that functionality is temporarily unavailable and answer based on other tool results. Do not fabricate data that the failed tool should have returned
 - The response should be complete, organized, and not omit important information
 - If tool results contain search results (web_search or search_school_website), you **must** cite information from the search results and include source links. Search results are real-time data; use them directly. Do not say "I cannot search" or "I cannot get real-time information"`;
   }
@@ -175,7 +192,7 @@ Important rules:
 重要规则：
 - **绝对不要** 再调用任何工具
 - 直接基于已有的工具结果生成回复
-- 如果某个工具执行失败，跳过相关内容或告知用户
+- 如果某个工具返回了 error 信息，告知用户该功能暂时不可用，并基于其他工具结果尽量回答。不要编造该工具本应返回的数据
 - 回复要完整、有条理，不要遗漏重要信息
 - 如果工具结果中包含搜索结果（web_search 或 search_school_website），你**必须**引用搜索结果中的信息来回答用户问题，并附上来源链接。搜索结果就是实时数据，直接使用即可，不要说"我无法搜索"或"我无法获取实时信息"`;
 }
@@ -199,6 +216,7 @@ export class WorkflowEngineService {
     private memory: MemoryService,
     @Optional() private resilience?: ResilienceService,
     @Optional() private memoryManager?: MemoryManagerService,
+    @Optional() private metricsService?: MetricsService,
   ) {}
 
   // ==================== 公开 API ====================
@@ -289,12 +307,26 @@ export class WorkflowEngineService {
   ): AsyncGenerator<WorkflowStreamEvent> {
     const totalStart = Date.now();
 
+    // Pre-fetch enterprise memory context once for the entire workflow turn.
+    // Reused by both Plan and Solve phases to avoid redundant embedding + DB queries.
+    const locale = (conversation.metadata?.locale as string) || 'zh';
+    const cachedMemoryContext = await this.getEnterpriseMemoryContext(
+      conversation,
+      locale,
+    );
+
     try {
       // ---- Phase 1: PLAN ----
       yield { type: 'phase_change', phase: WorkflowPhase.PLAN };
       const planStart = Date.now();
 
-      const plan = await this.planPhase(agentType, config, conversation, tools);
+      const plan = await this.planPhase(
+        agentType,
+        config,
+        conversation,
+        tools,
+        cachedMemoryContext,
+      );
       const planMs = Date.now() - planStart;
       this.warnIfSlow(agentType, 'plan', planMs);
 
@@ -305,14 +337,11 @@ export class WorkflowEngineService {
       // 快速路径：不需要工具调用 → 把 Plan 内容当最终回复，分块输出模拟流式
       if (plan.steps.length === 0 && !plan.delegation) {
         if (plan.planningContent) {
-          this.memory.addMessage(conversation, {
-            role: 'assistant',
-            content: plan.planningContent,
-            agentType,
-          });
           // Emit in small chunks to simulate streaming for the client.
           // Without this, the entire response arrives as a single event
           // because the Plan phase uses non-streaming llm.call().
+          // Note: assistant message persistence is handled by the Orchestrator's
+          // collectAndPersistStream / persistAssistantResponse to avoid double-write.
           yield* this.emitChunked(plan.planningContent, 'plan_content');
         }
 
@@ -372,6 +401,7 @@ export class WorkflowEngineService {
         agentType,
         config,
         conversation,
+        cachedMemoryContext,
       )) {
         finalMessage += chunk;
         yield { type: 'solve_content', content: chunk };
@@ -381,6 +411,46 @@ export class WorkflowEngineService {
 
       this.logger.log(`[${agentType}] SOLVE completed (${solveMs}ms)`);
 
+      // ---- Optional: CRITIQUE (only for enableReflection agents) ----
+      let critiqueMs = 0;
+      if (config.enableReflection && finalMessage && plan.steps.length > 0) {
+        const critiqueStart = Date.now();
+        const critiqueResult = await this.critiquePhase(
+          agentType,
+          config,
+          finalMessage,
+          plan,
+          locale,
+        );
+        critiqueMs = Date.now() - critiqueStart;
+
+        this.metricsService?.recordCritique(critiqueResult.passed);
+
+        if (!critiqueResult.passed) {
+          this.logger.log(
+            `[${agentType}] Critique failed (${critiqueMs}ms): ${critiqueResult.reason}, re-solving`,
+          );
+
+          let resolvedMessage = '';
+          for await (const chunk of this.reSolvePhase(
+            agentType,
+            config,
+            conversation,
+            critiqueResult.feedback || '',
+            cachedMemoryContext,
+          )) {
+            resolvedMessage += chunk;
+            yield { type: 'solve_content', content: chunk };
+          }
+
+          if (resolvedMessage) {
+            finalMessage = resolvedMessage;
+          }
+        } else {
+          this.logger.debug(`[${agentType}] Critique passed (${critiqueMs}ms)`);
+        }
+      }
+
       yield {
         type: 'done',
         result: this.buildWorkflowResult({
@@ -389,7 +459,7 @@ export class WorkflowEngineService {
           timing: {
             planMs,
             executeMs,
-            solveMs,
+            solveMs: solveMs + critiqueMs,
             totalMs: Date.now() - totalStart,
           },
         }),
@@ -437,8 +507,13 @@ export class WorkflowEngineService {
     config: AgentConfig,
     conversation: ConversationState,
     tools: ToolDefinition[],
+    memoryContext: string = '',
   ): Promise<ExecutionPlan> {
-    const systemPrompt = await this.buildPlanPrompt(config, conversation);
+    const systemPrompt = await this.buildPlanPrompt(
+      config,
+      conversation,
+      memoryContext,
+    );
     const messages = this.memory.getRecentMessages(conversation);
 
     const response = await this.llm.call(systemPrompt, messages, {
@@ -534,42 +609,64 @@ export class WorkflowEngineService {
   // ==================== Phase 2: EXECUTE ====================
 
   /**
-   * Phase 2: EXECUTE -- Run all planned tool calls sequentially without LLM involvement.
+   * Phase 2: EXECUTE -- Run planned tool calls with read/write-split parallelism.
    *
-   * This is the single source of truth for the Execute phase. It:
-   * 1. Records the assistant's plan message (with tool calls) into conversation history,
-   *    ensuring the Solve phase sees the complete [assistant+toolCalls] -> [tool results] sequence
-   * 2. Executes each planned step in order, yielding `tool_start` and `tool_end` events
+   * Strategy:
+   * 1. Record the assistant's plan message (with tool calls) into conversation history
+   * 2. Partition tools into readonly (parallelizable) and mutable (sequential) groups
+   * 3. Execute all readonly tools concurrently via Promise.allSettled
+   * 4. Execute mutable tools sequentially
+   * 5. Append tool results to conversation history in plan-original order
+   *    (critical for Solve phase coherence)
    *
    * No LLM calls are made during this phase, which structurally prevents
    * duplicate or hallucinated tool invocations.
-   *
-   * @param plan - The execution plan from the Plan phase
-   * @param conversation - Current conversation state (tool results are appended to its messages)
-   * @returns An async generator of tool lifecycle events
-   */
-  /**
-   * 执行阶段核心 —— 单一事实来源
-   *
-   * 1. 记录 assistant plan 消息（含 toolCalls）到对话历史
-   * 2. 依次执行每个工具，yield tool_start/tool_end 事件
-   *
-   * 这个阶段完全不调用 LLM，只执行工具
    */
   private async *executePhaseCore(
     plan: ExecutionPlan,
     conversation: ConversationState,
   ): AsyncGenerator<WorkflowStreamEvent> {
-    // 记录 assistant plan 消息（含 toolCalls）
-    // 确保 Solve 阶段 getRecentMessages() 拿到完整的
-    // [assistant+toolCalls] → [tool results] 消息序列
+    // Record assistant plan message (with toolCalls)
     this.memory.addMessage(conversation, {
       role: 'assistant',
       content: plan.planningContent || '',
       toolCalls: plan.steps.map((s) => s.toolCall),
     });
 
-    for (const step of plan.steps) {
+    // Partition: readonly (parallelizable) vs mutable (sequential)
+    const readonlySteps = plan.steps.filter((s) =>
+      TOOL_READONLY.has(s.toolCall.name),
+    );
+    const mutableSteps = plan.steps.filter(
+      (s) => !TOOL_READONLY.has(s.toolCall.name),
+    );
+
+    // Phase 2a: Execute readonly tools in parallel
+    if (readonlySteps.length > 0) {
+      for (const step of readonlySteps) {
+        yield { type: 'tool_start', tool: step.toolCall.name };
+      }
+
+      // Parallel execution — no memory writes inside (order-preserving)
+      await Promise.allSettled(
+        readonlySteps.map((step) =>
+          this.executeStepNoMemory(step, conversation),
+        ),
+      );
+
+      // Append results to conversation history in plan-original order
+      for (const step of readonlySteps) {
+        this.appendToolResultToMemory(step, conversation);
+        yield {
+          type: 'tool_end',
+          tool: step.toolCall.name,
+          toolResult: step.result,
+        };
+      }
+    }
+
+    // Phase 2b: Execute mutable tools sequentially
+    for (const step of mutableSteps) {
       yield { type: 'tool_start', tool: step.toolCall.name };
       await this.executeStep(step, conversation);
       yield {
@@ -658,6 +755,84 @@ export class WorkflowEngineService {
     }
   }
 
+  /**
+   * Execute a single tool step WITHOUT writing to conversation memory.
+   *
+   * Used by parallel execution: results are appended to memory in
+   * plan-original order after all parallel steps complete, preserving
+   * the message sequence that the Solve phase expects.
+   */
+  private async executeStepNoMemory(
+    step: PlannedStep,
+    conversation: ConversationState,
+  ): Promise<void> {
+    step.status = 'running';
+    const stepStart = Date.now();
+
+    try {
+      const stepLocale = (conversation.metadata?.locale as string) || 'zh';
+      const executeWithTimeout = async () => {
+        return this.toolExecutor.execute(
+          step.toolCall,
+          conversation.userId,
+          conversation.context,
+          stepLocale,
+        );
+      };
+
+      const result = this.resilience
+        ? await this.resilience.withTimeout(
+            executeWithTimeout,
+            TOOL_TIMEOUT_MS,
+            `tool:${step.toolCall.name}`,
+          )
+        : await executeWithTimeout();
+
+      step.duration = Date.now() - stepStart;
+      step.result = result;
+
+      if (result.success) {
+        step.status = 'success';
+      } else {
+        step.status = 'failed';
+        step.error = result.error;
+      }
+    } catch (error) {
+      step.duration = Date.now() - stepStart;
+      step.status = 'failed';
+      step.error =
+        error instanceof Error ? error.message : 'Tool execution failed';
+
+      this.logger.error(
+        `[EXECUTE] Tool ${step.toolCall.name} failed: ${step.error}`,
+      );
+    }
+  }
+
+  /**
+   * Append a completed tool step's result to conversation memory.
+   *
+   * Called after parallel execution completes, in plan-original order,
+   * to ensure the Solve phase sees tool results in a deterministic sequence.
+   */
+  private appendToolResultToMemory(
+    step: PlannedStep,
+    conversation: ConversationState,
+  ): void {
+    const resultContent =
+      step.status === 'success'
+        ? JSON.stringify(step.result?.result)
+        : JSON.stringify({
+            error: step.error || 'Tool execution failed',
+          });
+
+    this.memory.addMessage(conversation, {
+      role: 'tool',
+      content: resultContent,
+      toolCallId: step.toolCall.id,
+    });
+  }
+
   // ==================== Phase 3: SOLVE ====================
 
   /**
@@ -694,8 +869,13 @@ export class WorkflowEngineService {
     agentType: AgentType,
     config: AgentConfig,
     conversation: ConversationState,
+    memoryContext: string = '',
   ): AsyncGenerator<string> {
-    const systemPrompt = await this.buildSolvePrompt(config, conversation);
+    const systemPrompt = await this.buildSolvePrompt(
+      config,
+      conversation,
+      memoryContext,
+    );
     const messages = this.memory.getRecentMessages(conversation);
     const llmOpts = {
       model: config.model,
@@ -748,12 +928,152 @@ export class WorkflowEngineService {
       );
     }
 
-    // 4. 记录最终 assistant 回复
-    this.memory.addMessage(conversation, {
-      role: 'assistant',
-      content: fullContent,
-      agentType,
-    });
+    // Note: final assistant message persistence is handled by the Orchestrator
+    // (collectAndPersistStream / persistAssistantResponse) to avoid double-write.
+  }
+
+  // ==================== Phase 4: CRITIQUE (optional) ====================
+
+  /**
+   * Critique the Solve output using a low-cost model.
+   *
+   * Checks:
+   * 1. Every school/entity mentioned has supporting data from tool results
+   * 2. Numbers (acceptance rates, rankings) match tool data
+   * 3. No unsupported claims or hallucinated information
+   *
+   * Hard limits:
+   * - Single LLM call (no tools), maxTokens=500
+   * - Only one ReSolve attempt allowed (caller enforces)
+   * - Fail-open: parse errors default to "passed"
+   */
+  private async critiquePhase(
+    agentType: AgentType,
+    config: AgentConfig,
+    solveOutput: string,
+    plan: ExecutionPlan,
+    locale: string,
+  ): Promise<{ passed: boolean; reason?: string; feedback?: string }> {
+    const toolResults = plan.steps
+      .filter((s) => s.status === 'success')
+      .map(
+        (s) =>
+          `[${s.toolCall.name}]: ${JSON.stringify(s.result?.result).slice(0, 500)}`,
+      )
+      .join('\n');
+
+    const critiquePrompt =
+      locale === 'en'
+        ? `You are a quality reviewer for a college admissions AI assistant.
+Review the following response and tool data. Check:
+1. Every school mentioned has supporting data from tools
+2. Numbers (acceptance rates, rankings) match tool data
+3. No unsupported claims or hallucinated information
+
+Tool results:
+${toolResults}
+
+Response to review:
+${solveOutput}
+
+Reply in JSON: {"passed": true/false, "reason": "...", "feedback": "specific corrections needed"}`
+        : `你是留学 AI 助手的质量审查员。
+审查以下回复和工具数据。检查：
+1. 提到的每所学校都有工具返回数据支撑
+2. 数字（录取率、排名）与工具数据一致
+3. 没有无依据的判断或编造的信息
+
+工具结果：
+${toolResults}
+
+待审查回复：
+${solveOutput}
+
+用 JSON 回复：{"passed": true/false, "reason": "...", "feedback": "需要修正的具体内容"}`;
+
+    try {
+      const result = await this.llm.call(critiquePrompt, [], {
+        model: config.reflectionModel || 'gpt-4o-mini',
+        temperature: 0.1,
+        maxTokens: 500,
+        userId: 'system',
+        agentType: `${agentType}_critique`,
+      });
+
+      const parsed = extractJsonFromLlm<{
+        passed: boolean;
+        reason?: string;
+        feedback?: string;
+      }>(result.content);
+
+      return parsed || { passed: true };
+    } catch (error) {
+      this.logger.warn(
+        `[${agentType}] Critique failed to execute, defaulting to pass: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return { passed: true };
+    }
+  }
+
+  /**
+   * Re-run the Solve phase with critique feedback injected into the prompt.
+   *
+   * The critique feedback is appended to the system prompt so the LLM
+   * can correct its output without re-executing tools.
+   */
+  private async *reSolvePhase(
+    agentType: AgentType,
+    config: AgentConfig,
+    conversation: ConversationState,
+    critiqueFeedback: string,
+    memoryContext: string = '',
+  ): AsyncGenerator<string> {
+    const locale = (conversation.metadata?.locale as string) || 'zh';
+    const basePrompt = await this.buildSolvePrompt(
+      config,
+      conversation,
+      memoryContext,
+    );
+
+    const correctionSuffix =
+      locale === 'en'
+        ? `\n\n## Quality Review Feedback\nYour previous response had issues. Please correct:\n${critiqueFeedback}\n\nGenerate a corrected response that addresses all issues above.`
+        : `\n\n## 质量审查反馈\n你之前的回复存在问题，请修正：\n${critiqueFeedback}\n\n请生成修正后的回复，解决上述所有问题。`;
+
+    const systemPrompt = basePrompt + correctionSuffix;
+    const messages = this.memory.getRecentMessages(conversation);
+    const llmOpts = {
+      model: config.model,
+      temperature: config.temperature,
+      maxTokens: config.maxTokens,
+      userId: conversation.userId,
+      conversationId: conversation.id,
+      agentType: `${agentType}_resolve`,
+    };
+
+    let fullContent = '';
+
+    for await (const chunk of this.llm.callStream(
+      systemPrompt,
+      messages,
+      llmOpts,
+    )) {
+      if (chunk.type === 'content' && chunk.content) {
+        fullContent += chunk.content;
+        yield chunk.content;
+      }
+      if (chunk.type === 'done') break;
+    }
+
+    if (!fullContent.trim()) {
+      this.logger.warn(
+        `[${agentType}] ReSolve streaming empty, retrying non-streaming`,
+      );
+      const response = await this.llm.call(systemPrompt, messages, llmOpts);
+      if (response.content) {
+        yield response.content;
+      }
+    }
   }
 
   // ==================== 辅助方法 ====================
@@ -879,6 +1199,7 @@ export class WorkflowEngineService {
   private async buildPlanPrompt(
     config: AgentConfig,
     conversation: ConversationState,
+    memoryContext: string = '',
   ): Promise<string> {
     const locale = (conversation.metadata?.locale as string) || 'zh';
     const localizedPrompt = getLocalizedSystemPrompt(config, locale);
@@ -887,10 +1208,6 @@ export class WorkflowEngineService {
     const userInfoLabel =
       locale === 'en' ? '## Current User Info' : '## 当前用户信息';
     const baseContext = this.memory.getContextSummary(conversation.context);
-    const memoryContext = await this.getEnterpriseMemoryContext(
-      conversation,
-      locale,
-    );
 
     return `${localizedPrompt}
 
@@ -908,6 +1225,7 @@ ${memoryContext}${getPlanSystemSuffix(locale)}`;
   private async buildSolvePrompt(
     config: AgentConfig,
     conversation: ConversationState,
+    memoryContext: string = '',
   ): Promise<string> {
     const locale = (conversation.metadata?.locale as string) || 'zh';
     const localizedPrompt = getLocalizedSystemPrompt(config, locale);
@@ -916,10 +1234,6 @@ ${memoryContext}${getPlanSystemSuffix(locale)}`;
     const userInfoLabel =
       locale === 'en' ? '## Current User Info' : '## 当前用户信息';
     const baseContext = this.memory.getContextSummary(conversation.context);
-    const memoryContext = await this.getEnterpriseMemoryContext(
-      conversation,
-      locale,
-    );
 
     return `${localizedPrompt}
 

@@ -2777,3 +2777,17 @@ model FeatureFlag {
 
   @@map("feature_flags")
 }
+
+/// Embedding vectors for semantic agent routing (pgvector).
+/// Each row stores one example query for an agent type.
+model AgentRouteEmbedding {
+  id        String                  @id @default(uuid())
+  agentType String                  @map("agent_type")
+  example   String                  /// Example query text
+  embedding Unsupported("vector(1536)")
+  createdAt DateTime                @default(now()) @map("created_at")
+  updatedAt DateTime                @updatedAt @map("updated_at")
+
+  @@index([agentType])
+  @@map("agent_route_embeddings")
+}

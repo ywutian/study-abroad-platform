@@ -240,6 +240,8 @@ Prediction analysis:
     model: 'gpt-4o-mini',
     temperature: 0.5,
     maxTokens: 4000,
+    enableReflection: true,
+    reflectionModel: 'gpt-4o-mini',
   },
 
   // ==================== 档案分析 Agent ====================

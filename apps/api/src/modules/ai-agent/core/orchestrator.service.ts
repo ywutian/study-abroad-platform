@@ -6,6 +6,11 @@
  * 记忆系统优先级：
  * 1. MemoryManagerService（企业级，Redis + PostgreSQL）
  * 2. MemoryService（降级，内存）
+ *
+ * === 架构守护 ===
+ * - PG 写入：仅 Orchestrator 通过 memoryManager（addMessage / persistWorkflowMessages）
+ * - 内存写入：WorkflowEngine 通过 MemoryService（不触及 PG/Redis）
+ * - 新增持久化入口必须走 persistWorkflowMessages，禁止在 WorkflowEngine 中直接注入 MemoryManager
  */
 
 import { Injectable, Logger, Optional } from '@nestjs/common';
@@ -24,11 +29,14 @@ import {
   ModerationAction,
 } from '../security/content-moderation.service';
 import { FastRouterService } from './fast-router.service';
+import { EmbeddingRouterService } from './embedding-router.service';
 import { FallbackService } from './fallback.service';
+import { MetricsService } from '../infrastructure/observability/metrics.service';
 import { ConfigValidatorService } from '../config/config-validator.service';
 import { AGENT_CONFIGS } from '../config/agents.config';
 import { TOOLS } from '../config/tools.config';
 import { AgentType, AgentResponse, ConversationState, Message } from '../types';
+import { MessageInput } from '../memory/types';
 import { ActionSuggestion } from './types';
 import { StreamEvent } from '@study-abroad/shared';
 import { randomUUID } from 'crypto';
@@ -41,6 +49,28 @@ function createMsg(partial: Omit<Message, 'id' | 'timestamp'>): Message {
     id: randomUUID(),
     timestamp: new Date(),
     ...partial,
+  };
+}
+
+/**
+ * Convert an in-memory Message to a MessageInput suitable for enterprise persistence.
+ *
+ * Extracts tokensUsed/latencyMs from metadata (set by WorkflowEngine) and maps
+ * toolCalls to ToolCallRecord format. Fields not present in the AgentMessage schema
+ * (metadata, toolCallId) are intentionally dropped.
+ */
+function toMessageInput(msg: Message): MessageInput {
+  return {
+    role: msg.role,
+    content: msg.content,
+    agentType: msg.agentType,
+    toolCalls: msg.toolCalls?.map((tc) => ({
+      id: tc.id,
+      name: tc.name,
+      arguments: tc.arguments,
+    })),
+    tokensUsed: msg.metadata?.tokensUsed ?? undefined,
+    latencyMs: msg.metadata?.latencyMs ?? undefined,
   };
 }
 
@@ -59,11 +89,13 @@ export class OrchestratorService {
     private toolExecutor: ToolExecutorService,
     private workflowEngine: WorkflowEngineService,
     private configService: ConfigService,
+    private contentModeration: ContentModerationService,
     @Optional() private configValidator?: ConfigValidatorService,
     @Optional() private memoryManager?: MemoryManagerService,
     @Optional() private fastRouter?: FastRouterService,
+    @Optional() private embeddingRouter?: EmbeddingRouterService,
     @Optional() private fallback?: FallbackService,
-    @Optional() private contentModeration?: ContentModerationService,
+    @Optional() private metricsService?: MetricsService,
   ) {
     this.maxDelegationDepth = this.configService.get<number>(
       'AGENT_MAX_DELEGATION_DEPTH',
@@ -114,8 +146,22 @@ export class OrchestratorService {
         // 简单问答直接回复
         const simpleResponse = this.fastRouter.getSimpleResponse(message);
         if (simpleResponse) {
+          const conv = await this.getOrCreateConversation(
+            userId,
+            conversationId,
+          );
+          conv.metadata = { ...conv.metadata, locale };
+          await this.addMessage(
+            conv,
+            createMsg({ role: 'user', content: message }),
+          );
+          const moderated = await this.persistAssistantResponse(
+            conv,
+            simpleResponse,
+            AgentType.ORCHESTRATOR,
+          );
           return {
-            message: simpleResponse,
+            message: moderated,
             agentType: AgentType.ORCHESTRATOR,
             data: { fastRoute: true },
           };
@@ -127,6 +173,7 @@ export class OrchestratorService {
           this.logger.debug(
             `Fast route to ${routeResult.agent} (confidence: ${routeResult.confidence})`,
           );
+          this.metricsService?.recordRoutingDecision('fast');
 
           const conversation = await this.getOrCreateConversation(
             userId,
@@ -138,11 +185,57 @@ export class OrchestratorService {
             createMsg({ role: 'user', content: message }),
           );
 
-          return this.agentRunner.run(routeResult.agent, conversation, message);
+          const watermark = conversation.messages.length;
+          const response = await this.agentRunner.run(
+            routeResult.agent,
+            conversation,
+          );
+          await this.persistWorkflowMessages(conversation, watermark);
+          const moderated = await this.persistAssistantResponse(
+            conversation,
+            response.message,
+            response.agentType,
+          );
+          return { ...response, message: moderated };
         }
       }
 
-      // 2. 正常处理流程
+      // 2. 语义路由 (Embedding, ~5ms)
+      if (this.embeddingRouter) {
+        const embeddingResult = await this.embeddingRouter.route(message);
+        if (!embeddingResult.shouldUseLLM && embeddingResult.agent) {
+          this.logger.debug(
+            `Embedding route to ${embeddingResult.agent} (similarity: ${embeddingResult.confidence.toFixed(3)})`,
+          );
+          this.metricsService?.recordRoutingDecision('embedding');
+
+          const conversation = await this.getOrCreateConversation(
+            userId,
+            conversationId,
+          );
+          conversation.metadata = { ...conversation.metadata, locale };
+          await this.addMessage(
+            conversation,
+            createMsg({ role: 'user', content: message }),
+          );
+
+          const watermark = conversation.messages.length;
+          const response = await this.agentRunner.run(
+            embeddingResult.agent,
+            conversation,
+          );
+          await this.persistWorkflowMessages(conversation, watermark);
+          const moderated = await this.persistAssistantResponse(
+            conversation,
+            response.message,
+            response.agentType,
+          );
+          return { ...response, message: moderated };
+        }
+      }
+
+      // 3. 正常处理流程 (LLM Orchestrator)
+      this.metricsService?.recordRoutingDecision('llm');
       const conversation = await this.getOrCreateConversation(
         userId,
         conversationId,
@@ -153,11 +246,12 @@ export class OrchestratorService {
         createMsg({ role: 'user', content: message }),
       );
 
+      let watermark = conversation.messages.length;
       let response = await this.agentRunner.run(
         AgentType.ORCHESTRATOR,
         conversation,
-        message,
       );
+      await this.persistWorkflowMessages(conversation, watermark);
 
       // 3. 处理委派
       let delegationDepth = 0;
@@ -174,28 +268,29 @@ export class OrchestratorService {
         await this.addMessage(
           conversation,
           createMsg({
-            role: 'system',
+            role: 'assistant',
             content: `[委派给 ${response.delegatedTo} 处理: ${task}]`,
+            agentType: AgentType.ORCHESTRATOR,
+            metadata: { delegation: true, targetAgent: response.delegatedTo },
           }),
         );
 
+        watermark = conversation.messages.length;
         response = await this.agentRunner.run(
           response.delegatedTo,
           conversation,
-          task,
         );
+        await this.persistWorkflowMessages(conversation, watermark);
       }
 
-      // 4. 保存 assistant 响应到企业级记忆
-      if (this.useEnterpriseMemory) {
-        await this.memoryManager!.addMessage(conversation.id, {
-          role: 'assistant',
-          content: response.message,
-          agentType: response.agentType,
-        });
-      }
+      // 4. 保存 assistant 响应（in-memory + enterprise）
+      const moderated = await this.persistAssistantResponse(
+        conversation,
+        response.message,
+        response.agentType,
+      );
 
-      return response;
+      return { ...response, message: moderated };
     } catch (error) {
       // 5. 错误处理与降级
       if (this.fallback) {
@@ -283,9 +378,99 @@ export class OrchestratorService {
     // 始终写入内存（AgentRunner 需要）
     this.memory.addMessage(conversation, message);
 
-    // 企业级：同时写入 Redis/PostgreSQL
+    // 企业级：同时写入 Redis/PostgreSQL（统一使用 toMessageInput 映射）
     if (this.useEnterpriseMemory && message.role !== 'system') {
-      await this.memoryManager!.addMessage(conversation.id, message);
+      await this.memoryManager!.addMessage(
+        conversation.id,
+        toMessageInput(message),
+      );
+    }
+  }
+
+  /**
+   * Persist an assistant response to both in-memory and enterprise storage.
+   * No-op if content is empty. Used as the unified exit-path for all response routes.
+   *
+   * Runs output content moderation before persisting. Returns the (possibly
+   * moderated) content so callers can use it in the HTTP/WS response.
+   */
+  private async persistAssistantResponse(
+    conversation: ConversationState,
+    content: string,
+    agentType: AgentType,
+  ): Promise<string> {
+    if (!content) return content;
+
+    // Output moderation: sanitize or block before persisting
+    try {
+      const modResult = await this.contentModeration.moderate(content, {
+        context: 'output',
+        sanitize: true,
+      });
+      if (
+        modResult.action === ModerationAction.SANITIZE &&
+        modResult.sanitizedContent
+      ) {
+        content = modResult.sanitizedContent;
+      } else if (modResult.action === ModerationAction.BLOCK) {
+        this.logger.warn(
+          `Output blocked by content moderation: ${modResult.details.map((d) => d.type).join(', ')}`,
+        );
+        content =
+          conversation.metadata?.locale === 'en'
+            ? 'I apologize, but I cannot provide that response.'
+            : '抱歉，我无法提供该回复。';
+      }
+    } catch (err) {
+      this.logger.warn('Output moderation check failed', err);
+      // Fail-open: persist original content if moderation errors
+    }
+
+    await this.addMessage(
+      conversation,
+      createMsg({ role: 'assistant', content, agentType }),
+    );
+    return content;
+  }
+
+  /**
+   * Persist workflow-generated tool messages (role=tool and assistant+toolCalls)
+   * to enterprise memory. Uses a watermark pattern: caller records conversation
+   * message count before workflow runs, then slices new messages after.
+   *
+   * Architecture note:
+   * - Only the Orchestrator writes to PG (via memoryManager).
+   * - WorkflowEngine only writes to in-process MemoryService.
+   * - Any new persistence entry point must go through this method.
+   *
+   * @param conversation - The conversation state (contains in-memory messages)
+   * @param watermark - The message count before the workflow run
+   */
+  private async persistWorkflowMessages(
+    conversation: ConversationState,
+    watermark: number,
+  ): Promise<void> {
+    if (!this.useEnterpriseMemory) return;
+
+    const newMessages = conversation.messages.slice(watermark);
+    const toolMessages = newMessages.filter(
+      (m) =>
+        m.role === 'tool' ||
+        (m.role === 'assistant' && m.toolCalls && m.toolCalls.length > 0),
+    );
+
+    for (const msg of toolMessages) {
+      try {
+        await this.memoryManager!.addMessage(
+          conversation.id,
+          toMessageInput(msg),
+        );
+      } catch (err) {
+        this.logger.warn(
+          `Failed to persist workflow message (role=${msg.role})`,
+          err,
+        );
+      }
     }
   }
 
@@ -327,14 +512,18 @@ export class OrchestratorService {
     );
 
     this.logger.log(`callAgent: conversation ready, starting agent run`);
-    const response = await this.agentRunner.run(
-      agentType,
+    const watermark = conversation.messages.length;
+    const response = await this.agentRunner.run(agentType, conversation);
+    await this.persistWorkflowMessages(conversation, watermark);
+
+    const moderated = await this.persistAssistantResponse(
       conversation,
-      message,
+      response.message,
+      response.agentType,
     );
 
     this.logger.log(`callAgent completed: agent=${response.agentType}`);
-    return response;
+    return { ...response, message: moderated };
   }
 
   /**
@@ -352,8 +541,13 @@ export class OrchestratorService {
    * 获取对话历史
    */
   async getHistory(userId: string, conversationId?: string) {
-    // 优先从企业级记忆获取
+    // 优先从企业级记忆获取（含 ownership 校验）
     if (this.useEnterpriseMemory && conversationId) {
+      const conversation =
+        await this.memoryManager!.getConversation(conversationId);
+      if (!conversation || conversation.userId !== userId) {
+        return [];
+      }
       return this.memoryManager!.getConversationHistory(conversationId);
     }
 
@@ -382,9 +576,13 @@ export class OrchestratorService {
    */
   async clearConversation(userId: string, conversationId?: string) {
     this.memory.clearConversation(userId, conversationId);
-    // 企业级记忆清除
+    // 企业级记忆清除（含 ownership 校验）
     if (this.memoryManager && conversationId) {
-      await this.memoryManager.clearConversation(conversationId);
+      const conversation =
+        await this.memoryManager.getConversation(conversationId);
+      if (conversation && conversation.userId === userId) {
+        await this.memoryManager.clearConversation(conversationId);
+      }
     }
   }
 
@@ -435,7 +633,18 @@ export class OrchestratorService {
     if (this.fastRouter) {
       const simpleResponse = this.fastRouter.getSimpleResponse(message);
       if (simpleResponse) {
-        yield { type: 'start', agent: AgentType.ORCHESTRATOR };
+        const conv = await this.getOrCreateConversation(userId, conversationId);
+        conv.metadata = { ...conv.metadata, locale };
+        await this.addMessage(
+          conv,
+          createMsg({ role: 'user', content: message }),
+        );
+
+        yield {
+          type: 'start',
+          agent: AgentType.ORCHESTRATOR,
+          conversationId: conv.id,
+        };
         yield {
           type: 'content',
           agent: AgentType.ORCHESTRATOR,
@@ -449,11 +658,18 @@ export class OrchestratorService {
             agentType: AgentType.ORCHESTRATOR,
           },
         };
+
+        await this.persistAssistantResponse(
+          conv,
+          simpleResponse,
+          AgentType.ORCHESTRATOR,
+        );
         return;
       }
 
       const routeResult = this.fastRouter.route(message);
       if (!routeResult.shouldUseLLM && routeResult.agent) {
+        this.metricsService?.recordRoutingDecision('fast');
         const conversation = await this.getOrCreateConversation(
           userId,
           conversationId,
@@ -489,7 +705,44 @@ export class OrchestratorService {
       }
     }
 
-    // 2. 正常流程
+    // 2. 语义路由 (Embedding, ~5ms)
+    if (this.embeddingRouter) {
+      const embeddingResult = await this.embeddingRouter.route(message);
+      if (!embeddingResult.shouldUseLLM && embeddingResult.agent) {
+        this.logger.debug(
+          `Embedding route (stream) to ${embeddingResult.agent} (similarity: ${embeddingResult.confidence.toFixed(3)})`,
+        );
+        this.metricsService?.recordRoutingDecision('embedding');
+
+        const conv = await this.getOrCreateConversation(userId, conversationId);
+        conv.metadata = { ...conv.metadata, locale };
+        await this.addMessage(
+          conv,
+          createMsg({ role: 'user', content: message }),
+        );
+
+        const isNew = !conversationId;
+        if (isNew && this.useEnterpriseMemory) {
+          const t = message.slice(0, 50).replace(/\n/g, ' ').trim();
+          await this.memoryManager!.updateConversationTitle(conv.id, t);
+        }
+
+        yield {
+          type: 'start',
+          agent: embeddingResult.agent,
+          conversationId: conv.id,
+          title: isNew
+            ? message.slice(0, 50).replace(/\n/g, ' ').trim()
+            : undefined,
+        };
+
+        yield* this.collectAndPersistStream(embeddingResult.agent, conv);
+        return;
+      }
+    }
+
+    // 3. 正常流程 (LLM Orchestrator)
+    this.metricsService?.recordRoutingDecision('llm');
     const conversation = await this.getOrCreateConversation(
       userId,
       conversationId,
@@ -585,6 +838,7 @@ export class OrchestratorService {
   ): AsyncGenerator<StreamEvent> {
     let fullContent = '';
     let finalAgentType: AgentType = agentType;
+    const watermark = conversation.messages.length;
 
     for await (const event of this.runAgentStream(agentType, conversation)) {
       if (event.type === 'content' && event.content) {
@@ -597,37 +851,15 @@ export class OrchestratorService {
       yield event;
     }
 
-    // Moderate output before sending/persisting
-    if (fullContent && this.contentModeration) {
-      try {
-        const modResult = await this.contentModeration.moderate(fullContent, {
-          context: 'output',
-          sanitize: true,
-        });
-        if (
-          modResult.action === ModerationAction.SANITIZE &&
-          modResult.sanitizedContent
-        ) {
-          fullContent = modResult.sanitizedContent;
-        } else if (modResult.action === ModerationAction.BLOCK) {
-          this.logger.warn(
-            `Output blocked by content moderation: ${modResult.details.map((d) => d.type).join(', ')}`,
-          );
-        }
-      } catch (err) {
-        this.logger.warn('Output moderation check failed', err);
-      }
-    }
+    // Persist tool messages generated during the workflow
+    await this.persistWorkflowMessages(conversation, watermark);
 
-    if (fullContent && this.useEnterpriseMemory) {
+    if (fullContent) {
       try {
-        await this.addMessage(
+        await this.persistAssistantResponse(
           conversation,
-          createMsg({
-            role: 'assistant',
-            content: fullContent,
-            agentType: finalAgentType,
-          }),
+          fullContent,
+          finalAgentType,
         );
       } catch (err) {
         this.logger.error(
@@ -780,11 +1012,16 @@ export class OrchestratorService {
 
             yield { type: 'agent_switch', agent: targetAgent };
 
-            // 添加任务到对话
+            // 添加委派标记到对话（使用 assistant 角色 + metadata 标记，与非流式一致）
             if (task) {
               await this.addMessage(
                 conversation,
-                createMsg({ role: 'user', content: task }),
+                createMsg({
+                  role: 'assistant',
+                  content: `[委派给 ${targetAgent} 处理: ${task}]`,
+                  agentType: AgentType.ORCHESTRATOR,
+                  metadata: { delegation: true, targetAgent },
+                }),
               );
             }
 

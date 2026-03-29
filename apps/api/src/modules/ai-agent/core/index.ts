@@ -16,9 +16,7 @@ export * from './rate-limiter.service';
 export * from './token-tracker.service';
 export * from './fallback.service';
 export * from './fast-router.service';
-
-// 安全管道
-export * from './security-pipeline.service';
+export * from './embedding-router.service';
 
 // 错误类型
 export * from './errors';

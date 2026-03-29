@@ -50,9 +50,7 @@ import { OrchestratorService } from './core/orchestrator.service';
 import { RateLimiterService } from './core/rate-limiter.service';
 import { FallbackService } from './core/fallback.service';
 import { FastRouterService } from './core/fast-router.service';
-
-// Security Pipeline
-import { SecurityPipelineService } from './core/security-pipeline.service';
+import { EmbeddingRouterService } from './core/embedding-router.service';
 
 // Task Queue
 import { TaskQueueService } from './queue/task-queue.service';
@@ -80,6 +78,7 @@ import {
 
 // Config validation
 import { ConfigValidatorService } from './config/config-validator.service';
+import { ArchitectureValidatorService } from './config/architecture-validator.service';
 
 // Guards
 import { AgentThrottleGuard } from './guards';
@@ -120,6 +119,7 @@ import { AgentSecurityMiddleware } from './middleware/security.middleware';
   providers: [
     // Config Validation (must be first to validate on startup)
     ConfigValidatorService,
+    ArchitectureValidatorService,
 
     // Resilience & Protection Services
     // NOTE: ResilienceService, TokenTrackerService, LLMService are provided
@@ -127,12 +127,13 @@ import { AgentSecurityMiddleware } from './middleware/security.middleware';
     RateLimiterService,
     FallbackService,
     FastRouterService,
+    EmbeddingRouterService,
 
     // Tool helpers (shared across domain tool services)
     SchoolLookupHelper,
     ProfileLoaderHelper,
 
-    // Domain Tool Services (10 services, replace legacy ToolExecutor)
+    // Domain Tool Services (12 services, replace legacy ToolExecutor)
     ProfileToolsService,
     SchoolToolsService,
     EssayToolsService,
@@ -152,9 +153,6 @@ import { AgentSecurityMiddleware } from './middleware/security.middleware';
     WorkflowEngineService,
     AgentRunnerService,
     OrchestratorService,
-
-    // Security Pipeline
-    SecurityPipelineService,
 
     // Web Search
     WebSearchService,
@@ -176,6 +174,7 @@ import { AgentSecurityMiddleware } from './middleware/security.middleware';
     RateLimiterService,
     AiAgentGateway,
     WebSearchService,
+    ArchitectureValidatorService,
     // Re-export MemoryModule (8 external modules import AiAgentMemoryModule directly)
     AiAgentMemoryModule,
   ],
@@ -192,6 +191,8 @@ export class AiAgentModule implements OnModuleInit, NestModule {
       .apply(RequestContextMiddleware)
       .forRoutes('ai-agent', 'admin/ai-agent');
 
-    consumer.apply(AgentSecurityMiddleware).forRoutes('ai-agent/chat');
+    consumer
+      .apply(AgentSecurityMiddleware)
+      .forRoutes('ai-agent/chat', 'ai-agent/agent');
   }
 }
