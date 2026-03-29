@@ -2791,3 +2791,40 @@ model AgentRouteEmbedding {
   @@index([agentType])
   @@map("agent_route_embeddings")
 }
+
+/// Graph entity for relationship-based memory (schools, majors, deadlines).
+model GraphEntity {
+  id          String   @id @default(cuid())
+  userId      String
+  entityType  String   /// school, major, program, deadline, activity
+  name        String
+  attributes  Json?    /// flexible metadata (rank, acceptanceRate, etc.)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  outEdges    EntityRelationship[] @relation("source")
+  inEdges     EntityRelationship[] @relation("target")
+
+  @@unique([userId, entityType, name])
+  @@index([userId, entityType])
+  @@map("graph_entities")
+}
+
+/// Directed edge between two graph entities.
+model EntityRelationship {
+  id              String   @id @default(cuid())
+  userId          String
+  sourceEntityId  String
+  targetEntityId  String
+  relationType    String   /// applied_to, has_major, similar_to, has_deadline
+  weight          Float    @default(1.0)
+  metadata        Json?
+  createdAt       DateTime @default(now())
+
+  sourceEntity    GraphEntity @relation("source", fields: [sourceEntityId], references: [id], onDelete: Cascade)
+  targetEntity    GraphEntity @relation("target", fields: [targetEntityId], references: [id], onDelete: Cascade)
+
+  @@index([userId, sourceEntityId])
+  @@index([userId, relationType])
+  @@map("entity_relationships")
+}

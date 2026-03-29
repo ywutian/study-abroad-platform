@@ -1257,4 +1257,157 @@ export class PersistentMemoryService {
       createdAt: e.createdAt,
     };
   }
+
+  // ==================== Graph Memory ====================
+
+  /**
+   * Upsert a graph entity (school, major, program, etc.)
+   */
+  async upsertGraphEntity(
+    userId: string,
+    entityType: string,
+    name: string,
+    attributes?: Record<string, unknown>,
+  ): Promise<{ id: string }> {
+    const entity = await this.prisma.graphEntity.upsert({
+      where: {
+        userId_entityType_name: { userId, entityType, name },
+      },
+      create: {
+        userId,
+        entityType,
+        name,
+        attributes: (attributes || {}) as Prisma.InputJsonValue,
+      },
+      update: { attributes: (attributes || {}) as Prisma.InputJsonValue },
+      select: { id: true },
+    });
+    return entity;
+  }
+
+  /**
+   * Create a directed relationship between two graph entities.
+   */
+  async addRelationship(
+    userId: string,
+    sourceId: string,
+    targetId: string,
+    relationType: string,
+    weight: number = 1.0,
+    metadata?: Record<string, unknown>,
+  ): Promise<void> {
+    await this.prisma.entityRelationship.create({
+      data: {
+        userId,
+        sourceEntityId: sourceId,
+        targetEntityId: targetId,
+        relationType,
+        weight,
+        metadata: (metadata || {}) as Prisma.InputJsonValue,
+      },
+    });
+  }
+
+  /**
+   * Find connected entities up to N hops via recursive CTE.
+   */
+  async findConnectedEntities(
+    userId: string,
+    entityId: string,
+    maxDepth: number = 3,
+    relationType?: string,
+  ): Promise<
+    Array<{
+      id: string;
+      entityType: string;
+      name: string;
+      depth: number;
+      relationType: string;
+    }>
+  > {
+    const relationFilter = relationType
+      ? `AND er."relationType" = '${relationType}'`
+      : '';
+
+    const results = await this.prisma.$queryRawUnsafe<
+      Array<{
+        id: string;
+        entityType: string;
+        name: string;
+        depth: number;
+        rel_type: string;
+      }>
+    >(
+      `WITH RECURSIVE entity_graph AS (
+        SELECT ge.id, ge."entityType", ge.name, 1 as depth, er."relationType" as rel_type
+        FROM entity_relationships er
+        JOIN graph_entities ge ON ge.id = er."targetEntityId"
+        WHERE er."sourceEntityId" = $1
+          AND er."userId" = $2
+          ${relationFilter}
+
+        UNION ALL
+
+        SELECT ge.id, ge."entityType", ge.name, eg.depth + 1, er."relationType"
+        FROM entity_graph eg
+        JOIN entity_relationships er ON er."sourceEntityId" = eg.id
+        JOIN graph_entities ge ON ge.id = er."targetEntityId"
+        WHERE er."userId" = $2
+          AND eg.depth < $3
+          ${relationFilter}
+      )
+      SELECT DISTINCT ON (id) id, "entityType", name, depth, rel_type
+      FROM entity_graph
+      ORDER BY id, depth ASC`,
+      entityId,
+      userId,
+      maxDepth,
+    );
+
+    return results.map((r) => ({
+      id: r.id,
+      entityType: r.entityType,
+      name: r.name,
+      depth: r.depth,
+      relationType: r.rel_type,
+    }));
+  }
+
+  /**
+   * Find entities that share the most relationships with a given entity (similarity by graph structure).
+   */
+  async findSimilarEntities(
+    userId: string,
+    entityId: string,
+    entityType: string,
+    limit: number = 10,
+  ): Promise<Array<{ id: string; name: string; sharedConnections: number }>> {
+    const results = await this.prisma.$queryRawUnsafe<
+      Array<{ id: string; name: string; shared: bigint }>
+    >(
+      `SELECT ge.id, ge.name, COUNT(*) as shared
+       FROM entity_relationships er1
+       JOIN entity_relationships er2
+         ON er1."targetEntityId" = er2."targetEntityId"
+         AND er1."userId" = er2."userId"
+       JOIN graph_entities ge ON ge.id = er2."sourceEntityId"
+       WHERE er1."sourceEntityId" = $1
+         AND er2."sourceEntityId" != $1
+         AND er1."userId" = $2
+         AND ge."entityType" = $3
+       GROUP BY ge.id, ge.name
+       ORDER BY shared DESC
+       LIMIT $4`,
+      entityId,
+      userId,
+      entityType,
+      limit,
+    );
+
+    return results.map((r) => ({
+      id: r.id,
+      name: r.name,
+      sharedConnections: Number(r.shared),
+    }));
+  }
 }
