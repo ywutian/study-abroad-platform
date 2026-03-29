@@ -39,6 +39,7 @@ import {
   buildRecommendationSystemPrompt,
   buildRecommendationUserPrompt,
 } from './recommendation.prompts';
+import { PredictionHistoricalService } from '../prediction/prediction-historical.service';
 
 @Injectable()
 export class RecommendationService {
@@ -50,6 +51,7 @@ export class RecommendationService {
     private caseIncentiveService: CaseIncentiveService,
     private redis: RedisService,
     @Optional() private memoryManager?: MemoryManagerService,
+    @Optional() private historicalService?: PredictionHistoricalService,
   ) {}
 
   /**
@@ -163,13 +165,71 @@ export class RecommendationService {
           }
         : undefined;
 
-    const userPrompt = buildRecommendationUserPrompt(
+    let userPrompt = buildRecommendationUserPrompt(
       profile,
       dto,
       locale,
       assessmentData,
       nationalityContext,
     );
+
+    // Inject historical case data for evidence-based recommendations
+    if (this.historicalService) {
+      const historicalLines: string[] = [];
+      const targetSchools = (profile as any).targetSchools as
+        | string[]
+        | undefined;
+      if (targetSchools?.length) {
+        for (const schoolName of targetSchools.slice(0, 5)) {
+          try {
+            const school = await this.prisma.school.findFirst({
+              where: { name: { contains: schoolName, mode: 'insensitive' } },
+              select: { id: true, name: true, acceptanceRate: true },
+            });
+            if (!school) continue;
+            const dist = await this.historicalService.getSchoolDistribution(
+              school.id,
+            );
+            const natStats = nationalityContext?.nationality
+              ? await this.historicalService.getNationalityStats(
+                  school.id,
+                  nationalityContext.nationality,
+                )
+              : null;
+
+            const parts = [`### ${school.name}`];
+            if (dist) {
+              const satMedian = dist.satValues.length
+                ? dist.satValues.sort((a, b) => a - b)[
+                    Math.floor(dist.satValues.length / 2)
+                  ]
+                : null;
+              parts.push(`- Verified cases: ${dist.sampleCount}`);
+              if (satMedian) parts.push(`- Admitted SAT median: ${satMedian}`);
+            }
+            if (natStats && natStats.totalCases >= 3) {
+              parts.push(
+                `- ${natStats.nationality} applicant admit rate: ${natStats.admitRate.toFixed(1)}% (${natStats.admittedCases}/${natStats.totalCases})`,
+              );
+            }
+            if (parts.length > 1) historicalLines.push(parts.join('\n'));
+          } catch {
+            // Skip school if query fails
+          }
+        }
+      }
+      if (historicalLines.length > 0) {
+        const header =
+          locale === 'zh'
+            ? '\n\n## 历史录取数据（来自平台已验证案例，供参考）\n'
+            : '\n\n## Historical Admission Data (from verified platform cases, for reference)\n';
+        const footer =
+          locale === 'zh'
+            ? '\n\n注意：历史数据仅供参考，不代表未来录取标准。'
+            : '\n\nNote: Historical data is for reference only and does not guarantee future outcomes.';
+        userPrompt += header + historicalLines.join('\n\n') + footer;
+      }
+    }
 
     try {
       const result = await this.llmService.chatSimpleGuarded(
