@@ -723,6 +723,10 @@
     "testScoresDesc": "Add your standardized test scores",
     "gpa": "GPA",
     "gpaDesc": "Record your GPA information",
+    "errors": {
+      "gpaRange": "GPA must be between 0 and {max}",
+      "fixBeforeSave": "Please fix the errors before saving"
+    },
     "gpaScale": "GPA Scale",
     "yourGpa": "Your GPA",
     "gpaByGrade": "GPA by Grade Level",

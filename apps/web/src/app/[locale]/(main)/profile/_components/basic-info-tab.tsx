@@ -18,9 +18,10 @@ import type { ProfileFormData } from './types';
 interface BasicInfoTabProps {
   formData: ProfileFormData;
   onFormDataChange: (updater: (prev: ProfileFormData) => ProfileFormData) => void;
+  errors?: Record<string, string>;
 }
 
-export function BasicInfoTab({ formData, onFormDataChange }: BasicInfoTabProps) {
+export function BasicInfoTab({ formData, onFormDataChange, errors }: BasicInfoTabProps) {
   const t = useTranslations();
 
   return (

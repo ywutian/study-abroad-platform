@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { apiClient } from '@/lib/api';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { LoadingState } from '@/components/ui/loading-state';
+import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
 import { SchoolSelector } from '@/components/features';
 import { toast } from 'sonner';
@@ -197,7 +198,29 @@ export default function ProfilePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentCompleteness]);
 
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  const validateBeforeSave = (): boolean => {
+    const errors: Record<string, string> = {};
+    // GPA scale-aware validation
+    if (formData.gpa) {
+      const gpa = parseFloat(formData.gpa);
+      const scale = parseFloat(formData.gpaScale) || 4.0;
+      const maxGpa = scale === 100 ? 100 : scale === 45 ? 45 : scale === 6 ? 6 : scale + 1;
+      if (isNaN(gpa) || gpa < 0 || gpa > maxGpa) {
+        errors.gpa = t('profile.errors.gpaRange', { max: maxGpa });
+      }
+    }
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      toast.error(t('profile.errors.fixBeforeSave'));
+      return false;
+    }
+    return true;
+  };
+
   const handleSave = () => {
+    if (!validateBeforeSave()) return;
     m.updateMutation.mutate({
       ...formData,
       gpa: formData.gpa ? parseFloat(formData.gpa) : null,
@@ -276,7 +299,11 @@ export default function ProfilePage() {
               transition={{ duration: 0.2 }}
             >
               {activeTab === 'basic' && (
-                <BasicInfoTab formData={formData} onFormDataChange={setFormData} />
+                <BasicInfoTab
+                  formData={formData}
+                  onFormDataChange={setFormData}
+                  errors={formErrors}
+                />
               )}
               {activeTab === 'demographics' && (
                 <DemographicsTab formData={formData} onFormDataChange={setFormData} />
@@ -296,6 +323,7 @@ export default function ProfilePage() {
                 <GpaTab
                   formData={formData}
                   onFormDataChange={setFormData}
+                  errors={formErrors}
                   semesterGpas={profile?.semesterGpas || []}
                   onCreateSemesterGpa={(data) => m.createSemesterGpaMutation.mutate(data)}
                   onUpdateSemesterGpa={(id, data) =>

@@ -726,6 +726,10 @@
     "testScoresDesc": "添加你的标化考试成绩",
     "gpa": "GPA",
     "gpaDesc": "记录你的 GPA 信息",
+    "errors": {
+      "gpaRange": "GPA 必须在 0 到 {max} 之间",
+      "fixBeforeSave": "请先修正错误再保存"
+    },
     "gpaScale": "GPA 制式",
     "yourGpa": "你的 GPA",
     "gpaByGrade": "分年级 GPA",

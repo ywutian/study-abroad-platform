@@ -68,6 +68,7 @@ const emptySemesterForm: SemesterFormData = {
 interface GpaTabProps {
   formData: ProfileFormData;
   onFormDataChange: (updater: (prev: ProfileFormData) => ProfileFormData) => void;
+  errors?: Record<string, string>;
   semesterGpas?: SemesterGpa[];
   onCreateSemesterGpa?: (data: {
     semester: string;
@@ -88,6 +89,7 @@ interface GpaTabProps {
 export function GpaTab({
   formData,
   onFormDataChange,
+  errors,
   semesterGpas = [],
   onCreateSemesterGpa,
   onUpdateSemesterGpa,
@@ -228,6 +230,11 @@ export function GpaTab({
   return (
     <Card className="overflow-hidden">
       <div className="h-1.5 bg-success" />
+      {errors?.gpa && (
+        <div className="mx-4 mt-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          {errors.gpa}
+        </div>
+      )}
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
