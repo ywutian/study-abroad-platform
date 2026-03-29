@@ -2,22 +2,23 @@
 
 ## Agent 工作流（必须遵守）
 
-12 个专项 Agent 覆盖不同审查维度。每个 Agent 内置 **Step 0 相关性判断**：明确无关时快速返回 N/A，不确定时继续审查（宁可多审不可漏审）。
+13 个专项 Agent 覆盖不同审查维度。每个 Agent 内置 **Step 0 相关性判断**：明确无关时快速返回 N/A，不确定时继续审查（宁可多审不可漏审）。
 
-| #   | Agent          | 文件                                    | 职责                                                    |
-| --- | -------------- | --------------------------------------- | ------------------------------------------------------- |
-| 1   | **留学专家**   | `.claude/agents/study-abroad-expert.md` | 验证业务逻辑符合真实美本申请实践                        |
-| 2   | **申请者模拟** | `.claude/agents/applicant-simulator.md` | 以高中生+家长视角审查易用性和实用性                     |
-| 3   | **设计审查**   | `.claude/agents/design-reviewer.md`     | UI/UX、暗色模式、响应式、无障碍审查                     |
-| 4   | **架构师**     | `.claude/agents/architect.md`           | 系统架构、API 设计、模块依赖、性能                      |
-| 5   | **闭环检查**   | `.claude/agents/integration-checker.md` | 前后端对接、类型一致、权限、错误处理、文档更新          |
-| 6   | **数据模型**   | `.claude/agents/data-model-reviewer.md` | Schema→DTO→Select→Mapper→共享类型→前端 全链路一致性     |
-| 7   | **安全审查**   | `.claude/agents/security-reviewer.md`   | 认证授权、注入防护、数据泄露、隐私合规、OWASP Top 10    |
-| 8   | **AI Prompt**  | `.claude/agents/ai-prompt-engineer.md`  | Prompt 质量、幻觉控制、token 效率、输出可靠性           |
-| 9   | **i18n 专家**  | `.claude/agents/i18n-specialist.md`     | 翻译质量、术语一致、key 完整性、中英文布局适配          |
-| 10  | **测试工程**   | `.claude/agents/test-engineer.md`       | 测试覆盖、测试质量、边界用例、回归验证                  |
-| 11  | **移动端专家** | `.claude/agents/mobile-specialist.md`   | Expo/RN 兼容性、移动性能、离线、原生功能、与 web 一致性 |
-| 12  | **反馈处理**   | `.claude/agents/feedback-processor.md`  | 外部反馈分诊、根因分类、验收标准、防止返工              |
+| #   | Agent          | 文件                                     | 职责                                                    |
+| --- | -------------- | ---------------------------------------- | ------------------------------------------------------- |
+| 1   | **留学专家**   | `.claude/agents/study-abroad-expert.md`  | 验证业务逻辑符合真实美本申请实践                        |
+| 2   | **申请者模拟** | `.claude/agents/applicant-simulator.md`  | 以高中生+家长视角审查易用性和实用性                     |
+| 3   | **设计审查**   | `.claude/agents/design-reviewer.md`      | UI/UX、暗色模式、响应式、无障碍审查                     |
+| 4   | **架构师**     | `.claude/agents/architect.md`            | 系统架构、API 设计、模块依赖、性能                      |
+| 5   | **闭环检查**   | `.claude/agents/integration-checker.md`  | 前后端对接、类型一致、权限、错误处理、文档更新          |
+| 6   | **数据模型**   | `.claude/agents/data-model-reviewer.md`  | Schema→DTO→Select→Mapper→共享类型→前端 全链路一致性     |
+| 7   | **安全审查**   | `.claude/agents/security-reviewer.md`    | 认证授权、注入防护、数据泄露、隐私合规、OWASP Top 10    |
+| 8   | **AI Prompt**  | `.claude/agents/ai-prompt-engineer.md`   | Prompt 质量、幻觉控制、token 效率、输出可靠性           |
+| 9   | **i18n 专家**  | `.claude/agents/i18n-specialist.md`      | 翻译质量、术语一致、key 完整性、中英文布局适配          |
+| 10  | **测试工程**   | `.claude/agents/test-engineer.md`        | 测试覆盖、测试质量、边界用例、回归验证                  |
+| 11  | **移动端专家** | `.claude/agents/mobile-specialist.md`    | Expo/RN 兼容性、移动性能、离线、原生功能、与 web 一致性 |
+| 12  | **反馈处理**   | `.claude/agents/feedback-processor.md`   | 外部反馈分诊、根因分类、验收标准、防止返工              |
+| 13  | **用户旅程**   | `.claude/agents/user-journey-auditor.md` | 从用户视角审查功能完整性、体验连贯性、错误恢复          |
 
 ### 两阶段工作流
 
@@ -34,7 +35,7 @@
 | **全栈功能**                            | 架构师、数据模型、设计审查、i18n 专家、安全审查、测试工程 | 留学专家（涉及业务）、AI Prompt（涉及 LLM）、移动端专家（涉及 mobile） |
 | **数据库变更**                          | 数据模型、架构师、安全审查                                | —                                                                      |
 | **留学业务逻辑**                        | 留学专家、申请者模拟                                      | + 对应开发类型的 Agent 组                                              |
-| **大型变更**（新模块/架构重构/DB 迁移） | **全部 12 个 Agent 并行**                                 | —                                                                      |
+| **大型变更**（新模块/架构重构/DB 迁移） | **全部 13 个 Agent 并行**                                 | —                                                                      |
 
 #### 阶段二：验收闭环（强制）
 
@@ -42,7 +43,8 @@
 
 1. **闭环检查** `integration-checker` — 验证前后端对接、类型一致、i18n 覆盖、权限、错误处理
 2. **测试工程** `test-engineer` — 运行测试、补充缺失测试、验证通过
-3. **闭环检查**负责更新 CLAUDE.md / MEMORY.md 文档
+3. **用户旅程** `user-journey-auditor` — 涉及用户可见功能时，审查受影响旅程的完整性和体验（审计模板：`docs/templates/user-journey-audit.md`，记录：`docs/USER_JOURNEY_AUDIT_LOG.md`）
+4. **闭环检查**负责更新 CLAUDE.md / MEMORY.md 文档，并提醒在旅程注册表中登记新增的用户可见功能
 
 ### 规则
 
