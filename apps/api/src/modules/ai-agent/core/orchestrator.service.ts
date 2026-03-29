@@ -114,6 +114,21 @@ export class OrchestratorService {
     }
   }
 
+  // ==================== 语言检测 ====================
+
+  /**
+   * Detect message language to override locale when user writes in a different language.
+   * Returns null if ambiguous (mixed content).
+   */
+  private detectLanguage(text: string): 'zh' | 'en' | null {
+    const cleaned = text.replace(/[^a-zA-Z\u4e00-\u9fff]/g, '');
+    const enChars = (cleaned.match(/[a-zA-Z]/g) || []).length;
+    const zhChars = (cleaned.match(/[\u4e00-\u9fff]/g) || []).length;
+    if (enChars > zhChars * 2) return 'en';
+    if (zhChars > enChars * 2) return 'zh';
+    return null;
+  }
+
   // ==================== 对话级锁 ====================
 
   /** Acquire a per-conversation lock (Redis SET NX, 60s TTL). Returns false if already locked. */
@@ -167,6 +182,10 @@ export class OrchestratorService {
     conversationId?: string,
     locale: string = 'zh',
   ): Promise<AgentResponse> {
+    // Auto-detect language: if user writes in English but locale is 'zh', override
+    const detectedLang = this.detectLanguage(message);
+    if (detectedLang) locale = detectedLang;
+
     const lockKey = conversationId || userId;
     if (!(await this.acquireConversationLock(lockKey))) {
       return {
@@ -283,6 +302,23 @@ export class OrchestratorService {
         conversation,
         createMsg({ role: 'user', content: message }),
       );
+
+      // New user guidance: hint agent to suggest profile completion
+      if (!conversationId) {
+        const ctx = conversation.context;
+        if (!ctx?.profile?.gpa && !ctx?.profile?.testScores?.length) {
+          this.memory.addMessage(
+            conversation,
+            createMsg({
+              role: 'system',
+              content:
+                locale === 'en'
+                  ? 'Note: This user has not completed their profile. Suggest completing their profile for better recommendations, but still help with their current question.'
+                  : '提示：该用户尚未完善档案。建议完善档案以获取更精准推荐，但仍尽力回答当前问题。',
+            }),
+          );
+        }
+      }
 
       let watermark = conversation.messages.length;
       let response = await this.agentRunner.run(
@@ -669,6 +705,9 @@ export class OrchestratorService {
     conversationId?: string,
     locale: string = 'zh',
   ): AsyncGenerator<StreamEvent> {
+    const detectedLang = this.detectLanguage(message);
+    if (detectedLang) locale = detectedLang;
+
     const lockKey = conversationId || userId;
     if (!(await this.acquireConversationLock(lockKey))) {
       yield {
@@ -1110,7 +1149,10 @@ export class OrchestratorService {
                   ? result.toolsUsed
                   : undefined,
               suggestions: this.extractSuggestions(result?.message || ''),
-              actions: this.generateActions(result?.message || ''),
+              actions: this.generateActions(
+                result?.message || '',
+                result?.plan?.steps?.map((s) => ({ result: s.result })),
+              ),
               data: result
                 ? {
                     workflow: {
@@ -1212,15 +1254,34 @@ export class OrchestratorService {
    * @param message - The agent's full response text
    * @returns Array of action suggestions with labels and navigation targets, or undefined if none
    */
-  private generateActions(message: string): ActionSuggestion[] | undefined {
+  private generateActions(
+    message: string,
+    toolResults?: Array<{ result?: any }>,
+  ): ActionSuggestion[] | undefined {
     const actions: ActionSuggestion[] = [];
-    const lower = message.toLowerCase();
-    if (lower.includes('档案'))
-      actions.push({ label: '完善档案', action: 'navigate:/profile' });
-    if (lower.includes('文书'))
-      actions.push({ label: '文书管理', action: 'navigate:/essays' });
-    if (lower.includes('学校') || lower.includes('排名'))
-      actions.push({ label: '查看排名', action: 'navigate:/ranking' });
+
+    // Priority 1: Explicit suggestedAction from tool results
+    if (toolResults) {
+      for (const tr of toolResults) {
+        const sa =
+          tr.result?.suggestedAction || tr.result?.result?.suggestedAction;
+        if (sa?.label && sa?.action) {
+          actions.push({ label: sa.label, action: sa.action });
+        }
+      }
+    }
+
+    // Priority 2: Keyword-based fallback (only if no explicit actions)
+    if (actions.length === 0) {
+      const lower = message.toLowerCase();
+      if (lower.includes('档案'))
+        actions.push({ label: '完善档案', action: 'navigate:/profile' });
+      if (lower.includes('文书'))
+        actions.push({ label: '文书管理', action: 'navigate:/essays' });
+      if (lower.includes('学校') || lower.includes('排名'))
+        actions.push({ label: '查看排名', action: 'navigate:/ranking' });
+    }
+
     return actions.length > 0 ? actions : undefined;
   }
 }

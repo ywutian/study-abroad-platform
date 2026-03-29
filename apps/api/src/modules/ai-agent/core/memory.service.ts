@@ -96,19 +96,36 @@ export class MemoryService {
     conversation: ConversationState,
     limit: number = 20,
   ): Message[] {
-    // 过滤掉工具消息中的详细数据，只保留关键信息
-    return conversation.messages.slice(-limit).map((m) => {
-      if (m.role === 'tool') {
-        try {
-          const data = JSON.parse(m.content);
-          // 简化工具返回数据
-          return {
-            ...m,
-            content: JSON.stringify(this.summarizeToolResult(data)),
-          };
-        } catch {
-          return m;
+    const messages = conversation.messages.slice(-limit);
+    // Keep last 6 messages (3 turns) fully intact; compress older ones
+    const recentThreshold = Math.max(0, messages.length - 6);
+
+    return messages.map((m, i) => {
+      // Recent messages: keep full, only summarize tool data
+      if (i >= recentThreshold) {
+        if (m.role === 'tool') {
+          try {
+            const data = JSON.parse(m.content);
+            return {
+              ...m,
+              content: JSON.stringify(this.summarizeToolResult(data)),
+            };
+          } catch {
+            return m;
+          }
         }
+        return m;
+      }
+
+      // Older messages: compress aggressively
+      if (m.role === 'tool') {
+        return {
+          ...m,
+          content: '[Earlier tool result omitted for brevity]',
+        };
+      }
+      if (m.role === 'assistant' && m.content.length > 200) {
+        return { ...m, content: m.content.slice(0, 200) + '...' };
       }
       return m;
     });

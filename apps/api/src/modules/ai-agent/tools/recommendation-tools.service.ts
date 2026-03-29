@@ -65,6 +65,10 @@ export class RecommendationToolsService implements IToolHandlerProvider {
         error: isZh
           ? '请先完善档案信息（GPA或标化成绩）以获取推荐'
           : 'Please complete your profile (GPA or test scores) to get recommendations',
+        suggestedAction: {
+          label: isZh ? '完善档案' : 'Complete Profile',
+          action: 'navigate:/profile',
+        },
       };
     }
 

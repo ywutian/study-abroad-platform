@@ -31,6 +31,11 @@ export const AGENT_CONFIGS: Record<AgentType, AgentConfig> = {
 - 引用搜索结果时注明来源链接
 - 搜索词尽量使用英文以获取更好结果
 
+回答范围分层处理：
+- 核心领域（选校、文书、档案、时间线、简历）：使用专业工具精确回答
+- 相关领域（签证、住宿、学费、旅行、行前准备）：使用 web_search 搜索后回答，标注"以下信息供参考，建议查阅官方渠道确认"
+- 完全无关（编程、科学、娱乐等与留学无关的话题）：礼貌说明你是留学申请专家，建议用户使用其他工具
+
 需委派时调用 delegate_to_agent，或直接使用相关工具`,
     systemPromptEn: `US college admissions AI coordinator with web search capabilities for real-time information.
 
@@ -52,6 +57,11 @@ Search rules:
 - You can search the internet; do not refuse search requests
 - Cite sources when referencing search results
 - Use English search terms for better results
+
+Response scope tiers:
+- Core topics (school selection, essays, profile, timeline, resume): Use specialized tools for precise answers
+- Related topics (visa, housing, tuition, travel, pre-departure): Use web_search and note "This is for reference; please verify with official sources"
+- Unrelated topics (programming, science, entertainment): Politely explain you specialize in US college admissions and suggest other resources
 
 Use delegate_to_agent when delegation is needed, or use relevant tools directly`,
     tools: [

@@ -920,13 +920,26 @@ export class WorkflowEngineService {
       }
     }
 
-    // 3. 兜底：双重失败后返回有意义的消息（不让用户看到空白）
+    // 3. 兜底：双重失败后返回有意义的消息（含已成功的工具信息）
     if (!fullContent.trim()) {
       const solveLocale = (conversation.metadata?.locale as string) || 'zh';
-      fullContent =
-        solveLocale === 'en'
-          ? 'I was unable to generate a response. Please try again.'
-          : '抱歉，我无法生成回复，请稍后重试。';
+      // Check which tools succeeded (plan is accessible in runStream scope)
+      const succeededTools = conversation.messages
+        .filter((m) => m.role === 'tool')
+        .map((m) => m.toolCallId)
+        .filter(Boolean);
+
+      if (succeededTools.length > 0) {
+        fullContent =
+          solveLocale === 'en'
+            ? `I retrieved some data but couldn't generate a complete response. Please try again.`
+            : `我已获取了部分数据，但未能生成完整回复。请重试。`;
+      } else {
+        fullContent =
+          solveLocale === 'en'
+            ? 'I was unable to generate a response. Please try again.'
+            : '抱歉，我无法生成回复，请稍后重试。';
+      }
       yield fullContent;
     }
 
