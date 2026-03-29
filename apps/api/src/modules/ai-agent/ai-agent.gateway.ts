@@ -179,8 +179,19 @@ export class AiAgentGateway
       );
 
       let finalConversationId: string | undefined;
+      let clientDisconnected = false;
+      client.on('disconnect', () => {
+        clientDisconnected = true;
+      });
 
       for await (const event of stream) {
+        if (clientDisconnected) {
+          this.logger.debug(
+            `WebSocket client disconnected mid-stream [user=${client.userId}]`,
+          );
+          break;
+        }
+
         // 发送流式事件
         client.emit('aiResponse', event);
 

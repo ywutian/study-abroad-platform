@@ -32,6 +32,7 @@ import { FastRouterService } from './fast-router.service';
 import { EmbeddingRouterService } from './embedding-router.service';
 import { FallbackService } from './fallback.service';
 import { MetricsService } from '../infrastructure/observability/metrics.service';
+import { RedisService } from '../../../common/redis/redis.service';
 import { ConfigValidatorService } from '../config/config-validator.service';
 import { AGENT_CONFIGS } from '../config/agents.config';
 import { TOOLS } from '../config/tools.config';
@@ -96,6 +97,7 @@ export class OrchestratorService {
     @Optional() private embeddingRouter?: EmbeddingRouterService,
     @Optional() private fallback?: FallbackService,
     @Optional() private metricsService?: MetricsService,
+    @Optional() private redis?: RedisService,
   ) {
     this.maxDelegationDepth = this.configService.get<number>(
       'AGENT_MAX_DELEGATION_DEPTH',
@@ -109,6 +111,31 @@ export class OrchestratorService {
       this.logger.warn(
         'Enterprise memory not available, using fallback MemoryService',
       );
+    }
+  }
+
+  // ==================== 对话级锁 ====================
+
+  /** Acquire a per-conversation lock (Redis SET NX, 60s TTL). Returns false if already locked. */
+  private async acquireConversationLock(key: string): Promise<boolean> {
+    const client = this.redis?.getClient();
+    if (!client) return true; // No Redis = no locking (single-instance safe)
+    try {
+      const result = await client.set(`lock:conv:${key}`, '1', 'EX', 60, 'NX');
+      return result === 'OK';
+    } catch {
+      return true; // Fail-open: allow request if Redis is down
+    }
+  }
+
+  /** Release the per-conversation lock. */
+  private async releaseConversationLock(key: string): Promise<void> {
+    const client = this.redis?.getClient();
+    if (!client) return;
+    try {
+      await client.del(`lock:conv:${key}`);
+    } catch {
+      // Best-effort: lock will expire in 60s anyway
     }
   }
 
@@ -140,6 +167,17 @@ export class OrchestratorService {
     conversationId?: string,
     locale: string = 'zh',
   ): Promise<AgentResponse> {
+    const lockKey = conversationId || userId;
+    if (!(await this.acquireConversationLock(lockKey))) {
+      return {
+        message:
+          locale === 'en'
+            ? 'Still processing your previous message. Please wait a moment.'
+            : '正在处理上一条消息，请稍后再发送。',
+        agentType: AgentType.ORCHESTRATOR,
+      };
+    }
+
     try {
       // 1. 快速路由检查 (减少 LLM 调用)
       if (this.fastRouter) {
@@ -301,6 +339,8 @@ export class OrchestratorService {
         );
       }
       throw error;
+    } finally {
+      await this.releaseConversationLock(lockKey);
     }
   }
 
@@ -629,191 +669,219 @@ export class OrchestratorService {
     conversationId?: string,
     locale: string = 'zh',
   ): AsyncGenerator<StreamEvent> {
-    // 1. 快速路由 (减少 LLM 调用)
-    if (this.fastRouter) {
-      const simpleResponse = this.fastRouter.getSimpleResponse(message);
-      if (simpleResponse) {
-        const conv = await this.getOrCreateConversation(userId, conversationId);
-        conv.metadata = { ...conv.metadata, locale };
-        await this.addMessage(
-          conv,
-          createMsg({ role: 'user', content: message }),
-        );
-
-        yield {
-          type: 'start',
-          agent: AgentType.ORCHESTRATOR,
-          conversationId: conv.id,
-        };
-        yield {
-          type: 'content',
-          agent: AgentType.ORCHESTRATOR,
-          content: simpleResponse,
-        };
-        yield {
-          type: 'done',
-          agent: AgentType.ORCHESTRATOR,
-          response: {
-            message: simpleResponse,
-            agentType: AgentType.ORCHESTRATOR,
-          },
-        };
-
-        await this.persistAssistantResponse(
-          conv,
-          simpleResponse,
-          AgentType.ORCHESTRATOR,
-        );
-        return;
-      }
-
-      const routeResult = this.fastRouter.route(message);
-      if (!routeResult.shouldUseLLM && routeResult.agent) {
-        this.metricsService?.recordRoutingDecision('fast');
-        const conversation = await this.getOrCreateConversation(
-          userId,
-          conversationId,
-        );
-        conversation.metadata = { ...conversation.metadata, locale };
-        await this.addMessage(
-          conversation,
-          createMsg({ role: 'user', content: message }),
-        );
-
-        // 新对话自动生成标题
-        const isNew = !conversationId;
-        if (isNew && this.useEnterpriseMemory) {
-          const title = message.slice(0, 50).replace(/\n/g, ' ').trim();
-          await this.memoryManager!.updateConversationTitle(
-            conversation.id,
-            title,
-          );
-        }
-
-        yield {
-          type: 'start',
-          agent: routeResult.agent,
-          conversationId: conversation.id,
-          title: isNew
-            ? message.slice(0, 50).replace(/\n/g, ' ').trim()
-            : undefined,
-        };
-
-        // 收集流式内容并持久化 assistant 响应
-        yield* this.collectAndPersistStream(routeResult.agent, conversation);
-        return;
-      }
+    const lockKey = conversationId || userId;
+    if (!(await this.acquireConversationLock(lockKey))) {
+      yield {
+        type: 'error',
+        error:
+          locale === 'en'
+            ? 'Still processing your previous message. Please wait.'
+            : '正在处理上一条消息，请稍后再发送。',
+      };
+      return;
     }
-
-    // 2. 语义路由 (Embedding, ~5ms)
-    if (this.embeddingRouter) {
-      const embeddingResult = await this.embeddingRouter.route(message);
-      if (!embeddingResult.shouldUseLLM && embeddingResult.agent) {
-        this.logger.debug(
-          `Embedding route (stream) to ${embeddingResult.agent} (similarity: ${embeddingResult.confidence.toFixed(3)})`,
-        );
-        this.metricsService?.recordRoutingDecision('embedding');
-
-        const conv = await this.getOrCreateConversation(userId, conversationId);
-        conv.metadata = { ...conv.metadata, locale };
-        await this.addMessage(
-          conv,
-          createMsg({ role: 'user', content: message }),
-        );
-
-        const isNew = !conversationId;
-        if (isNew && this.useEnterpriseMemory) {
-          const t = message.slice(0, 50).replace(/\n/g, ' ').trim();
-          await this.memoryManager!.updateConversationTitle(conv.id, t);
-        }
-
-        yield {
-          type: 'start',
-          agent: embeddingResult.agent,
-          conversationId: conv.id,
-          title: isNew
-            ? message.slice(0, 50).replace(/\n/g, ' ').trim()
-            : undefined,
-        };
-
-        yield* this.collectAndPersistStream(embeddingResult.agent, conv);
-        return;
-      }
-    }
-
-    // 3. 正常流程 (LLM Orchestrator)
-    this.metricsService?.recordRoutingDecision('llm');
-    const conversation = await this.getOrCreateConversation(
-      userId,
-      conversationId,
-    );
-    conversation.metadata = { ...conversation.metadata, locale };
-    await this.addMessage(
-      conversation,
-      createMsg({ role: 'user', content: message }),
-    );
-
-    // 新对话自动生成标题
-    const isNewConversation = !conversationId;
-    let title: string | undefined;
-    if (isNewConversation && this.useEnterpriseMemory) {
-      title = message.slice(0, 50).replace(/\n/g, ' ').trim();
-      await this.memoryManager!.updateConversationTitle(conversation.id, title);
-    }
-
-    // 获取记忆上下文统计
-    let memoryContext: StreamEvent['memoryContext'];
-    if (this.memoryManager) {
-      try {
-        const ctx = await this.memoryManager.getRetrievalContext(
-          userId,
-          message,
-          conversation.id,
-        );
-        memoryContext = {
-          recentMemories: ctx.relevantMemories.length,
-          relevantFacts: ctx.relevantMemories.filter((m) => m.type === 'FACT')
-            .length,
-          entities: ctx.entities.map((e) => e.name),
-        };
-      } catch (err) {
-        this.logger.warn('Failed to retrieve memory context', err);
-      }
-    }
-
-    yield {
-      type: 'start',
-      agent: AgentType.ORCHESTRATOR,
-      conversationId: conversation.id,
-      title,
-      memoryContext,
-    };
 
     try {
-      // 收集流式内容并持久化 assistant 响应
-      yield* this.collectAndPersistStream(AgentType.ORCHESTRATOR, conversation);
-    } catch (error) {
-      // 错误降级
-      const streamLocale = (conversation.metadata?.locale as string) || 'zh';
-      if (this.fallback) {
-        const fallbackResponse = this.fallback.getFallbackResponse(
-          error instanceof Error ? error : new Error(String(error)),
-          undefined,
-          { userId, locale: streamLocale },
-        );
-        yield { type: 'error', error: fallbackResponse.message };
-        yield { type: 'done', response: fallbackResponse };
-      } else {
-        yield {
-          type: 'error',
-          error:
-            error instanceof Error
-              ? error.message
-              : streamLocale === 'zh'
-                ? '处理失败'
-                : 'Processing failed',
-        };
+      // 1. 快速路由 (减少 LLM 调用)
+      if (this.fastRouter) {
+        const simpleResponse = this.fastRouter.getSimpleResponse(message);
+        if (simpleResponse) {
+          const conv = await this.getOrCreateConversation(
+            userId,
+            conversationId,
+          );
+          conv.metadata = { ...conv.metadata, locale };
+          await this.addMessage(
+            conv,
+            createMsg({ role: 'user', content: message }),
+          );
+
+          yield {
+            type: 'start',
+            agent: AgentType.ORCHESTRATOR,
+            conversationId: conv.id,
+          };
+          yield {
+            type: 'content',
+            agent: AgentType.ORCHESTRATOR,
+            content: simpleResponse,
+          };
+          yield {
+            type: 'done',
+            agent: AgentType.ORCHESTRATOR,
+            response: {
+              message: simpleResponse,
+              agentType: AgentType.ORCHESTRATOR,
+            },
+          };
+
+          await this.persistAssistantResponse(
+            conv,
+            simpleResponse,
+            AgentType.ORCHESTRATOR,
+          );
+          return;
+        }
+
+        const routeResult = this.fastRouter.route(message);
+        if (!routeResult.shouldUseLLM && routeResult.agent) {
+          this.metricsService?.recordRoutingDecision('fast');
+          const conversation = await this.getOrCreateConversation(
+            userId,
+            conversationId,
+          );
+          conversation.metadata = { ...conversation.metadata, locale };
+          await this.addMessage(
+            conversation,
+            createMsg({ role: 'user', content: message }),
+          );
+
+          // 新对话自动生成标题
+          const isNew = !conversationId;
+          if (isNew && this.useEnterpriseMemory) {
+            const title = message.slice(0, 50).replace(/\n/g, ' ').trim();
+            await this.memoryManager!.updateConversationTitle(
+              conversation.id,
+              title,
+            );
+          }
+
+          yield {
+            type: 'start',
+            agent: routeResult.agent,
+            conversationId: conversation.id,
+            title: isNew
+              ? message.slice(0, 50).replace(/\n/g, ' ').trim()
+              : undefined,
+          };
+
+          // 收集流式内容并持久化 assistant 响应
+          yield* this.collectAndPersistStream(routeResult.agent, conversation);
+          return;
+        }
       }
+
+      // 2. 语义路由 (Embedding, ~5ms)
+      if (this.embeddingRouter) {
+        const embeddingResult = await this.embeddingRouter.route(message);
+        if (!embeddingResult.shouldUseLLM && embeddingResult.agent) {
+          this.logger.debug(
+            `Embedding route (stream) to ${embeddingResult.agent} (similarity: ${embeddingResult.confidence.toFixed(3)})`,
+          );
+          this.metricsService?.recordRoutingDecision('embedding');
+
+          const conv = await this.getOrCreateConversation(
+            userId,
+            conversationId,
+          );
+          conv.metadata = { ...conv.metadata, locale };
+          await this.addMessage(
+            conv,
+            createMsg({ role: 'user', content: message }),
+          );
+
+          const isNew = !conversationId;
+          if (isNew && this.useEnterpriseMemory) {
+            const t = message.slice(0, 50).replace(/\n/g, ' ').trim();
+            await this.memoryManager!.updateConversationTitle(conv.id, t);
+          }
+
+          yield {
+            type: 'start',
+            agent: embeddingResult.agent,
+            conversationId: conv.id,
+            title: isNew
+              ? message.slice(0, 50).replace(/\n/g, ' ').trim()
+              : undefined,
+          };
+
+          yield* this.collectAndPersistStream(embeddingResult.agent, conv);
+          return;
+        }
+      }
+
+      // 3. 正常流程 (LLM Orchestrator)
+      this.metricsService?.recordRoutingDecision('llm');
+      const conversation = await this.getOrCreateConversation(
+        userId,
+        conversationId,
+      );
+      conversation.metadata = { ...conversation.metadata, locale };
+      await this.addMessage(
+        conversation,
+        createMsg({ role: 'user', content: message }),
+      );
+
+      // 新对话自动生成标题
+      const isNewConversation = !conversationId;
+      let title: string | undefined;
+      if (isNewConversation && this.useEnterpriseMemory) {
+        title = message.slice(0, 50).replace(/\n/g, ' ').trim();
+        await this.memoryManager!.updateConversationTitle(
+          conversation.id,
+          title,
+        );
+      }
+
+      // 获取记忆上下文统计
+      let memoryContext: StreamEvent['memoryContext'];
+      if (this.memoryManager) {
+        try {
+          const ctx = await this.memoryManager.getRetrievalContext(
+            userId,
+            message,
+            conversation.id,
+          );
+          memoryContext = {
+            recentMemories: ctx.relevantMemories.length,
+            relevantFacts: ctx.relevantMemories.filter((m) => m.type === 'FACT')
+              .length,
+            entities: ctx.entities.map((e) => e.name),
+          };
+        } catch (err) {
+          this.logger.warn('Failed to retrieve memory context', err);
+        }
+      }
+
+      yield {
+        type: 'start',
+        agent: AgentType.ORCHESTRATOR,
+        conversationId: conversation.id,
+        title,
+        memoryContext,
+      };
+
+      try {
+        // 收集流式内容并持久化 assistant 响应
+        yield* this.collectAndPersistStream(
+          AgentType.ORCHESTRATOR,
+          conversation,
+        );
+      } catch (error) {
+        // 错误降级
+        const streamLocale = (conversation.metadata?.locale as string) || 'zh';
+        if (this.fallback) {
+          const fallbackResponse = this.fallback.getFallbackResponse(
+            error instanceof Error ? error : new Error(String(error)),
+            undefined,
+            { userId, locale: streamLocale },
+          );
+          yield { type: 'error', error: fallbackResponse.message };
+          yield { type: 'done', response: fallbackResponse };
+        } else {
+          yield {
+            type: 'error',
+            error:
+              error instanceof Error
+                ? error.message
+                : streamLocale === 'zh'
+                  ? '处理失败'
+                  : 'Processing failed',
+          };
+        }
+      }
+    } finally {
+      await this.releaseConversationLock(lockKey);
     }
   }
 
