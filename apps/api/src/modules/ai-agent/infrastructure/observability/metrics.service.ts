@@ -61,6 +61,20 @@ export interface AgentMetrics {
     rateLimitHits: number;
     quotaExceeded: number;
   };
+
+  // 路由指标
+  routing: {
+    fast: number;
+    embedding: number;
+    llm: number;
+  };
+
+  // Critique 指标
+  critiques: {
+    total: number;
+    passed: number;
+    failed: number;
+  };
 }
 
 @Injectable()
@@ -128,6 +142,23 @@ export class MetricsService implements OnModuleInit, OnModuleDestroy {
     if (agentType) {
       this.metrics.errors.byAgent[agentType] =
         (this.metrics.errors.byAgent[agentType] || 0) + 1;
+    }
+  }
+
+  // ==================== 路由指标 ====================
+
+  recordRoutingDecision(layer: 'fast' | 'embedding' | 'llm') {
+    this.metrics.routing[layer]++;
+  }
+
+  // ==================== Critique 指标 ====================
+
+  recordCritique(passed: boolean) {
+    this.metrics.critiques.total++;
+    if (passed) {
+      this.metrics.critiques.passed++;
+    } else {
+      this.metrics.critiques.failed++;
     }
   }
 
@@ -237,6 +268,8 @@ export class MetricsService implements OnModuleInit, OnModuleDestroy {
         rateLimitHits: 0,
         quotaExceeded: 0,
       },
+      routing: { fast: 0, embedding: 0, llm: 0 },
+      critiques: { total: 0, passed: 0, failed: 0 },
     };
   }
 

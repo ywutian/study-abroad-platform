@@ -5538,7 +5538,30 @@
         "config": "配置",
         "performance": "性能",
         "reliability": "可靠性",
-        "engagement": "用户参与"
+        "engagement": "用户参与",
+        "llmCalls": "调用记录"
+      },
+      "llmCalls": {
+        "title": "LLM 调用历史",
+        "total": "条记录",
+        "filterAgent": "Agent 类型",
+        "filterModel": "模型",
+        "filterUser": "用户 ID",
+        "allAgents": "全部 Agent",
+        "allModels": "全部模型",
+        "loading": "加载中...",
+        "empty": "暂无 LLM 调用记录",
+        "time": "时间",
+        "agent": "Agent",
+        "model": "模型",
+        "tokens": "Token 数",
+        "cost": "成本",
+        "latency": "延迟",
+        "finish": "完成",
+        "input": "输入（系统提示词）",
+        "output": "输出",
+        "noData": "无预览数据",
+        "showing": "显示 {from}-{to}，共 {total} 条"
       }
     },
     "aiAgent": {

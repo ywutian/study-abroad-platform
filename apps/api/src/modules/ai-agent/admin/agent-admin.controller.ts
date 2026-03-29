@@ -14,7 +14,9 @@ import {
   Body,
   Param,
   Query,
+  Logger,
 } from '@nestjs/common';
+import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { RequirePermission } from '../../../common/decorators';
@@ -39,11 +41,24 @@ import {
   IsNumber,
   IsBoolean,
   IsOptional,
+  IsIn,
+  MaxLength,
   Min,
   Max,
 } from 'class-validator';
 
 // ==================== DTOs ====================
+
+class ResolveConflictDto {
+  @IsString()
+  @IsIn(['keep_new', 'keep_existing', 'merge'])
+  action: 'keep_new' | 'keep_existing' | 'merge';
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(50000)
+  mergedContent?: string;
+}
 
 class UpdateQuotaDto {
   @IsNumber()
@@ -188,6 +203,8 @@ class UpdateDecayConfigDto {
 @Roles(Role.ADMIN)
 @RequirePermission(Permission.AI_CONFIG)
 export class AgentAdminController {
+  private readonly logger = new Logger(AgentAdminController.name);
+
   constructor(
     private configService: AgentConfigService,
     private metricsService: MetricsService,
@@ -512,6 +529,39 @@ export class AgentAdminController {
   }
 
   /**
+   * 浏览 LLM 调用记录（含 input/output 预览）
+   */
+  @Get('llm-calls')
+  @ApiOperation({ summary: 'Browse individual LLM calls with input/output' })
+  async getLlmCalls(
+    @Query('page') page: number = 1,
+    @Query('pageSize') pageSize: number = 20,
+    @Query('agentType') agentType?: string,
+    @Query('userId') userId?: string,
+    @Query('model') model?: string,
+  ) {
+    const take = Math.min(Number(pageSize) || 20, 100);
+    const skip = ((Number(page) || 1) - 1) * take;
+
+    const where: Record<string, unknown> = {};
+    if (agentType) where.agentType = agentType;
+    if (userId) where.userId = userId;
+    if (model) where.model = model;
+
+    const [data, total] = await Promise.all([
+      this.prisma.agentTokenUsage.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        take,
+        skip,
+      }),
+      this.prisma.agentTokenUsage.count({ where }),
+    ]);
+
+    return { data, total, page: Number(page) || 1, pageSize: take };
+  }
+
+  /**
    * 重置指标
    */
   @Delete('metrics')
@@ -792,6 +842,7 @@ export class AgentAdminController {
   @Get('memory/browse')
   @ApiOperation({ summary: 'Browse memory list' })
   async browseMemories(
+    @CurrentUser() admin: { id: string },
     @Query('userId') userId?: string,
     @Query('type') type?: MemoryType,
     @Query('category') category?: string,
@@ -829,6 +880,27 @@ export class AgentAdminController {
       this.prisma.memory.count({ where }),
     ]);
 
+    // Audit log — every browse is logged; browsing without userId (full scan) is more sensitive
+    this.prisma.agentAuditLog
+      .create({
+        data: {
+          action: 'ADMIN_BROWSE_MEMORIES',
+          resource: 'Memory',
+          operation: 'LIST',
+          userId: userId ?? null, // target user (not the operator)
+          details: {
+            adminUserId: admin?.id,
+            filters: { type, category, minImportance },
+            page: Number(page),
+            pageSize: Number(pageSize),
+            resultCount: total,
+          } as any,
+        },
+      })
+      .catch((err) =>
+        this.logger.error('Failed to write audit log for browseMemories', err),
+      );
+
     return { data, total, page: Number(page), pageSize: Number(pageSize) };
   }
 
@@ -838,7 +910,7 @@ export class AgentAdminController {
   @Delete('memory/:memoryId')
   @ApiOperation({ summary: 'Delete single memory' })
   async deleteMemory(@Param('memoryId') memoryId: string) {
-    await this.memoryManager.forget(memoryId);
+    await this.memoryManager.forgetAdmin(memoryId);
     return { message: 'Memory deleted' };
   }
 
@@ -971,6 +1043,22 @@ export class AgentAdminController {
   @ApiOperation({ summary: 'Get pending memory conflicts' })
   async getMemoryConflicts(@Query('userId') userId: string) {
     return this.memoryConflict.getPendingConflicts(userId);
+  }
+
+  /**
+   * 解决记忆冲突
+   */
+  @Put('memory/conflicts/:memoryId/resolve')
+  @ApiOperation({ summary: 'Resolve a pending memory conflict' })
+  async resolveConflict(
+    @Param('memoryId') memoryId: string,
+    @Body() dto: ResolveConflictDto,
+  ) {
+    return this.memoryConflict.resolveConflictById(
+      memoryId,
+      dto.action,
+      dto.mergedContent,
+    );
   }
 
   // ==================== 私有方法 ====================

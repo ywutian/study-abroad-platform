@@ -11,8 +11,6 @@
 const otlpEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
 
 if (otlpEndpoint) {
-  // Validate URL format before initializing SDK
-  // (Zod validation in env.validation.ts runs later during NestJS bootstrap)
   let isValidUrl = true;
   try {
     new URL(otlpEndpoint);
@@ -24,7 +22,6 @@ if (otlpEndpoint) {
   }
 
   if (isValidUrl) {
-    // Dynamic imports keep the require chain clean when OTel is disabled
     const { NodeSDK } = require('@opentelemetry/sdk-node');
     const {
       getNodeAutoInstrumentations,
@@ -55,7 +52,6 @@ if (otlpEndpoint) {
       }),
       instrumentations: [
         getNodeAutoInstrumentations({
-          // Disable noisy / low-value instrumentations
           '@opentelemetry/instrumentation-fs': { enabled: false },
           '@opentelemetry/instrumentation-dns': { enabled: false },
         }),
@@ -65,7 +61,6 @@ if (otlpEndpoint) {
 
     sdk.start();
 
-    // Graceful shutdown on SIGTERM (Cloud Run sends this)
     process.on('SIGTERM', () => {
       sdk
         .shutdown()

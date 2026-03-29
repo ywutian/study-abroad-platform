@@ -5543,7 +5543,30 @@
         "config": "Configuration",
         "performance": "Performance",
         "reliability": "Reliability",
-        "engagement": "Engagement"
+        "engagement": "Engagement",
+        "llmCalls": "LLM Calls"
+      },
+      "llmCalls": {
+        "title": "LLM Call History",
+        "total": "total",
+        "filterAgent": "Agent type",
+        "filterModel": "Model",
+        "filterUser": "User ID",
+        "allAgents": "All agents",
+        "allModels": "All models",
+        "loading": "Loading...",
+        "empty": "No LLM calls recorded yet",
+        "time": "Time",
+        "agent": "Agent",
+        "model": "Model",
+        "tokens": "Tokens",
+        "cost": "Cost",
+        "latency": "Latency",
+        "finish": "Finish",
+        "input": "Input (System Prompt)",
+        "output": "Output",
+        "noData": "No preview available",
+        "showing": "Showing {from}-{to} of {total}"
       }
     },
     "aiAgent": {
