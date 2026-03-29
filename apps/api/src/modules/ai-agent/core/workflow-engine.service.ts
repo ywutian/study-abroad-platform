@@ -920,7 +920,17 @@ export class WorkflowEngineService {
       }
     }
 
-    // 3. 可观测性：工具结果存在但回复过短
+    // 3. 兜底：双重失败后返回有意义的消息（不让用户看到空白）
+    if (!fullContent.trim()) {
+      const solveLocale = (conversation.metadata?.locale as string) || 'zh';
+      fullContent =
+        solveLocale === 'en'
+          ? 'I was unable to generate a response. Please try again.'
+          : '抱歉，我无法生成回复，请稍后重试。';
+      yield fullContent;
+    }
+
+    // 4. 可观测性：工具结果存在但回复过短
     const hasToolResults = conversation.messages.some((m) => m.role === 'tool');
     if (hasToolResults && fullContent.length > 0 && fullContent.length < 20) {
       this.logger.warn(

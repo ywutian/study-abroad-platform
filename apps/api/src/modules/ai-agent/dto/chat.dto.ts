@@ -7,6 +7,7 @@ import {
   IsOptional,
   IsEnum,
   IsBoolean,
+  IsNotEmpty,
   MaxLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -15,6 +16,7 @@ import { AgentType } from '../types';
 export class ChatDto {
   @ApiProperty({ description: 'User message content' })
   @IsString()
+  @IsNotEmpty({ message: 'Message cannot be empty' })
   @MaxLength(50000)
   message: string;
 
@@ -45,6 +47,7 @@ export class DirectAgentDto {
 
   @ApiProperty({ description: 'User message content' })
   @IsString()
+  @IsNotEmpty({ message: 'Message cannot be empty' })
   @MaxLength(50000)
   message: string;
 

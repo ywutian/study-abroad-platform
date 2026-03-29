@@ -47,6 +47,15 @@ export class SchoolToolsService implements IToolHandlerProvider {
       ? this.schoolLookup.sortByRelevance(schools, args.query.trim())
       : schools;
 
+    if (sortedSchools.length === 0) {
+      return {
+        count: 0,
+        schools: [],
+        message:
+          'No schools matched the search criteria. Try adjusting filters such as rank range, state, or tuition.',
+      };
+    }
+
     return {
       count: sortedSchools.length,
       schools: sortedSchools.map((s) => ({
