@@ -22,7 +22,8 @@ import { PaginationControls } from '../../_components/pagination-controls';
 import { apiClient } from '@/lib/api';
 import { API_ROUTES } from '@study-abroad/shared';
 import { toast } from 'sonner';
-import { Search, Pin, Lock, Trash2, MessageSquare } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Search, Pin, Lock, Trash2, MessageSquare, X } from 'lucide-react';
 
 interface ForumPost {
   id: string;
@@ -47,6 +48,7 @@ export function ForumContentTab({ pageSize, onDeleteRequest }: ForumContentTabPr
 
   const [forumSearch, setForumSearch] = useState('');
   const [forumPage, setForumPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { data: postsData, isLoading: postsLoading } = useQuery({
     queryKey: ['adminForumPosts', forumSearch, forumPage],
@@ -82,6 +84,37 @@ export function ForumContentTab({ pageSize, onDeleteRequest }: ForumContentTabPr
     },
   });
 
+  const batchMutation = useMutation({
+    mutationFn: (dto: { ids: string[]; action: string }) =>
+      apiClient.post<{ success: number; failed: number }>(
+        `${API_ROUTES.ADMIN}/forums/posts/batch`,
+        dto
+      ),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['adminForumPosts'] });
+      setSelectedIds(new Set());
+      toast.success(`${result.success} posts updated`);
+    },
+  });
+
+  const toggleSelectAll = () => {
+    if (!postsData?.data) return;
+    if (selectedIds.size === postsData.data.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(postsData.data.map((p) => p.id)));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
   return (
     <div className="space-y-4">
       <div className="relative">
@@ -101,11 +134,46 @@ export function ForumContentTab({ pageSize, onDeleteRequest }: ForumContentTabPr
         <ListSkeleton count={5} />
       ) : postsData?.data && postsData.data.length > 0 ? (
         <>
+          {selectedIds.size > 0 && (
+            <div className="flex items-center gap-2 rounded-lg bg-muted p-3">
+              <span className="text-sm font-medium">{selectedIds.size} selected</span>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => batchMutation.mutate({ ids: [...selectedIds], action: 'delete' })}
+              >
+                <Trash2 className="mr-1 h-3 w-3" /> Delete
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => batchMutation.mutate({ ids: [...selectedIds], action: 'lock' })}
+              >
+                <Lock className="mr-1 h-3 w-3" /> Lock
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => batchMutation.mutate({ ids: [...selectedIds], action: 'pin' })}
+              >
+                <Pin className="mr-1 h-3 w-3" /> Pin
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
+                <X className="mr-1 h-3 w-3" /> Clear
+              </Button>
+            </div>
+          )}
           <Card>
             <ScrollArea className="h-[500px]">
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-10">
+                      <Checkbox
+                        checked={postsData?.data && selectedIds.size === postsData.data.length}
+                        onCheckedChange={toggleSelectAll}
+                      />
+                    </TableHead>
                     <TableHead>Title</TableHead>
                     <TableHead>{t('contentMod.author')}</TableHead>
                     <TableHead>{t('contentMod.category')}</TableHead>
@@ -118,6 +186,12 @@ export function ForumContentTab({ pageSize, onDeleteRequest }: ForumContentTabPr
                 <TableBody>
                   {postsData.data.map((post) => (
                     <TableRow key={post.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedIds.has(post.id)}
+                          onCheckedChange={() => toggleSelect(post.id)}
+                        />
+                      </TableCell>
                       <TableCell className="font-medium max-w-[200px] truncate">
                         {post.title}
                       </TableCell>
