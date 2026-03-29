@@ -54,20 +54,51 @@ export class ProfileToolsService implements IToolHandlerProvider {
     locale = 'zh',
   ) {
     const isZh = locale === 'zh';
-    const allowedFields = [
-      'targetMajor',
-      'budgetTier',
-      'nationality',
-      'grade',
-      'currentSchoolType',
-    ];
 
-    if (!allowedFields.includes(field)) {
+    const FIELD_VALIDATORS: Record<
+      string,
+      { values?: string[]; validate?: (v: string) => boolean }
+    > = {
+      budgetTier: { values: ['LOW', 'MEDIUM', 'HIGH', 'UNLIMITED'] },
+      grade: {
+        values: ['FRESHMAN', 'SOPHOMORE', 'JUNIOR', 'SENIOR', 'GAP_YEAR'],
+      },
+      currentSchoolType: {
+        values: [
+          'PUBLIC_US',
+          'PRIVATE_US',
+          'BOARDING_US',
+          'INTL_CN',
+          'PUBLIC_CN',
+        ],
+      },
+      targetMajor: { validate: (v) => v.length > 0 && v.length <= 200 },
+      nationality: { validate: (v) => v.length > 0 && v.length <= 100 },
+    };
+
+    const validator = FIELD_VALIDATORS[field];
+    if (!validator) {
       return {
         success: false,
         message: isZh
           ? `不允许更新字段: ${field}`
           : `Field not allowed: ${field}`,
+      };
+    }
+
+    if (validator.values && !validator.values.includes(value)) {
+      return {
+        success: false,
+        message: isZh
+          ? `${field} 的值无效，允许的值: ${validator.values.join(', ')}`
+          : `Invalid value for ${field}. Allowed: ${validator.values.join(', ')}`,
+      };
+    }
+
+    if (validator.validate && !validator.validate(value)) {
+      return {
+        success: false,
+        message: isZh ? `${field} 的值无效` : `Invalid value for ${field}`,
       };
     }
 

@@ -290,6 +290,25 @@ Return in JSON format:
 
     const taskTitles = templates[args.category] || templates.OTHER;
 
+    // Validate deadline is not in the past (eventDate is allowed to be past for historical records)
+    if (args.deadline) {
+      const deadlineDate = new Date(args.deadline);
+      if (isNaN(deadlineDate.getTime())) {
+        return {
+          error:
+            locale === 'zh' ? '截止日期格式无效' : 'Invalid deadline format',
+        };
+      }
+      if (deadlineDate < new Date()) {
+        return {
+          error:
+            locale === 'zh'
+              ? '截止日期已过，无法创建'
+              : 'Deadline is in the past',
+        };
+      }
+    }
+
     const event = await this.prisma.personalEvent.create({
       data: {
         userId,
