@@ -413,32 +413,39 @@ export class WorkflowEngineService {
 
       this.logger.log(`[${agentType}] SOLVE completed (${solveMs}ms)`);
 
-      // ---- Optional: CRITIQUE (only for enableReflection agents) ----
-      let critiqueMs = 0;
+      // ---- Optional: Chain-of-Verification (CoVE) for enableReflection agents ----
+      let verifyMs = 0;
       if (config.enableReflection && finalMessage && plan.steps.length > 0) {
-        const critiqueStart = Date.now();
-        const critiqueResult = await this.critiquePhase(
+        const verifyStart = Date.now();
+        const verifyResult = await this.verificationPhase(
           agentType,
           config,
           finalMessage,
           plan,
+          conversation,
           locale,
         );
-        critiqueMs = Date.now() - critiqueStart;
+        verifyMs = Date.now() - verifyStart;
 
-        this.metricsService?.recordCritique(critiqueResult.passed);
+        this.metricsService?.recordCritique(verifyResult.allCorrect);
 
-        if (!critiqueResult.passed) {
+        if (!verifyResult.allCorrect) {
           this.logger.log(
-            `[${agentType}] Critique failed (${critiqueMs}ms): ${critiqueResult.reason}, re-solving`,
+            `[${agentType}] CoVE found ${verifyResult.corrections.length} inaccuracies (${verifyMs}ms), re-solving`,
           );
+
+          const correctionReport = verifyResult.corrections
+            .map(
+              (c) => `- "${c.claim}" → actual: ${c.actual} (source: ${c.tool})`,
+            )
+            .join('\n');
 
           let resolvedMessage = '';
           for await (const chunk of this.reSolvePhase(
             agentType,
             config,
             conversation,
-            critiqueResult.feedback || '',
+            `The following facts in your response were verified against the database and found to be inaccurate. Please correct them:\n${correctionReport}`,
             cachedMemoryContext,
           )) {
             resolvedMessage += chunk;
@@ -449,7 +456,9 @@ export class WorkflowEngineService {
             finalMessage = resolvedMessage;
           }
         } else {
-          this.logger.debug(`[${agentType}] Critique passed (${critiqueMs}ms)`);
+          this.logger.debug(
+            `[${agentType}] CoVE passed — ${verifyResult.verified} facts verified (${verifyMs}ms)`,
+          );
         }
       }
 
@@ -461,7 +470,7 @@ export class WorkflowEngineService {
           timing: {
             planMs,
             executeMs,
-            solveMs: solveMs + critiqueMs,
+            solveMs: solveMs + verifyMs,
             totalMs: Date.now() - totalStart,
           },
         }),
@@ -957,86 +966,136 @@ export class WorkflowEngineService {
     // (collectAndPersistStream / persistAssistantResponse) to avoid double-write.
   }
 
-  // ==================== Phase 4: CRITIQUE (optional) ====================
+  // ==================== Phase 4: Chain-of-Verification (CoVE) ====================
 
   /**
-   * Critique the Solve output using a low-cost model.
+   * Chain-of-Verification: extract verifiable facts from the response,
+   * verify each against database tools, and report corrections.
    *
-   * Checks:
-   * 1. Every school/entity mentioned has supporting data from tool results
-   * 2. Numbers (acceptance rates, rankings) match tool data
-   * 3. No unsupported claims or hallucinated information
+   * Steps:
+   * 1. LLM extracts verifiable facts (school names, numbers, dates)
+   * 2. Each fact is verified via tool call (parallel execution)
+   * 3. Mismatches become corrections for ReSolve
    *
    * Hard limits:
-   * - Single LLM call (no tools), maxTokens=500
-   * - Only one ReSolve attempt allowed (caller enforces)
-   * - Fail-open: parse errors default to "passed"
+   * - Max 5 verification questions (cost control)
+   * - Only verifiable facts (skip subjective claims)
+   * - Fail-open: if verification itself fails, assume correct
    */
-  private async critiquePhase(
+  private async verificationPhase(
     agentType: AgentType,
     config: AgentConfig,
     solveOutput: string,
     plan: ExecutionPlan,
+    conversation: ConversationState,
     locale: string,
-  ): Promise<{ passed: boolean; reason?: string; feedback?: string }> {
-    const toolResults = plan.steps
-      .filter((s) => s.status === 'success')
-      .map(
-        (s) =>
-          `[${s.toolCall.name}]: ${JSON.stringify(s.result?.result).slice(0, 500)}`,
-      )
-      .join('\n');
-
-    const critiquePrompt =
-      locale === 'en'
-        ? `You are a quality reviewer for a college admissions AI assistant.
-Review the following response and tool data. Check:
-1. Every school mentioned has supporting data from tools
-2. Numbers (acceptance rates, rankings) match tool data
-3. No unsupported claims or hallucinated information
-
-Tool results:
-${toolResults}
-
-Response to review:
-${solveOutput}
-
-Reply in JSON: {"passed": true/false, "reason": "...", "feedback": "specific corrections needed"}`
-        : `你是留学 AI 助手的质量审查员。
-审查以下回复和工具数据。检查：
-1. 提到的每所学校都有工具返回数据支撑
-2. 数字（录取率、排名）与工具数据一致
-3. 没有无依据的判断或编造的信息
-
-工具结果：
-${toolResults}
-
-待审查回复：
-${solveOutput}
-
-用 JSON 回复：{"passed": true/false, "reason": "...", "feedback": "需要修正的具体内容"}`;
-
+  ): Promise<{
+    allCorrect: boolean;
+    verified: number;
+    corrections: Array<{ claim: string; actual: string; tool: string }>;
+  }> {
     try {
-      const result = await this.llm.call(critiquePrompt, [], {
+      // Step 1: Extract verifiable facts from the response
+      const extractPrompt =
+        locale === 'en'
+          ? `Extract up to 5 verifiable factual claims from this college admissions response.
+Only include claims that can be checked against a school database (acceptance rates, rankings, deadlines, tuition).
+Skip subjective opinions or advice.
+
+Response:
+${solveOutput.slice(0, 2000)}
+
+Reply in JSON: {"facts": [{"claim": "MIT has a 3.4% acceptance rate", "schoolName": "MIT", "field": "acceptanceRate"}]}`
+          : `从以下留学申请回复中提取最多 5 个可验证的事实性声明。
+只包含可以通过学校数据库验证的声明（录取率、排名、截止日期、学费）。
+跳过主观建议。
+
+回复：
+${solveOutput.slice(0, 2000)}
+
+用 JSON 回复：{"facts": [{"claim": "MIT 录取率 3.4%", "schoolName": "MIT", "field": "acceptanceRate"}]}`;
+
+      const extractResult = await this.llm.call(extractPrompt, [], {
         model: config.reflectionModel || 'gpt-4o-mini',
-        temperature: 0.1,
+        temperature: 0,
         maxTokens: 500,
         userId: 'system',
-        agentType: `${agentType}_critique`,
+        agentType: `${agentType}_cove_extract`,
+        providerOptions: { response_format: { type: 'json_object' } },
       });
 
-      const parsed = extractJsonFromLlm<{
-        passed: boolean;
-        reason?: string;
-        feedback?: string;
-      }>(result.content);
+      const extracted = extractJsonFromLlm<{
+        facts: Array<{ claim: string; schoolName: string; field: string }>;
+      }>(extractResult.content);
 
-      return parsed || { passed: true };
+      if (!extracted?.facts?.length) {
+        return { allCorrect: true, verified: 0, corrections: [] };
+      }
+
+      // Step 2: Verify each fact against database (parallel)
+      const corrections: Array<{
+        claim: string;
+        actual: string;
+        tool: string;
+      }> = [];
+      let verified = 0;
+
+      const verifications = extracted.facts.slice(0, 5).map(async (fact) => {
+        try {
+          const toolResult = await this.toolExecutor.execute(
+            {
+              id: `cove_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+              name: 'get_school_details',
+              arguments: { schoolName: fact.schoolName },
+            },
+            conversation.userId,
+            conversation.context,
+            locale,
+          );
+
+          if (!toolResult.success || !toolResult.result) return;
+
+          const schoolData = toolResult.result as Record<string, unknown>;
+          const actualValue = String(schoolData[fact.field] ?? 'N/A');
+
+          // Simple mismatch check: if the claim contains a number, compare with actual
+          const claimNumbers = fact.claim.match(/[\d.]+%?/g);
+          const actualNumbers = actualValue.match(/[\d.]+%?/g);
+
+          if (claimNumbers && actualNumbers) {
+            const claimNum = parseFloat(claimNumbers[0]);
+            const actualNum = parseFloat(actualNumbers[0]);
+            if (
+              !isNaN(claimNum) &&
+              !isNaN(actualNum) &&
+              Math.abs(claimNum - actualNum) > 0.5
+            ) {
+              corrections.push({
+                claim: fact.claim,
+                actual: `${fact.field}: ${actualValue}`,
+                tool: 'get_school_details',
+              });
+              return;
+            }
+          }
+          verified++;
+        } catch {
+          // Verification tool failed — skip this fact (fail-open)
+        }
+      });
+
+      await Promise.allSettled(verifications);
+
+      return {
+        allCorrect: corrections.length === 0,
+        verified,
+        corrections,
+      };
     } catch (error) {
       this.logger.warn(
-        `[${agentType}] Critique failed to execute, defaulting to pass: ${error instanceof Error ? error.message : String(error)}`,
+        `[${agentType}] CoVE failed, defaulting to pass: ${error instanceof Error ? error.message : String(error)}`,
       );
-      return { passed: true };
+      return { allCorrect: true, verified: 0, corrections: [] };
     }
   }
 
