@@ -7,8 +7,9 @@
  * (charge points → AI ranking → probability calibration → persist → memory)
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
+import { RedisService } from '../../../common/redis/redis.service';
 import { LLMService } from '../core/llm.service';
 import { PredictionService } from '../../prediction/prediction.service';
 import { RecommendationService } from '../../recommendation/recommendation.service';
@@ -28,6 +29,7 @@ export class RecommendationToolsService implements IToolHandlerProvider {
     private recommendationService: RecommendationService,
     private profileLoader: ProfileLoaderHelper,
     private schoolLookup: SchoolLookupHelper,
+    @Optional() private redis?: RedisService,
   ) {}
 
   getHandlers(): Map<string, ToolHandler> {
@@ -67,6 +69,21 @@ export class RecommendationToolsService implements IToolHandlerProvider {
     }
 
     try {
+      // Check cache (24h TTL) for consistent results
+      const cacheKey = `rec:${userId}:${args.count || 15}:${args.preference || 'none'}`;
+      const client = this.redis?.getClient();
+      if (client) {
+        try {
+          const cached = await client.get(cacheKey);
+          if (cached) {
+            this.logger.debug(`recommend_schools cache hit for ${userId}`);
+            return JSON.parse(cached);
+          }
+        } catch {
+          // Cache miss or Redis error — proceed with fresh generation
+        }
+      }
+
       // Delegate to RecommendationService: charge points → AI ranking → persist → memory
       const result = await this.recommendationService.generateRecommendation(
         userId,
@@ -77,7 +94,7 @@ export class RecommendationToolsService implements IToolHandlerProvider {
         locale,
       );
 
-      return {
+      const formattedResult = {
         recommendations: result.recommendations?.map((r) => ({
           schoolName: r.schoolName,
           schoolId: r.schoolId,
@@ -92,6 +109,22 @@ export class RecommendationToolsService implements IToolHandlerProvider {
         summary: result.summary,
         totalCount: result.recommendations?.length || 0,
       };
+
+      // Cache for 24 hours
+      if (client) {
+        try {
+          await client.set(
+            cacheKey,
+            JSON.stringify(formattedResult),
+            'EX',
+            86400,
+          );
+        } catch {
+          // Cache write failure is non-critical
+        }
+      }
+
+      return formattedResult;
     } catch (error: any) {
       this.logger.warn(`recommend_schools failed: ${error?.message}`);
       return {

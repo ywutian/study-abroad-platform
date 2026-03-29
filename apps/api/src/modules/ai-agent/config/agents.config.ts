@@ -472,8 +472,8 @@ export function getAllAgentTypes(): AgentType[] {
  * 语言指令映射
  */
 const LOCALE_INSTRUCTIONS: Record<string, string> = {
-  zh: '请使用中文回复用户。',
-  en: 'Please respond to the user in English.',
+  zh: '请使用中文回复用户。如果对话历史中包含英文内容，仍请用中文回复。',
+  en: 'Please respond in English. If conversation history contains Chinese, still respond in English.',
 };
 
 /**
