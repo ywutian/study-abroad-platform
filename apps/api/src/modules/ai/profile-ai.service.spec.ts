@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProfileAiService } from './profile-ai.service';
 import { LLMService } from '../ai-agent/core/llm.service';
+import { PrismaService } from '../../prisma/prisma.service';
 
 jest.mock('../../common/utils/llm-json.util', () => ({
   extractJsonFromLlm: jest.fn(),
@@ -24,6 +25,10 @@ describe('ProfileAiService', () => {
         {
           provide: LLMService,
           useValue: mockLLMService,
+        },
+        {
+          provide: PrismaService,
+          useValue: { school: { findMany: jest.fn().mockResolvedValue([]) } },
         },
       ],
     }).compile();

@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
 import { LLMService } from '../ai-agent/core/llm.service';
 import { extractJsonFromLlm } from '../../common/utils/llm-json.util';
 import type {
@@ -15,7 +16,10 @@ import {
 export class ProfileAiService {
   private readonly logger = new Logger(ProfileAiService.name);
 
-  constructor(private readonly llmService: LLMService) {}
+  constructor(
+    private readonly llmService: LLMService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   /**
    * P0: 详细档案分析 - 红黄绿评分系统
@@ -30,7 +34,39 @@ export class ProfileAiService {
     locale = 'zh',
   ): Promise<DetailedProfileAnalysisResponse> {
     const systemPrompt = buildProfileAnalysisSystemPrompt(locale);
-    const userPrompt = buildProfileAnalysisUserPrompt(request, locale);
+
+    // Query target school stats for competitive positioning
+    let schoolComparison: Array<{
+      name: string;
+      sat25?: number | null;
+      sat75?: number | null;
+      acceptanceRate?: number | null;
+    }> = [];
+    if (request.targetSchools?.length) {
+      const schools = await this.prisma.school.findMany({
+        where: {
+          name: { in: request.targetSchools.slice(0, 3) },
+        },
+        select: {
+          name: true,
+          sat25: true,
+          sat75: true,
+          acceptanceRate: true,
+        },
+      });
+      schoolComparison = schools.map((s) => ({
+        name: s.name,
+        sat25: s.sat25,
+        sat75: s.sat75,
+        acceptanceRate: s.acceptanceRate ? Number(s.acceptanceRate) : null,
+      }));
+    }
+
+    const userPrompt = buildProfileAnalysisUserPrompt(
+      request,
+      locale,
+      schoolComparison.length > 0 ? schoolComparison : undefined,
+    );
 
     try {
       const result = await this.llmService.chatSimpleGuarded(

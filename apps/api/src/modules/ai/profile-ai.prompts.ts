@@ -127,6 +127,12 @@ All text fields must be in English. Return strict JSON only, no other content.`;
 export function buildProfileAnalysisUserPrompt(
   request: ProfileAnalysisRequest,
   locale: string,
+  schoolComparison?: Array<{
+    name: string;
+    sat25?: number | null;
+    sat75?: number | null;
+    acceptanceRate?: number | null;
+  }>,
 ): string {
   const isZh = locale === 'zh';
   const parts: string[] = [
@@ -188,6 +194,29 @@ export function buildProfileAnalysisUserPrompt(
       isZh
         ? `\n【目标专业】${request.targetMajor}`
         : `\n[Target Major] ${request.targetMajor}`,
+    );
+  }
+
+  // Inject school comparison data for competitive positioning
+  if (schoolComparison?.length) {
+    parts.push(
+      isZh ? `\n【目标学校参考数据】` : `\n[Target School Reference Data]`,
+    );
+    for (const s of schoolComparison) {
+      const satRange =
+        s.sat25 && s.sat75 ? `SAT 25th-75th: ${s.sat25}-${s.sat75}` : '';
+      const rate =
+        s.acceptanceRate != null
+          ? `${isZh ? '录取率' : 'Acceptance'}: ${s.acceptanceRate}%`
+          : '';
+      parts.push(
+        `- ${s.name}: ${[satRange, rate].filter(Boolean).join(' | ')}`,
+      );
+    }
+    parts.push(
+      isZh
+        ? '\n评估时请：1. 先给出具体改进建议 2. 用目标学校数据佐证 3. 不可改变的差距必须指出补偿优势'
+        : '\nWhen evaluating: 1. Lead with actionable improvements 2. Use school data as evidence 3. For unchangeable gaps, identify compensating strengths',
     );
   }
 

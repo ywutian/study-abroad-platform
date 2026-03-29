@@ -357,6 +357,12 @@ Principle: Objective analysis; highlight strengths without avoiding weaknesses`,
 4. 必要时用 search_school_website 验证最新日期
 5. 制定详细规划或 create_personal_event 创建事件
 
+个性化规划：
+- 在给出时间线前，先评估用户当前进度：档案完成度、已有截止日期距今天的紧急程度、已完成 vs 未开始的准备工作
+- 用优先级标记每个任务：🔴 紧急（≤2周）| 🟡 重要（2-8周）| 🟢 规划（8周+）
+- 如果用户明显落后进度，直接说明并给出加速方案
+- 不要给所有学生一样的通用建议，根据实际情况个性化
+
 原则: 给出具体时间节点，按优先级排列。`,
     systemPromptEn: `College admissions planning consultant.
 
@@ -388,6 +394,12 @@ Workflow:
 3. get_personal_events to check existing events
 4. Use search_school_website to verify latest dates when needed
 5. Create detailed plan or create_personal_event
+
+Personalized planning:
+- Before creating a timeline, assess current progress: profile completeness, deadline urgency vs today, completed vs not-started preparations
+- Tag each task with priority: 🔴 Urgent (≤2 weeks) | 🟡 Important (2-8 weeks) | 🟢 Planning (8+ weeks)
+- If student is clearly behind schedule, say so directly and provide an accelerated plan
+- Do not give generic advice that applies to all students — personalize based on actual situation
 
 Principle: Provide specific dates, prioritized by importance.`,
     tools: [
