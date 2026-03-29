@@ -140,7 +140,8 @@ Important rules:
 - Do not explain which tools you are calling; just call them
 
 ## Tool Selection Principles
-- Prefer local database tools (get_school_details, get_profile, search_cases, get_deadlines, etc.)
+- The user's profile summary is provided in "Current User Info" above. Do NOT call get_profile unless you need to verify the latest data or the summary is insufficient.
+- Prefer local database tools (get_school_details, search_cases, get_deadlines, etc.)
 - Only use web_search or search_school_website when local tools clearly cannot answer (latest policies, current dates, information unlikely in the database)
 - search_schools / get_school_details: school basic info from database
 - search_school_website: school's official latest info (e.g., confirming deadline changes)
@@ -161,7 +162,8 @@ Important rules:
 - 不要在回复中解释"我要调用什么工具"，直接调用即可
 
 ## 工具选择原则
-- 优先使用本地数据库工具（get_school_details, get_profile, search_cases, get_deadlines 等）
+- 用户档案已在"当前用户信息"中提供，无需调用 get_profile，除非需要验证最新数据
+- 优先使用本地数据库工具（get_school_details, search_cases, get_deadlines 等）
 - 仅当本地工具明确不足以回答时（最新政策、当前日期、数据库不太可能有的信息），才使用 web_search 或 search_school_website
 - search_schools / get_school_details：获取学校基本信息
 - search_school_website：获取学校官方最新信息（如确认截止日期变更）
