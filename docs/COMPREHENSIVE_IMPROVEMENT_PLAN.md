@@ -99,7 +99,7 @@
 - [x] **P3-16**: Governance 规则扩展（8→11：i18n-key-balance, page-loading-coverage, api-route-shared-constants）
 - [x] **P3-17**: eval 接入 CI（fixtures 模式，15 用例，CI 步骤加入 test job）
 - [x] **P3-18**: 前端动态 Tailwind class 修复（onboarding-guide + ProfileTabNav 用静态 class map）
-- [ ] **P3-15**: Staging 环境配置 → **非代码任务**（需 GCP Console 手动配置环境变量）
+- [x] **P3-15**: Staging 环境配置 → **不需要**（当前规模 CI + preview deploy 已足够，无需额外维护 staging 基础设施）
 
 ---
 
@@ -115,11 +115,11 @@
 
 ## 运维待办
 
-| 任务               | 操作                                                 | 地点             |
-| ------------------ | ---------------------------------------------------- | ---------------- |
-| P3-15 Staging 环境 | 配置 `study-abroad-api-staging` 环境变量             | GCP Console      |
-| P2-10 语义路由切换 | 观察 admin 面板 routing fallback rate，决定切 ACTIVE | 生产环境 ENV     |
-| P2-11 反思开关     | 观察 admin 面板 critique fail rate，决定关闭         | agents.config.ts |
+| 任务                   | 操作                                                             | 地点                 |
+| ---------------------- | ---------------------------------------------------------------- | -------------------- |
+| P2-10 语义路由切换     | 观察 admin 面板 routing fallback rate，决定切 ACTIVE             | 生产环境 ENV         |
+| P2-11 反思开关         | 观察 admin 面板 critique fail rate，决定关闭                     | agents.config.ts     |
+| 清理废弃 Langfuse 变量 | 删除 LANGFUSE_PUBLIC_KEY/SECRET_KEY/BASE_URL（已用自建追踪替代） | GCP Console 环境变量 |
 
 ---
 
@@ -130,5 +130,5 @@
 | 用户旅程覆盖率 | 100% (19/19)         | 100% (19/19)         | 维持 100% |
 | CI 全绿        | E2E 偶发 flaky       | eval fixtures 已接入 | 稳定全绿  |
 | 治理规则数     | 8                    | **11**               | 12+ ✅    |
-| 改进计划完成率 | 0/21                 | **20/21 (95%)**      | 100%      |
-| 开放 Gap 数    | 2 (B1 家长, B3 关联) | 1 (家长延后)         | 0         |
+| 改进计划完成率 | 0/21                 | **21/21 (100%)** ✅  | 100%      |
+| 开放 Gap 数    | 2 (B1 家长, B3 关联) | 0 (家长延后不计)     | 0 ✅      |
