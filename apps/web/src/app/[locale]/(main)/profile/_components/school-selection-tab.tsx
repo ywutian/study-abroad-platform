@@ -302,10 +302,10 @@ export function SchoolSelectionTab({
                 transition={{ delay: index * 0.05 }}
                 className="group rounded-xl border p-4 hover:shadow-md transition-all"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-3 min-w-0">
                     <div
-                      className="flex h-11 w-11 items-center justify-center rounded-xl bg-destructive/10 text-destructive font-bold text-xs"
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-destructive/10 text-destructive font-bold text-xs"
                       title={
                         getDisplayRankings(school.rankings).length > 0
                           ? `${getDisplayRankings(school.rankings)[0].source} ${RANKING_LIST_KEYS[getDisplayRankings(school.rankings)[0].list] || ''}`
@@ -320,9 +320,9 @@ export function SchoolSelectionTab({
                           ? `#${school.usNewsRank}`
                           : getSchoolName(school, locale).charAt(0)}
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="font-semibold">{getSchoolName(school, locale)}</p>
+                        <p className="font-semibold truncate">{getSchoolName(school, locale)}</p>
                         {isSafeUrl(school.website) && (
                           <a
                             href={school.website}
@@ -352,9 +352,9 @@ export function SchoolSelectionTab({
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-1.5 mt-0.5">
+                      <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
                         {getSchoolSubName(school, locale) && (
-                          <span className="text-sm text-muted-foreground">
+                          <span className="text-sm text-muted-foreground truncate">
                             {getSchoolSubName(school, locale)}
                           </span>
                         )}
@@ -372,7 +372,7 @@ export function SchoolSelectionTab({
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 shrink-0">
                     {(() => {
                       const availableRounds = getSchoolAvailableRounds(school);
                       return (
