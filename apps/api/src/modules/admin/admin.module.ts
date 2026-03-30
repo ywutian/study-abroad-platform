@@ -17,6 +17,7 @@ import { RedisModule } from '../../common/redis/redis.module';
 import { NotificationModule } from '../notification/notification.module';
 import { SchoolModule } from '../school/school.module';
 import { PredictionModule } from '../prediction/prediction.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { PredictionModule } from '../prediction/prediction.module';
     NotificationModule,
     SchoolModule,
     PredictionModule,
+    AuthModule, // Provides JwtService for AdminProgressGateway
   ],
   controllers: [
     AdminController,
