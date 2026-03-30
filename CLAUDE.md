@@ -442,6 +442,11 @@ Key utility classes: `zone-tinted`/`zone-dark` (section backgrounds), `glass`/`g
 - **Auth pages**: Use `--auth-*` CSS vars (auto light/dark) — never hardcode colors.
 - **Typography**: Use utility classes (`text-title`, `text-body-sm`, `text-caption`) from the typography scale, not raw Tailwind `text-xl` etc.
 - **Loading**: Use `Skeleton` component from `@/components/ui/skeleton` in `loading.tsx` files, matching page layout structure.
+- **Overflow prevention (3-layer defense)**:
+  - Layer 1 (global): `html`/`body` have `overflow-x: hidden` + `overflow-wrap: break-word` as safety net
+  - Layer 2 (layout): `PageContainer` and `Card` have `overflow-hidden` built-in
+  - Layer 3 (component): Any `flex` with `justify-between` **MUST** have `min-w-0` on the variable-width child and `shrink-0` on the fixed-width child. Text in flex items should use `truncate` or `line-clamp-N` when width is constrained.
+  - Governance rule `flex-overflow-safety` detects violations at CI time
 
 ## Development Workflow
 

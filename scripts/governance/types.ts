@@ -14,7 +14,8 @@ export type GovernanceRuleId =
   | 'i18n-key-balance'
   | 'page-loading-coverage'
   | 'api-route-shared-constants'
-  | 'validation-i18n-keys';
+  | 'validation-i18n-keys'
+  | 'flex-overflow-safety';
 
 export interface GovernanceIssue {
   rule: GovernanceRuleId;

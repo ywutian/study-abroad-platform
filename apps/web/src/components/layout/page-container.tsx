@@ -3,16 +3,32 @@ import { cn } from '@/lib/utils';
 interface PageContainerProps {
   children: React.ReactNode;
   className?: string;
-  /** 
+  /**
    * 最大宽度，默认 'wide'
    * - 'narrow': 适合阅读内容 (max-w-4xl)
-   * - 'medium': 适合表单/设置 (max-w-5xl) 
+   * - 'medium': 适合表单/设置 (max-w-5xl)
    * - 'default': 标准页面 (max-w-6xl)
    * - 'wide': 宽屏页面 (max-w-7xl)
    * - 'fluid': 流式布局 (max-w-[1600px])
    * - 'full': 全宽
    */
-  maxWidth?: 'narrow' | 'medium' | 'default' | 'wide' | 'fluid' | 'full' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl';
+  maxWidth?:
+    | 'narrow'
+    | 'medium'
+    | 'default'
+    | 'wide'
+    | 'fluid'
+    | 'full'
+    | 'sm'
+    | 'md'
+    | 'lg'
+    | 'xl'
+    | '2xl'
+    | '3xl'
+    | '4xl'
+    | '5xl'
+    | '6xl'
+    | '7xl';
 }
 
 const maxWidthClasses: Record<string, string> = {
@@ -38,21 +54,14 @@ const maxWidthClasses: Record<string, string> = {
 
 export function PageContainer({ children, className, maxWidth = 'wide' }: PageContainerProps) {
   return (
-    <div className={cn(
-      'mx-auto w-full px-4 sm:px-6 lg:px-8 xl:px-12',
-      maxWidthClasses[maxWidth],
-      className
-    )}>
+    <div
+      className={cn(
+        'mx-auto w-full px-4 sm:px-6 lg:px-8 xl:px-12 overflow-x-hidden',
+        maxWidthClasses[maxWidth],
+        className
+      )}
+    >
       {children}
     </div>
   );
 }
-
-
-
-
-
-
-
-
-

@@ -25,6 +25,7 @@ import { run as i18nKeyBalance } from './rules/i18n-key-balance';
 import { run as pageLoadingCoverage } from './rules/page-loading-coverage';
 import { run as apiRouteSharedConstants } from './rules/api-route-shared-constants';
 import { run as validationI18nKeys } from './rules/validation-i18n-keys';
+import { run as flexOverflowSafety } from './rules/flex-overflow-safety';
 
 // ── Rule registry ──────────────────────────────────────────
 
@@ -44,6 +45,7 @@ const RULES: GovernanceRule[] = [
   { id: 'page-loading-coverage', run: pageLoadingCoverage },
   { id: 'api-route-shared-constants', run: apiRouteSharedConstants },
   { id: 'validation-i18n-keys', run: validationI18nKeys },
+  { id: 'flex-overflow-safety', run: flexOverflowSafety },
 ];
 
 const ALL_RULE_IDS = RULES.map((r) => r.id);
