@@ -9,7 +9,9 @@ import { PageContainer, PageHeader } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
-import { LayoutDashboard, User } from 'lucide-react';
+import { LayoutDashboard, User, ArrowRight } from 'lucide-react';
+import { useOnboardingProgress } from '@/hooks/use-onboarding-progress';
+import { Progress } from '@/components/ui/progress';
 import { QuickExperience } from '@/components/features/onboarding/quick-experience';
 import { DashboardStats } from './_components/dashboard-stats';
 import { DashboardModules } from './_components/dashboard-modules';
@@ -100,6 +102,7 @@ export default function DashboardPage() {
   });
 
   const completeness = dashboard?.profile.completeness ?? 0;
+  const { showIndicator, gapCount } = useOnboardingProgress();
   const schoolCount = dashboard?.profile.targetSchoolCount ?? 0;
   const schoolTiers = dashboard?.profile.schoolTiers ?? { reach: 0, target: 0, safety: 0 };
   const pendingTotal = dashboard?.pendingTasks.total ?? 0;
@@ -157,6 +160,23 @@ export default function DashboardPage() {
         color="slate"
       />
       <QuickExperience />
+
+      {/* Mini progress banner — shown when profile is incomplete */}
+      {showIndicator && (
+        <Link href="/profile">
+          <div className="flex items-center gap-3 rounded-lg border bg-amber-500/5 border-amber-500/20 px-4 py-2.5 hover:bg-amber-500/10 transition-colors cursor-pointer">
+            <Progress value={completeness} className="h-1.5 flex-1 max-w-[120px]" />
+            <span className="text-sm text-muted-foreground">
+              {t('dashboard.onboarding.progress', { pct: completeness })}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              · {t('dashboard.onboarding.remaining', { count: gapCount })}
+            </span>
+            <ArrowRight className="h-3.5 w-3.5 text-muted-foreground ml-auto shrink-0" />
+          </div>
+        </Link>
+      )}
+
       <div className="space-y-8">
         {/* Welcome Header */}
         <motion.div

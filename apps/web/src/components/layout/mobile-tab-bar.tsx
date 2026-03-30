@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { Home, BookOpen, Target, User } from 'lucide-react';
 import { useHydrated } from '@/hooks/use-hydration';
+import { useOnboardingProgress } from '@/hooks/use-onboarding-progress';
 
 interface TabItem {
   href: string;
@@ -48,6 +49,7 @@ export function MobileTabBar() {
 
   // 企业级 Hydration 安全方案：使用 useSyncExternalStore
   const isHydrated = useHydrated();
+  const { completeness, showIndicator } = useOnboardingProgress();
 
   // 检查当前路径是否匹配
   const isActive = (tab: TabItem) => {
@@ -95,8 +97,34 @@ export function MobileTabBar() {
               <motion.div
                 animate={active ? { scale: 1.1 } : { scale: 1 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                className="relative"
               >
                 <Icon className={cn('h-5 w-5 mb-1 transition-all', active && 'stroke-[2.5px]')} />
+                {tab.href === '/profile' && showIndicator && (
+                  <svg className="absolute -top-1.5 -right-1.5 h-3.5 w-3.5" viewBox="0 0 16 16">
+                    <circle
+                      cx="8"
+                      cy="8"
+                      r="6"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      className="text-muted-foreground/20"
+                    />
+                    <circle
+                      cx="8"
+                      cy="8"
+                      r="6"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      className="text-primary"
+                      strokeDasharray={`${(completeness / 100) * 37.7} 37.7`}
+                      strokeLinecap="round"
+                      transform="rotate(-90 8 8)"
+                    />
+                  </svg>
+                )}
               </motion.div>
 
               {/* 标签 */}

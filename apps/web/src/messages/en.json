@@ -154,7 +154,9 @@
       "step3Title": "Get Predictions",
       "step3Desc": "Use AI to predict admission probability",
       "completed": "Guide completed",
-      "hint": "Click skip to return anytime"
+      "hint": "Click skip to return anytime",
+      "progress": "{pct}% complete",
+      "remaining": "{count} items remaining"
     },
     "quickExperience": {
       "title": "Welcome to Study Abroad Platform!",

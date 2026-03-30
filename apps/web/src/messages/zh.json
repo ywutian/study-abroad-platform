@@ -154,7 +154,9 @@
       "step3Title": "获取预测",
       "step3Desc": "使用 AI 预测你的录取概率",
       "completed": "已完成引导",
-      "hint": "点击跳过可随时返回"
+      "hint": "点击跳过可随时返回",
+      "progress": "已完成 {pct}%",
+      "remaining": "还有 {count} 项待完善"
     },
     "quickExperience": {
       "title": "欢迎来到留学平台！",
