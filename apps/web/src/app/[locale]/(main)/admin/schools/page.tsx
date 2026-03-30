@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/layout';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { apiClient, STALE_TIME } from '@/lib/api';
 import { schoolRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
@@ -108,6 +109,7 @@ export default function AdminSchoolsPage() {
   const [page, setPage] = useState(1);
   const pageSize = 50;
   const [editOpen, setEditOpen] = useState(false);
+  const [scrapeConfirmOpen, setScrapeConfirmOpen] = useState(false);
   const [editingSchool, setEditingSchool] = useState<School | null>(null);
 
   const { data: schoolsData, isLoading } = useQuery({
@@ -235,7 +237,7 @@ export default function AdminSchoolsPage() {
                 </CardHeader>
                 <CardContent>
                   <Button
-                    onClick={() => scrapeSchoolsMutation.mutate()}
+                    onClick={() => setScrapeConfirmOpen(true)}
                     disabled={scrapeSchoolsMutation.isPending}
                     variant="outline"
                   >
@@ -246,6 +248,16 @@ export default function AdminSchoolsPage() {
                     )}
                     {t('data.startScrape')}
                   </Button>
+                  <ConfirmDialog
+                    open={scrapeConfirmOpen}
+                    onOpenChange={setScrapeConfirmOpen}
+                    title={t('data.scrapeConfirm.title')}
+                    description={t('data.scrapeConfirm.description')}
+                    type="warning"
+                    confirmLabel={t('data.scrapeConfirm.confirm')}
+                    onConfirm={() => scrapeSchoolsMutation.mutate()}
+                    loading={scrapeSchoolsMutation.isPending}
+                  />
                 </CardContent>
               </Card>
 

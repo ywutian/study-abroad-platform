@@ -5181,6 +5181,10 @@
       "lastRun": "Last run",
       "status": "Status",
       "runNow": "Run now",
+      "syncConfirm": {
+        "title": "Run {job}?",
+        "description": "This will trigger a data sync job. The process may take several minutes depending on the number of schools."
+      },
       "nextScheduled": "Next scheduled",
       "success": "Success",
       "failure": "Failure",
@@ -5339,6 +5343,11 @@
       "scrapeSchools": "Scrape Schools",
       "scrapeSchoolsDesc": "Fetch latest school data from external sources",
       "startScrape": "Start Scraping",
+      "scrapeConfirm": {
+        "title": "Start School Data Scrape?",
+        "description": "This will scrape data for all schools from external sources. Admin manual edits are protected, but auto-imported fields may be updated.",
+        "confirm": "Start Scraping"
+      },
       "syncScorecard": "Sync Scorecard",
       "syncScorecardDesc": "Sync school scoring data from sources",
       "startSync": "Start Sync",

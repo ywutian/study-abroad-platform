@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ListSkeleton } from '@/components/ui/loading-state';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { apiClient } from '@/lib/api';
 import { toast } from 'sonner';
 import {
@@ -71,11 +72,14 @@ export function DataSyncTab() {
     return Database;
   };
 
+  const [confirmJobId, setConfirmJobId] = useState<string | null>(null);
+
   const handleRunNow = (jobId: string) => {
     const params = JOBS_WITH_LIMIT.includes(jobId)
       ? { limit: parseInt(triggerLimit, 10) || 500 }
       : undefined;
     triggerMutation.mutate({ job: jobId, params });
+    setConfirmJobId(null);
   };
 
   const formatDate = (iso: string | null) => {
@@ -154,7 +158,7 @@ export function DataSyncTab() {
               )}
               <Button
                 size="sm"
-                onClick={() => handleRunNow(job.id)}
+                onClick={() => setConfirmJobId(job.id)}
                 disabled={triggerMutation.isPending}
               >
                 {triggerMutation.isPending ? (
@@ -168,6 +172,21 @@ export function DataSyncTab() {
           </CardContent>
         </Card>
       ))}
+
+      <ConfirmDialog
+        open={!!confirmJobId}
+        onOpenChange={(open) => {
+          if (!open) setConfirmJobId(null);
+        }}
+        title={t('syncConfirm.title', { job: confirmJobId ?? '' })}
+        description={t('syncConfirm.description')}
+        type="warning"
+        confirmLabel={t('runNow')}
+        onConfirm={() => {
+          if (confirmJobId) handleRunNow(confirmJobId);
+        }}
+        loading={triggerMutation.isPending}
+      />
     </div>
   );
 }

@@ -5176,6 +5176,10 @@
       "lastRun": "最近运行",
       "status": "状态",
       "runNow": "立即更新",
+      "syncConfirm": {
+        "title": "运行 {job}？",
+        "description": "将触发数据同步任务。根据学校数量，处理过程可能需要几分钟。"
+      },
       "nextScheduled": "下次计划",
       "success": "成功",
       "failure": "失败",
@@ -5334,6 +5338,11 @@
       "scrapeSchools": "抓取学校数据",
       "scrapeSchoolsDesc": "从外部数据源抓取最新学校信息",
       "startScrape": "开始抓取",
+      "scrapeConfirm": {
+        "title": "开始学校数据抓取？",
+        "description": "将从外部数据源抓取所有学校数据。管理员手动编辑的字段受保护，但部分自动导入字段可能被更新。",
+        "confirm": "开始抓取"
+      },
       "syncScorecard": "同步成绩单",
       "syncScorecardDesc": "从数据源同步学校评分数据",
       "startSync": "开始同步",
