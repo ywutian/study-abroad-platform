@@ -3,7 +3,6 @@
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
@@ -12,16 +11,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormDescription,
+  FormMessage,
+} from '@/components/ui/form';
 import { Globe } from 'lucide-react';
 import { COMMON_COUNTRIES, EDUCATION_SYSTEMS } from './constants';
-import type { ProfileFormData } from './types';
+import type { Control } from 'react-hook-form';
+import type { ProfileFormValues } from '@/lib/validations/profile';
 
 interface DemographicsTabProps {
-  formData: ProfileFormData;
-  onFormDataChange: (updater: (prev: ProfileFormData) => ProfileFormData) => void;
+  control: Control<ProfileFormValues>;
 }
 
-export function DemographicsTab({ formData, onFormDataChange }: DemographicsTabProps) {
+export function DemographicsTab({ control }: DemographicsTabProps) {
   const t = useTranslations();
 
   return (
@@ -36,150 +43,207 @@ export function DemographicsTab({ formData, onFormDataChange }: DemographicsTabP
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid gap-6 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">{t('profile.demographics.nationality')}</Label>
-            <Select
-              value={formData.nationality}
-              onValueChange={(v) => onFormDataChange((p) => ({ ...p, nationality: v }))}
-            >
-              <SelectTrigger className="h-11">
-                <SelectValue placeholder={t('profile.demographics.selectCountry')} />
-              </SelectTrigger>
-              <SelectContent>
-                {COMMON_COUNTRIES.map((c) => (
-                  <SelectItem key={`nat-${c.value}`} value={c.value}>
-                    {t(c.labelKey)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">
-              {t('profile.demographics.countryOfResidence')}
-            </Label>
-            <Select
-              value={formData.countryOfResidence}
-              onValueChange={(v) => onFormDataChange((p) => ({ ...p, countryOfResidence: v }))}
-            >
-              <SelectTrigger className="h-11">
-                <SelectValue placeholder={t('profile.demographics.selectCountry')} />
-              </SelectTrigger>
-              <SelectContent>
-                {COMMON_COUNTRIES.map((c) => (
-                  <SelectItem key={`res-${c.value}`} value={c.value}>
-                    {t(c.labelKey)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <FormField
+            control={control}
+            name="nationality"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium">
+                  {t('profile.demographics.nationality')}
+                </FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder={t('profile.demographics.selectCountry')} />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {COMMON_COUNTRIES.map((c) => (
+                      <SelectItem key={`nat-${c.value}`} value={c.value}>
+                        {t(c.labelKey)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name="countryOfResidence"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium">
+                  {t('profile.demographics.countryOfResidence')}
+                </FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder={t('profile.demographics.selectCountry')} />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {COMMON_COUNTRIES.map((c) => (
+                      <SelectItem key={`res-${c.value}`} value={c.value}>
+                        {t(c.labelKey)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
         <div className="grid gap-6 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">{t('profile.demographics.citizenship')}</Label>
-            <Select
-              value={formData.citizenship}
-              onValueChange={(v) => onFormDataChange((p) => ({ ...p, citizenship: v }))}
-            >
-              <SelectTrigger className="h-11">
-                <SelectValue placeholder={t('profile.demographics.selectCountry')} />
-              </SelectTrigger>
-              <SelectContent>
-                {COMMON_COUNTRIES.map((c) => (
-                  <SelectItem key={`cit-${c.value}`} value={c.value}>
-                    {t(c.labelKey)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">
-              {t('profile.demographics.educationSystem')}
-            </Label>
-            <Select
-              value={formData.educationSystem}
-              onValueChange={(v) => onFormDataChange((p) => ({ ...p, educationSystem: v }))}
-            >
-              <SelectTrigger className="h-11">
-                <SelectValue placeholder={t('profile.demographics.selectEducationSystem')} />
-              </SelectTrigger>
-              <SelectContent>
-                {EDUCATION_SYSTEMS.map((es) => (
-                  <SelectItem key={es.value} value={es.value}>
-                    {t(es.labelKey)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <FormField
+            control={control}
+            name="citizenship"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium">
+                  {t('profile.demographics.citizenship')}
+                </FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder={t('profile.demographics.selectCountry')} />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {COMMON_COUNTRIES.map((c) => (
+                      <SelectItem key={`cit-${c.value}`} value={c.value}>
+                        {t(c.labelKey)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name="educationSystem"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium">
+                  {t('profile.demographics.educationSystem')}
+                </FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder={t('profile.demographics.selectEducationSystem')} />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {EDUCATION_SYSTEMS.map((es) => (
+                      <SelectItem key={es.value} value={es.value}>
+                        {t(es.labelKey)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
         <div className="space-y-4 pt-2">
-          <div className="flex items-center space-x-3">
-            <Checkbox
-              id="needsFinancialAid"
-              checked={formData.needsFinancialAid}
-              onCheckedChange={(checked) =>
-                onFormDataChange((p) => ({ ...p, needsFinancialAid: !!checked }))
-              }
-            />
-            <Label htmlFor="needsFinancialAid" className="text-sm cursor-pointer">
-              {t('profile.demographics.needsFinancialAid')}
-            </Label>
-          </div>
-          <div className="flex items-center space-x-3">
-            <Checkbox
-              id="firstGeneration"
-              checked={formData.firstGeneration}
-              onCheckedChange={(checked) =>
-                onFormDataChange((p) => ({ ...p, firstGeneration: !!checked }))
-              }
-            />
-            <Label htmlFor="firstGeneration" className="text-sm cursor-pointer">
-              {t('profile.demographics.firstGeneration')}
-            </Label>
-          </div>
+          <FormField
+            control={control}
+            name="needsFinancialAid"
+            render={({ field }) => (
+              <FormItem className="flex items-center space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <FormLabel className="text-sm cursor-pointer">
+                  {t('profile.demographics.needsFinancialAid')}
+                </FormLabel>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name="firstGeneration"
+            render={({ field }) => (
+              <FormItem className="flex items-center space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <FormLabel className="text-sm cursor-pointer">
+                  {t('profile.demographics.firstGeneration')}
+                </FormLabel>
+              </FormItem>
+            )}
+          />
         </div>
 
         {/* Legacy */}
-        <div className="space-y-2 pt-4 border-t">
-          <Label className="text-sm font-medium">{t('profile.demographics.legacy')}</Label>
-          <Input
-            placeholder={t('profile.demographics.legacyPlaceholder')}
-            value={formData.legacy.join(', ')}
-            onChange={(e) => {
-              const val = e.target.value;
-              const arr = val
-                ? val
-                    .split(',')
-                    .map((s) => s.trim())
-                    .filter(Boolean)
-                : [];
-              onFormDataChange((p) => ({ ...p, legacy: arr }));
-            }}
-          />
-          <p className="text-xs text-muted-foreground">{t('profile.demographics.legacyHint')}</p>
-        </div>
+        <FormField
+          control={control}
+          name="legacy"
+          render={({ field }) => (
+            <FormItem className="pt-4 border-t">
+              <FormLabel className="text-sm font-medium">
+                {t('profile.demographics.legacy')}
+              </FormLabel>
+              <FormControl>
+                <Input
+                  placeholder={t('profile.demographics.legacyPlaceholder')}
+                  value={field.value.join(', ')}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const arr = val
+                      ? val
+                          .split(',')
+                          .map((s) => s.trim())
+                          .filter(Boolean)
+                      : [];
+                    field.onChange(arr);
+                  }}
+                />
+              </FormControl>
+              <FormDescription>{t('profile.demographics.legacyHint')}</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         {/* Intended Major & Second Major */}
         <div className="grid gap-6 sm:grid-cols-2 pt-4 border-t">
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">{t('profile.fields.intendedMajor')}</Label>
-            <Input
-              placeholder={t('profile.placeholders.intendedMajor')}
-              value={formData.intendedMajor}
-              onChange={(e) => onFormDataChange((p) => ({ ...p, intendedMajor: e.target.value }))}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">{t('profile.fields.secondMajor')}</Label>
-            <Input
-              placeholder={t('profile.placeholders.secondMajor')}
-              value={formData.secondMajor}
-              onChange={(e) => onFormDataChange((p) => ({ ...p, secondMajor: e.target.value }))}
-            />
-          </div>
+          <FormField
+            control={control}
+            name="intendedMajor"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium">
+                  {t('profile.fields.intendedMajor')}
+                </FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder={t('profile.placeholders.intendedMajor')} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name="secondMajor"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium">
+                  {t('profile.fields.secondMajor')}
+                </FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder={t('profile.placeholders.secondMajor')} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
       </CardContent>
     </Card>

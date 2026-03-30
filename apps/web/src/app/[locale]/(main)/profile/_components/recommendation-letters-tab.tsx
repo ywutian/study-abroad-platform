@@ -1,11 +1,13 @@
 'use client';
 
+import { useEffect, useMemo } from 'react';
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -23,11 +25,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from '@/components/ui/form';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
 import { profileRoutes } from '@study-abroad/shared';
 import { motion } from 'framer-motion';
 import { Mail, Plus, Pencil, Trash2, Save, Loader2 } from 'lucide-react';
+import {
+  createRecommendationLetterSchema,
+  type RecommendationLetterFormValues,
+} from '@/lib/validations/profile';
 
 const RECOMMENDER_ROLES = ['TEACHER', 'COUNSELOR', 'COACH', 'EMPLOYER', 'OTHER'] as const;
 const LETTER_STATUSES = [
@@ -57,6 +71,16 @@ interface RecommendationLetter {
   notes?: string;
 }
 
+const DEFAULT_FORM_VALUES: RecommendationLetterFormValues = {
+  recommenderName: '',
+  recommenderEmail: '',
+  recommenderRole: undefined as unknown as RecommendationLetterFormValues['recommenderRole'],
+  subject: '',
+  status: 'NOT_REQUESTED',
+  dueDate: '',
+  notes: '',
+};
+
 export function RecommendationLettersTab() {
   const t = useTranslations('profile');
   const tCommon = useTranslations('common');
@@ -64,14 +88,10 @@ export function RecommendationLettersTab() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<RecommendationLetter | null>(null);
 
-  const [formData, setFormData] = useState({
-    recommenderName: '',
-    recommenderEmail: '',
-    recommenderRole: '' as string,
-    subject: '',
-    status: 'NOT_REQUESTED',
-    dueDate: '',
-    notes: '',
+  const schema = useMemo(() => createRecommendationLetterSchema(t), [t]);
+  const form = useForm<RecommendationLetterFormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: DEFAULT_FORM_VALUES,
   });
 
   const { data: letters = [] } = useQuery<RecommendationLetter[]>({
@@ -109,26 +129,18 @@ export function RecommendationLettersTab() {
 
   const openCreate = () => {
     setEditing(null);
-    setFormData({
-      recommenderName: '',
-      recommenderEmail: '',
-      recommenderRole: '',
-      subject: '',
-      status: 'NOT_REQUESTED',
-      dueDate: '',
-      notes: '',
-    });
+    form.reset(DEFAULT_FORM_VALUES);
     setFormOpen(true);
   };
 
   const openEdit = (letter: RecommendationLetter) => {
     setEditing(letter);
-    setFormData({
+    form.reset({
       recommenderName: letter.recommenderName,
       recommenderEmail: letter.recommenderEmail || '',
-      recommenderRole: letter.recommenderRole,
+      recommenderRole: letter.recommenderRole as RecommendationLetterFormValues['recommenderRole'],
       subject: letter.subject || '',
-      status: letter.status,
+      status: letter.status as RecommendationLetterFormValues['status'],
       dueDate: letter.dueDate?.slice(0, 10) || '',
       notes: letter.notes || '',
     });
@@ -140,19 +152,15 @@ export function RecommendationLettersTab() {
     setEditing(null);
   };
 
-  const handleSubmit = () => {
-    if (!formData.recommenderName || !formData.recommenderRole) {
-      toast.error(t('recLetter.validation.required'));
-      return;
-    }
+  const onSubmit = (data: RecommendationLetterFormValues) => {
     const payload = {
-      recommenderName: formData.recommenderName,
-      recommenderEmail: formData.recommenderEmail || undefined,
-      recommenderRole: formData.recommenderRole,
-      subject: formData.subject || undefined,
-      status: formData.status,
-      dueDate: formData.dueDate || undefined,
-      notes: formData.notes || undefined,
+      recommenderName: data.recommenderName,
+      recommenderEmail: data.recommenderEmail || undefined,
+      recommenderRole: data.recommenderRole,
+      subject: data.subject || undefined,
+      status: data.status,
+      dueDate: data.dueDate || undefined,
+      notes: data.notes || undefined,
     };
     if (editing) {
       updateMutation.mutate({ id: editing.id, data: payload });
@@ -160,6 +168,13 @@ export function RecommendationLettersTab() {
       createMutation.mutate(payload);
     }
   };
+
+  // Reset form when dialog closes
+  useEffect(() => {
+    if (!formOpen) {
+      form.reset(DEFAULT_FORM_VALUES);
+    }
+  }, [formOpen, form]);
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 
@@ -250,107 +265,158 @@ export function RecommendationLettersTab() {
               {editing ? t('recLetter.editTitle') : t('recLetter.addTitle')}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>{t('recLetter.field.name')} *</Label>
-              <Input
-                value={formData.recommenderName}
-                onChange={(e) => setFormData((p) => ({ ...p, recommenderName: e.target.value }))}
-                placeholder={t('recLetter.field.namePlaceholder')}
-                maxLength={200}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+              <FormField
+                control={form.control}
+                name="recommenderName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('recLetter.field.name')} *</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder={t('recLetter.field.namePlaceholder')}
+                        maxLength={200}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="space-y-2">
-              <Label>{t('recLetter.field.email')}</Label>
-              <Input
-                type="email"
-                value={formData.recommenderEmail}
-                onChange={(e) => setFormData((p) => ({ ...p, recommenderEmail: e.target.value }))}
-                placeholder={t('recLetter.field.emailPlaceholder')}
-                maxLength={200}
+              <FormField
+                control={form.control}
+                name="recommenderEmail"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('recLetter.field.email')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        {...field}
+                        placeholder={t('recLetter.field.emailPlaceholder')}
+                        maxLength={200}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{t('recLetter.field.role')} *</Label>
-                <Select
-                  value={formData.recommenderRole}
-                  onValueChange={(v) => setFormData((p) => ({ ...p, recommenderRole: v }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('recLetter.field.selectRole')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {RECOMMENDER_ROLES.map((r) => (
-                      <SelectItem key={r} value={r}>
-                        {t(`recLetter.role.${r}`)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>{t('recLetter.field.status')}</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(v) => setFormData((p) => ({ ...p, status: v }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LETTER_STATUSES.map((s) => (
-                      <SelectItem key={s} value={s}>
-                        {t(`recLetter.status.${s}`)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{t('recLetter.field.subject')}</Label>
-                <Input
-                  value={formData.subject}
-                  onChange={(e) => setFormData((p) => ({ ...p, subject: e.target.value }))}
-                  placeholder={t('recLetter.field.subjectPlaceholder')}
-                  maxLength={200}
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="recommenderRole"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('recLetter.field.role')} *</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder={t('recLetter.field.selectRole')} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {RECOMMENDER_ROLES.map((r) => (
+                            <SelectItem key={r} value={r}>
+                              {t(`recLetter.role.${r}`)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('recLetter.field.status')}</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {LETTER_STATUSES.map((s) => (
+                            <SelectItem key={s} value={s}>
+                              {t(`recLetter.status.${s}`)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </div>
-              <div className="space-y-2">
-                <Label>{t('recLetter.field.dueDate')}</Label>
-                <Input
-                  type="date"
-                  value={formData.dueDate}
-                  onChange={(e) => setFormData((p) => ({ ...p, dueDate: e.target.value }))}
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="subject"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('recLetter.field.subject')}</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder={t('recLetter.field.subjectPlaceholder')}
+                          maxLength={200}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="dueDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('recLetter.field.dueDate')}</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label>{t('recLetter.field.notes')}</Label>
-              <Textarea
-                value={formData.notes}
-                onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))}
-                placeholder={t('recLetter.field.notesPlaceholder')}
-                rows={2}
-                maxLength={2000}
+              <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('recLetter.field.notes')}</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        placeholder={t('recLetter.field.notesPlaceholder')}
+                        rows={2}
+                        maxLength={2000}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={closeForm}>
-              {tCommon('cancel')}
-            </Button>
-            <Button onClick={handleSubmit} disabled={isPending}>
-              {isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Save className="mr-2 h-4 w-4" />
-              )}
-              {tCommon('save')}
-            </Button>
-          </DialogFooter>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={closeForm}>
+                  {tCommon('cancel')}
+                </Button>
+                <Button type="submit" disabled={isPending}>
+                  {isPending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="mr-2 h-4 w-4" />
+                  )}
+                  {tCommon('save')}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
     </>

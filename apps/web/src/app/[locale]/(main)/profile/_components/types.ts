@@ -93,29 +93,6 @@ export interface TargetSchool extends School {
   };
 }
 
-export interface ProfileFormData {
-  grade: string;
-  currentSchool: string;
-  gpa: string;
-  gpaScale: string;
-  targetMajor: string;
-  budgetTier: string;
-  visibility: string;
-  nationality: string;
-  countryOfResidence: string;
-  citizenship: string;
-  educationSystem: string;
-  needsFinancialAid: boolean;
-  firstGeneration: boolean;
-  legacy: string[];
-  intendedMajor: string;
-  secondMajor: string;
-  gpa9: string;
-  gpa10: string;
-  gpa11: string;
-  gpa12: string;
-}
-
 export interface SemesterGpa {
   id: string;
   semester: string;

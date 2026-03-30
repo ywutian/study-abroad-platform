@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import {
   GraduationCap,
   Calculator,
@@ -25,7 +26,9 @@ import {
   ChevronDown,
   X,
 } from 'lucide-react';
-import type { ProfileFormData, SemesterGpa } from './types';
+import type { Control, UseFormWatch, UseFormSetValue } from 'react-hook-form';
+import type { ProfileFormValues } from '@/lib/validations/profile';
+import type { SemesterGpa } from './types';
 
 const GRADE_WEIGHTS = {
   gpa9: 0.15,
@@ -66,9 +69,9 @@ const emptySemesterForm: SemesterFormData = {
 };
 
 interface GpaTabProps {
-  formData: ProfileFormData;
-  onFormDataChange: (updater: (prev: ProfileFormData) => ProfileFormData) => void;
-  errors?: Record<string, string>;
+  control: Control<ProfileFormValues>;
+  watch: UseFormWatch<ProfileFormValues>;
+  setValue: UseFormSetValue<ProfileFormValues>;
   semesterGpas?: SemesterGpa[];
   onCreateSemesterGpa?: (data: {
     semester: string;
@@ -87,9 +90,9 @@ interface GpaTabProps {
 }
 
 export function GpaTab({
-  formData,
-  onFormDataChange,
-  errors,
+  control,
+  watch,
+  setValue,
   semesterGpas = [],
   onCreateSemesterGpa,
   onUpdateSemesterGpa,
@@ -98,7 +101,20 @@ export function GpaTab({
 }: GpaTabProps) {
   const t = useTranslations();
 
-  const hasDetailedData = GRADE_KEYS.some((key) => formData[key] !== '');
+  const watchedGpaScale = watch('gpaScale');
+  const watchedGpa9 = watch('gpa9');
+  const watchedGpa10 = watch('gpa10');
+  const watchedGpa11 = watch('gpa11');
+  const watchedGpa12 = watch('gpa12');
+  const watchedGpa = watch('gpa');
+
+  const gradeValues = {
+    gpa9: watchedGpa9,
+    gpa10: watchedGpa10,
+    gpa11: watchedGpa11,
+    gpa12: watchedGpa12,
+  };
+  const hasDetailedData = GRADE_KEYS.some((key) => gradeValues[key] !== '');
   const [mode, setMode] = useState<'simple' | 'detailed'>(hasDetailedData ? 'detailed' : 'simple');
 
   // Semester GPA local state
@@ -109,14 +125,14 @@ export function GpaTab({
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const calculatedGpa = useMemo(() => {
-    const filledGrades = GRADE_KEYS.filter((key) => formData[key] !== '');
+    const filledGrades = GRADE_KEYS.filter((key) => gradeValues[key] !== '');
     if (filledGrades.length === 0) return null;
 
     let weightedSum = 0;
     let totalWeight = 0;
 
     for (const key of filledGrades) {
-      const value = parseFloat(formData[key]);
+      const value = parseFloat(gradeValues[key]);
       if (!isNaN(value)) {
         weightedSum += value * GRADE_WEIGHTS[key];
         totalWeight += GRADE_WEIGHTS[key];
@@ -125,34 +141,34 @@ export function GpaTab({
 
     if (totalWeight === 0) return null;
     return (weightedSum / totalWeight).toFixed(2);
-  }, [formData]);
+  }, [gradeValues]);
 
   const handleGradeGpaChange = (key: GradeKey, value: string) => {
-    onFormDataChange((prev) => {
-      const updated = { ...prev, [key]: value };
-      const filledGrades = GRADE_KEYS.filter((k) => (k === key ? value : prev[k]) !== '');
-      if (filledGrades.length > 0) {
-        let weightedSum = 0;
-        let totalWeight = 0;
-        for (const k of filledGrades) {
-          const v = parseFloat(k === key ? value : prev[k]);
-          if (!isNaN(v)) {
-            weightedSum += v * GRADE_WEIGHTS[k];
-            totalWeight += GRADE_WEIGHTS[k];
-          }
+    setValue(key, value, { shouldValidate: true });
+
+    // Auto-calculate overall GPA from grade-level GPAs
+    const updated = { ...gradeValues, [key]: value };
+    const filledGrades = GRADE_KEYS.filter((k) => updated[k] !== '');
+    if (filledGrades.length > 0) {
+      let weightedSum = 0;
+      let totalWeight = 0;
+      for (const k of filledGrades) {
+        const v = parseFloat(updated[k]);
+        if (!isNaN(v)) {
+          weightedSum += v * GRADE_WEIGHTS[k];
+          totalWeight += GRADE_WEIGHTS[k];
         }
-        if (totalWeight > 0) {
-          updated.gpa = (weightedSum / totalWeight).toFixed(2);
-        }
-      } else {
-        updated.gpa = '';
       }
-      return updated;
-    });
+      if (totalWeight > 0) {
+        setValue('gpa', (weightedSum / totalWeight).toFixed(2));
+      }
+    } else {
+      setValue('gpa', '');
+    }
   };
 
   const handleStartAdd = () => {
-    setSemesterForm({ ...emptySemesterForm, gpaScale: formData.gpaScale || '4.0' });
+    setSemesterForm({ ...emptySemesterForm, gpaScale: watchedGpaScale || '4.0' });
     setIsAddingSemester(true);
     setEditingSemesterId(null);
     setSemesterOpen(true);
@@ -212,29 +228,24 @@ export function GpaTab({
 
   const scaleLabel = t(
     'profile.gpaScales.scale' +
-      (formData.gpaScale === '100'
+      (watchedGpaScale === '100'
         ? '100'
-        : formData.gpaScale === '45'
+        : watchedGpaScale === '45'
           ? '45'
-          : formData.gpaScale === '6'
+          : watchedGpaScale === '6'
             ? '6'
-            : formData.gpaScale === '5.0'
+            : watchedGpaScale === '5.0'
               ? '5'
               : '4')
   );
 
-  const maxGpa = formData.gpaScale === '100' ? '100' : formData.gpaScale;
+  const maxGpa = watchedGpaScale === '100' ? '100' : watchedGpaScale;
   const isFormValid =
     semesterForm.semester && semesterForm.gpa && semesterForm.year && semesterForm.gpaScale;
 
   return (
     <Card className="overflow-hidden">
       <div className="h-1.5 bg-success" />
-      {errors?.gpa && (
-        <div className="mx-4 mt-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-          {errors.gpa}
-        </div>
-      )}
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -266,40 +277,56 @@ export function GpaTab({
       </CardHeader>
       <CardContent className="space-y-6">
         {/* GPA Scale selector - shown in both modes */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">{t('profile.gpaScale')}</Label>
-          <Select
-            value={formData.gpaScale}
-            onValueChange={(v) => onFormDataChange((p) => ({ ...p, gpaScale: v }))}
-          >
-            <SelectTrigger className="h-11 sm:max-w-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="4.0">{t('profile.gpaScales.scale4')}</SelectItem>
-              <SelectItem value="5.0">{t('profile.gpaScales.scale5')}</SelectItem>
-              <SelectItem value="100">{t('profile.gpaScales.scale100')}</SelectItem>
-              <SelectItem value="45">{t('profile.gpaScales.scale45')}</SelectItem>
-              <SelectItem value="6">{t('profile.gpaScales.scale6')}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <FormField
+          control={control}
+          name="gpaScale"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-sm font-medium">{t('profile.gpaScale')}</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger className="h-11 sm:max-w-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="4.0">{t('profile.gpaScales.scale4')}</SelectItem>
+                  <SelectItem value="5.0">{t('profile.gpaScales.scale5')}</SelectItem>
+                  <SelectItem value="100">{t('profile.gpaScales.scale100')}</SelectItem>
+                  <SelectItem value="45">{t('profile.gpaScales.scale45')}</SelectItem>
+                  <SelectItem value="6">{t('profile.gpaScales.scale6')}</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         {mode === 'simple' ? (
           /* Simple mode: single GPA input */
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">{t('profile.gpa')}</Label>
-            <Input
-              type="number"
-              step="0.01"
-              min="0"
-              max={maxGpa}
-              value={formData.gpa}
-              onChange={(e) => onFormDataChange((p) => ({ ...p, gpa: e.target.value }))}
-              placeholder={t('profile.placeholders.gpaExample')}
-              className="h-11 text-lg font-semibold sm:max-w-xs"
-            />
-          </div>
+          <FormField
+            control={control}
+            name="gpa"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium">{t('profile.gpa')}</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max={maxGpa}
+                    value={field.value}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    placeholder={t('profile.placeholders.gpaExample')}
+                    className="h-11 text-lg font-semibold sm:max-w-xs"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         ) : (
           /* Detailed mode: grade-level GPAs */
           <div className="space-y-4">
@@ -308,24 +335,32 @@ export function GpaTab({
               <p className="mt-1 text-sm text-muted-foreground">{t('profile.gpaByGradeDesc')}</p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
-              {GRADE_KEYS.map((key) => {
-                const gradeNumber = key.replace('gpa', '');
-                return (
-                  <div key={key} className="space-y-1.5">
-                    <Label className="text-sm font-medium">{t(`profile.${key}`)}</Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      max={maxGpa}
-                      value={formData[key]}
-                      onChange={(e) => handleGradeGpaChange(key, e.target.value)}
-                      placeholder={t(`profile.${key}`)}
-                      className="h-10"
-                    />
-                  </div>
-                );
-              })}
+              {GRADE_KEYS.map((key) => (
+                <FormField
+                  key={key}
+                  control={control}
+                  name={key}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium">{t(`profile.${key}`)}</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          max={maxGpa}
+                          value={field.value}
+                          onChange={(e) => handleGradeGpaChange(key, e.target.value)}
+                          onBlur={field.onBlur}
+                          placeholder={t(`profile.${key}`)}
+                          className="h-10"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ))}
             </div>
 
             {/* Calculated GPA display */}
@@ -488,11 +523,11 @@ export function GpaTab({
         )}
 
         {/* GPA summary display */}
-        {formData.gpa && (
+        {watchedGpa && (
           <div className="rounded-xl bg-success/10 p-4">
             <div className="flex items-center gap-3">
               <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-success text-success-foreground shadow-lg">
-                <span className="text-xl font-bold">{formData.gpa}</span>
+                <span className="text-xl font-bold">{watchedGpa}</span>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">{t('profile.yourGpa')}</p>
