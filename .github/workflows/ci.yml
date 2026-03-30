@@ -220,6 +220,10 @@ jobs:
       - name: Generate Prisma Client
         run: pnpm --filter api exec prisma generate
 
+      - name: Run AI Eval (Fixtures)
+        if: needs.detect-changes.outputs.api == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
+        run: pnpm exec tsx scripts/eval/run-eval.ts --mode=fixtures --verbose
+
       - name: Run API tests
         if: needs.detect-changes.outputs.api == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
         run: pnpm --filter api exec jest --coverage --passWithNoTests --forceExit

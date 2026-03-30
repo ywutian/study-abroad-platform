@@ -21,18 +21,27 @@ import { run as deadProvider } from './rules/dead-provider';
 import { run as sensitiveEndpointThrottle } from './rules/sensitive-endpoint-throttle';
 import { run as controllerAuthCoverage } from './rules/controller-auth-coverage';
 import { run as dtoValidationCompleteness } from './rules/dto-validation-completeness';
+import { run as i18nKeyBalance } from './rules/i18n-key-balance';
+import { run as pageLoadingCoverage } from './rules/page-loading-coverage';
+import { run as apiRouteSharedConstants } from './rules/api-route-shared-constants';
 
 // ── Rule registry ──────────────────────────────────────────
 
 const RULES: GovernanceRule[] = [
+  // AI Agent & Security (G1-G5)
   { id: 'optional-security', run: optionalSecurity },
   { id: 'nl-endpoint-coverage', run: nlEndpointCoverage },
   { id: 'config-consistency', run: configConsistency },
   { id: 'user-data-isolation', run: userDataIsolation },
   { id: 'dead-provider', run: deadProvider },
+  // Backend quality (G6-G8)
   { id: 'sensitive-endpoint-throttle', run: sensitiveEndpointThrottle },
   { id: 'controller-auth-coverage', run: controllerAuthCoverage },
   { id: 'dto-validation-completeness', run: dtoValidationCompleteness },
+  // Frontend & i18n (G9-G11)
+  { id: 'i18n-key-balance', run: i18nKeyBalance },
+  { id: 'page-loading-coverage', run: pageLoadingCoverage },
+  { id: 'api-route-shared-constants', run: apiRouteSharedConstants },
 ];
 
 const ALL_RULE_IDS = RULES.map((r) => r.id);

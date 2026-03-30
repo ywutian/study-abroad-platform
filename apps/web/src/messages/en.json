@@ -5682,6 +5682,8 @@
       "metricActiveReqs": "Active Requests",
       "metricRateLimits": "Rate Limit Hits",
       "metricPromptTokens": "Prompt Tokens",
+      "metricRoutingFallback": "Routing Fallback Rate",
+      "metricCritiqueRate": "Critique Pass Rate",
       "noTraces": "No trace data available",
       "dailyTokens": "Daily Token Limit",
       "monthlyTokens": "Monthly Token Limit",

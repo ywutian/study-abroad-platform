@@ -10,7 +10,10 @@ export type GovernanceRuleId =
   | 'dead-provider'
   | 'sensitive-endpoint-throttle'
   | 'controller-auth-coverage'
-  | 'dto-validation-completeness';
+  | 'dto-validation-completeness'
+  | 'i18n-key-balance'
+  | 'page-loading-coverage'
+  | 'api-route-shared-constants';
 
 export interface GovernanceIssue {
   rule: GovernanceRuleId;

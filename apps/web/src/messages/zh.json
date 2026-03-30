@@ -5677,6 +5677,8 @@
       "metricActiveReqs": "活跃请求",
       "metricRateLimits": "限流触发",
       "metricPromptTokens": "Prompt Token",
+      "metricRoutingFallback": "路由回退率",
+      "metricCritiqueRate": "反思通过率",
       "noTraces": "暂无追踪数据",
       "dailyTokens": "日 Token 限额",
       "monthlyTokens": "月 Token 限额",
