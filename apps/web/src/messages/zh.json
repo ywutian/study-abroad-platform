@@ -5187,7 +5187,10 @@
       "triggerSuccess": "同步完成",
       "triggerError": "同步失败",
       "limit": "条数（学校）",
-      "limitPlaceholder": "如 500"
+      "limitPlaceholder": "如 500",
+      "running": "运行中...",
+      "completed": "已完成",
+      "failed": "失败"
     },
     "overview": {
       "needsAttention": "需要关注",

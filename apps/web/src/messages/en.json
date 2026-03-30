@@ -5192,7 +5192,10 @@
       "triggerSuccess": "Sync completed",
       "triggerError": "Sync failed",
       "limit": "Limit (schools)",
-      "limitPlaceholder": "e.g. 500"
+      "limitPlaceholder": "e.g. 500",
+      "running": "Running...",
+      "completed": "Completed",
+      "failed": "Failed"
     },
     "overview": {
       "needsAttention": "Needs Attention",

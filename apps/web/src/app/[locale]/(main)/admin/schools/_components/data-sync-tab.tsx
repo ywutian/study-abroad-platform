@@ -16,6 +16,8 @@ import {
 import { ListSkeleton } from '@/components/ui/loading-state';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { apiClient } from '@/lib/api';
+import { Progress } from '@/components/ui/progress';
+import { useAdminProgress } from '@/hooks/use-admin-progress';
 import { toast } from 'sonner';
 import {
   Database,
@@ -42,6 +44,7 @@ export function DataSyncTab() {
   const t = useTranslations('admin.dataUpdates');
   const queryClient = useQueryClient();
   const [triggerLimit, setTriggerLimit] = useState('500');
+  const { getJob } = useAdminProgress();
 
   const { data: jobs, isLoading } = useQuery({
     queryKey: ['adminDataSyncJobs'],
@@ -142,6 +145,41 @@ export function DataSyncTab() {
                 </div>
               )}
             </div>
+            {/* Real-time job progress via WebSocket */}
+            {(() => {
+              const progress = getJob(job.id);
+              if (!progress) return null;
+              return (
+                <div className="space-y-1 pt-1">
+                  {progress.status === 'running' && (
+                    <div className="flex items-center gap-2">
+                      <Progress
+                        value={
+                          progress.total ? (progress.current! / progress.total) * 100 : undefined
+                        }
+                        className="h-1.5 flex-1"
+                      />
+                      <span className="text-xs text-muted-foreground tabular-nums">
+                        {progress.message || t('running')}
+                      </span>
+                    </div>
+                  )}
+                  {progress.status === 'completed' && (
+                    <Badge variant="default" className="bg-emerald-600 text-xs gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      {progress.message || t('completed')}
+                    </Badge>
+                  )}
+                  {progress.status === 'failed' && (
+                    <Badge variant="destructive" className="text-xs gap-1">
+                      <XCircle className="h-3 w-3" />
+                      {progress.error || t('failed')}
+                    </Badge>
+                  )}
+                </div>
+              );
+            })()}
+
             <div className="flex items-center gap-2 pt-2">
               {JOBS_WITH_LIMIT.includes(job.id) && (
                 <Select value={triggerLimit} onValueChange={setTriggerLimit}>
