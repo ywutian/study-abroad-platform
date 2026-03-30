@@ -9,6 +9,8 @@ import { JwtStrategy } from './jwt.strategy';
 import { TokenCleanupScheduler } from './token-cleanup.scheduler';
 import { SessionManager } from './session-manager.service';
 import { BruteForceService } from './brute-force.service';
+import { McpApiKeyService } from './mcp-api-key.service';
+import { McpApiKeyController } from './mcp-api-key.controller';
 import { UserModule } from '../user/user.module';
 import { AuditLogModule } from '../../common/services/audit-log.module';
 
@@ -35,14 +37,15 @@ import { AuditLogModule } from '../../common/services/audit-log.module';
       inject: [ConfigService],
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, McpApiKeyController],
   providers: [
     AuthService,
     JwtStrategy,
     TokenCleanupScheduler,
     SessionManager,
     BruteForceService,
+    McpApiKeyService,
   ],
-  exports: [AuthService, JwtModule, SessionManager],
+  exports: [AuthService, JwtModule, SessionManager, McpApiKeyService],
 })
 export class AuthModule {}

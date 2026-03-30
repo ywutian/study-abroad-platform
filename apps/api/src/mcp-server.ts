@@ -3,13 +3,14 @@
  * MCP Server — Expose study-abroad AI Agent tools via Model Context Protocol.
  *
  * Allows Claude Desktop, Cursor, and other MCP clients to call the platform's
- * 42 tools (school search, essay review, profile analysis, etc.) directly.
+ * 42+ tools (school search, essay review, profile analysis, etc.) directly.
  *
  * Usage:
  *   npx tsx apps/api/src/mcp-server.ts
  *
  * Environment:
- *   MCP_USER_ID    — User ID to execute tools as (required)
+ *   MCP_API_KEY    — API key for authentication (recommended, created via /admin/mcp-keys)
+ *   MCP_USER_ID    — User ID fallback for development (deprecated)
  *   MCP_LOCALE     — Response locale (default: 'zh')
  *   DATABASE_URL   — PostgreSQL connection string
  */
@@ -40,9 +41,11 @@ import {
   RankingToolsService,
   SearchToolsService,
   ResumeToolsService,
+  SimilarityToolsService,
   SchoolLookupHelper,
   ProfileLoaderHelper,
 } from './modules/ai-agent/tools';
+import { McpApiKeyService } from './modules/auth/mcp-api-key.service';
 
 // Import domain modules needed by tool services
 import { PredictionModule } from './modules/prediction/prediction.module';
@@ -86,17 +89,14 @@ import { LLMProvidersModule } from './modules/ai-agent/providers/provider.module
     RankingToolsService,
     SearchToolsService,
     ResumeToolsService,
+    SimilarityToolsService,
     ToolExecutorService,
+    McpApiKeyService,
   ],
 })
 class McpAppModule {}
 
 async function main() {
-  const userId = process.env.MCP_USER_ID;
-  if (!userId) {
-    console.error('ERROR: MCP_USER_ID environment variable is required');
-    process.exit(1);
-  }
   const locale = process.env.MCP_LOCALE || 'zh';
 
   // Bootstrap minimal NestJS app (no HTTP listener)
@@ -104,6 +104,33 @@ async function main() {
     logger: ['error', 'warn'],
   });
   const toolExecutor = app.get(ToolExecutorService);
+
+  // ── Authenticate via API Key or fallback to MCP_USER_ID (dev only) ──
+  let userId: string;
+  const apiKey = process.env.MCP_API_KEY;
+  if (apiKey) {
+    const mcpKeyService = app.get(McpApiKeyService);
+    const keyInfo = await mcpKeyService.validateKey(apiKey);
+    if (!keyInfo) {
+      console.error('ERROR: Invalid or revoked MCP_API_KEY');
+      process.exit(1);
+    }
+    userId = keyInfo.userId;
+    await mcpKeyService.updateLastUsed(keyInfo.keyId);
+    console.error(
+      `MCP Server authenticated via API key "${keyInfo.name}" as user ${userId} (${keyInfo.role})`,
+    );
+  } else if (process.env.MCP_USER_ID) {
+    userId = process.env.MCP_USER_ID;
+    console.error(
+      'WARNING: Using MCP_USER_ID without API key validation (dev mode). Set MCP_API_KEY for production.',
+    );
+  } else {
+    console.error(
+      'ERROR: MCP_API_KEY or MCP_USER_ID environment variable is required',
+    );
+    process.exit(1);
+  }
 
   // Create MCP server
   const server = new McpServer({
