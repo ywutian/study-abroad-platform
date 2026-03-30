@@ -465,4 +465,208 @@ export class PredictionHistoricalService {
       confidence,
     };
   }
+
+  // ─── Case Comparison (Admitted vs Rejected) ───
+
+  /**
+   * Compares admitted vs rejected cohorts for a school, returning structured
+   * GPA/SAT statistics and common traits for each outcome group.
+   *
+   * Requires ≥ 5 admitted + 3 rejected cases to produce meaningful comparison.
+   * Results are cached in Redis for 24h.
+   *
+   * @param schoolId - Target school
+   * @param nationality - Optional nationality filter for segmented analysis
+   */
+  async getCaseComparison(
+    schoolId: string,
+    nationality?: string,
+  ): Promise<CaseComparisonResult | null> {
+    const cacheKey = `school:comparison:${schoolId}${nationality ? `:${nationality}` : ''}`;
+
+    try {
+      const cached = await this.redis.getJSON<CaseComparisonResult>(cacheKey);
+      if (cached) return cached;
+    } catch {
+      // Cache miss
+    }
+
+    const cases = await this.prisma.admissionCase.findMany({
+      where: {
+        schoolId,
+        isVerified: true,
+        ...CASE_REVIEW_APPROVED_WHERE,
+      },
+      select: {
+        result: true,
+        gpa11: true,
+        gpa10: true,
+        gpaRange: true,
+        satRange: true,
+        testScores: true,
+        tags: true,
+        demographicTags: true,
+        nationality: true,
+      },
+    });
+
+    // Group by result
+    const groups: Record<string, typeof cases> = {};
+    for (const c of cases) {
+      const key = c.result;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(c);
+    }
+
+    const admitted = groups['ADMITTED'] || [];
+    const rejected = groups['REJECTED'] || [];
+    const waitlisted = groups['WAITLISTED'] || [];
+
+    // Need minimum data for meaningful comparison
+    if (admitted.length < 5 || rejected.length < 3) return null;
+
+    const result: CaseComparisonResult = {
+      schoolId,
+      totalCases: cases.length,
+      admitted: this.computeCohortStats(admitted),
+      rejected: this.computeCohortStats(rejected),
+    };
+
+    if (waitlisted.length >= 3) {
+      result.waitlisted = this.computeCohortStats(waitlisted);
+    }
+
+    // Nationality subset analysis
+    if (nationality) {
+      const natAdmitted = admitted.filter((c) => c.nationality === nationality);
+      const natRejected = rejected.filter((c) => c.nationality === nationality);
+
+      if (natAdmitted.length >= 2 || natRejected.length >= 2) {
+        result.nationalitySubset = {
+          nationality,
+          admitted: this.computeCohortStats(natAdmitted),
+          rejected: this.computeCohortStats(natRejected),
+        };
+      }
+    }
+
+    try {
+      await this.redis.setJSON(cacheKey, result, DISTRIBUTION_CACHE_TTL);
+    } catch {
+      // Cache write failure is non-critical
+    }
+
+    return result;
+  }
+
+  /** Compute GPA/SAT stats and common traits for a cohort of cases. */
+  private computeCohortStats(
+    cases: Array<{
+      gpa11: any;
+      gpa10: any;
+      gpaRange: string | null;
+      satRange: string | null;
+      testScores: any;
+      tags: string[];
+      demographicTags: string[];
+    }>,
+  ): CohortStats {
+    const gpaValues: number[] = [];
+    const satValues: number[] = [];
+    const tagCounts: Record<string, number> = {};
+
+    for (const c of cases) {
+      // GPA: prefer gpa11 (most representative), fall back to gpa10, then gpaRange
+      const gpa =
+        c.gpa11 != null
+          ? Number(c.gpa11)
+          : c.gpa10 != null
+            ? Number(c.gpa10)
+            : c.gpaRange
+              ? parseRange(c.gpaRange)
+              : null;
+      if (gpa != null && !isNaN(gpa)) gpaValues.push(gpa);
+
+      // SAT: prefer structured testScores JSON, fall back to satRange
+      let sat: number | null = null;
+      if (c.testScores && Array.isArray(c.testScores)) {
+        const satEntry = (
+          c.testScores as Array<{ type: string; score: number }>
+        ).find((ts) => ts.type === 'SAT');
+        if (satEntry) sat = satEntry.score;
+      }
+      if (sat == null && c.satRange) {
+        sat = parseRange(c.satRange);
+      }
+      if (sat != null && !isNaN(sat)) satValues.push(sat);
+
+      // Tags: combine tags + demographicTags
+      for (const tag of [...(c.tags || []), ...(c.demographicTags || [])]) {
+        tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+      }
+    }
+
+    // Sort for percentile calculation
+    gpaValues.sort((a, b) => a - b);
+    satValues.sort((a, b) => a - b);
+
+    const stats: CohortStats = { count: cases.length };
+
+    if (gpaValues.length >= 3) {
+      stats.gpaMedian = percentile(gpaValues, 50);
+      stats.gpaP25 = percentile(gpaValues, 25);
+      stats.gpaP75 = percentile(gpaValues, 75);
+    }
+
+    if (satValues.length >= 3) {
+      stats.satMedian = percentile(satValues, 50);
+      stats.satP25 = percentile(satValues, 25);
+      stats.satP75 = percentile(satValues, 75);
+    }
+
+    // Top tags by frequency (≥ 10% of cohort)
+    const minTagCount = Math.max(2, Math.ceil(cases.length * 0.1));
+    stats.topTags = Object.entries(tagCounts)
+      .filter(([, count]) => count >= minTagCount)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 5)
+      .map(
+        ([tag, count]) =>
+          `${tag} (${Math.round((count / cases.length) * 100)}%)`,
+      );
+
+    return stats;
+  }
+}
+
+// ─── Types ───
+
+export interface CaseComparisonResult {
+  schoolId: string;
+  totalCases: number;
+  admitted: CohortStats;
+  rejected: CohortStats;
+  waitlisted?: CohortStats;
+  nationalitySubset?: {
+    nationality: string;
+    admitted: CohortStats;
+    rejected: CohortStats;
+  };
+}
+
+export interface CohortStats {
+  count: number;
+  gpaMedian?: number;
+  gpaP25?: number;
+  gpaP75?: number;
+  satMedian?: number;
+  satP25?: number;
+  satP75?: number;
+  topTags?: string[];
+}
+
+/** Simple percentile from sorted array (nearest-rank method). */
+function percentile(sorted: number[], p: number): number {
+  const idx = Math.ceil((p / 100) * sorted.length) - 1;
+  return Math.round(sorted[Math.max(0, idx)] * 100) / 100;
 }

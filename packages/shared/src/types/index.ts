@@ -430,6 +430,30 @@ export interface SchoolMeta {
   website?: string;
 }
 
+export interface CohortStats {
+  count: number;
+  gpaMedian?: number;
+  gpaP25?: number;
+  gpaP75?: number;
+  satMedian?: number;
+  satP25?: number;
+  satP75?: number;
+  topTags?: string[];
+}
+
+export interface CaseComparison {
+  schoolId: string;
+  totalCases: number;
+  admitted: CohortStats;
+  rejected: CohortStats;
+  waitlisted?: CohortStats;
+  nationalitySubset?: {
+    nationality: string;
+    admitted: CohortStats;
+    rejected: CohortStats;
+  };
+}
+
 export interface RecommendedSchool {
   schoolId?: string;
   schoolName: string;
@@ -441,6 +465,7 @@ export interface RecommendedSchool {
   concerns?: string[];
   dataPoints?: string[];
   schoolMeta?: SchoolMeta;
+  caseComparison?: CaseComparison;
 }
 
 export interface RecommendationAnalysis {

@@ -1200,7 +1200,16 @@
     "validation": {
       "activityRequired": "请填写活动信息",
       "awardRequired": "请填写奖项信息",
-      "scoreRequired": "请填写成绩信息"
+      "scoreRequired": "请填写成绩信息",
+      "nameRequired": "请填写名称",
+      "nameMaxLength": "名称不能超过 100 个字符",
+      "categoryRequired": "请选择类别",
+      "roleRequired": "请填写角色",
+      "levelRequired": "请选择级别",
+      "testTypeRequired": "请选择考试类型",
+      "semesterRequired": "请选择学期",
+      "yearRequired": "请填写年份",
+      "gpaRequired": "请填写 GPA"
     },
     "recLetter": {
       "title": "推荐信",
@@ -1242,7 +1251,9 @@
         "deleted": "推荐信已删除"
       },
       "validation": {
-        "required": "请填写推荐人姓名和角色"
+        "required": "请填写推荐人姓名和角色",
+        "nameRequired": "请填写推荐人姓名",
+        "roleRequired": "请选择推荐人角色"
       },
       "empty": "暂无推荐信",
       "emptyHint": "添加推荐人以追踪推荐信状态"
@@ -3090,6 +3101,12 @@
     "editDesc": "编辑您的文书内容",
     "createDesc": "创建一篇新的申请文书",
     "wordCount": "{count} 词",
+    "words": "词",
+    "wordLimitStatus": {
+      "within": "字数达标",
+      "near": "接近上限",
+      "over": "超出限制"
+    },
     "updatedAt": "更新于",
     "aiTools": "AI 工具",
     "aiActions": {
@@ -3517,6 +3534,7 @@
     "review": {
       "description": "AI 已从多个维度评估了您的文书",
       "suggestions": "改进建议",
+      "cliches": "陈词滥调检测",
       "newReview": "重新评分",
       "title": "文书评审",
       "schoolName": "目标学校",
@@ -3534,12 +3552,13 @@
     "radar": {
       "title": "雷达图",
       "dimensions": {
-        "structure": "结构",
+        "structure": "故事性",
         "originality": "原创性",
         "language": "语言",
         "clarity": "清晰度",
         "impact": "影响力",
-        "relevance": "相关性"
+        "relevance": "相关性",
+        "authenticity": "真实声音"
       }
     },
     "scores": {
@@ -4376,7 +4395,19 @@
     "missing": "缺少",
     "inList": "已在列表",
     "analysis": "分析",
-    "regenerate": "重新生成"
+    "regenerate": "重新生成",
+    "caseComparison": {
+      "title": "历史案例数据",
+      "cases": "案例",
+      "admitted": "录取",
+      "rejected": "拒绝",
+      "gpaMedian": "GPA 中位数",
+      "satMedian": "SAT 中位数",
+      "admittedTraits": "录取者常见特征",
+      "rejectedTraits": "拒绝者常见特征",
+      "nationalityData": "{nationality} 申请者",
+      "insufficientData": "案例数据不足"
+    }
   },
   "timeline": {
     "title": "申请时间线",

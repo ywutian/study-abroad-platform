@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAddToSchoolList } from '@/hooks/use-recommendation';
 import type { RecommendationResult, RecommendedSchool } from '@study-abroad/shared';
 import { isSafeUrl } from '@/lib/utils/url';
+import { CaseComparisonSummary } from '@/components/features/recommendation/CaseComparisonSummary';
 
 const TIER_COLORS = {
   reach: 'bg-red-500/10 text-red-600 dark:text-red-400',
@@ -127,6 +128,9 @@ export function ResultsView({ result, schoolList, onReset }: ResultsViewProps) {
                       <span key={j}>⚠ {c} </span>
                     ))}
                   </div>
+                )}
+                {school.caseComparison && (
+                  <CaseComparisonSummary comparison={school.caseComparison} />
                 )}
               </CardContent>
             </Card>

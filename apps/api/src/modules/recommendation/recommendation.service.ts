@@ -173,7 +173,11 @@ export class RecommendationService {
       nationalityContext,
     );
 
-    // Inject historical case data for evidence-based recommendations
+    // Inject historical case comparison data for evidence-based recommendations
+    const comparisonCache: Record<
+      string,
+      import('../prediction/prediction-historical.service').CaseComparisonResult
+    > = {};
     if (this.historicalService) {
       const historicalLines: string[] = [];
       const targetSchools = (profile as any).targetSchools as
@@ -187,59 +191,115 @@ export class RecommendationService {
               select: { id: true, name: true, acceptanceRate: true },
             });
             if (!school) continue;
-            const dist = await this.historicalService.getSchoolDistribution(
+
+            // Use structured case comparison (admitted vs rejected)
+            const comparison = await this.historicalService.getCaseComparison(
               school.id,
-            );
-            const natStats = nationalityContext?.nationality
-              ? await this.historicalService.getNationalityStats(
-                  school.id,
-                  nationalityContext.nationality,
-                )
-              : null;
-
-            // Query full outcome distribution (admitted + rejected + waitlisted)
-            const outcomes = await this.prisma.admissionCase.groupBy({
-              by: ['result'],
-              where: { schoolId: school.id, isVerified: true },
-              _count: true,
-            });
-            const outcomeMap: Record<string, number> = {};
-            for (const o of outcomes) {
-              outcomeMap[o.result] = o._count;
-            }
-            const totalCases = Object.values(outcomeMap).reduce(
-              (a, b) => a + b,
-              0,
+              nationalityContext?.nationality,
             );
 
-            const parts = [`### ${school.name}`];
-            if (totalCases >= 5) {
-              const admitted = outcomeMap['ADMITTED'] || 0;
-              const rejected = outcomeMap['REJECTED'] || 0;
-              const waitlisted = outcomeMap['WAITLISTED'] || 0;
+            if (comparison) {
+              comparisonCache[school.id] = comparison;
+              const parts = [`### ${school.name}`];
+              const { admitted, rejected } = comparison;
               parts.push(
-                `- Total verified cases: ${totalCases} (admitted: ${admitted}, rejected: ${rejected}, waitlisted: ${waitlisted})`,
+                `- Cases: ${comparison.totalCases} total (${admitted.count} admitted, ${rejected.count} rejected${comparison.waitlisted ? `, ${comparison.waitlisted.count} waitlisted` : ''})`,
               );
-              if (admitted > 0 && rejected > 0) {
-                parts.push(
-                  `- Platform admit rate: ${((admitted / totalCases) * 100).toFixed(1)}%`,
+              parts.push(
+                `- Platform admit rate: ${((admitted.count / comparison.totalCases) * 100).toFixed(1)}%`,
+              );
+
+              // Admitted cohort profile
+              const admittedParts: string[] = [];
+              if (admitted.gpaMedian != null) {
+                admittedParts.push(
+                  `GPA ${admitted.gpaMedian}${admitted.gpaP25 != null ? ` (${admitted.gpaP25}-${admitted.gpaP75})` : ''}`,
                 );
               }
-            }
-            if (dist) {
-              const satMedian = dist.satValues.length
-                ? dist.satValues.sort((a, b) => a - b)[
-                    Math.floor(dist.satValues.length / 2)
-                  ]
+              if (admitted.satMedian != null) {
+                admittedParts.push(
+                  `SAT ${admitted.satMedian}${admitted.satP25 != null ? ` (${admitted.satP25}-${admitted.satP75})` : ''}`,
+                );
+              }
+              if (admittedParts.length) {
+                parts.push(`- Admitted profile: ${admittedParts.join(', ')}`);
+              }
+
+              // Rejected cohort profile
+              const rejectedParts: string[] = [];
+              if (rejected.gpaMedian != null) {
+                rejectedParts.push(
+                  `GPA ${rejected.gpaMedian}${rejected.gpaP25 != null ? ` (${rejected.gpaP25}-${rejected.gpaP75})` : ''}`,
+                );
+              }
+              if (rejected.satMedian != null) {
+                rejectedParts.push(
+                  `SAT ${rejected.satMedian}${rejected.satP25 != null ? ` (${rejected.satP25}-${rejected.satP75})` : ''}`,
+                );
+              }
+              if (rejectedParts.length) {
+                parts.push(`- Rejected profile: ${rejectedParts.join(', ')}`);
+              }
+
+              // Common traits
+              if (admitted.topTags?.length) {
+                parts.push(
+                  `- Admitted common traits: ${admitted.topTags.join(', ')}`,
+                );
+              }
+              if (rejected.topTags?.length) {
+                parts.push(
+                  `- Rejected common traits: ${rejected.topTags.join(', ')}`,
+                );
+              }
+
+              // Nationality subset
+              if (comparison.nationalitySubset) {
+                const ns = comparison.nationalitySubset;
+                const natParts = [`- ${ns.nationality} applicants:`];
+                if (ns.admitted.count > 0 || ns.rejected.count > 0) {
+                  natParts.push(
+                    `${ns.admitted.count} admitted, ${ns.rejected.count} rejected`,
+                  );
+                }
+                if (ns.admitted.gpaMedian != null) {
+                  natParts.push(`admitted GPA ${ns.admitted.gpaMedian}+`);
+                }
+                if (ns.admitted.satMedian != null) {
+                  natParts.push(`admitted SAT ${ns.admitted.satMedian}+`);
+                }
+                parts.push(natParts.join(' '));
+              }
+
+              if (parts.length > 1) historicalLines.push(parts.join('\n'));
+            } else {
+              // Fall back to basic stats when comparison data is insufficient
+              const natStats = nationalityContext?.nationality
+                ? await this.historicalService.getNationalityStats(
+                    school.id,
+                    nationalityContext.nationality,
+                  )
                 : null;
-              if (satMedian) parts.push(`- Admitted SAT median: ${satMedian}`);
-            }
-            if (natStats && natStats.totalCases >= 3) {
-              parts.push(
-                `- ${natStats.nationality} applicant admit rate: ${natStats.admitRate.toFixed(1)}% (${natStats.admittedCases}/${natStats.totalCases})`,
+              const dist = await this.historicalService.getSchoolDistribution(
+                school.id,
               );
+              const parts = [`### ${school.name}`];
+              if (dist) {
+                const satMedian = dist.satValues.length
+                  ? dist.satValues.sort((a, b) => a - b)[
+                      Math.floor(dist.satValues.length / 2)
+                    ]
+                  : null;
+                if (satMedian)
+                  parts.push(`- Admitted SAT median: ${satMedian}`);
+              }
+              if (natStats && natStats.totalCases >= 3) {
+                parts.push(
+                  `- ${natStats.nationality} admit rate: ${natStats.admitRate.toFixed(1)}% (${natStats.admittedCases}/${natStats.totalCases})`,
+                );
+              }
+              if (parts.length > 1) historicalLines.push(parts.join('\n'));
             }
-            if (parts.length > 1) historicalLines.push(parts.join('\n'));
           } catch {
             // Skip school if query fails
           }
@@ -252,8 +312,8 @@ export class RecommendationService {
             : '\n\n## Historical Admission Data (from verified platform cases, for reference)\n';
         const footer =
           locale === 'zh'
-            ? '\n\n使用以上数据时请：1. 分析录取者与拒绝者的差异特征 2. 用"背景信息"框架呈现（非判决）3. 数据量<5时注明样本有限\n历史数据仅供参考，不代表未来录取标准。'
-            : '\n\nWhen using this data: 1. Analyze what differentiates admitted vs rejected students 2. Present as context (not verdict) 3. Note when sample size <5\nHistorical data is for reference only.';
+            ? '\n\n使用以上数据时请：1. 对比录取者与拒绝者的 GPA/标化/活动差异 2. 在 reasons 中引用录取者画像的对比 3. 在 concerns 中指出与拒绝者画像的相似之处 4. 有国籍数据时按国籍分析\n历史数据仅供参考，不代表未来录取标准。'
+            : '\n\nWhen using this data: 1. Compare admitted vs rejected GPA/test scores/activity differences 2. In reasons[], cite how the student compares to admitted cohort 3. In concerns[], note where the student resembles rejected cohort 4. Segment by nationality when data is available\nHistorical data is for reference only.';
         userPrompt += header + historicalLines.join('\n\n') + footer;
       }
     }
@@ -324,6 +384,13 @@ export class RecommendationService {
 
       // Enrich with essay prompt data
       await this.enrichWithEssayData(recommendations);
+
+      // Attach case comparison data to matched schools
+      for (const rec of recommendations) {
+        if (rec.schoolId && comparisonCache[rec.schoolId]) {
+          (rec as any).caseComparison = comparisonCache[rec.schoolId];
+        }
+      }
 
       // Save results
       const savedRecommendation = await this.prisma.schoolRecommendation.create(

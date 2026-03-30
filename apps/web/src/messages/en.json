@@ -1200,7 +1200,16 @@
     "validation": {
       "activityRequired": "Please fill in activity details",
       "awardRequired": "Please fill in award details",
-      "scoreRequired": "Please fill in score details"
+      "scoreRequired": "Please fill in score details",
+      "nameRequired": "Name is required",
+      "nameMaxLength": "Name must be 100 characters or less",
+      "categoryRequired": "Please select a category",
+      "roleRequired": "Role is required",
+      "levelRequired": "Please select a level",
+      "testTypeRequired": "Please select a test type",
+      "semesterRequired": "Please select a semester",
+      "yearRequired": "Year is required",
+      "gpaRequired": "GPA is required"
     },
     "recLetter": {
       "title": "Recommendation Letters",
@@ -1242,7 +1251,9 @@
         "deleted": "Recommendation letter deleted"
       },
       "validation": {
-        "required": "Recommender name and role are required"
+        "required": "Recommender name and role are required",
+        "nameRequired": "Recommender name is required",
+        "roleRequired": "Please select a role"
       },
       "empty": "No recommendation letters yet",
       "emptyHint": "Add your recommenders to track letter status"
@@ -3095,6 +3106,12 @@
     "editDesc": "Edit your essay content",
     "createDesc": "Create a new application essay",
     "wordCount": "{count} words",
+    "words": "words",
+    "wordLimitStatus": {
+      "within": "Within limit",
+      "near": "Approaching limit",
+      "over": "Over limit"
+    },
     "updatedAt": "Updated at",
     "aiTools": "AI Tools",
     "aiActions": {
@@ -3522,6 +3539,7 @@
     "review": {
       "description": "AI has evaluated your essay from multiple dimensions",
       "suggestions": "Suggestions",
+      "cliches": "Cliché Detection",
       "newReview": "New Review",
       "title": "Essay Review",
       "schoolName": "Target School",
@@ -3539,12 +3557,13 @@
     "radar": {
       "title": "Radar Chart",
       "dimensions": {
-        "structure": "Structure",
+        "structure": "Storytelling",
         "originality": "Originality",
         "language": "Language",
         "clarity": "Clarity",
         "impact": "Impact",
-        "relevance": "Relevance"
+        "relevance": "Relevance",
+        "authenticity": "Authenticity"
       }
     },
     "scores": {
@@ -4381,7 +4400,19 @@
     "missing": "Missing",
     "inList": "In List",
     "analysis": "Analysis",
-    "regenerate": "Regenerate"
+    "regenerate": "Regenerate",
+    "caseComparison": {
+      "title": "Historical Case Data",
+      "cases": "cases",
+      "admitted": "Admitted",
+      "rejected": "Rejected",
+      "gpaMedian": "GPA Median",
+      "satMedian": "SAT Median",
+      "admittedTraits": "Admitted Common Traits",
+      "rejectedTraits": "Rejected Common Traits",
+      "nationalityData": "{nationality} Applicants",
+      "insufficientData": "Insufficient case data"
+    }
   },
   "timeline": {
     "title": "Application Timeline",
