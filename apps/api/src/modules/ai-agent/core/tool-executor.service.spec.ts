@@ -18,6 +18,7 @@ import { ForumToolsService } from '../tools/forum-tools.service';
 import { RankingToolsService } from '../tools/ranking-tools.service';
 import { SearchToolsService } from '../tools/search-tools.service';
 import { ResumeToolsService } from '../tools/resume-tools.service';
+import { SimilarityToolsService } from '../tools/similarity-tools.service';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -80,6 +81,7 @@ describe('ToolExecutorService', () => {
   const mockRankingTools = createMockProvider();
   const mockSearchTools = createMockProvider();
   const mockResumeTools = createMockProvider();
+  const mockSimilarityTools = createMockProvider();
 
   beforeEach(async () => {
     // Reset call counts and implementations but keep object references
@@ -102,6 +104,7 @@ describe('ToolExecutorService', () => {
     mockRankingTools.getHandlers.mockReset();
     mockSearchTools.getHandlers.mockReset();
     mockResumeTools.getHandlers.mockReset();
+    mockSimilarityTools.getHandlers.mockReset();
 
     // Default: withRetry delegates to the wrapped function
     mockResilience.withRetry.mockImplementation((fn: () => Promise<any>) =>
@@ -121,6 +124,7 @@ describe('ToolExecutorService', () => {
     mockRankingTools.getHandlers.mockReturnValue(new Map());
     mockSearchTools.getHandlers.mockReturnValue(new Map());
     mockResumeTools.getHandlers.mockReturnValue(new Map());
+    mockSimilarityTools.getHandlers.mockReturnValue(new Map());
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -140,6 +144,7 @@ describe('ToolExecutorService', () => {
         { provide: RankingToolsService, useValue: mockRankingTools },
         { provide: SearchToolsService, useValue: mockSearchTools },
         { provide: ResumeToolsService, useValue: mockResumeTools },
+        { provide: SimilarityToolsService, useValue: mockSimilarityTools },
         { provide: MetricsService, useValue: mockMetrics },
         { provide: ResilienceService, useValue: mockResilience },
       ],
@@ -541,6 +546,7 @@ describe('ToolExecutorService', () => {
           { provide: RankingToolsService, useValue: mockRankingTools },
           { provide: SearchToolsService, useValue: mockSearchTools },
           { provide: ResumeToolsService, useValue: mockResumeTools },
+          { provide: SimilarityToolsService, useValue: mockSimilarityTools },
           // Intentionally omit MetricsService and ResilienceService
         ],
       }).compile();
