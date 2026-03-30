@@ -13,7 +13,14 @@ export const ESSAY_REVIEW_SYSTEM_ZH = `你是一位经验丰富的大学申请�
 1. clarity (主题清晰度): 主旨是否明确，读者能否快速理解核心信息
 2. uniqueness (个人特色): 是否展现了独特的个人经历、观点或视角
 3. storytelling (故事性): 叙事是否引人入胜，是否有具体、生动的细节
-4. authenticity (真实声音): 是否听起来像一个真实的高中生写的（而非成人代笔）
+4. authenticity (真实声音): 是否听起来像一个真实的高中生写的（而非成人代笔或 AI 生成）
+   检测信号：
+   - 词汇成熟度：是否使用了超出年龄的学术词汇或行业术语（如"paradigm shift""leverage""synergy"）
+   - 句式复杂度：是否出现过度复杂的从句嵌套（成人/AI 写作特征）
+   - 叙事视角一致性：全文是否保持同一个声音，还是混杂了不同成熟度的段落
+   - AI 生成迹象：过度工整的段落结构、千篇一律的过渡词（"Furthermore""Moreover""In conclusion"）、缺乏个人细节的泛泛而谈
+   - 情感真实度：情感表达是否自然具体，还是空洞煽情
+   如果 authenticity < 6，在 weaknesses 中明确指出哪些段落/表达像成人代笔或 AI 生成，并给出具体改写建议使其更像真实学生的声音。
 5. language (语言表达): 语法、用词、句式是否恰当有力
 
 注意：对于 Common App 个人陈述（Personal Statement），不评估"学校契合度"——个人陈述应展现你是谁，而非针对特定学校。"fit"维度仅适用于 supplement essay。
@@ -61,7 +68,14 @@ export const ESSAY_REVIEW_SYSTEM_EN = `You are an experienced college applicatio
 1. clarity: Is the thesis clear? Can readers quickly grasp the core message?
 2. uniqueness: Does it showcase unique personal experiences, viewpoints, or perspectives?
 3. storytelling: Is the narrative engaging with specific, vivid details?
-4. authenticity: Does it sound like a real teenager wrote it (not an adult ghostwriter)?
+4. authenticity: Does it sound like a real teenager wrote it (not an adult ghostwriter or AI)?
+   Detection signals:
+   - Vocabulary maturity: Does it use academic jargon beyond age level ("paradigm shift", "leverage", "synergy")?
+   - Sentence complexity: Are there overly nested subordinate clauses (adult/AI writing pattern)?
+   - Voice consistency: Does the entire essay maintain one voice, or do some paragraphs sound notably more mature?
+   - AI generation signs: Overly uniform paragraph structure, formulaic transitions ("Furthermore", "Moreover", "In conclusion"), generic statements lacking personal detail
+   - Emotional authenticity: Are emotions expressed naturally and specifically, or are they vague and performative?
+   If authenticity < 6, explicitly flag which paragraphs/phrases sound like adult ghostwriting or AI generation in weaknesses[], and suggest how to rewrite them in the student's authentic voice.
 5. language: Are grammar, word choice, and sentence structure effective?
 
 Note: For Common App Personal Statements, do NOT evaluate "school fit" — the personal statement should show who you are, not target a specific school. The "fit" dimension only applies to supplement essays.
@@ -108,6 +122,7 @@ export function buildReviewSystemPrompt(
   locale: string,
   schoolContext?: { name: string; details: string },
   major?: string,
+  wordLimit?: number,
 ): string {
   const isZh = locale === 'zh';
   const base = isZh ? ESSAY_REVIEW_SYSTEM_ZH : ESSAY_REVIEW_SYSTEM_EN;
@@ -122,6 +137,13 @@ export function buildReviewSystemPrompt(
   }
   if (major) {
     contextLines.push(isZh ? `目标专业：${major}` : `Target major: ${major}`);
+  }
+  if (wordLimit) {
+    contextLines.push(
+      isZh
+        ? `字数限制：${wordLimit} 字。这是学校规定的硬性限制，超过此字数的文书必须精简。请在 wordCountStatus 中反映是否超限。`
+        : `Word limit: ${wordLimit} words. This is the school's hard limit — essays exceeding this must be trimmed. Reflect whether the essay is over/under/within limit in wordCountStatus.`,
+    );
   }
 
   if (contextLines.length === 0) return base;

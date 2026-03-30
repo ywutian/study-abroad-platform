@@ -123,42 +123,34 @@ export function EssayAIDialogs({
                     <AIScoreRadar
                       scores={[
                         {
-                          key: 'structure',
-                          label: t('essayAi.radar.dimensions.structure'),
-                          score: reviewResult.structure.score,
+                          key: 'clarity',
+                          label: t('essayAi.radar.dimensions.clarity'),
+                          score: reviewResult.scores?.clarity ?? reviewResult.content?.score ?? 0,
                           maxScore: 10,
-                          feedback: reviewResult.structure.feedback,
                         },
                         {
-                          key: 'originality',
+                          key: 'uniqueness',
                           label: t('essayAi.radar.dimensions.originality'),
-                          score: derivedScores?.originality ?? 0,
+                          score: reviewResult.scores?.uniqueness ?? derivedScores?.originality ?? 0,
+                          maxScore: 10,
+                        },
+                        {
+                          key: 'storytelling',
+                          label: t('essayAi.radar.dimensions.structure'),
+                          score:
+                            reviewResult.scores?.storytelling ?? reviewResult.structure?.score ?? 0,
+                          maxScore: 10,
+                        },
+                        {
+                          key: 'authenticity',
+                          label: t('essayAi.radar.dimensions.authenticity'),
+                          score: reviewResult.scores?.authenticity ?? 0,
                           maxScore: 10,
                         },
                         {
                           key: 'language',
                           label: t('essayAi.radar.dimensions.language'),
-                          score: reviewResult.language.score,
-                          maxScore: 10,
-                          feedback: reviewResult.language.feedback,
-                        },
-                        {
-                          key: 'clarity',
-                          label: t('essayAi.radar.dimensions.clarity'),
-                          score: reviewResult.content.score,
-                          maxScore: 10,
-                          feedback: reviewResult.content.feedback,
-                        },
-                        {
-                          key: 'impact',
-                          label: t('essayAi.radar.dimensions.impact'),
-                          score: derivedScores?.impact ?? 0,
-                          maxScore: 10,
-                        },
-                        {
-                          key: 'relevance',
-                          label: t('essayAi.radar.dimensions.relevance'),
-                          score: derivedScores?.relevance ?? 0,
+                          score: reviewResult.scores?.language ?? reviewResult.language?.score ?? 0,
                           maxScore: 10,
                         },
                       ]}
@@ -174,25 +166,35 @@ export function EssayAIDialogs({
                     <ScoreDetailList
                       scores={[
                         {
-                          key: 'structure',
-                          label: t('essayAi.radar.dimensions.structure'),
-                          score: reviewResult.structure.score,
+                          key: 'clarity',
+                          label: t('essayAi.radar.dimensions.clarity'),
+                          score: reviewResult.scores?.clarity ?? reviewResult.content?.score ?? 0,
                           maxScore: 10,
-                          feedback: reviewResult.structure.feedback,
                         },
                         {
-                          key: 'content',
-                          label: t('essayAi.radar.dimensions.clarity'),
-                          score: reviewResult.content.score,
+                          key: 'uniqueness',
+                          label: t('essayAi.radar.dimensions.originality'),
+                          score: reviewResult.scores?.uniqueness ?? 0,
                           maxScore: 10,
-                          feedback: reviewResult.content.feedback,
+                        },
+                        {
+                          key: 'storytelling',
+                          label: t('essayAi.radar.dimensions.structure'),
+                          score:
+                            reviewResult.scores?.storytelling ?? reviewResult.structure?.score ?? 0,
+                          maxScore: 10,
+                        },
+                        {
+                          key: 'authenticity',
+                          label: t('essayAi.radar.dimensions.authenticity'),
+                          score: reviewResult.scores?.authenticity ?? 0,
+                          maxScore: 10,
                         },
                         {
                           key: 'language',
                           label: t('essayAi.radar.dimensions.language'),
-                          score: reviewResult.language.score,
+                          score: reviewResult.scores?.language ?? reviewResult.language?.score ?? 0,
                           maxScore: 10,
-                          feedback: reviewResult.language.feedback,
                         },
                       ]}
                     />
@@ -201,34 +203,60 @@ export function EssayAIDialogs({
 
                 <TabsContent value="suggestions" className="flex-1 mt-4">
                   <ScrollArea className="h-[350px] pr-4">
-                    {reviewResult.suggestions?.length > 0 ? (
-                      <div className="space-y-3">
-                        {reviewResult.suggestions.map((suggestion, i) => (
-                          <motion.div
-                            key={i}
-                            className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: i * 0.1 }}
-                          >
-                            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-                              {i + 1}
+                    <div className="space-y-4">
+                      {reviewResult.suggestions?.length > 0 && (
+                        <div className="space-y-3">
+                          {reviewResult.suggestions.map((suggestion, i) => (
+                            <motion.div
+                              key={i}
+                              className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: i * 0.1 }}
+                            >
+                              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                                {i + 1}
+                              </div>
+                              <p className="text-sm text-muted-foreground leading-relaxed">
+                                {suggestion}
+                              </p>
+                            </motion.div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Cliché Detection */}
+                      {reviewResult.cliches && reviewResult.cliches.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                            {t('essayAi.review.cliches')}
+                          </p>
+                          {reviewResult.cliches.map((cliche, i) => (
+                            <div
+                              key={i}
+                              className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 space-y-1.5"
+                            >
+                              <p className="text-sm line-through text-muted-foreground">
+                                {cliche.text}
+                              </p>
+                              <p className="text-sm text-foreground">→ {cliche.suggestion}</p>
                             </div>
-                            <p className="text-sm text-muted-foreground leading-relaxed">
-                              {suggestion}
-                            </p>
-                          </motion.div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-full text-center py-12">
-                        <Check className="h-12 w-12 text-emerald-500 mb-4" />
-                        <p className="text-lg font-semibold">{t('essays.review.noSuggestions')}</p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {t('essays.review.excellentWork')}
-                        </p>
-                      </div>
-                    )}
+                          ))}
+                        </div>
+                      )}
+
+                      {!reviewResult.suggestions?.length && !reviewResult.cliches?.length && (
+                        <div className="flex flex-col items-center justify-center h-full text-center py-12">
+                          <Check className="h-12 w-12 text-emerald-500 mb-4" />
+                          <p className="text-lg font-semibold">
+                            {t('essays.review.noSuggestions')}
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {t('essays.review.excellentWork')}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </ScrollArea>
                 </TabsContent>
               </Tabs>

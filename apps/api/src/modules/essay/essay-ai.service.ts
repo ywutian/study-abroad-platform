@@ -128,6 +128,9 @@ export class EssayAiService {
 
     const essay = await this.prisma.essay.findUnique({
       where: { id: dto.essayId },
+      include: {
+        linkedPrompt: { select: { wordLimit: true, type: true } },
+      },
     });
 
     if (!essay) {
@@ -178,6 +181,7 @@ export class EssayAiService {
         ? { name: dto.schoolName, details: schoolContext }
         : undefined,
       dto.major,
+      essay.linkedPrompt?.wordLimit ?? undefined,
     );
 
     try {
@@ -215,6 +219,7 @@ export class EssayAiService {
         strengths: parsed.strengths || [],
         weaknesses: parsed.weaknesses || [],
         suggestions: parsed.suggestions || [],
+        cliches: Array.isArray(parsed.cliches) ? parsed.cliches : undefined,
         verdict: parsed.verdict || '',
         tokenUsed: aiResult.tokenUsed,
       };
@@ -534,11 +539,17 @@ export class EssayAiService {
     content: string,
     prompt?: string,
     locale = 'zh',
+    wordLimit?: number,
   ): Promise<EssayReviewResponseDto> {
     const isZh = locale === 'zh';
     await this.caseIncentiveService.charge(userId, PointAction.AI_ESSAY_REVIEW);
 
-    const systemPrompt = buildReviewSystemPrompt(locale);
+    const systemPrompt = buildReviewSystemPrompt(
+      locale,
+      undefined,
+      undefined,
+      wordLimit,
+    );
 
     try {
       const result = await this.llmService.chatSimpleGuarded(
@@ -565,6 +576,7 @@ export class EssayAiService {
         strengths: parsed.strengths || [],
         weaknesses: parsed.weaknesses || [],
         suggestions: parsed.suggestions || [],
+        cliches: Array.isArray(parsed.cliches) ? parsed.cliches : undefined,
         verdict: parsed.verdict || '',
         tokenUsed,
       };

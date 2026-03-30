@@ -207,9 +207,11 @@ export function EssayFormDialog({
           <div className="space-y-2" data-tour="essay-content">
             <div className="flex items-center justify-between">
               <Label>{t('essays.label.content')}</Label>
-              <span className="text-xs text-muted-foreground">
-                {t('essays.wordCount', { count: getWordCount(essayForm.watch('content')) })}
-              </span>
+              <WordLimitIndicator
+                wordCount={getWordCount(essayForm.watch('content'))}
+                wordLimit={selectedPrompt?.wordLimit}
+                t={t}
+              />
             </div>
             <Textarea
               placeholder={t('essays.placeholder.content')}
@@ -237,6 +239,41 @@ export function EssayFormDialog({
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function WordLimitIndicator({
+  wordCount,
+  wordLimit,
+  t,
+}: {
+  wordCount: number;
+  wordLimit?: number;
+  t: (key: string, values?: Record<string, string | number>) => string;
+}) {
+  if (!wordLimit) {
+    return (
+      <span className="text-xs text-muted-foreground">
+        {t('essays.wordCount', { count: wordCount })}
+      </span>
+    );
+  }
+
+  const ratio = wordCount / wordLimit;
+  const colorClass =
+    ratio > 1 ? 'text-destructive' : ratio > 0.9 ? 'text-warning' : 'text-muted-foreground';
+  const statusKey =
+    ratio > 1
+      ? 'essays.wordLimitStatus.over'
+      : ratio > 0.9
+        ? 'essays.wordLimitStatus.near'
+        : 'essays.wordLimitStatus.within';
+
+  return (
+    <span className={`text-xs ${colorClass}`}>
+      {wordCount} / {wordLimit} {t('essays.words')}
+      {ratio > 1 && <span className="ml-1 font-medium">({t(statusKey)})</span>}
+    </span>
   );
 }
 
