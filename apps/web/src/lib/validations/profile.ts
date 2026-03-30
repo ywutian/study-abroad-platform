@@ -95,9 +95,9 @@ const TEST_TYPE_VALUES = ['SAT', 'ACT', 'TOEFL', 'IELTS', 'AP', 'IB', 'A_LEVEL',
 export function createTestScoreSchema(t: (key: string) => string) {
   return z.object({
     type: z.enum(TEST_TYPE_VALUES, {
-      required_error: t('profile.validation.testTypeRequired'),
+      required_error: t('validation.testTypeRequired'),
     }),
-    score: z.string().min(1, t('profile.validation.scoreRequired')),
+    score: z.string().min(1, t('validation.scoreRequired')),
     testDate: z.string().optional(),
     // Sub-scores kept as optional strings; complex conditional logic stays in component
     satReading: z.string().optional(),
@@ -139,14 +139,11 @@ const ACTIVITY_TIMING_VALUES = ['SCHOOL_YEAR', 'SCHOOL_BREAK', 'ALL_YEAR', ''] a
 
 export function createActivitySchema(t: (key: string) => string) {
   return z.object({
-    name: z
-      .string()
-      .min(1, t('profile.validation.nameRequired'))
-      .max(100, t('profile.validation.nameMaxLength')),
+    name: z.string().min(1, t('validation.nameRequired')).max(100, t('validation.nameMaxLength')),
     category: z.enum(ACTIVITY_CATEGORY_VALUES, {
-      required_error: t('profile.validation.categoryRequired'),
+      required_error: t('validation.categoryRequired'),
     }),
-    role: z.string().min(1, t('profile.validation.roleRequired')).max(100),
+    role: z.string().min(1, t('validation.roleRequired')).max(100),
     organization: z.string().max(100).optional(),
     description: z.string().max(500).optional(),
     commonAppDescription: z.string().max(150).optional(),
@@ -187,9 +184,9 @@ const AWARD_CATEGORY_VALUES = [
 
 export function createAwardSchema(t: (key: string) => string) {
   return z.object({
-    name: z.string().min(1, t('profile.validation.nameRequired')).max(200),
+    name: z.string().min(1, t('validation.nameRequired')).max(200),
     level: z.enum(AWARD_LEVEL_VALUES, {
-      required_error: t('profile.validation.levelRequired'),
+      required_error: t('validation.levelRequired'),
     }),
     category: z.enum(AWARD_CATEGORY_VALUES).default(''),
     year: z.string().optional(),
@@ -216,10 +213,10 @@ const SEMESTER_OPTIONS = [
 export function createSemesterGpaSchema(t: (key: string) => string) {
   return z.object({
     semester: z.enum(SEMESTER_OPTIONS, {
-      required_error: t('profile.validation.semesterRequired'),
+      required_error: t('validation.semesterRequired'),
     }),
-    year: z.string().min(1, t('profile.validation.yearRequired')),
-    gpa: z.string().min(1, t('profile.validation.gpaRequired')),
+    year: z.string().min(1, t('validation.yearRequired')),
+    gpa: z.string().min(1, t('validation.gpaRequired')),
     gpaScale: z.string().min(1),
     credits: z.string().optional(),
   });
@@ -241,10 +238,10 @@ const REC_LETTER_STATUS_VALUES = [
 
 export function createRecommendationLetterSchema(t: (key: string) => string) {
   return z.object({
-    recommenderName: z.string().min(1, t('profile.recLetter.validation.nameRequired')).max(200),
+    recommenderName: z.string().min(1, t('recLetter.validation.nameRequired')).max(200),
     recommenderEmail: z.string().max(200).optional().or(z.literal('')),
     recommenderRole: z.enum(RECOMMENDER_ROLE_VALUES, {
-      required_error: t('profile.recLetter.validation.roleRequired'),
+      required_error: t('recLetter.validation.roleRequired'),
     }),
     subject: z.string().max(200).optional(),
     status: z.enum(REC_LETTER_STATUS_VALUES).default('NOT_REQUESTED'),
