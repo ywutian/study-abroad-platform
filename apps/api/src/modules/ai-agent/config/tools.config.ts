@@ -36,6 +36,7 @@ export enum ToolName {
   // 案例工具
   SEARCH_CASES = 'search_cases',
   FIND_SIMILAR_CASES = 'find_similar_cases',
+  FIND_SIMILAR_APPLICANTS = 'find_similar_applicants',
 
   // 时间线工具
   GET_DEADLINES = 'get_deadlines',
@@ -108,6 +109,7 @@ export const TOOL_READONLY: ReadonlySet<string> = new Set([
   // 案例
   ToolName.SEARCH_CASES,
   ToolName.FIND_SIMILAR_CASES,
+  ToolName.FIND_SIMILAR_APPLICANTS,
   // 时间线（读操作）
   ToolName.GET_DEADLINES,
   ToolName.GET_PERSONAL_EVENTS,
@@ -491,6 +493,31 @@ export const TOOLS: ToolDefinition[] = [
         limit: {
           type: 'number',
           description: '返回数量限制（默认10，最大20）',
+        },
+      },
+      required: [],
+    },
+  },
+
+  {
+    name: ToolName.FIND_SIMILAR_APPLICANTS,
+    description:
+      '通过多维相似度评分查找与用户背景最相似的申请者（含录取和拒绝案例）。使用 GPA、标化成绩、国籍、课程体系、高中类型进行综合匹配，每个案例返回相似度分数。适合分析"和我背景类似的人录取情况如何"。与 find_similar_cases 的区别：本工具使用加权相似度评分，返回排序后的结果和录取统计摘要。',
+    parameters: {
+      type: 'object',
+      properties: {
+        schoolName: {
+          type: 'string',
+          description: '限定学校名称（可选）',
+        },
+        limit: {
+          type: 'number',
+          description: '返回数量限制（默认15，最大30）',
+        },
+        includeRejected: {
+          type: 'boolean',
+          description:
+            '是否包含被拒案例（默认 true，设为 false 仅查看录取案例）',
         },
       },
       required: [],

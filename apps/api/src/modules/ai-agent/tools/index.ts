@@ -18,6 +18,7 @@ export { EssayToolsService } from './essay-tools.service';
 export { RecommendationToolsService } from './recommendation-tools.service';
 export { PredictionToolsService } from './prediction-tools.service';
 export { CaseToolsService } from './case-tools.service';
+export { SimilarityToolsService } from './similarity-tools.service';
 export { TimelineToolsService } from './timeline-tools.service';
 export { AssessmentToolsService } from './assessment-tools.service';
 export { ForumToolsService } from './forum-tools.service';

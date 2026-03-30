@@ -237,6 +237,7 @@ Prediction analysis:
       'recommend_schools',
       'analyze_admission_chance',
       'analyze_intl_competitiveness',
+      'find_similar_applicants',
       // 预测数据工具
       'get_prediction_history',
       'get_prediction_dashboard',
@@ -310,6 +311,7 @@ Principle: Objective analysis; highlight strengths without avoiding weaknesses`,
     tools: [
       'get_profile',
       'update_profile',
+      'find_similar_applicants',
       // 测评工具
       'get_assessment_results',
       'interpret_assessment',

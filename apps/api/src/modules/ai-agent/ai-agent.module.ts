@@ -74,6 +74,7 @@ import {
   RankingToolsService,
   SearchToolsService,
   ResumeToolsService,
+  SimilarityToolsService,
 } from './tools';
 
 // Config validation
@@ -133,13 +134,14 @@ import { AgentSecurityMiddleware } from './middleware/security.middleware';
     SchoolLookupHelper,
     ProfileLoaderHelper,
 
-    // Domain Tool Services (12 services, replace legacy ToolExecutor)
+    // Domain Tool Services (13 services, replace legacy ToolExecutor)
     ProfileToolsService,
     SchoolToolsService,
     EssayToolsService,
     RecommendationToolsService,
     PredictionToolsService,
     CaseToolsService,
+    SimilarityToolsService,
     TimelineToolsService,
     AssessmentToolsService,
     ForumToolsService,

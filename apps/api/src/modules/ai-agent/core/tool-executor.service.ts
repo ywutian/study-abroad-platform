@@ -40,6 +40,7 @@ import { ForumToolsService } from '../tools/forum-tools.service';
 import { RankingToolsService } from '../tools/ranking-tools.service';
 import { SearchToolsService } from '../tools/search-tools.service';
 import { ResumeToolsService } from '../tools/resume-tools.service';
+import { SimilarityToolsService } from '../tools/similarity-tools.service';
 
 // Retry config
 const TOOL_RETRY_CONFIG = {
@@ -83,6 +84,7 @@ export class ToolExecutorService implements OnModuleInit {
     private rankingTools: RankingToolsService,
     private searchTools: SearchToolsService,
     private resumeTools: ResumeToolsService,
+    private similarityTools: SimilarityToolsService,
     // Infrastructure
     @Optional() private metrics?: MetricsService,
     @Optional() private resilience?: ResilienceService,
@@ -102,6 +104,7 @@ export class ToolExecutorService implements OnModuleInit {
       this.rankingTools,
       this.searchTools,
       this.resumeTools,
+      this.similarityTools,
     ];
 
     for (const provider of providers) {
