@@ -13,7 +13,8 @@ export type GovernanceRuleId =
   | 'dto-validation-completeness'
   | 'i18n-key-balance'
   | 'page-loading-coverage'
-  | 'api-route-shared-constants';
+  | 'api-route-shared-constants'
+  | 'validation-i18n-keys';
 
 export interface GovernanceIssue {
   rule: GovernanceRuleId;

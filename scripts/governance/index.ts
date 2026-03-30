@@ -24,6 +24,7 @@ import { run as dtoValidationCompleteness } from './rules/dto-validation-complet
 import { run as i18nKeyBalance } from './rules/i18n-key-balance';
 import { run as pageLoadingCoverage } from './rules/page-loading-coverage';
 import { run as apiRouteSharedConstants } from './rules/api-route-shared-constants';
+import { run as validationI18nKeys } from './rules/validation-i18n-keys';
 
 // ── Rule registry ──────────────────────────────────────────
 
@@ -42,6 +43,7 @@ const RULES: GovernanceRule[] = [
   { id: 'i18n-key-balance', run: i18nKeyBalance },
   { id: 'page-loading-coverage', run: pageLoadingCoverage },
   { id: 'api-route-shared-constants', run: apiRouteSharedConstants },
+  { id: 'validation-i18n-keys', run: validationI18nKeys },
 ];
 
 const ALL_RULE_IDS = RULES.map((r) => r.id);
