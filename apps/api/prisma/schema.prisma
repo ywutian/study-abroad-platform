@@ -165,6 +165,12 @@ enum ReportStatus {
   RESOLVED
 }
 
+enum ReportPriority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
 enum VerificationStatus {
   PENDING
   APPROVED
@@ -315,6 +321,7 @@ model User {
   reviewsReceived   Review[]                  @relation("ReviewedProfile")
   reviewReactions   ReviewReaction[]
   reports           Report[]
+  assignedReports   Report[]                  @relation("ReportAssignee")
   admissionCases  AdmissionCase[]
   userLists       UserList[]
   userListVotes   UserListVote[]
@@ -1456,6 +1463,10 @@ model Report {
   detail     String?          @db.Text
   context    Json? // Auto-attached context (e.g., chat messages)
   status     ReportStatus     @default(PENDING)
+  priority   ReportPriority   @default(MEDIUM)
+
+  assignedTo     String?
+  assignedToUser User?    @relation("ReportAssignee", fields: [assignedTo], references: [id], onDelete: SetNull)
 
   reviewedAt DateTime?
   reviewedBy String?
@@ -1466,6 +1477,8 @@ model Report {
 
   @@index([reporterId])
   @@index([status])
+  @@index([priority, status])
+  @@index([assignedTo])
   @@index([targetType, targetId])
 }
 
@@ -1555,6 +1568,7 @@ model DataImportStaging {
   status        StagingStatus @default(PENDING)
   createdBy     String?       // 导入者 ID（自我审核防护用）
   importBatchId String?       // 批次 ID（回滚用）
+  assignedTo    String?       // 领取审核任务的管理员 ID
   reviewedBy    String?
   reviewedAt    DateTime?
   reviewNote    String?

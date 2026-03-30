@@ -5288,6 +5288,35 @@
       "review": "Review",
       "message": "Message"
     },
+    "priority": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low",
+      "label": "Priority"
+    },
+    "assignment": {
+      "claim": "Claim",
+      "release": "Release",
+      "all": "All",
+      "mine": "My Items",
+      "unassigned": "Unassigned",
+      "claimed": "Item claimed",
+      "released": "Item released",
+      "assignedTo": "Assigned to"
+    },
+    "reviewStats": {
+      "title": "Statistics",
+      "queueDepth": "Queue Depth",
+      "throughputToday": "Reviewed Today",
+      "throughputTrend": "14-Day Throughput",
+      "activeReviewers": "Active Reviewers",
+      "reviewer": "Reviewer Activity",
+      "today": "Today",
+      "thisWeek": "Week",
+      "thisMonth": "Month",
+      "period": "Period",
+      "noData": "No review activity yet"
+    },
     "toast": {
       "roleUpdated": "User role updated",
       "userDeleted": "User deleted",

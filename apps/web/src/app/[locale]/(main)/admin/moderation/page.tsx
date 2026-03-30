@@ -26,9 +26,10 @@ import { ChatContentTab } from './_components/chat-content-tab';
 import { ReviewsContentTab } from './_components/reviews-content-tab';
 import { AiModerationTab } from './_components/ai-moderation-tab';
 import { ReportsTab } from './_components/reports-tab';
+import { ReviewStatisticsTab } from './_components/review-statistics-tab';
 
 const PAGE_SIZE = 20;
-const VALID_TABS = ['forum', 'chat', 'reviews', 'aiModeration', 'reports'] as const;
+const VALID_TABS = ['forum', 'chat', 'reviews', 'aiModeration', 'reports', 'statistics'] as const;
 type ModerationTab = (typeof VALID_TABS)[number];
 
 export default function AdminModerationPage() {
@@ -99,6 +100,7 @@ export default function AdminModerationPage() {
           <TabsTrigger value="reviews">{t('contentMod.reviews')}</TabsTrigger>
           <TabsTrigger value="aiModeration">{t('moderation.aiModeration')}</TabsTrigger>
           <TabsTrigger value="reports">{t('contentMod.reports')}</TabsTrigger>
+          <TabsTrigger value="statistics">{t('reviewStats.title')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="forum">
@@ -119,6 +121,10 @@ export default function AdminModerationPage() {
 
         <TabsContent value="reports">
           <ReportsTab />
+        </TabsContent>
+
+        <TabsContent value="statistics">
+          <ReviewStatisticsTab />
         </TabsContent>
       </Tabs>
 

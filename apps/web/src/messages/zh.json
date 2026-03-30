@@ -5283,6 +5283,35 @@
       "review": "评论",
       "message": "消息"
     },
+    "priority": {
+      "high": "高",
+      "medium": "中",
+      "low": "低",
+      "label": "优先级"
+    },
+    "assignment": {
+      "claim": "领取",
+      "release": "释放",
+      "all": "全部",
+      "mine": "我的",
+      "unassigned": "未分配",
+      "claimed": "已领取任务",
+      "released": "已释放任务",
+      "assignedTo": "分配给"
+    },
+    "reviewStats": {
+      "title": "统计",
+      "queueDepth": "待处理队列",
+      "throughputToday": "今日已审核",
+      "throughputTrend": "14 天审核趋势",
+      "activeReviewers": "活跃审核员",
+      "reviewer": "审核员活跃度",
+      "today": "今天",
+      "thisWeek": "本周",
+      "thisMonth": "本月",
+      "period": "时间段",
+      "noData": "暂无审核记录"
+    },
     "toast": {
       "roleUpdated": "用户角色已更新",
       "userDeleted": "用户已删除",

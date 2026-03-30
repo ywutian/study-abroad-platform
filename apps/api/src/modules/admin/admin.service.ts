@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
   Logger,
   ConflictException,
 } from '@nestjs/common';
@@ -10,6 +11,7 @@ import { ERR } from '../../common/constants/error-messages';
 import {
   Role,
   ReportStatus,
+  ReportPriority,
   Prisma,
   GlobalEventCategory,
   DataReviewStatus,
@@ -93,20 +95,31 @@ export class AdminService {
     targetType?: string,
     page = 1,
     pageSize = 20,
+    priority?: ReportPriority,
+    assignedTo?: string | 'unassigned',
   ) {
     const where: Prisma.ReportWhereInput = {};
     if (status) where.status = status;
     if (targetType) where.targetType = targetType as any;
+    if (priority) where.priority = priority;
+    if (assignedTo === 'unassigned') {
+      where.assignedTo = null;
+    } else if (assignedTo) {
+      where.assignedTo = assignedTo;
+    }
 
     const [reports, total] = await Promise.all([
       this.prisma.report.findMany({
         where,
         skip: (page - 1) * pageSize,
         take: pageSize,
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ priority: 'asc' }, { createdAt: 'asc' }],
         include: {
           reporter: {
             select: { id: true, email: true, role: true },
+          },
+          assignedToUser: {
+            select: { id: true, email: true },
           },
         },
       }),
@@ -120,6 +133,45 @@ export class AdminService {
       pageSize,
       totalPages: Math.ceil(total / pageSize),
     };
+  }
+
+  async claimReport(reportId: string, adminId: string) {
+    const report = await this.prisma.report.findUnique({
+      where: { id: reportId },
+    });
+    if (!report) throw new NotFoundException('Report not found');
+    if (report.assignedTo && report.assignedTo !== adminId) {
+      throw new ConflictException('Already assigned to another reviewer');
+    }
+    return this.prisma.report.update({
+      where: { id: reportId },
+      data: { assignedTo: adminId },
+    });
+  }
+
+  async releaseReport(reportId: string, adminId: string) {
+    const report = await this.prisma.report.findUnique({
+      where: { id: reportId },
+    });
+    if (!report) throw new NotFoundException('Report not found');
+    if (report.assignedTo !== adminId) {
+      throw new BadRequestException('You are not assigned to this report');
+    }
+    return this.prisma.report.update({
+      where: { id: reportId },
+      data: { assignedTo: null },
+    });
+  }
+
+  async updateReportPriority(reportId: string, priority: ReportPriority) {
+    const report = await this.prisma.report.findUnique({
+      where: { id: reportId },
+    });
+    if (!report) throw new NotFoundException('Report not found');
+    return this.prisma.report.update({
+      where: { id: reportId },
+      data: { priority },
+    });
   }
 
   async updateReportStatus(
@@ -176,6 +228,127 @@ export class AdminService {
       targetId: report.targetId,
       reason: report.reason,
     });
+  }
+
+  // ============================================
+  // Moderation Statistics
+  // ============================================
+
+  async getModerationStatistics(period: 'today' | 'week' | 'month' = 'week') {
+    const now = new Date();
+    const periodStart = new Date(now);
+    if (period === 'today') {
+      periodStart.setHours(0, 0, 0, 0);
+    } else if (period === 'week') {
+      periodStart.setDate(now.getDate() - 7);
+    } else {
+      periodStart.setDate(now.getDate() - 30);
+    }
+
+    const todayStart = new Date(now);
+    todayStart.setHours(0, 0, 0, 0);
+
+    // Queue depth: pending reports + pending staging
+    const [pendingReports, pendingStaging] = await Promise.all([
+      this.prisma.report.count({ where: { status: 'PENDING' } }),
+      this.prisma.dataImportStaging.count({ where: { status: 'PENDING' } }),
+    ]);
+
+    // Throughput: completed reviews in period (from audit log)
+    const reviewActions = [
+      'UPDATE_REPORT_STATUS',
+      'DELETE_REPORT',
+      'STAGING_APPROVED',
+      'STAGING_REJECTED',
+      'CASE_REVIEW_APPROVED',
+      'CASE_REVIEW_REJECTED',
+    ];
+
+    const periodLogs = await this.prisma.auditLog.findMany({
+      where: {
+        action: { in: reviewActions },
+        createdAt: { gte: periodStart },
+      },
+      select: {
+        userId: true,
+        action: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Throughput today
+    const throughputToday = periodLogs.filter(
+      (l) => l.createdAt >= todayStart,
+    ).length;
+
+    // Throughput trend (last 14 days)
+    const trendStart = new Date(now);
+    trendStart.setDate(now.getDate() - 14);
+    const trendLogs = periodLogs.filter((l) => l.createdAt >= trendStart);
+    const trendMap: Record<string, number> = {};
+    for (let d = 0; d < 14; d++) {
+      const date = new Date(now);
+      date.setDate(now.getDate() - (13 - d));
+      trendMap[date.toISOString().slice(0, 10)] = 0;
+    }
+    for (const log of trendLogs) {
+      const dateKey = log.createdAt.toISOString().slice(0, 10);
+      if (trendMap[dateKey] !== undefined) trendMap[dateKey]++;
+    }
+    const throughputTrend = Object.entries(trendMap).map(([date, count]) => ({
+      date,
+      count,
+    }));
+
+    // Per-reviewer stats
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - 7);
+    const monthStart = new Date(now);
+    monthStart.setDate(now.getDate() - 30);
+
+    const reviewerMap: Record<
+      string,
+      { today: number; week: number; month: number }
+    > = {};
+    for (const log of periodLogs) {
+      const uid = log.userId;
+      if (!uid) continue;
+      if (!reviewerMap[uid]) {
+        reviewerMap[uid] = { today: 0, week: 0, month: 0 };
+      }
+      if (log.createdAt >= todayStart) reviewerMap[uid].today++;
+      if (log.createdAt >= weekStart) reviewerMap[uid].week++;
+      reviewerMap[uid].month++;
+    }
+
+    const reviewerIds = Object.keys(reviewerMap);
+    const users = reviewerIds.length
+      ? await this.prisma.user.findMany({
+          where: { id: { in: reviewerIds } },
+          select: { id: true, email: true },
+        })
+      : [];
+    const userMap = new Map(users.map((u) => [u.id, u]));
+
+    const perReviewer = reviewerIds
+      .map((id) => ({
+        userId: id,
+        email: userMap.get(id)?.email ?? 'Unknown',
+        itemsReviewed: reviewerMap[id],
+      }))
+      .sort((a, b) => b.itemsReviewed.month - a.itemsReviewed.month);
+
+    return {
+      overall: {
+        queueDepth: pendingReports + pendingStaging,
+        pendingReports,
+        pendingStaging,
+        throughputToday,
+        throughputTrend,
+      },
+      perReviewer,
+    };
   }
 
   // ============================================
