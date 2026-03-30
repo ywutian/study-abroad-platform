@@ -10,15 +10,15 @@
     "clean": "rimraf dist"
   },
   "devDependencies": {
-    "@types/chrome": "^0.0.260",
-    "@types/node": "^20.11.0",
+    "@types/chrome": "^0.1.38",
+    "@types/node": "^20.19.37",
     "css-loader": "^6.10.0",
-    "mini-css-extract-plugin": "^2.8.0",
+    "mini-css-extract-plugin": "^2.10.2",
     "rimraf": "^5.0.5",
     "style-loader": "^3.3.4",
     "ts-loader": "^9.5.1",
     "typescript": "^5.3.3",
-    "webpack": "^5.90.0",
+    "webpack": "^5.105.4",
     "webpack-cli": "^5.1.4"
   }
 }
