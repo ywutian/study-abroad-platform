@@ -12,7 +12,19 @@ interface TestScoresEditorProps {
   onChange: (content: Record<string, unknown>) => void;
 }
 
-const TEST_TYPES = ['SAT', 'ACT', 'TOEFL', 'IELTS', 'GRE', 'GMAT', 'AP', 'IB', 'LSAT', 'MCAT'];
+const TEST_TYPES = [
+  'SAT',
+  'ACT',
+  'TOEFL',
+  'IELTS',
+  'DUOLINGO',
+  'GRE',
+  'GMAT',
+  'AP',
+  'IB',
+  'LSAT',
+  'MCAT',
+];
 
 export function TestScoresEditor({ content, onChange }: TestScoresEditorProps) {
   const items = (content.items ?? []) as TestScoreItem[];

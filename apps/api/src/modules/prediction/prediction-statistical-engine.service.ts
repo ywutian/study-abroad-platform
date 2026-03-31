@@ -8,6 +8,7 @@ import {
   normalizeGpa,
 } from './utils/score-calculator';
 import type { HsConfidenceResult } from '@study-abroad/shared/scoring';
+import { ROUND_MULTIPLIERS } from '@study-abroad/shared/scoring';
 import { PredictionTransformerService } from './prediction-transformer.service';
 
 /**
@@ -63,11 +64,19 @@ export class PredictionStatisticalEngine {
       profile.isInternational && school.intlAcceptanceRate
         ? { useIntlRate: true, intlAcceptanceRate: school.intlAcceptanceRate }
         : undefined;
-    const probability = calculateProbability(
+    let probability = calculateProbability(
       overallScore,
       schoolMetrics,
       selectivityOpts,
     );
+
+    // Apply application round multiplier (ED has higher acceptance rate)
+    const roundMultiplier = school.applicationRound
+      ? (ROUND_MULTIPLIERS[school.applicationRound] ?? 1.0)
+      : 1.0;
+    if (roundMultiplier !== 1.0) {
+      probability = Math.min(0.95, probability * roundMultiplier);
+    }
 
     // 生成因素分析
     const factors: PredictionFactor[] = [];
@@ -406,6 +415,18 @@ export class PredictionStatisticalEngine {
         improvement: isZh
           ? '在个人资料中补充高中信息可提升预测准确度'
           : 'Add your high school in your profile for more accurate predictions',
+      });
+    }
+
+    // Application round factor
+    if (school.applicationRound && roundMultiplier !== 1.0) {
+      factors.push({
+        name: isZh ? '申请轮次' : 'Application Round',
+        impact: roundMultiplier > 1.0 ? 'positive' : 'neutral',
+        weight: roundMultiplier - 1.0,
+        detail: isZh
+          ? `${school.applicationRound} 轮次通常录取率更高`
+          : `${school.applicationRound} round typically has higher acceptance rate`,
       });
     }
 

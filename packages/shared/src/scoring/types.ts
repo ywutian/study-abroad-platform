@@ -9,6 +9,8 @@ export interface ProfileMetrics {
   satScore?: number;
   actScore?: number;
   toeflScore?: number;
+  /** Normalized English proficiency score (0-1) from best of TOEFL/IELTS/Duolingo */
+  englishProficiencyScore?: number;
   activityCount: number;
   awardCount: number;
   nationalAwardCount: number;

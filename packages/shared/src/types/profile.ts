@@ -34,6 +34,7 @@ export enum TestType {
   IB = 'IB',
   A_LEVEL = 'A_LEVEL',
   IGCSE = 'IGCSE',
+  DUOLINGO = 'DUOLINGO',
 }
 
 export interface TestScore {

@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Link } from '@/lib/i18n/navigation';
 import { motion } from 'framer-motion';
 import { PageContainer, PageHeader } from '@/components/layout';
@@ -24,6 +24,7 @@ interface DashboardData {
     role: string;
     points: number;
     createdAt: string;
+    nickname?: string;
   };
   profile: {
     completeness: number;
@@ -101,6 +102,22 @@ export default function DashboardPage() {
     queryFn: () => apiClient.get<DashboardData>('/users/me/dashboard'),
   });
 
+  // Consume pendingOnboarding from sessionStorage (fallback from registration)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const raw = sessionStorage.getItem('pendingOnboarding');
+    if (!raw) return;
+    sessionStorage.removeItem('pendingOnboarding');
+    try {
+      const data = JSON.parse(raw);
+      apiClient.post('/profiles/onboarding', data).catch(() => {
+        // Silently fail — data was already attempted during registration
+      });
+    } catch {
+      // Invalid JSON — discard
+    }
+  }, []);
+
   const completeness = dashboard?.profile.completeness ?? 0;
   const { showIndicator, gapCount } = useOnboardingProgress();
   const schoolCount = dashboard?.profile.targetSchoolCount ?? 0;
@@ -153,7 +170,8 @@ export default function DashboardPage() {
     <PageContainer>
       <PageHeader
         title={t('dashboard.welcome', {
-          name: dashboard?.user.email?.split('@')[0] || t('dashboard.user'),
+          name:
+            dashboard?.user.nickname || dashboard?.user.email?.split('@')[0] || t('dashboard.user'),
         })}
         description={t('dashboard.subtitle')}
         icon={LayoutDashboard}
@@ -187,7 +205,10 @@ export default function DashboardPage() {
           <div>
             <h1 className="text-title">
               {t('dashboard.welcome', {
-                name: dashboard?.user.email?.split('@')[0] || t('dashboard.user'),
+                name:
+                  dashboard?.user.nickname ||
+                  dashboard?.user.email?.split('@')[0] ||
+                  t('dashboard.user'),
               })}
             </h1>
             <p className="text-muted-foreground mt-1">{t('dashboard.subtitle')}</p>

@@ -387,7 +387,7 @@ export default function ProfilePage() {
             </AnimatePresence>
 
             <div className="mt-6 flex justify-end gap-3">
-              <Button variant="outline" className="px-6">
+              <Button variant="outline" className="px-6" onClick={() => form.reset()}>
                 {t('common.cancel')}
               </Button>
               <Button

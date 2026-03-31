@@ -230,7 +230,8 @@
       "ap": "AP",
       "ib": "IB",
       "a_level": "A-Level",
-      "igcse": "IGCSE"
+      "igcse": "IGCSE",
+      "duolingo": "Duolingo English Test"
     },
     "addScore": "Add Score",
     "addActivity": "Add Activity",
@@ -1513,6 +1514,7 @@
   "more": {
     "title": "More Features",
     "subtitle": "Explore all tools and features",
+    "essays": "Essays",
     "resume": "Resume",
     "vault": "Vault",
     "teams": "Teams",

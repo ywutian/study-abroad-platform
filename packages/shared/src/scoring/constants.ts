@@ -101,6 +101,20 @@ export const REGION_COMPETITIVENESS: Record<string, number> = {
   DEFAULT: 1.0,
 };
 
+/**
+ * Application round multipliers.
+ * ED/ED2 have notably higher acceptance rates; RD is the baseline (1.0).
+ */
+export const ROUND_MULTIPLIERS: Record<string, number> = {
+  ED: 1.35,
+  ED2: 1.25,
+  REA: 1.15,
+  SCEA: 1.15,
+  EA: 1.1,
+  ROLLING: 1.05,
+  RD: 1.0,
+};
+
 /** 领导力角色关键词（不区分大小写匹配） */
 export const LEADERSHIP_KEYWORDS = [
   'president',

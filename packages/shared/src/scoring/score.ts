@@ -81,8 +81,21 @@ export function calculateAcademicScore(
     }
   }
 
-  // TOEFL: threshold gatekeeper + linear bonus (critical for intl students)
-  if (profile.toeflScore) {
+  // English proficiency: unified TOEFL/IELTS/Duolingo scoring
+  // Uses normalized englishProficiencyScore (0-1) when available, falls back to raw toeflScore
+  if (profile.englishProficiencyScore != null) {
+    const norm = profile.englishProficiencyScore;
+    const hardPenalty =
+      norm < ACADEMIC_CONFIG.toeflHardPenaltyThreshold / 120 ? ACADEMIC_CONFIG.toeflHardPenalty : 0;
+    // Map normalized score to bonus: baseline (105/120 ≈ 0.875) is neutral
+    const toeflEquiv = norm * 120;
+    const bonus = Math.max(
+      -ACADEMIC_CONFIG.toeflMaxBonus,
+      Math.min(ACADEMIC_CONFIG.toeflMaxBonus, (toeflEquiv - ACADEMIC_CONFIG.toeflBaseline) / 3)
+    );
+    score += bonus + hardPenalty;
+  } else if (profile.toeflScore) {
+    // Legacy fallback: raw TOEFL score
     const hardPenalty =
       profile.toeflScore < ACADEMIC_CONFIG.toeflHardPenaltyThreshold
         ? ACADEMIC_CONFIG.toeflHardPenalty

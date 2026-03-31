@@ -8,7 +8,10 @@ import {
   LEVEL_POINTS,
 } from './utils/score-calculator';
 import { clampPercentRate } from '../../common/utils/percent.util';
-import { detectInternationalStatus } from '@study-abroad/shared/scoring';
+import {
+  detectInternationalStatus,
+  getBestEnglishProficiency,
+} from '@study-abroad/shared/scoring';
 import type { ProfileWithRelations } from './prediction.types';
 
 /**
@@ -148,6 +151,10 @@ export class PredictionTransformerService {
       (s) => s.type === 'TOEFL',
     )?.score;
 
+    // Unified English proficiency: pick the best of TOEFL/IELTS/Duolingo
+    const bestEnglish = getBestEnglishProficiency(profile.testScores);
+    const englishProficiencyScore = bestEnglish?.normalized;
+
     const awardTierScores = profile.awards.map((a) => {
       if (a.tier)
         return TIER_POINTS[a.tier] ?? LEVEL_POINTS[a.level ?? ''] ?? 3;
@@ -161,6 +168,7 @@ export class PredictionTransformerService {
       satScore,
       actScore,
       toeflScore,
+      englishProficiencyScore,
       activityCount: profile.activities.length,
       activityDetails: profile.activities.map((a) => ({
         category: a.category || '',
@@ -229,7 +237,13 @@ export class PredictionTransformerService {
     if (profile.gpaSystem) score += 3;
     if (profile.testScores.some((s) => s.type === 'SAT' || s.type === 'ACT'))
       score += 15;
-    if (profile.testScores.some((s) => s.type === 'TOEFL')) score += 5;
+    if (
+      profile.testScores.some(
+        (s) =>
+          s.type === 'TOEFL' || s.type === 'IELTS' || s.type === 'DUOLINGO',
+      )
+    )
+      score += 5;
     if (profile.activities.length > 0) score += 10;
     if (profile.awards.length > 0) score += 10;
     if (profile.targetMajor) score += 5;

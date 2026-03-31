@@ -1303,12 +1303,26 @@
     "selectSchoolsDesc": "Select target schools to predict your admission chances",
     "comingSoon": "School selector coming soon",
     "comingSoonDesc": "For now, click the button below to see a demo prediction",
+    "tabPredict": "Predict",
+    "tabHistory": "History",
     "emptyHint": "Select schools and run prediction to see your chances",
     "runPrediction": "Run Prediction",
+    "history": {
+      "title": "Prediction History",
+      "empty": "No prediction history yet",
+      "emptyDesc": "Run your first prediction to start tracking changes over time"
+    },
+    "tier": {
+      "reach": "Reach",
+      "match": "Match",
+      "safety": "Safety"
+    },
     "ucOneClick": "UC One-Click Prediction",
     "ucOneClickUnavailable": "UC school list is not available",
     "ucExpandedDesc": "Since you selected a UC school, we automatically included all 9 UC campuses for comparison. UC schools share the same application system, so you can see which campuses are most likely to admit you.",
     "ucCollapseToOriginal": "Show only my original selection",
+    "lowDataWarning": "Your profile is missing key data (GPA, test scores). Predictions may be less accurate. Complete your profile for better results.",
+    "completeProfile": "Complete Profile",
     "recommendedSchoolsTitle": "You may also like",
     "recommendedSchoolsLoading": "Loading recommendations...",
     "majorSpecificComingSoon": "Major-specific and regional acceptance data coming soon",
@@ -2406,6 +2420,51 @@
       }
     }
   },
+  "schoolCompare": {
+    "title": "Compare Schools",
+    "description": "Compare schools side-by-side to find your best fit",
+    "addSchool": "Add School",
+    "removeSchool": "Remove",
+    "maxSchools": "Maximum {max} schools can be compared",
+    "selectSchoolsTitle": "Select Schools to Compare",
+    "emptyTitle": "No Schools Selected",
+    "emptyDescription": "Add at least two schools to start comparing",
+    "addMoreToCompare": "Add at least one more school to start comparing",
+    "field": "Field",
+    "yes": "Yes",
+    "no": "No",
+    "categories": {
+      "rankings": "Rankings",
+      "admissions": "Admissions",
+      "testScores": "Test Scores",
+      "cost": "Cost & Financial Aid",
+      "outcomes": "Outcomes",
+      "campus": "Campus Life"
+    },
+    "fields": {
+      "usNewsRank": "US News Ranking",
+      "qsRank": "QS Ranking",
+      "acceptanceRate": "Acceptance Rate",
+      "intlAcceptanceRate": "Intl. Acceptance Rate",
+      "hasEarlyDecision": "Early Decision",
+      "testOptional": "Test Optional",
+      "satAvg": "SAT Average",
+      "satRange": "SAT Range (25th-75th)",
+      "actAvg": "ACT Average",
+      "toeflMin": "TOEFL Minimum",
+      "tuition": "Tuition",
+      "averageNetPrice": "Average Net Price",
+      "averageAidPackage": "Average Aid Package",
+      "percentNeedMet": "% Need Met",
+      "needBlindInternational": "Need-Blind (Intl.)",
+      "avgSalary": "Avg. Salary After Grad",
+      "graduationRate": "Graduation Rate",
+      "retentionRate": "Retention Rate",
+      "studentCount": "Total Students",
+      "studentFacultyRatio": "Student-Faculty Ratio",
+      "intlStudentPct": "Intl. Student %"
+    }
+  },
   "schoolSelector": {
     "title": "Select Schools",
     "searchPlaceholder": "Search schools...",
@@ -2689,6 +2748,7 @@
   },
   "notifications": {
     "title": "Notifications",
+    "pageDescription": "View and manage all your notifications",
     "unreadCount": "{count} unread",
     "noUnread": "No unread notifications",
     "tabs": {
@@ -2699,8 +2759,18 @@
     "emptyHint": "New messages will show here",
     "markAllRead": "Mark All Read",
     "clearRead": "Clear Read",
+    "clearAll": "Clear All Notifications",
     "allRead": "All Read",
-    "view": "View"
+    "view": "View",
+    "viewAll": "View All Notifications",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "earlier": "Earlier",
+    "loadMore": "Load More",
+    "deleteNotification": "Delete notification",
+    "confirmClearAll": "Are you sure you want to clear all notifications? This cannot be undone.",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
   },
   "milestone": {
     "profileComplete": {

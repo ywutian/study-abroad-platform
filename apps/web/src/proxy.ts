@@ -19,6 +19,7 @@ const PROTECTED_PATTERNS = [
   '/chat',
   '/settings',
   '/teams/create', // 组队创建页需登录；/teams 和 /teams/[id] 保持公开
+  '/notifications',
   '/vault',
   '/uncommon-app',
   '/followers',

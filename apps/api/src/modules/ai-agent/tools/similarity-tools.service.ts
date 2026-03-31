@@ -65,11 +65,7 @@ export class SimilarityToolsService implements IToolHandlerProvider {
       [
         'find_similar_applicants',
         (args, userId, _ctx, locale) =>
-          this.findSimilarApplicants(
-            args as Record<string, any>,
-            userId,
-            locale,
-          ),
+          this.findSimilarApplicants(args, userId, locale),
       ],
     ]);
   }

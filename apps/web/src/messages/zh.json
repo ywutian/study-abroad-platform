@@ -1303,12 +1303,26 @@
     "selectSchoolsDesc": "选择目标学校以预测您的录取概率",
     "comingSoon": "学校选择器即将上线",
     "comingSoonDesc": "目前请点击下方按钮查看演示预测",
+    "tabPredict": "预测",
+    "tabHistory": "历史记录",
     "emptyHint": "选择学校并运行预测以查看您的录取概率",
     "runPrediction": "开始预测",
+    "history": {
+      "title": "预测历史",
+      "empty": "暂无预测记录",
+      "emptyDesc": "运行第一次预测后，您可以在这里追踪变化趋势"
+    },
+    "tier": {
+      "reach": "冲刺",
+      "match": "匹配",
+      "safety": "保底"
+    },
     "ucOneClick": "UC 一键预测",
     "ucOneClickUnavailable": "暂无法获取 UC 学校列表",
     "ucExpandedDesc": "因为你选了 UC 学校，我们自动加入了全部 9 所 UC 校区进行对比。UC 各校使用同一套申请系统，这样你可以看到哪些校区最有可能录取你。",
     "ucCollapseToOriginal": "只看我原来选的学校",
+    "lowDataWarning": "你的档案缺少关键数据（GPA、考试成绩），预测可能不够准确。完善档案可提高预测质量。",
+    "completeProfile": "完善档案",
     "recommendedSchoolsTitle": "你也可能感兴趣的学校",
     "recommendedSchoolsLoading": "加载推荐中...",
     "majorSpecificComingSoon": "专业录取率和地区数据即将推出",
@@ -2406,6 +2420,51 @@
       }
     }
   },
+  "schoolCompare": {
+    "title": "学校对比",
+    "description": "并排对比学校，找到最适合你的选择",
+    "addSchool": "添加学校",
+    "removeSchool": "移除",
+    "maxSchools": "最多可对比 {max} 所学校",
+    "selectSchoolsTitle": "选择要对比的学校",
+    "emptyTitle": "未选择学校",
+    "emptyDescription": "请添加至少两所学校开始对比",
+    "addMoreToCompare": "请至少再添加一所学校以开始对比",
+    "field": "对比项",
+    "yes": "是",
+    "no": "否",
+    "categories": {
+      "rankings": "排名",
+      "admissions": "录取",
+      "testScores": "标化成绩",
+      "cost": "费用与助学金",
+      "outcomes": "毕业去向",
+      "campus": "校园生活"
+    },
+    "fields": {
+      "usNewsRank": "US News 排名",
+      "qsRank": "QS 排名",
+      "acceptanceRate": "录取率",
+      "intlAcceptanceRate": "国际生录取率",
+      "hasEarlyDecision": "早申 (ED)",
+      "testOptional": "标化可选",
+      "satAvg": "SAT 均分",
+      "satRange": "SAT 区间 (25-75%)",
+      "actAvg": "ACT 均分",
+      "toeflMin": "托福最低要求",
+      "tuition": "学费",
+      "averageNetPrice": "平均净价",
+      "averageAidPackage": "平均助学金",
+      "percentNeedMet": "需求满足率",
+      "needBlindInternational": "国际生 Need-Blind",
+      "avgSalary": "毕业后平均薪资",
+      "graduationRate": "毕业率",
+      "retentionRate": "留存率",
+      "studentCount": "在校学生数",
+      "studentFacultyRatio": "师生比",
+      "intlStudentPct": "国际生比例"
+    }
+  },
   "schoolSelector": {
     "title": "选择学校",
     "searchPlaceholder": "搜索学校...",
@@ -2689,6 +2748,7 @@
   },
   "notifications": {
     "title": "通知",
+    "pageDescription": "查看和管理所有通知",
     "unreadCount": "{count} 未读",
     "noUnread": "暂无未读通知",
     "tabs": {
@@ -2699,8 +2759,18 @@
     "emptyHint": "有新消息会在这里显示",
     "markAllRead": "全部已读",
     "clearRead": "清除已读",
+    "clearAll": "清除所有通知",
     "allRead": "全部已读",
-    "view": "查看"
+    "view": "查看",
+    "viewAll": "查看所有通知",
+    "today": "今天",
+    "yesterday": "昨天",
+    "earlier": "更早",
+    "loadMore": "加载更多",
+    "deleteNotification": "删除通知",
+    "confirmClearAll": "确定要清除所有通知吗？此操作无法撤销。",
+    "cancel": "取消",
+    "confirm": "确认"
   },
   "milestone": {
     "profileComplete": {

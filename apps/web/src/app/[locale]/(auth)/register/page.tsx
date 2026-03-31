@@ -183,10 +183,17 @@ export default function RegisterPage() {
           ...(data.actScore ? [{ type: 'ACT', score: parseInt(data.actScore, 10) }] : []),
         ],
       };
+
+      // POST onboarding data directly (auth token already in memory from setAuthFromLogin)
       try {
-        sessionStorage.setItem('pendingOnboarding', JSON.stringify(onboardingData));
+        await apiClient.post('/profiles/onboarding', onboardingData);
       } catch {
-        /* private browsing */
+        // Fallback: store in sessionStorage for dashboard retry
+        try {
+          sessionStorage.setItem('pendingOnboarding', JSON.stringify(onboardingData));
+        } catch {
+          /* private browsing */
+        }
       }
 
       toast.success(t('auth.register.success'));

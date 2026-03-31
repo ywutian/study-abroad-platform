@@ -234,6 +234,9 @@ describe('PredictionService', () => {
             assessmentResult: {
               findMany: jest.fn().mockResolvedValue([]),
             },
+            schoolListItem: {
+              findMany: jest.fn().mockResolvedValue([]),
+            },
           },
         },
         {

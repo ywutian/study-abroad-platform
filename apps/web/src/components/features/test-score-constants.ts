@@ -7,6 +7,7 @@ export const TEST_TYPES = [
   { value: 'IB', label: 'IB', maxScore: 45 },
   { value: 'A_LEVEL', label: 'A-Level', maxScore: 240 },
   { value: 'IGCSE', label: 'IGCSE', maxScore: 90 },
+  { value: 'DUOLINGO', label: 'Duolingo English Test', maxScore: 160 },
 ];
 
 export const AP_SUBJECTS = [

@@ -66,6 +66,7 @@ enum TestType {
   IB
   A_LEVEL
   IGCSE
+  DUOLINGO
 }
 
 enum ActivityCategory {

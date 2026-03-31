@@ -38,9 +38,15 @@ export {
   calculateConfidence,
   enforceMonotonicity,
   calculateSelectivityIndex,
+  // English proficiency
+  getBestEnglishProficiency,
+  normalizeEnglishScore,
+  isEnglishProficiencyTest,
+  ENGLISH_PROFICIENCY_THRESHOLDS,
 } from '@study-abroad/shared/scoring';
 
 import { TIER_POINTS, LEVEL_POINTS } from '@study-abroad/shared/scoring';
+import { getBestEnglishProficiency } from '@study-abroad/shared/scoring';
 import type {
   ProfileMetrics,
   SchoolMetrics,
@@ -82,6 +88,10 @@ export function extractProfileMetrics(profile: {
   const actScore = testScores.find((t) => t.type === 'ACT')?.score;
   const toeflScore = testScores.find((t) => t.type === 'TOEFL')?.score;
 
+  // Unified English proficiency: pick the best of TOEFL/IELTS/Duolingo
+  const bestEnglish = getBestEnglishProficiency(testScores);
+  const englishProficiencyScore = bestEnglish?.normalized;
+
   const activities = profile.activities || [];
   const awards = profile.awards || [];
 
@@ -117,6 +127,7 @@ export function extractProfileMetrics(profile: {
     satScore,
     actScore,
     toeflScore,
+    englishProficiencyScore,
     activityCount: activities.length,
     awardCount: awards.length,
     nationalAwardCount,

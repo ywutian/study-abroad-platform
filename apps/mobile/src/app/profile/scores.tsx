@@ -20,7 +20,7 @@ import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import type { TestScore } from '@/types';
 
-const TEST_TYPES = ['SAT', 'ACT', 'TOEFL', 'IELTS', 'AP', 'IB', 'A_LEVEL', 'IGCSE'];
+const TEST_TYPES = ['SAT', 'ACT', 'TOEFL', 'IELTS', 'DUOLINGO', 'AP', 'IB', 'A_LEVEL', 'IGCSE'];
 
 const SUBJECT_MAP: Record<string, string[]> = {
   AP: [
@@ -318,6 +318,8 @@ export default function ScoresScreen() {
         return colors.warning;
       case 'IELTS':
         return colors.success;
+      case 'DUOLINGO':
+        return colors.warning;
       case 'AP':
         return colors.info;
       case 'IB':

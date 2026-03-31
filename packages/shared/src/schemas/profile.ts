@@ -90,7 +90,17 @@ export type ProfileFormValues = z.infer<ReturnType<typeof createProfileSchema>>;
 
 // ─── Test Score Dialog Schema ───
 
-const TEST_TYPE_VALUES = ['SAT', 'ACT', 'TOEFL', 'IELTS', 'AP', 'IB', 'A_LEVEL', 'IGCSE'] as const;
+const TEST_TYPE_VALUES = [
+  'SAT',
+  'ACT',
+  'TOEFL',
+  'IELTS',
+  'AP',
+  'IB',
+  'A_LEVEL',
+  'IGCSE',
+  'DUOLINGO',
+] as const;
 
 export function createTestScoreSchema(t: (key: string) => string) {
   return z.object({

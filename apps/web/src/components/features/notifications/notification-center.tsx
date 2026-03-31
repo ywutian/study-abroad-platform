@@ -35,7 +35,7 @@ import { apiClient } from '@/lib/api';
 import { notificationRoutes } from '@study-abroad/shared';
 import { formatDistanceToNow } from 'date-fns';
 import { zhCN, enUS } from 'date-fns/locale';
-import Link from 'next/link';
+import { Link } from '@/lib/i18n/navigation';
 
 interface Notification {
   id: string;
@@ -413,20 +413,31 @@ export function NotificationCenter() {
         </Tabs>
 
         {/* 底部 */}
-        {readNotifications.length > 0 && (
+        <div className="border-t">
+          {readNotifications.length > 0 && (
+            <div className="px-4 py-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full text-xs text-muted-foreground hover:text-destructive"
+                onClick={() => clearAllMutation.mutate()}
+                disabled={clearAllMutation.isPending}
+              >
+                <Trash2 className="w-3.5 h-3.5 mr-1" />
+                {t('clearRead')}
+              </Button>
+            </div>
+          )}
           <div className="px-4 py-2 border-t">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full text-xs text-muted-foreground hover:text-destructive"
-              onClick={() => clearAllMutation.mutate()}
-              disabled={clearAllMutation.isPending}
+            <Link
+              href="/notifications"
+              className="block text-center text-sm text-primary hover:underline"
+              onClick={() => setOpen(false)}
             >
-              <Trash2 className="w-3.5 h-3.5 mr-1" />
-              {t('clearRead')}
-            </Button>
+              {t('viewAll')}
+            </Link>
           </div>
-        )}
+        </div>
       </PopoverContent>
     </Popover>
   );
