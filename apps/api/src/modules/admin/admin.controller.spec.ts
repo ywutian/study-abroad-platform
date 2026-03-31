@@ -177,6 +177,8 @@ describe('AdminController', () => {
         targetType: 'POST' as any,
         page: 2,
         pageSize: 10,
+        priority: 'HIGH' as any,
+        assignedTo: 'admin-1',
       };
       await controller.getReports(query);
 
@@ -185,6 +187,8 @@ describe('AdminController', () => {
         'POST',
         2,
         10,
+        'HIGH',
+        'admin-1',
       );
     });
 
@@ -196,6 +200,8 @@ describe('AdminController', () => {
         undefined,
         1,
         20,
+        undefined,
+        undefined,
       );
     });
   });

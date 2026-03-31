@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 
+import { authRoutes } from '@study-abroad/shared';
 import { Button, Input } from '@/components/ui';
 import { apiClient } from '@/lib/api/client';
 import { useToast } from '@/components/ui/Toast';
@@ -41,7 +42,7 @@ export default function ForgotPasswordScreen() {
 
     setLoading(true);
     try {
-      await apiClient.post('/auth/forgot-password', { email }, { skipAuth: true });
+      await apiClient.post(authRoutes.forgotPassword(), { email }, { skipAuth: true });
       setSent(true);
       toast.success(t('auth.resetPassword.sent'));
     } catch (err) {
@@ -64,11 +65,7 @@ export default function ForgotPasswordScreen() {
           <Text style={[styles.description, { color: colors.foregroundMuted }]}>
             {t('auth.verifyEmail.description', { email })}
           </Text>
-          <Button
-            variant="outline"
-            onPress={() => router.back()}
-            style={styles.backButton}
-          >
+          <Button variant="outline" onPress={() => router.back()} style={styles.backButton}>
             {t('auth.verifyEmail.backToLogin')}
           </Button>
         </View>
@@ -82,10 +79,7 @@ export default function ForgotPasswordScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          { paddingTop: insets.top + spacing['2xl'] },
-        ]}
+        contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing['2xl'] }]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -121,16 +115,10 @@ export default function ForgotPasswordScreen() {
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
-            leftIcon={
-              <Ionicons name="mail-outline" size={20} color={colors.foregroundMuted} />
-            }
+            leftIcon={<Ionicons name="mail-outline" size={20} color={colors.foregroundMuted} />}
           />
 
-          <Button
-            onPress={handleSubmit}
-            loading={loading}
-            size="lg"
-          >
+          <Button onPress={handleSubmit} loading={loading} size="lg">
             {t('auth.resetPassword.sendLink')}
           </Button>
         </View>
@@ -205,4 +193,3 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.semibold,
   },
 });
-

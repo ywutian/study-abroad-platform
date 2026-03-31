@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/table';
 import { PaginationControls } from '../../_components/pagination-controls';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Search, Plus, Pencil, Loader2 } from 'lucide-react';
 import { SchoolEditDialog, type HighSchool } from './school-edit-dialog';
@@ -70,7 +70,7 @@ export function SchoolListTab() {
   const { data, isLoading } = useQuery({
     queryKey: ['adminHighSchools', search, country, type, tier, page],
     queryFn: () =>
-      apiClient.get<{ data: HighSchool[]; total: number }>('/admin/high-schools', {
+      apiClient.get<{ data: HighSchool[]; total: number }>(adminRoutes.highSchools(), {
         params: {
           search: search || undefined,
           country: country || undefined,
@@ -84,7 +84,7 @@ export function SchoolListTab() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data: body }: { id: string; data: Record<string, unknown> }) =>
-      apiClient.put(`${API_ROUTES.ADMIN}/high-schools/${id}`, body),
+      apiClient.put(adminRoutes.highSchoolById(id), body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminHighSchools'] });
       queryClient.invalidateQueries({ queryKey: ['adminHsReviewNeeded'] });

@@ -2,22 +2,23 @@
 
 ## Agent 工作流（必须遵守）
 
-12 个专项 Agent 覆盖不同审查维度。每个 Agent 内置 **Step 0 相关性判断**：明确无关时快速返回 N/A，不确定时继续审查（宁可多审不可漏审）。
+13 个专项 Agent 覆盖不同审查维度。每个 Agent 内置 **Step 0 相关性判断**：明确无关时快速返回 N/A，不确定时继续审查（宁可多审不可漏审）。
 
-| #   | Agent          | 文件                                    | 职责                                                    |
-| --- | -------------- | --------------------------------------- | ------------------------------------------------------- |
-| 1   | **留学专家**   | `.claude/agents/study-abroad-expert.md` | 验证业务逻辑符合真实美本申请实践                        |
-| 2   | **申请者模拟** | `.claude/agents/applicant-simulator.md` | 以高中生+家长视角审查易用性和实用性                     |
-| 3   | **设计审查**   | `.claude/agents/design-reviewer.md`     | UI/UX、暗色模式、响应式、无障碍审查                     |
-| 4   | **架构师**     | `.claude/agents/architect.md`           | 系统架构、API 设计、模块依赖、性能                      |
-| 5   | **闭环检查**   | `.claude/agents/integration-checker.md` | 前后端对接、类型一致、权限、错误处理、文档更新          |
-| 6   | **数据模型**   | `.claude/agents/data-model-reviewer.md` | Schema→DTO→Select→Mapper→共享类型→前端 全链路一致性     |
-| 7   | **安全审查**   | `.claude/agents/security-reviewer.md`   | 认证授权、注入防护、数据泄露、隐私合规、OWASP Top 10    |
-| 8   | **AI Prompt**  | `.claude/agents/ai-prompt-engineer.md`  | Prompt 质量、幻觉控制、token 效率、输出可靠性           |
-| 9   | **i18n 专家**  | `.claude/agents/i18n-specialist.md`     | 翻译质量、术语一致、key 完整性、中英文布局适配          |
-| 10  | **测试工程**   | `.claude/agents/test-engineer.md`       | 测试覆盖、测试质量、边界用例、回归验证                  |
-| 11  | **移动端专家** | `.claude/agents/mobile-specialist.md`   | Expo/RN 兼容性、移动性能、离线、原生功能、与 web 一致性 |
-| 12  | **反馈处理**   | `.claude/agents/feedback-processor.md`  | 外部反馈分诊、根因分类、验收标准、防止返工              |
+| #   | Agent          | 文件                                     | 职责                                                    |
+| --- | -------------- | ---------------------------------------- | ------------------------------------------------------- |
+| 1   | **留学专家**   | `.claude/agents/study-abroad-expert.md`  | 验证业务逻辑符合真实美本申请实践                        |
+| 2   | **申请者模拟** | `.claude/agents/applicant-simulator.md`  | 以高中生+家长视角审查易用性和实用性                     |
+| 3   | **设计审查**   | `.claude/agents/design-reviewer.md`      | UI/UX、暗色模式、响应式、无障碍审查                     |
+| 4   | **架构师**     | `.claude/agents/architect.md`            | 系统架构、API 设计、模块依赖、性能                      |
+| 5   | **闭环检查**   | `.claude/agents/integration-checker.md`  | 前后端对接、类型一致、权限、错误处理、文档更新          |
+| 6   | **数据模型**   | `.claude/agents/data-model-reviewer.md`  | Schema→DTO→Select→Mapper→共享类型→前端 全链路一致性     |
+| 7   | **安全审查**   | `.claude/agents/security-reviewer.md`    | 认证授权、注入防护、数据泄露、隐私合规、OWASP Top 10    |
+| 8   | **AI Prompt**  | `.claude/agents/ai-prompt-engineer.md`   | Prompt 质量、幻觉控制、token 效率、输出可靠性           |
+| 9   | **i18n 专家**  | `.claude/agents/i18n-specialist.md`      | 翻译质量、术语一致、key 完整性、中英文布局适配          |
+| 10  | **测试工程**   | `.claude/agents/test-engineer.md`        | 测试覆盖、测试质量、边界用例、回归验证                  |
+| 11  | **移动端专家** | `.claude/agents/mobile-specialist.md`    | Expo/RN 兼容性、移动性能、离线、原生功能、与 web 一致性 |
+| 12  | **反馈处理**   | `.claude/agents/feedback-processor.md`   | 外部反馈分诊、根因分类、验收标准、防止返工              |
+| 13  | **用户旅程**   | `.claude/agents/user-journey-auditor.md` | 从用户视角审查功能完整性、体验连贯性、错误恢复          |
 
 ### 两阶段工作流
 
@@ -34,7 +35,7 @@
 | **全栈功能**                            | 架构师、数据模型、设计审查、i18n 专家、安全审查、测试工程 | 留学专家（涉及业务）、AI Prompt（涉及 LLM）、移动端专家（涉及 mobile） |
 | **数据库变更**                          | 数据模型、架构师、安全审查                                | —                                                                      |
 | **留学业务逻辑**                        | 留学专家、申请者模拟                                      | + 对应开发类型的 Agent 组                                              |
-| **大型变更**（新模块/架构重构/DB 迁移） | **全部 12 个 Agent 并行**                                 | —                                                                      |
+| **大型变更**（新模块/架构重构/DB 迁移） | **全部 13 个 Agent 并行**                                 | —                                                                      |
 
 #### 阶段二：验收闭环（强制）
 
@@ -42,7 +43,8 @@
 
 1. **闭环检查** `integration-checker` — 验证前后端对接、类型一致、i18n 覆盖、权限、错误处理
 2. **测试工程** `test-engineer` — 运行测试、补充缺失测试、验证通过
-3. **闭环检查**负责更新 CLAUDE.md / MEMORY.md 文档
+3. **用户旅程** `user-journey-auditor` — 涉及用户可见功能时，审查受影响旅程的完整性和体验（审计模板：`docs/templates/user-journey-audit.md`，记录：`docs/USER_JOURNEY_AUDIT_LOG.md`）
+4. **闭环检查**负责更新 CLAUDE.md / MEMORY.md 文档，并提醒在旅程注册表中登记新增的用户可见功能
 
 ### 规则
 
@@ -183,7 +185,7 @@ All LLM calls go through `LLMService` (globally provided by `LLMProvidersModule.
 
 ### Tool System
 
-11 domain tool services implementing `IToolHandlerProvider`. See `memory/ai-system.md` for full list and how to add new tools.
+12 domain tool services implementing `IToolHandlerProvider`. See `memory/ai-system.md` for full list and how to add new tools.
 
 ### Memory System
 
@@ -440,6 +442,11 @@ Key utility classes: `zone-tinted`/`zone-dark` (section backgrounds), `glass`/`g
 - **Auth pages**: Use `--auth-*` CSS vars (auto light/dark) — never hardcode colors.
 - **Typography**: Use utility classes (`text-title`, `text-body-sm`, `text-caption`) from the typography scale, not raw Tailwind `text-xl` etc.
 - **Loading**: Use `Skeleton` component from `@/components/ui/skeleton` in `loading.tsx` files, matching page layout structure.
+- **Overflow prevention (3-layer defense)**:
+  - Layer 1 (global): `html`/`body` have `overflow-x: hidden` + `overflow-wrap: break-word` as safety net
+  - Layer 2 (layout): `PageContainer` and `Card` have `overflow-hidden` built-in
+  - Layer 3 (component): Any `flex` with `justify-between` **MUST** have `min-w-0` on the variable-width child and `shrink-0` on the fixed-width child. Text in flex items should use `truncate` or `line-clamp-N` when width is constrained.
+  - Governance rule `flex-overflow-safety` detects violations at CI time
 
 ## Development Workflow
 
@@ -541,6 +548,10 @@ Manual equivalent: `pnpm prepush`
 - **依赖审计 CVE**：用 `pnpm.overrides` 修复传递依赖的 CVE，注意区分 major 版本范围
 - **E2E 测试**：API 路由重命名/删除时，同步更新 `apps/api/test/*.e2e-spec.ts`
 - **CI workflow**：`pnpm/action-setup@v4` 自动读取 `packageManager` 字段，不要手动指定 `version`
+- **shared 包变更**：修改 `packages/shared` 后必须 `pnpm --filter @study-abroad/shared build` 再验证，因为 Mobile CI 的 Metro bundler + Jest 依赖 `dist/` 输出。`verify-gate.ts` 会自动检测并执行
+- **package.json exports**：`types` + `import` 条件指向 `.ts` 源码（tsc 用），`default` 指向 `dist/*.js`（Metro/Node 用）。**不要**把 `default` 指向 `.ts`（bundler 无法解析），也不要把 `types` 指向 `dist/`（tsc 需要先 build）
+- **Metro package exports**：`metro.config.js` 必须 `unstable_enablePackageExports = true`，否则 workspace 包的子路径（如 `@study-abroad/shared/utils`）无法解析
+- **测试 mock 与 shared 常量**：当 mobile 代码从 hardcoded URL 迁移到 `@study-abroad/shared` 常量后，测试的 `jest.mock('@study-abroad/shared')` 必须提供对应的 route helpers，否则 CI 上 mock 返回 undefined 导致测试失败
 
 ### Code Quality Checks (`check-code-quality.ts`)
 
@@ -656,6 +667,58 @@ After writing code, verify these items. `[AUTO]` items are enforced by tooling; 
 ```bash
 pnpm lint:all    # ESLint + frontend quality + backend quality + i18n
 ```
+
+## Architecture Governance (Automated Enforcement)
+
+Multi-layer governance system for the AI Agent module. See ADR 0010-0015 for design decisions.
+
+### Governance CLI
+
+```bash
+npx tsx scripts/governance/index.ts --all              # Run all 5 rules
+npx tsx scripts/governance/index.ts --all --json       # JSON output (for CI/Jest)
+npx tsx scripts/governance/index.ts --rules=optional-security,config-consistency
+npx tsx scripts/governance/index.ts --verify-project   # Verify ts-morph project setup
+pnpm lint:integration --domain=governance              # Via check-integration.ts
+```
+
+### Rules
+
+| Rule | ID                     | Severity  | What it catches                                        |
+| ---- | ---------------------- | --------- | ------------------------------------------------------ |
+| G1   | `optional-security`    | **error** | `@Optional()` on PromptGuard/ContentModeration/Audit   |
+| G2   | `nl-endpoint-coverage` | **error** | NL endpoint missing `AgentSecurityMiddleware` coverage |
+| G3   | `config-consistency`   | **error** | Direct `AGENT_CONFIGS[...]` read outside validator     |
+| G4   | `user-data-isolation`  | warning   | Prisma query missing `userId` filter in ai-agent code  |
+| G5   | `dead-provider`        | warning   | Unused provider in `ai-agent.module.ts`                |
+
+### Adding New NL Endpoints
+
+When adding a new endpoint that accepts user-generated natural language:
+
+1. Add route to `AgentSecurityMiddleware.forRoutes()` in `ai-agent.module.ts`
+2. Add entry to `scripts/governance/nl-endpoints.json`
+3. Run `npx tsx scripts/governance/index.ts --rule=nl-endpoint-coverage` to verify
+
+### Runtime Validation
+
+`ArchitectureValidatorService` runs on startup (`OnModuleInit`):
+
+- **production/staging**: Missing security services → startup fails
+- **development/test**: Missing security services → warn only
+- Health endpoint `/health/detailed` reports `aiSecurity` status + `embeddingConsistency`
+- `/health/ready` returns 503 when `aiSecurity === 'degraded'` in production/staging
+
+### Coverage Matrix
+
+| Gap               | Static (G1-G5) | Runtime          | Jest                 | ADR  |
+| ----------------- | -------------- | ---------------- | -------------------- | ---- |
+| Security coverage | G1, G2 (error) | Startup + Health | architecture.spec    | 0010 |
+| @Optional abuse   | G1 (error)     | Startup          | architecture.spec    | 0011 |
+| Config drift      | G3 (error)     | Startup          | architecture.spec    | 0010 |
+| Observability     | —              | Health degraded  | aiSecurity assertion | 0010 |
+| Multi-tenant      | G4 (warning)   | —                | —                    | 0010 |
+| Dead code         | G5 (warning)   | —                | —                    | 0015 |
 
 ## File Index
 

@@ -439,8 +439,8 @@ throw new Error('School not found');
 
 ### 8.1 输入防护
 
-- **MUST**: 所有用户输入经过 `SecurityPipelineService` 处理
-- **MUST**: Prompt injection 检测（`AgentSecurityMiddleware`）
+- **MUST**: Agent 路由经过 `AgentSecurityMiddleware` 输入防护
+- **MUST**: 非 Agent LLM 调用使用 `LLMService.chatSimpleGuarded()` 输入防护
 - **MUST**: 输入长度限制（单条消息 ≤ 5000 字符）
 
 ### 8.2 输出审核

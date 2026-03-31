@@ -154,7 +154,9 @@
       "step3Title": "获取预测",
       "step3Desc": "使用 AI 预测你的录取概率",
       "completed": "已完成引导",
-      "hint": "点击跳过可随时返回"
+      "hint": "点击跳过可随时返回",
+      "progress": "已完成 {pct}%",
+      "remaining": "还有 {count} 项待完善"
     },
     "quickExperience": {
       "title": "欢迎来到留学平台！",
@@ -726,6 +728,10 @@
     "testScoresDesc": "添加你的标化考试成绩",
     "gpa": "GPA",
     "gpaDesc": "记录你的 GPA 信息",
+    "errors": {
+      "gpaRange": "GPA 必须在 0 到 {max} 之间",
+      "fixBeforeSave": "请先修正错误再保存"
+    },
     "gpaScale": "GPA 制式",
     "yourGpa": "你的 GPA",
     "gpaByGrade": "分年级 GPA",
@@ -1196,7 +1202,16 @@
     "validation": {
       "activityRequired": "请填写活动信息",
       "awardRequired": "请填写奖项信息",
-      "scoreRequired": "请填写成绩信息"
+      "scoreRequired": "请填写成绩信息",
+      "nameRequired": "请填写名称",
+      "nameMaxLength": "名称不能超过 100 个字符",
+      "categoryRequired": "请选择类别",
+      "roleRequired": "请填写角色",
+      "levelRequired": "请选择级别",
+      "testTypeRequired": "请选择考试类型",
+      "semesterRequired": "请选择学期",
+      "yearRequired": "请填写年份",
+      "gpaRequired": "请填写 GPA"
     },
     "recLetter": {
       "title": "推荐信",
@@ -1238,7 +1253,9 @@
         "deleted": "推荐信已删除"
       },
       "validation": {
-        "required": "请填写推荐人姓名和角色"
+        "required": "请填写推荐人姓名和角色",
+        "nameRequired": "请填写推荐人姓名",
+        "roleRequired": "请选择推荐人角色"
       },
       "empty": "暂无推荐信",
       "emptyHint": "添加推荐人以追踪推荐信状态"
@@ -1286,12 +1303,26 @@
     "selectSchoolsDesc": "选择目标学校以预测您的录取概率",
     "comingSoon": "学校选择器即将上线",
     "comingSoonDesc": "目前请点击下方按钮查看演示预测",
+    "tabPredict": "预测",
+    "tabHistory": "历史记录",
     "emptyHint": "选择学校并运行预测以查看您的录取概率",
     "runPrediction": "开始预测",
+    "history": {
+      "title": "预测历史",
+      "empty": "暂无预测记录",
+      "emptyDesc": "运行第一次预测后，您可以在这里追踪变化趋势"
+    },
+    "tier": {
+      "reach": "冲刺",
+      "match": "匹配",
+      "safety": "保底"
+    },
     "ucOneClick": "UC 一键预测",
     "ucOneClickUnavailable": "暂无法获取 UC 学校列表",
     "ucExpandedDesc": "因为你选了 UC 学校，我们自动加入了全部 9 所 UC 校区进行对比。UC 各校使用同一套申请系统，这样你可以看到哪些校区最有可能录取你。",
     "ucCollapseToOriginal": "只看我原来选的学校",
+    "lowDataWarning": "你的档案缺少关键数据（GPA、考试成绩），预测可能不够准确。完善档案可提高预测质量。",
+    "completeProfile": "完善档案",
     "recommendedSchoolsTitle": "你也可能感兴趣的学校",
     "recommendedSchoolsLoading": "加载推荐中...",
     "majorSpecificComingSoon": "专业录取率和地区数据即将推出",
@@ -2389,6 +2420,51 @@
       }
     }
   },
+  "schoolCompare": {
+    "title": "学校对比",
+    "description": "并排对比学校，找到最适合你的选择",
+    "addSchool": "添加学校",
+    "removeSchool": "移除",
+    "maxSchools": "最多可对比 {max} 所学校",
+    "selectSchoolsTitle": "选择要对比的学校",
+    "emptyTitle": "未选择学校",
+    "emptyDescription": "请添加至少两所学校开始对比",
+    "addMoreToCompare": "请至少再添加一所学校以开始对比",
+    "field": "对比项",
+    "yes": "是",
+    "no": "否",
+    "categories": {
+      "rankings": "排名",
+      "admissions": "录取",
+      "testScores": "标化成绩",
+      "cost": "费用与助学金",
+      "outcomes": "毕业去向",
+      "campus": "校园生活"
+    },
+    "fields": {
+      "usNewsRank": "US News 排名",
+      "qsRank": "QS 排名",
+      "acceptanceRate": "录取率",
+      "intlAcceptanceRate": "国际生录取率",
+      "hasEarlyDecision": "早申 (ED)",
+      "testOptional": "标化可选",
+      "satAvg": "SAT 均分",
+      "satRange": "SAT 区间 (25-75%)",
+      "actAvg": "ACT 均分",
+      "toeflMin": "托福最低要求",
+      "tuition": "学费",
+      "averageNetPrice": "平均净价",
+      "averageAidPackage": "平均助学金",
+      "percentNeedMet": "需求满足率",
+      "needBlindInternational": "国际生 Need-Blind",
+      "avgSalary": "毕业后平均薪资",
+      "graduationRate": "毕业率",
+      "retentionRate": "留存率",
+      "studentCount": "在校学生数",
+      "studentFacultyRatio": "师生比",
+      "intlStudentPct": "国际生比例"
+    }
+  },
   "schoolSelector": {
     "title": "选择学校",
     "searchPlaceholder": "搜索学校...",
@@ -2672,6 +2748,7 @@
   },
   "notifications": {
     "title": "通知",
+    "pageDescription": "查看和管理所有通知",
     "unreadCount": "{count} 未读",
     "noUnread": "暂无未读通知",
     "tabs": {
@@ -2682,8 +2759,18 @@
     "emptyHint": "有新消息会在这里显示",
     "markAllRead": "全部已读",
     "clearRead": "清除已读",
+    "clearAll": "清除所有通知",
     "allRead": "全部已读",
-    "view": "查看"
+    "view": "查看",
+    "viewAll": "查看所有通知",
+    "today": "今天",
+    "yesterday": "昨天",
+    "earlier": "更早",
+    "loadMore": "加载更多",
+    "deleteNotification": "删除通知",
+    "confirmClearAll": "确定要清除所有通知吗？此操作无法撤销。",
+    "cancel": "取消",
+    "confirm": "确认"
   },
   "milestone": {
     "profileComplete": {
@@ -3086,6 +3173,12 @@
     "editDesc": "编辑您的文书内容",
     "createDesc": "创建一篇新的申请文书",
     "wordCount": "{count} 词",
+    "words": "词",
+    "wordLimitStatus": {
+      "within": "字数达标",
+      "near": "接近上限",
+      "over": "超出限制"
+    },
     "updatedAt": "更新于",
     "aiTools": "AI 工具",
     "aiActions": {
@@ -3513,6 +3606,7 @@
     "review": {
       "description": "AI 已从多个维度评估了您的文书",
       "suggestions": "改进建议",
+      "cliches": "陈词滥调检测",
       "newReview": "重新评分",
       "title": "文书评审",
       "schoolName": "目标学校",
@@ -3530,12 +3624,13 @@
     "radar": {
       "title": "雷达图",
       "dimensions": {
-        "structure": "结构",
+        "structure": "故事性",
         "originality": "原创性",
         "language": "语言",
         "clarity": "清晰度",
         "impact": "影响力",
-        "relevance": "相关性"
+        "relevance": "相关性",
+        "authenticity": "真实声音"
       }
     },
     "scores": {
@@ -4372,7 +4467,19 @@
     "missing": "缺少",
     "inList": "已在列表",
     "analysis": "分析",
-    "regenerate": "重新生成"
+    "regenerate": "重新生成",
+    "caseComparison": {
+      "title": "历史案例数据",
+      "cases": "案例",
+      "admitted": "录取",
+      "rejected": "拒绝",
+      "gpaMedian": "GPA 中位数",
+      "satMedian": "SAT 中位数",
+      "admittedTraits": "录取者常见特征",
+      "rejectedTraits": "拒绝者常见特征",
+      "nationalityData": "{nationality} 申请者",
+      "insufficientData": "案例数据不足"
+    }
   },
   "timeline": {
     "title": "申请时间线",
@@ -5139,6 +5246,10 @@
       "lastRun": "最近运行",
       "status": "状态",
       "runNow": "立即更新",
+      "syncConfirm": {
+        "title": "运行 {job}？",
+        "description": "将触发数据同步任务。根据学校数量，处理过程可能需要几分钟。"
+      },
       "nextScheduled": "下次计划",
       "success": "成功",
       "failure": "失败",
@@ -5146,7 +5257,10 @@
       "triggerSuccess": "同步完成",
       "triggerError": "同步失败",
       "limit": "条数（学校）",
-      "limitPlaceholder": "如 500"
+      "limitPlaceholder": "如 500",
+      "running": "运行中...",
+      "completed": "已完成",
+      "failed": "失败"
     },
     "overview": {
       "needsAttention": "需要关注",
@@ -5242,6 +5356,35 @@
       "review": "评论",
       "message": "消息"
     },
+    "priority": {
+      "high": "高",
+      "medium": "中",
+      "low": "低",
+      "label": "优先级"
+    },
+    "assignment": {
+      "claim": "领取",
+      "release": "释放",
+      "all": "全部",
+      "mine": "我的",
+      "unassigned": "未分配",
+      "claimed": "已领取任务",
+      "released": "已释放任务",
+      "assignedTo": "分配给"
+    },
+    "reviewStats": {
+      "title": "统计",
+      "queueDepth": "待处理队列",
+      "throughputToday": "今日已审核",
+      "throughputTrend": "14 天审核趋势",
+      "activeReviewers": "活跃审核员",
+      "reviewer": "审核员活跃度",
+      "today": "今天",
+      "thisWeek": "本周",
+      "thisMonth": "本月",
+      "period": "时间段",
+      "noData": "暂无审核记录"
+    },
     "toast": {
       "roleUpdated": "用户角色已更新",
       "userDeleted": "用户已删除",
@@ -5297,6 +5440,11 @@
       "scrapeSchools": "抓取学校数据",
       "scrapeSchoolsDesc": "从外部数据源抓取最新学校信息",
       "startScrape": "开始抓取",
+      "scrapeConfirm": {
+        "title": "开始学校数据抓取？",
+        "description": "将从外部数据源抓取所有学校数据。管理员手动编辑的字段受保护，但部分自动导入字段可能被更新。",
+        "confirm": "开始抓取"
+      },
       "syncScorecard": "同步成绩单",
       "syncScorecardDesc": "从数据源同步学校评分数据",
       "startSync": "开始同步",
@@ -5538,7 +5686,30 @@
         "config": "配置",
         "performance": "性能",
         "reliability": "可靠性",
-        "engagement": "用户参与"
+        "engagement": "用户参与",
+        "llmCalls": "调用记录"
+      },
+      "llmCalls": {
+        "title": "LLM 调用历史",
+        "total": "条记录",
+        "filterAgent": "Agent 类型",
+        "filterModel": "模型",
+        "filterUser": "用户 ID",
+        "allAgents": "全部 Agent",
+        "allModels": "全部模型",
+        "loading": "加载中...",
+        "empty": "暂无 LLM 调用记录",
+        "time": "时间",
+        "agent": "Agent",
+        "model": "模型",
+        "tokens": "Token 数",
+        "cost": "成本",
+        "latency": "延迟",
+        "finish": "完成",
+        "input": "输入（系统提示词）",
+        "output": "输出",
+        "noData": "无预览数据",
+        "showing": "显示 {from}-{to}，共 {total} 条"
       }
     },
     "aiAgent": {
@@ -5579,6 +5750,8 @@
       "metricActiveReqs": "活跃请求",
       "metricRateLimits": "限流触发",
       "metricPromptTokens": "Prompt Token",
+      "metricRoutingFallback": "路由回退率",
+      "metricCritiqueRate": "反思通过率",
       "noTraces": "暂无追踪数据",
       "dailyTokens": "日 Token 限额",
       "monthlyTokens": "月 Token 限额",

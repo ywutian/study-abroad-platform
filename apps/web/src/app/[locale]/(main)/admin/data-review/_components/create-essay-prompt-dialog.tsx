@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { useSchoolSearch } from '@/hooks/use-school-search';
@@ -66,8 +66,7 @@ export function CreateEssayPromptDialog({ open, onOpenChange }: Props) {
   const { data: schools } = useSchoolSearch(schoolQuery, open);
 
   const mutation = useMutation({
-    mutationFn: (body: Record<string, unknown>) =>
-      apiClient.post(`${API_ROUTES.ADMIN}/essay-prompts`, body),
+    mutationFn: (body: Record<string, unknown>) => apiClient.post(adminRoutes.essayPrompts(), body),
     onSuccess: () => {
       toast.success(t('success'));
       queryClient.invalidateQueries({ queryKey: ['essayPrompts'] });

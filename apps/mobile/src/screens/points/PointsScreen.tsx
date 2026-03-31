@@ -7,6 +7,7 @@ import { EmptyState, Loading } from '@/components/ui';
 import { StatsRow } from '@/components/ui/StatsRow';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 
 export default function PointsScreen() {
@@ -15,7 +16,7 @@ export default function PointsScreen() {
 
   const { data: balance, isLoading } = useQuery({
     queryKey: ['points', 'balance'],
-    queryFn: () => apiClient.get('/points/balance'),
+    queryFn: () => apiClient.get(`${API_ROUTES.POINTS}/balance`),
   });
 
   return (

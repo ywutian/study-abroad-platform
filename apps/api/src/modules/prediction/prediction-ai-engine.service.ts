@@ -87,8 +87,8 @@ export class PredictionAiEngine {
     if (profile.isInternational) {
       enhancedPrompt +=
         locale === 'zh'
-          ? `\n\n## 国际生评估要点\n如果申请者是国际生，请特别考虑：\n1. 该校对国际生的竞争程度（国际生录取率通常低于整体录取率）\n2. 申请者所在地区（如中国大陆）的竞争强度\n3. 高中背景在该校的认知度\n4. 标化成绩在国际生申请者池中的竞争力（而非整体申请池）\n5. TOEFL/IELTS在该校录取中的门槛作用`
-          : `\n\n## International Student Assessment\nFor international applicants, specifically consider:\n1. This school's competitiveness for international students\n2. Regional competition intensity (e.g., mainland China applicant pool)\n3. High school recognition at this specific school\n4. Test score competitiveness within the international applicant pool\n5. TOEFL/IELTS threshold requirements at this school`;
+          ? `\n\n## 国际生评估要点\n如果申请者是国际生，请特别考虑：\n1. 该校对国际生的竞争程度（国际生录取率通常低于整体录取率）\n2. 申请者所在地区（如中国大陆）的竞争强度\n3. 高中背景在该校的认知度\n4. 标化成绩在国际生申请者池中的竞争力（而非整体申请池）\n5. TOEFL/IELTS/Duolingo English Test在该校录取中的门槛作用`
+          : `\n\n## International Student Assessment\nFor international applicants, specifically consider:\n1. This school's competitiveness for international students\n2. Regional competition intensity (e.g., mainland China applicant pool)\n3. High school recognition at this specific school\n4. Test score competitiveness within the international applicant pool\n5. TOEFL/IELTS/Duolingo English Test threshold requirements at this school`;
     }
 
     if (memoryInsights.length > 0) {
@@ -115,7 +115,7 @@ export class PredictionAiEngine {
         : 'You are an expert college admissions consultant with 20 years of experience. Always respond in English with valid JSON only. CRITICAL: Your probability estimates MUST vary significantly based on school selectivity — a top-5 school with 3% acceptance rate should have MUCH lower probability than a top-50 school with 25% acceptance rate for the same student profile. Never give the same probability for schools with different selectivity levels.';
 
     try {
-      const response = await this.llmService.chatSimple(
+      const response = await this.llmService.chatSimpleGuarded(
         [
           {
             role: 'system',
@@ -127,6 +127,11 @@ export class PredictionAiEngine {
           temperature: 0,
           maxTokens: 2500,
           ...(profileId && { seed: this.computeSeed(profileId, school.id) }),
+          providerOptions: {
+            response_format: {
+              type: 'json_object',
+            },
+          },
         },
       );
 

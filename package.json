@@ -51,6 +51,7 @@
     "knip": "^6.0.5",
     "lint-staged": "^16.2.7",
     "prettier": "^3.2.5",
+    "ts-morph": "^27.0.2",
     "tsx": "^4.21.0",
     "turbo": "^2.3.0",
     "typescript": "^5.3.3",
@@ -103,7 +104,10 @@
       "socket.io-parser@>=4.0.0 <4.2.6": ">=4.2.6",
       "picomatch@^2": ">=2.3.2 <3",
       "picomatch@^3": ">=3.0.2 <4",
-      "picomatch@^4": ">=4.0.4"
+      "picomatch@^4": ">=4.0.4",
+      "node-forge": ">=1.4.0",
+      "handlebars": ">=4.7.9",
+      "path-to-regexp@>=8.0.0 <8.4.0": ">=8.4.0"
     }
   },
   "dependencies": {

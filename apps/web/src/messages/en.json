@@ -154,7 +154,9 @@
       "step3Title": "Get Predictions",
       "step3Desc": "Use AI to predict admission probability",
       "completed": "Guide completed",
-      "hint": "Click skip to return anytime"
+      "hint": "Click skip to return anytime",
+      "progress": "{pct}% complete",
+      "remaining": "{count} items remaining"
     },
     "quickExperience": {
       "title": "Welcome to Study Abroad Platform!",
@@ -723,6 +725,10 @@
     "testScoresDesc": "Add your standardized test scores",
     "gpa": "GPA",
     "gpaDesc": "Record your GPA information",
+    "errors": {
+      "gpaRange": "GPA must be between 0 and {max}",
+      "fixBeforeSave": "Please fix the errors before saving"
+    },
     "gpaScale": "GPA Scale",
     "yourGpa": "Your GPA",
     "gpaByGrade": "GPA by Grade Level",
@@ -1196,7 +1202,16 @@
     "validation": {
       "activityRequired": "Please fill in activity details",
       "awardRequired": "Please fill in award details",
-      "scoreRequired": "Please fill in score details"
+      "scoreRequired": "Please fill in score details",
+      "nameRequired": "Name is required",
+      "nameMaxLength": "Name must be 100 characters or less",
+      "categoryRequired": "Please select a category",
+      "roleRequired": "Role is required",
+      "levelRequired": "Please select a level",
+      "testTypeRequired": "Please select a test type",
+      "semesterRequired": "Please select a semester",
+      "yearRequired": "Year is required",
+      "gpaRequired": "GPA is required"
     },
     "recLetter": {
       "title": "Recommendation Letters",
@@ -1238,7 +1253,9 @@
         "deleted": "Recommendation letter deleted"
       },
       "validation": {
-        "required": "Recommender name and role are required"
+        "required": "Recommender name and role are required",
+        "nameRequired": "Recommender name is required",
+        "roleRequired": "Please select a role"
       },
       "empty": "No recommendation letters yet",
       "emptyHint": "Add your recommenders to track letter status"
@@ -1286,12 +1303,26 @@
     "selectSchoolsDesc": "Select target schools to predict your admission chances",
     "comingSoon": "School selector coming soon",
     "comingSoonDesc": "For now, click the button below to see a demo prediction",
+    "tabPredict": "Predict",
+    "tabHistory": "History",
     "emptyHint": "Select schools and run prediction to see your chances",
     "runPrediction": "Run Prediction",
+    "history": {
+      "title": "Prediction History",
+      "empty": "No prediction history yet",
+      "emptyDesc": "Run your first prediction to start tracking changes over time"
+    },
+    "tier": {
+      "reach": "Reach",
+      "match": "Match",
+      "safety": "Safety"
+    },
     "ucOneClick": "UC One-Click Prediction",
     "ucOneClickUnavailable": "UC school list is not available",
     "ucExpandedDesc": "Since you selected a UC school, we automatically included all 9 UC campuses for comparison. UC schools share the same application system, so you can see which campuses are most likely to admit you.",
     "ucCollapseToOriginal": "Show only my original selection",
+    "lowDataWarning": "Your profile is missing key data (GPA, test scores). Predictions may be less accurate. Complete your profile for better results.",
+    "completeProfile": "Complete Profile",
     "recommendedSchoolsTitle": "You may also like",
     "recommendedSchoolsLoading": "Loading recommendations...",
     "majorSpecificComingSoon": "Major-specific and regional acceptance data coming soon",
@@ -2389,6 +2420,51 @@
       }
     }
   },
+  "schoolCompare": {
+    "title": "Compare Schools",
+    "description": "Compare schools side-by-side to find your best fit",
+    "addSchool": "Add School",
+    "removeSchool": "Remove",
+    "maxSchools": "Maximum {max} schools can be compared",
+    "selectSchoolsTitle": "Select Schools to Compare",
+    "emptyTitle": "No Schools Selected",
+    "emptyDescription": "Add at least two schools to start comparing",
+    "addMoreToCompare": "Add at least one more school to start comparing",
+    "field": "Field",
+    "yes": "Yes",
+    "no": "No",
+    "categories": {
+      "rankings": "Rankings",
+      "admissions": "Admissions",
+      "testScores": "Test Scores",
+      "cost": "Cost & Financial Aid",
+      "outcomes": "Outcomes",
+      "campus": "Campus Life"
+    },
+    "fields": {
+      "usNewsRank": "US News Ranking",
+      "qsRank": "QS Ranking",
+      "acceptanceRate": "Acceptance Rate",
+      "intlAcceptanceRate": "Intl. Acceptance Rate",
+      "hasEarlyDecision": "Early Decision",
+      "testOptional": "Test Optional",
+      "satAvg": "SAT Average",
+      "satRange": "SAT Range (25th-75th)",
+      "actAvg": "ACT Average",
+      "toeflMin": "TOEFL Minimum",
+      "tuition": "Tuition",
+      "averageNetPrice": "Average Net Price",
+      "averageAidPackage": "Average Aid Package",
+      "percentNeedMet": "% Need Met",
+      "needBlindInternational": "Need-Blind (Intl.)",
+      "avgSalary": "Avg. Salary After Grad",
+      "graduationRate": "Graduation Rate",
+      "retentionRate": "Retention Rate",
+      "studentCount": "Total Students",
+      "studentFacultyRatio": "Student-Faculty Ratio",
+      "intlStudentPct": "Intl. Student %"
+    }
+  },
   "schoolSelector": {
     "title": "Select Schools",
     "searchPlaceholder": "Search schools...",
@@ -2672,6 +2748,7 @@
   },
   "notifications": {
     "title": "Notifications",
+    "pageDescription": "View and manage all your notifications",
     "unreadCount": "{count} unread",
     "noUnread": "No unread notifications",
     "tabs": {
@@ -2682,8 +2759,18 @@
     "emptyHint": "New messages will show here",
     "markAllRead": "Mark All Read",
     "clearRead": "Clear Read",
+    "clearAll": "Clear All Notifications",
     "allRead": "All Read",
-    "view": "View"
+    "view": "View",
+    "viewAll": "View All Notifications",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "earlier": "Earlier",
+    "loadMore": "Load More",
+    "deleteNotification": "Delete notification",
+    "confirmClearAll": "Are you sure you want to clear all notifications? This cannot be undone.",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
   },
   "milestone": {
     "profileComplete": {
@@ -3091,6 +3178,12 @@
     "editDesc": "Edit your essay content",
     "createDesc": "Create a new application essay",
     "wordCount": "{count} words",
+    "words": "words",
+    "wordLimitStatus": {
+      "within": "Within limit",
+      "near": "Approaching limit",
+      "over": "Over limit"
+    },
     "updatedAt": "Updated at",
     "aiTools": "AI Tools",
     "aiActions": {
@@ -3518,6 +3611,7 @@
     "review": {
       "description": "AI has evaluated your essay from multiple dimensions",
       "suggestions": "Suggestions",
+      "cliches": "Cliché Detection",
       "newReview": "New Review",
       "title": "Essay Review",
       "schoolName": "Target School",
@@ -3535,12 +3629,13 @@
     "radar": {
       "title": "Radar Chart",
       "dimensions": {
-        "structure": "Structure",
+        "structure": "Storytelling",
         "originality": "Originality",
         "language": "Language",
         "clarity": "Clarity",
         "impact": "Impact",
-        "relevance": "Relevance"
+        "relevance": "Relevance",
+        "authenticity": "Authenticity"
       }
     },
     "scores": {
@@ -4377,7 +4472,19 @@
     "missing": "Missing",
     "inList": "In List",
     "analysis": "Analysis",
-    "regenerate": "Regenerate"
+    "regenerate": "Regenerate",
+    "caseComparison": {
+      "title": "Historical Case Data",
+      "cases": "cases",
+      "admitted": "Admitted",
+      "rejected": "Rejected",
+      "gpaMedian": "GPA Median",
+      "satMedian": "SAT Median",
+      "admittedTraits": "Admitted Common Traits",
+      "rejectedTraits": "Rejected Common Traits",
+      "nationalityData": "{nationality} Applicants",
+      "insufficientData": "Insufficient case data"
+    }
   },
   "timeline": {
     "title": "Application Timeline",
@@ -5144,6 +5251,10 @@
       "lastRun": "Last run",
       "status": "Status",
       "runNow": "Run now",
+      "syncConfirm": {
+        "title": "Run {job}?",
+        "description": "This will trigger a data sync job. The process may take several minutes depending on the number of schools."
+      },
       "nextScheduled": "Next scheduled",
       "success": "Success",
       "failure": "Failure",
@@ -5151,7 +5262,10 @@
       "triggerSuccess": "Sync completed",
       "triggerError": "Sync failed",
       "limit": "Limit (schools)",
-      "limitPlaceholder": "e.g. 500"
+      "limitPlaceholder": "e.g. 500",
+      "running": "Running...",
+      "completed": "Completed",
+      "failed": "Failed"
     },
     "overview": {
       "needsAttention": "Needs Attention",
@@ -5247,6 +5361,35 @@
       "review": "Review",
       "message": "Message"
     },
+    "priority": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low",
+      "label": "Priority"
+    },
+    "assignment": {
+      "claim": "Claim",
+      "release": "Release",
+      "all": "All",
+      "mine": "My Items",
+      "unassigned": "Unassigned",
+      "claimed": "Item claimed",
+      "released": "Item released",
+      "assignedTo": "Assigned to"
+    },
+    "reviewStats": {
+      "title": "Statistics",
+      "queueDepth": "Queue Depth",
+      "throughputToday": "Reviewed Today",
+      "throughputTrend": "14-Day Throughput",
+      "activeReviewers": "Active Reviewers",
+      "reviewer": "Reviewer Activity",
+      "today": "Today",
+      "thisWeek": "Week",
+      "thisMonth": "Month",
+      "period": "Period",
+      "noData": "No review activity yet"
+    },
     "toast": {
       "roleUpdated": "User role updated",
       "userDeleted": "User deleted",
@@ -5302,6 +5445,11 @@
       "scrapeSchools": "Scrape Schools",
       "scrapeSchoolsDesc": "Fetch latest school data from external sources",
       "startScrape": "Start Scraping",
+      "scrapeConfirm": {
+        "title": "Start School Data Scrape?",
+        "description": "This will scrape data for all schools from external sources. Admin manual edits are protected, but auto-imported fields may be updated.",
+        "confirm": "Start Scraping"
+      },
       "syncScorecard": "Sync Scorecard",
       "syncScorecardDesc": "Sync school scoring data from sources",
       "startSync": "Start Sync",
@@ -5543,7 +5691,30 @@
         "config": "Configuration",
         "performance": "Performance",
         "reliability": "Reliability",
-        "engagement": "Engagement"
+        "engagement": "Engagement",
+        "llmCalls": "LLM Calls"
+      },
+      "llmCalls": {
+        "title": "LLM Call History",
+        "total": "total",
+        "filterAgent": "Agent type",
+        "filterModel": "Model",
+        "filterUser": "User ID",
+        "allAgents": "All agents",
+        "allModels": "All models",
+        "loading": "Loading...",
+        "empty": "No LLM calls recorded yet",
+        "time": "Time",
+        "agent": "Agent",
+        "model": "Model",
+        "tokens": "Tokens",
+        "cost": "Cost",
+        "latency": "Latency",
+        "finish": "Finish",
+        "input": "Input (System Prompt)",
+        "output": "Output",
+        "noData": "No preview available",
+        "showing": "Showing {from}-{to} of {total}"
       }
     },
     "aiAgent": {
@@ -5584,6 +5755,8 @@
       "metricActiveReqs": "Active Requests",
       "metricRateLimits": "Rate Limit Hits",
       "metricPromptTokens": "Prompt Tokens",
+      "metricRoutingFallback": "Routing Fallback Rate",
+      "metricCritiqueRate": "Critique Pass Rate",
       "noTraces": "No trace data available",
       "dailyTokens": "Daily Token Limit",
       "monthlyTokens": "Monthly Token Limit",

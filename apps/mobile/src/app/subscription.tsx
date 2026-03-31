@@ -40,6 +40,7 @@ import {
   ConfirmDialog,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
+import { subscriptionRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 
@@ -163,7 +164,7 @@ export default function SubscriptionPage() {
 
   const { data: plans, isLoading: plansLoading } = useQuery<PlanDetails[]>({
     queryKey: subscriptionKeys.plans(),
-    queryFn: () => apiClient.get('/subscriptions/plans'),
+    queryFn: () => apiClient.get(subscriptionRoutes.plans()),
     staleTime: 10 * 60_000,
   });
 
@@ -173,7 +174,7 @@ export default function SubscriptionPage() {
     refetch: refetchSub,
   } = useQuery<UserSubscription>({
     queryKey: subscriptionKeys.current(),
-    queryFn: () => apiClient.get('/subscriptions/me'),
+    queryFn: () => apiClient.get(subscriptionRoutes.current()),
     staleTime: 60_000,
   });
 
@@ -183,7 +184,7 @@ export default function SubscriptionPage() {
     refetch: refetchBilling,
   } = useQuery<BillingHistoryItem[]>({
     queryKey: subscriptionKeys.billing(),
-    queryFn: () => apiClient.get('/subscriptions/billing-history'),
+    queryFn: () => apiClient.get(subscriptionRoutes.invoices()),
     enabled: billingExpanded,
     staleTime: 5 * 60_000,
   });
@@ -191,7 +192,7 @@ export default function SubscriptionPage() {
   // ─── Mutations ─────────────────────────────────────────
 
   const subscribeMutation = useMutation({
-    mutationFn: (dto: SubscribeDto) => apiClient.post('/subscriptions/subscribe', dto),
+    mutationFn: (dto: SubscribeDto) => apiClient.post(subscriptionRoutes.subscribe(), dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: subscriptionKeys.current() });
       queryClient.invalidateQueries({ queryKey: subscriptionKeys.billing() });
@@ -205,7 +206,7 @@ export default function SubscriptionPage() {
   });
 
   const cancelMutation = useMutation({
-    mutationFn: () => apiClient.delete('/subscriptions/cancel'),
+    mutationFn: () => apiClient.delete(subscriptionRoutes.cancel()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: subscriptionKeys.current() });
       queryClient.invalidateQueries({ queryKey: subscriptionKeys.billing() });

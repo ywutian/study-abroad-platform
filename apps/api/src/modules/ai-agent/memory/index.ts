@@ -49,6 +49,3 @@ export type {
   CompactionResult,
   CompactionConfig,
 } from './memory-compaction.service';
-
-// Rules
-export * from './extraction-rules';

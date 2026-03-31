@@ -9,6 +9,7 @@ export interface DashboardSummary {
     role: string;
     points: number;
     createdAt: string;
+    nickname?: string;
   };
 
   // 档案信息
@@ -306,6 +307,7 @@ export class DashboardService {
         role: user?.role || 'USER',
         points: user?.points || 0,
         createdAt: user?.createdAt.toISOString() || '',
+        nickname: profile?.nickname || undefined,
       },
       profile: {
         completeness,

@@ -1,7 +1,7 @@
 import { IsOptional, IsString, IsEnum, MaxLength } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationDto } from '../../../common/dto/pagination.dto';
-import { ReportStatus, Role } from '@prisma/client';
+import { ReportStatus, ReportPriority, Role } from '@prisma/client';
 
 export class ReportQueryDto extends PaginationDto {
   @ApiPropertyOptional({ enum: ReportStatus })
@@ -14,6 +14,20 @@ export class ReportQueryDto extends PaginationDto {
   @IsString()
   @MaxLength(200)
   targetType?: string;
+
+  @ApiPropertyOptional({ enum: ReportPriority })
+  @IsOptional()
+  @IsEnum(ReportPriority)
+  priority?: ReportPriority;
+
+  @ApiPropertyOptional({
+    description:
+      'Filter by assignee: user ID for specific admin, "unassigned" for unclaimed items',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  assignedTo?: string;
 }
 
 export class UserQueryDto extends PaginationDto {

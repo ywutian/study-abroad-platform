@@ -658,8 +658,24 @@ export class ChatService {
       }
     }
 
+    // Auto-assign priority: USER reports = HIGH, MESSAGE = MEDIUM, others = LOW
+    const priority =
+      targetType === 'USER'
+        ? 'HIGH'
+        : targetType === 'MESSAGE'
+          ? 'MEDIUM'
+          : 'LOW';
+
     return this.prisma.report.create({
-      data: { reporterId, targetType, targetId, reason, detail, context },
+      data: {
+        reporterId,
+        targetType,
+        targetId,
+        reason,
+        detail,
+        context,
+        priority,
+      },
     });
   }
 

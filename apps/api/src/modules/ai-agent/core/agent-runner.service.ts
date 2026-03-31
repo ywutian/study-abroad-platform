@@ -9,13 +9,14 @@
  * 集成: Token 追踪、Tool 超时、请求追踪
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import {
   WorkflowEngineService,
   WorkflowResult,
 } from './workflow-engine.service';
 import { MemoryService } from './memory.service';
 import { AGENT_CONFIGS } from '../config/agents.config';
+import { ConfigValidatorService } from '../config/config-validator.service';
 import { TOOLS } from '../config/tools.config';
 import {
   AgentType,
@@ -33,6 +34,7 @@ export class AgentRunnerService {
   constructor(
     private workflow: WorkflowEngineService,
     private memory: MemoryService,
+    @Optional() private configValidator?: ConfigValidatorService,
   ) {}
 
   /**
@@ -43,9 +45,10 @@ export class AgentRunnerService {
   async run(
     agentType: AgentType,
     conversation: ConversationState,
-    initialMessage?: string,
   ): Promise<AgentResponse> {
-    const config = AGENT_CONFIGS[agentType];
+    const config =
+      this.configValidator?.getValidatedConfig(agentType) ??
+      AGENT_CONFIGS[agentType];
 
     // 配置缺失时返回降级响应
     if (!config) {
@@ -69,14 +72,6 @@ export class AgentRunnerService {
     }
 
     const tools = this.getAgentTools(config);
-
-    // 如果有初始消息，添加到对话
-    if (initialMessage) {
-      this.memory.addMessage(conversation, {
-        role: 'user',
-        content: initialMessage,
-      });
-    }
 
     // 运行三阶段工作流
     const result = await this.workflow.run(

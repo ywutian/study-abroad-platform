@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { apiClient } from '@/lib/api';
+import { adminAiAgentRoutes } from '@study-abroad/shared';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Activity } from 'lucide-react';
@@ -14,7 +15,7 @@ export function HealthSection() {
 
   const { data: health } = useQuery({
     queryKey: ['aiAgentHealth'],
-    queryFn: () => apiClient.get<any>('/admin/ai-agent/health'),
+    queryFn: () => apiClient.get<any>(adminAiAgentRoutes.health()),
     refetchInterval: 30000,
   });
 

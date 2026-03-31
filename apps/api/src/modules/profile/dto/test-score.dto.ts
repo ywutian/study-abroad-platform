@@ -19,6 +19,7 @@ const TEST_TYPES = [
   'IB',
   'A_LEVEL',
   'IGCSE',
+  'DUOLINGO',
 ] as const;
 
 export class CreateTestScoreDto {

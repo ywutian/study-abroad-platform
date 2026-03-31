@@ -1,7 +1,7 @@
 /**
  * OrchestratorService 单元测试
  *
- * 测试路由决策、委派逻辑、会话管理
+ * 测试路由决策、委派逻辑、会话管理、消息持久化一致性
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
@@ -16,6 +16,10 @@ import { ConfigValidatorService } from '../config/config-validator.service';
 import { MemoryManagerService } from '../memory/memory-manager.service';
 import { FastRouterService } from './fast-router.service';
 import { FallbackService } from './fallback.service';
+import {
+  ContentModerationService,
+  ModerationAction,
+} from '../security/content-moderation.service';
 import { AgentType } from '../types';
 
 describe('OrchestratorService', () => {
@@ -25,6 +29,7 @@ describe('OrchestratorService', () => {
   let memory: jest.Mocked<MemoryService>;
   let _llm: jest.Mocked<LLMService>;
   let fastRouter: jest.Mocked<FastRouterService>;
+  let memoryManager: jest.Mocked<MemoryManagerService>;
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
@@ -86,10 +91,15 @@ describe('OrchestratorService', () => {
             getOrCreateConversation: jest.fn(),
             addMessage: jest.fn(),
             getRetrievalContext: jest.fn(),
+            getConversation: jest.fn().mockResolvedValue({
+              id: 'conv_1',
+              userId: 'user_1',
+            }),
             getConversationHistory: jest.fn().mockResolvedValue([]),
             buildContextSummary: jest.fn().mockReturnValue(''),
             getStats: jest.fn().mockResolvedValue(null),
             clearConversation: jest.fn().mockResolvedValue(undefined),
+            updateConversationTitle: jest.fn().mockResolvedValue(undefined),
           },
         },
         {
@@ -108,6 +118,20 @@ describe('OrchestratorService', () => {
             }),
           },
         },
+        {
+          provide: ContentModerationService,
+          useValue: {
+            moderate: jest.fn().mockResolvedValue({
+              safe: true,
+              flagged: false,
+              categories: [],
+              severity: 'NONE',
+              action: ModerationAction.ALLOW,
+              sanitizedContent: undefined,
+              details: [],
+            }),
+          },
+        },
       ],
     }).compile();
 
@@ -116,35 +140,39 @@ describe('OrchestratorService', () => {
     memory = module.get(MemoryService);
     _llm = module.get(LLMService);
     fastRouter = module.get(FastRouterService);
+    memoryManager = module.get(MemoryManagerService);
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  describe('Fast Routing', () => {
+  // Helper to set up conversation mocks
+  const setupConversationMocks = (convId = 'conv_1') => {
     const mockConversation = {
-      id: 'conv_1',
+      id: convId,
       userId: 'user_1',
-      messages: [],
+      messages: [] as any[],
       context: { userId: 'user_1' },
+      metadata: {},
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
-    beforeEach(() => {
-      // 企业级记忆 mock
-      const memoryManager = module.get(MemoryManagerService);
-      (memoryManager.getOrCreateConversation as jest.Mock).mockResolvedValue({
-        id: 'conv_1',
-      });
+    memoryManager.getOrCreateConversation.mockResolvedValue({
+      id: convId,
+    } as any);
+    memory.getOrCreateConversation.mockResolvedValue(mockConversation as any);
 
-      // 内存 mock（用于 AgentRunner 兼容）
-      memory.getOrCreateConversation.mockResolvedValue(mockConversation);
+    return mockConversation;
+  };
+
+  describe('Fast Routing', () => {
+    beforeEach(() => {
+      setupConversationMocks();
     });
 
     it('should route essay-related queries to Essay Agent', async () => {
-      // 设置快速路由返回 essay
       fastRouter.route.mockReturnValue({
         agent: AgentType.ESSAY,
         confidence: 0.9,
@@ -152,7 +180,6 @@ describe('OrchestratorService', () => {
         shouldUseLLM: false,
       });
 
-      // 设置 agentRunner mock
       agentRunner.run.mockResolvedValue({
         message: '关于文书写作...',
         agentType: AgentType.ESSAY,
@@ -161,10 +188,10 @@ describe('OrchestratorService', () => {
       const result = await service.handleMessage('user_1', '帮我写文书');
 
       expect(fastRouter.route).toHaveBeenCalledWith('帮我写文书');
+      // Orchestrator no longer passes initialMessage (fixes double user write)
       expect(agentRunner.run).toHaveBeenCalledWith(
         AgentType.ESSAY,
         expect.any(Object),
-        '帮我写文书',
       );
       expect(result.agentType).toBe(AgentType.ESSAY);
     });
@@ -187,18 +214,173 @@ describe('OrchestratorService', () => {
       expect(agentRunner.run).toHaveBeenCalledWith(
         AgentType.SCHOOL,
         expect.any(Object),
-        '帮我推荐学校',
+      );
+    });
+  });
+
+  describe('Message Persistence', () => {
+    beforeEach(() => {
+      setupConversationMocks();
+    });
+
+    it('should persist both user and assistant for simple greeting', async () => {
+      fastRouter.getSimpleResponse.mockReturnValue('你好！有什么可以帮你的？');
+
+      const result = await service.handleMessage('user_1', '你好');
+
+      expect(result.message).toBe('你好！有什么可以帮你的？');
+      // user message persisted
+      expect(memory.addMessage).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({ role: 'user', content: '你好' }),
+      );
+      // assistant message persisted
+      expect(memory.addMessage).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({
+          role: 'assistant',
+          content: '你好！有什么可以帮你的？',
+        }),
+      );
+    });
+
+    it('should persist assistant response for fast route specialist', async () => {
+      fastRouter.route.mockReturnValue({
+        agent: AgentType.ESSAY,
+        confidence: 0.9,
+        matchedKeywords: ['文书'],
+        shouldUseLLM: false,
+      });
+
+      agentRunner.run.mockResolvedValue({
+        message: '关于文书...',
+        agentType: AgentType.ESSAY,
+      });
+
+      await service.handleMessage('user_1', '帮我写文书');
+
+      // assistant persisted to enterprise memory
+      expect(memoryManager.addMessage).toHaveBeenCalledWith(
+        'conv_1',
+        expect.objectContaining({
+          role: 'assistant',
+          content: '关于文书...',
+        }),
+      );
+    });
+
+    it('should persist assistant response for callAgent', async () => {
+      agentRunner.run.mockResolvedValue({
+        message: '分析结果...',
+        agentType: AgentType.PROFILE,
+      });
+
+      await service.callAgent('user_1', AgentType.PROFILE, '帮我分析');
+
+      // assistant persisted
+      expect(memoryManager.addMessage).toHaveBeenCalledWith(
+        'conv_1',
+        expect.objectContaining({
+          role: 'assistant',
+          content: '分析结果...',
+        }),
+      );
+    });
+
+    it('should not persist empty assistant response', async () => {
+      fastRouter.route.mockReturnValue({
+        agent: AgentType.ESSAY,
+        confidence: 0.9,
+        matchedKeywords: ['文书'],
+        shouldUseLLM: false,
+      });
+
+      agentRunner.run.mockResolvedValue({
+        message: '',
+        agentType: AgentType.ESSAY,
+      });
+
+      await service.handleMessage('user_1', '帮我写文书');
+
+      // user message persisted (1 call for user)
+      // assistant NOT persisted because content is empty (persistAssistantResponse no-ops)
+      const assistantCalls = memoryManager.addMessage.mock.calls.filter(
+        (call) => call[1]?.role === 'assistant',
+      );
+      expect(assistantCalls).toHaveLength(0);
+    });
+
+    it('should not double-write user message (no initialMessage to agentRunner)', async () => {
+      fastRouter.route.mockReturnValue({
+        agent: null,
+        confidence: 0,
+        matchedKeywords: [],
+        shouldUseLLM: true,
+      });
+
+      agentRunner.run.mockResolvedValue({
+        message: '回复',
+        agentType: AgentType.ORCHESTRATOR,
+      });
+
+      await service.handleMessage('user_1', '你好');
+
+      // agentRunner.run called without initialMessage (2 args, not 3)
+      expect(agentRunner.run).toHaveBeenCalledWith(
+        AgentType.ORCHESTRATOR,
+        expect.any(Object),
+      );
+      expect(agentRunner.run.mock.calls[0]).toHaveLength(2);
+    });
+  });
+
+  describe('Delegation', () => {
+    beforeEach(() => {
+      setupConversationMocks();
+    });
+
+    it('should use assistant role with delegation metadata for delegation markers', async () => {
+      fastRouter.route.mockReturnValue({
+        agent: null,
+        confidence: 0,
+        matchedKeywords: [],
+        shouldUseLLM: true,
+      });
+
+      // First call: orchestrator delegates
+      agentRunner.run
+        .mockResolvedValueOnce({
+          message: '',
+          agentType: AgentType.ORCHESTRATOR,
+          delegatedTo: AgentType.ESSAY,
+          data: { task: '帮我写文书' },
+        })
+        // Second call: specialist responds
+        .mockResolvedValueOnce({
+          message: '文书写作建议...',
+          agentType: AgentType.ESSAY,
+        });
+
+      await service.handleMessage('user_1', '帮我写文书');
+
+      // Delegation marker should use assistant role (not system)
+      expect(memory.addMessage).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({
+          role: 'assistant',
+          content: expect.stringContaining('委派给'),
+          metadata: expect.objectContaining({
+            delegation: true,
+            targetAgent: AgentType.ESSAY,
+          }),
+        }),
       );
     });
   });
 
   describe('Conversation Management', () => {
     beforeEach(() => {
-      // 企业级记忆 mock
-      const memoryManager = module.get(MemoryManagerService);
-      (memoryManager.getOrCreateConversation as jest.Mock).mockResolvedValue({
-        id: 'conv_new',
-      });
+      setupConversationMocks();
     });
 
     it('should create new conversation when conversationId is not provided', async () => {
@@ -209,15 +391,6 @@ describe('OrchestratorService', () => {
         shouldUseLLM: true,
       });
 
-      memory.getOrCreateConversation.mockResolvedValue({
-        id: 'conv_new',
-        userId: 'user_1',
-        messages: [],
-        context: { userId: 'user_1' },
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-
       agentRunner.run.mockResolvedValue({
         message: '你好！有什么可以帮助你的？',
         agentType: AgentType.ORCHESTRATOR,
@@ -225,8 +398,6 @@ describe('OrchestratorService', () => {
 
       await service.handleMessage('user_1', '你好');
 
-      // 因为使用企业级记忆，先调用 memoryManager，再同步到 memory
-      const memoryManager = module.get(MemoryManagerService);
       expect(memoryManager.getOrCreateConversation).toHaveBeenCalledWith(
         'user_1',
         undefined,
@@ -241,10 +412,9 @@ describe('OrchestratorService', () => {
         shouldUseLLM: true,
       });
 
-      const memoryManager = module.get(MemoryManagerService);
-      (memoryManager.getOrCreateConversation as jest.Mock).mockResolvedValue({
+      memoryManager.getOrCreateConversation.mockResolvedValue({
         id: 'conv_existing',
-      });
+      } as any);
 
       memory.getOrCreateConversation.mockResolvedValue({
         id: 'conv_existing',
@@ -278,19 +448,10 @@ describe('OrchestratorService', () => {
         shouldUseLLM: true,
       });
 
-      memory.getOrCreateConversation.mockResolvedValue({
-        id: 'conv_1',
-        userId: 'user_1',
-        messages: [],
-        context: { userId: 'user_1' },
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+      setupConversationMocks();
 
-      // AgentRunnerService.run 被调用，它会抛出错误
       agentRunner.run.mockRejectedValue(new Error('LLM service unavailable'));
 
-      // 因为有 FallbackService，应该返回 fallback response 而不是抛出错误
       const result = await service.handleMessage('user_1', '你好');
       expect(result.message).toContain('抱歉');
     });
@@ -303,10 +464,8 @@ describe('OrchestratorService', () => {
         { role: 'assistant', content: '你好！', timestamp: new Date() },
       ];
 
-      // 因为有 MemoryManagerService，会使用企业级记忆
-      const memoryManager = module.get(MemoryManagerService);
-      (memoryManager.getConversationHistory as jest.Mock).mockResolvedValue(
-        mockMessages,
+      memoryManager.getConversationHistory.mockResolvedValue(
+        mockMessages as any,
       );
 
       const history = await service.getHistory('user_1', 'conv_1');
@@ -323,6 +482,70 @@ describe('OrchestratorService', () => {
       await service.clearConversation('user_1', 'conv_1');
 
       expect(memory.clearConversation).toHaveBeenCalledWith('user_1', 'conv_1');
+    });
+  });
+
+  describe('Output Content Moderation', () => {
+    let contentModeration: { moderate: jest.Mock };
+
+    beforeEach(() => {
+      setupConversationMocks();
+      contentModeration = module.get(ContentModerationService);
+    });
+
+    it('should sanitize assistant response when moderation returns SANITIZE', async () => {
+      fastRouter.getSimpleResponse.mockReturnValue('some sensitive content');
+      contentModeration.moderate.mockResolvedValue({
+        action: ModerationAction.SANITIZE,
+        sanitizedContent: 'sanitized content',
+        details: [{ type: 'pii' }],
+      });
+
+      const result = await service.handleMessage('user_1', '你好');
+
+      expect(result.message).toBe('sanitized content');
+      expect(memoryManager.addMessage).toHaveBeenCalledWith(
+        'conv_1',
+        expect.objectContaining({
+          role: 'assistant',
+          content: 'sanitized content',
+        }),
+      );
+    });
+
+    it('should replace assistant response with safe fallback when moderation blocks', async () => {
+      fastRouter.getSimpleResponse.mockReturnValue('harmful content');
+      contentModeration.moderate.mockResolvedValue({
+        action: ModerationAction.BLOCK,
+        details: [{ type: 'harmful' }],
+      });
+
+      const result = await service.handleMessage('user_1', '你好');
+
+      expect(result.message).toBe('抱歉，我无法提供该回复。');
+    });
+
+    it('should pass through when moderation allows', async () => {
+      fastRouter.getSimpleResponse.mockReturnValue('safe content');
+      contentModeration.moderate.mockResolvedValue({
+        action: ModerationAction.ALLOW,
+        details: [],
+      });
+
+      const result = await service.handleMessage('user_1', '你好');
+
+      expect(result.message).toBe('safe content');
+    });
+
+    it('should fail-open when moderation throws', async () => {
+      fastRouter.getSimpleResponse.mockReturnValue('content');
+      contentModeration.moderate.mockRejectedValue(
+        new Error('moderation down'),
+      );
+
+      const result = await service.handleMessage('user_1', '你好');
+
+      expect(result.message).toBe('content');
     });
   });
 });

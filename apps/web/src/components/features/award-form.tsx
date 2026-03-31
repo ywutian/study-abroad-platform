@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
@@ -21,10 +22,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from '@/components/ui/form';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
 import { profileRoutes } from '@study-abroad/shared';
 import { Save, Loader2 } from 'lucide-react';
+import { createAwardSchema, type AwardFormValues } from '@/lib/validations/profile';
 
 const AWARD_LEVEL_KEYS = [
   { value: 'SCHOOL', labelKey: 'school' },
@@ -73,13 +83,40 @@ export function AwardForm({ open, onOpenChange, editingAward }: AwardFormProps) 
   const queryClient = useQueryClient();
   const isEditing = !!editingAward;
 
-  const [formData, setFormData] = useState({
-    name: editingAward?.name || '',
-    level: editingAward?.level || '',
-    category: editingAward?.category || '',
-    year: editingAward?.year?.toString() || '',
-    description: editingAward?.description || '',
+  const schema = useMemo(() => createAwardSchema(t), [t]);
+  const form = useForm<AwardFormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      name: '',
+      level: undefined,
+      category: '',
+      year: '',
+      description: '',
+    },
   });
+
+  // Reset form when dialog opens/closes or editing target changes
+  useEffect(() => {
+    if (open) {
+      if (editingAward) {
+        form.reset({
+          name: editingAward.name,
+          level: editingAward.level as AwardFormValues['level'],
+          category: (editingAward.category as AwardFormValues['category']) || '',
+          year: editingAward.year?.toString() || '',
+          description: editingAward.description || '',
+        });
+      } else {
+        form.reset({
+          name: '',
+          level: undefined,
+          category: '',
+          year: '',
+          description: '',
+        });
+      }
+    }
+  }, [open, editingAward, form]);
 
   const createMutation = useMutation({
     mutationFn: (data: unknown) => apiClient.post(profileRoutes.awards(), data),
@@ -87,7 +124,6 @@ export function AwardForm({ open, onOpenChange, editingAward }: AwardFormProps) 
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(t('toast.awardAdded'));
       onOpenChange(false);
-      resetForm();
     },
   });
 
@@ -100,38 +136,24 @@ export function AwardForm({ open, onOpenChange, editingAward }: AwardFormProps) 
     },
   });
 
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      level: '',
-      category: '',
-      year: '',
-      description: '',
-    });
-  };
-
-  const handleSubmit = () => {
-    if (!formData.name || !formData.level) {
-      toast.error(t('validation.awardRequired'));
-      return;
-    }
-
-    const data = {
-      name: formData.name,
-      level: formData.level,
-      category: formData.category || undefined,
-      year: formData.year ? parseInt(formData.year) : undefined,
-      description: formData.description || undefined,
+  const onSubmit = (data: AwardFormValues) => {
+    const payload = {
+      name: data.name,
+      level: data.level,
+      category: data.category || undefined,
+      year: data.year ? parseInt(data.year) : undefined,
+      description: data.description || undefined,
     };
 
     if (isEditing) {
-      updateMutation.mutate(data);
+      updateMutation.mutate(payload);
     } else {
-      createMutation.mutate(data);
+      createMutation.mutate(payload);
     }
   };
 
   const isPending = createMutation.isPending || updateMutation.isPending;
+  const description = form.watch('description');
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -140,95 +162,127 @@ export function AwardForm({ open, onOpenChange, editingAward }: AwardFormProps) 
           <DialogTitle>{isEditing ? t('form.editAward') : t('form.addAward')}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label>{t('form.awardName')} *</Label>
-            <Input
-              value={formData.name}
-              onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
-              placeholder={t('form.awardNamePlaceholder')}
-              maxLength={200}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('form.awardName')} *</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder={t('form.awardNamePlaceholder')}
+                      maxLength={200}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>{t('form.level')} *</Label>
-              <Select
-                value={formData.level}
-                onValueChange={(v) => setFormData((p) => ({ ...p, level: v }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t('form.selectLevel')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {AWARD_LEVEL_KEYS.map((l) => (
-                    <SelectItem key={l.value} value={l.value}>
-                      {t(`awardLevels.${l.labelKey}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="level"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('form.level')} *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('form.selectLevel')} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {AWARD_LEVEL_KEYS.map((l) => (
+                          <SelectItem key={l.value} value={l.value}>
+                            {t(`awardLevels.${l.labelKey}`)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('form.awardCategory')}</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('form.selectCategory')} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {AWARD_CATEGORIES.map((c) => (
+                          <SelectItem key={c.value} value={c.value}>
+                            {t(`awardCategories.${c.labelKey}`)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
-            <div className="space-y-2">
-              <Label>{t('form.awardCategory')}</Label>
-              <Select
-                value={formData.category}
-                onValueChange={(v) => setFormData((p) => ({ ...p, category: v }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t('form.selectCategory')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {AWARD_CATEGORIES.map((c) => (
-                    <SelectItem key={c.value} value={c.value}>
-                      {t(`awardCategories.${c.labelKey}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>{t('form.awardYear')}</Label>
-            <Input
-              type="number"
-              value={formData.year}
-              onChange={(e) => setFormData((p) => ({ ...p, year: e.target.value }))}
-              placeholder="2025"
-              min={2000}
-              max={2030}
+            <FormField
+              control={form.control}
+              name="year"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('form.awardYear')}</FormLabel>
+                  <FormControl>
+                    <Input type="number" {...field} placeholder="2025" min={2000} max={2030} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div className="space-y-2">
-            <Label>{t('form.awardDescription')}</Label>
-            <Textarea
-              value={formData.description}
-              onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
-              placeholder={t('form.awardDescPlaceholder')}
-              rows={3}
-              maxLength={500}
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('form.awardDescription')}</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder={t('form.awardDescPlaceholder')}
+                      rows={3}
+                      maxLength={500}
+                    />
+                  </FormControl>
+                  <p className="text-xs text-muted-foreground">{(description || '').length}/500</p>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            <p className="text-xs text-muted-foreground">{formData.description.length}/500</p>
-          </div>
-        </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {tCommon('cancel')}
-          </Button>
-          <Button onClick={handleSubmit} disabled={isPending}>
-            {isPending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Save className="mr-2 h-4 w-4" />
-            )}
-            {tCommon('save')}
-          </Button>
-        </DialogFooter>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                {tCommon('cancel')}
+              </Button>
+              <Button type="submit" disabled={isPending}>
+                {isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="mr-2 h-4 w-4" />
+                )}
+                {tCommon('save')}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

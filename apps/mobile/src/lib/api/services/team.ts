@@ -1,12 +1,13 @@
+import { API_ROUTES, teamRoutes } from '@study-abroad/shared';
 import { apiClient } from '../client';
 
 export const teamService = {
   list: (params?: Record<string, string | number | boolean | undefined>) =>
-    apiClient.get('/teams', { params }),
-  getById: (id: string) => apiClient.get(`/teams/${id}`),
+    apiClient.get(API_ROUTES.TEAMS, { params }),
+  getById: (id: string) => apiClient.get(teamRoutes.byId(id)),
   create: (data: Record<string, string | number | boolean | undefined>) =>
-    apiClient.post('/teams', data),
-  join: (id: string) => apiClient.post(`/teams/${id}/join`),
-  leave: (id: string) => apiClient.post(`/teams/${id}/leave`),
-  getMyTeams: () => apiClient.get('/teams/my'),
+    apiClient.post(API_ROUTES.TEAMS, data),
+  join: (id: string) => apiClient.post(teamRoutes.join(id)),
+  leave: (id: string) => apiClient.post(teamRoutes.leave(id)),
+  getMyTeams: () => apiClient.get(`${API_ROUTES.TEAMS}/my`),
 };

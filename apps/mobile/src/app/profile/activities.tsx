@@ -16,6 +16,7 @@ import {
 } from '@/components/ui';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useToast } from '@/components/ui/Toast';
+import { profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import type { Profile, Activity } from '@/types';
@@ -57,12 +58,12 @@ export default function ActivitiesScreen() {
     isRefetching,
   } = useQuery({
     queryKey: ['profile'],
-    queryFn: () => apiClient.get<Profile>('/profiles/me'),
+    queryFn: () => apiClient.get<Profile>(profileRoutes.me()),
   });
 
   const saveMutation = useMutation({
     mutationFn: (updatedActivities: Partial<Activity>[]) =>
-      apiClient.put<Profile>('/profiles/me', { activities: updatedActivities }),
+      apiClient.put<Profile>(profileRoutes.me(), { activities: updatedActivities }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(t('profileEdit.saveSuccess'));

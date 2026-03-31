@@ -28,7 +28,7 @@ config.resolver.alias = {
   '@types': path.resolve(projectRoot, 'src/types'),
 };
 
-// 4. Disable package exports
-config.resolver.unstable_enablePackageExports = false;
+// 4. Enable package exports for workspace package subpath resolution
+config.resolver.unstable_enablePackageExports = true;
 
 module.exports = config;

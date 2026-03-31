@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/table';
 import { PaginationControls } from '../../_components/pagination-controls';
 import { apiClient } from '@/lib/api';
+import { adminAiAgentRoutes } from '@study-abroad/shared';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { MessageSquare, Eye } from 'lucide-react';
@@ -38,7 +39,7 @@ export function ConversationsSection() {
     queryKey: ['memoryConversations', convUserId, convPage],
     queryFn: () =>
       apiClient.get<{ data: ConversationItem[]; total: number }>(
-        '/admin/ai-agent/memory/conversations',
+        adminAiAgentRoutes.memoryConversations(),
         {
           params: {
             ...(convUserId && { userId: convUserId }),
@@ -53,7 +54,7 @@ export function ConversationsSection() {
   const { data: convMessages } = useQuery({
     queryKey: ['memoryConvMessages', viewConvId],
     queryFn: () =>
-      apiClient.get<MessageItem[]>(`/admin/ai-agent/memory/conversations/${viewConvId}/messages`),
+      apiClient.get<MessageItem[]>(adminAiAgentRoutes.memoryConversationMessages(viewConvId!)),
     enabled: !!viewConvId,
   });
 

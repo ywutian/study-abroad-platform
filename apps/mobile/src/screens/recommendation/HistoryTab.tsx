@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 
 import { EmptyState, Loading } from '@/components/ui';
+import { recommendationRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useColors, spacing } from '@/utils/theme';
 
@@ -23,7 +24,7 @@ export function HistoryTab({ onViewResult, onSwitchToGenerate }: HistoryTabProps
 
   const { data: history, isLoading: historyLoading } = useQuery<RecommendationResult[]>({
     queryKey: recommendationKeys.history(),
-    queryFn: () => apiClient.get('/recommendations/history'),
+    queryFn: () => apiClient.get(recommendationRoutes.history()),
     staleTime: 5 * 60_000,
   });
 

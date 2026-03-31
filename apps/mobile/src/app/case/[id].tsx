@@ -16,6 +16,7 @@ import {
   ErrorState,
   Skeleton,
 } from '@/components/ui';
+import { caseRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useColors, withOpacity, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import type { Case } from '@/types';
@@ -32,7 +33,7 @@ export default function CaseDetailScreen() {
     refetch,
   } = useQuery({
     queryKey: ['case', id],
-    queryFn: () => apiClient.get<Case>(`/cases/${id}`),
+    queryFn: () => apiClient.get<Case>(caseRoutes.byId(id!)),
     enabled: !!id,
   });
 

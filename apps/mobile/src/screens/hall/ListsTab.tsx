@@ -19,6 +19,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AnimatedButton, Badge, EmptyState, Loading, Modal } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { API_ROUTES, hallRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import type { HallList, HallListDetail, CreateListDto } from './types';
 import { LIST_CATEGORIES } from './types';
@@ -46,18 +47,18 @@ export function ListsTab() {
     refetch,
   } = useQuery<HallList[]>({
     queryKey: ['hall-lists'],
-    queryFn: () => apiClient.get<HallList[]>('/halls/lists'),
+    queryFn: () => apiClient.get<HallList[]>(hallRoutes.lists()),
     staleTime: 2 * 60_000,
   });
 
   const { data: listDetail, isLoading: listDetailLoading } = useQuery<HallListDetail>({
     queryKey: ['hall-list-detail', listDetailId],
-    queryFn: () => apiClient.get<HallListDetail>(`/halls/lists/${listDetailId}`),
+    queryFn: () => apiClient.get<HallListDetail>(`${API_ROUTES.HALLS}/lists/${listDetailId}`),
     enabled: !!listDetailId,
   });
 
   const createListMutation = useMutation<HallList, Error, CreateListDto>({
-    mutationFn: (dto) => apiClient.post<HallList>('/halls/lists', dto),
+    mutationFn: (dto) => apiClient.post<HallList>(hallRoutes.lists(), dto),
     onSuccess: () => {
       toast.show({ type: 'success', message: t('hallOfFame.lists.created', 'List created!') });
       queryClient.invalidateQueries({ queryKey: ['hall-lists'] });
@@ -70,7 +71,7 @@ export function ListsTab() {
 
   const voteMutation = useMutation<void, Error, { listId: string; direction: 'up' | 'down' }>({
     mutationFn: ({ listId, direction }) =>
-      apiClient.post(`/halls/lists/${listId}/vote`, { direction }),
+      apiClient.post(hallRoutes.listVote(listId), { direction }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['hall-lists'] });
     },

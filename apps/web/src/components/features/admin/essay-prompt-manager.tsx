@@ -35,7 +35,7 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminRoutes } from '@study-abroad/shared';
 import { ListSkeleton } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toast } from 'sonner';
@@ -109,14 +109,14 @@ export function EssayPromptManager() {
   // 获取统计数据
   const { data: stats } = useQuery({
     queryKey: ['essayPromptStats'],
-    queryFn: () => apiClient.get<EssayStats>('/admin/essay-prompts/stats'),
+    queryFn: () => apiClient.get<EssayStats>(adminRoutes.essayPromptsStats()),
   });
 
   // 获取文书列表
   const { data: essaysData, isLoading } = useQuery({
     queryKey: ['essayPrompts', statusFilter, typeFilter, debouncedSearch],
     queryFn: () =>
-      apiClient.get<{ data: EssayPrompt[]; total: number }>('/admin/essay-prompts', {
+      apiClient.get<{ data: EssayPrompt[]; total: number }>(adminRoutes.essayPrompts(), {
         params: {
           status: statusFilter !== 'ALL' ? statusFilter : undefined,
           type: typeFilter !== 'ALL' ? typeFilter : undefined,
@@ -129,7 +129,7 @@ export function EssayPromptManager() {
   // 审核单个
   const verifyMutation = useMutation({
     mutationFn: ({ id, status, reason }: { id: string; status: string; reason?: string }) =>
-      apiClient.post(`${API_ROUTES.ADMIN}/essay-prompts/${id}/verify`, { status, reason }),
+      apiClient.post(adminRoutes.essayPromptVerify(id), { status, reason }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['essayPrompts'] });
       queryClient.invalidateQueries({ queryKey: ['essayPromptStats'] });
@@ -143,7 +143,7 @@ export function EssayPromptManager() {
   const batchVerifyMutation = useMutation({
     mutationFn: ({ ids, status, reason }: { ids: string[]; status: string; reason?: string }) =>
       apiClient.post<{ success: number; failed: Array<{ id: string; error: string }> }>(
-        '/admin/essay-prompts/batch-verify',
+        adminRoutes.essayPromptsBatchVerify(),
         {
           ids,
           status,
@@ -163,7 +163,7 @@ export function EssayPromptManager() {
     mutationFn: () =>
       apiClient.post<
         Array<{ schoolName: string; success: boolean; count?: number; error?: string }>
-      >('/admin/essay-scraper/scrape-all'),
+      >(adminRoutes.essayScraperScrapeAll()),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['essayPrompts'] });
       queryClient.invalidateQueries({ queryKey: ['essayPromptStats'] });

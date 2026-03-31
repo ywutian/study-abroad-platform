@@ -89,7 +89,7 @@ export const hallRoutes = {
   listVote: (id: string) => `${API_ROUTES.HALLS}/lists/${id}/vote`,
   reviews: () => `${API_ROUTES.HALLS}/reviews`,
   reviewReact: (id: string) => `${API_ROUTES.HALLS}/reviews/${id}/react`,
-  verified: () => `${API_ROUTES.HALLS}/verified`,
+  verifiedRanking: () => `${API_ROUTES.HALLS}/verified-ranking`,
   swipe: () => `${API_ROUTES.HALLS}/swipe`,
 };
 
@@ -100,7 +100,6 @@ export const chatRoutes = {
   message: (messageId: string) => `${API_ROUTES.CHATS}/messages/${messageId}`,
   follow: (userId: string) => `${API_ROUTES.CHATS}/follow/${userId}`,
   block: (userId: string) => `${API_ROUTES.CHATS}/block/${userId}`,
-  unblock: (userId: string) => `${API_ROUTES.CHATS}/unblock/${userId}`,
 };
 
 export const predictionRoutes = {
@@ -156,6 +155,7 @@ export const essayAiRoutes = {
   continueWriting: () => `${API_ROUTES.ESSAY_AI}/continue-writing`,
   generateOpening: () => `${API_ROUTES.ESSAY_AI}/generate-opening`,
   rewriteParagraph: () => `${API_ROUTES.ESSAY_AI}/rewrite-paragraph`,
+  activityDescription: () => `${API_ROUTES.ESSAY_AI}/activity-description`,
   gallery: () => `${API_ROUTES.ESSAY_AI}/gallery`,
 };
 
@@ -241,4 +241,196 @@ export const adminFeatureFlagRoutes = {
   list: () => `${API_ROUTES.ADMIN}/feature-flags`,
   byId: (id: string) => `${API_ROUTES.ADMIN}/feature-flags/${id}`,
   invalidateCache: (id: string) => `${API_ROUTES.ADMIN}/feature-flags/${id}/invalidate-cache`,
+};
+
+export const adminRoutes = {
+  // Stats & Dashboard
+  stats: () => `${API_ROUTES.ADMIN}/stats`,
+  statsTrends: () => `${API_ROUTES.ADMIN}/stats/trends`,
+
+  // Users
+  users: () => `${API_ROUTES.ADMIN}/users`,
+  userById: (id: string) => `${API_ROUTES.ADMIN}/users/${id}`,
+  userRole: (userId: string) => `${API_ROUTES.ADMIN}/users/${userId}/role`,
+  userBan: (userId: string) => `${API_ROUTES.ADMIN}/users/${userId}/ban`,
+  userUnban: (userId: string) => `${API_ROUTES.ADMIN}/users/${userId}/unban`,
+  userRoleAssign: (userId: string) => `${API_ROUTES.ADMIN}/roles/users/${userId}/role`,
+
+  // Roles & Permissions
+  myPermissions: () => `${API_ROUTES.ADMIN}/roles/my-permissions`,
+  operators: () => `${API_ROUTES.ADMIN}/roles/operators`,
+  operatorStats: (operatorId: string) => `${API_ROUTES.ADMIN}/roles/operators/${operatorId}/stats`,
+  operatorInvite: () => `${API_ROUTES.ADMIN}/roles/operators/invite`,
+  invites: () => `${API_ROUTES.ADMIN}/roles/invites`,
+  permissions: () => `${API_ROUTES.ADMIN}/roles/permissions`,
+  usersSearch: () => `${API_ROUTES.ADMIN}/roles/users/search`,
+  usersPromote: () => `${API_ROUTES.ADMIN}/roles/users/promote`,
+  userPermissions: (userId: string) => `${API_ROUTES.ADMIN}/roles/users/${userId}/permissions`,
+
+  // Audit Logs
+  auditLogs: () => `${API_ROUTES.ADMIN}/audit-logs`,
+
+  // Reports
+  reports: () => `${API_ROUTES.ADMIN}/reports`,
+  reportById: (id: string) => `${API_ROUTES.ADMIN}/reports/${id}`,
+  reportClaim: (id: string) => `${API_ROUTES.ADMIN}/reports/${id}/claim`,
+  reportRelease: (id: string) => `${API_ROUTES.ADMIN}/reports/${id}/release`,
+
+  // Moderation
+  moderationStatistics: () => `${API_ROUTES.ADMIN}/moderation/statistics`,
+  forumsPostDelete: (id: string) => `${API_ROUTES.ADMIN}/forums/posts/${id}`,
+  forumsPostPin: (postId: string) => `${API_ROUTES.ADMIN}/forums/posts/${postId}/pin`,
+  forumsPostLock: (postId: string) => `${API_ROUTES.ADMIN}/forums/posts/${postId}/lock`,
+  forumsPostsBatch: () => `${API_ROUTES.ADMIN}/forums/posts/batch`,
+  forumsCommentDelete: (id: string) => `${API_ROUTES.ADMIN}/forums/comments/${id}`,
+  chatsMessageDelete: (id: string) => `${API_ROUTES.ADMIN}/chats/messages/${id}`,
+  reviewById: (id: string) => `${API_ROUTES.ADMIN}/reviews/${id}`,
+  reviewHide: (id: string) => `${API_ROUTES.ADMIN}/reviews/${id}/hide`,
+  reviewUnhide: (id: string) => `${API_ROUTES.ADMIN}/reviews/${id}/unhide`,
+
+  // Payments
+  payments: () => `${API_ROUTES.ADMIN}/payments`,
+  paymentsStats: () => `${API_ROUTES.ADMIN}/payments/stats`,
+  paymentRefund: (paymentId: string) => `${API_ROUTES.ADMIN}/payments/${paymentId}/refund`,
+  paymentUserSubscription: (userId: string) =>
+    `${API_ROUTES.ADMIN}/payments/users/${userId}/subscription`,
+
+  // Points
+  pointsConfig: () => `${API_ROUTES.ADMIN}/points/config`,
+  pointsToggle: () => `${API_ROUTES.ADMIN}/points/toggle`,
+  pointsActions: () => `${API_ROUTES.ADMIN}/points/actions`,
+  pointsReset: () => `${API_ROUTES.ADMIN}/points/reset`,
+
+  // Data Review
+  reviewStats: () => `${API_ROUTES.ADMIN}/review/stats`,
+  reviewPendingCases: () => `${API_ROUTES.ADMIN}/review/pending-cases`,
+  reviewQueue: () => `${API_ROUTES.ADMIN}/review/queue`,
+  reviewApprove: (id: string) => `${API_ROUTES.ADMIN}/review/${id}/approve`,
+  reviewReject: (id: string) => `${API_ROUTES.ADMIN}/review/${id}/reject`,
+  reviewEditAndApprove: (id: string) => `${API_ROUTES.ADMIN}/review/${id}/edit-and-approve`,
+  reviewBatches: () => `${API_ROUTES.ADMIN}/review/batches`,
+  reviewBatchRollback: (batchId: string) =>
+    `${API_ROUTES.ADMIN}/review/batches/${batchId}/rollback`,
+
+  // Data Review - Case Review
+  reviewCaseApprove: (id: string) => `${API_ROUTES.ADMIN}/review/cases/${id}/approve`,
+  reviewCaseReject: (id: string) => `${API_ROUTES.ADMIN}/review/cases/${id}/reject`,
+  reviewBatch: () => `${API_ROUTES.ADMIN}/review/batch`,
+
+  // Cases
+  casesBatchImport: () => `${API_ROUTES.ADMIN}/cases/batch-import`,
+  casesBatchVerify: () => `${API_ROUTES.ADMIN}/cases/batch-verify`,
+  casesPendingEssays: () => `${API_ROUTES.ADMIN}/cases/pending-essays`,
+  casesStats: () => `${API_ROUTES.ADMIN}/cases/stats`,
+  caseReviewEssay: (id: string) => `${API_ROUTES.ADMIN}/cases/${id}/review-essay`,
+
+  // Essay Prompts
+  essayPrompts: () => `${API_ROUTES.ADMIN}/essay-prompts`,
+  essayPromptsBatchImport: () => `${API_ROUTES.ADMIN}/essay-prompts/batch-import`,
+  essayPromptsBatchVerify: () => `${API_ROUTES.ADMIN}/essay-prompts/batch-verify`,
+  essayPromptsStats: () => `${API_ROUTES.ADMIN}/essay-prompts/stats`,
+  essayPromptVerify: (id: string) => `${API_ROUTES.ADMIN}/essay-prompts/${id}/verify`,
+
+  // Essay Scraper
+  essayScraperCoverage: () => `${API_ROUTES.ADMIN}/essay-scraper/dashboard/coverage`,
+  essayScraperFreshness: () => `${API_ROUTES.ADMIN}/essay-scraper/dashboard/freshness`,
+  essayScraperPipelineRuns: () => `${API_ROUTES.ADMIN}/essay-scraper/pipeline/runs`,
+  essayScraperPipelineStart: () => `${API_ROUTES.ADMIN}/essay-scraper/pipeline/start`,
+  essayScraperTestScrape: () => `${API_ROUTES.ADMIN}/essay-scraper/test-scrape`,
+  essayScraperScrapeAll: () => `${API_ROUTES.ADMIN}/essay-scraper/scrape-all`,
+  essayScraperScrapeSchool: () => `${API_ROUTES.ADMIN}/essay-scraper/scrape`,
+  essayScraperConfirmSave: () => `${API_ROUTES.ADMIN}/essay-scraper/confirm-save`,
+
+  // High Schools
+  highSchools: () => `${API_ROUTES.ADMIN}/high-schools`,
+  highSchoolById: (id: string) => `${API_ROUTES.ADMIN}/high-schools/${id}`,
+  highSchoolsBatchImport: () => `${API_ROUTES.ADMIN}/high-schools/batch-import`,
+  highSchoolsReviewNeeded: () => `${API_ROUTES.ADMIN}/high-schools/review-needed`,
+  highSchoolsSuggestions: () => `${API_ROUTES.ADMIN}/high-schools/suggestions`,
+  highSchoolsSuggestionApprove: (id: string) =>
+    `${API_ROUTES.ADMIN}/high-schools/suggestions/${id}/approve`,
+  highSchoolsSuggestionReject: (id: string) =>
+    `${API_ROUTES.ADMIN}/high-schools/suggestions/${id}/reject`,
+
+  // Data Sync
+  dataSyncJobs: () => `${API_ROUTES.ADMIN}/data-sync/jobs`,
+  dataSyncTrigger: () => `${API_ROUTES.ADMIN}/data-sync/trigger`,
+
+  // Activity Templates
+  activityTemplates: () => `${API_ROUTES.ADMIN}/activity-templates`,
+  activityTemplateById: (id: string) => `${API_ROUTES.ADMIN}/activity-templates/${id}`,
+
+  // School Deadlines
+  schoolDeadlines: () => `${API_ROUTES.ADMIN}/school-deadlines`,
+  schoolDeadlineById: (id: string) => `${API_ROUTES.ADMIN}/school-deadlines/${id}`,
+
+  // Global Events
+  globalEvents: () => `${API_ROUTES.ADMIN}/global-events`,
+  globalEventById: (id: string) => `${API_ROUTES.ADMIN}/global-events/${id}`,
+
+  // Calibrations
+  calibrations: () => `${API_ROUTES.ADMIN}/calibrations`,
+  calibrationById: (id: string) => `${API_ROUTES.ADMIN}/calibrations/${id}`,
+  calibrationsBulk: () => `${API_ROUTES.ADMIN}/calibrations/bulk`,
+  calibrationsStats: () => `${API_ROUTES.ADMIN}/calibrations/stats`,
+  calibrationsSuggestions: () => `${API_ROUTES.ADMIN}/calibrations/suggestions`,
+  calibrationsPlattStatus: () => `${API_ROUTES.ADMIN}/calibrations/platt-status`,
+  calibrationsRetrain: () => `${API_ROUTES.ADMIN}/calibrations/retrain`,
+
+  // Schools (under /schools/admin prefix)
+  schoolsLogoFillStatus: () => `${API_ROUTES.SCHOOLS}/admin/logo-fill-status`,
+  schoolsDataQuality: () => `${API_ROUTES.SCHOOLS}/admin/data-quality`,
+  schoolsFillLogosByDomain: () => `${API_ROUTES.SCHOOLS}/admin/fill-logos-by-domain`,
+};
+
+export const adminAiAgentRoutes = {
+  // Health & Config
+  health: () => `${API_ROUTES.ADMIN}/ai-agent/health`,
+  config: () => `${API_ROUTES.ADMIN}/ai-agent/config`,
+  configQuota: () => `${API_ROUTES.ADMIN}/ai-agent/config/quota`,
+  configLlm: () => `${API_ROUTES.ADMIN}/ai-agent/config/llm`,
+
+  // Agents
+  agents: () => `${API_ROUTES.ADMIN}/ai-agent/agents`,
+  agentById: (type: string) => `${API_ROUTES.ADMIN}/ai-agent/agents/${type}`,
+  agentToggle: (type: string) => `${API_ROUTES.ADMIN}/ai-agent/agents/${type}/toggle`,
+
+  // Features
+  featureToggle: (feature: string) => `${API_ROUTES.ADMIN}/ai-agent/features/${feature}`,
+
+  // Security Events
+  securityEventResolve: (id: string) =>
+    `${API_ROUTES.ADMIN}/ai-agent/security-events/${id}/resolve`,
+
+  // Circuit Breakers
+  circuitBreakers: () => `${API_ROUTES.ADMIN}/ai-agent/circuit-breakers`,
+  circuitBreakerReset: (service: string) =>
+    `${API_ROUTES.ADMIN}/ai-agent/circuit-breakers/${service}`,
+
+  // Metrics
+  metrics: () => `${API_ROUTES.ADMIN}/ai-agent/metrics`,
+  metricsDaily: () => `${API_ROUTES.ADMIN}/ai-agent/metrics/daily`,
+
+  // Traces
+  traces: (tab: string) => `${API_ROUTES.ADMIN}/ai-agent/traces/${tab}`,
+
+  // LLM Calls
+  llmCalls: () => `${API_ROUTES.ADMIN}/ai-agent/llm-calls`,
+
+  // User AI
+  userUsage: (userId: string) => `${API_ROUTES.ADMIN}/ai-agent/users/${userId}/usage`,
+  userRateLimit: (userId: string) => `${API_ROUTES.ADMIN}/ai-agent/users/${userId}/rate-limit`,
+
+  // Memory
+  memoryById: (id: string) => `${API_ROUTES.ADMIN}/ai-agent/memory/${id}`,
+  memoryStats: () => `${API_ROUTES.ADMIN}/ai-agent/memory/stats`,
+  memoryBrowse: () => `${API_ROUTES.ADMIN}/ai-agent/memory/browse`,
+  memoryEntities: () => `${API_ROUTES.ADMIN}/ai-agent/memory/entities`,
+  memoryConversations: () => `${API_ROUTES.ADMIN}/ai-agent/memory/conversations`,
+  memoryConversationMessages: (convId: string) =>
+    `${API_ROUTES.ADMIN}/ai-agent/memory/conversations/${convId}/messages`,
+  memoryUserStats: (userId: string) => `${API_ROUTES.ADMIN}/ai-agent/memory/users/${userId}/stats`,
+  memoryDecayConfig: () => `${API_ROUTES.ADMIN}/ai-agent/memory/decay/config`,
+  memoryDecayStats: () => `${API_ROUTES.ADMIN}/ai-agent/memory/decay/stats`,
+  memoryDecayTrigger: () => `${API_ROUTES.ADMIN}/ai-agent/memory/decay/trigger`,
 };

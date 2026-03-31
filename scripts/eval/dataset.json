@@ -1,0 +1,139 @@
+[
+  {
+    "id": "route-001",
+    "category": "tool_routing",
+    "description": "选校查询应路由到 search_schools",
+    "input": "帮我查一下 MIT 的录取要求",
+    "expectedToolCalls": ["get_school_details"],
+    "forbiddenToolCalls": ["web_search"],
+    "severity": "critical"
+  },
+  {
+    "id": "route-002",
+    "category": "tool_routing",
+    "description": "文书请求应路由到文书工具",
+    "input": "帮我看看我的 Common App 主文书写得怎么样",
+    "expectedToolCalls": ["get_essays"],
+    "severity": "critical"
+  },
+  {
+    "id": "route-003",
+    "category": "tool_routing",
+    "description": "档案查询不应触发 web_search",
+    "input": "我的 GPA 是多少？",
+    "expectedToolCalls": ["get_profile"],
+    "forbiddenToolCalls": ["web_search", "search_school_website"],
+    "severity": "critical"
+  },
+  {
+    "id": "deadline-001",
+    "category": "deadline_accuracy",
+    "description": "ED 截止日期查询应返回准确日期",
+    "input": "Stanford REA 的截止日期是什么时候？",
+    "expectedToolCalls": ["get_deadlines"],
+    "expectedKeywords": ["11月1日", "November 1", "11/1"],
+    "forbiddenContent": ["11月15日", "12月1日"],
+    "severity": "critical"
+  },
+  {
+    "id": "deadline-002",
+    "category": "deadline_accuracy",
+    "description": "RD 截止日期查询",
+    "input": "Harvard RD 什么时候截止？",
+    "expectedToolCalls": ["get_deadlines"],
+    "expectedKeywords": ["1月1日", "January 1", "1/1"],
+    "severity": "critical"
+  },
+  {
+    "id": "school-001",
+    "category": "school_recommendation",
+    "description": "选校推荐应基于用户档案",
+    "input": "根据我的背景帮我推荐 5 所学校",
+    "expectedToolCalls": ["get_profile", "recommend_schools"],
+    "severity": "major"
+  },
+  {
+    "id": "school-002",
+    "category": "school_recommendation",
+    "description": "选校推荐应包含冲刺/匹配/保底分层",
+    "input": "帮我做一个选校清单",
+    "expectedToolCalls": ["get_profile", "recommend_schools"],
+    "expectedKeywords": ["冲刺", "匹配", "保底"],
+    "severity": "major"
+  },
+  {
+    "id": "prob-001",
+    "category": "probability_calibration",
+    "description": "录取概率查询应优先用已有预测",
+    "input": "我被 Stanford 录取的概率有多大？",
+    "expectedToolCalls": ["get_prediction_history"],
+    "severity": "major"
+  },
+  {
+    "id": "intl-001",
+    "category": "international_student",
+    "description": "国际生 need-blind 信息应准确",
+    "input": "哪些学校对国际生是 need-blind 的？",
+    "expectedKeywords": ["Harvard", "MIT", "Yale", "Princeton", "Amherst"],
+    "forbiddenContent": ["所有学校都是 need-blind"],
+    "severity": "major"
+  },
+  {
+    "id": "intl-002",
+    "category": "international_student",
+    "description": "国际生竞争力分析应调用专用工具",
+    "input": "作为国际生，我申请 top 20 的竞争力如何？",
+    "expectedToolCalls": ["get_profile", "analyze_intl_competitiveness"],
+    "severity": "major"
+  },
+  {
+    "id": "json-001",
+    "category": "json_compliance",
+    "description": "学校推荐结果应包含必要字段",
+    "input": "推荐学校",
+    "expectedJsonFields": ["schoolName", "tier", "reason"],
+    "severity": "major",
+    "mockToolCalls": [
+      { "name": "get_profile", "arguments": {} },
+      { "name": "recommend_schools", "arguments": {} }
+    ],
+    "mockToolResults": {
+      "get_profile": "{\"gpa\": 3.8, \"sat\": 1500, \"major\": \"CS\"}",
+      "recommend_schools": "[{\"schoolName\": \"MIT\", \"tier\": \"reach\", \"reason\": \"Strong CS program\"}, {\"schoolName\": \"UIUC\", \"tier\": \"match\", \"reason\": \"Good fit\"}]"
+    }
+  },
+  {
+    "id": "json-002",
+    "category": "json_compliance",
+    "description": "录取预测结果应包含概率字段",
+    "input": "预测我被 MIT 录取的概率",
+    "expectedJsonFields": ["probability", "tier"],
+    "severity": "major"
+  },
+  {
+    "id": "essay-001",
+    "category": "essay_guidance",
+    "description": "文书指导应基于具体 prompt",
+    "input": "Common App 主文书应该怎么写？有什么建议？",
+    "expectedToolCalls": ["search_essay_prompts"],
+    "severity": "minor",
+    "subjective": true
+  },
+  {
+    "id": "term-001",
+    "category": "terminology_accuracy",
+    "description": "EA/REA/SCEA 术语区分",
+    "input": "EA 和 REA 有什么区别？SCEA 又是什么？",
+    "expectedKeywords": ["Early Action", "Restrictive Early Action", "Single-Choice Early Action"],
+    "forbiddenContent": ["EA 和 REA 是一样的"],
+    "severity": "critical"
+  },
+  {
+    "id": "term-002",
+    "category": "terminology_accuracy",
+    "description": "ED I 和 ED II 区分",
+    "input": "ED1 和 ED2 有什么区别？",
+    "expectedKeywords": ["binding", "约束力", "11月", "1月"],
+    "severity": "major"
+  }
+]

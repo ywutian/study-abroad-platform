@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { apiClient } from '@/lib/api';
+import { adminAiAgentRoutes } from '@study-abroad/shared';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Database } from 'lucide-react';
@@ -20,7 +21,7 @@ export function GlobalStatsSection() {
 
   const { data: globalStats } = useQuery({
     queryKey: ['memoryGlobalStats'],
-    queryFn: () => apiClient.get<GlobalMemoryStats>('/admin/ai-agent/memory/stats'),
+    queryFn: () => apiClient.get<GlobalMemoryStats>(adminAiAgentRoutes.memoryStats()),
     refetchInterval: 30000,
   });
 

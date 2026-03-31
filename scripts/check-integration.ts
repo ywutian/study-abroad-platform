@@ -2,12 +2,14 @@
  * Cross-layer integration checker.
  * Verifies end-to-end consistency across Prisma, Shared types, Backend, Frontend, and Mobile.
  *
- * 16 rules across 4 domains:
+ * 21 rules across 5 domains:
  *   A. Type consistency (enum-consistency, password-regex-sync, form-validation-sync)
  *   B. Route & API (route-helper-sync, hardcoded-api-routes, route-protection-audit, mobile-endpoint-consistency)
  *   C. AI system (ai-tool-registration, streaming-event-coverage, websocket-event-coverage)
  *   D. Backend & frontend integration (admin-guard-coverage, email-method-existence,
  *      module-dependency-check, stub-service-audit, cache-invalidation-audit, llm-json-import-check)
+ *   E. Governance (governance-optional-security, governance-nl-endpoint-coverage,
+ *      governance-config-consistency, governance-user-data-isolation, governance-dead-provider)
  *
  * Usage:
  *   npx tsx scripts/check-integration.ts                         # All 16 rules
@@ -59,7 +61,12 @@ type RuleName =
   | 'module-dependency-check'
   | 'stub-service-audit'
   | 'cache-invalidation-audit'
-  | 'llm-json-import-check';
+  | 'llm-json-import-check'
+  | 'governance-optional-security'
+  | 'governance-nl-endpoint-coverage'
+  | 'governance-config-consistency'
+  | 'governance-user-data-isolation'
+  | 'governance-dead-provider';
 
 const DOMAINS: Record<string, RuleName[]> = {
   types: ['enum-consistency', 'password-regex-sync', 'form-validation-sync'],
@@ -77,6 +84,13 @@ const DOMAINS: Record<string, RuleName[]> = {
     'stub-service-audit',
     'cache-invalidation-audit',
     'llm-json-import-check',
+  ],
+  governance: [
+    'governance-optional-security',
+    'governance-nl-endpoint-coverage',
+    'governance-config-consistency',
+    'governance-user-data-isolation',
+    'governance-dead-provider',
   ],
 };
 
@@ -182,19 +196,32 @@ function checkEnumConsistency(): Issue[] {
     prismaEnums.set(name, { values, line });
   }
 
-  // Parse Shared enums
+  // Parse Shared enums (follow barrel re-exports)
+  const sharedTypesDir = path.dirname(SHARED_TYPES);
   const sharedContent = readFile(SHARED_TYPES);
   const sharedEnums = new Map<string, { values: string[]; line: number }>();
   const sharedEnumRegex = /export\s+enum\s+(\w+)\s*\{([^}]+)\}/g;
 
-  while ((match = sharedEnumRegex.exec(sharedContent)) !== null) {
+  // Collect content from index.ts + all re-exported files
+  let combinedContent = sharedContent;
+  const reExportRegex = /export\s+\*\s+from\s+['"](\.\/[^'"]+)['"]/g;
+  let reExportMatch: RegExpExecArray | null;
+  while ((reExportMatch = reExportRegex.exec(sharedContent)) !== null) {
+    const relPath = reExportMatch[1];
+    const fullPath = path.resolve(sharedTypesDir, relPath + '.ts');
+    if (fs.existsSync(fullPath)) {
+      combinedContent += '\n' + readFile(fullPath);
+    }
+  }
+
+  while ((match = sharedEnumRegex.exec(combinedContent)) !== null) {
     const name = match[1];
     const values = match[2]
       .split('\n')
       .map((l) => l.trim().replace(/,\s*$/, ''))
       .filter((l) => l && !l.startsWith('//'))
       .map((l) => l.split('=')[0].trim());
-    const line = sharedContent.substring(0, match.index).split('\n').length;
+    const line = combinedContent.substring(0, match.index).split('\n').length;
     sharedEnums.set(name, { values, line });
   }
 
@@ -1339,6 +1366,51 @@ function getSummary(issues: Issue[]): { errors: number; warnings: number; infos:
   };
 }
 
+// ── Governance bridge ─────────────────────────────────────
+
+import { execSync } from 'child_process';
+
+function runGovernanceRule(governanceRuleId: string): Issue[] {
+  try {
+    const output = execSync(
+      `npx tsx scripts/governance/index.ts --rule=${governanceRuleId} --json`,
+      { cwd: ROOT, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }
+    );
+    const result = JSON.parse(output);
+    return (result.issues || []).map((i: any) => ({
+      rule: `governance-${i.rule}` as RuleName,
+      severity: i.severity as Severity,
+      file: i.file ? rel(i.file) : 'scripts/governance',
+      line: i.line,
+      message: i.message,
+    }));
+  } catch (err: any) {
+    // If the governance CLI exits with code 1, it still outputs JSON on stdout
+    if (err.stdout) {
+      try {
+        const result = JSON.parse(err.stdout);
+        return (result.issues || []).map((i: any) => ({
+          rule: `governance-${i.rule}` as RuleName,
+          severity: i.severity as Severity,
+          file: i.file ? rel(i.file) : 'scripts/governance',
+          line: i.line,
+          message: i.message,
+        }));
+      } catch {
+        // JSON parse failed
+      }
+    }
+    return [
+      {
+        rule: `governance-${governanceRuleId}` as RuleName,
+        severity: 'error' as Severity,
+        file: 'scripts/governance',
+        message: `Governance rule '${governanceRuleId}' failed to execute: ${err.message}`,
+      },
+    ];
+  }
+}
+
 // ── Main ────────────────────────────────────────────────────
 
 const RULE_MAP: Record<RuleName, () => Issue[]> = {
@@ -1358,6 +1430,11 @@ const RULE_MAP: Record<RuleName, () => Issue[]> = {
   'stub-service-audit': checkStubServiceAudit,
   'cache-invalidation-audit': checkCacheInvalidation,
   'llm-json-import-check': checkLlmJsonImport,
+  'governance-optional-security': () => runGovernanceRule('optional-security'),
+  'governance-nl-endpoint-coverage': () => runGovernanceRule('nl-endpoint-coverage'),
+  'governance-config-consistency': () => runGovernanceRule('config-consistency'),
+  'governance-user-data-isolation': () => runGovernanceRule('user-data-isolation'),
+  'governance-dead-provider': () => runGovernanceRule('dead-provider'),
 };
 
 function main(): void {

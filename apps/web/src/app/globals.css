@@ -363,19 +363,22 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    overflow-x: hidden; /* Layer 1 溢出防护：全局禁止水平滚动条 */
     position: relative; /* 修复 framer-motion useScroll 警告 */
     font-size: 16px;
     hanging-punctuation: first last;
     scroll-padding-top: 5rem;
     scroll-behavior: smooth;
   }
-  
+
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
     font-optical-sizing: auto;
     line-height: 1.625;
     letter-spacing: -0.011em;
+    overflow-x: hidden; /* Layer 1 溢出防护 */
+    overflow-wrap: break-word; /* 超长单词允许断行 */
     position: relative; /* 修复 framer-motion useScroll 警告 */
   }
 

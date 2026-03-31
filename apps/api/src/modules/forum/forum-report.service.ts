@@ -63,6 +63,7 @@ export class ForumReportService {
         targetId: postId,
         reason,
         detail,
+        priority: 'LOW',
         context: {
           postTitle: post.title,
           postContent: post.content.substring(0, 500),
@@ -125,6 +126,7 @@ export class ForumReportService {
         targetId: commentId,
         reason,
         detail,
+        priority: 'LOW',
         context: {
           commentContent: comment.content,
           authorId: comment.authorId,

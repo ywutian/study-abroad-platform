@@ -234,6 +234,9 @@ describe('PredictionService', () => {
             assessmentResult: {
               findMany: jest.fn().mockResolvedValue([]),
             },
+            schoolListItem: {
+              findMany: jest.fn().mockResolvedValue([]),
+            },
           },
         },
         {
@@ -255,6 +258,9 @@ describe('PredictionService', () => {
               .mockReturnValue(mockProfileMetrics),
             extractSchoolMetrics: jest.fn().mockReturnValue(mockSchoolMetrics),
             evaluateDataCompleteness: jest.fn().mockReturnValue(0.75),
+            enrichWithEssayQuality: jest
+              .fn()
+              .mockImplementation((input) => Promise.resolve(input)),
           },
         },
         {
@@ -671,20 +677,30 @@ describe('PredictionService', () => {
   });
 
   describe('getPredictionHistory', () => {
-    it('should return prediction history for a profile', async () => {
-      (reportingService.getPredictionHistory as jest.Mock).mockResolvedValue([
-        {
-          id: 'pred-1',
-          schoolId: 'school-1',
-          probability: 0.45,
-          tier: 'match',
-          createdAt: new Date(),
-          school: mockSchool,
-        },
-      ]);
+    it('should return paginated prediction history for a profile', async () => {
+      const mockPaginated = {
+        items: [
+          {
+            id: 'pred-1',
+            schoolId: 'school-1',
+            probability: 0.45,
+            tier: 'match',
+            createdAt: new Date(),
+            school: mockSchool,
+          },
+        ],
+        total: 1,
+        page: 1,
+        pageSize: 20,
+        totalPages: 1,
+      };
+      (reportingService.getPredictionHistory as jest.Mock).mockResolvedValue(
+        mockPaginated,
+      );
 
       const results = await service.getPredictionHistory('profile-1');
-      expect(results).toHaveLength(1);
+      expect(results.items).toHaveLength(1);
+      expect(results.total).toBe(1);
     });
   });
 

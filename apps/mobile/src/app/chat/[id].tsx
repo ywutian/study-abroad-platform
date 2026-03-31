@@ -23,6 +23,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { Avatar, Loading } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
+import { API_ROUTES, chatRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
 import { useChatSocket } from '@/hooks/useChatSocket';
@@ -170,7 +171,7 @@ export default function ChatScreen() {
     error,
   } = useQuery({
     queryKey: ['conversation', id],
-    queryFn: () => apiClient.get<Conversation>(`/chats/conversations/${id}`),
+    queryFn: () => apiClient.get<Conversation>(chatRoutes.conversation(id!)),
     enabled: !!id,
     // No refetchInterval — WebSocket handles real-time updates
   });
@@ -242,12 +243,12 @@ export default function ChatScreen() {
       const msg = await sendMessage(id, text);
       if (!msg) {
         // Fallback: send via REST if socket fails
-        await apiClient.post<Message>(`/chats/conversations/${id}/messages`, { content: text });
+        await apiClient.post<Message>(chatRoutes.conversationMessages(id), { content: text });
         queryClient.invalidateQueries({ queryKey: ['conversation', id] });
       }
     } else {
       // Fallback: send via REST
-      await apiClient.post<Message>(`/chats/conversations/${id}/messages`, { content: text });
+      await apiClient.post<Message>(chatRoutes.conversationMessages(id), { content: text });
       queryClient.invalidateQueries({ queryKey: ['conversation', id] });
     }
 
@@ -280,12 +281,12 @@ export default function ChatScreen() {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               toast.show({ type: 'success', message: t('chat.copied') });
             } else if (options[index] === t('chat.recall')) {
-              apiClient.delete(`/chats/messages/${message.id}`).then(() => {
+              apiClient.delete(chatRoutes.message(message.id)).then(() => {
                 queryClient.invalidateQueries({ queryKey: ['conversation', id] });
                 toast.show({ type: 'success', message: t('chat.recalled') });
               });
             } else if (options[index] === t('chat.delete')) {
-              apiClient.delete(`/chats/messages/${message.id}`).then(() => {
+              apiClient.delete(chatRoutes.message(message.id)).then(() => {
                 queryClient.invalidateQueries({ queryKey: ['conversation', id] });
               });
             }

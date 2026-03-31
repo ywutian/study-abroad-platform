@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,11 +25,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from '@/components/ui/form';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
 import { profileRoutes } from '@study-abroad/shared';
 import { Save, Loader2, Sparkles, HelpCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { createActivitySchema, type ActivityFormValues } from '@/lib/validations/profile';
 
 const ACTIVITY_CATEGORY_KEYS = [
   { value: 'ACADEMIC', labelKey: 'academic' },
@@ -108,27 +119,33 @@ interface ActivityFormProps {
   editingActivity?: Activity | null;
 }
 
+const DEFAULT_VALUES: ActivityFormValues = {
+  name: '',
+  category: undefined as unknown as ActivityFormValues['category'],
+  role: '',
+  organization: '',
+  description: '',
+  commonAppDescription: '',
+  startDate: '',
+  endDate: '',
+  hoursPerWeek: '',
+  weeksPerYear: '',
+  isOngoing: false,
+  gradeLevels: [],
+  timing: '',
+  activityTemplateId: '',
+};
+
 export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFormProps) {
   const t = useTranslations('profile');
   const tCommon = useTranslations('common');
   const queryClient = useQueryClient();
   const isEditing = !!editingActivity;
 
-  const [formData, setFormData] = useState({
-    name: '',
-    category: '',
-    role: '',
-    organization: '',
-    description: '',
-    commonAppDescription: '',
-    startDate: '',
-    endDate: '',
-    hoursPerWeek: '',
-    weeksPerYear: '',
-    isOngoing: false,
-    gradeLevels: [] as number[],
-    timing: '',
-    activityTemplateId: '',
+  const schema = useMemo(() => createActivitySchema(t), [t]);
+  const form = useForm<ActivityFormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: DEFAULT_VALUES,
   });
 
   const [selectedTemplate, setSelectedTemplate] = useState<ActivityTemplate | null>(null);
@@ -138,28 +155,35 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (editingActivity) {
-      setFormData({
-        name: editingActivity.name || '',
-        category: editingActivity.category || '',
-        role: editingActivity.role || '',
-        organization: editingActivity.organization || '',
-        description: editingActivity.description || '',
-        commonAppDescription: editingActivity.commonAppDescription || '',
-        startDate: editingActivity.startDate?.slice(0, 10) || '',
-        endDate: editingActivity.endDate?.slice(0, 10) || '',
-        hoursPerWeek: editingActivity.hoursPerWeek?.toString() || '',
-        weeksPerYear: editingActivity.weeksPerYear?.toString() || '',
-        isOngoing: editingActivity.isOngoing || false,
-        gradeLevels: editingActivity.gradeLevels || [],
-        timing: editingActivity.timing || '',
-        activityTemplateId: editingActivity.activityTemplateId || '',
-      });
-      setSelectedTemplate(editingActivity.activityTemplate || null);
-    } else {
-      resetForm();
+    if (open) {
+      if (editingActivity) {
+        form.reset({
+          name: editingActivity.name || '',
+          category:
+            (editingActivity.category as ActivityFormValues['category']) ||
+            (undefined as unknown as ActivityFormValues['category']),
+          role: editingActivity.role || '',
+          organization: editingActivity.organization || '',
+          description: editingActivity.description || '',
+          commonAppDescription: editingActivity.commonAppDescription || '',
+          startDate: editingActivity.startDate?.slice(0, 10) || '',
+          endDate: editingActivity.endDate?.slice(0, 10) || '',
+          hoursPerWeek: editingActivity.hoursPerWeek?.toString() || '',
+          weeksPerYear: editingActivity.weeksPerYear?.toString() || '',
+          isOngoing: editingActivity.isOngoing || false,
+          gradeLevels: editingActivity.gradeLevels || [],
+          timing: (editingActivity.timing as ActivityFormValues['timing']) || '',
+          activityTemplateId: editingActivity.activityTemplateId || '',
+        });
+        setSelectedTemplate(editingActivity.activityTemplate || null);
+      } else {
+        form.reset(DEFAULT_VALUES);
+        setSelectedTemplate(null);
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
     }
-  }, [editingActivity, open]);
+  }, [editingActivity, open, form]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -188,9 +212,9 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
   }, []);
 
   const handleNameChange = (value: string) => {
-    setFormData((p) => ({ ...p, name: value }));
+    form.setValue('name', value);
     setSelectedTemplate(null);
-    setFormData((p) => ({ ...p, activityTemplateId: '' }));
+    form.setValue('activityTemplateId', '');
 
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     searchTimeoutRef.current = setTimeout(() => searchTemplates(value), 300);
@@ -198,23 +222,19 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
 
   const handleSelectTemplate = (template: ActivityTemplate) => {
     setSelectedTemplate(template);
-    setFormData((p) => ({
-      ...p,
-      name: template.name,
-      category: template.category,
-      activityTemplateId: template.id,
-    }));
+    form.setValue('name', template.name);
+    form.setValue('category', template.category as ActivityFormValues['category']);
+    form.setValue('activityTemplateId', template.id);
     setShowSuggestions(false);
     setSuggestions([]);
   };
 
   const handleGradeLevelToggle = (grade: number) => {
-    setFormData((p) => ({
-      ...p,
-      gradeLevels: p.gradeLevels.includes(grade)
-        ? p.gradeLevels.filter((g) => g !== grade)
-        : [...p.gradeLevels, grade].sort(),
-    }));
+    const current = form.getValues('gradeLevels');
+    const updated = current.includes(grade)
+      ? current.filter((g) => g !== grade)
+      : [...current, grade].sort();
+    form.setValue('gradeLevels', updated);
   };
 
   const createMutation = useMutation({
@@ -223,7 +243,6 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(t('toast.activityAdded'));
       onOpenChange(false);
-      resetForm();
     },
   });
 
@@ -233,7 +252,6 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(t('toast.activityUpdated'));
       onOpenChange(false);
-      resetForm();
     },
   });
 
@@ -243,7 +261,7 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
         `/profiles/me/activities/${activityId}/refine`
       ),
     onSuccess: (data) => {
-      setFormData((p) => ({ ...p, description: data.refined }));
+      form.setValue('description', data.refined);
       if (data.tips) {
         toast.success(data.tips);
       } else {
@@ -256,67 +274,44 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
     mutationFn: (activityId: string) =>
       apiClient.post<{ commonAppDescription: string }>(
         `/profiles/me/activities/${activityId}/generate-common-app-description`,
-        { description: formData.description }
+        { description: form.getValues('description') }
       ),
     onSuccess: (data) => {
-      setFormData((p) => ({ ...p, commonAppDescription: data.commonAppDescription }));
+      form.setValue('commonAppDescription', data.commonAppDescription);
       toast.success(t('form.aiGenerateSuccess'));
     },
   });
 
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      category: '',
-      role: '',
-      organization: '',
-      description: '',
-      commonAppDescription: '',
-      startDate: '',
-      endDate: '',
-      hoursPerWeek: '',
-      weeksPerYear: '',
-      isOngoing: false,
-      gradeLevels: [],
-      timing: '',
-      activityTemplateId: '',
-    });
-    setSelectedTemplate(null);
-    setSuggestions([]);
-    setShowSuggestions(false);
-  };
-
-  const handleSubmit = () => {
-    if (!formData.name || !formData.category || !formData.role) {
-      toast.error(t('validation.activityRequired'));
-      return;
-    }
-
-    const data: Record<string, unknown> = {
-      name: formData.name,
-      category: formData.category,
-      role: formData.role,
-      organization: formData.organization || undefined,
-      description: formData.description || undefined,
-      commonAppDescription: formData.commonAppDescription || undefined,
-      startDate: formData.startDate || undefined,
-      endDate: formData.isOngoing ? undefined : formData.endDate || undefined,
-      hoursPerWeek: formData.hoursPerWeek ? parseInt(formData.hoursPerWeek) : undefined,
-      weeksPerYear: formData.weeksPerYear ? parseInt(formData.weeksPerYear) : undefined,
-      isOngoing: formData.isOngoing,
-      gradeLevels: formData.gradeLevels.length > 0 ? formData.gradeLevels : undefined,
-      timing: formData.timing || undefined,
-      activityTemplateId: formData.activityTemplateId || undefined,
+  const onSubmit = (data: ActivityFormValues) => {
+    const payload: Record<string, unknown> = {
+      name: data.name,
+      category: data.category,
+      role: data.role,
+      organization: data.organization || undefined,
+      description: data.description || undefined,
+      commonAppDescription: data.commonAppDescription || undefined,
+      startDate: data.startDate || undefined,
+      endDate: data.isOngoing ? undefined : data.endDate || undefined,
+      hoursPerWeek: data.hoursPerWeek ? parseInt(data.hoursPerWeek) : undefined,
+      weeksPerYear: data.weeksPerYear ? parseInt(data.weeksPerYear) : undefined,
+      isOngoing: data.isOngoing,
+      gradeLevels: data.gradeLevels.length > 0 ? data.gradeLevels : undefined,
+      timing: data.timing || undefined,
+      activityTemplateId: data.activityTemplateId || undefined,
     };
 
     if (isEditing) {
-      updateMutation.mutate(data);
+      updateMutation.mutate(payload);
     } else {
-      createMutation.mutate(data);
+      createMutation.mutate(payload);
     }
   };
 
   const isPending = createMutation.isPending || updateMutation.isPending;
+  const watchedDescription = form.watch('description') || '';
+  const watchedCommonApp = form.watch('commonAppDescription') || '';
+  const watchedIsOngoing = form.watch('isOngoing');
+  const watchedGradeLevels = form.watch('gradeLevels');
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -325,355 +320,372 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
           <DialogTitle>{isEditing ? t('form.editActivity') : t('form.addActivity')}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          {/* Name with template autocomplete */}
-          <div className="space-y-2">
-            <Label>{t('form.activityName')} *</Label>
-            <div className="relative" ref={suggestionsRef}>
-              <Input
-                value={formData.name}
-                onChange={(e) => handleNameChange(e.target.value)}
-                onFocus={() => {
-                  if (suggestions.length > 0) setShowSuggestions(true);
-                }}
-                placeholder={t('form.activityNamePlaceholder')}
-                maxLength={100}
-              />
-              {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-lg">
-                  {suggestions.map((tmpl) => {
-                    const tierCfg = TIER_CONFIG[tmpl.tier] || TIER_CONFIG[4];
-                    return (
-                      <button
-                        key={tmpl.id}
-                        type="button"
-                        className="flex w-full items-center justify-between px-3 py-2 text-sm hover:bg-accent"
-                        onClick={() => handleSelectTemplate(tmpl)}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+            {/* Name with template autocomplete */}
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('form.activityName')} *</FormLabel>
+                  <div className="relative" ref={suggestionsRef}>
+                    <FormControl>
+                      <Input
+                        value={field.value}
+                        onChange={(e) => handleNameChange(e.target.value)}
+                        onBlur={field.onBlur}
+                        onFocus={() => {
+                          if (suggestions.length > 0) setShowSuggestions(true);
+                        }}
+                        placeholder={t('form.activityNamePlaceholder')}
+                        maxLength={100}
+                      />
+                    </FormControl>
+                    {showSuggestions && suggestions.length > 0 && (
+                      <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-lg">
+                        {suggestions.map((tmpl) => {
+                          const tierCfg = TIER_CONFIG[tmpl.tier] || TIER_CONFIG[4];
+                          return (
+                            <button
+                              key={tmpl.id}
+                              type="button"
+                              className="flex w-full items-center justify-between px-3 py-2 text-sm hover:bg-accent"
+                              onClick={() => handleSelectTemplate(tmpl)}
+                            >
+                              <span className="truncate">
+                                {tmpl.name}
+                                {tmpl.nameZh && (
+                                  <span className="ml-1 text-muted-foreground">
+                                    ({tmpl.nameZh})
+                                  </span>
+                                )}
+                              </span>
+                              <Badge
+                                variant="outline"
+                                className={`ml-2 shrink-0 text-xs ${tierCfg.className}`}
+                              >
+                                <Sparkles className="mr-1 h-3 w-3" />T{tmpl.tier}
+                              </Badge>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                  {selectedTemplate && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Badge
+                        variant="outline"
+                        className={`text-xs ${TIER_CONFIG[selectedTemplate.tier]?.className}`}
                       >
-                        <span className="truncate">
-                          {tmpl.name}
-                          {tmpl.nameZh && (
-                            <span className="ml-1 text-muted-foreground">({tmpl.nameZh})</span>
-                          )}
-                        </span>
-                        <Badge
-                          variant="outline"
-                          className={`ml-2 shrink-0 text-xs ${tierCfg.className}`}
-                        >
-                          <Sparkles className="mr-1 h-3 w-3" />T{tmpl.tier}
-                        </Badge>
-                      </button>
-                    );
-                  })}
+                        <Sparkles className="mr-1 h-3 w-3" />
+                        Tier {selectedTemplate.tier} — {TIER_CONFIG[selectedTemplate.tier]?.label}
+                      </Badge>
+                      <span>Linked to template</span>
+                    </div>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('form.activityCategory')} *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('form.selectCategory')} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {ACTIVITY_CATEGORY_KEYS.map((c) => (
+                          <SelectItem key={c.value} value={c.value}>
+                            {t(`activityCategories.${c.labelKey}`)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('form.role')} *</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder={t('form.rolePlaceholder')} maxLength={100} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="organization"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('form.organization')}</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder={t('form.organizationPlaceholder')}
+                      maxLength={100}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5">
+                <Label>{t('form.detailedDescription')}</Label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent
+                      side="top"
+                      className="max-w-xs bg-popover text-popover-foreground border shadow-md"
+                    >
+                      <p className="text-xs">{t('form.activityDescTooltip')}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              <p className="text-xs text-muted-foreground">{t('form.detailedDescriptionHelper')}</p>
+              <Textarea
+                value={watchedDescription}
+                onChange={(e) => form.setValue('description', e.target.value)}
+                placeholder={t('form.activityDescPlaceholder')}
+                rows={3}
+                maxLength={500}
+              />
+              {/* Segmented indicator bar */}
+              <div className="h-0.5 w-full rounded-full bg-muted overflow-hidden">
+                <div className="relative h-full">
+                  <div
+                    className="absolute h-full bg-success rounded-full transition-all"
+                    style={{ width: `${Math.min((watchedDescription.length / 500) * 100, 30)}%` }}
+                  />
+                  {watchedDescription.length > 150 && (
+                    <div
+                      className={`absolute h-full rounded-r-full transition-all ${watchedDescription.length > 400 ? 'bg-warning' : 'bg-muted-foreground/30'}`}
+                      style={{
+                        left: '30%',
+                        width: `${Math.min(((watchedDescription.length - 150) / 500) * 100, 70)}%`,
+                      }}
+                    />
+                  )}
+                  <div className="absolute top-0 h-full w-px bg-border" style={{ left: '30%' }} />
                 </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">
+                  {watchedDescription.length === 0
+                    ? t('form.activityDescHelperEmpty')
+                    : watchedDescription.length <= 150
+                      ? t('form.activityDescHelperWithin')
+                      : t('form.activityDescHelperOver')}
+                </p>
+                <p
+                  className={`text-xs tabular-nums ${
+                    watchedDescription.length === 0
+                      ? 'text-muted-foreground'
+                      : watchedDescription.length <= 150
+                        ? 'text-success'
+                        : watchedDescription.length > 400
+                          ? 'text-warning'
+                          : 'text-muted-foreground'
+                  }`}
+                >
+                  {t('form.activityCharCount', { count: watchedDescription.length, max: 500 })}
+                </p>
+              </div>
+              {isEditing && editingActivity && watchedDescription.length > 150 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 text-xs w-full"
+                  onClick={() => refineMutation.mutate(editingActivity.id)}
+                  disabled={refineMutation.isPending}
+                >
+                  {refineMutation.isPending ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-3.5 w-3.5" />
+                  )}
+                  {t('form.aiRefineDesc')}
+                </Button>
               )}
             </div>
-            {selectedTemplate && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Badge
-                  variant="outline"
-                  className={`text-xs ${TIER_CONFIG[selectedTemplate.tier]?.className}`}
-                >
-                  <Sparkles className="mr-1 h-3 w-3" />
-                  Tier {selectedTemplate.tier} — {TIER_CONFIG[selectedTemplate.tier]?.label}
-                </Badge>
-                <span>Linked to template</span>
-              </div>
-            )}
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
+            {/* AI Generate Common App Description */}
+            {isEditing && editingActivity && watchedDescription.length > 150 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-1.5 text-xs w-full"
+                onClick={() => generateCommonAppMutation.mutate(editingActivity.id)}
+                disabled={generateCommonAppMutation.isPending}
+              >
+                {generateCommonAppMutation.isPending ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Sparkles className="h-3.5 w-3.5" />
+                )}
+                {t('form.aiGenerate')}
+              </Button>
+            )}
+
+            {/* Common App Description */}
             <div className="space-y-2">
-              <Label>{t('form.activityCategory')} *</Label>
+              <Label>{t('form.commonAppDescription')}</Label>
+              <p className="text-xs text-muted-foreground">
+                {t('form.commonAppDescriptionHelper')}
+              </p>
+              <Textarea
+                value={watchedCommonApp}
+                onChange={(e) => form.setValue('commonAppDescription', e.target.value)}
+                placeholder={t('form.commonAppDescriptionPlaceholder')}
+                rows={2}
+                maxLength={150}
+              />
+              <div className="flex items-center justify-end">
+                <p
+                  className={`text-xs tabular-nums ${
+                    watchedCommonApp.length === 0
+                      ? 'text-muted-foreground'
+                      : watchedCommonApp.length <= 150
+                        ? 'text-success'
+                        : 'text-warning'
+                  }`}
+                >
+                  {t('form.activityCharCount', { count: watchedCommonApp.length, max: 150 })}
+                </p>
+              </div>
+            </div>
+
+            {/* Grade Levels */}
+            <div className="space-y-2">
+              <Label>{t('form.gradeLevels')}</Label>
+              <div className="flex gap-2">
+                {GRADE_LEVELS.map((gl) => (
+                  <button
+                    key={gl.value}
+                    type="button"
+                    onClick={() => handleGradeLevelToggle(gl.value)}
+                    className={`rounded-full border px-3 py-1 text-sm transition-colors ${
+                      watchedGradeLevels.includes(gl.value)
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-border text-muted-foreground hover:border-primary/50'
+                    }`}
+                  >
+                    {t(`form.${gl.labelKey}`)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Timing */}
+            <div className="space-y-2">
+              <Label>{t('form.timing')}</Label>
               <Select
-                value={formData.category}
-                onValueChange={(v) => setFormData((p) => ({ ...p, category: v }))}
+                value={form.watch('timing')}
+                onValueChange={(v) => form.setValue('timing', v as ActivityFormValues['timing'])}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={t('form.selectCategory')} />
+                  <SelectValue placeholder={t('form.selectTiming')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {ACTIVITY_CATEGORY_KEYS.map((c) => (
-                    <SelectItem key={c.value} value={c.value}>
-                      {t(`activityCategories.${c.labelKey}`)}
+                  {TIMING_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {t(
+                        `form.timing${opt.value === 'SCHOOL_YEAR' ? 'SchoolYear' : opt.value === 'SCHOOL_BREAK' ? 'SchoolBreak' : 'AllYear'}`
+                      )}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label>{t('form.role')} *</Label>
-              <Input
-                value={formData.role}
-                onChange={(e) => setFormData((p) => ({ ...p, role: e.target.value }))}
-                placeholder={t('form.rolePlaceholder')}
-                maxLength={100}
-              />
-            </div>
-          </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>{t('form.startDate')}</Label>
+                <Input type="date" {...form.register('startDate')} />
+              </div>
 
-          <div className="space-y-2">
-            <Label>{t('form.organization')}</Label>
-            <Input
-              value={formData.organization}
-              onChange={(e) => setFormData((p) => ({ ...p, organization: e.target.value }))}
-              placeholder={t('form.organizationPlaceholder')}
-              maxLength={100}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center gap-1.5">
-              <Label>{t('form.detailedDescription')}</Label>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
-                  </TooltipTrigger>
-                  <TooltipContent
-                    side="top"
-                    className="max-w-xs bg-popover text-popover-foreground border shadow-md"
-                  >
-                    <p className="text-xs">{t('form.activityDescTooltip')}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-            <p className="text-xs text-muted-foreground">{t('form.detailedDescriptionHelper')}</p>
-            <Textarea
-              value={formData.description}
-              onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
-              placeholder={t('form.activityDescPlaceholder')}
-              rows={3}
-              maxLength={500}
-            />
-            {/* Segmented indicator bar: green up to 150/500 (30%) */}
-            <div className="h-0.5 w-full rounded-full bg-muted overflow-hidden">
-              <div className="relative h-full">
-                <div
-                  className="absolute h-full bg-success rounded-full transition-all"
-                  style={{ width: `${Math.min((formData.description.length / 500) * 100, 30)}%` }}
-                />
-                {formData.description.length > 150 && (
-                  <div
-                    className={`absolute h-full rounded-r-full transition-all ${formData.description.length > 400 ? 'bg-warning' : 'bg-muted-foreground/30'}`}
-                    style={{
-                      left: '30%',
-                      width: `${Math.min(((formData.description.length - 150) / 500) * 100, 70)}%`,
-                    }}
-                  />
-                )}
-                {/* 150-char marker */}
-                <div className="absolute top-0 h-full w-px bg-border" style={{ left: '30%' }} />
+              <div className="space-y-2">
+                <Label>{t('form.endDate')}</Label>
+                <Input type="date" {...form.register('endDate')} disabled={watchedIsOngoing} />
               </div>
             </div>
-            <div className="flex items-center justify-between">
-              <p className="text-xs text-muted-foreground">
-                {formData.description.length === 0
-                  ? t('form.activityDescHelperEmpty')
-                  : formData.description.length <= 150
-                    ? t('form.activityDescHelperWithin')
-                    : t('form.activityDescHelperOver')}
-              </p>
-              <p
-                className={`text-xs tabular-nums ${
-                  formData.description.length === 0
-                    ? 'text-muted-foreground'
-                    : formData.description.length <= 150
-                      ? 'text-success'
-                      : formData.description.length > 400
-                        ? 'text-warning'
-                        : 'text-muted-foreground'
-                }`}
-              >
-                {t('form.activityCharCount', { count: formData.description.length, max: 500 })}
-              </p>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="isOngoing"
+                checked={watchedIsOngoing}
+                onCheckedChange={(checked) => form.setValue('isOngoing', !!checked)}
+              />
+              <Label htmlFor="isOngoing" className="cursor-pointer">
+                {t('form.ongoing')}
+              </Label>
             </div>
-            {isEditing && editingActivity && formData.description.length > 150 && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="gap-1.5 text-xs w-full"
-                onClick={() => refineMutation.mutate(editingActivity.id)}
-                disabled={refineMutation.isPending}
-              >
-                {refineMutation.isPending ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <Sparkles className="h-3.5 w-3.5" />
-                )}
-                {t('form.aiRefineDesc')}
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>{t('form.hoursPerWeek')}</Label>
+                <Input
+                  type="number"
+                  {...form.register('hoursPerWeek')}
+                  placeholder="1 - 40"
+                  min={1}
+                  max={40}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>{t('form.weeksPerYear')}</Label>
+                <Input
+                  type="number"
+                  {...form.register('weeksPerYear')}
+                  placeholder="1 - 52"
+                  min={1}
+                  max={52}
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                {tCommon('cancel')}
               </Button>
-            )}
-          </div>
-
-          {/* AI Generate Common App Description */}
-          {isEditing && editingActivity && formData.description.length > 150 && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="gap-1.5 text-xs w-full"
-              onClick={() => generateCommonAppMutation.mutate(editingActivity.id)}
-              disabled={generateCommonAppMutation.isPending}
-            >
-              {generateCommonAppMutation.isPending ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Sparkles className="h-3.5 w-3.5" />
-              )}
-              {t('form.aiGenerate')}
-            </Button>
-          )}
-
-          {/* Common App Description */}
-          <div className="space-y-2">
-            <Label>{t('form.commonAppDescription')}</Label>
-            <p className="text-xs text-muted-foreground">{t('form.commonAppDescriptionHelper')}</p>
-            <Textarea
-              value={formData.commonAppDescription}
-              onChange={(e) => setFormData((p) => ({ ...p, commonAppDescription: e.target.value }))}
-              placeholder={t('form.commonAppDescriptionPlaceholder')}
-              rows={2}
-              maxLength={150}
-            />
-            <div className="flex items-center justify-end">
-              <p
-                className={`text-xs tabular-nums ${
-                  formData.commonAppDescription.length === 0
-                    ? 'text-muted-foreground'
-                    : formData.commonAppDescription.length <= 150
-                      ? 'text-success'
-                      : 'text-warning'
-                }`}
-              >
-                {t('form.activityCharCount', {
-                  count: formData.commonAppDescription.length,
-                  max: 150,
-                })}
-              </p>
-            </div>
-          </div>
-
-          {/* Grade Levels */}
-          <div className="space-y-2">
-            <Label>{t('form.gradeLevels')}</Label>
-            <div className="flex gap-2">
-              {GRADE_LEVELS.map((gl) => (
-                <button
-                  key={gl.value}
-                  type="button"
-                  onClick={() => handleGradeLevelToggle(gl.value)}
-                  className={`rounded-full border px-3 py-1 text-sm transition-colors ${
-                    formData.gradeLevels.includes(gl.value)
-                      ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-border text-muted-foreground hover:border-primary/50'
-                  }`}
-                >
-                  {t(`form.${gl.labelKey}`)}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Timing */}
-          <div className="space-y-2">
-            <Label>{t('form.timing')}</Label>
-            <Select
-              value={formData.timing}
-              onValueChange={(v) => setFormData((p) => ({ ...p, timing: v }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t('form.selectTiming')} />
-              </SelectTrigger>
-              <SelectContent>
-                {TIMING_OPTIONS.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {t(
-                      `form.timing${opt.value === 'SCHOOL_YEAR' ? 'SchoolYear' : opt.value === 'SCHOOL_BREAK' ? 'SchoolBreak' : 'AllYear'}`
-                    )}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>{t('form.startDate')}</Label>
-              <Input
-                type="date"
-                value={formData.startDate}
-                onChange={(e) => setFormData((p) => ({ ...p, startDate: e.target.value }))}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>{t('form.endDate')}</Label>
-              <Input
-                type="date"
-                value={formData.endDate}
-                onChange={(e) => setFormData((p) => ({ ...p, endDate: e.target.value }))}
-                disabled={formData.isOngoing}
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="isOngoing"
-              checked={formData.isOngoing}
-              onCheckedChange={(checked) =>
-                setFormData((p) => ({ ...p, isOngoing: checked as boolean }))
-              }
-            />
-            <Label htmlFor="isOngoing" className="cursor-pointer">
-              {t('form.ongoing')}
-            </Label>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>{t('form.hoursPerWeek')}</Label>
-              <Input
-                type="number"
-                value={formData.hoursPerWeek}
-                onChange={(e) => setFormData((p) => ({ ...p, hoursPerWeek: e.target.value }))}
-                placeholder="1 - 40"
-                min={1}
-                max={40}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>{t('form.weeksPerYear')}</Label>
-              <Input
-                type="number"
-                value={formData.weeksPerYear}
-                onChange={(e) => setFormData((p) => ({ ...p, weeksPerYear: e.target.value }))}
-                placeholder="1 - 52"
-                min={1}
-                max={52}
-              />
-            </div>
-          </div>
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {tCommon('cancel')}
-          </Button>
-          <Button onClick={handleSubmit} disabled={isPending}>
-            {isPending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Save className="mr-2 h-4 w-4" />
-            )}
-            {tCommon('save')}
-          </Button>
-        </DialogFooter>
+              <Button type="submit" disabled={isPending}>
+                {isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="mr-2 h-4 w-4" />
+                )}
+                {tCommon('save')}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { apiClient } from '@/lib/api';
+import { adminRoutes } from '@study-abroad/shared';
 import { ClipboardList, FileCheck, CheckCircle, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -48,7 +49,7 @@ export function ReviewStatsCards() {
 
   const { data: stats } = useQuery<ReviewStats>({
     queryKey: ['reviewStats'],
-    queryFn: () => apiClient.get<ReviewStats>('/admin/review/stats'),
+    queryFn: () => apiClient.get<ReviewStats>(adminRoutes.reviewStats()),
     refetchInterval: 30000,
   });
 

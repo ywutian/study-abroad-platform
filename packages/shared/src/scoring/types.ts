@@ -9,6 +9,8 @@ export interface ProfileMetrics {
   satScore?: number;
   actScore?: number;
   toeflScore?: number;
+  /** Normalized English proficiency score (0-1) from best of TOEFL/IELTS/Duolingo */
+  englishProficiencyScore?: number;
   activityCount: number;
   awardCount: number;
   nationalAwardCount: number;
@@ -41,6 +43,12 @@ export interface ProfileMetrics {
   highSchoolGradeInflation?: string;
   /** Target major category for spike alignment detection */
   targetMajorCategory?: string;
+  /** Whether the student has legacy status at any school */
+  isLegacy?: boolean;
+  /** Whether the student is a first-generation college student */
+  isFirstGen?: boolean;
+  /** Whether the student needs financial aid (for need-aware penalty) */
+  needsFinancialAid?: boolean;
 }
 
 /** 历史录取数据分布（用于数据驱动评分） */

@@ -8,6 +8,7 @@
 export { AgentType } from '@study-abroad/shared';
 export type { StreamEvent, ActionButton, AgentResponse } from '@study-abroad/shared';
 import { AgentType } from '@study-abroad/shared';
+import type { ActionButton } from '@study-abroad/shared';
 
 export interface ChatMessage {
   id: string;
@@ -15,6 +16,7 @@ export interface ChatMessage {
   content: string;
   agent?: AgentType;
   toolCalls?: ToolCallInfo[];
+  actions?: ActionButton[];
   isStreaming?: boolean;
   timestamp: Date;
 }

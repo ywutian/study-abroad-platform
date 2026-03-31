@@ -10,6 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { apiClient } from '@/lib/api';
+import { adminRoutes } from '@study-abroad/shared';
 import { useAuthStore } from '@/stores/auth';
 import {
   BarChart3,
@@ -103,13 +104,13 @@ export function AdminSidebar() {
 
   const { data: stats } = useQuery({
     queryKey: ['adminStats'],
-    queryFn: () => apiClient.get<AdminStats>('/admin/stats'),
+    queryFn: () => apiClient.get<AdminStats>(adminRoutes.stats()),
     refetchInterval: 60000,
   });
 
   const { data: myPerms } = useQuery({
     queryKey: ['adminMyPermissions'],
-    queryFn: () => apiClient.get<MyPermissionsResponse>('/admin/roles/my-permissions'),
+    queryFn: () => apiClient.get<MyPermissionsResponse>(adminRoutes.myPermissions()),
     staleTime: 5 * 60 * 1000,
   });
 

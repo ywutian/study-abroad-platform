@@ -54,6 +54,14 @@ export interface ProfileInput {
     mbtiType?: string;
     hollandCodes?: string[];
   };
+  /** Whether the student has legacy status at any school */
+  isLegacy?: boolean;
+  /** School names where the student has legacy connections */
+  legacySchools?: string[];
+  /** Whether the student is a first-generation college student */
+  isFirstGen?: boolean;
+  /** Essay quality score (0-10) from the latest AI essay review */
+  essayQualityScore?: number;
 }
 
 export interface SchoolInput {
@@ -78,6 +86,7 @@ export interface SchoolInput {
   averageNetPrice?: number;
   testOptional?: boolean;
   hasEarlyDecision?: boolean;
+  applicationRound?: string;
 }
 
 /**
@@ -441,14 +450,15 @@ ${formatHighSchoolContext(profile, true)}
 - 目标专业: ${sanitizeForPrompt(profile.targetMajor || '未确定')}${profile.majorCompetitiveness ? `（该校竞争度: ${profile.majorCompetitiveness.level}/5${profile.majorCompetitiveness.schoolEstimate ? `，预估专业录取率 ~${profile.majorCompetitiveness.schoolEstimate}%` : ''}）` : ''}
 - 活动经历: ${formatActivities(profile.activities, true)}
 - 获奖情况: ${formatAwards(profile.awards, true)}
-${formatAssessmentContext(profile.assessment, true)}${profile.isInternational ? `\n- 申请者身份: 国际生${profile.nationality ? `（${profile.nationality}）` : ''}${profile.educationSystem ? `，${profile.educationSystem}体系` : ''}${profile.needsFinancialAid ? '，需要助学金' : ''}` : ''}
+${formatAssessmentContext(profile.assessment, true)}${profile.isInternational ? `\n- 申请者身份: 国际生${profile.nationality ? `（${profile.nationality}）` : ''}${profile.educationSystem ? `，${profile.educationSystem}体系` : ''}${profile.needsFinancialAid ? '，需要助学金' : ''}` : ''}${profile.isLegacy && profile.legacySchools?.length ? `\n- 校友遗产 (Legacy): ${profile.legacySchools.join(', ')}` : ''}${profile.isFirstGen ? `\n- 第一代大学生: 是` : ''}${profile.essayQualityScore != null ? `\n- 文书质量: ${profile.essayQualityScore}/10（AI 评审）` : ''}
 
 ## 目标学校: ${schoolName}
 - US News 排名: ${school.usNewsRank ? `#${school.usNewsRank}` : unknown}
 - 录取率: ${school.acceptanceRate ? `${school.acceptanceRate}%` : unknown}${school.intlAcceptanceRate ? `\n- 国际生录取率: ${school.intlAcceptanceRate}%` : ''}${school.intlStudentPct ? `\n- 国际生比例: ${school.intlStudentPct}%` : ''}${school.needBlindInternational ? '\n- Need-Blind政策: 对国际生Need-Blind' : ''}
 - 毕业率: ${school.graduationRate ? `${school.graduationRate}%` : unknown}
 - 平均 SAT: ${school.satAvg || unknown}${school.sat25 && school.sat75 ? ` (25th-75th: ${school.sat25}-${school.sat75})` : ''}
-- 平均 ACT: ${school.actAvg || unknown}${school.act25 && school.act75 ? ` (25th-75th: ${school.act25}-${school.act75})` : ''}${school.retentionRate ? `\n- 新生留存率: ${school.retentionRate}%` : ''}${school.studentFacultyRatio ? `\n- 师生比: ${school.studentFacultyRatio}:1` : ''}${school.percentNeedMet ? `\n- 助学金满足率: ${school.percentNeedMet}%` : ''}${school.averageNetPrice ? `\n- 平均净费用: $${school.averageNetPrice.toLocaleString()}` : ''}${school.testOptional === true ? '\n- 标化政策: Test Optional' : ''}${school.hasEarlyDecision ? '\n- 提前决定: 有ED轮次' : ''}${nationalityStats && profile.isInternational ? `\n\n## 国籍维度历史数据\n- 该校来自${nationalityStats.nationality}的历史申请者录取率: ${nationalityStats.admitRate.toFixed(1)}% (基于${nationalityStats.totalCases}个案例)\n- 请将此数据作为国际生录取概率评估的重要参考` : ''}${buildMissingDataGuidance(profile, true)}
+- 平均 ACT: ${school.actAvg || unknown}${school.act25 && school.act75 ? ` (25th-75th: ${school.act25}-${school.act75})` : ''}${school.retentionRate ? `\n- 新生留存率: ${school.retentionRate}%` : ''}${school.studentFacultyRatio ? `\n- 师生比: ${school.studentFacultyRatio}:1` : ''}${school.percentNeedMet ? `\n- 助学金满足率: ${school.percentNeedMet}%` : ''}${school.averageNetPrice ? `\n- 平均净费用: $${school.averageNetPrice.toLocaleString()}` : ''}${school.testOptional === true ? '\n- 标化政策: Test Optional' : ''}${school.hasEarlyDecision ? '\n- 提前决定: 有ED轮次' : ''}
+- 申请轮次: ${school.applicationRound || '未指定（默认按RD评估）'}${nationalityStats && profile.isInternational ? `\n\n## 国籍维度历史数据\n- 该校来自${nationalityStats.nationality}的历史申请者录取率: ${nationalityStats.admitRate.toFixed(1)}% (基于${nationalityStats.totalCases}个案例)\n- 请将此数据作为国际生录取概率评估的重要参考` : ''}${buildMissingDataGuidance(profile, true)}
 
 ## 分析要求
 1. 综合评估学生竞争力与学校录取标准的匹配度
@@ -523,14 +533,15 @@ ${formatHighSchoolContext(profile, false)}
 - Target Major: ${sanitizeForPrompt(profile.targetMajor || 'Undecided')}${profile.majorCompetitiveness ? ` (competitiveness at this school: ${profile.majorCompetitiveness.level}/5${profile.majorCompetitiveness.schoolEstimate ? `, estimated major acceptance ~${profile.majorCompetitiveness.schoolEstimate}%` : ''})` : ''}
 - Activities: ${formatActivities(profile.activities, false)}
 - Awards: ${formatAwards(profile.awards, false)}
-${formatAssessmentContext(profile.assessment, false)}${profile.isInternational ? `\n- Applicant Status: International student${profile.nationality ? ` (${profile.nationality})` : ''}${profile.educationSystem ? `, ${profile.educationSystem} curriculum` : ''}${profile.needsFinancialAid ? ', needs financial aid' : ''}` : ''}
+${formatAssessmentContext(profile.assessment, false)}${profile.isInternational ? `\n- Applicant Status: International student${profile.nationality ? ` (${profile.nationality})` : ''}${profile.educationSystem ? `, ${profile.educationSystem} curriculum` : ''}${profile.needsFinancialAid ? ', needs financial aid' : ''}` : ''}${profile.isLegacy && profile.legacySchools?.length ? `\n- Legacy Status: ${profile.legacySchools.join(', ')}` : ''}${profile.isFirstGen ? `\n- First-Generation College Student: Yes` : ''}${profile.essayQualityScore != null ? `\n- Essay Quality: ${profile.essayQualityScore}/10 (from AI review)` : ''}
 
 ## Target School: ${schoolName}
 - US News Rank: ${school.usNewsRank ? `#${school.usNewsRank}` : unknown}
 - Acceptance Rate: ${school.acceptanceRate ? `${school.acceptanceRate}%` : unknown}${school.intlAcceptanceRate ? `\n- International Acceptance Rate: ${school.intlAcceptanceRate}%` : ''}${school.intlStudentPct ? `\n- International Student %: ${school.intlStudentPct}%` : ''}${school.needBlindInternational ? '\n- Need-Blind for International Students: Yes' : ''}
 - Graduation Rate: ${school.graduationRate ? `${school.graduationRate}%` : unknown}
 - Average SAT: ${school.satAvg || unknown}${school.sat25 && school.sat75 ? ` (25th-75th: ${school.sat25}-${school.sat75})` : ''}
-- Average ACT: ${school.actAvg || unknown}${school.act25 && school.act75 ? ` (25th-75th: ${school.act25}-${school.act75})` : ''}${school.retentionRate ? `\n- Retention Rate: ${school.retentionRate}%` : ''}${school.studentFacultyRatio ? `\n- Student-Faculty Ratio: ${school.studentFacultyRatio}:1` : ''}${school.percentNeedMet ? `\n- % Need Met: ${school.percentNeedMet}%` : ''}${school.averageNetPrice ? `\n- Avg Net Price: $${school.averageNetPrice.toLocaleString()}` : ''}${school.testOptional === true ? '\n- Test Policy: Test Optional' : ''}${school.hasEarlyDecision ? '\n- Early Decision: Available' : ''}${nationalityStats && profile.isInternational ? `\n\n## Nationality-Specific Historical Data\n- Historical admission rate for ${nationalityStats.nationality} applicants at this school: ${nationalityStats.admitRate.toFixed(1)}% (based on ${nationalityStats.totalCases} cases)\n- Use this data as an important reference for international student probability estimation` : ''}${buildMissingDataGuidance(profile, false)}
+- Average ACT: ${school.actAvg || unknown}${school.act25 && school.act75 ? ` (25th-75th: ${school.act25}-${school.act75})` : ''}${school.retentionRate ? `\n- Retention Rate: ${school.retentionRate}%` : ''}${school.studentFacultyRatio ? `\n- Student-Faculty Ratio: ${school.studentFacultyRatio}:1` : ''}${school.percentNeedMet ? `\n- % Need Met: ${school.percentNeedMet}%` : ''}${school.averageNetPrice ? `\n- Avg Net Price: $${school.averageNetPrice.toLocaleString()}` : ''}${school.testOptional === true ? '\n- Test Policy: Test Optional' : ''}${school.hasEarlyDecision ? '\n- Early Decision: Available' : ''}
+- Application Round: ${school.applicationRound || 'Not specified (assume RD)'}${nationalityStats && profile.isInternational ? `\n\n## Nationality-Specific Historical Data\n- Historical admission rate for ${nationalityStats.nationality} applicants at this school: ${nationalityStats.admitRate.toFixed(1)}% (based on ${nationalityStats.totalCases} cases)\n- Use this data as an important reference for international student probability estimation` : ''}${buildMissingDataGuidance(profile, false)}
 
 ## Analysis Requirements
 1. Evaluate the student's competitiveness against the school's admission standards

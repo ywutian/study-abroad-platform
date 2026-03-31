@@ -9,6 +9,7 @@ import * as Haptics from 'expo-haptics';
 
 import { AnimatedButton, AnimatedCard, CardContent, Progress } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
+import { recommendationRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import {
   useColors,
@@ -72,14 +73,14 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
 
   const { data: preflight, isLoading: preflightLoading } = useQuery<RecommendationPreflight>({
     queryKey: recommendationKeys.preflight(),
-    queryFn: () => apiClient.get('/recommendations/preflight'),
+    queryFn: () => apiClient.get(recommendationRoutes.preflight()),
     staleTime: 60_000,
   });
 
   // ─── Mutation ──────────────────────────────────────────
 
   const generateMutation = useMutation<RecommendationResult, Error, GenerateRecommendationDto>({
-    mutationFn: (dto) => apiClient.post<RecommendationResult>('/recommendations', dto),
+    mutationFn: (dto) => apiClient.post<RecommendationResult>(recommendationRoutes.generate(), dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: recommendationKeys.history() });
       queryClient.invalidateQueries({ queryKey: recommendationKeys.preflight() });

@@ -20,7 +20,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminAiAgentRoutes } from '@study-abroad/shared';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Clock, Loader2, Play } from 'lucide-react';
@@ -32,12 +32,12 @@ export function DecaySection() {
 
   const { data: decayConfig } = useQuery({
     queryKey: ['memoryDecayConfig'],
-    queryFn: () => apiClient.get<DecayConfig>('/admin/ai-agent/memory/decay/config'),
+    queryFn: () => apiClient.get<DecayConfig>(adminAiAgentRoutes.memoryDecayConfig()),
   });
 
   const { data: decayStats } = useQuery({
     queryKey: ['memoryDecayStats'],
-    queryFn: () => apiClient.get<DecayStats>('/admin/ai-agent/memory/decay/stats'),
+    queryFn: () => apiClient.get<DecayStats>(adminAiAgentRoutes.memoryDecayStats()),
   });
 
   const [decayForm, setDecayForm] = useState<Partial<DecayConfig>>({});
@@ -46,7 +46,7 @@ export function DecaySection() {
 
   const updateDecayMutation = useMutation({
     mutationFn: (data: Partial<DecayConfig>) =>
-      apiClient.put(`${API_ROUTES.ADMIN}/ai-agent/memory/decay/config`, data),
+      apiClient.put(adminAiAgentRoutes.memoryDecayConfig(), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['memoryDecayConfig'] });
       toast.success(t('configSaved'));
@@ -54,7 +54,7 @@ export function DecaySection() {
   });
 
   const triggerDecayMutation = useMutation({
-    mutationFn: () => apiClient.post<DecayResult>('/admin/ai-agent/memory/decay/trigger'),
+    mutationFn: () => apiClient.post<DecayResult>(adminAiAgentRoutes.memoryDecayTrigger()),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['memoryDecayStats'] });
       queryClient.invalidateQueries({ queryKey: ['memoryGlobalStats'] });

@@ -34,11 +34,19 @@ export class EssayScoresDto {
   @ApiProperty({ description: 'Storytelling 1-10' })
   storytelling: number;
 
-  @ApiProperty({ description: 'School fit 1-10' })
-  fit: number;
+  @ApiProperty({ description: 'Voice authenticity 1-10' })
+  authenticity: number;
 
   @ApiProperty({ description: 'Language expression 1-10' })
   language: number;
+}
+
+export class EssayClicheDto {
+  @ApiProperty({ description: 'Original cliché text found in essay' })
+  text: string;
+
+  @ApiProperty({ description: 'Suggested more personal alternative' })
+  suggestion: string;
 }
 
 export class EssayReviewResponseDto {
@@ -59,6 +67,9 @@ export class EssayReviewResponseDto {
 
   @ApiProperty({ type: [String] })
   suggestions: string[];
+
+  @ApiProperty({ type: [EssayClicheDto], required: false })
+  cliches?: EssayClicheDto[];
 
   @ApiProperty()
   verdict: string;

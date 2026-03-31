@@ -6,7 +6,7 @@ import { useMutation } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Globe, Database, ClipboardCheck, CheckCircle, ArrowRight, Loader2 } from 'lucide-react';
 
@@ -33,12 +33,12 @@ export function DataCollectionTab({ onSwitchTab }: Props) {
   const t = useTranslations('admin.dataReview.pipeline');
 
   const scrapeMutation = useMutation({
-    mutationFn: () => apiClient.post(`${API_ROUTES.ADMIN}/essay-scraper/pipeline/start`, {}),
+    mutationFn: () => apiClient.post(adminRoutes.essayScraperPipelineStart(), {}),
     onSuccess: () => toast.success(t('scrapeStarted')),
   });
 
   const syncMutation = useMutation({
-    mutationFn: () => apiClient.post(`${API_ROUTES.ADMIN}/data-sync/trigger`, {}),
+    mutationFn: () => apiClient.post(adminRoutes.dataSyncTrigger(), {}),
     onSuccess: () => toast.success(t('syncStarted')),
   });
 

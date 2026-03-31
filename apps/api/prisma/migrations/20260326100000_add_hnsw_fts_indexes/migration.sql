@@ -1,0 +1,13 @@
+-- HNSW + GIN indexes for Memory table
+--
+-- These advanced index types (HNSW, GIN with tsvector) are not supported by
+-- Prisma's schema declarations and cause migration drift if created here.
+-- They are managed via a separate setup script: scripts/setup-search-indexes.sql
+--
+-- To create manually:
+--   CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_memory_embedding_hnsw
+--     ON "Memory" USING hnsw (embedding vector_cosine_ops) WITH (m = 16, ef_construction = 64);
+--   CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_memory_content_fts
+--     ON "Memory" USING GIN (to_tsvector('simple', content));
+--
+-- This migration is intentionally empty (indexes managed outside Prisma).

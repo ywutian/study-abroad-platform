@@ -10,6 +10,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
+import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight, borderRadius, shadows } from '@/utils/theme';
 
@@ -25,7 +26,7 @@ export default function StatsBar({ onShowStats }: StatsBarProps) {
 
   const { data: stats } = useQuery<SwipeStatsDto>({
     queryKey: ['swipe', 'stats'],
-    queryFn: () => apiClient.get<SwipeStatsDto>('/halls/swipe/stats'),
+    queryFn: () => apiClient.get<SwipeStatsDto>(`${API_ROUTES.HALLS}/swipe/stats`),
     staleTime: 30_000,
   });
 

@@ -1,0 +1,15 @@
+// Re-export all profile schemas from shared package
+export {
+  createProfileSchema,
+  createTestScoreSchema,
+  createActivitySchema,
+  createAwardSchema,
+  createSemesterGpaSchema,
+  createRecommendationLetterSchema,
+  type ProfileFormValues,
+  type TestScoreFormValues,
+  type ActivityFormValues,
+  type AwardFormValues,
+  type SemesterGpaFormValues,
+  type RecommendationLetterFormValues,
+} from '@study-abroad/shared/schemas';

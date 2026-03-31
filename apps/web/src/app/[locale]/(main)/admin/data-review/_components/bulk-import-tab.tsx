@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { apiClient } from '@/lib/api';
+import { adminRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
@@ -278,7 +279,7 @@ export function BulkImportTab() {
           toefl: row.toefl || undefined,
           tags: row.tags || undefined,
         }));
-        return apiClient.post<ImportResult>('/admin/cases/batch-import', {
+        return apiClient.post<ImportResult>(adminRoutes.casesBatchImport(), {
           items,
           visibility: 'ANONYMOUS',
         });
@@ -293,7 +294,7 @@ export function BulkImportTab() {
           isRequired: row.isRequired !== 'false',
           sourceUrl: row.sourceUrl || undefined,
         }));
-        return apiClient.post<ImportResult>('/admin/essay-prompts/batch-import', { items });
+        return apiClient.post<ImportResult>(adminRoutes.essayPromptsBatchImport(), { items });
       }
     },
     onSuccess: (data) => {

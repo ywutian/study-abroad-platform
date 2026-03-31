@@ -5,7 +5,13 @@
  * Adds resilience (retry, circuit breaker, timeout) and token tracking.
  */
 
-import { Injectable, Inject, Logger, Optional } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  Logger,
+  Optional,
+  HttpException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AgentType, Message, ToolDefinition } from '../types';
 import type { ILLMProvider } from '../providers/llm-provider.interface';
@@ -19,6 +25,7 @@ import {
 } from '../providers/llm-provider.types';
 import { ResilienceService } from './resilience.service';
 import { TokenTrackerService, TokenUsage } from './token-tracker.service';
+import { PromptGuardService } from '../security/prompt-guard.service';
 import { ToolCall } from '../types';
 
 export interface LLMResponse {
@@ -101,6 +108,7 @@ export class LLMService {
     @Inject(LLM_PROVIDER_TOKEN) private provider: ILLMProvider,
     @Optional() private resilience?: ResilienceService,
     @Optional() private tokenTracker?: TokenTrackerService,
+    @Optional() private promptGuard?: PromptGuardService,
   ) {
     this.defaultModel =
       this.configService.get<string>('OPENAI_MODEL') || 'gpt-4o-mini';
@@ -121,25 +129,55 @@ export class LLMService {
       `LLM call started: provider=${this.provider.providerId}, model=${model}, messages=${messages.length}, timeout=${timeoutMs}ms`,
     );
 
+    // Pre-flight: reject if input likely exceeds model context window
+    const contextWindow = this.provider.getContextWindow(model);
+    if (contextWindow) {
+      const totalChars =
+        systemPrompt.length +
+        messages.reduce((s, m) => s + m.content.length, 0);
+      const estimatedTokens = Math.ceil(totalChars / 3); // ~3 chars/token average
+      if (estimatedTokens > contextWindow * 0.8) {
+        throw new HttpException(
+          {
+            statusCode: 400,
+            message: `Input too long (~${estimatedTokens} tokens, model capacity: ${contextWindow}). Please shorten your message.`,
+            code: 'CONTEXT_WINDOW_EXCEEDED',
+          },
+          400,
+        );
+      }
+    }
+
+    const callStartTime = Date.now();
+
     const executeCall = async (): Promise<LLMResponse> => {
       const request = this.buildRequest(systemPrompt, messages, options, model);
       const response = await this.provider.chat(request);
       const result = this.toInternalResponse(response);
 
-      // Token tracking
+      // Token tracking + LLM call tracing (input/output stored in metadata JSONB)
       if (this.tokenTracker && options.userId && response.usage) {
         const usage: TokenUsage = {
           promptTokens: response.usage.promptTokens,
           completionTokens: response.usage.completionTokens,
           totalTokens: response.usage.totalTokens,
           model,
-          estimatedCost: 0,
+          estimatedCost: this.estimateCost(
+            model,
+            response.usage.promptTokens,
+            response.usage.completionTokens,
+          ),
         };
         result.usage = usage;
 
         await this.tokenTracker.trackUsage(options.userId, usage, {
           conversationId: options.conversationId,
           agentType: options.agentType as AgentType | undefined,
+          inputPreview: systemPrompt.slice(0, 500),
+          outputPreview: result.content.slice(0, 1000),
+          latencyMs: Date.now() - callStartTime,
+          finishReason: result.finishReason,
+          messageCount: messages.length,
         });
       }
 
@@ -235,7 +273,65 @@ export class LLMService {
     return result.content;
   }
 
+  /**
+   * Guarded one-shot LLM call. Runs PromptGuard on user-role messages
+   * before forwarding to chatSimple(). Throws 400 if prompt injection detected.
+   *
+   * Use for any call where messages contain user-supplied content
+   * (essay text, profile descriptions, etc.).
+   */
+  async chatSimpleGuarded(
+    messages: ChatSimpleMessage[],
+    options?: ChatSimpleOptions,
+  ): Promise<string> {
+    if (this.promptGuard) {
+      const userMessages = messages.filter((m) => m.role === 'user');
+      for (const msg of userMessages) {
+        const result = await this.promptGuard.analyze(msg.content, {
+          userId: options?.userId,
+          strictMode: false,
+        });
+        if (result.blocked) {
+          throw new HttpException(
+            {
+              statusCode: 400,
+              message: 'Input blocked by security check',
+              code: 'PROMPT_GUARD_BLOCK',
+            },
+            400,
+          );
+        }
+        if (result.sanitizedInput && result.sanitizedInput !== msg.content) {
+          msg.content = result.sanitizedInput;
+        }
+      }
+    }
+    return this.chatSimple(messages, options);
+  }
+
   // ── Private helpers ──────────────────────────────────────
+
+  /** Estimate USD cost from token counts using per-model pricing ($/M tokens). */
+  private estimateCost(
+    model: string,
+    promptTokens: number,
+    completionTokens: number,
+  ): number {
+    const PRICING: Record<string, { input: number; output: number }> = {
+      'gpt-4o': { input: 2.5, output: 10 },
+      'gpt-4o-mini': { input: 0.15, output: 0.6 },
+      'gpt-4-turbo': { input: 10, output: 30 },
+      'gpt-4': { input: 30, output: 60 },
+      'gpt-3.5-turbo': { input: 0.5, output: 1.5 },
+      'deepseek-chat': { input: 0.14, output: 0.28 },
+      'deepseek-reasoner': { input: 0.55, output: 2.19 },
+    };
+
+    const price = PRICING[model] || PRICING['gpt-4o-mini'];
+    return (
+      (promptTokens * price.input + completionTokens * price.output) / 1_000_000
+    );
+  }
 
   private buildRequest(
     systemPrompt: string,

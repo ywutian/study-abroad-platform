@@ -3,7 +3,6 @@
 
 import { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
-import { pdf } from '@react-pdf/renderer';
 import { motion } from 'framer-motion';
 import {
   Dialog,
@@ -35,8 +34,6 @@ import {
   Sparkles,
 } from 'lucide-react';
 
-import { BasicTemplate } from './templates/basic-template';
-import { ProfessionalTemplate } from './templates/professional-template';
 import type { ResumeData, ResumeExportOptions } from './styles/pdf-styles';
 
 interface ResumeExportDialogProps {
@@ -162,7 +159,13 @@ export function ResumeExportDialog({ open, onOpenChange, profileData }: ResumeEx
     setIsExporting(true);
 
     try {
-      // 选择模板
+      // Lazy-load PDF renderer + templates (saves ~500KB from main bundle)
+      const [{ pdf }, { BasicTemplate }, { ProfessionalTemplate }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('./templates/basic-template'),
+        import('./templates/professional-template'),
+      ]);
+
       const TemplateComponent =
         options.template === 'professional' ? ProfessionalTemplate : BasicTemplate;
 

@@ -64,6 +64,7 @@ export class UserDataService {
       where.content = { contains: search, mode: 'insensitive' };
     }
 
+    // governance: userId validated — getMemories(userId) sets where={userId} at line 53
     const [items, total] = await Promise.all([
       this.prisma.memory.findMany({
         where,
@@ -81,7 +82,7 @@ export class UserDataService {
           createdAt: true,
         },
       }),
-      this.prisma.memory.count({ where }),
+      this.prisma.memory.count({ where }), // governance: userId validated
     ]);
 
     return {
@@ -288,6 +289,7 @@ export class UserDataService {
       ];
     }
 
+    // governance: userId validated — getEntities(userId) sets where={userId} at line 278
     const [items, total] = await Promise.all([
       this.prisma.entity.findMany({
         where,
@@ -302,7 +304,7 @@ export class UserDataService {
           createdAt: true,
         },
       }),
-      this.prisma.entity.count({ where }),
+      this.prisma.entity.count({ where }), // governance: userId validated
     ]);
 
     return {

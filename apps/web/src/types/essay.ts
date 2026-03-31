@@ -12,10 +12,23 @@ export interface Essay {
 
 export interface EssayReview {
   overallScore: number;
-  structure: { score: number; feedback: string };
-  content: { score: number; feedback: string };
-  language: { score: number; feedback: string };
+  scores: {
+    clarity: number;
+    uniqueness: number;
+    storytelling: number;
+    authenticity: number;
+    language: number;
+  };
+  strengths: string[];
+  weaknesses: string[];
   suggestions: string[];
+  cliches?: Array<{ text: string; suggestion: string }>;
+  verdict: string;
+
+  // Legacy fields for backward compatibility with cached results
+  structure?: { score: number; feedback: string };
+  content?: { score: number; feedback: string };
+  language?: { score: number; feedback: string };
 }
 
 export interface PolishResult {

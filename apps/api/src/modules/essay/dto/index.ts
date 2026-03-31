@@ -6,6 +6,7 @@ export * from './analyze-gallery-essay.dto';
 export * from './rewrite-paragraph.dto';
 export * from './continue-writing.dto';
 export * from './generate-opening.dto';
+export * from './optimize-activity-description.dto';
 
 // essay-prompt DTOs
 export * from './create-essay-prompt.dto';

@@ -6,6 +6,7 @@ import { useColors, spacing } from '@/utils/theme';
 import { EmptyState, Loading } from '@/components/ui';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { verificationRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 
 export default function VerificationScreen() {
@@ -14,7 +15,7 @@ export default function VerificationScreen() {
 
   const { data: status, isLoading } = useQuery({
     queryKey: ['verification', 'status'],
-    queryFn: () => apiClient.get('/verifications/status'),
+    queryFn: () => apiClient.get(verificationRoutes.status()),
   });
 
   return (

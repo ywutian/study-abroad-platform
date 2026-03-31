@@ -137,6 +137,10 @@ export class TimelineApplicationService {
               dl.round,
               dl.essayPrompts,
               dl.essayCount,
+              {
+                interviewRequired: dl.interviewRequired ?? false,
+                financialAidDeadline: dl.financialAidDeadline,
+              },
             );
             const timeline = await this.prisma.applicationTimeline.create({
               data: {
@@ -234,6 +238,10 @@ export class TimelineApplicationService {
     round: string,
     essayPrompts: any,
     essayCount: number | null,
+    options?: {
+      interviewRequired?: boolean;
+      financialAidDeadline?: Date | null;
+    },
   ) {
     const tasks: Array<{
       title: string;
@@ -295,6 +303,22 @@ export class TimelineApplicationService {
           sortOrder: sortOrder++,
         });
       }
+    }
+
+    if (options?.interviewRequired) {
+      tasks.push({
+        title: '准备并完成面试',
+        type: TaskType.INTERVIEW,
+        sortOrder: sortOrder++,
+      });
+    }
+
+    if (options?.financialAidDeadline) {
+      tasks.push({
+        title: '提交助学金申请 (CSS Profile/ISFAA)',
+        type: TaskType.DOCUMENT,
+        sortOrder: sortOrder++,
+      });
     }
 
     tasks.push({

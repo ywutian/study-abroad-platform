@@ -12,7 +12,7 @@
  * - AI 排名分析
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, memo } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -376,7 +376,7 @@ interface RankingCardProps {
   getRankIcon: (percentile: number) => React.ReactNode;
 }
 
-function RankingCard({
+const RankingCard = memo(function RankingCard({
   result,
   index,
   t,
@@ -605,4 +605,4 @@ function RankingCard({
       )}
     </motion.div>
   );
-}
+});

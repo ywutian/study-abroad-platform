@@ -8,6 +8,11 @@ import { Role } from '@prisma/client';
 import { SkipThrottle } from '../../common/decorators/throttle.decorator';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
+import {
+  ArchitectureValidatorService,
+  type AiSecurityStatus,
+  type EmbeddingConsistency,
+} from '../ai-agent/config/architecture-validator.service';
 
 type CheckStatus = 'ok' | 'degraded' | 'error';
 
@@ -43,6 +48,11 @@ interface DetailedHealthStatus extends HealthStatus {
   env: string;
   nodeVersion: string;
   build: BuildInfo;
+  aiSecurity: {
+    status: AiSecurityStatus;
+    services: Record<string, boolean>;
+  };
+  embeddingConsistency: EmbeddingConsistency;
 }
 
 @ApiTags('Health')
@@ -54,6 +64,7 @@ export class HealthController {
   constructor(
     private prisma: PrismaService,
     @Optional() private redisService?: RedisService,
+    @Optional() private architectureValidator?: ArchitectureValidatorService,
   ) {}
 
   @Get()
@@ -92,6 +103,13 @@ export class HealthController {
   ): Promise<DetailedHealthStatus> {
     const basicHealth = await this.check(res);
 
+    const aiSecurityInfo = this.architectureValidator
+      ? {
+          status: this.architectureValidator.aiSecurityStatus,
+          services: this.architectureValidator.securityInfo.services,
+        }
+      : { status: 'unknown' as AiSecurityStatus, services: {} };
+
     return {
       ...basicHealth,
       env: process.env.NODE_ENV || 'development',
@@ -104,6 +122,9 @@ export class HealthController {
         buildTime: process.env.BUILD_TIME || 'unknown',
         nodeVersion: process.version,
       },
+      aiSecurity: aiSecurityInfo,
+      embeddingConsistency:
+        this.architectureValidator?.embeddingConsistency ?? 'missing',
     };
   }
 
@@ -121,6 +142,19 @@ export class HealthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ status: CheckStatus; message?: string }> {
     try {
+      // Check AI security status in production/staging
+      const nodeEnv = process.env.NODE_ENV || 'development';
+      if (
+        (nodeEnv === 'production' || nodeEnv === 'staging') &&
+        this.architectureValidator?.aiSecurityStatus === 'degraded'
+      ) {
+        res.status(HttpStatus.SERVICE_UNAVAILABLE);
+        return {
+          status: 'degraded',
+          message: 'AI security services degraded',
+        };
+      }
+
       // Check for pending/failed migrations (set by PrismaService.onModuleInit)
       if (this.prisma.hasPendingMigrations) {
         res.status(HttpStatus.SERVICE_UNAVAILABLE);

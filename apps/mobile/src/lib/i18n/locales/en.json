@@ -230,7 +230,8 @@
       "ap": "AP",
       "ib": "IB",
       "a_level": "A-Level",
-      "igcse": "IGCSE"
+      "igcse": "IGCSE",
+      "duolingo": "Duolingo English Test"
     },
     "addScore": "Add Score",
     "addActivity": "Add Activity",
@@ -358,7 +359,16 @@
   },
   "cases": {
     "title": "Case Library",
-    "detail": "Case Detail",
+    "detail": {
+      "background": "Background",
+      "scores": "Test Scores",
+      "activities": "Activities",
+      "awards": "Awards",
+      "essays": "Essay Overview",
+      "essay": "Essay",
+      "tags": "Tags",
+      "tips": "Application Tips"
+    },
     "submitCase": "Submit Case",
     "filters": {
       "school": "Target School",
@@ -376,16 +386,6 @@
     "similarCases": "Similar Cases",
     "verified": "Verified",
     "anonymous": "Anonymous",
-    "detail": {
-      "background": "Background",
-      "scores": "Test Scores",
-      "activities": "Activities",
-      "awards": "Awards",
-      "essays": "Essay Overview",
-      "essay": "Essay",
-      "tags": "Tags",
-      "tips": "Application Tips"
-    },
     "submit": {
       "title": "Submit Admission Case",
       "selectSchool": "Select School",
@@ -605,34 +605,17 @@
     "deletePostMessage": "Are you sure you want to delete this post? This action cannot be undone."
   },
   "followers": {
-    "title": "Social",
+    "title": "Follow Management",
     "tabs": {
-      "followers": "Followers",
       "following": "Following",
-      "blocked": "Blocked"
+      "followers": "Followers"
     },
-    "search": "Search users...",
-    "recommendations": "Recommended",
     "follow": "Follow",
     "unfollow": "Unfollow",
-    "following_label": "Following",
-    "mutual": "Mutual",
-    "block": "Block",
-    "unblock": "Unblock",
-    "blockConfirm": "Are you sure you want to block this user?",
-    "message": "Message",
-    "startChat": "Start Chat",
-    "empty": {
-      "followers": "No followers yet",
-      "following": "You're not following anyone",
-      "blocked": "No blocked users"
-    },
-    "toast": {
-      "followed": "Followed successfully",
-      "unfollowed": "Unfollowed",
-      "blocked": "User blocked",
-      "unblocked": "User unblocked"
-    }
+    "followBack": "Follow Back",
+    "mutualFollow": "Mutual Follow",
+    "noFollowing": "Not following anyone yet",
+    "noFollowers": "No followers yet"
   },
   "swipe": {
     "title": "Swipe Game",
@@ -859,19 +842,6 @@
       "popularLists": "Popular Lists"
     }
   },
-  "followers": {
-    "title": "Follow Management",
-    "tabs": {
-      "following": "Following",
-      "followers": "Followers"
-    },
-    "follow": "Follow",
-    "unfollow": "Unfollow",
-    "followBack": "Follow Back",
-    "mutualFollow": "Mutual Follow",
-    "noFollowing": "Not following anyone yet",
-    "noFollowers": "No followers yet"
-  },
   "ranking": {
     "title": "Custom Rankings",
     "subtitle": "Adjust weight parameters to generate personalized school rankings",
@@ -918,7 +888,12 @@
       "safety": "Safety Schools",
       "reach": "Reach Schools"
     },
-    "results": "Prediction Results",
+    "results": {
+      "admitted": "Admitted",
+      "rejected": "Rejected",
+      "waitlisted": "Waitlisted",
+      "deferred": "Deferred"
+    },
     "recommendation": {
       "reach": "Reach",
       "match": "Match",
@@ -945,13 +920,7 @@
     "selectResult": "What was the actual result?",
     "submitResult": "Submit Result",
     "resultReported": "Result reported successfully",
-    "reportFailed": "Failed to report result",
-    "results": {
-      "admitted": "Admitted",
-      "rejected": "Rejected",
-      "waitlisted": "Waitlisted",
-      "deferred": "Deferred"
-    }
+    "reportFailed": "Failed to report result"
   },
   "settings": {
     "title": "Settings",
@@ -1023,11 +992,9 @@
       "totalReviews": "Total Reviews"
     },
     "roles": {
-      "user": "User",
-      "verified": "Verified",
-      "operator": "Operator",
-      "admin": "Admin",
-      "superAdmin": "Super Admin"
+      "ADMIN": "Admin",
+      "VERIFIED": "Verified",
+      "USER": "User"
     },
     "users": {
       "search": "Search by email...",
@@ -1058,11 +1025,6 @@
       "noReportsDesc": "All reports have been processed",
       "handleReport": "Handle Report",
       "statusLabel": "Status"
-    },
-    "roles": {
-      "ADMIN": "Admin",
-      "VERIFIED": "Verified",
-      "USER": "User"
     },
     "dialogs": {
       "deleteConfirmTitle": "Confirm Delete",
@@ -1513,6 +1475,7 @@
   "more": {
     "title": "More Features",
     "subtitle": "Explore all tools and features",
+    "essays": "Essays",
     "resume": "Resume",
     "vault": "Vault",
     "teams": "Teams",
@@ -1524,7 +1487,9 @@
     "assessment": "Assessment",
     "settings": "Settings",
     "timeline": "Timeline",
-    "chat": "Chat"
+    "chat": "Chat",
+    "notifications": "Notifications",
+    "forum": "Forum"
   },
   "resume": {
     "title": "Resume Builder",

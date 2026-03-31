@@ -1,4 +1,12 @@
-import { Controller, Post, Get, Body, Param, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Param,
+  Patch,
+  Query,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -18,6 +26,7 @@ import {
   PredictionResponseDto,
   ReportResultDto,
 } from './dto';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 import { clampPercentRate } from '../../common/utils/percent.util';
 import { SCHOOL_NAME_RANK_SELECT } from '../../common/constants/prisma-selects';
 
@@ -77,17 +86,24 @@ export class PredictionController {
   }
 
   @Get('history')
-  @ApiOperation({ summary: 'Get prediction history' })
-  async getHistory(@CurrentUser() user: CurrentUserPayload) {
+  @ApiOperation({ summary: 'Get prediction history (paginated)' })
+  async getHistory(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query() pagination: PaginationDto,
+  ) {
     const profile = await this.prisma.profile.findUnique({
       where: { userId: user.id },
     });
 
     if (!profile) {
-      return [];
+      return { items: [], total: 0, page: 1, pageSize: 20, totalPages: 0 };
     }
 
-    return this.predictionService.getPredictionHistory(profile.id);
+    return this.predictionService.getPredictionHistory(
+      profile.id,
+      pagination.page,
+      pagination.pageSize,
+    );
   }
 
   @Patch(':schoolId/result')

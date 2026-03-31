@@ -558,6 +558,15 @@ export class PredictionService {
       where: { id: { in: schoolIds } },
     });
 
+    // Load user's application round per school (ED, EA, RD, etc.)
+    const schoolListItems = await this.prisma.schoolListItem.findMany({
+      where: { userId: profile.userId, schoolId: { in: schoolIds } },
+      select: { schoolId: true, round: true },
+    });
+    const roundMap = new Map(
+      schoolListItems.map((item) => [item.schoolId, item.round]),
+    );
+
     // Fetch latest MBTI and Holland assessment results for profile enrichment
     const assessmentResults = await this.prisma.assessmentResult.findMany({
       where: { userId: profile.userId },
@@ -579,6 +588,10 @@ export class PredictionService {
         : undefined;
 
     const profileInput = this.profileToInput(profile, assessmentData);
+
+    // Enrich with essay quality score (G8) — non-blocking optional enrichment
+    await this.transformer.enrichWithEssayQuality(profileInput, profile.id);
+
     const profileMetrics = this.extractProfileMetrics(profileInput);
     const profileHash = this.hashProfileData(profile);
 
@@ -701,6 +714,7 @@ export class PredictionService {
             profileHash,
             programMap.get(school.id),
             dataCompleteness,
+            roundMap.get(school.id) || undefined,
           ),
         ),
       );
@@ -796,8 +810,14 @@ export class PredictionService {
     profileHash?: string,
     programData?: any,
     dataCompleteness?: number,
+    applicationRound?: string,
   ): Promise<PredictionResultDto> {
     const schoolInput = this.schoolToInput(school);
+
+    // Inject application round from user's school list
+    if (applicationRound) {
+      schoolInput.applicationRound = applicationRound;
+    }
     const schoolMetrics = this.extractSchoolMetrics(schoolInput);
 
     // Inject major competitiveness into profileInput for prompt builder
@@ -1349,8 +1369,16 @@ export class PredictionService {
   }
 
   /** @deprecated Use PredictionReportingService.getPredictionHistory() directly */
-  async getPredictionHistory(profileId: string) {
-    return this.reportingService.getPredictionHistory(profileId);
+  async getPredictionHistory(
+    profileId: string,
+    page?: number,
+    pageSize?: number,
+  ) {
+    return this.reportingService.getPredictionHistory(
+      profileId,
+      page,
+      pageSize,
+    );
   }
 
   /** @deprecated Use PredictionReportingService.reportActualResult() directly */

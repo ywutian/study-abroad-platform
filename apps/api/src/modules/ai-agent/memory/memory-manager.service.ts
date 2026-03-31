@@ -9,9 +9,15 @@
  * - 冲突检测与解决
  */
 
-import { Injectable, Logger, Optional } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  Optional,
+} from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { MemoryType, EntityType } from '@prisma/client';
+import { RedisService } from '../../../common/redis/redis.service';
 import { RedisCacheService } from './redis-cache.service';
 import { PersistentMemoryService } from './persistent-memory.service';
 import { EmbeddingService } from './embedding.service';
@@ -50,11 +56,16 @@ import {
 export class MemoryManagerService {
   private readonly logger = new Logger(MemoryManagerService.name);
 
+  private static readonly CLEANUP_LOCK_KEY = 'memory:cleanup:lock';
+  private static readonly CLEANUP_LOCK_TTL = 300; // 5 minutes
+  private isRunning = false;
+
   constructor(
     private cache: RedisCacheService,
     private persistent: PersistentMemoryService,
     private embedding: EmbeddingService,
     private summarizer: SummarizerService,
+    private redis: RedisService,
     @Optional() private scorer?: MemoryScorerService,
     @Optional() private decay?: MemoryDecayService,
     @Optional() private conflict?: MemoryConflictService,
@@ -79,15 +90,23 @@ export class MemoryManagerService {
     conversationId?: string,
   ): Promise<ConversationRecord> {
     if (conversationId) {
-      // 尝试从缓存获取
+      // 缓存命中时也必须校验归属（否则任意用户可传入他人 conversationId 读写会话）
       const cached = await this.cache.getConversationMeta(conversationId);
       if (cached?.id) {
-        return cached as ConversationRecord;
+        if (cached.userId === userId) {
+          return cached as ConversationRecord;
+        }
+        if (cached.userId) {
+          throw new NotFoundException('Conversation not found');
+        }
+        // 元数据不完整（例如仅写过 title）时回落到数据库校验
       }
 
-      // 从数据库获取
       const existing = await this.persistent.getConversation(conversationId);
       if (existing) {
+        if (existing.userId !== userId) {
+          throw new NotFoundException('Conversation not found');
+        }
         await this.cache.cacheConversation(conversationId, existing);
         return existing;
       }
@@ -191,6 +210,18 @@ export class MemoryManagerService {
     limit: number = 50,
   ): Promise<MessageRecord[]> {
     return this.persistent.getMessages(conversationId, { limit });
+  }
+
+  /**
+   * Retrieve a single conversation record (used by the Gateway for ownership validation).
+   *
+   * @param conversationId - The conversation to retrieve
+   * @returns The conversation record, or null if not found
+   */
+  async getConversation(
+    conversationId: string,
+  ): Promise<ConversationRecord | null> {
+    return this.persistent.getConversation(conversationId);
   }
 
   /**
@@ -332,6 +363,7 @@ export class MemoryManagerService {
                   importance: resolution.memory.importance,
                   metadata: resolution.memory.metadata,
                 },
+                userId,
               );
               return updated;
             }
@@ -347,6 +379,7 @@ export class MemoryManagerService {
                   importance: resolution.memory.importance,
                   metadata: resolution.memory.metadata,
                 },
+                userId,
               );
               return merged;
             }
@@ -440,13 +473,14 @@ export class MemoryManagerService {
   ): Promise<MemoryRecord[]> {
     const { query, useSemanticSearch = true, limit = 10 } = options;
 
+    // 检索候选集（rerank 时取更多候选，scorer 不可用时直接取 limit）
+    const candidateLimit = this.scorer ? Math.max(limit, 20) : limit;
     let memories: MemoryRecord[];
 
     // 如果有查询且启用语义搜索
     if (query && useSemanticSearch) {
       memories = await this.persistent.searchMemories(userId, query, {
-        limit,
-        minSimilarity: 0.5,
+        limit: candidateLimit,
       });
     } else {
       // 普通检索
@@ -454,15 +488,41 @@ export class MemoryManagerService {
         types: options.types,
         categories: options.categories,
         minImportance: options.minImportance,
-        limit,
+        limit: candidateLimit,
       });
+    }
+
+    // 规则重排：叠加 importance / freshness / access 评分，截取 top-N
+    if (this.scorer && memories.length > limit) {
+      const scored = memories.map((m) => {
+        const scoreInput: MemoryScoreInput = {
+          type: m.type,
+          content: m.content,
+          importance: m.importance,
+          confidence: m.metadata?.confidence ?? 0.5,
+          createdAt: m.createdAt,
+          accessCount: m.accessCount,
+          lastAccessedAt: m.lastAccessedAt,
+        };
+        return {
+          memory: m,
+          totalScore: this.scorer!.score(scoreInput).totalScore,
+        };
+      });
+      scored.sort((a, b) => b.totalScore - a.totalScore);
+      memories = scored.slice(0, limit).map((s) => s.memory);
     }
 
     // 记录访问（强化记忆）
     if (this.decay && memories.length > 0) {
-      this.decay.recordAccessBatch(memories.map((m) => m.id)).catch((err) => {
-        this.logger.error('Failed to record memory access', err);
-      });
+      this.decay
+        .recordAccessBatch(
+          memories.map((m) => m.id),
+          userId,
+        )
+        .catch((err) => {
+          this.logger.error('Failed to record memory access', err);
+        });
     }
 
     return memories;
@@ -473,8 +533,11 @@ export class MemoryManagerService {
    *
    * @param memoryId - The ID of the memory to delete
    */
-  // 遗忘记忆
-  async forget(memoryId: string): Promise<void> {
+  /**
+   * Admin-only memory deletion. No userId check — caller must be @Roles(ADMIN).
+   * For user-facing deletion, use UserDataService.deleteMemory(userId, id).
+   */
+  async forgetAdmin(memoryId: string): Promise<void> {
     await this.persistent.deleteMemory(memoryId);
   }
 
@@ -559,7 +622,9 @@ export class MemoryManagerService {
       parts.push(`回复详细度: ${context.preferences.responseLength}`);
     }
 
-    // 相关记忆
+    // 相关记忆 — getRetrievalContext retrieves 5 for scoring/availability;
+    // buildContextSummary renders top 3 into system prompt to control token budget.
+    // The full 5 remain in RetrievalContext for programmatic use by tools.
     if (context.relevantMemories.length > 0) {
       parts.push('\n## 相关记忆');
       for (const mem of context.relevantMemories.slice(0, 3)) {
@@ -685,7 +750,7 @@ export class MemoryManagerService {
           importance: m.importance,
           confidence: 0.8,
           createdAt: m.createdAt,
-          accessCount: m.metadata?.accessCount || 0,
+          accessCount: m.accessCount ?? 0,
         }),
       );
 
@@ -712,11 +777,36 @@ export class MemoryManagerService {
    *
    * @returns An object containing the count of deleted expired memories
    */
-  // 清理过期记忆（每小时自动执行）
+  // 清理过期记忆（每小时自动执行，分布式锁防多副本重复）
   @Cron('0 * * * *')
   async cleanup(): Promise<{ expiredMemories: number }> {
-    const expiredMemories = await this.persistent.cleanupExpiredMemories();
-    return { expiredMemories };
+    const client = this.redis.getClient();
+    const useRedisLock = !!(client && this.redis.connected);
+
+    if (useRedisLock) {
+      const locked = await client.set(
+        MemoryManagerService.CLEANUP_LOCK_KEY,
+        '1',
+        'EX',
+        MemoryManagerService.CLEANUP_LOCK_TTL,
+        'NX',
+      );
+      if (locked !== 'OK') {
+        this.logger.debug('Cleanup lock held by another instance, skipping');
+        return { expiredMemories: 0 };
+      }
+    } else if (this.isRunning) {
+      this.logger.debug('Cleanup already running in this process, skipping');
+      return { expiredMemories: 0 };
+    }
+
+    this.isRunning = true;
+    try {
+      const expiredMemories = await this.persistent.cleanupExpiredMemories();
+      return { expiredMemories };
+    } finally {
+      this.isRunning = false;
+    }
   }
 
   /**
@@ -799,15 +889,30 @@ export class MemoryManagerService {
     const { memories, entities } =
       await this.summarizer.extractFromMessage(message);
 
-    for (const mem of memories) {
-      await this.remember(conversation.userId, mem).catch((err) => {
-        this.logger.warn(`Failed to remember extracted memory: ${err.message}`);
-      });
-    }
+    // Parallelize memory persistence (typically 1-3 items per message)
+    // If conflict detection issues increase, revert memories to serial
+    await Promise.allSettled(
+      memories.map((mem) =>
+        this.remember(conversation.userId, mem).catch((err) => {
+          this.logger.warn(
+            `Failed to remember extracted memory: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }),
+      ),
+    );
 
-    for (const entity of entities) {
-      await this.persistent.upsertEntity(conversation.userId, entity);
-    }
+    // Entities use upsert with unique key (userId,type,name) — safe to parallelize
+    await Promise.allSettled(
+      entities.map((entity) =>
+        this.persistent
+          .upsertEntity(conversation.userId, entity)
+          .catch((err) => {
+            this.logger.warn(
+              `Failed to upsert entity (${entity.type} ${entity.name}): ${err instanceof Error ? err.message : String(err)}`,
+            );
+          }),
+      ),
+    );
   }
 
   /**
@@ -825,16 +930,35 @@ export class MemoryManagerService {
    * @param message - The tool-result message record to parse
    */
   // 从工具执行结果中提取记忆（时间线、个人事件等关键决策）
+  // 安全上限：content >50KB 跳过整条消息；提取的 memories/entities 各不超过 10 条
+  private static readonly MAX_TOOL_RESULT_BYTES = 50 * 1024;
+  private static readonly MAX_EXTRACTED_ITEMS = 10;
+
   private async extractToolResultMemory(
     conversationId: string,
     message: MessageRecord,
   ): Promise<void> {
+    // Skip oversized tool results to prevent memory/parsing issues
+    if (message.content.length > MemoryManagerService.MAX_TOOL_RESULT_BYTES) {
+      this.logger.warn('Skipped oversized tool result', {
+        conversationId,
+        contentLength: message.content.length,
+      });
+      return;
+    }
+
     const conversation = await this.persistent.getConversation(conversationId);
     if (!conversation) return;
 
     try {
       const data = JSON.parse(message.content);
-      if (!data || typeof data !== 'object') return;
+      if (!data || typeof data !== 'object') {
+        this.logger.debug(
+          'Tool result is not a JSON object, skipping memory extraction',
+          { conversationId, type: typeof data },
+        );
+        return;
+      }
 
       const memories: MemoryInput[] = [];
       const entities: EntityInput[] = [];
@@ -1038,15 +1162,44 @@ export class MemoryManagerService {
         });
       }
 
-      // 保存
-      if (memories.length > 0) {
-        await this.persistent.createMemories(conversation.userId, memories);
-      }
-      for (const entity of entities) {
-        await this.persistent.upsertEntity(conversation.userId, entity);
-      }
-    } catch {
-      // JSON 解析失败则跳过
+      // 保存（上限截断，防止单次提取过多条目）
+      const cappedMemories = memories.slice(
+        0,
+        MemoryManagerService.MAX_EXTRACTED_ITEMS,
+      );
+      const cappedEntities = entities.slice(
+        0,
+        MemoryManagerService.MAX_EXTRACTED_ITEMS,
+      );
+      // 通过 remember() 管道保存（冲突检测 + 评分标注）
+      await Promise.allSettled(
+        cappedMemories.map((mem) =>
+          this.remember(conversation.userId, mem).catch((err) => {
+            this.logger.warn(
+              `Failed to remember tool result memory: ${err instanceof Error ? err.message : String(err)}`,
+            );
+          }),
+        ),
+      );
+
+      // 实体 upsert（唯一键 userId+type+name，天然幂等）
+      await Promise.allSettled(
+        cappedEntities.map((entity) =>
+          this.persistent
+            .upsertEntity(conversation.userId, entity)
+            .catch((err) => {
+              this.logger.warn(
+                `Failed to upsert entity (${entity.type} ${entity.name}): ${err instanceof Error ? err.message : String(err)}`,
+              );
+            }),
+        ),
+      );
+    } catch (err) {
+      // Non-JSON tool results (e.g. plain text responses) are expected — log at debug level
+      this.logger.debug(
+        `Tool result memory extraction skipped: ${err instanceof Error ? err.message : String(err)}`,
+        { conversationId },
+      );
     }
   }
 }

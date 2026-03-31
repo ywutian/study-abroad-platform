@@ -47,6 +47,15 @@ export class SchoolToolsService implements IToolHandlerProvider {
       ? this.schoolLookup.sortByRelevance(schools, args.query.trim())
       : schools;
 
+    if (sortedSchools.length === 0) {
+      return {
+        count: 0,
+        schools: [],
+        message:
+          'No schools matched the search criteria. Try adjusting filters such as rank range, state, or tuition.',
+      };
+    }
+
     return {
       count: sortedSchools.length,
       schools: sortedSchools.map((s) => ({
@@ -113,7 +122,7 @@ export class SchoolToolsService implements IToolHandlerProvider {
         (fullSchool as any).salary6YrPostGrad != null
           ? `$${(fullSchool as any).salary6YrPostGrad.toLocaleString()}`
           : 'N/A',
-      deadlines: metadata.deadlines || {},
+      deadlines: this.annotateDeadlines(metadata.deadlines || {}),
       essayPrompts: await this.prisma.essayPrompt.findMany({
         where: { schoolId: fullSchool.id, isActive: true, status: 'VERIFIED' },
         orderBy: { sortOrder: 'asc' },
@@ -164,5 +173,32 @@ export class SchoolToolsService implements IToolHandlerProvider {
             : 'N/A',
       })),
     };
+  }
+
+  /** Annotate each deadline with status relative to current date. */
+  private annotateDeadlines(
+    deadlines: Record<string, unknown>,
+  ): Record<string, { date: string; status: string; daysUntil: number }> {
+    const now = new Date();
+    const result: Record<
+      string,
+      { date: string; status: string; daysUntil: number }
+    > = {};
+
+    for (const [type, dateStr] of Object.entries(deadlines)) {
+      if (typeof dateStr !== 'string') continue;
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) continue;
+
+      const daysUntil = Math.ceil((date.getTime() - now.getTime()) / 86400000);
+      result[type] = {
+        date: dateStr,
+        status:
+          daysUntil < 0 ? 'passed' : daysUntil <= 7 ? 'closing_soon' : 'open',
+        daysUntil,
+      };
+    }
+
+    return result;
   }
 }

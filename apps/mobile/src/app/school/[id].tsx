@@ -19,6 +19,7 @@ import {
   Skeleton,
 } from '@/components/ui';
 import { Tabs } from '@/components/ui/Tabs';
+import { API_ROUTES, schoolRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import { getResultBadgeVariant } from '@/utils/case-helpers';
@@ -67,14 +68,14 @@ export default function SchoolDetailScreen() {
     refetch,
   } = useQuery({
     queryKey: ['school', id],
-    queryFn: () => apiClient.get<School>(`/schools/${id}`),
+    queryFn: () => apiClient.get<School>(schoolRoutes.byId(id!)),
     enabled: !!id,
   });
 
   const { data: casesData, isLoading: casesLoading } = useQuery({
     queryKey: ['schoolCases', id],
     queryFn: () =>
-      apiClient.get<PaginatedResponse<Case>>('/cases', {
+      apiClient.get<PaginatedResponse<Case>>(API_ROUTES.CASES, {
         params: { schoolId: id, limit: 10 },
       }),
     enabled: !!id,

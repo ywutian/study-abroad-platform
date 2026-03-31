@@ -211,9 +211,14 @@ export class ProfileAnalysisService {
       if (testScores.some((t) => t.type === 'SAT' || t.type === 'ACT'))
         sections.testing.score += 6;
       else sections.testing.missing.push('SAT/ACT');
-      if (testScores.some((t) => t.type === 'TOEFL' || t.type === 'IELTS'))
+      if (
+        testScores.some(
+          (t) =>
+            t.type === 'TOEFL' || t.type === 'IELTS' || t.type === 'DUOLINGO',
+        )
+      )
         sections.testing.score += 6;
-      else sections.testing.missing.push('TOEFL/IELTS');
+      else sections.testing.missing.push('TOEFL/IELTS/Duolingo');
     } else {
       sections.testing.missing.push('testScores');
     }

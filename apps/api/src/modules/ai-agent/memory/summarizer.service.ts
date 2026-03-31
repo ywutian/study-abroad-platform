@@ -4,6 +4,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { MemoryType, EntityType } from '@prisma/client';
+import { extractJsonFromLlm } from '../../../common/utils/llm-json.util';
 import { LLMService } from '../core/llm.service';
 import {
   MessageRecord,
@@ -104,16 +105,30 @@ category 说明: competition=竞赛, summer_program=夏校/暑期项目, interns
         { temperature: 0.2, maxTokens: 500 },
       );
 
-      const parsed = JSON.parse(content);
+      const parsed = extractJsonFromLlm<{
+        memories?: LLMParsedMemory[];
+        entities?: LLMParsedEntity[];
+      }>(content);
+
+      // Structure validation — extractJsonFromLlm returns { result: rawResponse } on failure
+      if (!Array.isArray(parsed?.memories)) {
+        this.logger.warn(
+          'LLM memory extraction returned unexpected structure, skipping',
+        );
+        return { memories: [], entities: [] };
+      }
+
+      const memories = parsed.memories;
+      const entities = Array.isArray(parsed.entities) ? parsed.entities : [];
 
       return {
-        memories: (parsed.memories || []).map((m: LLMParsedMemory) => ({
+        memories: memories.map((m: LLMParsedMemory) => ({
           type: this.mapMemoryType(m.type),
           category: m.category,
           content: m.content,
           importance: m.importance || 0.5,
         })),
-        entities: (parsed.entities || []).map((e: LLMParsedEntity) => ({
+        entities: entities.map((e: LLMParsedEntity) => ({
           type: this.mapEntityType(e.type),
           name: e.name,
           description: e.description,
@@ -210,26 +225,43 @@ category 说明: competition=竞赛, summer_program=夏校/暑期项目, interns
 
   private parseSummaryResponse(content: string): ConversationSummary {
     try {
-      const parsed = JSON.parse(content);
+      const parsed = extractJsonFromLlm<{
+        summary?: string;
+        keyTopics?: string[];
+        decisions?: string[];
+        nextSteps?: string[];
+        facts?: LLMParsedMemory[];
+        entities?: LLMParsedEntity[];
+      }>(content);
+
+      // Structure validation — reject fallback shape
+      if (typeof parsed?.summary !== 'string') {
+        return this.getEmptySummary();
+      }
+
+      // Defensive array checks — model may return string instead of array
+      const keyTopics = Array.isArray(parsed.keyTopics) ? parsed.keyTopics : [];
+      const decisions = Array.isArray(parsed.decisions) ? parsed.decisions : [];
+      const nextSteps = Array.isArray(parsed.nextSteps) ? parsed.nextSteps : [];
+      const facts = Array.isArray(parsed.facts) ? parsed.facts : [];
+      const entities = Array.isArray(parsed.entities) ? parsed.entities : [];
 
       return {
-        summary: parsed.summary || '',
-        keyTopics: parsed.keyTopics || [],
-        decisions: parsed.decisions || [],
-        nextSteps: parsed.nextSteps || [],
-        extractedFacts: (parsed.facts || []).map((f: LLMParsedMemory) => ({
+        summary: parsed.summary,
+        keyTopics,
+        decisions,
+        nextSteps,
+        extractedFacts: facts.map((f: LLMParsedMemory) => ({
           type: this.mapMemoryType(f.type),
           category: f.category,
           content: f.content,
           importance: f.importance || 0.5,
         })),
-        extractedEntities: (parsed.entities || []).map(
-          (e: LLMParsedEntity) => ({
-            type: this.mapEntityType(e.type),
-            name: e.name,
-            description: e.description,
-          }),
-        ),
+        extractedEntities: entities.map((e: LLMParsedEntity) => ({
+          type: this.mapEntityType(e.type),
+          name: e.name,
+          description: e.description,
+        })),
       };
     } catch {
       return this.getEmptySummary();

@@ -18,6 +18,12 @@ import {
   X,
 } from 'lucide-react';
 
+const STEP_BG_CLASSES: Record<string, string> = {
+  profile: 'bg-primary text-white',
+  schools: 'bg-primary text-white',
+  prediction: 'bg-success text-white',
+};
+
 interface OnboardingStep {
   id: string;
   title: string;
@@ -25,7 +31,6 @@ interface OnboardingStep {
   icon: React.ElementType;
   href: string;
   completed: boolean;
-  gradient: string;
 }
 
 interface OnboardingGuideProps {
@@ -42,7 +47,14 @@ export function OnboardingGuide({
   onDismiss,
 }: OnboardingGuideProps) {
   const t = useTranslations('dashboard.onboarding');
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return localStorage.getItem('onboarding-guide-dismissed') === 'true';
+    } catch {
+      return false;
+    }
+  });
 
   const steps: OnboardingStep[] = [
     {
@@ -52,7 +64,6 @@ export function OnboardingGuide({
       icon: User,
       href: '/profile',
       completed: profileProgress >= 60,
-      gradient: 'bg-primary',
     },
     {
       id: 'schools',
@@ -61,7 +72,6 @@ export function OnboardingGuide({
       icon: GraduationCap,
       href: '/schools',
       completed: hasSchools,
-      gradient: 'bg-primary',
     },
     {
       id: 'prediction',
@@ -70,7 +80,6 @@ export function OnboardingGuide({
       icon: Target,
       href: '/prediction',
       completed: hasPredictions,
-      gradient: 'bg-success',
     },
   ];
 
@@ -86,6 +95,11 @@ export function OnboardingGuide({
 
   const handleDismiss = () => {
     setDismissed(true);
+    try {
+      localStorage.setItem('onboarding-guide-dismissed', 'true');
+    } catch {
+      // Private browsing or storage full
+    }
     onDismiss?.();
   };
 
@@ -162,7 +176,7 @@ export function OnboardingGuide({
                         step.completed
                           ? 'bg-emerald-500 text-white'
                           : isActive
-                            ? `bg-gradient-to-br ${step.gradient} text-white`
+                            ? STEP_BG_CLASSES[step.id] || 'bg-primary text-white'
                             : 'bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary'
                       )}
                     >

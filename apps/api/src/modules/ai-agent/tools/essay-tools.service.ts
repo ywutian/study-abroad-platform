@@ -13,7 +13,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { LLMService } from '../core/llm.service';
 import { EssayAiService } from '../../essay/essay-ai.service';
-import { extractJsonFromLlm } from './helpers/llm-json.helper';
+import { extractJsonFromLlm } from '../../../common/utils/llm-json.util';
 import { ToolHandler, IToolHandlerProvider } from './tool-handler.interface';
 
 @Injectable()
@@ -93,6 +93,16 @@ export class EssayToolsService implements IToolHandlerProvider {
       return {
         error:
           locale === 'zh' ? '请提供文书内容' : 'Please provide essay content',
+      };
+    }
+
+    const MAX_ESSAY_LENGTH = 30000;
+    if (args.content.length > MAX_ESSAY_LENGTH) {
+      return {
+        error:
+          locale === 'zh'
+            ? `文书内容过长（${args.content.length} 字符），请限制在 ${MAX_ESSAY_LENGTH} 字符以内`
+            : `Essay too long (${args.content.length} chars). Limit: ${MAX_ESSAY_LENGTH}.`,
       };
     }
 

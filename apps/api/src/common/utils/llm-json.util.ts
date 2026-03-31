@@ -5,42 +5,118 @@
  * code blocks or surrounding text.
  */
 
+import { Logger } from '@nestjs/common';
+
+const logger = new Logger('extractJsonFromLlm');
+
+/**
+ * Find the outermost brace-balanced JSON substring starting with `open`.
+ * Returns the substring or null if no balanced block is found.
+ */
+function extractBalanced(
+  text: string,
+  open: string,
+  close: string,
+): string | null {
+  const start = text.indexOf(open);
+  if (start === -1) return null;
+
+  let depth = 0;
+  let inString = false;
+  let escape = false;
+
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i];
+
+    if (escape) {
+      escape = false;
+      continue;
+    }
+
+    if (ch === '\\' && inString) {
+      escape = true;
+      continue;
+    }
+
+    if (ch === '"') {
+      inString = !inString;
+      continue;
+    }
+
+    if (inString) continue;
+
+    if (ch === open) depth++;
+    else if (ch === close) {
+      depth--;
+      if (depth === 0) {
+        return text.slice(start, i + 1);
+      }
+    }
+  }
+
+  return null;
+}
+
 /**
  * Extract and parse JSON from an LLM response string.
- * Handles responses wrapped in markdown code blocks or surrounded by text.
- * Returns the parsed object, or the fallback if extraction fails.
+ *
+ * Strategy (in order):
+ * 1. Direct JSON.parse (pure JSON response)
+ * 2. Markdown code block extraction (```json ... ```)
+ * 3. Brace-balanced object extraction (handles nested JSON correctly)
+ * 4. Brace-balanced array extraction
+ * 5. Fallback: wraps entire response in { [fallbackKey]: response }
+ *
+ * Logs a warning when falling back to help diagnose extraction issues.
  */
 export function extractJsonFromLlm<T = any>(
   response: string,
   fallbackKey = 'result',
 ): T {
-  // Try direct parse first
+  // 1. Try direct parse first
   try {
     return JSON.parse(response);
   } catch {
     // Not pure JSON, try extraction
   }
 
-  // Try extracting JSON object from response
+  // 2. Try markdown code block (```json ... ``` or ``` ... ```)
   try {
-    const jsonMatch = response.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
+    const codeBlockMatch = response.match(
+      /```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/,
+    );
+    if (codeBlockMatch?.[1]) {
+      const parsed = JSON.parse(codeBlockMatch[1].trim());
+      return parsed;
     }
   } catch {
-    // JSON extraction failed
+    // Code block content wasn't valid JSON
   }
 
-  // Try extracting JSON array
+  // 3. Try brace-balanced object extraction (handles nested JSON correctly)
   try {
-    const arrayMatch = response.match(/\[[\s\S]*\]/);
-    if (arrayMatch) {
-      return JSON.parse(arrayMatch[0]);
+    const objectStr = extractBalanced(response, '{', '}');
+    if (objectStr) {
+      return JSON.parse(objectStr);
+    }
+  } catch {
+    // JSON object extraction failed
+  }
+
+  // 4. Try brace-balanced array extraction
+  try {
+    const arrayStr = extractBalanced(response, '[', ']');
+    if (arrayStr) {
+      return JSON.parse(arrayStr);
     }
   } catch {
     // Array extraction failed
   }
 
-  // Return fallback
+  // 5. Return fallback with warning
+  logger.warn(
+    `JSON extraction failed, using fallback key "${fallbackKey}". ` +
+      `Response preview: ${response.slice(0, 200)}`,
+  );
   return { [fallbackKey]: response } as T;
 }

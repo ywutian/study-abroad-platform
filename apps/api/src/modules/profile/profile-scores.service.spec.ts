@@ -55,6 +55,7 @@ describe('ProfileScoresService', () => {
 
   const mockLLMService = {
     chatSimple: jest.fn(),
+    chatSimpleGuarded: jest.fn(),
   };
 
   const mockHelpers = {
@@ -329,7 +330,7 @@ describe('ProfileScoresService', () => {
 
       expect(result.suggestedOrder).toHaveLength(1);
       expect(result.suggestedOrder[0].activityId).toBe('act-1');
-      expect(mockLLMService.chatSimple).not.toHaveBeenCalled();
+      expect(mockLLMService.chatSimpleGuarded).not.toHaveBeenCalled();
     });
 
     it('should return fallback when LLM fails', async () => {
@@ -341,7 +342,9 @@ describe('ProfileScoresService', () => {
           { id: 'act-2', name: 'Math Club' },
         ],
       });
-      mockLLMService.chatSimple.mockRejectedValue(new Error('LLM error'));
+      mockLLMService.chatSimpleGuarded.mockRejectedValue(
+        new Error('LLM error'),
+      );
 
       const result = await service.aiSortActivities('user-1', 'en');
 

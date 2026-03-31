@@ -19,6 +19,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Badge, Segment } from '@/components/ui';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import type { EssayDetail } from './types';
 import { RESULT_COLORS, resultBadgeVariant } from './types';
@@ -47,7 +48,7 @@ export function DetailSheet({ essayId, onClose }: DetailSheetProps) {
 
   const { data: essayDetail, isLoading: isDetailLoading } = useQuery<EssayDetail>({
     queryKey: ['essay-detail', essayId],
-    queryFn: () => apiClient.get<EssayDetail>(`/essay-ai/gallery/${essayId}`),
+    queryFn: () => apiClient.get<EssayDetail>(`${API_ROUTES.ESSAY_AI}/gallery/${essayId}`),
     enabled: !!essayId,
   });
 

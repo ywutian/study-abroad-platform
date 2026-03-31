@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { Card, CardContent, Button, Loading } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
+import { profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import type { Profile } from '@/types';
@@ -18,7 +19,7 @@ export default function ExportScreen() {
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ['profile'],
-    queryFn: () => apiClient.get<Profile>('/profiles/me'),
+    queryFn: () => apiClient.get<Profile>(profileRoutes.me()),
   });
 
   const handleExportJson = async () => {

@@ -128,6 +128,9 @@ export class EssayAiService {
 
     const essay = await this.prisma.essay.findUnique({
       where: { id: dto.essayId },
+      include: {
+        linkedPrompt: { select: { wordLimit: true, type: true } },
+      },
     });
 
     if (!essay) {
@@ -178,10 +181,12 @@ export class EssayAiService {
         ? { name: dto.schoolName, details: schoolContext }
         : undefined,
       dto.major,
+      essay.linkedPrompt?.wordLimit ?? undefined,
+      essay.linkedPrompt?.type ?? undefined,
     );
 
     try {
-      const result = await this.llmService.chatSimple(
+      const result = await this.llmService.chatSimpleGuarded(
         [
           { role: 'system', content: systemPrompt },
           {
@@ -215,6 +220,7 @@ export class EssayAiService {
         strengths: parsed.strengths || [],
         weaknesses: parsed.weaknesses || [],
         suggestions: parsed.suggestions || [],
+        cliches: Array.isArray(parsed.cliches) ? parsed.cliches : undefined,
         verdict: parsed.verdict || '',
         tokenUsed: aiResult.tokenUsed,
       };
@@ -415,7 +421,7 @@ export class EssayAiService {
         ? `题目：${dto.prompt}${dto.background ? `\n学生背景：${dto.background}` : ''}`
         : `Prompt: ${dto.prompt}${dto.background ? `\nStudent background: ${dto.background}` : ''}`;
 
-      const result = await this.llmService.chatSimple(
+      const result = await this.llmService.chatSimpleGuarded(
         [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userContent },
@@ -534,14 +540,20 @@ export class EssayAiService {
     content: string,
     prompt?: string,
     locale = 'zh',
+    wordLimit?: number,
   ): Promise<EssayReviewResponseDto> {
     const isZh = locale === 'zh';
     await this.caseIncentiveService.charge(userId, PointAction.AI_ESSAY_REVIEW);
 
-    const systemPrompt = buildReviewSystemPrompt(locale);
+    const systemPrompt = buildReviewSystemPrompt(
+      locale,
+      undefined,
+      undefined,
+      wordLimit,
+    );
 
     try {
-      const result = await this.llmService.chatSimple(
+      const result = await this.llmService.chatSimpleGuarded(
         [
           { role: 'system', content: systemPrompt },
           {
@@ -565,6 +577,7 @@ export class EssayAiService {
         strengths: parsed.strengths || [],
         weaknesses: parsed.weaknesses || [],
         suggestions: parsed.suggestions || [],
+        cliches: Array.isArray(parsed.cliches) ? parsed.cliches : undefined,
         verdict: parsed.verdict || '',
         tokenUsed,
       };
@@ -611,7 +624,7 @@ export class EssayAiService {
         ? `题目：${prompt}${background ? `\n学生背景：${background}` : ''}`
         : `Prompt: ${prompt}${background ? `\nStudent background: ${background}` : ''}`;
 
-      const result = await this.llmService.chatSimple(
+      const result = await this.llmService.chatSimpleGuarded(
         [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userContent },
@@ -691,7 +704,7 @@ Return JSON format:
 style field must be in English.`;
 
     try {
-      const result = await this.llmService.chatSimple(
+      const result = await this.llmService.chatSimpleGuarded(
         [
           { role: 'system', content: systemPrompt },
           {
@@ -766,7 +779,7 @@ Return JSON format:
 suggestions field must be in English.`;
 
     try {
-      const result = await this.llmService.chatSimple(
+      const result = await this.llmService.chatSimpleGuarded(
         [
           { role: 'system', content: systemPrompt },
           {
@@ -854,7 +867,7 @@ ${background ? `Background: ${background}` : ''}
 Please generate 3 compelling openings:`;
 
     try {
-      const result = await this.llmService.chatSimple(
+      const result = await this.llmService.chatSimpleGuarded(
         [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
@@ -873,6 +886,64 @@ Please generate 3 compelling openings:`;
     } catch (error) {
       this.logger.error('Opening generation failed', error);
       throw new BadRequestException('Failed to generate opening');
+    }
+  }
+
+  /**
+   * Activity description optimizer for Common App 150-char limit.
+   * No points charge — lightweight single-shot LLM call.
+   */
+  async optimizeActivityDescription(
+    description: string,
+    activityName: string,
+    role: string,
+    locale = 'zh',
+  ): Promise<{ optimized: string; charCount: number }> {
+    const isZh = locale === 'zh';
+
+    const prompt = isZh
+      ? `你是一位经验丰富的美国大学申请顾问。请优化以下活动描述，使其在 150 个字符以内且最大化影响力。
+
+活动名称：${activityName}
+职位/角色：${role}
+当前描述：${description}
+
+规则：
+- 必须 150 个英文字符或更少（仔细计数）
+- 以强有力的动词开头
+- 尽可能包含可量化的成果
+- 删除填充词
+- 保留最重要的成就/影响
+- 语言：英文（这是用于美国大学申请的）
+
+只返回优化后的描述，不要返回其他任何内容。`
+      : `You are an expert college application counselor. Optimize this activity description to fit within 150 characters while maximizing impact.
+
+Activity: ${activityName}
+Role: ${role}
+Current description: ${description}
+
+Rules:
+- MUST be 150 characters or fewer (count carefully)
+- Start with a strong action verb
+- Include quantifiable impact where possible
+- Remove filler words
+- Keep the most important achievement/impact
+- Language: English
+
+Return ONLY the optimized description, nothing else.`;
+
+    try {
+      const result = await this.llmService.chatSimpleGuarded(
+        [{ role: 'user', content: prompt }],
+        { maxTokens: 200, temperature: 0.3 },
+      );
+
+      const optimized = result.trim();
+      return { optimized, charCount: optimized.length };
+    } catch (error) {
+      this.logger.error('Activity description optimization failed', error);
+      throw new BadRequestException('Failed to optimize activity description');
     }
   }
 
@@ -972,7 +1043,7 @@ All text fields must be in English.`;
       .join('\n\n');
 
     try {
-      const result = await this.llmService.chatSimple(
+      const result = await this.llmService.chatSimpleGuarded(
         [
           { role: 'system', content: systemPrompt },
           {
@@ -1061,7 +1132,7 @@ Return JSON format:
 Only list major changes (5-10), not every small edit. All reason fields must be in English.`;
 
     try {
-      const result = await this.llmService.chatSimple(
+      const result = await this.llmService.chatSimpleGuarded(
         [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: `请润色以下文书:\n\n${content}` },

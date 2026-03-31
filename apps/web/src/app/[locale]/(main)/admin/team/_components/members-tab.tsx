@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
+import { adminRoutes } from '@study-abroad/shared';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -47,12 +48,12 @@ export function MembersTab() {
 
   const { data: operators, isLoading } = useQuery({
     queryKey: ['adminOperators'],
-    queryFn: () => apiClient.get<Operator[]>('/admin/roles/operators'),
+    queryFn: () => apiClient.get<Operator[]>(adminRoutes.operators()),
   });
 
   const { data: operatorStats, isLoading: statsLoading } = useQuery({
     queryKey: ['adminOperatorStats', selectedOperator],
-    queryFn: () => apiClient.get<OperatorStats>(`/admin/roles/operators/${selectedOperator}/stats`),
+    queryFn: () => apiClient.get<OperatorStats>(adminRoutes.operatorStats(selectedOperator!)),
     enabled: !!selectedOperator,
   });
 

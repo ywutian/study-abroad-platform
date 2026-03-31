@@ -11,6 +11,7 @@ import { StatsRow } from '@/components/ui/StatsRow';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useToast } from '@/components/ui/Toast';
+import { userRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 
 export default function ReferralScreen() {
@@ -20,7 +21,7 @@ export default function ReferralScreen() {
 
   const { data: referralData, isLoading } = useQuery({
     queryKey: ['referral'],
-    queryFn: () => apiClient.get('/users/me/referral'),
+    queryFn: () => apiClient.get(`${userRoutes.me()}/referral`),
   });
 
   const handleCopy = async () => {

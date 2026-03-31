@@ -35,14 +35,14 @@ export class UpdateProfileDto {
   @IsNumber({ maxDecimalPlaces: 2 })
   @Type(() => Number)
   @Min(0)
-  @Max(5)
+  @Max(100)
   gpa?: number;
 
   @ApiPropertyOptional({ description: 'GPA scale maximum', example: 4.0 })
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   @Type(() => Number)
-  @IsIn([4.0, 5.0, 100])
+  @IsIn([4.0, 5.0, 6, 45, 100])
   gpaScale?: number;
 
   @ApiPropertyOptional({ description: 'Current school' })

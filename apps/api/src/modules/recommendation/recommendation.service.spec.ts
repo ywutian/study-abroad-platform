@@ -119,6 +119,7 @@ describe('RecommendationService', () => {
           provide: LLMService,
           useValue: {
             chatSimple: jest.fn().mockResolvedValue(mockAIResponse),
+            chatSimpleGuarded: jest.fn().mockResolvedValue(mockAIResponse),
           },
         },
         {
@@ -180,7 +181,7 @@ describe('RecommendationService', () => {
 
       expect(result).toBeDefined();
       expect(result.recommendations).toBeDefined();
-      expect(llmService.chatSimple).toHaveBeenCalled();
+      expect(llmService.chatSimpleGuarded).toHaveBeenCalled();
     });
 
     it('should throw NotFoundException and refund if profile not found', async () => {
@@ -194,7 +195,7 @@ describe('RecommendationService', () => {
 
     it('should refund points if AI service fails', async () => {
       (prisma.profile.findFirst as jest.Mock).mockResolvedValue(mockProfile);
-      (llmService.chatSimple as jest.Mock).mockRejectedValue(
+      (llmService.chatSimpleGuarded as jest.Mock).mockRejectedValue(
         new Error('AI service timeout'),
       );
 
@@ -234,7 +235,7 @@ describe('RecommendationService', () => {
 
     it('should refund and throw on non-JSON AI response', async () => {
       (prisma.profile.findFirst as jest.Mock).mockResolvedValue(mockProfile);
-      (llmService.chatSimple as jest.Mock).mockResolvedValue(
+      (llmService.chatSimpleGuarded as jest.Mock).mockResolvedValue(
         'This is not valid JSON',
       );
 
@@ -248,11 +249,174 @@ describe('RecommendationService', () => {
   describe('getRecommendationHistory', () => {
     it('should return user recommendation history', async () => {
       (prisma.schoolRecommendation.findMany as jest.Mock).mockResolvedValue([
-        { id: 'rec-1', createdAt: new Date() },
+        {
+          id: 'rec-1',
+          recommendations: [],
+          analysis: { strengths: [], weaknesses: [], improvementTips: [] },
+          summary: 'test',
+          tokenUsed: 100,
+          createdAt: new Date(),
+        },
       ]);
 
       const result = await service.getRecommendationHistory('user-1');
       expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('rec-1');
+    });
+
+    it('should return empty array when user has no history', async () => {
+      (prisma.schoolRecommendation.findMany as jest.Mock).mockResolvedValue([]);
+
+      const result = await service.getRecommendationHistory('user-no-recs');
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('getRecommendationById', () => {
+    it('should return a specific recommendation by id', async () => {
+      (prisma.schoolRecommendation.findFirst as jest.Mock).mockResolvedValue({
+        id: 'rec-1',
+        userId: 'user-1',
+        recommendations: [{ schoolName: 'MIT', tier: 'reach' }],
+        analysis: {
+          strengths: ['Strong GPA'],
+          weaknesses: [],
+          improvementTips: [],
+        },
+        summary: 'Good profile',
+        tokenUsed: 200,
+        createdAt: new Date(),
+      });
+
+      const result = await service.getRecommendationById('user-1', 'rec-1');
+
+      expect(result.id).toBe('rec-1');
+      expect(result.recommendations).toHaveLength(1);
+    });
+
+    it('should throw NotFoundException when recommendation not found', async () => {
+      (prisma.schoolRecommendation.findFirst as jest.Mock).mockResolvedValue(
+        null,
+      );
+
+      await expect(
+        service.getRecommendationById('user-1', 'nonexistent'),
+      ).rejects.toThrow();
+    });
+  });
+
+  describe('checkPreflight', () => {
+    it('should return canGenerate=true when profile is complete and has points', async () => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({ points: 100 });
+      (prisma.profile.findFirst as jest.Mock).mockResolvedValue({
+        gpa: 3.8,
+        targetMajor: 'CS',
+        testScores: [{ id: 'ts-1' }],
+        activities: [{ id: 'act-1' }],
+      });
+      (caseIncentive as any).canPerformAction = jest
+        .fn()
+        .mockResolvedValue(true);
+
+      const result = await service.checkPreflight('user-1');
+
+      expect(result.canGenerate).toBe(true);
+      expect(result.profileComplete).toBe(true);
+      expect(result.missingFields).toEqual([]);
+    });
+
+    it('should return missing fields when profile is incomplete', async () => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({ points: 100 });
+      (prisma.profile.findFirst as jest.Mock).mockResolvedValue({
+        gpa: null,
+        targetMajor: null,
+        testScores: [],
+        activities: [],
+      });
+      (caseIncentive as any).canPerformAction = jest
+        .fn()
+        .mockResolvedValue(true);
+
+      const result = await service.checkPreflight('user-1');
+
+      expect(result.canGenerate).toBe(false);
+      expect(result.missingFields).toContain('gpa');
+      expect(result.missingFields).toContain('testScores');
+      expect(result.missingFields).toContain('activities');
+      expect(result.missingFields).toContain('targetMajor');
+    });
+
+    it('should return canGenerate=false when no profile exists', async () => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({ points: 100 });
+      (prisma.profile.findFirst as jest.Mock).mockResolvedValue(null);
+      (caseIncentive as any).canPerformAction = jest
+        .fn()
+        .mockResolvedValue(true);
+
+      const result = await service.checkPreflight('user-1');
+
+      expect(result.canGenerate).toBe(false);
+      expect(result.missingFields).toContain('profile');
+    });
+  });
+
+  describe('deleteRecommendation', () => {
+    it('should delete recommendation owned by user', async () => {
+      (prisma.schoolRecommendation.findFirst as jest.Mock).mockResolvedValue({
+        id: 'rec-1',
+        userId: 'user-1',
+      });
+      (prisma.schoolRecommendation as any).delete = jest
+        .fn()
+        .mockResolvedValue({});
+
+      await service.deleteRecommendation('user-1', 'rec-1');
+
+      expect((prisma.schoolRecommendation as any).delete).toHaveBeenCalledWith({
+        where: { id: 'rec-1' },
+      });
+    });
+
+    it('should throw NotFoundException when recommendation not found', async () => {
+      (prisma.schoolRecommendation.findFirst as jest.Mock).mockResolvedValue(
+        null,
+      );
+
+      await expect(
+        service.deleteRecommendation('user-1', 'nonexistent'),
+      ).rejects.toThrow();
+    });
+  });
+
+  describe('idempotency lock', () => {
+    it('should reject concurrent duplicate requests', async () => {
+      const redis = {
+        setNX: jest.fn().mockResolvedValue(false),
+        del: jest.fn(),
+      };
+      // Access the redis mock from the module
+      const module = await Test.createTestingModule({
+        providers: [
+          RecommendationService,
+          {
+            provide: PrismaService,
+            useValue: prisma,
+          },
+          { provide: LLMService, useValue: llmService },
+          { provide: CaseIncentiveService, useValue: caseIncentive },
+          {
+            provide: MemoryManagerService,
+            useValue: { remember: jest.fn(), recall: jest.fn() },
+          },
+          { provide: RedisService, useValue: redis },
+        ],
+      }).compile();
+
+      const svc = module.get<RecommendationService>(RecommendationService);
+
+      await expect(
+        svc.generateRecommendation('user-1', { schoolCount: 10 } as any),
+      ).rejects.toThrow();
     });
   });
 });

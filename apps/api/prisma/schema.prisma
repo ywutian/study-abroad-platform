@@ -66,6 +66,7 @@ enum TestType {
   IB
   A_LEVEL
   IGCSE
+  DUOLINGO
 }
 
 enum ActivityCategory {
@@ -163,6 +164,12 @@ enum ReportStatus {
   PENDING
   REVIEWED
   RESOLVED
+}
+
+enum ReportPriority {
+  HIGH
+  MEDIUM
+  LOW
 }
 
 enum VerificationStatus {
@@ -315,6 +322,7 @@ model User {
   reviewsReceived   Review[]                  @relation("ReviewedProfile")
   reviewReactions   ReviewReaction[]
   reports           Report[]
+  assignedReports   Report[]                  @relation("ReportAssignee")
   admissionCases  AdmissionCase[]
   userLists       UserList[]
   userListVotes   UserListVote[]
@@ -352,6 +360,9 @@ model User {
 
   // Vault (密码保险库)
   vaultItems VaultItem[]
+
+  // MCP API Keys
+  mcpApiKeys McpApiKey[]
 
   // Recommendations (选校推荐)
   schoolRecommendations SchoolRecommendation[]
@@ -406,6 +417,24 @@ model RefreshToken {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+model McpApiKey {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  keyHash    String    @unique
+  keyPrefix  String    @db.VarChar(12) // "mcp_" + first 8 hex chars for lookup
+  name       String    @db.VarChar(100) // e.g., "Claude Desktop", "Cursor IDE"
+  isRevoked  Boolean   @default(false)
+  expiresAt  DateTime?
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+  @@index([keyPrefix])
+
+  @@map("mcp_api_keys")
 }
 
 // ============================================
@@ -1435,6 +1464,10 @@ model Report {
   detail     String?          @db.Text
   context    Json? // Auto-attached context (e.g., chat messages)
   status     ReportStatus     @default(PENDING)
+  priority   ReportPriority   @default(MEDIUM)
+
+  assignedTo     String?
+  assignedToUser User?    @relation("ReportAssignee", fields: [assignedTo], references: [id], onDelete: SetNull)
 
   reviewedAt DateTime?
   reviewedBy String?
@@ -1445,6 +1478,8 @@ model Report {
 
   @@index([reporterId])
   @@index([status])
+  @@index([priority, status])
+  @@index([assignedTo])
   @@index([targetType, targetId])
 }
 
@@ -1534,6 +1569,7 @@ model DataImportStaging {
   status        StagingStatus @default(PENDING)
   createdBy     String?       // 导入者 ID（自我审核防护用）
   importBatchId String?       // 批次 ID（回滚用）
+  assignedTo    String?       // 领取审核任务的管理员 ID
   reviewedBy    String?
   reviewedAt    DateTime?
   reviewNote    String?
@@ -1902,6 +1938,8 @@ model ForumPost {
   @@index([postTag])
   @@index([createdAt])
   @@index([likeCount])
+  @@index([categoryId, createdAt])
+  @@index([authorId, createdAt])
 }
 
 model ForumComment {
@@ -2776,4 +2814,55 @@ model FeatureFlag {
   updatedAt   DateTime @updatedAt
 
   @@map("feature_flags")
+}
+
+/// Embedding vectors for semantic agent routing (pgvector).
+/// Each row stores one example query for an agent type.
+model AgentRouteEmbedding {
+  id        String                  @id @default(uuid())
+  agentType String                  @map("agent_type")
+  example   String                  /// Example query text
+  embedding Unsupported("vector(1536)")
+  createdAt DateTime                @default(now()) @map("created_at")
+  updatedAt DateTime                @updatedAt @map("updated_at")
+
+  @@index([agentType])
+  @@map("agent_route_embeddings")
+}
+
+/// Graph entity for relationship-based memory (schools, majors, deadlines).
+model GraphEntity {
+  id          String   @id @default(cuid())
+  userId      String
+  entityType  String   /// school, major, program, deadline, activity
+  name        String
+  attributes  Json?    /// flexible metadata (rank, acceptanceRate, etc.)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  outEdges    EntityRelationship[] @relation("source")
+  inEdges     EntityRelationship[] @relation("target")
+
+  @@unique([userId, entityType, name])
+  @@index([userId, entityType])
+  @@map("graph_entities")
+}
+
+/// Directed edge between two graph entities.
+model EntityRelationship {
+  id              String   @id @default(cuid())
+  userId          String
+  sourceEntityId  String
+  targetEntityId  String
+  relationType    String   /// applied_to, has_major, similar_to, has_deadline
+  weight          Float    @default(1.0)
+  metadata        Json?
+  createdAt       DateTime @default(now())
+
+  sourceEntity    GraphEntity @relation("source", fields: [sourceEntityId], references: [id], onDelete: Cascade)
+  targetEntity    GraphEntity @relation("target", fields: [targetEntityId], references: [id], onDelete: Cascade)
+
+  @@index([userId, sourceEntityId])
+  @@index([userId, relationType])
+  @@map("entity_relationships")
 }

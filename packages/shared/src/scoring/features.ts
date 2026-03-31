@@ -197,9 +197,14 @@ export function extractFeatureVector(
       : NaN;
   const satNorm = profile.satScore != null ? profile.satScore / 1600 : NaN;
   const actNorm = profile.actScore != null ? profile.actScore / 36 : NaN;
-  const toeflNorm = profile.toeflScore != null ? profile.toeflScore / 120 : NaN;
+  const toeflNorm =
+    profile.englishProficiencyScore != null
+      ? profile.englishProficiencyScore
+      : profile.toeflScore != null
+        ? profile.toeflScore / 120
+        : NaN;
   const hasTestScore = profile.satScore != null || profile.actScore != null ? 1 : 0;
-  const hasToefl = profile.toeflScore != null ? 1 : 0;
+  const hasToefl = profile.englishProficiencyScore != null || profile.toeflScore != null ? 1 : 0;
 
   let testCount = 0;
   if (profile.satScore != null) testCount++;

@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminRoutes } from '@study-abroad/shared';
 import { ChevronDown, ChevronRight, Pencil } from 'lucide-react';
 import { SchoolEditDialog, type HighSchool } from './school-edit-dialog';
 import { toast } from 'sonner';
@@ -106,7 +106,7 @@ export function TierOverviewTab() {
   const { data, isLoading } = useQuery({
     queryKey: ['adminHighSchools', 'tierOverview', country, state, type],
     queryFn: () =>
-      apiClient.get<{ data: HighSchoolWithQuality[]; total: number }>('/admin/high-schools', {
+      apiClient.get<{ data: HighSchoolWithQuality[]; total: number }>(adminRoutes.highSchools(), {
         params: {
           country: country || undefined,
           state: state || undefined,
@@ -118,7 +118,7 @@ export function TierOverviewTab() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data: d }: { id: string; data: Record<string, unknown> }) =>
-      apiClient.put(`${API_ROUTES.ADMIN}/high-schools/${id}`, d),
+      apiClient.put(adminRoutes.highSchoolById(id), d),
     onSuccess: () => {
       toast.success(t('messages.schoolUpdated'));
       queryClient.invalidateQueries({ queryKey: ['adminHighSchools'] });

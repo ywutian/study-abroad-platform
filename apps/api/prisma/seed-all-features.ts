@@ -2125,40 +2125,8 @@ async function main() {
   // ------------------------------------------
   // 3. Essay Examples for Gallery
   // ------------------------------------------
-  console.log('3. Creating essay examples for gallery...\n');
-
-  let essaysCreated = 0;
-  for (const essay of essayExamples) {
-    const randomSchool =
-      allSchools[randomInt(0, Math.min(19, allSchools.length - 1))];
-
-    const existing = await prisma.essayExample.findFirst({
-      where: { prompt: essay.prompt, content: essay.content },
-    });
-
-    if (!existing) {
-      await prisma.essayExample.create({
-        data: {
-          schoolId: randomSchool?.id,
-          type: essay.type,
-          prompt: essay.prompt,
-          content: essay.content,
-          wordCount: essay.wordCount,
-          year: essay.year,
-          promptNumber: essay.promptNumber,
-          viewCount: randomInt(50, 5000),
-          likeCount: randomInt(10, 500),
-          rating: randomFloat(3.5, 5.0, 1),
-          ratingCount: randomInt(5, 100),
-          isVerified: true,
-          isPublic: true,
-          tags: essay.tags,
-        },
-      });
-      essaysCreated++;
-    }
-  }
-  console.log(`  Essay examples created: ${essaysCreated}\n`);
+  // EssayExample model removed — essay gallery now uses AdmissionCase essays
+  console.log('3. Essay examples: skipped (using AdmissionCase essays)\n');
 
   // ------------------------------------------
   // 4. Social Features (Follow, Block)
@@ -3478,7 +3446,7 @@ async function main() {
   console.log(`
   Users (with profiles): ${createdUsers.length}
   Admission Cases: ${casesCreated}
-  Essay Examples: ${essaysCreated}
+  Essay Examples: (using AdmissionCase essays)
   Social Follows: ${followsCreated}
   Chat Conversations: ${conversationsCreated}
   Reviews: ${reviewsCreated}, Peer Reviews: ${peerReviewsCreated}

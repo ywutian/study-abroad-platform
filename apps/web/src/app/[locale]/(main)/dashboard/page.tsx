@@ -2,14 +2,16 @@
 
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Link } from '@/lib/i18n/navigation';
 import { motion } from 'framer-motion';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
-import { LayoutDashboard, User } from 'lucide-react';
+import { LayoutDashboard, User, ArrowRight } from 'lucide-react';
+import { useOnboardingProgress } from '@/hooks/use-onboarding-progress';
+import { Progress } from '@/components/ui/progress';
 import { QuickExperience } from '@/components/features/onboarding/quick-experience';
 import { DashboardStats } from './_components/dashboard-stats';
 import { DashboardModules } from './_components/dashboard-modules';
@@ -22,6 +24,7 @@ interface DashboardData {
     role: string;
     points: number;
     createdAt: string;
+    nickname?: string;
   };
   profile: {
     completeness: number;
@@ -99,7 +102,24 @@ export default function DashboardPage() {
     queryFn: () => apiClient.get<DashboardData>('/users/me/dashboard'),
   });
 
+  // Consume pendingOnboarding from sessionStorage (fallback from registration)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const raw = sessionStorage.getItem('pendingOnboarding');
+    if (!raw) return;
+    sessionStorage.removeItem('pendingOnboarding');
+    try {
+      const data = JSON.parse(raw);
+      apiClient.post('/profiles/onboarding', data).catch(() => {
+        // Silently fail — data was already attempted during registration
+      });
+    } catch {
+      // Invalid JSON — discard
+    }
+  }, []);
+
   const completeness = dashboard?.profile.completeness ?? 0;
+  const { showIndicator, gapCount } = useOnboardingProgress();
   const schoolCount = dashboard?.profile.targetSchoolCount ?? 0;
   const schoolTiers = dashboard?.profile.schoolTiers ?? { reach: 0, target: 0, safety: 0 };
   const pendingTotal = dashboard?.pendingTasks.total ?? 0;
@@ -150,13 +170,31 @@ export default function DashboardPage() {
     <PageContainer>
       <PageHeader
         title={t('dashboard.welcome', {
-          name: dashboard?.user.email?.split('@')[0] || t('dashboard.user'),
+          name:
+            dashboard?.user.nickname || dashboard?.user.email?.split('@')[0] || t('dashboard.user'),
         })}
         description={t('dashboard.subtitle')}
         icon={LayoutDashboard}
         color="slate"
       />
       <QuickExperience />
+
+      {/* Mini progress banner — shown when profile is incomplete */}
+      {showIndicator && (
+        <Link href="/profile">
+          <div className="flex items-center gap-3 rounded-lg border bg-amber-500/5 border-amber-500/20 px-4 py-2.5 hover:bg-amber-500/10 transition-colors cursor-pointer">
+            <Progress value={completeness} className="h-1.5 flex-1 max-w-[120px]" />
+            <span className="text-sm text-muted-foreground">
+              {t('dashboard.onboarding.progress', { pct: completeness })}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              · {t('dashboard.onboarding.remaining', { count: gapCount })}
+            </span>
+            <ArrowRight className="h-3.5 w-3.5 text-muted-foreground ml-auto shrink-0" />
+          </div>
+        </Link>
+      )}
+
       <div className="space-y-8">
         {/* Welcome Header */}
         <motion.div
@@ -167,7 +205,10 @@ export default function DashboardPage() {
           <div>
             <h1 className="text-title">
               {t('dashboard.welcome', {
-                name: dashboard?.user.email?.split('@')[0] || t('dashboard.user'),
+                name:
+                  dashboard?.user.nickname ||
+                  dashboard?.user.email?.split('@')[0] ||
+                  t('dashboard.user'),
               })}
             </h1>
             <p className="text-muted-foreground mt-1">{t('dashboard.subtitle')}</p>

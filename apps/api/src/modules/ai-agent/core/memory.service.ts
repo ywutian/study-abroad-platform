@@ -96,19 +96,36 @@ export class MemoryService {
     conversation: ConversationState,
     limit: number = 20,
   ): Message[] {
-    // 过滤掉工具消息中的详细数据，只保留关键信息
-    return conversation.messages.slice(-limit).map((m) => {
-      if (m.role === 'tool') {
-        try {
-          const data = JSON.parse(m.content);
-          // 简化工具返回数据
-          return {
-            ...m,
-            content: JSON.stringify(this.summarizeToolResult(data)),
-          };
-        } catch {
-          return m;
+    const messages = conversation.messages.slice(-limit);
+    // Keep last 6 messages (3 turns) fully intact; compress older ones
+    const recentThreshold = Math.max(0, messages.length - 6);
+
+    return messages.map((m, i) => {
+      // Recent messages: keep full, only summarize tool data
+      if (i >= recentThreshold) {
+        if (m.role === 'tool') {
+          try {
+            const data = JSON.parse(m.content);
+            return {
+              ...m,
+              content: JSON.stringify(this.summarizeToolResult(data)),
+            };
+          } catch {
+            return m;
+          }
         }
+        return m;
+      }
+
+      // Older messages: compress aggressively
+      if (m.role === 'tool') {
+        return {
+          ...m,
+          content: '[Earlier tool result omitted for brevity]',
+        };
+      }
+      if (m.role === 'assistant' && m.content.length > 200) {
+        return { ...m, content: m.content.slice(0, 200) + '...' };
       }
       return m;
     });
@@ -375,30 +392,56 @@ export class MemoryService {
 
   /**
    * 生成上下文摘要（用于 system prompt）
+   *
+   * 丰富的 profile 数据直接嵌入 prompt，减少 get_profile 工具调用。
+   * 格式：结构化自然语言（非 JSON），省 token 且易于 LLM 引用。
    */
   getContextSummary(context: UserContext): string {
-    const parts: string[] = [];
+    const sections: string[] = [];
 
-    // 档案摘要
     if (context.profile) {
       const p = context.profile;
-      if (p.gpa) {
-        parts.push(`GPA: ${p.gpa}/${p.gpaScale || 4.0}`);
+      const basics: string[] = [];
+      if (p.gpa) basics.push(`- GPA: ${p.gpa}/${p.gpaScale || 4.0}`);
+      if (p.grade) basics.push(`- 年级: ${p.grade}`);
+      if (p.targetMajor) basics.push(`- 目标专业: ${p.targetMajor}`);
+      if (p.budgetTier) basics.push(`- 预算: ${p.budgetTier}`);
+
+      if (basics.length > 0) {
+        sections.push(basics.join('\n'));
       }
+
+      // 标化成绩
       if (p.testScores?.length) {
-        parts.push(
-          `标化: ${p.testScores.map((s) => `${s.type} ${s.score}`).join(', ')}`,
-        );
+        const scores = p.testScores
+          .map((s) => `- ${s.type}: ${s.score}`)
+          .join('\n');
+        sections.push(`### 标化成绩\n${scores}`);
       }
-      if (p.targetMajor) {
-        parts.push(`目标专业: ${p.targetMajor}`);
-      }
+
+      // 活动（显示前 5 条，超过则截断）
       if (p.activities?.length) {
-        parts.push(`活动: ${p.activities.length}项`);
+        const MAX_ACTIVITIES = 5;
+        const shown = p.activities.slice(0, MAX_ACTIVITIES);
+        const lines = shown
+          .map((a) => `- ${a.name} | ${a.category} | ${a.role}`)
+          .join('\n');
+        let actSection = `### 课外活动 (${p.activities.length}项)\n${lines}`;
+        if (p.activities.length > MAX_ACTIVITIES) {
+          actSection += `\n（完整列表可通过 get_profile 获取）`;
+        }
+        sections.push(actSection);
       }
+
+      // 奖项
       if (p.awards?.length) {
-        parts.push(`奖项: ${p.awards.length}项`);
+        const awards = p.awards
+          .map((a) => `- ${a.name} | ${a.level}`)
+          .join('\n');
+        sections.push(`### 奖项 (${p.awards.length}项)\n${awards}`);
       }
+    } else {
+      sections.push('用户尚未完善档案');
     }
 
     // 时间线摘要
@@ -407,21 +450,27 @@ export class MemoryService {
       const tlParts: string[] = [];
       if (ts.schoolApps > 0) tlParts.push(`${ts.schoolApps}所学校申请`);
       if (ts.personalEvents > 0) tlParts.push(`${ts.personalEvents}项个人事件`);
-      parts.push(`时间线: ${tlParts.join(', ')}`);
 
+      let tlSection = `### 时间线\n- ${tlParts.join(', ')}`;
       if (ts.upcoming.length > 0) {
-        const deadlineStr = ts.upcoming
+        const deadlines = ts.upcoming
           .slice(0, 3)
           .map((u) => {
             const label =
               u.type === 'school' ? u.title : `${u.title}(${u.category})`;
-            return `${label} ${u.deadline}`;
+            return `- ${label}: ${u.deadline}`;
           })
-          .join('; ');
-        parts.push(`近期截止: ${deadlineStr}`);
+          .join('\n');
+        tlSection += `\n- 近期截止:\n${deadlines}`;
       }
+      sections.push(tlSection);
     }
 
-    return parts.length > 0 ? parts.join(' | ') : '用户档案为空';
+    // 未预加载的数据提示
+    sections.push(
+      `### 未包含在上下文中的数据\n- 测评结果 → get_assessment_results\n- 文书内容 → get_essays\n- 简历 → get_resume_list`,
+    );
+
+    return sections.join('\n\n');
   }
 }

@@ -12,6 +12,7 @@ import { AnimatedButton, EmptyState, Loading, Segment, Modal } from '@/component
 import { Slider } from '@/components/ui/Slider';
 import { useToast } from '@/components/ui/Toast';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { API_ROUTES, hallRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import type { Review, ReviewsResponse, CreateReviewDto } from './types';
 import { SCORE_LABELS } from './types';
@@ -46,13 +47,13 @@ export function ReviewsTab() {
     queryKey: ['hall-reviews', reviewMode],
     queryFn: () =>
       reviewMode === 'mine'
-        ? apiClient.get<ReviewsResponse>('/halls/reviews/me')
-        : apiClient.get<ReviewsResponse>('/halls/reviews/popular'),
+        ? apiClient.get<ReviewsResponse>(`${API_ROUTES.HALLS}/reviews/me`)
+        : apiClient.get<ReviewsResponse>(`${API_ROUTES.HALLS}/reviews/popular`),
     staleTime: 2 * 60_000,
   });
 
   const createReviewMutation = useMutation<Review, Error, CreateReviewDto>({
-    mutationFn: (dto) => apiClient.post<Review>('/halls/reviews', dto),
+    mutationFn: (dto) => apiClient.post<Review>(hallRoutes.reviews(), dto),
     onSuccess: () => {
       toast.show({
         type: 'success',
@@ -71,8 +72,7 @@ export function ReviewsTab() {
     Error,
     { reviewId: string; type: 'helpful' | 'insightful' }
   >({
-    mutationFn: ({ reviewId, type }) =>
-      apiClient.post(`/halls/reviews/${reviewId}/react`, { type }),
+    mutationFn: ({ reviewId, type }) => apiClient.post(hallRoutes.reviewReact(reviewId), { type }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['hall-reviews'] });
     },

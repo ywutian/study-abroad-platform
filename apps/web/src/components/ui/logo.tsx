@@ -28,7 +28,9 @@ export function Logo({ className, showText = true, size = 'md' }: LogoProps) {
         <GraduationCap className={cn('text-primary-foreground', sizes[size].icon)} />
       </div>
       {showText && (
-        <span className={cn('font-bold text-foreground', sizes[size].text)}>StudyAbroad</span>
+        <span className={cn('font-bold text-foreground hidden sm:inline', sizes[size].text)}>
+          StudyAbroad
+        </span>
       )}
     </div>
   );

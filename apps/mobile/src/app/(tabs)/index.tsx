@@ -238,8 +238,8 @@ export default function HomeScreen() {
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>95%</Text>
-              <Text style={styles.statLabel}>{t('home.stats.accuracy')}</Text>
+              <Text style={styles.statValue}>{casesData?.total ? `${casesData.total}+` : '-'}</Text>
+              <Text style={styles.statLabel}>{t('home.stats.cases')}</Text>
             </View>
           </Animated.View>
         </LinearGradient>

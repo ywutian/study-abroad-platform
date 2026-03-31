@@ -1,4 +1,5 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SchoolDataService } from '../school/school-data.service';
 import { UrbanInstituteDataService } from '../school/urban-institute-data.service';
@@ -63,6 +64,7 @@ export class AdminDataSyncService {
 
   constructor(
     private readonly prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
     private readonly schoolDataService: SchoolDataService,
     private readonly urbanInstituteService: UrbanInstituteDataService,
     private readonly bigFutureService: BigFutureScrapeService,
@@ -133,6 +135,7 @@ export class AdminDataSyncService {
     }
 
     const runParams = params ?? {};
+    this.eventEmitter.emit('admin.job.started', { jobId });
     try {
       if (jobId === 'COLLEGE_SCORECARD') {
         const limit =
@@ -151,11 +154,13 @@ export class AdminDataSyncService {
           result.errors,
           undefined,
         );
-        return {
+        const response = {
           synced: result.synced,
           errors: result.errors,
           message: `Synced ${result.synced} schools, ${result.errors} errors`,
         };
+        this.eventEmitter.emit('admin.job.completed', { jobId, ...response });
+        return response;
       }
 
       if (jobId === 'URBAN_INSTITUTE') {
@@ -176,11 +181,13 @@ export class AdminDataSyncService {
           result.total.synced,
           result.total.errors,
         );
-        return {
+        const response = {
           synced: result.total.synced,
           errors: result.total.errors,
           message: `Synced ${result.total.synced} schools, ${result.total.errors} failed`,
         };
+        this.eventEmitter.emit('admin.job.completed', { jobId, ...response });
+        return response;
       }
 
       if (jobId === 'BIGFUTURE') {
@@ -195,11 +202,13 @@ export class AdminDataSyncService {
           userId,
         );
         await this.logSync(userId, jobId, result.updated, result.failed);
-        return {
+        const response = {
           synced: result.updated,
           errors: result.failed,
           message: `Scraped ${result.scraped}, updated ${result.updated}, ${result.failed} failed`,
         };
+        this.eventEmitter.emit('admin.job.completed', { jobId, ...response });
+        return response;
       }
 
       if (jobId === 'APPILY') {
@@ -214,11 +223,16 @@ export class AdminDataSyncService {
           userId,
         );
         await this.logSync(userId, jobId, result.updated, result.failed);
-        return {
+        const appilyResponse = {
           synced: result.updated,
           errors: result.failed,
           message: `Scraped ${result.scraped}, updated ${result.updated}, ${result.failed} failed`,
         };
+        this.eventEmitter.emit('admin.job.completed', {
+          jobId,
+          ...appilyResponse,
+        });
+        return appilyResponse;
       }
 
       if (jobId === 'IPEDS_CHECK' || jobId === 'RANKINGS_REMINDER') {
@@ -232,6 +246,7 @@ export class AdminDataSyncService {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.warn(`Data-sync job ${jobId} failed: ${message}`);
+      this.eventEmitter.emit('admin.job.failed', { jobId, error: message });
       await this.logSync(userId, jobId, 0, 1, message);
       throw error;
     }

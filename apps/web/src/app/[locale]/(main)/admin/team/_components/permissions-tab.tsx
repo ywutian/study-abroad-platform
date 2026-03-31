@@ -4,7 +4,7 @@ import { useState, useEffect, Fragment } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminRoutes } from '@study-abroad/shared';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -67,7 +67,7 @@ export function PermissionsTab() {
 
   const { data: permissions, isLoading } = useQuery({
     queryKey: ['adminPermissions'],
-    queryFn: () => apiClient.get<RolePermissionEntry[]>('/admin/roles/permissions'),
+    queryFn: () => apiClient.get<RolePermissionEntry[]>(adminRoutes.permissions()),
   });
 
   useEffect(() => {
@@ -84,7 +84,7 @@ export function PermissionsTab() {
 
   const saveMutation = useMutation({
     mutationFn: (data: { permissions: RolePermissionEntry[] }) =>
-      apiClient.put(`${API_ROUTES.ADMIN}/roles/permissions`, data),
+      apiClient.put(adminRoutes.permissions(), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminPermissions'] });
       setIsDirty(false);
@@ -275,7 +275,7 @@ function UserPermissionEditor() {
   // Get list of operators
   const { data: operators } = useQuery({
     queryKey: ['adminOperators'],
-    queryFn: () => apiClient.get<Operator[]>('/admin/roles/operators'),
+    queryFn: () => apiClient.get<Operator[]>(adminRoutes.operators()),
   });
 
   // Get user permissions when selected
@@ -300,7 +300,7 @@ function UserPermissionEditor() {
 
   const saveUserPermsMutation = useMutation({
     mutationFn: (data: { permissions: Array<{ permission: string; granted: boolean }> }) =>
-      apiClient.put(`${API_ROUTES.ADMIN}/roles/users/${selectedUserId}/permissions`, data),
+      apiClient.put(adminRoutes.userPermissions(selectedUserId), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminUserPermissions', selectedUserId] });
       setIsUserDirty(false);

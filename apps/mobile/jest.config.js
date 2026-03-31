@@ -19,6 +19,8 @@ module.exports = {
     '^@stores/(.*)$': '<rootDir>/src/stores/$1',
     '^@utils/(.*)$': '<rootDir>/src/utils/$1',
     '^@types/(.*)$': '<rootDir>/src/types/$1',
+    '^@study-abroad/shared$': '<rootDir>/../../packages/shared/src/index.ts',
+    '^@study-abroad/shared/(.*)$': '<rootDir>/../../packages/shared/src/$1',
   },
   testMatch: ['**/__tests__/**/*.test.[jt]s?(x)'],
   testPathIgnorePatterns: ['/node_modules/', '/.expo/'],

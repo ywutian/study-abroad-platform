@@ -29,9 +29,18 @@ import { CardSkeleton } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PaginationControls } from '../../_components/pagination-controls';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
-import { AlertTriangle, CheckCircle, Clock, Loader2 } from 'lucide-react';
+import {
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Loader2,
+  UserCheck,
+  UserX,
+  ArrowUpCircle,
+} from 'lucide-react';
+import { useAuthStore } from '@/stores';
 
 interface Report {
   id: string;
@@ -40,6 +49,9 @@ interface Report {
   reason: string;
   detail?: string;
   status: 'PENDING' | 'REVIEWED' | 'RESOLVED';
+  priority?: 'HIGH' | 'MEDIUM' | 'LOW';
+  assignedTo?: string;
+  assignedToUser?: { id: string; email: string };
   context?: any;
   createdAt: string;
   resolvedAt?: string;
@@ -51,28 +63,67 @@ interface Report {
   };
 }
 
+const PRIORITY_BADGE: Record<
+  string,
+  { variant: 'destructive' | 'warning' | 'secondary'; label: string }
+> = {
+  HIGH: { variant: 'destructive', label: 'priority.high' },
+  MEDIUM: { variant: 'warning', label: 'priority.medium' },
+  LOW: { variant: 'secondary', label: 'priority.low' },
+};
+
 export function ReportsTab() {
   const t = useTranslations('admin');
   const fmt = useFormatter();
   const queryClient = useQueryClient();
 
+  const { user } = useAuthStore();
   const [reportFilter, setReportFilter] = useState('PENDING');
+  const [assignmentFilter, setAssignmentFilter] = useState<string>('all');
   const [page, setPage] = useState(1);
   const pageSize = 20;
   const [reportToResolve, setReportToResolve] = useState<Report | null>(null);
   const [resolutionText, setResolutionText] = useState('');
 
+  const assignedToParam =
+    assignmentFilter === 'mine'
+      ? user?.id
+      : assignmentFilter === 'unassigned'
+        ? 'unassigned'
+        : undefined;
+
   const { data: reportsData, isLoading } = useQuery({
-    queryKey: ['adminReports', reportFilter, page],
+    queryKey: ['adminReports', reportFilter, assignmentFilter, page],
     queryFn: () =>
-      apiClient.get<{ data: Report[]; total: number; totalPages: number }>('/admin/reports', {
-        params: { status: reportFilter, page, pageSize },
+      apiClient.get<{ data: Report[]; total: number; totalPages: number }>(adminRoutes.reports(), {
+        params: {
+          status: reportFilter,
+          page,
+          pageSize,
+          ...(assignedToParam && { assignedTo: assignedToParam }),
+        },
       }),
+  });
+
+  const claimMutation = useMutation({
+    mutationFn: (id: string) => apiClient.post(adminRoutes.reportClaim(id)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminReports'] });
+      toast.success(t('assignment.claimed'));
+    },
+  });
+
+  const releaseMutation = useMutation({
+    mutationFn: (id: string) => apiClient.post(adminRoutes.reportRelease(id)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminReports'] });
+      toast.success(t('assignment.released'));
+    },
   });
 
   const updateReportMutation = useMutation({
     mutationFn: ({ id, status, resolution }: { id: string; status: string; resolution?: string }) =>
-      apiClient.put(`${API_ROUTES.ADMIN}/reports/${id}`, { status, resolution }),
+      apiClient.put(adminRoutes.reportById(id), { status, resolution }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminReports'] });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
@@ -118,7 +169,7 @@ export function ReportsTab() {
   return (
     <>
       <div>
-        <div className="mb-4 flex items-center gap-4">
+        <div className="mb-4 flex flex-wrap items-center gap-4">
           <Select
             value={reportFilter}
             onValueChange={(v) => {
@@ -135,6 +186,24 @@ export function ReportsTab() {
               <SelectItem value="RESOLVED">{t('status.resolved')}</SelectItem>
             </SelectContent>
           </Select>
+
+          {/* Assignment filter */}
+          <div className="flex rounded-lg border border-border p-0.5">
+            {(['all', 'mine', 'unassigned'] as const).map((filter) => (
+              <Button
+                key={filter}
+                variant={assignmentFilter === filter ? 'default' : 'ghost'}
+                size="sm"
+                className="h-8 px-3 text-xs"
+                onClick={() => {
+                  setAssignmentFilter(filter);
+                  setPage(1);
+                }}
+              >
+                {t(`assignment.${filter}`)}
+              </Button>
+            ))}
+          </div>
         </div>
 
         {isLoading ? (
@@ -151,9 +220,24 @@ export function ReportsTab() {
                   <CardContent className="pt-6">
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           {getStatusBadge(report.status)}
                           <Badge variant="outline">{getTargetTypeName(report.targetType)}</Badge>
+                          {report.priority && PRIORITY_BADGE[report.priority] && (
+                            <Badge
+                              variant={PRIORITY_BADGE[report.priority].variant}
+                              className="gap-1 text-xs"
+                            >
+                              <ArrowUpCircle className="h-3 w-3" />
+                              {t(PRIORITY_BADGE[report.priority].label)}
+                            </Badge>
+                          )}
+                          {report.assignedToUser && (
+                            <Badge variant="outline" className="text-xs gap-1">
+                              <UserCheck className="h-3 w-3" />
+                              {report.assignedToUser.email.split('@')[0]}
+                            </Badge>
+                          )}
                         </div>
                         <p className="font-medium">{report.reason}</p>
                         {report.detail && (
@@ -169,22 +253,48 @@ export function ReportsTab() {
                           </p>
                         )}
                       </div>
-                      {report.status === 'PENDING' && (
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() =>
-                              updateReportMutation.mutate({ id: report.id, status: 'REVIEWED' })
-                            }
-                          >
-                            {t('reports.markReviewed')}
-                          </Button>
-                          <Button size="sm" onClick={() => setReportToResolve(report)}>
-                            {t('reports.resolve')}
-                          </Button>
-                        </div>
-                      )}
+                      <div className="flex gap-2 shrink-0">
+                        {/* Claim/Release */}
+                        {report.status === 'PENDING' &&
+                          (report.assignedTo === user?.id ? (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => releaseMutation.mutate(report.id)}
+                              disabled={releaseMutation.isPending}
+                            >
+                              <UserX className="h-3.5 w-3.5 mr-1" />
+                              {t('assignment.release')}
+                            </Button>
+                          ) : !report.assignedTo ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => claimMutation.mutate(report.id)}
+                              disabled={claimMutation.isPending}
+                            >
+                              <UserCheck className="h-3.5 w-3.5 mr-1" />
+                              {t('assignment.claim')}
+                            </Button>
+                          ) : null)}
+                        {/* Review actions */}
+                        {report.status === 'PENDING' && (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() =>
+                                updateReportMutation.mutate({ id: report.id, status: 'REVIEWED' })
+                              }
+                            >
+                              {t('reports.markReviewed')}
+                            </Button>
+                            <Button size="sm" onClick={() => setReportToResolve(report)}>
+                              {t('reports.resolve')}
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

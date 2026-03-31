@@ -208,6 +208,10 @@ export interface AgentConfig {
   model?: string;
   temperature?: number;
   maxTokens?: number;
+  /** Enable output reflection/critique for high-stakes agents. */
+  enableReflection?: boolean;
+  /** Model to use for critique (defaults to gpt-4o-mini for cost efficiency). */
+  reflectionModel?: string;
 }
 
 // ==================== 工具定义 ====================

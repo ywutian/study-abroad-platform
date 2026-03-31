@@ -13,10 +13,23 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { User, Copy, Check, ChevronDown, ChevronUp, Sparkles, Wrench } from 'lucide-react';
 import { ChatMessage as ChatMessageType, AGENT_INFO, AgentType } from './types';
+import { useRouter } from '@/lib/i18n/navigation';
 import { transitions } from '@/lib/motion';
 import { ToolCallCard } from './tool-call-card';
 import { ThinkingIndicator } from './thinking-indicator';
 import { MessageContent } from './message-content';
+
+/**
+ * Security allowlist: only these action strings map to valid navigation routes.
+ * Any action not in this map is silently ignored to prevent open-redirect attacks.
+ */
+const ALLOWED_ACTIONS: Record<string, string> = {
+  'navigate:/schools': '/schools',
+  'navigate:/cases': '/cases',
+  'navigate:/pricing': '/settings/subscription',
+  'navigate:/ranking': '/ranking',
+  'navigate:/profile': '/profile',
+};
 
 interface ChatMessageProps {
   message: ChatMessageType;
@@ -28,7 +41,7 @@ export const ChatMessage = memo(function ChatMessage({
   isLast: _isLast,
 }: ChatMessageProps) {
   const t = useTranslations('agentChat');
-
+  const router = useRouter();
   const locale = useLocale();
   const isUser = message.role === 'user';
   const agentInfo = message.agent ? AGENT_INFO[message.agent] : null;
@@ -235,6 +248,31 @@ export const ChatMessage = memo(function ChatMessage({
           )}
         </motion.div>
 
+        {/* Action Buttons */}
+        {!isUser && message.actions && message.actions.length > 0 && !message.isStreaming && (
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="flex flex-wrap gap-2 mt-1"
+          >
+            {message.actions.map((action, idx) => {
+              const path = ALLOWED_ACTIONS[action.action];
+              if (!path) return null;
+              return (
+                <Button
+                  key={`${action.action}-${idx}`}
+                  size="sm"
+                  variant={action.variant || 'outline'}
+                  onClick={() => router.push(path)}
+                >
+                  {action.label}
+                </Button>
+              );
+            })}
+          </motion.div>
+        )}
+
         {/* Timestamp */}
         <motion.span
           initial={{ opacity: 0 }}
@@ -261,6 +299,8 @@ function StaticChatMessage({
   agentName: string | null;
   isUser: boolean;
 }) {
+  const router = useRouter();
+
   return (
     <div className={cn('flex gap-3', isUser ? 'flex-row-reverse' : 'flex-row')}>
       <Avatar className={cn('h-8 w-8 shrink-0', isUser ? 'bg-primary' : '')}>
@@ -280,6 +320,24 @@ function StaticChatMessage({
         >
           <MessageContent content={message.content} isStreaming={false} />
         </div>
+        {!isUser && message.actions && message.actions.length > 0 && !message.isStreaming && (
+          <div className="flex flex-wrap gap-2 mt-1">
+            {message.actions.map((action, idx) => {
+              const path = ALLOWED_ACTIONS[action.action];
+              if (!path) return null;
+              return (
+                <Button
+                  key={`${action.action}-${idx}`}
+                  size="sm"
+                  variant={action.variant || 'outline'}
+                  onClick={() => router.push(path)}
+                >
+                  {action.label}
+                </Button>
+              );
+            })}
+          </div>
+        )}
         <span className="text-2xs text-muted-foreground px-1">{formatTime(message.timestamp)}</span>
       </div>
     </div>

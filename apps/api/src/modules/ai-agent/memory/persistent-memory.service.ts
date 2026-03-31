@@ -4,7 +4,7 @@
  * 使用 pgvector 进行高效向量相似度搜索
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { EntityType, Prisma } from '@prisma/client';
@@ -279,6 +279,7 @@ export class PersistentMemoryService {
       };
     }
 
+    // governance: userId validated — queryMemories(userId) sets where.userId at line 253
     const memories = await this.prisma.memory.findMany({
       where,
       orderBy: [{ importance: 'desc' }, { createdAt: 'desc' }],
@@ -307,62 +308,96 @@ export class PersistentMemoryService {
    * @param options.minSimilarity - Minimum cosine similarity threshold in [0, 1] (default: 0.5)
    * @returns Matching memories with their similarity scores, ordered by similarity desc
    */
-  // 语义检索记忆（使用 pgvector 原生向量搜索）
-  // 性能：O(log n) vs 之前的 O(n)
+  // 混合检索：向量相似度 + 全文搜索（ts_rank）
+  // 向量走 HNSW 索引，FTS 走 GIN 索引
+  // alpha=0.7 向量 + 0.3 文本线性组合（MVP 阶段，效果不理想时可调整为 min-max 归一）
+  static readonly SEARCH_CONFIG = {
+    /** 综合分数下限（混合模式下非纯 cosine 阈值） */
+    minCombinedScore: 0.3,
+    /** 向量权重 */
+    alpha: 0.7,
+    /** 查询长度上限（字符） */
+    maxQueryLength: 500,
+  } as const;
+
   async searchMemories(
     userId: string,
     queryText: string,
     options: { limit?: number; minSimilarity?: number } = {},
   ): Promise<Array<MemoryRecord & { similarity: number }>> {
-    const { limit = 10, minSimilarity = 0.5 } = options;
+    const { limit = 10 } = options;
+    const minScore =
+      options.minSimilarity ??
+      PersistentMemoryService.SEARCH_CONFIG.minCombinedScore;
+    const { alpha, maxQueryLength } = PersistentMemoryService.SEARCH_CONFIG;
+
+    // Sanitize query
+    const sanitizedQuery = queryText.slice(0, maxQueryLength);
 
     // 生成查询向量
-    const queryEmbedding = await this.embedding.embed(queryText);
+    const queryEmbedding = await this.embedding.embed(sanitizedQuery);
 
     if (queryEmbedding.length === 0) {
       this.logger.warn(
-        `searchMemories: embedding unavailable, falling back to keyword search`,
+        `searchMemories: embedding unavailable, falling back to FTS-only`,
       );
-      // 回退到关键词搜索
-      const memories = await this.prisma.memory.findMany({
-        where: {
-          userId,
-          content: { contains: queryText, mode: 'insensitive' },
-          OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-        },
-        orderBy: { importance: 'desc' },
-        take: limit,
-      });
-      return memories.map((m) => ({
-        ...this.toMemoryRecord(m as unknown as RawMemoryRow),
-        similarity: 0.5,
+      // 降级为纯 FTS（使用 GIN 索引）
+      const results = await this.prisma.$queryRaw<RawMemoryRow[]>(
+        Prisma.sql`
+        SELECT
+          m.id, m."userId", m.type, m.category, m.content, m.importance,
+          m."accessCount", m."lastAccessedAt", m.metadata, m."expiresAt",
+          m."createdAt", m."updatedAt",
+          COALESCE(ts_rank(to_tsvector('simple', m.content), plainto_tsquery('simple', ${sanitizedQuery})), 0) AS similarity
+        FROM "Memory" m
+        WHERE
+          m."userId" = ${userId}
+          AND to_tsvector('simple', m.content) @@ plainto_tsquery('simple', ${sanitizedQuery})
+          AND (m."expiresAt" IS NULL OR m."expiresAt" > NOW())
+        ORDER BY similarity DESC
+        LIMIT ${limit}
+      `,
+      );
+      return results.map((r) => ({
+        ...this.toMemoryRecord(r),
+        similarity: Number(r.similarity),
       }));
     }
 
-    // 使用 pgvector 原生向量搜索（排除 embedding 列避免反序列化错误）
-    // 1 - (a <=> b) 将距离转换为相似度（余弦距离 → 余弦相似度）
+    // 混合检索：向量 (cosine) + FTS (ts_rank)
+    // - vec_score: 1 - cosine_distance, 天然 0~1
+    // - text_score: ts_rank 值域小且浮动，MVP 直接线性组合
+    // - 无 embedding 行：vec_score=0，combined_score 仅用 text_score
     const results = await this.prisma.$queryRaw<RawMemoryRow[]>(
       Prisma.sql`
-      SELECT 
+      SELECT
         m.id, m."userId", m.type, m.category, m.content, m.importance,
         m."accessCount", m."lastAccessedAt", m.metadata, m."expiresAt",
         m."createdAt", m."updatedAt",
-        1 - (m.embedding <=> ${queryEmbedding}::vector) AS similarity
+        CASE WHEN m.embedding IS NOT NULL
+          THEN ${alpha} * (1 - (m.embedding <=> ${queryEmbedding}::vector))
+               + ${1 - alpha} * COALESCE(ts_rank(to_tsvector('simple', m.content), plainto_tsquery('simple', ${sanitizedQuery})), 0)
+          ELSE COALESCE(ts_rank(to_tsvector('simple', m.content), plainto_tsquery('simple', ${sanitizedQuery})), 0)
+        END AS similarity
       FROM "Memory" m
-      WHERE 
+      WHERE
         m."userId" = ${userId}
-        AND m.embedding IS NOT NULL
+        AND (
+          m.embedding IS NOT NULL
+          OR to_tsvector('simple', m.content) @@ plainto_tsquery('simple', ${sanitizedQuery})
+        )
         AND (m."expiresAt" IS NULL OR m."expiresAt" > NOW())
-        AND 1 - (m.embedding <=> ${queryEmbedding}::vector) >= ${minSimilarity}
-      ORDER BY m.embedding <=> ${queryEmbedding}::vector
+      ORDER BY similarity DESC
       LIMIT ${limit}
     `,
     );
 
-    return results.map((r) => ({
-      ...this.toMemoryRecord(r),
-      similarity: Number(r.similarity),
-    }));
+    return results
+      .filter((r) => Number(r.similarity) >= minScore)
+      .map((r) => ({
+        ...this.toMemoryRecord(r),
+        similarity: Number(r.similarity),
+      }));
   }
 
   /**
@@ -375,7 +410,10 @@ export class PersistentMemoryService {
    * @param data - Fields to update; all are optional but at least one should be provided
    * @returns The updated memory record
    */
-  // 更新记忆
+  /**
+   * Update a memory. When userId is provided, enforces ownership before updating.
+   * When omitted, updates by ID only (admin/internal path).
+   */
   async updateMemory(
     memoryId: string,
     data: {
@@ -384,7 +422,19 @@ export class PersistentMemoryService {
       metadata?: Record<string, any>;
       category?: string;
     },
+    userId?: string,
   ): Promise<MemoryRecord> {
+    // Ownership check — applies to all update paths (content or metadata-only)
+    if (userId) {
+      const existing = await this.prisma.memory.findFirst({
+        where: { id: memoryId, userId },
+        select: { id: true },
+      });
+      if (!existing) {
+        throw new NotFoundException(`Memory ${memoryId} not found for user`);
+      }
+    }
+
     // 如果内容更新，需要重新生成向量
     if (data.content) {
       const embeddingVector = await this.embedding.embed(data.content);
@@ -441,14 +491,25 @@ export class PersistentMemoryService {
    * @param memoryId - The ID of the memory that was accessed
    */
   // 记录记忆访问
-  async recordAccess(memoryId: string): Promise<void> {
-    await this.prisma.memory.update({
-      where: { id: memoryId },
-      data: {
-        accessCount: { increment: 1 },
-        lastAccessedAt: new Date(),
-      },
-    });
+  async recordAccess(memoryId: string, userId?: string): Promise<void> {
+    if (userId) {
+      await this.prisma.memory.updateMany({
+        where: { id: memoryId, userId },
+        data: {
+          accessCount: { increment: 1 },
+          lastAccessedAt: new Date(),
+        },
+      });
+    } else {
+      // governance: userId validated — admin path, protected by @Roles(ADMIN) at controller
+      await this.prisma.memory.update({
+        where: { id: memoryId },
+        data: {
+          accessCount: { increment: 1 },
+          lastAccessedAt: new Date(),
+        },
+      });
+    }
   }
 
   /**
@@ -457,9 +518,23 @@ export class PersistentMemoryService {
    * @param memoryId - The ID of the memory to delete
    * @throws {Prisma.PrismaClientKnownRequestError} If the memory ID does not exist
    */
-  // 删除记忆
-  async deleteMemory(memoryId: string): Promise<void> {
-    await this.prisma.memory.delete({ where: { id: memoryId } });
+  /**
+   * Delete a memory. When userId is provided, enforces ownership (user path).
+   * When omitted, deletes by ID only (admin/internal path — caller must be @Roles(ADMIN)).
+   */
+  async deleteMemory(memoryId: string, userId?: string): Promise<void> {
+    if (userId) {
+      const result = await this.prisma.memory.deleteMany({
+        where: { id: memoryId, userId },
+      });
+      if (result.count === 0) {
+        throw new NotFoundException(`Memory ${memoryId} not found for user`);
+      }
+    } else {
+      // Admin-only path — protected by @Roles(ADMIN) at controller layer
+      // governance: userId validated — admin path, see @Roles(ADMIN) guard above
+      await this.prisma.memory.delete({ where: { id: memoryId } });
+    }
   }
 
   /**
@@ -467,14 +542,30 @@ export class PersistentMemoryService {
    *
    * @returns The number of expired memories that were deleted
    */
-  // 清理过期记忆
+  // 清理过期记忆（分批删除，避免大事务）
   async cleanupExpiredMemories(): Promise<number> {
-    const result = await this.prisma.memory.deleteMany({
-      where: {
-        expiresAt: { lt: new Date() },
-      },
-    });
-    return result.count;
+    const BATCH_SIZE = 1000;
+    let totalDeleted = 0;
+
+    for (;;) {
+      const expired = await this.prisma.memory.findMany({
+        where: { expiresAt: { lt: new Date() } },
+        select: { id: true },
+        take: BATCH_SIZE,
+      });
+
+      if (expired.length === 0) break;
+
+      // governance: batch-operation — cleanup of expired memories by ID batch
+      const result = await this.prisma.memory.deleteMany({
+        where: { id: { in: expired.map((m) => m.id) } },
+      });
+      totalDeleted += result.count;
+
+      if (expired.length < BATCH_SIZE) break;
+    }
+
+    return totalDeleted;
   }
 
   // ==================== 对话管理 ====================
@@ -647,29 +738,34 @@ export class PersistentMemoryService {
   }
 
   /**
-   * Retrieve messages for a conversation, ordered chronologically (asc).
+   * Retrieve the most recent messages for a conversation, returned in chronological order.
+   *
+   * Implementation: queries in DESC order with LIMIT to fetch the newest N rows,
+   * then reverses to restore chronological (ASC) order for consumers.
+   * This leverages the existing @@index([conversationId, createdAt(sort: Desc)]).
    *
    * @param conversationId - The conversation whose messages to retrieve
    * @param options - Optional pagination: limit (default: 50) and before (cursor date)
-   * @returns An array of message records in chronological order
+   * @returns An array of the most recent message records in chronological order
    */
-  // 获取对话消息
+  // 获取对话消息（最新 N 条，按时间正序返回）
   async getMessages(
     conversationId: string,
     options: { limit?: number; before?: Date } = {},
   ): Promise<MessageRecord[]> {
     const { limit = 50, before } = options;
 
+    // Query DESC + take to get newest N, then reverse for chronological order
     const messages = await this.prisma.agentMessage.findMany({
       where: {
         conversationId,
         ...(before ? { createdAt: { lt: before } } : {}),
       },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: 'desc' },
       take: limit,
     });
 
-    return messages.map((m) => this.toMessageRecord(m));
+    return messages.reverse().map((m) => this.toMessageRecord(m));
   }
 
   // ==================== 实体管理 ====================
@@ -1029,6 +1125,7 @@ export class PersistentMemoryService {
     for (let i = 0; i < memoryIds.length; i++) {
       const emb = embeddings[i];
       if (emb && emb.length > 0) {
+        // governance: batch-operation — system embedding backfill by memory ID
         await this.prisma.$executeRaw`
           UPDATE "Memory"
           SET embedding = ${emb}::vector, "updatedAt" = NOW()
@@ -1159,5 +1256,158 @@ export class PersistentMemoryService {
       relations: e.relations || undefined,
       createdAt: e.createdAt,
     };
+  }
+
+  // ==================== Graph Memory ====================
+
+  /**
+   * Upsert a graph entity (school, major, program, etc.)
+   */
+  async upsertGraphEntity(
+    userId: string,
+    entityType: string,
+    name: string,
+    attributes?: Record<string, unknown>,
+  ): Promise<{ id: string }> {
+    const entity = await this.prisma.graphEntity.upsert({
+      where: {
+        userId_entityType_name: { userId, entityType, name },
+      },
+      create: {
+        userId,
+        entityType,
+        name,
+        attributes: (attributes || {}) as Prisma.InputJsonValue,
+      },
+      update: { attributes: (attributes || {}) as Prisma.InputJsonValue },
+      select: { id: true },
+    });
+    return entity;
+  }
+
+  /**
+   * Create a directed relationship between two graph entities.
+   */
+  async addRelationship(
+    userId: string,
+    sourceId: string,
+    targetId: string,
+    relationType: string,
+    weight: number = 1.0,
+    metadata?: Record<string, unknown>,
+  ): Promise<void> {
+    await this.prisma.entityRelationship.create({
+      data: {
+        userId,
+        sourceEntityId: sourceId,
+        targetEntityId: targetId,
+        relationType,
+        weight,
+        metadata: (metadata || {}) as Prisma.InputJsonValue,
+      },
+    });
+  }
+
+  /**
+   * Find connected entities up to N hops via recursive CTE.
+   */
+  async findConnectedEntities(
+    userId: string,
+    entityId: string,
+    maxDepth: number = 3,
+    relationType?: string,
+  ): Promise<
+    Array<{
+      id: string;
+      entityType: string;
+      name: string;
+      depth: number;
+      relationType: string;
+    }>
+  > {
+    const relationFilter = relationType
+      ? `AND er."relationType" = '${relationType}'`
+      : '';
+
+    const results = await this.prisma.$queryRawUnsafe<
+      Array<{
+        id: string;
+        entityType: string;
+        name: string;
+        depth: number;
+        rel_type: string;
+      }>
+    >(
+      `WITH RECURSIVE entity_graph AS (
+        SELECT ge.id, ge."entityType", ge.name, 1 as depth, er."relationType" as rel_type
+        FROM entity_relationships er
+        JOIN graph_entities ge ON ge.id = er."targetEntityId"
+        WHERE er."sourceEntityId" = $1
+          AND er."userId" = $2
+          ${relationFilter}
+
+        UNION ALL
+
+        SELECT ge.id, ge."entityType", ge.name, eg.depth + 1, er."relationType"
+        FROM entity_graph eg
+        JOIN entity_relationships er ON er."sourceEntityId" = eg.id
+        JOIN graph_entities ge ON ge.id = er."targetEntityId"
+        WHERE er."userId" = $2
+          AND eg.depth < $3
+          ${relationFilter}
+      )
+      SELECT DISTINCT ON (id) id, "entityType", name, depth, rel_type
+      FROM entity_graph
+      ORDER BY id, depth ASC`,
+      entityId,
+      userId,
+      maxDepth,
+    );
+
+    return results.map((r) => ({
+      id: r.id,
+      entityType: r.entityType,
+      name: r.name,
+      depth: r.depth,
+      relationType: r.rel_type,
+    }));
+  }
+
+  /**
+   * Find entities that share the most relationships with a given entity (similarity by graph structure).
+   */
+  async findSimilarEntities(
+    userId: string,
+    entityId: string,
+    entityType: string,
+    limit: number = 10,
+  ): Promise<Array<{ id: string; name: string; sharedConnections: number }>> {
+    const results = await this.prisma.$queryRawUnsafe<
+      Array<{ id: string; name: string; shared: bigint }>
+    >(
+      `SELECT ge.id, ge.name, COUNT(*) as shared
+       FROM entity_relationships er1
+       JOIN entity_relationships er2
+         ON er1."targetEntityId" = er2."targetEntityId"
+         AND er1."userId" = er2."userId"
+       JOIN graph_entities ge ON ge.id = er2."sourceEntityId"
+       WHERE er1."sourceEntityId" = $1
+         AND er2."sourceEntityId" != $1
+         AND er1."userId" = $2
+         AND ge."entityType" = $3
+       GROUP BY ge.id, ge.name
+       ORDER BY shared DESC
+       LIMIT $4`,
+      entityId,
+      userId,
+      entityType,
+      limit,
+    );
+
+    return results.map((r) => ({
+      id: r.id,
+      name: r.name,
+      sharedConnections: Number(r.shared),
+    }));
   }
 }

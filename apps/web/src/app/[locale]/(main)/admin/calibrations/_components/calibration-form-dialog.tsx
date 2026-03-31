@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES, schoolRoutes } from '@study-abroad/shared';
+import { adminRoutes, schoolRoutes } from '@study-abroad/shared';
 import { getSchoolName } from '@/lib/utils';
 
 interface SchoolOption {
@@ -103,7 +103,7 @@ export function CalibrationFormDialog({
 
   const createMutation = useMutation({
     mutationFn: (data: { schoolId: string; multiplier: number; reason?: string }) =>
-      apiClient.post(`${API_ROUTES.ADMIN}/calibrations`, data),
+      apiClient.post(adminRoutes.calibrations(), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminCalibrations'] });
       queryClient.invalidateQueries({ queryKey: ['adminCalibrationStats'] });
@@ -116,7 +116,7 @@ export function CalibrationFormDialog({
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: { multiplier?: number; reason?: string } }) =>
-      apiClient.put(`${API_ROUTES.ADMIN}/calibrations/${id}`, data),
+      apiClient.put(adminRoutes.calibrationById(id), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminCalibrations'] });
       queryClient.invalidateQueries({ queryKey: ['adminCalibrationStats'] });

@@ -20,6 +20,7 @@ import Markdown from 'react-native-markdown-display';
 
 import { AnimatedCard, Badge, Loading, ProgressBar } from '@/components/ui';
 import { CardContent } from '@/components/ui/Card';
+import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
 import { useToast } from '@/components/ui/Toast';
@@ -87,20 +88,20 @@ export default function UncommonAppScreen() {
   // ---- Queries -------------------------------------------------------------
   const { data: quota } = useQuery<QuotaData>({
     queryKey: ['ai-agent', 'quota'],
-    queryFn: () => apiClient.get('/ai-agent/quota'),
+    queryFn: () => apiClient.get(`${API_ROUTES.AI_AGENT}/quota`),
     enabled: isAuthenticated,
     refetchInterval: 60_000,
   });
 
   const { data: usage } = useQuery<UsageData>({
     queryKey: ['ai-agent', 'usage'],
-    queryFn: () => apiClient.get('/ai-agent/usage'),
+    queryFn: () => apiClient.get(`${API_ROUTES.AI_AGENT}/usage`),
     enabled: isAuthenticated,
   });
 
   // ---- Clear conversation mutation -----------------------------------------
   const clearMutation = useMutation({
-    mutationFn: () => apiClient.delete('/ai-agent/conversation'),
+    mutationFn: () => apiClient.delete(`${API_ROUTES.AI_AGENT}/conversation`),
     onSuccess: () => {
       setMessages([]);
       setConversationId(undefined);

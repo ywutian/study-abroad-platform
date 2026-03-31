@@ -16,11 +16,12 @@ import {
 } from '@/components/ui';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useToast } from '@/components/ui/Toast';
+import { profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import type { TestScore } from '@/types';
 
-const TEST_TYPES = ['SAT', 'ACT', 'TOEFL', 'IELTS', 'AP', 'IB', 'A_LEVEL', 'IGCSE'];
+const TEST_TYPES = ['SAT', 'ACT', 'TOEFL', 'IELTS', 'DUOLINGO', 'AP', 'IB', 'A_LEVEL', 'IGCSE'];
 
 const SUBJECT_MAP: Record<string, string[]> = {
   AP: [
@@ -144,7 +145,7 @@ export default function ScoresScreen() {
     isRefetching,
   } = useQuery({
     queryKey: ['test-scores'],
-    queryFn: () => apiClient.get<TestScore[]>('/profiles/me/test-scores'),
+    queryFn: () => apiClient.get<TestScore[]>(profileRoutes.testScores()),
   });
 
   const invalidateScores = () => {
@@ -158,7 +159,7 @@ export default function ScoresScreen() {
       score: number;
       testDate?: string;
       subScores?: Record<string, number | string>;
-    }) => apiClient.post<TestScore>('/profiles/me/test-scores', data),
+    }) => apiClient.post<TestScore>(profileRoutes.testScores(), data),
     onSuccess: () => {
       invalidateScores();
       toast.success(t('profileEdit.saveSuccess'));
@@ -181,7 +182,7 @@ export default function ScoresScreen() {
         testDate?: string;
         subScores?: Record<string, number | string>;
       };
-    }) => apiClient.put<TestScore>(`/profiles/me/test-scores/${id}`, data),
+    }) => apiClient.put<TestScore>(profileRoutes.testScore(id), data),
     onSuccess: () => {
       invalidateScores();
       toast.success(t('profileEdit.saveSuccess'));
@@ -193,7 +194,7 @@ export default function ScoresScreen() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/profiles/me/test-scores/${id}`),
+    mutationFn: (id: string) => apiClient.delete(profileRoutes.testScore(id)),
     onSuccess: () => {
       invalidateScores();
       toast.success(t('profileEdit.saveSuccess'));
@@ -318,6 +319,8 @@ export default function ScoresScreen() {
         return colors.warning;
       case 'IELTS':
         return colors.success;
+      case 'DUOLINGO':
+        return colors.warning;
       case 'AP':
         return colors.info;
       case 'IB':

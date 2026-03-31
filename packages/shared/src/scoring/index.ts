@@ -9,3 +9,4 @@ export * from './major-lookup';
 export * from './tier';
 export * from './hs-quality';
 export * from './hs-confidence';
+export * from './english-proficiency';

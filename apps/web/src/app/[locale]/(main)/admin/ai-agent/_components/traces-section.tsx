@@ -15,6 +15,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { apiClient } from '@/lib/api';
+import { adminAiAgentRoutes } from '@study-abroad/shared';
 import { useTranslations } from 'next-intl';
 import { Activity } from 'lucide-react';
 
@@ -25,7 +26,7 @@ export function TracesSection() {
   const { data: traces } = useQuery({
     queryKey: ['aiAgentTraces', traceTab],
     queryFn: () =>
-      apiClient.get<any[]>(`/admin/ai-agent/traces/${traceTab}`, { params: { limit: '30' } }),
+      apiClient.get<any[]>(adminAiAgentRoutes.traces(traceTab), { params: { limit: '30' } }),
   });
 
   return (

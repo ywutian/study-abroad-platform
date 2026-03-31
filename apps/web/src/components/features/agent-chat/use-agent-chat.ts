@@ -164,6 +164,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                     content: msg.content || event.response?.message || msg.content,
                     isStreaming: false,
                     agent: event.agent || msg.agent,
+                    ...(event.response?.actions?.length ? { actions: event.response.actions } : {}),
                   }
                 : msg
             )

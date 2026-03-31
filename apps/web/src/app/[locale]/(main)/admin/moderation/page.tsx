@@ -18,7 +18,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/layout';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { ShieldCheck, Loader2 } from 'lucide-react';
 import { ForumContentTab } from './_components/forum-content-tab';
@@ -26,9 +26,10 @@ import { ChatContentTab } from './_components/chat-content-tab';
 import { ReviewsContentTab } from './_components/reviews-content-tab';
 import { AiModerationTab } from './_components/ai-moderation-tab';
 import { ReportsTab } from './_components/reports-tab';
+import { ReviewStatisticsTab } from './_components/review-statistics-tab';
 
 const PAGE_SIZE = 20;
-const VALID_TABS = ['forum', 'chat', 'reviews', 'aiModeration', 'reports'] as const;
+const VALID_TABS = ['forum', 'chat', 'reviews', 'aiModeration', 'reports', 'statistics'] as const;
 type ModerationTab = (typeof VALID_TABS)[number];
 
 export default function AdminModerationPage() {
@@ -57,13 +58,13 @@ export default function AdminModerationPage() {
     mutationFn: ({ type, id }: { type: string; id: string }) => {
       switch (type) {
         case 'post':
-          return apiClient.delete(`${API_ROUTES.ADMIN}/forums/posts/${id}`);
+          return apiClient.delete(adminRoutes.forumsPostDelete(id));
         case 'comment':
-          return apiClient.delete(`${API_ROUTES.ADMIN}/forums/comments/${id}`);
+          return apiClient.delete(adminRoutes.forumsCommentDelete(id));
         case 'message':
-          return apiClient.delete(`${API_ROUTES.ADMIN}/chats/messages/${id}`);
+          return apiClient.delete(adminRoutes.chatsMessageDelete(id));
         case 'review':
-          return apiClient.delete(`${API_ROUTES.ADMIN}/reviews/${id}`);
+          return apiClient.delete(adminRoutes.reviewById(id));
         default:
           throw new Error('Unknown type');
       }
@@ -99,6 +100,7 @@ export default function AdminModerationPage() {
           <TabsTrigger value="reviews">{t('contentMod.reviews')}</TabsTrigger>
           <TabsTrigger value="aiModeration">{t('moderation.aiModeration')}</TabsTrigger>
           <TabsTrigger value="reports">{t('contentMod.reports')}</TabsTrigger>
+          <TabsTrigger value="statistics">{t('reviewStats.title')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="forum">
@@ -119,6 +121,10 @@ export default function AdminModerationPage() {
 
         <TabsContent value="reports">
           <ReportsTab />
+        </TabsContent>
+
+        <TabsContent value="statistics">
+          <ReviewStatisticsTab />
         </TabsContent>
       </Tabs>
 

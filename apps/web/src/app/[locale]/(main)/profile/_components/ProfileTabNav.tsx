@@ -11,14 +11,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { TAB_CONFIG } from './constants';
+import { TAB_CONFIG, TAB_ICON_ACTIVE_CLASSES } from './constants';
 
 interface ProfileTabNavProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  tabErrors?: Record<string, number>;
 }
 
-export function ProfileTabNav({ activeTab, onTabChange }: ProfileTabNavProps) {
+export function ProfileTabNav({ activeTab, onTabChange, tabErrors }: ProfileTabNavProps) {
   const t = useTranslations();
   const activeTabConfig = TAB_CONFIG.find((tab) => tab.value === activeTab);
 
@@ -47,14 +48,20 @@ export function ProfileTabNav({ activeTab, onTabChange }: ProfileTabNavProps) {
                   className={cn(
                     'flex h-9 w-9 items-center justify-center rounded-lg transition-all',
                     isActive
-                      ? `bg-gradient-to-br ${tab.color} text-white shadow-md`
+                      ? TAB_ICON_ACTIVE_CLASSES[tab.value] || 'bg-primary text-white shadow-md'
                       : 'bg-muted text-muted-foreground'
                   )}
                 >
                   <tab.icon className="h-4 w-4" />
                 </div>
                 <span className="font-medium text-sm">{t(tab.labelKey)}</span>
-                {isActive && <ChevronRight className="ml-auto h-4 w-4" />}
+                {tabErrors?.[tab.value] ? (
+                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-xs font-medium px-1">
+                    {tabErrors[tab.value]}
+                  </span>
+                ) : isActive ? (
+                  <ChevronRight className="ml-auto h-4 w-4" />
+                ) : null}
               </motion.button>
             );
           })}
@@ -68,8 +75,8 @@ export function ProfileTabNav({ activeTab, onTabChange }: ProfileTabNavProps) {
                 {activeTabConfig && (
                   <div
                     className={cn(
-                      'flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br text-white',
-                      activeTabConfig.color
+                      'flex h-8 w-8 items-center justify-center rounded-lg',
+                      TAB_ICON_ACTIVE_CLASSES[activeTabConfig.value] || 'bg-primary text-white'
                     )}
                   >
                     <activeTabConfig.icon className="h-4 w-4" />
@@ -84,6 +91,11 @@ export function ProfileTabNav({ activeTab, onTabChange }: ProfileTabNavProps) {
                   <span className="flex items-center gap-2">
                     <tab.icon className="h-4 w-4" />
                     {t(tab.labelKey)}
+                    {tabErrors?.[tab.value] ? (
+                      <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-medium px-1">
+                        {tabErrors[tab.value]}
+                      </span>
+                    ) : null}
                   </span>
                 </SelectItem>
               ))}

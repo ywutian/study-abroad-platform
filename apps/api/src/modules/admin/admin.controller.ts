@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Body,
   Param,
@@ -48,6 +49,7 @@ import {
   CreateSchoolCalibrationDto,
   UpdateSchoolCalibrationDto,
   BulkCreateCalibrationDto,
+  UpdatePriorityDto,
 } from './dto';
 import { AdminDataSyncService } from './admin-data-sync.service';
 import { PredictionService } from '../prediction/prediction.service';
@@ -100,8 +102,22 @@ export class AdminController {
   @RequirePermission(Permission.CONTENT_MODERATE)
   @ApiOperation({ summary: 'Get report list' })
   async getReports(@Query() query: ReportQueryDto) {
-    const { status, targetType, page = 1, pageSize = 20 } = query;
-    return this.adminService.getReports(status, targetType, page, pageSize);
+    const {
+      status,
+      targetType,
+      page = 1,
+      pageSize = 20,
+      priority,
+      assignedTo,
+    } = query;
+    return this.adminService.getReports(
+      status,
+      targetType,
+      page,
+      pageSize,
+      priority,
+      assignedTo,
+    );
   }
 
   @Put('reports/:id')
@@ -118,6 +134,50 @@ export class AdminController {
       data.status,
       data.resolution,
     );
+  }
+
+  @Post('reports/:id/claim')
+  @RequirePermission(Permission.CONTENT_MODERATE)
+  @ApiOperation({ summary: 'Claim a report for review' })
+  async claimReport(
+    @CurrentUser() admin: CurrentUserPayload,
+    @Param('id') id: string,
+  ) {
+    return this.adminService.claimReport(id, admin.id);
+  }
+
+  @Post('reports/:id/release')
+  @RequirePermission(Permission.CONTENT_MODERATE)
+  @ApiOperation({ summary: 'Release a claimed report' })
+  async releaseReport(
+    @CurrentUser() admin: CurrentUserPayload,
+    @Param('id') id: string,
+  ) {
+    return this.adminService.releaseReport(id, admin.id);
+  }
+
+  @Patch('reports/:id/priority')
+  @RequirePermission(Permission.CONTENT_MODERATE)
+  @ApiOperation({ summary: 'Update report priority' })
+  async updateReportPriority(
+    @Param('id') id: string,
+    @Body() data: UpdatePriorityDto,
+  ) {
+    return this.adminService.updateReportPriority(id, data.priority);
+  }
+
+  @Get('moderation/statistics')
+  @RequirePermission(Permission.CONTENT_MODERATE)
+  @ApiOperation({ summary: 'Get moderation review statistics' })
+  @ApiQuery({
+    name: 'period',
+    required: false,
+    enum: ['today', 'week', 'month'],
+  })
+  async getModerationStatistics(
+    @Query('period') period?: 'today' | 'week' | 'month',
+  ) {
+    return this.adminService.getModerationStatistics(period);
   }
 
   @Delete('reports/:id')

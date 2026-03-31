@@ -15,7 +15,7 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Logger, Optional } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { OrchestratorService } from './core/orchestrator.service';
@@ -65,7 +65,7 @@ export class AiAgentGateway
     private jwtService: JwtService,
     private configService: ConfigService,
     private memoryManager: MemoryManagerService,
-    @Optional() private promptGuard?: PromptGuardService,
+    private promptGuard: PromptGuardService,
   ) {}
 
   /**
@@ -157,18 +157,16 @@ export class AiAgentGateway
 
     try {
       // Input security check
-      if (this.promptGuard) {
-        const guardResult = await this.promptGuard.analyze(message, {
-          userId: client.userId,
-          strictMode: false,
+      const guardResult = await this.promptGuard.analyze(message, {
+        userId: client.userId,
+        strictMode: false,
+      });
+      if (guardResult.blocked) {
+        client.emit('aiError', {
+          error: '输入内容包含不安全的模式',
+          code: 'SECURITY_BLOCK',
         });
-        if (guardResult.blocked) {
-          client.emit('aiError', {
-            error: '输入内容包含不安全的模式',
-            code: 'SECURITY_BLOCK',
-          });
-          return { success: false, error: 'Input blocked by security check' };
-        }
+        return { success: false, error: 'Input blocked by security check' };
       }
 
       client.emit('aiTyping', { isTyping: true });
@@ -181,8 +179,19 @@ export class AiAgentGateway
       );
 
       let finalConversationId: string | undefined;
+      let clientDisconnected = false;
+      client.on('disconnect', () => {
+        clientDisconnected = true;
+      });
 
       for await (const event of stream) {
+        if (clientDisconnected) {
+          this.logger.debug(
+            `WebSocket client disconnected mid-stream [user=${client.userId}]`,
+          );
+          break;
+        }
+
         // 发送流式事件
         client.emit('aiResponse', event);
 
@@ -238,6 +247,13 @@ export class AiAgentGateway
       const { conversationId, limit = 50 } = data;
 
       if (conversationId) {
+        // Ownership check: verify the conversation belongs to the requesting user
+        const conversation =
+          await this.memoryManager.getConversation(conversationId);
+        if (!conversation || conversation.userId !== client.userId) {
+          return { success: false, error: 'Conversation not found' };
+        }
+
         // 获取特定对话的消息
         const messages = await this.memoryManager.getMessages(
           conversationId,
@@ -280,6 +296,13 @@ export class AiAgentGateway
 
       if (!conversationId) {
         return { success: false, error: 'conversationId is required' };
+      }
+
+      // Ownership check: verify the conversation belongs to the requesting user
+      const conversation =
+        await this.memoryManager.getConversation(conversationId);
+      if (!conversation || conversation.userId !== client.userId) {
+        return { success: false, error: 'Conversation not found' };
       }
 
       // 清除对话（企业级记忆系统）

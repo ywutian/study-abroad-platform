@@ -73,6 +73,19 @@ export const COMMON_COUNTRIES = [
   { value: 'OTHER', labelKey: 'profile.demographics.countries.OTHER' },
 ];
 
+/** Static active-icon class map per tab — avoids dynamic Tailwind class interpolation. */
+export const TAB_ICON_ACTIVE_CLASSES: Record<string, string> = {
+  basic: 'bg-primary text-white shadow-md',
+  demographics: 'bg-gradient-to-br from-teal-500 to-cyan-500 text-white shadow-md',
+  scores: 'bg-primary text-white shadow-md',
+  gpa: 'bg-success text-white shadow-md',
+  activities: 'bg-warning text-white shadow-md',
+  awards: 'bg-gradient-to-br from-yellow-500 to-orange-500 text-white shadow-md',
+  targets: 'bg-destructive text-white shadow-md',
+  recLetters: 'bg-gradient-to-br from-violet-500 to-purple-500 text-white shadow-md',
+  privacy: 'bg-muted-foreground text-white shadow-md',
+};
+
 export const TAB_CONFIG: TabConfig[] = [
   { value: 'basic', labelKey: 'profile.steps.basic', icon: User, color: 'bg-primary' },
   {
@@ -161,6 +174,34 @@ export const AWARD_LEVEL_KEYS: Record<string, string> = {
   STATE: 'profile.awardLevels.state',
   NATIONAL: 'profile.awardLevels.national',
   INTERNATIONAL: 'profile.awardLevels.international',
+};
+
+/** Maps form field names to their owning tab value (for tab error indicators) */
+export const FIELD_TO_TAB: Record<string, string> = {
+  // BasicInfoTab
+  grade: 'basic',
+  currentSchool: 'basic',
+  targetMajor: 'basic',
+  budgetTier: 'basic',
+  // DemographicsTab
+  nationality: 'demographics',
+  countryOfResidence: 'demographics',
+  citizenship: 'demographics',
+  educationSystem: 'demographics',
+  needsFinancialAid: 'demographics',
+  firstGeneration: 'demographics',
+  legacy: 'demographics',
+  intendedMajor: 'demographics',
+  secondMajor: 'demographics',
+  // GpaTab
+  gpa: 'gpa',
+  gpaScale: 'gpa',
+  gpa9: 'gpa',
+  gpa10: 'gpa',
+  gpa11: 'gpa',
+  gpa12: 'gpa',
+  // PrivacyTab
+  visibility: 'privacy',
 };
 
 export const AWARD_CATEGORY_KEYS: Record<string, string> = {

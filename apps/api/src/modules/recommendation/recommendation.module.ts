@@ -6,6 +6,7 @@ import { AiAgentMemoryModule } from '../ai-agent/memory/memory.module';
 import { PointsModule } from '../points/points.module';
 import { RedisModule } from '../../common/redis/redis.module';
 import { SchoolModule } from '../school/school.module';
+import { PredictionModule } from '../prediction/prediction.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { SchoolModule } from '../school/school.module';
     PointsModule,
     RedisModule,
     SchoolModule,
+    PredictionModule,
   ],
   providers: [RecommendationService],
   controllers: [RecommendationController],

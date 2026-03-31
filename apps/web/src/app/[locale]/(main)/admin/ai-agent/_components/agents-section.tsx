@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminAiAgentRoutes } from '@study-abroad/shared';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Zap, Cpu, Pencil } from 'lucide-react';
@@ -21,20 +21,20 @@ export function AgentsSection() {
   const { data: agents } = useQuery({
     queryKey: ['aiAgentAgents'],
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    queryFn: () => apiClient.get<any>('/admin/ai-agent/agents'),
+    queryFn: () => apiClient.get<any>(adminAiAgentRoutes.agents()),
   });
 
   const { data: configData } = useQuery({
     queryKey: ['aiAgentConfig'],
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    queryFn: () => apiClient.get<any>('/admin/ai-agent/config'),
+    queryFn: () => apiClient.get<any>(adminAiAgentRoutes.config()),
   });
 
   const llmConfig = configData?.config?.system?.llm;
 
   const toggleAgentMutation = useMutation({
     mutationFn: ({ type, enabled }: { type: string; enabled: boolean }) =>
-      apiClient.put(`${API_ROUTES.ADMIN}/ai-agent/agents/${type}/toggle`, { enabled }),
+      apiClient.put(adminAiAgentRoutes.agentToggle(type), { enabled }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['aiAgentAgents'] });
       toast.success(t('agentUpdated'));

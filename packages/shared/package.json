@@ -6,29 +6,40 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
       "require": "./dist/index.js",
-      "default": "./src/index.ts"
+      "default": "./dist/index.js"
     },
     "./types": {
-      "types": "./dist/types/index.d.ts",
+      "types": "./src/types/index.ts",
+      "import": "./src/types/index.ts",
       "require": "./dist/types/index.js",
-      "default": "./src/types/index.ts"
+      "default": "./dist/types/index.js"
     },
     "./constants": {
-      "types": "./dist/constants/index.d.ts",
+      "types": "./src/constants/index.ts",
+      "import": "./src/constants/index.ts",
       "require": "./dist/constants/index.js",
-      "default": "./src/constants/index.ts"
+      "default": "./dist/constants/index.js"
     },
     "./utils": {
-      "types": "./dist/utils/index.d.ts",
+      "types": "./src/utils/index.ts",
+      "import": "./src/utils/index.ts",
       "require": "./dist/utils/index.js",
-      "default": "./src/utils/index.ts"
+      "default": "./dist/utils/index.js"
     },
     "./scoring": {
-      "types": "./dist/scoring/index.d.ts",
+      "types": "./src/scoring/index.ts",
+      "import": "./src/scoring/index.ts",
       "require": "./dist/scoring/index.js",
-      "default": "./src/scoring/index.ts"
+      "default": "./dist/scoring/index.js"
+    },
+    "./schemas": {
+      "types": "./src/schemas/index.ts",
+      "import": "./src/schemas/index.ts",
+      "require": "./dist/schemas/index.js",
+      "default": "./dist/schemas/index.js"
     }
   },
   "scripts": {
@@ -37,5 +48,8 @@
   },
   "devDependencies": {
     "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "zod": "3.23.8"
   }
 }

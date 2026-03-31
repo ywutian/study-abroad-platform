@@ -36,6 +36,7 @@ export enum ToolName {
   // 案例工具
   SEARCH_CASES = 'search_cases',
   FIND_SIMILAR_CASES = 'find_similar_cases',
+  FIND_SIMILAR_APPLICANTS = 'find_similar_applicants',
 
   // 时间线工具
   GET_DEADLINES = 'get_deadlines',
@@ -80,6 +81,67 @@ export enum ToolName {
   WEB_SEARCH = 'web_search',
   SEARCH_SCHOOL_WEBSITE = 'search_school_website',
 }
+
+// ==================== 工具读写分类 ====================
+
+// Readonly tools: can be safely executed in parallel (no side effects).
+//
+// Classification:
+// - All get_, search_, compare_, analyze_, explain_, interpret_, suggest_, review_, answer_, find_ tools are readonly.
+// - All update_, create_, polish_, optimize_, generate_, brainstorm_ tools are mutable (sequential).
+// - delegate_to_agent is special-cased and does not participate in parallel grouping.
+//
+// New tools must be registered here; unlisted tools default to mutable (sequential).
+export const TOOL_READONLY: ReadonlySet<string> = new Set([
+  // 档案
+  ToolName.GET_PROFILE,
+  // 学校
+  ToolName.SEARCH_SCHOOLS,
+  ToolName.GET_SCHOOL_DETAILS,
+  ToolName.COMPARE_SCHOOLS,
+  // 文书（读操作）
+  ToolName.GET_ESSAYS,
+  ToolName.REVIEW_ESSAY,
+  ToolName.SEARCH_ESSAY_PROMPTS,
+  // 选校（分析）
+  ToolName.RECOMMEND_SCHOOLS,
+  ToolName.ANALYZE_ADMISSION_CHANCE,
+  // 案例
+  ToolName.SEARCH_CASES,
+  ToolName.FIND_SIMILAR_CASES,
+  ToolName.FIND_SIMILAR_APPLICANTS,
+  // 时间线（读操作）
+  ToolName.GET_DEADLINES,
+  ToolName.GET_PERSONAL_EVENTS,
+  // 测评
+  ToolName.GET_ASSESSMENT_RESULTS,
+  ToolName.INTERPRET_ASSESSMENT,
+  ToolName.SUGGEST_ACTIVITIES_FROM_ASSESSMENT,
+  // 论坛
+  ToolName.SEARCH_FORUM_POSTS,
+  ToolName.GET_POPULAR_DISCUSSIONS,
+  ToolName.ANSWER_FORUM_QUESTION,
+  // 案例预测
+  ToolName.EXPLAIN_CASE_RESULT,
+  ToolName.ANALYZE_PREDICTION_ACCURACY,
+  ToolName.COMPARE_CASE_WITH_PROFILE,
+  ToolName.ANALYZE_INTL_COMPETITIVENESS,
+  // 预测数据
+  ToolName.GET_PREDICTION_HISTORY,
+  ToolName.GET_PREDICTION_DASHBOARD,
+  ToolName.GET_SCHOOL_LIST_PREDICTIONS,
+  // 排名
+  ToolName.ANALYZE_PROFILE_RANKING,
+  ToolName.SUGGEST_PROFILE_IMPROVEMENTS,
+  ToolName.COMPARE_WITH_ADMITTED_PROFILES,
+  // 简历（读操作）
+  ToolName.GET_RESUME_LIST,
+  ToolName.GET_RESUME_DETAILS,
+  ToolName.REVIEW_RESUME,
+  // 外部搜索
+  ToolName.WEB_SEARCH,
+  ToolName.SEARCH_SCHOOL_WEBSITE,
+]);
 
 // ==================== 工具定义 ====================
 
@@ -372,7 +434,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     name: ToolName.ANALYZE_ADMISSION_CHANCE,
     description:
-      '分析用户申请某所学校的录取概率。当用户询问某所学校的录取机会或"我能不能进 XX"时使用。支持通过 schoolId 或 schoolName 查询。返回录取概率评估、优劣势分析和建议。不要用于多校推荐（请用 recommend_schools）。',
+      '分析用户申请某所学校的录取概率。当用户询问某所学校的录取机会或"我能不能进 XX"时使用。注意：此工具实时计算较耗时，优先使用 get_prediction_history 读取已有预测结果。仅当用户明确要求重新分析、或 get_prediction_history 无该校数据时才调用。支持通过 schoolId 或 schoolName 查询。返回录取概率评估、优劣势分析和建议。不要用于多校推荐（请用 recommend_schools）。',
     parameters: {
       type: 'object',
       properties: {
@@ -393,7 +455,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     name: ToolName.SEARCH_CASES,
     description:
-      '搜索历史录取案例。当用户想了解类似背景的真实申请结果、录取数据时使用。支持按学校、专业、年份、GPA 范围筛选。返回匹配的案例列表（含背景和录取结果）。不要用于分析用户自己的录取概率（请用 analyze_admission_chance）。',
+      '搜索历史录取案例。当用户指定了特定筛选条件（学校名、专业、年份、GPA 范围等）来查找案例时使用。返回匹配的案例列表（含背景和录取结果）。不要用于"帮我找相似案例"这类基于用户档案的自动匹配（请用 find_similar_cases）。不要用于分析用户自己的录取概率（请用 analyze_admission_chance）。',
     parameters: {
       type: 'object',
       properties: {
@@ -420,7 +482,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     name: ToolName.FIND_SIMILAR_CASES,
     description:
-      '根据用户档案自动查找背景相似的录取案例。当用户想看"和我背景差不多的人申请了哪些学校"时使用。自动读取用户 GPA 范围和目标专业进行匹配。返回相似案例列表（含结构化活动、奖项、成绩摘要）。不要用于搜索指定学校的案例（请用 search_cases）。',
+      '根据用户档案自动查找背景相似的录取案例。当用户想基于自己的背景自动匹配（如"和我背景差不多的人申请了哪些学校"）时使用。自动读取用户 GPA 范围和目标专业进行匹配。返回相似案例列表（含结构化活动、奖项、成绩摘要）。不要用于按指定条件搜索案例（请用 search_cases）。',
     parameters: {
       type: 'object',
       properties: {
@@ -431,6 +493,31 @@ export const TOOLS: ToolDefinition[] = [
         limit: {
           type: 'number',
           description: '返回数量限制（默认10，最大20）',
+        },
+      },
+      required: [],
+    },
+  },
+
+  {
+    name: ToolName.FIND_SIMILAR_APPLICANTS,
+    description:
+      '通过多维相似度评分查找与用户背景最相似的申请者（含录取和拒绝案例）。使用 GPA、标化成绩、国籍、课程体系、高中类型进行综合匹配，每个案例返回相似度分数。适合分析"和我背景类似的人录取情况如何"。与 find_similar_cases 的区别：本工具使用加权相似度评分，返回排序后的结果和录取统计摘要。',
+    parameters: {
+      type: 'object',
+      properties: {
+        schoolName: {
+          type: 'string',
+          description: '限定学校名称（可选）',
+        },
+        limit: {
+          type: 'number',
+          description: '返回数量限制（默认15，最大30）',
+        },
+        includeRejected: {
+          type: 'boolean',
+          description:
+            '是否包含被拒案例（默认 true，设为 false 仅查看录取案例）',
         },
       },
       required: [],
@@ -746,7 +833,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     name: ToolName.ANALYZE_INTL_COMPETITIVENESS,
     description:
-      'Analyze admission competitiveness for international students from a specific country at a given school. Returns nationality-specific and overall international admit rates. Use when a user asks about competitiveness for applicants from a particular country.',
+      '分析国际生在特定学校的录取竞争力。当用户询问作为某国国际生在特定学校的竞争力、国际生录取率时使用。返回该国籍申请者的录取率和整体国际生录取率对比。Analyze admission competitiveness for international students from a specific country at a given school.',
     parameters: {
       type: 'object',
       properties: {
@@ -967,7 +1054,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     name: ToolName.WEB_SEARCH,
     description:
-      '搜索互联网获取最新信息。当用户询问留学政策、签证动态、申请趋势等需要实时信息的问题时使用。返回搜索结果摘要和来源链接。不要用于查询学校官方信息（请用 search_school_website）。',
+      '搜索互联网获取最新信息。仅当需要跨学校的通用时效性信息（留学政策、签证动态、申请趋势、排名变化等）且本地数据库工具无法回答时使用。返回搜索结果摘要和来源链接。不要用于查询特定学校的官方信息（请用 search_school_website）。不要用于查询数据库已有的学校/案例/档案数据。',
     parameters: {
       type: 'object',
       properties: {
@@ -987,7 +1074,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     name: ToolName.SEARCH_SCHOOL_WEBSITE,
     description:
-      '搜索学校官方网站获取权威信息。当需要确认学校官方的截止日期、文书题目、录取要求、学费等信息时使用。自动限定到学校官网域名。返回官网搜索结果和来源链接。不要用于通用互联网搜索（请用 web_search）。',
+      '搜索特定学校的官方网站获取权威信息。当需要确认某所学校官方的截止日期、文书题目、录取要求、学费等最新信息时使用。自动限定到学校官网域名。返回官网搜索结果和来源链接。不要用于跨学校的通用搜索（请用 web_search）。优先使用 get_school_details / get_deadlines 查询本地数据库，仅当需要官网最新信息时才使用此工具。',
     parameters: {
       type: 'object',
       properties: {

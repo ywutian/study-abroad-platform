@@ -6,7 +6,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     <div className="min-h-dvh flex flex-col bg-background">
       <Header />
       <PageTransitionWrapper className="flex-1">
-        <main className="py-6 sm:py-8 pb-20 md:pb-8">{children}</main>
+        <main className="py-6 sm:py-8 pb-20 md:pb-8 overflow-x-hidden">{children}</main>
       </PageTransitionWrapper>
       <FloatingChat />
       <MobileTabBar />

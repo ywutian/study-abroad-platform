@@ -29,7 +29,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Check, X, Loader2 } from 'lucide-react';
 
@@ -62,12 +62,12 @@ export function SuggestionsTab() {
 
   const { data: suggestions, isLoading } = useQuery({
     queryKey: ['adminHsSuggestions'],
-    queryFn: () => apiClient.get<Suggestion[]>('/admin/high-schools/suggestions'),
+    queryFn: () => apiClient.get<Suggestion[]>(adminRoutes.highSchoolsSuggestions()),
   });
 
   const approveMutation = useMutation({
     mutationFn: ({ id, type }: { id: string; type: string }) =>
-      apiClient.post(`${API_ROUTES.ADMIN}/high-schools/suggestions/${id}/approve`, { type }),
+      apiClient.post(adminRoutes.highSchoolsSuggestionApprove(id), { type }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminHsSuggestions'] });
       queryClient.invalidateQueries({ queryKey: ['adminHighSchools'] });
@@ -77,8 +77,7 @@ export function SuggestionsTab() {
   });
 
   const rejectMutation = useMutation({
-    mutationFn: (id: string) =>
-      apiClient.post(`${API_ROUTES.ADMIN}/high-schools/suggestions/${id}/reject`),
+    mutationFn: (id: string) => apiClient.post(adminRoutes.highSchoolsSuggestionReject(id)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminHsSuggestions'] });
       toast.success(t('suggestions.rejectSuccess'));

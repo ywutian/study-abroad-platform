@@ -20,6 +20,7 @@ type MockPrismaMemory = {
 type MockPrismaService = {
   memory: MockPrismaMemory;
   $executeRaw: jest.Mock;
+  $transaction: jest.Mock;
 };
 
 describe('MemoryDecayService', () => {
@@ -49,6 +50,7 @@ describe('MemoryDecayService', () => {
         aggregate: jest.fn(),
       },
       $executeRaw: jest.fn().mockResolvedValue(0),
+      $transaction: jest.fn().mockResolvedValue([]),
     };
 
     mockScorerService = {

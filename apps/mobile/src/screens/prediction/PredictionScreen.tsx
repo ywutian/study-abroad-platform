@@ -26,6 +26,7 @@ import {
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { useColors, withOpacity, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { API_ROUTES, profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
 
@@ -84,7 +85,7 @@ export default function PredictionScreen() {
 
   const reportMutation = useMutation({
     mutationFn: (data: { schoolId: string; result: AdmissionResult }) =>
-      apiClient.post('/predictions/report-result', data),
+      apiClient.post(`${API_ROUTES.PREDICTIONS}/report-result`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['predictions'] });
       setReportModalVisible(false);
@@ -106,7 +107,7 @@ export default function PredictionScreen() {
   // 获取用户档案完整度
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ['profile'],
-    queryFn: () => apiClient.get<{ completeness?: number }>('/profiles/me'),
+    queryFn: () => apiClient.get<{ completeness?: number }>(profileRoutes.me()),
     enabled: isAuthenticated,
   });
 
@@ -117,7 +118,7 @@ export default function PredictionScreen() {
     refetch,
   } = useQuery({
     queryKey: ['predictions', 'dashboard'],
-    queryFn: () => apiClient.get<DashboardResponse>('/predictions/dashboard'),
+    queryFn: () => apiClient.get<DashboardResponse>(`${API_ROUTES.PREDICTIONS}/dashboard`),
     enabled: isAuthenticated,
   });
 
@@ -125,7 +126,7 @@ export default function PredictionScreen() {
 
   // 运行预测
   const predictMutation = useMutation({
-    mutationFn: (schoolIds: string[]) => apiClient.post('/predictions', { schoolIds }),
+    mutationFn: (schoolIds: string[]) => apiClient.post(API_ROUTES.PREDICTIONS, { schoolIds }),
     onSuccess: () => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       refetch();

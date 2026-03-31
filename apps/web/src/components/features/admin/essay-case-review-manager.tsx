@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { PaginationControls } from '@/app/[locale]/(main)/admin/_components/pagination-controls';
@@ -75,7 +75,7 @@ export function EssayCaseReviewManager() {
   // 获取统计数据
   const { data: stats } = useQuery({
     queryKey: ['adminCaseStats'],
-    queryFn: () => apiClient.get<CaseAdminStats>('/admin/cases/stats'),
+    queryFn: () => apiClient.get<CaseAdminStats>(adminRoutes.casesStats()),
   });
 
   // 获取待审核列表
@@ -83,7 +83,7 @@ export function EssayCaseReviewManager() {
     queryKey: ['pendingEssays', search, page],
     queryFn: () =>
       apiClient.get<{ data: CaseEssay[]; total: number; totalPages?: number }>(
-        '/admin/cases/pending-essays',
+        adminRoutes.casesPendingEssays(),
         {
           params: { pageSize: PAGE_SIZE, page, ...(search && { search }) },
         }
@@ -100,7 +100,7 @@ export function EssayCaseReviewManager() {
       id: string;
       action: 'APPROVE' | 'REJECT';
       reason?: string;
-    }) => apiClient.post(`${API_ROUTES.ADMIN}/cases/${id}/review-essay`, { action, reason }),
+    }) => apiClient.post(adminRoutes.caseReviewEssay(id), { action, reason }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingEssays'] });
       queryClient.invalidateQueries({ queryKey: ['adminCaseStats'] });
@@ -114,7 +114,7 @@ export function EssayCaseReviewManager() {
   const batchReviewMutation = useMutation({
     mutationFn: ({ ids, action }: { ids: string[]; action: 'APPROVE' | 'REJECT' }) =>
       apiClient.post<{ success: number; failed: Array<{ id: string; error: string }> }>(
-        '/admin/cases/batch-verify',
+        adminRoutes.casesBatchVerify(),
         {
           ids,
           action,

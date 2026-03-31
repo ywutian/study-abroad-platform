@@ -12,6 +12,7 @@ import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Loading, ProgressBar } from '@/components/ui';
+import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 
@@ -37,14 +38,14 @@ export default function StatsView({ onBack }: StatsViewProps) {
 
   const { data: stats, isLoading: statsLoading } = useQuery<SwipeStatsDto>({
     queryKey: ['swipe', 'stats'],
-    queryFn: () => apiClient.get<SwipeStatsDto>('/halls/swipe/stats'),
+    queryFn: () => apiClient.get<SwipeStatsDto>(`${API_ROUTES.HALLS}/swipe/stats`),
     staleTime: 30_000,
   });
 
   const { data: leaderboard, isLoading: leaderboardLoading } = useQuery<LeaderboardEntryDto[]>({
     queryKey: ['swipe', 'leaderboard'],
     queryFn: () =>
-      apiClient.get<LeaderboardEntryDto[]>('/halls/swipe/leaderboard', {
+      apiClient.get<LeaderboardEntryDto[]>(`${API_ROUTES.HALLS}/swipe/leaderboard`, {
         params: { limit: 20 },
       }),
     staleTime: 60_000,

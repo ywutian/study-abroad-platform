@@ -193,9 +193,20 @@ export class OpenAIProvider implements ILLMProvider {
           : request.toolChoice || 'auto';
     }
 
-    // Pass through provider-specific options
+    // Pass through provider-specific options (denylist reserved keys to prevent overwrites)
     if (request.providerOptions) {
-      Object.assign(body, request.providerOptions);
+      const reserved = new Set([
+        'model',
+        'messages',
+        'tools',
+        'tool_choice',
+        'stream',
+      ]);
+      for (const [key, value] of Object.entries(request.providerOptions)) {
+        if (!reserved.has(key)) {
+          body[key] = value;
+        }
+      }
     }
 
     return body;

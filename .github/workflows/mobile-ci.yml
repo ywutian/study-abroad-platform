@@ -14,7 +14,7 @@ on:
 
 jobs:
   lint-and-test:
-    name: Lint & Test
+    name: Lint, Test & Validate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -26,17 +26,37 @@ jobs:
           node-version: 20
           cache: 'pnpm'
 
+      - uses: dtinth/setup-github-actions-caching-for-turbo@v1
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Lint
-        run: pnpm --filter study-abroad-mobile lint
+      - name: Build shared package
+        run: pnpm --filter @study-abroad/shared build
 
-      - name: TypeCheck
-        run: pnpm --filter study-abroad-mobile exec tsc --noEmit
+      - name: Lint & TypeCheck & Test (parallel)
+        run: |
+          pnpm --filter study-abroad-mobile lint &
+          PID_LINT=$!
+          pnpm --filter study-abroad-mobile exec tsc --noEmit &
+          PID_TSC=$!
+          pnpm --filter study-abroad-mobile exec jest --ci --coverage --passWithNoTests --forceExit &
+          PID_TEST=$!
+          wait $PID_LINT || exit 1
+          wait $PID_TSC || exit 1
+          wait $PID_TEST || exit 1
 
-      - name: Unit Tests
-        run: pnpm --filter study-abroad-mobile exec jest --ci --coverage --passWithNoTests --forceExit
+      - name: Validate Expo config
+        run: npx expo-doctor@latest || true
+        working-directory: apps/mobile
+
+      - name: Verify JS bundle
+        run: npx expo export --platform web --output-dir /tmp/expo-export
+        working-directory: apps/mobile
+
+      - name: Dependency audit
+        run: pnpm audit --audit-level=high --registry=https://registry.npmjs.org
+        continue-on-error: true
 
       - name: Upload Coverage
         if: always()

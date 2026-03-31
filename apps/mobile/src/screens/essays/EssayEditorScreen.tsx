@@ -27,6 +27,7 @@ import * as Haptics from 'expo-haptics';
 import { AnimatedButton, Loading, Modal, Badge } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { useColors, withOpacity, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { essayAiRoutes, profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 
 interface Essay {
@@ -115,7 +116,7 @@ export default function EssayEditorScreen() {
   // Load essay
   const { data: essay, isLoading } = useQuery({
     queryKey: ['essay', id],
-    queryFn: () => apiClient.get<Essay>(`/profiles/me/essays/${id}`),
+    queryFn: () => apiClient.get<Essay>(`${profileRoutes.me()}/essays/${id}`),
     enabled: !isNew && !!id,
   });
 
@@ -147,13 +148,13 @@ export default function EssayEditorScreen() {
   const saveMutation = useMutation({
     mutationFn: (data: { title: string; content: string }) => {
       if (isNew) {
-        return apiClient.post('/profiles/me/essays', {
+        return apiClient.post(`${profileRoutes.me()}/essays`, {
           ...data,
           type: 'personal_statement',
           status: 'draft',
         });
       }
-      return apiClient.put(`/profiles/me/essays/${id}`, data);
+      return apiClient.put(`${profileRoutes.me()}/essays/${id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['essays'] });
@@ -168,7 +169,7 @@ export default function EssayEditorScreen() {
   // AI mutations
   const reviewMutation = useMutation({
     mutationFn: () =>
-      apiClient.post<AIReviewResult>('/essay-ai/review', { essayId: id }, { timeout: 60000 }),
+      apiClient.post<AIReviewResult>(essayAiRoutes.review(), { essayId: id }, { timeout: 60000 }),
     onSuccess: (data) => {
       setAiResult(data);
       setActiveTool('review');
@@ -178,7 +179,7 @@ export default function EssayEditorScreen() {
 
   const polishMutation = useMutation({
     mutationFn: () =>
-      apiClient.post<AIPolishResult>('/essay-ai/polish', { essayId: id }, { timeout: 60000 }),
+      apiClient.post<AIPolishResult>(essayAiRoutes.polish(), { essayId: id }, { timeout: 60000 }),
     onSuccess: (data) => {
       setAiResult(data);
       setActiveTool('polish');
@@ -189,7 +190,7 @@ export default function EssayEditorScreen() {
   const brainstormMutation = useMutation({
     mutationFn: () =>
       apiClient.post<AIBrainstormResult>(
-        '/essay-ai/brainstorm',
+        essayAiRoutes.brainstorm(),
         { topic: title || content.slice(0, 200) },
         { timeout: 60000 }
       ),

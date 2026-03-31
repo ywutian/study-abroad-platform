@@ -439,7 +439,7 @@ ${JSON.stringify(activitiesJson, null, 2)}`;
     ];
 
     try {
-      const result = await this.llmService.chatSimple(messages, {
+      const result = await this.llmService.chatSimpleGuarded(messages, {
         temperature: 0.3,
       });
       const parsed = extractJsonFromLlm<{
@@ -554,7 +554,7 @@ ${JSON.stringify(activitiesJson, null, 2)}`;
       },
     ];
 
-    const response = await this.llmService.chatSimple(messages, {
+    const response = await this.llmService.chatSimpleGuarded(messages, {
       temperature: 0.7,
       maxTokens: 300,
     });
@@ -635,7 +635,7 @@ ${JSON.stringify(activitiesJson, null, 2)}`;
 
     let response: string;
     try {
-      response = await this.llmService.chatSimple(messages, {
+      response = await this.llmService.chatSimpleGuarded(messages, {
         temperature: 0.7,
         maxTokens: 300,
       });

@@ -14,6 +14,7 @@ describe('ResumeAiService', () => {
 
   const mockLLMService = {
     chatSimple: jest.fn(),
+    chatSimpleGuarded: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -105,7 +106,7 @@ describe('ResumeAiService', () => {
         summary: 'Solid resume with room for improvement.',
       };
 
-      mockLLMService.chatSimple.mockResolvedValue('{}');
+      mockLLMService.chatSimpleGuarded.mockResolvedValue('{}');
       (extractJsonFromLlm as jest.Mock).mockReturnValue(parsedResult);
 
       const result = await service.reviewResume(
@@ -121,7 +122,7 @@ describe('ResumeAiService', () => {
       expect(result.sectionFeedback[0].sectionId).toBe('s1'); // mapped via sectionType
       expect(result.bulletQuality.actionVerbUsage).toBe(80);
       expect(result.summary).toBe('Solid resume with room for improvement.');
-      expect(mockLLMService.chatSimple).toHaveBeenCalledWith(
+      expect(mockLLMService.chatSimpleGuarded).toHaveBeenCalledWith(
         expect.arrayContaining([
           expect.objectContaining({ role: 'system' }),
           expect.objectContaining({ role: 'user' }),
@@ -131,7 +132,9 @@ describe('ResumeAiService', () => {
     });
 
     it('should throw BadRequestException when LLM call fails', async () => {
-      mockLLMService.chatSimple.mockRejectedValue(new Error('API error'));
+      mockLLMService.chatSimpleGuarded.mockRejectedValue(
+        new Error('API error'),
+      );
 
       await expect(
         service.reviewResume(mockResumeData, {}, 'en'),
@@ -139,7 +142,7 @@ describe('ResumeAiService', () => {
     });
 
     it('should handle missing fields in parsed result gracefully', async () => {
-      mockLLMService.chatSimple.mockResolvedValue('{}');
+      mockLLMService.chatSimpleGuarded.mockResolvedValue('{}');
       (extractJsonFromLlm as jest.Mock).mockReturnValue({});
 
       const result = await service.reviewResume(mockResumeData, {}, 'zh');
@@ -165,7 +168,7 @@ describe('ResumeAiService', () => {
         newSuggestions: ['Consider adding leadership bullet'],
       };
 
-      mockLLMService.chatSimple.mockResolvedValue('{}');
+      mockLLMService.chatSimpleGuarded.mockResolvedValue('{}');
       (extractJsonFromLlm as jest.Mock).mockReturnValue(parsedResult);
 
       const result = await service.optimizeResumeBullets(
@@ -180,7 +183,7 @@ describe('ResumeAiService', () => {
     });
 
     it('should throw BadRequestException when LLM call fails', async () => {
-      mockLLMService.chatSimple.mockRejectedValue(new Error('timeout'));
+      mockLLMService.chatSimpleGuarded.mockRejectedValue(new Error('timeout'));
 
       await expect(
         service.optimizeResumeBullets(
@@ -206,7 +209,7 @@ describe('ResumeAiService', () => {
         exampleBullets: ['Led research on ML models'],
       };
 
-      mockLLMService.chatSimple.mockResolvedValue('{}');
+      mockLLMService.chatSimpleGuarded.mockResolvedValue('{}');
       (extractJsonFromLlm as jest.Mock).mockReturnValue(parsedResult);
 
       const result = await service.suggestSectionContent(
@@ -222,7 +225,7 @@ describe('ResumeAiService', () => {
     });
 
     it('should throw BadRequestException when LLM call fails', async () => {
-      mockLLMService.chatSimple.mockRejectedValue(new Error('fail'));
+      mockLLMService.chatSimpleGuarded.mockRejectedValue(new Error('fail'));
 
       await expect(
         service.suggestSectionContent(
@@ -234,7 +237,7 @@ describe('ResumeAiService', () => {
     });
 
     it('should handle empty parsed result gracefully', async () => {
-      mockLLMService.chatSimple.mockResolvedValue('{}');
+      mockLLMService.chatSimpleGuarded.mockResolvedValue('{}');
       (extractJsonFromLlm as jest.Mock).mockReturnValue({});
 
       const result = await service.suggestSectionContent(

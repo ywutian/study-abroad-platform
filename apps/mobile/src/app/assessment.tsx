@@ -31,6 +31,7 @@ import {
   Progress,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
+import { API_ROUTES, assessmentRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 
@@ -161,7 +162,7 @@ export default function AssessmentPage() {
     refetch: refetchQuiz,
   } = useQuery<AssessmentDto>({
     queryKey: ['assessment', selectedType],
-    queryFn: () => apiClient.get(`/assessments/${selectedType}`),
+    queryFn: () => apiClient.get(`${API_ROUTES.ASSESSMENTS}/${selectedType}`),
     enabled: !!selectedType && viewState === 'quiz',
     staleTime: 10 * 60_000,
   });
@@ -172,13 +173,13 @@ export default function AssessmentPage() {
     refetch: refetchHist,
   } = useQuery<AssessmentResultDto[]>({
     queryKey: ['assessment', 'history'],
-    queryFn: () => apiClient.get('/assessments/history/me'),
+    queryFn: () => apiClient.get(`${API_ROUTES.ASSESSMENTS}/history/me`),
     enabled: viewState === 'history',
     staleTime: 5 * 60_000,
   });
 
   const submitMut = useMutation<AssessmentResultDto, Error, SubmitAssessmentDto>({
-    mutationFn: (dto) => apiClient.post<AssessmentResultDto>('/assessments', dto),
+    mutationFn: (dto) => apiClient.post<AssessmentResultDto>(API_ROUTES.ASSESSMENTS, dto),
     onSuccess: (data) => {
       setResult(data);
       setViewState('result');

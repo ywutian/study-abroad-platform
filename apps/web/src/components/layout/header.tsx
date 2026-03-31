@@ -49,6 +49,7 @@ import { ClientOnly } from '@/components/common/client-only';
 import { MobileNav } from './mobile-nav';
 import { NotificationCenter, HelpCenter } from '@/components/features';
 import { useAuthStore } from '@/stores';
+import { useOnboardingProgress } from '@/hooks/use-onboarding-progress';
 import { localeNames, type Locale } from '@/lib/i18n/config';
 import { useRouter } from '@/lib/i18n/navigation';
 import { useParams } from 'next/navigation';
@@ -443,6 +444,9 @@ export function Header() {
   });
   const unreadCount = unreadData?.count || 0;
 
+  // Onboarding progress (for gentle reminder dot on Dashboard nav)
+  const { showIndicator: showOnboardingDot } = useOnboardingProgress();
+
   // Primary navigation - core features (rendered during SSR for SEO)
   const mainNavItems = [
     { href: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
@@ -622,6 +626,9 @@ export function Header() {
                     )}
                   />
                   <span>{item.label}</span>
+                  {item.href === '/dashboard' && showOnboardingDot && !active && (
+                    <span className="ml-0.5 h-2 w-2 rounded-full bg-amber-500 dark:bg-amber-400 animate-pulse" />
+                  )}
                   {active && (
                     <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-primary" />
                   )}

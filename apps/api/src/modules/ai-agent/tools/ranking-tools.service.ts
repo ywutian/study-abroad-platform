@@ -11,7 +11,7 @@ import { LLMService } from '../core/llm.service';
 import { HallService } from '../../hall/hall.service';
 import { ProfileLoaderHelper } from './helpers/profile-loader.helper';
 import { SchoolLookupHelper } from './helpers/school-lookup.helper';
-import { extractJsonFromLlm } from './helpers/llm-json.helper';
+import { extractJsonFromLlm } from '../../../common/utils/llm-json.util';
 import { formatHighSchoolContext } from './helpers/education-context.helper';
 import { ToolHandler, IToolHandlerProvider } from './tool-handler.interface';
 import { CASE_REVIEW_APPROVED_WHERE } from '../../../common/constants/prisma-selects';

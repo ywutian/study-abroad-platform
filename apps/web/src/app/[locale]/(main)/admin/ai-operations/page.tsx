@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from '@/lib/i18n/navigation';
 import dynamic from 'next/dynamic';
-import { Bot, Activity, Settings, BarChart3, ShieldCheck, Users } from 'lucide-react';
+import { Bot, Activity, Settings, BarChart3, ShieldCheck, Users, Terminal } from 'lucide-react';
 
 import { PageHeader } from '@/components/layout';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -30,8 +30,19 @@ const EngagementTab = dynamic(
   () => import('./_components/engagement-tab').then((m) => ({ default: m.EngagementTab })),
   { ssr: false }
 );
+const LlmCallsTab = dynamic(
+  () => import('./_components/llm-calls-tab').then((m) => ({ default: m.LlmCallsTab })),
+  { ssr: false }
+);
 
-const VALID_TABS = ['overview', 'config', 'performance', 'reliability', 'engagement'] as const;
+const VALID_TABS = [
+  'overview',
+  'config',
+  'performance',
+  'reliability',
+  'engagement',
+  'llm-calls',
+] as const;
 type AiOpsTab = (typeof VALID_TABS)[number];
 
 const TAB_CONFIG = [
@@ -40,6 +51,7 @@ const TAB_CONFIG = [
   { value: 'performance' as const, icon: BarChart3, labelKey: 'admin.aiOps.tabs.performance' },
   { value: 'reliability' as const, icon: ShieldCheck, labelKey: 'admin.aiOps.tabs.reliability' },
   { value: 'engagement' as const, icon: Users, labelKey: 'admin.aiOps.tabs.engagement' },
+  { value: 'llm-calls' as const, icon: Terminal, labelKey: 'admin.aiOps.tabs.llmCalls' },
 ];
 
 export default function AdminAiOperationsPage() {
@@ -94,6 +106,9 @@ export default function AdminAiOperationsPage() {
         </TabsContent>
         <TabsContent value="engagement" className="mt-4">
           <EngagementTab />
+        </TabsContent>
+        <TabsContent value="llm-calls" className="mt-4">
+          <LlmCallsTab />
         </TabsContent>
       </Tabs>
     </>

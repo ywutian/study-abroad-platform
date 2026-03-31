@@ -4,7 +4,9 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { router, type Href } from 'expo-router';
+import { deepLinkPaths } from '@/lib/linking';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
+import { API_ROUTES, notificationRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useNotificationStore } from '@/stores/notification';
 
@@ -128,7 +130,7 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
  */
 async function registerTokenWithBackend(token: string): Promise<void> {
   const platform: 'ios' | 'android' = Platform.OS === 'ios' ? 'ios' : 'android';
-  await apiClient.post('/notifications/push-token', { token, platform });
+  await apiClient.post(`${API_ROUTES.NOTIFICATIONS}/push-token`, { token, platform });
 }
 
 /**
@@ -158,7 +160,7 @@ function navigateToNotification(notification: Notification): void {
   switch (type) {
     case 'NEW_MESSAGE':
       if (relatedId) {
-        router.push(`/chat/${relatedId}` as Href);
+        router.push(deepLinkPaths.chat(relatedId) as Href);
       }
       break;
 
@@ -177,11 +179,15 @@ function navigateToNotification(notification: Notification): void {
 
     case 'POST_REPLY':
     case 'POST_LIKE':
-      router.push('/forum' as Href);
+      if (relatedId) {
+        router.push(deepLinkPaths.forum(relatedId) as Href);
+      } else {
+        router.push('/forum' as Href);
+      }
       break;
 
     case 'DEADLINE_REMINDER':
-      router.push('/timeline' as Href);
+      router.push(deepLinkPaths.timeline() as Href);
       break;
 
     // For all other types (VERIFICATION_*, POINTS_EARNED, LEVEL_UP,
@@ -221,7 +227,7 @@ export function useNotifications() {
     refetch: refreshNotifications,
   } = useQuery<Notification[]>({
     queryKey: QUERY_KEYS.notifications,
-    queryFn: () => apiClient.get<Notification[]>('/notifications'),
+    queryFn: () => apiClient.get<Notification[]>(API_ROUTES.NOTIFICATIONS),
     staleTime: 30_000, // 30 seconds
   });
 
@@ -230,7 +236,7 @@ export function useNotifications() {
   // -------------------------------------------------------------------------
   const { data: unreadCountData, refetch: refetchUnreadCount } = useQuery<UnreadCountResponse>({
     queryKey: QUERY_KEYS.unreadCount,
-    queryFn: () => apiClient.get<UnreadCountResponse>('/notifications/unread-count'),
+    queryFn: () => apiClient.get<UnreadCountResponse>(`${API_ROUTES.NOTIFICATIONS}/unread-count`),
     staleTime: 15_000, // 15 seconds
   });
 
@@ -245,7 +251,8 @@ export function useNotifications() {
   // Mutations
   // -------------------------------------------------------------------------
   const markAsReadMutation = useMutation({
-    mutationFn: (notificationId: string) => apiClient.post(`/notifications/${notificationId}/read`),
+    mutationFn: (notificationId: string) =>
+      apiClient.post(notificationRoutes.markRead(notificationId)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.notifications });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.unreadCount });
@@ -253,7 +260,7 @@ export function useNotifications() {
   });
 
   const markAllAsReadMutation = useMutation({
-    mutationFn: () => apiClient.post('/notifications/read-all'),
+    mutationFn: () => apiClient.post(notificationRoutes.readAll()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.notifications });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.unreadCount });
