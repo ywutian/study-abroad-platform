@@ -26,6 +26,7 @@ import {
   RewriteParagraphDto,
   ContinueWritingDto,
   GenerateOpeningDto,
+  OptimizeActivityDescriptionDto,
 } from './dto';
 import { EssayGalleryService } from './essay-gallery.service';
 import { CurrentUser, Public } from '../../common/decorators';
@@ -124,6 +125,22 @@ export class EssayAiController {
     return this.essayAiService.generateOpening(
       dto.prompt,
       dto.background,
+      user.locale,
+    );
+  }
+
+  @Post('activity-description')
+  @ApiOperation({
+    summary: 'Optimize activity description for Common App 150-char limit',
+  })
+  async optimizeActivityDescription(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: OptimizeActivityDescriptionDto,
+  ) {
+    return this.essayAiService.optimizeActivityDescription(
+      dto.description,
+      dto.activityName,
+      dto.role,
       user.locale,
     );
   }

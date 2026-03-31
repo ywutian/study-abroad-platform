@@ -20,6 +20,7 @@ export enum ApplicationRound {
   ED2 = 'ED2',
   EA = 'EA',
   REA = 'REA',
+  SCEA = 'SCEA',
   RD = 'RD',
   ROLLING = 'Rolling',
 }

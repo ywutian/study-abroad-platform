@@ -31,6 +31,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build shared package
+        run: pnpm --filter @study-abroad/shared build
+
       - name: Lint & TypeCheck & Test (parallel)
         run: |
           pnpm --filter study-abroad-mobile lint &
@@ -44,9 +47,8 @@ jobs:
           wait $PID_TEST || exit 1
 
       - name: Validate Expo config
-        run: npx expo-doctor@latest
+        run: npx expo-doctor@latest || true
         working-directory: apps/mobile
-        continue-on-error: true
 
       - name: Verify JS bundle
         run: npx expo export --platform web --output-dir /tmp/expo-export

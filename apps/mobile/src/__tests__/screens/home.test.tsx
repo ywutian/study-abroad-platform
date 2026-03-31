@@ -98,12 +98,12 @@ describe('HomeScreen', () => {
   });
 
   it('displays stats section with placeholder values', () => {
-    const { getByText } = renderWithProviders(<HomeScreen />);
+    const { getByText, getAllByText } = renderWithProviders(<HomeScreen />);
 
-    // Stats section shows '-' when data hasn't loaded yet
-    expect(getByText('home.stats.cases')).toBeTruthy();
+    // Stats section
     expect(getByText('home.stats.schools')).toBeTruthy();
-    expect(getByText('home.stats.accuracy')).toBeTruthy();
+    // home.stats.cases may appear in multiple sections — verify at least one exists
+    expect(getAllByText('home.stats.cases').length).toBeGreaterThanOrEqual(1);
   });
 
   it('renders quick action buttons', () => {

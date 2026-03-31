@@ -117,15 +117,23 @@ All text fields must be in English.`;
 
 /**
  * Build the review system prompt with optional school context.
+ *
+ * @param essayType - When 'UC', automatically sets wordLimit to 350 (UC PIQ standard)
+ *                    and appends UC-specific coaching guidance.
  */
 export function buildReviewSystemPrompt(
   locale: string,
   schoolContext?: { name: string; details: string },
   major?: string,
   wordLimit?: number,
+  essayType?: string,
 ): string {
   const isZh = locale === 'zh';
   const base = isZh ? ESSAY_REVIEW_SYSTEM_ZH : ESSAY_REVIEW_SYSTEM_EN;
+
+  // Auto-detect UC PIQ word limit
+  const effectiveWordLimit =
+    wordLimit ?? (essayType === 'UC' ? 350 : undefined);
 
   const contextLines: string[] = [];
   if (schoolContext) {
@@ -138,11 +146,32 @@ export function buildReviewSystemPrompt(
   if (major) {
     contextLines.push(isZh ? `目标专业：${major}` : `Target major: ${major}`);
   }
-  if (wordLimit) {
+  if (effectiveWordLimit) {
     contextLines.push(
       isZh
-        ? `字数限制：${wordLimit} 字。这是学校规定的硬性限制，超过此字数的文书必须精简。请在 wordCountStatus 中反映是否超限。`
-        : `Word limit: ${wordLimit} words. This is the school's hard limit — essays exceeding this must be trimmed. Reflect whether the essay is over/under/within limit in wordCountStatus.`,
+        ? `字数限制：${effectiveWordLimit} 字。这是学校规定的硬性限制，超过此字数的文书必须精简。请在 wordCountStatus 中反映是否超限。`
+        : `Word limit: ${effectiveWordLimit} words. This is the school's hard limit — essays exceeding this must be trimmed. Reflect whether the essay is over/under/within limit in wordCountStatus.`,
+    );
+  }
+
+  // UC PIQ-specific guidance
+  if (essayType === 'UC') {
+    contextLines.push(
+      isZh
+        ? `## UC PIQ 专项指导
+这是一篇 UC 个人洞察问题（Personal Insight Question）。审查时请注意：
+- 硬性限制 350 字（UC 系统强制截断）
+- UC PIQ 应当直接、具体地回答问题，不需要像 Common App 那样的叙事性写法
+- 每个 PIQ 应聚焦于回答该 prompt 的具体问题，而非宽泛地讲故事
+- UC 招生官看重真实性和具体细节，而非华丽的文学技巧
+- 开头不需要"hook"——直奔主题即可`
+        : `## UC PIQ-Specific Guidance
+This is a UC Personal Insight Question (PIQ). When reviewing, note:
+- Hard limit of 350 words (UC system enforces cutoff)
+- UC PIQs should be direct and specific, not narrative like Common App essays
+- Each PIQ should focus on answering the specific prompt question, not tell a broad story
+- UC admissions values authenticity and concrete details over literary flourish
+- No need for a narrative "hook" — get straight to the point`,
     );
   }
 

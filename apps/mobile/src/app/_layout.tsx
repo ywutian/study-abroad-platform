@@ -138,6 +138,7 @@ const DETAIL_SCREENS = [
   'peer-review',
   'referral',
   'verification',
+  'notifications',
 ] as const;
 
 const DETAIL_SCREEN_OPTIONS = { title: '', headerBackTitle: '' } as const;

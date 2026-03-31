@@ -258,6 +258,9 @@ describe('PredictionService', () => {
               .mockReturnValue(mockProfileMetrics),
             extractSchoolMetrics: jest.fn().mockReturnValue(mockSchoolMetrics),
             evaluateDataCompleteness: jest.fn().mockReturnValue(0.75),
+            enrichWithEssayQuality: jest
+              .fn()
+              .mockImplementation((input) => Promise.resolve(input)),
           },
         },
         {

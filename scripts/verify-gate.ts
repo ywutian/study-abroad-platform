@@ -133,6 +133,12 @@ function main() {
 
   const results: CheckResult[] = [];
 
+  // 0. Build shared package when mobile/shared affected (CI parity: Metro needs dist/)
+  if (affected.has('shared') || affected.has('mobile')) {
+    console.log('📦 Building shared package (required for mobile bundling)...');
+    results.push(runCheck('build:shared', 'pnpm --filter @study-abroad/shared build'));
+  }
+
   // 1. Typecheck affected apps
   if (affected.has('api')) {
     console.log('🔍 Typecheck: api...');

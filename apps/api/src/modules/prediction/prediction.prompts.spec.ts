@@ -6,13 +6,14 @@ describe('buildMissingDataGuidance', () => {
     activities: [],
     awards: [],
     testScores: [],
-    essays: [],
   };
 
   it('returns empty string when activities are present', () => {
     const profile: ProfileInput = {
       ...baseProfile,
-      activities: [{ name: 'Robotics Club', role: 'President' }],
+      activities: [
+        { name: 'Robotics Club', category: 'ACADEMIC', role: 'President' },
+      ],
     };
     expect(buildMissingDataGuidance(profile, false)).toBe('');
     expect(buildMissingDataGuidance(profile, true)).toBe('');

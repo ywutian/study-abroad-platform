@@ -548,6 +548,10 @@ Manual equivalent: `pnpm prepush`
 - **依赖审计 CVE**：用 `pnpm.overrides` 修复传递依赖的 CVE，注意区分 major 版本范围
 - **E2E 测试**：API 路由重命名/删除时，同步更新 `apps/api/test/*.e2e-spec.ts`
 - **CI workflow**：`pnpm/action-setup@v4` 自动读取 `packageManager` 字段，不要手动指定 `version`
+- **shared 包变更**：修改 `packages/shared` 后必须 `pnpm --filter @study-abroad/shared build` 再验证，因为 Mobile CI 的 Metro bundler + Jest 依赖 `dist/` 输出。`verify-gate.ts` 会自动检测并执行
+- **package.json exports**：`types` + `import` 条件指向 `.ts` 源码（tsc 用），`default` 指向 `dist/*.js`（Metro/Node 用）。**不要**把 `default` 指向 `.ts`（bundler 无法解析），也不要把 `types` 指向 `dist/`（tsc 需要先 build）
+- **Metro package exports**：`metro.config.js` 必须 `unstable_enablePackageExports = true`，否则 workspace 包的子路径（如 `@study-abroad/shared/utils`）无法解析
+- **测试 mock 与 shared 常量**：当 mobile 代码从 hardcoded URL 迁移到 `@study-abroad/shared` 常量后，测试的 `jest.mock('@study-abroad/shared')` 必须提供对应的 route helpers，否则 CI 上 mock 返回 undefined 导致测试失败
 
 ### Code Quality Checks (`check-code-quality.ts`)
 

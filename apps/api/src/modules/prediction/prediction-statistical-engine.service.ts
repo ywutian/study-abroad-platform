@@ -78,6 +78,32 @@ export class PredictionStatisticalEngine {
       probability = Math.min(0.95, probability * roundMultiplier);
     }
 
+    // === Hook factors (G3): Legacy & First-Generation boosts ===
+    // Legacy boost: only when student's legacy school matches the target school
+    if (
+      profile.isLegacy &&
+      profile.legacySchools?.some(
+        (ls) =>
+          ls.toLowerCase() === school.name?.toLowerCase() ||
+          ls.toLowerCase() === school.nameZh?.toLowerCase(),
+      )
+    ) {
+      probability = Math.min(0.95, probability * 1.5);
+    }
+    // First-generation boost
+    if (profile.isFirstGen) {
+      probability = Math.min(0.95, probability * 1.15);
+    }
+
+    // === Need-aware financial aid penalty (G4) ===
+    if (
+      profile.needsFinancialAid &&
+      profile.isInternational &&
+      !school.needBlindInternational
+    ) {
+      probability = probability * 0.75;
+    }
+
     // 生成因素分析
     const factors: PredictionFactor[] = [];
 
@@ -427,6 +453,55 @@ export class PredictionStatisticalEngine {
         detail: isZh
           ? `${school.applicationRound} 轮次通常录取率更高`
           : `${school.applicationRound} round typically has higher acceptance rate`,
+      });
+    }
+
+    // Legacy hook factor (G3)
+    if (
+      profile.isLegacy &&
+      profile.legacySchools?.some(
+        (ls) =>
+          ls.toLowerCase() === school.name?.toLowerCase() ||
+          ls.toLowerCase() === school.nameZh?.toLowerCase(),
+      )
+    ) {
+      factors.push({
+        name: isZh ? '校友遗产' : 'Legacy',
+        impact: 'positive',
+        weight: 0.5,
+        detail: isZh
+          ? '你在该校有校友遗产关系（Legacy），这在录取中通常是一个显著优势'
+          : 'You have a legacy connection at this school, which is typically a significant admissions advantage',
+      });
+    }
+
+    // First-generation factor (G3)
+    if (profile.isFirstGen) {
+      factors.push({
+        name: isZh ? '第一代大学生' : 'First Generation',
+        impact: 'positive',
+        weight: 0.15,
+        detail: isZh
+          ? '作为第一代大学生，许多大学在录取时会给予一定的优势考量'
+          : 'As a first-generation college student, many universities give a modest boost in admissions consideration',
+      });
+    }
+
+    // Need-aware financial aid penalty (G4)
+    if (
+      profile.needsFinancialAid &&
+      profile.isInternational &&
+      !school.needBlindInternational
+    ) {
+      factors.push({
+        name: isZh
+          ? '助学金需求（Need-aware）'
+          : 'Financial Aid Need (Need-aware)',
+        impact: 'negative',
+        weight: -0.25,
+        detail: isZh
+          ? '该校对国际生采用 need-aware 录取政策，申请助学金可能降低录取概率'
+          : 'This school uses need-aware admissions for international students; requesting financial aid may reduce admission probability',
       });
     }
 

@@ -54,6 +54,14 @@ export interface ProfileInput {
     mbtiType?: string;
     hollandCodes?: string[];
   };
+  /** Whether the student has legacy status at any school */
+  isLegacy?: boolean;
+  /** School names where the student has legacy connections */
+  legacySchools?: string[];
+  /** Whether the student is a first-generation college student */
+  isFirstGen?: boolean;
+  /** Essay quality score (0-10) from the latest AI essay review */
+  essayQualityScore?: number;
 }
 
 export interface SchoolInput {
@@ -442,7 +450,7 @@ ${formatHighSchoolContext(profile, true)}
 - 目标专业: ${sanitizeForPrompt(profile.targetMajor || '未确定')}${profile.majorCompetitiveness ? `（该校竞争度: ${profile.majorCompetitiveness.level}/5${profile.majorCompetitiveness.schoolEstimate ? `，预估专业录取率 ~${profile.majorCompetitiveness.schoolEstimate}%` : ''}）` : ''}
 - 活动经历: ${formatActivities(profile.activities, true)}
 - 获奖情况: ${formatAwards(profile.awards, true)}
-${formatAssessmentContext(profile.assessment, true)}${profile.isInternational ? `\n- 申请者身份: 国际生${profile.nationality ? `（${profile.nationality}）` : ''}${profile.educationSystem ? `，${profile.educationSystem}体系` : ''}${profile.needsFinancialAid ? '，需要助学金' : ''}` : ''}
+${formatAssessmentContext(profile.assessment, true)}${profile.isInternational ? `\n- 申请者身份: 国际生${profile.nationality ? `（${profile.nationality}）` : ''}${profile.educationSystem ? `，${profile.educationSystem}体系` : ''}${profile.needsFinancialAid ? '，需要助学金' : ''}` : ''}${profile.isLegacy && profile.legacySchools?.length ? `\n- 校友遗产 (Legacy): ${profile.legacySchools.join(', ')}` : ''}${profile.isFirstGen ? `\n- 第一代大学生: 是` : ''}${profile.essayQualityScore != null ? `\n- 文书质量: ${profile.essayQualityScore}/10（AI 评审）` : ''}
 
 ## 目标学校: ${schoolName}
 - US News 排名: ${school.usNewsRank ? `#${school.usNewsRank}` : unknown}
@@ -525,7 +533,7 @@ ${formatHighSchoolContext(profile, false)}
 - Target Major: ${sanitizeForPrompt(profile.targetMajor || 'Undecided')}${profile.majorCompetitiveness ? ` (competitiveness at this school: ${profile.majorCompetitiveness.level}/5${profile.majorCompetitiveness.schoolEstimate ? `, estimated major acceptance ~${profile.majorCompetitiveness.schoolEstimate}%` : ''})` : ''}
 - Activities: ${formatActivities(profile.activities, false)}
 - Awards: ${formatAwards(profile.awards, false)}
-${formatAssessmentContext(profile.assessment, false)}${profile.isInternational ? `\n- Applicant Status: International student${profile.nationality ? ` (${profile.nationality})` : ''}${profile.educationSystem ? `, ${profile.educationSystem} curriculum` : ''}${profile.needsFinancialAid ? ', needs financial aid' : ''}` : ''}
+${formatAssessmentContext(profile.assessment, false)}${profile.isInternational ? `\n- Applicant Status: International student${profile.nationality ? ` (${profile.nationality})` : ''}${profile.educationSystem ? `, ${profile.educationSystem} curriculum` : ''}${profile.needsFinancialAid ? ', needs financial aid' : ''}` : ''}${profile.isLegacy && profile.legacySchools?.length ? `\n- Legacy Status: ${profile.legacySchools.join(', ')}` : ''}${profile.isFirstGen ? `\n- First-Generation College Student: Yes` : ''}${profile.essayQualityScore != null ? `\n- Essay Quality: ${profile.essayQualityScore}/10 (from AI review)` : ''}
 
 ## Target School: ${schoolName}
 - US News Rank: ${school.usNewsRank ? `#${school.usNewsRank}` : unknown}

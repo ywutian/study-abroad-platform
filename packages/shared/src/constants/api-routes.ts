@@ -155,6 +155,7 @@ export const essayAiRoutes = {
   continueWriting: () => `${API_ROUTES.ESSAY_AI}/continue-writing`,
   generateOpening: () => `${API_ROUTES.ESSAY_AI}/generate-opening`,
   rewriteParagraph: () => `${API_ROUTES.ESSAY_AI}/rewrite-paragraph`,
+  activityDescription: () => `${API_ROUTES.ESSAY_AI}/activity-description`,
   gallery: () => `${API_ROUTES.ESSAY_AI}/gallery`,
 };
 

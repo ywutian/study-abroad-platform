@@ -54,6 +54,20 @@ jest.mock('@/utils/format', () => ({
 // Mock shared modules
 jest.mock('@study-abroad/shared', () => ({
   DATA_SOURCE_LABELS: {},
+  API_ROUTES: {
+    SCHOOLS: '/schools',
+    SCHOOL_LISTS: '/school-lists',
+    CASES: '/cases',
+  },
+  schoolRoutes: {
+    byId: (id: string) => `/schools/${id}`,
+  },
+  schoolListRoutes: {
+    list: () => '/school-lists',
+  },
+  caseRoutes: {
+    list: () => '/cases',
+  },
 }));
 
 jest.mock('@study-abroad/shared/utils', () => ({

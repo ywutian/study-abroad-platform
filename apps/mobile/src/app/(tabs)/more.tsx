@@ -25,6 +25,13 @@ export default function MoreScreen() {
   const insets = useSafeAreaInsets();
 
   const items: MoreItem[] = [
+    {
+      icon: 'notifications',
+      label: t('more.notifications'),
+      route: '/notifications',
+      color: colors.warning,
+    },
+    { icon: 'chatbubbles', label: t('more.forum'), route: '/forum', color: colors.info },
     { icon: 'create', label: t('more.essays'), route: '/essays', color: colors.violet },
     { icon: 'document-text', label: t('more.resume'), route: '/resume', color: colors.primary },
     { icon: 'lock-closed', label: t('more.vault'), route: '/vault', color: colors.success },

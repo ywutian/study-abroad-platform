@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { School } from '@prisma/client';
+import { PrismaService } from '../../prisma/prisma.service';
 import { ProfileInput, SchoolInput } from './prediction.prompts';
 import {
   ProfileMetrics,
@@ -8,6 +9,7 @@ import {
   LEVEL_POINTS,
 } from './utils/score-calculator';
 import { clampPercentRate } from '../../common/utils/percent.util';
+import { extractJsonFromLlm } from '../../common/utils/llm-json.util';
 import {
   detectInternationalStatus,
   getBestEnglishProficiency,
@@ -22,6 +24,8 @@ import type { ProfileWithRelations } from './prediction.types';
  */
 @Injectable()
 export class PredictionTransformerService {
+  constructor(private readonly prisma: PrismaService) {}
+
   /**
    * Convert a Prisma profile (with relations) to the internal ProfileInput format
    * used by prediction engines and prompt builders.
@@ -97,6 +101,12 @@ export class PredictionTransformerService {
         competitionName: a.competition?.name ?? undefined,
       })),
       assessment: assessmentData,
+      isLegacy: (profile as any).legacy?.length > 0,
+      legacySchools:
+        (profile as any).legacy?.length > 0
+          ? (profile as any).legacy
+          : undefined,
+      isFirstGen: (profile as any).firstGeneration ?? false,
     };
   }
 
@@ -191,6 +201,9 @@ export class PredictionTransformerService {
       highSchoolStudentQuality: profile.highSchoolStudentQuality,
       highSchoolResources: profile.highSchoolResources,
       highSchoolGradeInflation: profile.highSchoolGradeInflation,
+      isLegacy: profile.isLegacy,
+      isFirstGen: profile.isFirstGen,
+      needsFinancialAid: profile.needsFinancialAid,
     };
   }
 
@@ -256,5 +269,45 @@ export class PredictionTransformerService {
     if (school.actAvg || (school.act25 && school.act75)) score += 10;
 
     return Math.min(100, Math.round((score / maxScore) * 100));
+  }
+
+  /**
+   * Enrich a ProfileInput with the latest essay AI review quality score.
+   *
+   * Queries the most recent EssayAIResult (type = 'review') for the given profile
+   * and extracts the overallScore from the stored JSON scores field.
+   *
+   * @param profileInput - The profile input to enrich (mutated in place)
+   * @param profileId - The Prisma profile ID used to find linked essays
+   * @returns The enriched ProfileInput (same reference)
+   */
+  async enrichWithEssayQuality(
+    profileInput: ProfileInput,
+    profileId: string,
+  ): Promise<ProfileInput> {
+    try {
+      const latestReview = await this.prisma.essayAIResult.findFirst({
+        where: {
+          essay: { profileId },
+          type: 'review',
+        },
+        orderBy: { createdAt: 'desc' },
+        select: { output: true },
+      });
+
+      if (latestReview?.output) {
+        // The output is the raw LLM response — use extractJsonFromLlm for robust parsing
+        const parsed = extractJsonFromLlm<{ overallScore?: number }>(
+          latestReview.output,
+        );
+        if (parsed && typeof parsed.overallScore === 'number') {
+          profileInput.essayQualityScore = parsed.overallScore;
+        }
+      }
+    } catch {
+      // Non-critical — essay quality is an optional enrichment
+    }
+
+    return profileInput;
   }
 }

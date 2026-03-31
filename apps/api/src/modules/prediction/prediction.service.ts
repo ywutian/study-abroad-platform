@@ -588,6 +588,10 @@ export class PredictionService {
         : undefined;
 
     const profileInput = this.profileToInput(profile, assessmentData);
+
+    // Enrich with essay quality score (G8) — non-blocking optional enrichment
+    await this.transformer.enrichWithEssayQuality(profileInput, profile.id);
+
     const profileMetrics = this.extractProfileMetrics(profileInput);
     const profileHash = this.hashProfileData(profile);
 
