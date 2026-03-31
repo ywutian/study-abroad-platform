@@ -12,8 +12,7 @@ import {
   Sparkles,
   Loader2,
 } from 'lucide-react';
-import { pdf } from '@react-pdf/renderer';
-import { AnalysisReportPDF } from '@/components/features/report/analysis-report-pdf';
+// pdf + AnalysisReportPDF lazy-loaded in handleExportReport
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -44,6 +43,12 @@ export function StepResults({ t, analysis, isAnalyzing, onReAnalyze, onDone }: S
     setIsExporting(true);
 
     try {
+      // Lazy-load PDF renderer + report component (saves ~500KB from main bundle)
+      const [{ pdf }, { AnalysisReportPDF }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('@/components/features/report/analysis-report-pdf'),
+      ]);
+
       const blob = await pdf(
         <AnalysisReportPDF
           data={{

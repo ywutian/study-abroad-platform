@@ -3,14 +3,23 @@
 
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
+import dynamic from 'next/dynamic';
 import { PageHeader } from '@/components/layout';
 import { CardSkeleton } from '@/components/ui/loading-state';
 import { apiClient } from '@/lib/api';
 import { Shield } from 'lucide-react';
 import { AdminStatsCards } from './_components/admin-stats-cards';
-import { AdminChartSection } from './_components/admin-chart-section';
 import { AdminHealthIndicator } from './_components/admin-health-indicator';
 import { AdminRecentActivity } from './_components/admin-recent-activity';
+
+// Lazy-load chart section (recharts ~200KB)
+const AdminChartSection = dynamic(
+  () =>
+    import('./_components/admin-chart-section').then((m) => ({
+      default: m.AdminChartSection,
+    })),
+  { ssr: false, loading: () => <CardSkeleton /> }
+);
 
 interface AdminStats {
   totalUsers: number;

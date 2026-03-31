@@ -139,6 +139,27 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     await this.client.del(key);
   }
 
+  async delByPrefix(prefix: string): Promise<number> {
+    if (!this.client) return 0;
+    let deleted = 0;
+    let cursor = '0';
+    do {
+      const [nextCursor, keys] = await this.client.scan(
+        cursor,
+        'MATCH',
+        `${prefix}*`,
+        'COUNT',
+        100,
+      );
+      cursor = nextCursor;
+      if (keys.length > 0) {
+        await this.client.del(...keys);
+        deleted += keys.length;
+      }
+    } while (cursor !== '0');
+    return deleted;
+  }
+
   async exists(key: string): Promise<boolean> {
     if (!this.client) return false;
     return (await this.client.exists(key)) === 1;

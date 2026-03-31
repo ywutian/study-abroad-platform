@@ -103,6 +103,72 @@
 
 ---
 
+## 第三轮（进行中，2026-03-30）
+
+### Batch A: 基础优化 ✅
+
+- [x] **P1-1**: 用户页面 error.tsx 边界（about, help, privacy, terms 4 个静态页，其余已有）
+- [x] **P1-3**: ForumPost 复合索引（`[categoryId, createdAt]` + `[authorId, createdAt]`，migration 已建）
+- [x] **P1-4**: 预测历史分页（reporting service + controller + 前端 hook，向后兼容 page=1/pageSize=20）
+- [x] **P2-2**: 学校列表 Redis 缓存（非搜索查询 hash key 缓存 5 分钟，invalidateSchoolCache 含 list 清理，新增 `delByPrefix` 方法）
+
+### Batch B: 性能与 DX ✅
+
+- [x] **P1-2**: 懒加载 PDF/recharts（resume-export-dialog + step-results 动态 import pdf，admin page 动态 import AdminChartSection，首屏减 ~700KB）
+- [x] **P2-4**: 移动端 ScrollView → FlatList（HallOfFameScreen → Animated.FlatList，EssaysScreen → FlatList + ListHeaderComponent）
+- [x] **P2-5**: 共享类型文件拆分（1149 行单文件 → 13 个域文件 + barrel index.ts，零破坏性变更）
+- [x] **P3-2**: 移动端 CI 增强（并行 lint/typecheck/test，新增 expo-doctor + expo export 构建验证 + 依赖审计 + Turbo 缓存）
+
+### Batch C1: 组件拆分 + Deep Linking ✅
+
+- [x] **P1-5**: 拆分 5 个超大组件（submit-case 768→491, school-selection 726→506, pending-cases 702→388, create-case 696→546, test-score 692→537, 新增 7 个子组件文件）
+- [x] **P3-3**: 移动端 Deep Linking（lib/linking.ts 工具库 + app.json associatedDomains/intentFilters + useNotifications deepLinkPaths）
+
+### Batch C2: Memo + 治理规则 ✅
+
+- [x] **P2-1**: Memoize 高频渲染组件（SchoolExpandedDetails, CaseDetailDialog, RankingCard 加 React.memo）
+- [x] **P3-5**: 新增 3 条治理规则 13→16（component-size-limit, service-size-limit, error-boundary-coverage）
+
+### Batch D1: 服务拆分 + Zod ✅
+
+- [x] **P2-3**: case.service.ts 拆分（1369→444 行，新增 case-query/batch/memory 3 个子服务，39 测试通过）
+- [x] **P3-4**: 共享 Zod Schema（packages/shared/schemas/ 10 个 schema factory，web validations 改为 re-export）
+
+### Batch D2: 后端关键测试 ✅
+
+- [x] **P3-1**: 后端关键测试 Batch 1（auth 3 + prediction 4 = 7 个 .spec.ts，172 个新测试，覆盖 63→70 files）
+
+### Batch D3: 移动端测试 ✅
+
+- [x] **P3-6**: 移动端 5 个核心 screen 测试（home, prediction, chat, school-detail, scores = 26 tests，14→19 files）
+
+---
+
+## 渐进式优化 Backlog（不紧急，按需推进）
+
+### 前端组件拆分（21 个 >500 行）
+
+Top 5：`activity-form.tsx` 693, `bulk-import-tab.tsx` 665, `header.tsx` 660, `school-overview-tab.tsx` 657, `gpa-tab.tsx` 653
+
+### 后端服务拆分（8 个 >1000 行）
+
+`persistent-memory` 1414, `prediction` 1382, `workflow-engine` 1366, `orchestrator` 1288, `admin` 1225, `memory-manager` 1206, `essay-ai` 1203, `profile-scores` 1106
+（prediction/memory 已有子服务体系，主要是 orchestration 逻辑留存）
+
+### 后端测试覆盖 70/149 (47%)
+
+Batch 1 (auth+prediction) 已完成。剩余 79 个未测 service：用户功能 14、AI tools 14、基础设施 37
+
+### 移动端测试覆盖 19 files
+
+剩余高优 screen：`timeline.tsx` 1214, `forum.tsx` 1097, `find-college.tsx` 1088
+
+### flex-overflow-safety 120 warnings
+
+需逐个加 `min-w-0` / `truncate`，无功能影响
+
+---
+
 ## 待产品决策（P4）
 
 | #   | 任务              | 决策点                                  | 状态   |

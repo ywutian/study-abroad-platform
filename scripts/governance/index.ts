@@ -26,6 +26,9 @@ import { run as pageLoadingCoverage } from './rules/page-loading-coverage';
 import { run as apiRouteSharedConstants } from './rules/api-route-shared-constants';
 import { run as validationI18nKeys } from './rules/validation-i18n-keys';
 import { run as flexOverflowSafety } from './rules/flex-overflow-safety';
+import { run as componentSizeLimit } from './rules/component-size-limit';
+import { run as serviceSizeLimit } from './rules/service-size-limit';
+import { run as errorBoundaryCoverage } from './rules/error-boundary-coverage';
 
 // ── Rule registry ──────────────────────────────────────────
 
@@ -46,6 +49,10 @@ const RULES: GovernanceRule[] = [
   { id: 'api-route-shared-constants', run: apiRouteSharedConstants },
   { id: 'validation-i18n-keys', run: validationI18nKeys },
   { id: 'flex-overflow-safety', run: flexOverflowSafety },
+  // Size limits & coverage (G14-G16)
+  { id: 'component-size-limit', run: componentSizeLimit },
+  { id: 'service-size-limit', run: serviceSizeLimit },
+  { id: 'error-boundary-coverage', run: errorBoundaryCoverage },
 ];
 
 const ALL_RULE_IDS = RULES.map((r) => r.id);

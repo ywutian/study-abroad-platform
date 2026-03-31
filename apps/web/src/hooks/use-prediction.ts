@@ -119,11 +119,14 @@ export function useReportResult() {
   });
 }
 
-/** 获取预测历史 */
-export function usePredictionHistory(enabled = true) {
+/** 获取预测历史（分页） */
+export function usePredictionHistory(page = 1, pageSize = 20, enabled = true) {
   return useQuery({
-    queryKey: predictionKeys.history(),
-    queryFn: () => apiClient.get(predictionRoutes.history()),
+    queryKey: [...predictionKeys.history(), page, pageSize],
+    queryFn: () =>
+      apiClient.get(predictionRoutes.history(), {
+        params: { page, pageSize },
+      }),
     staleTime: STALE_TIME.MODERATE,
     enabled,
   });

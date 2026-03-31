@@ -14,7 +14,8 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.studyabroad.mobile",
-      "buildNumber": "1"
+      "buildNumber": "1",
+      "associatedDomains": ["applinks:studyabroad.app"]
     },
     "android": {
       "adaptiveIcon": {
@@ -22,7 +23,21 @@
         "backgroundColor": "#0f172a"
       },
       "package": "com.studyabroad.mobile",
-      "versionCode": 1
+      "versionCode": 1,
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "studyabroad.app",
+              "pathPrefix": "/"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"

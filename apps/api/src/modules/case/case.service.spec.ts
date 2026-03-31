@@ -1,5 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CaseService } from './case.service';
+import { CaseQueryService } from './case-query.service';
+import { CaseBatchService } from './case-batch.service';
+import { CaseMemoryService } from './case-memory.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
 import { AuditLogService } from '../../common/services/audit-log.service';
@@ -9,6 +12,8 @@ import { DataReviewStatus, Role, Visibility } from '@prisma/client';
 
 describe('CaseService', () => {
   let service: CaseService;
+  let caseQueryService: CaseQueryService;
+  let caseBatchService: CaseBatchService;
   let prismaService: PrismaService;
 
   const mockCase = {
@@ -26,51 +31,68 @@ describe('CaseService', () => {
     school: { id: 'school-123', name: 'Harvard', nameZh: '哈佛' },
   };
 
+  const mockPrismaService = {
+    admissionCase: {
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      count: jest.fn(),
+      groupBy: jest.fn().mockResolvedValue([]),
+    },
+    education: {
+      findFirst: jest.fn().mockResolvedValue(null),
+    },
+    profile: {
+      findUnique: jest.fn().mockResolvedValue(null),
+    },
+  };
+
+  const mockAuditLogService = {
+    log: jest.fn().mockResolvedValue(undefined),
+  };
+
+  const mockRedisService = {
+    get: jest.fn().mockResolvedValue(null),
+    set: jest.fn().mockResolvedValue(undefined),
+  };
+
+  const mockMemoryManagerService = {
+    remember: jest.fn().mockResolvedValue(undefined),
+    recall: jest.fn().mockResolvedValue([]),
+    recordEntity: jest.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CaseService,
+        CaseQueryService,
+        CaseBatchService,
+        CaseMemoryService,
         {
           provide: PrismaService,
-          useValue: {
-            admissionCase: {
-              findMany: jest.fn(),
-              findUnique: jest.fn(),
-              create: jest.fn(),
-              update: jest.fn(),
-              delete: jest.fn(),
-              count: jest.fn(),
-              groupBy: jest.fn().mockResolvedValue([]),
-            },
-            education: {
-              findFirst: jest.fn().mockResolvedValue(null),
-            },
-          },
+          useValue: mockPrismaService,
         },
         {
           provide: AuditLogService,
-          useValue: {
-            log: jest.fn().mockResolvedValue(undefined),
-          },
+          useValue: mockAuditLogService,
         },
         {
           provide: RedisService,
-          useValue: {
-            get: jest.fn().mockResolvedValue(null),
-            set: jest.fn().mockResolvedValue(undefined),
-          },
+          useValue: mockRedisService,
         },
         {
           provide: MemoryManagerService,
-          useValue: {
-            remember: jest.fn().mockResolvedValue(undefined),
-            recall: jest.fn().mockResolvedValue([]),
-          },
+          useValue: mockMemoryManagerService,
         },
       ],
     }).compile();
 
     service = module.get<CaseService>(CaseService);
+    caseQueryService = module.get<CaseQueryService>(CaseQueryService);
+    caseBatchService = module.get<CaseBatchService>(CaseBatchService);
     prismaService = module.get<PrismaService>(PrismaService);
   });
 

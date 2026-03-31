@@ -1937,6 +1937,8 @@ model ForumPost {
   @@index([postTag])
   @@index([createdAt])
   @@index([likeCount])
+  @@index([categoryId, createdAt])
+  @@index([authorId, createdAt])
 }
 
 model ForumComment {

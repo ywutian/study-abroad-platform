@@ -11,13 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -27,10 +20,10 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { PaginationControls } from '../../_components/pagination-controls';
 import { QualityScoreBadge } from './quality-score-badge';
 import { RejectReasonDialog } from './reject-reason-dialog';
+import { CaseDetailDialog } from './pending-cases/CaseDetailDialog';
 import { apiClient } from '@/lib/api';
 import { API_ROUTES } from '@study-abroad/shared';
 import { toast } from 'sonner';
-import { Separator } from '@/components/ui/separator';
 import { Check, X, Eye, Loader2, FileCheck, GraduationCap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -109,7 +102,6 @@ const RESULT_COLORS: Record<string, string> = {
 
 export function PendingCasesTab() {
   const t = useTranslations('admin.dataReview');
-  const td = useTranslations('admin.dataReview.detail');
   const ta = useTranslations('admin.dataReview.actions');
   const te = useTranslations('admin.dataReview.enums');
   const format = useFormatter();
@@ -363,322 +355,17 @@ export function PendingCasesTab() {
       )}
 
       {/* Case Detail Dialog */}
-      <Dialog
+      <CaseDetailDialog
+        case_={detailCase}
         open={!!detailCase}
         onOpenChange={(open) => {
           if (!open) setDetailCase(null);
         }}
-      >
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{t('detail.caseDetail')}</DialogTitle>
-          </DialogHeader>
-          {detailCase && (
-            <div className="space-y-4">
-              {/* Basic info grid */}
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div>
-                  <span className="text-muted-foreground">{t('table.school')}</span>
-                  <p className="font-medium">{getSchoolName(detailCase)}</p>
-                  {detailCase.school?.usNewsRank && (
-                    <p className="text-xs text-muted-foreground">
-                      US News #{detailCase.school.usNewsRank}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <span className="text-muted-foreground">{t('table.result')}</span>
-                  <p>
-                    {detailCase.admissionResult ? (
-                      <Badge
-                        className={cn('text-xs', RESULT_COLORS[detailCase.admissionResult] || '')}
-                      >
-                        {te.has(`result.${detailCase.admissionResult}`)
-                          ? te(`result.${detailCase.admissionResult}` as never)
-                          : detailCase.admissionResult}
-                      </Badge>
-                    ) : (
-                      '—'
-                    )}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">{t('table.year')}</span>
-                  <p className="font-medium">{detailCase.admissionYear || '—'}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">{t('table.round')}</span>
-                  <p className="font-medium">{detailCase.admissionSeason || '—'}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">{t('table.gpa')}</span>
-                  <p className="font-mono">{detailCase.gpa?.range || '—'}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">{t('table.qualityScore')}</span>
-                  <QualityScoreBadge score={detailCase.qualityScore} />
-                </div>
-                <div>
-                  <span className="text-muted-foreground">{t('table.source')}</span>
-                  <p className="text-xs">{detailCase.source || '—'}</p>
-                </div>
-              </div>
-
-              {/* Test Scores */}
-              {(detailCase.testScores?.length || detailCase.sat?.range) && (
-                <>
-                  <Separator />
-                  <div>
-                    <span className="text-sm font-medium text-muted-foreground">
-                      {td('testScores')}
-                    </span>
-                    <div className="flex flex-wrap gap-1.5 mt-1.5">
-                      {detailCase.sat?.range && (
-                        <Badge variant="secondary" className="text-xs font-mono">
-                          SAT {detailCase.sat.range}
-                        </Badge>
-                      )}
-                      {detailCase.testScores?.map((ts, i) => (
-                        <Badge key={i} variant="secondary" className="text-xs font-mono">
-                          {ts.type} {ts.score ?? ts.range ?? '—'}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {/* AP / IB */}
-              {(detailCase.apCount || detailCase.ibScore || detailCase.apSubjects?.length) && (
-                <>
-                  <Separator />
-                  <div>
-                    <span className="text-sm font-medium text-muted-foreground">
-                      {td('apInfo')}
-                    </span>
-                    <div className="grid grid-cols-2 gap-3 mt-1.5 text-sm">
-                      {detailCase.apCount != null && (
-                        <div>
-                          <span className="text-muted-foreground">{td('apCount')}</span>
-                          <p className="font-mono">{detailCase.apCount}</p>
-                        </div>
-                      )}
-                      {detailCase.ibScore != null && (
-                        <div>
-                          <span className="text-muted-foreground">{td('ibScore')}</span>
-                          <p className="font-mono">{detailCase.ibScore}</p>
-                        </div>
-                      )}
-                    </div>
-                    {detailCase.apSubjects && detailCase.apSubjects.length > 0 && (
-                      <div className="mt-1.5">
-                        <span className="text-xs text-muted-foreground">{td('apSubjects')}</span>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {detailCase.apSubjects.map((subj, i) => (
-                            <Badge key={i} variant="outline" className="text-xs">
-                              {subj}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
-
-              {/* School Background */}
-              {(detailCase.highSchoolType || detailCase.curriculumType) && (
-                <>
-                  <Separator />
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    {detailCase.highSchoolType && (
-                      <div>
-                        <span className="text-muted-foreground">{td('hsType')}</span>
-                        <p className="font-medium">
-                          {te.has(`hsType.${detailCase.highSchoolType}`)
-                            ? te(`hsType.${detailCase.highSchoolType}` as never)
-                            : detailCase.highSchoolType}
-                        </p>
-                      </div>
-                    )}
-                    {detailCase.curriculumType && (
-                      <div>
-                        <span className="text-muted-foreground">{td('curriculum')}</span>
-                        <p className="font-medium">
-                          {te.has(`curriculum.${detailCase.curriculumType}`)
-                            ? te(`curriculum.${detailCase.curriculumType}` as never)
-                            : detailCase.curriculumType}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
-
-              {/* Activities */}
-              {(detailCase.activitiesCount || detailCase.activities?.length) && (
-                <>
-                  <Separator />
-                  <div>
-                    <span className="text-sm font-medium text-muted-foreground">
-                      {td('activities')}
-                    </span>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {td('activitiesCount', {
-                        count: detailCase.activitiesCount ?? detailCase.activities?.length ?? 0,
-                      })}
-                    </p>
-                    {detailCase.activitiesSummary && (
-                      <p className="text-sm mt-1">{detailCase.activitiesSummary}</p>
-                    )}
-                    {!detailCase.activitiesSummary &&
-                      detailCase.activities &&
-                      detailCase.activities.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1.5">
-                          {detailCase.activities.slice(0, 5).map((a, i) => (
-                            <Badge key={i} variant="outline" className="text-xs">
-                              {(a.category && te.has(`activityCategory.${a.category}`)
-                                ? te(`activityCategory.${a.category}` as never)
-                                : a.category) ||
-                                a.description ||
-                                a.role ||
-                                `Activity ${i + 1}`}
-                            </Badge>
-                          ))}
-                          {detailCase.activities.length > 5 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{detailCase.activities.length - 5}
-                            </Badge>
-                          )}
-                        </div>
-                      )}
-                  </div>
-                </>
-              )}
-
-              {/* Awards */}
-              {(detailCase.awardsCount || detailCase.awards?.length) && (
-                <>
-                  <Separator />
-                  <div>
-                    <span className="text-sm font-medium text-muted-foreground">
-                      {td('awards')}
-                    </span>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {td('awardsCount', {
-                        count: detailCase.awardsCount ?? detailCase.awards?.length ?? 0,
-                      })}
-                    </p>
-                    {detailCase.awardsSummary && (
-                      <p className="text-sm mt-1">{detailCase.awardsSummary}</p>
-                    )}
-                    {!detailCase.awardsSummary &&
-                      detailCase.awards &&
-                      detailCase.awards.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1.5">
-                          {detailCase.awards.slice(0, 5).map((a, i) => (
-                            <Badge key={i} variant="outline" className="text-xs">
-                              {a.name ||
-                                (a.level && te.has(`awardLevel.${a.level}`)
-                                  ? te(`awardLevel.${a.level}` as never)
-                                  : a.level) ||
-                                `Award ${i + 1}`}
-                            </Badge>
-                          ))}
-                          {detailCase.awards.length > 5 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{detailCase.awards.length - 5}
-                            </Badge>
-                          )}
-                        </div>
-                      )}
-                  </div>
-                </>
-              )}
-
-              {/* Demographics */}
-              {detailCase.demographicTags && detailCase.demographicTags.length > 0 && (
-                <>
-                  <Separator />
-                  <div>
-                    <span className="text-sm font-medium text-muted-foreground">
-                      {td('demographics')}
-                    </span>
-                    <div className="flex flex-wrap gap-1 mt-1.5">
-                      {detailCase.demographicTags.map((tag, i) => (
-                        <Badge key={i} variant="secondary" className="text-xs">
-                          {te.has(`demographic.${tag}`) ? te(`demographic.${tag}` as never) : tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {/* Financial Aid & Enrollment */}
-              {(detailCase.financialAid || detailCase.enrollmentStatus) && (
-                <>
-                  <Separator />
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    {detailCase.financialAid && (
-                      <div>
-                        <span className="text-muted-foreground">{td('financialAid')}</span>
-                        <p className="font-medium">
-                          {te.has(`financialAid.${detailCase.financialAid}`)
-                            ? te(`financialAid.${detailCase.financialAid}` as never)
-                            : detailCase.financialAid}
-                        </p>
-                      </div>
-                    )}
-                    {detailCase.enrollmentStatus && (
-                      <div>
-                        <span className="text-muted-foreground">{td('enrollment')}</span>
-                        <p className="font-medium">{detailCase.enrollmentStatus}</p>
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
-
-              {/* Narrative */}
-              {detailCase.narrative && (
-                <>
-                  <Separator />
-                  <div>
-                    <span className="text-sm font-medium text-muted-foreground">
-                      {td('narrative')}
-                    </span>
-                    <p className="text-sm mt-1 whitespace-pre-line line-clamp-4">
-                      {detailCase.narrative}
-                    </p>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setDetailCase(null)} disabled={isPending}>
-              {t('filter.reset')}
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => detailCase && setRejectId(detailCase.id)}
-              disabled={isPending}
-            >
-              <X className="h-4 w-4 mr-1" />
-              {ta('reject')}
-            </Button>
-            <Button
-              onClick={() => detailCase && approveMutation.mutate(detailCase.id)}
-              disabled={isPending}
-            >
-              {approveMutation.isPending && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
-              <Check className="h-4 w-4 mr-1" />
-              {ta('approve')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        onApprove={(id) => approveMutation.mutate(id)}
+        onReject={(id) => setRejectId(id)}
+        isPending={isPending}
+        locale=""
+      />
 
       {/* Reject Reason Dialog */}
       <RejectReasonDialog

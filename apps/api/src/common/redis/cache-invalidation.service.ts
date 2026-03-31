@@ -78,8 +78,13 @@ export class CacheInvalidationService {
    */
   async onSchoolChange(schoolId: string): Promise<void> {
     try {
-      await this.redis.del(`school:detail:${schoolId}`);
-      this.logger.debug(`Invalidated cache for school ${schoolId}`);
+      await Promise.all([
+        this.redis.del(`school:detail:${schoolId}`),
+        this.redis.delByPrefix('school:list:'),
+      ]);
+      this.logger.debug(
+        `Invalidated detail + list caches for school ${schoolId}`,
+      );
     } catch (error) {
       this.logger.error(
         `Failed to invalidate school cache ${schoolId}: ${String(error instanceof Error ? error.message : error)}`,

@@ -13,6 +13,7 @@ import {
 } from '../../common/dto/pagination.dto';
 import { normalizeSchoolName } from '../../common/utils/school-name.util';
 import { clampPercentRate } from '../../common/utils/percent.util';
+import { createHash } from 'crypto';
 
 // Cache TTL in seconds
 const CACHE_TTL = {
@@ -121,6 +122,15 @@ export class SchoolService {
   ): Promise<PaginatedResponseDto<School>> {
     const { page = 1, pageSize = 20 } = pagination;
     const skip = (page - 1) * pageSize;
+    const isSearch = !!filters?.search;
+
+    // Cache non-search queries (search queries are too variable for caching)
+    if (!isSearch) {
+      const cacheKey = this.buildListCacheKey(pagination, filters);
+      const cached =
+        await this.redis.getJSON<PaginatedResponseDto<School>>(cacheKey);
+      if (cached) return cached;
+    }
 
     const where: Prisma.SchoolWhereInput = {};
 
@@ -129,8 +139,8 @@ export class SchoolService {
       where.country = filters.country;
     }
 
-    if (filters?.search) {
-      const searchTerm = filters.search.trim();
+    if (isSearch) {
+      const searchTerm = filters.search!.trim();
       where.OR = [
         { name: { contains: searchTerm, mode: 'insensitive' } },
         { nameZh: { contains: searchTerm, mode: 'insensitive' } },
@@ -246,8 +256,8 @@ export class SchoolService {
       graduationRate: clampPercentRate(s.graduationRate) ?? s.graduationRate,
     });
 
-    if (filters?.search) {
-      const searchTerm = filters.search.trim();
+    if (isSearch) {
+      const searchTerm = filters.search!.trim();
       const sorted = this.sortByRelevance(schools, searchTerm);
       return createPaginatedResponse(
         sorted.map(clampRates),
@@ -257,12 +267,18 @@ export class SchoolService {
       );
     }
 
-    return createPaginatedResponse(
+    const result = createPaginatedResponse(
       schools.map(clampRates),
       total,
       page,
       pageSize,
     );
+
+    // Cache non-search results
+    const cacheKey = this.buildListCacheKey(pagination, filters);
+    await this.redis.setJSON(cacheKey, result, CACHE_TTL.SCHOOL_LIST);
+
+    return result;
   }
 
   async findById(id: string) {
@@ -357,7 +373,20 @@ export class SchoolService {
    * Invalidate school cache when data is updated
    */
   async invalidateSchoolCache(id: string) {
-    await this.redis.del(`school:detail:${id}`);
+    await Promise.all([
+      this.redis.del(`school:detail:${id}`),
+      this.redis.delByPrefix('school:list:'),
+    ]);
+  }
+
+  private buildListCacheKey(
+    pagination: PaginationDto,
+    filters?: SchoolFilters,
+  ): string {
+    const { search: _search, ...cacheableFilters } = filters ?? {};
+    const raw = JSON.stringify({ p: pagination, f: cacheableFilters });
+    const hash = createHash('md5').update(raw).digest('hex').slice(0, 12);
+    return `school:list:${hash}`;
   }
 
   async create(

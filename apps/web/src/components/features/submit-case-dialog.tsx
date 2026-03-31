@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -26,27 +26,11 @@ import {
 import { apiClient } from '@/lib/api';
 import { caseRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
-import { Switch } from '@/components/ui/switch';
-import { Loader2, Send, GraduationCap, PenTool, Upload, FileText, ChevronDown } from 'lucide-react';
+import { Loader2, Send, GraduationCap } from 'lucide-react';
 import { getSchoolName } from '@/lib/utils';
 import { SchoolSelector } from './school-selector';
-
-const ESSAY_TYPES = [
-  { value: 'COMMON_APP', label: 'Common App' },
-  { value: 'UC', label: 'UC' },
-  { value: 'SUPPLEMENTAL', label: 'Supplemental' },
-  { value: 'WHY_SCHOOL', label: 'Why School' },
-  { value: 'SHORT_ANSWER', label: 'Short Answer' },
-  { value: 'ACTIVITY', label: 'Activity' },
-  { value: 'OPTIONAL', label: 'Optional' },
-  { value: 'OTHER', label: 'Other' },
-];
-
-const VISIBILITY_OPTIONS = [
-  { value: 'ANONYMOUS', labelKey: 'anonymous' },
-  { value: 'PUBLIC', labelKey: 'public' },
-  { value: 'VERIFIED_ONLY', labelKey: 'verifiedOnly' },
-];
+import { EssaySection } from './submit-case/EssaySection';
+import { DetailsSection } from './submit-case/DetailsSection';
 
 const RESULT_KEYS = [
   { value: 'ADMITTED', labelKey: 'admitted' },
@@ -54,19 +38,6 @@ const RESULT_KEYS = [
   { value: 'WAITLISTED', labelKey: 'waitlisted' },
   { value: 'DEFERRED', labelKey: 'deferred' },
 ];
-
-const DEMOGRAPHIC_OPTIONS = [
-  'international',
-  'first_gen',
-  'legacy',
-  'urm',
-  'recruited_athlete',
-  'low_income',
-  'transfer',
-  'homeschool',
-  'military',
-  'gap_year',
-] as const;
 
 const ROUND_KEYS = [
   { value: 'ED', labelKey: 'ED' },
@@ -106,42 +77,12 @@ export function SubmitCaseDialog({
   const queryClient = useQueryClient();
   const [schoolSelectorOpen, setSchoolSelectorOpen] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
-  const essayFileInputRef = useRef<HTMLInputElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-
-  const processEssayFile = useCallback(async (file: File) => {
-    const ext = file.name.split('.').pop()?.toLowerCase();
-    try {
-      if (ext === 'txt') {
-        const text = await file.text();
-        setFormData((prev) => ({ ...prev, essayContent: text }));
-      } else if (ext === 'docx') {
-        const mammoth = await import('mammoth');
-        const arrayBuffer = await file.arrayBuffer();
-        const result = await mammoth.extractRawText({ arrayBuffer });
-        setFormData((prev) => ({ ...prev, essayContent: result.value }));
-      } else if (ext === 'pdf') {
-        const pdfjsLib = (await import(/* webpackIgnore: true */ 'pdfjs-dist' as string)) as any;
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
-        const pdf = await pdfjsLib.getDocument(await file.arrayBuffer()).promise;
-        const pages: string[] = [];
-        for (let i = 1; i <= pdf.numPages; i++) {
-          const page = await pdf.getPage(i);
-          const content = await page.getTextContent();
-          pages.push(content.items.map((item: any) => item.str).join(' '));
-        }
-        setFormData((prev) => ({ ...prev, essayContent: pages.join('\n\n') }));
-      } else {
-        toast.error('Unsupported file format. Please use .txt, .docx, or .pdf');
-      }
-    } catch {
-      toast.error('Failed to read file. Please try pasting the content instead.');
-    }
-  }, []);
-
   const [includeEssay, setIncludeEssay] = useState(defaultIncludeEssay);
-  const [showDetails, setShowDetails] = useState(false);
   const [demographicTags, setDemographicTags] = useState<string[]>([]);
+
+  const handleFieldChange = useCallback((field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  }, []);
   const [formData, setFormData] = useState({
     year: new Date().getFullYear().toString(),
     round: '',
@@ -218,7 +159,6 @@ export function SubmitCaseDialog({
     setDemographicTags([]);
     setSelectedSchool(null);
     setIncludeEssay(defaultIncludeEssay);
-    setShowDetails(false);
   };
 
   const handleSubmit = () => {
@@ -499,244 +439,27 @@ export function SubmitCaseDialog({
               />
             </div>
 
-            {/* Collapsible Details Section */}
-            <div className="border-t pt-3">
-              <button
-                type="button"
-                className="flex w-full items-center justify-between text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                onClick={() => setShowDetails(!showDetails)}
-              >
-                {t('detailsToggle')}
-                <ChevronDown
-                  className={`h-4 w-4 transition-transform ${showDetails ? 'rotate-180' : ''}`}
-                />
-              </button>
+            <DetailsSection
+              nationality={formData.nationality}
+              actRange={formData.actRange}
+              apCount={formData.apCount}
+              apSubjects={formData.apSubjects}
+              ibScore={formData.ibScore}
+              narrative={formData.narrative}
+              demographicTags={demographicTags}
+              onFieldChange={handleFieldChange}
+              onDemographicTagsChange={setDemographicTags}
+            />
 
-              {showDetails && (
-                <div className="mt-3 space-y-4">
-                  {/* Nationality + ACT */}
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label>{t('nationalityLabel')}</Label>
-                      <Input
-                        placeholder={t('nationalityPlaceholder')}
-                        value={formData.nationality}
-                        onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>{t('actLabel')}</Label>
-                      <Input
-                        placeholder={t('actPlaceholder')}
-                        value={formData.actRange}
-                        onChange={(e) => setFormData({ ...formData, actRange: e.target.value })}
-                      />
-                    </div>
-                  </div>
-
-                  {/* AP/IB */}
-                  <div className="grid gap-4 sm:grid-cols-3">
-                    <div className="space-y-2">
-                      <Label>{t('apCountLabel')}</Label>
-                      <Input
-                        type="number"
-                        min="0"
-                        max="30"
-                        placeholder="0"
-                        value={formData.apCount}
-                        onChange={(e) => setFormData({ ...formData, apCount: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>{t('apSubjectsLabel')}</Label>
-                      <Input
-                        placeholder={t('apSubjectsPlaceholder')}
-                        value={formData.apSubjects}
-                        onChange={(e) => setFormData({ ...formData, apSubjects: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>{t('ibScoreLabel')}</Label>
-                      <Input
-                        type="number"
-                        min="0"
-                        max="45"
-                        placeholder="0-45"
-                        value={formData.ibScore}
-                        onChange={(e) => setFormData({ ...formData, ibScore: e.target.value })}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Demographic Tags */}
-                  <div className="space-y-2">
-                    <Label>{t('demographicTagsLabel')}</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {DEMOGRAPHIC_OPTIONS.map((tag) => (
-                        <button
-                          key={tag}
-                          type="button"
-                          className={`rounded-full border px-3 py-1 text-xs transition-colors ${
-                            demographicTags.includes(tag)
-                              ? 'border-primary bg-primary/10 text-primary'
-                              : 'border-border text-muted-foreground hover:border-primary/50'
-                          }`}
-                          onClick={() =>
-                            setDemographicTags((prev) =>
-                              prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-                            )
-                          }
-                        >
-                          {t(`demographic.${tag}`)}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Narrative */}
-                  <div className="space-y-2">
-                    <Label>{t('narrativeLabel')}</Label>
-                    <Textarea
-                      placeholder={t('narrativePlaceholder')}
-                      value={formData.narrative}
-                      onChange={(e) => setFormData({ ...formData, narrative: e.target.value })}
-                      rows={4}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Essay Section */}
-            <div className="border-t pt-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <PenTool className="h-4 w-4 text-primary" />
-                  <Label className="font-medium">{t('includeEssay')}</Label>
-                </div>
-                <Switch checked={includeEssay} onCheckedChange={setIncludeEssay} />
-              </div>
-
-              {includeEssay && (
-                <div className="space-y-4 pl-1">
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label>{t('essayTypeLabel')}</Label>
-                      <Select
-                        value={formData.essayType}
-                        onValueChange={(value) => setFormData({ ...formData, essayType: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder={t('essayTypePlaceholder')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {ESSAY_TYPES.map((type) => (
-                            <SelectItem key={type.value} value={type.value}>
-                              {type.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>{t('visibilityLabel')}</Label>
-                      <Select
-                        value={formData.visibility}
-                        onValueChange={(value) => setFormData({ ...formData, visibility: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {VISIBILITY_OPTIONS.map((v) => (
-                            <SelectItem key={v.value} value={v.value}>
-                              {t(`visibility.${v.labelKey}`)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>{t('essayPromptLabel')}</Label>
-                    <Textarea
-                      placeholder={t('essayPromptPlaceholder')}
-                      value={formData.essayPrompt}
-                      onChange={(e) => setFormData({ ...formData, essayPrompt: e.target.value })}
-                      rows={2}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label>{t('essayContentLabel')}</Label>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-muted-foreground">.txt .docx .pdf</span>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="gap-1.5 text-xs"
-                          onClick={() => essayFileInputRef.current?.click()}
-                        >
-                          <Upload className="h-3.5 w-3.5" />
-                          {t('importFromFile')}
-                        </Button>
-                      </div>
-                      <input
-                        ref={essayFileInputRef}
-                        type="file"
-                        accept=".txt,.docx,.pdf"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) processEssayFile(file);
-                          e.target.value = '';
-                        }}
-                      />
-                    </div>
-                    <div
-                      className={`relative rounded-md transition-colors ${isDragging ? 'ring-2 ring-primary bg-primary/5' : ''}`}
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        setIsDragging(true);
-                      }}
-                      onDragLeave={() => setIsDragging(false)}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        setIsDragging(false);
-                        const file = e.dataTransfer.files[0];
-                        if (file) processEssayFile(file);
-                      }}
-                    >
-                      {isDragging && (
-                        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-primary/10 border-2 border-dashed border-primary">
-                          <div className="flex items-center gap-2 text-primary font-medium">
-                            <FileText className="h-5 w-5" />
-                            {t('dropEssayHere') || 'Drop your essay file here'}
-                          </div>
-                        </div>
-                      )}
-                      <Textarea
-                        placeholder={t('essayContentPlaceholder')}
-                        value={formData.essayContent}
-                        onChange={(e) => setFormData({ ...formData, essayContent: e.target.value })}
-                        rows={15}
-                        className="min-h-[300px] resize-y"
-                      />
-                    </div>
-                    {formData.essayContent && (
-                      <div className="flex justify-end">
-                        <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded">
-                          {formData.essayContent.split(/\s+/).filter(Boolean).length} words
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
+            <EssaySection
+              includeEssay={includeEssay}
+              setIncludeEssay={setIncludeEssay}
+              essayType={formData.essayType}
+              essayPrompt={formData.essayPrompt}
+              essayContent={formData.essayContent}
+              visibility={formData.visibility}
+              onFieldChange={handleFieldChange}
+            />
           </div>
 
           <DialogFooter>

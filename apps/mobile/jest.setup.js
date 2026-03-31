@@ -52,28 +52,128 @@ jest.mock('react-native-worklets', () => ({
 }));
 
 // Mock react-native-reanimated (Worklets runtime not available in Jest)
+// Prefix with `mock` so jest.mock() factory can reference it.
+function mockChainableAnimation() {
+  const anim = {};
+  const methods = [
+    'duration',
+    'delay',
+    'springify',
+    'damping',
+    'stiffness',
+    'mass',
+    'withInitialValues',
+    'withCallback',
+    'build',
+  ];
+  methods.forEach((m) => {
+    anim[m] = jest.fn().mockReturnValue(anim);
+  });
+  return anim;
+}
+
 jest.mock('react-native-reanimated', () => ({
   __esModule: true,
-  default: { call: jest.fn() },
+  default: {
+    call: jest.fn(),
+    createAnimatedComponent: (component) => component,
+    addWhitelistedNativeProps: jest.fn(),
+    addWhitelistedUIProps: jest.fn(),
+    View: 'Animated.View',
+  },
   useSharedValue: (init) => ({ value: init }),
   useAnimatedStyle: (fn) => fn(),
+  useAnimatedRef: () => ({ current: null }),
+  useEvent: jest.fn(),
+  useHandler: jest.fn(),
   useReducedMotion: () => false,
+  useAnimatedGestureHandler: jest.fn(),
+  useAnimatedScrollHandler: jest.fn(),
   withTiming: (v) => v,
   withSpring: (v) => v,
   withDelay: (_, v) => v,
   withSequence: (...args) => args[args.length - 1],
   withRepeat: (v) => v,
-  Easing: { linear: jest.fn(), ease: jest.fn(), bezier: jest.fn(() => jest.fn()) },
-  FadeIn: { duration: jest.fn().mockReturnThis() },
-  FadeOut: { duration: jest.fn().mockReturnThis() },
-  SlideInRight: { duration: jest.fn().mockReturnThis() },
-  SlideOutLeft: { duration: jest.fn().mockReturnThis() },
-  Layout: { duration: jest.fn().mockReturnThis() },
+  Easing: {
+    linear: jest.fn(),
+    ease: jest.fn(),
+    bezier: jest.fn(() => jest.fn()),
+    in: jest.fn(() => jest.fn()),
+    out: jest.fn(() => jest.fn()),
+    inOut: jest.fn(() => jest.fn()),
+    cubic: jest.fn(),
+    quad: jest.fn(),
+    circle: jest.fn(),
+    exp: jest.fn(),
+    back: jest.fn(),
+    bounce: jest.fn(),
+    elastic: jest.fn(),
+    sin: jest.fn(),
+    poly: jest.fn(() => jest.fn()),
+  },
+  FadeIn: mockChainableAnimation(),
+  FadeOut: mockChainableAnimation(),
+  FadeInDown: mockChainableAnimation(),
+  FadeInUp: mockChainableAnimation(),
+  FadeInRight: mockChainableAnimation(),
+  FadeInLeft: mockChainableAnimation(),
+  SlideInUp: mockChainableAnimation(),
+  SlideInDown: mockChainableAnimation(),
+  SlideInRight: mockChainableAnimation(),
+  SlideInLeft: mockChainableAnimation(),
+  SlideOutLeft: mockChainableAnimation(),
+  SlideOutRight: mockChainableAnimation(),
+  Layout: mockChainableAnimation(),
   cancelAnimation: jest.fn(),
   createAnimatedComponent: (component) => component,
   interpolate: jest.fn(),
   Extrapolation: { CLAMP: 'clamp', EXTEND: 'extend' },
 }));
+
+// Mock react-native-gesture-handler
+// Returns a Proxy-based chainable gesture so any method call returns itself.
+function mockChainableGesture() {
+  const handler = {
+    get(target, prop) {
+      if (typeof prop === 'symbol') return undefined;
+      return (..._args) => new Proxy({}, handler);
+    },
+  };
+  return new Proxy({}, handler);
+}
+
+jest.mock('react-native-gesture-handler', () => {
+  const View = require('react-native').View;
+  return {
+    GestureHandlerRootView: View,
+    GestureDetector: ({ children }) => children,
+    Gesture: {
+      Pan: () => mockChainableGesture(),
+      Tap: () => mockChainableGesture(),
+      LongPress: () => mockChainableGesture(),
+      Pinch: () => mockChainableGesture(),
+      Rotation: () => mockChainableGesture(),
+      Fling: () => mockChainableGesture(),
+      Native: () => mockChainableGesture(),
+      Manual: () => mockChainableGesture(),
+      Hover: () => mockChainableGesture(),
+      Simultaneous: (...args) => mockChainableGesture(),
+      Exclusive: (...args) => mockChainableGesture(),
+      Race: (...args) => mockChainableGesture(),
+    },
+    Swipeable: View,
+    DrawerLayout: View,
+    State: {},
+    ScrollView: require('react-native').ScrollView,
+    FlatList: require('react-native').FlatList,
+    PanGestureHandler: View,
+    TapGestureHandler: View,
+    TouchableOpacity: require('react-native').TouchableOpacity,
+    TouchableHighlight: require('react-native').TouchableHighlight,
+    TouchableWithoutFeedback: require('react-native').TouchableWithoutFeedback,
+    Directions: {},
+  };
+});
 
 // Mock expo-linear-gradient
 jest.mock('expo-linear-gradient', () => ({

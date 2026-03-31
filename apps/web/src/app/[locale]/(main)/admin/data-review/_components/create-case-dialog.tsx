@@ -27,38 +27,13 @@ import { apiClient } from '@/lib/api';
 import { caseRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Loader2, ChevronDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { useSchoolSearch } from '@/hooks/use-school-search';
-import { useHighSchoolSearch } from '@/hooks/use-high-school-search';
+import { BackgroundSection } from './create-case/BackgroundSection';
 
 const YEARS = Array.from({ length: 11 }, (_, i) => 2020 + i);
 const RESULTS = ['ADMITTED', 'REJECTED', 'WAITLISTED', 'DEFERRED'] as const;
 const ROUNDS = ['ED', 'ED2', 'EA', 'REA', 'RD', 'ROLLING'] as const;
 const VISIBILITIES = ['ANONYMOUS', 'PUBLIC', 'VERIFIED_ONLY'] as const;
-const CURRICULA = ['AP', 'IB', 'A_LEVEL', 'GAOKAO', 'CANADIAN', 'AUSTRALIAN', 'OTHER'] as const;
-const AID_OPTIONS = [
-  'no_aid',
-  'need_based',
-  'merit',
-  'need_and_merit',
-  'full_tuition',
-  'full_ride',
-  'loan_only',
-  'none_received',
-  'unknown',
-] as const;
-const DEMOGRAPHIC_OPTIONS = [
-  'international',
-  'first_gen',
-  'legacy',
-  'urm',
-  'recruited_athlete',
-  'low_income',
-  'transfer',
-  'homeschool',
-  'military',
-  'gap_year',
-] as const;
 
 interface Props {
   open: boolean;
@@ -92,11 +67,9 @@ export function CreateCaseDialog({ open, onOpenChange }: Props) {
   const [apSubjects, setApSubjects] = useState('');
   const [ibScore, setIbScore] = useState('');
 
-  // Background — high school search
-  const [hsQuery, setHsQuery] = useState('');
+  // Background
   const [highSchoolId, setHighSchoolId] = useState('');
   const [highSchoolName, setHighSchoolName] = useState('');
-  const [showHsDropdown, setShowHsDropdown] = useState(false);
   const [curriculum, setCurriculum] = useState('');
   const [nationality, setNationality] = useState('');
   const [demographics, setDemographics] = useState<Set<string>>(new Set());
@@ -116,12 +89,10 @@ export function CreateCaseDialog({ open, onOpenChange }: Props) {
 
   // Collapsible sections
   const [scoresOpen, setScoresOpen] = useState(true);
-  const [backgroundOpen, setBackgroundOpen] = useState(false);
   const [activitiesOpen, setActivitiesOpen] = useState(false);
   const [contextOpen, setContextOpen] = useState(false);
 
   const { data: schools } = useSchoolSearch(schoolQuery, open);
-  const { data: highSchools } = useHighSchoolSearch(hsQuery, open);
 
   const mutation = useMutation({
     mutationFn: (body: Record<string, unknown>) => apiClient.post(caseRoutes.list(), body),
@@ -150,7 +121,6 @@ export function CreateCaseDialog({ open, onOpenChange }: Props) {
     setApCount('');
     setApSubjects('');
     setIbScore('');
-    setHsQuery('');
     setHighSchoolId('');
     setHighSchoolName('');
     setCurriculum('');
@@ -442,145 +412,25 @@ export function CreateCaseDialog({ open, onOpenChange }: Props) {
           </Collapsible>
 
           {/* ── Background Section ── */}
-          <Collapsible open={backgroundOpen} onOpenChange={setBackgroundOpen}>
-            <CollapsibleTrigger asChild>
-              <button
-                type="button"
-                className="flex w-full items-center justify-between rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-muted/50"
-              >
-                {t('background')}
-                <ChevronDown
-                  className={`h-4 w-4 transition-transform ${backgroundOpen ? 'rotate-180' : ''}`}
-                />
-              </button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="mt-2 space-y-3">
-              {/* High school search */}
-              <div className="space-y-1.5 relative">
-                <Label>{t('highSchool')}</Label>
-                <Input
-                  placeholder={t('highSchoolSearch')}
-                  value={highSchoolId ? highSchoolName : hsQuery}
-                  onChange={(e) => {
-                    setHsQuery(e.target.value);
-                    setHighSchoolId('');
-                    setHighSchoolName('');
-                    setShowHsDropdown(true);
-                  }}
-                  onFocus={() => setShowHsDropdown(true)}
-                />
-                {showHsDropdown && highSchools && highSchools.length > 0 && !highSchoolId && (
-                  <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border rounded-md shadow-md max-h-[200px] overflow-y-auto">
-                    {highSchools.map((hs) => (
-                      <button
-                        key={hs.id}
-                        type="button"
-                        className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors"
-                        onClick={() => {
-                          setHighSchoolId(hs.id);
-                          setHighSchoolName(locale === 'zh' && hs.nameZh ? hs.nameZh : hs.name);
-                          setShowHsDropdown(false);
-                        }}
-                      >
-                        <span className="font-medium">
-                          {locale === 'zh' && hs.nameZh ? hs.nameZh : hs.name}
-                        </span>
-                        {hs.tier && (
-                          <span className="text-muted-foreground ml-2 text-xs">T{hs.tier}</span>
-                        )}
-                        {(hs.city || hs.state) && (
-                          <span className="text-muted-foreground ml-1 text-xs">
-                            · {[hs.city, hs.state].filter(Boolean).join(', ')}
-                          </span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {highSchoolId && (
-                  <button
-                    type="button"
-                    className="absolute right-2 top-[calc(50%+4px)] text-muted-foreground hover:text-foreground text-xs"
-                    onClick={() => {
-                      setHighSchoolId('');
-                      setHighSchoolName('');
-                      setHsQuery('');
-                    }}
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-              <div className="space-y-1.5">
-                <Label>{t('nationality')}</Label>
-                <Input
-                  value={nationality}
-                  onChange={(e) => setNationality(e.target.value)}
-                  placeholder={te('nationalityPlaceholder')}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>{t('curriculum')}</Label>
-                <Select value={curriculum} onValueChange={setCurriculum}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="—" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CURRICULA.map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {te(`curriculum.${c}`)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>{t('financialAid')}</Label>
-                <Select value={financialAid} onValueChange={setFinancialAid}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="—" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {AID_OPTIONS.map((a) => (
-                      <SelectItem key={a} value={a}>
-                        {te(`financialAid.${a}`)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>{t('demographics')}</Label>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {DEMOGRAPHIC_OPTIONS.map((tag) => {
-                    const active = demographics.has(tag);
-                    return (
-                      <button
-                        key={tag}
-                        type="button"
-                        onClick={() => {
-                          setDemographics((prev) => {
-                            const next = new Set(prev);
-                            if (next.has(tag)) next.delete(tag);
-                            else next.add(tag);
-                            return next;
-                          });
-                        }}
-                        className={cn(
-                          'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-                          active
-                            ? 'border-primary bg-primary/10 text-primary'
-                            : 'border-border bg-background text-muted-foreground hover:bg-muted'
-                        )}
-                      >
-                        {te(`demographic.${tag}`)}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
+          <BackgroundSection
+            highSchoolId={highSchoolId}
+            highSchoolName={highSchoolName}
+            curriculum={curriculum}
+            nationality={nationality}
+            demographics={demographics}
+            financialAid={financialAid}
+            dialogOpen={open}
+            onFieldChange={(field, value) => {
+              if (field === 'curriculum') setCurriculum(value);
+              else if (field === 'nationality') setNationality(value);
+              else if (field === 'financialAid') setFinancialAid(value);
+            }}
+            onDemographicsChange={setDemographics}
+            onHighSchoolSelect={(id, name) => {
+              setHighSchoolId(id);
+              setHighSchoolName(name);
+            }}
+          />
 
           {/* ── Activities & Awards Section ── */}
           <Collapsible open={activitiesOpen} onOpenChange={setActivitiesOpen}>

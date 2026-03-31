@@ -15,7 +15,10 @@ export type GovernanceRuleId =
   | 'page-loading-coverage'
   | 'api-route-shared-constants'
   | 'validation-i18n-keys'
-  | 'flex-overflow-safety';
+  | 'flex-overflow-safety'
+  | 'component-size-limit'
+  | 'service-size-limit'
+  | 'error-boundary-coverage';
 
 export interface GovernanceIssue {
   rule: GovernanceRuleId;

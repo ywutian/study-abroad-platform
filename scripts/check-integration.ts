@@ -196,19 +196,32 @@ function checkEnumConsistency(): Issue[] {
     prismaEnums.set(name, { values, line });
   }
 
-  // Parse Shared enums
+  // Parse Shared enums (follow barrel re-exports)
+  const sharedTypesDir = path.dirname(SHARED_TYPES);
   const sharedContent = readFile(SHARED_TYPES);
   const sharedEnums = new Map<string, { values: string[]; line: number }>();
   const sharedEnumRegex = /export\s+enum\s+(\w+)\s*\{([^}]+)\}/g;
 
-  while ((match = sharedEnumRegex.exec(sharedContent)) !== null) {
+  // Collect content from index.ts + all re-exported files
+  let combinedContent = sharedContent;
+  const reExportRegex = /export\s+\*\s+from\s+['"](\.\/[^'"]+)['"]/g;
+  let reExportMatch: RegExpExecArray | null;
+  while ((reExportMatch = reExportRegex.exec(sharedContent)) !== null) {
+    const relPath = reExportMatch[1];
+    const fullPath = path.resolve(sharedTypesDir, relPath + '.ts');
+    if (fs.existsSync(fullPath)) {
+      combinedContent += '\n' + readFile(fullPath);
+    }
+  }
+
+  while ((match = sharedEnumRegex.exec(combinedContent)) !== null) {
     const name = match[1];
     const values = match[2]
       .split('\n')
       .map((l) => l.trim().replace(/,\s*$/, ''))
       .filter((l) => l && !l.startsWith('//'))
       .map((l) => l.split('=')[0].trim());
-    const line = sharedContent.substring(0, match.index).split('\n').length;
+    const line = combinedContent.substring(0, match.index).split('\n').length;
     sharedEnums.set(name, { values, line });
   }
 

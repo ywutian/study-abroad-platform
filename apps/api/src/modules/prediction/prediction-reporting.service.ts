@@ -3,6 +3,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
 import { MemoryType } from '@prisma/client';
 import { fireAndForget } from '../../common/utils/async.util';
+import { createPaginatedResponse } from '../../common/dto/pagination.dto';
 
 /**
  * Reporting and calibration data service for predictions.
@@ -23,14 +24,21 @@ export class PredictionReportingService {
    * Retrieve the prediction history for a profile, ordered by most recent first.
    *
    * @param profileId - The profile identifier
-   * @returns Up to 50 most recent PredictionResult records
+   * @param page - Page number (default: 1)
+   * @param pageSize - Items per page (default: 20)
    */
-  async getPredictionHistory(profileId: string) {
-    return this.prisma.predictionResult.findMany({
-      where: { profileId },
-      orderBy: { updatedAt: 'desc' },
-      take: 50,
-    });
+  async getPredictionHistory(profileId: string, page = 1, pageSize = 20) {
+    const skip = (page - 1) * pageSize;
+    const [items, total] = await Promise.all([
+      this.prisma.predictionResult.findMany({
+        where: { profileId },
+        orderBy: { updatedAt: 'desc' },
+        skip,
+        take: pageSize,
+      }),
+      this.prisma.predictionResult.count({ where: { profileId } }),
+    ]);
+    return createPaginatedResponse(items, total, page, pageSize);
   }
 
   /**

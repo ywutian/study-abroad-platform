@@ -140,23 +140,33 @@ describe('PredictionController', () => {
 
   describe('getHistory', () => {
     it('should return prediction history for the user', async () => {
-      const result = await controller.getHistory(mockUser as any);
+      const pagination = { page: 1, pageSize: 20 };
+      const result = await controller.getHistory(mockUser as any, pagination);
 
       expect(prisma.profile.findUnique).toHaveBeenCalledWith({
         where: { userId: 'user-1' },
       });
       expect(predictionService.getPredictionHistory).toHaveBeenCalledWith(
         'profile-1',
+        1,
+        20,
       );
       expect(result).toEqual(mockHistory);
     });
 
-    it('should return empty array when profile does not exist', async () => {
+    it('should return empty paginated response when profile does not exist', async () => {
       (prisma.profile.findUnique as jest.Mock).mockResolvedValue(null);
+      const pagination = { page: 1, pageSize: 20 };
 
-      const result = await controller.getHistory(mockUser as any);
+      const result = await controller.getHistory(mockUser as any, pagination);
 
-      expect(result).toEqual([]);
+      expect(result).toEqual({
+        items: [],
+        total: 0,
+        page: 1,
+        pageSize: 20,
+        totalPages: 0,
+      });
       expect(predictionService.getPredictionHistory).not.toHaveBeenCalled();
     });
   });

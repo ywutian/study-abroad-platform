@@ -11,6 +11,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  FlatList,
   RefreshControl,
   TouchableOpacity,
   Dimensions,
@@ -203,36 +204,39 @@ export default function HallOfFameScreen() {
       </View>
 
       {/* Member List */}
-      <Animated.ScrollView
-        onScroll={scrollHandler}
-        scrollEventThrottle={16}
-        contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xl }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.listContainer}>
-          {isLoading ? (
-            <Loading />
-          ) : members.length > 0 ? (
-            members.map((member, index) => (
-              <Animated.View key={member.id} entering={FadeInUp.delay(index * 80).springify()}>
-                <MemberCard
-                  member={member}
-                  colors={colors}
-                  rank={index + 1}
-                  onPress={() => router.push(`/case/${member.id}`)}
-                />
-              </Animated.View>
-            ))
-          ) : (
+      {isLoading ? (
+        <Loading />
+      ) : (
+        <Animated.FlatList
+          data={members}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item, index }) => (
+            <Animated.View entering={FadeInUp.delay(Math.min(index, 10) * 80).springify()}>
+              <MemberCard
+                member={item}
+                colors={colors}
+                rank={index + 1}
+                onPress={() => router.push(`/case/${item.id}`)}
+              />
+            </Animated.View>
+          )}
+          onScroll={scrollHandler}
+          scrollEventThrottle={16}
+          contentContainerStyle={{
+            padding: spacing.lg,
+            paddingBottom: insets.bottom + spacing.xl,
+          }}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
             <EmptyState
               icon="trophy-outline"
               title={t('hallOfFame.empty.title')}
               description={t('hallOfFame.empty.description')}
             />
-          )}
-        </View>
-      </Animated.ScrollView>
+          }
+        />
+      )}
     </View>
   );
 }

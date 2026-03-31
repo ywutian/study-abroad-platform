@@ -4,7 +4,7 @@
 
 import React, { useState, useMemo } from 'react';
 import type { ComponentProps } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -139,87 +139,93 @@ export default function EssaysScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView
+      <FlatList
+        data={isLoading ? [] : filteredEssays}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item, index }) => (
+          <Animated.View
+            entering={FadeInUp.delay(Math.min(index, 10) * 80).springify()}
+            layout={Layout.springify()}
+          >
+            <EssayCard
+              essay={item}
+              colors={colors}
+              onPress={() => router.push(`/essay/${item.id}`)}
+              onDelete={() => handleDelete(item.id)}
+              onAIReview={() => {
+                router.push({
+                  pathname: '/(tabs)/ai',
+                  params: { prompt: `${t('essays.aiReviewPrompt')}${item.title}` },
+                });
+              }}
+            />
+          </Animated.View>
+        )}
+        ListHeaderComponent={
+          <>
+            {/* Stats */}
+            <Animated.View entering={FadeInDown.duration(400)}>
+              <View style={styles.statsContainer}>
+                <StatCard
+                  label={t('essays.stats.all')}
+                  value={stats.total}
+                  icon="document-text"
+                  color={colors.primary}
+                  active={activeTab === 'all'}
+                  onPress={() => setActiveTab('all')}
+                />
+                <StatCard
+                  label={t('essays.stats.draft')}
+                  value={stats.draft}
+                  icon="create"
+                  color={colors.warning}
+                  active={activeTab === 'draft'}
+                  onPress={() => setActiveTab('draft')}
+                />
+                <StatCard
+                  label={t('essays.stats.inProgress')}
+                  value={stats.inProgress}
+                  icon="pencil"
+                  color={colors.info}
+                  active={activeTab === 'in_progress'}
+                  onPress={() => setActiveTab('in_progress')}
+                />
+                <StatCard
+                  label={t('essays.stats.completed')}
+                  value={stats.completed}
+                  icon="checkmark-circle"
+                  color={colors.success}
+                  active={activeTab === 'completed'}
+                  onPress={() => setActiveTab('completed')}
+                />
+              </View>
+            </Animated.View>
+
+            {/* Section Title */}
+            <View style={styles.listSection}>
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+                {t('essays.title')}
+              </Text>
+            </View>
+
+            {isLoading && <Loading />}
+          </>
+        }
         contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={() => refetch()} />}
         showsVerticalScrollIndicator={false}
-      >
-        {/* Stats */}
-        <Animated.View entering={FadeInDown.duration(400)}>
-          <View style={styles.statsContainer}>
-            <StatCard
-              label={t('essays.stats.all')}
-              value={stats.total}
-              icon="document-text"
-              color={colors.primary}
-              active={activeTab === 'all'}
-              onPress={() => setActiveTab('all')}
-            />
-            <StatCard
-              label={t('essays.stats.draft')}
-              value={stats.draft}
-              icon="create"
-              color={colors.warning}
-              active={activeTab === 'draft'}
-              onPress={() => setActiveTab('draft')}
-            />
-            <StatCard
-              label={t('essays.stats.inProgress')}
-              value={stats.inProgress}
-              icon="pencil"
-              color={colors.info}
-              active={activeTab === 'in_progress'}
-              onPress={() => setActiveTab('in_progress')}
-            />
-            <StatCard
-              label={t('essays.stats.completed')}
-              value={stats.completed}
-              icon="checkmark-circle"
-              color={colors.success}
-              active={activeTab === 'completed'}
-              onPress={() => setActiveTab('completed')}
-            />
-          </View>
-        </Animated.View>
-
-        {/* Essay List */}
-        <View style={styles.listSection}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-            {t('essays.title')}
-          </Text>
-
-          {isLoading ? (
-            <Loading />
-          ) : filteredEssays.length > 0 ? (
-            filteredEssays.map((essay, index) => (
-              <Animated.View
-                key={essay.id}
-                entering={FadeInUp.delay(index * 80).springify()}
-                layout={Layout.springify()}
-              >
-                <EssayCard
-                  essay={essay}
-                  colors={colors}
-                  onPress={() => router.push(`/essay/${essay.id}`)}
-                  onDelete={() => handleDelete(essay.id)}
-                  onAIReview={() => {
-                    router.push({
-                      pathname: '/(tabs)/ai',
-                      params: { prompt: `${t('essays.aiReviewPrompt')}${essay.title}` },
-                    });
-                  }}
-                />
-              </Animated.View>
-            ))
-          ) : (
-            <EmptyState
-              icon="document-text-outline"
-              title={t('essays.empty.title')}
-              description={t('essays.empty.description')}
-            />
-          )}
-        </View>
-      </ScrollView>
+        ListEmptyComponent={
+          isLoading ? null : (
+            <View style={styles.listSection}>
+              <EmptyState
+                icon="document-text-outline"
+                title={t('essays.empty.title')}
+                description={t('essays.empty.description')}
+              />
+            </View>
+          )
+        }
+      />
 
       {/* FAB */}
       <Animated.View

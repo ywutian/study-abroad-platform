@@ -4,6 +4,7 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { router, type Href } from 'expo-router';
+import { deepLinkPaths } from '@/lib/linking';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/client';
 import { useNotificationStore } from '@/stores/notification';
@@ -158,7 +159,7 @@ function navigateToNotification(notification: Notification): void {
   switch (type) {
     case 'NEW_MESSAGE':
       if (relatedId) {
-        router.push(`/chat/${relatedId}` as Href);
+        router.push(deepLinkPaths.chat(relatedId) as Href);
       }
       break;
 
@@ -177,11 +178,15 @@ function navigateToNotification(notification: Notification): void {
 
     case 'POST_REPLY':
     case 'POST_LIKE':
-      router.push('/forum' as Href);
+      if (relatedId) {
+        router.push(deepLinkPaths.forum(relatedId) as Href);
+      } else {
+        router.push('/forum' as Href);
+      }
       break;
 
     case 'DEADLINE_REMINDER':
-      router.push('/timeline' as Href);
+      router.push(deepLinkPaths.timeline() as Href);
       break;
 
     // For all other types (VERIFICATION_*, POINTS_EARNED, LEVEL_UP,

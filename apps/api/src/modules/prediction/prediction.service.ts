@@ -1349,8 +1349,16 @@ export class PredictionService {
   }
 
   /** @deprecated Use PredictionReportingService.getPredictionHistory() directly */
-  async getPredictionHistory(profileId: string) {
-    return this.reportingService.getPredictionHistory(profileId);
+  async getPredictionHistory(
+    profileId: string,
+    page?: number,
+    pageSize?: number,
+  ) {
+    return this.reportingService.getPredictionHistory(
+      profileId,
+      page,
+      pageSize,
+    );
   }
 
   /** @deprecated Use PredictionReportingService.reportActualResult() directly */
