@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/table';
 import { PaginationControls } from '../../_components/pagination-controls';
 import { apiClient } from '@/lib/api';
+import { adminAiAgentRoutes } from '@study-abroad/shared';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Network, Eye } from 'lucide-react';
@@ -46,7 +47,7 @@ export function EntitiesSection() {
   const { data: entityData } = useQuery({
     queryKey: ['memoryEntities', entityFilters, entityPage],
     queryFn: () =>
-      apiClient.get<{ data: EntityItem[]; total: number }>('/admin/ai-agent/memory/entities', {
+      apiClient.get<{ data: EntityItem[]; total: number }>(adminAiAgentRoutes.memoryEntities(), {
         params: {
           ...(entityFilters.userId && { userId: entityFilters.userId }),
           ...(entityFilters.type && { type: entityFilters.type }),

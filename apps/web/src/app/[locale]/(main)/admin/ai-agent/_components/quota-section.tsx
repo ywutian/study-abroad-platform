@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminAiAgentRoutes } from '@study-abroad/shared';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Settings, Loader2 } from 'lucide-react';
@@ -18,7 +18,7 @@ export function QuotaSection() {
 
   const { data: configData } = useQuery({
     queryKey: ['aiAgentConfig'],
-    queryFn: () => apiClient.get<any>('/admin/ai-agent/config'),
+    queryFn: () => apiClient.get<any>(adminAiAgentRoutes.config()),
   });
 
   const quota = configData?.config?.system?.quota;
@@ -31,7 +31,7 @@ export function QuotaSection() {
   });
 
   const updateQuotaMutation = useMutation({
-    mutationFn: (data: any) => apiClient.put(`${API_ROUTES.ADMIN}/ai-agent/config/quota`, data),
+    mutationFn: (data: any) => apiClient.put(adminAiAgentRoutes.configQuota(), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['aiAgentConfig'] });
       toast.success(t('quotaUpdated'));

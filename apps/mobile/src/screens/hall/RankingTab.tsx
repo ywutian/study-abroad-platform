@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EmptyState, Loading } from '@/components/ui';
 import { useColors, spacing } from '@/utils/theme';
+import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import type { RankingResult } from './types';
 import { RankingItem } from './RankingItem';
@@ -23,7 +24,7 @@ export function RankingTab() {
     refetch,
   } = useQuery<RankingResult[]>({
     queryKey: ['hall-target-ranking'],
-    queryFn: () => apiClient.get<RankingResult[]>('/halls/target-ranking'),
+    queryFn: () => apiClient.get<RankingResult[]>(`${API_ROUTES.HALLS}/target-ranking`),
     staleTime: 5 * 60_000,
   });
 

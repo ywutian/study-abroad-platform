@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { apiClient } from '@/lib/api';
+import { adminAiAgentRoutes } from '@study-abroad/shared';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Loader2, Users } from 'lucide-react';
@@ -20,7 +21,7 @@ export function UserQuerySection() {
   const { data: userStats, isFetching: userStatsFetching } = useQuery({
     queryKey: ['memoryUserStats', queryUserId],
     queryFn: () =>
-      apiClient.get<EnhancedMemoryStats>(`/admin/ai-agent/memory/users/${queryUserId}/stats`),
+      apiClient.get<EnhancedMemoryStats>(adminAiAgentRoutes.memoryUserStats(queryUserId)),
     enabled: !!queryUserId,
   });
 

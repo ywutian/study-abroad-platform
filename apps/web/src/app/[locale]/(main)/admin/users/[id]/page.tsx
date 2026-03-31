@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/layout';
 import { Link } from '@/lib/i18n/navigation';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminRoutes, adminAiAgentRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import {
   User,
@@ -61,24 +61,24 @@ export default function AdminUserDetailPage() {
 
   const { data: user, isLoading } = useQuery({
     queryKey: ['adminUser', userId],
-    queryFn: () => apiClient.get<UserDetail>(`/admin/users/${userId}`),
+    queryFn: () => apiClient.get<UserDetail>(adminRoutes.userById(userId)),
     enabled: !!userId,
   });
 
   const { data: usage } = useQuery({
     queryKey: ['adminUserUsage', userId],
-    queryFn: () => apiClient.get<UsageStats>(`/admin/ai-agent/users/${userId}/usage`),
+    queryFn: () => apiClient.get<UsageStats>(adminAiAgentRoutes.userUsage(userId)),
     enabled: !!userId,
   });
 
   const { data: rateLimit } = useQuery({
     queryKey: ['adminUserRateLimit', userId],
-    queryFn: () => apiClient.get<RateLimitInfo>(`/admin/ai-agent/users/${userId}/rate-limit`),
+    queryFn: () => apiClient.get<RateLimitInfo>(adminAiAgentRoutes.userRateLimit(userId)),
     enabled: !!userId,
   });
 
   const resetRateLimitMutation = useMutation({
-    mutationFn: () => apiClient.delete(`${API_ROUTES.ADMIN}/ai-agent/users/${userId}/rate-limit`),
+    mutationFn: () => apiClient.delete(adminAiAgentRoutes.userRateLimit(userId)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminUserRateLimit', userId] });
       toast.success(t('userDetail.rateLimitReset'));

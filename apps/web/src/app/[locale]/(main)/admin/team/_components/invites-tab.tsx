@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminRoutes } from '@study-abroad/shared';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -108,14 +108,14 @@ export function InvitesTab() {
   // Invite history
   const { data: invites } = useQuery({
     queryKey: ['adminInvites'],
-    queryFn: () => apiClient.get<Invite[]>('/admin/roles/invites'),
+    queryFn: () => apiClient.get<Invite[]>(adminRoutes.invites()),
   });
 
   // ── Search & Promote mutations ──
   const searchMutation = useMutation({
     mutationFn: (searchEmail: string) =>
       apiClient.get<SearchResult>(
-        `/admin/roles/users/search?email=${encodeURIComponent(searchEmail)}`
+        `${adminRoutes.usersSearch()}?email=${encodeURIComponent(searchEmail)}`
       ),
     onSuccess: (data) => {
       setSearchResult(data);
@@ -130,7 +130,7 @@ export function InvitesTab() {
 
   const promoteMutation = useMutation({
     mutationFn: (data: { email: string; role: string }) =>
-      apiClient.post(`${API_ROUTES.ADMIN}/roles/users/promote`, data),
+      apiClient.post(adminRoutes.usersPromote(), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminOperators'] });
       toast.success(t('team.invites.promoted'));
@@ -141,7 +141,7 @@ export function InvitesTab() {
   // ── Invite link mutation ──
   const createInviteMutation = useMutation({
     mutationFn: (data: { email?: string; role: string }) =>
-      apiClient.post<InviteCreateResult>('/admin/roles/operators/invite', data),
+      apiClient.post<InviteCreateResult>(adminRoutes.operatorInvite(), data),
     onSuccess: (data) => {
       const baseUrl = window.location.origin;
       const locale = window.location.pathname.split('/')[1] || 'zh';

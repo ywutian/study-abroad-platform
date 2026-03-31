@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { apiClient } from '@/lib/api';
+import { adminRoutes } from '@study-abroad/shared';
 import { useTranslations } from 'next-intl';
 import { Users, FileText, CreditCard, DollarSign } from 'lucide-react';
 import {
@@ -28,7 +29,7 @@ export function EngagementTab() {
 
   const { data: trends } = useQuery({
     queryKey: ['adminTrends'],
-    queryFn: () => apiClient.get<TrendData[]>('/admin/stats/trends'),
+    queryFn: () => apiClient.get<TrendData[]>(adminRoutes.statsTrends()),
   });
 
   const data = trends || [];

@@ -43,6 +43,7 @@ import {
   AnimatedCounter,
 } from '@/components/ui';
 import { useColors, type Colors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -82,7 +83,7 @@ export default function HallOfFameScreen() {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['hallOfFame', activeTab],
     queryFn: () =>
-      apiClient.get<{ members: HallMember[]; stats: HallStats }>('/halls', {
+      apiClient.get<{ members: HallMember[]; stats: HallStats }>(API_ROUTES.HALLS, {
         params: { filter: activeTab },
       }),
   });

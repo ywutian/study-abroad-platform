@@ -35,7 +35,7 @@ import { CardSkeleton, ListSkeleton } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PaginationControls } from '../_components/pagination-controls';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import {
   CreditCard,
@@ -84,7 +84,7 @@ export default function AdminPaymentsPage() {
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['adminPaymentStats'],
-    queryFn: () => apiClient.get<PaymentStats>('/admin/payments/stats'),
+    queryFn: () => apiClient.get<PaymentStats>(adminRoutes.paymentsStats()),
   });
 
   const { data: paymentsData, isLoading: paymentsLoading } = useQuery({
@@ -94,7 +94,7 @@ export default function AdminPaymentsPage() {
       if (statusFilter !== 'ALL') params.status = statusFilter;
       if (planFilter !== 'ALL') params.plan = planFilter;
       return apiClient.get<{ data: Payment[]; total: number; totalPages: number }>(
-        '/admin/payments',
+        adminRoutes.payments(),
         { params }
       );
     },
@@ -102,7 +102,7 @@ export default function AdminPaymentsPage() {
 
   const refundMutation = useMutation({
     mutationFn: ({ paymentId, reason }: { paymentId: string; reason: string }) =>
-      apiClient.post(`${API_ROUTES.ADMIN}/payments/${paymentId}/refund`, { reason }),
+      apiClient.post(adminRoutes.paymentRefund(paymentId), { reason }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminPayments'] });
       queryClient.invalidateQueries({ queryKey: ['adminPaymentStats'] });
@@ -114,7 +114,7 @@ export default function AdminPaymentsPage() {
 
   const adjustMutation = useMutation({
     mutationFn: ({ userId, plan }: { userId: string; plan: string }) =>
-      apiClient.put(`${API_ROUTES.ADMIN}/payments/users/${userId}/subscription`, { plan }),
+      apiClient.put(adminRoutes.paymentUserSubscription(userId), { plan }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminPayments'] });
       setAdjustTarget(null);

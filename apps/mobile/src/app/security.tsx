@@ -28,6 +28,7 @@ import {
   fontWeight,
   borderRadius,
 } from '@/utils/theme';
+import { API_ROUTES, userRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
 import { BIOMETRIC_ENABLED_KEY } from '@/screens/settings/SettingsScreen';
@@ -62,7 +63,7 @@ export default function SecurityScreen() {
 
   const changePasswordMutation = useMutation({
     mutationFn: (data: { currentPassword: string; newPassword: string }) =>
-      apiClient.put('/users/me/password', data),
+      apiClient.put(`${userRoutes.me()}/password`, data),
     onSuccess: () => {
       toast.success(t('security.passwordChanged'));
       setCurrentPassword('');
@@ -151,7 +152,7 @@ export default function SecurityScreen() {
 
   // -- Active Sessions --
   const logoutAllMutation = useMutation({
-    mutationFn: () => apiClient.post('/auth/logout-all'),
+    mutationFn: () => apiClient.post(`${API_ROUTES.AUTH}/logout-all`),
     onSuccess: async () => {
       toast.success(t('security.loggedOutAll'));
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -178,7 +179,7 @@ export default function SecurityScreen() {
 
   const deleteAccountMutation = useMutation({
     mutationFn: (password: string) =>
-      apiClient.delete('/users/me', { body: JSON.stringify({ password }) }),
+      apiClient.delete(userRoutes.me(), { body: JSON.stringify({ password }) }),
     onSuccess: async () => {
       setDeleteDialogVisible(false);
       toast.success(t('security.accountDeleted'));

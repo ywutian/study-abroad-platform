@@ -13,6 +13,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { apiClient } from '@/lib/api';
+import { adminAiAgentRoutes } from '@study-abroad/shared';
 import { useTranslations } from 'next-intl';
 import { Cpu } from 'lucide-react';
 
@@ -29,7 +30,7 @@ export function AgentPerformanceTab() {
   const { data } = useQuery({
     queryKey: ['analyticsTokenUsage', days],
     queryFn: () =>
-      apiClient.get<DailyMetrics>('/admin/ai-agent/metrics/daily', {
+      apiClient.get<DailyMetrics>(adminAiAgentRoutes.metricsDaily(), {
         params: { days: String(days) },
       }),
   });

@@ -26,6 +26,7 @@ import {
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { API_ROUTES, chatRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 
 // ==================== Types ====================
@@ -72,7 +73,7 @@ export default function FollowersPage() {
     refetch: refetchFollowers,
   } = useQuery({
     queryKey: ['chat', 'followers'],
-    queryFn: () => apiClient.get<UserWithProfile[]>('/chats/followers'),
+    queryFn: () => apiClient.get<UserWithProfile[]>(`${API_ROUTES.CHATS}/followers`),
   });
 
   const {
@@ -81,7 +82,7 @@ export default function FollowersPage() {
     refetch: refetchFollowing,
   } = useQuery({
     queryKey: ['chat', 'following'],
-    queryFn: () => apiClient.get<UserWithProfile[]>('/chats/following'),
+    queryFn: () => apiClient.get<UserWithProfile[]>(`${API_ROUTES.CHATS}/following`),
   });
 
   const {
@@ -90,19 +91,21 @@ export default function FollowersPage() {
     refetch: refetchBlocked,
   } = useQuery({
     queryKey: ['chat', 'blocked'],
-    queryFn: () => apiClient.get<UserWithProfile[]>('/chats/blocked'),
+    queryFn: () => apiClient.get<UserWithProfile[]>(`${API_ROUTES.CHATS}/blocked`),
   });
 
   const { data: recommendations } = useQuery({
     queryKey: ['chat', 'recommendations'],
     queryFn: () =>
-      apiClient.get<UserWithProfile[]>('/chats/recommendations', { params: { limit: 5 } }),
+      apiClient.get<UserWithProfile[]>(`${API_ROUTES.CHATS}/recommendations`, {
+        params: { limit: 5 },
+      }),
   });
 
   // ==================== Mutations ====================
 
   const followMutation = useMutation({
-    mutationFn: (userId: string) => apiClient.post(`/chats/follow/${userId}`),
+    mutationFn: (userId: string) => apiClient.post(chatRoutes.follow(userId)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chat', 'following'] });
       queryClient.invalidateQueries({ queryKey: ['chat', 'followers'] });
@@ -116,7 +119,7 @@ export default function FollowersPage() {
   });
 
   const unfollowMutation = useMutation({
-    mutationFn: (userId: string) => apiClient.delete(`/chats/follow/${userId}`),
+    mutationFn: (userId: string) => apiClient.delete(chatRoutes.follow(userId)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chat', 'following'] });
       queryClient.invalidateQueries({ queryKey: ['chat', 'followers'] });
@@ -129,7 +132,7 @@ export default function FollowersPage() {
   });
 
   const blockMutation = useMutation({
-    mutationFn: (userId: string) => apiClient.post(`/chats/block/${userId}`),
+    mutationFn: (userId: string) => apiClient.post(chatRoutes.block(userId)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chat', 'blocked'] });
       queryClient.invalidateQueries({ queryKey: ['chat', 'followers'] });
@@ -145,7 +148,7 @@ export default function FollowersPage() {
   });
 
   const unblockMutation = useMutation({
-    mutationFn: (userId: string) => apiClient.delete(`/chats/block/${userId}`),
+    mutationFn: (userId: string) => apiClient.delete(chatRoutes.block(userId)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chat', 'blocked'] });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -160,7 +163,7 @@ export default function FollowersPage() {
 
   const startConversationMutation = useMutation({
     mutationFn: (userId: string) =>
-      apiClient.post<Conversation>('/chats/conversations', { userId }),
+      apiClient.post<Conversation>(chatRoutes.conversations(), { userId }),
     onSuccess: (data) => {
       router.push(`/chat/${data.id}`);
     },

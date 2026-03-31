@@ -7,6 +7,7 @@ import {
   getAccessToken,
   getRefreshToken,
 } from '@/lib/storage/secure-store';
+import { authRoutes, userRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import type { User, AuthResponse, LoginDto, RegisterDto } from '@/types';
 
@@ -32,7 +33,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   sessionExpired: false,
 
   login: async (dto: LoginDto) => {
-    const response = await apiClient.post<AuthResponse>('/auth/login', dto, { skipAuth: true });
+    const response = await apiClient.post<AuthResponse>(authRoutes.login(), dto, {
+      skipAuth: true,
+    });
 
     if (!response.accessToken) {
       throw new Error('Login failed: no access token returned');
@@ -50,7 +53,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   register: async (dto: RegisterDto) => {
-    await apiClient.post('/auth/register', dto, { skipAuth: true });
+    await apiClient.post(authRoutes.register(), dto, { skipAuth: true });
     // Registration doesn't return tokens — the user needs to verify email then login.
     // The UI should show a success message and redirect to login.
   },
@@ -61,7 +64,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     // Call logout API
     if (refreshToken) {
       try {
-        await apiClient.post('/auth/logout', { refreshToken });
+        await apiClient.post(authRoutes.logout(), { refreshToken });
       } catch {
         // Ignore logout API errors
       }
@@ -80,7 +83,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (token && user) {
         // Verify token is still valid
         try {
-          const freshUser = await apiClient.get<User>('/users/me');
+          const freshUser = await apiClient.get<User>(userRoutes.me());
           await saveUser(freshUser);
           set({ user: freshUser, isAuthenticated: true, isLoading: false });
         } catch (error: unknown) {

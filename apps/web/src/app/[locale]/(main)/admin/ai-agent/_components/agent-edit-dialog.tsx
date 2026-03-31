@@ -14,7 +14,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminAiAgentRoutes } from '@study-abroad/shared';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
@@ -41,7 +41,7 @@ export function AgentEditDialog({
   const updateAgentMutation = useMutation({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mutationFn: ({ type, ...data }: { type: string; [key: string]: any }) =>
-      apiClient.put(`${API_ROUTES.ADMIN}/ai-agent/agents/${type}`, data),
+      apiClient.put(adminAiAgentRoutes.agentById(type), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['aiAgentAgents'] });
       toast.success(t('agentUpdated'));

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { apiClient } from '@/lib/api';
+import { adminRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Upload, FileJson, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 
@@ -29,7 +30,7 @@ export function BatchImportTab() {
 
   const importMutation = useMutation({
     mutationFn: (schools: Record<string, unknown>[]) =>
-      apiClient.post<ImportResult>('/admin/high-schools/batch-import', { schools }),
+      apiClient.post<ImportResult>(adminRoutes.highSchoolsBatchImport(), { schools }),
     onSuccess: (data) => {
       const result = data as unknown as ImportResult;
       setLastResult(result);

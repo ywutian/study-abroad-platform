@@ -335,4 +335,140 @@ describe('EssayAiService', () => {
       expect(result.structure.hasStrongOpening).toBe(true);
     });
   });
+
+  describe('polishEssay', () => {
+    const userId = 'user-1';
+    const dto = { essayId: 'essay-1', style: 'formal' as any };
+
+    it('should polish essay and save result', async () => {
+      mockPrisma.essay.findUnique.mockResolvedValue({
+        id: 'essay-1',
+        profileId: 'profile-1',
+        content: 'Original essay text',
+      });
+      mockPrisma.profile.findFirst.mockResolvedValue({ id: 'profile-1' });
+
+      const polishResult = {
+        polished: 'Polished essay text',
+        changes: [
+          {
+            original: 'Original',
+            revised: 'Polished',
+            reason: 'Better word choice',
+          },
+        ],
+      };
+
+      mockLLMService.chatSimpleGuarded.mockResolvedValue('{}');
+      (extractJsonFromLlm as jest.Mock).mockReturnValue(polishResult);
+      mockPrisma.essayAIResult.create.mockResolvedValue({
+        id: 'result-1',
+        tokenUsed: 50,
+      });
+
+      const result = await service.polishEssay(userId, dto, 'en');
+
+      expect(result.polished).toBe('Polished essay text');
+      expect(result.changes).toHaveLength(1);
+      expect(mockIncentiveService.charge).toHaveBeenCalledWith(
+        userId,
+        'AI_ESSAY_POLISH',
+      );
+    });
+
+    it('should throw NotFoundException when essay not found', async () => {
+      mockPrisma.essay.findUnique.mockResolvedValue(null);
+
+      await expect(service.polishEssay(userId, dto, 'en')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('should throw BadRequestException when user does not own essay', async () => {
+      mockPrisma.essay.findUnique.mockResolvedValue({
+        id: 'essay-1',
+        profileId: 'profile-1',
+        content: 'text',
+      });
+      mockPrisma.profile.findFirst.mockResolvedValue(null);
+
+      await expect(service.polishEssay(userId, dto, 'en')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should refund points when LLM call fails', async () => {
+      mockPrisma.essay.findUnique.mockResolvedValue({
+        id: 'essay-1',
+        profileId: 'profile-1',
+        content: 'text',
+      });
+      mockPrisma.profile.findFirst.mockResolvedValue({ id: 'profile-1' });
+      mockLLMService.chatSimpleGuarded.mockRejectedValue(
+        new Error('LLM timeout'),
+      );
+
+      await expect(service.polishEssay(userId, dto, 'en')).rejects.toThrow();
+      expect(safeRefund).toHaveBeenCalled();
+    });
+  });
+
+  describe('continueWriting', () => {
+    it('should return continuation and suggestions on success', async () => {
+      const parsedResult = {
+        continuation: 'The next paragraph continues...',
+        suggestions: ['Expand on theme', 'Add a conclusion'],
+      };
+      mockLLMService.chatSimpleGuarded.mockResolvedValue('{}');
+      (extractJsonFromLlm as jest.Mock).mockReturnValue(parsedResult);
+
+      const result = await service.continueWriting(
+        'My essay so far...',
+        'Why this school?',
+        undefined,
+        'en',
+      );
+
+      expect(result.continuation).toBe('The next paragraph continues...');
+      expect(result.suggestions).toHaveLength(2);
+    });
+
+    it('should throw BadRequestException when LLM fails', async () => {
+      mockLLMService.chatSimpleGuarded.mockRejectedValue(new Error('fail'));
+
+      await expect(
+        service.continueWriting('text', undefined, undefined, 'en'),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('generateOpening', () => {
+    it('should return opening suggestions on success', async () => {
+      const parsedResult = {
+        openings: [
+          { text: 'It was a cold morning...', style: 'Scene setting' },
+          { text: '"Why not?" she asked.', style: 'Dialogue' },
+        ],
+      };
+      mockLLMService.chatSimpleGuarded.mockResolvedValue('{}');
+      (extractJsonFromLlm as jest.Mock).mockReturnValue(parsedResult);
+
+      const result = await service.generateOpening(
+        'Describe a challenge',
+        'I play piano',
+        'en',
+      );
+
+      expect(result.openings).toHaveLength(2);
+      expect(result.openings[0].style).toBe('Scene setting');
+    });
+
+    it('should throw BadRequestException when LLM fails', async () => {
+      mockLLMService.chatSimpleGuarded.mockRejectedValue(new Error('fail'));
+
+      await expect(
+        service.generateOpening('prompt', undefined, 'en'),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
 });

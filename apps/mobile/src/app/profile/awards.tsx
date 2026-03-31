@@ -17,6 +17,7 @@ import {
 } from '@/components/ui';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useToast } from '@/components/ui/Toast';
+import { profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import type { Profile, Award } from '@/types';
@@ -47,12 +48,12 @@ export default function AwardsScreen() {
     isRefetching,
   } = useQuery({
     queryKey: ['profile'],
-    queryFn: () => apiClient.get<Profile>('/profiles/me'),
+    queryFn: () => apiClient.get<Profile>(profileRoutes.me()),
   });
 
   const saveMutation = useMutation({
     mutationFn: (updatedAwards: Partial<Award>[]) =>
-      apiClient.put<Profile>('/profiles/me', { awards: updatedAwards }),
+      apiClient.put<Profile>(profileRoutes.me(), { awards: updatedAwards }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(t('profileEdit.saveSuccess'));

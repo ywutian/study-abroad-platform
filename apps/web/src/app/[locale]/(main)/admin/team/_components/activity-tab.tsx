@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
+import { adminRoutes } from '@study-abroad/shared';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -72,7 +73,7 @@ export function ActivityTab() {
 
   const { data: operators } = useQuery({
     queryKey: ['adminOperators'],
-    queryFn: () => apiClient.get<Operator[]>('/admin/roles/operators'),
+    queryFn: () => apiClient.get<Operator[]>(adminRoutes.operators()),
   });
 
   const { data: logsData, isLoading } = useQuery({
@@ -84,7 +85,7 @@ export function ActivityTab() {
       };
       if (memberFilter !== 'ALL') params.adminId = memberFilter;
       if (actionFilter !== 'ALL') params.action = actionFilter;
-      return apiClient.get<AuditResponse>('/admin/audit-logs', { params });
+      return apiClient.get<AuditResponse>(adminRoutes.auditLogs(), { params });
     },
   });
 

@@ -40,7 +40,7 @@ import { SourceBadge } from './source-badge';
 import { CompletenessBar } from './completeness-bar';
 import { RejectReasonDialog } from './reject-reason-dialog';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Check, X, Eye, Pencil, Loader2, ClipboardList, RotateCcw } from 'lucide-react';
 import { AdminFeatureGuide } from '../../_components/admin-feature-guide';
@@ -107,7 +107,7 @@ export function ReviewQueueTab() {
   const { data, isLoading } = useQuery<PaginatedStaging>({
     queryKey: ['reviewQueue', typeFilter, sourceFilter, page],
     queryFn: () =>
-      apiClient.get<PaginatedStaging>(`${API_ROUTES.ADMIN}/review/queue`, {
+      apiClient.get<PaginatedStaging>(adminRoutes.reviewQueue(), {
         params: {
           page,
           limit: PAGE_SIZE,
@@ -120,7 +120,7 @@ export function ReviewQueueTab() {
   // Mutations
   const approveMutation = useMutation({
     mutationFn: ({ id, noteText }: { id: string; noteText?: string }) =>
-      apiClient.post(`${API_ROUTES.ADMIN}/review/${id}/approve`, { note: noteText }),
+      apiClient.post(adminRoutes.reviewApprove(id), { note: noteText }),
     onSuccess: () => {
       toast.success(t('toast.approved'));
       invalidateAll();
@@ -133,7 +133,7 @@ export function ReviewQueueTab() {
 
   const rejectMutation = useMutation({
     mutationFn: ({ id, reason }: { id: string; reason: string }) =>
-      apiClient.post(`${API_ROUTES.ADMIN}/review/${id}/reject`, { reason }),
+      apiClient.post(adminRoutes.reviewReject(id), { reason }),
     onSuccess: () => {
       toast.success(t('toast.rejected'));
       invalidateAll();
@@ -155,7 +155,7 @@ export function ReviewQueueTab() {
       correctedData: Record<string, unknown>;
       noteText?: string;
     }) =>
-      apiClient.post(`${API_ROUTES.ADMIN}/review/${id}/edit-and-approve`, {
+      apiClient.post(adminRoutes.reviewEditAndApprove(id), {
         correctedData,
         note: noteText,
       }),
@@ -178,7 +178,7 @@ export function ReviewQueueTab() {
       ids: string[];
       action: 'approve' | 'reject';
       reason?: string;
-    }) => apiClient.post(`${API_ROUTES.ADMIN}/review/batch`, { ids, action, reason }),
+    }) => apiClient.post(adminRoutes.reviewBatch(), { ids, action, reason }),
     onSuccess: (_data, vars) => {
       toast.success(t('toast.batchSuccess', { count: vars.ids.length }));
       invalidateAll();

@@ -7,7 +7,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { LLMService } from '../core/llm.service';
 import { AssessmentService } from '../../assessment/assessment.service';
-import { extractJsonFromLlm } from './helpers/llm-json.helper';
+import { extractJsonFromLlm } from '../../../common/utils/llm-json.util';
 import { ToolHandler, IToolHandlerProvider } from './tool-handler.interface';
 
 @Injectable()

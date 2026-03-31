@@ -29,7 +29,7 @@ import { CardSkeleton } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PaginationControls } from '../../_components/pagination-controls';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import {
   AlertTriangle,
@@ -95,7 +95,7 @@ export function ReportsTab() {
   const { data: reportsData, isLoading } = useQuery({
     queryKey: ['adminReports', reportFilter, assignmentFilter, page],
     queryFn: () =>
-      apiClient.get<{ data: Report[]; total: number; totalPages: number }>('/admin/reports', {
+      apiClient.get<{ data: Report[]; total: number; totalPages: number }>(adminRoutes.reports(), {
         params: {
           status: reportFilter,
           page,
@@ -106,7 +106,7 @@ export function ReportsTab() {
   });
 
   const claimMutation = useMutation({
-    mutationFn: (id: string) => apiClient.post(`${API_ROUTES.ADMIN}/reports/${id}/claim`),
+    mutationFn: (id: string) => apiClient.post(adminRoutes.reportClaim(id)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminReports'] });
       toast.success(t('assignment.claimed'));
@@ -114,7 +114,7 @@ export function ReportsTab() {
   });
 
   const releaseMutation = useMutation({
-    mutationFn: (id: string) => apiClient.post(`${API_ROUTES.ADMIN}/reports/${id}/release`),
+    mutationFn: (id: string) => apiClient.post(adminRoutes.reportRelease(id)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminReports'] });
       toast.success(t('assignment.released'));
@@ -123,7 +123,7 @@ export function ReportsTab() {
 
   const updateReportMutation = useMutation({
     mutationFn: ({ id, status, resolution }: { id: string; status: string; resolution?: string }) =>
-      apiClient.put(`${API_ROUTES.ADMIN}/reports/${id}`, { status, resolution }),
+      apiClient.put(adminRoutes.reportById(id), { status, resolution }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminReports'] });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });

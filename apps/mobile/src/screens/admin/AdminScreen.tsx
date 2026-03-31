@@ -35,6 +35,7 @@ import {
   Avatar,
 } from '@/components/ui';
 import { Segment } from '@/components/ui/Tabs';
+import { adminRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
@@ -105,7 +106,7 @@ export default function AdminScreen() {
     refetch: refetchStats,
   } = useQuery({
     queryKey: ['adminStats'],
-    queryFn: () => apiClient.get<AdminStats>('/admin/stats'),
+    queryFn: () => apiClient.get<AdminStats>(adminRoutes.stats()),
     enabled: isAdmin,
   });
 
@@ -116,7 +117,7 @@ export default function AdminScreen() {
   } = useQuery({
     queryKey: ['adminReports'],
     queryFn: () =>
-      apiClient.get<{ items: Report[]; total: number }>('/admin/reports', {
+      apiClient.get<{ items: Report[]; total: number }>(adminRoutes.reports(), {
         params: { status: 'PENDING' },
       }),
     enabled: isAdmin,
@@ -129,7 +130,7 @@ export default function AdminScreen() {
   } = useQuery({
     queryKey: ['adminUsers', userSearch],
     queryFn: () =>
-      apiClient.get<{ items: User[]; total: number }>('/admin/users', {
+      apiClient.get<{ items: User[]; total: number }>(adminRoutes.users(), {
         params: userSearch ? { search: userSearch } : {},
       }),
     enabled: isAdmin,
@@ -139,7 +140,7 @@ export default function AdminScreen() {
 
   const updateReportMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
-      apiClient.put(`/admin/reports/${id}`, {
+      apiClient.put(adminRoutes.reportById(id), {
         status,
         resolution: t('admin.dialogs.defaultResolution'),
       }),
@@ -156,7 +157,7 @@ export default function AdminScreen() {
 
   const updateUserRoleMutation = useMutation({
     mutationFn: ({ userId, role }: { userId: string; role: string }) =>
-      apiClient.put(`/admin/users/${userId}/role`, { role }),
+      apiClient.put(adminRoutes.userRole(userId), { role }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
       setSelectedUser(null);
@@ -168,7 +169,7 @@ export default function AdminScreen() {
   });
 
   const deleteUserMutation = useMutation({
-    mutationFn: (userId: string) => apiClient.delete(`/admin/users/${userId}`),
+    mutationFn: (userId: string) => apiClient.delete(adminRoutes.userById(userId)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });

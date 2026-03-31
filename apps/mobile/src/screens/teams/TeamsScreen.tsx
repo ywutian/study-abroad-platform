@@ -6,6 +6,7 @@ import { useColors, spacing } from '@/utils/theme';
 import { EmptyState, Loading, Segment } from '@/components/ui';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 
 export default function TeamsScreen() {
@@ -14,7 +15,7 @@ export default function TeamsScreen() {
 
   const { data: teams, isLoading } = useQuery({
     queryKey: ['teams'],
-    queryFn: () => apiClient.get('/teams'),
+    queryFn: () => apiClient.get(API_ROUTES.TEAMS),
   });
 
   return (

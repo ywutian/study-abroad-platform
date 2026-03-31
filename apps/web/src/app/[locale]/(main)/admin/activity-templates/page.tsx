@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { PageHeader } from '@/components/layout';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Layers, Plus, Loader2, Search } from 'lucide-react';
 import { TemplatesTable } from './_components/templates-table';
@@ -104,7 +104,7 @@ export default function AdminActivityTemplatesPage() {
       tier: number;
       aliases?: string[];
       description?: string;
-    }) => apiClient.post(`${API_ROUTES.ADMIN}/activity-templates`, payload),
+    }) => apiClient.post(adminRoutes.activityTemplates(), payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminActivityTemplates'] });
       setDialogOpen(false);
@@ -127,7 +127,7 @@ export default function AdminActivityTemplatesPage() {
         aliases?: string[];
         description?: string;
       };
-    }) => apiClient.put(`${API_ROUTES.ADMIN}/activity-templates/${id}`, data),
+    }) => apiClient.put(adminRoutes.activityTemplateById(id), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminActivityTemplates'] });
       setDialogOpen(false);
@@ -137,7 +137,7 @@ export default function AdminActivityTemplatesPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`${API_ROUTES.ADMIN}/activity-templates/${id}`),
+    mutationFn: (id: string) => apiClient.delete(adminRoutes.activityTemplateById(id)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminActivityTemplates'] });
       setDeleteId(null);

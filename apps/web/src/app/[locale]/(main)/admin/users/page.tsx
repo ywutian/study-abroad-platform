@@ -8,7 +8,7 @@ import { ListSkeleton } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PaginationControls } from '../_components/pagination-controls';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Users } from 'lucide-react';
 
@@ -40,15 +40,18 @@ export default function AdminUsersPage() {
       const params: Record<string, string> = { page: String(page), pageSize: String(pageSize) };
       if (userSearch) params.search = userSearch;
       if (userRoleFilter && userRoleFilter !== 'ALL') params.role = userRoleFilter;
-      return apiClient.get<{ data: User[]; total: number; totalPages: number }>('/admin/users', {
-        params,
-      });
+      return apiClient.get<{ data: User[]; total: number; totalPages: number }>(
+        adminRoutes.users(),
+        {
+          params,
+        }
+      );
     },
   });
 
   const updateUserRoleMutation = useMutation({
     mutationFn: ({ userId, role }: { userId: string; role: string }) =>
-      apiClient.post(`${API_ROUTES.ADMIN}/roles/users/${userId}/role`, { role }),
+      apiClient.post(adminRoutes.userRoleAssign(userId), { role }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
       toast.success(t('toast.roleUpdated'));
@@ -56,7 +59,7 @@ export default function AdminUsersPage() {
   });
 
   const deleteUserMutation = useMutation({
-    mutationFn: (userId: string) => apiClient.delete(`${API_ROUTES.ADMIN}/users/${userId}`),
+    mutationFn: (userId: string) => apiClient.delete(adminRoutes.userById(userId)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
@@ -77,7 +80,7 @@ export default function AdminUsersPage() {
       durationHours?: number;
       permanent?: boolean;
     }) =>
-      apiClient.post(`${API_ROUTES.ADMIN}/users/${userId}/ban`, {
+      apiClient.post(adminRoutes.userBan(userId), {
         reason,
         durationHours,
         permanent,
@@ -93,7 +96,7 @@ export default function AdminUsersPage() {
   });
 
   const unbanUserMutation = useMutation({
-    mutationFn: (userId: string) => apiClient.post(`${API_ROUTES.ADMIN}/users/${userId}/unban`),
+    mutationFn: (userId: string) => apiClient.post(adminRoutes.userUnban(userId)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
       setUserToUnban(null);
@@ -117,9 +120,7 @@ export default function AdminUsersPage() {
   const bulkRoleMutation = useMutation({
     mutationFn: async ({ userIds, role }: { userIds: string[]; role: string }) => {
       const results = await Promise.allSettled(
-        userIds.map((userId) =>
-          apiClient.post(`${API_ROUTES.ADMIN}/roles/users/${userId}/role`, { role })
-        )
+        userIds.map((userId) => apiClient.post(adminRoutes.userRoleAssign(userId), { role }))
       );
       const successCount = results.filter((r) => r.status === 'fulfilled').length;
       return { successCount, total: userIds.length };
@@ -135,7 +136,7 @@ export default function AdminUsersPage() {
     mutationFn: async (userIds: string[]) => {
       const results = await Promise.allSettled(
         userIds.map((userId) =>
-          apiClient.post(`${API_ROUTES.ADMIN}/users/${userId}/ban`, {
+          apiClient.post(adminRoutes.userBan(userId), {
             reason: banReason,
             permanent: banPermanent,
             ...(banPermanent ? {} : { durationHours: banDuration }),

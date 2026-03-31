@@ -28,7 +28,7 @@ import { CardSkeleton } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PaginationControls } from '../../_components/pagination-controls';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { History, Loader2, Undo2 } from 'lucide-react';
 
@@ -69,14 +69,13 @@ export function ImportHistoryTab() {
   const { data, isLoading } = useQuery<PaginatedBatches>({
     queryKey: ['importBatches', page],
     queryFn: () =>
-      apiClient.get<PaginatedBatches>(`${API_ROUTES.ADMIN}/review/batches`, {
+      apiClient.get<PaginatedBatches>(adminRoutes.reviewBatches(), {
         params: { page, limit: PAGE_SIZE },
       }),
   });
 
   const rollbackMutation = useMutation({
-    mutationFn: (batchId: string) =>
-      apiClient.post(`${API_ROUTES.ADMIN}/review/batches/${batchId}/rollback`, {}),
+    mutationFn: (batchId: string) => apiClient.post(adminRoutes.reviewBatchRollback(batchId), {}),
     onSuccess: () => {
       toast.success(t('rollbackSuccess'));
       setRollbackId(null);

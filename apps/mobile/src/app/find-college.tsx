@@ -31,6 +31,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { useToast } from '@/components/ui/Toast';
 import { useDebouncedSearch } from '@/hooks/api';
+import { API_ROUTES, schoolListRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import { formatAcceptanceRate } from '@/utils/format';
@@ -496,7 +497,7 @@ export default function FindCollegePage() {
   // Fetch user's school list to determine "in list" state
   const { data: schoolListData } = useQuery({
     queryKey: ['school-list'],
-    queryFn: () => apiClient.get<{ schoolId: string; school: School }[]>('/school-lists'),
+    queryFn: () => apiClient.get<{ schoolId: string; school: School }[]>(API_ROUTES.SCHOOL_LISTS),
   });
 
   const schoolListIds = useMemo(() => {
@@ -511,7 +512,7 @@ export default function FindCollegePage() {
 
   // Add to school list mutation
   const addToListMutation = useMutation({
-    mutationFn: (schoolId: string) => apiClient.post('/school-lists', { schoolId }),
+    mutationFn: (schoolId: string) => apiClient.post(API_ROUTES.SCHOOL_LISTS, { schoolId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['school-list'] });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -524,7 +525,7 @@ export default function FindCollegePage() {
 
   // Remove from school list mutation
   const removeFromListMutation = useMutation({
-    mutationFn: (schoolId: string) => apiClient.delete(`/school-lists/${schoolId}`),
+    mutationFn: (schoolId: string) => apiClient.delete(schoolListRoutes.byId(schoolId)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['school-list'] });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

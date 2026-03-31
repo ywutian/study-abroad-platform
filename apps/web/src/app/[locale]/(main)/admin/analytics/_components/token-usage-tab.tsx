@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { apiClient } from '@/lib/api';
+import { adminAiAgentRoutes } from '@study-abroad/shared';
 import { useTranslations } from 'next-intl';
 import { Coins, Zap, Hash, TrendingUp } from 'lucide-react';
 import {
@@ -50,7 +51,7 @@ export function TokenUsageTab() {
   const { data } = useQuery({
     queryKey: ['analyticsTokenUsage', days],
     queryFn: () =>
-      apiClient.get<DailyMetrics>('/admin/ai-agent/metrics/daily', {
+      apiClient.get<DailyMetrics>(adminAiAgentRoutes.metricsDaily(), {
         params: { days: String(days) },
       }),
   });

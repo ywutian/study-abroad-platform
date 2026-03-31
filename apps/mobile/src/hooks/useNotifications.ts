@@ -6,6 +6,7 @@ import Constants from 'expo-constants';
 import { router, type Href } from 'expo-router';
 import { deepLinkPaths } from '@/lib/linking';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
+import { API_ROUTES, notificationRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useNotificationStore } from '@/stores/notification';
 
@@ -129,7 +130,7 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
  */
 async function registerTokenWithBackend(token: string): Promise<void> {
   const platform: 'ios' | 'android' = Platform.OS === 'ios' ? 'ios' : 'android';
-  await apiClient.post('/notifications/push-token', { token, platform });
+  await apiClient.post(`${API_ROUTES.NOTIFICATIONS}/push-token`, { token, platform });
 }
 
 /**
@@ -226,7 +227,7 @@ export function useNotifications() {
     refetch: refreshNotifications,
   } = useQuery<Notification[]>({
     queryKey: QUERY_KEYS.notifications,
-    queryFn: () => apiClient.get<Notification[]>('/notifications'),
+    queryFn: () => apiClient.get<Notification[]>(API_ROUTES.NOTIFICATIONS),
     staleTime: 30_000, // 30 seconds
   });
 
@@ -235,7 +236,7 @@ export function useNotifications() {
   // -------------------------------------------------------------------------
   const { data: unreadCountData, refetch: refetchUnreadCount } = useQuery<UnreadCountResponse>({
     queryKey: QUERY_KEYS.unreadCount,
-    queryFn: () => apiClient.get<UnreadCountResponse>('/notifications/unread-count'),
+    queryFn: () => apiClient.get<UnreadCountResponse>(`${API_ROUTES.NOTIFICATIONS}/unread-count`),
     staleTime: 15_000, // 15 seconds
   });
 
@@ -250,7 +251,8 @@ export function useNotifications() {
   // Mutations
   // -------------------------------------------------------------------------
   const markAsReadMutation = useMutation({
-    mutationFn: (notificationId: string) => apiClient.post(`/notifications/${notificationId}/read`),
+    mutationFn: (notificationId: string) =>
+      apiClient.post(notificationRoutes.markRead(notificationId)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.notifications });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.unreadCount });
@@ -258,7 +260,7 @@ export function useNotifications() {
   });
 
   const markAllAsReadMutation = useMutation({
-    mutationFn: () => apiClient.post('/notifications/read-all'),
+    mutationFn: () => apiClient.post(notificationRoutes.readAll()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.notifications });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.unreadCount });

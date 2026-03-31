@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CardSkeleton } from '@/components/ui/loading-state';
 import { apiClient } from '@/lib/api';
+import { adminRoutes } from '@study-abroad/shared';
 import { BarChart3, Clock, TrendingUp, Users } from 'lucide-react';
 
 interface ModerationStats {
@@ -34,7 +35,7 @@ export function ReviewStatisticsTab() {
   const { data, isLoading } = useQuery({
     queryKey: ['moderationStatistics', period],
     queryFn: () =>
-      apiClient.get<ModerationStats>('/admin/moderation/statistics', {
+      apiClient.get<ModerationStats>(adminRoutes.moderationStatistics(), {
         params: { period },
       }),
     refetchInterval: 30000,

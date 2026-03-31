@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { apiClient } from '@/lib/api';
+import { adminAiAgentRoutes } from '@study-abroad/shared';
 import { useTranslations } from 'next-intl';
 import { Terminal, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -64,7 +65,7 @@ export function LlmCallsTab() {
       if (agentType) params.agentType = agentType;
       if (model) params.model = model;
       if (userId.trim()) params.userId = userId.trim();
-      return apiClient.get<LlmCallsResponse>('/admin/ai-agent/llm-calls', { params });
+      return apiClient.get<LlmCallsResponse>(adminAiAgentRoutes.llmCalls(), { params });
     },
   });
 

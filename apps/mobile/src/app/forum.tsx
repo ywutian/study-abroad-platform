@@ -37,6 +37,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { useToast } from '@/components/ui/Toast';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { API_ROUTES, forumRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 
 // ---------------------------------------------------------------------------
@@ -377,12 +378,12 @@ export default function ForumPage() {
 
   const { data: categories } = useQuery<CategoryDto[]>({
     queryKey: keys.categories,
-    queryFn: () => apiClient.get<CategoryDto[]>('/forums/categories'),
+    queryFn: () => apiClient.get<CategoryDto[]>(`${API_ROUTES.FORUMS}/categories`),
   });
 
   const { data: stats } = useQuery<ForumStats>({
     queryKey: keys.stats,
-    queryFn: () => apiClient.get<ForumStats>('/forums/stats'),
+    queryFn: () => apiClient.get<ForumStats>(`${API_ROUTES.FORUMS}/stats`),
   });
 
   const {
@@ -392,13 +393,13 @@ export default function ForumPage() {
     refetch,
   } = useQuery<PostsResponse>({
     queryKey: keys.posts(queryParams),
-    queryFn: () => apiClient.get<PostsResponse>('/forums/posts', { params: queryParams }),
+    queryFn: () => apiClient.get<PostsResponse>(forumRoutes.posts(), { params: queryParams }),
   });
 
   // ---- Mutations ----
 
   const createPost = useMutation<PostDto, Error, CreatePostDto>({
-    mutationFn: (dto) => apiClient.post<PostDto>('/forums/posts', dto),
+    mutationFn: (dto) => apiClient.post<PostDto>(forumRoutes.posts(), dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forum'] });
       setCreateModalVisible(false);

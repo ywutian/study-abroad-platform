@@ -27,6 +27,7 @@ import {
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { useColors, type Colors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
 
@@ -82,13 +83,13 @@ export default function EssaysScreen() {
     isRefetching,
   } = useQuery({
     queryKey: ['essays'],
-    queryFn: () => apiClient.get<Essay[]>('/profiles/me/essays'),
+    queryFn: () => apiClient.get<Essay[]>(`${profileRoutes.me()}/essays`),
     enabled: isAuthenticated,
   });
 
   // 删除文书
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/profiles/me/essays/${id}`),
+    mutationFn: (id: string) => apiClient.delete(`${profileRoutes.me()}/essays/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['essays'] });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

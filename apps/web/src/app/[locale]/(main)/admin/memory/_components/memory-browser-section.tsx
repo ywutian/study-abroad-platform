@@ -42,7 +42,7 @@ import {
 } from '@/components/ui/table';
 import { PaginationControls } from '../../_components/pagination-controls';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminAiAgentRoutes } from '@study-abroad/shared';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -65,7 +65,7 @@ export function MemoryBrowserSection() {
   const { data: memData } = useQuery({
     queryKey: ['memoryBrowse', memFilters, memPage],
     queryFn: () =>
-      apiClient.get<{ data: MemoryItem[]; total: number }>('/admin/ai-agent/memory/browse', {
+      apiClient.get<{ data: MemoryItem[]; total: number }>(adminAiAgentRoutes.memoryBrowse(), {
         params: {
           ...(memFilters.userId && { userId: memFilters.userId }),
           ...(memFilters.type && { type: memFilters.type }),
@@ -81,7 +81,7 @@ export function MemoryBrowserSection() {
   const [deleteMemoryId, setDeleteMemoryId] = useState<string | null>(null);
 
   const deleteMemoryMutation = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`${API_ROUTES.ADMIN}/ai-agent/memory/${id}`),
+    mutationFn: (id: string) => apiClient.delete(adminAiAgentRoutes.memoryById(id)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['memoryBrowse'] });
       queryClient.invalidateQueries({ queryKey: ['memoryGlobalStats'] });

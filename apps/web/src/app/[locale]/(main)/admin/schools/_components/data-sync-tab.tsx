@@ -16,6 +16,7 @@ import {
 import { ListSkeleton } from '@/components/ui/loading-state';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { apiClient } from '@/lib/api';
+import { adminRoutes } from '@study-abroad/shared';
 import { Progress } from '@/components/ui/progress';
 import { useAdminProgress } from '@/hooks/use-admin-progress';
 import { toast } from 'sonner';
@@ -48,13 +49,13 @@ export function DataSyncTab() {
 
   const { data: jobs, isLoading } = useQuery({
     queryKey: ['adminDataSyncJobs'],
-    queryFn: () => apiClient.get<DataSyncJob[]>('/admin/data-sync/jobs'),
+    queryFn: () => apiClient.get<DataSyncJob[]>(adminRoutes.dataSyncJobs()),
   });
 
   const triggerMutation = useMutation({
     mutationFn: (payload: { job: string; params?: Record<string, number | string> }) =>
       apiClient.post<{ synced?: number; errors?: number; message?: string }>(
-        '/admin/data-sync/trigger',
+        adminRoutes.dataSyncTrigger(),
         payload
       ),
     onSuccess: () => {

@@ -28,6 +28,7 @@ import { useToast } from '@/components/ui/Toast';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import { useAuthStore } from '@/stores';
 import { useThemeStore } from '@/stores/theme';
+import { userRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 
 export const BIOMETRIC_ENABLED_KEY = 'biometric_auth_enabled';
@@ -114,7 +115,7 @@ export default function SettingsScreen() {
 
     setDeleting(true);
     try {
-      await apiClient.delete('/users/me', {
+      await apiClient.delete(userRoutes.me(), {
         body: JSON.stringify({ password: deletePassword }),
       });
 

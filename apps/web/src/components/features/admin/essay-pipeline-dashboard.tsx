@@ -25,7 +25,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { apiClient } from '@/lib/api/client';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminRoutes } from '@study-abroad/shared';
 import { Play, Search, Eye, RefreshCw, Loader2 } from 'lucide-react';
 
 import type {
@@ -63,9 +63,9 @@ export function EssayPipelineDashboard() {
     setLoading(true);
     try {
       const [coverageRes, freshnessRes, runsRes] = await Promise.all([
-        apiClient.get<CoverageStats>('/admin/essay-scraper/dashboard/coverage'),
-        apiClient.get<FreshnessItem[]>('/admin/essay-scraper/dashboard/freshness'),
-        apiClient.get<PipelineRun[]>('/admin/essay-scraper/pipeline/runs'),
+        apiClient.get<CoverageStats>(adminRoutes.essayScraperCoverage()),
+        apiClient.get<FreshnessItem[]>(adminRoutes.essayScraperFreshness()),
+        apiClient.get<PipelineRun[]>(adminRoutes.essayScraperPipelineRuns()),
       ]);
       setCoverage(coverageRes);
       setFreshness(freshnessRes);
@@ -87,7 +87,7 @@ export function EssayPipelineDashboard() {
     setStartingPipeline(true);
     try {
       await apiClient.post<{ runId: string; status: string }>(
-        '/admin/essay-scraper/pipeline/start',
+        adminRoutes.essayScraperPipelineStart(),
         {}
       );
       toast.success(t('pipelineStarted'));
@@ -104,7 +104,7 @@ export function EssayPipelineDashboard() {
     setTestScrapeLoading(true);
     setTestScrapeResult(null);
     try {
-      const result = await apiClient.post<TestScrapeResult>('/admin/essay-scraper/test-scrape', {
+      const result = await apiClient.post<TestScrapeResult>(adminRoutes.essayScraperTestScrape(), {
         schoolName,
       });
       setTestScrapeResult(result);
@@ -118,7 +118,7 @@ export function EssayPipelineDashboard() {
 
   const handleSingleScrape = async (schoolName: string) => {
     try {
-      await apiClient.post(`${API_ROUTES.ADMIN}/essay-scraper/pipeline/scrape-school`, {
+      await apiClient.post(adminRoutes.essayScraperScrapeSchool(), {
         schoolName,
       });
       toast.success(t('scrapeStarted'));
@@ -133,7 +133,7 @@ export function EssayPipelineDashboard() {
     setSavingConfirm(true);
     try {
       const essays = selectedIndexes.map((i) => testScrapeResult.essays[i]);
-      await apiClient.post(`${API_ROUTES.ADMIN}/essay-scraper/confirm-save`, {
+      await apiClient.post(adminRoutes.essayScraperConfirmSave(), {
         schoolId: testScrapeResult.schoolId,
         schoolName: testScrapeResult.school,
         essays,

@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { Plus, Trash2, ClipboardPaste } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { apiClient } from '@/lib/api/client';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminRoutes } from '@study-abroad/shared';
 
 import type { BatchRow } from './batch-entry-types';
 import { MAX_ROWS, createEmptyRow, isRowValid } from './batch-entry-types';
@@ -61,7 +61,7 @@ export function BatchEntryTab() {
         tags: row.tags || undefined,
       }));
 
-      return apiClient.post(`${API_ROUTES.ADMIN}/cases/batch-import`, {
+      return apiClient.post(adminRoutes.casesBatchImport(), {
         items: payload,
         visibility: 'ANONYMOUS',
         autoVerify: false,

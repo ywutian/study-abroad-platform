@@ -19,6 +19,7 @@ import {
 } from '@/components/ui';
 import { ListItem, ListGroup, Separator } from '@/components/ui/ListItem';
 import { CircularProgress } from '@/components/ui/Progress';
+import { profileRoutes, API_ROUTES, verificationRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
 import { useColors, withOpacity, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
@@ -36,20 +37,23 @@ export default function ProfileScreen() {
     isRefetching,
   } = useQuery({
     queryKey: ['profile'],
-    queryFn: () => apiClient.get<Profile>('/profiles/me'),
+    queryFn: () => apiClient.get<Profile>(profileRoutes.me()),
     enabled: isAuthenticated,
   });
 
   const { data: verificationData } = useQuery({
     queryKey: ['verification', 'status'],
     queryFn: () =>
-      apiClient.get<{ emailVerified: boolean; identityVerified: boolean }>('/verifications/status'),
+      apiClient.get<{ emailVerified: boolean; identityVerified: boolean }>(
+        verificationRoutes.status()
+      ),
     enabled: isAuthenticated,
   });
 
   const { data: pointsData } = useQuery({
     queryKey: ['points', 'balance'],
-    queryFn: () => apiClient.get<{ balance: number; level: string }>('/points/balance'),
+    queryFn: () =>
+      apiClient.get<{ balance: number; level: string }>(`${API_ROUTES.POINTS}/balance`),
     enabled: isAuthenticated,
   });
 

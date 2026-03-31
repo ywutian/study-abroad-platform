@@ -25,6 +25,7 @@ import * as Haptics from 'expo-haptics';
 
 import { AnimatedButton } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
+import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 
@@ -69,7 +70,7 @@ export default function GameView({ onShowStats }: GameViewProps) {
   // ── Batch loading ─────────────────────────────────────
   const loadBatch = useCallback(async () => {
     try {
-      const batch = await apiClient.get<SwipeCaseDto[]>('/halls/swipe/batch', {
+      const batch = await apiClient.get<SwipeCaseDto[]>(`${API_ROUTES.HALLS}/swipe/batch`, {
         params: { count: BATCH_SIZE },
       });
       setCases((prev) => [...prev, ...batch]);
@@ -100,7 +101,7 @@ export default function GameView({ onShowStats }: GameViewProps) {
     { caseId: string; prediction: PredictionType }
   >({
     mutationFn: ({ caseId, prediction }) =>
-      apiClient.post<SwipeResultDto>('/halls/swipe/predict', { caseId, prediction }),
+      apiClient.post<SwipeResultDto>(`${API_ROUTES.HALLS}/swipe/predict`, { caseId, prediction }),
     onSuccess: (result) => {
       if (result.isCorrect) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

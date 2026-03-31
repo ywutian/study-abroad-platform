@@ -6,6 +6,7 @@ import { useColors, spacing } from '@/utils/theme';
 import { EmptyState, Loading } from '@/components/ui';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 
 export default function ResumeScreen() {
@@ -14,7 +15,7 @@ export default function ResumeScreen() {
 
   const { data: resumes, isLoading } = useQuery({
     queryKey: ['resumes'],
-    queryFn: () => apiClient.get('/resumes'),
+    queryFn: () => apiClient.get(API_ROUTES.RESUMES),
   });
 
   return (

@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Button, Input, Select, Loading } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
+import { profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import type { Profile } from '@/types';
@@ -56,7 +57,7 @@ export default function BasicInfoScreen() {
     isRefetching,
   } = useQuery({
     queryKey: ['profile'],
-    queryFn: () => apiClient.get<Profile>('/profiles/me'),
+    queryFn: () => apiClient.get<Profile>(profileRoutes.me()),
   });
 
   const [grade, setGrade] = useState('');
@@ -82,7 +83,7 @@ export default function BasicInfoScreen() {
   }, [profile]);
 
   const saveMutation = useMutation({
-    mutationFn: (data: Record<string, unknown>) => apiClient.put<Profile>('/profiles/me', data),
+    mutationFn: (data: Record<string, unknown>) => apiClient.put<Profile>(profileRoutes.me(), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.show({ type: 'success', message: t('profileEdit.saveSuccess') });

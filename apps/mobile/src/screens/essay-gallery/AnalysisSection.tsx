@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { CircularProgress, AnimatedButton } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import type { AnalysisResult, ParagraphAnalysis, EssayDetail, Colors } from './types';
 import { RESULT_COLORS, STATUS_COLORS } from './types';
@@ -160,7 +161,7 @@ export function AnalysisSection({ essayId, essayDetail }: AnalysisSectionProps) 
 
   const analysisMutation = useMutation<AnalysisResult, Error, void>({
     mutationFn: () =>
-      apiClient.post<AnalysisResult>(`/essay-ai/gallery/${essayId}/analyze`, {
+      apiClient.post<AnalysisResult>(`${API_ROUTES.ESSAY_AI}/gallery/${essayId}/analyze`, {
         schoolName: essayDetail.school?.name,
       }),
     onError: (error) => {

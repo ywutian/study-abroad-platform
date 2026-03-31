@@ -345,6 +345,32 @@ describe('EssayPromptService', () => {
     });
   });
 
+  describe('countBySchoolIds', () => {
+    it('should return counts grouped by school id', async () => {
+      mockPrisma.essayPrompt.groupBy.mockResolvedValue([
+        { schoolId: 'school-1', _count: 5 },
+        { schoolId: 'school-2', _count: 3 },
+      ]);
+
+      const result = await service.countBySchoolIds([
+        'school-1',
+        'school-2',
+        'school-3',
+      ]);
+
+      expect(result.get('school-1')).toBe(5);
+      expect(result.get('school-2')).toBe(3);
+      expect(result.get('school-3')).toBeUndefined();
+    });
+
+    it('should return empty map for empty input', async () => {
+      const result = await service.countBySchoolIds([]);
+
+      expect(result.size).toBe(0);
+      expect(mockPrisma.essayPrompt.groupBy).not.toHaveBeenCalled();
+    });
+  });
+
   describe('getStats', () => {
     it('should return review statistics', async () => {
       mockPrisma.essayPrompt.count

@@ -26,6 +26,7 @@ import {
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { useColors, type Colors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 
 interface RankingWeights {
@@ -71,14 +72,14 @@ export default function CustomRankingScreen() {
     refetch,
   } = useQuery({
     queryKey: ['customRanking', weights],
-    queryFn: () => apiClient.post<RankedSchool[]>('/rankings/calculate', weights),
+    queryFn: () => apiClient.post<RankedSchool[]>(`${API_ROUTES.RANKINGS}/calculate`, weights),
     enabled: false,
   });
 
   // 保存排名
   const saveMutation = useMutation({
     mutationFn: (data: { name: string; isPublic: boolean } & RankingWeights) =>
-      apiClient.post('/rankings', data),
+      apiClient.post(API_ROUTES.RANKINGS, data),
     onSuccess: () => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.show({ type: 'success', message: t('ranking.toast.saved') });

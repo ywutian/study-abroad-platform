@@ -8,7 +8,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { LLMService } from '../core/llm.service';
 import { SchoolLookupHelper } from './helpers/school-lookup.helper';
-import { extractJsonFromLlm } from './helpers/llm-json.helper';
+import { extractJsonFromLlm } from '../../../common/utils/llm-json.util';
 import { ToolHandler, IToolHandlerProvider } from './tool-handler.interface';
 
 @Injectable()

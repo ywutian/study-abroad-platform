@@ -22,7 +22,7 @@ import { QualityScoreBadge } from './quality-score-badge';
 import { RejectReasonDialog } from './reject-reason-dialog';
 import { CaseDetailDialog } from './pending-cases/CaseDetailDialog';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Check, X, Eye, Loader2, FileCheck, GraduationCap } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -116,15 +116,14 @@ export function PendingCasesTab() {
   const { data, isLoading } = useQuery<PaginatedCases>({
     queryKey: ['pendingCases', page],
     queryFn: () =>
-      apiClient.get<PaginatedCases>('/admin/review/pending-cases', {
+      apiClient.get<PaginatedCases>(adminRoutes.reviewPendingCases(), {
         params: { page, limit: PAGE_SIZE },
       }),
   });
 
   // Mutations
   const approveMutation = useMutation({
-    mutationFn: (id: string) =>
-      apiClient.post(`${API_ROUTES.ADMIN}/review/cases/${id}/approve`, {}),
+    mutationFn: (id: string) => apiClient.post(adminRoutes.reviewCaseApprove(id), {}),
     onSuccess: () => {
       toast.success(t('toast.approved'));
       invalidateAll();
@@ -137,7 +136,7 @@ export function PendingCasesTab() {
 
   const rejectMutation = useMutation({
     mutationFn: ({ id, reason }: { id: string; reason: string }) =>
-      apiClient.post(`${API_ROUTES.ADMIN}/review/cases/${id}/reject`, { reason }),
+      apiClient.post(adminRoutes.reviewCaseReject(id), { reason }),
     onSuccess: () => {
       toast.success(t('toast.rejected'));
       invalidateAll();
@@ -158,7 +157,7 @@ export function PendingCasesTab() {
       ids: string[];
       action: 'approve' | 'reject';
       reason?: string;
-    }) => apiClient.post(`${API_ROUTES.ADMIN}/review/batch`, { ids, action, reason }),
+    }) => apiClient.post(adminRoutes.reviewBatch(), { ids, action, reason }),
     onSuccess: (_data, vars) => {
       toast.success(t('toast.batchSuccess', { count: vars.ids.length }));
       invalidateAll();

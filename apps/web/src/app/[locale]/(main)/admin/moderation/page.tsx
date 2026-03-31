@@ -18,7 +18,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/layout';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { ShieldCheck, Loader2 } from 'lucide-react';
 import { ForumContentTab } from './_components/forum-content-tab';
@@ -58,13 +58,13 @@ export default function AdminModerationPage() {
     mutationFn: ({ type, id }: { type: string; id: string }) => {
       switch (type) {
         case 'post':
-          return apiClient.delete(`${API_ROUTES.ADMIN}/forums/posts/${id}`);
+          return apiClient.delete(adminRoutes.forumsPostDelete(id));
         case 'comment':
-          return apiClient.delete(`${API_ROUTES.ADMIN}/forums/comments/${id}`);
+          return apiClient.delete(adminRoutes.forumsCommentDelete(id));
         case 'message':
-          return apiClient.delete(`${API_ROUTES.ADMIN}/chats/messages/${id}`);
+          return apiClient.delete(adminRoutes.chatsMessageDelete(id));
         case 'review':
-          return apiClient.delete(`${API_ROUTES.ADMIN}/reviews/${id}`);
+          return apiClient.delete(adminRoutes.reviewById(id));
         default:
           throw new Error('Unknown type');
       }

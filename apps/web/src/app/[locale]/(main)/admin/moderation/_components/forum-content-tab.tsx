@@ -20,7 +20,7 @@ import { ListSkeleton } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PaginationControls } from '../../_components/pagination-controls';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { adminRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Search, Pin, Lock, Trash2, MessageSquare, X } from 'lucide-react';
@@ -66,7 +66,7 @@ export function ForumContentTab({ pageSize, onDeleteRequest }: ForumContentTabPr
   });
 
   const pinMutation = useMutation({
-    mutationFn: (postId: string) => apiClient.put(`${API_ROUTES.ADMIN}/forums/posts/${postId}/pin`),
+    mutationFn: (postId: string) => apiClient.put(adminRoutes.forumsPostPin(postId)),
     onSuccess: (_, postId) => {
       queryClient.invalidateQueries({ queryKey: ['adminForumPosts'] });
       const post = postsData?.data.find((p) => p.id === postId);
@@ -75,8 +75,7 @@ export function ForumContentTab({ pageSize, onDeleteRequest }: ForumContentTabPr
   });
 
   const lockMutation = useMutation({
-    mutationFn: (postId: string) =>
-      apiClient.put(`${API_ROUTES.ADMIN}/forums/posts/${postId}/lock`),
+    mutationFn: (postId: string) => apiClient.put(adminRoutes.forumsPostLock(postId)),
     onSuccess: (_, postId) => {
       queryClient.invalidateQueries({ queryKey: ['adminForumPosts'] });
       const post = postsData?.data.find((p) => p.id === postId);
@@ -86,10 +85,7 @@ export function ForumContentTab({ pageSize, onDeleteRequest }: ForumContentTabPr
 
   const batchMutation = useMutation({
     mutationFn: (dto: { ids: string[]; action: string }) =>
-      apiClient.post<{ success: number; failed: number }>(
-        `${API_ROUTES.ADMIN}/forums/posts/batch`,
-        dto
-      ),
+      apiClient.post<{ success: number; failed: number }>(adminRoutes.forumsPostsBatch(), dto),
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['adminForumPosts'] });
       setSelectedIds(new Set());

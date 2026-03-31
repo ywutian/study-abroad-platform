@@ -30,6 +30,7 @@ import {
   AnimatedButton,
 } from '@/components/ui';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { essayAiRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import type { GalleryResponse, GalleryEssay } from '@/screens/essay-gallery/types';
 import {
@@ -90,7 +91,7 @@ export default function EssayGalleryPage() {
     isFetching,
   } = useQuery<GalleryResponse>({
     queryKey: ['essay-gallery', queryParams],
-    queryFn: () => apiClient.get<GalleryResponse>('/essay-ai/gallery', { params: queryParams }),
+    queryFn: () => apiClient.get<GalleryResponse>(essayAiRoutes.gallery(), { params: queryParams }),
   });
 
   const hasActiveFilters =

@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EmptyState, Loading } from '@/components/ui';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { hallRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import type { VerifiedUserDto, VerifiedRankingResponse, RankingFilter } from './types';
 import { RANKING_FILTERS } from './types';
@@ -28,7 +29,7 @@ export function VerifiedTab() {
   } = useQuery<VerifiedRankingResponse>({
     queryKey: ['hall-verified', verifiedFilter],
     queryFn: () =>
-      apiClient.get<VerifiedRankingResponse>('/halls/verified-ranking', {
+      apiClient.get<VerifiedRankingResponse>(hallRoutes.verifiedRanking(), {
         params: { filter: verifiedFilter, limit: 50 },
       }),
     staleTime: 5 * 60_000,

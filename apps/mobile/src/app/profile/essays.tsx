@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 
 import { Card, CardContent, Badge, Loading, EmptyState } from '@/components/ui';
+import { profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import type { Profile } from '@/types';
@@ -28,7 +29,7 @@ export default function EssaysScreen() {
     isRefetching,
   } = useQuery({
     queryKey: ['profile'],
-    queryFn: () => apiClient.get<Profile>('/profiles/me'),
+    queryFn: () => apiClient.get<Profile>(profileRoutes.me()),
   });
 
   const essays = (profile?.essays || []) as Essay[];

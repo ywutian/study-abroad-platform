@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { useToast } from '@/components/ui/Toast';
+import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import type { School, CaseResult, PaginatedResponse } from '@/types';
@@ -256,7 +257,7 @@ export function SubmitCaseModal({ visible, onClose, onSuccess }: SubmitCaseModal
       }
       if (form.nationality) payload.nationality = form.nationality;
 
-      await apiClient.post('/cases', payload);
+      await apiClient.post(API_ROUTES.CASES, payload);
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.success(t('cases.submit.submitSuccess'));

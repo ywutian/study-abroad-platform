@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 import { PageHeader } from '@/components/layout';
 import { CardSkeleton } from '@/components/ui/loading-state';
 import { apiClient } from '@/lib/api';
+import { adminRoutes } from '@study-abroad/shared';
 import { Shield } from 'lucide-react';
 import { AdminStatsCards } from './_components/admin-stats-cards';
 import { AdminHealthIndicator } from './_components/admin-health-indicator';
@@ -55,7 +56,7 @@ export default function AdminOverviewPage() {
 
   const { data: myPerms } = useQuery({
     queryKey: ['adminMyPermissions'],
-    queryFn: () => apiClient.get<MyPermissionsResponse>('/admin/roles/my-permissions'),
+    queryFn: () => apiClient.get<MyPermissionsResponse>(adminRoutes.myPermissions()),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -66,12 +67,12 @@ export default function AdminOverviewPage() {
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['adminStats'],
-    queryFn: () => apiClient.get<AdminStats>('/admin/stats'),
+    queryFn: () => apiClient.get<AdminStats>(adminRoutes.stats()),
   });
 
   const { data: trends } = useQuery({
     queryKey: ['adminTrends'],
-    queryFn: () => apiClient.get<TrendData[]>('/admin/stats/trends'),
+    queryFn: () => apiClient.get<TrendData[]>(adminRoutes.statsTrends()),
   });
 
   const { data: health } = useQuery({
