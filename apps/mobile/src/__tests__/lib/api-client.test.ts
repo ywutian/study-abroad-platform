@@ -343,6 +343,7 @@ describe('ApiClient', () => {
         )
         .mockResolvedValueOnce(
           mockResponse({
+            success: true,
             data: { accessToken: 'new-token', refreshToken: 'new-refresh' },
           })
         )
@@ -455,6 +456,7 @@ describe('ApiClient', () => {
         )
         .mockResolvedValueOnce(
           mockResponse({
+            success: true,
             data: { accessToken: 'new-token', refreshToken: 'new-refresh' },
           })
         )
@@ -488,8 +490,8 @@ describe('ApiClient', () => {
 
       await expect(
         (async () => {
-          for await (const _chunk of apiClient.stream('/ai-agent/chat', { message: 'hi' })) {
-            // no-op
+          for await (const chunk of apiClient.stream('/ai-agent/chat', { message: 'hi' })) {
+            void chunk;
           }
         })()
       ).rejects.toThrow('Session expired');

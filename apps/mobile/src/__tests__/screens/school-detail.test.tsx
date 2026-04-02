@@ -14,7 +14,7 @@ jest.mock('react-i18next', () => ({
 jest.mock('expo-router', () => ({
   Link: ({ children }: { children: React.ReactNode }) => children,
   Stack: {
-    Screen: ({ options }: { options: Record<string, unknown> }) => null,
+    Screen: () => null,
   },
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),

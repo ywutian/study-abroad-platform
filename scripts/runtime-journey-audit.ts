@@ -3,6 +3,7 @@ import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import fs from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 
 import {
@@ -150,7 +151,7 @@ async function ensureDir(dir: string) {
 }
 
 function sessionCachePath(email: string) {
-  return path.join(ROOT, '.tmp-runtime-audit', `${sanitizeFileName(email)}.json`);
+  return path.join(os.tmpdir(), 'study-abroad-runtime-audit', `${sanitizeFileName(email)}.json`);
 }
 
 function findAccountByEmail(email: string) {
@@ -187,6 +188,22 @@ async function appendText(filePath: string, value: string) {
 
 function rel(filePath: string) {
   return path.relative(ROOT, filePath);
+}
+
+function sanitizeLogcatLine(line: string) {
+  return line
+    .replace(/ExpoPushToken\[[^\]]+\]/g, 'ExpoPushToken[REDACTED]')
+    .replace(/(access_token=)[^;\s]+/g, '$1REDACTED')
+    .replace(/(refreshToken=)[^;\s]+/g, '$1REDACTED')
+    .replace(/\bcom\.huawei\.hms\.ads_\d+\b/g, 'com.huawei.hms.ads_REDACTED');
+}
+
+function formatFilteredLog(lines: string[], fallbackMessage: string) {
+  if (lines.length === 0) {
+    return fallbackMessage;
+  }
+
+  return lines.map(sanitizeLogcatLine).join('\n');
 }
 
 function journeyDir(id: string) {
@@ -1271,26 +1288,32 @@ async function collectMobileEvidence() {
           /useNotifications:list success|useNotifications:unread success|skipping push token registration on simulator\/emulator|FirebaseApp/.test(
             line
           )
-        )
-        .join('\n');
+        );
       const emulatorLogPath = path.join(a11Dir, 'emulator-logcat.txt');
       await writeText(
         emulatorLogPath,
-        emulatorFiltered || emulatorLogcat.stdout || emulatorLogcat.stderr
+        formatFilteredLog(
+          emulatorFiltered,
+          emulatorLogcat.stderr || 'No matching emulator notification log lines captured.'
+        )
       );
       a11Evidence.push(rel(emulatorLogPath));
 
       const sj3EmulatorLogPath = path.join(sj3Dir, 'emulator-logcat.txt');
       await writeText(
         sj3EmulatorLogPath,
-        emulatorFiltered || emulatorLogcat.stdout || emulatorLogcat.stderr
+        formatFilteredLog(
+          emulatorFiltered,
+          emulatorLogcat.stderr || 'No matching emulator notification log lines captured.'
+        )
       );
       sj3Evidence.push(rel(sj3EmulatorLogPath));
 
-      emulatorNotificationListOk = /useNotifications:list success/.test(emulatorFiltered);
-      emulatorUnreadOk = /useNotifications:unread success/.test(emulatorFiltered);
+      const emulatorFilteredJoined = emulatorFiltered.join('\n');
+      emulatorNotificationListOk = /useNotifications:list success/.test(emulatorFilteredJoined);
+      emulatorUnreadOk = /useNotifications:unread success/.test(emulatorFilteredJoined);
       emulatorPushSkipped = /skipping push token registration on simulator\/emulator/.test(
-        emulatorFiltered
+        emulatorFilteredJoined
       );
     } catch (error) {
       const emulatorErrorPath = path.join(a11Dir, 'emulator-collection-error.txt');
@@ -1356,15 +1379,21 @@ async function collectMobileEvidence() {
           /FirebaseApp|FirebaseInitProvider|useNotifications|failed to register|push token|ExpoPushToken/.test(
             line
           )
-        )
-        .join('\n');
+        );
       const deviceLogPath = path.join(a11Dir, 'device-push-logcat.txt');
-      await writeText(deviceLogPath, deviceFiltered || deviceLogcat.stdout || deviceLogcat.stderr);
+      await writeText(
+        deviceLogPath,
+        formatFilteredLog(
+          deviceFiltered,
+          deviceLogcat.stderr || 'No matching physical-device push log lines captured.'
+        )
+      );
       a11Evidence.push(rel(deviceLogPath));
       sj3Evidence.push(rel(deviceLogPath));
+      const deviceFilteredJoined = deviceFiltered.join('\n');
       deviceFirebaseMissing =
-        /Default FirebaseApp failed to initialize/.test(deviceFiltered) ||
-        /FirebaseApp initialization unsuccessful/.test(deviceFiltered);
+        /Default FirebaseApp failed to initialize/.test(deviceFilteredJoined) ||
+        /FirebaseApp initialization unsuccessful/.test(deviceFilteredJoined);
     } catch (error) {
       const deviceErrorPath = path.join(a11Dir, 'device-collection-error.txt');
       await writeText(deviceErrorPath, formatError(error));

@@ -1,13 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Link, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -108,16 +100,7 @@ export default function LoginScreen() {
       .finally(() => {
         setLoading(false);
       });
-  }, [
-    devAutoLoginEmail,
-    devAutoLoginEnabled,
-    devAutoLoginPassword,
-    login,
-    loading,
-    router,
-    t,
-    toast,
-  ]);
+  }, [devAutoLoginEmail, devAutoLoginEnabled, devAutoLoginPassword, login, loading, t, toast]);
 
   return (
     <KeyboardAvoidingView

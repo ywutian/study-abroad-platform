@@ -2,7 +2,7 @@ import {
   getMcpAuthErrorMessage,
   normalizeMcpArguments,
   serializeMcpToolContent,
-} from './mcp-server';
+} from './mcp-server.helpers';
 import { ModerationAction } from './modules/ai-agent/security/content-moderation.service';
 
 describe('mcp-server helpers', () => {

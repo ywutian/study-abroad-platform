@@ -36,7 +36,7 @@ describe('Button Component', () => {
   });
 
   it('shows loading indicator when loading', () => {
-    const { queryByText, getByTestId } = render(<Button loading>Loading Button</Button>);
+    const { queryByText } = render(<Button loading>Loading Button</Button>);
 
     // Text should not be visible when loading
     expect(queryByText('Loading Button')).toBeNull();

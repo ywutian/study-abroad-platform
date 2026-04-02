@@ -14,7 +14,7 @@ jest.mock('react-i18next', () => ({
 jest.mock('expo-router', () => ({
   Link: ({ children }: { children: React.ReactNode }) => children,
   Stack: {
-    Screen: ({ options }: { options: Record<string, unknown> }) => null,
+    Screen: () => null,
   },
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
@@ -74,7 +74,7 @@ jest.mock('@/hooks/useChatSocket', () => ({
 
 // Mock date-fns (avoid import issues)
 jest.mock('date-fns', () => ({
-  format: jest.fn((_date: Date, fmt: string) => '12:00'),
+  format: jest.fn(() => '12:00'),
   isToday: jest.fn(() => true),
   isYesterday: jest.fn(() => false),
   isSameDay: jest.fn(() => true),

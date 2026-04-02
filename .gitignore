@@ -46,6 +46,7 @@ prisma/*.db-journal
 # Temp
 tmp
 temp
+.tmp-runtime-audit/
 
 # Claude Code
 .claude/
