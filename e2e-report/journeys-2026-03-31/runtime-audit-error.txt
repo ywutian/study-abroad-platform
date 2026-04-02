@@ -1,0 +1,5 @@
+TypeError: fetch failed
+    at node:internal/deps/undici/undici:13510:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async apiLogin (/Users/yitianwu/Documents/study-abroad-platform/scripts/runtime-journey-audit-2026-03-31.ts:258:20)
+    at async main (/Users/yitianwu/Documents/study-abroad-platform/scripts/runtime-journey-audit-2026-03-31.ts:1984:30)

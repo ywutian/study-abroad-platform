@@ -14,7 +14,7 @@ import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight, borderRadius, shadows } from '@/utils/theme';
 
-import { SwipeStatsDto, BADGE_COLORS, BADGE_ICONS } from './types';
+import { SwipeStatsDto, BADGE_COLORS, BADGE_ICONS, normalizeBadge } from './types';
 
 interface StatsBarProps {
   onShowStats: () => void;
@@ -30,9 +30,9 @@ export default function StatsBar({ onShowStats }: StatsBarProps) {
     staleTime: 30_000,
   });
 
-  const badge = stats?.badge || 'BRONZE';
-  const badgeColor = BADGE_COLORS[badge] || BADGE_COLORS.BRONZE;
-  const badgeIcon = BADGE_ICONS[badge] || BADGE_ICONS.BRONZE;
+  const badge = normalizeBadge(stats?.badge);
+  const badgeColor = BADGE_COLORS[badge] || BADGE_COLORS.bronze;
+  const badgeIcon = BADGE_ICONS[badge] || BADGE_ICONS.bronze;
 
   return (
     <Animated.View

@@ -1,5 +1,41 @@
 # 留学平台测试清单
 
+## AI-First 发版门禁流程（2026-04-01 起）
+
+当前正式 E2E 门禁不再采用“人工先全量探索”的方式，而是改为：
+
+1. `Codex 预检`
+2. `Codex 首轮执行`
+3. `人工补位体验验证`
+4. `Codex 收口复验`
+5. `发版结论`
+
+正式流程文档：
+
+- [AI-First 发版门禁 E2E SOP](./QA_RELEASE_GATE_SOP.md)
+- [Codex E2E Runbook](./CODEX_E2E_RUNBOOK.md)
+- [旅程注册表](./JOURNEY_REGISTRY.md)
+- [Impact Set 映射规则](./RELEASE_IMPACT_MAPPING.md)
+- [AI Agent 评估 Rubric](./AI_AGENT_EVALUATION_RUBRIC.md)
+- [Web / Mobile 复用 Rubric](./CROSS_PLATFORM_REUSE_RUBRIC.md)
+- [专业留学中介感 Rubric](./PROFESSIONAL_CONSULTANCY_RUBRIC.md)
+- [人工测试者任务卡模板](./templates/human-e2e-task-card.md)
+- [问题提报模板](./templates/e2e-issue-report.md)
+- [发版门禁总表模板](./templates/release-gate-master.md)
+- [发版门禁样例包](./examples/AI_FIRST_RELEASE_GATE_SAMPLE.md)
+
+默认规则：
+
+- 正式门禁环境是共享预发环境。
+- `Baseline Smoke` 先由 Codex 全跑。
+- 非技术用户只接触任务卡和问题提报表，不负责日志、接口和环境。
+- 正式状态继续使用 `PASS / ISSUE / BROKEN / BLOCKED / SKIPPED`。
+- 下列 4 个维度是正式门禁项，不再视为“可选主观反馈”：
+  - 布局合理性
+  - AI Agent 功能与输出合理性
+  - Web / Mobile 复用合理性
+  - 整体是否符合专业留学中介产品定位
+
 ## 📊 测试状态总览
 
 | 类别            | 状态              | 完成度         |

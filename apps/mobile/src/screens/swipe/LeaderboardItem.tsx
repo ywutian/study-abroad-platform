@@ -10,7 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Badge } from '@/components/ui';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 
-import { LeaderboardEntryDto, BADGE_COLORS, BADGE_ICONS } from './types';
+import { LeaderboardEntryDto, BADGE_COLORS, BADGE_ICONS, normalizeBadge } from './types';
 
 interface LeaderboardItemProps {
   entry: LeaderboardEntryDto;
@@ -20,8 +20,9 @@ const LeaderboardItem = memo(function LeaderboardItem({ entry }: LeaderboardItem
   const { t } = useTranslation();
   const c = useColors();
 
-  const entryBadgeColor = BADGE_COLORS[entry.badge] || BADGE_COLORS.BRONZE;
-  const entryBadgeIcon = BADGE_ICONS[entry.badge] || BADGE_ICONS.BRONZE;
+  const badge = normalizeBadge(entry.badge);
+  const entryBadgeColor = BADGE_COLORS[badge] || BADGE_COLORS.bronze;
+  const entryBadgeIcon = BADGE_ICONS[badge] || BADGE_ICONS.bronze;
   const isMe = entry.isCurrentUser;
 
   return (
@@ -72,7 +73,7 @@ const LeaderboardItem = memo(function LeaderboardItem({ entry }: LeaderboardItem
             ]}
             numberOfLines={1}
           >
-            {entry.nickname || t('swipe.anonymous')}
+            {entry.userName || t('swipe.anonymous')}
           </Text>
           {isMe && (
             <Badge variant="default" style={{ marginLeft: spacing.xs }}>

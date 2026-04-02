@@ -326,6 +326,47 @@ describe('McpApiKeyService', () => {
     });
   });
 
+  describe('validateKeyDetailed', () => {
+    const mockCandidateWithUser = {
+      ...mockKeyRecord,
+      user: {
+        id: 'user-123',
+        role: 'USER',
+        isBanned: false,
+        deletedAt: null,
+      },
+    };
+
+    it('should surface revoked keys distinctly', async () => {
+      (prismaService.mcpApiKey.findMany as jest.Mock).mockResolvedValue([
+        { ...mockCandidateWithUser, isRevoked: true },
+      ]);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+
+      const result = await service.validateKeyDetailed(
+        'mcp_a1b2c3d4e5f6a1b2c3d4e5f6',
+      );
+
+      expect(result).toEqual({ status: 'revoked' });
+    });
+
+    it('should surface expired keys distinctly', async () => {
+      (prismaService.mcpApiKey.findMany as jest.Mock).mockResolvedValue([
+        {
+          ...mockCandidateWithUser,
+          expiresAt: new Date('2020-01-01'),
+        },
+      ]);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+
+      const result = await service.validateKeyDetailed(
+        'mcp_a1b2c3d4e5f6a1b2c3d4e5f6',
+      );
+
+      expect(result).toEqual({ status: 'expired' });
+    });
+  });
+
   describe('updateLastUsed', () => {
     it('should update lastUsedAt timestamp', async () => {
       (prismaService.mcpApiKey.update as jest.Mock).mockResolvedValue({

@@ -1,0 +1,25 @@
+{
+  "id": "C3",
+  "title": "用户管理 → AI 使用",
+  "account": "admin@example.com",
+  "prerequisites": ["Applicant user ID resolved from admin search"],
+  "steps": [
+    "Queried admin users for alice.zhang@demo.studyabroad.com.",
+    "Opened the real admin user-detail page and inspected the AI usage card."
+  ],
+  "userVisibleResult": "The admin user-detail page rendered the applicant AI usage / rate-limit section in the live UI.",
+  "score": 4,
+  "status": "PASS",
+  "evidence": [
+    "e2e-report/releases/verify-admin-routes/journeys/C3/01-user-detail.png",
+    "e2e-report/releases/verify-admin-routes/journeys/C3/user-detail.html"
+  ],
+  "registryVersion": "2026-04-01.v1",
+  "registryStatus": "active",
+  "executionOwner": "codex",
+  "validationType": "admin-only",
+  "baselineSmoke": false,
+  "qualityDimensionsChecked": ["layout"],
+  "impactMappingUsed": ["manual-runtime-audit:verify-admin-routes"],
+  "generatedAt": "2026-04-02T03:03:20.057Z"
+}

@@ -1,0 +1,45 @@
+{
+  "status": 200,
+  "body": [
+    {
+      "id": "cmnftobtv00npxdx7yvv6xx3w",
+      "profileId": "cmnftobsn00ngxdx74w4h7pq1",
+      "type": "SAT",
+      "score": 1500,
+      "subScores": null,
+      "testDate": null,
+      "createdAt": "2026-04-01T09:07:20.419Z",
+      "updatedAt": "2026-04-01T09:07:20.419Z"
+    },
+    {
+      "id": "cmnftobtu00nnxdx7ufdweyys",
+      "profileId": "cmnftobsn00ngxdx74w4h7pq1",
+      "type": "SAT",
+      "score": 1500,
+      "subScores": null,
+      "testDate": null,
+      "createdAt": "2026-04-01T09:07:20.418Z",
+      "updatedAt": "2026-04-01T09:07:20.418Z"
+    },
+    {
+      "id": "cmnftobti00nlxdx7hsq4f1wh",
+      "profileId": "cmnftobsn00ngxdx74w4h7pq1",
+      "type": "TOEFL",
+      "score": 110,
+      "subScores": null,
+      "testDate": null,
+      "createdAt": "2026-04-01T09:07:20.406Z",
+      "updatedAt": "2026-04-01T09:07:20.406Z"
+    },
+    {
+      "id": "cmnftobth00njxdx7c7xj5xr7",
+      "profileId": "cmnftobsn00ngxdx74w4h7pq1",
+      "type": "TOEFL",
+      "score": 110,
+      "subScores": null,
+      "testDate": null,
+      "createdAt": "2026-04-01T09:07:20.405Z",
+      "updatedAt": "2026-04-01T09:07:20.405Z"
+    }
+  ]
+}

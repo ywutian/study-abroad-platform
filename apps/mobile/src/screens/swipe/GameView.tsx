@@ -31,6 +31,7 @@ import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/
 
 import {
   SwipeCaseDto,
+  SwipeBatchResultDto,
   SwipeResultDto,
   PredictionType,
   SCREEN_WIDTH,
@@ -70,10 +71,12 @@ export default function GameView({ onShowStats }: GameViewProps) {
   // ── Batch loading ─────────────────────────────────────
   const loadBatch = useCallback(async () => {
     try {
-      const batch = await apiClient.get<SwipeCaseDto[]>(`${API_ROUTES.HALLS}/swipe/batch`, {
+      const batch = await apiClient.get<SwipeBatchResultDto>(`${API_ROUTES.HALLS}/swipe/batch`, {
         params: { count: BATCH_SIZE },
       });
-      setCases((prev) => [...prev, ...batch]);
+      const nextCases = Array.isArray(batch?.cases) ? batch.cases : [];
+      if (!nextCases.length) return;
+      setCases((prev) => [...prev, ...nextCases]);
     } catch (err) {
       if (err instanceof Error) {
         toastRef.current.show({ type: 'error', message: err.message });

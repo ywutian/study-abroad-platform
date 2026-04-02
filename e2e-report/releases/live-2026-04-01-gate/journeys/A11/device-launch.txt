@@ -1,0 +1,8 @@
+Starting: Intent { cmp=com.studyabroad.mobile/.MainActivity }
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Status: ok
+LaunchState: UNKNOWN (0)
+Activity: com.studyabroad.mobile/.MainActivity
+TotalTime: 0
+WaitTime: 28
+Complete

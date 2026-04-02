@@ -10,7 +10,6 @@ import Animated, { FadeInDown, FadeInRight, SlideInUp } from 'react-native-reani
 
 import {
   Badge,
-  Avatar,
   EmptyState,
   AnimatedButton,
   AnimatedCard,
@@ -21,6 +20,7 @@ import {
   SkeletonCard,
   SkeletonListItem,
 } from '@/components/ui';
+import { SchoolAvatar } from '@/components/features/SchoolAvatar';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
 import {
@@ -33,7 +33,59 @@ import {
   withOpacity,
 } from '@/utils/theme';
 import { getResultBadgeVariant } from '@/utils/case-helpers';
-import type { School, Case, PaginatedResponse } from '@/types';
+import type { School, Case, PaginatedResponse, Profile } from '@/types';
+
+type HomeProfile = Profile & {
+  completionPercentage?: number;
+};
+
+type SchoolListItem = {
+  id: string;
+  tier: 'REACH' | 'TARGET' | 'SAFETY' | string;
+};
+
+type TimelineOverview = {
+  upcomingDeadlines: {
+    id: string;
+    schoolName: string;
+    deadline?: string;
+    round?: string;
+    status?: string;
+  }[];
+};
+
+type UpcomingDeadline = TimelineOverview['upcomingDeadlines'][number] & {
+  deadline: string;
+};
+
+function getProfileCompletion(profile?: HomeProfile): number {
+  if (!profile) return 0;
+  if (typeof profile.completionPercentage === 'number') {
+    return Math.max(0, Math.min(profile.completionPercentage, 100));
+  }
+
+  const checkpoints = [
+    Boolean(profile.gpa),
+    Boolean(profile.currentSchool),
+    Boolean(profile.targetMajor),
+    Boolean(profile.budgetTier || profile.regionPreference?.length),
+    (profile.testScores?.length ?? 0) > 0,
+    (profile.activities?.length ?? 0) > 0,
+    (profile.awards?.length ?? 0) > 0,
+    (profile.education?.length ?? 0) > 0,
+    (profile.essays?.length ?? 0) > 0,
+  ];
+
+  const completed = checkpoints.filter(Boolean).length;
+  return Math.round((completed / checkpoints.length) * 100);
+}
+
+function isFutureDeadline(
+  item: TimelineOverview['upcomingDeadlines'][number]
+): item is UpcomingDeadline {
+  if (!item.deadline) return false;
+  return new Date(item.deadline) > new Date();
+}
 
 export default function HomeScreen() {
   const { t } = useTranslation();
@@ -50,8 +102,10 @@ export default function HomeScreen() {
     queryKey: ['recentCases'],
     queryFn: () =>
       apiClient.get<PaginatedResponse<Case>>('/cases', {
-        params: { limit: 5, sort: 'createdAt', order: 'desc' },
+        params: { page: 1, pageSize: 5 },
       }),
+    refetchOnMount: 'always',
+    refetchOnReconnect: 'always',
   });
 
   // Fetch top schools
@@ -63,48 +117,50 @@ export default function HomeScreen() {
     queryKey: ['topSchools'],
     queryFn: () =>
       apiClient.get<PaginatedResponse<School>>('/schools', {
-        params: { limit: 5, sort: 'usnewsRank', order: 'asc' },
+        params: { page: 1, pageSize: 5 },
       }),
+    refetchOnMount: 'always',
+    refetchOnReconnect: 'always',
   });
 
   // Fetch profile for grade card
-  const { data: profile } = useQuery({
+  const { data: profile, refetch: refetchProfile } = useQuery({
     queryKey: ['profile', 'me'],
-    queryFn: () =>
-      apiClient.get<{
-        completionPercentage?: number;
-        gpa?: number;
-        satScore?: number;
-        toeflScore?: number;
-      }>('/profiles/me'),
+    queryFn: () => apiClient.get<HomeProfile>('/profiles/me'),
     enabled: isAuthenticated,
+    refetchOnMount: 'always',
+    refetchOnReconnect: 'always',
   });
 
   // Fetch school list for tier breakdown
-  const { data: schoolList } = useQuery({
+  const { data: schoolList, refetch: refetchSchoolList } = useQuery({
     queryKey: ['schoolList'],
-    queryFn: () =>
-      apiClient.get<{
-        items: { tier: string }[];
-      }>('/school-lists'),
+    queryFn: () => apiClient.get<SchoolListItem[]>('/school-lists'),
     enabled: isAuthenticated,
+    refetchOnMount: 'always',
+    refetchOnReconnect: 'always',
   });
 
   // Fetch upcoming deadlines
-  const { data: deadlines } = useQuery({
+  const { data: deadlines, refetch: refetchDeadlines } = useQuery({
     queryKey: ['deadlines', 'upcoming'],
-    queryFn: () =>
-      apiClient.get<{
-        items: { id: string; schoolName: string; deadline: string; type: string }[];
-      }>('/timelines/overview'),
+    queryFn: () => apiClient.get<TimelineOverview>('/timelines/overview'),
     enabled: isAuthenticated,
+    refetchOnMount: 'always',
+    refetchOnReconnect: 'always',
   });
 
   const [refreshing, setRefreshing] = React.useState(false);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([refetchCases(), refetchSchools()]);
+    await Promise.all([
+      refetchCases(),
+      refetchSchools(),
+      refetchProfile(),
+      refetchSchoolList(),
+      refetchDeadlines(),
+    ]);
     setRefreshing(false);
   };
 
@@ -156,17 +212,19 @@ export default function HomeScreen() {
     [t, colors.primary, colors.success, colors.warning, colors.info, colors.accent, colors.error]
   );
 
+  const profileCompletion = useMemo(() => getProfileCompletion(profile), [profile]);
+
   const profileGrade = useMemo(() => {
-    const pct = profile?.completionPercentage ?? 0;
+    const pct = profileCompletion;
     if (pct >= 90) return { grade: 'A', color: colors.success };
     if (pct >= 80) return { grade: 'B+', color: '#10b981' };
     if (pct >= 70) return { grade: 'B', color: colors.info };
     if (pct >= 50) return { grade: 'C', color: colors.warning };
     return { grade: 'D', color: colors.error };
-  }, [profile?.completionPercentage, colors]);
+  }, [profileCompletion, colors]);
 
   const tierCounts = useMemo(() => {
-    const items = schoolList?.items ?? [];
+    const items = schoolList ?? [];
     return {
       reach: items.filter((s) => s.tier === 'REACH').length,
       target: items.filter((s) => s.tier === 'TARGET').length,
@@ -175,8 +233,8 @@ export default function HomeScreen() {
   }, [schoolList]);
 
   const upcomingDeadlines = useMemo(() => {
-    return (deadlines?.items ?? [])
-      .filter((d) => new Date(d.deadline) > new Date())
+    return (deadlines?.upcomingDeadlines ?? [])
+      .filter(isFutureDeadline)
       .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
       .slice(0, 5);
   }, [deadlines]);
@@ -225,21 +283,19 @@ export default function HomeScreen() {
           >
             <View style={styles.statItem}>
               <Text style={styles.statValue}>
-                {casesData?.total ? casesData.total.toLocaleString() : '-'}
+                {casesData ? casesData.total.toLocaleString() : '-'}
               </Text>
               <Text style={styles.statLabel}>{t('home.stats.cases')}</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>
-                {schoolsData?.total ? `${schoolsData.total}+` : '-'}
-              </Text>
+              <Text style={styles.statValue}>{schoolsData ? `${schoolsData.total}+` : '-'}</Text>
               <Text style={styles.statLabel}>{t('home.stats.schools')}</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{casesData?.total ? `${casesData.total}+` : '-'}</Text>
-              <Text style={styles.statLabel}>{t('home.stats.cases')}</Text>
+              <Text style={styles.statValue}>-</Text>
+              <Text style={styles.statLabel}>{t('home.stats.accuracy')}</Text>
             </View>
           </Animated.View>
         </LinearGradient>
@@ -305,7 +361,7 @@ export default function HomeScreen() {
                     {t('home.profileGrade')}
                   </Text>
                   <Text style={[styles.gradeDesc, { color: colors.foregroundMuted }]}>
-                    {t('home.profileCompletion', { pct: profile.completionPercentage ?? 0 })}
+                    {t('home.profileCompletion', { pct: profileCompletion })}
                   </Text>
                   {/* Progress bar */}
                   <View style={[styles.progressTrack, { backgroundColor: colors.muted }]}>
@@ -313,7 +369,7 @@ export default function HomeScreen() {
                       style={[
                         styles.progressFill,
                         {
-                          width: `${Math.min(profile.completionPercentage ?? 0, 100)}%`,
+                          width: `${Math.min(profileCompletion, 100)}%`,
                           backgroundColor: profileGrade.color,
                         },
                       ]}
@@ -408,7 +464,7 @@ export default function HomeScreen() {
                       {dl.schoolName}
                     </Text>
                     <Text style={[styles.deadlineType, { color: colors.foregroundMuted }]}>
-                      {dl.type}
+                      {dl.round || dl.status || ''}
                     </Text>
                   </View>
                   <View style={styles.deadlineDays}>
@@ -480,9 +536,10 @@ export default function HomeScreen() {
                   accessibilityLabel={`${school.name}${school.usNewsRank ? `, #${school.usNewsRank} US News` : ''}`}
                 >
                   <CardContent>
-                    <Avatar
-                      source={school.logoUrl}
+                    <SchoolAvatar
                       name={school.name}
+                      logoUrl={school.logoUrl}
+                      website={school.website}
                       size="lg"
                       style={styles.schoolLogo}
                     />

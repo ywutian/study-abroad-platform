@@ -5,19 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Button,
-  Avatar,
-  Badge,
-  Loading,
-  EmptyState,
-  ConfirmDialog,
-} from '@/components/ui';
-import { ListItem, ListGroup, Separator } from '@/components/ui/ListItem';
+import { Button, Avatar, Badge, Loading, EmptyState, ConfirmDialog } from '@/components/ui';
+import { ListItem, ListGroup } from '@/components/ui/ListItem';
 import { CircularProgress } from '@/components/ui/Progress';
 import { profileRoutes, API_ROUTES, verificationRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
@@ -193,13 +182,16 @@ export default function ProfileScreen() {
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={styles.contentContainer}
       refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
       showsVerticalScrollIndicator={false}
     >
       {/* Profile Header */}
       <View style={[styles.header, { backgroundColor: colors.card }]}>
-        <Avatar source={null} name={user?.email} size="xl" style={styles.avatar} />
-        <Text style={[styles.email, { color: colors.foreground }]}>{user?.email}</Text>
+        <Avatar source={null} name={user?.email} size="lg" style={styles.avatar} />
+        <Text style={[styles.email, { color: colors.foreground }]} numberOfLines={2}>
+          {user?.email}
+        </Text>
         <View style={styles.roleBadge}>
           <Badge
             variant={
@@ -210,33 +202,45 @@ export default function ProfileScreen() {
           </Badge>
         </View>
 
-        {/* Completion Ring */}
-        <View style={styles.completionContainer}>
-          <CircularProgress
-            value={completion}
-            size={100}
-            strokeWidth={10}
-            label={t('profile.profileComplete')}
-          />
-        </View>
-
-        {completion < 100 && (
-          <>
-            {missingFields.length > 0 && (
-              <Text style={[styles.missingFields, { color: colors.foregroundMuted }]}>
+        <View
+          style={[
+            styles.completionCard,
+            {
+              backgroundColor: withOpacity(colors.primary, 0.05),
+              borderColor: colors.border,
+            },
+          ]}
+        >
+          <CircularProgress value={completion} size={96} strokeWidth={8} />
+          <View style={styles.completionCopy}>
+            <Text style={[styles.completionTitle, { color: colors.foreground }]}>
+              {t('profile.profileComplete')}
+            </Text>
+            <Text style={[styles.completionSummary, { color: colors.foregroundMuted }]}>
+              {completion === 100
+                ? t('profile.completionReady')
+                : t('profile.completionSummary', { percentage: completion })}
+            </Text>
+            {completion < 100 && missingFields.length > 0 && (
+              <Text
+                style={[styles.missingFields, { color: colors.foregroundMuted }]}
+                numberOfLines={3}
+              >
                 {t('recommendation.missingFields', { fields: missingFields.join(', ') })}
               </Text>
             )}
-            <Button
-              variant="outline"
-              size="sm"
-              onPress={() => router.push('/profile/basic')}
-              style={styles.completeButton}
-            >
-              {t('profile.completeProfile')}
-            </Button>
-          </>
-        )}
+            {completion < 100 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onPress={() => router.push('/profile/basic')}
+                style={styles.completeButton}
+              >
+                {t('profile.completeProfile')}
+              </Button>
+            )}
+          </View>
+        </View>
 
         {/* Verification Status */}
         {verificationData && (
@@ -442,40 +446,66 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  contentContainer: {
+    paddingBottom: spacing['4xl'],
+  },
   centered: {
     justifyContent: 'center',
     alignItems: 'center',
   },
   header: {
     alignItems: 'center',
-    padding: spacing['2xl'],
-    paddingBottom: spacing['3xl'],
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.xl,
     borderBottomLeftRadius: borderRadius['2xl'],
     borderBottomRightRadius: borderRadius['2xl'],
   },
   avatar: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
   email: {
     fontSize: fontSize.lg,
     fontWeight: fontWeight.semibold,
     marginBottom: spacing.sm,
+    textAlign: 'center',
+    paddingHorizontal: spacing.md,
   },
   roleBadge: {
-    marginBottom: spacing.xl,
-  },
-  completionContainer: {
     marginBottom: spacing.lg,
+  },
+  completionCard: {
+    width: '100%',
+    borderWidth: 1,
+    borderRadius: borderRadius.xl,
+    padding: spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.lg,
+    marginBottom: spacing.lg,
+  },
+  completionCopy: {
+    flex: 1,
+    minHeight: 96,
+    justifyContent: 'center',
+  },
+  completionTitle: {
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.semibold,
+    marginBottom: spacing.xs,
+  },
+  completionSummary: {
+    fontSize: fontSize.sm,
+    lineHeight: 20,
   },
   missingFields: {
     fontSize: fontSize.xs,
-    textAlign: 'center',
     marginTop: spacing.sm,
-    paddingHorizontal: spacing.lg,
     lineHeight: 18,
   },
   completeButton: {
     marginTop: spacing.md,
+    alignSelf: 'flex-start',
   },
   section: {
     padding: spacing.lg,
@@ -491,8 +521,9 @@ const styles = StyleSheet.create({
   verificationRow: {
     flexDirection: 'row',
     justifyContent: 'center',
+    flexWrap: 'wrap',
     gap: spacing.sm,
-    marginTop: spacing.md,
+    marginTop: spacing.xs,
   },
   verifyBadge: {
     flexDirection: 'row',

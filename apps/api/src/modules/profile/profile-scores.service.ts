@@ -64,6 +64,16 @@ export class ProfileScoresService {
     data: CreateTestScoreDto,
   ): Promise<TestScore> {
     const profileId = await this.helpers.getProfileId(userId);
+    const testDate = data.testDate ? new Date(data.testDate) : null;
+    const duplicate = await this.findDuplicateTestScore(
+      profileId,
+      data,
+      testDate,
+    );
+
+    if (duplicate) {
+      return duplicate;
+    }
 
     const testScore = await this.prisma.testScore.create({
       data: {
@@ -71,13 +81,57 @@ export class ProfileScoresService {
         type: data.type as any,
         score: data.score,
         subScores: data.subScores as any,
-        testDate: data.testDate ? new Date(data.testDate) : null,
+        testDate,
       },
     });
 
     await this.cacheInvalidation.onProfileChange(userId);
 
     return testScore;
+  }
+
+  private async findDuplicateTestScore(
+    profileId: string,
+    data: CreateTestScoreDto,
+    testDate: Date | null,
+  ): Promise<TestScore | null> {
+    const candidates = await this.prisma.testScore.findMany({
+      where: {
+        profileId,
+        type: data.type as any,
+        score: data.score,
+        testDate,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const targetSubScores = this.serializeSubScores(data.subScores);
+
+    return (
+      candidates.find(
+        (candidate) =>
+          this.serializeSubScores(candidate.subScores) === targetSubScores,
+      ) ?? null
+    );
+  }
+
+  private serializeSubScores(subScores: unknown): string {
+    if (
+      !subScores ||
+      typeof subScores !== 'object' ||
+      Array.isArray(subScores)
+    ) {
+      return JSON.stringify(subScores ?? null);
+    }
+
+    return JSON.stringify(
+      Object.keys(subScores as Record<string, unknown>)
+        .sort()
+        .reduce<Record<string, unknown>>((acc, key) => {
+          acc[key] = (subScores as Record<string, unknown>)[key];
+          return acc;
+        }, {}),
+    );
   }
 
   /**

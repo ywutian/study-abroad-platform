@@ -31,6 +31,9 @@ describe('NotificationService', () => {
             get: jest.fn().mockResolvedValue('0'),
             set: jest.fn().mockResolvedValue('OK'),
             del: jest.fn().mockResolvedValue(1),
+            sadd: jest.fn().mockResolvedValue(1),
+            smembers: jest.fn().mockResolvedValue([]),
+            srem: jest.fn().mockResolvedValue(0),
           },
         },
         {
@@ -54,6 +57,7 @@ describe('NotificationService', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+    jest.restoreAllMocks();
   });
 
   describe('createNotification', () => {
@@ -192,6 +196,25 @@ describe('NotificationService', () => {
     });
   });
 
+  describe('registerPushToken', () => {
+    it('should store the push token in Redis and refresh TTL', async () => {
+      await service.registerPushToken(
+        'user-1',
+        'ExponentPushToken[test-token]',
+        'android',
+      );
+
+      expect(redis.sadd).toHaveBeenCalledWith(
+        'notification_push_tokens:user-1',
+        'ExponentPushToken[test-token]',
+      );
+      expect(redis.expire).toHaveBeenCalledWith(
+        'notification_push_tokens:user-1',
+        60 * 60 * 24 * 90,
+      );
+    });
+  });
+
   describe('markAsRead', () => {
     it('should mark an unread notification as read', async () => {
       const unreadNotif = {
@@ -296,6 +319,63 @@ describe('NotificationService', () => {
 
       expect(redis.del).toHaveBeenCalledWith('notifications:user-1');
       expect(redis.set).toHaveBeenCalledWith('unread_count:user-1', '0');
+    });
+  });
+
+  describe('remote push dispatch', () => {
+    it('should send a remote Expo push when the user has registered tokens', async () => {
+      (redis.smembers as jest.Mock).mockResolvedValue([
+        'ExponentPushToken[test-token]',
+      ]);
+      const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue({
+        ok: true,
+        json: async () => ({ data: [{ status: 'ok' }] }),
+      } as Response);
+
+      await service.createNotification(
+        'user-1',
+        NotificationType.SYSTEM_BROADCAST,
+        {
+          customContent: 'Push me',
+        },
+      );
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://exp.host/--/api/v2/push/send',
+        expect.objectContaining({
+          method: 'POST',
+        }),
+      );
+    });
+
+    it('should remove stale Expo tokens when Expo reports DeviceNotRegistered', async () => {
+      (redis.smembers as jest.Mock).mockResolvedValue([
+        'ExponentPushToken[stale-token]',
+      ]);
+      jest.spyOn(global, 'fetch').mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          data: [
+            {
+              status: 'error',
+              details: { error: 'DeviceNotRegistered' },
+            },
+          ],
+        }),
+      } as Response);
+
+      await service.createNotification(
+        'user-1',
+        NotificationType.SYSTEM_BROADCAST,
+        {
+          customContent: 'Push me',
+        },
+      );
+
+      expect(redis.srem).toHaveBeenCalledWith(
+        'notification_push_tokens:user-1',
+        'ExponentPushToken[stale-token]',
+      );
     });
   });
 });

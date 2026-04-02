@@ -136,8 +136,11 @@ export class NotificationService {
   private readonly logger = new Logger(NotificationService.name);
   private readonly NOTIFICATION_KEY_PREFIX = 'notifications:';
   private readonly UNREAD_COUNT_KEY_PREFIX = 'unread_count:';
+  private readonly PUSH_TOKEN_KEY_PREFIX = 'notification_push_tokens:';
   private readonly MAX_NOTIFICATIONS = 100;
   private readonly NOTIFICATION_TTL = 60 * 60 * 24 * 30; // 30天
+  private readonly PUSH_TOKEN_TTL = 60 * 60 * 24 * 90; // 90天
+  private readonly EXPO_PUSH_ENDPOINT = 'https://exp.host/--/api/v2/push/send';
 
   constructor(
     private readonly redis: RedisService,
@@ -206,9 +209,35 @@ export class NotificationService {
       data: notification,
     } satisfies NotificationPushPayload);
 
+    try {
+      await this.sendRemotePush(notification);
+    } catch (error) {
+      this.logger.warn(
+        `Remote push dispatch failed for user ${userId}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+
     this.logger.log(`Notification created: ${type} for user ${userId}`);
 
     return notification;
+  }
+
+  async registerPushToken(
+    userId: string,
+    token: string,
+    platform: 'ios' | 'android',
+  ): Promise<void> {
+    const normalizedToken = token.trim();
+    if (!normalizedToken) {
+      return;
+    }
+
+    const key = this.getPushTokenKey(userId);
+    await this.redis.sadd(key, normalizedToken);
+    await this.redis.expire(key, this.PUSH_TOKEN_TTL);
+    this.logger.log(
+      `Push token registered for user ${userId} on ${platform}: ${normalizedToken.slice(0, 24)}...`,
+    );
   }
 
   /**
@@ -372,5 +401,80 @@ export class NotificationService {
 
   private getUnreadCountKey(userId: string): string {
     return `${this.UNREAD_COUNT_KEY_PREFIX}${userId}`;
+  }
+
+  private getPushTokenKey(userId: string): string {
+    return `${this.PUSH_TOKEN_KEY_PREFIX}${userId}`;
+  }
+
+  private async sendRemotePush(notification: Notification): Promise<void> {
+    const pushTokens = (
+      await this.redis.smembers(this.getPushTokenKey(notification.userId))
+    ).filter((token) => token.startsWith('ExponentPushToken['));
+
+    if (pushTokens.length === 0) {
+      return;
+    }
+
+    const payload = pushTokens.map((token) => ({
+      to: token,
+      title: notification.title,
+      body: notification.content,
+      sound: 'default',
+      priority: 'high',
+      channelId: 'default',
+      data: { notification },
+    }));
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+    try {
+      const response = await fetch(this.EXPO_PUSH_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        this.logger.warn(
+          `Expo push request failed for user ${notification.userId}: HTTP ${response.status}`,
+        );
+        return;
+      }
+
+      const result = (await response.json().catch(() => null)) as {
+        data?: Array<{
+          status?: string;
+          details?: { error?: string };
+          message?: string;
+        }>;
+      } | null;
+
+      const invalidTokens = (result?.data ?? [])
+        .map((ticket, index) =>
+          ticket?.status === 'error' &&
+          ticket.details?.error === 'DeviceNotRegistered'
+            ? pushTokens[index]
+            : null,
+        )
+        .filter((token): token is string => !!token);
+
+      if (invalidTokens.length > 0) {
+        await this.redis.srem(
+          this.getPushTokenKey(notification.userId),
+          ...invalidTokens,
+        );
+        this.logger.warn(
+          `Removed ${invalidTokens.length} stale Expo push token(s) for user ${notification.userId}`,
+        );
+      }
+    } finally {
+      clearTimeout(timeoutId);
+    }
   }
 }

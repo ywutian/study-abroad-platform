@@ -1,0 +1,4 @@
+Error: POST /api/v1/recommendations failed: 500 Internal Server Error
+    at applicantA3 (/Users/yitianwu/Documents/study-abroad-platform/scripts/runtime-journey-audit-2026-03-31.ts:819:11)
+    at async runSingleJourney (/Users/yitianwu/Documents/study-abroad-platform/scripts/runtime-journey-audit-2026-03-31.ts:1711:9)
+    at async main (/Users/yitianwu/Documents/study-abroad-platform/scripts/runtime-journey-audit-2026-03-31.ts:1757:7)

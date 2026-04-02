@@ -14,6 +14,18 @@ export interface McpKeyInfo {
   name: string;
 }
 
+export type McpKeyValidationStatus =
+  | 'valid'
+  | 'invalid'
+  | 'revoked'
+  | 'expired'
+  | 'user_inactive';
+
+export interface McpKeyValidationResult {
+  status: McpKeyValidationStatus;
+  info?: McpKeyInfo;
+}
+
 @Injectable()
 export class McpApiKeyService {
   private readonly logger = new Logger(McpApiKeyService.name);
@@ -99,6 +111,56 @@ export class McpApiKeyService {
     }
 
     return null;
+  }
+
+  async validateKeyDetailed(plainKey: string): Promise<McpKeyValidationResult> {
+    if (!plainKey.startsWith(KEY_PREFIX) || plainKey.length < 20) {
+      return { status: 'invalid' };
+    }
+
+    const prefix = plainKey.slice(0, 12);
+    const candidates = await this.prisma.mcpApiKey.findMany({
+      where: { keyPrefix: prefix },
+      include: {
+        user: {
+          select: { id: true, role: true, isBanned: true, deletedAt: true },
+        },
+      },
+    });
+
+    for (const candidate of candidates) {
+      const match = await bcrypt.compare(plainKey, candidate.keyHash);
+      if (!match) {
+        continue;
+      }
+
+      if (candidate.isRevoked) {
+        return { status: 'revoked' };
+      }
+
+      if (candidate.expiresAt && candidate.expiresAt < new Date()) {
+        return { status: 'expired' };
+      }
+
+      if (candidate.user.isBanned || candidate.user.deletedAt) {
+        this.logger.warn(
+          `MCP key ${prefix}... belongs to banned/deleted user ${candidate.userId}`,
+        );
+        return { status: 'user_inactive' };
+      }
+
+      return {
+        status: 'valid',
+        info: {
+          keyId: candidate.id,
+          userId: candidate.userId,
+          role: candidate.user.role,
+          name: candidate.name,
+        },
+      };
+    }
+
+    return { status: 'invalid' };
   }
 
   /** Update lastUsedAt timestamp (fire-and-forget). */

@@ -1,0 +1,20 @@
+{
+  "id": "SJ-1",
+  "title": "学校详情 → 学校对比",
+  "account": "alice.zhang@demo.studyabroad.com",
+  "prerequisites": ["Two live school detail IDs loaded from the local API"],
+  "steps": [
+    "Opened the first school detail page: Princeton University.",
+    "Navigated into the real compare page with two school IDs.",
+    "Inspected the rendered graduation/retention fields in the user-visible table."
+  ],
+  "userVisibleResult": "The compare table rendered with apparently normal outcome percentages.",
+  "score": 4,
+  "status": "PASS",
+  "evidence": [
+    "e2e-report/journeys-2026-03-31/SJ-1/01-school-detail.png",
+    "e2e-report/journeys-2026-03-31/SJ-1/02-compare-page.png",
+    "e2e-report/journeys-2026-03-31/SJ-1/compare-page.html"
+  ],
+  "generatedAt": "2026-04-01T02:06:24.678Z"
+}

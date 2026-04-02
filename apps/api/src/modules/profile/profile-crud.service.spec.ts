@@ -282,6 +282,33 @@ describe('ProfileCrudService', () => {
         }),
       );
     });
+
+    it('should retry as update when upsert races on unique userId', async () => {
+      const p2002Error = new Prisma.PrismaClientKnownRequestError(
+        'Unique constraint failed on the fields: (`userId`)',
+        {
+          code: 'P2002',
+          clientVersion: '6.8.0',
+          meta: { target: ['userId'] },
+        },
+      );
+      const updated = { id: 'profile-1', userId: 'user-1', targetMajor: 'CS' };
+      mockPrisma.profile.upsert.mockRejectedValue(p2002Error);
+      mockPrisma.profile.update.mockResolvedValue(updated);
+
+      const result = await service.upsert('user-1', {
+        targetMajor: 'CS',
+      } as any);
+
+      expect(result).toEqual(updated);
+      expect(mockPrisma.profile.update).toHaveBeenCalledWith({
+        where: { userId: 'user-1' },
+        data: expect.objectContaining({ targetMajor: 'CS' }),
+      });
+      expect(mockCacheInvalidation.onProfileChange).toHaveBeenCalledWith(
+        'user-1',
+      );
+    });
   });
 
   // ============================================

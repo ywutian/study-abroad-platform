@@ -1,0 +1,13 @@
+2026-04-01 push verification limitation
+
+- Runtime media exercised:
+  - Android runtime for notifications list / delete / mark-all-as-read / unread-count sync
+  - USB-connected physical Android phone `PCT_AL10` with standalone Android dev build (`com.studyabroad.mobile`) for real push-token verification
+- On the physical device, the applicant session loaded successfully but push registration failed before any remote push could be delivered.
+- Metro and the on-device warning both reported:
+  - `useNotifications: failed to register for push notifications`
+  - `Default FirebaseApp is not initialized in this process com.studyabroad.mobile`
+- Repo state confirms the missing native config:
+  - `apps/mobile/android/app/google-services.json` is absent
+  - Gradle is prepared to apply Google Services once the Firebase config file is provided
+- Result: the notifications page behavior itself is verified, but real remote push arrival and notification-open behavior remain blocked until Android Firebase / FCM credentials are added and the physical-device dev build is rebuilt.

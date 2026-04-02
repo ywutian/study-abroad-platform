@@ -1,0 +1,23 @@
+{
+  "id": "A4",
+  "title": "文书评审 / 润色",
+  "account": "alice.zhang@demo.studyabroad.com",
+  "prerequisites": [
+    "Applicant already logged into the web AI page",
+    "OpenAI key configured locally"
+  ],
+  "steps": [
+    "Opened the real `/en/ai` page.",
+    "Sent the prompt: Please briefly review and polish this Common App essay opening in 2-3 bullets plus a revised paragraph: \"When I taught my grandmother to use WeChat, I realized technology feels human only when it removes fear.\"",
+    "Waited for the assistant response to finish streaming in the live chat UI."
+  ],
+  "userVisibleResult": "Please briefly review and polish this Common App essay opening in 2-3 bullets plus a revised paragraph: \"When I taught my grandmother to use WeChat, I realized technology feels human only when it removes fear.\"",
+  "score": 4,
+  "status": "PASS",
+  "evidence": [
+    "e2e-report/journeys-2026-03-31/A4/01-enter.png",
+    "e2e-report/journeys-2026-03-31/A4/02-result.png",
+    "e2e-report/journeys-2026-03-31/A4/response.txt"
+  ],
+  "generatedAt": "2026-04-01T02:04:52.706Z"
+}

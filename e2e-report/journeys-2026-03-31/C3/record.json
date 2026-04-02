@@ -1,0 +1,18 @@
+{
+  "id": "C3",
+  "title": "用户管理 → AI 使用",
+  "account": "admin@example.com",
+  "prerequisites": ["Applicant user ID resolved from admin search"],
+  "steps": [
+    "Queried admin users for alice.zhang@demo.studyabroad.com.",
+    "Opened the real admin user-detail page and inspected the AI usage card."
+  ],
+  "userVisibleResult": "The admin user-detail page rendered the applicant AI usage / rate-limit section in the live UI.",
+  "score": 4,
+  "status": "PASS",
+  "evidence": [
+    "e2e-report/journeys-2026-03-31/C3/01-user-detail.png",
+    "e2e-report/journeys-2026-03-31/C3/user-detail.html"
+  ],
+  "generatedAt": "2026-04-01T10:36:25.694Z"
+}

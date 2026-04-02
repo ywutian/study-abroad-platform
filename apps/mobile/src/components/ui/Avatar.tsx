@@ -1,19 +1,35 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import { Image } from 'expo-image';
 import { useColors, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 
 type AvatarSize = 'sm' | 'default' | 'lg' | 'xl';
 
-interface AvatarProps {
+export interface AvatarProps {
   source?: string | null;
+  fallbackSource?: string | null;
   name?: string;
   size?: AvatarSize;
   style?: StyleProp<ViewStyle>;
 }
 
-export function Avatar({ source, name, size = 'default', style }: AvatarProps) {
+export function Avatar({ source, fallbackSource, name, size = 'default', style }: AvatarProps) {
   const colors = useColors();
+  const [useFallback, setUseFallback] = useState(false);
+  const [hideImage, setHideImage] = useState(false);
+
+  const primarySource = source ?? null;
+  const secondarySource = useMemo(() => {
+    if (!fallbackSource || fallbackSource === primarySource) {
+      return null;
+    }
+    return fallbackSource;
+  }, [fallbackSource, primarySource]);
+
+  useEffect(() => {
+    setUseFallback(false);
+    setHideImage(false);
+  }, [primarySource, secondarySource]);
 
   const getSizeStyles = () => {
     switch (size) {
@@ -35,6 +51,19 @@ export function Avatar({ source, name, size = 'default', style }: AvatarProps) {
     .join('')
     .toUpperCase()
     .slice(0, 2);
+  const imageSource = hideImage
+    ? null
+    : useFallback
+      ? secondarySource
+      : (primarySource ?? secondarySource);
+
+  const handleImageError = () => {
+    if (!useFallback && primarySource && secondarySource) {
+      setUseFallback(true);
+      return;
+    }
+    setHideImage(true);
+  };
 
   return (
     <View
@@ -49,13 +78,14 @@ export function Avatar({ source, name, size = 'default', style }: AvatarProps) {
         style,
       ]}
     >
-      {source ? (
+      {imageSource ? (
         <Image
-          source={{ uri: source }}
+          source={{ uri: imageSource }}
           placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
           contentFit="cover"
           cachePolicy="memory-disk"
           transition={200}
+          onError={handleImageError}
           style={[
             styles.image,
             {

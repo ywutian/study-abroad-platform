@@ -6,10 +6,10 @@ import Animated, {
   withRepeat,
   withTiming,
   interpolate,
-  useReducedMotion,
   Easing,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useColors, borderRadius as br } from '@/utils/theme';
 
 interface AnimatedSkeletonProps {

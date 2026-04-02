@@ -57,10 +57,13 @@ interface CategoryDto {
 
 interface PostAuthor {
   id: string;
-  email: string;
+  name?: string;
+  avatar?: string;
+  isVerified?: boolean;
+  email?: string;
   profile?: {
-    nickname: string;
-    avatarUrl: string;
+    nickname?: string;
+    avatarUrl?: string;
   };
 }
 
@@ -89,15 +92,20 @@ interface PostDto {
 }
 
 interface ForumStats {
-  totalPosts: number;
-  totalComments: number;
-  totalUsers: number;
-  todayPosts: number;
+  postCount?: number;
+  userCount?: number;
+  teamingCount?: number;
+  activeToday?: number;
+  totalPosts?: number;
+  totalComments?: number;
+  totalUsers?: number;
+  todayPosts?: number;
 }
 
 interface PostsResponse {
-  items: PostDto[];
+  posts: PostDto[];
   total: number;
+  hasMore: boolean;
 }
 
 enum PostSortBy {
@@ -156,6 +164,10 @@ const timeAgo = (
   return t('common.time.monthsShort', { count: months });
 };
 
+const getAuthorName = (author: PostAuthor): string => {
+  return author.name || author.profile?.nickname || author.email?.split('@')[0] || 'User';
+};
+
 // ---------------------------------------------------------------------------
 // Memoized header for FlashList ListHeaderComponent
 // ---------------------------------------------------------------------------
@@ -195,18 +207,31 @@ const ForumHeader = memo(function ForumHeader({
 
   const categoryLabel = (cat: CategoryDto) => (isZh ? cat.nameZh || cat.name : cat.name);
 
-  const statItems = useMemo(
-    () =>
-      stats
-        ? [
-            { value: stats.totalPosts, label: t('forum.stats.posts'), color: c.primary },
-            { value: stats.totalComments, label: t('forum.stats.comments'), color: c.info },
-            { value: stats.totalUsers, label: t('forum.stats.users'), color: c.success },
-            { value: stats.todayPosts, label: t('forum.stats.today'), color: c.warning },
-          ]
-        : [],
-    [stats, t, c.primary, c.info, c.success, c.warning]
-  );
+  const statItems = useMemo(() => {
+    if (!stats) return [];
+    return [
+      {
+        value: stats.postCount ?? stats.totalPosts ?? 0,
+        label: t('forum.stats.posts'),
+        color: c.primary,
+      },
+      {
+        value: stats.userCount ?? stats.totalUsers ?? 0,
+        label: t('forum.stats.users'),
+        color: c.info,
+      },
+      {
+        value: stats.teamingCount ?? stats.totalComments ?? 0,
+        label: t('forum.stats.teaming'),
+        color: c.success,
+      },
+      {
+        value: stats.activeToday ?? stats.todayPosts ?? 0,
+        label: t('forum.stats.activeToday'),
+        color: c.warning,
+      },
+    ];
+  }, [stats, t, c.primary, c.info, c.success, c.warning]);
 
   return (
     <View>
@@ -476,7 +501,7 @@ export default function ForumPage() {
   // Post card
   const renderPostCard = useCallback(
     ({ item }: { item: PostDto }) => {
-      const authorName = item.author.profile?.nickname || item.author.email.split('@')[0];
+      const authorName = getAuthorName(item.author);
       const catLabel = item.category ? categoryLabel(item.category) : '';
 
       return (
@@ -800,7 +825,7 @@ export default function ForumPage() {
       <View style={[styles.container, { backgroundColor: c.background }]}>
         {isLoading ? (
           <Loading text={t('forum.loading')} />
-        ) : !postsData || postsData.items.length === 0 ? (
+        ) : !postsData || postsData.posts.length === 0 ? (
           <View style={styles.emptyContainer}>
             {listHeader}
             <EmptyState
@@ -815,7 +840,7 @@ export default function ForumPage() {
           </View>
         ) : (
           <FlashList
-            data={postsData.items}
+            data={postsData.posts}
             renderItem={renderPostCard}
             keyExtractor={(item) => item.id}
             ListHeaderComponent={listHeader}

@@ -1,0 +1,110 @@
+{
+  "events": [
+    {
+      "phase": "before-onboarding-post",
+      "scoreValuesRef": {
+        "toeflScore": "110",
+        "ieltsScore": "",
+        "satScore": "1500",
+        "actScore": ""
+      },
+      "currentValues": {
+        "email": "audit.1775101314410.1@example.com",
+        "password": "Demo123!",
+        "confirmPassword": "Demo123!",
+        "agreeTerms": true,
+        "realName": "Audit Fresh User",
+        "birthYear": "",
+        "birthMonth": "",
+        "birthDay": "",
+        "gradYear": "",
+        "gradMonth": "",
+        "toeflScore": "110",
+        "ieltsScore": "",
+        "satScore": "1500",
+        "actScore": "",
+        "referralCode": ""
+      },
+      "domValues": {
+        "email": "audit.1775101314410.1@example.com",
+        "realName": "Audit Fresh User",
+        "toeflScore": "110",
+        "ieltsScore": "",
+        "satScore": "1500",
+        "actScore": ""
+      },
+      "snapshotValues": {
+        "email": "audit.1775101314410.1@example.com",
+        "realName": "Audit Fresh User",
+        "toeflScore": "110",
+        "ieltsScore": "",
+        "satScore": "1500",
+        "actScore": ""
+      },
+      "resolvedValues": {
+        "email": "audit.1775101314410.1@example.com",
+        "password": "Demo123!",
+        "confirmPassword": "Demo123!",
+        "agreeTerms": true,
+        "realName": "Audit Fresh User",
+        "birthYear": "",
+        "birthMonth": "",
+        "birthDay": "",
+        "gradYear": "",
+        "gradMonth": "",
+        "toeflScore": "110",
+        "ieltsScore": "",
+        "satScore": "1500",
+        "actScore": "",
+        "referralCode": ""
+      },
+      "onboardingData": {
+        "realName": "Audit Fresh User",
+        "birthday": null,
+        "graduationDate": null,
+        "testScores": [
+          { "type": "TOEFL", "score": 110 },
+          { "type": "SAT", "score": 1500 }
+        ]
+      },
+      "capturedAt": "2026-04-02T03:41:56.012Z"
+    },
+    {
+      "phase": "onboarding-post-failed",
+      "scoreValuesRef": {
+        "toeflScore": "110",
+        "ieltsScore": "",
+        "satScore": "1500",
+        "actScore": ""
+      },
+      "resolvedValues": {
+        "email": "audit.1775101314410.1@example.com",
+        "password": "Demo123!",
+        "confirmPassword": "Demo123!",
+        "agreeTerms": true,
+        "realName": "Audit Fresh User",
+        "birthYear": "",
+        "birthMonth": "",
+        "birthDay": "",
+        "gradYear": "",
+        "gradMonth": "",
+        "toeflScore": "110",
+        "ieltsScore": "",
+        "satScore": "1500",
+        "actScore": "",
+        "referralCode": ""
+      },
+      "onboardingData": {
+        "realName": "Audit Fresh User",
+        "birthday": null,
+        "graduationDate": null,
+        "testScores": [
+          { "type": "TOEFL", "score": 110 },
+          { "type": "SAT", "score": 1500 }
+        ]
+      },
+      "pendingOnboardingStored": true,
+      "capturedAt": "2026-04-02T03:41:56.035Z"
+    }
+  ]
+}

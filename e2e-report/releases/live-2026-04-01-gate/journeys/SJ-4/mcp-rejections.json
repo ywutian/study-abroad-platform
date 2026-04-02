@@ -1,0 +1,20 @@
+{
+  "invalidResults": {
+    "name": "invalid",
+    "exitCode": 1,
+    "stderr": "[Nest] 79205  - 04/01/2026, 8:45:02 PM   ERROR [PrismaService] CRITICAL: 1 pending/failed migration(s) detected. Schema may be out of sync.\nERROR: Invalid MCP_API_KEY\n",
+    "stdout": "[Nest] 79205  - 04/01/2026, 8:45:02 PM    WARN [RedisCacheService] RedisCacheService initialized — Redis unavailable, using in-process Map fallback. Data will NOT be shared across pods.\nprisma:info Starting a postgresql pool with 3 connections.\n[Nest] 79205  - 04/01/2026, 8:45:02 PM    WARN [SentryModule] SENTRY_DSN not configured — error tracking disabled\n[Nest] 79205  - 04/01/2026, 8:45:02 PM    WARN [ConfigValidatorService] Search engine: Google Custom Search - disabled (missing GOOGLE_SEARCH_API_KEY or GOOGLE_SEARCH_ENGINE_ID)\n"
+  },
+  "expiredResults": {
+    "name": "expired",
+    "exitCode": 1,
+    "stderr": "[Nest] 79602  - 04/01/2026, 8:45:10 PM   ERROR [PrismaService] CRITICAL: 1 pending/failed migration(s) detected. Schema may be out of sync.\nERROR: Expired MCP_API_KEY\n",
+    "stdout": "[Nest] 79602  - 04/01/2026, 8:45:10 PM    WARN [RedisCacheService] RedisCacheService initialized — Redis unavailable, using in-process Map fallback. Data will NOT be shared across pods.\nprisma:info Starting a postgresql pool with 3 connections.\n[Nest] 79602  - 04/01/2026, 8:45:10 PM    WARN [SentryModule] SENTRY_DSN not configured — error tracking disabled\n[Nest] 79602  - 04/01/2026, 8:45:10 PM    WARN [ConfigValidatorService] Search engine: Google Custom Search - disabled (missing GOOGLE_SEARCH_API_KEY or GOOGLE_SEARCH_ENGINE_ID)\n"
+  },
+  "revokedResults": {
+    "name": "revoked",
+    "exitCode": 1,
+    "stderr": "[Nest] 79811  - 04/01/2026, 8:45:18 PM   ERROR [PrismaService] CRITICAL: 1 pending/failed migration(s) detected. Schema may be out of sync.\nERROR: Revoked MCP_API_KEY\n",
+    "stdout": "[Nest] 79811  - 04/01/2026, 8:45:18 PM    WARN [RedisCacheService] RedisCacheService initialized — Redis unavailable, using in-process Map fallback. Data will NOT be shared across pods.\nprisma:info Starting a postgresql pool with 3 connections.\n[Nest] 79811  - 04/01/2026, 8:45:18 PM    WARN [SentryModule] SENTRY_DSN not configured — error tracking disabled\n[Nest] 79811  - 04/01/2026, 8:45:18 PM    WARN [ConfigValidatorService] Search engine: Google Custom Search - disabled (missing GOOGLE_SEARCH_API_KEY or GOOGLE_SEARCH_ENGINE_ID)\n"
+  }
+}

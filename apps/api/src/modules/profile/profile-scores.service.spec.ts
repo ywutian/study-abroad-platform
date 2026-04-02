@@ -17,6 +17,7 @@ describe('ProfileScoresService', () => {
   const mockPrisma = {
     testScore: {
       create: jest.fn(),
+      findMany: jest.fn(),
       findUnique: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
@@ -98,6 +99,7 @@ describe('ProfileScoresService', () => {
         type: 'SAT',
         score: 1500,
       };
+      mockPrisma.testScore.findMany.mockResolvedValue([]);
       mockPrisma.testScore.create.mockResolvedValue(created);
 
       const result = await service.createTestScore('user-1', {
@@ -113,6 +115,7 @@ describe('ProfileScoresService', () => {
     });
 
     it('should handle testDate when provided', async () => {
+      mockPrisma.testScore.findMany.mockResolvedValue([]);
       mockPrisma.testScore.create.mockResolvedValue({ id: 'ts-2' });
 
       await service.createTestScore('user-1', {
@@ -126,6 +129,29 @@ describe('ProfileScoresService', () => {
           testDate: expect.any(Date),
         }),
       });
+    });
+
+    it('should reuse an identical existing score on retry', async () => {
+      const existing = {
+        id: 'ts-1',
+        profileId: 'profile-1',
+        type: 'TOEFL',
+        score: 110,
+        subScores: { reading: 29, listening: 28 },
+        testDate: null,
+        createdAt: new Date(),
+      };
+      mockPrisma.testScore.findMany.mockResolvedValue([existing]);
+
+      const result = await service.createTestScore('user-1', {
+        type: 'TOEFL',
+        score: 110,
+        subScores: { listening: 28, reading: 29 },
+      } as any);
+
+      expect(result).toEqual(existing);
+      expect(mockPrisma.testScore.create).not.toHaveBeenCalled();
+      expect(mockCacheInvalidation.onProfileChange).not.toHaveBeenCalled();
     });
   });
 

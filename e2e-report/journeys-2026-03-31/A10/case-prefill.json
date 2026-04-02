@@ -1,0 +1,299 @@
+{
+  "gpaRange": "3.95",
+  "gpaScale": 4,
+  "major": "Computer Science",
+  "testScores": [
+    {
+      "type": "SAT",
+      "score": 1560,
+      "subscores": {
+        "math": 800,
+        "reading": 760
+      },
+      "testDate": "2025-06-01T00:00:00.000Z"
+    },
+    {
+      "type": "TOEFL",
+      "score": 115,
+      "subscores": {
+        "reading": 30,
+        "writing": 29,
+        "speaking": 27,
+        "listening": 29
+      },
+      "testDate": "2025-05-15T00:00:00.000Z"
+    },
+    {
+      "type": "AP",
+      "score": 5,
+      "subscores": {
+        "subject": "Calculus BC"
+      },
+      "testDate": "2025-05-10T00:00:00.000Z"
+    },
+    {
+      "type": "AP",
+      "score": 5,
+      "subscores": {
+        "subject": "Computer Science A"
+      },
+      "testDate": "2025-05-10T00:00:00.000Z"
+    },
+    {
+      "type": "AP",
+      "score": 5,
+      "subscores": {
+        "subject": "Physics C: Mechanics"
+      },
+      "testDate": "2025-05-10T00:00:00.000Z"
+    },
+    {
+      "type": "DUOLINGO",
+      "score": 150,
+      "subscores": null,
+      "testDate": "2025-10-01T00:00:00.000Z"
+    },
+    {
+      "type": "IELTS",
+      "score": 8,
+      "subscores": null,
+      "testDate": "2025-11-01T00:00:00.000Z"
+    },
+    {
+      "type": "DUOLINGO",
+      "score": 150,
+      "subscores": null,
+      "testDate": "2025-10-01T00:00:00.000Z"
+    },
+    {
+      "type": "IELTS",
+      "score": 8,
+      "subscores": null,
+      "testDate": "2025-11-01T00:00:00.000Z"
+    },
+    {
+      "type": "DUOLINGO",
+      "score": 150,
+      "subscores": null,
+      "testDate": "2025-10-01T00:00:00.000Z"
+    },
+    {
+      "type": "IELTS",
+      "score": 8,
+      "subscores": null,
+      "testDate": "2025-11-01T00:00:00.000Z"
+    },
+    {
+      "type": "DUOLINGO",
+      "score": 150,
+      "subscores": null,
+      "testDate": "2025-10-01T00:00:00.000Z"
+    },
+    {
+      "type": "IELTS",
+      "score": 8,
+      "subscores": null,
+      "testDate": "2025-11-01T00:00:00.000Z"
+    },
+    {
+      "type": "DUOLINGO",
+      "score": 150,
+      "subscores": null,
+      "testDate": "2025-10-01T00:00:00.000Z"
+    },
+    {
+      "type": "IELTS",
+      "score": 8,
+      "subscores": null,
+      "testDate": "2025-11-01T00:00:00.000Z"
+    },
+    {
+      "type": "DUOLINGO",
+      "score": 150,
+      "subscores": null,
+      "testDate": "2025-10-01T00:00:00.000Z"
+    },
+    {
+      "type": "IELTS",
+      "score": 8,
+      "subscores": null,
+      "testDate": "2025-11-01T00:00:00.000Z"
+    },
+    {
+      "type": "DUOLINGO",
+      "score": 150,
+      "subscores": null,
+      "testDate": "2025-10-01T00:00:00.000Z"
+    },
+    {
+      "type": "IELTS",
+      "score": 8,
+      "subscores": null,
+      "testDate": "2025-11-01T00:00:00.000Z"
+    },
+    {
+      "type": "DUOLINGO",
+      "score": 150,
+      "subscores": null,
+      "testDate": "2025-10-01T00:00:00.000Z"
+    },
+    {
+      "type": "IELTS",
+      "score": 8,
+      "subscores": null,
+      "testDate": "2025-11-01T00:00:00.000Z"
+    }
+  ],
+  "activities": [
+    {
+      "category": "LEADERSHIP",
+      "description": "Audit Shadowing Initiative @ Runtime Audit Lab",
+      "role": "Lead Coordinator",
+      "hoursPerWeek": 3,
+      "weeksPerYear": 8
+    },
+    {
+      "category": "LEADERSHIP",
+      "description": "Audit Shadowing Initiative @ Runtime Audit Lab",
+      "role": "Lead Coordinator",
+      "hoursPerWeek": 3,
+      "weeksPerYear": 8
+    },
+    {
+      "category": "LEADERSHIP",
+      "description": "Audit Shadowing Initiative @ Runtime Audit Lab",
+      "role": "Lead Coordinator",
+      "hoursPerWeek": 3,
+      "weeksPerYear": 8
+    },
+    {
+      "category": "RESEARCH",
+      "description": "AI for Education Research Project @ 清华大学计算机系",
+      "role": "Lead Researcher",
+      "hoursPerWeek": 15,
+      "weeksPerYear": 40
+    },
+    {
+      "category": "LEADERSHIP",
+      "description": "Audit Shadowing Initiative @ Runtime Audit Lab",
+      "role": "Lead Coordinator",
+      "hoursPerWeek": 3,
+      "weeksPerYear": 8
+    },
+    {
+      "category": "LEADERSHIP",
+      "description": "Audit Shadowing Initiative @ Runtime Audit Lab",
+      "role": "Lead Coordinator",
+      "hoursPerWeek": 3,
+      "weeksPerYear": 8
+    },
+    {
+      "category": "LEADERSHIP",
+      "description": "Audit Shadowing Initiative @ Runtime Audit Lab",
+      "role": "Lead Coordinator",
+      "hoursPerWeek": 3,
+      "weeksPerYear": 8
+    },
+    {
+      "category": "LEADERSHIP",
+      "description": "Audit Shadowing Initiative @ Runtime Audit Lab",
+      "role": "Lead Coordinator",
+      "hoursPerWeek": 3,
+      "weeksPerYear": 8
+    },
+    {
+      "category": "LEADERSHIP",
+      "description": "Audit Shadowing Initiative @ Runtime Audit Lab",
+      "role": "Lead Coordinator",
+      "hoursPerWeek": 3,
+      "weeksPerYear": 8
+    },
+    {
+      "category": "ACADEMIC",
+      "description": "School Programming Club @ 人大附中",
+      "role": "President & Founder",
+      "hoursPerWeek": 10,
+      "weeksPerYear": 36
+    },
+    {
+      "category": "COMMUNITY_SERVICE",
+      "description": "Rural Education Volunteer @ Teach For Rural China",
+      "role": "Program Director",
+      "hoursPerWeek": 8,
+      "weeksPerYear": 30
+    },
+    {
+      "category": "ACADEMIC",
+      "description": "Competitive Programming @ RDFZ Competitive Programming Team",
+      "role": "Team Captain",
+      "hoursPerWeek": 12,
+      "weeksPerYear": 40
+    }
+  ],
+  "awards": [
+    {
+      "name": "Runtime Audit Merit",
+      "level": "school",
+      "year": 2026
+    },
+    {
+      "name": "Runtime Audit Merit",
+      "level": "school",
+      "year": 2026
+    },
+    {
+      "name": "Runtime Audit Merit",
+      "level": "school",
+      "year": 2026
+    },
+    {
+      "name": "USACO Platinum Division",
+      "level": "national",
+      "year": 2025
+    },
+    {
+      "name": "Runtime Audit Merit",
+      "level": "school",
+      "year": 2026
+    },
+    {
+      "name": "Runtime Audit Merit",
+      "level": "school",
+      "year": 2026
+    },
+    {
+      "name": "Runtime Audit Merit",
+      "level": "school",
+      "year": 2026
+    },
+    {
+      "name": "Runtime Audit Merit",
+      "level": "school",
+      "year": 2026
+    },
+    {
+      "name": "Runtime Audit Merit",
+      "level": "school",
+      "year": 2026
+    },
+    {
+      "name": "NOIP First Prize",
+      "level": "national",
+      "year": 2024
+    },
+    {
+      "name": "AMC 12 Score 140+",
+      "level": "national",
+      "year": 2025
+    },
+    {
+      "name": "Intel ISEF Finalist",
+      "level": "international",
+      "year": 2025
+    }
+  ],
+  "apCount": 3,
+  "apSubjects": ["Calculus BC", "Computer Science A", "Physics C: Mechanics"],
+  "highSchoolType": "PUBLIC_CN",
+  "activityList": "LEADERSHIP - Audit Shadowing Initiative @ Runtime Audit Lab (Lead Coordinator)\nLEADERSHIP - Audit Shadowing Initiative @ Runtime Audit Lab (Lead Coordinator)\nLEADERSHIP - Audit Shadowing Initiative @ Runtime Audit Lab (Lead Coordinator)\nRESEARCH - AI for Education Research Project @ 清华大学计算机系 (Lead Researcher)\nLEADERSHIP - Audit Shadowing Initiative @ Runtime Audit Lab (Lead Coordinator)\nLEADERSHIP - Audit Shadowing Initiative @ Runtime Audit Lab (Lead Coordinator)\nLEADERSHIP - Audit Shadowing Initiative @ Runtime Audit Lab (Lead Coordinator)\nLEADERSHIP - Audit Shadowing Initiative @ Runtime Audit Lab (Lead Coordinator)\nLEADERSHIP - Audit Shadowing Initiative @ Runtime Audit Lab (Lead Coordinator)\nACADEMIC - School Programming Club @ 人大附中 (President & Founder)\nCOMMUNITY_SERVICE - Rural Education Volunteer @ Teach For Rural China (Program Director)\nACADEMIC - Competitive Programming @ RDFZ Competitive Programming Team (Team Captain)"
+}

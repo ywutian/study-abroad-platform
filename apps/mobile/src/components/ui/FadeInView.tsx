@@ -20,7 +20,7 @@ import Animated, {
   ZoomIn,
   BounceIn,
 } from 'react-native-reanimated';
-import { useReducedMotion } from 'react-native-reanimated';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 type AnimationType =
   | 'fade'

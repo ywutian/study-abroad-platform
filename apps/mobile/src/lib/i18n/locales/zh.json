@@ -193,6 +193,8 @@
     "editProfile": "编辑档案",
     "completeProfile": "完善档案",
     "profileComplete": "档案完整度",
+    "completionSummary": "已完成核心档案项的 {{percentage}}%",
+    "completionReady": "核心档案项已全部完成。",
     "fields": {
       "grade": "年级",
       "schoolType": "学校类型",
@@ -519,7 +521,9 @@
   "forum": {
     "title": "论坛",
     "search": "搜索帖子...",
+    "searchPlaceholder": "搜索帖子...",
     "allCategories": "全部",
+    "resultsCount": "共 {{count}} 条帖子",
     "sort": {
       "latest": "最新",
       "popular": "热门",
@@ -527,10 +531,24 @@
     },
     "stats": {
       "posts": "帖子",
-      "comments": "评论",
       "users": "用户",
-      "today": "今日"
+      "teaming": "组队中",
+      "activeToday": "今日活跃"
     },
+    "postCreated": "帖子已发布",
+    "createPost": "发帖",
+    "category": "分类",
+    "selectCategory": "选择分类",
+    "postTitle": "标题",
+    "titlePlaceholder": "输入清晰的标题",
+    "contentPlaceholder": "写下你的问题或经验...",
+    "tags": "标签",
+    "tagPlaceholder": "添加标签",
+    "teamPostDesc": "开启后可用于招募申请队友。",
+    "teamSizePlaceholder": "需要几位队友？",
+    "requirementsPlaceholder": "填写要求或期待",
+    "noPosts": "还没有帖子",
+    "noPostsDesc": "成为第一个发起讨论的人。",
     "post": {
       "team": "组队",
       "pinned": "置顶",
@@ -606,9 +624,57 @@
   },
   "followers": {
     "title": "关注管理",
+    "searchPlaceholder": "搜索用户",
     "tabs": {
       "following": "关注",
-      "followers": "粉丝"
+      "followers": "粉丝",
+      "blocked": "已拉黑"
+    },
+    "recommendations": {
+      "title": "推荐关注"
+    },
+    "actions": {
+      "follow": "关注",
+      "unfollow": "取消关注",
+      "unblock": "解除拉黑"
+    },
+    "badge": {
+      "mutual": "互相关注"
+    },
+    "toast": {
+      "followed": "已关注",
+      "followFailed": "关注失败",
+      "unfollowed": "已取消关注",
+      "unfollowFailed": "取消关注失败",
+      "blocked": "已拉黑该用户",
+      "blockFailed": "拉黑失败",
+      "unblocked": "已解除拉黑",
+      "unblockFailed": "解除拉黑失败",
+      "chatFailed": "发起聊天失败"
+    },
+    "empty": {
+      "followers": {
+        "title": "暂无粉丝",
+        "description": "当别人关注你后，会显示在这里。"
+      },
+      "following": {
+        "title": "暂未关注任何人",
+        "description": "关注一些人来建立你的社交网络。"
+      },
+      "blocked": {
+        "title": "暂无拉黑用户",
+        "description": "被拉黑的用户会显示在这里。"
+      }
+    },
+    "blockDialog": {
+      "title": "拉黑用户",
+      "message": "确认拉黑 {{name}} 吗？对方将无法再与你互动。",
+      "confirm": "拉黑"
+    },
+    "unblockDialog": {
+      "title": "解除拉黑",
+      "message": "确认解除拉黑 {{name}} 吗？",
+      "confirm": "解除拉黑"
     },
     "follow": "关注",
     "unfollow": "取消关注",
@@ -621,14 +687,22 @@
     "title": "Swipe 游戏",
     "accuracy": "准确率",
     "streak": "连胜",
+    "acceptanceRate": "录取率",
+    "activities": "课外活动",
+    "awards": "获奖",
     "admit": "录取",
     "reject": "拒绝",
     "waitlist": "候补",
     "correct": "正确！",
     "incorrect": "错误",
     "actualResult": "实际结果：{{result}}",
+    "actualResultLabel": "实际结果",
+    "yourPrediction": "你的选择：{{result}}",
+    "yourPredictionLabel": "你的选择",
     "points": "+{{points}} 分",
-    "badgeUpgrade": "徽章升级！",
+    "streakValue": "{{count}} 连胜",
+    "badgeUpgrade": "已解锁 {{badge}}",
+    "nextCardHint": "正在加载下一张卡片...",
     "stats": {
       "title": "统计",
       "totalSwipes": "总滑动数",
@@ -646,6 +720,11 @@
       "you": "你"
     },
     "badges": {
+      "bronze": "青铜",
+      "silver": "白银",
+      "gold": "黄金",
+      "platinum": "铂金",
+      "diamond": "钻石",
       "BRONZE": "青铜",
       "SILVER": "白银",
       "GOLD": "黄金",
@@ -888,6 +967,7 @@
       "safety": "保底学校",
       "reach": "冲刺学校"
     },
+    "resultsTitle": "预测结果",
     "results": {
       "admitted": "录取",
       "rejected": "拒绝",
@@ -905,7 +985,7 @@
       "activities": "活动",
       "essays": "文书"
     },
-    "confidence": "置信度: {value}%",
+    "confidence": "置信度: {{value}}",
     "empty": {
       "loginRequired": "请先登录",
       "loginRequiredDesc": "登录后即可使用录取预测功能",

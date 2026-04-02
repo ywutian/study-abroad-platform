@@ -59,6 +59,46 @@ function mockResponse(
   } as unknown as Response;
 }
 
+function mockStreamResponse(
+  chunks: string[],
+  { status = 200, ok = true }: { status?: number; ok?: boolean } = {}
+): Response {
+  const encodedChunks = chunks.map((chunk) => new TextEncoder().encode(`data: ${chunk}\n\n`));
+  let index = 0;
+  const reader = {
+    read: jest.fn().mockImplementation(async () => {
+      if (index >= encodedChunks.length) {
+        return { done: true, value: undefined };
+      }
+      const value = encodedChunks[index];
+      index += 1;
+      return { done: false, value };
+    }),
+    releaseLock: jest.fn(),
+  };
+
+  return {
+    ok,
+    status,
+    json: jest.fn(),
+    text: jest.fn(),
+    headers: new Headers(),
+    redirected: false,
+    statusText: ok ? 'OK' : 'Error',
+    type: 'basic' as ResponseType,
+    url: '',
+    clone: jest.fn(),
+    body: {
+      getReader: () => reader,
+    } as unknown as ReadableStream<Uint8Array>,
+    bodyUsed: false,
+    arrayBuffer: jest.fn(),
+    blob: jest.fn(),
+    formData: jest.fn(),
+    bytes: jest.fn(),
+  } as unknown as Response;
+}
+
 // --------------- setup ---------------
 
 const originalFetch = global.fetch;
@@ -399,6 +439,64 @@ describe('ApiClient', () => {
 
       // Only called once -- no retries
       expect(global.fetch).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('stream requests', () => {
+    it('retries stream after a successful token refresh on 401', async () => {
+      (getAccessToken as jest.Mock)
+        .mockResolvedValueOnce('expired-token')
+        .mockResolvedValueOnce('new-token');
+      (getRefreshToken as jest.Mock).mockResolvedValue('valid-refresh');
+
+      (global.fetch as jest.Mock)
+        .mockResolvedValueOnce(
+          mockResponse({ message: 'Unauthorized' }, { status: 401, ok: false })
+        )
+        .mockResolvedValueOnce(
+          mockResponse({
+            data: { accessToken: 'new-token', refreshToken: 'new-refresh' },
+          })
+        )
+        .mockResolvedValueOnce(mockStreamResponse(['{"type":"content","content":"hello"}']));
+
+      const chunks: string[] = [];
+      for await (const chunk of apiClient.stream('/ai-agent/chat', {
+        message: 'hi',
+        stream: true,
+      })) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks).toEqual(['{"type":"content","content":"hello"}']);
+      expect(saveTokens).toHaveBeenCalledWith('new-token', 'new-refresh');
+      expect(global.fetch).toHaveBeenCalledTimes(3);
+    });
+
+    it('throws session expired when stream 401 and refresh fails', async () => {
+      const onRefreshFailed = jest.fn();
+      apiClient.setOnRefreshFailed(onRefreshFailed);
+
+      (getAccessToken as jest.Mock).mockResolvedValue('expired-token');
+      (getRefreshToken as jest.Mock).mockResolvedValue('bad-refresh');
+
+      (global.fetch as jest.Mock)
+        .mockResolvedValueOnce(
+          mockResponse({ message: 'Unauthorized' }, { status: 401, ok: false })
+        )
+        .mockResolvedValueOnce(mockResponse({ message: 'Invalid' }, { status: 401, ok: false }));
+
+      await expect(
+        (async () => {
+          for await (const _chunk of apiClient.stream('/ai-agent/chat', { message: 'hi' })) {
+            // no-op
+          }
+        })()
+      ).rejects.toThrow('Session expired');
+
+      expect(clearAuthData).toHaveBeenCalled();
+      expect(onRefreshFailed).toHaveBeenCalled();
+      apiClient.setOnRefreshFailed(() => {});
     });
   });
 });

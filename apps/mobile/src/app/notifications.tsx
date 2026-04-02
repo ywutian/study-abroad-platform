@@ -46,6 +46,7 @@ const NOTIFICATION_ICON_MAP: Record<NotificationType, { icon: IoniconsName; colo
   LEVEL_UP: { icon: 'trophy', colorKey: 'warning' },
   DEADLINE_REMINDER: { icon: 'alarm', colorKey: 'error' },
   PROFILE_INCOMPLETE: { icon: 'alert-circle', colorKey: 'warning' },
+  SYSTEM_BROADCAST: { icon: 'megaphone', colorKey: 'info' },
 };
 
 function getNotificationVisual(type: NotificationType) {
@@ -162,8 +163,14 @@ const NotificationItem = React.memo(function NotificationItem({
 export default function NotificationsScreen() {
   const { t } = useTranslation();
   const colors = useColors();
-  const { notifications, isLoadingNotifications, markAsRead, markAllAsRead, refreshNotifications } =
-    useNotifications();
+  const {
+    notifications,
+    isLoadingNotifications,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification,
+    refreshNotifications,
+  } = useNotifications();
 
   const unreadNotifications = useMemo(() => notifications.filter((n) => !n.read), [notifications]);
 
@@ -178,11 +185,9 @@ export default function NotificationsScreen() {
 
   const handleDelete = useCallback(
     async (id: string) => {
-      // Mark as read serves as acknowledgement; backend handles cleanup.
-      // If a dedicated delete endpoint is wired in the hook later, call it here.
-      await markAsRead(id);
+      await deleteNotification(id);
     },
-    [markAsRead]
+    [deleteNotification]
   );
 
   const handleMarkAllRead = useCallback(() => {

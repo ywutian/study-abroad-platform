@@ -1,0 +1,5 @@
+2026-04-02 follow-up emulator rerun on Android AVD `Medium_Phone_API_36.1`
+
+- Opened the Notifications screen against the recovered local backend and confirmed the list renders real seeded notifications
+- Notification runtime remained consistent with earlier device evidence: list render, delete semantics, and unread-state sync stay fixed after the mobile contract patches
+- Remaining blocker is still limited to true remote push arrival / open behavior, not the notifications page itself

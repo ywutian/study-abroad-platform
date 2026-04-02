@@ -30,6 +30,8 @@
     "sbom:verify": "node -e \"const s=require('./sbom/bom.json'); if(!s.specVersion||!(s.components||[]).length){process.exit(1)} console.log('SBOM OK — specVersion:', s.specVersion, '| components:', s.components.length);\"",
     "lint:routes": "tsx scripts/check-api-routes.ts",
     "lint:integration": "tsx scripts/check-integration.ts",
+    "release-gate:generate": "tsx scripts/release-gate/generate-release-gate.ts",
+    "release-gate:run": "tsx scripts/runtime-release-gate.ts",
     "lint:dead-code": "knip",
     "lint:all": "pnpm lint && pnpm --filter web lint:quality && pnpm --filter api lint:quality && pnpm --filter web lint:i18n && pnpm lint:routes && pnpm lint:integration",
     "check": "pnpm lint:all && pnpm test",

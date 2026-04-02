@@ -1,0 +1,30 @@
+{
+  "id": "A6",
+  "title": "5+ 轮多轮对话",
+  "account": "alice.zhang@demo.studyabroad.com",
+  "prerequisites": ["Existing applicant conversation on `/en/ai`"],
+  "steps": [
+    "Stayed in the same chat thread for five follow-up prompts.",
+    "Referenced earlier preferences and asked for progressively compressed outputs.",
+    "Checked the final response for memory of previous turns."
+  ],
+  "userVisibleResult": "You are a senior with a GPA of 3.95, targeting a major in Computer Science, interested in undergraduate research, and have a high budget for college applications.",
+  "score": 4,
+  "status": "PASS",
+  "evidence": [
+    "e2e-report/releases/verify-a6-login-rerun/journeys/A6/01-conversation-start.png",
+    "e2e-report/releases/verify-a6-login-rerun/journeys/A6/runner-debug.jsonl",
+    "e2e-report/releases/verify-a6-login-rerun/journeys/A6/02-conversation-end.png",
+    "e2e-report/releases/verify-a6-login-rerun/journeys/A6/turns.json",
+    "e2e-report/releases/verify-a6-login-rerun/journeys/A6/agent-chat-debug.json"
+  ],
+  "notes": ["Five sequential prompts were completed in a single conversation."],
+  "registryVersion": "2026-04-01.v1",
+  "registryStatus": "active",
+  "executionOwner": "codex",
+  "validationType": "objective",
+  "baselineSmoke": false,
+  "qualityDimensionsChecked": ["ai-quality", "consultancy-quality"],
+  "impactMappingUsed": ["manual-runtime-audit:verify-a6-login-rerun"],
+  "generatedAt": "2026-04-02T03:33:42.602Z"
+}

@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Platform } from 'react-native';
-import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
-import Constants from 'expo-constants';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { router, type Href } from 'expo-router';
 import { deepLinkPaths } from '@/lib/linking';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { API_ROUTES, notificationRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { useAuthStore } from '@/stores';
 import { useNotificationStore } from '@/stores/notification';
 
 // ---------------------------------------------------------------------------
@@ -27,7 +27,8 @@ export type NotificationType =
   | 'POINTS_EARNED'
   | 'LEVEL_UP'
   | 'DEADLINE_REMINDER'
-  | 'PROFILE_INCOMPLETE';
+  | 'PROFILE_INCOMPLETE'
+  | 'SYSTEM_BROADCAST';
 
 export interface Notification {
   id: string;
@@ -47,18 +48,28 @@ interface UnreadCountResponse {
   count: number;
 }
 
+const IS_EXPO_GO = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+const IS_EXPO_GO_ANDROID = IS_EXPO_GO && Platform.OS === 'android';
+type ExpoNotificationsModule = typeof import('expo-notifications');
+type NotificationSubscription = import('expo-notifications').EventSubscription;
+const Notifications: ExpoNotificationsModule | null = !IS_EXPO_GO_ANDROID
+  ? (require('expo-notifications') as ExpoNotificationsModule)
+  : null;
+
 // ---------------------------------------------------------------------------
 // Notification handler configuration (foreground behaviour)
 // ---------------------------------------------------------------------------
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
-});
+if (!IS_EXPO_GO_ANDROID && Notifications) {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    }),
+  });
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -69,6 +80,9 @@ Notifications.setNotificationHandler({
  * and is a no-op on iOS.
  */
 async function setupAndroidChannel(): Promise<void> {
+  if (IS_EXPO_GO_ANDROID || !Notifications) {
+    return;
+  }
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('default', {
       name: 'Default',
@@ -85,9 +99,12 @@ async function setupAndroidChannel(): Promise<void> {
  * declines the permission prompt.
  */
 async function registerForPushNotificationsAsync(): Promise<string | null> {
-  // Push tokens only work on physical devices
+  if (IS_EXPO_GO_ANDROID || !Notifications) {
+    console.warn('useNotifications: Expo Go Android does not support remote push registration');
+    return null;
+  }
   if (!Device.isDevice) {
-    console.warn('useNotifications: push tokens require a physical device');
+    console.info('useNotifications: skipping push token registration on simulator/emulator');
     return null;
   }
 
@@ -114,13 +131,18 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
   }
 
   // Retrieve the Expo push token
-  const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
+  const envProjectId = process.env.EXPO_PUBLIC_EAS_PROJECT_ID;
+  const projectId =
+    envProjectId || Constants.expoConfig?.extra?.eas?.projectId || Constants.easConfig?.projectId;
 
-  if (!projectId || projectId === 'your-project-id') {
+  if (!projectId) {
     console.warn('useNotifications: no valid EAS project ID configured, skipping push token');
     return null;
   }
 
+  if (!Notifications) {
+    return null;
+  }
   const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
   return tokenData.data;
 }
@@ -143,7 +165,7 @@ async function registerTokenWithRetry(token: string, maxRetries = 3): Promise<vo
       return;
     } catch (error) {
       if (i === maxRetries - 1) {
-        console.error('useNotifications: failed to register push token after retries', error);
+        console.warn('useNotifications: failed to register push token after retries', error);
         return; // Don't throw — push registration failure is non-fatal
       }
       await new Promise((r) => setTimeout(r, 1000 * Math.pow(2, i)));
@@ -201,9 +223,10 @@ function navigateToNotification(notification: Notification): void {
 // Query keys
 // ---------------------------------------------------------------------------
 
-const QUERY_KEYS = {
-  notifications: ['notifications'] as const,
-  unreadCount: ['notifications', 'unread-count'] as const,
+const notificationQueryKeys = {
+  list: (userId: string | null) => ['notifications', userId ?? 'anonymous'] as const,
+  unreadCount: (userId: string | null) =>
+    ['notifications', userId ?? 'anonymous', 'unread-count'] as const,
 };
 
 // ---------------------------------------------------------------------------
@@ -213,10 +236,14 @@ const QUERY_KEYS = {
 export function useNotifications() {
   const queryClient = useQueryClient();
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
-  const notificationListener = useRef<Notifications.EventSubscription | null>(null);
-  const responseListener = useRef<Notifications.EventSubscription | null>(null);
+  const notificationListener = useRef<NotificationSubscription | null>(null);
+  const responseListener = useRef<NotificationSubscription | null>(null);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const userId = useAuthStore((state) => state.user?.id ?? null);
+  const userEmail = useAuthStore((state) => state.user?.email ?? null);
 
   const { setUnreadCount } = useNotificationStore();
+  const notificationsEnabled = isAuthenticated && !!userId;
 
   // -------------------------------------------------------------------------
   // Fetch notification list
@@ -224,28 +251,87 @@ export function useNotifications() {
   const {
     data: notifications = [],
     isLoading: isLoadingNotifications,
+    error: notificationsError,
     refetch: refreshNotifications,
   } = useQuery<Notification[]>({
-    queryKey: QUERY_KEYS.notifications,
-    queryFn: () => apiClient.get<Notification[]>(API_ROUTES.NOTIFICATIONS),
+    queryKey: notificationQueryKeys.list(userId),
+    queryFn: async () => {
+      try {
+        const result = await apiClient.get<Notification[]>(API_ROUTES.NOTIFICATIONS);
+        if (__DEV__) {
+          console.info('useNotifications:list success', {
+            userId,
+            userEmail,
+            count: result.length,
+          });
+        }
+        return result;
+      } catch (error) {
+        if (__DEV__) {
+          console.warn('useNotifications:list failed', {
+            userId,
+            userEmail,
+            isAuthenticated,
+            message: error instanceof Error ? error.message : String(error),
+          });
+        }
+        throw error;
+      }
+    },
+    enabled: notificationsEnabled,
     staleTime: 30_000, // 30 seconds
+    refetchOnMount: 'always',
   });
 
   // -------------------------------------------------------------------------
   // Fetch unread count
   // -------------------------------------------------------------------------
-  const { data: unreadCountData, refetch: refetchUnreadCount } = useQuery<UnreadCountResponse>({
-    queryKey: QUERY_KEYS.unreadCount,
-    queryFn: () => apiClient.get<UnreadCountResponse>(`${API_ROUTES.NOTIFICATIONS}/unread-count`),
+  const {
+    data: unreadCountData,
+    error: unreadCountError,
+    refetch: refetchUnreadCount,
+  } = useQuery<UnreadCountResponse>({
+    queryKey: notificationQueryKeys.unreadCount(userId),
+    queryFn: async () => {
+      try {
+        const result = await apiClient.get<UnreadCountResponse>(
+          `${API_ROUTES.NOTIFICATIONS}/unread-count`
+        );
+        if (__DEV__) {
+          console.info('useNotifications:unread success', {
+            userId,
+            userEmail,
+            count: result.count,
+          });
+        }
+        return result;
+      } catch (error) {
+        if (__DEV__) {
+          console.warn('useNotifications:unread failed', {
+            userId,
+            userEmail,
+            isAuthenticated,
+            message: error instanceof Error ? error.message : String(error),
+          });
+        }
+        throw error;
+      }
+    },
+    enabled: notificationsEnabled,
     staleTime: 15_000, // 15 seconds
+    refetchOnMount: 'always',
   });
 
   // Keep the Zustand store in sync with the server value
   useEffect(() => {
+    if (!notificationsEnabled) {
+      setUnreadCount(0);
+      return;
+    }
     if (unreadCountData !== undefined) {
       setUnreadCount(unreadCountData.count);
     }
-  }, [unreadCountData, setUnreadCount]);
+  }, [notificationsEnabled, unreadCountData, setUnreadCount]);
 
   // -------------------------------------------------------------------------
   // Mutations
@@ -254,17 +340,26 @@ export function useNotifications() {
     mutationFn: (notificationId: string) =>
       apiClient.post(notificationRoutes.markRead(notificationId)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.notifications });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.unreadCount });
+      queryClient.invalidateQueries({ queryKey: notificationQueryKeys.list(userId) });
+      queryClient.invalidateQueries({ queryKey: notificationQueryKeys.unreadCount(userId) });
     },
   });
 
   const markAllAsReadMutation = useMutation({
     mutationFn: () => apiClient.post(notificationRoutes.readAll()),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.notifications });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.unreadCount });
+      queryClient.invalidateQueries({ queryKey: notificationQueryKeys.list(userId) });
+      queryClient.invalidateQueries({ queryKey: notificationQueryKeys.unreadCount(userId) });
       useNotificationStore.getState().resetUnread();
+    },
+  });
+
+  const deleteNotificationMutation = useMutation({
+    mutationFn: (notificationId: string) =>
+      apiClient.delete(notificationRoutes.delete(notificationId)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: notificationQueryKeys.list(userId) });
+      queryClient.invalidateQueries({ queryKey: notificationQueryKeys.unreadCount(userId) });
     },
   });
 
@@ -278,10 +373,19 @@ export function useNotifications() {
     [markAllAsReadMutation]
   );
 
+  const deleteNotification = useCallback(
+    (notificationId: string) => deleteNotificationMutation.mutateAsync(notificationId),
+    [deleteNotificationMutation]
+  );
+
   // -------------------------------------------------------------------------
   // Schedule a local notification (useful for WebSocket push while in foreground)
   // -------------------------------------------------------------------------
   const scheduleLocalNotification = useCallback(async (notification: Notification) => {
+    if (IS_EXPO_GO_ANDROID || !Notifications) {
+      console.warn('useNotifications: skipping local notification scheduling in Expo Go Android');
+      return;
+    }
     await Notifications.scheduleNotificationAsync({
       content: {
         title: notification.title,
@@ -296,6 +400,10 @@ export function useNotifications() {
   // Push token registration & listeners
   // -------------------------------------------------------------------------
   useEffect(() => {
+    if (IS_EXPO_GO_ANDROID || !Notifications || !notificationsEnabled) {
+      return;
+    }
+
     // Register for push notifications
     registerForPushNotificationsAsync()
       .then((token) => {
@@ -305,14 +413,14 @@ export function useNotifications() {
         }
       })
       .catch((error) => {
-        console.error('useNotifications: failed to register for push notifications', error);
+        console.info('useNotifications: push notifications unavailable', error);
       });
 
     // Foreground notification received
     notificationListener.current = Notifications.addNotificationReceivedListener((event) => {
       // Refresh queries so UI stays up-to-date
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.notifications });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.unreadCount });
+      queryClient.invalidateQueries({ queryKey: notificationQueryKeys.list(userId) });
+      queryClient.invalidateQueries({ queryKey: notificationQueryKeys.unreadCount(userId) });
     });
 
     // User tapped on notification
@@ -334,7 +442,7 @@ export function useNotifications() {
         responseListener.current.remove();
       }
     };
-  }, [queryClient]);
+  }, [notificationsEnabled, queryClient, userId]);
 
   // -------------------------------------------------------------------------
   // Public API
@@ -346,7 +454,10 @@ export function useNotifications() {
     isLoadingNotifications,
     markAsRead,
     markAllAsRead,
+    deleteNotification,
     refreshNotifications,
     scheduleLocalNotification,
+    notificationsError,
+    unreadCountError,
   };
 }

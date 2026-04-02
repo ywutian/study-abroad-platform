@@ -1,4 +1,4 @@
-import React, { useState, memo } from 'react';
+import React, { useState, memo, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, RefreshControl } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
@@ -10,11 +10,11 @@ import {
   CardContent,
   SearchBar,
   Badge,
-  Avatar,
   Loading,
   EmptyState,
   Skeleton,
 } from '@/components/ui';
+import { SchoolAvatar } from '@/components/features/SchoolAvatar';
 import { BottomSheet } from '@/components/ui/Modal';
 import { useDebouncedSearch, usePaginatedQuery } from '@/hooks/api';
 import { useColors, spacing, fontSize, fontWeight } from '@/utils/theme';
@@ -31,7 +31,7 @@ const SchoolListItem = memo(function SchoolListItem({ item, colors }: SchoolList
     <TouchableOpacity onPress={() => router.push(`/school/${item.id}`)} style={styles.cardWrapper}>
       <Card>
         <CardContent style={styles.cardContent}>
-          <Avatar source={item.logoUrl} name={item.name} size="lg" />
+          <SchoolAvatar name={item.name} logoUrl={item.logoUrl} website={item.website} size="lg" />
           <View style={styles.schoolInfo}>
             <Text style={[styles.schoolName, { color: colors.foreground }]} numberOfLines={2}>
               {item.name}
@@ -76,10 +76,33 @@ export default function SchoolsScreen() {
     endpoint: '/schools',
     params: {
       search: debouncedSearch || undefined,
-      sort: sortBy,
-      order: sortBy === 'name' ? 'asc' : 'asc',
     },
   });
+
+  const sortedSchools = useMemo(() => {
+    const items = [...schools];
+
+    items.sort((a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return a.name.localeCompare(b.name);
+        case 'acceptanceRate':
+          return (
+            (a.acceptanceRate ?? Number.POSITIVE_INFINITY) -
+            (b.acceptanceRate ?? Number.POSITIVE_INFINITY)
+          );
+        case 'tuition':
+          return (a.tuition ?? Number.POSITIVE_INFINITY) - (b.tuition ?? Number.POSITIVE_INFINITY);
+        case 'usnewsRank':
+        default:
+          return (
+            (a.usNewsRank ?? Number.POSITIVE_INFINITY) - (b.usNewsRank ?? Number.POSITIVE_INFINITY)
+          );
+      }
+    });
+
+    return items;
+  }, [schools, sortBy]);
 
   const sortOptions: { value: SortOption; label: string }[] = [
     { value: 'usnewsRank', label: t('schools.sort.ranking') },
@@ -160,7 +183,7 @@ export default function SchoolsScreen() {
 
       {/* Schools List */}
       <FlashList
-        data={schools}
+        data={sortedSchools}
         renderItem={renderSchoolItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}

@@ -22,8 +22,8 @@ import {
   Loading,
   Input,
   Slider,
-  Avatar,
 } from '@/components/ui';
+import { SchoolAvatar } from '@/components/features/SchoolAvatar';
 import { useToast } from '@/components/ui/Toast';
 import { useColors, type Colors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import { API_ROUTES } from '@study-abroad/shared';
@@ -41,6 +41,7 @@ interface RankedSchool {
   name: string;
   nameZh?: string;
   logoUrl?: string;
+  website?: string;
   usNewsRank?: number;
   acceptanceRate?: number;
   tuition?: number;
@@ -272,7 +273,12 @@ export default function CustomRankingScreen() {
 
                           {/* School Info */}
                           <View style={styles.schoolInfo}>
-                            <Avatar source={school.logoUrl} name={school.name} size="sm" />
+                            <SchoolAvatar
+                              name={school.name}
+                              logoUrl={school.logoUrl}
+                              website={school.website}
+                              size="sm"
+                            />
                             <View style={styles.schoolText}>
                               <Text
                                 style={[styles.schoolName, { color: colors.foreground }]}

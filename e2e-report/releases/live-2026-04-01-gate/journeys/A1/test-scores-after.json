@@ -1,0 +1,35 @@
+{
+  "status": 200,
+  "body": [
+    {
+      "id": "cmngxhpwt00vx1fettllhdsax",
+      "profileId": "cmngxhpvx00vq1fetie7as5rl",
+      "type": "SAT",
+      "score": 1500,
+      "subScores": null,
+      "testDate": null,
+      "createdAt": "2026-04-02T03:41:56.717Z",
+      "updatedAt": "2026-04-02T03:41:56.717Z"
+    },
+    {
+      "id": "cmngxhpwt00vw1fetzsc227cj",
+      "profileId": "cmngxhpvx00vq1fetie7as5rl",
+      "type": "SAT",
+      "score": 1500,
+      "subScores": null,
+      "testDate": null,
+      "createdAt": "2026-04-02T03:41:56.717Z",
+      "updatedAt": "2026-04-02T03:41:56.717Z"
+    },
+    {
+      "id": "cmngxhpwk00vt1fetus63h0w0",
+      "profileId": "cmngxhpvx00vq1fetie7as5rl",
+      "type": "TOEFL",
+      "score": 110,
+      "subScores": null,
+      "testDate": null,
+      "createdAt": "2026-04-02T03:41:56.708Z",
+      "updatedAt": "2026-04-02T03:41:56.708Z"
+    }
+  ]
+}

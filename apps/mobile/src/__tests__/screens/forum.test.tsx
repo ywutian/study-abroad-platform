@@ -28,7 +28,7 @@ jest.mock('expo-router', () => ({
 // Mock API client
 jest.mock('@/lib/api/client', () => ({
   apiClient: {
-    get: jest.fn().mockResolvedValue({ items: [], total: 0 }),
+    get: jest.fn().mockResolvedValue({ posts: [], total: 0, hasMore: false }),
     post: jest.fn().mockResolvedValue({}),
   },
 }));
@@ -105,7 +105,7 @@ describe('ForumPage', () => {
   });
 
   it('renders without crashing', () => {
-    (apiClient.get as jest.Mock).mockResolvedValue({ items: [], total: 0 });
+    (apiClient.get as jest.Mock).mockResolvedValue({ posts: [], total: 0, hasMore: false });
 
     const { toJSON } = renderWithProviders(<ForumPage />);
     expect(toJSON()).toBeTruthy();
@@ -124,7 +124,7 @@ describe('ForumPage', () => {
       if (url.includes('/categories')) return Promise.resolve([]);
       if (url.includes('/stats'))
         return Promise.resolve({ totalPosts: 0, totalComments: 0, totalUsers: 0, todayPosts: 0 });
-      return Promise.resolve({ items: [], total: 0 });
+      return Promise.resolve({ posts: [], total: 0, hasMore: false });
     });
 
     const { getByText } = renderWithProviders(<ForumPage />);
@@ -137,7 +137,7 @@ describe('ForumPage', () => {
 
   it('renders post cards when data is available', async () => {
     const mockPosts = {
-      items: [
+      posts: [
         {
           id: 'post-1',
           categoryId: 'cat-1',
@@ -153,8 +153,9 @@ describe('ForumPage', () => {
           },
           author: {
             id: 'u-1',
-            email: 'alice@example.com',
-            profile: { nickname: 'Alice', avatarUrl: '' },
+            name: 'Alice',
+            avatar: '',
+            isVerified: true,
           },
           title: 'How to write a great personal statement?',
           content: 'Looking for advice on personal statement writing...',
@@ -176,6 +177,7 @@ describe('ForumPage', () => {
         },
       ],
       total: 1,
+      hasMore: false,
     };
 
     const mockCategories = [
@@ -206,7 +208,7 @@ describe('ForumPage', () => {
   });
 
   it('calls apiClient.get for categories, stats, and posts on mount', () => {
-    (apiClient.get as jest.Mock).mockResolvedValue({ items: [], total: 0 });
+    (apiClient.get as jest.Mock).mockResolvedValue({ posts: [], total: 0, hasMore: false });
 
     renderWithProviders(<ForumPage />);
 

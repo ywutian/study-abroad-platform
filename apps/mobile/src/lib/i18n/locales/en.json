@@ -193,6 +193,8 @@
     "editProfile": "Edit Profile",
     "completeProfile": "Complete Profile",
     "profileComplete": "Profile Completion",
+    "completionSummary": "{{percentage}}% of core profile sections completed",
+    "completionReady": "All core profile sections are complete.",
     "fields": {
       "grade": "Grade",
       "schoolType": "School Type",
@@ -519,7 +521,9 @@
   "forum": {
     "title": "Forum",
     "search": "Search posts...",
+    "searchPlaceholder": "Search posts...",
     "allCategories": "All",
+    "resultsCount": "{{count}} posts",
     "sort": {
       "latest": "Latest",
       "popular": "Popular",
@@ -527,10 +531,24 @@
     },
     "stats": {
       "posts": "Posts",
-      "comments": "Comments",
       "users": "Users",
-      "today": "Today"
+      "teaming": "Teaming",
+      "activeToday": "Active Today"
     },
+    "postCreated": "Post created",
+    "createPost": "Create Post",
+    "category": "Category",
+    "selectCategory": "Select category",
+    "postTitle": "Title",
+    "titlePlaceholder": "Enter a clear title",
+    "contentPlaceholder": "Share your question or experience...",
+    "tags": "Tags",
+    "tagPlaceholder": "Add a tag",
+    "teamPostDesc": "Enable this to recruit teammates for an application group.",
+    "teamSizePlaceholder": "How many teammates do you need?",
+    "requirementsPlaceholder": "List the requirements or expectations",
+    "noPosts": "No posts yet",
+    "noPostsDesc": "Be the first to start a discussion.",
     "post": {
       "team": "Team",
       "pinned": "Pinned",
@@ -606,9 +624,57 @@
   },
   "followers": {
     "title": "Follow Management",
+    "searchPlaceholder": "Search people",
     "tabs": {
       "following": "Following",
-      "followers": "Followers"
+      "followers": "Followers",
+      "blocked": "Blocked"
+    },
+    "recommendations": {
+      "title": "Recommended People"
+    },
+    "actions": {
+      "follow": "Follow",
+      "unfollow": "Unfollow",
+      "unblock": "Unblock"
+    },
+    "badge": {
+      "mutual": "Mutual Follow"
+    },
+    "toast": {
+      "followed": "Followed",
+      "followFailed": "Failed to follow",
+      "unfollowed": "Unfollowed",
+      "unfollowFailed": "Failed to unfollow",
+      "blocked": "User blocked",
+      "blockFailed": "Failed to block user",
+      "unblocked": "User unblocked",
+      "unblockFailed": "Failed to unblock user",
+      "chatFailed": "Failed to start chat"
+    },
+    "empty": {
+      "followers": {
+        "title": "No followers yet",
+        "description": "When others follow you, they will appear here."
+      },
+      "following": {
+        "title": "Not following anyone yet",
+        "description": "Follow people to build your network."
+      },
+      "blocked": {
+        "title": "No blocked users",
+        "description": "Blocked users will appear here."
+      }
+    },
+    "blockDialog": {
+      "title": "Block user",
+      "message": "Block {{name}}? They will no longer be able to interact with you.",
+      "confirm": "Block"
+    },
+    "unblockDialog": {
+      "title": "Unblock user",
+      "message": "Unblock {{name}}?",
+      "confirm": "Unblock"
     },
     "follow": "Follow",
     "unfollow": "Unfollow",
@@ -621,14 +687,22 @@
     "title": "Swipe Game",
     "accuracy": "Accuracy",
     "streak": "Streak",
+    "acceptanceRate": "Acceptance Rate",
+    "activities": "Activities",
+    "awards": "Awards",
     "admit": "Admit",
     "reject": "Reject",
     "waitlist": "Waitlist",
     "correct": "Correct!",
     "incorrect": "Incorrect",
     "actualResult": "Actual: {{result}}",
+    "actualResultLabel": "Actual",
+    "yourPrediction": "Your pick: {{result}}",
+    "yourPredictionLabel": "Your Pick",
     "points": "+{{points}} pts",
-    "badgeUpgrade": "Badge Upgraded!",
+    "streakValue": "{{count}} streak",
+    "badgeUpgrade": "Unlocked {{badge}}",
+    "nextCardHint": "Loading the next case...",
     "stats": {
       "title": "Statistics",
       "totalSwipes": "Total Swipes",
@@ -646,6 +720,11 @@
       "you": "You"
     },
     "badges": {
+      "bronze": "Bronze",
+      "silver": "Silver",
+      "gold": "Gold",
+      "platinum": "Platinum",
+      "diamond": "Diamond",
       "BRONZE": "Bronze",
       "SILVER": "Silver",
       "GOLD": "Gold",
@@ -888,6 +967,7 @@
       "safety": "Safety Schools",
       "reach": "Reach Schools"
     },
+    "resultsTitle": "Prediction Results",
     "results": {
       "admitted": "Admitted",
       "rejected": "Rejected",
@@ -905,7 +985,7 @@
       "activities": "Activities",
       "essays": "Essays"
     },
-    "confidence": "Confidence: {value}%",
+    "confidence": "Confidence: {{value}}",
     "empty": {
       "loginRequired": "Please login first",
       "loginRequiredDesc": "Login to use admission prediction",

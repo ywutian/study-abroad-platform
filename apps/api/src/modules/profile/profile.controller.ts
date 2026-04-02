@@ -170,12 +170,12 @@ export class ProfileController {
       profileData.graduationDate = new Date(data.graduationDate);
     }
 
-    const profile = await this.profileService.upsert(user.id, profileData);
+    await this.profileService.upsert(user.id, profileData);
 
     // Add test scores if provided
     if (data.testScores && data.testScores.length > 0) {
       for (const score of data.testScores) {
-        await this.profileService.createTestScore(profile.id, {
+        await this.profileService.createTestScore(user.id, {
           type: score.type,
           score: score.score,
         });

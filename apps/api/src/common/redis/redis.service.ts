@@ -242,6 +242,11 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     return this.client.smembers(key);
   }
 
+  async srem(key: string, ...members: string[]): Promise<number> {
+    if (!this.client) return 0;
+    return this.client.srem(key, ...members);
+  }
+
   /**
    * SET if Not eXists — returns true if the key was set, false if it already existed.
    * Used for distributed idempotency locks.

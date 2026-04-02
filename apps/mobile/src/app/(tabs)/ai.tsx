@@ -22,7 +22,7 @@ import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
 import { useToast } from '@/components/ui/Toast';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
-import type { AiChatMessage, StreamEvent } from '@/types';
+import type { AiChatMessage } from '@/types';
 
 type AgentMode = 'auto' | 'essay' | 'school' | 'profile' | 'timeline';
 
@@ -33,6 +33,24 @@ interface ChatMessageItemProps {
   isLast: boolean;
   isLoading: boolean;
   t: (key: string) => string;
+}
+
+function getAiResponseText(result: unknown, fallbackText: string): string {
+  if (typeof result === 'string' && result.trim()) return result;
+
+  if (result && typeof result === 'object') {
+    const candidate = result as {
+      message?: string;
+      response?: { message?: string };
+      data?: { message?: string };
+    };
+
+    return (
+      candidate.message || candidate.response?.message || candidate.data?.message || fallbackText
+    );
+  }
+
+  return fallbackText;
 }
 
 const ChatMessageItem = React.memo(function ChatMessageItem({
@@ -190,64 +208,29 @@ export default function AIScreen() {
             return newMessages;
           });
         } else {
-          // Streaming auto-mode via orchestrator
-          for await (const chunk of apiClient.stream(
-            '/ai-agent/chat',
-            {
-              message: text,
-              conversationId: null,
-              stream: true,
-            },
-            controller.signal
-          )) {
-            try {
-              const event: StreamEvent = JSON.parse(chunk);
-
-              if (event.type === 'content' && event.content) {
-                setMessages((prev) => {
-                  const newMessages = [...prev];
-                  const lastMessage = newMessages[newMessages.length - 1];
-                  if (lastMessage.role === 'assistant') {
-                    newMessages[newMessages.length - 1] = {
-                      ...lastMessage,
-                      content: lastMessage.content + event.content,
-                    };
-                  }
-                  return newMessages;
-                });
-              } else if (event.type === 'tool_start' && event.tool) {
-                setMessages((prev) => {
-                  const newMessages = [...prev];
-                  const lastMessage = newMessages[newMessages.length - 1];
-                  if (lastMessage.role === 'assistant') {
-                    newMessages[newMessages.length - 1] = {
-                      ...lastMessage,
-                      toolCalls: [
-                        ...(lastMessage.toolCalls || []),
-                        { name: event.tool!, status: 'running' },
-                      ],
-                    };
-                  }
-                  return newMessages;
-                });
-              } else if (event.type === 'error') {
-                toast.error(event.error || t('errors.unknown'));
-              }
-            } catch {
-              // Non-JSON chunk, treat as plain text
-              setMessages((prev) => {
-                const newMessages = [...prev];
-                const lastMessage = newMessages[newMessages.length - 1];
-                if (lastMessage.role === 'assistant') {
-                  newMessages[newMessages.length - 1] = {
-                    ...lastMessage,
-                    content: lastMessage.content + chunk,
-                  };
-                }
-                return newMessages;
-              });
+          // React Native fetch does not expose a stable SSE body reader here,
+          // so mobile auto-mode uses the non-streaming chat endpoint.
+          const result = await apiClient.post<{
+            message?: string;
+            response?: { message?: string };
+            data?: { message?: string };
+          }>('/ai-agent/chat', {
+            message: text,
+            conversationId: null,
+            stream: false,
+          });
+          const responseText = getAiResponseText(result, t('ai.chat.noResponse'));
+          setMessages((prev) => {
+            const newMessages = [...prev];
+            const lastMessage = newMessages[newMessages.length - 1];
+            if (lastMessage?.role === 'assistant') {
+              newMessages[newMessages.length - 1] = {
+                ...lastMessage,
+                content: responseText,
+              };
             }
-          }
+            return newMessages;
+          });
         }
       } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {

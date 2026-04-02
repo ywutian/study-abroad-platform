@@ -22,11 +22,11 @@ import {
   Badge,
   EmptyState,
   Loading,
-  Avatar,
   SearchBar,
   Skeleton,
   AnimatedButton,
 } from '@/components/ui';
+import { SchoolAvatar } from '@/components/features/SchoolAvatar';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { useToast } from '@/components/ui/Toast';
@@ -465,20 +465,22 @@ export default function FindCollegePage() {
       queryFn: async ({ pageParam = 1 }) => {
         const params: Record<string, string | number | boolean | undefined> = {
           page: pageParam,
-          limit: PAGE_LIMIT,
+          pageSize: PAGE_LIMIT,
           search: debouncedSearch || undefined,
         };
 
-        if (appliedFilters.minRank) params.minRank = Number(appliedFilters.minRank);
-        if (appliedFilters.maxRank) params.maxRank = Number(appliedFilters.maxRank);
-        if (appliedFilters.minTuition) params.minTuition = Number(appliedFilters.minTuition);
-        if (appliedFilters.maxTuition) params.maxTuition = Number(appliedFilters.maxTuition);
+        if (appliedFilters.minRank) params.rankMin = Number(appliedFilters.minRank);
+        if (appliedFilters.maxRank) params.rankMax = Number(appliedFilters.maxRank);
+        if (appliedFilters.minTuition) params.tuitionMin = Number(appliedFilters.minTuition);
+        if (appliedFilters.maxTuition) params.tuitionMax = Number(appliedFilters.maxTuition);
         if (appliedFilters.minAcceptanceRate)
-          params.minAcceptanceRate = Number(appliedFilters.minAcceptanceRate);
+          params.acceptanceMin = Number(appliedFilters.minAcceptanceRate);
         if (appliedFilters.maxAcceptanceRate)
-          params.maxAcceptanceRate = Number(appliedFilters.maxAcceptanceRate);
+          params.acceptanceMax = Number(appliedFilters.maxAcceptanceRate);
         if (appliedFilters.state) params.state = appliedFilters.state;
-        if (appliedFilters.type && appliedFilters.type !== 'all') params.type = appliedFilters.type;
+        if (appliedFilters.type && appliedFilters.type !== 'all') {
+          params.schoolType = appliedFilters.type;
+        }
 
         return apiClient.get<PaginatedResponse<School>>('/schools', { params });
       },
@@ -621,7 +623,12 @@ export default function FindCollegePage() {
           <AnimatedCard onPress={() => router.push(`/school/${item.id}`)} hapticFeedback>
             <CardContent style={styles.cardContent}>
               <View style={styles.cardTopRow}>
-                <Avatar source={item.logoUrl} name={item.name} size="lg" />
+                <SchoolAvatar
+                  name={item.name}
+                  logoUrl={item.logoUrl}
+                  website={item.website}
+                  size="lg"
+                />
                 <View style={styles.schoolInfo}>
                   <Text style={[styles.schoolName, { color: colors.foreground }]} numberOfLines={2}>
                     {item.name}

@@ -65,6 +65,7 @@ export type ApiRoutePrefix = (typeof API_ROUTES)[keyof typeof API_ROUTES];
 
 export const profileRoutes = {
   me: () => `${API_ROUTES.PROFILES}/me`,
+  aiAnalysis: () => `${API_ROUTES.PROFILES}/me/ai-analysis`,
   testScores: () => `${API_ROUTES.PROFILES}/me/test-scores`,
   testScore: (id: string) => `${API_ROUTES.PROFILES}/me/test-scores/${id}`,
   activities: () => `${API_ROUTES.PROFILES}/me/activities`,
@@ -196,6 +197,9 @@ export const caseRoutes = {
 export const notificationRoutes = {
   list: () => API_ROUTES.NOTIFICATIONS,
   byId: (id: string) => `${API_ROUTES.NOTIFICATIONS}/${id}`,
+  delete: (id: string) => `${API_ROUTES.NOTIFICATIONS}/${id}`,
+  deleteAll: () => API_ROUTES.NOTIFICATIONS,
+  pushToken: () => `${API_ROUTES.NOTIFICATIONS}/push-token`,
   markRead: (id: string) => `${API_ROUTES.NOTIFICATIONS}/${id}/read`,
   readAll: () => `${API_ROUTES.NOTIFICATIONS}/read-all`,
 };

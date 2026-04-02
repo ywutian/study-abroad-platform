@@ -1,0 +1,18 @@
+{
+  "releaseId": "prereq-regression-demo",
+  "registryVersion": "2026-04-01.v3",
+  "impactMappingVersion": "2026-04-01.v1",
+  "environment": "pre-release",
+  "candidateVersion": "demo-2026.04.01",
+  "base": "HEAD~1",
+  "head": "HEAD",
+  "gateJourneyIds": ["A1", "A2", "A3", "A10", "A11", "C1", "SJ-2", "SJ-4", "SJ-3"],
+  "baselineSmokeIds": ["A1", "A2", "A3", "A10", "A11", "C1", "SJ-2", "SJ-4"],
+  "humanReviewJourneyIds": ["A2", "A3", "A10", "A11", "SJ-2", "SJ-3"],
+  "runtimeAuditScript": "scripts/runtime-journey-audit.ts",
+  "runtimeAuditId": "prereq-regression-demo",
+  "runtimeAuditContext": "release gate prereq-regression-demo",
+  "runtimeEvidenceRoot": "e2e-report/releases/prereq-regression-demo/journeys",
+  "journeysCsv": "A1,A2,A3,A10,A11,C1,SJ-2,SJ-4,SJ-3",
+  "suggestedCommand": "pnpm exec tsx scripts/runtime-release-gate.ts --config \"/Users/yitianwu/Documents/study-abroad-platform/e2e-report/releases/prereq-regression-demo/codex-run-config.json\""
+}

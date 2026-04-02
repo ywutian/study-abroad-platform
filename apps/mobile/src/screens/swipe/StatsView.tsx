@@ -18,12 +18,14 @@ import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/
 
 import {
   SwipeStatsDto,
+  LeaderboardDto,
   LeaderboardEntryDto,
   SCREEN_WIDTH,
   BADGE_COLORS,
   BADGE_ICONS,
   BADGE_THRESHOLDS,
   getNextBadge,
+  normalizeBadge,
 } from './types';
 import LeaderboardItem from './LeaderboardItem';
 
@@ -42,18 +44,18 @@ export default function StatsView({ onBack }: StatsViewProps) {
     staleTime: 30_000,
   });
 
-  const { data: leaderboard, isLoading: leaderboardLoading } = useQuery<LeaderboardEntryDto[]>({
+  const { data: leaderboard, isLoading: leaderboardLoading } = useQuery<LeaderboardDto>({
     queryKey: ['swipe', 'leaderboard'],
     queryFn: () =>
-      apiClient.get<LeaderboardEntryDto[]>(`${API_ROUTES.HALLS}/swipe/leaderboard`, {
+      apiClient.get<LeaderboardDto>(`${API_ROUTES.HALLS}/swipe/leaderboard`, {
         params: { limit: 20 },
       }),
     staleTime: 60_000,
   });
 
-  const badge = stats?.badge || 'BRONZE';
-  const badgeColor = BADGE_COLORS[badge] || BADGE_COLORS.BRONZE;
-  const badgeIcon = BADGE_ICONS[badge] || BADGE_ICONS.BRONZE;
+  const badge = normalizeBadge(stats?.badge);
+  const badgeColor = BADGE_COLORS[badge] || BADGE_COLORS.bronze;
+  const badgeIcon = BADGE_ICONS[badge] || BADGE_ICONS.bronze;
   const nextBadgeName = getNextBadge(badge);
   const nextBadgeThreshold = BADGE_THRESHOLDS[nextBadgeName] || 0;
   const currentThreshold = BADGE_THRESHOLDS[badge] || 0;
@@ -99,7 +101,7 @@ export default function StatsView({ onBack }: StatsViewProps) {
             <Text style={[styles.badgeName, { color: badgeColor }]}>
               {t(`swipe.badges.${badge.toLowerCase()}`)}
             </Text>
-            {badge !== 'DIAMOND' && (
+            {badge !== 'diamond' && (
               <View style={styles.badgeProgress}>
                 <ProgressBar
                   value={progressToNext}
@@ -190,9 +192,9 @@ export default function StatsView({ onBack }: StatsViewProps) {
 
             {leaderboardLoading ? (
               <Loading text={t('swipe.loading')} />
-            ) : leaderboard && leaderboard.length > 0 ? (
+            ) : leaderboard?.entries?.length ? (
               <View style={styles.leaderboardList}>
-                {leaderboard.map((entry) => (
+                {leaderboard.entries.map((entry) => (
                   <LeaderboardItem key={entry.userId} entry={entry} />
                 ))}
               </View>

@@ -1,0 +1,22 @@
+{
+  "id": "B3",
+  "title": "家长查看选校列表和概率",
+  "account": "N/A (persona unsupported in current product)",
+  "prerequisites": ["Web app reachable locally"],
+  "notes": [
+    "No parent role or parent-specific entry point was visible in the registration UI.",
+    "404\nPage Not Found\n\nSorry, the page you are looking for does not exist or has been moved. Please check the link or return to the homepage.\n\nBack to Home\n\nOr visit the following pages:\n\nCase Library\nSc"
+  ],
+  "steps": [
+    "Tried to establish a parent account path before accessing child-school-list data.",
+    "Confirmed the absence of parent-specific entry and sharing flow in the live product surface."
+  ],
+  "userVisibleResult": "The parent oversight journey is not reachable because no parent persona or child-linking flow is exposed in the live product.",
+  "score": 1,
+  "status": "SKIPPED",
+  "evidence": [
+    "e2e-report/journeys-2026-03-31/B1/01-register-no-parent-role.png",
+    "e2e-report/journeys-2026-03-31/B1/02-parent-route.png"
+  ],
+  "generatedAt": "2026-04-01T10:36:19.465Z"
+}

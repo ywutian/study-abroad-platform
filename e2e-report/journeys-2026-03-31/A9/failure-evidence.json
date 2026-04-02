@@ -1,0 +1,8 @@
+{
+  "forcedAiFailure": true,
+  "failureEvidence": [
+    "e2e-report/journeys-2026-03-31/A9/00-before-failure.png",
+    "e2e-report/journeys-2026-03-31/A9/01-failure-state.png",
+    "e2e-report/journeys-2026-03-31/A9/failure-note.txt"
+  ]
+}

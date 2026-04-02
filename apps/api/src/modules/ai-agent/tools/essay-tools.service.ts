@@ -42,9 +42,10 @@ export class EssayToolsService implements IToolHandlerProvider {
       ],
       [
         'generate_outline',
-        (args, _userId, _ctx, locale) =>
+        (args, userId, _ctx, locale) =>
           this.generateOutline(
             args as { prompt: string; background?: string; wordLimit?: number },
+            userId,
             locale,
           ),
       ],
@@ -328,6 +329,7 @@ export class EssayToolsService implements IToolHandlerProvider {
 
   async generateOutline(
     args: { prompt: string; background?: string; wordLimit?: number },
+    userId: string,
     locale = 'zh',
   ) {
     const isZh = locale === 'zh';
@@ -367,7 +369,7 @@ Return in JSON format:
   "tips": ["Writing tip 1", "Writing tip 2"]
 }`;
 
-    const result = await this.llmService.chatSimple(
+    const result = await this.llmService.chatSimpleGuarded(
       [
         { role: 'system', content: systemPrompt },
         {
@@ -377,7 +379,7 @@ Return in JSON format:
             : `Prompt: ${args.prompt}\n${args.background ? `Background: ${args.background}\n` : ''}${args.wordLimit ? `Word limit: ${args.wordLimit} words` : ''}`,
         },
       ],
-      { temperature: 0.7 },
+      { temperature: 0.7, userId },
     );
 
     return extractJsonFromLlm(result, 'outline');
