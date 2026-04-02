@@ -21,6 +21,7 @@ import { ConfigModule } from '@nestjs/config';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
+import { AppModule } from './app.module';
 
 import { PrismaModule } from './prisma/prisma.module';
 import { RedisModule } from './common/redis/redis.module';
@@ -56,15 +57,27 @@ import { ResumeModule } from './modules/resume/resume.module';
 import { EssayModule } from './modules/essay/essay.module';
 import { RecommendationModule } from './modules/recommendation/recommendation.module';
 import { LLMProvidersModule } from './modules/ai-agent/providers/provider.module';
+import { AgentSecurityModule } from './modules/ai-agent/security/security.module';
+import { SettingsModule } from './modules/settings/settings.module';
+import { ContentModerationService } from './modules/ai-agent/security/content-moderation.service';
+import {
+  getMcpAuthErrorMessage,
+  normalizeMcpArguments,
+  serializeMcpToolContent,
+} from './mcp-server.helpers';
+
+const MCP_TOOL_INPUT_SCHEMA = z.object({}).passthrough();
 
 /**
  * Minimal NestJS module for MCP — only what ToolExecutorService needs.
  */
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
     RedisModule,
+    AgentSecurityModule,
+    SettingsModule,
     LLMProvidersModule.forRoot(),
     PredictionModule,
     AssessmentModule,
@@ -96,25 +109,27 @@ import { LLMProvidersModule } from './modules/ai-agent/providers/provider.module
 })
 class McpAppModule {}
 
-async function main() {
+export async function main() {
   const locale = process.env.MCP_LOCALE || 'zh';
 
   // Bootstrap minimal NestJS app (no HTTP listener)
-  const app = await NestFactory.createApplicationContext(McpAppModule, {
+  const app = await NestFactory.createApplicationContext(AppModule, {
     logger: ['error', 'warn'],
   });
   const toolExecutor = app.get(ToolExecutorService);
+  const contentModeration = app.get(ContentModerationService);
 
   // ── Authenticate via API Key or fallback to MCP_USER_ID (dev only) ──
   let userId: string;
   const apiKey = process.env.MCP_API_KEY;
   if (apiKey) {
     const mcpKeyService = app.get(McpApiKeyService);
-    const keyInfo = await mcpKeyService.validateKey(apiKey);
-    if (!keyInfo) {
-      console.error('ERROR: Invalid or revoked MCP_API_KEY');
+    const validation = await mcpKeyService.validateKeyDetailed(apiKey);
+    if (validation.status !== 'valid' || !validation.info) {
+      console.error(`ERROR: ${getMcpAuthErrorMessage(validation.status)}`);
       process.exit(1);
     }
+    const keyInfo = validation.info;
     userId = keyInfo.userId;
     await mcpKeyService.updateLastUsed(keyInfo.keyId);
     console.error(
@@ -143,29 +158,35 @@ async function main() {
     if (tool.name === 'delegate_to_agent') continue;
 
     // Build zod schema from JSON Schema (simplified: accept any object)
-    server.tool(
+    server.registerTool(
       tool.name,
-      tool.description,
-      { args: z.record(z.unknown()).optional() },
-      async ({ args }) => {
+      {
+        description: tool.description,
+        inputSchema: MCP_TOOL_INPUT_SCHEMA,
+      },
+      async (args) => {
         const result = await toolExecutor.execute(
           {
             id: `mcp_${Date.now()}`,
             name: tool.name,
-            arguments: (args?.args as Record<string, unknown>) || {},
+            arguments: normalizeMcpArguments(args),
           },
           userId,
           { userId, profile: undefined, preferences: undefined },
           locale,
         );
 
+        const text = await serializeMcpToolContent(
+          tool.name,
+          result,
+          contentModeration,
+        );
+
         return {
           content: [
             {
               type: 'text' as const,
-              text: result.success
-                ? JSON.stringify(result.result, null, 2)
-                : `Error: ${result.error}`,
+              text,
             },
           ],
         };
@@ -184,7 +205,9 @@ async function main() {
   });
 }
 
-main().catch((err) => {
-  console.error('MCP server failed to start:', err);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((err) => {
+    console.error('MCP server failed to start:', err);
+    process.exit(1);
+  });
+}

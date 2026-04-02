@@ -5,12 +5,18 @@ export {
   createAwardSchema,
   createSemesterGpaSchema,
   createRecommendationLetterSchema,
+  createSubmitCaseSchema,
+  createEducationSchema,
+  createListSchema,
   type ProfileFormValues,
   type TestScoreFormValues,
   type ActivityFormValues,
   type AwardFormValues,
   type SemesterGpaFormValues,
   type RecommendationLetterFormValues,
+  type SubmitCaseFormValues,
+  type EducationFormValues,
+  type ListFormValues,
 } from './profile';
 
 export {

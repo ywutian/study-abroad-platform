@@ -3,7 +3,7 @@
  * Respects user's reduced motion preference
  */
 
-import { useReducedMotion } from 'react-native-reanimated';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { animation } from '@/utils/theme';
 
 export function useAnimationConfig() {

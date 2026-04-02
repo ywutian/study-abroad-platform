@@ -55,10 +55,13 @@ interface CategoryDto {
 
 interface PostAuthor {
   id: string;
-  email: string;
+  name?: string;
+  avatar?: string;
+  isVerified?: boolean;
+  email?: string;
   profile?: {
-    nickname: string;
-    avatarUrl: string;
+    nickname?: string;
+    avatarUrl?: string;
   };
 }
 
@@ -122,6 +125,10 @@ const timeAgo = (dateStr: string): string => {
   if (days < 30) return `${days}d`;
   const months = Math.floor(days / 30);
   return `${months}mo`;
+};
+
+const getAuthorName = (author: PostAuthor): string => {
+  return author.name || author.profile?.nickname || author.email?.split('@')[0] || 'User';
 };
 
 // ---------------------------------------------------------------------------
@@ -281,7 +288,7 @@ export default function ForumPostDetailPage() {
   // ---- Sub-Renders ----
 
   const renderAuthorAvatar = (author: PostAuthor, size: number = 32) => {
-    const name = author.profile?.nickname || author.email.split('@')[0];
+    const name = getAuthorName(author);
     return (
       <View
         style={[
@@ -304,7 +311,7 @@ export default function ForumPostDetailPage() {
   // Post header with author info
   const renderPostHeader = () => {
     if (!post) return null;
-    const authorName = post.author.profile?.nickname || post.author.email.split('@')[0];
+    const authorName = getAuthorName(post.author);
 
     return (
       <Animated.View entering={FadeInDown.duration(400)}>
@@ -515,7 +522,7 @@ export default function ForumPostDetailPage() {
 
   // Single comment component
   const renderComment = (comment: CommentDto & { children?: CommentDto[] }, depth: number = 0) => {
-    const authorName = comment.author.profile?.nickname || comment.author.email.split('@')[0];
+    const authorName = getAuthorName(comment.author);
     const isNested = depth > 0;
 
     return (

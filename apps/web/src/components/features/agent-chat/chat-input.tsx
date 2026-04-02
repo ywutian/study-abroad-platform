@@ -12,9 +12,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Send, Square, Sparkles, Paperclip, Mic } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { transitions } from '@/lib/motion';
+import { pushAgentChatDebug } from './debug';
 
 interface ChatInputProps {
-  onSend: (message: string) => void;
+  onSend: (message: string) => void | boolean | Promise<void | boolean>;
   onStop?: () => void;
   isLoading?: boolean;
   placeholder?: string;
@@ -37,22 +38,49 @@ export function ChatInput({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const prefersReducedMotion = useReducedMotion();
 
-  const handleSend = useCallback(() => {
-    if (!value.trim() || disabled || isLoading) return;
-    onSend(value.trim());
+  const handleSend = useCallback(async () => {
+    const trimmedValue = value.trim();
+    pushAgentChatDebug('handleSend_invoked', {
+      trimmedValueLength: trimmedValue.length,
+      disabled: Boolean(disabled),
+      isLoading: Boolean(isLoading),
+    });
+    if (!trimmedValue || disabled || isLoading) {
+      pushAgentChatDebug('handleSend_rejected_local', {
+        reason: !trimmedValue ? 'empty' : disabled ? 'disabled' : 'loading',
+        trimmedValueLength: trimmedValue.length,
+      });
+      return;
+    }
+    const accepted = await onSend(trimmedValue);
+    pushAgentChatDebug('handleSend_onSend_resolved', {
+      accepted: accepted === true,
+      acceptedRaw: accepted == null ? String(accepted) : accepted,
+      trimmedValueLength: trimmedValue.length,
+    });
+    if (accepted !== true) {
+      textareaRef.current?.focus();
+      return;
+    }
     setValue('');
-    // Reset height
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
+      textareaRef.current.focus();
     }
-    textareaRef.current?.focus();
   }, [value, disabled, isLoading, onSend]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
+      pushAgentChatDebug('textarea_keydown', {
+        key: e.key,
+        shiftKey: e.shiftKey,
+        trimmedValueLength: e.currentTarget.value.trim().length,
+        disabled: Boolean(disabled),
+        isLoading: Boolean(isLoading),
+      });
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        handleSend();
+        void handleSend();
       }
     },
     [handleSend]
@@ -129,6 +157,12 @@ export function ChatInput({
             ref={textareaRef}
             value={value}
             onChange={(e) => {
+              pushAgentChatDebug('textarea_change', {
+                valueLength: e.target.value.length,
+                trimmedValueLength: e.target.value.trim().length,
+                disabled: Boolean(disabled),
+                isLoading: Boolean(isLoading),
+              });
               setValue(e.target.value);
               handleInput();
             }}
@@ -197,7 +231,9 @@ export function ChatInput({
               >
                 <Button
                   size="icon"
-                  onClick={handleSend}
+                  onClick={() => {
+                    void handleSend();
+                  }}
                   disabled={!hasContent || disabled}
                   className={cn(
                     'h-10 w-10 rounded-full transition-all duration-200',
@@ -215,7 +251,7 @@ export function ChatInput({
           {/* Pulse effect when ready to send */}
           {hasContent && !isLoading && !prefersReducedMotion && (
             <motion.span
-              className="absolute inset-0 rounded-full bg-primary/30"
+              className="pointer-events-none absolute inset-0 rounded-full bg-primary/30"
               animate={{ scale: [1, 1.3], opacity: [0.5, 0] }}
               transition={{ duration: 1, repeat: Infinity }}
             />

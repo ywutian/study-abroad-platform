@@ -244,6 +244,9 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
       toast.success(t('toast.activityAdded'));
       onOpenChange(false);
     },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : t('toast.saveFailed'));
+    },
   });
 
   const updateMutation = useMutation({
@@ -252,6 +255,9 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(t('toast.activityUpdated'));
       onOpenChange(false);
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : t('toast.saveFailed'));
     },
   });
 
@@ -268,6 +274,9 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
         toast.success(t('toast.activityRefined'));
       }
     },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : t('toast.saveFailed'));
+    },
   });
 
   const generateCommonAppMutation = useMutation({
@@ -279,6 +288,9 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
     onSuccess: (data) => {
       form.setValue('commonAppDescription', data.commonAppDescription);
       toast.success(t('form.aiGenerateSuccess'));
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : t('toast.saveFailed'));
     },
   });
 

@@ -1,0 +1,24 @@
+{
+  "id": "A3",
+  "title": "首次选校推荐",
+  "account": "alice.zhang@demo.studyabroad.com",
+  "prerequisites": [
+    "Applicant profile complete enough for recommendation preflight",
+    "Applicant has non-zero points"
+  ],
+  "steps": [
+    "Opened the AI recommendation tab on `/en/schools?tab=recommend`.",
+    "Submitted region, major, budget, school-count, and preference inputs with the seeded applicant account.",
+    "Waited for the generated recommendation cards to render in the real web UI."
+  ],
+  "userVisibleResult": "The recommendation form generated a visible result set with fit score / probability cards and school-specific rationale.",
+  "score": 4,
+  "status": "PASS",
+  "evidence": [
+    "e2e-report/journeys-2026-03-31/A3/01-recommend-enter.png",
+    "e2e-report/journeys-2026-03-31/A3/generate-response.json",
+    "e2e-report/journeys-2026-03-31/A3/02-recommend-results.png"
+  ],
+  "notes": ["First result marker: Fit Score: 90%"],
+  "generatedAt": "2026-04-01T02:04:50.641Z"
+}

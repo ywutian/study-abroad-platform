@@ -20,6 +20,14 @@ interface RequestConfig extends RequestInit {
   skipAuth?: boolean;
 }
 
+function unwrapApiResponse<T>(json: unknown): T {
+  if (json && typeof json === 'object' && 'success' in json && 'data' in json) {
+    return (json as { data: T }).data;
+  }
+
+  return json as T;
+}
+
 /** Custom error that carries the HTTP status code for retry decisions */
 class HttpError extends Error {
   constructor(
@@ -92,8 +100,10 @@ class ApiClient {
       }
 
       const json = await response.json();
-      // Unwrap backend standard response format
-      const data = json.data !== undefined ? json.data : json;
+      const data = unwrapApiResponse<{
+        accessToken?: string;
+        refreshToken?: string;
+      }>(json);
 
       if (!data.accessToken) {
         await clearAuthData();
@@ -181,8 +191,7 @@ class ApiClient {
         }
 
         const json = JSON.parse(text);
-        // Unwrap backend standard response format: { success: true, data: {...} }
-        return json.data !== undefined ? json.data : json;
+        return unwrapApiResponse<T>(json);
       } catch (error: unknown) {
         clearTimeout(timeoutId);
 
@@ -258,27 +267,46 @@ class ApiClient {
   }
 
   // SSE stream support for AI chat
-  async *stream(
+  private async openStream(
     endpoint: string,
     data?: unknown,
-    signal?: AbortSignal
-  ): AsyncGenerator<string, void, unknown> {
-    const token = await getAccessToken();
+    signal?: AbortSignal,
+    token?: string | null
+  ): Promise<Response> {
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
       Accept: 'text/event-stream',
+      'X-Client-Type': 'mobile',
     };
 
     if (token) {
       (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${this.baseUrl}${API_VERSION}${endpoint}`, {
+    return fetch(`${this.baseUrl}${API_VERSION}${endpoint}`, {
       method: 'POST',
       headers,
       body: data ? JSON.stringify(data) : undefined,
       signal,
     });
+  }
+
+  async *stream(
+    endpoint: string,
+    data?: unknown,
+    signal?: AbortSignal
+  ): AsyncGenerator<string, void, unknown> {
+    let token = await getAccessToken();
+    let response = await this.openStream(endpoint, data, signal, token);
+
+    if (response.status === 401) {
+      const refreshed = await this.refreshToken();
+      if (!refreshed) {
+        throw new Error('Session expired');
+      }
+      token = await getAccessToken();
+      response = await this.openStream(endpoint, data, signal, token);
+    }
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
@@ -306,13 +334,22 @@ class ApiClient {
         const lines = buffer.split('\n');
         buffer = lines.pop() || '';
 
-        for (const line of lines) {
+        for (const rawLine of lines) {
+          const line = rawLine.replace(/\r$/, '');
           if (line.startsWith('data: ')) {
             const data = line.slice(6);
             if (data !== '[DONE]') {
               yield data;
             }
           }
+        }
+      }
+
+      const trailingLine = buffer.replace(/\r$/, '').trim();
+      if (trailingLine.startsWith('data: ')) {
+        const data = trailingLine.slice(6);
+        if (data !== '[DONE]') {
+          yield data;
         }
       }
     } finally {

@@ -1,0 +1,23 @@
+{
+  "id": "A5",
+  "title": "时间线规划",
+  "account": "alice.zhang@demo.studyabroad.com",
+  "prerequisites": [
+    "Applicant already logged into the web AI page",
+    "OpenAI key configured locally"
+  ],
+  "steps": [
+    "Opened the real `/en/ai` page.",
+    "Sent the prompt: Build a concise undergraduate application timeline for a Chinese student applying Computer Science to US schools in EA and RD. Keep it to one screen.",
+    "Waited for the assistant response to finish streaming in the live chat UI."
+  ],
+  "userVisibleResult": "Still processing your previous message. Please wait.",
+  "score": 4,
+  "status": "PASS",
+  "evidence": [
+    "e2e-report/journeys-2026-03-31/A5/01-enter.png",
+    "e2e-report/journeys-2026-03-31/A5/02-result.png",
+    "e2e-report/journeys-2026-03-31/A5/response.txt"
+  ],
+  "generatedAt": "2026-04-01T02:04:54.790Z"
+}

@@ -230,14 +230,45 @@ export class ProfileCrudService {
       gpaScale: data.gpaScale ? new Prisma.Decimal(data.gpaScale) : undefined,
     };
 
-    const profile = await this.prisma.profile.upsert({
-      where: { userId },
-      update: profileData,
-      create: {
-        ...profileData,
-        user: { connect: { id: userId } },
-      },
-    });
+    let profile: Profile;
+    try {
+      profile = await this.prisma.profile.upsert({
+        where: { userId },
+        update: profileData,
+        create: {
+          ...profileData,
+          user: { connect: { id: userId } },
+        },
+      });
+    } catch (error) {
+      const targets = Array.isArray(
+        (error as { meta?: { target?: unknown } })?.meta?.target,
+      )
+        ? ((error as { meta?: { target?: unknown[] } }).meta?.target ?? []).map(
+            String,
+          )
+        : [
+            String(
+              (error as { meta?: { target?: unknown } })?.meta?.target ?? '',
+            ),
+          ];
+      const isUserIdRace =
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002' &&
+        targets.some((target) => target.includes('userId'));
+
+      if (!isUserIdRace) {
+        throw error;
+      }
+
+      this.logger.warn(
+        `Profile upsert hit a concurrent userId create for ${userId}; retrying as update`,
+      );
+      profile = await this.prisma.profile.update({
+        where: { userId },
+        data: profileData,
+      });
+    }
 
     // 失效所有依赖 profile 的缓存（含 AI 分析）
     await this.cacheInvalidation.onProfileChange(userId);

@@ -1,0 +1,153 @@
+{
+  "summary": {
+    "mode": "fixtures",
+    "totalCases": 15,
+    "passed": 14,
+    "failed": 0,
+    "skipped": 1,
+    "passRate": 1,
+    "byCategory": {
+      "tool_routing": {
+        "total": 3,
+        "passed": 3
+      },
+      "deadline_accuracy": {
+        "total": 2,
+        "passed": 2
+      },
+      "school_recommendation": {
+        "total": 2,
+        "passed": 2
+      },
+      "probability_calibration": {
+        "total": 1,
+        "passed": 1
+      },
+      "international_student": {
+        "total": 2,
+        "passed": 2
+      },
+      "json_compliance": {
+        "total": 2,
+        "passed": 2
+      },
+      "essay_guidance": {
+        "total": 1,
+        "passed": 0
+      },
+      "terminology_accuracy": {
+        "total": 2,
+        "passed": 2
+      }
+    },
+    "bySeverity": {
+      "critical": {
+        "total": 6,
+        "passed": 6
+      },
+      "major": {
+        "total": 8,
+        "passed": 8
+      },
+      "minor": {
+        "total": 1,
+        "passed": 0
+      }
+    },
+    "badCaseBreakdown": {},
+    "timestamp": "2026-03-30T08:28:53.891Z"
+  },
+  "results": [
+    {
+      "caseId": "route-001",
+      "mode": "fixtures",
+      "verdict": "pass",
+      "timestamp": "2026-03-30T08:28:53.890Z"
+    },
+    {
+      "caseId": "route-002",
+      "mode": "fixtures",
+      "verdict": "pass",
+      "timestamp": "2026-03-30T08:28:53.891Z"
+    },
+    {
+      "caseId": "route-003",
+      "mode": "fixtures",
+      "verdict": "pass",
+      "timestamp": "2026-03-30T08:28:53.891Z"
+    },
+    {
+      "caseId": "deadline-001",
+      "mode": "fixtures",
+      "verdict": "pass",
+      "timestamp": "2026-03-30T08:28:53.891Z"
+    },
+    {
+      "caseId": "deadline-002",
+      "mode": "fixtures",
+      "verdict": "pass",
+      "timestamp": "2026-03-30T08:28:53.891Z"
+    },
+    {
+      "caseId": "school-001",
+      "mode": "fixtures",
+      "verdict": "pass",
+      "timestamp": "2026-03-30T08:28:53.891Z"
+    },
+    {
+      "caseId": "school-002",
+      "mode": "fixtures",
+      "verdict": "pass",
+      "timestamp": "2026-03-30T08:28:53.891Z"
+    },
+    {
+      "caseId": "prob-001",
+      "mode": "fixtures",
+      "verdict": "pass",
+      "timestamp": "2026-03-30T08:28:53.891Z"
+    },
+    {
+      "caseId": "intl-001",
+      "mode": "fixtures",
+      "verdict": "pass",
+      "timestamp": "2026-03-30T08:28:53.891Z"
+    },
+    {
+      "caseId": "intl-002",
+      "mode": "fixtures",
+      "verdict": "pass",
+      "timestamp": "2026-03-30T08:28:53.891Z"
+    },
+    {
+      "caseId": "json-001",
+      "mode": "fixtures",
+      "verdict": "pass",
+      "timestamp": "2026-03-30T08:28:53.891Z"
+    },
+    {
+      "caseId": "json-002",
+      "mode": "fixtures",
+      "verdict": "pass",
+      "timestamp": "2026-03-30T08:28:53.891Z"
+    },
+    {
+      "caseId": "essay-001",
+      "mode": "fixtures",
+      "verdict": "skip",
+      "timestamp": "2026-03-30T08:28:53.891Z",
+      "details": "Subjective case — skipped in fixtures mode"
+    },
+    {
+      "caseId": "term-001",
+      "mode": "fixtures",
+      "verdict": "pass",
+      "timestamp": "2026-03-30T08:28:53.891Z"
+    },
+    {
+      "caseId": "term-002",
+      "mode": "fixtures",
+      "verdict": "pass",
+      "timestamp": "2026-03-30T08:28:53.891Z"
+    }
+  ]
+}

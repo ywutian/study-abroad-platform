@@ -33,7 +33,6 @@ jest.mock('@/lib/storage/secure-store', () => ({
   },
 }));
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Localization from 'expo-localization';
 import { storage } from '@/lib/storage/secure-store';
 

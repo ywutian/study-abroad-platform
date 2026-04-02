@@ -980,7 +980,8 @@
       "addErrorUnavailable": "{school}: {round} is not available for this school",
       "addErrorGeneric": "{school}: unable to add",
       "schoolRemoved": "School removed from list",
-      "roundUpdated": "Round updated"
+      "roundUpdated": "Round updated",
+      "saveFailed": "Failed to save, please try again"
     },
     "grades": {
       "freshman": "Freshman",
@@ -1211,7 +1212,8 @@
       "testTypeRequired": "Please select a test type",
       "semesterRequired": "Please select a semester",
       "yearRequired": "Year is required",
-      "gpaRequired": "GPA is required"
+      "gpaRequired": "GPA is required",
+      "schoolNameRequired": "School name is required"
     },
     "recLetter": {
       "title": "Recommendation Letters",
@@ -2124,9 +2126,13 @@
       "public": "Public",
       "verifiedOnly": "Verified Only"
     },
+    "validation": {
+      "resultRequired": "Please select an application result"
+    },
     "toast": {
       "success": "Case submitted successfully! Essays will be reviewed before appearing in the gallery.",
       "requiredFields": "Please fill in required fields",
+      "submitFailed": "Failed to submit case, please try again",
       "inviteSchoolmates": "Your case has been shared! Invite classmates from your high school to share theirs — more data means better predictions."
     }
   },
@@ -2509,10 +2515,15 @@
     "schoolsLabel": "Schools",
     "addSchool": "Add School",
     "noSchools": "No schools added yet",
+    "validation": {
+      "titleRequired": "Title is required",
+      "titleTooLong": "Title must be 100 characters or less"
+    },
     "toast": {
       "success": "List created successfully",
       "titleRequired": "Please enter a title",
-      "schoolsRequired": "Please add at least one school"
+      "schoolsRequired": "Please add at least one school",
+      "createFailed": "Failed to create list, please try again"
     },
     "createButton": "Create",
     "selectSchools": "Select Schools"

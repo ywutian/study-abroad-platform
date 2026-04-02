@@ -1,0 +1,51 @@
+{
+  "id": "A1",
+  "title": "注册 → 首次登录 → onboarding → dashboard 恢复链路",
+  "account": "audit.1775101314410.1@example.com",
+  "prerequisites": [
+    "Fresh email address available",
+    "Web app and API were already running locally"
+  ],
+  "steps": [
+    "Opened the real `/en/register` flow and completed all three steps, including TOEFL and SAT scores.",
+    "Forced the first onboarding POST to fail once to exercise the dashboard recovery path.",
+    "Allowed the dashboard retry to hit the real backend, then reloaded dashboard and checked saved profile state through the live API."
+  ],
+  "userVisibleResult": "Registration, auto-login, and retry-based onboarding recovery all completed from a user perspective.",
+  "score": 4,
+  "status": "PASS",
+  "evidence": [
+    "e2e-report/releases/live-2026-04-01-gate/journeys/A1/01-register-enter.png",
+    "e2e-report/releases/live-2026-04-01-gate/journeys/A1/02-register-before-submit.png",
+    "e2e-report/releases/live-2026-04-01-gate/journeys/A1/03-dashboard-after-register.png",
+    "e2e-report/releases/live-2026-04-01-gate/journeys/A1/dashboard-after-register.html",
+    "e2e-report/releases/live-2026-04-01-gate/journeys/A1/04-dashboard-revisit.png",
+    "e2e-report/releases/live-2026-04-01-gate/journeys/A1/onboarding-events.json",
+    "e2e-report/releases/live-2026-04-01-gate/journeys/A1/profile-after.json",
+    "e2e-report/releases/live-2026-04-01-gate/journeys/A1/register-debug.json",
+    "e2e-report/releases/live-2026-04-01-gate/journeys/A1/test-scores-after.json",
+    "e2e-report/releases/live-2026-04-01-gate/journeys/A1/dashboard-after.json"
+  ],
+  "notes": [
+    "pendingOnboarding in sessionStorage after dashboard retry: cleared",
+    "Profile onboardingCompleted: true",
+    "Saved test score count after retry: 3",
+    "register-debug captured: yes"
+  ],
+  "issues": [],
+  "registryVersion": "2026-04-01.v1",
+  "registryStatus": "active",
+  "executionOwner": "codex",
+  "validationType": "objective",
+  "baselineSmoke": true,
+  "qualityDimensionsChecked": ["layout", "consultancy-quality"],
+  "impactMappingUsed": ["manual-runtime-audit:live-2026-04-01-gate"],
+  "generatedAt": "2026-04-02T03:42:01.498Z",
+  "onboardingCompleted": true,
+  "pendingCleared": true,
+  "testScoreCount": 3,
+  "profileStatus": 200,
+  "scoreStatus": 200,
+  "dashboardStatus": 200,
+  "retryCount": 0
+}

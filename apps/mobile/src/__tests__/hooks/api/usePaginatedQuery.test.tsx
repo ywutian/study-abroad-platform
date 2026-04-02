@@ -147,7 +147,7 @@ describe('usePaginatedQuery', () => {
     expect(result.current.items).toEqual([]);
   });
 
-  it('passes params to the API call', async () => {
+  it('passes params to the API call using pageSize pagination', async () => {
     mockGet.mockResolvedValueOnce({
       items: [],
       page: 1,
@@ -161,7 +161,7 @@ describe('usePaginatedQuery', () => {
         usePaginatedQuery<{ id: string }>({
           queryKey: ['test-params'],
           endpoint: '/schools',
-          params: { search: 'MIT', sort: 'name' },
+          params: { search: 'MIT' },
           limit: 10,
         }),
       { wrapper: createWrapper() }
@@ -174,9 +174,8 @@ describe('usePaginatedQuery', () => {
     expect(mockGet).toHaveBeenCalledWith('/schools', {
       params: {
         page: 1,
-        limit: 10,
+        pageSize: 10,
         search: 'MIT',
-        sort: 'name',
       },
     });
   });

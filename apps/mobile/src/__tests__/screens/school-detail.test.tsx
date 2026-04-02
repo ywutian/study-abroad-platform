@@ -14,7 +14,7 @@ jest.mock('react-i18next', () => ({
 jest.mock('expo-router', () => ({
   Link: ({ children }: { children: React.ReactNode }) => children,
   Stack: {
-    Screen: ({ options }: { options: Record<string, unknown> }) => null,
+    Screen: () => null,
   },
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
@@ -155,13 +155,13 @@ describe('SchoolDetailScreen', () => {
       return Promise.resolve({ items: [], total: 0 });
     });
 
-    const { getByText } = renderWithProviders(<SchoolDetailScreen />);
+    const { findByText } = renderWithProviders(<SchoolDetailScreen />);
 
-    await waitFor(() => {
-      expect(getByText('Massachusetts Institute of Technology')).toBeTruthy();
-      expect(getByText('MIT zhong wen')).toBeTruthy();
-      expect(getByText('Cambridge, MA, US')).toBeTruthy();
-    });
+    expect(
+      await findByText('Massachusetts Institute of Technology', {}, { timeout: 3000 })
+    ).toBeTruthy();
+    expect(await findByText('MIT zhong wen', {}, { timeout: 3000 })).toBeTruthy();
+    expect(await findByText('Cambridge, MA, US', {}, { timeout: 3000 })).toBeTruthy();
   });
 
   it('renders stat cards with formatted values', async () => {
@@ -187,14 +187,12 @@ describe('SchoolDetailScreen', () => {
       return Promise.resolve({ items: [], total: 0 });
     });
 
-    const { getByText } = renderWithProviders(<SchoolDetailScreen />);
+    const { findByText } = renderWithProviders(<SchoolDetailScreen />);
 
-    await waitFor(() => {
-      expect(getByText('Stanford University')).toBeTruthy();
-      expect(getByText('$56,169')).toBeTruthy();
-      expect(getByText('$95,000')).toBeTruthy();
-      expect(getByText('17,381')).toBeTruthy();
-    });
+    expect(await findByText('Stanford University', {}, { timeout: 3000 })).toBeTruthy();
+    expect(await findByText('$56,169', {}, { timeout: 3000 })).toBeTruthy();
+    expect(await findByText('$95,000', {}, { timeout: 3000 })).toBeTruthy();
+    expect(await findByText('17,381', {}, { timeout: 3000 })).toBeTruthy();
   });
 
   it('renders tab labels for overview, deadlines, essays, and cases', async () => {
@@ -217,13 +215,11 @@ describe('SchoolDetailScreen', () => {
       return Promise.resolve({ items: [], total: 0 });
     });
 
-    const { getByText } = renderWithProviders(<SchoolDetailScreen />);
+    const { findByText } = renderWithProviders(<SchoolDetailScreen />);
 
-    await waitFor(() => {
-      expect(getByText('schools.detail.overview')).toBeTruthy();
-      expect(getByText('schools.detail.deadlines')).toBeTruthy();
-      expect(getByText('schools.detail.essayPrompts')).toBeTruthy();
-      expect(getByText('schools.detail.relatedCases')).toBeTruthy();
-    });
+    expect(await findByText('schools.detail.overview', {}, { timeout: 3000 })).toBeTruthy();
+    expect(await findByText('schools.detail.deadlines', {}, { timeout: 3000 })).toBeTruthy();
+    expect(await findByText('schools.detail.essayPrompts', {}, { timeout: 3000 })).toBeTruthy();
+    expect(await findByText('schools.detail.relatedCases', {}, { timeout: 3000 })).toBeTruthy();
   });
 });

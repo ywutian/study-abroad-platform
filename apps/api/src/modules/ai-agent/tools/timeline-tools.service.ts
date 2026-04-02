@@ -30,7 +30,8 @@ export class TimelineToolsService implements IToolHandlerProvider {
       ],
       [
         'create_timeline',
-        (args, _userId, ctx, locale) => this.createTimeline(args, ctx, locale),
+        (args, userId, ctx, locale) =>
+          this.createTimeline(args, userId, ctx, locale),
       ],
       [
         'get_personal_events',
@@ -74,6 +75,7 @@ export class TimelineToolsService implements IToolHandlerProvider {
 
   async createTimeline(
     args: { targetSchools?: string; startDate?: string },
+    userId: string,
     _context: any,
     locale = 'zh',
   ) {
@@ -120,7 +122,7 @@ Return in JSON format:
   "tips": ["Tip 1", "Tip 2"]
 }`;
 
-    const result = await this.llmService.chatSimple(
+    const result = await this.llmService.chatSimpleGuarded(
       [
         { role: 'system', content: systemPrompt },
         {
@@ -130,7 +132,7 @@ Return in JSON format:
             : `Target schools: ${args.targetSchools || 'TBD'}\nStart date: ${args.startDate || 'now'}`,
         },
       ],
-      { temperature: 0.6 },
+      { temperature: 0.6, userId },
     );
 
     return extractJsonFromLlm(result, 'timeline');

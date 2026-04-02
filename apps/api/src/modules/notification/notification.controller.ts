@@ -17,6 +17,7 @@ import { NotificationService } from './notification.service';
 import { CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
+import { RegisterPushTokenDto } from './dto/register-push-token.dto';
 
 @ApiTags('notifications')
 @ApiBearerAuth()
@@ -47,6 +48,20 @@ export class NotificationController {
   async getUnreadCount(@CurrentUser() user: CurrentUserPayload) {
     const count = await this.notificationService.getUnreadCount(user.id);
     return { count };
+  }
+
+  @Post('push-token')
+  @ApiOperation({ summary: 'Register or refresh a mobile push token' })
+  async registerPushToken(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: RegisterPushTokenDto,
+  ) {
+    await this.notificationService.registerPushToken(
+      user.id,
+      body.token,
+      body.platform,
+    );
+    return { success: true };
   }
 
   @Post(':id/read')

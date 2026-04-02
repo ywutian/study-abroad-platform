@@ -1,0 +1,30 @@
+{
+  "id": "A5",
+  "title": "时间线规划",
+  "account": "alice.zhang@demo.studyabroad.com",
+  "prerequisites": [
+    "Applicant already logged into the web AI page",
+    "OpenAI key configured locally"
+  ],
+  "steps": [
+    "Opened the real `/en/ai` page.",
+    "Sent the prompt: Build a concise undergraduate application timeline for a Chinese student applying Computer Science to US schools in EA and RD. Keep it to one screen.",
+    "Waited for the assistant response to finish streaming in the live chat UI."
+  ],
+  "userVisibleResult": "Here’s a concise undergraduate application timeline for a Chinese student applying for Computer Science to US schools in Early Action (EA) and Regular Decision (RD):\n\nUndergraduate Application Timeline\n\nSpring/Summer (April - August 2026)\n\nApril 2026: Finalize college list; research schools with str",
+  "score": 4,
+  "status": "PASS",
+  "evidence": [
+    "e2e-report/releases/live-2026-04-01-gate/journeys/A5/01-enter.png",
+    "e2e-report/releases/live-2026-04-01-gate/journeys/A5/02-result.png",
+    "e2e-report/releases/live-2026-04-01-gate/journeys/A5/response.txt"
+  ],
+  "registryVersion": "2026-04-01.v1",
+  "registryStatus": "active",
+  "executionOwner": "codex",
+  "validationType": "objective",
+  "baselineSmoke": false,
+  "qualityDimensionsChecked": ["ai-quality", "consultancy-quality"],
+  "impactMappingUsed": ["manual-runtime-audit:live-2026-04-01-gate"],
+  "generatedAt": "2026-04-02T02:48:36.589Z"
+}

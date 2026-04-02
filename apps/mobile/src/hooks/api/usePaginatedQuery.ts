@@ -7,9 +7,9 @@ interface UsePaginatedQueryOptions {
   queryKey: unknown[];
   /** API endpoint path (e.g. '/schools') */
   endpoint: string;
-  /** Query params to send with each request (page & limit are added automatically) */
+  /** Query params to send with each request (page & pageSize are added automatically) */
   params?: Record<string, unknown>;
-  /** Items per page (default: 20) */
+  /** Items per page (default: 20). Sent as pageSize to match current API pagination DTOs. */
   limit?: number;
   /** Whether the query is enabled (default: true) */
   enabled?: boolean;
@@ -32,7 +32,7 @@ export function usePaginatedQuery<T>({
       return apiClient.get<PaginatedResponse<T>>(endpoint, {
         params: {
           page: pageParam,
-          limit,
+          pageSize: limit,
           ...params,
         },
       });

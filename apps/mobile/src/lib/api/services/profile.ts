@@ -12,5 +12,5 @@ export const profileService = {
   updateEssay: (id: string, data: Record<string, string | number | boolean | undefined>) =>
     apiClient.put(`${profileRoutes.me()}/essays/${id}`, data),
   deleteEssay: (id: string) => apiClient.delete(`${profileRoutes.me()}/essays/${id}`),
-  getAnalysis: () => apiClient.get(`${profileRoutes.me()}/analysis`),
+  getAnalysis: () => apiClient.get(profileRoutes.aiAnalysis()),
 };

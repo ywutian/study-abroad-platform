@@ -11,11 +11,11 @@ import {
   CardHeader,
   CardTitle,
   Badge,
-  Avatar,
   Loading,
   ErrorState,
   Skeleton,
 } from '@/components/ui';
+import { SchoolAvatar } from '@/components/features/SchoolAvatar';
 import { caseRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useColors, withOpacity, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
@@ -130,7 +130,12 @@ export default function CaseDetailScreen() {
             onPress={() => caseData.schoolId && router.push(`/school/${caseData.schoolId}`)}
             style={[styles.schoolRow, { backgroundColor: withOpacity(colors.card, 0.7) }]}
           >
-            <Avatar source={caseData.school?.logoUrl} name={caseData.school?.name} size="lg" />
+            <SchoolAvatar
+              name={caseData.school?.name}
+              logoUrl={caseData.school?.logoUrl}
+              website={caseData.school?.website}
+              size="lg"
+            />
             <View style={styles.schoolInfo}>
               <Text style={[styles.schoolName, { color: colors.foreground }]}>
                 {caseData.school?.name || t('common.unknownSchool')}

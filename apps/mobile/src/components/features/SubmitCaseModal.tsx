@@ -99,7 +99,7 @@ export function SubmitCaseModal({ visible, onClose, onSuccess }: SubmitCaseModal
       setSearchingSchools(true);
       try {
         const response = await apiClient.get<PaginatedResponse<School>>('/schools', {
-          params: { search: query, limit: 10, page: 1 },
+          params: { search: query, page: 1, pageSize: 10 },
         });
         setSchoolResults(response.items);
         setShowSchoolDropdown(true);

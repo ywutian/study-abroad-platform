@@ -5,7 +5,7 @@
  * 运行: pnpm --filter api ts-node prisma/seed-all-features.ts
  */
 
-import { PrismaClient, Prisma } from '@prisma/client';
+import { PrismaClient, Prisma, DataReviewStatus } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -2094,30 +2094,38 @@ async function main() {
       where: { userId: user.id, schoolId: school.id, year: caseData.year },
     });
 
+    const casePayload = {
+      userId: user.id,
+      schoolId: school.id,
+      year: caseData.year,
+      round: caseData.round,
+      result: caseData.result,
+      major: caseData.major,
+      gpaRange: caseData.gpaRange,
+      satRange: caseData.satRange,
+      toeflRange: caseData.toeflRange,
+      tags: caseData.tags,
+      visibility: caseData.visibility,
+      isVerified: caseData.visibility === 'VERIFIED_ONLY',
+      reviewStatus: DataReviewStatus.AUTO_APPROVED,
+      essayType: caseData.essayType as any,
+      essayPrompt: caseData.essayPrompt,
+      essayContent: caseData.essayContent,
+    } satisfies Prisma.AdmissionCaseUncheckedCreateInput;
+
     if (!existing) {
       await prisma.admissionCase.create({
-        data: {
-          userId: user.id,
-          schoolId: school.id,
-          year: caseData.year,
-          round: caseData.round,
-          result: caseData.result,
-          major: caseData.major,
-          gpaRange: caseData.gpaRange,
-          satRange: caseData.satRange,
-          toeflRange: caseData.toeflRange,
-          tags: caseData.tags,
-          visibility: caseData.visibility,
-          isVerified: caseData.visibility === 'VERIFIED_ONLY',
-          essayType: caseData.essayType as any,
-          essayPrompt: caseData.essayPrompt,
-          essayContent: caseData.essayContent,
-        },
+        data: casePayload,
       });
       casesCreated++;
       console.log(
         `  + ${caseData.schoolName} (${caseData.result}) - ${caseData.major}`,
       );
+    } else {
+      await prisma.admissionCase.update({
+        where: { id: existing.id },
+        data: casePayload,
+      });
     }
   }
   console.log(`\n  Cases created: ${casesCreated}\n`);

@@ -20,6 +20,7 @@ import {
   useOptimisticUpdateConversation,
 } from './use-chat-history';
 import { env } from '@/lib/env';
+import { pushAgentChatDebug } from './debug';
 
 // SSE streaming requests connect to the backend directly to bypass Next.js proxy buffering.
 // When empty, requests go through the Next.js rewrite proxy which buffers SSE responses
@@ -43,6 +44,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
   // conversationId state is the single source of truth; ref syncs via useEffect for closures
   const [conversationId, setConversationId] = useState<string | undefined>(options.conversationId);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const isLoadingRef = useRef(false);
   const conversationIdRef = useRef<string | undefined>(options.conversationId);
   const invalidateConversations = useInvalidateConversations();
   const optimisticAddConversation = useOptimisticAddConversation();
@@ -57,10 +59,16 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
     conversationIdRef.current = conversationId;
   }, [conversationId]);
 
+  const setLoadingState = useCallback((next: boolean) => {
+    isLoadingRef.current = next;
+    setIsLoading(next);
+  }, []);
+
   // Cleanup on unmount: abort any in-flight stream
   useEffect(() => {
     return () => {
       abortControllerRef.current?.abort();
+      isLoadingRef.current = false;
       clearTimeout(chunkTimeoutRef.current);
     };
   }, []);
@@ -176,7 +184,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
             });
           }
           invalidateConversations();
-          break;
+          return { terminal: true };
 
         case 'error':
           setMessages((prev) =>
@@ -186,8 +194,10 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                 : msg
             )
           );
-          break;
+          return { terminal: true };
       }
+
+      return { terminal: false };
     },
     [invalidateConversations, optimisticAddConversation, optimisticUpdateConversation]
   );
@@ -204,10 +214,26 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
    */
   const sendMessage = useCallback(
     async (content: string) => {
-      if (!content.trim() || isLoading) return;
+      const trimmedContent = content.trim();
+      pushAgentChatDebug('sendMessage_attempt', {
+        trimmedContentLength: trimmedContent.length,
+        isLoadingRef: isLoadingRef.current,
+        conversationId: conversationIdRef.current ?? null,
+      });
+      if (!trimmedContent || isLoadingRef.current) {
+        pushAgentChatDebug('sendMessage_rejected_guard', {
+          reason: !trimmedContent ? 'empty' : 'loading',
+          isLoadingRef: isLoadingRef.current,
+        });
+        return false;
+      }
 
       // Track user message for optimistic title fallback
-      lastUserMessageRef.current = content.trim();
+      lastUserMessageRef.current = trimmedContent;
+      pushAgentChatDebug('sendMessage_append_messages', {
+        conversationId: conversationIdRef.current ?? null,
+        trimmedContentLength: trimmedContent.length,
+      });
 
       // Append user message to the list
       const userMessage: ChatMessage = {
@@ -231,7 +257,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
       };
       setMessages((prev) => [...prev, assistantMessage]);
 
-      setIsLoading(true);
+      setLoadingState(true);
       setActiveTools([]);
 
       // Create AbortController for cancellation support
@@ -241,6 +267,11 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
       try {
         // Inner function: execute the actual fetch request
         const doRequest = async (authToken: string | null) => {
+          pushAgentChatDebug('sendMessage_fetch_start', {
+            conversationId: conversationIdRef.current ?? null,
+            locale,
+            hasAuthToken: Boolean(authToken),
+          });
           return fetch(`${STREAM_API_URL}/api/v1/ai-agent/chat`, {
             method: 'POST',
             headers: {
@@ -259,13 +290,23 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         };
 
         let response = await doRequest(token);
+        pushAgentChatDebug('sendMessage_fetch_response', {
+          status: response.status,
+          ok: response.ok,
+          conversationId: conversationIdRef.current ?? null,
+        });
 
         // On 401, refresh the access token and retry once
         if (response.status === 401) {
+          pushAgentChatDebug('sendMessage_auth_refresh_required');
           const refreshed = await refreshAccessToken();
           if (refreshed) {
             const newToken = useAuthStore.getState().accessToken;
             response = await doRequest(newToken);
+            pushAgentChatDebug('sendMessage_fetch_response_after_refresh', {
+              status: response.status,
+              ok: response.ok,
+            });
           } else {
             throw new Error('AUTH_EXPIRED');
           }
@@ -287,6 +328,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
 
         const decoder = new TextDecoder();
         let buffer = '';
+        let streamTerminated = false;
 
         /** Reset the single reusable chunk timeout */
         const resetChunkTimeout = () => {
@@ -314,14 +356,34 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
             if (!line.startsWith('data: ')) continue;
             const data = line.slice(6);
 
-            if (data === '[DONE]') continue;
+            if (data === '[DONE]') {
+              pushAgentChatDebug('sendMessage_stream_done_marker', {
+                conversationId: conversationIdRef.current ?? null,
+              });
+              streamTerminated = true;
+              break;
+            }
 
             try {
               const event: StreamEvent = JSON.parse(data);
-              handleStreamEventRef.current(event, assistantId);
+              pushAgentChatDebug('sendMessage_stream_event', {
+                type: event.type,
+                conversationId: event.conversationId ?? conversationIdRef.current ?? null,
+              });
+              const result = handleStreamEventRef.current(event, assistantId);
+              if (result.terminal) {
+                streamTerminated = true;
+                break;
+              }
             } catch {
               // Ignore malformed SSE data lines
             }
+          }
+
+          if (streamTerminated) {
+            clearTimeout(chunkTimeoutRef.current);
+            await reader.cancel().catch(() => undefined);
+            break;
           }
         }
       } catch (error) {
@@ -334,13 +396,16 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
           );
 
         if (isUserAbort) {
+          pushAgentChatDebug('sendMessage_user_abort', {
+            conversationId: conversationIdRef.current ?? null,
+          });
           // User-initiated abort: clean up streaming state
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === assistantId && msg.isStreaming ? { ...msg, isStreaming: false } : msg
             )
           );
-          return;
+          return true;
         }
 
         const errorMsg = error instanceof Error ? error.message : 'Unknown error';
@@ -360,6 +425,12 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         }
 
         options.onError?.(displayMessage);
+        pushAgentChatDebug('sendMessage_error', {
+          errorMessage: errorMsg,
+          displayMessage,
+          isTimeout,
+          conversationId: conversationIdRef.current ?? null,
+        });
 
         // Update the placeholder message with the error
         setMessages((prev) =>
@@ -368,23 +439,32 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
           )
         );
       } finally {
+        pushAgentChatDebug('sendMessage_finally', {
+          conversationId: conversationIdRef.current ?? null,
+        });
         clearTimeout(chunkTimeoutRef.current);
-        setIsLoading(false);
+        setLoadingState(false);
         setActiveTools([]);
         abortControllerRef.current = null;
       }
+      return true;
     },
-    [token, isLoading, options, refreshAccessToken, locale, t]
+    [token, options, refreshAccessToken, locale, t, setLoadingState]
   );
 
   /** Abort the in-flight SSE stream and mark all streaming messages as complete. */
   const stopGeneration = useCallback(() => {
+    pushAgentChatDebug('stopGeneration_invoked', {
+      conversationId: conversationIdRef.current ?? null,
+    });
     abortControllerRef.current?.abort();
-    setIsLoading(false);
+    clearTimeout(chunkTimeoutRef.current);
+    setLoadingState(false);
+    setActiveTools([]);
     setMessages((prev) =>
       prev.map((msg) => (msg.isStreaming ? { ...msg, isStreaming: false } : msg))
     );
-  }, []);
+  }, [setLoadingState]);
 
   /** Clear all messages locally and delete the conversation on the server. */
   const clearMessages = useCallback(async () => {
@@ -410,7 +490,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
    */
   const loadConversation = useCallback(
     async (targetConversationId: string) => {
-      setIsLoading(true);
+      setLoadingState(true);
       try {
         const res = await apiClient.get<{
           messages: Array<{
@@ -444,10 +524,10 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
       } catch {
         options.onError?.(t('errorProcessing'));
       } finally {
-        setIsLoading(false);
+        setLoadingState(false);
       }
     },
-    [options, t]
+    [options, t, setLoadingState]
   );
 
   /**

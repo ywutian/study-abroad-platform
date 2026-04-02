@@ -1,0 +1,18 @@
+{
+  "id": "C4",
+  "title": "内容审核 → 举报处理",
+  "account": "admin@example.com",
+  "prerequisites": ["Admin already logged into web"],
+  "steps": [
+    "Opened /admin/moderation?tab=reports.",
+    "Waited for the dynamic admin data to finish loading in the live page."
+  ],
+  "userVisibleResult": "The admin page rendered in the live web application and evidence was captured.",
+  "score": 4,
+  "status": "PASS",
+  "evidence": [
+    "e2e-report/journeys-2026-03-31/C4/01-page.png",
+    "e2e-report/journeys-2026-03-31/C4/page.html"
+  ],
+  "generatedAt": "2026-04-01T10:36:23.989Z"
+}

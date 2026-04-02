@@ -1,12 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
@@ -32,11 +32,20 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from '@/components/ui/form';
 import { apiClient } from '@/lib/api';
 import { profileRoutes, highSchoolRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Loader2, Save, ChevronsUpDown, Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { createEducationSchema, type EducationFormValues } from '@/lib/validations/profile';
 
 const GPA_SYSTEM_OPTIONS = [
   { value: 'SCALE_4_UW', label: '4.0 Scale (Unweighted)', gpaScale: '4.0' },
@@ -123,70 +132,70 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
   const queryClient = useQueryClient();
   const isEditing = !!education;
 
-  const [formData, setFormData] = useState({
-    schoolName: '',
-    schoolType: '',
-    degree: '',
-    major: '',
-    startDate: '',
-    endDate: '',
-    gpa: '',
-    gpaScale: '4.0',
-    gpaSystem: '' as string,
-    description: '',
-    highSchoolId: '' as string | undefined,
+  const schema = useMemo(() => createEducationSchema(t), [t]);
+  const form = useForm<EducationFormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      schoolName: '',
+      schoolType: '',
+      degree: '',
+      major: '',
+      startDate: '',
+      endDate: '',
+      gpa: '',
+      gpaScale: '4.0',
+      gpaSystem: '',
+      description: '',
+      highSchoolId: '',
+    },
   });
 
   const [hsPopoverOpen, setHsPopoverOpen] = useState(false);
-  const isHighSchool = formData.schoolType === 'HIGH_SCHOOL';
+  const schoolType = form.watch('schoolType');
+  const isHighSchool = schoolType === 'HIGH_SCHOOL';
   const { search, setSearch, results, loading } = useHighSchoolSearch(
     isHighSchool && hsPopoverOpen
   );
 
+  // Reset form when dialog opens/closes or editing target changes
   useEffect(() => {
-    if (education) {
-      setFormData({
-        schoolName: education.schoolName || '',
-        schoolType: education.schoolType || '',
-        degree: education.degree || '',
-        major: education.major || '',
-        startDate: education.startDate?.slice(0, 10) || '',
-        endDate: education.endDate?.slice(0, 10) || '',
-        gpa: education.gpa?.toString() || '',
-        gpaScale: education.gpaScale?.toString() || '4.0',
-        gpaSystem: '',
-        description: education.description || '',
-        highSchoolId: education.highSchoolId || undefined,
-      });
-    } else {
-      setFormData({
-        schoolName: '',
-        schoolType: '',
-        degree: '',
-        major: '',
-        startDate: '',
-        endDate: '',
-        gpa: '',
-        gpaScale: '4.0',
-        gpaSystem: '',
-        description: '',
-        highSchoolId: undefined,
-      });
+    if (open) {
+      if (education) {
+        form.reset({
+          schoolName: education.schoolName || '',
+          schoolType: (education.schoolType as EducationFormValues['schoolType']) || '',
+          degree: education.degree || '',
+          major: education.major || '',
+          startDate: education.startDate?.slice(0, 10) || '',
+          endDate: education.endDate?.slice(0, 10) || '',
+          gpa: education.gpa?.toString() || '',
+          gpaScale: education.gpaScale?.toString() || '4.0',
+          gpaSystem: '',
+          description: education.description || '',
+          highSchoolId: education.highSchoolId || '',
+        });
+      } else {
+        form.reset();
+      }
     }
-  }, [education, open]);
+  }, [education, open, form]);
 
   const createMutation = useMutation({
-    mutationFn: (data: any) => apiClient.post(`${profileRoutes.me()}/education`, data),
+    mutationFn: (data: Record<string, unknown>) =>
+      apiClient.post(`${profileRoutes.me()}/education`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       onOpenChange(false);
       toast.success(t('toast.educationAdded'));
       onSuccess?.();
     },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : t('toast.saveFailed'));
+    },
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data: any) =>
+    mutationFn: (data: Record<string, unknown>) =>
       apiClient.put(`${profileRoutes.me()}/education/${education?.id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
@@ -194,24 +203,27 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
       toast.success(t('toast.educationUpdated'));
       onSuccess?.();
     },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : t('toast.saveFailed'));
+    },
   });
 
-  const handleSubmit = () => {
-    const data: any = {
-      schoolName: formData.schoolName,
-      schoolType: formData.schoolType || undefined,
-      degree: formData.degree || undefined,
-      major: formData.major || undefined,
-      startDate: formData.startDate || undefined,
-      endDate: formData.endDate || undefined,
-      gpa: formData.gpa ? parseFloat(formData.gpa) : undefined,
-      gpaScale: formData.gpaScale ? parseFloat(formData.gpaScale) : undefined,
-      gpaSystem: formData.gpaSystem || undefined,
-      description: formData.description || undefined,
+  const onSubmit = (values: EducationFormValues) => {
+    const data: Record<string, unknown> = {
+      schoolName: values.schoolName,
+      schoolType: values.schoolType || undefined,
+      degree: values.degree || undefined,
+      major: values.major || undefined,
+      startDate: values.startDate || undefined,
+      endDate: values.endDate || undefined,
+      gpa: values.gpa ? parseFloat(values.gpa) : undefined,
+      gpaScale: values.gpaScale ? parseFloat(values.gpaScale) : undefined,
+      gpaSystem: values.gpaSystem || undefined,
+      description: values.description || undefined,
     };
 
     if (isHighSchool) {
-      data.highSchoolId = formData.highSchoolId || undefined;
+      data.highSchoolId = values.highSchoolId || undefined;
     }
 
     if (isEditing) {
@@ -222,37 +234,33 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
   };
 
   const handleSelectHighSchool = (hs: HighSchool) => {
-    setFormData({
-      ...formData,
-      schoolName: hs.nameZh || hs.name,
-      highSchoolId: hs.id,
-    });
+    form.setValue('schoolName', hs.nameZh || hs.name);
+    form.setValue('highSchoolId', hs.id);
     setHsPopoverOpen(false);
   };
 
   const handleClearHighSchool = () => {
-    setFormData({ ...formData, highSchoolId: undefined });
+    form.setValue('highSchoolId', '');
   };
 
   const handleSchoolTypeChange = (value: string) => {
-    setFormData({
-      ...formData,
-      schoolType: value,
-      // Clear highSchoolId when switching away from HIGH_SCHOOL
-      highSchoolId: value === 'HIGH_SCHOOL' ? formData.highSchoolId : undefined,
-    });
+    form.setValue('schoolType', value as EducationFormValues['schoolType']);
+    if (value !== 'HIGH_SCHOOL') {
+      form.setValue('highSchoolId', '');
+    }
   };
 
   const handleGpaSystemChange = (value: string) => {
     const option = GPA_SYSTEM_OPTIONS.find((o) => o.value === value);
-    setFormData({
-      ...formData,
-      gpaSystem: value,
-      gpaScale: option?.gpaScale || formData.gpaScale,
-    });
+    form.setValue('gpaSystem', value);
+    if (option) {
+      form.setValue('gpaScale', option.gpaScale);
+    }
   };
 
   const isPending = createMutation.isPending || updateMutation.isPending;
+  const highSchoolId = form.watch('highSchoolId');
+  const schoolName = form.watch('schoolName');
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -264,252 +272,293 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-4">
-          {/* School Type selector — placed first so high school search can appear */}
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>{t('form.schoolType')}</Label>
-              <Select value={formData.schoolType} onValueChange={handleSchoolTypeChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('form.selectType')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {SCHOOL_TYPE_KEYS.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
-                      {t(`form.educationTypes.${type.labelKey}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>{t('form.degree')}</Label>
-              <Input
-                placeholder={t('form.degreePlaceholder')}
-                value={formData.degree}
-                onChange={(e) => setFormData({ ...formData, degree: e.target.value })}
-              />
-            </div>
-          </div>
-
-          {/* School Name — Combobox for HIGH_SCHOOL, plain Input otherwise */}
-          <div className="space-y-2">
-            <Label>{t('form.schoolName')} *</Label>
-            {isHighSchool ? (
-              <div className="flex gap-2">
-                <Popover open={hsPopoverOpen} onOpenChange={setHsPopoverOpen} modal>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={hsPopoverOpen}
-                      className="w-full justify-between font-normal"
-                    >
-                      <span className="truncate">
-                        {formData.schoolName || t('form.searchHighSchool')}
-                      </span>
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    className="w-[var(--radix-popover-trigger-width)] p-0"
-                    align="start"
-                  >
-                    <Command shouldFilter={false}>
-                      <CommandInput
-                        placeholder={t('form.searchHighSchoolPlaceholder')}
-                        value={search}
-                        onValueChange={setSearch}
-                      />
-                      <CommandList>
-                        <CommandEmpty>
-                          {loading ? (
-                            t('form.searching')
-                          ) : search.length > 0 ? (
-                            <div className="flex flex-col items-center gap-2 py-1">
-                              <span>{t('form.noHighSchoolFound')}</span>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={async () => {
-                                  try {
-                                    await apiClient.post(highSchoolRoutes.suggest(), {
-                                      name: search,
-                                      country: 'Unknown',
-                                    });
-                                    toast.success(t('form.schoolSuggested'));
-                                  } catch {
-                                    toast.error(t('form.schoolSuggestFailed'));
-                                  }
-                                }}
-                              >
-                                {t('form.suggestSchool')}
-                              </Button>
-                            </div>
-                          ) : (
-                            t('form.typeToSearch')
-                          )}
-                        </CommandEmpty>
-                        {results.length > 0 && (
-                          <CommandGroup>
-                            {results.map((hs) => (
-                              <CommandItem
-                                key={hs.id}
-                                value={hs.id}
-                                onSelect={() => handleSelectHighSchool(hs)}
-                              >
-                                <Check
-                                  className={cn(
-                                    'mr-2 h-4 w-4',
-                                    formData.highSchoolId === hs.id ? 'opacity-100' : 'opacity-0'
-                                  )}
-                                />
-                                <div className="flex flex-col">
-                                  <span className="font-medium">
-                                    {hs.nameZh || hs.name}
-                                    {hs.nameZh && hs.name !== hs.nameZh && (
-                                      <span className="ml-1 text-muted-foreground text-xs">
-                                        {hs.name}
-                                      </span>
-                                    )}
-                                  </span>
-                                  <span className="text-xs text-muted-foreground">
-                                    Tier {hs.tier} · {hs.type.replace(/_/g, ' ')} ·{' '}
-                                    {hs.state || hs.country}
-                                  </span>
-                                </div>
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        )}
-                      </CommandList>
-                    </Command>
-                    {/* Allow custom input */}
-                    <div className="border-t p-2">
-                      <Input
-                        placeholder={t('form.customHighSchool')}
-                        value={formData.schoolName}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            schoolName: e.target.value,
-                            highSchoolId: undefined,
-                          })
-                        }
-                        className="h-8 text-sm"
-                      />
-                    </div>
-                  </PopoverContent>
-                </Popover>
-                {formData.highSchoolId && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="shrink-0"
-                    onClick={handleClearHighSchool}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
+            {/* School Type selector */}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="schoolType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('form.schoolType')}</FormLabel>
+                    <Select onValueChange={handleSchoolTypeChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('form.selectType')} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {SCHOOL_TYPE_KEYS.map((type) => (
+                          <SelectItem key={type.value} value={type.value}>
+                            {t(`form.educationTypes.${type.labelKey}`)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
                 )}
+              />
+
+              <FormField
+                control={form.control}
+                name="degree"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('form.degree')}</FormLabel>
+                    <FormControl>
+                      <Input placeholder={t('form.degreePlaceholder')} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* School Name — Combobox for HIGH_SCHOOL, plain Input otherwise */}
+            <FormField
+              control={form.control}
+              name="schoolName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('form.schoolName')} *</FormLabel>
+                  {isHighSchool ? (
+                    <div className="flex gap-2">
+                      <Popover open={hsPopoverOpen} onOpenChange={setHsPopoverOpen} modal>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={hsPopoverOpen}
+                            className="w-full justify-between font-normal"
+                            type="button"
+                          >
+                            <span className="truncate">
+                              {schoolName || t('form.searchHighSchool')}
+                            </span>
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          className="w-[var(--radix-popover-trigger-width)] p-0"
+                          align="start"
+                        >
+                          <Command shouldFilter={false}>
+                            <CommandInput
+                              placeholder={t('form.searchHighSchoolPlaceholder')}
+                              value={search}
+                              onValueChange={setSearch}
+                            />
+                            <CommandList>
+                              <CommandEmpty>
+                                {loading ? (
+                                  t('form.searching')
+                                ) : search.length > 0 ? (
+                                  <div className="flex flex-col items-center gap-2 py-1">
+                                    <span>{t('form.noHighSchoolFound')}</span>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      type="button"
+                                      onClick={async () => {
+                                        try {
+                                          await apiClient.post(highSchoolRoutes.suggest(), {
+                                            name: search,
+                                            country: 'Unknown',
+                                          });
+                                          toast.success(t('form.schoolSuggested'));
+                                        } catch {
+                                          toast.error(t('form.schoolSuggestFailed'));
+                                        }
+                                      }}
+                                    >
+                                      {t('form.suggestSchool')}
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  t('form.typeToSearch')
+                                )}
+                              </CommandEmpty>
+                              {results.length > 0 && (
+                                <CommandGroup>
+                                  {results.map((hs) => (
+                                    <CommandItem
+                                      key={hs.id}
+                                      value={hs.id}
+                                      onSelect={() => handleSelectHighSchool(hs)}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          'mr-2 h-4 w-4',
+                                          highSchoolId === hs.id ? 'opacity-100' : 'opacity-0'
+                                        )}
+                                      />
+                                      <div className="flex flex-col">
+                                        <span className="font-medium">
+                                          {hs.nameZh || hs.name}
+                                          {hs.nameZh && hs.name !== hs.nameZh && (
+                                            <span className="ml-1 text-muted-foreground text-xs">
+                                              {hs.name}
+                                            </span>
+                                          )}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                          Tier {hs.tier} · {hs.type.replace(/_/g, ' ')} ·{' '}
+                                          {hs.state || hs.country}
+                                        </span>
+                                      </div>
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              )}
+                            </CommandList>
+                          </Command>
+                          {/* Allow custom input */}
+                          <div className="border-t p-2">
+                            <Input
+                              placeholder={t('form.customHighSchool')}
+                              value={field.value}
+                              onChange={(e) => {
+                                field.onChange(e.target.value);
+                                form.setValue('highSchoolId', '');
+                              }}
+                              className="h-8 text-sm"
+                            />
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                      {highSchoolId && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="shrink-0"
+                          type="button"
+                          onClick={handleClearHighSchool}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <FormControl>
+                      <Input placeholder={t('form.schoolNamePlaceholder')} {...field} />
+                    </FormControl>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="major"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('form.major')}</FormLabel>
+                  <FormControl>
+                    <Input placeholder={t('form.majorPlaceholder')} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="startDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('form.startDate')}</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="endDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('form.endDate')}</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-3">
+              <FormField
+                control={form.control}
+                name="gpa"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>GPA</FormLabel>
+                    <FormControl>
+                      <Input type="number" step="0.01" placeholder="3.85" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <div className="space-y-2">
+                <FormLabel>{t('form.gpaSystem')}</FormLabel>
+                <Select value={form.watch('gpaSystem') || ''} onValueChange={handleGpaSystemChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('form.selectType')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {GPA_SYSTEM_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            ) : (
-              <Input
-                placeholder={t('form.schoolNamePlaceholder')}
-                value={formData.schoolName}
-                onChange={(e) => setFormData({ ...formData, schoolName: e.target.value })}
+              <FormField
+                control={form.control}
+                name="gpaScale"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('form.gpaMax')}</FormLabel>
+                    <FormControl>
+                      <Input type="number" step="0.1" placeholder="4.0" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
               />
-            )}
-          </div>
+            </div>
 
-          <div className="space-y-2">
-            <Label>{t('form.major')}</Label>
-            <Input
-              placeholder={t('form.majorPlaceholder')}
-              value={formData.major}
-              onChange={(e) => setFormData({ ...formData, major: e.target.value })}
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('form.description')}</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder={t('form.descriptionPlaceholder')} rows={3} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>{t('form.startDate')}</Label>
-              <Input
-                type="date"
-                value={formData.startDate}
-                onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>{t('form.endDate')}</Label>
-              <Input
-                type="date"
-                value={formData.endDate}
-                onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-              />
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="space-y-2">
-              <Label>GPA</Label>
-              <Input
-                type="number"
-                step="0.01"
-                placeholder="3.85"
-                value={formData.gpa}
-                onChange={(e) => setFormData({ ...formData, gpa: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              {/* TODO: add i18n key for "GPA System" */}
-              <Label>{t('form.gpaSystem')}</Label>
-              <Select value={formData.gpaSystem} onValueChange={handleGpaSystemChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('form.selectType')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {GPA_SYSTEM_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>{t('form.gpaMax')}</Label>
-              <Input
-                type="number"
-                step="0.1"
-                placeholder="4.0"
-                value={formData.gpaScale}
-                onChange={(e) => setFormData({ ...formData, gpaScale: e.target.value })}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>{t('form.description')}</Label>
-            <Textarea
-              placeholder={t('form.descriptionPlaceholder')}
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              rows={3}
-            />
-          </div>
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {tCommon('cancel')}
-          </Button>
-          <Button onClick={handleSubmit} disabled={!formData.schoolName || isPending}>
-            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            <Save className="mr-2 h-4 w-4" />
-            {tCommon('save')}
-          </Button>
-        </DialogFooter>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                {tCommon('cancel')}
+              </Button>
+              <Button type="submit" disabled={isPending}>
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Save className="mr-2 h-4 w-4" />
+                {tCommon('save')}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

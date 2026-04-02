@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState, type BaseSyntheticEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -54,6 +54,29 @@ const createRegisterSchema = (t: ReturnType<typeof useTranslations>) =>
 
 type RegisterForm = z.infer<ReturnType<typeof createRegisterSchema>>;
 
+function writeRegisterDebug(value: Record<string, unknown>) {
+  if (typeof window === 'undefined') return;
+  try {
+    const existingRaw = window.sessionStorage.getItem('__registerDebug');
+    const existing = existingRaw ? (JSON.parse(existingRaw) as { events?: unknown[] }) : null;
+    const events = Array.isArray(existing?.events) ? existing.events : [];
+    window.sessionStorage.setItem(
+      '__registerDebug',
+      JSON.stringify({
+        events: [
+          ...events,
+          {
+            ...value,
+            capturedAt: new Date().toISOString(),
+          },
+        ],
+      })
+    );
+  } catch {
+    // Ignore sessionStorage failures in private browsing.
+  }
+}
+
 export default function RegisterPage() {
   const t = useTranslations();
   const ta = useTranslations('auth.register');
@@ -70,6 +93,14 @@ export default function RegisterPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [referralOpen, setReferralOpen] = useState(!!refCode);
+  const formRef = useRef<HTMLFormElement>(null);
+  const [scoreValues, setScoreValues] = useState({
+    toeflScore: '',
+    ieltsScore: '',
+    satScore: '',
+    actScore: '',
+  });
+  const scoreValuesRef = useRef(scoreValues);
 
   const form = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
@@ -139,15 +170,44 @@ export default function RegisterPage() {
     }
   };
 
-  const onSubmit = async (data: RegisterForm) => {
+  const onSubmit = async (data: RegisterForm, event?: BaseSyntheticEvent) => {
     setIsLoading(true);
     try {
+      const formElement =
+        event?.currentTarget instanceof HTMLFormElement ? event.currentTarget : formRef.current;
+      const readFormDataValue = (name: keyof RegisterForm) => {
+        const snapshot = formElement ? new FormData(formElement) : null;
+        const value = snapshot?.get(name);
+        return typeof value === 'string' ? value.trim() : '';
+      };
+      const readDomValue = (name: keyof RegisterForm) => {
+        const field = formElement?.querySelector(`[name="${String(name)}"]`);
+        if (
+          field instanceof HTMLInputElement ||
+          field instanceof HTMLTextAreaElement ||
+          field instanceof HTMLSelectElement
+        ) {
+          return field.value.trim();
+        }
+        return '';
+      };
+      const currentValues = form.getValues();
+      const registerValues = {
+        email:
+          readDomValue('email') || readFormDataValue('email') || currentValues.email || data.email,
+        password: currentValues.password || data.password,
+        referralCode:
+          readDomValue('referralCode') ||
+          readFormDataValue('referralCode') ||
+          currentValues.referralCode ||
+          data.referralCode,
+      };
       const res = (await apiClient.post(
         '/auth/register',
         {
-          email: data.email,
-          password: data.password,
-          ...(data.referralCode ? { referralCode: data.referralCode } : {}),
+          email: registerValues.email,
+          password: registerValues.password,
+          ...(registerValues.referralCode ? { referralCode: registerValues.referralCode } : {}),
         },
         { skipAuth: true }
       )) as {
@@ -163,30 +223,122 @@ export default function RegisterPage() {
 
       // Auto-login: store auth state from register response
       setAuthFromLogin(res.user, res.accessToken);
+      await new Promise<void>((resolve) => {
+        window.requestAnimationFrame(() => resolve());
+      });
+
+      const onboardingCurrentValues = form.getValues();
+      const scoreFieldMap = {
+        toeflScore: scoreValuesRef.current.toeflScore,
+        ieltsScore: scoreValuesRef.current.ieltsScore,
+        satScore: scoreValuesRef.current.satScore,
+        actScore: scoreValuesRef.current.actScore,
+      } satisfies Record<'toeflScore' | 'ieltsScore' | 'satScore' | 'actScore', string>;
+      const readOnboardingValue = (
+        name:
+          | 'realName'
+          | 'birthYear'
+          | 'birthMonth'
+          | 'birthDay'
+          | 'gradYear'
+          | 'gradMonth'
+          | 'toeflScore'
+          | 'ieltsScore'
+          | 'satScore'
+          | 'actScore'
+      ) => {
+        const currentValue = onboardingCurrentValues[name];
+        const formValue = data[name];
+        const scoreValue =
+          name in scoreFieldMap ? scoreFieldMap[name as keyof typeof scoreFieldMap] : '';
+        return (
+          readDomValue(name) ||
+          scoreValue ||
+          readFormDataValue(name) ||
+          (typeof currentValue === 'string' ? currentValue : '') ||
+          (typeof formValue === 'string' ? formValue : '')
+        );
+      };
+      const resolvedValues: RegisterForm = {
+        email: registerValues.email,
+        password: registerValues.password,
+        confirmPassword: onboardingCurrentValues.confirmPassword || data.confirmPassword,
+        agreeTerms: onboardingCurrentValues.agreeTerms || data.agreeTerms,
+        realName: readOnboardingValue('realName') || '',
+        birthYear: readOnboardingValue('birthYear') || '',
+        birthMonth: readOnboardingValue('birthMonth') || '',
+        birthDay: readOnboardingValue('birthDay') || '',
+        gradYear: readOnboardingValue('gradYear') || '',
+        gradMonth: readOnboardingValue('gradMonth') || '',
+        toeflScore: readOnboardingValue('toeflScore') || '',
+        ieltsScore: readOnboardingValue('ieltsScore') || '',
+        satScore: readOnboardingValue('satScore') || '',
+        actScore: readOnboardingValue('actScore') || '',
+        referralCode: registerValues.referralCode || '',
+      };
 
       const birthday =
-        data.birthYear && data.birthMonth && data.birthDay
-          ? `${data.birthYear}-${data.birthMonth}-${data.birthDay}`
+        resolvedValues.birthYear && resolvedValues.birthMonth && resolvedValues.birthDay
+          ? `${resolvedValues.birthYear}-${resolvedValues.birthMonth}-${resolvedValues.birthDay}`
           : null;
 
       const graduationDate =
-        data.gradYear && data.gradMonth ? `${data.gradYear}-${data.gradMonth}-01` : null;
+        resolvedValues.gradYear && resolvedValues.gradMonth
+          ? `${resolvedValues.gradYear}-${resolvedValues.gradMonth}-01`
+          : null;
 
       const onboardingData = {
-        realName: data.realName,
+        realName: resolvedValues.realName,
         birthday,
         graduationDate,
         testScores: [
-          ...(data.toeflScore ? [{ type: 'TOEFL', score: parseInt(data.toeflScore, 10) }] : []),
-          ...(data.ieltsScore ? [{ type: 'IELTS', score: parseFloat(data.ieltsScore) }] : []),
-          ...(data.satScore ? [{ type: 'SAT', score: parseInt(data.satScore, 10) }] : []),
-          ...(data.actScore ? [{ type: 'ACT', score: parseInt(data.actScore, 10) }] : []),
+          ...(resolvedValues.toeflScore
+            ? [{ type: 'TOEFL', score: parseInt(resolvedValues.toeflScore, 10) }]
+            : []),
+          ...(resolvedValues.ieltsScore
+            ? [{ type: 'IELTS', score: parseFloat(resolvedValues.ieltsScore) }]
+            : []),
+          ...(resolvedValues.satScore
+            ? [{ type: 'SAT', score: parseInt(resolvedValues.satScore, 10) }]
+            : []),
+          ...(resolvedValues.actScore
+            ? [{ type: 'ACT', score: parseInt(resolvedValues.actScore, 10) }]
+            : []),
         ],
       };
+      writeRegisterDebug({
+        phase: 'before-onboarding-post',
+        scoreValuesRef: { ...scoreValuesRef.current },
+        currentValues: onboardingCurrentValues,
+        domValues: {
+          email: readDomValue('email'),
+          realName: readDomValue('realName'),
+          toeflScore: readDomValue('toeflScore'),
+          ieltsScore: readDomValue('ieltsScore'),
+          satScore: readDomValue('satScore'),
+          actScore: readDomValue('actScore'),
+        },
+        snapshotValues: {
+          email: readFormDataValue('email'),
+          realName: readFormDataValue('realName'),
+          toeflScore: readFormDataValue('toeflScore'),
+          ieltsScore: readFormDataValue('ieltsScore'),
+          satScore: readFormDataValue('satScore'),
+          actScore: readFormDataValue('actScore'),
+        },
+        resolvedValues,
+        onboardingData,
+      });
 
       // POST onboarding data directly (auth token already in memory from setAuthFromLogin)
       try {
         await apiClient.post('/profiles/onboarding', onboardingData);
+        writeRegisterDebug({
+          phase: 'onboarding-post-succeeded',
+          scoreValuesRef: { ...scoreValuesRef.current },
+          resolvedValues,
+          onboardingData,
+        });
       } catch {
         // Fallback: store in sessionStorage for dashboard retry
         try {
@@ -194,6 +346,13 @@ export default function RegisterPage() {
         } catch {
           /* private browsing */
         }
+        writeRegisterDebug({
+          phase: 'onboarding-post-failed',
+          scoreValuesRef: { ...scoreValuesRef.current },
+          resolvedValues,
+          onboardingData,
+          pendingOnboardingStored: true,
+        });
       }
 
       toast.success(t('auth.register.success'));
@@ -224,13 +383,14 @@ export default function RegisterPage() {
              so fields stay mounted and react-hook-form retains their values */}
         <Form {...form}>
           <form
+            ref={formRef}
             noValidate
             onSubmit={(e) => {
               e.preventDefault();
               if (isLastStep) {
-                form.handleSubmit(onSubmit)();
+                void form.handleSubmit((values, submitEvent) => onSubmit(values, submitEvent))(e);
               } else {
-                handleNext();
+                void handleNext();
               }
             }}
           >
@@ -252,7 +412,15 @@ export default function RegisterPage() {
 
               {/* Step 2: Scores */}
               <div className={cn(currentStep !== 2 && 'hidden')}>
-                <RegisterStepScores form={form} />
+                <RegisterStepScores
+                  form={form}
+                  values={scoreValues}
+                  onValueChange={(field, value) => {
+                    const nextValues = { ...scoreValuesRef.current, [field]: value };
+                    scoreValuesRef.current = nextValues;
+                    setScoreValues(nextValues);
+                  }}
+                />
               </div>
             </div>
 

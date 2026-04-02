@@ -32,6 +32,17 @@ export interface SwipeCaseDto {
   apCount?: number;
 }
 
+export interface SwipeBatchMetaDto {
+  totalAvailable: number;
+  totalSwiped: number;
+  hasMore: boolean;
+}
+
+export interface SwipeBatchResultDto {
+  cases: SwipeCaseDto[];
+  meta: SwipeBatchMetaDto;
+}
+
 export interface SwipeResultDto {
   caseId: string;
   prediction: 'admit' | 'reject' | 'waitlist';
@@ -40,7 +51,7 @@ export interface SwipeResultDto {
   currentStreak: number;
   pointsEarned: number;
   badgeUpgraded: boolean;
-  currentBadge: 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM' | 'DIAMOND';
+  currentBadge: string;
 }
 
 export interface SwipeStatsDto {
@@ -58,12 +69,17 @@ export interface SwipeStatsDto {
 export interface LeaderboardEntryDto {
   rank: number;
   userId: string;
-  nickname?: string;
-  avatarUrl?: string;
+  userName?: string;
   accuracy: number;
   totalSwipes: number;
+  correctCount?: number;
   badge: string;
   isCurrentUser?: boolean;
+}
+
+export interface LeaderboardDto {
+  entries: LeaderboardEntryDto[];
+  currentUserEntry?: LeaderboardEntryDto;
 }
 
 export type PredictionType = 'admit' | 'reject' | 'waitlist';
@@ -82,27 +98,27 @@ export const BATCH_SIZE = 5;
 export const RELOAD_THRESHOLD = 2;
 
 export const BADGE_COLORS: Record<string, string> = {
-  BRONZE: '#CD7F32',
-  SILVER: '#C0C0C0',
-  GOLD: '#FFD700',
-  PLATINUM: '#E5E4E2',
-  DIAMOND: '#B9F2FF',
+  bronze: '#CD7F32',
+  silver: '#C0C0C0',
+  gold: '#FFD700',
+  platinum: '#E5E4E2',
+  diamond: '#B9F2FF',
 };
 
 export const BADGE_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
-  BRONZE: 'shield-outline',
-  SILVER: 'shield-half-outline',
-  GOLD: 'shield',
-  PLATINUM: 'diamond-outline',
-  DIAMOND: 'diamond',
+  bronze: 'shield-outline',
+  silver: 'shield-half-outline',
+  gold: 'shield',
+  platinum: 'diamond-outline',
+  diamond: 'diamond',
 };
 
 export const BADGE_THRESHOLDS: Record<string, number> = {
-  BRONZE: 0,
-  SILVER: 100,
-  GOLD: 500,
-  PLATINUM: 2000,
-  DIAMOND: 5000,
+  bronze: 0,
+  silver: 100,
+  gold: 500,
+  platinum: 2000,
+  diamond: 5000,
 };
 
 // ---------------------------------------------------------------------------
@@ -128,8 +144,14 @@ export function getTierBgColor(rank?: number): string {
 }
 
 export function getNextBadge(badge: string): string {
-  const order = ['BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND'];
-  const idx = order.indexOf(badge);
+  const normalized = normalizeBadge(badge);
+  const order = ['bronze', 'silver', 'gold', 'platinum', 'diamond'];
+  const idx = order.indexOf(normalized);
   if (idx < order.length - 1) return order[idx + 1];
-  return badge;
+  return normalized;
+}
+
+export function normalizeBadge(badge?: string | null): string {
+  if (!badge) return 'bronze';
+  return badge.toLowerCase();
 }

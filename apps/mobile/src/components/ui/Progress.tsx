@@ -224,7 +224,12 @@ export function CircularProgress({
             </Text>
           )}
           {label && (
-            <Text style={[styles.circularLabel, { color: colors.foregroundMuted }]}>{label}</Text>
+            <Text
+              style={[styles.circularLabel, { color: colors.foregroundMuted }]}
+              numberOfLines={2}
+            >
+              {label}
+            </Text>
           )}
         </View>
       )}
@@ -267,14 +272,20 @@ const styles = StyleSheet.create({
   circularContent: {
     position: 'absolute',
     alignItems: 'center',
+    justifyContent: 'center',
+    width: '72%',
+    paddingHorizontal: spacing.xs,
   },
   circularValue: {
     fontSize: fontSize.lg,
     fontWeight: fontWeight.bold,
+    textAlign: 'center',
   },
   circularLabel: {
     fontSize: fontSize.xs,
     marginTop: 2,
+    lineHeight: 14,
+    textAlign: 'center',
   },
 });
 

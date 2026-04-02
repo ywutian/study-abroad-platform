@@ -12,12 +12,12 @@ import {
   CardHeader,
   CardTitle,
   Badge,
-  Avatar,
   Button,
   Loading,
   ErrorState,
   Skeleton,
 } from '@/components/ui';
+import { SchoolAvatar } from '@/components/features/SchoolAvatar';
 import { Tabs } from '@/components/ui/Tabs';
 import { API_ROUTES, schoolRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
@@ -76,7 +76,7 @@ export default function SchoolDetailScreen() {
     queryKey: ['schoolCases', id],
     queryFn: () =>
       apiClient.get<PaginatedResponse<Case>>(API_ROUTES.CASES, {
-        params: { schoolId: id, limit: 10 },
+        params: { schoolId: id, page: 1, pageSize: 10 },
       }),
     enabled: !!id,
   });
@@ -352,7 +352,13 @@ export default function SchoolDetailScreen() {
           entering={FadeInDown.duration(400).springify()}
           style={[styles.header, { backgroundColor: colors.card }]}
         >
-          <Avatar source={school.logoUrl} name={school.name} size="xl" style={styles.logo} />
+          <SchoolAvatar
+            name={school.name}
+            logoUrl={school.logoUrl}
+            website={school.website}
+            size="xl"
+            style={styles.logo}
+          />
           <Text style={[styles.name, { color: colors.foreground }]}>{school.name}</Text>
           {school.nameZh && (
             <Text style={[styles.nameZh, { color: colors.foregroundMuted }]}>{school.nameZh}</Text>

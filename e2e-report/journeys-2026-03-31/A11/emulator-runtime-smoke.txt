@@ -1,0 +1,14 @@
+2026-04-02 follow-up emulator rerun on Android AVD `Medium_Phone_API_36.1`
+
+- Local API health: `GET /health` returned 200 with database and redis `ok`
+- Local feature seed rerun after infra recovery; public `/cases?page=1&pageSize=5` returned seeded records
+- Fresh emulator screenshots captured after fixing mobile API-contract drift and AI response handling
+- Verified user-visible screens with the seeded Alice session:
+  - Home
+  - Schools
+  - Cases
+  - AI auto mode (`Analyze my profile`)
+  - Profile
+  - Forum
+  - Notifications
+- Remaining blocker stayed unchanged: real Android remote push still requires Firebase / FCM native setup and cannot be completed on the current product configuration

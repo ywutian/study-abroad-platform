@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotificationController } from './notification.controller';
 import { NotificationService } from './notification.service';
+import { RegisterPushTokenDto } from './dto/register-push-token.dto';
 
 describe('NotificationController', () => {
   let controller: NotificationController;
@@ -32,6 +33,7 @@ describe('NotificationController', () => {
           useValue: {
             getNotifications: jest.fn().mockResolvedValue([mockNotification]),
             getUnreadCount: jest.fn().mockResolvedValue(5),
+            registerPushToken: jest.fn().mockResolvedValue(undefined),
             markAsRead: jest.fn().mockResolvedValue(true),
             markAllAsRead: jest.fn().mockResolvedValue(3),
             deleteNotification: jest.fn().mockResolvedValue(true),
@@ -82,6 +84,24 @@ describe('NotificationController', () => {
 
       expect(notificationService.getUnreadCount).toHaveBeenCalledWith('user-1');
       expect(result).toEqual({ count: 5 });
+    });
+  });
+
+  describe('registerPushToken', () => {
+    it('should call notificationService.registerPushToken with userId and dto', async () => {
+      const body: RegisterPushTokenDto = {
+        token: 'ExponentPushToken[test-token]',
+        platform: 'android',
+      };
+
+      const result = await controller.registerPushToken(mockUser as any, body);
+
+      expect(notificationService.registerPushToken).toHaveBeenCalledWith(
+        'user-1',
+        'ExponentPushToken[test-token]',
+        'android',
+      );
+      expect(result).toEqual({ success: true });
     });
   });
 

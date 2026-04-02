@@ -267,7 +267,7 @@ export default function PredictionScreen() {
       {/* Predictions List */}
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-          {t('prediction.results')}
+          {t('prediction.resultsTitle')}
         </Text>
 
         {predictionsLoading ? (
@@ -346,7 +346,9 @@ export default function PredictionScreen() {
 
                   <View style={styles.cardFooter}>
                     <Text style={[styles.confidence, { color: colors.foregroundMuted }]}>
-                      {t('prediction.confidence', { value: prediction.confidence })}
+                      {t('prediction.confidence', {
+                        value: t(`prediction.${prediction.confidence}`),
+                      })}
                     </Text>
                     <TouchableOpacity
                       onPress={() => openReportModal(prediction.schoolId)}

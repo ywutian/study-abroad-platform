@@ -212,6 +212,35 @@ describe('ProfileController', () => {
         message: 'Onboarding completed',
       });
     });
+
+    it('should create onboarding test scores with user ownership', async () => {
+      const dto = {
+        realName: 'Test User',
+        testScores: [
+          { type: 'TOEFL', score: 110 },
+          { type: 'SAT', score: 1520 },
+        ],
+      };
+
+      await controller.completeOnboarding(mockUser as any, dto as any);
+
+      expect(profileService.createTestScore).toHaveBeenNthCalledWith(
+        1,
+        'user-1',
+        {
+          type: 'TOEFL',
+          score: 110,
+        },
+      );
+      expect(profileService.createTestScore).toHaveBeenNthCalledWith(
+        2,
+        'user-1',
+        {
+          type: 'SAT',
+          score: 1520,
+        },
+      );
+    });
   });
 
   // ============================================

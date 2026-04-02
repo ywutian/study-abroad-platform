@@ -262,3 +262,83 @@ export function createRecommendationLetterSchema(t: (key: string) => string) {
 export type RecommendationLetterFormValues = z.infer<
   ReturnType<typeof createRecommendationLetterSchema>
 >;
+
+// ─── Submit Case Schema ───
+
+const CASE_RESULT_VALUES = ['ADMITTED', 'REJECTED', 'WAITLISTED', 'DEFERRED'] as const;
+
+const CASE_ROUND_VALUES = ['ED', 'ED2', 'EA', 'REA', 'RD', 'UC', ''] as const;
+
+const CASE_VISIBILITY_VALUES = ['PUBLIC', 'ANONYMOUS', 'VERIFIED_ONLY'] as const;
+
+export function createSubmitCaseSchema(t: (key: string) => string) {
+  return z.object({
+    year: z.string().min(1),
+    round: z.enum(CASE_ROUND_VALUES).default(''),
+    result: z.enum(CASE_RESULT_VALUES, {
+      required_error: t('validation.resultRequired'),
+    }),
+    major: z.string().max(200).optional(),
+    gpaRange: z.string().optional(),
+    gpa9: z.string().optional(),
+    gpa10: z.string().optional(),
+    gpa11: z.string().optional(),
+    gpa12: z.string().optional(),
+    ucCappedGpa: z.string().optional(),
+    ucUncappedGpa: z.string().optional(),
+    gpaScale: z.string().default('4.0'),
+    satRange: z.string().optional(),
+    actRange: z.string().optional(),
+    toeflRange: z.string().optional(),
+    nationality: z.string().optional(),
+    apCount: z.string().optional(),
+    apSubjects: z.string().optional(),
+    ibScore: z.string().optional(),
+    narrative: z.string().max(5000).optional(),
+    tags: z.string().optional(),
+    activityList: z.string().max(10000).optional(),
+    essayType: z.string().optional(),
+    essayPrompt: z.string().optional(),
+    essayContent: z.string().optional(),
+    visibility: z.enum(CASE_VISIBILITY_VALUES).default('ANONYMOUS'),
+  });
+}
+
+export type SubmitCaseFormValues = z.infer<ReturnType<typeof createSubmitCaseSchema>>;
+
+// ─── Education Schema ───
+
+const SCHOOL_TYPE_VALUES = ['HIGH_SCHOOL', 'COLLEGE', 'GRADUATE', 'OTHER', ''] as const;
+
+export function createEducationSchema(t: (key: string) => string) {
+  return z.object({
+    schoolName: z.string().min(1, t('validation.schoolNameRequired')).max(200),
+    schoolType: z.enum(SCHOOL_TYPE_VALUES).default(''),
+    degree: z.string().max(200).optional(),
+    major: z.string().max(200).optional(),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+    gpa: z.string().optional(),
+    gpaScale: z.string().default('4.0'),
+    gpaSystem: z.string().optional(),
+    description: z.string().max(2000).optional(),
+    highSchoolId: z.string().optional(),
+  });
+}
+
+export type EducationFormValues = z.infer<ReturnType<typeof createEducationSchema>>;
+
+// ─── Create List Schema ───
+
+const LIST_CATEGORY_VALUES = ['school_ranking', 'major_ranking', 'tips', 'other'] as const;
+
+export function createListSchema(t: (key: string) => string) {
+  return z.object({
+    title: z.string().min(1, t('validation.titleRequired')).max(100, t('validation.titleTooLong')),
+    description: z.string().max(500).optional(),
+    category: z.enum(LIST_CATEGORY_VALUES).default('school_ranking'),
+    isPublic: z.boolean().default(true),
+  });
+}
+
+export type ListFormValues = z.infer<ReturnType<typeof createListSchema>>;

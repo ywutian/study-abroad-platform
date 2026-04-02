@@ -1,0 +1,59 @@
+{
+  "id": "A11",
+  "title": "移动端一致性",
+  "account": "alice.zhang@demo.studyabroad.com",
+  "prerequisites": [
+    "Local API recovered after `docker compose up -d db redis`, `pnpm --filter api db:push`, `pnpm --filter api db:seed`, and `pnpm --filter api exec ts-node prisma/seed-all-features.ts`",
+    "Android emulator `Medium_Phone_API_36.1` running against Metro + local API",
+    "USB-connected physical Android phone PCT_AL10 with local Android dev build installed",
+    "apps/mobile/.env pointed to local API via http://10.0.0.195:4101 and real EAS project ID 2ae702ae-a367-490c-817a-e77626f710b7",
+    "Dev-only auto login enabled for alice.zhang@demo.studyabroad.com"
+  ],
+  "steps": [
+    "After recovering local infra and reseeding feature data, re-ran the Android emulator against the live local backend and verified Home, Schools, Cases, AI auto mode, Profile, Forum, and Notifications with the seeded Alice session.",
+    "Launched the standalone Android dev build on the USB-connected PCT_AL10 phone after rebuilding `com.studyabroad.mobile` locally.",
+    "Verified that the app auto-logged into the seeded Alice account and rendered the real Home session while talking to the local API over LAN / adb reverse.",
+    "Confirmed the standalone Android dev build still resolves the production `studyabroad://timeline` deep link against the real `com.studyabroad.mobile` package.",
+    "Observed real-device push registration fail in Metro and on-device runtime warnings before any Expo push token could be issued."
+  ],
+  "userVisibleResult": "On the Android emulator, the applicant session now renders real Home, Schools, Cases, AI, Profile, Forum, and Notifications data end-to-end against the local backend, and AI auto mode returns a full answer. On the real Android phone, the standalone `studyabroad://timeline` deep link still lands on Timeline. The audit remains open only because true remote push delivery still cannot start: push registration fails on-device with `Default FirebaseApp is not initialized in this process com.studyabroad.mobile`.",
+  "score": 3,
+  "status": "BLOCKED",
+  "evidence": [
+    "e2e-report/journeys-2026-03-31/A11/01-home.png",
+    "e2e-report/journeys-2026-03-31/A11/02-profile.png",
+    "e2e-report/journeys-2026-03-31/A11/03-prediction.png",
+    "e2e-report/journeys-2026-03-31/A11/04-timeline-deeplink.png",
+    "e2e-report/journeys-2026-03-31/A11/05-standalone-scheme-timeline.png",
+    "e2e-report/journeys-2026-03-31/A11/06-real-device-push-blocker.png",
+    "e2e-report/journeys-2026-03-31/A11/07-emulator-home.png",
+    "e2e-report/journeys-2026-03-31/A11/08-emulator-schools.png",
+    "e2e-report/journeys-2026-03-31/A11/09-emulator-cases.png",
+    "e2e-report/journeys-2026-03-31/A11/10-emulator-ai-answer.png",
+    "e2e-report/journeys-2026-03-31/A11/11-emulator-profile.png",
+    "e2e-report/journeys-2026-03-31/A11/12-emulator-forum.png",
+    "e2e-report/journeys-2026-03-31/A11/13-emulator-notifications.png",
+    "e2e-report/journeys-2026-03-31/A11/deep-link-results.txt",
+    "e2e-report/journeys-2026-03-31/A11/emulator-runtime-smoke.txt",
+    "e2e-report/journeys-2026-03-31/A11/push-limitations.txt"
+  ],
+  "notes": [
+    "iOS simulator is unavailable in this session because CoreSimulatorService could not be reached.",
+    "Startup crash is no longer reproducible after the mobile foundation fixes landed.",
+    "The earlier emulator report of 'no data / AI broken' reproduced as a mix of local infra downtime, stale mobile cache, API-contract drift, and over-aggressive client response unwrapping; all four were fixed before the follow-up rerun.",
+    "Android emulator rerun now shows seeded Home / Schools / Cases data and a complete AI answer for `Analyze my profile`.",
+    "Unread-count state was observed to stay consistent with the live backend while moving between Home and Notifications.",
+    "Expo Go route deep links (`exp://.../--/timeline`, `exp://.../--/prediction`) worked.",
+    "The standalone Android dev build resolved `studyabroad://timeline` into the real Timeline screen under `com.studyabroad.mobile`.",
+    "Physical-device Metro logs and the on-device warning overlay both reported `Default FirebaseApp is not initialized in this process com.studyabroad.mobile`."
+  ],
+  "issues": [
+    {
+      "summary": "The only remaining A11 blocker is real remote push delivery on Android.",
+      "rootCause": "Mobile core runtime is now passing on the emulator and the standalone Android dev build still resolves production deep links. The unresolved piece is Android remote push registration: `Notifications.getExpoPushTokenAsync` fails because `apps/mobile/android/app/google-services.json` is missing, so `com.google.gms.google-services` cannot initialize Firebase / FCM and the runtime throws `Default FirebaseApp is not initialized in this process com.studyabroad.mobile`.",
+      "acceptance": "Either add valid Android Firebase / FCM credentials at `apps/mobile/android/app/google-services.json`, rebuild the physical-device dev build, and verify a real push arrives / opens correctly, or formally remove Android remote push from the active stop condition if the product does not intend to support it."
+    }
+  ],
+  "generatedAt": "2026-04-02T01:03:40Z",
+  "collectedAt": "2026-04-02T01:03:40Z"
+}

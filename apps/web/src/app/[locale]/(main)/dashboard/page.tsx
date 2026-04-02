@@ -107,14 +107,20 @@ export default function DashboardPage() {
     if (typeof window === 'undefined') return;
     const raw = sessionStorage.getItem('pendingOnboarding');
     if (!raw) return;
-    sessionStorage.removeItem('pendingOnboarding');
+
     try {
       const data = JSON.parse(raw);
-      apiClient.post('/profiles/onboarding', data).catch(() => {
-        // Silently fail — data was already attempted during registration
-      });
+
+      apiClient
+        .post('/profiles/onboarding', data)
+        .then(() => {
+          sessionStorage.removeItem('pendingOnboarding');
+        })
+        .catch(() => {
+          // Keep the payload for the next dashboard recovery attempt.
+        });
     } catch {
-      // Invalid JSON — discard
+      sessionStorage.removeItem('pendingOnboarding');
     }
   }, []);
 

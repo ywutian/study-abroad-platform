@@ -125,6 +125,7 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
               className
             )}
             aria-invalid={!!error}
+            aria-required={required || undefined}
             aria-describedby={error ? `${id}-error` : helperText ? `${id}-helper` : undefined}
             {...props}
           />

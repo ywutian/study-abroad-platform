@@ -34,14 +34,27 @@ import { apiClient } from '@/lib/api/client';
 interface UserProfile {
   nickname?: string;
   avatarUrl?: string;
+  realName?: string;
   grade?: string;
   targetMajor?: string;
 }
 
 interface UserWithProfile {
   id: string;
-  email: string;
+  email?: string;
   profile?: UserProfile;
+}
+
+interface FollowerRecord {
+  follower: UserWithProfile;
+}
+
+interface FollowingRecord {
+  following: UserWithProfile;
+}
+
+interface BlockedRecord {
+  blocked: UserWithProfile;
 }
 
 interface Conversation {
@@ -73,7 +86,10 @@ export default function FollowersPage() {
     refetch: refetchFollowers,
   } = useQuery({
     queryKey: ['chat', 'followers'],
-    queryFn: () => apiClient.get<UserWithProfile[]>(`${API_ROUTES.CHATS}/followers`),
+    queryFn: async () => {
+      const records = await apiClient.get<FollowerRecord[]>(`${API_ROUTES.CHATS}/followers`);
+      return records.map((record) => record.follower);
+    },
   });
 
   const {
@@ -82,7 +98,10 @@ export default function FollowersPage() {
     refetch: refetchFollowing,
   } = useQuery({
     queryKey: ['chat', 'following'],
-    queryFn: () => apiClient.get<UserWithProfile[]>(`${API_ROUTES.CHATS}/following`),
+    queryFn: async () => {
+      const records = await apiClient.get<FollowingRecord[]>(`${API_ROUTES.CHATS}/following`);
+      return records.map((record) => record.following);
+    },
   });
 
   const {
@@ -91,7 +110,10 @@ export default function FollowersPage() {
     refetch: refetchBlocked,
   } = useQuery({
     queryKey: ['chat', 'blocked'],
-    queryFn: () => apiClient.get<UserWithProfile[]>(`${API_ROUTES.CHATS}/blocked`),
+    queryFn: async () => {
+      const records = await apiClient.get<BlockedRecord[]>(`${API_ROUTES.CHATS}/blocked`);
+      return records.map((record) => record.blocked);
+    },
   });
 
   const { data: recommendations } = useQuery({
@@ -179,13 +201,13 @@ export default function FollowersPage() {
   const isFollowing = useCallback((userId: string) => followingIds.has(userId), [followingIds]);
 
   const getDisplayName = (user: UserWithProfile): string =>
-    user.profile?.nickname || user.email.split('@')[0];
+    user.profile?.realName || user.profile?.nickname || user.email?.split('@')[0] || 'User';
 
   const getSubtitle = (user: UserWithProfile): string => {
     const parts: string[] = [];
     if (user.profile?.grade) parts.push(user.profile.grade);
     if (user.profile?.targetMajor) parts.push(user.profile.targetMajor);
-    return parts.length > 0 ? parts.join(' · ') : user.email;
+    return parts.length > 0 ? parts.join(' · ') : user.email || '';
   };
 
   const filterUsers = useCallback(
@@ -196,7 +218,7 @@ export default function FollowersPage() {
       return users.filter(
         (u) =>
           getDisplayName(u).toLowerCase().includes(query) ||
-          u.email.toLowerCase().includes(query) ||
+          u.email?.toLowerCase().includes(query) ||
           u.profile?.targetMajor?.toLowerCase().includes(query)
       );
     },

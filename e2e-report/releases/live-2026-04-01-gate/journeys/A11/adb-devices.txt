@@ -1,0 +1,4 @@
+List of devices attached
+5ENDU19409002997	device
+emulator-5554	device
+

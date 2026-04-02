@@ -1,0 +1,68 @@
+{"at":"2026-04-02T03:43:41.732Z","stage":"turn:start","data":{"turnLabel":"turn-1","prompt":"Remember that my target major is Computer Science and I care about undergraduate research."}}
+{"at":"2026-04-02T03:43:41.732Z","stage":"sendChatPrompt:start","data":{"turnLabel":"turn-1","prompt":"Remember that my target major is Computer Science and I care about undergraduate research."}}
+{"at":"2026-04-02T03:43:41.735Z","stage":"sendChatPrompt:textarea-visible","data":{"turnLabel":"turn-1"}}
+{"at":"2026-04-02T03:43:41.743Z","stage":"sendChatPrompt:composer-ready","data":{"turnLabel":"turn-1"}}
+{"at":"2026-04-02T03:43:43.925Z","stage":"sendChatPrompt:typed","data":{"turnLabel":"turn-1","promptLength":90}}
+{"at":"2026-04-02T03:43:43.926Z","stage":"sendChatPrompt:value-confirmed","data":{"turnLabel":"turn-1"}}
+{"at":"2026-04-02T03:43:43.927Z","stage":"sendChatPrompt:send-enabled","data":{"turnLabel":"turn-1"}}
+{"at":"2026-04-02T03:43:43.979Z","stage":"sendChatPrompt:send-clicked","data":{"turnLabel":"turn-1"}}
+{"at":"2026-04-02T03:43:43.981Z","stage":"sendChatPrompt:submit-signalled","data":{"turnLabel":"turn-1","handleSendCount":1,"fetchStartCount":1,"finalizeCount":0,"hasStopButton":false}}
+{"at":"2026-04-02T03:43:43.982Z","stage":"sendChatPrompt:assistant-waiting","data":{"turnLabel":"turn-1","elapsedMs":1,"finalizeCount":0,"hasNewAssistantOutput":true,"hasStopButton":false,"textCount":1,"lastTextLength":90}}
+{"at":"2026-04-02T03:43:48.002Z","stage":"sendChatPrompt:assistant-complete","data":{"turnLabel":"turn-1","finalizeCount":1}}
+{"at":"2026-04-02T03:43:49.007Z","stage":"sendChatPrompt:return","data":{"turnLabel":"turn-1","messageLength":226}}
+{"at":"2026-04-02T03:43:49.008Z","stage":"turn:complete","data":{"turnLabel":"turn-1","responseLength":226}}
+{"at":"2026-04-02T03:43:49.009Z","stage":"turn:start","data":{"turnLabel":"turn-2","prompt":"Give me 3 priorities for April."}}
+{"at":"2026-04-02T03:43:49.009Z","stage":"sendChatPrompt:start","data":{"turnLabel":"turn-2","prompt":"Give me 3 priorities for April."}}
+{"at":"2026-04-02T03:43:49.013Z","stage":"sendChatPrompt:textarea-visible","data":{"turnLabel":"turn-2"}}
+{"at":"2026-04-02T03:43:49.014Z","stage":"sendChatPrompt:composer-ready","data":{"turnLabel":"turn-2"}}
+{"at":"2026-04-02T03:43:49.785Z","stage":"sendChatPrompt:typed","data":{"turnLabel":"turn-2","promptLength":31}}
+{"at":"2026-04-02T03:43:49.787Z","stage":"sendChatPrompt:value-confirmed","data":{"turnLabel":"turn-2"}}
+{"at":"2026-04-02T03:43:49.788Z","stage":"sendChatPrompt:send-enabled","data":{"turnLabel":"turn-2"}}
+{"at":"2026-04-02T03:43:49.825Z","stage":"sendChatPrompt:send-clicked","data":{"turnLabel":"turn-2"}}
+{"at":"2026-04-02T03:43:49.828Z","stage":"sendChatPrompt:submit-signalled","data":{"turnLabel":"turn-2","handleSendCount":2,"fetchStartCount":2,"finalizeCount":1,"hasStopButton":false}}
+{"at":"2026-04-02T03:43:49.829Z","stage":"sendChatPrompt:assistant-waiting","data":{"turnLabel":"turn-2","elapsedMs":1,"finalizeCount":1,"hasNewAssistantOutput":true,"hasStopButton":false,"textCount":3,"lastTextLength":31}}
+{"at":"2026-04-02T03:43:54.855Z","stage":"sendChatPrompt:assistant-waiting","data":{"turnLabel":"turn-2","elapsedMs":5027,"finalizeCount":1,"hasNewAssistantOutput":true,"hasStopButton":true,"textCount":4,"lastTextLength":289}}
+{"at":"2026-04-02T03:43:58.873Z","stage":"sendChatPrompt:assistant-complete","data":{"turnLabel":"turn-2","finalizeCount":1}}
+{"at":"2026-04-02T03:43:59.876Z","stage":"sendChatPrompt:return","data":{"turnLabel":"turn-2","messageLength":1107}}
+{"at":"2026-04-02T03:43:59.877Z","stage":"turn:complete","data":{"turnLabel":"turn-2","responseLength":1107}}
+{"at":"2026-04-02T03:43:59.877Z","stage":"turn:start","data":{"turnLabel":"turn-3","prompt":"Now compress those priorities into one weekly checklist."}}
+{"at":"2026-04-02T03:43:59.877Z","stage":"sendChatPrompt:start","data":{"turnLabel":"turn-3","prompt":"Now compress those priorities into one weekly checklist."}}
+{"at":"2026-04-02T03:43:59.880Z","stage":"sendChatPrompt:textarea-visible","data":{"turnLabel":"turn-3"}}
+{"at":"2026-04-02T03:43:59.881Z","stage":"sendChatPrompt:composer-ready","data":{"turnLabel":"turn-3"}}
+{"at":"2026-04-02T03:44:01.282Z","stage":"sendChatPrompt:typed","data":{"turnLabel":"turn-3","promptLength":56}}
+{"at":"2026-04-02T03:44:01.288Z","stage":"sendChatPrompt:value-confirmed","data":{"turnLabel":"turn-3"}}
+{"at":"2026-04-02T03:44:01.289Z","stage":"sendChatPrompt:send-enabled","data":{"turnLabel":"turn-3"}}
+{"at":"2026-04-02T03:44:01.331Z","stage":"sendChatPrompt:send-clicked","data":{"turnLabel":"turn-3"}}
+{"at":"2026-04-02T03:44:01.335Z","stage":"sendChatPrompt:submit-signalled","data":{"turnLabel":"turn-3","handleSendCount":1,"fetchStartCount":1,"finalizeCount":1,"hasStopButton":false}}
+{"at":"2026-04-02T03:44:01.337Z","stage":"sendChatPrompt:assistant-waiting","data":{"turnLabel":"turn-3","elapsedMs":1,"finalizeCount":1,"hasNewAssistantOutput":true,"hasStopButton":false,"textCount":5,"lastTextLength":56}}
+{"at":"2026-04-02T03:44:06.356Z","stage":"sendChatPrompt:assistant-waiting","data":{"turnLabel":"turn-3","elapsedMs":5020,"finalizeCount":2,"hasNewAssistantOutput":true,"hasStopButton":false,"textCount":6,"lastTextLength":799}}
+{"at":"2026-04-02T03:44:07.359Z","stage":"sendChatPrompt:assistant-complete","data":{"turnLabel":"turn-3","finalizeCount":2}}
+{"at":"2026-04-02T03:44:08.362Z","stage":"sendChatPrompt:return","data":{"turnLabel":"turn-3","messageLength":796}}
+{"at":"2026-04-02T03:44:08.362Z","stage":"turn:complete","data":{"turnLabel":"turn-3","responseLength":796}}
+{"at":"2026-04-02T03:44:08.363Z","stage":"turn:start","data":{"turnLabel":"turn-4","prompt":"Which of those items should happen before recommendation letters?"}}
+{"at":"2026-04-02T03:44:08.363Z","stage":"sendChatPrompt:start","data":{"turnLabel":"turn-4","prompt":"Which of those items should happen before recommendation letters?"}}
+{"at":"2026-04-02T03:44:08.366Z","stage":"sendChatPrompt:textarea-visible","data":{"turnLabel":"turn-4"}}
+{"at":"2026-04-02T03:44:08.367Z","stage":"sendChatPrompt:composer-ready","data":{"turnLabel":"turn-4"}}
+{"at":"2026-04-02T03:44:09.932Z","stage":"sendChatPrompt:typed","data":{"turnLabel":"turn-4","promptLength":65}}
+{"at":"2026-04-02T03:44:09.934Z","stage":"sendChatPrompt:value-confirmed","data":{"turnLabel":"turn-4"}}
+{"at":"2026-04-02T03:44:09.935Z","stage":"sendChatPrompt:send-enabled","data":{"turnLabel":"turn-4"}}
+{"at":"2026-04-02T03:44:09.971Z","stage":"sendChatPrompt:send-clicked","data":{"turnLabel":"turn-4"}}
+{"at":"2026-04-02T03:44:09.973Z","stage":"sendChatPrompt:submit-signalled","data":{"turnLabel":"turn-4","handleSendCount":2,"fetchStartCount":2,"finalizeCount":1,"hasStopButton":false}}
+{"at":"2026-04-02T03:44:09.976Z","stage":"sendChatPrompt:assistant-waiting","data":{"turnLabel":"turn-4","elapsedMs":2,"finalizeCount":1,"hasNewAssistantOutput":true,"hasStopButton":false,"textCount":7,"lastTextLength":65}}
+{"at":"2026-04-02T03:44:14.997Z","stage":"sendChatPrompt:assistant-waiting","data":{"turnLabel":"turn-4","elapsedMs":5023,"finalizeCount":1,"hasNewAssistantOutput":true,"hasStopButton":true,"textCount":7,"lastTextLength":65}}
+{"at":"2026-04-02T03:44:18.513Z","stage":"sendChatPrompt:assistant-complete","data":{"turnLabel":"turn-4","finalizeCount":2}}
+{"at":"2026-04-02T03:44:19.516Z","stage":"sendChatPrompt:return","data":{"turnLabel":"turn-4","messageLength":1085}}
+{"at":"2026-04-02T03:44:19.517Z","stage":"turn:complete","data":{"turnLabel":"turn-4","responseLength":1085}}
+{"at":"2026-04-02T03:44:19.517Z","stage":"turn:start","data":{"turnLabel":"turn-5","prompt":"Summarize everything you already know about my preferences in one sentence."}}
+{"at":"2026-04-02T03:44:19.517Z","stage":"sendChatPrompt:start","data":{"turnLabel":"turn-5","prompt":"Summarize everything you already know about my preferences in one sentence."}}
+{"at":"2026-04-02T03:44:19.520Z","stage":"sendChatPrompt:textarea-visible","data":{"turnLabel":"turn-5"}}
+{"at":"2026-04-02T03:44:19.521Z","stage":"sendChatPrompt:composer-ready","data":{"turnLabel":"turn-5"}}
+{"at":"2026-04-02T03:44:21.316Z","stage":"sendChatPrompt:typed","data":{"turnLabel":"turn-5","promptLength":75}}
+{"at":"2026-04-02T03:44:21.318Z","stage":"sendChatPrompt:value-confirmed","data":{"turnLabel":"turn-5"}}
+{"at":"2026-04-02T03:44:21.319Z","stage":"sendChatPrompt:send-enabled","data":{"turnLabel":"turn-5"}}
+{"at":"2026-04-02T03:44:21.359Z","stage":"sendChatPrompt:send-clicked","data":{"turnLabel":"turn-5"}}
+{"at":"2026-04-02T03:44:21.808Z","stage":"sendChatPrompt:submit-signalled","data":{"turnLabel":"turn-5","handleSendCount":2,"fetchStartCount":2,"finalizeCount":1,"hasStopButton":true}}
+{"at":"2026-04-02T03:44:21.809Z","stage":"sendChatPrompt:assistant-waiting","data":{"turnLabel":"turn-5","elapsedMs":1,"finalizeCount":1,"hasNewAssistantOutput":true,"hasStopButton":true,"textCount":9,"lastTextLength":75}}
+{"at":"2026-04-02T03:44:24.820Z","stage":"sendChatPrompt:assistant-complete","data":{"turnLabel":"turn-5","finalizeCount":2}}
+{"at":"2026-04-02T03:44:25.822Z","stage":"sendChatPrompt:return","data":{"turnLabel":"turn-5","messageLength":176}}
+{"at":"2026-04-02T03:44:25.823Z","stage":"turn:complete","data":{"turnLabel":"turn-5","responseLength":176}}

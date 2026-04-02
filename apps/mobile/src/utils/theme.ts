@@ -4,7 +4,7 @@
  * 注：颜色值与 packages/shared/src/design/tokens.ts 保持同步
  * Web 使用 oklch，Mobile 使用对应的 Hex 值
  */
-import { useReducedMotion } from 'react-native-reanimated';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useThemeStore } from '@/stores/theme';
 
 // ==================== 颜色系统 ====================

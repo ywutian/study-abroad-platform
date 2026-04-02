@@ -6,13 +6,13 @@ import Animated, {
   withSpring,
   withTiming,
   runOnJS,
-  useReducedMotion,
   FadeInRight,
   FadeOutLeft,
   Layout,
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useColors, spacing, borderRadius } from '@/utils/theme';
 
 interface AnimatedListItemProps {

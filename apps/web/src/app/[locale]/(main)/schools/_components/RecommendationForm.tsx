@@ -80,7 +80,7 @@ export function RecommendationForm({ onGenerate, preflight }: RecommendationForm
                 />
               </div>
               <div className="space-y-2">
-                <Label>{t('schoolCount')}</Label>
+                <Label>{t('schoolCountLabel')}</Label>
                 <Input
                   type="number"
                   min={3}

@@ -6,10 +6,10 @@ import Animated, {
   withSpring,
   withTiming,
   runOnJS,
-  useReducedMotion,
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useColors, spacing, fontSize, borderRadius, fontWeight } from '@/utils/theme';
 
 type ButtonVariant = 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';

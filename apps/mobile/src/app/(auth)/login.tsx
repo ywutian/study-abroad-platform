@@ -1,13 +1,5 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Link, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,6 +16,10 @@ export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const toast = useToast();
   const login = useAuthStore((state) => state.login);
+  const autoLoginAttemptedRef = useRef(false);
+  const devAutoLoginEnabled = __DEV__ && process.env.EXPO_PUBLIC_AUDIT_AUTO_LOGIN === '1';
+  const devAutoLoginEmail = process.env.EXPO_PUBLIC_AUDIT_AUTO_LOGIN_EMAIL?.trim() ?? '';
+  const devAutoLoginPassword = process.env.EXPO_PUBLIC_AUDIT_AUTO_LOGIN_PASSWORD ?? '';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,13 +28,13 @@ export default function LoginScreen() {
 
   const validate = () => {
     const newErrors: typeof errors = {};
-    
+
     if (!email) {
       newErrors.email = t('auth.errors.emailRequired');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       newErrors.email = t('auth.errors.invalidEmail');
     }
-    
+
     if (!password) {
       newErrors.password = t('auth.errors.passwordRequired');
     } else if (password.length < 8) {
@@ -64,16 +60,55 @@ export default function LoginScreen() {
     }
   };
 
+  useEffect(() => {
+    if (!devAutoLoginEnabled) return;
+
+    if (!email && devAutoLoginEmail) {
+      setEmail(devAutoLoginEmail);
+    }
+
+    if (!password && devAutoLoginPassword) {
+      setPassword(devAutoLoginPassword);
+    }
+  }, [devAutoLoginEmail, devAutoLoginEnabled, devAutoLoginPassword, email, password]);
+
+  useEffect(() => {
+    if (
+      !devAutoLoginEnabled ||
+      autoLoginAttemptedRef.current ||
+      loading ||
+      !devAutoLoginEmail ||
+      !devAutoLoginPassword
+    ) {
+      return;
+    }
+
+    autoLoginAttemptedRef.current = true;
+    setLoading(true);
+
+    void login({
+      email: devAutoLoginEmail,
+      password: devAutoLoginPassword,
+    })
+      .then(() => {
+        toast.success(t('auth.login.loginSuccess'));
+        router.replace('/(tabs)');
+      })
+      .catch((error) => {
+        toast.error(error instanceof Error ? error.message : t('auth.login.loginFailed'));
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [devAutoLoginEmail, devAutoLoginEnabled, devAutoLoginPassword, login, loading, t, toast]);
+
   return (
     <KeyboardAvoidingView
       style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          { paddingTop: insets.top + spacing['2xl'] },
-        ]}
+        contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing['2xl'] }]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -82,9 +117,7 @@ export default function LoginScreen() {
           <View style={[styles.logoContainer, { backgroundColor: colors.primary }]}>
             <Ionicons name="school" size={40} color={colors.primaryForeground} />
           </View>
-          <Text style={[styles.title, { color: colors.foreground }]}>
-            {t('auth.login.title')}
-          </Text>
+          <Text style={[styles.title, { color: colors.foreground }]}>{t('auth.login.title')}</Text>
           <Text style={[styles.subtitle, { color: colors.foregroundMuted }]}>
             {t('auth.login.subtitle')}
           </Text>
@@ -104,9 +137,7 @@ export default function LoginScreen() {
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
-            leftIcon={
-              <Ionicons name="mail-outline" size={20} color={colors.foregroundMuted} />
-            }
+            leftIcon={<Ionicons name="mail-outline" size={20} color={colors.foregroundMuted} />}
           />
 
           <Input
@@ -120,6 +151,8 @@ export default function LoginScreen() {
             error={errors.password}
             secureTextEntry
             autoComplete="password"
+            returnKeyType="go"
+            onSubmitEditing={handleLogin}
             leftIcon={
               <Ionicons name="lock-closed-outline" size={20} color={colors.foregroundMuted} />
             }
@@ -131,12 +164,7 @@ export default function LoginScreen() {
             </Text>
           </Link>
 
-          <Button
-            onPress={handleLogin}
-            loading={loading}
-            size="lg"
-            style={styles.loginButton}
-          >
+          <Button onPress={handleLogin} loading={loading} size="lg" style={styles.loginButton}>
             {t('auth.login.loginButton')}
           </Button>
         </View>
@@ -214,4 +242,3 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.semibold,
   },
 });
-

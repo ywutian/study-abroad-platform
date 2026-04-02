@@ -1,0 +1,4 @@
+page.goto: Target page, context or browser has been closed
+    at applicantSJ1 (/Users/yitianwu/Documents/study-abroad-platform/scripts/runtime-journey-audit-2026-03-31.ts:1098:14)
+    at async runSingleJourney (/Users/yitianwu/Documents/study-abroad-platform/scripts/runtime-journey-audit-2026-03-31.ts:1693:9)
+    at async main (/Users/yitianwu/Documents/study-abroad-platform/scripts/runtime-journey-audit-2026-03-31.ts:1773:7)

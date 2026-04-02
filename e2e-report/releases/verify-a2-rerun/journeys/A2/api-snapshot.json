@@ -1,0 +1,128 @@
+{
+  "createdScore": {
+    "id": "cmngwr44n00e61fetlevhxtaq",
+    "profileId": "cmn7e094w0001vvpil8cc09i0",
+    "type": "DUOLINGO",
+    "score": 145,
+    "subScores": null,
+    "testDate": "2025-10-01T00:00:00.000Z",
+    "createdAt": "2026-04-02T03:21:15.432Z",
+    "updatedAt": "2026-04-02T03:21:15.432Z"
+  },
+  "updatedScore": {
+    "id": "cmngwr44n00e61fetlevhxtaq",
+    "profileId": "cmn7e094w0001vvpil8cc09i0",
+    "type": "DUOLINGO",
+    "score": 150,
+    "subScores": null,
+    "testDate": "2025-10-01T00:00:00.000Z",
+    "createdAt": "2026-04-02T03:21:15.432Z",
+    "updatedAt": "2026-04-02T03:21:15.607Z"
+  },
+  "createdIelts": {
+    "id": "cmnfeg69o004kfwl38f215chn",
+    "profileId": "cmn7e094w0001vvpil8cc09i0",
+    "type": "IELTS",
+    "score": 8,
+    "subScores": null,
+    "testDate": "2025-11-01T00:00:00.000Z",
+    "createdAt": "2026-04-01T02:01:05.724Z",
+    "updatedAt": "2026-04-01T02:01:05.724Z"
+  },
+  "updatedActivity": {
+    "id": "cmngwr4ak00ea1fetbrdpttwa",
+    "profileId": "cmn7e094w0001vvpil8cc09i0",
+    "name": "Audit Shadowing Initiative",
+    "category": "LEADERSHIP",
+    "role": "Lead Coordinator",
+    "organization": "Runtime Audit Lab",
+    "description": "Created during the verify a2 rerun.",
+    "commonAppDescription": null,
+    "startDate": null,
+    "endDate": null,
+    "hoursPerWeek": 3,
+    "weeksPerYear": 8,
+    "isOngoing": true,
+    "order": 0,
+    "gradeLevels": [],
+    "timing": null,
+    "activityTemplateId": null,
+    "createdAt": "2026-04-02T03:21:15.644Z",
+    "updatedAt": "2026-04-02T03:21:15.666Z",
+    "activityTemplate": null
+  },
+  "updatedAward": {
+    "id": "cmngwr4bf00ec1fet5iq4vv2h",
+    "profileId": "cmn7e094w0001vvpil8cc09i0",
+    "name": "Runtime Audit Merit",
+    "level": "SCHOOL",
+    "category": "LEADERSHIP",
+    "year": 2026,
+    "description": "Updated during audit coverage.",
+    "order": 0,
+    "competitionId": null,
+    "createdAt": "2026-04-02T03:21:15.675Z",
+    "updatedAt": "2026-04-02T03:21:15.699Z"
+  },
+  "updatedRecLetter": {
+    "id": "cmngwr4cc00ed1fetxifnqlqx",
+    "userId": "cmn7e094w0000vvpiy2e956xl",
+    "recommenderName": "Dr. Runtime",
+    "recommenderEmail": "runtime@example.com",
+    "recommenderRole": "TEACHER",
+    "subject": "Computer Science",
+    "status": "CONFIRMED",
+    "dueDate": "2026-11-01T00:00:00.000Z",
+    "notes": "Updated during runtime audit.",
+    "createdAt": "2026-04-02T03:21:15.709Z",
+    "updatedAt": "2026-04-02T03:21:15.725Z"
+  },
+  "schoolListItem": {
+    "id": "cmnejvu8h004f10dophwq9rq1",
+    "schoolId": "cmn1htkn80003vqf29zl0f9lr",
+    "school": {
+      "id": "cmn1htkn80003vqf29zl0f9lr",
+      "name": "Stanford University",
+      "nameZh": "斯坦福大学",
+      "usNewsRank": 3,
+      "acceptanceRate": 3.7,
+      "satAvg": 1550,
+      "tuition": 62484,
+      "city": "Stanford",
+      "state": "CA",
+      "testOptional": false,
+      "hasEarlyDecision": false,
+      "acceptsCommonApp": true,
+      "needBlindInternational": false,
+      "website": "https://www.stanford.edu",
+      "scorecardId": "243744",
+      "ipedsId": "243744",
+      "rankings": []
+    },
+    "tier": "REACH",
+    "round": "RD",
+    "notes": "冲刺校 - RD",
+    "isAIRecommended": false,
+    "prediction": {
+      "probability": 0.3283,
+      "tier": "match",
+      "confidence": "high",
+      "source": "prediction",
+      "updatedAt": "2026-04-02T03:14:36.388Z"
+    },
+    "essayPromptCount": 3,
+    "deadlines": [
+      {
+        "round": "REA",
+        "applicationDeadline": "2025-11-01T07:00:00.000Z",
+        "interviewRequired": false
+      },
+      {
+        "round": "RD",
+        "applicationDeadline": "2026-01-01T08:00:00.000Z",
+        "interviewRequired": false
+      }
+    ],
+    "createdAt": "2026-03-31T11:45:28.530Z"
+  }
+}

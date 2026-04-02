@@ -1,0 +1,30 @@
+{
+  "id": "SJ-2",
+  "title": "Web 通知中心 / 通知页",
+  "account": "alice.zhang@demo.studyabroad.com",
+  "prerequisites": ["Admin broadcast permission available", "Applicant logged into the web header"],
+  "steps": [
+    "Broadcast a live system notification as admin to verified users.",
+    "Opened the header notification center and captured unread badge + popover state.",
+    "Marked all as read in the popover, then opened the full `/en/notifications` page."
+  ],
+  "userVisibleResult": "The notification center and full notifications page both rendered and reacted to a live broadcast notification.",
+  "score": 4,
+  "status": "PASS",
+  "evidence": [
+    "e2e-report/releases/live-2026-04-01-gate/journeys/SJ-2/broadcast-response.json",
+    "e2e-report/releases/live-2026-04-01-gate/journeys/SJ-2/01-notification-center.png",
+    "e2e-report/releases/live-2026-04-01-gate/journeys/SJ-2/02-center-after-mark-all.png",
+    "e2e-report/releases/live-2026-04-01-gate/journeys/SJ-2/03-notifications-page.png",
+    "e2e-report/releases/live-2026-04-01-gate/journeys/SJ-2/unread-count.json"
+  ],
+  "notes": ["Unread count after mark-all flow: 0"],
+  "registryVersion": "2026-04-01.v1",
+  "registryStatus": "temporary-child",
+  "executionOwner": "codex",
+  "validationType": "objective",
+  "baselineSmoke": true,
+  "qualityDimensionsChecked": ["layout", "consultancy-quality"],
+  "impactMappingUsed": ["manual-runtime-audit:live-2026-04-01-gate"],
+  "generatedAt": "2026-04-02T03:44:32.153Z"
+}
