@@ -125,6 +125,9 @@ export function AwardForm({ open, onOpenChange, editingAward }: AwardFormProps) 
       toast.success(t('toast.awardAdded'));
       onOpenChange(false);
     },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : t('toast.saveFailed'));
+    },
   });
 
   const updateMutation = useMutation({
@@ -133,6 +136,9 @@ export function AwardForm({ open, onOpenChange, editingAward }: AwardFormProps) 
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(t('toast.awardUpdated'));
       onOpenChange(false);
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : t('toast.saveFailed'));
     },
   });
 

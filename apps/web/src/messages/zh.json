@@ -1165,7 +1165,8 @@
       "addErrorUnavailable": "{school}：该校不提供 {round} 轮次",
       "addErrorGeneric": "{school}：添加失败",
       "schoolRemoved": "学校已移除",
-      "roundUpdated": "轮次已更新"
+      "roundUpdated": "轮次已更新",
+      "saveFailed": "保存失败，请重试"
     },
     "visibilityOptions": {
       "private": "仅自己可见",
@@ -1211,7 +1212,8 @@
       "testTypeRequired": "请选择考试类型",
       "semesterRequired": "请选择学期",
       "yearRequired": "请填写年份",
-      "gpaRequired": "请填写 GPA"
+      "gpaRequired": "请填写 GPA",
+      "schoolNameRequired": "请填写学校名称"
     },
     "recLetter": {
       "title": "推荐信",
@@ -2124,9 +2126,13 @@
       "public": "公开",
       "verifiedOnly": "仅认证用户可见"
     },
+    "validation": {
+      "resultRequired": "请选择申请结果"
+    },
     "toast": {
       "success": "案例提交成功！文书将在审核通过后显示在文书库中。",
       "requiredFields": "请填写必填字段",
+      "submitFailed": "提交失败，请重试",
       "inviteSchoolmates": "案例已分享！邀请你高中的同学也来分享，数据越多预测越准。"
     }
   },
@@ -2509,10 +2515,15 @@
     "schoolsLabel": "学校",
     "addSchool": "添加学校",
     "noSchools": "还没有添加学校",
+    "validation": {
+      "titleRequired": "请输入标题",
+      "titleTooLong": "标题不能超过100个字符"
+    },
     "toast": {
       "success": "榜单创建成功",
       "titleRequired": "请输入标题",
-      "schoolsRequired": "请至少添加一所学校"
+      "schoolsRequired": "请至少添加一所学校",
+      "createFailed": "创建失败，请重试"
     },
     "createButton": "创建",
     "selectSchools": "选择学校"
