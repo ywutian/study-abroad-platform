@@ -194,9 +194,9 @@ git push -u origin feature/your-task-name
 
 确保 PostgreSQL 已启动：`docker compose up -d db`，然后检查 `.env` 中的 `DATABASE_URL`。
 
-### Q: 前端页面 404
+### Q: 前端页面或 dev toolbar 异常
 
-确保使用 Turbopack 模式启动：`pnpm --filter web dev`（Next.js 16 默认使用 Turbopack；如需 Webpack 可使用 `dev:webpack`），详见 [ADR-0001](adr/0001-use-nextjs-turbopack-webpack-fallback.md)。
+默认使用稳定的 Webpack 模式启动：`pnpm web` 或 `pnpm --filter web dev`。如果你需要排查 Turbopack 专属问题，再显式使用 `pnpm web:turbopack`，详见 [ADR-0001](adr/0001-use-nextjs-turbopack-webpack-fallback.md)。
 
 ### Q: 测试失败
 

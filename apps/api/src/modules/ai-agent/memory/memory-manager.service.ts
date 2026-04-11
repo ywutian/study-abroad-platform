@@ -254,6 +254,18 @@ export class MemoryManagerService {
     await this.cache.cacheConversation(conversationId, { title });
   }
 
+  async updateConversationMetadata(
+    conversationId: string,
+    metadata: Record<string, unknown>,
+  ): Promise<void> {
+    const existing = await this.persistent.getConversation(conversationId);
+    const merged = { ...(existing?.metadata || {}), ...metadata };
+    await this.persistent.updateConversation(conversationId, {
+      metadata: merged,
+    });
+    await this.cache.cacheConversation(conversationId, { metadata: merged });
+  }
+
   /**
    * Clear a conversation by ending it (generating a summary) and removing cached data.
    * Used by the Gateway for user-initiated conversation clearing.

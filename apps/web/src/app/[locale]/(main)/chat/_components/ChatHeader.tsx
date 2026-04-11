@@ -12,12 +12,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ArrowLeft, MoreVertical, Flag, Ban, Pin } from 'lucide-react';
+import { ArrowLeft, MoreVertical, Flag, Ban, Pin, Users } from 'lucide-react';
 import type { Conversation } from './types';
-import { getDisplayName } from './utils';
+import { getConversationTitle, getDisplayName } from './utils';
 
 interface ChatHeaderProps {
-  selectedUser: Conversation['otherUser'];
+  conversation: Conversation;
   isOnline: boolean;
   isPinned: boolean;
   onBack: () => void;
@@ -27,7 +27,7 @@ interface ChatHeaderProps {
 }
 
 export function ChatHeader({
-  selectedUser,
+  conversation,
   isOnline,
   isPinned,
   onBack,
@@ -36,6 +36,9 @@ export function ChatHeader({
   onBlock,
 }: ChatHeaderProps) {
   const t = useTranslations();
+  const selectedUser = conversation.otherUser;
+  const isDirect = conversation.kind === 'DIRECT';
+  const title = getConversationTitle(conversation);
 
   return (
     <div className="border-b px-4 py-3 shrink-0">
@@ -50,7 +53,7 @@ export function ChatHeader({
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          {selectedUser && (
+          {isDirect && selectedUser ? (
             <UserProfileCard user={selectedUser}>
               <div className="relative cursor-pointer">
                 <Avatar className="h-10 w-10 border-2 border-background shadow">
@@ -69,14 +72,24 @@ export function ChatHeader({
                 <span className="sr-only">{isOnline ? t('chat.online') : t('chat.offline')}</span>
               </div>
             </UserProfileCard>
+          ) : (
+            <div className="flex h-10 w-10 items-center justify-center rounded-full border bg-muted/50 text-muted-foreground">
+              <Users className="h-5 w-5" />
+            </div>
           )}
           <div>
             <p className="font-medium flex items-center gap-1">
-              {getDisplayName(selectedUser)}
-              {selectedUser?.role === 'VERIFIED' && <VerificationIcon verified size="sm" />}
+              {title}
+              {isDirect && selectedUser?.role === 'VERIFIED' && (
+                <VerificationIcon verified size="sm" />
+              )}
             </p>
             <p className={cn('text-xs', isOnline ? 'text-emerald-500' : 'text-muted-foreground')}>
-              {isOnline ? t('chat.online') : t('chat.offline')}
+              {isDirect
+                ? isOnline
+                  ? t('chat.online')
+                  : t('chat.offline')
+                : `${conversation.participantCount} participants`}
             </p>
           </div>
         </div>
@@ -93,19 +106,23 @@ export function ChatHeader({
               <Pin className="h-4 w-4" />
               {isPinned ? t('chat.unpinConversation') : t('chat.pinConversation')}
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={onReport} className="gap-2">
-              <Flag className="h-4 w-4" />
-              {t('chat.reportUser')}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={onBlock}
-              className="gap-2 text-destructive focus:text-destructive"
-            >
-              <Ban className="h-4 w-4" />
-              {t('chat.blockUser')}
-            </DropdownMenuItem>
+            {isDirect && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={onReport} className="gap-2">
+                  <Flag className="h-4 w-4" />
+                  {t('chat.reportUser')}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={onBlock}
+                  className="gap-2 text-destructive focus:text-destructive"
+                >
+                  <Ban className="h-4 w-4" />
+                  {t('chat.blockUser')}
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

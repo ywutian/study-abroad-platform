@@ -4,8 +4,13 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { SchoolFilters } from '@/components/features';
 import { type SelectedSchool } from '@/components/features/schools/FloatingAddButton';
+import {
+  buildSchoolQueryParams,
+  countActiveSchoolFilters,
+  SCHOOL_BROWSE_PAGE_SIZE,
+  type SchoolFilters,
+} from '@/components/features/schools/school-filters';
 import { useRouter } from '@/lib/i18n/navigation';
 import { useAuthStore } from '@/stores/auth';
 import { apiClient, STALE_TIME } from '@/lib/api';
@@ -15,7 +20,7 @@ import { toast } from 'sonner';
 
 import { SchoolFilterBar } from './SchoolFilterBar';
 import { SchoolGrid } from './SchoolGrid';
-import { type School, type Filters } from './schools-types';
+import { type School } from './schools-types';
 
 interface WeightPreset {
   ranking: number;
@@ -43,7 +48,6 @@ export function BrowseTab() {
   const [country, setCountry] = useState('ALL');
   const [sortBy, setSortBy] = useState<'rank' | 'name' | 'acceptance' | 'weighted'>('rank');
   const [advancedFilters, setAdvancedFilters] = useState<SchoolFilters>(defaultAdvancedFilters);
-  const [filters, setFilters] = useState<Filters>({ schoolType: 'ALL', tuitionRange: 'ALL' });
   const [activePreset, setActivePreset] = useState<string>('selectivity');
 
   // Selection state
@@ -51,26 +55,14 @@ export function BrowseTab() {
   const [selectedSchools, setSelectedSchools] = useState<SelectedSchool[]>([]);
 
   // Derived filter counts
-  const activeAdvancedFilterCount = useMemo(() => {
-    let count = 0;
-    if (advancedFilters.rankMin || advancedFilters.rankMax) count++;
-    if (advancedFilters.acceptanceMin || advancedFilters.acceptanceMax) count++;
-    if (advancedFilters.tuitionMin || advancedFilters.tuitionMax) count++;
-    if (advancedFilters.sizeMin || advancedFilters.sizeMax) count++;
-    if (advancedFilters.state) count++;
-    if (advancedFilters.region) count++;
-    if (advancedFilters.schoolType) count++;
-    if (advancedFilters.testOptional) count++;
-    if (advancedFilters.needBlind) count++;
-    if (advancedFilters.hasEarlyDecision) count++;
-    return count;
-  }, [advancedFilters]);
+  const activeAdvancedFilterCount = useMemo(
+    () => countActiveSchoolFilters(advancedFilters, country),
+    [advancedFilters, country]
+  );
 
-  const activeFilterCount =
-    (filters.schoolType !== 'ALL' ? 1 : 0) + (filters.tuitionRange !== 'ALL' ? 1 : 0);
+  const activeFilterCount = activeAdvancedFilterCount;
 
-  const hasFilters =
-    !!search || country !== 'ALL' || activeAdvancedFilterCount > 0 || activeFilterCount > 0;
+  const hasFilters = !!search || country !== 'ALL' || activeAdvancedFilterCount > 0;
 
   // Fetch schools
   const {
@@ -79,43 +71,16 @@ export function BrowseTab() {
     isError,
     refetch,
   } = useQuery({
-    queryKey: ['schools', search, country, filters, advancedFilters],
-    queryFn: () => {
-      const params: Record<string, string> = { pageSize: '100' };
-      if (search) params.search = search;
-      if (country && country !== 'ALL') params.country = country;
-      if (filters.schoolType !== 'ALL') {
-        params.isPrivate = (filters.schoolType === 'PRIVATE').toString();
-      }
-      if (filters.tuitionRange !== 'ALL') {
-        const [min, max] = filters.tuitionRange.split('-');
-        if (min) params.tuitionMin = (parseInt(min) * 1000).toString();
-        if (max) params.tuitionMax = (parseInt(max) * 1000).toString();
-        if (filters.tuitionRange === '50+') {
-          params.tuitionMin = '50000';
-        }
-      }
-      // Advanced filters
-      if (advancedFilters.rankMin) params.rankMin = advancedFilters.rankMin.toString();
-      if (advancedFilters.rankMax) params.rankMax = advancedFilters.rankMax.toString();
-      if (advancedFilters.acceptanceMin)
-        params.acceptanceMin = advancedFilters.acceptanceMin.toString();
-      if (advancedFilters.acceptanceMax)
-        params.acceptanceMax = advancedFilters.acceptanceMax.toString();
-      if (advancedFilters.tuitionMin)
-        params.tuitionMin = (advancedFilters.tuitionMin * 10000).toString();
-      if (advancedFilters.tuitionMax)
-        params.tuitionMax = (advancedFilters.tuitionMax * 10000).toString();
-      if (advancedFilters.sizeMin) params.sizeMin = advancedFilters.sizeMin.toString();
-      if (advancedFilters.sizeMax) params.sizeMax = advancedFilters.sizeMax.toString();
-      if (advancedFilters.state) params.state = advancedFilters.state;
-      if (advancedFilters.region) params.region = advancedFilters.region;
-      if (advancedFilters.schoolType) params.schoolType = advancedFilters.schoolType;
-      if (advancedFilters.testOptional) params.testOptional = 'true';
-      if (advancedFilters.needBlind) params.needBlind = 'true';
-      if (advancedFilters.hasEarlyDecision) params.hasEarlyDecision = 'true';
-      return apiClient.get<{ items: School[]; total: number }>(schoolRoutes.list(), { params });
-    },
+    queryKey: ['schools', search, country, advancedFilters],
+    queryFn: () =>
+      apiClient.get<{ items: School[]; total: number }>(schoolRoutes.list(), {
+        params: buildSchoolQueryParams({
+          search,
+          country,
+          filters: advancedFilters,
+          pageSize: SCHOOL_BROWSE_PAGE_SIZE,
+        }),
+      }),
     staleTime: STALE_TIME.DYNAMIC,
     retry: 2,
     refetchOnWindowFocus: false,
@@ -269,10 +234,20 @@ export function BrowseTab() {
     [batchAddMutation]
   );
 
+  const handleCountryChange = useCallback((value: string) => {
+    setCountry(value);
+    if (value !== 'US') {
+      setAdvancedFilters((prev) => ({
+        ...prev,
+        state: undefined,
+        region: undefined,
+      }));
+    }
+  }, []);
+
   const resetAllFilters = useCallback(() => {
     setSearch('');
     setCountry('ALL');
-    setFilters({ schoolType: 'ALL', tuitionRange: 'ALL' });
     setAdvancedFilters(defaultAdvancedFilters);
   }, []);
 
@@ -282,11 +257,9 @@ export function BrowseTab() {
         search={search}
         onSearchChange={setSearch}
         country={country}
-        onCountryChange={setCountry}
+        onCountryChange={handleCountryChange}
         sortBy={sortBy}
         onSortByChange={(v) => setSortBy(v as any)}
-        filters={filters}
-        onFiltersChange={setFilters}
         advancedFilters={advancedFilters}
         onAdvancedFiltersChange={setAdvancedFilters}
         onResetAdvancedFilters={() => setAdvancedFilters(defaultAdvancedFilters)}

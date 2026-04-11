@@ -26,12 +26,16 @@ import {
   AI_RECOMMENDATION_SCHOOL_SELECT,
   mapSchoolForList,
 } from './school-list.constants';
+import { CacheInvalidationService } from '../../common/redis/cache-invalidation.service';
 
 @Injectable()
 export class SchoolListService {
   private readonly logger = new Logger(SchoolListService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private cacheInvalidation: CacheInvalidationService,
+  ) {}
 
   /**
    * Get available application rounds for a school from deadline data
@@ -330,6 +334,8 @@ export class SchoolListService {
       },
     });
 
+    await this.cacheInvalidation.onProfileChange(userId);
+
     const essayCount = await this.prisma.essayPrompt.count({
       where: {
         schoolId: item.schoolId,
@@ -387,6 +393,8 @@ export class SchoolListService {
       },
     });
 
+    await this.cacheInvalidation.onProfileChange(userId);
+
     const essayCount = await this.prisma.essayPrompt.count({
       where: {
         schoolId: updated.schoolId,
@@ -423,6 +431,8 @@ export class SchoolListService {
     await this.prisma.schoolListItem.delete({
       where: { id: itemId },
     });
+
+    await this.cacheInvalidation.onProfileChange(userId);
   }
 
   /**

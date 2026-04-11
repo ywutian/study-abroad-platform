@@ -11,8 +11,15 @@
   - active set / baseline smoke / human task / external prerequisite 定义
 - `impact-mapping.ts`
   - 代码改动到 `journey_id` 的映射规则
+- `full-surface-registry.ts`
+  - 全产品面 machine-readable inventory
+  - route inventory / capability inventory / journey overlay
 - `generate-release-gate.ts`
   - 从 `git diff` 或显式 changed files 生成一轮 release gate package
+- `generate-full-surface-audit.ts`
+  - 生成全产品面 inventory snapshot
+  - 初始化 `docs/FULL_SURFACE_AUDIT_LOG_<date>.md`
+  - 初始化 `docs/FULL_SURFACE_AGENT_REVIEW_<date>.md`
 - `../runtime-release-gate.ts`
   - 读取 `codex-run-config.json`，执行 runtime audit，并把结果回填到 release gate package
 - `../runtime-journey-audit.ts`
@@ -43,6 +50,23 @@ pnpm release-gate:generate \
 - `git diff HEAD~1 HEAD`
 - `scripts/release-gate/registry.ts`
 - `scripts/release-gate/impact-mapping.ts`
+
+## Full Surface 初始化命令
+
+```bash
+pnpm full-surface:generate --audit-date 2026-04-02
+```
+
+默认会写入：
+
+- `e2e-report/full-surface-2026-04-02/`
+- `docs/FULL_SURFACE_AUDIT_LOG_2026-04-02.md`
+- `docs/FULL_SURFACE_AGENT_REVIEW_2026-04-02.md`
+
+全产品面事实源见：
+
+- `scripts/release-gate/full-surface-registry.ts`
+- `docs/FULL_SURFACE_REGISTRY.md`
 
 输出目录默认是：
 

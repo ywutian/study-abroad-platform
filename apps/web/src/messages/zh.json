@@ -623,7 +623,7 @@
       "evaluateEssay": "评估文书",
       "viewDeadlines": "查看截止日期",
       "analyzeProfileMessage": "请帮我分析一下我的档案竞争力",
-      "recommendSchoolsMessage": "根据我的背景推荐一些适合的学校",
+      "recommendSchoolsMessage": "请按冲刺、匹配、保底三类，推荐适合我当前档案的学校，并说明理由",
       "evaluateEssayMessage": "帮我评估一下我的文书",
       "viewDeadlinesMessage": "帮我整理一下目标学校的申请截止日期"
     },
@@ -641,7 +641,11 @@
     "tierReach": "冲刺",
     "tierTarget": "匹配",
     "tierSafety": "保底",
+    "tierReachDesc": "适合作为冲刺选择",
+    "tierTargetDesc": "与你当前背景较匹配",
+    "tierSafetyDesc": "可作为保底选择",
     "tierSchoolCount": "{label}校 ({count})",
+    "tierStrategyDisclaimer": "以下分层用于制定选校策略，不是学校官方评级。",
     "tools": {
       "searchSchools": "搜索学校",
       "getProfile": "获取档案",
@@ -652,7 +656,26 @@
       "queryDatabase": "查询数据库",
       "generateOutline": "生成文书大纲",
       "recommendSchools": "推荐学校",
-      "analyzeChance": "分析录取概率"
+      "analyzeChance": "分析录取概率",
+      "predictionHistory": "预测历史",
+      "predictionDashboard": "预测概览",
+      "schoolListPredictions": "选校清单预测",
+      "predictionTrace": "预测解释摘要"
+    },
+    "toolPreview": {
+      "probability": "概率",
+      "tier": "分层",
+      "confidence": "置信度",
+      "historyPoints": "历史点位",
+      "schools": "学校数",
+      "predicted": "已有预测",
+      "avgProbability": "平均概率",
+      "sources": "来源数",
+      "uncertainty": "不确定项",
+      "round": "轮次",
+      "updated": "更新",
+      "notAvailable": "暂无",
+      "noPublicTrace": "暂无公开解释摘要"
     },
     "clear": "清空对话",
     "characters": "字符",
@@ -783,6 +806,7 @@
     "targetSchools": "目标院校",
     "targetSchoolsDesc": "选择你的目标院校",
     "schoolSelection": {
+      "toggleDetails": "展开/收起学校详情",
       "roundFilter": "按轮次筛选",
       "allRounds": "全部轮次",
       "dataDisclaimer": "学校数据来源于公开数据库，可能未反映最新更新。请以学校官方网站信息为准。",
@@ -800,6 +824,8 @@
       "essayRequirements": "文书要求",
       "noEssayPrompts": "暂无该校文书题目",
       "writeEssay": "写文书",
+      "askAi": "问 AI",
+      "askAiPrompt": "请结合我当前档案和在 {schoolName} 的个人预测（{probability}%），解释这个结果为什么会这样、哪些因素还能改变概率，以及我应该如何在选校清单中定位这所学校。",
       "startWriting": "开始写作",
       "words": "字",
       "optional": "选填",
@@ -1332,8 +1358,16 @@
       "title": "录取率明细",
       "overall": "总体录取率",
       "international": "国际生录取率",
+      "contextualBaseline": "当前情境基线",
+      "contextualBaselineWithRound": "{round} 情境基线",
+      "contextualBaselineShort": "基线 {rate}%",
+      "contextualBaselineTooltip": "优先采用当前学校最贴近你情境的公开录取率，并在适用时按申请轮次做基线调整。",
       "majorEstimate": "{major} 预估录取率",
       "yourProbability": "你的预测概率",
+      "roundAdjusted": "已应用 {round} 轮次",
+      "deltaAbove": "比基线高 {points} 个点",
+      "deltaBelow": "比基线低 {points} 个点",
+      "deltaNear": "与基线接近",
       "needBlind": "对国际生Need-Blind",
       "intlPercent": "{pct}%国际生",
       "competitiveness": {
@@ -1363,8 +1397,8 @@
     "selectedCount": "已选 {count} 所",
     "showMore": "展开更多",
     "showLess": "收起",
-    "acceptanceRateLabel": "录取率：{rate}%",
-    "range": "预测范围",
+    "acceptanceRateLabel": "学校整体录取率：{rate}%",
+    "range": "可能区间",
     "weight": "权重",
     "suggestions": "提升建议",
     "engineBreakdown": "引擎分析",
@@ -1378,12 +1412,12 @@
       "analyzing": "正在分析..."
     },
     "badge": {
-      "ensemble": "集成模型"
+      "ensemble": "综合预测"
     },
     "confidence": {
-      "high": "高置信度",
-      "medium": "中置信度",
-      "low": "低置信度"
+      "high": "数据参考充分",
+      "medium": "数据参考一般",
+      "low": "数据参考有限"
     },
     "tier": {
       "reach": "冲刺",
@@ -1392,7 +1426,7 @@
       "unknown": "未知"
     },
     "tooltip": {
-      "ensemble": "基于多个模型的综合预测"
+      "ensemble": "把 AI、统计和历史信号合并成一个面向你的综合预估"
     },
     "aiAssistantTitle": "AI 预测助手",
     "aiAssistantDescNoResults": "选择学校后，AI 将为你提供个性化分析",
@@ -1400,7 +1434,7 @@
     "aiInitialNoResults": "选择学校并开始预测，我会为你分析录取概率",
     "aiInitialWithResults": "预测完成！我可以帮你分析结果，点击下方按钮获取建议",
     "detailedAnalysis": "详细分析",
-    "detailedAnalysisPrompt": "请详细分析我申请{schoolName}的录取概率，包括各项因素、提升建议，以及与类似申请者的对比。",
+    "detailedAnalysisPrompt": "请用留学顾问的口吻详细分析我申请{schoolName}的机会，明确区分学校整体录取率与我基于当前档案的个人预估，并给出提升建议。",
     "dataCompleteness": "档案完整度",
     "dataCompletenessLow": "完善档案以获得更准确的预测结果",
     "completeProfile": "完善档案",
@@ -1424,10 +1458,10 @@
       "historicalData": "历史录取"
     },
     "engineWeights": "引擎权重分布",
-    "reportResult": "报告实际结果",
-    "resultReported": "结果报告成功",
+    "reportResult": "补充最终结果标签",
+    "resultReported": "结果标签已保存",
     "noResultsForFilter": "没有符合当前筛选条件的结果",
-    "resultRecordedThankYou": "感谢反馈！您的结果有助于优化模型",
+    "resultRecordedThankYou": "感谢反馈，这条结果标签会帮助我们优化后续预估。",
     "predictionAccurate": "预测准确",
     "outperformedPrediction": "超出预期",
     "updatedAgo": "{time} 前更新",
@@ -1436,10 +1470,27 @@
     "historyTrend": "预测历史",
     "noHistory": "暂无预测历史",
     "rank": "第{rank}名",
-    "acceptRate": "录取率 {rate}%",
-    "estimatedProbabilityLabel": "预估录取概率",
-    "schoolAcceptanceRateLabel": "学校录取率 {rate}%",
-    "probabilityVsRateDisclaimer": "录取率为学校官方数据；大数字为基于您档案的预估录取概率。",
+    "acceptRate": "学校整体录取率 {rate}%",
+    "estimatedProbabilityLabel": "个人预估录取概率",
+    "schoolAcceptanceRateLabel": "学校整体录取率 {rate}%",
+    "probabilityVsRateDisclaimer": "学校整体录取率来自公开数据；大数字是基于你当前档案的个人预估。",
+    "confidenceDisclaimer": "“数据参考程度”反映当前档案与学校公开数据的充足度，不代表录取希望高低。",
+    "tierStrategyDisclaimer": "“冲刺 / 匹配 / 保底” 用于制定选校策略，不是学校官方评级。",
+    "modelLabel": "综合预测",
+    "predictionContextTitle": "如何理解这条预估",
+    "roundContextLabel": "申请轮次",
+    "roundContextChip": "轮次：{value}",
+    "cohortKeyLabel": "对比样本人群",
+    "sourceSummaryLabel": "主要参考依据",
+    "sourceSummarySecondaryLabel": "补充信号",
+    "sourceFreshnessLabel": "数据新鲜度",
+    "confidenceReasonLabel": "为什么是这个数据参考程度",
+    "uncertaintyReasonsLabel": "哪些因素可能让结果波动",
+    "outcomeLabelSection": "最终结果标签",
+    "outcomeLabelHint": "如果你之后收到了这所学校的真实决定，可以在这里补充最终结果标签。",
+    "outcomeLabelSaved": "结果标签已保存",
+    "outcomeLabelSavedToast": "已保存，这会帮助我们改进后续预估。",
+    "outcomeLabelSavedHint": "这会作为你提交的结果标签保存，后续可能进入人工复核。",
     "predictionInProgress": "预测进行中，请稍候",
     "resultsAnnouncement": "显示 {count} 个结果，按{sort}排序",
     "essayDisclaimer": "当前预测未包含文书、面试等主观因素。",
@@ -1457,7 +1508,7 @@
     "sort": {
       "probability": "按概率",
       "tier": "按分类",
-      "confidence": "按置信度"
+      "confidence": "按数据参考程度"
     },
     "filter": {
       "all": "全部"
@@ -1465,7 +1516,8 @@
     "result": {
       "admitted": "已录取",
       "waitlisted": "候补名单",
-      "rejected": "已拒绝"
+      "rejected": "已拒绝",
+      "deferred": "延期"
     },
     "aiActions": {
       "analyzeResults": "分析预测结果",
@@ -1479,7 +1531,7 @@
       "improveChances": "提升录取概率",
       "improveChancesPrompt": "根据以下预测结果，我该如何提升录取概率？\n{results}",
       "recommendSchools": "推荐学校",
-      "recommendSchoolsPrompt": "请根据我的背景推荐适合的学校"
+      "recommendSchoolsPrompt": "请根据我当前档案推荐适合的学校，并说明哪些适合作为冲刺、匹配和保底选择；请区分学校整体录取率与我的个人机会，不要把分层说成官方评级。"
     },
     "hint": {
       "addHighSchool": "在个人资料中补充高中信息可提升预测准确度",
@@ -1902,7 +1954,7 @@
     "swipeCard": {
       "applicantProfile": "申请者档案",
       "applicantFeatures": "申请特点",
-      "acceptanceRate": "录取率",
+      "acceptanceRate": "学校整体录取率",
       "activities": "课外活动",
       "awards": "获奖经历",
       "apCourses": "AP 课程",
@@ -1921,7 +1973,14 @@
       "gradeGAP_YEAR": "间隔年",
       "schoolTypePUBLIC_US": "美国公立",
       "schoolTypePRIVATE_US": "美国私立",
+      "schoolTypeBOARDING_US": "美国寄宿",
+      "schoolTypeINTL_CN": "中国国际",
+      "schoolTypePUBLIC_CN": "中国公立",
+      "schoolTypePRIVATE_CN": "中国私立",
       "schoolTypeINTERNATIONAL": "国际学校",
+      "schoolTypeINTL_OTHER": "其他国际",
+      "schoolTypePUBLIC_OTHER": "其他公立",
+      "schoolTypePRIVATE_OTHER": "其他私立",
       "awardLevelINTERNATIONAL": "国际级",
       "awardLevelNATIONAL": "国家级",
       "awardLevelSTATE": "州级",
@@ -2476,7 +2535,7 @@
     "searchPlaceholder": "搜索学校...",
     "noResults": "没有找到学校",
     "noResultsHint": "尝试使用不同的关键词",
-    "acceptanceRate": "录取率",
+    "acceptanceRate": "学校整体录取率",
     "selectedCount": "已选择 {count}/{max}",
     "confirmSelection": "确认选择",
     "maxSelectionReached": "最多可选择 {max} 所学校",
@@ -2538,6 +2597,7 @@
     "noResults": "没有找到学校",
     "tryDifferentSearch": "尝试使用不同的关键词搜索",
     "resultsCount": "共 {count} 所学校",
+    "showingTruncated": "当前仅显示前 {shown} 所，共 {total} 所。请缩小筛选范围查看更多。",
     "country": "国家",
     "countries": {
       "all": "全部国家",
@@ -2561,13 +2621,24 @@
     "acceptanceRate": "录取率",
     "students": "学生数",
     "viewDetails": "查看详情",
+    "supplementalRanking": "补充排名",
     "indices": {
       "legend": "指数图例",
       "safetyIndex": "安全指数",
       "happinessIndex": "幸福指数",
       "foodIndex": "美食指数",
       "moreIsBetter": "图标越多越好",
-      "noData": "暂无数据"
+      "noData": "暂无数据",
+      "estimated": "暂定",
+      "estimatedHint": "在有来源支撑的校园生活评分补齐前，先用暂定值展示。"
+    },
+    "community": {
+      "safetyShort": "安全",
+      "lifeShort": "生活",
+      "foodShort": "餐饮",
+      "count": "{count} 条评分",
+      "pendingCard": "目前有 {count} 条评分，达到 {minCount} 条后才会公开均分。",
+      "noneCard": "暂无公开社区评分"
     },
     "gradeLabels": {
       "A+": "A+",
@@ -2594,6 +2665,7 @@
     "tuitionRange": "学费范围",
     "tuition": {
       "all": "全部",
+      "custom": "自定义",
       "20k-30k": "$20,000 - $30,000",
       "30k-40k": "$30,000 - $40,000",
       "40k-50k": "$40,000 - $50,000",
@@ -2650,6 +2722,193 @@
       "testOptional": "可选考试"
     }
   },
+  "applicationAnalysis": {
+    "title": "申请分析",
+    "subtitle": "基于档案、预测与历史证据生成的学校级申请策略",
+    "loading": {
+      "title": "正在分析你的申请",
+      "description": "系统正在整合档案、预测结果与历史案例，生成学校级策略判断。"
+    },
+    "error": {
+      "title": "分析失败",
+      "description": "生成分析时出现问题，请重试。",
+      "retry": "重试"
+    },
+    "empty": {
+      "title": "还没有申请分析",
+      "description": "运行申请分析后，这里会显示学校级策略建议。"
+    },
+    "emptyList": "暂无内容",
+    "overallScore": "综合评分",
+    "focusSchools": "重点学校",
+    "profileContext": "申请语境",
+    "schoolListDiagnosis": "学校清单诊断",
+    "foundationReview": "基础档案诊断",
+    "riskBoundaries": "风险边界",
+    "missingPredictions": "缺少预测的学校",
+    "missingRounds": "尚未绑定轮次的学校",
+    "highlights": "亮点",
+    "improvements": "改进点",
+    "freshness": {
+      "fresh": "最新",
+      "cached": "缓存",
+      "degraded": "降级"
+    },
+    "dataQuality": {
+      "high": "高质量证据",
+      "medium": "中等质量证据",
+      "low": "证据有限",
+      "insufficient": "证据不足"
+    },
+    "legacyTier": {
+      "top10": "Top 10 兼容档位",
+      "top30": "Top 30 兼容档位",
+      "top50": "Top 50 兼容档位",
+      "top100": "Top 100 兼容档位",
+      "other": "基础档位"
+    },
+    "states": {
+      "ready": {
+        "label": "可做学校级判断",
+        "description": "当前证据已足以支持学校级策略分析。"
+      },
+      "noTargetSchools": {
+        "label": "需要目标校清单",
+        "description": "先补 3-5 所目标校并绑定轮次，再看学校级策略。"
+      },
+      "noPredictions": {
+        "label": "需要最新预测",
+        "description": "学校清单已存在，但重点学校还缺少最新预测。"
+      },
+      "insufficientProfileData": {
+        "label": "需要核心背景",
+        "description": "当前档案还不足以支撑可信的学校级判断。"
+      },
+      "analysisError": {
+        "label": "分析暂不可用",
+        "description": "本次分析未能完成，请稍后重试。"
+      }
+    },
+    "portfolioBalance": {
+      "balanced": "分布均衡",
+      "reachHeavy": "偏冲刺",
+      "safetyHeavy": "偏保守",
+      "undermatch": "存在保守申请风险",
+      "insufficient": "学校数量不足"
+    },
+    "applicantType": {
+      "title": "申请者类型",
+      "domestic": "美国本土申请者",
+      "international": "国际申请者",
+      "unknown": "申请者类型未完全识别"
+    },
+    "contextFlags": {
+      "needAid": "需要助学金",
+      "firstGeneration": "第一代大学生",
+      "legacy": "存在校友子女背景",
+      "gapYear": "Gap Year",
+      "testSubmit": "走提交标化路径",
+      "testOptional": "走 test-optional 路径"
+    },
+    "testStrategy": {
+      "title": "标化策略",
+      "submit": "提交标化",
+      "testOptional": "不提交标化",
+      "unknown": "尚未确定"
+    },
+    "confidence": {
+      "low": "低",
+      "medium": "中",
+      "high": "高"
+    },
+    "actions": {
+      "refresh": "刷新分析",
+      "showFull": "展开完整分析",
+      "hideFull": "收起详情"
+    },
+    "sections": {
+      "academic": "学术基础",
+      "testScores": "标化位置",
+      "activities": "活动与领导力",
+      "awards": "奖项与外部验证"
+    },
+    "sectionStatus": {
+      "green": "明确优势",
+      "yellow": "可用但暴露",
+      "red": "核心短板"
+    },
+    "schoolTier": {
+      "REACH": "冲刺",
+      "TARGET": "匹配",
+      "SAFETY": "保底"
+    },
+    "schoolCards": {
+      "probability": "录取概率",
+      "probabilityUnavailable": "暂无",
+      "confidence": "置信度",
+      "updated": "更新时间",
+      "whyHard": "为什么难",
+      "strengths": "补偿优势",
+      "gaps": "主要差距",
+      "nextActions": "下一步行动",
+      "historical": "历史信号",
+      "hardStops": "硬风险",
+      "recourse": "Recourse 指引",
+      "uncertainty": "策略不确定性",
+      "uncertaintyRange": "策略区间"
+    },
+    "policy": {
+      "testing": {
+        "REQUIRED": "必须提交标化",
+        "OPTIONAL": "可选提交标化",
+        "BLIND": "标化盲审",
+        "UNKNOWN": "标化政策未知"
+      },
+      "intlAid": {
+        "NEED_BLIND": "国际生资助 Need-Blind",
+        "NEED_AWARE": "国际生资助 Need-Aware",
+        "UNKNOWN": "国际生资助政策未知"
+      }
+    },
+    "actionPlan": {
+      "title": "行动计划",
+      "now": "现在",
+      "next90Days": "未来 90 天",
+      "beforeSubmission": "提交前"
+    },
+    "recommendations": {
+      "title": "补充建议",
+      "majors": "专业方向",
+      "competitions": "竞赛",
+      "activities": "项目与活动",
+      "summerPrograms": "暑校 / 项目",
+      "timeline": "规划备注"
+    },
+    "fairness": {
+      "title": "公平性披露",
+      "notes": "披露说明",
+      "appliesTo": "适用范围",
+      "status": {
+        "clear": "通过",
+        "limited": "有限",
+        "blocked": "阻断"
+      }
+    },
+    "feedback": {
+      "title": "这部分实验增强对你有帮助吗？",
+      "helpful": "有帮助",
+      "notHelpful": "没帮助",
+      "chooseReason": "请选择原因",
+      "submitted": "反馈已记录。",
+      "categories": {
+        "UNSAFE_RECOURSE": "建议存在风险",
+        "POLICY_MISMATCH": "政策不匹配",
+        "MISLEADING_UNCERTAINTY": "不确定性表达有误导",
+        "FAIRNESS_CONCERN": "公平性担忧",
+        "LOW_ACTIONABILITY": "可执行性太低"
+      }
+    }
+  },
   "uncommonApp": {
     "title": "智能申请",
     "description": "管理你的选校清单和个人档案，获取 AI 智能推荐",
@@ -2679,11 +2938,14 @@
     "loadingStep3": "正在生成推荐...",
     "loadingStepOf": "第 {current} 步，共 {total} 步",
     "myProfile": "我的档案",
+    "profileReadiness": "档案准备度",
+    "profileReadinessHint": "这里衡量的是证据是否完整，不等于你的申请竞争力结论。",
     "profileScore": "档案完成度",
     "testScores": "考试成绩",
     "activities": "活动经历",
     "awards": "获奖情况",
     "gradeProfile": "评估我的档案",
+    "generateAnalysis": "生成申请分析",
     "analyzing": "分析中...",
     "aiAnalyzing": "AI Agent 分析中...",
     "analysisComplete": "分析完成！",
@@ -4037,7 +4299,7 @@
       "moderate": "该校申请难度适中，注重展示与学校的匹配度"
     },
     "stats": {
-      "acceptanceRate": "录取率",
+      "acceptanceRate": "学校整体录取率",
       "tuition": "学费/年",
       "avgSalary": "毕业薪资",
       "studentCount": "学生人数"
@@ -4052,6 +4314,7 @@
     },
     "academicStats": "学术统计",
     "usNewsRank": "US News 排名",
+    "qsRank": "QS 排名",
     "satAvg": "SAT 平均分",
     "actAvg": "ACT 平均分",
     "graduationRate": "毕业率",
@@ -4088,6 +4351,43 @@
       "life": "学生生活",
       "food": "餐饮",
       "studentOrgs": "学生社团数量"
+    },
+    "campusLifeOfficial": {
+      "title": "官方校园生活数据",
+      "description": "仅展示已验证的官方/联邦校园生活字段",
+      "empty": "目前暂无已验证的官方校园生活数据。"
+    },
+    "officialData": {
+      "title": "官方数据",
+      "description": "仅展示已验证的官方/联邦学校统计",
+      "empty": "目前暂无已验证的官方学术数据。"
+    },
+    "supplemental": {
+      "title": "补充信息",
+      "description": "可追溯但非官方的数据来源与补充排名"
+    },
+    "supplementalRanking": "补充排名",
+    "supplementalCampusLife": "补充校园生活评级",
+    "supplementalBadges": "补充申请信息",
+    "community": {
+      "title": "社区评分",
+      "description": "用户聚合评分，与官方数据分开展示",
+      "safety": "安全",
+      "life": "校园生活",
+      "food": "餐饮",
+      "count": "{count} 条社区评分",
+      "userLabel": "用户评分",
+      "pending": "目前已有 {count} 条评分，达到 {minCount} 条后才会公开均分。",
+      "notEnough": "评分样本不足，登录后可以提交你的评分。",
+      "rateTitle": "给这所学校打分",
+      "rateHint": "每项按 1 到 5 分评分，之后可以随时修改。",
+      "submit": "提交评分",
+      "update": "更新评分",
+      "saved": "社区评分已保存",
+      "saveFailed": "社区评分保存失败",
+      "loginHint": "登录后可提交你对校园生活的评分。",
+      "loginAction": "登录后评分",
+      "hidden": "这条评分当前未计入公开均分"
     },
     "postGrad": {
       "title": "毕业后发展",
@@ -4144,12 +4444,16 @@
     },
     "prediction": {
       "title": "录取预测",
-      "subtitle": "基于你的档案进行 AI 概率分析",
+      "subtitle": "基于你当前档案的 AI 综合判断",
       "safety": "保底",
       "match": "匹配",
       "reach": "冲刺",
+      "personalEstimate": "个人预估",
+      "reachAdvice": "适合作为冲刺选择",
+      "matchAdvice": "与你当前背景较匹配",
+      "safetyAdvice": "可作为保底选择",
       "confidenceInterval": "置信区间",
-      "confidence": "置信度",
+      "confidence": "数据参考程度",
       "source": "数据来源",
       "factors": "关键因素",
       "trend": "历史趋势",
@@ -4171,15 +4475,15 @@
   },
   "predictionDashboard": {
     "title": "预测仪表盘",
-    "subtitle": "你所有学校录取预测的总览",
+    "subtitle": "你所有学校个人预估的总览",
     "totalSchools": "学校总数",
-    "avgProbability": "平均概率",
-    "tierDistribution": "梯度分布",
+    "avgProbability": "平均个人预估",
+    "tierDistribution": "选校策略分层",
     "reach": "冲刺",
     "match": "匹配",
     "safety": "保底",
     "dataCompleteness": "数据完整度",
-    "probabilityRange": "概率范围",
+    "probabilityRange": "个人预估区间",
     "improveProfile": "完善档案",
     "completeness": {
       "good": "优秀",
@@ -4362,15 +4666,15 @@
     "categories": {
       "reach": {
         "label": "冲刺校",
-        "description": "有挑战但值得尝试"
+        "description": "按你当前档案，适合作为冲刺选择"
       },
       "target": {
         "label": "匹配校",
-        "description": "与你的背景匹配度高"
+        "description": "与你当前背景较匹配，可重点准备"
       },
       "safety": {
         "label": "保底校",
-        "description": "录取把握较大"
+        "description": "可作为保底选择，帮助稳住申请结果"
       }
     },
     "noHistory": "暂无推荐历史",
@@ -4391,20 +4695,22 @@
     "visitWebsite": "访问官方网站",
     "viewScorecard": "在 College Scorecard 查看",
     "viewIPEDS": "查看联邦教育数据 (IPEDS)",
-    "admissionChance": "录取概率",
+    "admissionChance": "个人预估机会",
     "noSchoolsInCategory": "暂无{category}推荐，请完善档案信息",
-    "disclaimer": "推荐结果基于AI分析，仅供参考。实际录取受多种因素影响。",
+    "disclaimer": "推荐结果用于制定选校策略，不是学校官方评级；个人机会仍会受文书、推荐信、面试等因素影响。",
     "summerPrograms": "推荐暑期项目",
     "result": "推荐结果",
     "newRecommendation": "重新推荐",
     "success": "推荐完成",
     "failed": "推荐失败，请重试",
-    "fitScore": "匹配度",
-    "probability": "录取概率",
-    "estimatedProbability": "预估录取概率",
-    "aiRoughEstimate": "预估录取概率",
+    "fitScore": "背景匹配度",
+    "probability": "个人预估机会",
+    "acceptRate": "学校整体录取率",
+    "estimatedProbability": "个人预估机会",
+    "aiRoughEstimate": "个人预估机会",
     "viewDetailedPrediction": "查看详细预测分析 →",
-    "probabilityTooltip": "基于AI分析并以统计模型为基准。如需包含历史数据的完整分析，请使用录取预测功能。",
+    "probabilityTooltip": "这是基于你当前档案的个人预估，不等于学校整体录取率。如需更完整的概率分析，请使用录取预测功能。",
+    "strategyDisclaimer": "以下分层用于制定选校策略，不是学校官方评级。",
     "strengths": "优势",
     "weaknesses": "不足",
     "concerns": "关注点",
@@ -4794,7 +5100,10 @@
       "askQuestionPrompt": "我想问一个关于留学申请的问题：",
       "essayHelp": "文书求助建议",
       "essayHelpPrompt": "我正在写文书，不知道该从哪个角度下手。请给我一些建议，或者告诉我论坛里有哪些关于文书写作的好帖子。"
-    }
+    },
+    "legacyTeamReadOnly": "论坛组队帖已切为 legacy 只读。请到 /teams 创建新的比赛组队卡。",
+    "legacyTeamHistorical": "论坛组队帖已切为 legacy 只读，历史内容可看但不能再申请加入。请到 /teams 发起新的比赛组队匹配。",
+    "openTeams": "前往 /teams"
   },
   "teams": {
     "title": "组队",
@@ -4855,6 +5164,18 @@
     },
     "goDiscover": "去发现队伍",
     "loginToJoin": "登录后加入",
+    "joinPage": {
+      "loading": "加载中...",
+      "joining": "正在加入队伍..."
+    },
+    "inviteResults": {
+      "title": "邀请送达结果",
+      "sent": "通知已送达",
+      "existingPending": "沿用原有邀请并已重新送达通知",
+      "manualShare": "邀请已就绪，如对方未收到通知请手动分享链接。",
+      "alreadyMember": "已跳过，对方已经在你的队伍中",
+      "copyLink": "复制链接"
+    },
     "loadErrorMy": "加载我的队伍失败",
     "loadErrorDiscover": "加载队伍列表失败",
     "retry": "重试",
@@ -4874,6 +5195,9 @@
       "joined": "已加入",
       "joinFailed": "加入失败",
       "alreadyMember": "已经是成员",
+      "invitesDelivered": "邀请结果已准备好",
+      "invitesPartiallyDelivered": "部分邀请需要手动分享链接",
+      "copyInviteLinkFailed": "复制邀请链接失败",
       "settingsSaved": "设置已保存",
       "saveFailed": "保存失败"
     },
@@ -4902,6 +5226,111 @@
       "public": "公开",
       "unlisted": "不公开",
       "private": "私密"
+    },
+    "recruitment": {
+      "description": "比赛组队匹配与成队工作台",
+      "tab": {
+        "match": "Match",
+        "matches": "Matches",
+        "myTeam": "My Team"
+      },
+      "swipeDeck": {
+        "title": "Swipe Deck",
+        "description": "只会发同比赛同赛道且人数兼容的卡。",
+        "pass": "左滑",
+        "like": "右滑"
+      },
+      "currentCard": "当前我的卡",
+      "currentCardOverview": "当前卡片概览",
+      "refresh": "刷新",
+      "openDeck": "去划卡",
+      "openChat": "进入群聊",
+      "inviteToTeam": "邀请对方入队",
+      "matchKind": {
+        "teamUp": "可组队",
+        "networking": "交流"
+      },
+      "empty": {
+        "noCard": "先创建并发布一张组队卡",
+        "deckEmpty": "当前牌堆为空",
+        "noMatches": "还没有新的匹配",
+        "noCardYet": "还没有组队卡"
+      },
+      "editor": {
+        "title": "组队卡编辑器",
+        "description": "先选择 backing team；如果没有队伍，可以直接创建一张 solo card。"
+      },
+      "field": {
+        "backingTeam": "绑定队伍",
+        "createSoloTeam": "新建 Solo Team",
+        "competitionTrack": "比赛赛道",
+        "selectTrack": "选择赛道",
+        "soloTeamName": "Solo 队伍名",
+        "soloTeamNamePlaceholder": "默认会自动生成",
+        "headline": "首屏摘要",
+        "headlinePlaceholder": "几秒内让对方知道你想做什么",
+        "detailNote": "详细说明",
+        "detailNotePlaceholder": "补充赛题理解、协作方式、亮点经历",
+        "offerRoles": "我能提供",
+        "offerRolesPlaceholder": "建模, 编程, 答辩",
+        "needRoles": "我需要",
+        "needRolesPlaceholder": "文案, 设计, PM",
+        "skillTags": "技能标签",
+        "skillTagsPlaceholder": "如 Python、LaTeX、Figma",
+        "targetSize": "目标人数",
+        "intent": "模式",
+        "availability": "投入",
+        "collaborationMode": "协作方式",
+        "city": "城市",
+        "cityPlaceholder": "北京 / 上海 / Remote",
+        "languages": "语言",
+        "languagesPlaceholder": "中文, English"
+      },
+      "intentMode": {
+        "teamUp": "正式组队",
+        "networkingOnly": "仅交流"
+      },
+      "option": {
+        "unset": "未设置",
+        "weekendsOnly": "仅周末",
+        "online": "线上",
+        "offline": "线下",
+        "hybrid": "混合"
+      },
+      "action": {
+        "saveCard": "保存组队卡",
+        "createCard": "创建组队卡",
+        "publish": "发布",
+        "close": "关闭",
+        "legacySettings": "传统 Team 设置页"
+      },
+      "display": {
+        "title": "我的展示信息",
+        "description": "发布前每个成员都要确认自己的展示配置。",
+        "introLine": "一句话介绍",
+        "selectedResume": "展示简历",
+        "noResume": "不展示简历",
+        "showSchool": "展示学校",
+        "showGrade": "展示年级",
+        "showAwards": "展示奖项",
+        "save": "仅保存",
+        "confirmConsent": "确认并同意展示"
+      },
+      "card": {
+        "offer": "我能提供",
+        "need": "我需要",
+        "skills": "技能",
+        "members": "成员摘要",
+        "confirmed": "已确认"
+      },
+      "toast": {
+        "cardCreated": "组队卡已创建",
+        "cardUpdated": "组队卡已更新",
+        "cardPublished": "组队卡已发布",
+        "cardClosed": "组队卡已关闭",
+        "displayUpdated": "展示信息已更新",
+        "matched": "互相右滑，已创建群聊"
+      }
     }
   },
   "points": {
@@ -5071,6 +5500,19 @@
       "south": "南部",
       "west": "西部"
     },
+    "states": {
+      "all": "全部州",
+      "CA": "加利福尼亚州",
+      "NY": "纽约州",
+      "MA": "马萨诸塞州",
+      "TX": "得克萨斯州",
+      "PA": "宾夕法尼亚州",
+      "IL": "伊利诺伊州",
+      "FL": "佛罗里达州",
+      "NC": "北卡罗来纳州",
+      "GA": "佐治亚州",
+      "OH": "俄亥俄州"
+    },
     "countries": {
       "all": "全部国家",
       "us": "美国",
@@ -5083,6 +5525,15 @@
       "hard": "困难 (10-20%)",
       "medium": "中等 (20-40%)",
       "easy": "容易 (>40%)"
+    },
+    "rankingPresets": {
+      "top1": "Top 1",
+      "top100": "Top 100",
+      "top10": "Top 10",
+      "top30": "Top 30",
+      "top50": "Top 50",
+      "range30To50": "30-50",
+      "range50To100": "50-100"
     },
     "specialConditions": {
       "testOptional": "标化可选",
@@ -5201,6 +5652,7 @@
       "payments": "支付管理",
       "analytics": "数据分析",
       "calibrations": "预测校准",
+      "applicationAnalysisWorkflow": "申请分析工作流",
       "activityTemplates": "活动模板",
       "highSchools": "高中管理",
       "dataReview": "数据审核",
@@ -5440,6 +5892,29 @@
       "toeflMin": "托福最低分",
       "ieltsMin": "雅思最低分",
       "essayCount": "文书数量",
+      "community": {
+        "title": "社区评分",
+        "column": "社区评分",
+        "count": "{count} 条",
+        "totalCount": "总计 {count} 条",
+        "visibleCount": "可见 {count} 条",
+        "hiddenCount": "隐藏 {count} 条",
+        "safety": "安全",
+        "life": "生活",
+        "food": "餐饮",
+        "user": "用户",
+        "status": "状态",
+        "updatedAt": "更新时间",
+        "visible": "可见",
+        "hidden": "已隐藏",
+        "hide": "隐藏",
+        "restore": "恢复",
+        "publicReady": "已公开社区均分",
+        "publicPending": "达到 {minCount} 条后公开",
+        "hiddenSuccess": "评分已隐藏",
+        "restoredSuccess": "评分已恢复",
+        "actionError": "操作失败"
+      },
       "tabs": {
         "basic": "基础信息",
         "rankings": "排名录取",
@@ -5530,7 +6005,10 @@
       "tabs": {
         "diagnosis": "预测诊断",
         "schoolCalibrations": "学校校准",
-        "systemCalibration": "自动校准"
+        "systemCalibration": "自动校准",
+        "workflow": "工作流",
+        "policies": "策略版本",
+        "outcomes": "结果复核"
       },
       "stats": {
         "calibratedSchools": "已校准学校",
@@ -5615,6 +6093,232 @@
         "axisOriginal": "原始预测",
         "tooltipOriginal": "原始",
         "lineCalibrated": "校准后预测"
+      },
+      "workflow": {
+        "hubTitle": "预测工作流中枢",
+        "policyVersion": "策略版本",
+        "selectPolicy": "选择策略版本",
+        "buildSignals": "构建激活信号",
+        "reviewSaved": "Observation 审核已保存",
+        "signalsBuilt": "激活信号已重新构建",
+        "observationsTitle": "Observation 审核队列",
+        "allStatuses": "全部状态",
+        "allSources": "全部来源",
+        "emptyObservations": "当前筛选条件下没有 observation。",
+        "school": "学校",
+        "source": "来源",
+        "stage": "阶段",
+        "status": "状态",
+        "reviewWindow": "复核 / 失效时间",
+        "actions": "操作",
+        "review": "审核",
+        "reviewDialogTitle": "审核 Observation",
+        "reviewAt": "复核时间",
+        "expiresAt": "失效时间",
+        "notes": "备注",
+        "notesPlaceholder": "填写审核说明、重新分类原因或后续动作",
+        "cancel": "取消",
+        "saveReview": "保存审核",
+        "activeSignalsTitle": "激活信号快照",
+        "selectPolicyHint": "选择一个策略版本，查看当前的 prior、drift 和 relationship 信号。",
+        "priors": "Priors",
+        "driftSignals": "Drift Signals",
+        "relationshipSignals": "Relationship Signals"
+      },
+      "policies": {
+        "title": "策略版本控制",
+        "version": "版本",
+        "status": "状态",
+        "sets": "信号集",
+        "updatedAt": "更新时间",
+        "actions": "操作",
+        "promoteCandidate": "冻结为 Candidate",
+        "promoteShadow": "进入 Shadow",
+        "refreshShadow": "刷新 Shadow 指标",
+        "activate": "激活",
+        "rollback": "回滚",
+        "candidateSuccess": "策略已提升为 candidate",
+        "shadowSuccess": "策略已进入 shadow",
+        "shadowRefreshSuccess": "Shadow 指标已刷新",
+        "activateSuccess": "策略已激活",
+        "rollbackSuccess": "已回滚到上一个 active 策略",
+        "gateSummary": "升级门禁摘要",
+        "shadowPredictions": "Shadow Predictions",
+        "resolvedLabels": "已解析标签",
+        "ready": "可发布",
+        "blocked": "阻塞",
+        "metricDeltas": "指标变化",
+        "failures": "门禁失败项",
+        "noFailures": "当前没有阻塞失败项。",
+        "releaseControls": "发布控制",
+        "bucket": "Bucket",
+        "count": "数量",
+        "actualRate": "实际录取率"
+      },
+      "outcomes": {
+        "title": "结果复核队列",
+        "allStatuses": "全部状态",
+        "allResults": "全部结果",
+        "eligibleOnly": "仅显示可用于校准的数据",
+        "empty": "当前筛选条件下没有结果标签。",
+        "school": "学校",
+        "reported": "上报结果",
+        "status": "状态",
+        "eligible": "可用于校准",
+        "evidence": "证据",
+        "actions": "操作",
+        "viewEvidence": "查看证据",
+        "review": "复核",
+        "reviewSaved": "结果复核已保存",
+        "readyCount": "可用标签数",
+        "conflictedCount": "冲突标签数",
+        "selfReportedCount": "用户自报数",
+        "reviewDialogTitle": "复核结果标签",
+        "canonicalLabel": "Canonical 标签",
+        "round": "申请轮次",
+        "evidenceUrl": "证据链接",
+        "notes": "复核备注",
+        "notesPlaceholder": "说明验证依据、冲突处理或 censor 原因",
+        "markFinal": "标记为最终结果",
+        "cancel": "取消",
+        "saveReview": "保存复核"
+      }
+    },
+    "applicationAnalysisWorkflow": {
+      "title": "申请分析工作流",
+      "description": "治理 canonical application analysis 的证据、策略版本、评估运行与实验预览。",
+      "tabs": {
+        "evidence": "证据",
+        "policies": "策略版本",
+        "evaluations": "评估",
+        "gates": "门禁",
+        "activate": "激活 / 回滚",
+        "experiments": "实验",
+        "automation": "自动化",
+        "incidents": "事件",
+        "liveSignals": "实时信号"
+      },
+      "evidence": {
+        "createTitle": "创建学校政策证据",
+        "queueTitle": "证据审核队列",
+        "schoolId": "学校 ID",
+        "dimension": "政策维度",
+        "policyValue": "政策值",
+        "sourceName": "来源名称",
+        "sourceUrl": "来源链接",
+        "notes": "备注",
+        "create": "创建证据",
+        "created": "证据已创建",
+        "reviewSaved": "证据审核已保存",
+        "updatedAt": "更新时间",
+        "reviewedAt": "审核时间",
+        "empty": "还没有申请分析证据。",
+        "policyHint": "第一批证据审核通过后，再创建策略版本。"
+      },
+      "policies": {
+        "createTitle": "创建策略版本",
+        "tableTitle": "策略版本列表",
+        "version": "版本",
+        "analysisVersion": "分析版本",
+        "promptVersion": "Prompt 版本",
+        "ruleBundleVersion": "规则包版本",
+        "create": "创建策略",
+        "created": "策略草稿已创建",
+        "promoteCandidate": "冻结为 Candidate",
+        "promoteShadow": "进入 Shadow",
+        "refreshShadow": "刷新 Shadow 评估",
+        "candidateSuccess": "策略已提升为 candidate",
+        "shadowSuccess": "策略已进入 shadow",
+        "shadowRefreshSuccess": "Shadow 评估已刷新",
+        "empty": "还没有申请分析策略版本。"
+      },
+      "evaluations": {
+        "title": "评估运行",
+        "policyCorrectnessRate": "政策正确率",
+        "weakStateCorrectnessRate": "弱态正确率",
+        "actionabilityMean": "可执行性",
+        "empty": "还没有评估运行记录。"
+      },
+      "gates": {
+        "title": "升级门禁",
+        "policy": "策略",
+        "selectPolicy": "选择一个策略版本",
+        "ready": "可发布",
+        "blocked": "阻塞",
+        "failures": "失败项",
+        "noFailures": "当前没有阻塞失败项。"
+      },
+      "activate": {
+        "title": "发布控制",
+        "policy": "策略",
+        "selectPolicy": "选择一个策略版本",
+        "activate": "激活",
+        "rollback": "回滚",
+        "activateSuccess": "策略已激活",
+        "rollbackSuccess": "已回滚到上一个 active 策略"
+      },
+      "experiments": {
+        "createTitle": "创建实验版本",
+        "tableTitle": "实验版本列表",
+        "gatesTitle": "实验门禁",
+        "previewTitle": "实验预览",
+        "evaluationsTitle": "实验评估",
+        "capability": "能力",
+        "version": "版本",
+        "methodVersion": "方法版本",
+        "linkedPolicy": "关联策略",
+        "selectPolicy": "选择一个关联策略",
+        "selectedExperiment": "实验",
+        "selectExperiment": "选择一个实验版本",
+        "create": "创建实验",
+        "created": "实验草稿已创建",
+        "promoteShadow": "进入 Shadow",
+        "promoteCanary": "进入 Canary",
+        "refreshEvaluation": "刷新评估",
+        "activate": "激活能力",
+        "retire": "停用能力",
+        "runSweep": "运行自动 Sweep",
+        "shadowSuccess": "实验已进入 shadow",
+        "canarySuccess": "实验已进入 canary",
+        "evaluateSuccess": "实验评估已刷新",
+        "activateSuccess": "实验已激活",
+        "retireSuccess": "实验已停用",
+        "sweepSuccess": "Sweep 完成：进入 canary {promoted} 个，激活 {activated} 个，退役 {retired} 个",
+        "empty": "还没有实验版本。",
+        "title": "实验预览",
+        "recourse": "Recourse 预览",
+        "uncertainty": "不确定性预览",
+        "fairness": "公平性报告",
+        "recoursePreview": "Recourse / Counterfactual 预览",
+        "uncertaintyPreview": "Conformal-style 不确定性预览",
+        "fairnessPreview": "公平性就绪度预览"
+      },
+      "automation": {
+        "title": "自动化",
+        "experiment": "实验",
+        "rolloutPercentages": "放量百分比",
+        "minStageHours": "最小时长（小时）",
+        "autoPromote": "自动升级",
+        "autoRetire": "自动退役",
+        "paused": "暂停自动化",
+        "enabled": "开启",
+        "disabled": "关闭",
+        "save": "保存配置",
+        "configSaved": "自动化配置已保存",
+        "currentPercentage": "当前百分比",
+        "lastSweep": "最近 Sweep",
+        "nextEligiblePromotion": "下次可升级时间",
+        "sweepHistory": "Sweep 历史"
+      },
+      "incidents": {
+        "title": "事件",
+        "acknowledge": "确认",
+        "acknowledged": "事件已确认"
+      },
+      "liveSignals": {
+        "title": "实时信号",
+        "feedback": "申请者反馈",
+        "empty": "暂时没有实时信号。"
       }
     },
     "calendar": {
@@ -6034,6 +6738,8 @@
         "UK": "英国",
         "CA": "加拿大",
         "AU": "澳大利亚",
+        "JP": "日本",
+        "KR": "韩国",
         "SG": "新加坡",
         "HK": "香港",
         "OTHER": "其他"

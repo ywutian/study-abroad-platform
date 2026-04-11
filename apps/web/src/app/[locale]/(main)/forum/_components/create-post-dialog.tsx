@@ -43,13 +43,14 @@ export function CreatePostDialog({
 }: CreatePostDialogProps) {
   const t = useTranslations('forum');
   const locale = useLocale();
+  const legacyTeamPostsEnabled = false;
 
   const [formTitle, setFormTitle] = useState('');
   const [formContent, setFormContent] = useState('');
   const [formCategory, setFormCategory] = useState('');
   const [formTags, setFormTags] = useState<string[]>([]);
   const [formTagInput, setFormTagInput] = useState('');
-  const [isTeamPost, setIsTeamPost] = useState(initialTeamPost);
+  const [isTeamPost, setIsTeamPost] = useState(false);
   const [formTeamSize, setFormTeamSize] = useState(5);
   const [formDeadline, setFormDeadline] = useState('');
   const [formRequirements, setFormRequirements] = useState('');
@@ -84,9 +85,9 @@ export function CreatePostDialog({
         content: formContent,
         categoryId: formCategory,
         tags: formTags,
-        isTeamPost,
+        isTeamPost: false,
       };
-      if (isTeamPost) {
+      if (legacyTeamPostsEnabled && isTeamPost) {
         payload.teamSize = formTeamSize;
         payload.teamDeadline = formDeadline;
         payload.requirements = formRequirements;
@@ -126,7 +127,7 @@ export function CreatePostDialog({
   // Sync initialTeamPost when dialog opens
   const handleOpenChange = (nextOpen: boolean) => {
     if (nextOpen) {
-      setIsTeamPost(initialTeamPost);
+      setIsTeamPost(false);
     } else {
       resetForm();
     }
@@ -168,42 +169,16 @@ export function CreatePostDialog({
             </TabsList>
 
             <TabsContent value="edit" className="space-y-4 mt-0">
-              {/* Post Type Toggle */}
-              <div className="flex gap-2 p-1 bg-muted rounded-lg w-fit">
-                <button
-                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                    !isTeamPost
-                      ? 'bg-card shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                  onClick={() => setIsTeamPost(false)}
-                >
-                  {t('normalPost')}
-                </button>
-                <button
-                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-1.5 ${
-                    isTeamPost
-                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                  onClick={() => isVerified && setIsTeamPost(true)}
-                  disabled={!isVerified}
-                >
-                  <Users className="h-3.5 w-3.5" />
-                  {t('teamPosts')}
-                </button>
-              </div>
-
-              {!isVerified && isTeamPost && (
+              {!legacyTeamPostsEnabled && (
                 <Alert className="bg-amber-50 border-amber-200">
                   <ShieldAlert className="h-4 w-4 text-amber-600" />
                   <AlertDescription className="flex items-center justify-between text-amber-800">
-                    <span className="text-sm">{t('verificationRequired')}</span>
+                    <span className="text-sm">{t('legacyTeamReadOnly')}</span>
                     <Link
-                      href="/verification"
+                      href="/teams"
                       className="inline-flex items-center gap-1 text-primary hover:underline text-sm font-medium"
                     >
-                      {t('goVerify')} <ArrowRight className="h-3 w-3" />
+                      {t('openTeams')} <ArrowRight className="h-3 w-3" />
                     </Link>
                   </AlertDescription>
                 </Alert>
@@ -265,7 +240,7 @@ export function CreatePostDialog({
               </div>
 
               {/* Team Options */}
-              {isTeamPost && (
+              {legacyTeamPostsEnabled && isTeamPost && (
                 <div className="space-y-4 p-4 bg-amber-50/50 rounded-lg border border-amber-100">
                   <h4 className="font-medium text-amber-800 flex items-center gap-2">
                     <Users className="h-4 w-4" />

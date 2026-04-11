@@ -500,20 +500,13 @@ export default function ForumPostDetailPage() {
               </View>
             )}
 
-            {/* Apply button */}
-            {post.teamStatus === 'OPEN' && !isOwnPost && (
-              <AnimatedButton
-                onPress={() => applyMutation.mutate()}
-                loading={applyMutation.isPending}
-                disabled={applyMutation.isPending}
-                style={styles.applyButton}
-                leftIcon={
-                  <Ionicons name="hand-left-outline" size={18} color={c.primaryForeground} />
-                }
-              >
-                {t('forum.applyToJoin')}
-              </AnimatedButton>
-            )}
+            <View style={[styles.requirementsSection, { marginTop: spacing.md }]}>
+              <Text style={[styles.requirementsText, { color: c.foregroundMuted }]}>
+                {i18n.language?.startsWith('zh')
+                  ? '历史组队帖仅保留浏览，不再支持申请加入。请到 /teams 使用新的比赛组队匹配。'
+                  : 'Legacy forum team posts stay readable, but joining is disabled. Use /teams for live competition matching.'}
+              </Text>
+            </View>
           </CardContent>
         </AnimatedCard>
       </Animated.View>

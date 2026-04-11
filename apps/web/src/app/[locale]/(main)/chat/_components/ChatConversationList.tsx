@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 import { staggerContainerFast, staggerItemSlide } from '@/lib/motion';
 import { Users, Search, MessageSquare, Pin } from 'lucide-react';
 import type { Conversation } from './types';
-import { getDisplayName, formatTime } from './utils';
+import { getConversationTitle, getDisplayName, formatTime } from './utils';
 
 interface ChatConversationListProps {
   conversations: Conversation[];
@@ -79,10 +79,16 @@ export function ChatConversationList({
               <AnimatePresence>
                 <motion.div variants={staggerContainerFast} initial="hidden" animate="show">
                   {conversations.map((conv) => {
-                    const isOnline = isUserOnline(conv.otherUser?.id || '');
-                    const displayName = getDisplayName(conv.otherUser);
+                    const isDirect = conv.kind === 'DIRECT';
+                    const isOnline =
+                      isDirect && conv.otherUser ? isUserOnline(conv.otherUser.id) : false;
+                    const displayName = getConversationTitle(conv);
                     const isVerified = conv.otherUser?.role === 'VERIFIED';
                     const isSelected = selectedId === conv.id;
+                    const fallbackInitial =
+                      conv.kind === 'MATCH_GROUP'
+                        ? 'G'
+                        : getDisplayName(conv.otherUser)?.[0]?.toUpperCase() || '?';
 
                     return (
                       <motion.div
@@ -105,21 +111,35 @@ export function ChatConversationList({
                       >
                         <div className="relative">
                           <Avatar className="h-11 w-11 border-2 border-background shadow">
-                            <AvatarImage src={conv.otherUser?.profile?.avatarUrl} />
+                            <AvatarImage
+                              src={
+                                conv.kind === 'DIRECT'
+                                  ? conv.otherUser?.profile?.avatarUrl
+                                  : conv.avatarSummary.find(Boolean) || undefined
+                              }
+                            />
                             <AvatarFallback className="bg-primary text-white font-medium">
-                              {displayName?.[0]?.toUpperCase() || '?'}
+                              {fallbackInitial}
                             </AvatarFallback>
                           </Avatar>
-                          <span
-                            className={cn(
-                              'absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background',
-                              isOnline ? 'bg-emerald-500' : 'bg-muted-foreground'
-                            )}
-                            aria-hidden="true"
-                          />
-                          <span className="sr-only">
-                            {isOnline ? t('chat.online') : t('chat.offline')}
-                          </span>
+                          {isDirect ? (
+                            <>
+                              <span
+                                className={cn(
+                                  'absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background',
+                                  isOnline ? 'bg-emerald-500' : 'bg-muted-foreground'
+                                )}
+                                aria-hidden="true"
+                              />
+                              <span className="sr-only">
+                                {isOnline ? t('chat.online') : t('chat.offline')}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="absolute -bottom-1 -right-1 rounded-full border border-background bg-background p-1 text-muted-foreground">
+                              <Users className="h-3 w-3" />
+                            </span>
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
@@ -128,7 +148,7 @@ export function ChatConversationList({
                                 <Pin className="h-3 w-3 text-muted-foreground shrink-0" />
                               )}
                               {displayName}
-                              {isVerified && <VerificationIcon verified size="sm" />}
+                              {isDirect && isVerified && <VerificationIcon verified size="sm" />}
                             </span>
                             <span className="text-xs text-muted-foreground">
                               {formatTime(conv.updatedAt, locale)}
@@ -139,7 +159,10 @@ export function ChatConversationList({
                               ? t('chat.messageRecalled')
                               : conv.lastMessage?.isDeleted
                                 ? t('chat.messageDeleted')
-                                : conv.lastMessage?.content || t('chat.noMessages')}
+                                : conv.lastMessage?.content ||
+                                  (conv.kind === 'MATCH_GROUP'
+                                    ? `${conv.participantCount} participants`
+                                    : t('chat.noMessages'))}
                           </p>
                         </div>
                         <CountBadge count={conv.unreadCount} variant="primary" />

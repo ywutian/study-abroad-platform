@@ -1,15 +1,13 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
 import { GraduationCap } from 'lucide-react';
 import { PageContainer } from '@/components/layout';
 import { PageHeader } from '@/components/layout/page-header';
 import { apiClient } from '@/lib/api';
-import { schoolListRoutes } from '@study-abroad/shared';
-import { cn } from '@/lib/utils';
+import { profileRoutes, schoolListRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { AIErrorBoundary } from '@/components/features/ai-error-boundary';
 
@@ -20,12 +18,7 @@ import type {
   TieredRecommendations,
 } from './_components/types';
 import { AgentType } from './_components/types';
-import {
-  callAIAgent,
-  extractScore,
-  parseMarkdownSections,
-  parseSchoolRecommendations,
-} from './_components/utils';
+import { callAIAgent, parseSchoolRecommendations } from './_components/utils';
 import { StepProfileGrading } from './_components/step-profile-grading';
 import { StepSchoolLists } from './_components/step-school-lists';
 import { StepAIRecommendations } from './_components/step-ai-recommendations';
@@ -36,7 +29,6 @@ export default function UncommonAppPage() {
   const locale = useLocale();
   const queryClient = useQueryClient();
 
-  const [isFlipped, setIsFlipped] = useState(false);
   const [aiRecommendations, setAiRecommendations] = useState<TieredRecommendations | null>(null);
   const [analysis, setAnalysis] = useState<AIAnalysis | null>(null);
 
@@ -57,32 +49,20 @@ export default function UncommonAppPage() {
     mutationFn: (id: string) => apiClient.delete(schoolListRoutes.byId(id)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['school-lists'] });
+      queryClient.invalidateQueries({ queryKey: ['profile-ai-analysis'] });
       toast.success(t('removedFromList'));
     },
   });
 
   // AI profile analysis
   const profileAnalysisMutation = useMutation({
-    mutationFn: () => callAIAgent(AgentType.PROFILE, t('aiPrompts.analyzeProfile')),
+    mutationFn: () =>
+      apiClient.get<AIAnalysis>(profileRoutes.aiAnalysis(), {
+        timeout: 45000,
+        directApi: true,
+      }),
     onSuccess: (response) => {
-      const parsedSections = parseMarkdownSections(response.message);
-
-      const analysisResult: AIAnalysis = {
-        overallScore: extractScore(response.message) || 85,
-        admissionPrediction: response.message,
-        strengths: response.data?.analysis?.strengths || parsedSections.strengths,
-        weaknesses: response.data?.analysis?.weaknesses || parsedSections.weaknesses,
-        improvements: response.data?.analysis?.improvements || parsedSections.improvements,
-        recommendedActivities: response.data?.analysis?.activities || parsedSections.activities,
-        timeline: response.data?.analysis?.timeline || [
-          { date: t('defaults.nearTerm'), task: t('defaults.nearTermTask') },
-          { date: t('defaults.laterTerm'), task: t('defaults.laterTermTask') },
-        ],
-        projectedImprovement: response.data?.analysis?.improvement || 15,
-      };
-
-      setAnalysis(analysisResult);
-      setIsFlipped(true);
+      setAnalysis(response);
       toast.success(t('analysisComplete'));
     },
   });
@@ -184,37 +164,26 @@ export default function UncommonAppPage() {
             />
           </div>
 
-          {/* Right Side - Profile with Flip Card */}
-          <div className="relative" style={{ perspective: '1000px' }}>
-            <motion.div
-              className="relative w-full"
-              style={{ transformStyle: 'preserve-3d' }}
-              animate={{ rotateY: isFlipped ? 180 : 0 }}
-              transition={{ duration: 0.6, type: 'spring' }}
-            >
-              {/* Front - Profile */}
-              <div className={cn(isFlipped && 'invisible')}>
-                <StepProfileGrading
-                  t={t}
-                  profile={profile}
-                  profileLoading={profileLoading}
-                  profileScore={profileScore}
-                  isAnalyzing={isAnalyzing}
-                  onGradeProfile={handleGradeProfile}
-                />
-              </div>
+          {/* Right Side - Profile and canonical analysis */}
+          <div className="space-y-6">
+            <StepProfileGrading
+              t={t}
+              profile={profile}
+              profileLoading={profileLoading}
+              profileScore={profileScore}
+              isAnalyzing={isAnalyzing}
+              onGradeProfile={handleGradeProfile}
+            />
 
-              {/* Back - AI Analysis */}
-              <div className={cn(!isFlipped && 'invisible')}>
-                <StepResults
-                  t={t}
-                  analysis={analysis}
-                  isAnalyzing={isAnalyzing}
-                  onReAnalyze={handleGradeProfile}
-                  onDone={() => setIsFlipped(false)}
-                />
-              </div>
-            </motion.div>
+            {(analysis || isAnalyzing) && (
+              <StepResults
+                t={t}
+                analysis={analysis}
+                isAnalyzing={isAnalyzing}
+                onReAnalyze={handleGradeProfile}
+                onDone={() => setAnalysis(null)}
+              />
+            )}
           </div>
         </div>
       </PageContainer>

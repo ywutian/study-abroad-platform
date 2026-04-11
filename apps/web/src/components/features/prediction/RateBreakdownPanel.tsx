@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Info } from 'lucide-react';
 import type { MajorBreakdown } from '@study-abroad/shared/types';
+import { formatPercentValue, resolveContextualBaseline } from './benchmark-utils';
 
 interface RateBreakdownPanelProps {
   schoolMeta?: {
@@ -27,6 +28,7 @@ interface RateBreakdownPanelProps {
   };
   probability: number;
   isInternational: boolean;
+  roundContext?: string | null;
 }
 
 function RateBar({
@@ -88,13 +90,21 @@ export function RateBreakdownPanel({
   communityInsight,
   probability,
   isInternational,
+  roundContext,
 }: RateBreakdownPanelProps) {
   const t = useTranslations('prediction');
+  const contextualBaseline = resolveContextualBaseline({
+    schoolMeta,
+    isInternational,
+    roundContext,
+    probability,
+  });
 
   const hasAnyData =
     schoolMeta?.acceptanceRate != null ||
     schoolMeta?.intlAcceptanceRate != null ||
-    majorBreakdown != null;
+    majorBreakdown != null ||
+    contextualBaseline != null;
 
   if (!hasAnyData && !isInternational) {
     return null;
@@ -113,6 +123,20 @@ export function RateBreakdownPanel({
             rate={schoolMeta?.intlAcceptanceRate}
             tooltip={schoolMeta?.intlAcceptanceRate == null ? t('rateBreakdown.naIntl') : undefined}
             na={t('rateBreakdown.na')}
+          />
+        )}
+
+        {contextualBaseline && (
+          <RateBar
+            label={
+              contextualBaseline.roundAdjusted
+                ? t('rateBreakdown.contextualBaselineWithRound', {
+                    round: contextualBaseline.roundContext,
+                  })
+                : t('rateBreakdown.contextualBaseline')
+            }
+            rate={contextualBaseline.rate}
+            tooltip={t('rateBreakdown.contextualBaselineTooltip')}
           />
         )}
 
@@ -144,6 +168,43 @@ export function RateBreakdownPanel({
 
       {/* Context badges */}
       <div className="flex flex-wrap gap-2 pt-1">
+        {contextualBaseline && (
+          <>
+            <Badge variant="secondary" className="text-xs">
+              {contextualBaseline.baseType === 'international'
+                ? t('rateBreakdown.international')
+                : t('rateBreakdown.overall')}
+            </Badge>
+            {contextualBaseline.roundAdjusted && (
+              <Badge variant="secondary" className="text-xs">
+                {t('rateBreakdown.roundAdjusted', {
+                  round: contextualBaseline.roundContext,
+                })}
+              </Badge>
+            )}
+            <Badge
+              variant="secondary"
+              className={cn(
+                'text-xs',
+                contextualBaseline.deltaPoints > 2
+                  ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
+                  : contextualBaseline.deltaPoints < -2
+                    ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/30 dark:text-rose-400 border-rose-200 dark:border-rose-800'
+                    : ''
+              )}
+            >
+              {contextualBaseline.deltaPoints > 2
+                ? t('rateBreakdown.deltaAbove', {
+                    points: formatPercentValue(contextualBaseline.deltaPoints),
+                  })
+                : contextualBaseline.deltaPoints < -2
+                  ? t('rateBreakdown.deltaBelow', {
+                      points: formatPercentValue(Math.abs(contextualBaseline.deltaPoints)),
+                    })
+                  : t('rateBreakdown.deltaNear')}
+            </Badge>
+          </>
+        )}
         {schoolMeta?.needBlindInternational && (
           <Badge
             variant="secondary"

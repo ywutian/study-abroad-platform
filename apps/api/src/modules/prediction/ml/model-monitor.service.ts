@@ -11,7 +11,12 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { computePSI, computeECE } from '@study-abroad/shared/scoring';
+import {
+  computePSI,
+  computeECE,
+  resolveCanonicalPredictionOutcome,
+  VERIFIED_OUTCOME_STATUSES,
+} from '@study-abroad/shared/scoring';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { RedisService } from '../../../common/redis/redis.service';
 import { TrainingDataService } from './training-data.service';
@@ -222,32 +227,77 @@ export class ModelMonitorService {
   // ============================================
 
   private async checkCalibration(): Promise<CalibrationReport> {
-    // Get recent predictions with outcomes
-    const recentOutcomes = await this.prisma.predictionResult.findMany({
+    const recentPredictions = await this.prisma.predictionResult.findMany({
       where: {
-        actualResult: { in: ['ADMITTED', 'REJECTED'] },
         createdAt: { gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) }, // last 90 days
+        outcomeLabelRecords: {
+          some: {
+            status: { in: VERIFIED_OUTCOME_STATUSES },
+            result: { in: ['ADMITTED', 'REJECTED'] },
+          },
+        },
       },
       select: {
         probability: true,
-        actualResult: true,
+        outcomeLabelRecords: {
+          select: {
+            result: true,
+            status: true,
+            isFinal: true,
+            createdAt: true,
+            resolvedAt: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        },
       },
       orderBy: { createdAt: 'desc' },
       take: 1000,
     });
+
+    const recentOutcomes = recentPredictions
+      .map((prediction) => {
+        const canonical = resolveCanonicalPredictionOutcome(
+          prediction.outcomeLabelRecords,
+        );
+        if (!canonical.eligibleForCalibration || !canonical.canonicalRecord) {
+          return null;
+        }
+        return {
+          probability: Number(prediction.probability),
+          result: canonical.canonicalRecord.result,
+        };
+      })
+      .filter(
+        (
+          item,
+        ): item is {
+          probability: number;
+          result: string;
+        } => Boolean(item),
+      );
+
+    if (recentOutcomes.length === 0) {
+      return {
+        ece: null,
+        status: 'ok',
+        recentOutcomeCount: 0,
+        message:
+          'No verified ADMITTED/REJECTED outcomes available for calibration check (0/20)',
+      };
+    }
 
     if (recentOutcomes.length < 20) {
       return {
         ece: null,
         status: 'ok',
         recentOutcomeCount: recentOutcomes.length,
-        message: `Not enough outcomes for calibration check (${recentOutcomes.length}/20)`,
+        message: `Only ${recentOutcomes.length}/20 verified ADMITTED/REJECTED outcomes available for calibration check`,
       };
     }
 
-    const preds = recentOutcomes.map((o) => Number(o.probability));
+    const preds = recentOutcomes.map((o) => o.probability);
     const labels = recentOutcomes.map((o) =>
-      o.actualResult === 'ADMITTED' ? (1 as const) : (0 as const),
+      o.result === 'ADMITTED' ? (1 as const) : (0 as const),
     );
     const ece = computeECE(preds, labels, 5);
 

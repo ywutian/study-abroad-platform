@@ -41,6 +41,7 @@ describe('PredictionCacheService', () => {
             getJSON: jest.fn().mockResolvedValue(null),
             setJSON: jest.fn().mockResolvedValue(undefined),
             del: jest.fn().mockResolvedValue(1),
+            delByPrefix: jest.fn().mockResolvedValue(1),
           },
         },
       ],
@@ -57,7 +58,12 @@ describe('PredictionCacheService', () => {
   describe('getCacheKey', () => {
     it('should build cache key in correct format', () => {
       const key = service.getCacheKey('profile-1', 'school-1');
-      expect(key).toBe('prediction:profile-1:school-1');
+      expect(key).toBe('prediction:profile-1:school-1:legacy:v4');
+    });
+
+    it('should include policy version when provided', () => {
+      const key = service.getCacheKey('profile-1', 'school-1', 'policy-1');
+      expect(key).toBe('prediction:profile-1:school-1:policy-1:v4');
     });
 
     it('should produce unique keys for different profiles', () => {
@@ -221,7 +227,7 @@ describe('PredictionCacheService', () => {
 
       expect(result).toBeNull();
       expect(redis.getJSON).toHaveBeenCalledWith(
-        'prediction:profile-1:school-1',
+        'prediction:profile-1:school-1:legacy:v4',
       );
     });
 
@@ -324,7 +330,7 @@ describe('PredictionCacheService', () => {
       await service.saveToCache('profile-1', 'school-1', mockResult);
 
       expect(redis.setJSON).toHaveBeenCalledWith(
-        'prediction:profile-1:school-1',
+        'prediction:profile-1:school-1:legacy:v4',
         expect.objectContaining({
           ...mockResult,
           cachedAt: expect.any(String),
@@ -337,7 +343,7 @@ describe('PredictionCacheService', () => {
       await service.saveToCache('profile-1', 'school-1', mockResult, 'my-hash');
 
       expect(redis.setJSON).toHaveBeenCalledWith(
-        'prediction:profile-1:school-1',
+        'prediction:profile-1:school-1:legacy:v4',
         expect.objectContaining({
           _profileHash: 'my-hash',
         }),
@@ -349,7 +355,7 @@ describe('PredictionCacheService', () => {
       await service.saveToCache('profile-1', 'school-1', mockResult);
 
       expect(redis.setJSON).toHaveBeenCalledWith(
-        'prediction:profile-1:school-1',
+        'prediction:profile-1:school-1:legacy:v4',
         expect.objectContaining({
           _profileHash: undefined,
         }),
@@ -374,20 +380,28 @@ describe('PredictionCacheService', () => {
         'school-3',
       ]);
 
-      expect(redis.del).toHaveBeenCalledTimes(3);
-      expect(redis.del).toHaveBeenCalledWith('prediction:profile-1:school-1');
-      expect(redis.del).toHaveBeenCalledWith('prediction:profile-1:school-2');
-      expect(redis.del).toHaveBeenCalledWith('prediction:profile-1:school-3');
+      expect(redis.delByPrefix).toHaveBeenCalledTimes(3);
+      expect(redis.delByPrefix).toHaveBeenCalledWith(
+        'prediction:profile-1:school-1:',
+      );
+      expect(redis.delByPrefix).toHaveBeenCalledWith(
+        'prediction:profile-1:school-2:',
+      );
+      expect(redis.delByPrefix).toHaveBeenCalledWith(
+        'prediction:profile-1:school-3:',
+      );
     });
 
     it('should handle empty schoolIds array', async () => {
       await service.invalidateUserCache('profile-1', []);
 
-      expect(redis.del).not.toHaveBeenCalled();
+      expect(redis.delByPrefix).not.toHaveBeenCalled();
     });
 
     it('should not throw when Redis deletion fails (graceful degradation)', async () => {
-      (redis.del as jest.Mock).mockRejectedValue(new Error('Redis timeout'));
+      (redis.delByPrefix as jest.Mock).mockRejectedValue(
+        new Error('Redis timeout'),
+      );
 
       await expect(
         service.invalidateUserCache('profile-1', ['school-1']),

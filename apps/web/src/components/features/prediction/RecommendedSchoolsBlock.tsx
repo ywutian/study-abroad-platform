@@ -22,6 +22,7 @@ export function RecommendedSchoolsBlock() {
     queryFn: () =>
       apiClient.get<RecommendationResponse>('/schools/ai/recommend', {
         timeout: AI_TIMEOUTS.AI_REQUEST,
+        directApi: true,
       }),
     staleTime: STALE_TIME.MODERATE,
     retry: 1,

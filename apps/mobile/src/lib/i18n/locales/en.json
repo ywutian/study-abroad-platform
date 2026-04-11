@@ -949,23 +949,23 @@
   },
   "prediction": {
     "title": "Admission Prediction",
-    "subtitle": "AI-powered prediction of your admission probability",
+    "subtitle": "A personal estimate based on your current profile, not the school's overall acceptance rate",
     "selectSchools": "Select Target Schools",
     "runPrediction": "Run Prediction",
-    "probability": "Admission Probability",
+    "probability": "Your estimated admission chance",
     "factors": "Impact Factors",
     "positive": "Positive Factors",
     "negative": "Negative Factors",
     "suggestion": "Suggestion",
-    "high": "High",
-    "medium": "Medium",
-    "low": "Low",
+    "high": "Strong",
+    "medium": "Moderate",
+    "low": "Limited",
     "profileCompleteness": "Profile Completeness",
     "completeProfileHint": "Complete your profile for better prediction accuracy",
     "stats": {
       "predicted": "Schools Predicted",
-      "safety": "Safety Schools",
-      "reach": "Reach Schools"
+      "safety": "Safety Options",
+      "reach": "Reach Options"
     },
     "resultsTitle": "Prediction Results",
     "results": {
@@ -985,7 +985,28 @@
       "activities": "Activities",
       "essays": "Essays"
     },
-    "confidence": "Confidence: {{value}}",
+    "confidence": "Data support: {{value}}",
+    "estimatedProbabilityLabel": "Your estimated admission chance",
+    "probabilityVsRateDisclaimer": "Your estimate is based on your current profile. It is not the same as a school's overall acceptance rate.",
+    "contextualBaseline": "Context baseline {{value}}%",
+    "contextualBaselineWithRound": "{{round}} baseline {{value}}%",
+    "baselineOverall": "Overall rate",
+    "baselineInternational": "International rate",
+    "roundAdjusted": "{{round}} adjusted",
+    "deltaAbove": "{{points}} pts above baseline",
+    "deltaBelow": "{{points}} pts below baseline",
+    "deltaNear": "Near baseline",
+    "needBlind": "Need-blind for intl",
+    "whyThisEstimate": "Why this estimate",
+    "uncertaintyHint": "Watchout: {{reason}}",
+    "lastUpdated": "Updated {{value}} ago",
+    "confidenceDisclaimer": "\"Data support\" shows how complete your profile and public data are. It does not mean your chances are high or low.",
+    "tierDisclaimer": "\"Reach / Match / Safety\" helps plan your school list. It is not an official school rating.",
+    "analysisCard": {
+      "subtitle": "Open the school-aware strategy view built from the same profile and prediction evidence.",
+      "description": "Review the school-aware application analysis for list balance, weak states, and next actions.",
+      "open": "Open analysis"
+    },
     "empty": {
       "loginRequired": "Please login first",
       "loginRequiredDesc": "Login to use admission prediction",
@@ -1001,6 +1022,163 @@
     "submitResult": "Submit Result",
     "resultReported": "Result reported successfully",
     "reportFailed": "Failed to report result"
+  },
+  "applicationAnalysis": {
+    "title": "Application Analysis",
+    "subtitle": "School-aware strategy built from your profile, predictions, and historical evidence.",
+    "loading": {
+      "description": "Building the latest school-aware application analysis."
+    },
+    "empty": {
+      "title": "No analysis yet",
+      "description": "Run the application analysis to unlock school-level strategy guidance."
+    },
+    "emptyList": "No items yet",
+    "overallScore": "Overall score",
+    "focusSchools": "Focus schools",
+    "profileContext": "Profile context",
+    "schoolListDiagnosis": "School list diagnosis",
+    "freshness": {
+      "fresh": "Fresh",
+      "cached": "Cached",
+      "degraded": "Degraded"
+    },
+    "dataQuality": {
+      "high": "High evidence quality",
+      "medium": "Moderate evidence quality",
+      "low": "Limited evidence quality",
+      "insufficient": "Insufficient evidence"
+    },
+    "states": {
+      "ready": {
+        "label": "School-ready",
+        "description": "The evidence is sufficient for school-level guidance."
+      },
+      "noTargetSchools": {
+        "label": "Needs target schools",
+        "description": "Add 3-5 target schools and rounds before expecting school-specific strategy."
+      },
+      "noPredictions": {
+        "label": "Needs predictions",
+        "description": "The focus schools still need fresh predictions."
+      },
+      "insufficientProfileData": {
+        "label": "Needs core evidence",
+        "description": "The profile is still too thin for reliable school-level judgment."
+      },
+      "analysisError": {
+        "label": "Analysis unavailable",
+        "description": "The analysis could not be completed. Please try again later."
+      }
+    },
+    "portfolioBalance": {
+      "balanced": "Balanced",
+      "reachHeavy": "Reach-heavy",
+      "safetyHeavy": "Safety-heavy",
+      "undermatch": "Undermatch risk",
+      "insufficient": "Not enough schools"
+    },
+    "applicantType": {
+      "title": "Applicant type",
+      "domestic": "Domestic applicant",
+      "international": "International applicant",
+      "unknown": "Unknown applicant type"
+    },
+    "contextFlags": {
+      "needAid": "Needs financial aid",
+      "firstGeneration": "First-generation",
+      "legacy": "Legacy context present",
+      "gapYear": "Gap year",
+      "testSubmit": "Test-submit path",
+      "testOptional": "Test-optional path"
+    },
+    "testStrategy": {
+      "title": "Testing strategy",
+      "submit": "Test-submit",
+      "testOptional": "Test-optional",
+      "unknown": "Unknown"
+    },
+    "confidence": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "schoolTier": {
+      "REACH": "Reach",
+      "TARGET": "Target",
+      "SAFETY": "Safety"
+    },
+    "policy": {
+      "testing": {
+        "REQUIRED": "Test required",
+        "OPTIONAL": "Test optional",
+        "BLIND": "Test blind",
+        "UNKNOWN": "Testing policy unknown"
+      },
+      "intlAid": {
+        "NEED_BLIND": "Intl aid need-blind",
+        "NEED_AWARE": "Intl aid need-aware",
+        "UNKNOWN": "Intl aid policy unknown"
+      }
+    },
+    "schoolCards": {
+      "probabilityUnavailable": "Unavailable",
+      "confidence": "Confidence",
+      "updated": "Updated",
+      "whyHard": "Why this is hard",
+      "strengths": "Compensating strengths",
+      "gaps": "Top gaps",
+      "nextActions": "Next actions",
+      "historical": "Historical signals",
+      "hardStops": "Hard-stop risks",
+      "recourse": "Recourse guidance",
+      "uncertainty": "Strategy uncertainty",
+      "uncertaintyRange": "Strategy range"
+    },
+    "actionPlan": {
+      "title": "Action plan",
+      "now": "Now",
+      "next90Days": "Next 90 days",
+      "beforeSubmission": "Before submission"
+    },
+    "recommendations": {
+      "title": "Supplemental recommendations",
+      "majors": "Major directions",
+      "competitions": "Competitions",
+      "activities": "Projects & activities",
+      "summerPrograms": "Summer programs",
+      "timeline": "Planning notes"
+    },
+    "fairness": {
+      "title": "Fairness disclosure",
+      "notes": "Disclosure notes",
+      "appliesTo": "Applies to",
+      "status": {
+        "clear": "Clear",
+        "limited": "Limited",
+        "blocked": "Blocked"
+      }
+    },
+    "feedback": {
+      "title": "Was this experimental guidance helpful?",
+      "helpful": "Helpful",
+      "notHelpful": "Not helpful",
+      "chooseReason": "Choose a reason",
+      "submitted": "Feedback recorded. Thanks.",
+      "categories": {
+        "UNSAFE_RECOURSE": "Unsafe recourse",
+        "POLICY_MISMATCH": "Policy mismatch",
+        "MISLEADING_UNCERTAINTY": "Misleading uncertainty",
+        "FAIRNESS_CONCERN": "Fairness concern",
+        "LOW_ACTIONABILITY": "Low actionability"
+      }
+    },
+    "summaryCard": {
+      "title": "School-aware strategy",
+      "subtitle": "See the same canonical analysis used on web and uncommon-app.",
+      "loading": "Loading",
+      "open": "Open application analysis"
+    }
   },
   "settings": {
     "title": "Settings",
@@ -1159,8 +1337,8 @@
     "strengths": "Strengths",
     "weaknesses": "Areas to Improve",
     "tips": "Improvement Tips",
-    "fitScore": "Fit Score",
-    "probability": "Admission Probability",
+    "fitScore": "Profile Fit",
+    "probability": "Estimated Personal Chance",
     "reasons": "Why this school",
     "concerns": "Potential concerns",
     "generateAgain": "Generate Again",
@@ -1171,7 +1349,13 @@
     "match": "Match",
     "safety": "Safety",
     "schools": "{count} schools",
-    "visitWebsite": "Visit official website"
+    "visitWebsite": "Visit official website",
+    "tierReach": "Reach Choice",
+    "tierMatch": "Match Choice",
+    "tierSafety": "Safety Choice",
+    "acceptRate": "school-wide acceptance rate",
+    "disclaimer": "These tiers help plan your school list. They are not official school ratings.",
+    "strategyDisclaimer": "These tiers help plan your school list. They are not official school ratings."
   },
   "findCollege": {
     "title": "Find College",

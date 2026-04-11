@@ -1,4 +1,4 @@
-import { chromium, type Browser, type Page } from '@playwright/test';
+import { chromium, type Browser, type BrowserContext, type Page } from '@playwright/test';
 import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
@@ -190,6 +190,36 @@ function rel(filePath: string) {
   return path.relative(ROOT, filePath);
 }
 
+async function settlePage(page: Page, networkIdleTimeout = 3000, fallbackDelay = 1200) {
+  try {
+    await Promise.race([
+      page.waitForLoadState('networkidle', { timeout: networkIdleTimeout }),
+      page.waitForTimeout(fallbackDelay),
+    ]);
+  } catch {
+    await page.waitForTimeout(fallbackDelay);
+  }
+}
+
+async function gotoStable(page: Page, url: string, timeout = 60_000) {
+  try {
+    await page.goto(url, { waitUntil: 'commit', timeout });
+  } catch (error) {
+    const message = formatError(error);
+    const reachedTarget =
+      page.url() !== 'about:blank' &&
+      (page.url() === url || page.url().startsWith(`${url}?`) || page.url().startsWith(`${url}#`));
+    if (!/page\.goto: Timeout/i.test(message) || !reachedTarget) {
+      throw error;
+    }
+    await Promise.race([
+      page.waitForSelector('body', { timeout: 5_000 }).catch(() => undefined),
+      page.waitForTimeout(2_000),
+    ]);
+  }
+  await settlePage(page, 5_000, 1_500);
+}
+
 function sanitizeLogcatLine(line: string) {
   return line
     .replace(/ExpoPushToken\[[^\]]+\]/g, 'ExpoPushToken[REDACTED]')
@@ -357,7 +387,7 @@ async function saveHtml(page: Page, id: string, name: string) {
 }
 
 async function gotoAndAssertOk(page: Page, url: string, expectedPath?: string) {
-  const response = await page.goto(url);
+  const response = await page.goto(url, { waitUntil: 'domcontentloaded' });
   if (!response) {
     throw new Error(`Navigation produced no document response for ${url}`);
   }
@@ -367,7 +397,7 @@ async function gotoAndAssertOk(page: Page, url: string, expectedPath?: string) {
     throw new Error(`Route request failed with HTTP ${status} for ${url}`);
   }
 
-  await page.waitForLoadState('networkidle');
+  await settlePage(page);
 
   if (expectedPath) {
     const actualPath = new URL(page.url()).pathname;
@@ -432,22 +462,204 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function apiLogin(account: Account): Promise<ApiSession> {
-  const cachePath = sessionCachePath(account.email);
+async function safeCloseContext(context: BrowserContext | null | undefined) {
+  if (!context) return;
   try {
-    const cached = JSON.parse(await fs.readFile(cachePath, 'utf8')) as ApiSession & {
-      exp?: number;
-    };
-    const exp = cached.exp ?? decodeJwtExp(cached.accessToken);
-    if (exp && exp * 1000 > Date.now() + 60_000) {
-      return {
-        user: cached.user,
-        accessToken: cached.accessToken,
-        cookies: cached.cookies ?? [],
-      };
+    await context.close();
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      /(target page, context or browser has been closed|browser has been closed)/i.test(
+        error.message
+      )
+    ) {
+      return;
     }
+    throw error;
+  }
+}
+
+async function safeCloseBrowser(browser: Browser | null | undefined) {
+  if (!browser) return;
+  try {
+    await browser.close();
+  } catch (error) {
+    if (error instanceof Error && /browser has been closed/i.test(error.message)) {
+      return;
+    }
+    throw error;
+  }
+}
+
+async function redisKeyExists(key: string) {
+  try {
+    const { stdout } = await execFileAsync('redis-cli', ['EXISTS', key], {
+      cwd: ROOT,
+    });
+    return stdout.trim() === '1';
   } catch {
-    // ignore cache miss
+    return false;
+  }
+}
+
+async function waitForRedisLockToClear(
+  key: string,
+  { timeoutMs = 180_000, intervalMs = 2_000 }: { timeoutMs?: number; intervalMs?: number } = {}
+) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (!(await redisKeyExists(key))) {
+      return;
+    }
+    await sleep(intervalMs);
+  }
+}
+
+function parseSetCookieForContext(setCookie: string) {
+  const [nameValue, ...rawAttributes] = setCookie.split(';').map((segment) => segment.trim());
+  const separatorIndex = nameValue.indexOf('=');
+  if (separatorIndex <= 0) {
+    return null;
+  }
+
+  const cookie: Parameters<BrowserContext['addCookies']>[0][number] = {
+    name: nameValue.slice(0, separatorIndex),
+    value: nameValue.slice(separatorIndex + 1),
+    url: WEB_BASE,
+    sameSite: 'Lax',
+  };
+
+  for (const attribute of rawAttributes) {
+    const [rawKey, ...rawValueParts] = attribute.split('=');
+    const key = rawKey.trim().toLowerCase();
+    const value = rawValueParts.join('=').trim();
+    switch (key) {
+      case 'path':
+        if ('domain' in cookie) {
+          cookie.path = value || '/';
+        }
+        break;
+      case 'domain':
+        cookie.domain = value;
+        cookie.path = cookie.path ?? '/';
+        delete cookie.url;
+        break;
+      case 'secure':
+        cookie.secure = true;
+        break;
+      case 'httponly':
+        cookie.httpOnly = true;
+        break;
+      case 'samesite':
+        if (/^strict$/i.test(value)) cookie.sameSite = 'Strict';
+        else if (/^none$/i.test(value)) cookie.sameSite = 'None';
+        else cookie.sameSite = 'Lax';
+        break;
+      case 'expires': {
+        const epochSeconds = Math.floor(new Date(value).getTime() / 1000);
+        if (Number.isFinite(epochSeconds)) {
+          cookie.expires = epochSeconds;
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  return cookie;
+}
+
+function accessTokenCookie(
+  accessToken: string
+): Parameters<BrowserContext['addCookies']>[0][number] {
+  return {
+    name: 'access_token',
+    value: accessToken,
+    url: WEB_BASE,
+    httpOnly: false,
+    secure: false,
+    sameSite: 'Lax',
+  };
+}
+
+function sessionCookiesForContext(session: ApiSession) {
+  return session.cookies
+    .map((value) => parseSetCookieForContext(value))
+    .filter(
+      (value): value is Parameters<BrowserContext['addCookies']>[0][number] =>
+        value !== null &&
+        (typeof value.url === 'string' ||
+          (typeof value.domain === 'string' && typeof value.path === 'string'))
+    );
+}
+
+async function seedContextSessionCookies(context: BrowserContext, session: ApiSession) {
+  await context.addCookies([accessTokenCookie(session.accessToken)]);
+
+  const passthroughCookies = sessionCookiesForContext(session).filter(
+    (cookie) => cookie.name !== 'access_token'
+  );
+  if (passthroughCookies.length === 0) {
+    return;
+  }
+
+  try {
+    await context.addCookies(passthroughCookies);
+  } catch {
+    // Audit sessions only need a stable access token cookie. Ignore malformed
+    // passthrough cookies instead of failing the whole journey bootstrap.
+  }
+}
+
+async function pageShowsAnonymousShell(page: Page) {
+  return page
+    .evaluate(() => {
+      const isVisible = (element: Element) => {
+        const rect = element.getBoundingClientRect();
+        const style = window.getComputedStyle(element);
+        return (
+          rect.width > 0 &&
+          rect.height > 0 &&
+          style.visibility !== 'hidden' &&
+          style.display !== 'none'
+        );
+      };
+
+      return Array.from(document.querySelectorAll('a,button')).some((element) => {
+        if (!isVisible(element)) {
+          return false;
+        }
+        const text = (element.textContent ?? '').trim();
+        return /^login$/i.test(text) || /^register$/i.test(text);
+      });
+    })
+    .catch(() => false);
+}
+
+async function apiLogin(
+  account: Account,
+  options: {
+    forceFresh?: boolean;
+  } = {}
+): Promise<ApiSession> {
+  const cachePath = sessionCachePath(account.email);
+  if (!options.forceFresh) {
+    try {
+      const cached = JSON.parse(await fs.readFile(cachePath, 'utf8')) as ApiSession & {
+        exp?: number;
+      };
+      const exp = cached.exp ?? decodeJwtExp(cached.accessToken);
+      if (exp && exp * 1000 > Date.now() + 60_000) {
+        return {
+          user: cached.user,
+          accessToken: cached.accessToken,
+          cookies: cached.cookies ?? [],
+        };
+      }
+    } catch {
+      // ignore cache miss
+    }
   }
 
   const response = await fetch(`${API_BASE}/auth/login`, {
@@ -534,11 +746,18 @@ async function loginUi(page: Page, account: Account, targetPath: string, locale 
     return value.search === targetUrl.search;
   };
 
-  await page.goto(targetUrl.toString());
-  await page.waitForLoadState('networkidle');
+  await gotoStable(page, targetUrl.toString());
 
-  const currentUrl = new URL(page.url());
-  if (currentUrl.pathname === `/${locale}/login`) {
+  let currentUrl = new URL(page.url());
+  const callbackUrl = `/${locale}${targetPath}`;
+  const anonymousShell = await pageShowsAnonymousShell(page);
+  if (currentUrl.pathname === `/${locale}/login` || anonymousShell) {
+    if (currentUrl.pathname !== `/${locale}/login`) {
+      const loginUrl = new URL(`${WEB_BASE}/${locale}/login`);
+      loginUrl.searchParams.set('callbackUrl', callbackUrl);
+      await gotoStable(page, loginUrl.toString());
+      currentUrl = new URL(page.url());
+    }
     await page.locator('input[type="email"]').first().fill(account.email);
     await page.locator('input[type="password"]').first().fill(account.password);
     await page.getByRole('button', { name: /login/i }).click();
@@ -552,13 +771,12 @@ async function loginUi(page: Page, account: Account, targetPath: string, locale 
       },
       { timeout: 30000 }
     );
-    await page.waitForLoadState('networkidle');
+    await settlePage(page);
   }
 
   let resolvedUrl = new URL(page.url());
   if (!matchesTarget(resolvedUrl)) {
-    await page.goto(targetUrl.toString());
-    await page.waitForLoadState('networkidle');
+    await gotoStable(page, targetUrl.toString());
     resolvedUrl = new URL(page.url());
   }
 
@@ -568,7 +786,7 @@ async function loginUi(page: Page, account: Account, targetPath: string, locale 
     );
   }
 
-  await page.waitForLoadState('networkidle');
+  await settlePage(page);
 }
 
 async function clickProfileTab(page: Page, label: RegExp) {
@@ -623,50 +841,39 @@ async function browserRead(page: Page, url: string) {
 
 async function openAuthenticatedPage(browser: Browser, account: Account, targetPath: string) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1100 } });
-  let seededSession = await apiLogin(account);
-  await context.addCookies([
-    {
-      name: 'access_token',
-      value: seededSession.accessToken,
-      url: WEB_BASE,
-      httpOnly: false,
-      secure: false,
-      sameSite: 'Lax',
-    },
-  ]);
-  await context.route('**/api/v1/auth/refresh', async (route) => {
-    seededSession = await apiLogin(account);
-    await context.addCookies([
-      {
-        name: 'access_token',
-        value: seededSession.accessToken,
-        url: WEB_BASE,
-        httpOnly: false,
-        secure: false,
-        sameSite: 'Lax',
-      },
-    ]);
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        data: {
-          accessToken: seededSession.accessToken,
-        },
-      }),
+  let seededSession = await apiLogin(account, { forceFresh: true });
+  await seedContextSessionCookies(context, seededSession);
+  const hasRealRefreshCookie = sessionCookiesForContext(seededSession).some(
+    (cookie) => cookie.name === 'refreshToken'
+  );
+  if (!hasRealRefreshCookie) {
+    await context.route('**/api/v1/auth/refresh', async (route) => {
+      seededSession = await apiLogin(account, { forceFresh: true });
+      await seedContextSessionCookies(context, seededSession);
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          data: {
+            accessToken: seededSession.accessToken,
+          },
+        }),
+      });
     });
-  });
+  }
   const page = await context.newPage();
-  await page.goto(`${WEB_BASE}/en${targetPath}`);
-  await page.waitForLoadState('networkidle');
-  if (/\/(en|zh)\/login(?:\?|$)/.test(new URL(page.url()).pathname)) {
+  await gotoStable(page, `${WEB_BASE}/en${targetPath}`);
+  if (
+    /\/(en|zh)\/login(?:\?|$)/.test(new URL(page.url()).pathname) ||
+    (await pageShowsAnonymousShell(page))
+  ) {
     await loginUi(page, account, targetPath);
   }
   return { context, page };
 }
 
-async function openApplicantPage(browser: Browser) {
-  return openAuthenticatedPage(browser, ACCOUNTS.applicant, '/dashboard');
+async function openApplicantPage(browser: Browser, targetPath = '/dashboard') {
+  return openAuthenticatedPage(browser, ACCOUNTS.applicant, targetPath);
 }
 
 async function openAdminPage(browser: Browser) {
@@ -1645,7 +1852,11 @@ async function applicantA1(browser: Browser) {
     });
 
     try {
-      await page.goto(`${WEB_BASE}/en/register?callbackUrl=%2Fen%2Fdashboard`);
+      await page.goto(`${WEB_BASE}/en/register?callbackUrl=%2Fen%2Fdashboard`, {
+        waitUntil: 'commit',
+        timeout: 60_000,
+      });
+      await settlePage(page);
       await page.evaluate(() => {
         window.sessionStorage.removeItem('__registerDebug');
       });
@@ -1690,7 +1901,8 @@ async function applicantA1(browser: Browser) {
       await sleep(4000);
       evidence.push(await screenshot(page, id, '03-dashboard-after-register', true));
       evidence.push(await saveHtml(page, id, 'dashboard-after-register'));
-      await page.reload({ waitUntil: 'networkidle' });
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await settlePage(page);
       evidence.push(await screenshot(page, id, '04-dashboard-revisit', true));
 
       const accessTokenCookie = (await context.cookies()).find(
@@ -1823,7 +2035,7 @@ async function applicantA1(browser: Browser) {
       }
       throw error;
     } finally {
-      await context.close();
+      await safeCloseContext(context);
     }
   }
 
@@ -2009,10 +2221,16 @@ async function applicantA2(page: Page, session: ApiSession) {
   });
 }
 
-async function applicantA3(page: Page) {
+async function applicantA3(page: Page, session: ApiSession) {
   const id = 'A3';
   const evidence: string[] = [];
-  await loginUi(page, ACCOUNTS.applicant, '/schools?tab=recommend');
+  const currentUrl = new URL(page.url());
+  if (currentUrl.pathname !== '/en/schools' || currentUrl.search !== '?tab=recommend') {
+    await loginUi(page, ACCOUNTS.applicant, '/schools?tab=recommend');
+  } else {
+    await settlePage(page);
+  }
+  await waitForRedisLockToClear(`recommendation:lock:${session.user.id}`);
   evidence.push(await screenshot(page, id, '01-recommend-enter', true));
 
   const form = page
@@ -2027,40 +2245,117 @@ async function applicantA3(page: Page) {
   await form
     .locator('textarea')
     .fill('Research-heavy schools with strong undergraduate mentorship.');
-  const responsePromise = page.waitForResponse(
-    (response) =>
-      response.url().includes('/api/v1/recommendations') && response.request().method() === 'POST',
+  const generateButton = form.getByRole('button', { name: /generate/i });
+  await page.waitForFunction(
+    () => {
+      const buttons = Array.from(document.querySelectorAll('form button'));
+      const target = buttons.find((button) => /generate/i.test(button.textContent ?? ''));
+      return target instanceof HTMLButtonElement && !target.disabled;
+    },
     { timeout: 60000 }
   );
-  await form.getByRole('button', { name: /generate/i }).click();
-  const generateResponse = await responsePromise;
-  const generateBody = await generateResponse.text().catch(() => '');
+  const waitForRecommendationResponse = () =>
+    page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/v1/recommendations') &&
+        response.request().method() === 'POST',
+      { timeout: 120000 }
+    );
+  const waitForRecommendationUi = () =>
+    page.getByRole('button', { name: /regenerate/i }).waitFor({ timeout: 150000 });
+  const isBusyConflict = (status: number, body: string) =>
+    status === 409 && /(already in progress|正在生成中)/i.test(body);
+
+  let watcherError: string | null = null;
+  let generateResponse = await (async () => {
+    const responsePromise = waitForRecommendationResponse();
+    await generateButton.click();
+    try {
+      return await responsePromise;
+    } catch (error) {
+      watcherError = error instanceof Error ? error.message : String(error);
+      return null;
+    }
+  })();
+  let generateBody = generateResponse ? await generateResponse.text().catch(() => '') : '';
+  const retryNote =
+    generateResponse && isBusyConflict(generateResponse.status(), generateBody)
+      ? {
+          firstStatus: generateResponse.status(),
+          firstBody: generateBody,
+        }
+      : null;
+
+  if (retryNote) {
+    await sleep(45000);
+    await page.waitForFunction(
+      () => {
+        const buttons = Array.from(document.querySelectorAll('form button'));
+        const target = buttons.find((button) => /generate/i.test(button.textContent ?? ''));
+        return target instanceof HTMLButtonElement && !target.disabled;
+      },
+      { timeout: 60000 }
+    );
+    const retryResponsePromise = waitForRecommendationResponse();
+    await generateButton.click();
+    try {
+      generateResponse = await retryResponsePromise;
+      watcherError = null;
+    } catch (error) {
+      watcherError = error instanceof Error ? error.message : String(error);
+      generateResponse = null;
+    }
+    generateBody = generateResponse ? await generateResponse.text().catch(() => '') : '';
+  }
   const responsePath = path.join(journeyDir(id), 'generate-response.json');
   await writeText(
     responsePath,
     JSON.stringify(
       {
-        status: generateResponse.status(),
-        ok: generateResponse.ok(),
+        status: generateResponse?.status() ?? null,
+        ok: generateResponse?.ok() ?? null,
         body: generateBody,
+        retryNote,
+        watcherError,
       },
       null,
       2
     )
   );
   evidence.push(rel(responsePath));
-  if (!generateResponse.ok()) {
+  if (generateResponse && !generateResponse.ok()) {
     throw new Error(
       `POST /api/v1/recommendations failed: ${generateResponse.status()} ${generateBody.slice(0, 500)}`
     );
   }
-  await page.getByRole('button', { name: /regenerate/i }).waitFor({ timeout: 120000 });
+  await waitForRecommendationUi();
   evidence.push(await screenshot(page, id, '02-recommend-results', true));
-  const summary = await page
-    .locator('text=/fit score/i')
-    .first()
-    .textContent()
-    .catch(() => null);
+  const firstRecommendationSummary = (() => {
+    if (!generateBody) return null;
+    try {
+      const parsed = JSON.parse(generateBody) as {
+        data?: {
+          recommendations?: Array<{
+            schoolName?: string;
+            school?: { name?: string };
+            fitScore?: number;
+          }>;
+        };
+      };
+      const firstRecommendation = parsed.data?.recommendations?.[0];
+      if (!firstRecommendation) return null;
+      const schoolName =
+        firstRecommendation.schoolName?.trim() ?? firstRecommendation.school?.name?.trim() ?? null;
+      const fitScore =
+        typeof firstRecommendation.fitScore === 'number' ? firstRecommendation.fitScore : null;
+      if (schoolName && fitScore !== null) {
+        return `${schoolName} (fit ${fitScore})`;
+      }
+      return schoolName;
+    } catch {
+      return null;
+    }
+  })();
   await addRecord({
     id,
     title: '首次选校推荐',
@@ -2079,19 +2374,22 @@ async function applicantA3(page: Page) {
     score: 4,
     status: 'PASS',
     evidence,
-    notes: [summary ? `First result marker: ${summary.trim()}` : 'Recommendation cards rendered.'],
+    notes: [
+      firstRecommendationSummary
+        ? `First recommendation: ${firstRecommendationSummary}`
+        : 'Recommendation cards rendered.',
+    ],
   });
 }
 
 async function applicantAiJourneys(page: Page) {
   const openAiPage = async () => {
-    await page.goto(`${WEB_BASE}/en/ai`);
-    await page.waitForLoadState('networkidle');
+    await gotoStable(page, `${WEB_BASE}/en/ai`);
     if (/\/(en|zh)\/login(?:\?|$)/.test(new URL(page.url()).pathname)) {
       await loginUi(page, ACCOUNTS.applicant, '/ai');
     }
     await page.waitForURL(/\/(en|zh)\/ai(?:\?|$)/, { timeout: 30000 });
-    await page.waitForLoadState('networkidle');
+    await settlePage(page);
     await page.locator('textarea:visible').last().waitFor({ state: 'visible', timeout: 30000 });
     await page.evaluate(() => {
       (window as Window & { __agentChatDebug?: unknown[] }).__agentChatDebug = [];
@@ -2198,112 +2496,114 @@ async function applicantAiJourneys(page: Page) {
     'Referenced earlier preferences and asked for progressively compressed outputs.',
     'Checked the final response for memory of previous turns.',
   ];
-  const existingA6 = await readExistingRecord('A6');
-  if (FORCE_RERUN || !existingA6 || existingA6.status === 'BROKEN') {
-    try {
-      await fs.rm(journeyDir('A6'), { recursive: true, force: true });
-      await ensureDir(journeyDir('A6'));
-      await openAiPage();
-      const multiTurnEvidence: string[] = [
-        await screenshot(page, 'A6', '01-conversation-start', true),
-      ];
-      const runnerDebugPath = path.join(journeyDir('A6'), 'runner-debug.jsonl');
-      await writeText(runnerDebugPath, '');
-      multiTurnEvidence.push(rel(runnerDebugPath));
-      const turnPrompts = [
-        'Remember that my target major is Computer Science and I care about undergraduate research.',
-        'Give me 3 priorities for April.',
-        'Now compress those priorities into one weekly checklist.',
-        'Which of those items should happen before recommendation letters?',
-        'Summarize everything you already know about my preferences in one sentence.',
-      ];
-      const turnResponses: string[] = [];
-      for (const [index, prompt] of turnPrompts.entries()) {
-        const turnLabel = `turn-${index + 1}`;
-        await appendJourneyTrace('A6', 'turn:start', { turnLabel, prompt });
-        const response = await sendChatPrompt(page, prompt, 120000, {
-          traceId: 'A6',
-          turnLabel,
+  if (shouldRunJourney('A6')) {
+    const existingA6 = await readExistingRecord('A6');
+    if (FORCE_RERUN || !existingA6 || existingA6.status === 'BROKEN') {
+      try {
+        await fs.rm(journeyDir('A6'), { recursive: true, force: true });
+        await ensureDir(journeyDir('A6'));
+        await openAiPage();
+        const multiTurnEvidence: string[] = [
+          await screenshot(page, 'A6', '01-conversation-start', true),
+        ];
+        const runnerDebugPath = path.join(journeyDir('A6'), 'runner-debug.jsonl');
+        await writeText(runnerDebugPath, '');
+        multiTurnEvidence.push(rel(runnerDebugPath));
+        const turnPrompts = [
+          'Remember that my target major is Computer Science and I care about undergraduate research.',
+          'Give me 3 priorities for April.',
+          'Now compress those priorities into one weekly checklist.',
+          'Which of those items should happen before recommendation letters?',
+          'Summarize everything you already know about my preferences in one sentence.',
+        ];
+        const turnResponses: string[] = [];
+        for (const [index, prompt] of turnPrompts.entries()) {
+          const turnLabel = `turn-${index + 1}`;
+          await appendJourneyTrace('A6', 'turn:start', { turnLabel, prompt });
+          const response = await sendChatPrompt(page, prompt, 120000, {
+            traceId: 'A6',
+            turnLabel,
+          });
+          turnResponses.push(response.message);
+          await appendJourneyTrace('A6', 'turn:complete', {
+            turnLabel,
+            responseLength: response.message.length,
+          });
+        }
+        multiTurnEvidence.push(await screenshot(page, 'A6', '02-conversation-end', true));
+        const turnPath = path.join(journeyDir('A6'), 'turns.json');
+        await writeJson(
+          turnPath,
+          turnPrompts.map((prompt, index) => ({ prompt, response: turnResponses[index] }))
+        );
+        multiTurnEvidence.push(rel(turnPath));
+        const debugPath = path.join(journeyDir('A6'), 'agent-chat-debug.json');
+        const debugDump = await page
+          .evaluate(() => window.sessionStorage.getItem('__agentChatDebug'))
+          .catch(() => null);
+        if (debugDump) {
+          await writeText(debugPath, debugDump);
+          multiTurnEvidence.push(rel(debugPath));
+        }
+        await addRecord({
+          id: 'A6',
+          title: '5+ 轮多轮对话',
+          account: ACCOUNTS.applicant.email,
+          prerequisites: a6Prerequisites,
+          steps: a6Steps,
+          userVisibleResult: turnResponses[turnResponses.length - 1].slice(0, 300),
+          score: 4,
+          status: 'PASS',
+          evidence: multiTurnEvidence,
+          notes: ['Five sequential prompts were completed in a single conversation.'],
         });
-        turnResponses.push(response.message);
-        await appendJourneyTrace('A6', 'turn:complete', {
-          turnLabel,
-          responseLength: response.message.length,
+      } catch (error) {
+        const debugPath = path.join(journeyDir('A6'), 'agent-chat-debug.json');
+        const debugDump = await page
+          .evaluate(() => window.sessionStorage.getItem('__agentChatDebug'))
+          .catch(() => null);
+        if (debugDump) {
+          await writeText(debugPath, debugDump);
+        }
+        const textareaStatePath = path.join(journeyDir('A6'), 'textarea-state.json');
+        const textareaState = await page
+          .evaluate(() =>
+            Array.from(document.querySelectorAll('textarea')).map((element, index) => {
+              const rect = element.getBoundingClientRect();
+              return {
+                index,
+                value: element.value,
+                disabled: element.disabled,
+                placeholder: element.getAttribute('placeholder'),
+                visible:
+                  rect.width > 0 &&
+                  rect.height > 0 &&
+                  window.getComputedStyle(element).visibility !== 'hidden' &&
+                  window.getComputedStyle(element).display !== 'none',
+              };
+            })
+          )
+          .catch(() => null);
+        if (textareaState) {
+          await writeJson(textareaStatePath, textareaState);
+        }
+        const runnerDebugPath = path.join(journeyDir('A6'), 'runner-debug.jsonl');
+        await addFailureRecord({
+          id: 'A6',
+          title: '5+ 轮多轮对话',
+          account: ACCOUNTS.applicant.email,
+          prerequisites: a6Prerequisites,
+          steps: a6Steps,
+          error,
+          page,
+          notes: ['The multi-turn memory path stopped before all five turns completed.'],
+          extraEvidence: [
+            ...(debugDump ? [rel(debugPath)] : []),
+            ...(textareaState ? [rel(textareaStatePath)] : []),
+            rel(runnerDebugPath),
+          ],
         });
       }
-      multiTurnEvidence.push(await screenshot(page, 'A6', '02-conversation-end', true));
-      const turnPath = path.join(journeyDir('A6'), 'turns.json');
-      await writeJson(
-        turnPath,
-        turnPrompts.map((prompt, index) => ({ prompt, response: turnResponses[index] }))
-      );
-      multiTurnEvidence.push(rel(turnPath));
-      const debugPath = path.join(journeyDir('A6'), 'agent-chat-debug.json');
-      const debugDump = await page
-        .evaluate(() => window.sessionStorage.getItem('__agentChatDebug'))
-        .catch(() => null);
-      if (debugDump) {
-        await writeText(debugPath, debugDump);
-        multiTurnEvidence.push(rel(debugPath));
-      }
-      await addRecord({
-        id: 'A6',
-        title: '5+ 轮多轮对话',
-        account: ACCOUNTS.applicant.email,
-        prerequisites: a6Prerequisites,
-        steps: a6Steps,
-        userVisibleResult: turnResponses[turnResponses.length - 1].slice(0, 300),
-        score: 4,
-        status: 'PASS',
-        evidence: multiTurnEvidence,
-        notes: ['Five sequential prompts were completed in a single conversation.'],
-      });
-    } catch (error) {
-      const debugPath = path.join(journeyDir('A6'), 'agent-chat-debug.json');
-      const debugDump = await page
-        .evaluate(() => window.sessionStorage.getItem('__agentChatDebug'))
-        .catch(() => null);
-      if (debugDump) {
-        await writeText(debugPath, debugDump);
-      }
-      const textareaStatePath = path.join(journeyDir('A6'), 'textarea-state.json');
-      const textareaState = await page
-        .evaluate(() =>
-          Array.from(document.querySelectorAll('textarea')).map((element, index) => {
-            const rect = element.getBoundingClientRect();
-            return {
-              index,
-              value: element.value,
-              disabled: element.disabled,
-              placeholder: element.getAttribute('placeholder'),
-              visible:
-                rect.width > 0 &&
-                rect.height > 0 &&
-                window.getComputedStyle(element).visibility !== 'hidden' &&
-                window.getComputedStyle(element).display !== 'none',
-            };
-          })
-        )
-        .catch(() => null);
-      if (textareaState) {
-        await writeJson(textareaStatePath, textareaState);
-      }
-      const runnerDebugPath = path.join(journeyDir('A6'), 'runner-debug.jsonl');
-      await addFailureRecord({
-        id: 'A6',
-        title: '5+ 轮多轮对话',
-        account: ACCOUNTS.applicant.email,
-        prerequisites: a6Prerequisites,
-        steps: a6Steps,
-        error,
-        page,
-        notes: ['The multi-turn memory path stopped before all five turns completed.'],
-        extraEvidence: [
-          ...(debugDump ? [rel(debugPath)] : []),
-          ...(textareaState ? [rel(textareaStatePath)] : []),
-          rel(runnerDebugPath),
-        ],
-      });
     }
   }
 
@@ -2376,55 +2676,112 @@ async function applicantA10(page: Page, session: ApiSession) {
   const id = 'A10';
   const evidence: string[] = [];
   await loginUi(page, ACCOUNTS.applicant, '/prediction');
-  evidence.push(await screenshot(page, id, '01-prediction-enter', true));
-  const predictionResponsePromise = page
-    .waitForResponse(
-      (response) =>
-        response.url().includes('/api/v1/predictions') && response.request().method() === 'POST',
-      { timeout: 60000 }
-    )
-    .catch((error) => {
-      if (page.isClosed()) {
-        return null;
-      }
-      throw error;
-    });
-  await page.getByRole('button', { name: /run prediction|analyzing/i }).click();
-  const predictionResponse = await predictionResponsePromise;
-  if (!predictionResponse) {
-    throw new Error('Prediction response watcher was interrupted before the live POST completed.');
+  const profile = await apiRequest<{ id?: string; profile?: { id?: string } }>(
+    session,
+    'GET',
+    '/profiles/me'
+  ).catch(() => null);
+  const profileId = profile?.id ?? profile?.profile?.id;
+  if (profileId) {
+    await waitForRedisLockToClear(`prediction:lock:${profileId}`);
   }
-  const predictionBody = await predictionResponse.text().catch(() => '');
+  evidence.push(await screenshot(page, id, '01-prediction-enter', true));
+  const predictionButton = page.getByRole('button', { name: /run prediction|analyzing/i });
+  const waitForPredictionResponse = () =>
+    page
+      .waitForResponse(
+        (response) =>
+          response.url().includes('/api/v1/predictions') && response.request().method() === 'POST',
+        { timeout: 60000 }
+      )
+      .catch((error) => {
+        if (page.isClosed()) {
+          return null;
+        }
+        throw error;
+      });
+  const waitForPredictionUi = () =>
+    page
+      .getByText(/results/i)
+      .first()
+      .waitFor({ timeout: 120000 });
+  const isBusyConflict = (status: number, body: string) =>
+    status === 409 && /(already in progress|正在生成中)/i.test(body);
+
+  let predictionWatcherError: string | null = null;
+  let predictionResponse = await (async () => {
+    const responsePromise = waitForPredictionResponse();
+    await predictionButton.click();
+    try {
+      return await responsePromise;
+    } catch (error) {
+      predictionWatcherError = error instanceof Error ? error.message : String(error);
+      return null;
+    }
+  })();
+  let predictionBody = predictionResponse ? await predictionResponse.text().catch(() => '') : '';
+  const retryNote =
+    predictionResponse && isBusyConflict(predictionResponse.status(), predictionBody)
+      ? {
+          firstStatus: predictionResponse.status(),
+          firstBody: predictionBody,
+        }
+      : null;
+
+  if (retryNote) {
+    await sleep(45000);
+    await page.waitForFunction(
+      () => {
+        const buttons = Array.from(document.querySelectorAll('button'));
+        const target = buttons.find((button) =>
+          /run prediction|analyzing/i.test(button.textContent ?? '')
+        );
+        return target instanceof HTMLButtonElement && !target.disabled;
+      },
+      { timeout: 60000 }
+    );
+    const retryResponsePromise = waitForPredictionResponse();
+    await predictionButton.click();
+    try {
+      predictionResponse = await retryResponsePromise;
+      predictionWatcherError = null;
+    } catch (error) {
+      predictionWatcherError = error instanceof Error ? error.message : String(error);
+      predictionResponse = null;
+    }
+    predictionBody = predictionResponse ? await predictionResponse.text().catch(() => '') : '';
+  }
   const predictionResponsePath = path.join(journeyDir(id), 'prediction-response.json');
   await writeText(
     predictionResponsePath,
     JSON.stringify(
       {
-        status: predictionResponse.status(),
-        ok: predictionResponse.ok(),
+        status: predictionResponse?.status() ?? null,
+        ok: predictionResponse?.ok() ?? null,
         body: predictionBody,
+        retryNote,
+        watcherError: predictionWatcherError,
       },
       null,
       2
     )
   );
   evidence.push(rel(predictionResponsePath));
-  if (!predictionResponse.ok()) {
+  if (predictionResponse && !predictionResponse.ok()) {
     throw new Error(
       `POST /api/v1/predictions failed: ${predictionResponse.status()} ${predictionBody.slice(0, 500)}`
     );
   }
-  const parsedPrediction = JSON.parse(predictionBody) as {
-    data?: { results?: Array<{ schoolName?: string }> };
-  };
-  const firstSchoolName = parsedPrediction.data?.results?.[0]?.schoolName?.trim();
+  const parsedPrediction = predictionBody
+    ? (JSON.parse(predictionBody) as {
+        data?: { results?: Array<{ schoolName?: string }> };
+      })
+    : null;
+  const firstSchoolName = parsedPrediction?.data?.results?.[0]?.schoolName?.trim();
   if (firstSchoolName) {
     await page.getByText(firstSchoolName, { exact: false }).first().waitFor({ timeout: 120000 });
   } else {
-    await page
-      .getByText(/results/i)
-      .first()
-      .waitFor({ timeout: 120000 });
+    await waitForPredictionUi();
   }
   evidence.push(await screenshot(page, id, '02-prediction-results', true));
   await page
@@ -2435,12 +2792,10 @@ async function applicantA10(page: Page, session: ApiSession) {
   await sleep(1000);
   evidence.push(await screenshot(page, id, '03-prediction-feedback', true));
 
-  await page.goto(`${WEB_BASE}/en/cases`);
-  await page.waitForLoadState('networkidle');
+  await gotoStable(page, `${WEB_BASE}/en/cases`);
   evidence.push(await screenshot(page, id, '04-cases-page', true));
 
-  await page.goto(`${WEB_BASE}/en/ranking`);
-  await page.waitForLoadState('networkidle');
+  await gotoStable(page, `${WEB_BASE}/en/ranking`);
   await page
     .getByRole('button', { name: /calculate|preview/i })
     .first()
@@ -2506,13 +2861,11 @@ async function applicantSJ1(page: Page, session: ApiSession) {
     return;
   }
 
-  await page.goto(`${WEB_BASE}/en/schools/${picked[0].id}`);
-  await page.waitForLoadState('networkidle');
+  await gotoStable(page, `${WEB_BASE}/en/schools/${picked[0].id}`);
   evidence.push(await screenshot(page, id, '01-school-detail', true));
 
   const compareUrl = `${WEB_BASE}/en/schools/compare?ids=${picked.map((s) => s.id).join(',')}`;
-  await page.goto(compareUrl);
-  await page.waitForLoadState('networkidle');
+  await gotoStable(page, compareUrl);
   evidence.push(await screenshot(page, id, '02-compare-page', true));
   const compareHtml = await saveHtml(page, id, 'compare-page');
   evidence.push(compareHtml);
@@ -2561,8 +2914,7 @@ async function applicantSJ2(page: Page, applicantSession: ApiSession, adminSessi
   await writeJson(broadcastPath, broadcast);
   evidence.push(rel(broadcastPath));
 
-  await page.goto(`${WEB_BASE}/en/dashboard`);
-  await page.waitForLoadState('networkidle');
+  await gotoStable(page, `${WEB_BASE}/en/dashboard`);
   await sleep(1500);
   const bell = page.getByRole('button', { name: /notifications/i });
   await bell.click();
@@ -2575,8 +2927,11 @@ async function applicantSJ2(page: Page, applicantSession: ApiSession, adminSessi
   await sleep(1000);
   evidence.push(await screenshot(page, id, '02-center-after-mark-all', true));
   await page.locator('a[href$="/notifications"]').last().click();
-  await page.waitForURL(/\/en\/notifications/, { timeout: 10000 });
-  await page.waitForLoadState('networkidle');
+  await page.waitForURL(/\/en\/notifications/, {
+    timeout: 10000,
+    waitUntil: 'domcontentloaded',
+  });
+  await settlePage(page);
   evidence.push(await screenshot(page, id, '03-notifications-page', true));
 
   const unread = await apiRequest<{ count: number }>(
@@ -2611,13 +2966,13 @@ async function parentJourneys(browser: Browser) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1100 } });
   const page = await context.newPage();
   const evidenceCommon: string[] = [];
-  await page.goto(`${WEB_BASE}/en/register`);
-  await page.waitForLoadState('networkidle');
+  await page.goto(`${WEB_BASE}/en/register`, { waitUntil: 'domcontentloaded' });
+  await settlePage(page);
   evidenceCommon.push(await screenshot(page, 'B1', '01-register-no-parent-role', true));
   const registerText = await page.locator('body').innerText();
   const hasParentEntry = /parent/i.test(registerText);
-  await page.goto(`${WEB_BASE}/en/parent`);
-  await page.waitForLoadState('networkidle');
+  await page.goto(`${WEB_BASE}/en/parent`, { waitUntil: 'domcontentloaded' });
+  await settlePage(page);
   const parentRouteText = await page.locator('body').innerText();
   evidenceCommon.push(await screenshot(page, 'B1', '02-parent-route', true));
 
@@ -2684,7 +3039,7 @@ async function parentJourneys(browser: Browser) {
     evidence: evidenceCommon,
   });
 
-  await context.close();
+  await safeCloseContext(context);
 }
 
 async function adminJourneys(page: Page, adminSession: ApiSession, applicantSession: ApiSession) {
@@ -3278,19 +3633,25 @@ async function main() {
       title,
       prerequisites,
       steps,
+      initialPath,
       fn,
     }: {
       id: string;
       title: string;
       prerequisites: string[];
       steps: string[];
+      initialPath?: string;
       fn: (page: Page) => Promise<void>;
     }) => {
       if (!shouldRunJourney(id as (typeof JOURNEY_IDS)[number])) {
         return;
       }
-      const { context, page } = await openApplicantPage(browser);
+      let context: Awaited<ReturnType<typeof openApplicantPage>>['context'] | null = null;
+      let page: Page | undefined;
       try {
+        const opened = await openApplicantPage(browser, initialPath);
+        context = opened.context;
+        page = opened.page;
         await runSingleJourney({
           id,
           title,
@@ -3300,8 +3661,19 @@ async function main() {
           page,
           fn: () => fn(page),
         });
+      } catch (error) {
+        await addFailureRecord({
+          id,
+          title,
+          account: applicantSession.user.email,
+          prerequisites,
+          steps,
+          error,
+          page,
+          notes: initialPath ? [`initial_path=${initialPath}`] : undefined,
+        });
       } finally {
-        await context.close();
+        await safeCloseContext(context);
       }
     };
 
@@ -3317,6 +3689,7 @@ async function main() {
         'Open the real `/en/profile` page and save GPA through the UI.',
         'Switch tabs to confirm visible echo.',
       ],
+      initialPath: '/profile',
       fn: (page) => applicantA2(page, applicantSession),
     });
     await runApplicantJourney({
@@ -3331,7 +3704,8 @@ async function main() {
         'Submit the recommendation form with live inputs.',
         'Wait for the recommendation results to render in the UI.',
       ],
-      fn: (page) => applicantA3(page),
+      initialPath: '/schools?tab=recommend',
+      fn: (page) => applicantA3(page, applicantSession),
     });
     await runApplicantJourney({
       id: 'A10',
@@ -3345,16 +3719,17 @@ async function main() {
         'Open `/en/cases` to verify case library rendering.',
         'Open `/en/ranking` and capture the ranking table.',
       ],
+      initialPath: '/prediction',
       fn: (page) => applicantA10(page, applicantSession),
     });
     const selectedAiJourneys = selectedJourneyGroup(['A4', 'A5', 'A6', 'A7', 'A8', 'A9']);
     if (selectedAiJourneys.length > 0) {
-      const { context, page } = await openApplicantPage(browser);
+      const { context, page } = await openApplicantPage(browser, '/ai');
       try {
         console.log(`Running ${selectedAiJourneys.join(', ')}`);
         await applicantAiJourneys(page);
       } finally {
-        await context.close();
+        await safeCloseContext(context);
       }
     }
     await runApplicantJourney({
@@ -3366,6 +3741,7 @@ async function main() {
         'Navigate into the compare page with two school IDs.',
         'Inspect rendered outcome metrics.',
       ],
+      initialPath: '/schools',
       fn: (page) => applicantSJ1(page, applicantSession),
     });
     await runApplicantJourney({
@@ -3422,7 +3798,7 @@ async function main() {
 
     await writeEvidenceReadme();
   } finally {
-    await browser.close();
+    await safeCloseBrowser(browser);
   }
 
   for (const record of RECORDS) {

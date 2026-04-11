@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
 import { useMutation } from '@tanstack/react-query';
@@ -80,8 +80,13 @@ export default function SettingsPage() {
   const router = useRouter();
   const pathname = usePathname();
 
+  const [mounted, setMounted] = useState(false);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -141,11 +146,11 @@ export default function SettingsPage() {
       items: [
         {
           id: 'theme',
-          icon: theme === 'dark' ? Moon : Sun,
+          icon: mounted && theme === 'dark' ? Moon : Sun,
           label: t('settings.items.darkMode'),
           description: t('settings.items.darkModeDesc'),
           type: 'toggle',
-          value: theme === 'dark',
+          value: mounted ? theme === 'dark' : false,
           onToggle: (value) => setTheme(value ? 'dark' : 'light'),
         },
         {
@@ -396,7 +401,12 @@ export default function SettingsPage() {
 
 function SettingItemRow({ item, disabled }: { item: SettingItem; disabled?: boolean }) {
   const t = useTranslations();
+  const [mounted, setMounted] = useState(false);
   const Icon = item.icon;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const content = (
     <div
@@ -427,13 +437,19 @@ function SettingItemRow({ item, disabled }: { item: SettingItem; disabled?: bool
         )}
       </div>
 
-      {item.type === 'toggle' && (
-        <Switch
-          checked={item.value as boolean}
-          onCheckedChange={item.onToggle}
-          disabled={disabled}
-        />
-      )}
+      {item.type === 'toggle' &&
+        (mounted ? (
+          <Switch
+            checked={item.value as boolean}
+            onCheckedChange={item.onToggle}
+            disabled={disabled}
+          />
+        ) : (
+          <div
+            aria-hidden="true"
+            className="h-6 w-11 shrink-0 rounded-full border border-border bg-muted/70"
+          />
+        ))}
 
       {item.type === 'select' && (
         <Select value={item.value as string} onValueChange={item.onSelect} disabled={disabled}>

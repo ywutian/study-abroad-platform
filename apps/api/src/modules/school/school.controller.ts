@@ -22,6 +22,8 @@ import { SchoolQueryDto } from './dto/school-query.dto';
 import { CreateSchoolDto } from './dto/create-school.dto';
 import { UpdateSchoolDto } from './dto/update-school.dto';
 import { FillLogosDto } from './dto/fill-logos.dto';
+import { UpdateSchoolCommunityRatingDto } from './dto/update-school-community-rating.dto';
+import { AdminSchoolCommunityRatingActionDto } from './dto/admin-school-community-rating-action.dto';
 import {
   DataEnrichmentDto,
   ScrapeEnrichmentDto,
@@ -34,7 +36,7 @@ import { Public, Roles, CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
-import { Role } from '@prisma/client';
+import { Prisma, Role } from '@prisma/client';
 import { RedisService } from '../../common/redis/redis.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
@@ -43,6 +45,34 @@ import {
 } from '../../common/services/audit-log.service';
 import { SchoolListService } from '../school-list/school-list.service';
 import { clampPercentRate } from '../../common/utils/percent.util';
+import { DataSource, isMergeableSchoolField } from './school-data-merger';
+import { SchoolCommunityRatingService } from './school-community-rating.service';
+
+function toRecord(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return {};
+  }
+  return value as Record<string, unknown>;
+}
+
+function buildManualProvenance(
+  fields: Record<string, unknown>,
+  existing: Record<string, unknown>,
+  at: string,
+) {
+  const provenance = { ...existing };
+
+  for (const [field, value] of Object.entries(fields)) {
+    if (value !== undefined && isMergeableSchoolField(field)) {
+      provenance[field] = {
+        source: DataSource.MANUAL_ADMIN,
+        at,
+      };
+    }
+  }
+
+  return provenance;
+}
 
 @ApiTags('schools')
 @ThrottleRelaxed()
@@ -63,6 +93,7 @@ export class SchoolController {
     private readonly urbanInstituteService: UrbanInstituteDataService,
     private readonly bigFutureService: BigFutureScrapeService,
     private readonly appilyService: AppilyScrapeService,
+    private readonly schoolCommunityRatingService: SchoolCommunityRatingService,
   ) {}
 
   @Get('uc-ids')
@@ -185,6 +216,50 @@ export class SchoolController {
     return results;
   }
 
+  @Get('admin/community-ratings/:schoolId')
+  @ApiBearerAuth()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({
+    summary: 'Get school community ratings for moderation (admin only)',
+  })
+  async getAdminCommunityRatings(@Param('schoolId') schoolId: string) {
+    return this.schoolCommunityRatingService.getAdminRatings(schoolId);
+  }
+
+  @Post('admin/community-ratings/:ratingId/hide')
+  @ApiBearerAuth()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({
+    summary: 'Hide a school community rating (admin only)',
+  })
+  async hideCommunityRating(
+    @Param('ratingId') ratingId: string,
+    @Body() body: AdminSchoolCommunityRatingActionDto,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.schoolCommunityRatingService.hideRating(
+      ratingId,
+      user.id,
+      body.reason,
+    );
+  }
+
+  @Post('admin/community-ratings/:ratingId/restore')
+  @ApiBearerAuth()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({
+    summary: 'Restore a hidden school community rating (admin only)',
+  })
+  async restoreCommunityRating(
+    @Param('ratingId') ratingId: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.schoolCommunityRatingService.restoreRating(ratingId, user.id);
+  }
+
   /**
    * P1: AI 个性化选校推荐
    * Delegates to SchoolListService which uses the stats-based scoring pipeline.
@@ -251,6 +326,38 @@ export class SchoolController {
     return { suggestedLogoUrl: suggested };
   }
 
+  @Get(':id/community-ratings/summary')
+  @Public()
+  @ApiOperation({ summary: 'Get public school community rating summary' })
+  async getCommunityRatingSummary(@Param('id') id: string) {
+    return this.schoolCommunityRatingService.getSummary(id);
+  }
+
+  @Get(':id/community-ratings/me')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get the current user community rating for a school',
+  })
+  async getMyCommunityRating(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.schoolCommunityRatingService.getMyRating(id, user.id);
+  }
+
+  @Put(':id/community-ratings/me')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Create or update the current user community rating for a school',
+  })
+  async upsertMyCommunityRating(
+    @Param('id') id: string,
+    @Body() body: UpdateSchoolCommunityRatingDto,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.schoolCommunityRatingService.upsertMyRating(id, user.id, body);
+  }
+
   @Get(':id')
   @Public()
   @Header(
@@ -268,7 +375,20 @@ export class SchoolController {
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Create school (admin only)' })
   async create(@Body() data: CreateSchoolDto) {
-    return this.schoolService.create(data);
+    const now = new Date().toISOString();
+    const provenance = buildManualProvenance(
+      data as unknown as Record<string, unknown>,
+      {},
+      now,
+    );
+
+    return this.schoolService.create({
+      ...data,
+      metadata:
+        Object.keys(provenance).length > 0
+          ? ({ provenance } as Prisma.InputJsonObject)
+          : undefined,
+    });
   }
 
   @Put(':id')
@@ -281,25 +401,33 @@ export class SchoolController {
     @Body() data: UpdateSchoolDto,
     @CurrentUser() user: CurrentUserPayload,
   ) {
+    const existing = await this.prisma.school.findUnique({
+      where: { id },
+      select: { metadata: true },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('School not found');
+    }
+
     // Extract metadata sub-fields that are stored in JSON, not as schema columns
     const { toeflMin, ieltsMin, essayCount, ...schemaFields } = data;
+    const existingMeta = toRecord(existing.metadata);
+    const existingReqs = toRecord(existingMeta.requirements);
+    const existingProv = toRecord(existingMeta.provenance);
+    const now = new Date().toISOString();
+    const updatedReqs = { ...existingReqs };
+    const updatedProv = buildManualProvenance(
+      schemaFields as Record<string, unknown>,
+      existingProv,
+      now,
+    );
 
     if (
       toeflMin !== undefined ||
       ieltsMin !== undefined ||
       essayCount !== undefined
     ) {
-      const existing = await this.schoolService.findById(id);
-      const existingMeta = (existing.metadata as Record<string, unknown>) || {};
-      const existingReqs =
-        (existingMeta.requirements as Record<string, unknown>) || {};
-      const existingProv =
-        (existingMeta.provenance as Record<string, unknown>) || {};
-      const now = new Date().toISOString();
-
-      const updatedReqs = { ...existingReqs };
-      const updatedProv = { ...existingProv };
-
       if (toeflMin !== undefined) {
         updatedReqs.toeflMin = toeflMin;
         updatedProv.toeflMin = { source: 'MANUAL_ADMIN', at: now };
@@ -311,14 +439,18 @@ export class SchoolController {
       if (essayCount !== undefined) {
         updatedProv.essayCount = { source: 'MANUAL_ADMIN', at: now };
       }
-
-      (schemaFields as Record<string, unknown>).metadata = {
-        ...existingMeta,
-        requirements: updatedReqs,
-        provenance: updatedProv,
-        ...(essayCount !== undefined ? { essayCount } : {}),
-      };
     }
+
+    (schemaFields as Record<string, unknown>).metadata = {
+      ...existingMeta,
+      requirements: updatedReqs,
+      provenance: updatedProv,
+      ...(essayCount !== undefined
+        ? { essayCount }
+        : existingMeta.essayCount !== undefined
+          ? { essayCount: existingMeta.essayCount }
+          : {}),
+    };
 
     const school = await this.schoolService.update(id, schemaFields);
     await this.schoolService.invalidateSchoolCache(id);

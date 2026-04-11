@@ -503,6 +503,7 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
               </Text>
             </View>
             <Text style={styles.summaryText}>{result.summary}</Text>
+            <Text style={styles.summaryHint}>{t('recommendation.strategyDisclaimer')}</Text>
 
             {/* Tier Counts */}
             <View style={styles.tierCountsRow}>
@@ -867,6 +868,13 @@ const styles = StyleSheet.create({
     color: themeColors.light.onGradientMuted,
     lineHeight: fontSize.sm * 1.6,
     marginBottom: spacing.lg,
+  },
+  summaryHint: {
+    fontSize: fontSize.xs,
+    color: themeColors.light.onGradientMuted,
+    lineHeight: fontSize.xs * 1.5,
+    marginTop: -spacing.sm,
+    marginBottom: spacing.md,
   },
   tierCountsRow: {
     flexDirection: 'row',

@@ -1,24 +1,38 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Users, GraduationCap, X } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  resumeRoutes,
+  teamRoutes,
+  type InviteMatchMembersResponseDto,
+  type RecruitmentContextDto,
+  type TeamMatchDto,
+  type TeamMatchInviteResultDto,
+  type TeamRecruitmentCardFrontDto,
+} from '@study-abroad/shared';
+import {
+  Users,
+  Heart,
+  X,
+  Sparkles,
+  MessageSquare,
+  Clock3,
+  ShieldCheck,
+  Target,
+  Copy,
+  Check,
+} from 'lucide-react';
 import { PageContainer, PageHeader } from '@/components/layout';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Skeleton } from '@/components/ui/skeleton';
-import { EmptyState } from '@/components/ui/empty-state';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Link, useRouter } from '@/lib/i18n/navigation';
-import { useLocale } from 'next-intl';
 import { apiClient } from '@/lib/api';
-import { teamRoutes } from '@study-abroad/shared';
-import { useAuthStore } from '@/stores';
-import { TeamCard, type TeamCardData } from '@/components/features';
-import { toast } from 'sonner';
-import { useSchoolSearch } from '@/hooks/use-school-search';
-import { getSchoolName } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Select,
   SelectContent,
@@ -26,339 +40,1059 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useState, useMemo } from 'react';
+import { EmptyState } from '@/components/ui/empty-state';
+import { toast } from 'sonner';
+import { useRouter } from '@/lib/i18n/navigation';
+import { useAuthStore } from '@/stores/auth';
+import {
+  getCurrentMemberDisplaySettings,
+  getInviteDeliveryState,
+} from '@/components/features/teams/team-recruitment-utils';
 
-type TabValue = 'my' | 'discover';
+type MyRecruitmentsResponse = {
+  items: Array<{
+    team: {
+      id: string;
+      name: string;
+      description?: string | null;
+      visibility?: string;
+      joinPolicy?: string;
+      maxMembers?: number | null;
+      memberCount: number;
+      myRole: string;
+      school?: { id: string; name: string; nameZh?: string | null } | null;
+    };
+    recruitmentCards: TeamRecruitmentCardFrontDto[];
+  }>;
+};
 
-type DiscoverParams = {
-  page: number;
-  pageSize: number;
-  schoolId?: string;
-  joinPolicy?: string;
-  sort?: 'newest' | 'members';
+type RecruitmentDeckResponse = {
+  sourceCard: TeamRecruitmentCardFrontDto | null;
+  items: TeamRecruitmentCardFrontDto[];
+};
+
+type ResumeOption = {
+  id: string;
+  title: string;
+};
+
+type RecruitmentFormState = {
+  teamId?: string;
+  teamName: string;
+  competitionTrackId: string;
+  headline: string;
+  detailNote: string;
+  offerRoles: string;
+  needRoles: string;
+  skillTags: string;
+  targetTeamSize: string;
+  availabilityBand: string;
+  collaborationMode: string;
+  timezone: string;
+  city: string;
+  languages: string;
+  intentMode: 'TEAM_UP' | 'NETWORKING_ONLY';
+};
+
+const DEFAULT_FORM: RecruitmentFormState = {
+  teamId: undefined,
+  teamName: '',
+  competitionTrackId: '',
+  headline: '',
+  detailNote: '',
+  offerRoles: '',
+  needRoles: '',
+  skillTags: '',
+  targetTeamSize: '',
+  availabilityBand: '',
+  collaborationMode: '',
+  timezone: '',
+  city: '',
+  languages: '',
+  intentMode: 'TEAM_UP',
 };
 
 export function TeamsPageClient() {
   const t = useTranslations('teams');
-  const locale = useLocale();
-  const searchParams = useSearchParams();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const tab = (searchParams.get('tab') as TabValue) || 'discover';
-  const isLoggedIn = useAuthStore((s) => !!s.accessToken);
+  const authUserId = useAuthStore((state) => state.user?.id ?? null);
 
-  const joinMutation = useMutation({
-    mutationFn: (teamId: string) => apiClient.post(teamRoutes.join(teamId)),
-    onSuccess: (_, teamId) => {
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
-      toast.success('Joined');
-      router.push(`/teams/${teamId}`);
-    },
-    onError: (e: unknown, _teamId) => {
-      const err = e as { response?: { data?: { error?: { code?: string; message?: string } } } };
-      const code = err.response?.data?.error?.code;
-      if (code === 'CONFLICT') toast.error(t('errors.full'));
-      else toast.error(err.response?.data?.error?.message ?? 'Failed to join');
-    },
+  const [tab, setTab] = useState<'match' | 'matches' | 'my-team'>('match');
+  const [selectedTeamId, setSelectedTeamId] = useState<string>('new-solo');
+  const [form, setForm] = useState<RecruitmentFormState>(DEFAULT_FORM);
+  const [introLine, setIntroLine] = useState('');
+  const [selectedResumeId, setSelectedResumeId] = useState<string>('none');
+  const [showSchool, setShowSchool] = useState(false);
+  const [showGrade, setShowGrade] = useState(false);
+  const [showAwards, setShowAwards] = useState(false);
+  const [inviteResultsByMatchId, setInviteResultsByMatchId] = useState<
+    Record<string, TeamMatchInviteResultDto[]>
+  >({});
+  const [copiedInviteUrl, setCopiedInviteUrl] = useState<string | null>(null);
+
+  const { data: contextsData, isLoading: contextsLoading } = useQuery({
+    queryKey: ['teams', 'recruitment-contexts'],
+    queryFn: () => apiClient.get<RecruitmentContextDto>(teamRoutes.recruitmentContexts()),
   });
 
-  const handleJoinClick = (teamId: string) => {
-    if (!isLoggedIn) {
-      router.push(`/login?callbackUrl=${encodeURIComponent(`/teams?tab=discover`)}`);
+  const { data: myRecruitments, isLoading: myRecruitmentsLoading } = useQuery({
+    queryKey: ['teams', 'recruitments', 'my'],
+    queryFn: () => apiClient.get<MyRecruitmentsResponse>(teamRoutes.myRecruitments()),
+  });
+
+  const { data: resumesData } = useQuery({
+    queryKey: ['resumes', 'options'],
+    queryFn: () => apiClient.get<ResumeOption[]>(resumeRoutes.list()),
+  });
+
+  const currentTeamEntry = useMemo(() => {
+    if (!myRecruitments?.items?.length) return null;
+    if (selectedTeamId === 'new-solo') return myRecruitments.items[0] ?? null;
+    return (
+      myRecruitments.items.find((item) => item.team.id === selectedTeamId) ??
+      myRecruitments.items[0]
+    );
+  }, [myRecruitments?.items, selectedTeamId]);
+
+  const currentCard = currentTeamEntry?.recruitmentCards[0] ?? null;
+
+  useEffect(() => {
+    if (!myRecruitments?.items) return;
+    if (myRecruitments.items.length === 0) {
+      setSelectedTeamId('new-solo');
       return;
     }
-    joinMutation.mutate(teamId);
-  };
+    if (
+      selectedTeamId === 'new-solo' ||
+      !myRecruitments.items.some((item) => item.team.id === selectedTeamId)
+    ) {
+      setSelectedTeamId(myRecruitments.items[0].team.id);
+    }
+  }, [myRecruitments?.items, selectedTeamId]);
 
-  const setTab = (value: TabValue) => {
-    const next = new URLSearchParams(searchParams.toString());
-    next.set('tab', value);
-    router.replace(`/teams?${next.toString()}`);
-  };
+  useEffect(() => {
+    if (!contextsData?.items?.length) return;
+    setForm((prev) => ({
+      ...prev,
+      teamId: selectedTeamId === 'new-solo' ? undefined : selectedTeamId,
+      competitionTrackId: prev.competitionTrackId || contextsData.items[0].id,
+      targetTeamSize: prev.targetTeamSize || String(contextsData.items[0].maxTeamSize),
+    }));
+  }, [contextsData?.items, selectedTeamId]);
 
-  const discoverParams: DiscoverParams = useMemo(() => {
-    const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10) || 1);
-    const pageSize = Math.min(
-      50,
-      Math.max(1, parseInt(searchParams.get('pageSize') ?? '20', 10) || 20)
-    );
-    const schoolId = searchParams.get('schoolId') ?? undefined;
-    const joinPolicy = searchParams.get('joinPolicy') ?? undefined;
-    const sort = (searchParams.get('sort') as 'newest' | 'members') ?? 'newest';
-    return { page, pageSize, schoolId, joinPolicy, sort };
-  }, [searchParams]);
+  useEffect(() => {
+    if (!currentCard) {
+      setForm((prev) => ({
+        ...DEFAULT_FORM,
+        competitionTrackId: prev.competitionTrackId,
+        teamId: selectedTeamId === 'new-solo' ? undefined : selectedTeamId,
+        teamName: selectedTeamId === 'new-solo' ? prev.teamName : '',
+        targetTeamSize: prev.targetTeamSize,
+      }));
+      return;
+    }
+    setForm({
+      teamId: currentTeamEntry?.team.id,
+      teamName: currentTeamEntry?.team.name ?? '',
+      competitionTrackId: currentCard.context.trackId,
+      headline: currentCard.headline,
+      detailNote: currentCard.detailNote ?? '',
+      offerRoles: currentCard.offerRoles.join(', '),
+      needRoles: currentCard.needRoles.join(', '),
+      skillTags: currentCard.skillTags.join(', '),
+      targetTeamSize: String(currentCard.team.targetSize),
+      availabilityBand: currentCard.availabilityBand ?? '',
+      collaborationMode: currentCard.collaborationMode ?? '',
+      timezone: currentCard.timezone ?? '',
+      city: currentCard.city ?? '',
+      languages: currentCard.languages.join(', '),
+      intentMode: currentCard.intentMode,
+    });
+  }, [currentCard, currentTeamEntry?.team.id, currentTeamEntry?.team.name, selectedTeamId]);
 
-  const setDiscoverFilters = (updates: Partial<DiscoverParams>) => {
-    const next = new URLSearchParams(searchParams.toString());
-    next.set('tab', 'discover');
-    const merged = { ...discoverParams, ...updates };
-    next.set('page', String(merged.page));
-    next.set('pageSize', String(merged.pageSize));
-    if (merged.schoolId) next.set('schoolId', merged.schoolId);
-    else next.delete('schoolId');
-    if (merged.joinPolicy) next.set('joinPolicy', merged.joinPolicy);
-    else next.delete('joinPolicy');
-    next.set('sort', merged.sort ?? 'newest');
-    router.replace(`/teams?${next.toString()}`);
-  };
+  useEffect(() => {
+    const displaySettings = getCurrentMemberDisplaySettings(currentCard, authUserId);
+    setIntroLine(displaySettings.introLine);
+    setSelectedResumeId(displaySettings.selectedResumeId);
+    setShowSchool(displaySettings.showSchool);
+    setShowGrade(displaySettings.showGrade);
+    setShowAwards(displaySettings.showAwards);
+  }, [authUserId, currentCard]);
 
-  const {
-    data: discoverData,
-    isLoading: discoverLoading,
-    isError: discoverError,
-    refetch: refetchDiscover,
-  } = useQuery({
-    queryKey: ['teams', 'discover', discoverParams],
+  const { data: deckData, isLoading: deckLoading } = useQuery({
+    queryKey: ['teams', 'recruitments', 'deck', currentTeamEntry?.team.id],
     queryFn: () =>
-      apiClient.get<{ items: TeamCardData[]; total: number }>('/teams', {
-        params: {
-          page: discoverParams.page,
-          pageSize: discoverParams.pageSize,
-          schoolId: discoverParams.schoolId,
-          joinPolicy: discoverParams.joinPolicy,
-          sort: discoverParams.sort,
-        },
+      apiClient.get<RecruitmentDeckResponse>(teamRoutes.recruitmentDeck(), {
+        params: currentTeamEntry?.team.id ? { teamId: currentTeamEntry.team.id } : undefined,
       }),
+    enabled: !!currentTeamEntry?.team.id,
   });
 
-  const {
-    data: myData,
-    isLoading: myLoading,
-    isError: myError,
-    refetch: refetchMy,
-  } = useQuery({
-    queryKey: ['teams', 'my'],
-    queryFn: () => apiClient.get<TeamCardData[]>('/teams/my'),
-    enabled: isLoggedIn,
+  const { data: matchesData, isLoading: matchesLoading } = useQuery({
+    queryKey: ['teams', 'matches'],
+    queryFn: () => apiClient.get<{ items: TeamMatchDto[] }>(teamRoutes.matches()),
   });
 
-  const discoverItems = discoverData?.items ?? [];
-  const myItems = Array.isArray(myData) ? myData : [];
+  const invalidateRecruitmentQueries = () => {
+    queryClient.invalidateQueries({ queryKey: ['teams', 'recruitments'] });
+    queryClient.invalidateQueries({ queryKey: ['teams', 'matches'] });
+    queryClient.invalidateQueries({ queryKey: ['teams', 'recruitment-contexts'] });
+  };
+
+  const createRecruitmentMutation = useMutation({
+    mutationFn: () =>
+      apiClient.post(teamRoutes.recruitments(), {
+        teamId: selectedTeamId === 'new-solo' ? undefined : selectedTeamId,
+        teamName: selectedTeamId === 'new-solo' ? form.teamName || undefined : undefined,
+        competitionTrackId: form.competitionTrackId,
+        headline: form.headline,
+        detailNote: form.detailNote || undefined,
+        offerRoles: toArray(form.offerRoles),
+        needRoles: toArray(form.needRoles),
+        skillTags: toArray(form.skillTags),
+        targetTeamSize: form.targetTeamSize ? Number(form.targetTeamSize) : undefined,
+        availabilityBand: form.availabilityBand || undefined,
+        collaborationMode: form.collaborationMode || undefined,
+        timezone: form.timezone || undefined,
+        city: form.city || undefined,
+        languages: toArray(form.languages),
+        intentMode: form.intentMode,
+      }),
+    onSuccess: () => {
+      toast.success(t('recruitment.toast.cardCreated'));
+      invalidateRecruitmentQueries();
+      setTab('my-team');
+    },
+  });
+
+  const updateRecruitmentMutation = useMutation({
+    mutationFn: () =>
+      apiClient.patch(teamRoutes.recruitmentById(currentCard!.id), {
+        competitionTrackId: form.competitionTrackId,
+        headline: form.headline,
+        detailNote: form.detailNote || undefined,
+        offerRoles: toArray(form.offerRoles),
+        needRoles: toArray(form.needRoles),
+        skillTags: toArray(form.skillTags),
+        targetTeamSize: form.targetTeamSize ? Number(form.targetTeamSize) : undefined,
+        availabilityBand: form.availabilityBand || undefined,
+        collaborationMode: form.collaborationMode || undefined,
+        timezone: form.timezone || undefined,
+        city: form.city || undefined,
+        languages: toArray(form.languages),
+        intentMode: form.intentMode,
+      }),
+    onSuccess: () => {
+      toast.success(t('recruitment.toast.cardUpdated'));
+      invalidateRecruitmentQueries();
+    },
+  });
+
+  const publishMutation = useMutation({
+    mutationFn: (cardId: string) => apiClient.post(teamRoutes.recruitmentPublish(cardId)),
+    onSuccess: () => {
+      toast.success(t('recruitment.toast.cardPublished'));
+      invalidateRecruitmentQueries();
+    },
+  });
+
+  const closeMutation = useMutation({
+    mutationFn: (cardId: string) => apiClient.post(teamRoutes.recruitmentClose(cardId)),
+    onSuccess: () => {
+      toast.success(t('recruitment.toast.cardClosed'));
+      invalidateRecruitmentQueries();
+    },
+  });
+
+  const memberProfileMutation = useMutation({
+    mutationFn: (consentConfirmed: boolean) =>
+      apiClient.patch(teamRoutes.recruitmentMemberProfile(currentCard!.id), {
+        introLine,
+        selectedResumeId: selectedResumeId === 'none' ? null : selectedResumeId,
+        showSchool,
+        showGrade,
+        showAwards,
+        consentConfirmed,
+      }),
+    onSuccess: () => {
+      toast.success(t('recruitment.toast.displayUpdated'));
+      invalidateRecruitmentQueries();
+    },
+  });
+
+  const swipeMutation = useMutation({
+    mutationFn: (payload: {
+      sourceCardId: string;
+      targetCardId: string;
+      action: 'LIKE' | 'PASS';
+    }) =>
+      apiClient.post<{ matched?: boolean; match?: { conversationId?: string | null } }>(
+        teamRoutes.recruitmentSwipe(payload.sourceCardId),
+        {
+          targetCardId: payload.targetCardId,
+          action: payload.action,
+        }
+      ),
+    onSuccess: (data: { matched?: boolean; match?: { conversationId?: string | null } }) => {
+      invalidateRecruitmentQueries();
+      if (data?.matched) {
+        toast.success(t('recruitment.toast.matched'));
+      }
+    },
+  });
+
+  const matchInviteMutation = useMutation({
+    mutationFn: (payload: { matchId: string; inviteeIds: string[]; sourceTeamId?: string }) =>
+      apiClient.post<InviteMatchMembersResponseDto>(
+        teamRoutes.matchInviteMembers(payload.matchId),
+        payload
+      ),
+    onSuccess: (data, variables) => {
+      setInviteResultsByMatchId((prev) => ({
+        ...prev,
+        [variables.matchId]: data.invitations,
+      }));
+
+      const manualShareCount = data.invitations.filter(
+        (invitation) => getInviteDeliveryState(invitation) === 'manual_share'
+      ).length;
+
+      toast.success(
+        manualShareCount > 0 ? t('toast.invitesPartiallyDelivered') : t('toast.invitesDelivered')
+      );
+    },
+  });
+
+  const deckCards = deckData?.items ?? [];
+  const activeDeckCard = deckCards[0] ?? null;
+  const contextOptions = contextsData?.items ?? [];
+  const matches = matchesData?.items ?? [];
+  const resumes = resumesData ?? [];
+
+  const handleCopyInviteLink = async (inviteUrl: string) => {
+    try {
+      const absoluteUrl =
+        typeof window === 'undefined'
+          ? inviteUrl
+          : new URL(inviteUrl, window.location.origin).toString();
+      await navigator.clipboard.writeText(absoluteUrl);
+      setCopiedInviteUrl(absoluteUrl);
+      toast.success(t('toast.linkCopied'));
+    } catch {
+      toast.error(t('toast.copyInviteLinkFailed'));
+    }
+  };
 
   return (
     <PageContainer maxWidth="7xl">
       <PageHeader
         title={t('title')}
-        description={t('description')}
+        description={t('recruitment.description')}
         icon={Users}
         color="amber"
-        actions={
-          isLoggedIn ? (
-            <Link href="/teams/create">
-              <Button>{t('create')}</Button>
-            </Link>
-          ) : (
-            <Link href={`/login?callbackUrl=${encodeURIComponent('/teams/create')}`}>
-              <Button>{t('create')}</Button>
-            </Link>
-          )
-        }
       />
-      <Tabs value={tab} onValueChange={(v) => setTab(v as TabValue)} className="mt-6">
-        <TabsList>
-          <TabsTrigger value="my">{t('myTeams')}</TabsTrigger>
-          <TabsTrigger value="discover">{t('discover')}</TabsTrigger>
+
+      <Tabs value={tab} onValueChange={(value) => setTab(value as typeof tab)} className="mt-6">
+        <TabsList className="grid w-full max-w-xl grid-cols-3">
+          <TabsTrigger value="match">{t('recruitment.tab.match')}</TabsTrigger>
+          <TabsTrigger value="matches">{t('recruitment.tab.matches')}</TabsTrigger>
+          <TabsTrigger value="my-team">{t('recruitment.tab.myTeam')}</TabsTrigger>
         </TabsList>
-        <TabsContent value="my" className="mt-6">
-          {!isLoggedIn ? (
+
+        <TabsContent value="match" className="mt-6">
+          {!currentCard ? (
             <EmptyState
               type="teams"
-              title={t('empty.my')}
+              title={t('recruitment.empty.noCard')}
               action={{
-                label: t('loginToJoin'),
-                onClick: () =>
-                  router.push(`/login?callbackUrl=${encodeURIComponent('/teams?tab=my')}`),
+                label: t('recruitment.tab.myTeam'),
+                onClick: () => setTab('my-team'),
               }}
             />
-          ) : myLoading ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-32 rounded-lg" />
+          ) : (
+            <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+              <Card className="overflow-hidden">
+                <div className="h-1.5 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500" />
+                <CardHeader>
+                  <CardTitle>{t('recruitment.swipeDeck.title')}</CardTitle>
+                  <CardDescription>{t('recruitment.swipeDeck.description')}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {deckLoading ? (
+                    <Skeleton className="h-[420px] w-full rounded-xl" />
+                  ) : activeDeckCard ? (
+                    <div className="space-y-4">
+                      <RecruitmentCardPreview card={activeDeckCard} />
+                      <div className="flex gap-3">
+                        <Button
+                          variant="outline"
+                          className="flex-1 gap-2"
+                          disabled={swipeMutation.isPending}
+                          onClick={() =>
+                            swipeMutation.mutate({
+                              sourceCardId: currentCard.id,
+                              targetCardId: activeDeckCard.id,
+                              action: 'PASS',
+                            })
+                          }
+                        >
+                          <X className="h-4 w-4" />
+                          {t('recruitment.swipeDeck.pass')}
+                        </Button>
+                        <Button
+                          className="flex-1 gap-2 bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600"
+                          disabled={swipeMutation.isPending}
+                          onClick={() =>
+                            swipeMutation.mutate({
+                              sourceCardId: currentCard.id,
+                              targetCardId: activeDeckCard.id,
+                              action: 'LIKE',
+                            })
+                          }
+                        >
+                          <Heart className="h-4 w-4" />
+                          {t('recruitment.swipeDeck.like')}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <EmptyState
+                      type="teams"
+                      title={t('recruitment.empty.deckEmpty')}
+                      action={{
+                        label: t('recruitment.refresh'),
+                        onClick: () =>
+                          queryClient.invalidateQueries({
+                            queryKey: ['teams', 'recruitments', 'deck'],
+                          }),
+                      }}
+                    />
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('recruitment.currentCard')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <RecruitmentCardPreview card={currentCard} compact />
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="matches" className="mt-6">
+          {matchesLoading ? (
+            <div className="grid gap-4 lg:grid-cols-2">
+              {[1, 2].map((item) => (
+                <Skeleton key={item} className="h-48 rounded-xl" />
               ))}
             </div>
-          ) : myError ? (
+          ) : matches.length === 0 ? (
             <EmptyState
               type="teams"
-              title={t('loadErrorMy')}
-              action={{ label: t('retry'), onClick: () => refetchMy() }}
-            />
-          ) : myItems.length === 0 ? (
-            <EmptyState
-              type="teams"
-              title={t('empty.my')}
+              title={t('recruitment.empty.noMatches')}
               action={{
-                label: t('goDiscover'),
-                onClick: () => setTab('discover'),
+                label: t('recruitment.openDeck'),
+                onClick: () => setTab('match'),
               }}
             />
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {myItems.map((team) => (
-                <TeamCard key={team.id} team={team} locale={locale} isMember />
+            <div className="grid gap-4 lg:grid-cols-2">
+              {matches.map((match) => (
+                <Card key={match.id}>
+                  <CardHeader>
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <CardTitle className="text-base">{match.otherCard.team.name}</CardTitle>
+                        <CardDescription>
+                          {match.otherCard.context.competition.abbreviation} /{' '}
+                          {match.otherCard.context.trackName}
+                        </CardDescription>
+                      </div>
+                      <Badge variant="secondary">
+                        {match.matchKind === 'TEAM_UP'
+                          ? t('recruitment.matchKind.teamUp')
+                          : t('recruitment.matchKind.networking')}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <RecruitmentCardPreview card={match.otherCard} compact />
+                    <div className="flex gap-3">
+                      {match.conversationId && (
+                        <Button
+                          className="flex-1 gap-2"
+                          onClick={() => router.push(`/chat?conversation=${match.conversationId}`)}
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                          {t('recruitment.openChat')}
+                        </Button>
+                      )}
+                      {match.canInvite && match.otherCard.members.length > 0 && (
+                        <Button
+                          variant="outline"
+                          className="flex-1"
+                          disabled={
+                            matchInviteMutation.isPending &&
+                            matchInviteMutation.variables?.matchId === match.id
+                          }
+                          onClick={() =>
+                            matchInviteMutation.mutate({
+                              matchId: match.id,
+                              inviteeIds: match.otherCard.members.map((member) => member.userId),
+                              sourceTeamId: match.myCard.team.id,
+                            })
+                          }
+                        >
+                          {t('recruitment.inviteToTeam')}
+                        </Button>
+                      )}
+                    </div>
+                    {inviteResultsByMatchId[match.id]?.length ? (
+                      <div className="rounded-xl border bg-muted/30 p-3">
+                        <p className="text-sm font-medium">{t('inviteResults.title')}</p>
+                        <div className="mt-3 space-y-2">
+                          {inviteResultsByMatchId[match.id].map((invitation) => {
+                            const invitee = match.otherCard.members.find(
+                              (member) => member.userId === invitation.inviteeId
+                            );
+                            const inviteUrl = invitation.inviteUrl
+                              ? typeof window === 'undefined'
+                                ? invitation.inviteUrl
+                                : new URL(invitation.inviteUrl, window.location.origin).toString()
+                              : null;
+                            const deliveryState = getInviteDeliveryState(invitation);
+
+                            return (
+                              <div
+                                key={`${match.id}-${invitation.inviteeId}`}
+                                className="flex items-center justify-between gap-3 rounded-lg bg-background/70 p-2.5"
+                              >
+                                <div className="min-w-0">
+                                  <p className="truncate text-sm font-medium">
+                                    {invitee?.displayName ?? invitation.inviteeId}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {deliveryState === 'sent'
+                                      ? t('inviteResults.sent')
+                                      : deliveryState === 'existing_pending'
+                                        ? t('inviteResults.existingPending')
+                                        : deliveryState === 'already_member'
+                                          ? t('inviteResults.alreadyMember')
+                                          : t('inviteResults.manualShare')}
+                                  </p>
+                                </div>
+                                {inviteUrl ? (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="gap-2"
+                                    onClick={() => handleCopyInviteLink(inviteUrl)}
+                                  >
+                                    {copiedInviteUrl === inviteUrl ? (
+                                      <Check className="h-4 w-4" />
+                                    ) : (
+                                      <Copy className="h-4 w-4" />
+                                    )}
+                                    {t('inviteResults.copyLink')}
+                                  </Button>
+                                ) : null}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ) : null}
+                  </CardContent>
+                </Card>
               ))}
             </div>
           )}
         </TabsContent>
-        <TabsContent value="discover" className="mt-6">
-          <div className="flex flex-wrap items-center gap-3 mb-4">
-            <Select
-              value={discoverParams.joinPolicy ?? 'all'}
-              onValueChange={(v) => setDiscoverFilters({ joinPolicy: v === 'all' ? undefined : v })}
-            >
-              <SelectTrigger className="w-[160px]">
-                <SelectValue placeholder={t('filters.joinPolicy')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('filters.joinPolicyAll')}</SelectItem>
-                <SelectItem value="OPEN">{t('joinPolicy.open')}</SelectItem>
-                <SelectItem value="INVITE_ONLY">{t('joinPolicy.inviteOnly')}</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
-              value={discoverParams.sort ?? 'newest'}
-              onValueChange={(v: 'newest' | 'members') => setDiscoverFilters({ sort: v })}
-            >
-              <SelectTrigger className="w-[160px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">{t('filters.sortNewest')}</SelectItem>
-                <SelectItem value="members">{t('filters.sortMembers')}</SelectItem>
-              </SelectContent>
-            </Select>
-            <DiscoverSchoolFilter
-              schoolId={discoverParams.schoolId}
-              locale={locale}
-              onSelect={(id) => setDiscoverFilters({ schoolId: id || undefined })}
-            />
+
+        <TabsContent value="my-team" className="mt-6">
+          <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('recruitment.editor.title')}</CardTitle>
+                <CardDescription>{t('recruitment.editor.description')}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {myRecruitmentsLoading || contextsLoading ? (
+                  <Skeleton className="h-[420px] w-full rounded-xl" />
+                ) : (
+                  <>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <Field label={t('recruitment.field.backingTeam')}>
+                        <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="new-solo">
+                              {t('recruitment.field.createSoloTeam')}
+                            </SelectItem>
+                            {(myRecruitments?.items ?? []).map((item) => (
+                              <SelectItem key={item.team.id} value={item.team.id}>
+                                {item.team.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </Field>
+                      <Field label={t('recruitment.field.competitionTrack')}>
+                        <Select
+                          value={form.competitionTrackId}
+                          onValueChange={(value) =>
+                            setForm((prev) => ({ ...prev, competitionTrackId: value }))
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder={t('recruitment.field.selectTrack')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {contextOptions.map((track) => (
+                              <SelectItem key={track.id} value={track.id}>
+                                {track.competition.abbreviation} / {track.edition.seasonLabel} /{' '}
+                                {track.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </Field>
+                    </div>
+
+                    {selectedTeamId === 'new-solo' && (
+                      <Field label={t('recruitment.field.soloTeamName')}>
+                        <Input
+                          value={form.teamName}
+                          onChange={(event) =>
+                            setForm((prev) => ({ ...prev, teamName: event.target.value }))
+                          }
+                          placeholder={t('recruitment.field.soloTeamNamePlaceholder')}
+                        />
+                      </Field>
+                    )}
+
+                    <Field label={t('recruitment.field.headline')}>
+                      <Input
+                        value={form.headline}
+                        onChange={(event) =>
+                          setForm((prev) => ({ ...prev, headline: event.target.value }))
+                        }
+                        placeholder={t('recruitment.field.headlinePlaceholder')}
+                      />
+                    </Field>
+
+                    <Field label={t('recruitment.field.detailNote')}>
+                      <Textarea
+                        value={form.detailNote}
+                        onChange={(event) =>
+                          setForm((prev) => ({ ...prev, detailNote: event.target.value }))
+                        }
+                        rows={5}
+                        placeholder={t('recruitment.field.detailNotePlaceholder')}
+                      />
+                    </Field>
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <Field label={t('recruitment.field.offerRoles')}>
+                        <Input
+                          value={form.offerRoles}
+                          onChange={(event) =>
+                            setForm((prev) => ({ ...prev, offerRoles: event.target.value }))
+                          }
+                          placeholder={t('recruitment.field.offerRolesPlaceholder')}
+                        />
+                      </Field>
+                      <Field label={t('recruitment.field.needRoles')}>
+                        <Input
+                          value={form.needRoles}
+                          onChange={(event) =>
+                            setForm((prev) => ({ ...prev, needRoles: event.target.value }))
+                          }
+                          placeholder={t('recruitment.field.needRolesPlaceholder')}
+                        />
+                      </Field>
+                    </div>
+
+                    <div className="grid gap-4 md:grid-cols-3">
+                      <Field label={t('recruitment.field.skillTags')}>
+                        <Input
+                          value={form.skillTags}
+                          onChange={(event) =>
+                            setForm((prev) => ({ ...prev, skillTags: event.target.value }))
+                          }
+                          placeholder={t('recruitment.field.skillTagsPlaceholder')}
+                        />
+                      </Field>
+                      <Field label={t('recruitment.field.targetSize')}>
+                        <Input
+                          value={form.targetTeamSize}
+                          onChange={(event) =>
+                            setForm((prev) => ({ ...prev, targetTeamSize: event.target.value }))
+                          }
+                          type="number"
+                          min={2}
+                        />
+                      </Field>
+                      <Field label={t('recruitment.field.intent')}>
+                        <Select
+                          value={form.intentMode}
+                          onValueChange={(value: 'TEAM_UP' | 'NETWORKING_ONLY') =>
+                            setForm((prev) => ({ ...prev, intentMode: value }))
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="TEAM_UP">
+                              {t('recruitment.intentMode.teamUp')}
+                            </SelectItem>
+                            <SelectItem value="NETWORKING_ONLY">
+                              {t('recruitment.intentMode.networkingOnly')}
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </Field>
+                    </div>
+
+                    <div className="grid gap-4 md:grid-cols-4">
+                      <Field label={t('recruitment.field.availability')}>
+                        <Select
+                          value={form.availabilityBand || 'none'}
+                          onValueChange={(value) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              availabilityBand: value === 'none' ? '' : value,
+                            }))
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">{t('recruitment.option.unset')}</SelectItem>
+                            <SelectItem value="LESS_THAN_5_HOURS">{'<5h'}</SelectItem>
+                            <SelectItem value="FIVE_TO_TEN_HOURS">{'5-10h'}</SelectItem>
+                            <SelectItem value="TEN_PLUS_HOURS">{'10h+'}</SelectItem>
+                            <SelectItem value="WEEKENDS_ONLY">
+                              {t('recruitment.option.weekendsOnly')}
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </Field>
+                      <Field label={t('recruitment.field.collaborationMode')}>
+                        <Select
+                          value={form.collaborationMode || 'none'}
+                          onValueChange={(value) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              collaborationMode: value === 'none' ? '' : value,
+                            }))
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">{t('recruitment.option.unset')}</SelectItem>
+                            <SelectItem value="ONLINE">{t('recruitment.option.online')}</SelectItem>
+                            <SelectItem value="OFFLINE">
+                              {t('recruitment.option.offline')}
+                            </SelectItem>
+                            <SelectItem value="HYBRID">{t('recruitment.option.hybrid')}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </Field>
+                      <Field label="Timezone">
+                        <Input
+                          value={form.timezone}
+                          onChange={(event) =>
+                            setForm((prev) => ({ ...prev, timezone: event.target.value }))
+                          }
+                          placeholder="UTC+8"
+                        />
+                      </Field>
+                      <Field label={t('recruitment.field.city')}>
+                        <Input
+                          value={form.city}
+                          onChange={(event) =>
+                            setForm((prev) => ({ ...prev, city: event.target.value }))
+                          }
+                          placeholder={t('recruitment.field.cityPlaceholder')}
+                        />
+                      </Field>
+                    </div>
+
+                    <Field label={t('recruitment.field.languages')}>
+                      <Input
+                        value={form.languages}
+                        onChange={(event) =>
+                          setForm((prev) => ({ ...prev, languages: event.target.value }))
+                        }
+                        placeholder={t('recruitment.field.languagesPlaceholder')}
+                      />
+                    </Field>
+
+                    <div className="flex flex-wrap gap-3">
+                      <Button
+                        onClick={() =>
+                          currentCard
+                            ? updateRecruitmentMutation.mutate()
+                            : createRecruitmentMutation.mutate()
+                        }
+                        disabled={
+                          createRecruitmentMutation.isPending ||
+                          updateRecruitmentMutation.isPending ||
+                          !form.competitionTrackId ||
+                          !form.headline.trim()
+                        }
+                      >
+                        {currentCard
+                          ? t('recruitment.action.saveCard')
+                          : t('recruitment.action.createCard')}
+                      </Button>
+                      {currentCard && (
+                        <>
+                          <Button
+                            variant="secondary"
+                            disabled={publishMutation.isPending}
+                            onClick={() => publishMutation.mutate(currentCard.id)}
+                          >
+                            {t('recruitment.action.publish')}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            disabled={closeMutation.isPending}
+                            onClick={() => closeMutation.mutate(currentCard.id)}
+                          >
+                            {t('recruitment.action.close')}
+                          </Button>
+                        </>
+                      )}
+                      <Button variant="outline" onClick={() => router.push('/teams/create')}>
+                        {t('recruitment.action.legacySettings')}
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('recruitment.display.title')}</CardTitle>
+                  <CardDescription>{t('recruitment.display.description')}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Field label={t('recruitment.display.introLine')}>
+                    <Input
+                      value={introLine}
+                      onChange={(event) => setIntroLine(event.target.value)}
+                    />
+                  </Field>
+                  <Field label={t('recruitment.display.selectedResume')}>
+                    <Select value={selectedResumeId} onValueChange={setSelectedResumeId}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">{t('recruitment.display.noResume')}</SelectItem>
+                        {resumes.map((resume) => (
+                          <SelectItem key={resume.id} value={resume.id}>
+                            {resume.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <div className="flex flex-wrap gap-2">
+                    <ToggleBadge
+                      active={showSchool}
+                      onClick={() => setShowSchool((value) => !value)}
+                      icon={ShieldCheck}
+                      label={t('recruitment.display.showSchool')}
+                    />
+                    <ToggleBadge
+                      active={showGrade}
+                      onClick={() => setShowGrade((value) => !value)}
+                      icon={Clock3}
+                      label={t('recruitment.display.showGrade')}
+                    />
+                    <ToggleBadge
+                      active={showAwards}
+                      onClick={() => setShowAwards((value) => !value)}
+                      icon={Sparkles}
+                      label={t('recruitment.display.showAwards')}
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      disabled={!currentCard || memberProfileMutation.isPending}
+                      onClick={() => memberProfileMutation.mutate(false)}
+                    >
+                      {t('recruitment.display.save')}
+                    </Button>
+                    <Button
+                      disabled={!currentCard || memberProfileMutation.isPending}
+                      onClick={() => memberProfileMutation.mutate(true)}
+                    >
+                      {t('recruitment.display.confirmConsent')}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('recruitment.currentCardOverview')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {currentCard ? (
+                    <RecruitmentCardPreview card={currentCard} />
+                  ) : (
+                    <EmptyState type="teams" title={t('recruitment.empty.noCardYet')} />
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </div>
-          {discoverLoading ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <Skeleton key={i} className="h-32 rounded-lg" />
-              ))}
-            </div>
-          ) : discoverError ? (
-            <EmptyState
-              type="teams"
-              title={t('loadErrorDiscover')}
-              action={{ label: t('retry'), onClick: () => refetchDiscover() }}
-            />
-          ) : discoverItems.length === 0 ? (
-            <EmptyState
-              type="teams"
-              title={
-                discoverParams.schoolId || discoverParams.joinPolicy
-                  ? t('empty.noResults')
-                  : t('empty.discover')
-              }
-              action={
-                isLoggedIn
-                  ? { label: t('create'), onClick: () => router.push('/teams/create') }
-                  : {
-                      label: t('loginToJoin'),
-                      onClick: () =>
-                        router.push(`/login?callbackUrl=${encodeURIComponent('/teams')}`),
-                    }
-              }
-            />
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {discoverItems.map((team) => (
-                <TeamCard
-                  key={team.id}
-                  team={team}
-                  locale={locale}
-                  showJoin
-                  onJoinClick={() => handleJoinClick(team.id)}
-                />
-              ))}
-            </div>
-          )}
         </TabsContent>
       </Tabs>
     </PageContainer>
   );
 }
 
-function DiscoverSchoolFilter({
-  schoolId,
-  locale,
-  onSelect,
+function RecruitmentCardPreview({
+  card,
+  compact = false,
 }: {
-  schoolId?: string;
-  locale: string;
-  onSelect: (id: string | null) => void;
+  card: TeamRecruitmentCardFrontDto;
+  compact?: boolean;
 }) {
   const t = useTranslations('teams');
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState('');
-  const { data: searchData, isLoading } = useSchoolSearch(search, open);
-  const items = searchData?.items ?? [];
-  const selectedSchool = items.find((s) => s.id === schoolId);
-
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="outline" className="w-[200px] justify-start text-left font-normal">
-          <GraduationCap className="mr-2 h-4 w-4 shrink-0" />
-          {schoolId ? (
-            <span className="truncate">
-              {selectedSchool ? getSchoolName(selectedSchool, locale) : t('filters.schoolSelected')}
-            </span>
-          ) : (
-            <span className="text-muted-foreground">{t('filters.schoolPlaceholder')}</span>
-          )}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[280px] p-0" align="start">
-        <Input
-          placeholder={t('filters.schoolSearch')}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="rounded-b-none border-0 border-b"
-        />
-        <div className="max-h-[240px] overflow-auto">
-          {schoolId && (
-            <button
-              type="button"
-              className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
-              onClick={() => {
-                onSelect(null);
-                setOpen(false);
-              }}
-            >
-              <X className="h-4 w-4" />
-              {t('filters.schoolClear')}
-            </button>
-          )}
-          {isLoading ? (
-            <div className="py-4 text-center text-sm text-muted-foreground">
-              {t('filters.schoolLoading')}
-            </div>
-          ) : items.length === 0 && search.trim() ? (
-            <div className="py-4 text-center text-sm text-muted-foreground">
-              {t('filters.schoolNoResults')}
-            </div>
-          ) : (
-            items.slice(0, 10).map((school) => (
-              <button
-                key={school.id}
-                type="button"
-                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-muted"
-                onClick={() => {
-                  onSelect(school.id);
-                  setOpen(false);
-                  setSearch('');
-                }}
-              >
-                {getSchoolName(school, locale)}
-              </button>
-            ))
-          )}
+    <div
+      className={`rounded-2xl border bg-gradient-to-br from-background to-amber-50/70 dark:to-amber-950/30 p-5 ${compact ? 'space-y-3' : 'space-y-4'}`}
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">
+            {card.context.competition.abbreviation} / {card.context.trackName}
+          </p>
+          <h3 className="text-lg font-semibold">{card.team.name}</h3>
+          <p className="text-sm text-muted-foreground">{card.headline}</p>
         </div>
-      </PopoverContent>
-    </Popover>
+        <Badge variant={card.status === 'CLOSED' ? 'secondary' : 'default'}>{card.status}</Badge>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <Badge variant="outline">
+          <Target className="mr-1 h-3 w-3" />
+          {card.team.currentSize}/{card.team.targetSize}
+        </Badge>
+        {card.availabilityBand && <Badge variant="outline">{card.availabilityBand}</Badge>}
+        {card.collaborationMode && <Badge variant="outline">{card.collaborationMode}</Badge>}
+        {card.timezone && <Badge variant="outline">{card.timezone}</Badge>}
+      </div>
+
+      <CardBlock title={t('recruitment.card.offer')} items={card.offerRoles} />
+      <CardBlock title={t('recruitment.card.need')} items={card.needRoles} />
+      <CardBlock title={t('recruitment.card.skills')} items={card.skillTags} />
+
+      {!compact && card.members.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm font-medium">{t('recruitment.card.members')}</p>
+          <div className="grid gap-2">
+            {card.members.map((member) => (
+              <div key={member.userId} className="rounded-xl border bg-background/70 p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="font-medium">{member.displayName}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {member.introLine || member.targetMajor || member.role}
+                    </p>
+                  </div>
+                  {member.consentConfirmedAt && (
+                    <Badge variant="secondary">{t('recruitment.card.confirmed')}</Badge>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {card.detailNote && !compact && (
+        <div className="rounded-xl bg-muted/50 p-3 text-sm text-muted-foreground">
+          {card.detailNote}
+        </div>
+      )}
+    </div>
   );
+}
+
+function CardBlock({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div className="space-y-2">
+      <p className="text-sm font-medium">{title}</p>
+      <div className="flex flex-wrap gap-2">
+        {items.length > 0 ? (
+          items.map((item) => (
+            <Badge key={item} variant="secondary">
+              {item}
+            </Badge>
+          ))
+        ) : (
+          <span className="text-sm text-muted-foreground">-</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <p className="text-sm font-medium">{label}</p>
+      {children}
+    </div>
+  );
+}
+
+function ToggleBadge({
+  active,
+  onClick,
+  icon: Icon,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: typeof ShieldCheck;
+  label: string;
+}) {
+  return (
+    <button type="button" onClick={onClick}>
+      <Badge variant={active ? 'default' : 'outline'} className="gap-1.5 px-3 py-1.5">
+        <Icon className="h-3.5 w-3.5" />
+        {label}
+      </Badge>
+    </button>
+  );
+}
+
+function toArray(value: string) {
+  return value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
 }

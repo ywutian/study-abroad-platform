@@ -8,3 +8,4 @@ export * from './onboarding.dto';
 export * from './target-schools.dto';
 export * from './recommendation-letter.dto';
 export * from './semester-gpa.dto';
+export * from './application-analysis-feedback.dto';

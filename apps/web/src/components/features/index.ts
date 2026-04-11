@@ -66,7 +66,7 @@ export type { TeamCardData } from './teams/TeamCard';
 
 // Schools components
 export { AdvancedSchoolFilter } from './schools/AdvancedSchoolFilter';
-export type { SchoolFilters } from './schools/AdvancedSchoolFilter';
+export type { SchoolFilters } from './schools/school-filters';
 export { SchoolLogo } from './schools/SchoolLogo';
 export type { SchoolLogoProps } from './schools/SchoolLogo';
 export { SchoolRecommendation } from './schools/SchoolRecommendation';

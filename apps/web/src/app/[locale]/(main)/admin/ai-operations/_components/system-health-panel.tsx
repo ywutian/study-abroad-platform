@@ -62,7 +62,11 @@ export function SystemHealthPanel() {
 
   const { data: health, isLoading } = useQuery<DetailedHealthStatus>({
     queryKey: ['adminHealthDetailed'],
-    queryFn: () => apiClient.get<DetailedHealthStatus>('/health/detailed'),
+    queryFn: () =>
+      apiClient.get<DetailedHealthStatus>('/health/detailed', {
+        directApi: true,
+        skipApiVersion: true,
+      }),
     refetchInterval: 15000,
   });
 

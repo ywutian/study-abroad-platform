@@ -4,6 +4,7 @@ import { OrchestratorService } from './core/orchestrator.service';
 import { TokenTrackerService } from './core/token-tracker.service';
 import { RateLimiterService } from './core/rate-limiter.service';
 import { LLMService } from './core/llm.service';
+import { AgentType } from './types';
 
 describe('AiAgentController', () => {
   let controller: AiAgentController;
@@ -81,9 +82,19 @@ describe('AiAgentController', () => {
 
   describe('POST /chat (non-stream)', () => {
     it('should call orchestrator.handleMessage and return json', async () => {
+      const context = {
+        type: 'prediction-results' as const,
+        source: 'prediction_page',
+        results: [{ schoolName: 'MIT', probability: 0.4 }],
+      };
       await controller.chat(
         mockUser as any,
-        { message: 'hi', stream: false },
+        {
+          message: 'hi',
+          stream: false,
+          context,
+          agentHint: AgentType.SCHOOL,
+        },
         mockResponse as any,
       );
 
@@ -92,6 +103,8 @@ describe('AiAgentController', () => {
         'hi',
         undefined,
         undefined,
+        context,
+        AgentType.SCHOOL,
       );
       expect(mockResponse.json).toHaveBeenCalledWith({ reply: 'hello' });
     });
@@ -103,10 +116,22 @@ describe('AiAgentController', () => {
         yield { type: 'token', content: 'hi' };
       })();
       (orchestrator.handleMessageStream as jest.Mock).mockReturnValue(events);
+      const context = {
+        type: 'selected-schools' as const,
+        source: 'profile_school_list',
+        schools: [{ id: 'school-1', name: 'Stanford' }],
+      };
 
       await controller.chat(
         mockUser as any,
-        { message: 'hi', stream: true, conversationId: 'conv-1', locale: 'en' },
+        {
+          message: 'hi',
+          stream: true,
+          conversationId: 'conv-1',
+          locale: 'en',
+          context,
+          agentHint: AgentType.SCHOOL,
+        },
         mockResponse as any,
       );
 
@@ -119,6 +144,8 @@ describe('AiAgentController', () => {
         'hi',
         'conv-1',
         'en',
+        context,
+        AgentType.SCHOOL,
       );
       expect(mockResponse.end).toHaveBeenCalled();
     });
@@ -126,11 +153,18 @@ describe('AiAgentController', () => {
 
   describe('POST /agent', () => {
     it('should call orchestrator.callAgent with correct params', async () => {
+      const context = {
+        type: 'prediction-results' as const,
+        source: 'prediction_result_card',
+        results: [{ schoolName: 'Harvard', probability: 0.2 }],
+      };
       const result = await controller.callAgent(mockUser as any, {
         agent: 'essay' as any,
         message: 'help with essay',
         conversationId: 'conv-2',
         locale: 'zh',
+        context,
+        agentHint: AgentType.ESSAY,
       });
 
       expect(orchestrator.callAgent).toHaveBeenCalledWith(
@@ -139,6 +173,8 @@ describe('AiAgentController', () => {
         'help with essay',
         'conv-2',
         'zh',
+        context,
+        AgentType.ESSAY,
       );
       expect(result).toEqual({ reply: 'agent response' });
     });

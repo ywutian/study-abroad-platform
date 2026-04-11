@@ -9,9 +9,11 @@ import {
   IsBoolean,
   IsNotEmpty,
   MaxLength,
+  IsObject,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AgentType } from '../types';
+import type { AgentChatContext } from '../types';
 
 export class ChatDto {
   @ApiProperty({ description: 'User message content' })
@@ -38,6 +40,21 @@ export class ChatDto {
   @IsString()
   @MaxLength(10)
   locale?: string;
+
+  @ApiPropertyOptional({
+    description: 'Structured UI context for prediction or selected schools',
+  })
+  @IsOptional()
+  @IsObject()
+  context?: AgentChatContext;
+
+  @ApiPropertyOptional({
+    description: 'Optional agent routing hint from the calling UI',
+    enum: AgentType,
+  })
+  @IsOptional()
+  @IsEnum(AgentType)
+  agentHint?: AgentType;
 }
 
 export class DirectAgentDto {
@@ -64,4 +81,19 @@ export class DirectAgentDto {
   @IsString()
   @MaxLength(10)
   locale?: string;
+
+  @ApiPropertyOptional({
+    description: 'Structured UI context for prediction or selected schools',
+  })
+  @IsOptional()
+  @IsObject()
+  context?: AgentChatContext;
+
+  @ApiPropertyOptional({
+    description: 'Optional agent routing hint from the calling UI',
+    enum: AgentType,
+  })
+  @IsOptional()
+  @IsEnum(AgentType)
+  agentHint?: AgentType;
 }

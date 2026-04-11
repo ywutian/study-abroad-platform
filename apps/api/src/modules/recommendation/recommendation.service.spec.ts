@@ -181,7 +181,13 @@ describe('RecommendationService', () => {
 
       expect(result).toBeDefined();
       expect(result.recommendations).toBeDefined();
-      expect(llmService.chatSimpleGuarded).toHaveBeenCalled();
+      expect(llmService.chatSimpleGuarded).toHaveBeenCalledWith(
+        expect.any(Array),
+        expect.objectContaining({
+          maxTokens: 3000,
+          timeoutMs: 90000,
+        }),
+      );
     });
 
     it('should throw NotFoundException and refund if profile not found', async () => {

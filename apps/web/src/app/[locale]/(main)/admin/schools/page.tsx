@@ -26,6 +26,7 @@ import { SchoolsList } from './_components/schools-list';
 import { DataQualityTab } from './_components/data-quality-tab';
 import { DataSyncTab } from './_components/data-sync-tab';
 import { EditSchoolDialog } from './_components/edit-school-dialog';
+import { SchoolCommunityRatingsDialog } from './_components/school-community-ratings-dialog';
 
 interface School {
   id: string;
@@ -61,6 +62,10 @@ interface School {
     applicationCycle?: string;
     dataUpdated?: string;
     requirements?: { toeflMin?: number; ieltsMin?: number };
+  };
+  communityRatingSummary?: {
+    count: number;
+    isPublic: boolean;
   };
 }
 
@@ -111,6 +116,8 @@ export default function AdminSchoolsPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [scrapeConfirmOpen, setScrapeConfirmOpen] = useState(false);
   const [editingSchool, setEditingSchool] = useState<School | null>(null);
+  const [communityDialogOpen, setCommunityDialogOpen] = useState(false);
+  const [communitySchool, setCommunitySchool] = useState<School | null>(null);
 
   const { data: schoolsData, isLoading } = useQuery({
     queryKey: ['adminSchools', schoolSearch, page],
@@ -193,6 +200,11 @@ export default function AdminSchoolsPage() {
   const openEdit = (school: School) => {
     setEditingSchool(school);
     setEditOpen(true);
+  };
+
+  const openCommunity = (school: School) => {
+    setCommunitySchool(school);
+    setCommunityDialogOpen(true);
   };
 
   const totalPages = schoolsData ? Math.ceil(schoolsData.total / pageSize) : 1;
@@ -320,6 +332,7 @@ export default function AdminSchoolsPage() {
               }}
               onPageChange={setPage}
               onEdit={openEdit}
+              onViewCommunity={openCommunity}
             />
           </TabsContent>
 
@@ -347,6 +360,11 @@ export default function AdminSchoolsPage() {
           onGenerateLogo={(schoolId) => fetchLogoSuggestionMutation.mutate(schoolId)}
           isSaving={updateSchoolMutation.isPending}
           isGenerating={fetchLogoSuggestionMutation.isPending}
+        />
+        <SchoolCommunityRatingsDialog
+          open={communityDialogOpen}
+          onOpenChange={setCommunityDialogOpen}
+          school={communitySchool}
         />
       </div>
     </>

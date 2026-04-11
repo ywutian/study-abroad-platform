@@ -25,8 +25,11 @@ import { ChatService } from './chat.service';
 import { ChatGateway } from './chat.gateway';
 import { CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
-import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
-import { StartConversationDto, CreateReportDto } from './dto';
+import {
+  ThrottleRelaxed,
+  ThrottleSensitive,
+} from '../../common/decorators/throttle.decorator';
+import { StartConversationDto, CreateReportDto, SendMessageDto } from './dto';
 
 @ApiTags('chat')
 @ApiBearerAuth()
@@ -46,6 +49,15 @@ export class ChatController {
   @ApiOperation({ summary: 'Get my conversation list' })
   async getConversations(@CurrentUser() user: CurrentUserPayload) {
     return this.chatService.getConversations(user.id);
+  }
+
+  @Get('conversations/:id')
+  @ApiOperation({ summary: 'Get a single conversation detail' })
+  async getConversation(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') conversationId: string,
+  ) {
+    return this.chatService.getConversation(conversationId, user.id);
   }
 
   @Post('conversations')
@@ -73,9 +85,31 @@ export class ChatController {
     return this.chatService.getMessages(
       conversationId,
       user.id,
-      limit || 50,
+      Math.min(limit || 50, 100),
       before,
     );
+  }
+
+  @Post('conversations/:id/messages')
+  @ThrottleSensitive()
+  @ApiOperation({ summary: 'Send a message through REST' })
+  async sendMessage(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') conversationId: string,
+    @Body() dto: SendMessageDto,
+  ) {
+    const message = await this.chatService.sendMessage(
+      conversationId,
+      user.id,
+      dto.content,
+    );
+
+    this.chatGateway.broadcastToConversation(conversationId, 'newMessage', {
+      conversationId,
+      message,
+    });
+
+    return message;
   }
 
   @Post('conversations/:id/read')
@@ -222,7 +256,7 @@ export class ChatController {
   ) {
     return this.chatService.getRecommendedUsers(
       user.id,
-      limit ? parseInt(limit, 10) : 10,
+      Math.min(limit ? parseInt(limit, 10) : 10, 50),
     );
   }
 

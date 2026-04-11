@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { teamRoutes } from '@study-abroad/shared';
 import { useRouter } from '@/lib/i18n/navigation';
 import { PageContainer } from '@/components/layout';
 import { Button } from '@/components/ui/button';
@@ -27,7 +28,8 @@ export function TeamJoinPageClient() {
   const joinStarted = useRef(false);
 
   const joinMutation = useMutation({
-    mutationFn: (tkn: string) => apiClient.post<JoinResult>('/teams/join', { token: tkn }),
+    mutationFn: (tkn: string) =>
+      apiClient.post<JoinResult>(teamRoutes.joinByToken(), { token: tkn }),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
       router.push(`/teams/${data.id}`);
@@ -81,7 +83,7 @@ export function TeamJoinPageClient() {
         <div className="flex flex-col items-center justify-center py-12">
           <Skeleton className="h-12 w-12 rounded-full mb-4" />
           <p className="text-muted-foreground">
-            {joinMutation.isPending ? 'Joining team...' : 'Loading...'}
+            {joinMutation.isPending ? t('joinPage.joining') : t('joinPage.loading')}
           </p>
         </div>
       </PageContainer>

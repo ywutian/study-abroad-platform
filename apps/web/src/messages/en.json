@@ -623,7 +623,7 @@
       "evaluateEssay": "Evaluate Essay",
       "viewDeadlines": "View Deadlines",
       "analyzeProfileMessage": "Please help me analyze my profile competitiveness",
-      "recommendSchoolsMessage": "Recommend suitable schools based on my background",
+      "recommendSchoolsMessage": "Recommend schools for my current profile, grouped into reach, match, and safety with reasons",
       "evaluateEssayMessage": "Help me evaluate my essay",
       "viewDeadlinesMessage": "Help me organize the application deadlines for my target schools"
     },
@@ -639,9 +639,13 @@
     "usingTools": "Using tools",
     "scrollToBottom": "Scroll to bottom",
     "tierReach": "Reach",
-    "tierTarget": "Target",
+    "tierTarget": "Match",
     "tierSafety": "Safety",
+    "tierReachDesc": "Best treated as a reach choice",
+    "tierTargetDesc": "Well aligned with your current profile",
+    "tierSafetyDesc": "Can serve as a safer option",
     "tierSchoolCount": "{label} ({count})",
+    "tierStrategyDisclaimer": "These tiers help plan your school list. They are not official school ratings.",
     "tools": {
       "searchSchools": "Search Schools",
       "getProfile": "Get Profile",
@@ -652,7 +656,26 @@
       "queryDatabase": "Query Database",
       "generateOutline": "Generate Outline",
       "recommendSchools": "Recommend Schools",
-      "analyzeChance": "Analyze Chances"
+      "analyzeChance": "Analyze Chances",
+      "predictionHistory": "Prediction History",
+      "predictionDashboard": "Prediction Dashboard",
+      "schoolListPredictions": "School List Predictions",
+      "predictionTrace": "Prediction Trace Summary"
+    },
+    "toolPreview": {
+      "probability": "Probability",
+      "tier": "Tier",
+      "confidence": "Confidence",
+      "historyPoints": "History",
+      "schools": "Schools",
+      "predicted": "Predicted",
+      "avgProbability": "Avg. Probability",
+      "sources": "Sources",
+      "uncertainty": "Uncertainty",
+      "round": "Round",
+      "updated": "Updated",
+      "notAvailable": "N/A",
+      "noPublicTrace": "No public trace summary"
     },
     "clear": "Clear Chat",
     "characters": "characters",
@@ -780,6 +803,7 @@
     "targetSchools": "Target Schools",
     "targetSchoolsDesc": "Select your target schools",
     "schoolSelection": {
+      "toggleDetails": "Toggle school details",
       "roundFilter": "Filter by Round",
       "allRounds": "All Rounds",
       "dataDisclaimer": "School data is sourced from public databases and may not reflect the most recent updates. Please verify with official school websites.",
@@ -797,6 +821,8 @@
       "essayRequirements": "Essay Requirements",
       "noEssayPrompts": "No essay prompts available for this school",
       "writeEssay": "Write",
+      "askAi": "Ask AI",
+      "askAiPrompt": "Use my current profile and personal estimate for {schoolName} ({probability}%) to explain this prediction, what could move the odds, and how I should position this school in my list.",
       "startWriting": "Start writing this essay",
       "words": "words",
       "optional": "Optional",
@@ -1332,8 +1358,16 @@
       "title": "Rate Breakdown",
       "overall": "Overall Acceptance Rate",
       "international": "Intl Student Rate",
+      "contextualBaseline": "Contextual Baseline",
+      "contextualBaselineWithRound": "{round} Context Baseline",
+      "contextualBaselineShort": "Baseline {rate}%",
+      "contextualBaselineTooltip": "Uses the best available public baseline for this school, then adjusts for your application round when applicable.",
       "majorEstimate": "{major} Estimate",
       "yourProbability": "Your Estimated Probability",
+      "roundAdjusted": "{round} context applied",
+      "deltaAbove": "{points} pts above baseline",
+      "deltaBelow": "{points} pts below baseline",
+      "deltaNear": "Close to baseline",
       "needBlind": "Need-Blind for Intl",
       "intlPercent": "{pct}% Intl Students",
       "competitiveness": {
@@ -1363,8 +1397,8 @@
     "selectedCount": "{count} selected",
     "showMore": "Show More",
     "showLess": "Show Less",
-    "acceptanceRateLabel": "Acceptance Rate: {rate}%",
-    "range": "Prediction Range",
+    "acceptanceRateLabel": "School-wide Acceptance Rate: {rate}%",
+    "range": "Likely Range",
     "weight": "Weight",
     "suggestions": "Suggestions",
     "engineBreakdown": "Engine Breakdown",
@@ -1378,12 +1412,12 @@
       "analyzing": "Analyzing..."
     },
     "badge": {
-      "ensemble": "Ensemble Model"
+      "ensemble": "Combined Estimate"
     },
     "confidence": {
-      "high": "High Confidence",
-      "medium": "Medium Confidence",
-      "low": "Low Confidence"
+      "high": "Strong Data Support",
+      "medium": "Moderate Data Support",
+      "low": "Limited Data Support"
     },
     "tier": {
       "reach": "Reach",
@@ -1392,7 +1426,7 @@
       "unknown": "Unknown"
     },
     "tooltip": {
-      "ensemble": "Combined prediction from multiple models"
+      "ensemble": "Combines AI, statistics, and historical signals into one personal estimate"
     },
     "aiAssistantTitle": "AI Prediction Assistant",
     "aiAssistantDescNoResults": "Select schools and AI will provide personalized analysis",
@@ -1400,7 +1434,7 @@
     "aiInitialNoResults": "Select schools and start prediction for analysis",
     "aiInitialWithResults": "Prediction complete! Click below for recommendations",
     "detailedAnalysis": "Detailed Analysis",
-    "detailedAnalysisPrompt": "Please provide a detailed analysis of my admission chance for {schoolName}, including factors, suggestions, and comparison with similar applicants.",
+    "detailedAnalysisPrompt": "Please analyze my chances for {schoolName} like a professional admissions counselor. Clearly distinguish the school's overall acceptance rate from my profile-based personal estimate, then explain key factors and next steps.",
     "dataCompleteness": "Profile Completeness",
     "dataCompletenessLow": "Complete your profile for more accurate predictions",
     "completeProfile": "Complete Profile",
@@ -1424,10 +1458,10 @@
       "historicalData": "Historical Admissions"
     },
     "engineWeights": "Engine Weight Distribution",
-    "reportResult": "Report Actual Result",
-    "resultReported": "Result reported successfully",
+    "reportResult": "Add Final Outcome Label",
+    "resultReported": "Outcome label saved",
     "noResultsForFilter": "No results match the current filter",
-    "resultRecordedThankYou": "Thank you! Your result helps calibrate the model",
+    "resultRecordedThankYou": "Thanks. This outcome label helps us improve future estimates.",
     "predictionAccurate": "Prediction Accurate",
     "outperformedPrediction": "Beat the Odds",
     "updatedAgo": "Updated {time} ago",
@@ -1436,10 +1470,27 @@
     "historyTrend": "Prediction History",
     "noHistory": "No prediction history yet",
     "rank": "#{rank}",
-    "acceptRate": "{rate}% accept",
-    "estimatedProbabilityLabel": "Estimated admission probability",
-    "schoolAcceptanceRateLabel": "Acceptance rate {rate}%",
-    "probabilityVsRateDisclaimer": "Acceptance rate is school data; the percentage is your estimated admission probability based on your profile.",
+    "acceptRate": "School-wide acceptance rate {rate}%",
+    "estimatedProbabilityLabel": "Your estimated admission chance",
+    "schoolAcceptanceRateLabel": "School-wide acceptance rate {rate}%",
+    "probabilityVsRateDisclaimer": "School-wide acceptance rate comes from public data; the main percentage is your personal estimate based on your current profile.",
+    "confidenceDisclaimer": "\"Data support\" reflects how complete your profile and school data are. It does not mean your chances are high or low.",
+    "tierStrategyDisclaimer": "\"Reach / Match / Safety\" is a planning framework for school selection, not an official school rating.",
+    "modelLabel": "Combined model",
+    "predictionContextTitle": "How to read this estimate",
+    "roundContextLabel": "Application round",
+    "roundContextChip": "Round: {value}",
+    "cohortKeyLabel": "Comparison cohort",
+    "sourceSummaryLabel": "Evidence used",
+    "sourceSummarySecondaryLabel": "Additional signals",
+    "sourceFreshnessLabel": "Data freshness",
+    "confidenceReasonLabel": "Why this data support level",
+    "uncertaintyReasonsLabel": "What may move this estimate",
+    "outcomeLabelSection": "Final outcome label",
+    "outcomeLabelHint": "If you later receive a real decision from this school, add the final outcome label here.",
+    "outcomeLabelSaved": "Outcome label saved",
+    "outcomeLabelSavedToast": "Saved. This helps improve future estimates.",
+    "outcomeLabelSavedHint": "This label is stored as your submitted outcome and may be reviewed later.",
     "predictionInProgress": "Prediction in progress, please wait",
     "resultsAnnouncement": "Showing {count} results, sorted by {sort}",
     "essayDisclaimer": "This prediction does not include essays, interviews, or other subjective factors.",
@@ -1457,7 +1508,7 @@
     "sort": {
       "probability": "By Probability",
       "tier": "By Tier",
-      "confidence": "By Confidence"
+      "confidence": "By Data Support"
     },
     "filter": {
       "all": "All"
@@ -1465,7 +1516,8 @@
     "result": {
       "admitted": "Admitted",
       "waitlisted": "Waitlisted",
-      "rejected": "Rejected"
+      "rejected": "Rejected",
+      "deferred": "Deferred"
     },
     "aiActions": {
       "analyzeResults": "Analyze Results",
@@ -1479,7 +1531,7 @@
       "improveChances": "Improve Chances",
       "improveChancesPrompt": "How can I improve my admission chances based on these predictions?\n{results}",
       "recommendSchools": "Recommend Schools",
-      "recommendSchoolsPrompt": "Please recommend schools based on my profile"
+      "recommendSchoolsPrompt": "Please recommend schools based on my current profile and explain which ones fit as reach, match, and safety choices. Distinguish school-wide acceptance rates from my personal chances, and do not present tiers as official school ratings."
     },
     "hint": {
       "addHighSchool": "Add your high school in your profile for more accurate predictions",
@@ -1902,7 +1954,7 @@
     "swipeCard": {
       "applicantProfile": "Applicant Profile",
       "applicantFeatures": "Applicant Features",
-      "acceptanceRate": "Acceptance Rate",
+      "acceptanceRate": "School-wide Acceptance Rate",
       "activities": "Activities",
       "awards": "Awards",
       "apCourses": "AP Courses",
@@ -1921,7 +1973,14 @@
       "gradeGAP_YEAR": "Gap Year",
       "schoolTypePUBLIC_US": "US Public",
       "schoolTypePRIVATE_US": "US Private",
+      "schoolTypeBOARDING_US": "US Boarding",
+      "schoolTypeINTL_CN": "China International",
+      "schoolTypePUBLIC_CN": "China Public",
+      "schoolTypePRIVATE_CN": "China Private",
       "schoolTypeINTERNATIONAL": "International",
+      "schoolTypeINTL_OTHER": "Other International",
+      "schoolTypePUBLIC_OTHER": "Other Public",
+      "schoolTypePRIVATE_OTHER": "Other Private",
       "awardLevelINTERNATIONAL": "International",
       "awardLevelNATIONAL": "National",
       "awardLevelSTATE": "State",
@@ -2476,7 +2535,7 @@
     "searchPlaceholder": "Search schools...",
     "noResults": "No schools found",
     "noResultsHint": "Try using different keywords",
-    "acceptanceRate": "Acceptance Rate",
+    "acceptanceRate": "School-wide Acceptance Rate",
     "selectedCount": "Selected {count}/{max}",
     "confirmSelection": "Confirm Selection",
     "maxSelectionReached": "Maximum {max} schools can be selected",
@@ -2538,6 +2597,7 @@
     "noResults": "No schools found",
     "tryDifferentSearch": "Try searching with different keywords",
     "resultsCount": "{count} schools total",
+    "showingTruncated": "Showing first {shown} of {total} schools. Narrow your filters to see more.",
     "country": "Country",
     "countries": {
       "all": "All Countries",
@@ -2561,13 +2621,24 @@
     "acceptanceRate": "Acceptance Rate",
     "students": "Students",
     "viewDetails": "View Details",
+    "supplementalRanking": "Supplemental ranking",
     "indices": {
       "legend": "Index Legend",
       "safetyIndex": "Safety Index",
       "happinessIndex": "Happiness Index",
       "foodIndex": "Food Index",
       "moreIsBetter": "More icons = better",
-      "noData": "No Data"
+      "noData": "No Data",
+      "estimated": "Estimated",
+      "estimatedHint": "Shown as a temporary estimate until source-backed campus-life ratings are available."
+    },
+    "community": {
+      "safetyShort": "Safety",
+      "lifeShort": "Life",
+      "foodShort": "Food",
+      "count": "{count} ratings",
+      "pendingCard": "{count} ratings so far. Public averages appear at {minCount}+.",
+      "noneCard": "No public community ratings yet"
     },
     "gradeLabels": {
       "A+": "A+",
@@ -2594,6 +2665,7 @@
     "tuitionRange": "Tuition Range",
     "tuition": {
       "all": "All",
+      "custom": "Custom",
       "20k-30k": "$20,000 - $30,000",
       "30k-40k": "$30,000 - $40,000",
       "40k-50k": "$40,000 - $50,000",
@@ -2650,6 +2722,193 @@
       "testOptional": "Test Optional"
     }
   },
+  "applicationAnalysis": {
+    "title": "Application Analysis",
+    "subtitle": "School-aware admissions strategy built from profile, predictions, and historical evidence",
+    "loading": {
+      "title": "Analyzing your application",
+      "description": "Building a school-aware strategy view from profile, predictions, and historical evidence."
+    },
+    "error": {
+      "title": "Analysis failed",
+      "description": "Something went wrong while generating your analysis. Please try again.",
+      "retry": "Retry"
+    },
+    "empty": {
+      "title": "No analysis yet",
+      "description": "Run the application analysis to see school-aware guidance."
+    },
+    "emptyList": "No items yet",
+    "overallScore": "Overall score",
+    "focusSchools": "Focus schools",
+    "profileContext": "Profile context",
+    "schoolListDiagnosis": "School list diagnosis",
+    "foundationReview": "Foundation review",
+    "riskBoundaries": "Risk boundaries",
+    "missingPredictions": "Missing predictions",
+    "missingRounds": "Schools without rounds",
+    "highlights": "Highlights",
+    "improvements": "Improvements",
+    "freshness": {
+      "fresh": "Fresh",
+      "cached": "Cached",
+      "degraded": "Degraded"
+    },
+    "dataQuality": {
+      "high": "High evidence quality",
+      "medium": "Moderate evidence quality",
+      "low": "Limited evidence quality",
+      "insufficient": "Insufficient evidence"
+    },
+    "legacyTier": {
+      "top10": "Top 10 legacy tier",
+      "top30": "Top 30 legacy tier",
+      "top50": "Top 50 legacy tier",
+      "top100": "Top 100 legacy tier",
+      "other": "Foundational tier"
+    },
+    "states": {
+      "ready": {
+        "label": "School-ready",
+        "description": "The evidence is sufficient for school-level strategy guidance."
+      },
+      "noTargetSchools": {
+        "label": "Needs target schools",
+        "description": "Add 3-5 target schools and rounds before expecting school-specific strategy."
+      },
+      "noPredictions": {
+        "label": "Needs predictions",
+        "description": "The school list exists, but the focus schools still need fresh predictions."
+      },
+      "insufficientProfileData": {
+        "label": "Needs core evidence",
+        "description": "The profile is still too thin for reliable school-level judgment."
+      },
+      "analysisError": {
+        "label": "Analysis unavailable",
+        "description": "The analysis could not be completed. Please try again later."
+      }
+    },
+    "portfolioBalance": {
+      "balanced": "Balanced",
+      "reachHeavy": "Reach-heavy",
+      "safetyHeavy": "Safety-heavy",
+      "undermatch": "Undermatch risk",
+      "insufficient": "Not enough schools"
+    },
+    "applicantType": {
+      "title": "Applicant type",
+      "domestic": "Domestic applicant",
+      "international": "International applicant",
+      "unknown": "Applicant type not fully identified"
+    },
+    "contextFlags": {
+      "needAid": "Needs financial aid",
+      "firstGeneration": "First-generation",
+      "legacy": "Legacy context present",
+      "gapYear": "Gap year",
+      "testSubmit": "Test-submit path",
+      "testOptional": "Test-optional path"
+    },
+    "testStrategy": {
+      "title": "Testing strategy",
+      "submit": "Test-submit",
+      "testOptional": "Test-optional",
+      "unknown": "Not decided"
+    },
+    "confidence": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "actions": {
+      "refresh": "Refresh analysis",
+      "showFull": "Show full analysis",
+      "hideFull": "Hide details"
+    },
+    "sections": {
+      "academic": "Academic foundation",
+      "testScores": "Testing position",
+      "activities": "Activities & leadership",
+      "awards": "Awards & validation"
+    },
+    "sectionStatus": {
+      "green": "Clear strength",
+      "yellow": "Workable but exposed",
+      "red": "Core gap"
+    },
+    "schoolTier": {
+      "REACH": "Reach",
+      "TARGET": "Target",
+      "SAFETY": "Safety"
+    },
+    "schoolCards": {
+      "probability": "Admission probability",
+      "probabilityUnavailable": "Unavailable",
+      "confidence": "Confidence",
+      "updated": "Updated",
+      "whyHard": "Why this is hard",
+      "strengths": "Compensating strengths",
+      "gaps": "Top gaps",
+      "nextActions": "Next actions",
+      "historical": "Historical signals",
+      "hardStops": "Hard-stop risks",
+      "recourse": "Recourse guidance",
+      "uncertainty": "Strategy uncertainty",
+      "uncertaintyRange": "Strategy range"
+    },
+    "policy": {
+      "testing": {
+        "REQUIRED": "Test required",
+        "OPTIONAL": "Test optional",
+        "BLIND": "Test blind",
+        "UNKNOWN": "Testing policy unknown"
+      },
+      "intlAid": {
+        "NEED_BLIND": "Intl aid need-blind",
+        "NEED_AWARE": "Intl aid need-aware",
+        "UNKNOWN": "Intl aid policy unknown"
+      }
+    },
+    "actionPlan": {
+      "title": "Action plan",
+      "now": "Now",
+      "next90Days": "Next 90 days",
+      "beforeSubmission": "Before submission"
+    },
+    "recommendations": {
+      "title": "Supplemental recommendations",
+      "majors": "Major directions",
+      "competitions": "Competitions",
+      "activities": "Projects & activities",
+      "summerPrograms": "Summer programs",
+      "timeline": "Planning notes"
+    },
+    "fairness": {
+      "title": "Fairness disclosure",
+      "notes": "Disclosure notes",
+      "appliesTo": "Applies to",
+      "status": {
+        "clear": "Clear",
+        "limited": "Limited",
+        "blocked": "Blocked"
+      }
+    },
+    "feedback": {
+      "title": "Was this experimental guidance helpful?",
+      "helpful": "Helpful",
+      "notHelpful": "Not helpful",
+      "chooseReason": "Choose a reason",
+      "submitted": "Feedback recorded. Thanks.",
+      "categories": {
+        "UNSAFE_RECOURSE": "Unsafe recourse",
+        "POLICY_MISMATCH": "Policy mismatch",
+        "MISLEADING_UNCERTAINTY": "Misleading uncertainty",
+        "FAIRNESS_CONCERN": "Fairness concern",
+        "LOW_ACTIONABILITY": "Low actionability"
+      }
+    }
+  },
   "uncommonApp": {
     "title": "Uncommon App",
     "description": "Manage your school list and profile, get AI-powered recommendations",
@@ -2679,11 +2938,14 @@
     "loadingStep3": "Generating recommendations...",
     "loadingStepOf": "Step {current} of {total}",
     "myProfile": "My Profile",
+    "profileReadiness": "Profile readiness",
+    "profileReadinessHint": "This measures how complete your evidence is, not how strong your candidacy already is.",
     "profileScore": "Profile Completion",
     "testScores": "Test Scores",
     "activities": "Activities",
     "awards": "Awards",
     "gradeProfile": "Grade My Profile",
+    "generateAnalysis": "Generate application analysis",
     "analyzing": "Analyzing...",
     "aiAnalyzing": "AI Agent analyzing...",
     "analysisComplete": "Analysis complete!",
@@ -4042,7 +4304,7 @@
       "moderate": "This school has moderate difficulty. Focus on demonstrating fit with the school"
     },
     "stats": {
-      "acceptanceRate": "Acceptance Rate",
+      "acceptanceRate": "School-wide Acceptance Rate",
       "tuition": "Tuition/Year",
       "avgSalary": "Avg Salary",
       "studentCount": "Students"
@@ -4057,6 +4319,7 @@
     },
     "academicStats": "Academic Stats",
     "usNewsRank": "US News Rank",
+    "qsRank": "QS Rank",
     "satAvg": "SAT Average",
     "actAvg": "ACT Average",
     "graduationRate": "Graduation Rate",
@@ -4093,6 +4356,43 @@
       "life": "Student Life",
       "food": "Food",
       "studentOrgs": "Student Organizations"
+    },
+    "campusLifeOfficial": {
+      "title": "Official Campus-Life Data",
+      "description": "Verified official or federal campus-life fields only",
+      "empty": "No verified official campus-life data is available yet."
+    },
+    "officialData": {
+      "title": "Official Data",
+      "description": "Verified official or federal school statistics",
+      "empty": "No verified official academic data is available yet."
+    },
+    "supplemental": {
+      "title": "Supplemental Information",
+      "description": "Traceable non-official data sources and supplemental rankings"
+    },
+    "supplementalRanking": "Supplemental ranking",
+    "supplementalCampusLife": "Supplemental campus-life grades",
+    "supplementalBadges": "Supplemental application details",
+    "community": {
+      "title": "Community Ratings",
+      "description": "Aggregated user ratings shown separately from official data",
+      "safety": "Safety",
+      "life": "Campus Life",
+      "food": "Food",
+      "count": "{count} community ratings",
+      "userLabel": "User ratings",
+      "pending": "{count} ratings submitted so far. Public averages unlock at {minCount}+ ratings.",
+      "notEnough": "Not enough ratings yet. Log in to add yours.",
+      "rateTitle": "Rate this school",
+      "rateHint": "Rate each category from 1 to 5. You can update your ratings anytime.",
+      "submit": "Submit ratings",
+      "update": "Update ratings",
+      "saved": "Community ratings saved",
+      "saveFailed": "Could not save your ratings",
+      "loginHint": "Log in to submit your own campus ratings.",
+      "loginAction": "Log in to rate",
+      "hidden": "This rating is currently hidden from public averages"
     },
     "postGrad": {
       "title": "Post-Graduation Outcomes",
@@ -4149,12 +4449,16 @@
     },
     "prediction": {
       "title": "Admission Prediction",
-      "subtitle": "AI-powered probability analysis based on your profile",
+      "subtitle": "AI-assisted judgment based on your current profile",
       "safety": "Safety",
       "match": "Match",
       "reach": "Reach",
+      "personalEstimate": "Personal estimate",
+      "reachAdvice": "Works best as a reach choice",
+      "matchAdvice": "A strong match for your current profile",
+      "safetyAdvice": "Can serve as a safer option",
       "confidenceInterval": "Confidence Interval",
-      "confidence": "Confidence",
+      "confidence": "Data Support",
       "source": "Source",
       "factors": "Key Factors",
       "trend": "History Trend",
@@ -4176,15 +4480,15 @@
   },
   "predictionDashboard": {
     "title": "Prediction Dashboard",
-    "subtitle": "Overview of all your school admission predictions",
+    "subtitle": "Overview of your personal estimates across schools",
     "totalSchools": "Total Schools",
-    "avgProbability": "Avg Probability",
-    "tierDistribution": "Tier Distribution",
+    "avgProbability": "Avg Personal Estimate",
+    "tierDistribution": "Strategy Mix",
     "reach": "Reach",
     "match": "Match",
     "safety": "Safety",
     "dataCompleteness": "Data Quality",
-    "probabilityRange": "Probability Range",
+    "probabilityRange": "Estimate Range",
     "improveProfile": "Improve Profile",
     "completeness": {
       "good": "Excellent",
@@ -4367,15 +4671,15 @@
     "categories": {
       "reach": {
         "label": "Reach Schools",
-        "description": "Challenging but worth trying"
+        "description": "Best treated as a reach choice for your current profile"
       },
       "target": {
         "label": "Target Schools",
-        "description": "Good match with your background"
+        "description": "Well aligned with your current profile and worth prioritizing"
       },
       "safety": {
         "label": "Safety Schools",
-        "description": "High chance of admission"
+        "description": "Can serve as a safer option to stabilize your school list"
       }
     },
     "noHistory": "No recommendation history",
@@ -4396,20 +4700,22 @@
     "visitWebsite": "Visit official website",
     "viewScorecard": "View on College Scorecard",
     "viewIPEDS": "View federal data (IPEDS)",
-    "admissionChance": "Admission Chance",
+    "admissionChance": "Estimated Personal Chance",
     "noSchoolsInCategory": "No {category} recommendations, please complete your profile",
-    "disclaimer": "Recommendations are based on AI analysis for reference only. Actual admission depends on multiple factors.",
+    "disclaimer": "These recommendations help shape your school strategy, not label schools officially. Essays, recommendations, interviews, and other factors still matter.",
     "summerPrograms": "Recommended Summer Programs",
     "result": "Recommendation Results",
     "newRecommendation": "New Recommendation",
     "success": "Recommendation complete",
     "failed": "Recommendation failed, please retry",
-    "fitScore": "Fit Score",
-    "probability": "Admission Probability",
-    "estimatedProbability": "Estimated Probability",
-    "aiRoughEstimate": "Estimated Probability",
+    "fitScore": "Profile Fit",
+    "probability": "Estimated Personal Chance",
+    "acceptRate": "School-wide acceptance rate",
+    "estimatedProbability": "Estimated Personal Chance",
+    "aiRoughEstimate": "Estimated Personal Chance",
     "viewDetailedPrediction": "View detailed prediction →",
-    "probabilityTooltip": "Based on AI analysis anchored to statistical model. For a full analysis with historical data, use Prediction.",
+    "probabilityTooltip": "This is a personal estimate based on your current profile, not the school's overall acceptance rate. For a fuller probability analysis, use Prediction.",
+    "strategyDisclaimer": "These tiers help plan your school list. They are not official school ratings.",
     "strengths": "Strengths",
     "weaknesses": "Weaknesses",
     "concerns": "Concerns",
@@ -4799,7 +5105,10 @@
       "askQuestionPrompt": "I'd like to ask a question about studying abroad:",
       "essayHelp": "Essay Help",
       "essayHelpPrompt": "I'm working on my essay and not sure what angle to take. Please give me some suggestions or point me to good essay writing posts on the forum."
-    }
+    },
+    "legacyTeamReadOnly": "Legacy forum team posts are now read-only. Create new competition recruitment cards in /teams.",
+    "legacyTeamHistorical": "Legacy forum team posts are now read-only. Historical content stays visible, but new applications are disabled. Use /teams for live competition matching.",
+    "openTeams": "Open /teams"
   },
   "teams": {
     "title": "Teams",
@@ -4860,6 +5169,18 @@
     },
     "goDiscover": "Discover teams",
     "loginToJoin": "Log in to join",
+    "joinPage": {
+      "loading": "Loading...",
+      "joining": "Joining team..."
+    },
+    "inviteResults": {
+      "title": "Invitation delivery",
+      "sent": "Notification delivered",
+      "existingPending": "Existing invite reused and notification delivered",
+      "manualShare": "Invite is ready. Share the link manually if needed.",
+      "alreadyMember": "Skipped because this user is already in your team",
+      "copyLink": "Copy link"
+    },
     "loadErrorMy": "Failed to load your teams",
     "loadErrorDiscover": "Failed to load teams",
     "retry": "Retry",
@@ -4879,6 +5200,9 @@
       "joined": "Joined",
       "joinFailed": "Failed to join",
       "alreadyMember": "Already a member",
+      "invitesDelivered": "Invitations are ready",
+      "invitesPartiallyDelivered": "Some invites need manual link sharing",
+      "copyInviteLinkFailed": "Failed to copy invite link",
       "settingsSaved": "Settings saved",
       "saveFailed": "Failed to save"
     },
@@ -4907,6 +5231,111 @@
       "public": "Public",
       "unlisted": "Unlisted",
       "private": "Private"
+    },
+    "recruitment": {
+      "description": "Competition recruitment matching workspace",
+      "tab": {
+        "match": "Match",
+        "matches": "Matches",
+        "myTeam": "My Team"
+      },
+      "swipeDeck": {
+        "title": "Swipe Deck",
+        "description": "Deck only includes compatible cards from the same competition track.",
+        "pass": "Pass",
+        "like": "Like"
+      },
+      "currentCard": "Current Card",
+      "currentCardOverview": "Current Card Overview",
+      "refresh": "Refresh",
+      "openDeck": "Open deck",
+      "openChat": "Open chat",
+      "inviteToTeam": "Invite to my team",
+      "matchKind": {
+        "teamUp": "Team up",
+        "networking": "Networking"
+      },
+      "empty": {
+        "noCard": "Create and publish a recruitment card first",
+        "deckEmpty": "Deck is empty",
+        "noMatches": "No matches yet",
+        "noCardYet": "No recruitment card yet"
+      },
+      "editor": {
+        "title": "Recruitment Card Editor",
+        "description": "Choose a backing team first. You can also create a solo card directly."
+      },
+      "field": {
+        "backingTeam": "Backing Team",
+        "createSoloTeam": "Create Solo Team",
+        "competitionTrack": "Competition Track",
+        "selectTrack": "Select track",
+        "soloTeamName": "Solo Team Name",
+        "soloTeamNamePlaceholder": "Optional",
+        "headline": "Headline",
+        "headlinePlaceholder": "Make the value proposition obvious in seconds",
+        "detailNote": "Detail Note",
+        "detailNotePlaceholder": "Add context, working style, and highlight experience",
+        "offerRoles": "Offer Roles",
+        "offerRolesPlaceholder": "Modeling, Coding, Pitching",
+        "needRoles": "Need Roles",
+        "needRolesPlaceholder": "Writing, Design, PM",
+        "skillTags": "Skill Tags",
+        "skillTagsPlaceholder": "Python, Latex, Figma",
+        "targetSize": "Target Size",
+        "intent": "Intent",
+        "availability": "Availability",
+        "collaborationMode": "Mode",
+        "city": "City",
+        "cityPlaceholder": "SF / NYC / Remote",
+        "languages": "Languages",
+        "languagesPlaceholder": "English, Chinese"
+      },
+      "intentMode": {
+        "teamUp": "Team up",
+        "networkingOnly": "Networking only"
+      },
+      "option": {
+        "unset": "Unset",
+        "weekendsOnly": "Weekends only",
+        "online": "Online",
+        "offline": "Offline",
+        "hybrid": "Hybrid"
+      },
+      "action": {
+        "saveCard": "Save card",
+        "createCard": "Create card",
+        "publish": "Publish",
+        "close": "Close",
+        "legacySettings": "Open legacy team settings"
+      },
+      "display": {
+        "title": "My Display Settings",
+        "description": "Every member has to confirm their own display settings before publish.",
+        "introLine": "Intro Line",
+        "selectedResume": "Selected Resume",
+        "noResume": "No resume",
+        "showSchool": "Show school",
+        "showGrade": "Show grade",
+        "showAwards": "Show awards",
+        "save": "Save",
+        "confirmConsent": "Confirm consent"
+      },
+      "card": {
+        "offer": "Offer",
+        "need": "Need",
+        "skills": "Skills",
+        "members": "Members",
+        "confirmed": "Confirmed"
+      },
+      "toast": {
+        "cardCreated": "Recruitment card created",
+        "cardUpdated": "Recruitment card updated",
+        "cardPublished": "Recruitment card published",
+        "cardClosed": "Recruitment card closed",
+        "displayUpdated": "Member display updated",
+        "matched": "It matched and opened a group chat"
+      }
     }
   },
   "points": {
@@ -5076,6 +5505,19 @@
       "south": "South",
       "west": "West"
     },
+    "states": {
+      "all": "All States",
+      "CA": "California",
+      "NY": "New York",
+      "MA": "Massachusetts",
+      "TX": "Texas",
+      "PA": "Pennsylvania",
+      "IL": "Illinois",
+      "FL": "Florida",
+      "NC": "North Carolina",
+      "GA": "Georgia",
+      "OH": "Ohio"
+    },
     "countries": {
       "all": "All Countries",
       "us": "United States",
@@ -5088,6 +5530,15 @@
       "hard": "Hard (10-20%)",
       "medium": "Medium (20-40%)",
       "easy": "Easy (>40%)"
+    },
+    "rankingPresets": {
+      "top1": "Top 1",
+      "top100": "Top 100",
+      "top10": "Top 10",
+      "top30": "Top 30",
+      "top50": "Top 50",
+      "range30To50": "30-50",
+      "range50To100": "50-100"
     },
     "specialConditions": {
       "testOptional": "Test Optional",
@@ -5206,6 +5657,7 @@
       "payments": "Payments",
       "analytics": "Analytics",
       "calibrations": "Prediction Calibration",
+      "applicationAnalysisWorkflow": "Application Analysis Workflow",
       "activityTemplates": "Activity Templates",
       "highSchools": "High Schools",
       "dataReview": "Data Review",
@@ -5445,6 +5897,29 @@
       "toeflMin": "Min TOEFL Score",
       "ieltsMin": "Min IELTS Score",
       "essayCount": "Essay Count",
+      "community": {
+        "title": "Community Ratings",
+        "column": "Community",
+        "count": "{count} ratings",
+        "totalCount": "{count} total",
+        "visibleCount": "{count} visible",
+        "hiddenCount": "{count} hidden",
+        "safety": "Safety",
+        "life": "Life",
+        "food": "Food",
+        "user": "User",
+        "status": "Status",
+        "updatedAt": "Updated",
+        "visible": "Visible",
+        "hidden": "Hidden",
+        "hide": "Hide",
+        "restore": "Restore",
+        "publicReady": "Public summary live",
+        "publicPending": "Public at {minCount}+ ratings",
+        "hiddenSuccess": "Rating hidden",
+        "restoredSuccess": "Rating restored",
+        "actionError": "Action failed"
+      },
       "tabs": {
         "basic": "Basic Info",
         "rankings": "Rankings",
@@ -5535,7 +6010,10 @@
       "tabs": {
         "diagnosis": "Prediction Diagnosis",
         "schoolCalibrations": "School Calibrations",
-        "systemCalibration": "Auto Calibration"
+        "systemCalibration": "Auto Calibration",
+        "workflow": "Workflow",
+        "policies": "Policy Versions",
+        "outcomes": "Outcome Review"
       },
       "stats": {
         "calibratedSchools": "Calibrated Schools",
@@ -5620,6 +6098,232 @@
         "axisOriginal": "Original Prediction",
         "tooltipOriginal": "Original",
         "lineCalibrated": "Calibrated Prediction"
+      },
+      "workflow": {
+        "hubTitle": "Prediction Workflow Hub",
+        "policyVersion": "Policy Version",
+        "selectPolicy": "Select a policy version",
+        "buildSignals": "Build Active Signals",
+        "reviewSaved": "Observation review saved",
+        "signalsBuilt": "Active signals rebuilt",
+        "observationsTitle": "Observation Review Queue",
+        "allStatuses": "All statuses",
+        "allSources": "All sources",
+        "emptyObservations": "No observations matched the current filters.",
+        "school": "School",
+        "source": "Source",
+        "stage": "Stage",
+        "status": "Status",
+        "reviewWindow": "Review / Expiry",
+        "actions": "Actions",
+        "review": "Review",
+        "reviewDialogTitle": "Review Observation",
+        "reviewAt": "Review At",
+        "expiresAt": "Expires At",
+        "notes": "Notes",
+        "notesPlaceholder": "Add reviewer guidance or reclassification notes",
+        "cancel": "Cancel",
+        "saveReview": "Save Review",
+        "activeSignalsTitle": "Active Signals Snapshot",
+        "selectPolicyHint": "Select a policy version to inspect active priors, drift, and relationship signals.",
+        "priors": "Priors",
+        "driftSignals": "Drift Signals",
+        "relationshipSignals": "Relationship Signals"
+      },
+      "policies": {
+        "title": "Policy Version Control",
+        "version": "Version",
+        "status": "Status",
+        "sets": "Signal Sets",
+        "updatedAt": "Updated",
+        "actions": "Actions",
+        "promoteCandidate": "Freeze Candidate",
+        "promoteShadow": "Start Shadow",
+        "refreshShadow": "Refresh Shadow Metrics",
+        "activate": "Activate",
+        "rollback": "Rollback",
+        "candidateSuccess": "Policy promoted to candidate",
+        "shadowSuccess": "Policy moved to shadow",
+        "shadowRefreshSuccess": "Shadow metrics refreshed",
+        "activateSuccess": "Policy activated",
+        "rollbackSuccess": "Rolled back to previous active policy",
+        "gateSummary": "Promotion Gate Summary",
+        "shadowPredictions": "Shadow Predictions",
+        "resolvedLabels": "Resolved Labels",
+        "ready": "Ready",
+        "blocked": "Blocked",
+        "metricDeltas": "Metric Deltas",
+        "failures": "Gate Failures",
+        "noFailures": "No blocking failures.",
+        "releaseControls": "Release Controls",
+        "bucket": "Bucket",
+        "count": "Count",
+        "actualRate": "Actual Admit Rate"
+      },
+      "outcomes": {
+        "title": "Outcome Review Queue",
+        "allStatuses": "All statuses",
+        "allResults": "All results",
+        "eligibleOnly": "Show calibration-eligible only",
+        "empty": "No outcome labels matched the current filters.",
+        "school": "School",
+        "reported": "Reported Outcome",
+        "status": "Status",
+        "eligible": "Calibration Eligible",
+        "evidence": "Evidence",
+        "actions": "Actions",
+        "viewEvidence": "View evidence",
+        "review": "Review",
+        "reviewSaved": "Outcome review saved",
+        "readyCount": "Eligible Labels",
+        "conflictedCount": "Conflicted Labels",
+        "selfReportedCount": "Self-Reported Labels",
+        "reviewDialogTitle": "Review Outcome Label",
+        "canonicalLabel": "Canonical label",
+        "round": "Round",
+        "evidenceUrl": "Evidence URL",
+        "notes": "Review Notes",
+        "notesPlaceholder": "Explain verification, conflict, or censoring decision",
+        "markFinal": "Mark as final outcome",
+        "cancel": "Cancel",
+        "saveReview": "Save Review"
+      }
+    },
+    "applicationAnalysisWorkflow": {
+      "title": "Application Analysis Workflow",
+      "description": "Govern evidence, policy versions, evaluations, and experimental previews for canonical application analysis.",
+      "tabs": {
+        "evidence": "Evidence",
+        "policies": "Policies",
+        "evaluations": "Evaluations",
+        "gates": "Gates",
+        "activate": "Activate / Rollback",
+        "experiments": "Experiments",
+        "automation": "Automation",
+        "incidents": "Incidents",
+        "liveSignals": "Live Signals"
+      },
+      "evidence": {
+        "createTitle": "Create School Policy Evidence",
+        "queueTitle": "Evidence Review Queue",
+        "schoolId": "School ID",
+        "dimension": "Policy Dimension",
+        "policyValue": "Policy Value",
+        "sourceName": "Source Name",
+        "sourceUrl": "Source URL",
+        "notes": "Notes",
+        "create": "Create Evidence",
+        "created": "Evidence created",
+        "reviewSaved": "Evidence review saved",
+        "updatedAt": "Updated",
+        "reviewedAt": "Reviewed",
+        "empty": "No application-analysis evidence has been created yet.",
+        "policyHint": "Create a draft policy version after the first evidence batch is reviewed."
+      },
+      "policies": {
+        "createTitle": "Create Policy Version",
+        "tableTitle": "Policy Versions",
+        "version": "Version",
+        "analysisVersion": "Analysis Version",
+        "promptVersion": "Prompt Version",
+        "ruleBundleVersion": "Rule Bundle Version",
+        "create": "Create Policy",
+        "created": "Policy draft created",
+        "promoteCandidate": "Freeze Candidate",
+        "promoteShadow": "Start Shadow",
+        "refreshShadow": "Refresh Shadow Evaluation",
+        "candidateSuccess": "Policy promoted to candidate",
+        "shadowSuccess": "Policy moved to shadow",
+        "shadowRefreshSuccess": "Shadow evaluation refreshed",
+        "empty": "No application-analysis policies exist yet."
+      },
+      "evaluations": {
+        "title": "Evaluation Runs",
+        "policyCorrectnessRate": "Policy Correctness",
+        "weakStateCorrectnessRate": "Weak-State Correctness",
+        "actionabilityMean": "Actionability",
+        "empty": "No evaluation runs have been recorded yet."
+      },
+      "gates": {
+        "title": "Promotion Gates",
+        "policy": "Policy",
+        "selectPolicy": "Select a policy version",
+        "ready": "Ready",
+        "blocked": "Blocked",
+        "failures": "Gate Failures",
+        "noFailures": "No blocking failures."
+      },
+      "activate": {
+        "title": "Release Controls",
+        "policy": "Policy",
+        "selectPolicy": "Select a policy version",
+        "activate": "Activate",
+        "rollback": "Rollback",
+        "activateSuccess": "Policy activated",
+        "rollbackSuccess": "Rolled back to the previous active policy"
+      },
+      "experiments": {
+        "createTitle": "Create Experiment Version",
+        "tableTitle": "Experiment Versions",
+        "gatesTitle": "Experiment Gates",
+        "previewTitle": "Experiment Previews",
+        "evaluationsTitle": "Experiment Evaluations",
+        "capability": "Capability",
+        "version": "Version",
+        "methodVersion": "Method Version",
+        "linkedPolicy": "Linked Policy",
+        "selectPolicy": "Select a linked policy",
+        "selectedExperiment": "Experiment",
+        "selectExperiment": "Select an experiment version",
+        "create": "Create Experiment",
+        "created": "Experiment draft created",
+        "promoteShadow": "Start Shadow",
+        "promoteCanary": "Start Canary",
+        "refreshEvaluation": "Refresh Evaluation",
+        "activate": "Activate Capability",
+        "retire": "Retire Capability",
+        "runSweep": "Run Auto Sweep",
+        "shadowSuccess": "Experiment moved to shadow",
+        "canarySuccess": "Experiment moved to canary",
+        "evaluateSuccess": "Experiment evaluation refreshed",
+        "activateSuccess": "Experiment activated",
+        "retireSuccess": "Experiment retired",
+        "sweepSuccess": "Sweep complete: {promoted} promoted, {activated} activated, {retired} retired",
+        "empty": "No experiment versions have been created yet.",
+        "title": "Experimental Previews",
+        "recourse": "Recourse Preview",
+        "uncertainty": "Uncertainty Preview",
+        "fairness": "Fairness Report",
+        "recoursePreview": "Recourse / Counterfactual Preview",
+        "uncertaintyPreview": "Conformal-style Uncertainty Preview",
+        "fairnessPreview": "Fairness Readiness Preview"
+      },
+      "automation": {
+        "title": "Automation",
+        "experiment": "Experiment",
+        "rolloutPercentages": "Rollout percentages",
+        "minStageHours": "Minimum stage hours",
+        "autoPromote": "Auto-promote",
+        "autoRetire": "Auto-retire",
+        "paused": "Automation paused",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "save": "Save config",
+        "configSaved": "Automation config saved",
+        "currentPercentage": "Current percentage",
+        "lastSweep": "Last sweep",
+        "nextEligiblePromotion": "Next eligible promotion",
+        "sweepHistory": "Sweep history"
+      },
+      "incidents": {
+        "title": "Incidents",
+        "acknowledge": "Acknowledge",
+        "acknowledged": "Incident acknowledged"
+      },
+      "liveSignals": {
+        "title": "Live signals",
+        "feedback": "Applicant feedback",
+        "empty": "No live signals yet."
       }
     },
     "calendar": {
@@ -6039,6 +6743,8 @@
         "UK": "United Kingdom",
         "CA": "Canada",
         "AU": "Australia",
+        "JP": "Japan",
+        "KR": "South Korea",
         "SG": "Singapore",
         "HK": "Hong Kong",
         "OTHER": "Other"

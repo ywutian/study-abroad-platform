@@ -115,8 +115,8 @@ export const SchoolCard = memo(function SchoolCard({ school, colors }: SchoolCar
               <View style={styles.metaItem}>
                 <Ionicons name="people-outline" size={14} color={colors.foregroundMuted} />
                 <Text style={[styles.metaText, { color: colors.foregroundMuted }]}>
-                  {formatAcceptanceRate(school.schoolMeta.acceptanceRate)}{' '}
-                  {t('recommendation.acceptRate', 'accept rate')}
+                  {t('recommendation.acceptRate', 'school-wide acceptance rate')}{' '}
+                  {formatAcceptanceRate(school.schoolMeta.acceptanceRate)}
                 </Text>
               </View>
             )}

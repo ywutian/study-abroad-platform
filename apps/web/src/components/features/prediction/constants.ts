@@ -101,10 +101,13 @@ export const CONFIDENCE_CONFIG = {
     text: 'text-emerald-600 dark:text-emerald-400',
   },
   medium: {
-    border: 'border-blue-300 dark:border-blue-700',
-    text: 'text-blue-600 dark:text-blue-400',
+    border: 'border-sky-300 dark:border-sky-700',
+    text: 'text-sky-600 dark:text-sky-400',
   },
-  low: { border: 'border-rose-300 dark:border-rose-700', text: 'text-rose-600 dark:text-rose-400' },
+  low: {
+    border: 'border-amber-300 dark:border-amber-700',
+    text: 'text-amber-700 dark:text-amber-400',
+  },
 } as const;
 
 // ── Utility ──────────────────────────────────────────────────────────────────

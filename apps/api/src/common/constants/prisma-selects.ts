@@ -69,6 +69,17 @@ export const SCHOOL_NAME_RANK_SELECT = {
   rankings: { select: SCHOOL_RANKING_SELECT },
 } as const satisfies Prisma.SchoolSelect;
 
+/**
+ * School fields needed to contextualize prediction results on dashboard/mobile surfaces.
+ */
+export const SCHOOL_PREDICTION_CONTEXT_SELECT = {
+  ...SCHOOL_NAME_RANK_SELECT,
+  acceptanceRate: true,
+  intlAcceptanceRate: true,
+  intlStudentPct: true,
+  needBlindInternational: true,
+} as const satisfies Prisma.SchoolSelect;
+
 // Prisma-inferred types
 export type SchoolBasicResult = Prisma.SchoolGetPayload<{
   select: typeof SCHOOL_BASIC_SELECT;

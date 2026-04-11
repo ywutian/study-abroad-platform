@@ -1,4 +1,4 @@
-export const JOURNEY_REGISTRY_VERSION = '2026-04-01.v3';
+export const JOURNEY_REGISTRY_VERSION = '2026-04-10.v4';
 
 export const REGISTRY_STATUSES = ['active', 'inactive', 'temporary-child'] as const;
 export type RegistryStatus = (typeof REGISTRY_STATUSES)[number];
@@ -446,6 +446,34 @@ export const JOURNEY_REGISTRY = [
     baselineSmoke: true,
     fullAuditDefault: true,
     qualityDimensions: ['ai-quality', 'consultancy-quality'],
+  },
+  {
+    id: 'SJ-5',
+    title: 'Teams 组队卡：建卡 → 发布 → Swipe → Match → 邀请/入队',
+    registryStatus: 'temporary-child',
+    persona: 'applicant',
+    platform: 'web',
+    defaultExecutionOwner: 'codex',
+    validationType: 'objective',
+    baselineSmoke: false,
+    fullAuditDefault: true,
+    qualityDimensions: ['layout', 'consultancy-quality'],
+    humanTask: {
+      summary:
+        '确认 applicant 从建卡到邀请入队的路径可解释、可送达，且整体像正式组队产品而不是 demo 流程。',
+      entry: 'Teams / Match / Join invite',
+      steps: [
+        '创建或编辑 recruitment card，并确认 display settings 已预填可编辑。',
+        '发布卡片，完成 reciprocal like 并进入 match group chat。',
+        '从 matches 邀请对方成员入队，并验证通知、copy fallback 和 join 接受路径。',
+      ],
+      expectedResults: [
+        'match 后不止停在 toast，而是能看到逐人邀请送达结果。',
+        '被邀请人能从通知或复制的 join link 进入接受流程。',
+        '整个过程语义清楚，没有让用户猜下一步。',
+      ],
+      observationPrompts: ['布局合理性', '专业留学中介感'],
+    },
   },
 ] as const satisfies readonly JourneyDefinition[];
 

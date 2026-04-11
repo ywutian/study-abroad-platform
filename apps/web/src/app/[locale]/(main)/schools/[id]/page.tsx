@@ -15,6 +15,11 @@ import { apiClient, STALE_TIME } from '@/lib/api';
 import { useRouter } from '@/lib/i18n/navigation';
 import { useAuthStore } from '@/stores/auth';
 import { useSchoolPrediction } from '@/hooks/use-prediction';
+import {
+  getSchoolEnrollmentCount,
+  getSchoolFieldSource,
+  hasVerifiedFieldSource,
+} from '@/components/features/schools/school-display-utils';
 import { motion } from 'framer-motion';
 import { cn, getSchoolName, formatAcceptanceRate } from '@/lib/utils';
 import {
@@ -32,7 +37,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 
-import { DATA_SOURCE_LABELS } from '@study-abroad/shared';
+import { AgentType, DATA_SOURCE_LABELS, schoolRoutes } from '@study-abroad/shared';
 import type { SchoolDetail, EssayPrompt } from './_components/types';
 import { getSourceUrl } from './_components/source-utils';
 import { SchoolHeroHeader } from './_components/school-hero-header';
@@ -40,6 +45,8 @@ import { SchoolOverviewTab } from './_components/school-overview-tab';
 import { SchoolAcademicsTab, SchoolEssaysTab } from './_components/school-academics-tab';
 import { SchoolCasesTab } from './_components/school-cases-tab';
 import { SchoolBookmarkButton } from './_components/school-bookmark-button';
+import { buildSchoolAiContext } from './_components/school-ai-context';
+import { openFloatingAgentChat } from '@/components/features/agent-chat/floating-chat-bridge';
 
 export default function SchoolDetailPage() {
   const params = useParams();
@@ -62,7 +69,7 @@ export default function SchoolDetailPage() {
     error,
   } = useQuery({
     queryKey: ['school', schoolId],
-    queryFn: () => apiClient.get<SchoolDetail>(`/schools/${schoolId}`),
+    queryFn: () => apiClient.get<SchoolDetail>(schoolRoutes.byId(schoolId)),
     staleTime: STALE_TIME.STATIC,
     enabled: !!schoolId,
   });
@@ -106,6 +113,15 @@ export default function SchoolDetailPage() {
       },
     ];
   }, [school, locale, t]);
+
+  const schoolAiContext = useMemo(() => {
+    return buildSchoolAiContext({
+      school,
+      schoolId,
+      locale,
+      predictionData,
+    });
+  }, [locale, predictionData, school, schoolId]);
 
   if (isLoading) {
     return (
@@ -172,52 +188,71 @@ export default function SchoolDetailPage() {
       {/* Key Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {(() => {
-          const provenance = school.metadata?.provenance as
-            | Record<string, { source: string; at: string }>
-            | undefined;
           const localeKey = locale === 'zh' ? 'zh' : 'en';
+          const enrollmentCount = getSchoolEnrollmentCount(school);
+          const verifiedAcceptanceRate = hasVerifiedFieldSource(school, 'acceptanceRate')
+            ? school.acceptanceRate
+            : undefined;
+          const verifiedTuition = hasVerifiedFieldSource(school, 'tuition')
+            ? school.tuition
+            : undefined;
+          const verifiedAvgSalary = hasVerifiedFieldSource(school, 'avgSalary')
+            ? school.avgSalary
+            : undefined;
+          const verifiedEnrollmentCount = hasVerifiedFieldSource(
+            school,
+            'totalEnrollment',
+            'studentCount'
+          )
+            ? enrollmentCount
+            : undefined;
           return [
             {
               icon: Target,
               label: t('school.stats.acceptanceRate'),
-              value: school.acceptanceRate
-                ? formatAcceptanceRate(school.acceptanceRate)
-                : tc('notAvailable'),
+              value:
+                verifiedAcceptanceRate != null
+                  ? formatAcceptanceRate(verifiedAcceptanceRate)
+                  : tc('notAvailable'),
               color: 'rose',
-              source: provenance?.acceptanceRate?.source,
+              source: getSchoolFieldSource(school, 'acceptanceRate'),
             },
             {
               icon: DollarSign,
               label: t('school.stats.tuition'),
-              value: school.tuition
-                ? format.number(school.tuition, 'currency')
-                : tc('notAvailable'),
+              value:
+                verifiedTuition != null
+                  ? format.number(verifiedTuition, 'currency')
+                  : tc('notAvailable'),
               color: 'emerald',
-              source: provenance?.tuition?.source,
+              source: getSchoolFieldSource(school, 'tuition'),
             },
             {
               icon: TrendingUp,
               label: t('school.stats.avgSalary'),
-              value: school.avgSalary
-                ? format.number(school.avgSalary, 'currency')
-                : tc('notAvailable'),
+              value:
+                verifiedAvgSalary != null
+                  ? format.number(verifiedAvgSalary, 'currency')
+                  : tc('notAvailable'),
               color: 'blue',
-              source: provenance?.avgSalary?.source,
+              source: getSchoolFieldSource(school, 'avgSalary'),
             },
             {
               icon: Users,
               label: t('school.stats.studentCount'),
-              value: school.studentCount
-                ? format.number(school.studentCount, 'standard')
-                : tc('notAvailable'),
+              value:
+                verifiedEnrollmentCount != null
+                  ? format.number(verifiedEnrollmentCount, 'standard')
+                  : tc('notAvailable'),
               color: 'violet',
-              source: provenance?.studentCount?.source,
+              source: getSchoolFieldSource(school, 'totalEnrollment', 'studentCount'),
             },
           ].map((stat, index) => {
             const StatIcon = stat.icon;
-            const sourceLabel = stat.source
-              ? DATA_SOURCE_LABELS[stat.source]?.[localeKey]
-              : undefined;
+            const sourceLabel =
+              stat.source?.tier === 'verified'
+                ? DATA_SOURCE_LABELS[stat.source.source]?.[localeKey]
+                : undefined;
             return (
               <motion.div
                 key={stat.label}
@@ -260,7 +295,10 @@ export default function SchoolDetailPage() {
                     </div>
                     {sourceLabel &&
                       (() => {
-                        const url = stat.source ? getSourceUrl(stat.source, school) : null;
+                        const url =
+                          stat.source?.tier === 'verified'
+                            ? getSourceUrl(stat.source.source, school)
+                            : null;
                         return url ? (
                           <a
                             href={url}
@@ -299,11 +337,11 @@ export default function SchoolDetailPage() {
                 size="sm"
                 className="gap-1.5 text-xs hover:bg-primary/5 hover:border-primary/50 hover:text-primary transition-all"
                 onClick={() => {
-                  window.dispatchEvent(
-                    new CustomEvent('ai-assistant-action', {
-                      detail: { message: action.message },
-                    })
-                  );
+                  openFloatingAgentChat({
+                    message: action.message,
+                    context: schoolAiContext,
+                    agentHint: AgentType.SCHOOL,
+                  });
                 }}
               >
                 {action.icon}

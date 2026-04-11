@@ -12,6 +12,7 @@ export enum ReportTargetType {
   MESSAGE = 'MESSAGE',
   CASE = 'CASE',
   REVIEW = 'REVIEW',
+  RECRUITMENT_CARD = 'RECRUITMENT_CARD',
 }
 
 export class CreateReportDto {

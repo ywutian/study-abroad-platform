@@ -58,6 +58,24 @@ export interface FieldProvenance {
 
 export type ProvenanceRecord = Record<string, FieldProvenance>;
 
+export type SchoolDataSourceTier = 'verified' | 'supplemental';
+
+export interface SchoolFieldSource {
+  tier: SchoolDataSourceTier;
+  source: string;
+  updatedAt: string;
+}
+
+export type SchoolFieldSources = Record<string, SchoolFieldSource>;
+
+export interface SchoolCommunityRatingSummary {
+  count: number;
+  safetyAvg: number | null;
+  lifeAvg: number | null;
+  foodAvg: number | null;
+  isPublic: boolean;
+}
+
 /** Human-readable labels for school data sources */
 export const DATA_SOURCE_LABELS: Record<string, { en: string; zh: string }> = {
   COLLEGE_SCORECARD: { en: 'US Dept. of Education', zh: '美国教育部' },
@@ -71,8 +89,8 @@ export const DATA_SOURCE_LABELS: Record<string, { en: string; zh: string }> = {
     en: 'US Federal Statistics (IPEDS)',
     zh: '美国联邦教育统计 (IPEDS)',
   },
-  MANUAL_ADMIN: { en: 'Platform verified', zh: '平台审核' },
-  SEED: { en: 'Initial dataset', zh: '初始数据' },
+  MANUAL_ADMIN: { en: 'Platform entry', zh: '平台录入' },
+  SEED: { en: 'Curated dataset', zh: '整理数据集' },
   SCRAPER: { en: 'School website', zh: '学校官网' },
 };
 

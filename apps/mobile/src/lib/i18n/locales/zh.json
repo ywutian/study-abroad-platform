@@ -949,23 +949,23 @@
   },
   "prediction": {
     "title": "录取预测",
-    "subtitle": "基于 AI 算法，预测你的录取概率",
+    "subtitle": "基于你当前档案的个人预估，不等于学校整体录取率",
     "selectSchools": "选择目标院校",
     "runPrediction": "开始预测",
-    "probability": "录取概率",
+    "probability": "个人预估录取概率",
     "factors": "影响因素",
     "positive": "有利因素",
     "negative": "不利因素",
     "suggestion": "建议",
-    "high": "较高",
-    "medium": "中等",
-    "low": "较低",
+    "high": "参考充分",
+    "medium": "参考一般",
+    "low": "参考有限",
     "profileCompleteness": "档案完整度",
     "completeProfileHint": "完善档案可提高预测准确度",
     "stats": {
       "predicted": "已预测学校",
-      "safety": "保底学校",
-      "reach": "冲刺学校"
+      "safety": "保底选择",
+      "reach": "冲刺选择"
     },
     "resultsTitle": "预测结果",
     "results": {
@@ -985,7 +985,28 @@
       "activities": "活动",
       "essays": "文书"
     },
-    "confidence": "置信度: {{value}}",
+    "confidence": "数据参考程度: {{value}}",
+    "estimatedProbabilityLabel": "个人预估录取概率",
+    "probabilityVsRateDisclaimer": "个人预估基于你当前档案；它不等于学校整体录取率。",
+    "contextualBaseline": "当前情境基线 {{value}}%",
+    "contextualBaselineWithRound": "{{round}} 情境基线 {{value}}%",
+    "baselineOverall": "学校整体录取率",
+    "baselineInternational": "国际生录取率",
+    "roundAdjusted": "{{round}} 轮次调整",
+    "deltaAbove": "比基线高 {{points}} 个点",
+    "deltaBelow": "比基线低 {{points}} 个点",
+    "deltaNear": "与基线接近",
+    "needBlind": "国际生 Need-Blind",
+    "whyThisEstimate": "为什么是这个预估",
+    "uncertaintyHint": "注意项：{{reason}}",
+    "lastUpdated": "{{value}} 前更新",
+    "confidenceDisclaimer": "“数据参考程度”反映当前档案与公开数据是否充足，不代表录取希望高低。",
+    "tierDisclaimer": "“冲刺 / 匹配 / 保底” 用于选校策略，不是学校官方评级。",
+    "analysisCard": {
+      "subtitle": "打开与 Web 和 uncommon-app 同步的学校级申请分析。",
+      "description": "查看学校清单平衡、弱态说明与下一步行动建议。",
+      "open": "查看申请分析"
+    },
     "empty": {
       "loginRequired": "请先登录",
       "loginRequiredDesc": "登录后即可使用录取预测功能",
@@ -1001,6 +1022,163 @@
     "submitResult": "提交结果",
     "resultReported": "结果提交成功",
     "reportFailed": "提交失败"
+  },
+  "applicationAnalysis": {
+    "title": "申请分析",
+    "subtitle": "基于档案、预测与历史证据生成的学校级申请策略。",
+    "loading": {
+      "description": "正在生成最新的学校级申请分析。"
+    },
+    "empty": {
+      "title": "还没有申请分析",
+      "description": "运行申请分析后，这里会显示学校级策略建议。"
+    },
+    "emptyList": "暂无内容",
+    "overallScore": "综合评分",
+    "focusSchools": "重点学校",
+    "profileContext": "申请语境",
+    "schoolListDiagnosis": "学校清单诊断",
+    "freshness": {
+      "fresh": "最新",
+      "cached": "缓存",
+      "degraded": "降级"
+    },
+    "dataQuality": {
+      "high": "高质量证据",
+      "medium": "中等质量证据",
+      "low": "证据有限",
+      "insufficient": "证据不足"
+    },
+    "states": {
+      "ready": {
+        "label": "可做学校级判断",
+        "description": "当前证据已足以支持学校级策略分析。"
+      },
+      "noTargetSchools": {
+        "label": "需要目标校清单",
+        "description": "先补 3-5 所目标校并绑定轮次，再看学校级策略。"
+      },
+      "noPredictions": {
+        "label": "需要最新预测",
+        "description": "重点学校还缺少最新预测。"
+      },
+      "insufficientProfileData": {
+        "label": "需要核心背景",
+        "description": "当前档案还不足以支撑可信的学校级判断。"
+      },
+      "analysisError": {
+        "label": "分析暂不可用",
+        "description": "本次分析未能完成，请稍后重试。"
+      }
+    },
+    "portfolioBalance": {
+      "balanced": "分布均衡",
+      "reachHeavy": "偏冲刺",
+      "safetyHeavy": "偏保守",
+      "undermatch": "存在保守申请风险",
+      "insufficient": "学校数量不足"
+    },
+    "applicantType": {
+      "title": "申请者类型",
+      "domestic": "美国本土申请者",
+      "international": "国际申请者",
+      "unknown": "申请者类型未完全识别"
+    },
+    "contextFlags": {
+      "needAid": "需要助学金",
+      "firstGeneration": "第一代大学生",
+      "legacy": "存在 legacy 背景",
+      "gapYear": "Gap Year",
+      "testSubmit": "走提交标化路径",
+      "testOptional": "走 test-optional 路径"
+    },
+    "testStrategy": {
+      "title": "标化策略",
+      "submit": "提交标化",
+      "testOptional": "不提交标化",
+      "unknown": "尚未确定"
+    },
+    "confidence": {
+      "low": "低",
+      "medium": "中",
+      "high": "高"
+    },
+    "schoolTier": {
+      "REACH": "冲刺",
+      "TARGET": "匹配",
+      "SAFETY": "保底"
+    },
+    "policy": {
+      "testing": {
+        "REQUIRED": "必须提交标化",
+        "OPTIONAL": "可选提交标化",
+        "BLIND": "标化盲审",
+        "UNKNOWN": "标化政策未知"
+      },
+      "intlAid": {
+        "NEED_BLIND": "国际生资助 Need-Blind",
+        "NEED_AWARE": "国际生资助 Need-Aware",
+        "UNKNOWN": "国际生资助政策未知"
+      }
+    },
+    "schoolCards": {
+      "probabilityUnavailable": "暂无",
+      "confidence": "置信度",
+      "updated": "更新时间",
+      "whyHard": "为什么难",
+      "strengths": "补偿优势",
+      "gaps": "主要差距",
+      "nextActions": "下一步行动",
+      "historical": "历史信号",
+      "hardStops": "硬风险",
+      "recourse": "Recourse 指引",
+      "uncertainty": "策略不确定性",
+      "uncertaintyRange": "策略区间"
+    },
+    "actionPlan": {
+      "title": "行动计划",
+      "now": "现在",
+      "next90Days": "未来 90 天",
+      "beforeSubmission": "提交前"
+    },
+    "recommendations": {
+      "title": "补充建议",
+      "majors": "专业方向",
+      "competitions": "竞赛",
+      "activities": "项目与活动",
+      "summerPrograms": "暑校 / 项目",
+      "timeline": "规划备注"
+    },
+    "fairness": {
+      "title": "公平性披露",
+      "notes": "披露说明",
+      "appliesTo": "适用范围",
+      "status": {
+        "clear": "通过",
+        "limited": "有限",
+        "blocked": "阻断"
+      }
+    },
+    "feedback": {
+      "title": "这部分实验增强对你有帮助吗？",
+      "helpful": "有帮助",
+      "notHelpful": "没帮助",
+      "chooseReason": "请选择原因",
+      "submitted": "反馈已记录。",
+      "categories": {
+        "UNSAFE_RECOURSE": "建议存在风险",
+        "POLICY_MISMATCH": "政策不匹配",
+        "MISLEADING_UNCERTAINTY": "不确定性表达有误导",
+        "FAIRNESS_CONCERN": "公平性担忧",
+        "LOW_ACTIONABILITY": "可执行性太低"
+      }
+    },
+    "summaryCard": {
+      "title": "学校级策略判断",
+      "subtitle": "查看与 Web 和 uncommon-app 同步的 canonical 分析。",
+      "loading": "加载中",
+      "open": "打开申请分析"
+    }
   },
   "settings": {
     "title": "设置",
@@ -1159,8 +1337,8 @@
     "strengths": "优势",
     "weaknesses": "待提升",
     "tips": "提升建议",
-    "fitScore": "匹配度",
-    "probability": "录取概率",
+    "fitScore": "背景匹配度",
+    "probability": "个人预估机会",
     "reasons": "推荐理由",
     "concerns": "注意事项",
     "generateAgain": "重新生成",
@@ -1171,7 +1349,13 @@
     "match": "匹配",
     "safety": "保底",
     "schools": "{count} 所学校",
-    "visitWebsite": "访问官网"
+    "visitWebsite": "访问官网",
+    "tierReach": "冲刺选择",
+    "tierMatch": "匹配选择",
+    "tierSafety": "保底选择",
+    "acceptRate": "学校整体录取率",
+    "disclaimer": "推荐分层用于选校策略，不是学校官方评级。",
+    "strategyDisclaimer": "以下分层用于制定选校策略，不是学校官方评级。"
   },
   "findCollege": {
     "title": "发现学校",

@@ -8,6 +8,7 @@
 
 // Import for local usage throughout this file
 import { AgentType, MemoryType, ActionButton } from '@study-abroad/shared';
+import type { AgentChatContext } from '@study-abroad/shared';
 
 // AgentType & MemoryType: single source of truth in @study-abroad/shared
 export { AgentType, MemoryType } from '@study-abroad/shared';
@@ -102,6 +103,10 @@ export interface ConversationMetadata {
   agentType?: AgentType;
   messageCount?: number;
   locale?: string;
+  lastAgentContext?: AgentChatContext;
+  lastAgentContextSummary?: string;
+  lastAgentContextAt?: string;
+  lastAgentHint?: AgentType;
   [key: string]: unknown;
 }
 
@@ -193,7 +198,7 @@ export interface AgentResponse {
 }
 
 // ActionButton: single source of truth in @study-abroad/shared
-export type { ActionButton } from '@study-abroad/shared';
+export type { ActionButton, AgentChatContext } from '@study-abroad/shared';
 
 // ==================== Agent 配置 ====================
 

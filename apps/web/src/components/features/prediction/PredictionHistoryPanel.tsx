@@ -127,7 +127,7 @@ export const PredictionHistoryPanel = memo(function PredictionHistoryPanel({
       <div className="space-y-1">
         <div className="flex items-center justify-between text-[10px] text-muted-foreground uppercase tracking-wide pb-0.5 border-b border-dashed">
           <span> </span>
-          <span>{t('probability')}</span>
+          <span>{t('estimatedProbabilityLabel')}</span>
         </div>
         {history
           .slice(-5)

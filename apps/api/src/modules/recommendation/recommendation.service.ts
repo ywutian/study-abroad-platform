@@ -326,7 +326,8 @@ export class RecommendationService {
         ],
         {
           temperature: 0.6,
-          maxTokens: 4000,
+          maxTokens: 3000,
+          timeoutMs: 90000,
           providerOptions: {
             response_format: {
               type: 'json_object',

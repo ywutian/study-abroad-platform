@@ -24,16 +24,19 @@ export function SchoolRecommendationCards({ schools }: { schools: SchoolRecommen
   const tierConfig = {
     reach: {
       label: t('tierReach'),
+      description: t('tierReachDesc'),
       color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
       icon: '🎯',
     },
     target: {
       label: t('tierTarget'),
+      description: t('tierTargetDesc'),
       color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
       icon: '✅',
     },
     safety: {
       label: t('tierSafety'),
+      description: t('tierSafetyDesc'),
       color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
       icon: '🛡️',
     },
@@ -54,6 +57,7 @@ export function SchoolRecommendationCards({ schools }: { schools: SchoolRecommen
 
   return (
     <div className="my-3 space-y-3">
+      <p className="text-xs text-muted-foreground">{t('tierStrategyDisclaimer')}</p>
       {tierOrder.map((tier) => {
         const tierSchools = grouped[tier];
         if (!tierSchools?.length) return null;
@@ -67,6 +71,7 @@ export function SchoolRecommendationCards({ schools }: { schools: SchoolRecommen
                 {t('tierSchoolCount', { label: config.label, count: tierSchools.length })}
               </Badge>
             </div>
+            <p className="text-xs text-muted-foreground">{config.description}</p>
             <div className="grid gap-2">
               {tierSchools.map((school, idx) => (
                 <motion.div

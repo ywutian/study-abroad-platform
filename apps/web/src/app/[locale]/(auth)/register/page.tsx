@@ -332,7 +332,11 @@ export default function RegisterPage() {
 
       // POST onboarding data directly (auth token already in memory from setAuthFromLogin)
       try {
-        await apiClient.post('/profiles/onboarding', onboardingData);
+        await apiClient.post('/profiles/onboarding', onboardingData, {
+          headers: {
+            Authorization: `Bearer ${res.accessToken}`,
+          },
+        });
         writeRegisterDebug({
           phase: 'onboarding-post-succeeded',
           scoreValuesRef: { ...scoreValuesRef.current },

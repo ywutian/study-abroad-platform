@@ -24,86 +24,10 @@ export async function callAIAgent(
     },
     {
       timeout: AI_TIMEOUTS.AI_REQUEST,
+      directApi: true,
     }
   );
   return response;
-}
-
-/**
- * Extract a numeric score from AI text (e.g. "85/100" or "8.5/10").
- */
-export function extractScore(text: string): number | null {
-  const scoreMatch = text.match(/(\d{1,3}(?:\.\d)?)\s*[/]\s*(?:100|10)/);
-  if (scoreMatch) {
-    const score = parseFloat(scoreMatch[1]);
-    return score > 10 ? Math.min(100, Math.round(score)) : Math.min(100, Math.round(score * 10));
-  }
-  const boldMatch = text.match(/\*\*(\d{1,3}(?:\.\d)?)\s*[/]\s*(?:100|10)\*\*/);
-  if (boldMatch) {
-    const score = parseFloat(boldMatch[1]);
-    return score > 10 ? Math.min(100, Math.round(score)) : Math.min(100, Math.round(score * 10));
-  }
-  return null;
-}
-
-/**
- * Parse structured sections from a markdown AI response.
- */
-export function parseMarkdownSections(text: string): {
-  strengths: string[];
-  weaknesses: string[];
-  improvements: string[];
-  activities: string[];
-} {
-  const lines = text.split('\n');
-  const sections: Record<string, string[]> = {
-    strengths: [],
-    weaknesses: [],
-    improvements: [],
-    activities: [],
-  };
-
-  let currentSection: keyof typeof sections | null = null;
-
-  for (const line of lines) {
-    const trimmedLine = line.trim();
-
-    if (trimmedLine.match(/^#{1,3}\s*\d*\)?\s*优势/i)) {
-      currentSection = 'strengths';
-      continue;
-    }
-    if (trimmedLine.match(/^#{1,3}\s*\d*\)?\s*(不足|劣势|弱点|待提升)/i)) {
-      currentSection = 'weaknesses';
-      continue;
-    }
-    if (trimmedLine.match(/^#{1,3}\s*\d*\)?\s*(提升|建议|改进)/i)) {
-      currentSection = 'improvements';
-      continue;
-    }
-    if (trimmedLine.match(/^#{1,3}\s*\d*\)?\s*(推荐活动|活动建议|推荐)/i)) {
-      currentSection = 'activities';
-      continue;
-    }
-    if (trimmedLine.match(/^#{1,3}\s*\d*\)?\s*(整体|评分|预计|时间|总结)/i)) {
-      currentSection = null;
-      continue;
-    }
-
-    if (currentSection && trimmedLine.startsWith('-')) {
-      const item = trimmedLine.replace(/^-\s*/, '').replace(/\*\*/g, '').trim();
-
-      if (item.length > 2) {
-        sections[currentSection].push(item);
-      }
-    }
-  }
-
-  return {
-    strengths: sections.strengths.slice(0, 8),
-    weaknesses: sections.weaknesses.slice(0, 8),
-    improvements: sections.improvements.slice(0, 8),
-    activities: sections.activities.slice(0, 8),
-  };
 }
 
 /**

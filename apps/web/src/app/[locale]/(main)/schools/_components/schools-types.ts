@@ -1,3 +1,4 @@
+import type { SchoolCommunityRatingSummary, SchoolFieldSources } from '@study-abroad/shared';
 import { type SchoolRanking } from '@/lib/utils/ranking';
 
 export interface School {
@@ -25,9 +26,6 @@ export interface School {
   hasEarlyDecision?: boolean;
   acceptsCommonApp?: boolean;
   rankings?: SchoolRanking[];
-}
-
-export interface Filters {
-  schoolType: 'ALL' | 'PUBLIC' | 'PRIVATE';
-  tuitionRange: string;
+  fieldSources?: SchoolFieldSources;
+  communityRatingSummary?: SchoolCommunityRatingSummary;
 }

@@ -274,39 +274,17 @@ export function PostDetailDialog({
                         )}
                       </div>
                       <div className="space-y-2">
-                        <div className="flex gap-2">
-                          <Input
-                            value={applicationMessage}
-                            onChange={(e) => setApplicationMessage(e.target.value)}
-                            placeholder={t('joinPlaceholder')}
-                            className="flex-1"
-                          />
-                          <Button
-                            onClick={() => handleApply(showPostDetail.id)}
-                            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
-                            disabled={!applicationMessage.trim()}
-                          >
-                            <UserPlus className="h-4 w-4 mr-1" />
-                            {t('joinTeam')}
-                          </Button>
+                        <div className="rounded-lg border border-amber-200 bg-white/70 p-3 text-sm text-amber-900">
+                          {t('legacyTeamHistorical')}
                         </div>
-                        {userResumes.length > 0 && (
-                          <Select value={selectedResumeId} onValueChange={setSelectedResumeId}>
-                            <SelectTrigger className="h-8 text-xs">
-                              <SelectValue
-                                placeholder={t('attachResume') || 'Attach resume (optional)'}
-                              />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="none">{t('noResume') || 'No resume'}</SelectItem>
-                              {userResumes.map((r) => (
-                                <SelectItem key={r.id} value={r.id}>
-                                  {r.title}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            window.location.href = '/teams';
+                          }}
+                        >
+                          {t('openTeams')}
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>

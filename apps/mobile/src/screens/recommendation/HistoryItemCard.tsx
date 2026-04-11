@@ -27,6 +27,16 @@ export const HistoryItemCard = memo(function HistoryItemCard({
   const reachCount = item.recommendations.filter((r) => r.tier === 'reach').length;
   const matchCount = item.recommendations.filter((r) => r.tier === 'match').length;
   const safetyCount = item.recommendations.filter((r) => r.tier === 'safety').length;
+  const tierSummaryBase: Array<{
+    tier: 'reach' | 'match' | 'safety';
+    count: number;
+    label: string;
+  }> = [
+    { tier: 'reach', count: reachCount, label: t('recommendation.tierReach', 'Reach') },
+    { tier: 'match', count: matchCount, label: t('recommendation.tierMatch', 'Match') },
+    { tier: 'safety', count: safetyCount, label: t('recommendation.tierSafety', 'Safety') },
+  ];
+  const tierSummary = tierSummaryBase.filter((item) => item.count > 0);
 
   return (
     <AnimatedCard style={styles.historyCard} onPress={() => onToggle(item.id)}>
@@ -41,21 +51,19 @@ export const HistoryItemCard = memo(function HistoryItemCard({
             </Text>
           </View>
           <View style={styles.historyTierRow}>
-            {reachCount > 0 && (
-              <View style={[styles.historyTierDot, { backgroundColor: TIER_CONFIG.reach.color }]}>
-                <Text style={styles.historyTierDotText}>{reachCount}</Text>
+            {tierSummary.map((tier) => (
+              <View key={tier.tier} style={styles.historyTierBadge}>
+                <View
+                  style={[
+                    styles.historyTierBadgeDot,
+                    { backgroundColor: TIER_CONFIG[tier.tier].color },
+                  ]}
+                />
+                <Text style={[styles.historyTierBadgeText, { color: colors.foregroundMuted }]}>
+                  {tier.label} {tier.count}
+                </Text>
               </View>
-            )}
-            {matchCount > 0 && (
-              <View style={[styles.historyTierDot, { backgroundColor: TIER_CONFIG.match.color }]}>
-                <Text style={styles.historyTierDotText}>{matchCount}</Text>
-              </View>
-            )}
-            {safetyCount > 0 && (
-              <View style={[styles.historyTierDot, { backgroundColor: TIER_CONFIG.safety.color }]}>
-                <Text style={styles.historyTierDotText}>{safetyCount}</Text>
-              </View>
-            )}
+            ))}
           </View>
           <Ionicons
             name={isExpanded ? 'chevron-up' : 'chevron-down'}
@@ -89,7 +97,7 @@ export const HistoryItemCard = memo(function HistoryItemCard({
                     {school.schoolName}
                   </Text>
                   <Text style={[styles.historySchoolScore, { color: colors.foregroundMuted }]}>
-                    {school.fitScore}
+                    {t('recommendation.fitScore', 'Profile Fit')} {school.fitScore}
                   </Text>
                 </View>
               ))}
@@ -138,18 +146,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.xs,
     marginRight: spacing.md,
+    flexWrap: 'wrap',
+    justifyContent: 'flex-end',
   },
-  historyTierDot: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+  historyTierBadge: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 6,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: 999,
+    backgroundColor: themeColors.light.muted,
   },
-  historyTierDotText: {
+  historyTierBadgeDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  historyTierBadgeText: {
     fontSize: fontSize.xs,
-    fontWeight: fontWeight.bold,
-    color: themeColors.light.onGradient,
+    fontWeight: fontWeight.medium,
   },
   historyExpandedContent: {
     marginTop: spacing.lg,

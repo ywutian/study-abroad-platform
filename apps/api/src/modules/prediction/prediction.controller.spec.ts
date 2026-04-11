@@ -3,6 +3,7 @@ import { PredictionController } from './prediction.controller';
 import { PredictionService } from './prediction.service';
 import { SchoolService } from '../school/school.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { PredictionReportingService } from './prediction-reporting.service';
 
 describe('PredictionController', () => {
   let controller: PredictionController;
@@ -68,6 +69,18 @@ describe('PredictionController', () => {
             profile: {
               findUnique: jest.fn().mockResolvedValue(mockProfile),
             },
+          },
+        },
+        {
+          provide: PredictionReportingService,
+          useValue: {
+            resolveCanonicalOutcome: jest.fn().mockReturnValue({
+              canonicalRecord: null,
+              displayRecord: null,
+              canonicalOutcomeLabel: 'CENSORED',
+              eligibleForCalibration: false,
+            }),
+            mapLatestOutcomeLabel: jest.fn().mockReturnValue(undefined),
           },
         },
       ],
@@ -187,6 +200,12 @@ describe('PredictionController', () => {
         'profile-1',
         'school-1',
         'ADMITTED',
+        {
+          notes: undefined,
+          evidenceUrl: undefined,
+          round: undefined,
+          isFinal: undefined,
+        },
       );
       expect(result).toEqual({
         success: true,

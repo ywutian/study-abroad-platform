@@ -1,6 +1,7 @@
 # Codex E2E Runbook
 
 > 本文定义 Codex 在发版门禁中的固定动作。目标是让每次 E2E 门禁都有稳定节奏、稳定产物和稳定收口方式。
+> 如本轮是“全产品面专项审计”，请先生成 full-surface inventory，再按本 Runbook 的批次执行思想收口。
 
 ## 1. 目标
 
@@ -14,10 +15,20 @@
 在每次执行前，Codex 先读取以下标准：
 
 - [JOURNEY_REGISTRY.md](./JOURNEY_REGISTRY.md)
+- [FULL_SURFACE_REGISTRY.md](./FULL_SURFACE_REGISTRY.md)
+- [FULL_SURFACE_REUSE_PLAYBOOK.md](./FULL_SURFACE_REUSE_PLAYBOOK.md)
+- [FULL_SURFACE_GAP_CHECKLIST.md](./FULL_SURFACE_GAP_CHECKLIST.md)
 - [RELEASE_IMPACT_MAPPING.md](./RELEASE_IMPACT_MAPPING.md)
 - [AI_AGENT_EVALUATION_RUBRIC.md](./AI_AGENT_EVALUATION_RUBRIC.md)
 - [CROSS_PLATFORM_REUSE_RUBRIC.md](./CROSS_PLATFORM_REUSE_RUBRIC.md)
 - [PROFESSIONAL_CONSULTANCY_RUBRIC.md](./PROFESSIONAL_CONSULTANCY_RUBRIC.md)
+
+如本轮是全产品面专项审计，再额外读取：
+
+- [FULL_SURFACE_REGISTRY.md](./FULL_SURFACE_REGISTRY.md)
+- [FULL_SURFACE_REUSE_PLAYBOOK.md](./FULL_SURFACE_REUSE_PLAYBOOK.md)
+- [FULL_SURFACE_GAP_CHECKLIST.md](./FULL_SURFACE_GAP_CHECKLIST.md)
+- `MEMORY.md`
 
 如果本轮是新的 release gate，先生成执行包：
 
@@ -45,6 +56,38 @@ e2e-report/releases/<release-id>/
 ```bash
 pnpm release-gate:run --config e2e-report/releases/<release-id>/codex-run-config.json
 ```
+
+### Full-surface bootstrap 命令
+
+```bash
+pnpm full-surface:generate --audit-date YYYY-MM-DD
+```
+
+该命令会生成：
+
+- `e2e-report/full-surface-YYYY-MM-DD/route-inventory.json`
+- `e2e-report/full-surface-YYYY-MM-DD/capability-inventory.json`
+- `e2e-report/full-surface-YYYY-MM-DD/journey-overlay.json`
+- `docs/FULL_SURFACE_AUDIT_LOG_YYYY-MM-DD.md`
+- `docs/FULL_SURFACE_AGENT_REVIEW_YYYY-MM-DD.md`
+
+后续各批次执行时，必须持续回填这些 dated 文档和 `MEMORY.md`，而不是把结论留在聊天里。
+
+如本轮是全产品面专项审计，先执行：
+
+```bash
+pnpm full-surface:generate --audit-date YYYY-MM-DD
+```
+
+然后使用：
+
+- `e2e-report/full-surface-YYYY-MM-DD/manifest.json`
+- `e2e-report/full-surface-YYYY-MM-DD/route-inventory.json`
+- `e2e-report/full-surface-YYYY-MM-DD/capability-inventory.json`
+- `docs/FULL_SURFACE_AUDIT_LOG_YYYY-MM-DD.md`
+- `docs/FULL_SURFACE_AGENT_REVIEW_YYYY-MM-DD.md`
+
+作为全量执行入口和回填台账。
 
 ### 2.1 阶段 0：环境 gate
 

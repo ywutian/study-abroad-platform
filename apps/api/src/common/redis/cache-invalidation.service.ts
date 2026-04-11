@@ -19,14 +19,13 @@ export class CacheInvalidationService {
    * TTL provides a fallback guarantee for eventual consistency.
    */
   async onProfileChange(userId: string): Promise<void> {
-    const keys = [
-      `profile:${userId}`,
-      `ai:recommend:${userId}`,
-      `ai:profile-analysis:${userId}`,
-    ];
-
     try {
-      await Promise.all(keys.map((k) => this.redis.del(k)));
+      await Promise.all([
+        this.redis.del(`profile:${userId}`),
+        this.redis.del(`ai:recommend:${userId}`),
+        this.redis.delByPrefix(`ai:profile-analysis:${userId}:`),
+        this.redis.del(`ai:profile-analysis:${userId}`),
+      ]);
 
       // Invalidate prediction caches for all schools the user has predictions for
       await this.invalidatePredictionCaches(userId);
@@ -41,7 +40,7 @@ export class CacheInvalidationService {
 
   /**
    * Invalidate all prediction caches for a user.
-   * Looks up profileId from userId, then deletes all prediction:{profileId}:{schoolId} keys.
+   * Looks up profileId from userId, then deletes all prediction:{profileId}:* keys.
    */
   private async invalidatePredictionCaches(userId: string): Promise<void> {
     try {
@@ -50,22 +49,10 @@ export class CacheInvalidationService {
         select: { id: true },
       });
       if (!profile) return;
-
-      const predictions = await this.prisma.predictionResult.findMany({
-        where: { profileId: profile.id },
-        select: { schoolId: true },
-      });
-
-      if (predictions.length === 0) return;
-
-      await Promise.all(
-        predictions.map((p) =>
-          this.redis.del(`prediction:${profile.id}:${p.schoolId}`),
-        ),
-      );
+      const deleted = await this.redis.delByPrefix(`prediction:${profile.id}:`);
 
       this.logger.debug(
-        `Invalidated ${predictions.length} prediction caches for profile ${profile.id}`,
+        `Invalidated ${deleted} prediction caches for profile ${profile.id}`,
       );
     } catch (error) {
       this.logger.warn('Failed to invalidate prediction caches', error);
@@ -78,10 +65,17 @@ export class CacheInvalidationService {
    */
   async onSchoolChange(schoolId: string): Promise<void> {
     try {
+      const schoolListUsers = await this.prisma.schoolListItem.findMany({
+        where: { schoolId },
+        select: { userId: true },
+      });
       await Promise.all([
         this.redis.del(`school:detail:${schoolId}`),
         this.redis.delByPrefix('school:list:'),
       ]);
+      await this.invalidateApplicationAnalysisCaches(
+        schoolListUsers.map((item) => item.userId),
+      );
       this.logger.debug(
         `Invalidated detail + list caches for school ${schoolId}`,
       );
@@ -124,6 +118,7 @@ export class CacheInvalidationService {
       await Promise.all(
         userIds.map((uid) => this.invalidatePredictionCaches(uid)),
       );
+      await this.invalidateApplicationAnalysisCaches(userIds);
 
       this.logger.debug(
         `Invalidated prediction caches for ${userIds.length} users linked to high school ${highSchoolId}`,
@@ -133,5 +128,19 @@ export class CacheInvalidationService {
         `Failed to invalidate caches for high school ${highSchoolId}: ${String(error instanceof Error ? error.message : error)}`,
       );
     }
+  }
+
+  private async invalidateApplicationAnalysisCaches(
+    userIds: string[],
+  ): Promise<void> {
+    const uniqueUserIds = [...new Set(userIds.filter(Boolean))];
+    if (uniqueUserIds.length === 0) return;
+
+    await Promise.all(
+      uniqueUserIds.flatMap((userId) => [
+        this.redis.del(`ai:profile-analysis:${userId}`),
+        this.redis.delByPrefix(`ai:profile-analysis:${userId}:`),
+      ]),
+    );
   }
 }

@@ -59,6 +59,7 @@ export function useGenerateRecommendation() {
     mutationFn: (dto: GenerateRecommendationDto) =>
       apiClient.post<RecommendationResult>(recommendationRoutes.generate(), dto, {
         timeout: AI_TIMEOUTS.AI_REQUEST,
+        directApi: true,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({

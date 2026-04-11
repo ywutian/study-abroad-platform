@@ -67,7 +67,7 @@ export const EssayBrainstormDialog: React.FC<EssayBrainstormDialogProps> = ({
           school: school || undefined,
           major: major || undefined,
         },
-        { timeout: AI_TIMEOUTS.AI_REQUEST }
+        { timeout: AI_TIMEOUTS.AI_REQUEST, directApi: true }
       );
       return response;
     },

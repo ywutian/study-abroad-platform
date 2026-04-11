@@ -22,6 +22,11 @@ import { PredictionHistoricalService } from './prediction-historical.service';
 import { PredictionMemoryService } from './prediction-memory.service';
 import { PredictionPersistenceService } from './prediction-persistence.service';
 import { PredictionReportingService } from './prediction-reporting.service';
+import { PredictionPolicyService } from './prediction-policy.service';
+import { PredictionWorkflowService } from './prediction-workflow.service';
+import { PredictionPolicyShadowService } from './prediction-policy-shadow.service';
+import { PredictionHookModifiersService } from './prediction-hook-modifiers.service';
+import { PredictionMlPrimaryService } from './prediction-ml-primary.service';
 
 @Module({
   imports: [
@@ -44,17 +49,25 @@ import { PredictionReportingService } from './prediction-reporting.service';
     PredictionMemoryService,
     PredictionPersistenceService,
     PredictionReportingService,
+    PredictionPolicyService,
+    PredictionWorkflowService,
+    PredictionPolicyShadowService,
     ModelRegistryService,
     TrainingDataService,
     ModelTrainerService,
     ShadowEvaluatorService,
     ModelMonitorService,
+    PredictionHookModifiersService,
+    PredictionMlPrimaryService,
   ],
   exports: [
     PredictionService,
     PredictionHistoricalService,
     PredictionCalibrationService,
     PredictionReportingService,
+    PredictionPolicyService,
+    PredictionWorkflowService,
+    PredictionPolicyShadowService,
   ],
 })
 export class PredictionModule {}

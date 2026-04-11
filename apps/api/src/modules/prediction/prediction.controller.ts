@@ -19,7 +19,10 @@ import { SchoolService } from '../school/school.service';
 import { CurrentUser, Roles } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { Role } from '@prisma/client';
-import { ThrottleAI } from '../../common/decorators/throttle.decorator';
+import {
+  ThrottleAI,
+  ThrottleSensitive,
+} from '../../common/decorators/throttle.decorator';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   PredictionRequestDto,
@@ -28,7 +31,8 @@ import {
 } from './dto';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { clampPercentRate } from '../../common/utils/percent.util';
-import { SCHOOL_NAME_RANK_SELECT } from '../../common/constants/prisma-selects';
+import { SCHOOL_PREDICTION_CONTEXT_SELECT } from '../../common/constants/prisma-selects';
+import { PredictionReportingService } from './prediction-reporting.service';
 
 @ApiTags('predictions')
 @ApiBearerAuth()
@@ -39,6 +43,7 @@ export class PredictionController {
     private readonly predictionService: PredictionService,
     private readonly schoolService: SchoolService,
     private readonly prisma: PrismaService,
+    private readonly reportingService: PredictionReportingService,
   ) {}
 
   @Post()
@@ -107,6 +112,7 @@ export class PredictionController {
   }
 
   @Patch(':schoolId/result')
+  @ThrottleSensitive()
   @ApiOperation({ summary: 'Report actual admission result (for calibration)' })
   @ApiParam({ name: 'schoolId', description: 'School ID' })
   @ApiResponse({ status: 200, description: 'Result recorded' })
@@ -127,6 +133,12 @@ export class PredictionController {
       profile.id,
       schoolId,
       body.result,
+      {
+        notes: body.notes,
+        evidenceUrl: body.evidenceUrl,
+        round: body.round,
+        isFinal: body.isFinal,
+      },
     );
 
     return { success: true, message: 'Result recorded for calibration' };
@@ -159,15 +171,35 @@ export class PredictionController {
     const predictions = await this.prisma.predictionResult.findMany({
       where: { profileId: profile.id },
       orderBy: { updatedAt: 'desc' },
+      include: {
+        outcomeLabelRecords: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
     });
 
     // Fetch school info separately (PredictionResult has no school relation)
     const schoolIds = [...new Set(predictions.map((p) => p.schoolId))];
     const schools = await this.prisma.school.findMany({
       where: { id: { in: schoolIds } },
-      select: SCHOOL_NAME_RANK_SELECT,
+      select: SCHOOL_PREDICTION_CONTEXT_SELECT,
     });
-    const schoolMap = new Map(schools.map((s) => [s.id, s]));
+    const schoolMap = new Map(
+      schools.map((s) => [
+        s.id,
+        {
+          ...s,
+          acceptanceRate: clampPercentRate((s as any).acceptanceRate),
+          intlAcceptanceRate: clampPercentRate((s as any).intlAcceptanceRate),
+          intlStudentPct:
+            (s as any).intlStudentPct != null
+              ? Number((s as any).intlStudentPct)
+              : undefined,
+          needBlindInternational:
+            (s as any).needBlindInternational || undefined,
+        },
+      ]),
+    );
 
     const tierDistribution = { reach: 0, match: 0, safety: 0 };
     const confidenceBreakdown = { low: 0, medium: 0, high: 0 };
@@ -193,11 +225,31 @@ export class PredictionController {
           : 0,
       confidenceBreakdown,
       predictions: predictions.map((p) => ({
+        ...((): {
+          latestOutcomeLabel?: ReturnType<
+            PredictionReportingService['mapLatestOutcomeLabel']
+          >;
+        } => {
+          const canonical = this.reportingService.resolveCanonicalOutcome(
+            p.outcomeLabelRecords,
+          );
+          return {
+            latestOutcomeLabel: this.reportingService.mapLatestOutcomeLabel(
+              canonical.displayRecord,
+            ),
+          };
+        })(),
         schoolId: p.schoolId,
         school: schoolMap.get(p.schoolId) ?? null,
         probability: Number(p.probability),
         tier: p.tier,
         confidence: p.confidence,
+        confidenceReason: p.confidenceReason,
+        cohortKey: p.cohortKey,
+        roundContext: p.applicationRound,
+        sourceSummary: p.sourceSummary,
+        uncertaintyReasons: p.uncertaintyReasons,
+        servedPolicyVersionId: p.policyVersionId ?? undefined,
         source: p.source,
         modelVersion: p.modelVersion,
         updatedAt: p.updatedAt,
@@ -230,6 +282,11 @@ export class PredictionController {
             schoolId,
           },
         },
+        include: {
+          outcomeLabelRecords: {
+            orderBy: { createdAt: 'desc' },
+          },
+        },
       }),
       this.prisma.predictionSnapshot.findMany({
         where: { profileId: profile.id, schoolId },
@@ -251,6 +308,20 @@ export class PredictionController {
     return {
       current: current
         ? {
+            ...((): {
+              latestOutcomeLabel?: ReturnType<
+                PredictionReportingService['mapLatestOutcomeLabel']
+              >;
+            } => {
+              const canonical = this.reportingService.resolveCanonicalOutcome(
+                current.outcomeLabelRecords,
+              );
+              return {
+                latestOutcomeLabel: this.reportingService.mapLatestOutcomeLabel(
+                  canonical.displayRecord,
+                ),
+              };
+            })(),
             probability: Number(current.probability),
             probabilityLow: current.probabilityLow
               ? Number(current.probabilityLow)
@@ -260,6 +331,12 @@ export class PredictionController {
               : undefined,
             tier: current.tier,
             confidence: current.confidence,
+            confidenceReason: current.confidenceReason,
+            cohortKey: current.cohortKey,
+            roundContext: current.applicationRound,
+            sourceSummary: current.sourceSummary,
+            uncertaintyReasons: current.uncertaintyReasons,
+            servedPolicyVersionId: current.policyVersionId ?? undefined,
             factors: current.factors,
             source: current.source,
             modelVersion: current.modelVersion,
@@ -270,6 +347,12 @@ export class PredictionController {
         probability: Number(h.probability),
         tier: h.tier,
         confidence: h.confidence,
+        confidenceReason: h.confidenceReason,
+        cohortKey: h.cohortKey,
+        roundContext: h.applicationRound,
+        sourceSummary: h.sourceSummary,
+        uncertaintyReasons: h.uncertaintyReasons,
+        servedPolicyVersionId: h.policyVersionId ?? undefined,
         source: h.source,
         modelVersion: h.modelVersion,
         createdAt: h.createdAt,

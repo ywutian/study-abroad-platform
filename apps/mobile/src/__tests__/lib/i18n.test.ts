@@ -158,6 +158,11 @@ describe('i18n', () => {
         expect(i18n.t('home.features.profile')).toBe('My Profile');
       });
 
+      it('resolves application-analysis keys', () => {
+        expect(i18n.t('applicationAnalysis.title')).toBe('Application Analysis');
+        expect(i18n.t('prediction.analysisCard.open')).toBe('Open analysis');
+      });
+
       it('resolves error keys', () => {
         expect(i18n.t('errors.networkError')).toBe('Network error, please try again');
         expect(i18n.t('errors.unauthorized')).toBe('Please login first');
@@ -195,6 +200,11 @@ describe('i18n', () => {
 
       it('resolves nested keys like home.features.profile', () => {
         expect(i18n.t('home.features.profile')).toBe('我的档案');
+      });
+
+      it('resolves application-analysis keys', () => {
+        expect(i18n.t('applicationAnalysis.title')).toBe('申请分析');
+        expect(i18n.t('prediction.analysisCard.open')).toBe('查看申请分析');
       });
 
       it('resolves error keys', () => {

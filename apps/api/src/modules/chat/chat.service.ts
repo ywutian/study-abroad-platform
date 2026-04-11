@@ -9,7 +9,7 @@ import {
   StorageService,
   StorageFile,
 } from '../../common/storage/storage.service';
-import { Prisma, DataReviewStatus } from '@prisma/client';
+import { Prisma, DataReviewStatus, ConversationKind } from '@prisma/client';
 
 /** 用户信息的标准 select（复用） */
 const USER_SELECT = {
@@ -21,13 +21,20 @@ const USER_SELECT = {
   },
 } as const;
 
-/** 消息中发送者的标准 select */
+/** 消息中发送者的标准 select — email intentionally excluded for privacy */
 const SENDER_SELECT = {
   id: true,
-  email: true,
   profile: {
     select: { nickname: true, avatarUrl: true, realName: true },
   },
+} as const;
+
+const PARTICIPANT_SELECT = {
+  id: true,
+  userId: true,
+  isPinned: true,
+  lastReadAt: true,
+  user: { select: USER_SELECT },
 } as const;
 
 @Injectable()
@@ -123,6 +130,7 @@ export class ChatService {
     // 查找已有会话（精确匹配：恰好包含这两个参与者）
     const existing = await this.prisma.conversation.findFirst({
       where: {
+        kind: ConversationKind.DIRECT,
         AND: [
           { participants: { some: { userId: initiatorId } } },
           { participants: { some: { userId: targetId } } },
@@ -140,6 +148,7 @@ export class ChatService {
     // 创建新会话
     return this.prisma.conversation.create({
       data: {
+        kind: ConversationKind.DIRECT,
         participants: {
           create: [{ userId: initiatorId }, { userId: targetId }],
         },
@@ -167,10 +176,20 @@ export class ChatService {
     }
 
     // 屏蔽检查
+    const conversation = await this.prisma.conversation.findUnique({
+      where: { id: conversationId },
+      select: {
+        kind: true,
+        participants: {
+          where: { userId: { not: senderId } },
+          select: { userId: true },
+        },
+      },
+    });
     const otherParticipant =
-      await this.prisma.conversationParticipant.findFirst({
-        where: { conversationId, userId: { not: senderId } },
-      });
+      conversation?.kind === ConversationKind.DIRECT
+        ? conversation.participants[0]
+        : null;
     if (otherParticipant) {
       const blocked = await this.checkBlocked(
         otherParticipant.userId,
@@ -193,6 +212,7 @@ export class ChatService {
         conversationId,
         senderId,
         content: filterResult.filtered,
+        isSystem: false,
       },
       include: {
         sender: { select: SENDER_SELECT },
@@ -274,6 +294,9 @@ export class ChatService {
               take: 1,
               include: { sender: { select: SENDER_SELECT } },
             },
+            teamMatch: {
+              select: { id: true },
+            },
           },
         },
       },
@@ -308,19 +331,125 @@ export class ChatService {
       unreadCounts.map((u) => [u.conversationId, Number(u.count)]),
     );
 
-    return participations.map((p) => {
-      const otherParticipant = p.conversation.participants.find(
-        (part) => part.userId !== userId,
-      );
+    return participations.map((p) =>
+      this.serializeConversationSummary(
+        p.conversation,
+        userId,
+        unreadMap.get(p.conversationId) || 0,
+        p.isPinned,
+      ),
+    );
+  }
 
-      return {
-        id: p.conversation.id,
-        otherUser: otherParticipant?.user || null,
-        lastMessage: p.conversation.messages[0] || null,
-        unreadCount: unreadMap.get(p.conversationId) || 0,
-        updatedAt: p.conversation.updatedAt,
-        isPinned: p.isPinned,
-      };
+  async getConversation(conversationId: string, userId: string) {
+    const participant = await this.prisma.conversationParticipant.findUnique({
+      where: { conversationId_userId: { conversationId, userId } },
+    });
+    if (!participant) {
+      throw new ForbiddenException('Not a participant of this conversation');
+    }
+
+    const [conversation, unread] = await Promise.all([
+      this.prisma.conversation.findUnique({
+        where: { id: conversationId },
+        include: {
+          participants: {
+            include: {
+              user: { select: USER_SELECT },
+            },
+          },
+          messages: {
+            orderBy: { createdAt: 'desc' },
+            take: 50,
+            include: {
+              sender: { select: SENDER_SELECT },
+            },
+          },
+          teamMatch: {
+            select: { id: true },
+          },
+        },
+      }),
+      this.prisma.$queryRaw<{ count: bigint }[]>`
+        SELECT COUNT(*) as count
+        FROM "Message" m
+        INNER JOIN "ConversationParticipant" cp
+          ON cp."conversationId" = m."conversationId" AND cp."userId" = ${userId}
+        WHERE m."conversationId" = ${conversationId}
+          AND m."senderId" != ${userId}
+          AND m."createdAt" > COALESCE(cp."lastReadAt", '1970-01-01'::timestamp)
+      `,
+    ]);
+
+    if (!conversation) {
+      throw new BadRequestException('Conversation not found');
+    }
+
+    const summary = this.serializeConversationSummary(
+      conversation,
+      userId,
+      Number(unread[0]?.count ?? 0),
+      participant.isPinned,
+    );
+
+    // Messages were fetched in desc order (for LIMIT), reverse to asc for display
+    const messages = [...conversation.messages].reverse();
+
+    return {
+      ...summary,
+      participants: conversation.participants,
+      messages,
+      lastMessageAt:
+        messages[messages.length - 1]?.createdAt ?? conversation.updatedAt,
+    };
+  }
+
+  async createMatchGroupConversation(params: {
+    title: string;
+    participantIds: string[];
+    systemSenderId: string;
+    initialMessage: string;
+  }) {
+    const participantIds = Array.from(new Set(params.participantIds));
+    if (participantIds.length < 2) {
+      throw new BadRequestException(
+        'Match group conversation requires at least two participants',
+      );
+    }
+
+    return this.prisma.conversation.create({
+      data: {
+        kind: ConversationKind.MATCH_GROUP,
+        title: params.title,
+        createdBySystem: true,
+        participants: {
+          create: participantIds.map((userId) => ({ userId })),
+        },
+        messages: {
+          create: {
+            senderId: params.systemSenderId,
+            content: params.initialMessage,
+            isSystem: true,
+          },
+        },
+      },
+      include: {
+        participants: {
+          include: {
+            user: { select: USER_SELECT },
+          },
+        },
+        messages: {
+          take: 1,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            sender: { select: SENDER_SELECT },
+          },
+        },
+        teamMatch: {
+          select: { id: true },
+        },
+      },
     });
   }
 
@@ -458,6 +587,77 @@ export class ChatService {
     return { isPinned: updated.isPinned };
   }
 
+  private serializeConversationSummary(
+    conversation: {
+      id: string;
+      kind: ConversationKind;
+      title: string | null;
+      createdBySystem: boolean;
+      createdAt: Date;
+      updatedAt: Date;
+      participants: Array<{
+        id: string;
+        userId: string;
+        user: Prisma.UserGetPayload<{ select: typeof USER_SELECT }>;
+      }>;
+      messages: Array<
+        Prisma.MessageGetPayload<{
+          include: { sender: { select: typeof SENDER_SELECT } };
+        }>
+      >;
+      teamMatch?: { id: string } | null;
+    },
+    currentUserId: string,
+    unreadCount: number,
+    isPinned: boolean,
+  ) {
+    const otherParticipants = conversation.participants.filter(
+      (participant) => participant.userId !== currentUserId,
+    );
+    const otherUser =
+      conversation.kind === ConversationKind.DIRECT
+        ? (otherParticipants[0]?.user ?? null)
+        : null;
+    const derivedTitle =
+      conversation.kind === ConversationKind.MATCH_GROUP
+        ? conversation.title ||
+          otherParticipants
+            .map((participant) => this.getDisplayName(participant.user))
+            .join(', ')
+        : otherUser
+          ? this.getDisplayName(otherUser)
+          : conversation.title || 'Conversation';
+
+    return {
+      id: conversation.id,
+      kind: conversation.kind,
+      title: derivedTitle,
+      createdBySystem: conversation.createdBySystem,
+      otherUser,
+      participantCount: conversation.participants.length,
+      participantPreview: otherParticipants.slice(0, 3).map((participant) => ({
+        id: participant.user.id,
+        role: participant.user.role,
+        profile: participant.user.profile,
+      })),
+      avatarSummary: otherParticipants
+        .slice(0, 3)
+        .map((participant) => participant.user.profile?.avatarUrl ?? null),
+      lastMessage: conversation.messages[0] || null,
+      unreadCount,
+      updatedAt: conversation.updatedAt,
+      createdAt: conversation.createdAt,
+      isPinned,
+      teamMatchId: conversation.teamMatch?.id ?? null,
+    };
+  }
+
+  private getDisplayName(
+    user: Prisma.UserGetPayload<{ select: typeof USER_SELECT }>,
+  ) {
+    return user.profile?.nickname || user.profile?.realName || user.email;
+  }
+
   // ============================================
   // 关注 / 屏蔽
   // ============================================
@@ -518,11 +718,32 @@ export class ChatService {
         ],
       },
     });
-    return this.prisma.block.upsert({
+    const block = await this.prisma.block.upsert({
       where: { blockerId_blockedId: { blockerId, blockedId } },
       update: {},
       create: { blockerId, blockedId },
     });
+    const affectedMatchGroups = await this.prisma.conversation.findMany({
+      where: {
+        kind: ConversationKind.MATCH_GROUP,
+        AND: [
+          { participants: { some: { userId: blockerId } } },
+          { participants: { some: { userId: blockedId } } },
+        ],
+      },
+      select: { id: true },
+    });
+    if (affectedMatchGroups.length > 0) {
+      await this.prisma.conversationParticipant.deleteMany({
+        where: {
+          userId: blockerId,
+          conversationId: {
+            in: affectedMatchGroups.map((conversation) => conversation.id),
+          },
+        },
+      });
+    }
+    return block;
   }
 
   /**
@@ -635,7 +856,7 @@ export class ChatService {
    */
   async report(
     reporterId: string,
-    targetType: 'USER' | 'MESSAGE' | 'CASE' | 'REVIEW',
+    targetType: 'USER' | 'MESSAGE' | 'CASE' | 'REVIEW' | 'RECRUITMENT_CARD',
     targetId: string,
     reason: string,
     detail?: string,

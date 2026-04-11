@@ -75,6 +75,9 @@ describe('TeamService', () => {
               create: jest.fn(),
               update: jest.fn(),
             },
+            teamRecruitmentCard: {
+              updateMany: jest.fn().mockResolvedValue({ count: 0 }),
+            },
             $transaction: jest.fn((ops) =>
               Promise.all(
                 ops.map((op: () => unknown) =>
@@ -292,6 +295,55 @@ describe('TeamService', () => {
         service.invite(teamId, userId, { inviteeId: otherUserId }),
       ).rejects.toThrow(ConflictException);
       expect(prisma.teamInvitation.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('joinByToken', () => {
+    it('should mark expired invitations and reject the join', async () => {
+      (prisma.teamInvitation.findFirst as jest.Mock).mockResolvedValue({
+        id: 'inv-expired',
+        teamId,
+        expiresAt: new Date(Date.now() - 60_000),
+        team: { maxMembers: 4, _count: { members: 1 } },
+      });
+
+      await expect(
+        service.joinByToken(otherUserId, 'expired-token'),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.teamInvitation.update).toHaveBeenCalledWith({
+        where: { id: 'inv-expired' },
+        data: { status: 'EXPIRED' },
+      });
+    });
+
+    it('should reject when the invitee is already a member', async () => {
+      (prisma.teamInvitation.findFirst as jest.Mock).mockResolvedValue({
+        id: 'inv-1',
+        teamId,
+        expiresAt: new Date(Date.now() + 60_000),
+        team: { maxMembers: 4, _count: { members: 1 } },
+      });
+      (prisma.teamMembership.findUnique as jest.Mock).mockResolvedValue({
+        id: 'mem-existing',
+      });
+
+      await expect(
+        service.joinByToken(otherUserId, 'valid-token'),
+      ).rejects.toThrow(ConflictException);
+    });
+
+    it('should reject when the team is already full', async () => {
+      (prisma.teamInvitation.findFirst as jest.Mock).mockResolvedValue({
+        id: 'inv-full',
+        teamId,
+        expiresAt: new Date(Date.now() + 60_000),
+        team: { maxMembers: 2, _count: { members: 2 } },
+      });
+      (prisma.teamMembership.findUnique as jest.Mock).mockResolvedValue(null);
+
+      await expect(
+        service.joinByToken(otherUserId, 'full-token'),
+      ).rejects.toThrow(ConflictException);
     });
   });
 

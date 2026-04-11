@@ -25,6 +25,49 @@ import { evaluateHsConfidence, type HsConfidenceResult } from './hs-confidence';
 import { computeTierFromPartial } from './tier';
 
 // ============================================
+// Log-odds utilities (v5 ML-Primary)
+// ============================================
+
+/** Convert probability to log-odds. Clamps input to avoid ±Infinity. */
+export function logit(p: number): number {
+  const safe = Math.max(0.001, Math.min(0.999, p));
+  return Math.log(safe / (1 - safe));
+}
+
+/** Convert log-odds to probability. */
+export function invLogit(x: number): number {
+  return 1 / (1 + Math.exp(-x));
+}
+
+/**
+ * Adjust a probability by a log-odds shift. Mathematically correct for
+ * odds-ratio modifiers (ED boost, legacy, need-aware penalty, etc.).
+ * Unlike `p * multiplier`, this never exceeds [0, 1].
+ */
+export function adjustInLogOdds(p: number, logOddsShift: number): number {
+  return invLogit(logit(p) + logOddsShift);
+}
+
+/**
+ * Major-specific base rate multiplier (v5).
+ * Competitive majors (CS@CMU, Engineering@MIT) have much lower effective
+ * acceptance rates than the school-wide average.
+ *
+ * Source: CAPS framework (Zeng & Shen 2025), CDS Section C analysis.
+ */
+const MAJOR_RATE_MULTIPLIER: Record<number, number> = {
+  5: 0.3, // Hyper-competitive (CS@CMU, CS@GT) — effective rate ~30% of overall
+  4: 0.5, // High competition (Engineering@MIT)
+  3: 1.0, // Neutral
+  2: 1.3, // Low competition
+  1: 1.5, // Very low competition
+};
+
+export function getMajorSelectivityMultiplier(competitiveness: number): number {
+  return MAJOR_RATE_MULTIPLIER[competitiveness] ?? 1.0;
+}
+
+// ============================================
 // Component Scores (0-100 each)
 // ============================================
 

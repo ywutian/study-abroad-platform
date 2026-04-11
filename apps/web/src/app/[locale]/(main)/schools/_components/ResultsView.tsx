@@ -9,12 +9,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAddToSchoolList } from '@/hooks/use-recommendation';
 import type { RecommendationResult, RecommendedSchool } from '@study-abroad/shared';
+import { formatAcceptanceRate } from '@/lib/utils';
 import { isSafeUrl } from '@/lib/utils/url';
 import { CaseComparisonSummary } from '@/components/features/recommendation/CaseComparisonSummary';
 
 const TIER_COLORS = {
   reach: 'bg-red-500/10 text-red-600 dark:text-red-400',
-  match: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+  match: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
   safety: 'bg-green-500/10 text-green-600 dark:text-green-400',
 } as const;
 
@@ -28,6 +29,8 @@ export function ResultsView({ result, schoolList, onReset }: ResultsViewProps) {
   const t = useTranslations('recommendation');
   const addToList = useAddToSchoolList();
   const existingSchoolIds = new Set(schoolList?.map((s) => s.schoolId) ?? []);
+  const getTierCategoryKey = (tier: RecommendedSchool['tier']) =>
+    tier === 'match' ? 'target' : tier;
 
   const handleAdd = (school: RecommendedSchool) => {
     if (!school.schoolId) return;
@@ -51,6 +54,10 @@ export function ResultsView({ result, schoolList, onReset }: ResultsViewProps) {
       <Card>
         <CardContent className="pt-6">
           <p className="text-sm text-muted-foreground">{result.summary}</p>
+          <div className="mt-3 space-y-1">
+            <p className="text-xs text-muted-foreground">{t('strategyDisclaimer')}</p>
+            <p className="text-xs text-muted-foreground">{t('probabilityTooltip')}</p>
+          </div>
         </CardContent>
       </Card>
 
@@ -58,6 +65,7 @@ export function ResultsView({ result, schoolList, onReset }: ResultsViewProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {result.recommendations.map((school, i) => {
           const inList = school.schoolId ? existingSchoolIds.has(school.schoolId) : false;
+          const categoryKey = getTierCategoryKey(school.tier);
           return (
             <Card key={school.schoolId ?? i}>
               <CardHeader className="pb-3">
@@ -86,7 +94,7 @@ export function ResultsView({ result, schoolList, onReset }: ResultsViewProps) {
                     </CardTitle>
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge variant="secondary" className={TIER_COLORS[school.tier]}>
-                        {t(`tiers.${school.tier}`)}
+                        {t(`categories.${categoryKey}.label`)}
                       </Badge>
                       <span className="text-xs text-muted-foreground">
                         {t('fitScore')}: {school.fitScore}%
@@ -94,7 +102,16 @@ export function ResultsView({ result, schoolList, onReset }: ResultsViewProps) {
                       <span className="text-xs text-muted-foreground">
                         {t('probability')}: {school.estimatedProbability}%
                       </span>
+                      {school.schoolMeta?.acceptanceRate != null && (
+                        <span className="text-xs text-muted-foreground">
+                          {t('acceptRate')}:{' '}
+                          {formatAcceptanceRate(school.schoolMeta.acceptanceRate)}
+                        </span>
+                      )}
                     </div>
+                    <p className="text-xs text-muted-foreground">
+                      {t(`categories.${categoryKey}.description`)}
+                    </p>
                   </div>
                   {school.schoolId && !inList && (
                     <Button

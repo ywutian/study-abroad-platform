@@ -6,9 +6,12 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
+import { clampPercentRate } from '../../../common/utils/percent.util';
+import { SCHOOL_PREDICTION_CONTEXT_SELECT } from '../../../common/constants/prisma-selects';
 import { ProfileLoaderHelper } from './helpers/profile-loader.helper';
 import { SchoolLookupHelper } from './helpers/school-lookup.helper';
 import { ToolHandler, IToolHandlerProvider } from './tool-handler.interface';
+import { PredictionReportingService } from '../../prediction/prediction-reporting.service';
 
 @Injectable()
 export class PredictionToolsService implements IToolHandlerProvider {
@@ -18,6 +21,7 @@ export class PredictionToolsService implements IToolHandlerProvider {
     private prisma: PrismaService,
     private profileLoader: ProfileLoaderHelper,
     private schoolLookup: SchoolLookupHelper,
+    private predictionReporting: PredictionReportingService,
   ) {}
 
   getHandlers(): Map<string, ToolHandler> {
@@ -37,7 +41,105 @@ export class PredictionToolsService implements IToolHandlerProvider {
         (_args, userId, _ctx, locale) =>
           this.getSchoolListPredictions(userId, locale),
       ],
+      [
+        'get_prediction_trace_summary',
+        (args, userId, _ctx, locale) =>
+          this.getPredictionTraceSummary(userId, args, locale),
+      ],
     ]);
+  }
+
+  private numberFromValue(value: unknown): number | undefined {
+    if (value == null) return undefined;
+    if (typeof value === 'number') return value;
+    if (
+      typeof value === 'object' &&
+      typeof (value as { toNumber?: () => number }).toNumber === 'function'
+    ) {
+      return (value as { toNumber: () => number }).toNumber();
+    }
+    return Number(value);
+  }
+
+  private formatSchoolContext(school: any) {
+    if (!school) return null;
+    return {
+      id: school.id,
+      name: school.name,
+      nameZh: school.nameZh ?? undefined,
+      usNewsRank: school.usNewsRank ?? undefined,
+      acceptanceRate: clampPercentRate(
+        this.numberFromValue(school.acceptanceRate),
+      ),
+      intlAcceptanceRate: clampPercentRate(
+        this.numberFromValue(school.intlAcceptanceRate),
+      ),
+      intlStudentPct: this.numberFromValue(school.intlStudentPct),
+      needBlindInternational: school.needBlindInternational ?? undefined,
+    };
+  }
+
+  private mapLatestOutcome(
+    records?: Parameters<
+      PredictionReportingService['resolveCanonicalOutcome']
+    >[0],
+  ) {
+    const canonical = this.predictionReporting.resolveCanonicalOutcome(records);
+    return this.predictionReporting.mapLatestOutcomeLabel(
+      canonical.displayRecord,
+    );
+  }
+
+  private formatPredictionResult(prediction: any) {
+    if (!prediction) return null;
+    return {
+      probability: this.numberFromValue(prediction.probability),
+      probabilityLow:
+        prediction.probabilityLow != null
+          ? this.numberFromValue(prediction.probabilityLow)
+          : undefined,
+      probabilityHigh:
+        prediction.probabilityHigh != null
+          ? this.numberFromValue(prediction.probabilityHigh)
+          : undefined,
+      tier: prediction.tier ?? undefined,
+      confidence: prediction.confidence ?? undefined,
+      confidenceReason: prediction.confidenceReason ?? undefined,
+      cohortKey: prediction.cohortKey ?? undefined,
+      roundContext: prediction.applicationRound ?? undefined,
+      sourceSummary: Array.isArray(prediction.sourceSummary)
+        ? prediction.sourceSummary
+        : undefined,
+      uncertaintyReasons: prediction.uncertaintyReasons ?? undefined,
+      // servedPolicyVersionId omitted — internal policy gate detail
+      source: prediction.source ?? undefined,
+      modelVersion: prediction.modelVersion ?? undefined,
+      updatedAt: prediction.updatedAt,
+      latestOutcomeLabel:
+        prediction.outcomeLabelRecords != null
+          ? this.mapLatestOutcome(prediction.outcomeLabelRecords as any)
+          : undefined,
+    };
+  }
+
+  private formatPredictionSnapshot(snapshot: any) {
+    if (!snapshot) return null;
+    return {
+      probability: this.numberFromValue(snapshot.probability),
+      tier: snapshot.tier ?? undefined,
+      confidence: snapshot.confidence ?? undefined,
+      confidenceReason: snapshot.confidenceReason ?? undefined,
+      cohortKey: snapshot.cohortKey ?? undefined,
+      roundContext: snapshot.applicationRound ?? undefined,
+      sourceSummary: Array.isArray(snapshot.sourceSummary)
+        ? snapshot.sourceSummary
+        : undefined,
+      uncertaintyReasons: snapshot.uncertaintyReasons ?? undefined,
+      servedPolicyVersionId: snapshot.policyVersionId ?? undefined,
+      source: snapshot.source ?? undefined,
+      modelVersion: snapshot.modelVersion ?? undefined,
+      createdAt: snapshot.createdAt,
+    };
   }
 
   async getPredictionHistory(
@@ -56,18 +158,26 @@ export class PredictionToolsService implements IToolHandlerProvider {
     const school = await this.schoolLookup.findSchool(
       args.schoolId,
       args.schoolName,
-      { id: true, name: true, nameZh: true },
     );
     if (!school) {
       return { error: isZh ? '未找到该学校' : 'School not found' };
     }
 
-    const [current, history] = await Promise.all([
+    const [schoolContext, current, history] = await Promise.all([
+      this.prisma.school.findUnique({
+        where: { id: school.id },
+        select: SCHOOL_PREDICTION_CONTEXT_SELECT,
+      }),
       this.prisma.predictionResult.findUnique({
         where: {
           profileId_schoolId: {
             profileId,
             schoolId: school.id,
+          },
+        },
+        include: {
+          outcomeLabelRecords: {
+            orderBy: { createdAt: 'desc' },
           },
         },
       }),
@@ -79,31 +189,11 @@ export class PredictionToolsService implements IToolHandlerProvider {
     ]);
 
     return {
-      school: { id: school.id, name: school.name, nameZh: school.nameZh },
-      current: current
-        ? {
-            probability: Number(current.probability),
-            probabilityLow: current.probabilityLow
-              ? Number(current.probabilityLow)
-              : undefined,
-            probabilityHigh: current.probabilityHigh
-              ? Number(current.probabilityHigh)
-              : undefined,
-            tier: current.tier,
-            confidence: current.confidence,
-            source: current.source,
-            modelVersion: current.modelVersion,
-            updatedAt: current.updatedAt,
-          }
-        : null,
-      history: history.map((s) => ({
-        probability: Number(s.probability),
-        tier: s.tier,
-        confidence: s.confidence,
-        source: s.source,
-        modelVersion: s.modelVersion,
-        createdAt: s.createdAt,
-      })),
+      school: this.formatSchoolContext(schoolContext),
+      current: this.formatPredictionResult(current),
+      history: history
+        .map((snapshot) => this.formatPredictionSnapshot(snapshot))
+        .filter(Boolean),
     };
   }
 
@@ -122,6 +212,11 @@ export class PredictionToolsService implements IToolHandlerProvider {
       where: { profileId },
       take: 100,
       orderBy: { updatedAt: 'desc' },
+      include: {
+        outcomeLabelRecords: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
     });
 
     if (predictions.length === 0) {
@@ -136,7 +231,7 @@ export class PredictionToolsService implements IToolHandlerProvider {
 
     const schools = await this.prisma.school.findMany({
       where: { id: { in: predictions.map((p) => p.schoolId) } },
-      select: { id: true, name: true, nameZh: true, usNewsRank: true },
+      select: SCHOOL_PREDICTION_CONTEXT_SELECT,
     });
     const schoolMap = new Map(schools.map((s) => [s.id, s]));
 
@@ -154,13 +249,8 @@ export class PredictionToolsService implements IToolHandlerProvider {
 
       return {
         schoolId: p.schoolId,
-        school: schoolMap.get(p.schoolId) ?? null,
-        probability: prob,
-        tier,
-        confidence: conf,
-        source: p.source,
-        modelVersion: p.modelVersion,
-        updatedAt: p.updatedAt,
+        school: this.formatSchoolContext(schoolMap.get(p.schoolId)),
+        ...this.formatPredictionResult(p),
       };
     });
 
@@ -206,13 +296,10 @@ export class PredictionToolsService implements IToolHandlerProvider {
         profileId,
         schoolId: { in: items.map((i) => i.schoolId) },
       },
-      select: {
-        schoolId: true,
-        probability: true,
-        tier: true,
-        confidence: true,
-        source: true,
-        updatedAt: true,
+      include: {
+        outcomeLabelRecords: {
+          orderBy: { createdAt: 'desc' },
+        },
       },
     });
     const predMap = new Map(preds.map((p) => [p.schoolId, p]));
@@ -221,19 +308,88 @@ export class PredictionToolsService implements IToolHandlerProvider {
       const pred = predMap.get(item.schoolId);
       return {
         schoolId: item.schoolId,
-        school: item.school,
+        school: {
+          ...item.school,
+          nameZh: item.school.nameZh ?? undefined,
+          usNewsRank: item.school.usNewsRank ?? undefined,
+        },
         tier: item.tier,
         isAIRecommended: item.isAIRecommended,
-        prediction: pred
-          ? {
-              probability: Number(pred.probability),
-              tier: pred.tier,
-              confidence: pred.confidence,
-              source: pred.source,
-              updatedAt: pred.updatedAt,
-            }
-          : null,
+        prediction: this.formatPredictionResult(pred),
       };
     });
+  }
+
+  async getPredictionTraceSummary(
+    userId: string,
+    args: { schoolId?: string; schoolName?: string },
+    locale = 'zh',
+  ) {
+    const isZh = locale === 'zh';
+    const profileId = await this.profileLoader.getProfileId(userId);
+    if (!profileId) {
+      return {
+        error: isZh ? '请先完善档案信息' : 'Please complete your profile first',
+      };
+    }
+
+    const school = await this.schoolLookup.findSchool(
+      args.schoolId,
+      args.schoolName,
+    );
+    if (!school) {
+      return { error: isZh ? '未找到该学校' : 'School not found' };
+    }
+
+    const prediction = await this.prisma.predictionResult.findUnique({
+      where: {
+        profileId_schoolId: {
+          profileId,
+          schoolId: school.id,
+        },
+      },
+      include: {
+        outcomeLabelRecords: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+
+    if (!prediction) {
+      return {
+        error: isZh
+          ? '该学校暂无历史预测，请先重新运行预测'
+          : 'No saved prediction was found for this school. Please run a prediction first.',
+      };
+    }
+
+    return {
+      school: {
+        id: school.id,
+        name: school.name,
+        nameZh: school.nameZh ?? undefined,
+      },
+      current: {
+        probability: Number(prediction.probability),
+        tier: prediction.tier ?? undefined,
+        confidence: prediction.confidence ?? undefined,
+        updatedAt: prediction.updatedAt,
+      },
+      trace: {
+        source: prediction.source ?? undefined,
+        modelVersion: prediction.modelVersion ?? undefined,
+        // servedPolicyVersionId omitted — internal policy gate detail
+        roundContext: prediction.applicationRound ?? undefined,
+        sourceSummary: Array.isArray(prediction.sourceSummary)
+          ? prediction.sourceSummary
+          : undefined,
+        uncertaintyReasons: prediction.uncertaintyReasons ?? undefined,
+        confidenceReason: prediction.confidenceReason ?? undefined,
+        latestOutcomeLabel: this.mapLatestOutcome(
+          prediction.outcomeLabelRecords,
+        ),
+        updatedAt: prediction.updatedAt,
+      },
+    };
   }
 }

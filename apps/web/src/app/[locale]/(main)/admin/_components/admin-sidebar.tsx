@@ -175,6 +175,12 @@ export function AdminSidebar() {
           requiredPermission: 'system:calibration',
         },
         {
+          href: '/admin/application-analysis-workflow',
+          icon: ShieldCheck,
+          label: t('sidebar.applicationAnalysisWorkflow'),
+          requiredPermission: 'system:calibration',
+        },
+        {
           href: '/admin/essays',
           icon: PenTool,
           label: t('sidebar.essays'),

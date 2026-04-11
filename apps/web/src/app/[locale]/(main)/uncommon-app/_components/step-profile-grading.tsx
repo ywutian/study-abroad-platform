@@ -1,6 +1,6 @@
 'use client';
 
-import { User, Sparkles, Brain } from 'lucide-react';
+import { User, Brain } from 'lucide-react';
 import { Link, useRouter } from '@/lib/i18n/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,10 +44,17 @@ export function StepProfileGrading({
           </div>
         ) : profile ? (
           <div className="space-y-6">
-            {/* Profile Score */}
-            <div className="text-center p-6 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5">
-              <div className="text-5xl font-bold text-primary mb-2">{profileScore}</div>
-              <div className="text-sm text-muted-foreground">{t('profileScore')}</div>
+            <div className="rounded-xl border bg-primary/5 p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm font-medium">{t('profileReadiness')}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">{t('profileReadinessHint')}</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-4xl font-semibold text-primary">{profileScore}%</div>
+                  <div className="text-xs text-muted-foreground">{t('profileScore')}</div>
+                </div>
+              </div>
               <Progress value={profileScore} className="mt-3" />
             </div>
 
@@ -72,12 +79,7 @@ export function StepProfileGrading({
             </div>
 
             {/* Grade Profile Button */}
-            <Button
-              className="w-full bg-gradient-to-r from-primary to-violet-600 hover:from-primary/90 hover:to-violet-600/90"
-              size="lg"
-              onClick={onGradeProfile}
-              disabled={isAnalyzing}
-            >
+            <Button className="w-full" size="lg" onClick={onGradeProfile} disabled={isAnalyzing}>
               {isAnalyzing ? (
                 <>
                   <Brain className="h-4 w-4 mr-2 animate-pulse" />
@@ -85,17 +87,11 @@ export function StepProfileGrading({
                 </>
               ) : (
                 <>
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  {t('gradeProfile')}
+                  <Brain className="h-4 w-4 mr-2" />
+                  {t('generateAnalysis')}
                 </>
               )}
             </Button>
-
-            {/* AI Agent label */}
-            <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
-              <Brain className="h-3 w-3" />
-              <span>{t('poweredByAI')}</span>
-            </div>
 
             <Link href="/profile" className="block">
               <Button variant="outline" className="w-full">

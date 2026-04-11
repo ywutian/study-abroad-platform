@@ -669,6 +669,100 @@ All routes prefixed with `/api/v1/`. Health endpoints excluded.
 | POST                | /me/target-schools/:schoolId | Yes  | Add target school                              |
 | DELETE              | /me/target-schools/:schoolId | Yes  | Remove target school                           |
 
+##### Application Analysis Pipeline
+
+`GET /profiles/me/ai-analysis` is the canonical school-aware application analysis flow for web and mobile.
+
+Runtime chain:
+
+1. `ProfileController` delegates directly to `ProfileApplicationAnalysisService`.
+2. The service loads the full profile, `SchoolListItem` records, current prediction snapshots, and historical case-comparison signals.
+3. It selects at most 5 focus schools using this order:
+   - schools with explicit round first
+   - then `REACH` → `TARGET` → `SAFETY`
+   - then most recently updated items
+4. If a focus-school prediction is missing or stale relative to profile or school-list evidence, the service refreshes that prediction before synthesis.
+5. Deterministic fields such as weak state, evidence quality, legacy section scores, and portfolio coverage are computed in code.
+6. School-aware `policyContext` is derived in the backend from school metadata, round context, applicant context, and hard-coded UC `test-blind` guardrails.
+7. If an `ACTIVE` `ApplicationAnalysisPolicyVersion` exists, runtime reads its governance metadata and prefers `APPROVED` `SchoolPolicyEvidence` over derived school-policy rules.
+8. If an `ACTIVE` or request-eligible `CANARY` `ApplicationAnalysisExperimentVersion` exists for `RECOURSE`, `UNCERTAINTY`, or `FAIRNESS`, and the corresponding feature flag passes, runtime enriches the response with additive V3 fields (`recourseGuidance`, `strategyUncertainty`, `fairnessDisclosure`, `meta.experimentalVersions`).
+9. `LLMService.chatSimple()` is used only for synthesis: summary, school-level explanation, phased action plan, and recommendation lists.
+10. Web Profile, web `uncommon-app`, mobile `/profile`, mobile `/profile/analysis`, and the mobile `/prediction` analysis CTA all consume the same structured response.
+
+Guardrails:
+
+- `SchoolListItem` is the single source of target-school truth.
+- Prediction is the single source of probability/tier truth.
+- Historical evidence is contextual support, not a destiny score.
+- The frontend must consume the structured contract and must not parse markdown or free-form text for profile analysis.
+- School testing / aid / round policy must be rendered from `targetSchoolInsights[].policyContext`; clients must not re-derive school policy ad hoc.
+- applicant runtime never consumes `DRAFT / CANDIDATE / SHADOW` application-analysis policies. Only `ACTIVE` is user-visible.
+- applicant runtime never consumes `DRAFT / SHADOW / RETIRED` experiment versions. `CANARY` is only user-visible through feature-flag sampling; `ACTIVE` is globally visible.
+- V3 capability fields are additive only. If a capability is disabled or retired, runtime silently falls back to the V2/V1 response without an extra public error state.
+
+Caching and invalidation:
+
+- Cache key includes `userId`, `locale`, analysis version, `profile.updatedAt`, latest school-list update time, and school count.
+- Active policy changes and approved school-policy evidence reviews invalidate application analysis cache.
+- Profile updates invalidate application analysis cache.
+- School-list add/update/remove also invalidates application analysis cache.
+- Mobile and web consumers reuse the same freshness semantics: cached responses return `status: cached`, fresh synthesis returns `status: fresh`, fallback returns `status: degraded`.
+
+##### Application Analysis Governance Workflow
+
+Internal governance endpoints live under `/admin/application-analysis-workflow`.
+
+Managed entities:
+
+- `SchoolPolicyEvidence`
+- `ApplicationAnalysisPolicyVersion`
+- `ApplicationAnalysisEvaluationRun`
+- `ApplicationAnalysisExperimentVersion`
+- `ApplicationAnalysisExperimentEvaluationRun`
+
+Lifecycle:
+
+1. `DRAFT`
+2. `CANDIDATE`
+3. `SHADOW`
+4. `ACTIVE`
+5. `RETIRED`
+
+Runtime rule:
+
+- If no `ACTIVE` application-analysis policy exists, `/profiles/me/ai-analysis` falls back to built-in `V1` logic instead of failing.
+
+##### Application Analysis Experiment Runtime
+
+Capability-scoped experiment endpoints also live under `/admin/application-analysis-workflow`.
+
+Capabilities:
+
+- `RECOURSE`
+- `UNCERTAINTY`
+- `FAIRNESS`
+
+Experiment lifecycle:
+
+1. `DRAFT`
+2. `SHADOW`
+3. `CANARY`
+4. `ACTIVE`
+5. `RETIRED`
+
+Runtime rules:
+
+- Master switch: `application-analysis-experimental`
+- Capability switches:
+  - `application-analysis-recourse`
+  - `application-analysis-conformal`
+  - `application-analysis-fairness`
+- `CANARY` uses percentage-based feature-flag sampling.
+- `ACTIVE` enables the capability globally.
+- `retire` acts as the kill switch and immediately invalidates applicant caches.
+- `ApplicationAnalysisExperimentScheduler` runs a nightly sweep to refresh `SHADOW / CANARY / ACTIVE` experiment evaluations, auto-promote ready `SHADOW` experiments to `CANARY`, auto-activate mature `CANARY` experiments, and auto-retire regressing `CANARY / ACTIVE` experiments.
+- Admin can also trigger the same orchestration path manually through `POST /admin/application-analysis-workflow/experiments/sweep`.
+
 #### Schools (`/schools`)
 
 | Method | Path          | Auth   | Description               |

@@ -183,6 +183,10 @@ export class TeamService {
   /** Update team; only OWNER or ADMIN. */
   async update(id: string, userId: string, dto: UpdateTeamDto) {
     await this.ensureMemberRole(id, userId, ['OWNER', 'ADMIN']);
+    const before = await this.prisma.team.findUnique({
+      where: { id },
+      select: { maxMembers: true },
+    });
     const team = await this.prisma.team.update({
       where: { id },
       data: {
@@ -199,6 +203,9 @@ export class TeamService {
         _count: { select: { members: true } },
       },
     });
+    if (before?.maxMembers !== team.maxMembers) {
+      await this.invalidateRecruitmentCards(id);
+    }
     return team;
   }
 
@@ -221,6 +228,7 @@ export class TeamService {
     await this.prisma.teamMembership.create({
       data: { teamId, userId, role: 'MEMBER' },
     });
+    await this.invalidateRecruitmentCards(teamId);
     return this.findById(teamId, userId);
   }
 
@@ -256,6 +264,7 @@ export class TeamService {
     await this.prisma.teamMembership.delete({
       where: { teamId_userId: { teamId, userId } },
     });
+    await this.invalidateRecruitmentCards(teamId);
     await this.auditLog.log({
       userId,
       action: AuditAction.TEAM_LEAVE,
@@ -356,6 +365,7 @@ export class TeamService {
         data: { status: 'ACCEPTED' },
       }),
     ]);
+    await this.invalidateRecruitmentCards(inv.teamId);
     await this.auditLog.log({
       userId,
       action: AuditAction.TEAM_ACCEPT_INVITE,
@@ -435,6 +445,7 @@ export class TeamService {
     await this.prisma.teamMembership.delete({
       where: { teamId_userId: { teamId, userId: targetUserId } },
     });
+    await this.invalidateRecruitmentCards(teamId);
     await this.auditLog.log({
       userId,
       action: AuditAction.TEAM_MEMBER_REMOVE,
@@ -463,5 +474,17 @@ export class TeamService {
     if (!m) throw new ForbiddenException('Team not found or access denied');
     if (!roles.includes(m.role))
       throw new ForbiddenException('Insufficient permission');
+  }
+
+  private async invalidateRecruitmentCards(teamId: string) {
+    await this.prisma.teamRecruitmentCard.updateMany({
+      where: {
+        teamId,
+        phase: 'PUBLISHED',
+      },
+      data: {
+        phase: 'DRAFT',
+      },
+    });
   }
 }

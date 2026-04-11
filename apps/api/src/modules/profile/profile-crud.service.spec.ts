@@ -16,6 +16,13 @@ describe('ProfileCrudService', () => {
       update: jest.fn(),
       upsert: jest.fn(),
     },
+    recommendationLetter: {
+      findMany: jest.fn(),
+      create: jest.fn(),
+      findFirst: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    },
   };
 
   const mockRedis = {
@@ -354,6 +361,69 @@ describe('ProfileCrudService', () => {
       const result = service.anonymizeProfile(profile);
 
       expect(result.gpa).toBeNull();
+    });
+  });
+
+  describe('recommendation letters', () => {
+    it('invalidates application-analysis caches after creating a recommendation letter', async () => {
+      const created = {
+        id: 'rec-1',
+        userId: 'user-1',
+        recommenderName: 'Teacher',
+      };
+      mockPrisma.recommendationLetter.create.mockResolvedValue(created);
+
+      const result = await service.createRecommendationLetter('user-1', {
+        recommenderName: 'Teacher',
+      } as any);
+
+      expect(result).toEqual(created);
+      expect(mockCacheInvalidation.onProfileChange).toHaveBeenCalledWith(
+        'user-1',
+      );
+    });
+
+    it('invalidates application-analysis caches after updating a recommendation letter', async () => {
+      mockPrisma.recommendationLetter.findFirst.mockResolvedValue({
+        id: 'rec-1',
+        userId: 'user-1',
+      });
+      mockPrisma.recommendationLetter.update.mockResolvedValue({
+        id: 'rec-1',
+        userId: 'user-1',
+        recommenderName: 'Updated Teacher',
+      });
+
+      const result = await service.updateRecommendationLetter(
+        'user-1',
+        'rec-1',
+        {
+          recommenderName: 'Updated Teacher',
+        } as any,
+      );
+
+      expect(result.recommenderName).toBe('Updated Teacher');
+      expect(mockCacheInvalidation.onProfileChange).toHaveBeenCalledWith(
+        'user-1',
+      );
+    });
+
+    it('invalidates application-analysis caches after deleting a recommendation letter', async () => {
+      mockPrisma.recommendationLetter.findFirst.mockResolvedValue({
+        id: 'rec-1',
+        userId: 'user-1',
+      });
+      mockPrisma.recommendationLetter.delete.mockResolvedValue(undefined);
+
+      const result = await service.deleteRecommendationLetter(
+        'user-1',
+        'rec-1',
+      );
+
+      expect(result).toEqual({ success: true });
+      expect(mockCacheInvalidation.onProfileChange).toHaveBeenCalledWith(
+        'user-1',
+      );
     });
   });
 });

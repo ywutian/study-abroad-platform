@@ -83,6 +83,8 @@ export class AiAgentController {
           data.message,
           data.conversationId,
           data.locale,
+          data.context,
+          data.agentHint,
         )) {
           if (clientDisconnected) {
             this.logger.debug(
@@ -113,6 +115,8 @@ export class AiAgentController {
       data.message,
       data.conversationId,
       data.locale,
+      data.context,
+      data.agentHint,
     );
     res.json(result);
   }
@@ -141,6 +145,8 @@ export class AiAgentController {
       data.message,
       data.conversationId,
       data.locale,
+      data.context,
+      data.agentHint,
     );
   }
 

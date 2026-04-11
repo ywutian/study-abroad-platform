@@ -197,4 +197,110 @@ export class PredictionAiEngine {
       return null;
     }
   }
+
+  /**
+   * Generate explanation text for an already-computed prediction (v5 ML-Primary).
+   * LLM does NOT produce the probability — it only explains why the number is what it is.
+   *
+   * @param probability - Already computed probability
+   * @param baseRate - School base rate used
+   * @param hookShifts - Hook adjustments applied
+   * @param school - School input data
+   * @param locale - Language locale
+   * @returns Factors and suggestions, or null on failure
+   */
+  async generateExplanation(
+    probability: number,
+    baseRate: number,
+    hookShifts: Array<{
+      hookType: string;
+      logOddsShift: number;
+      source: string;
+    }>,
+    school: SchoolInput,
+    locale = 'zh',
+  ): Promise<{ factors: PredictionFactor[]; suggestions: string[] } | null> {
+    try {
+      const hookSummary = hookShifts
+        .filter((h) => Math.abs(h.logOddsShift) > 0.01)
+        .map(
+          (h) =>
+            `${h.hookType}: ${h.logOddsShift > 0 ? '+' : ''}${h.logOddsShift.toFixed(2)} (${h.source})`,
+        )
+        .join('\n');
+
+      const prompt =
+        locale === 'zh'
+          ? `你是资深美国大学招生顾问。以下是基于数据模型计算的录取评估结果，请用专业视角解释。
+
+## 评估结果
+- 学校：${school.name}（录取率 ${(baseRate * 100).toFixed(1)}%）
+- 预估概率：${(probability * 100).toFixed(1)}%
+
+## 调整因素
+${hookSummary || '无特殊调整'}
+
+## 要求
+1. 解释为什么这个概率高于或低于学校平均录取率
+2. 列出 3-5 个关键影响因素（正面+负面）
+3. 给出 2-3 条可操作改进建议
+4. 不要质疑或修改上面的概率数字
+
+只返回 JSON: { "factors": [{"name":"...", "impact":"positive|negative|neutral", "weight":0.3, "detail":"..."}], "suggestions": ["..."] }`
+          : `You are a senior US college admissions consultant. Below is a data-model-computed prediction. Explain it professionally.
+
+## Prediction Result
+- School: ${school.name} (acceptance rate ${(baseRate * 100).toFixed(1)}%)
+- Estimated probability: ${(probability * 100).toFixed(1)}%
+
+## Adjustment Factors
+${hookSummary || 'None'}
+
+## Requirements
+1. Explain why this probability is above or below the school's average
+2. List 3-5 key factors (positive + negative)
+3. Give 2-3 actionable suggestions
+4. Do NOT question or modify the probability number
+
+Return JSON only: { "factors": [{"name":"...", "impact":"positive|negative|neutral", "weight":0.3, "detail":"..."}], "suggestions": ["..."] }`;
+
+      const response = await this.llmService.chatSimpleGuarded(
+        [
+          {
+            role: 'system',
+            content:
+              locale === 'zh'
+                ? '你是资深招生顾问。只返回有效 JSON。不要修改概率数字。'
+                : 'You are a senior admissions consultant. Return valid JSON only. Do NOT modify the probability.',
+          },
+          { role: 'user', content: prompt },
+        ],
+        { temperature: 0, maxTokens: 1500 },
+      );
+
+      const parsed = extractJsonFromLlm<{
+        factors?: Array<{
+          name: string;
+          impact: string;
+          weight: number;
+          detail: string;
+        }>;
+        suggestions?: string[];
+      }>(response);
+
+      return {
+        factors: (parsed?.factors || []).map((f) => ({
+          name: f.name || 'Unknown',
+          impact:
+            (f.impact as 'positive' | 'negative' | 'neutral') || 'neutral',
+          weight: f.weight || 0,
+          detail: f.detail || '',
+        })),
+        suggestions: parsed?.suggestions || [],
+      };
+    } catch (error) {
+      this.logger.warn('Explanation generation failed', error);
+      return null;
+    }
+  }
 }

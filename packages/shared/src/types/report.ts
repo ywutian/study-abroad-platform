@@ -7,6 +7,7 @@ export enum ReportTargetType {
   REVIEW = 'REVIEW',
   POST = 'POST',
   COMMENT = 'COMMENT',
+  RECRUITMENT_CARD = 'RECRUITMENT_CARD',
 }
 
 export enum ReportStatus {

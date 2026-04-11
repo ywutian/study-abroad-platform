@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Button } from '@/components/ui/button';
+import { AgentType } from '@study-abroad/shared';
 import {
   BarChart3,
   TrendingUp,
@@ -13,6 +14,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { getSchoolName, formatAcceptanceRate } from '@/lib/utils';
+import { openFloatingAgentChat } from '@/components/features/agent-chat/floating-chat-bridge';
 import type { PredictionResult, SchoolSearchItem } from './types';
 
 interface AiContextActionsProps {
@@ -20,12 +22,20 @@ interface AiContextActionsProps {
   selectedSchools: SchoolSearchItem[];
 }
 
+type ActionContextMode = 'prediction' | 'selected' | 'auto';
+
 export function AiContextActions({ results, selectedSchools }: AiContextActionsProps) {
   const t = useTranslations();
   const locale = useLocale();
 
   const actions = useMemo(() => {
-    const items: Array<{ id: string; label: string; icon: React.ReactNode; prompt: string }> = [];
+    const items: Array<{
+      id: string;
+      label: string;
+      icon: React.ReactNode;
+      prompt: string;
+      contextMode: ActionContextMode;
+    }> = [];
 
     if (results.length > 0) {
       const resultsText = results
@@ -47,12 +57,14 @@ export function AiContextActions({ results, selectedSchools }: AiContextActionsP
           label: t('prediction.aiActions.analyzeResults'),
           prompt: t('prediction.aiActions.analyzeResultsPrompt', { results: resultsText }),
           icon: <BarChart3 className="h-4 w-4" />,
+          contextMode: 'prediction',
         },
         {
           id: 'improve-chances',
           label: t('prediction.aiActions.improveChances'),
           prompt: t('prediction.aiActions.improveChancesPrompt', { results: resultsShort }),
           icon: <TrendingUp className="h-4 w-4" />,
+          contextMode: 'prediction',
         }
       );
     }
@@ -69,6 +81,7 @@ export function AiContextActions({ results, selectedSchools }: AiContextActionsP
         label: t('prediction.aiActions.analyzeSelectedSchools'),
         prompt: t('prediction.aiActions.analyzeSelectedSchoolsPrompt', { schools: schoolsText }),
         icon: <School className="h-4 w-4" />,
+        contextMode: 'selected',
       });
     }
 
@@ -78,18 +91,21 @@ export function AiContextActions({ results, selectedSchools }: AiContextActionsP
         label: t('prediction.aiActions.recommendSchools'),
         prompt: t('prediction.aiActions.recommendSchoolsPrompt'),
         icon: <Target className="h-4 w-4" />,
+        contextMode: 'auto',
       },
       {
         id: 'application-strategy',
         label: t('prediction.aiActions.applicationStrategy'),
         prompt: t('prediction.aiActions.applicationStrategyPrompt'),
         icon: <Lightbulb className="h-4 w-4" />,
+        contextMode: 'auto',
       },
       {
         id: 'explain-prediction',
         label: t('prediction.aiActions.explainModel'),
         prompt: t('prediction.aiActions.explainModelPrompt'),
         icon: <GraduationCap className="h-4 w-4" />,
+        contextMode: 'auto',
       }
     );
 
@@ -100,12 +116,21 @@ export function AiContextActions({ results, selectedSchools }: AiContextActionsP
     if (results.length === 0) return undefined;
     return {
       type: 'prediction-results' as const,
+      source: 'prediction_page' as const,
       results: results.map((r) => ({
+        schoolId: r.schoolId,
         schoolName: r.schoolName,
         probability: r.probability,
         tier: r.tier,
         confidence: r.confidence,
-        actualResult: r.actualResult,
+        source: r.source,
+        modelVersion: r.modelVersion,
+        roundContext: r.roundContext,
+        cohortKey: r.cohortKey,
+        sourceSummary: r.sourceSummary,
+        uncertaintyReasons: r.uncertaintyReasons,
+        confidenceReason: r.confidenceReason,
+        latestOutcomeLabel: r.latestOutcomeLabel,
         schoolMeta: r.schoolMeta,
       })),
       summary: {
@@ -118,12 +143,48 @@ export function AiContextActions({ results, selectedSchools }: AiContextActionsP
     };
   }, [results]);
 
-  const dispatchAction = (prompt: string) => {
-    window.dispatchEvent(
-      new CustomEvent('ai-assistant-action', {
-        detail: { message: prompt, context: predictionContext },
-      })
+  const selectedSchoolsContext = useMemo(() => {
+    if (selectedSchools.length === 0) return undefined;
+    const predictionBySchoolId = new Map(
+      results.map((result) => [
+        result.schoolId,
+        {
+          probability: result.probability,
+          tier: result.tier,
+          confidence: result.confidence,
+          source: result.source,
+          modelVersion: result.modelVersion,
+        },
+      ])
     );
+
+    return {
+      type: 'selected-schools' as const,
+      source: 'prediction_page' as const,
+      schools: selectedSchools.map((school) => ({
+        id: school.id,
+        name: school.name,
+        nameZh: school.nameZh,
+        usNewsRank: school.usNewsRank,
+        acceptanceRate: school.acceptanceRate ?? undefined,
+        prediction: predictionBySchoolId.get(school.id),
+      })),
+    };
+  }, [results, selectedSchools]);
+
+  const dispatchAction = (prompt: string, contextMode: ActionContextMode) => {
+    const context =
+      contextMode === 'prediction'
+        ? predictionContext
+        : contextMode === 'selected'
+          ? selectedSchoolsContext
+          : (predictionContext ?? selectedSchoolsContext);
+
+    openFloatingAgentChat({
+      message: prompt,
+      context,
+      agentHint: AgentType.SCHOOL,
+    });
   };
 
   return (
@@ -136,13 +197,13 @@ export function AiContextActions({ results, selectedSchools }: AiContextActionsP
         {t('prediction.aiAssistantDescWithResults')}
       </p>
       <div className="flex flex-wrap gap-2">
-        {actions.slice(0, 4).map((action) => (
+        {actions.map((action) => (
           <Button
             key={action.id}
             variant="outline"
             size="sm"
             className="gap-1.5 text-xs"
-            onClick={() => dispatchAction(action.prompt)}
+            onClick={() => dispatchAction(action.prompt, action.contextMode)}
           >
             {action.icon}
             {action.label}

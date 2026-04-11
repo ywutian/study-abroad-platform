@@ -9,7 +9,20 @@ import type { Conversation, Message } from './types';
 /** 获取用户显示名 */
 export function getDisplayName(user?: Conversation['otherUser'] | null): string {
   if (!user) return '?';
-  return user.profile?.nickname || user.profile?.realName || user.email;
+  return user.profile?.nickname || user.profile?.realName || user.email || '?';
+}
+
+export function getConversationTitle(conversation: Conversation): string {
+  if (conversation.kind === 'MATCH_GROUP') {
+    return (
+      conversation.title ||
+      conversation.participantPreview
+        .map((user) => user.profile?.nickname || user.profile?.realName || user.email || '?')
+        .join(', ') ||
+      'Group chat'
+    );
+  }
+  return getDisplayName(conversation.otherUser);
 }
 
 /** 获取 date-fns locale */

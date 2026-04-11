@@ -183,6 +183,7 @@ Important rules:
 - Generate the response directly based on existing tool results
 - If a tool returned an error, inform the user that functionality is temporarily unavailable and answer based on other tool results. Do not fabricate data that the failed tool should have returned
 - The response should be complete, organized, and not omit important information
+- For prediction explanations, only use safe public fields already returned by tools, such as sourceSummary, uncertaintyReasons, confidenceReason, roundContext, and latestOutcomeLabel. Do not invent hidden policy logic, raw traces, or shadow-model conclusions
 - If tool results contain search results (web_search or search_school_website), you **must** cite information from the search results and include source links. Search results are real-time data; use them directly. Do not say "I cannot search" or "I cannot get real-time information"`;
   }
   return `
@@ -196,6 +197,7 @@ Important rules:
 - 直接基于已有的工具结果生成回复
 - 如果某个工具返回了 error 信息，告知用户该功能暂时不可用，并基于其他工具结果尽量回答。不要编造该工具本应返回的数据
 - 回复要完整、有条理，不要遗漏重要信息
+- 涉及预测解释时，只能使用工具已经返回的公开字段，例如 sourceSummary、uncertaintyReasons、confidenceReason、roundContext、latestOutcomeLabel。不要猜测内部 policy 逻辑、raw trace 或 shadow 模型结论
 - 如果工具结果中包含搜索结果（web_search 或 search_school_website），你**必须**引用搜索结果中的信息来回答用户问题，并附上来源链接。搜索结果就是实时数据，直接使用即可，不要说"我无法搜索"或"我无法获取实时信息"`;
 }
 
@@ -1292,6 +1294,7 @@ ${solveOutput.slice(0, 2000)}
     const userInfoLabel =
       locale === 'en' ? '## Current User Info' : '## 当前用户信息';
     const baseContext = this.memory.getContextSummary(conversation.context);
+    const uiContext = this.getUiContextSummary(conversation, locale);
 
     return `${localizedPrompt}
 
@@ -1299,7 +1302,7 @@ ${dateLabel} ${this.getCurrentDateString(locale)}
 
 ${userInfoLabel}
 ${baseContext}
-${memoryContext}${getPlanSystemSuffix(locale)}`;
+${uiContext}${memoryContext}${getPlanSystemSuffix(locale)}`;
   }
 
   /**
@@ -1318,6 +1321,7 @@ ${memoryContext}${getPlanSystemSuffix(locale)}`;
     const userInfoLabel =
       locale === 'en' ? '## Current User Info' : '## 当前用户信息';
     const baseContext = this.memory.getContextSummary(conversation.context);
+    const uiContext = this.getUiContextSummary(conversation, locale);
 
     return `${localizedPrompt}
 
@@ -1325,7 +1329,26 @@ ${dateLabel} ${this.getCurrentDateString(locale)}
 
 ${userInfoLabel}
 ${baseContext}
-${memoryContext}${getSolveSystemSuffix(locale)}`;
+${uiContext}${memoryContext}${getSolveSystemSuffix(locale)}`;
+  }
+
+  private getUiContextSummary(
+    conversation: ConversationState,
+    locale: string,
+  ): string {
+    const summary = conversation.metadata?.lastAgentContextSummary;
+    const hint = conversation.metadata?.lastAgentHint as string | undefined;
+    if (!summary && !hint) return '';
+
+    const header =
+      locale === 'en' ? '\n## Active UI Context' : '\n## 当前界面上下文';
+    const hintLine = hint
+      ? locale === 'en'
+        ? `Routing hint: prefer the ${hint} agent when appropriate.`
+        : `路由提示：合适时优先使用 ${hint} agent。`
+      : '';
+
+    return `${header}\n${hintLine}${hintLine && summary ? '\n' : ''}${summary || ''}`;
   }
 
   /**

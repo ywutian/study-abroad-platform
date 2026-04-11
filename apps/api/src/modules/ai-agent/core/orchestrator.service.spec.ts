@@ -90,6 +90,7 @@ describe('OrchestratorService', () => {
           useValue: {
             getOrCreateConversation: jest.fn(),
             addMessage: jest.fn(),
+            remember: jest.fn().mockResolvedValue(undefined),
             getRetrievalContext: jest.fn(),
             getConversation: jest.fn().mockResolvedValue({
               id: 'conv_1',
@@ -100,6 +101,7 @@ describe('OrchestratorService', () => {
             getStats: jest.fn().mockResolvedValue(null),
             clearConversation: jest.fn().mockResolvedValue(undefined),
             updateConversationTitle: jest.fn().mockResolvedValue(undefined),
+            updateConversationMetadata: jest.fn().mockResolvedValue(undefined),
           },
         },
         {
@@ -221,6 +223,96 @@ describe('OrchestratorService', () => {
   describe('Message Persistence', () => {
     beforeEach(() => {
       setupConversationMocks();
+    });
+
+    it('should persist prediction UI context metadata and memory summary', async () => {
+      fastRouter.getSimpleResponse.mockReturnValue('好的，我来分析这批预测。');
+
+      const context = {
+        type: 'prediction-results' as const,
+        source: 'prediction_page',
+        summary: { total: 2, reach: 1, match: 1, safety: 0 },
+        results: [
+          { schoolName: 'MIT', probability: 0.21, tier: 'reach' as const },
+          { schoolName: 'Stanford', probability: 0.42, tier: 'match' as const },
+        ],
+      };
+
+      await service.handleMessage(
+        'user_1',
+        '帮我分析这批预测',
+        undefined,
+        'zh',
+        context,
+        AgentType.SCHOOL,
+      );
+
+      expect(memoryManager.updateConversationMetadata).toHaveBeenCalledWith(
+        'conv_1',
+        expect.objectContaining({
+          locale: 'zh',
+          lastAgentHint: AgentType.SCHOOL,
+          lastAgentContextSummary: expect.stringContaining('预测页面上下文'),
+          lastAgentContext: expect.objectContaining({
+            type: 'prediction-results',
+            source: 'prediction_page',
+          }),
+        }),
+      );
+      expect(memoryManager.remember).toHaveBeenCalledWith(
+        'user_1',
+        expect.objectContaining({
+          category: 'prediction_ui_context',
+          metadata: expect.objectContaining({
+            contextType: 'prediction-results',
+            agentHint: AgentType.SCHOOL,
+          }),
+        }),
+      );
+    });
+
+    it('should persist selected-schools context metadata for follow-up turns', async () => {
+      fastRouter.getSimpleResponse.mockReturnValue('我来比较这几所学校。');
+
+      const context = {
+        type: 'selected-schools' as const,
+        source: 'profile_school_list',
+        schools: [
+          { id: 'school-1', name: 'MIT', usNewsRank: 2 },
+          { id: 'school-2', name: 'Stanford', usNewsRank: 3 },
+        ],
+      };
+
+      await service.handleMessage(
+        'user_1',
+        '比较我选中的学校',
+        undefined,
+        'zh',
+        context,
+        AgentType.SCHOOL,
+      );
+
+      expect(memoryManager.updateConversationMetadata).toHaveBeenCalledWith(
+        'conv_1',
+        expect.objectContaining({
+          lastAgentHint: AgentType.SCHOOL,
+          lastAgentContextSummary: expect.stringContaining('选校上下文'),
+          lastAgentContext: expect.objectContaining({
+            type: 'selected-schools',
+            source: 'profile_school_list',
+          }),
+        }),
+      );
+      expect(memoryManager.remember).toHaveBeenCalledWith(
+        'user_1',
+        expect.objectContaining({
+          category: 'prediction_ui_context',
+          metadata: expect.objectContaining({
+            contextType: 'selected-schools',
+            agentHint: AgentType.SCHOOL,
+          }),
+        }),
+      );
     });
 
     it('should persist both user and assistant for simple greeting', async () => {

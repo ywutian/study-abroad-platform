@@ -17,9 +17,14 @@ import {
 } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
-import { AdvancedSchoolFilter, SchoolFilters } from '@/components/features';
+import { AdvancedSchoolFilter } from '@/components/features';
+import {
+  applyTuitionPreset,
+  getTuitionPresetValue,
+  type TuitionPresetValue,
+  type SchoolFilters,
+} from '@/components/features/schools/school-filters';
 import { Link } from '@/lib/i18n/navigation';
-import { type Filters } from './schools-types';
 
 const countries = [
   { value: 'ALL', labelKey: 'all' },
@@ -33,6 +38,7 @@ const countries = [
 
 const tuitionRanges = [
   { value: 'ALL', labelKey: 'all' },
+  { value: 'CUSTOM', labelKey: 'custom' },
   { value: '20-30', labelKey: '20k-30k' },
   { value: '30-40', labelKey: '30k-40k' },
   { value: '40-50', labelKey: '40k-50k' },
@@ -46,8 +52,6 @@ interface SchoolFilterBarProps {
   onCountryChange: (value: string) => void;
   sortBy: string;
   onSortByChange: (value: string) => void;
-  filters: Filters;
-  onFiltersChange: (filters: Filters) => void;
   advancedFilters: SchoolFilters;
   onAdvancedFiltersChange: (filters: SchoolFilters) => void;
   onResetAdvancedFilters: () => void;
@@ -65,8 +69,6 @@ export function SchoolFilterBar({
   onCountryChange,
   sortBy,
   onSortByChange,
-  filters,
-  onFiltersChange,
   advancedFilters,
   onAdvancedFiltersChange,
   onResetAdvancedFilters,
@@ -78,6 +80,7 @@ export function SchoolFilterBar({
 }: SchoolFilterBarProps) {
   const t = useTranslations('schools');
   const tc = useTranslations('common');
+  const quickTuitionRange = getTuitionPresetValue(advancedFilters);
 
   return (
     <Card>
@@ -142,31 +145,48 @@ export function SchoolFilterBar({
                 <div className="space-y-2">
                   <Label>{t('schoolType')}</Label>
                   <Select
-                    value={filters.schoolType}
-                    onValueChange={(v) => onFiltersChange({ ...filters, schoolType: v as any })}
+                    value={advancedFilters.schoolType || 'all'}
+                    onValueChange={(value) =>
+                      onAdvancedFiltersChange({
+                        ...advancedFilters,
+                        schoolType: value === 'all' ? undefined : (value as 'public' | 'private'),
+                      })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ALL">{tc('all')}</SelectItem>
-                      <SelectItem value="PUBLIC">{t('public')}</SelectItem>
-                      <SelectItem value="PRIVATE">{t('private')}</SelectItem>
+                      <SelectItem value="all">{tc('all')}</SelectItem>
+                      <SelectItem value="public">{t('public')}</SelectItem>
+                      <SelectItem value="private">{t('private')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>{t('tuitionRange')}</Label>
                   <Select
-                    value={filters.tuitionRange}
-                    onValueChange={(v) => onFiltersChange({ ...filters, tuitionRange: v })}
+                    value={quickTuitionRange}
+                    onValueChange={(value) => {
+                      if (value === 'CUSTOM') return;
+                      onAdvancedFiltersChange(
+                        applyTuitionPreset(
+                          advancedFilters,
+                          value as Exclude<TuitionPresetValue, 'CUSTOM'>
+                        )
+                      );
+                    }}
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {tuitionRanges.map((range) => (
-                        <SelectItem key={range.value} value={range.value}>
+                        <SelectItem
+                          key={range.value}
+                          value={range.value}
+                          disabled={range.value === 'CUSTOM'}
+                        >
                           {t(`tuition.${range.labelKey}`)}
                         </SelectItem>
                       ))}
@@ -177,7 +197,14 @@ export function SchoolFilterBar({
                   variant="ghost"
                   size="sm"
                   className="w-full"
-                  onClick={() => onFiltersChange({ schoolType: 'ALL', tuitionRange: 'ALL' })}
+                  onClick={() =>
+                    onAdvancedFiltersChange({
+                      ...advancedFilters,
+                      schoolType: undefined,
+                      tuitionMin: undefined,
+                      tuitionMax: undefined,
+                    })
+                  }
                 >
                   {t('resetFilters')}
                 </Button>
@@ -187,6 +214,7 @@ export function SchoolFilterBar({
 
           {/* Advanced Filter */}
           <AdvancedSchoolFilter
+            country={country}
             filters={advancedFilters}
             onChange={onAdvancedFiltersChange}
             onReset={onResetAdvancedFilters}

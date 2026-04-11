@@ -36,7 +36,14 @@ import { RedisService } from '../../../common/redis/redis.service';
 import { ConfigValidatorService } from '../config/config-validator.service';
 import { AGENT_CONFIGS } from '../config/agents.config';
 import { TOOLS } from '../config/tools.config';
-import { AgentType, AgentResponse, ConversationState, Message } from '../types';
+import {
+  AgentChatContext,
+  AgentType,
+  AgentResponse,
+  ConversationState,
+  MemoryType,
+  Message,
+} from '../types';
 import { MessageInput } from '../memory/types';
 import { ActionSuggestion } from './types';
 import { StreamEvent } from '@study-abroad/shared';
@@ -129,6 +136,158 @@ export class OrchestratorService {
     return null;
   }
 
+  private sanitizeAgentContext(
+    context?: AgentChatContext,
+  ): AgentChatContext | undefined {
+    if (!context) return undefined;
+
+    if (context.type === 'prediction-results') {
+      return {
+        type: 'prediction-results',
+        source: context.source,
+        createdAt: context.createdAt,
+        summary: context.summary,
+        results: context.results.slice(0, 10).map((result) => ({
+          schoolId: result.schoolId,
+          schoolName: result.schoolName,
+          probability: result.probability,
+          tier: result.tier,
+          confidence: result.confidence,
+          source: result.source,
+          modelVersion: result.modelVersion,
+          cohortKey: result.cohortKey,
+          roundContext: result.roundContext,
+          sourceSummary: result.sourceSummary?.slice(0, 5) || undefined,
+          uncertaintyReasons:
+            result.uncertaintyReasons?.slice(0, 5) || undefined,
+          confidenceReason: result.confidenceReason,
+          latestOutcomeLabel: result.latestOutcomeLabel || undefined,
+          schoolMeta: result.schoolMeta
+            ? {
+                usNewsRank: result.schoolMeta.usNewsRank,
+                acceptanceRate: result.schoolMeta.acceptanceRate,
+                intlAcceptanceRate: result.schoolMeta.intlAcceptanceRate,
+                intlStudentPct: result.schoolMeta.intlStudentPct,
+                needBlindInternational:
+                  result.schoolMeta.needBlindInternational,
+                graduationRate: result.schoolMeta.graduationRate,
+                satAvg: result.schoolMeta.satAvg,
+                sat25: result.schoolMeta.sat25,
+                sat75: result.schoolMeta.sat75,
+              }
+            : undefined,
+        })),
+      };
+    }
+
+    return {
+      type: 'selected-schools',
+      source: context.source,
+      createdAt: context.createdAt,
+      schools: context.schools.slice(0, 10).map((school) => ({
+        id: school.id,
+        name: school.name,
+        nameZh: school.nameZh,
+        usNewsRank: school.usNewsRank,
+        acceptanceRate: school.acceptanceRate,
+        prediction: school.prediction
+          ? {
+              probability: school.prediction.probability,
+              tier: school.prediction.tier,
+              confidence: school.prediction.confidence,
+              source: school.prediction.source,
+              modelVersion: school.prediction.modelVersion,
+              updatedAt: school.prediction.updatedAt,
+            }
+          : undefined,
+      })),
+    };
+  }
+
+  private summarizeAgentContext(
+    context: AgentChatContext,
+    locale: string,
+  ): string {
+    if (context.type === 'prediction-results') {
+      const topSchools = context.results
+        .slice(0, 3)
+        .map((result) => {
+          const pct =
+            typeof result.probability === 'number'
+              ? `${Math.round(result.probability * 100)}%`
+              : locale === 'en'
+                ? 'unknown'
+                : '未知';
+          const tier =
+            result.tier || (locale === 'en' ? 'unknown tier' : '未知分层');
+          return `${result.schoolName} (${pct}, ${tier})`;
+        })
+        .join(', ');
+
+      if (locale === 'en') {
+        return `Prediction page context from ${context.source || 'ui'}: ${context.summary?.total ?? context.results.length} school predictions. Top schools: ${topSchools || 'none'}.`;
+      }
+
+      return `预测页面上下文，来源 ${context.source || 'ui'}：共 ${context.summary?.total ?? context.results.length} 所学校预测。重点学校：${topSchools || '暂无'}。`;
+    }
+
+    const schools = context.schools
+      .slice(0, 5)
+      .map((school) => school.name)
+      .join(', ');
+    if (locale === 'en') {
+      return `Selected schools context from ${context.source || 'ui'}: ${context.schools.length} schools in scope. Schools: ${schools || 'none'}.`;
+    }
+    return `选校上下文，来源 ${context.source || 'ui'}：当前有 ${context.schools.length} 所学校。学校：${schools || '暂无'}。`;
+  }
+
+  private async applyConversationContext(
+    conversation: ConversationState,
+    locale: string,
+    context?: AgentChatContext,
+    agentHint?: AgentType,
+  ): Promise<void> {
+    const previousSummary = conversation.metadata?.lastAgentContextSummary;
+    const nextMetadata = { ...(conversation.metadata || {}), locale };
+
+    if (agentHint) {
+      nextMetadata.lastAgentHint = agentHint;
+    }
+
+    const sanitizedContext = this.sanitizeAgentContext(context);
+    if (sanitizedContext) {
+      const summary = this.summarizeAgentContext(sanitizedContext, locale);
+      nextMetadata.lastAgentContext = sanitizedContext;
+      nextMetadata.lastAgentContextSummary = summary;
+      nextMetadata.lastAgentContextAt = new Date().toISOString();
+
+      if (this.useEnterpriseMemory && summary && summary !== previousSummary) {
+        await this.memoryManager!.remember(conversation.userId, {
+          type: MemoryType.FACT,
+          category: 'prediction_ui_context',
+          content: summary,
+          importance: 0.45,
+          metadata: {
+            source: 'prediction_ui_context',
+            conversationId: conversation.id,
+            transient: true,
+            agentHint,
+            contextType: sanitizedContext.type,
+          },
+        });
+      }
+    }
+
+    conversation.metadata = nextMetadata;
+
+    if (this.useEnterpriseMemory) {
+      await this.memoryManager!.updateConversationMetadata(
+        conversation.id,
+        nextMetadata,
+      );
+    }
+  }
+
   // ==================== 对话级锁 ====================
 
   /** Acquire a per-conversation lock (Redis SET NX, 60s TTL). Returns false if already locked. */
@@ -181,6 +340,8 @@ export class OrchestratorService {
     message: string,
     conversationId?: string,
     locale: string = 'zh',
+    context?: AgentChatContext,
+    agentHint?: AgentType,
   ): Promise<AgentResponse> {
     // Auto-detect language: if user writes in English but locale is 'zh', override
     const detectedLang = this.detectLanguage(message);
@@ -207,7 +368,7 @@ export class OrchestratorService {
             userId,
             conversationId,
           );
-          conv.metadata = { ...conv.metadata, locale };
+          await this.applyConversationContext(conv, locale, context, agentHint);
           await this.addMessage(
             conv,
             createMsg({ role: 'user', content: message }),
@@ -236,7 +397,12 @@ export class OrchestratorService {
             userId,
             conversationId,
           );
-          conversation.metadata = { ...conversation.metadata, locale };
+          await this.applyConversationContext(
+            conversation,
+            locale,
+            context,
+            agentHint,
+          );
           await this.addMessage(
             conversation,
             createMsg({ role: 'user', content: message }),
@@ -297,7 +463,12 @@ export class OrchestratorService {
         userId,
         conversationId,
       );
-      conversation.metadata = { ...conversation.metadata, locale };
+      await this.applyConversationContext(
+        conversation,
+        locale,
+        context,
+        agentHint,
+      );
       await this.addMessage(
         conversation,
         createMsg({ role: 'user', content: message }),
@@ -407,6 +578,10 @@ export class OrchestratorService {
         userId,
         conv.id,
       );
+      conversation.metadata = {
+        ...(conversation.metadata || {}),
+        ...((conv.metadata as Record<string, unknown> | undefined) || {}),
+      };
 
       // Backfill enterprise memory history into in-memory state so the
       // workflow engine's Plan/Solve phases see prior conversation turns.
@@ -572,6 +747,8 @@ export class OrchestratorService {
     message: string,
     conversationId?: string,
     locale: string = 'zh',
+    context?: AgentChatContext,
+    agentHint?: AgentType,
   ): Promise<AgentResponse> {
     this.logger.log(
       `callAgent started: userId=${userId}, agent=${agentType}, conversationId=${conversationId}`,
@@ -581,7 +758,12 @@ export class OrchestratorService {
       userId,
       conversationId,
     );
-    conversation.metadata = { ...conversation.metadata, locale };
+    await this.applyConversationContext(
+      conversation,
+      locale,
+      context,
+      agentHint,
+    );
     await this.addMessage(
       conversation,
       createMsg({ role: 'user', content: message }),
@@ -624,7 +806,21 @@ export class OrchestratorService {
       if (!conversation || conversation.userId !== userId) {
         return [];
       }
-      return this.memoryManager!.getConversationHistory(conversationId);
+      const messages =
+        await this.memoryManager!.getConversationHistory(conversationId);
+      return messages
+        .filter((msg) => msg.role === 'user' || msg.role === 'assistant')
+        .map((msg) => ({
+          id: msg.id,
+          role: msg.role,
+          content: msg.content,
+          agentType: msg.agentType,
+          toolCalls: msg.toolCalls?.map((toolCall) => ({
+            id: toolCall.id,
+            name: toolCall.name,
+          })),
+          createdAt: msg.createdAt,
+        }));
     }
 
     const conversation = await this.memory.getOrCreateConversation(
@@ -634,10 +830,11 @@ export class OrchestratorService {
     return conversation.messages
       .filter((m) => m.role === 'user' || m.role === 'assistant')
       .map((m) => ({
+        id: m.id,
         role: m.role,
         content: m.content,
         agentType: m.agentType,
-        timestamp: m.timestamp,
+        createdAt: m.timestamp,
       }));
   }
 
@@ -704,6 +901,8 @@ export class OrchestratorService {
     message: string,
     conversationId?: string,
     locale: string = 'zh',
+    context?: AgentChatContext,
+    agentHint?: AgentType,
   ): AsyncGenerator<StreamEvent> {
     const detectedLang = this.detectLanguage(message);
     if (detectedLang) locale = detectedLang;
@@ -729,7 +928,7 @@ export class OrchestratorService {
             userId,
             conversationId,
           );
-          conv.metadata = { ...conv.metadata, locale };
+          await this.applyConversationContext(conv, locale, context, agentHint);
           await this.addMessage(
             conv,
             createMsg({ role: 'user', content: message }),
@@ -769,7 +968,12 @@ export class OrchestratorService {
             userId,
             conversationId,
           );
-          conversation.metadata = { ...conversation.metadata, locale };
+          await this.applyConversationContext(
+            conversation,
+            locale,
+            context,
+            agentHint,
+          );
           await this.addMessage(
             conversation,
             createMsg({ role: 'user', content: message }),
@@ -813,7 +1017,7 @@ export class OrchestratorService {
             userId,
             conversationId,
           );
-          conv.metadata = { ...conv.metadata, locale };
+          await this.applyConversationContext(conv, locale, context, agentHint);
           await this.addMessage(
             conv,
             createMsg({ role: 'user', content: message }),
@@ -845,7 +1049,12 @@ export class OrchestratorService {
         userId,
         conversationId,
       );
-      conversation.metadata = { ...conversation.metadata, locale };
+      await this.applyConversationContext(
+        conversation,
+        locale,
+        context,
+        agentHint,
+      );
       await this.addMessage(
         conversation,
         createMsg({ role: 'user', content: message }),

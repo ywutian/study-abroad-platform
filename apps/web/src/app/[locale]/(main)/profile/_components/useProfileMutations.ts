@@ -55,6 +55,11 @@ function getAddErrorMessage(
 export function useProfileMutations() {
   const t = useTranslations();
   const queryClient = useQueryClient();
+  const invalidateAnalysisQueries = () => {
+    queryClient.invalidateQueries({ queryKey: ['profile-ai-analysis'] });
+    queryClient.invalidateQueries({ queryKey: ['prediction'] });
+    queryClient.invalidateQueries({ queryKey: ['predictions'] });
+  };
 
   // Form dialog state
   const [scoreFormOpen, setScoreFormOpen] = useState(false);
@@ -78,7 +83,7 @@ export function useProfileMutations() {
     mutationFn: (data: ProfileUpdatePayload) => apiClient.put(profileRoutes.me(), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
-      queryClient.invalidateQueries({ queryKey: ['predictions'] });
+      invalidateAnalysisQueries();
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       toast.success(t('common.success'));
     },
@@ -88,6 +93,7 @@ export function useProfileMutations() {
     mutationFn: (id: string) => apiClient.delete(profileRoutes.testScore(id)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      invalidateAnalysisQueries();
       toast.success(t('profile.toast.scoreDeleted'));
     },
   });
@@ -96,6 +102,7 @@ export function useProfileMutations() {
     mutationFn: (id: string) => apiClient.delete(profileRoutes.activity(id)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      invalidateAnalysisQueries();
       toast.success(t('profile.toast.activityDeleted'));
     },
   });
@@ -105,6 +112,7 @@ export function useProfileMutations() {
       apiClient.put(`${profileRoutes.activities()}/reorder`, { ids: activityIds }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      invalidateAnalysisQueries();
     },
   });
 
@@ -113,7 +121,7 @@ export function useProfileMutations() {
       apiClient.post(
         `${profileRoutes.activities()}/ai-sort`,
         {},
-        { timeout: AI_TIMEOUTS.AI_REQUEST }
+        { timeout: AI_TIMEOUTS.AI_REQUEST, directApi: true }
       ) as Promise<{
         suggestedOrder: Array<{ activityId: string; rank: number; reasoning: string }>;
         summary: string;
@@ -127,6 +135,7 @@ export function useProfileMutations() {
     mutationFn: (id: string) => apiClient.delete(profileRoutes.award(id)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      invalidateAnalysisQueries();
       toast.success(t('profile.toast.awardDeleted'));
     },
   });
@@ -146,6 +155,7 @@ export function useProfileMutations() {
       apiClient.put(schoolListRoutes.byId(listItemId), { round }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['school-lists'] });
+      invalidateAnalysisQueries();
       toast.success(t('profile.toast.roundUpdated'));
     },
   });
@@ -162,6 +172,7 @@ export function useProfileMutations() {
     }) => apiClient.post(`${profileRoutes.me()}/semester-gpas`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      invalidateAnalysisQueries();
       toast.success(t('profile.semesterGpaAdded'));
     },
   });
@@ -181,6 +192,7 @@ export function useProfileMutations() {
     }) => apiClient.put(`${profileRoutes.me()}/semester-gpas/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      invalidateAnalysisQueries();
       toast.success(t('profile.semesterGpaUpdated'));
     },
   });
@@ -189,6 +201,7 @@ export function useProfileMutations() {
     mutationFn: (id: string) => apiClient.delete(`${profileRoutes.me()}/semester-gpas/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      invalidateAnalysisQueries();
       toast.success(t('profile.semesterGpaDeleted'));
     },
   });
@@ -262,6 +275,7 @@ export function useProfileMutations() {
 
       // Batch invalidation — single refetch after all mutations
       queryClient.invalidateQueries({ queryKey: ['school-lists'] });
+      invalidateAnalysisQueries();
 
       // Summary toast with per-school error details
       if (addedCount > 0 && failedCount === 0) {

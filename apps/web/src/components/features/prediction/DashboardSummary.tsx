@@ -48,15 +48,15 @@ export const DashboardSummary = memo(function DashboardSummary({
           <div className="text-overline text-muted-foreground">
             {t('predictionDashboard.tierDistribution')}
           </div>
-          <div className="flex gap-2 mt-1">
+          <div className="mt-1 flex flex-wrap gap-2">
             <Badge className="bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400">
-              {data.tierDistribution.reach}
+              {t('prediction.tier.reach')} {data.tierDistribution.reach}
             </Badge>
             <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-              {data.tierDistribution.match}
+              {t('prediction.tier.match')} {data.tierDistribution.match}
             </Badge>
             <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-              {data.tierDistribution.safety}
+              {t('prediction.tier.safety')} {data.tierDistribution.safety}
             </Badge>
           </div>
         </Card>
@@ -141,6 +141,12 @@ export const DashboardSummary = memo(function DashboardSummary({
             </>
           )}
         </Card>
+      </div>
+      <div className="mt-3 space-y-1">
+        <p className="text-xs text-muted-foreground">
+          {t('prediction.probabilityVsRateDisclaimer')}
+        </p>
+        <p className="text-xs text-muted-foreground">{t('prediction.tierStrategyDisclaimer')}</p>
       </div>
     </div>
   );

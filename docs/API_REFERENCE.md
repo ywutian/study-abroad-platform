@@ -107,14 +107,53 @@ Rate limits: login 5/min, register 5/min
 
 ## 4. Profile (`/profiles`)
 
-| Method | Path                       | Auth     | Description          |
-| ------ | -------------------------- | -------- | -------------------- |
-| GET    | `/profiles/me`             | Required | Get my profile       |
-| PUT    | `/profiles/me`             | Required | Update my profile    |
-| GET    | `/profiles/:id`            | Required | Get profile by ID    |
-| GET    | `/profiles/me/ai-analysis` | Required | AI profile analysis  |
-| POST   | `/profiles/onboarding`     | Required | Complete onboarding  |
-| GET    | `/profiles/me/grade`       | Required | Get AI profile grade |
+| Method | Path                       | Auth     | Description                    |
+| ------ | -------------------------- | -------- | ------------------------------ |
+| GET    | `/profiles/me`             | Required | Get my profile                 |
+| PUT    | `/profiles/me`             | Required | Update my profile              |
+| GET    | `/profiles/:id`            | Required | Get profile by ID              |
+| GET    | `/profiles/me/ai-analysis` | Required | Canonical application analysis |
+| POST   | `/profiles/onboarding`     | Required | Complete onboarding            |
+| GET    | `/profiles/me/grade`       | Required | Get AI profile grade           |
+
+### `GET /profiles/me/ai-analysis`
+
+Canonical structured application-analysis endpoint for web and mobile clients.
+
+Behavior:
+
+- Reads full profile context, school-list context, prediction snapshots, and historical comparison signals.
+- Uses `SchoolListItem` as the canonical target-school source.
+- May refresh stale predictions for up to 5 focus schools before synthesis when profile or school-list evidence is newer than the stored prediction.
+- Keeps prediction as the single source of probability and school difficulty; the LLM layer synthesizes strategy only.
+- Returns weak states instead of fabricated certainty when target schools, predictions, or core evidence are missing.
+- Canonical consumers are web Profile / `uncommon-app` and mobile `/profile`, `/profile/analysis`, `/prediction` CTA surfaces.
+
+Legacy compatibility:
+
+- `sections`, `overallScore`, `tier`, `suggestions`, and `summary` remain available.
+- `GET /profiles/me/grade` remains a legacy compatibility surface and should not be used for new school-aware analysis flows.
+
+Response shape additions:
+
+- `status`: `fresh | cached | degraded`
+- `meta`: `analysisVersion`, `state`, `dataQuality`, `targetSchoolCount`, `focusSchoolCount`, `schoolsWithPredictions`, `generatedAt`
+- `meta.experimentalVersions[]`: currently enabled applicant-facing experiment summaries for `RECOURSE | UNCERTAINTY | FAIRNESS`
+- `profileContext`: applicant type, testing strategy, major direction, geography/high-school context
+- `portfolioAnalysis`: school-list balance, risk boundaries, missing rounds, missing prediction coverage
+- `targetSchoolInsights[]`: school-specific prediction snapshot, difficulty reasons, compensating strengths, top gaps, next actions, historical signals, hard-stop risks, `policyContext`
+- `targetSchoolInsights[].policyContext`: `testingPolicy`, `intlAidPolicy`, `roundContext`, `policySourceQuality`
+- `targetSchoolInsights[].recourseGuidance`: capability-gated school-aware next moves with `goal`, `recommendedChanges[]`, `estimatedDirection`, `constraints`, `whyNotGuaranteed`
+- `targetSchoolInsights[].strategyUncertainty`: capability-gated strategy interval with `probabilityLow`, `probabilityHigh`, `intervalLabel`, `reasons[]`
+- `fairnessDisclosure`: top-level capability-gated disclosure with `status`, `notes[]`, `appliesTo[]`
+- `actionPlan`: phased actions for `now`, `next90Days`, `beforeSubmission`
+- `recommendedPrograms`: majors, competitions, projects/activities, summer programs, planning notes
+
+Capability-gated runtime behavior:
+
+- V3 additions are additive and optional. They only appear when an `ACTIVE` or request-eligible `CANARY` `ApplicationAnalysisExperimentVersion` exists for that capability and the corresponding feature flag is enabled.
+- `/profiles/me/ai-analysis` remains the only applicant-facing endpoint; V3 does not create a second public API.
+- If a capability is disabled, retired, or missing sufficient runtime evidence, the response silently falls back to V1/V2 fields without rendering placeholder failure text.
 
 ### Test Scores
 
@@ -540,24 +579,49 @@ Reviews, rankings, lists, swipe, verified ranking — 35+ endpoints. Includes:
 
 All admin endpoints require `ADMIN` role.
 
-| Method | Path                          | Description            |
-| ------ | ----------------------------- | ---------------------- |
-| GET    | `/admin/stats`                | Platform statistics    |
-| GET    | `/admin/reports`              | Content reports        |
-| PUT    | `/admin/reports/:id`          | Update report status   |
-| DELETE | `/admin/reports/:id`          | Delete report          |
-| GET    | `/admin/users`                | User management        |
-| PUT    | `/admin/users/:id/role`       | Update user role       |
-| DELETE | `/admin/users/:id`            | Delete user            |
-| GET    | `/admin/audit-logs`           | Audit logs             |
-| GET    | `/admin/school-deadlines`     | List school deadlines  |
-| POST   | `/admin/school-deadlines`     | Create school deadline |
-| PUT    | `/admin/school-deadlines/:id` | Update school deadline |
-| DELETE | `/admin/school-deadlines/:id` | Delete school deadline |
-| GET    | `/admin/global-events`        | List global events     |
-| POST   | `/admin/global-events`        | Create global event    |
-| PUT    | `/admin/global-events/:id`    | Update global event    |
-| DELETE | `/admin/global-events/:id`    | Delete global event    |
+| Method | Path                                                                   | Description                                |
+| ------ | ---------------------------------------------------------------------- | ------------------------------------------ |
+| GET    | `/admin/stats`                                                         | Platform statistics                        |
+| GET    | `/admin/reports`                                                       | Content reports                            |
+| PUT    | `/admin/reports/:id`                                                   | Update report status                       |
+| DELETE | `/admin/reports/:id`                                                   | Delete report                              |
+| GET    | `/admin/users`                                                         | User management                            |
+| PUT    | `/admin/users/:id/role`                                                | Update user role                           |
+| DELETE | `/admin/users/:id`                                                     | Delete user                                |
+| GET    | `/admin/audit-logs`                                                    | Audit logs                                 |
+| GET    | `/admin/school-deadlines`                                              | List school deadlines                      |
+| POST   | `/admin/school-deadlines`                                              | Create school deadline                     |
+| PUT    | `/admin/school-deadlines/:id`                                          | Update school deadline                     |
+| DELETE | `/admin/school-deadlines/:id`                                          | Delete school deadline                     |
+| GET    | `/admin/global-events`                                                 | List global events                         |
+| POST   | `/admin/global-events`                                                 | Create global event                        |
+| PUT    | `/admin/global-events/:id`                                             | Update global event                        |
+| DELETE | `/admin/global-events/:id`                                             | Delete global event                        |
+| GET    | `/admin/application-analysis-workflow/evidence`                        | List school policy evidence                |
+| POST   | `/admin/application-analysis-workflow/evidence`                        | Create school policy evidence              |
+| PATCH  | `/admin/application-analysis-workflow/evidence/:id/review`             | Review school policy evidence              |
+| GET    | `/admin/application-analysis-workflow/policies`                        | List application-analysis policies         |
+| POST   | `/admin/application-analysis-workflow/policies`                        | Create application-analysis policy         |
+| POST   | `/admin/application-analysis-workflow/policies/:id/candidate`          | Freeze candidate                           |
+| POST   | `/admin/application-analysis-workflow/policies/:id/shadow`             | Start shadow                               |
+| POST   | `/admin/application-analysis-workflow/policies/:id/shadow-refresh`     | Refresh shadow evaluation                  |
+| GET    | `/admin/application-analysis-workflow/policies/:id/gates`              | Inspect promotion gates                    |
+| POST   | `/admin/application-analysis-workflow/policies/:id/activate`           | Activate policy                            |
+| POST   | `/admin/application-analysis-workflow/policies/rollback`               | Rollback previous active policy            |
+| GET    | `/admin/application-analysis-workflow/evaluations`                     | List evaluation runs                       |
+| GET    | `/admin/application-analysis-workflow/experiments`                     | List experiment versions                   |
+| POST   | `/admin/application-analysis-workflow/experiments`                     | Create experiment version                  |
+| POST   | `/admin/application-analysis-workflow/experiments/sweep`               | Run automated experiment sweep immediately |
+| POST   | `/admin/application-analysis-workflow/experiments/:id/shadow`          | Promote experiment to shadow               |
+| POST   | `/admin/application-analysis-workflow/experiments/:id/canary`          | Promote experiment to canary               |
+| POST   | `/admin/application-analysis-workflow/experiments/:id/evaluate`        | Run or refresh experiment evaluation       |
+| GET    | `/admin/application-analysis-workflow/experiments/:id/gates`           | Inspect experiment promotion gates         |
+| POST   | `/admin/application-analysis-workflow/experiments/:id/activate`        | Activate experiment capability             |
+| POST   | `/admin/application-analysis-workflow/experiments/:id/retire`          | Retire experiment capability / kill switch |
+| GET    | `/admin/application-analysis-workflow/experiment-evaluations`          | List experiment evaluation runs            |
+| POST   | `/admin/application-analysis-workflow/experiments/recourse-preview`    | Preview recourse / counterfactual guidance |
+| POST   | `/admin/application-analysis-workflow/experiments/uncertainty-preview` | Preview conformal-style uncertainty        |
+| GET    | `/admin/application-analysis-workflow/experiments/fairness-report`     | Preview subgroup fairness readiness        |
 
 ---
 
@@ -592,4 +656,4 @@ Access at: `http://localhost:4101/api/docs`
 
 ---
 
-_Last updated: 2026-02-13_
+_Last updated: 2026-04-10_

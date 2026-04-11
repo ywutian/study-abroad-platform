@@ -8,6 +8,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { SchoolService } from './school.service';
 import { normalizeSchoolName } from '../../common/utils/school-name.util';
 import { normalizePercentRate } from '../../common/utils/percent.util';
+import { DataSource, SchoolDataMerger } from './school-data-merger';
 
 /**
  * College Scorecard API 数据同步服务
@@ -50,6 +51,7 @@ export class SchoolDataService {
     private configService: ConfigService,
     private prisma: PrismaService,
     private schoolService: SchoolService,
+    private merger: SchoolDataMerger,
   ) {
     this.apiKey = this.configService.get<string>('COLLEGE_SCORECARD_API_KEY');
   }
@@ -220,6 +222,11 @@ export class SchoolDataService {
       avgSalary:
         (data['latest.earnings.10_yrs_after_entry.median'] as number) || null,
     };
+    const scorecardMergeData = Object.fromEntries(
+      Object.entries(schoolData).filter(
+        ([key, value]) => value != null && SCORECARD_WRITABLE_FIELDS.has(key),
+      ),
+    );
 
     const nameNorm = normalizeSchoolName(name);
 
@@ -234,29 +241,22 @@ export class SchoolDataService {
       let schoolId: string;
 
       if (existing) {
-        // Only write Scorecard-owned fields that have non-null values.
-        // This prevents overwriting seed-managed fields (usNewsRank, nameZh, etc.)
-        // and avoids wiping existing data with null when Scorecard lacks a value.
-        const nonNullScorecardData = Object.fromEntries(
-          Object.entries(schoolData).filter(
-            ([k, v]) => v != null && SCORECARD_WRITABLE_FIELDS.has(k),
-          ),
-        );
+        const existingMetadata =
+          (existing.metadata as Record<string, unknown>) || {};
         await tx.school.update({
           where: { id: existing.id },
           data: {
-            ...nonNullScorecardData,
-            nameNorm,
             scorecardId,
-            metadata: { scorecardId },
+            metadata: { ...existingMetadata, scorecardId },
           },
         });
         schoolId = existing.id;
       } else {
         const created = await tx.school.create({
           data: {
-            ...schoolData,
+            name,
             nameNorm,
+            country: 'US',
             scorecardId,
             metadata: { scorecardId },
           },
@@ -304,6 +304,15 @@ export class SchoolDataService {
         });
       }
     });
+
+    if (schoolIdOut && Object.keys(scorecardMergeData).length > 0) {
+      await this.merger.merge(
+        schoolIdOut,
+        scorecardMergeData,
+        DataSource.COLLEGE_SCORECARD,
+      );
+    }
+
     return schoolIdOut;
   }
 
