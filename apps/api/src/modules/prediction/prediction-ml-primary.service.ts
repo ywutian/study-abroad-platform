@@ -99,14 +99,7 @@ export class PredictionMlPrimaryService {
    */
   async predictForSchool(
     profileId: string,
-    school: {
-      id: string;
-      name?: string;
-      acceptanceRate?: number;
-      edAcceptanceRate?: number;
-      intlAcceptanceRate?: number;
-      [key: string]: unknown;
-    },
+    school: any, // eslint-disable-line @typescript-eslint/no-explicit-any
     profileInput: ProfileInput,
     schoolInput: SchoolInput,
     profileMetrics: ProfileMetrics,

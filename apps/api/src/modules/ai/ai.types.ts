@@ -79,6 +79,7 @@ export type SchoolRoundContext =
   | 'ED2'
   | 'EA'
   | 'REA'
+  | 'SCEA'
   | 'RD'
   | 'UC'
   | 'UNKNOWN';
