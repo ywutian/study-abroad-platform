@@ -273,7 +273,7 @@ describe('PredictionHookModifiersService', () => {
       expect(legacyShift!.logOddsShift).toBeCloseTo(2.14, 2);
     });
 
-    it('should return legacy secondary shift (+1.10) when legacy at different school', () => {
+    it('should NOT give legacy boost when legacy at different school', () => {
       const profile = makeProfile({
         isLegacy: true,
         legacySchools: ['Yale University'],
@@ -282,9 +282,11 @@ describe('PredictionHookModifiersService', () => {
 
       const shifts = service.computeHookShifts(profile, school);
 
-      const legacyShift = shifts.find((s) => s.hookType === 'LEGACY_SECONDARY');
-      expect(legacyShift).toBeDefined();
-      expect(legacyShift!.logOddsShift).toBeCloseTo(1.1, 2);
+      const legacyShift = shifts.find(
+        (s) =>
+          s.hookType === 'LEGACY_PRIMARY' || s.hookType === 'LEGACY_SECONDARY',
+      );
+      expect(legacyShift).toBeUndefined();
     });
 
     it('should return first-gen shift (+0.4)', () => {

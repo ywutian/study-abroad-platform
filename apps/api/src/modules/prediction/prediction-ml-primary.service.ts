@@ -101,10 +101,10 @@ export class PredictionMlPrimaryService {
     profileId: string,
     school: {
       id: string;
-      name?: string | null;
-      acceptanceRate?: number | null;
-      edAcceptanceRate?: number | null;
-      intlAcceptanceRate?: number | null;
+      name?: string;
+      acceptanceRate?: number;
+      edAcceptanceRate?: number;
+      intlAcceptanceRate?: number;
       [key: string]: unknown;
     },
     profileInput: ProfileInput,

@@ -22,7 +22,7 @@ export type TierType = 'reach' | 'match' | 'safety';
 export type ConfidenceLevel = 'low' | 'medium' | 'high';
 export type SchoolTestingPolicy = 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
 export type SchoolIntlAidPolicy = 'NEED_BLIND' | 'NEED_AWARE' | 'UNKNOWN';
-export type SchoolRoundContext = 'ED' | 'ED2' | 'EA' | 'REA' | 'RD' | 'UC' | 'UNKNOWN';
+export type SchoolRoundContext = 'ED' | 'ED2' | 'EA' | 'REA' | 'SCEA' | 'RD' | 'UC' | 'UNKNOWN';
 export type PolicySourceQuality = 'REVIEWED' | 'DERIVED' | 'UNKNOWN';
 export type PredictionOutcomeLabelStatus =
   | 'SELF_REPORTED'

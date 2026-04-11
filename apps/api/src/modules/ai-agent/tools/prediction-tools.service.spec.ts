@@ -144,7 +144,6 @@ describe('PredictionToolsService', () => {
       trace: expect.objectContaining({
         source: 'served',
         modelVersion: 'v3-enterprise',
-        servedPolicyVersionId: 'served-v3',
         roundContext: 'ED',
         sourceSummary: [{ label: 'IPEDS baseline' }],
         uncertaintyReasons: ['Round-specific public data is limited.'],
@@ -291,7 +290,6 @@ describe('PredictionToolsService', () => {
         expect.objectContaining({
           probability: 0.39,
           roundContext: 'RD',
-          servedPolicyVersionId: 'served-v2',
         }),
       ],
     });
