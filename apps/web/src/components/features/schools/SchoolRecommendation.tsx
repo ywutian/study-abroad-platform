@@ -80,6 +80,7 @@ export function SchoolRecommendation({ className }: SchoolRecommendationProps) {
     queryFn: () =>
       apiClient.get<RecommendationResponse>('/schools/ai/recommend', {
         timeout: AI_TIMEOUTS.AI_REQUEST,
+        directApi: true,
       }),
     staleTime: STALE_TIME.MODERATE,
     gcTime: GC_TIME.SCHOOL_RECOMMENDATION,
@@ -201,6 +202,7 @@ export function SchoolRecommendation({ className }: SchoolRecommendationProps) {
             <div>
               <p className="font-medium text-sm">{t('strategyTitle')}</p>
               <p className="text-sm text-muted-foreground mt-1">{data.summary}</p>
+              <p className="text-xs text-muted-foreground mt-2">{t('strategyDisclaimer')}</p>
             </div>
           </div>
         </div>

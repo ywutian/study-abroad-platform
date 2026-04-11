@@ -59,25 +59,30 @@ export function SchoolHeroHeader({
                 <Badge variant="info">#{school.usNewsRank} US News</Badge>
               )}
               {isLoggedIn && predictionData?.current && (
-                <Badge
-                  variant="outline"
-                  className={cn('gap-1', {
-                    'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30':
-                      predictionData.current.tier === 'safety',
-                    'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30':
-                      predictionData.current.tier === 'match',
-                    'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30':
-                      predictionData.current.tier === 'reach',
-                  })}
-                >
-                  <Target className="h-3 w-3" />
-                  {Math.round(predictionData.current.probability * 100)}%{' '}
-                  {predictionData.current.tier === 'safety'
-                    ? t('school.prediction.safety')
-                    : predictionData.current.tier === 'match'
-                      ? t('school.prediction.match')
-                      : t('school.prediction.reach')}
-                </Badge>
+                <>
+                  <Badge variant="secondary" className="gap-1">
+                    <Target className="h-3 w-3" />
+                    {t('school.prediction.personalEstimate')}{' '}
+                    {Math.round(predictionData.current.probability * 100)}%
+                  </Badge>
+                  <Badge
+                    variant="outline"
+                    className={cn('gap-1', {
+                      'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30':
+                        predictionData.current.tier === 'safety',
+                      'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30':
+                        predictionData.current.tier === 'match',
+                      'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30':
+                        predictionData.current.tier === 'reach',
+                    })}
+                  >
+                    {predictionData.current.tier === 'safety'
+                      ? t('school.prediction.safetyAdvice')
+                      : predictionData.current.tier === 'match'
+                        ? t('school.prediction.matchAdvice')
+                        : t('school.prediction.reachAdvice')}
+                  </Badge>
+                </>
               )}
               {school.testOptional && (
                 <Badge
@@ -120,6 +125,11 @@ export function SchoolHeroHeader({
                 </a>
               )}
             </div>
+            {isLoggedIn && predictionData?.current && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                {t('prediction.probabilityVsRateDisclaimer')}
+              </p>
+            )}
           </div>
         </div>
 

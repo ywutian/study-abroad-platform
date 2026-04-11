@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TeamController } from './team.controller';
 import { TeamService } from './team.service';
+import { TeamRecruitmentService } from './team-recruitment.service';
 
 describe('TeamController', () => {
   let controller: TeamController;
@@ -59,6 +60,23 @@ describe('TeamController', () => {
             transferOwner: jest.fn().mockResolvedValue({ success: true }),
             getMembers: jest.fn().mockResolvedValue([]),
             removeMember: jest.fn().mockResolvedValue({ success: true }),
+          },
+        },
+        {
+          provide: TeamRecruitmentService,
+          useValue: {
+            getRecruitmentContexts: jest.fn().mockResolvedValue([]),
+            getMyRecruitments: jest.fn().mockResolvedValue([]),
+            getDeck: jest.fn().mockResolvedValue([]),
+            create: jest.fn().mockResolvedValue({}),
+            getById: jest.fn().mockResolvedValue({}),
+            update: jest.fn().mockResolvedValue({}),
+            updateMemberProfile: jest.fn().mockResolvedValue({}),
+            publish: jest.fn().mockResolvedValue({}),
+            close: jest.fn().mockResolvedValue({}),
+            swipe: jest.fn().mockResolvedValue({}),
+            getMatches: jest.fn().mockResolvedValue([]),
+            inviteMembers: jest.fn().mockResolvedValue({}),
           },
         },
       ],

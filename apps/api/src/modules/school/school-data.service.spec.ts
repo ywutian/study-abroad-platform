@@ -4,6 +4,7 @@ import { SchoolDataService } from './school-data.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { SchoolService } from './school.service';
+import { DataSource, SchoolDataMerger } from './school-data-merger';
 
 // Mock global fetch
 const mockFetch = jest.fn();
@@ -31,6 +32,12 @@ describe('SchoolDataService', () => {
   const mockSchoolService = {
     invalidateSchoolCache: jest.fn().mockResolvedValue(undefined),
   };
+  const mockSchoolDataMerger = {
+    merge: jest.fn().mockResolvedValue({
+      updatedFields: ['acceptanceRate'],
+      skippedFields: [],
+    }),
+  };
 
   beforeEach(async () => {
     mockConfigService.get.mockReturnValue('test-api-key');
@@ -41,6 +48,7 @@ describe('SchoolDataService', () => {
         { provide: PrismaService, useValue: mockPrisma },
         { provide: ConfigService, useValue: mockConfigService },
         { provide: SchoolService, useValue: mockSchoolService },
+        { provide: SchoolDataMerger, useValue: mockSchoolDataMerger },
       ],
     }).compile();
 
@@ -105,6 +113,17 @@ describe('SchoolDataService', () => {
       expect(result.synced).toBe(1);
       expect(result.errors).toBe(0);
       expect(mockFetch).toHaveBeenCalled();
+      expect(mockSchoolDataMerger.merge).toHaveBeenCalledWith(
+        'school-new',
+        expect.objectContaining({
+          name: 'MIT',
+          state: 'MA',
+          city: 'Cambridge',
+          website: 'https://mit.edu',
+          studentCount: 11500,
+        }),
+        DataSource.COLLEGE_SCORECARD,
+      );
     });
 
     it('should throw when API key is not configured', async () => {
@@ -117,6 +136,7 @@ describe('SchoolDataService', () => {
           { provide: PrismaService, useValue: mockPrisma },
           { provide: ConfigService, useValue: mockConfigService },
           { provide: SchoolService, useValue: mockSchoolService },
+          { provide: SchoolDataMerger, useValue: mockSchoolDataMerger },
         ],
       }).compile();
 
@@ -241,6 +261,7 @@ describe('SchoolDataService', () => {
           { provide: PrismaService, useValue: mockPrisma },
           { provide: ConfigService, useValue: mockConfigService },
           { provide: SchoolService, useValue: mockSchoolService },
+          { provide: SchoolDataMerger, useValue: mockSchoolDataMerger },
         ],
       }).compile();
 

@@ -1,3 +1,9 @@
+import type {
+  ProvenanceRecord,
+  SchoolCommunityRatingSummary,
+  SchoolFieldSources,
+} from '@study-abroad/shared';
+
 export interface SchoolDetail {
   id: string;
   name: string;
@@ -80,8 +86,10 @@ export interface SchoolDetail {
       applicationFee?: number;
     };
     essayPrompts?: Array<{ id: number; prompt: string; year: number }>;
-    provenance?: import('@study-abroad/shared').ProvenanceRecord;
+    provenance?: ProvenanceRecord;
   };
+  fieldSources?: SchoolFieldSources;
+  communityRatingSummary?: SchoolCommunityRatingSummary;
   cases?: Array<{
     id: string;
     year: number;

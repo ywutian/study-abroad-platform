@@ -17,7 +17,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SchoolLogo } from '@/components/features';
-import { IndexGroup, IndexLegend } from '@/components/features/schools/IndexIndicators';
+import {
+  getSchoolCommunityRatingSummary,
+  getSchoolEnrollmentCount,
+  hasVerifiedFieldSource,
+} from '@/components/features/schools/school-display-utils';
 import { FloatingAddButton, SelectedSchool } from '@/components/features/schools/FloatingAddButton';
 import { Link } from '@/lib/i18n/navigation';
 import { RankingBadge } from '@/components/ui/ranking-badge';
@@ -43,6 +47,15 @@ interface SchoolGridProps {
   onRemoveSelected: (id: string) => void;
   onClearSelected: () => void;
   isBatchAdding: boolean;
+}
+
+function CommunityMetric({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-full border border-border/70 bg-background px-2.5 py-1 text-[11px] font-medium">
+      <span className="text-muted-foreground">{label}</span>{' '}
+      <span className="text-foreground">{value.toFixed(1)}</span>
+    </div>
+  );
 }
 
 export function SchoolGrid({
@@ -72,12 +85,16 @@ export function SchoolGrid({
 
   return (
     <>
-      {/* Index Legend */}
-      {hasAuth && <IndexLegend className="mb-0" />}
-
       {/* Results Count */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">{t('resultsCount', { count: total })}</p>
+        <div>
+          <p className="text-sm text-muted-foreground">{t('resultsCount', { count: total })}</p>
+          {schools.length > 0 && total > schools.length ? (
+            <p className="text-xs text-muted-foreground">
+              {t('showingTruncated', { shown: schools.length, total })}
+            </p>
+          ) : null}
+        </div>
         {selectedSchools.length > 0 && (
           <Badge variant="secondary" className="gap-1">
             {t('selectedCount', { count: selectedSchools.length })}
@@ -123,6 +140,20 @@ export function SchoolGrid({
           {schools.map((school, index) => {
             const isSelected = isSchoolSelected(school.id);
             const isAdded = addedSchools.has(school.id);
+            const communityRatingSummary = getSchoolCommunityRatingSummary(school);
+            const enrollmentCount = hasVerifiedFieldSource(
+              school,
+              'totalEnrollment',
+              'studentCount'
+            )
+              ? getSchoolEnrollmentCount(school)
+              : undefined;
+            const verifiedAcceptanceRate = hasVerifiedFieldSource(school, 'acceptanceRate')
+              ? school.acceptanceRate
+              : undefined;
+            const hasSupplementalRanking = Boolean(
+              school.usNewsRank || school.qsRank || school.rankings?.length
+            );
 
             return (
               <motion.div
@@ -163,9 +194,16 @@ export function SchoolGrid({
                         />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
-                            <h3 className="font-semibold text-base leading-tight group-hover:text-primary transition-colors line-clamp-2">
-                              {getSchoolName(school, locale)}
-                            </h3>
+                            <div className="min-w-0">
+                              <h3 className="font-semibold text-base leading-tight group-hover:text-primary transition-colors line-clamp-2">
+                                {getSchoolName(school, locale)}
+                              </h3>
+                              {hasSupplementalRanking && (
+                                <Badge variant="secondary" className="mt-1 text-[10px]">
+                                  {t('supplementalRanking')}
+                                </Badge>
+                              )}
+                            </div>
                             <RankingBadge
                               rankings={school.rankings}
                               usNewsRank={school.usNewsRank}
@@ -214,14 +252,16 @@ export function SchoolGrid({
                           <div
                             className={cn(
                               'font-semibold text-sm',
-                              school.acceptanceRate && school.acceptanceRate < 15
+                              verifiedAcceptanceRate && verifiedAcceptanceRate < 15
                                 ? 'text-rose-500'
-                                : school.acceptanceRate && school.acceptanceRate < 30
+                                : verifiedAcceptanceRate && verifiedAcceptanceRate < 30
                                   ? 'text-amber-500'
                                   : ''
                             )}
                           >
-                            {formatAcceptanceRate(school.acceptanceRate)}
+                            {verifiedAcceptanceRate != null
+                              ? formatAcceptanceRate(verifiedAcceptanceRate)
+                              : tc('notAvailable')}
                           </div>
                         </div>
                         <div className="text-center border-l border-border">
@@ -230,24 +270,53 @@ export function SchoolGrid({
                             {t('students')}
                           </div>
                           <div className="font-semibold text-sm">
-                            {school.studentCount
-                              ? format.number(school.studentCount, 'standard')
-                              : '-'}
+                            {enrollmentCount
+                              ? format.number(enrollmentCount, 'standard')
+                              : tc('notAvailable')}
                           </div>
                         </div>
                       </div>
                     </Link>
 
-                    {/* Add to List Button */}
-                    {hasAuth && (
-                      <div className="mt-3 flex items-center justify-between">
-                        <IndexGroup
-                          safetyGrade={school.nicheSafetyGrade}
-                          lifeGrade={school.nicheLifeGrade}
-                          foodGrade={school.nicheFoodGrade}
-                          className="flex"
-                        />
-                        {isAdded ? (
+                    <div className="mt-3 flex items-center justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        {communityRatingSummary.isPublic ? (
+                          <div className="flex flex-wrap items-center gap-2">
+                            {communityRatingSummary.safetyAvg != null && (
+                              <CommunityMetric
+                                label={t('community.safetyShort')}
+                                value={communityRatingSummary.safetyAvg}
+                              />
+                            )}
+                            {communityRatingSummary.lifeAvg != null && (
+                              <CommunityMetric
+                                label={t('community.lifeShort')}
+                                value={communityRatingSummary.lifeAvg}
+                              />
+                            )}
+                            {communityRatingSummary.foodAvg != null && (
+                              <CommunityMetric
+                                label={t('community.foodShort')}
+                                value={communityRatingSummary.foodAvg}
+                              />
+                            )}
+                            <span className="text-[11px] text-muted-foreground">
+                              {t('community.count', { count: communityRatingSummary.count })}
+                            </span>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-muted-foreground">
+                            {communityRatingSummary.count > 0
+                              ? t('community.pendingCard', {
+                                  count: communityRatingSummary.count,
+                                  minCount: 5,
+                                })
+                              : t('community.noneCard')}
+                          </p>
+                        )}
+                      </div>
+                      {hasAuth ? (
+                        isAdded ? (
                           <Button variant="secondary" size="sm" disabled>
                             <Check className="h-4 w-4 mr-1" />
                             {t('added')}
@@ -272,16 +341,14 @@ export function SchoolGrid({
                               ))}
                             </DropdownMenuContent>
                           </DropdownMenu>
-                        )}
-                      </div>
-                    )}
-
-                    {!hasAuth && (
-                      <div className="mt-3 flex items-center justify-end text-sm text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                        {t('viewDetails')}
-                        <ChevronRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    )}
+                        )
+                      ) : (
+                        <div className="flex items-center text-sm text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                          {t('viewDetails')}
+                          <ChevronRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               </motion.div>

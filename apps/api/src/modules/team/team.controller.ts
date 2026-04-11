@@ -10,19 +10,36 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { TeamService } from './team.service';
+import { TeamRecruitmentService } from './team-recruitment.service';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
 import { InviteDto } from './dto/invite.dto';
 import { JoinByTokenDto } from './dto/join-by-token.dto';
 import { TransferOwnerDto } from './dto/transfer-owner.dto';
 import { TeamQueryDto } from './dto/team-query.dto';
+import {
+  CreateRecruitmentDto,
+  CreateRecruitmentSwipeDto,
+  InviteMatchMembersDto,
+  MatchQueryDto,
+  RecruitmentDeckQueryDto,
+  UpdateRecruitmentDto,
+  UpdateRecruitmentMemberProfileDto,
+} from './dto/recruitment.dto';
 import { Public, CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
+import {
+  ThrottleSensitive,
+  ThrottleRelaxed,
+} from '../../common/decorators/throttle.decorator';
 
 @ApiTags('teams')
 @Controller('teams')
 export class TeamController {
-  constructor(private readonly teamService: TeamService) {}
+  constructor(
+    private readonly teamService: TeamService,
+    private readonly recruitmentService: TeamRecruitmentService,
+  ) {}
 
   @Get()
   @Public()
@@ -56,6 +73,132 @@ export class TeamController {
     @Body() dto: JoinByTokenDto,
   ) {
     return this.teamService.joinByToken(user.id, dto.token);
+  }
+
+  @Get('recruitment-contexts')
+  @Public()
+  @ThrottleRelaxed()
+  @ApiOperation({ summary: 'Get active competition recruitment contexts' })
+  async getRecruitmentContexts() {
+    return this.recruitmentService.getRecruitmentContexts();
+  }
+
+  @Get('recruitments/me')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get my teams with recruitment cards' })
+  async getMyRecruitments(@CurrentUser() user: CurrentUserPayload) {
+    return this.recruitmentService.getMyRecruitments(user.id);
+  }
+
+  @Get('recruitments/deck')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get recruitment swipe deck' })
+  async getRecruitmentDeck(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query() query: RecruitmentDeckQueryDto,
+  ) {
+    return this.recruitmentService.getDeck(user.id, query);
+  }
+
+  @Post('recruitments')
+  @ApiBearerAuth()
+  @ThrottleSensitive()
+  @ApiOperation({ summary: 'Create a competition recruitment card' })
+  async createRecruitment(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: CreateRecruitmentDto,
+  ) {
+    return this.recruitmentService.create(user.id, dto);
+  }
+
+  @Get('recruitments/:id')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get recruitment card detail' })
+  async getRecruitmentById(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.recruitmentService.getById(id, user.id);
+  }
+
+  @Patch('recruitments/:id')
+  @ApiBearerAuth()
+  @ThrottleSensitive()
+  @ApiOperation({ summary: 'Update recruitment card public fields' })
+  async updateRecruitment(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: UpdateRecruitmentDto,
+  ) {
+    return this.recruitmentService.update(id, user.id, dto);
+  }
+
+  @Patch('recruitments/:id/members/me')
+  @ApiBearerAuth()
+  @ThrottleSensitive()
+  @ApiOperation({ summary: 'Update my recruitment card member profile' })
+  async updateRecruitmentMemberProfile(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: UpdateRecruitmentMemberProfileDto,
+  ) {
+    return this.recruitmentService.updateMemberProfile(id, user.id, dto);
+  }
+
+  @Post('recruitments/:id/publish')
+  @ApiBearerAuth()
+  @ThrottleSensitive()
+  @ApiOperation({ summary: 'Publish recruitment card' })
+  async publishRecruitment(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.recruitmentService.publish(id, user.id);
+  }
+
+  @Post('recruitments/:id/close')
+  @ApiBearerAuth()
+  @ThrottleSensitive()
+  @ApiOperation({ summary: 'Close recruitment card' })
+  async closeRecruitment(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.recruitmentService.close(id, user.id);
+  }
+
+  @Post('recruitments/:id/swipes')
+  @ApiBearerAuth()
+  @ThrottleSensitive()
+  @ApiOperation({ summary: 'Create swipe against another recruitment card' })
+  async swipeRecruitment(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: CreateRecruitmentSwipeDto,
+  ) {
+    return this.recruitmentService.swipe(id, user.id, dto);
+  }
+
+  @Get('matches')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get my recruitment matches' })
+  async getMatches(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query() query: MatchQueryDto,
+  ) {
+    return this.recruitmentService.getMatches(user.id, query);
+  }
+
+  @Post('matches/:id/invite-members')
+  @ApiBearerAuth()
+  @ThrottleSensitive()
+  @ApiOperation({ summary: 'Invite matched members to my team' })
+  async inviteMatchMembers(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: InviteMatchMembersDto,
+  ) {
+    return this.recruitmentService.inviteMembers(id, user.id, dto);
   }
 
   @Get(':id')

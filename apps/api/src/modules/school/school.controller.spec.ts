@@ -14,6 +14,7 @@ import { SchoolListService } from '../school-list/school-list.service';
 import { UrbanInstituteDataService } from './urban-institute-data.service';
 import { BigFutureScrapeService } from './scrapers/bigfuture.scraper';
 import { AppilyScrapeService } from './scrapers/appily.scraper';
+import { SchoolCommunityRatingService } from './school-community-rating.service';
 
 describe('SchoolController', () => {
   let controller: SchoolController;
@@ -140,6 +141,11 @@ describe('SchoolController', () => {
           provide: PrismaService,
           useValue: {
             profile: { findFirst: jest.fn().mockResolvedValue(null) },
+            school: {
+              findUnique: jest.fn().mockResolvedValue({
+                metadata: {},
+              }),
+            },
             predictionResult: {
               findUnique: jest.fn().mockResolvedValue(null),
               upsert: jest.fn(),
@@ -201,6 +207,34 @@ describe('SchoolController', () => {
               failed: 0,
               skipped: 0,
             }),
+          },
+        },
+        {
+          provide: SchoolCommunityRatingService,
+          useValue: {
+            getSummary: jest.fn().mockResolvedValue({
+              count: 0,
+              safetyAvg: null,
+              lifeAvg: null,
+              foodAvg: null,
+              isPublic: false,
+            }),
+            getMyRating: jest.fn().mockResolvedValue(null),
+            upsertMyRating: jest.fn(),
+            getAdminRatings: jest.fn().mockResolvedValue({
+              summary: {
+                count: 0,
+                safetyAvg: null,
+                lifeAvg: null,
+                foodAvg: null,
+                isPublic: false,
+              },
+              totalCount: 0,
+              hiddenCount: 0,
+              ratings: [],
+            }),
+            hideRating: jest.fn(),
+            restoreRating: jest.fn(),
           },
         },
       ],
@@ -277,7 +311,19 @@ describe('SchoolController', () => {
 
       const result = await controller.create(dto);
 
-      expect(schoolService.create).toHaveBeenCalledWith(dto);
+      expect(schoolService.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'MIT',
+          country: 'US',
+          metadata: expect.objectContaining({
+            provenance: expect.objectContaining({
+              name: expect.objectContaining({
+                source: 'MANUAL_ADMIN',
+              }),
+            }),
+          }),
+        }),
+      );
       expect(result).toEqual(mockSchool);
     });
   });
@@ -288,7 +334,19 @@ describe('SchoolController', () => {
 
       const result = await controller.update('school-1', dto, mockUser as any);
 
-      expect(schoolService.update).toHaveBeenCalledWith('school-1', dto);
+      expect(schoolService.update).toHaveBeenCalledWith(
+        'school-1',
+        expect.objectContaining({
+          name: 'MIT Updated',
+          metadata: expect.objectContaining({
+            provenance: expect.objectContaining({
+              name: expect.objectContaining({
+                source: 'MANUAL_ADMIN',
+              }),
+            }),
+          }),
+        }),
+      );
       expect(result).toEqual(mockSchool);
     });
   });

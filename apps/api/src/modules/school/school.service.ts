@@ -3,6 +3,11 @@ import {
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
+import type {
+  FieldProvenance,
+  SchoolCommunityRatingSummary,
+  SchoolFieldSources,
+} from '@study-abroad/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
 import { School, Prisma } from '@prisma/client';
@@ -14,6 +19,8 @@ import {
 import { normalizeSchoolName } from '../../common/utils/school-name.util';
 import { clampPercentRate } from '../../common/utils/percent.util';
 import { createHash } from 'crypto';
+import { SchoolCommunityRatingService } from './school-community-rating.service';
+import { VERIFIED_SCHOOL_DATA_SOURCES } from './school-data-merger';
 
 // Cache TTL in seconds
 const CACHE_TTL = {
@@ -34,6 +41,39 @@ const UC_SCHOOL_NAMES = [
   'University of California, Riverside',
   'University of California, Merced',
 ];
+
+type SchoolWithPresentation<T> = T & {
+  fieldSources: SchoolFieldSources;
+  communityRatingSummary: SchoolCommunityRatingSummary;
+};
+
+type SchoolWithAliases = Pick<School, 'name' | 'nameZh' | 'usNewsRank'> & {
+  aliases?: string[];
+};
+
+function toRecord(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return {};
+  }
+  return value as Record<string, unknown>;
+}
+
+function parseProvenance(metadata: unknown): Record<string, FieldProvenance> {
+  const raw = toRecord(toRecord(metadata).provenance);
+  const provenance: Record<string, FieldProvenance> = {};
+
+  for (const [field, value] of Object.entries(raw)) {
+    const entry = toRecord(value);
+    if (typeof entry.source === 'string' && typeof entry.at === 'string') {
+      provenance[field] = {
+        source: entry.source,
+        at: entry.at,
+      };
+    }
+  }
+
+  return provenance;
+}
 
 /**
  * 高级学校筛选接口
@@ -114,12 +154,20 @@ export class SchoolService {
   constructor(
     private prisma: PrismaService,
     private redis: RedisService,
+    private schoolCommunityRatingService: SchoolCommunityRatingService,
   ) {}
 
   async findAll(
     pagination: PaginationDto,
     filters?: SchoolFilters,
-  ): Promise<PaginatedResponseDto<School>> {
+  ): Promise<
+    PaginatedResponseDto<
+      School & {
+        fieldSources: SchoolFieldSources;
+        communityRatingSummary: SchoolCommunityRatingSummary;
+      }
+    >
+  > {
     const { page = 1, pageSize = 20 } = pagination;
     const skip = (page - 1) * pageSize;
     const isSearch = !!filters?.search;
@@ -127,8 +175,14 @@ export class SchoolService {
     // Cache non-search queries (search queries are too variable for caching)
     if (!isSearch) {
       const cacheKey = this.buildListCacheKey(pagination, filters);
-      const cached =
-        await this.redis.getJSON<PaginatedResponseDto<School>>(cacheKey);
+      const cached = await this.redis.getJSON<
+        PaginatedResponseDto<
+          School & {
+            fieldSources: SchoolFieldSources;
+            communityRatingSummary: SchoolCommunityRatingSummary;
+          }
+        >
+      >(cacheKey);
       if (cached) return cached;
     }
 
@@ -161,7 +215,17 @@ export class SchoolService {
       where.state = filters.state;
     }
 
-    if (filters?.region && REGION_TO_STATES[filters.region]) {
+    const allowsUsRegionFilter =
+      !filters?.country ||
+      filters.country === 'US' ||
+      filters.country === 'USA';
+
+    if (
+      !filters?.state &&
+      allowsUsRegionFilter &&
+      filters?.region &&
+      REGION_TO_STATES[filters.region]
+    ) {
       where.state = { in: REGION_TO_STATES[filters.region] };
     }
 
@@ -245,30 +309,26 @@ export class SchoolService {
       this.prisma.school.count({ where }),
     ]);
 
-    // Clamp acceptanceRate/graduationRate to 0–100 for display (fixes e.g. 2470% from double conversion)
-    const clampRates = <
-      T extends { acceptanceRate?: unknown; graduationRate?: unknown },
-    >(
-      s: T,
-    ): T => ({
-      ...s,
-      acceptanceRate: clampPercentRate(s.acceptanceRate) ?? s.acceptanceRate,
-      graduationRate: clampPercentRate(s.graduationRate) ?? s.graduationRate,
-    });
+    const communitySummaries =
+      await this.schoolCommunityRatingService.getSummariesForSchools(
+        schools.map((school) => school.id),
+      );
+
+    const enrichedSchools = schools.map((school) =>
+      this.enrichSchool(
+        school,
+        communitySummaries[school.id] ?? this.createEmptyCommunitySummary(),
+      ),
+    );
 
     if (isSearch) {
       const searchTerm = filters.search!.trim();
-      const sorted = this.sortByRelevance(schools, searchTerm);
-      return createPaginatedResponse(
-        sorted.map(clampRates),
-        total,
-        page,
-        pageSize,
-      );
+      const sorted = this.sortByRelevance(enrichedSchools, searchTerm);
+      return createPaginatedResponse(sorted, total, page, pageSize);
     }
 
     const result = createPaginatedResponse(
-      schools.map(clampRates),
+      enrichedSchools,
       total,
       page,
       pageSize,
@@ -284,15 +344,14 @@ export class SchoolService {
   async findById(id: string) {
     // Try cache first
     const cacheKey = `school:detail:${id}`;
-    const cached = await this.redis.getJSON<School>(cacheKey);
+    const cached = await this.redis.getJSON<
+      School & {
+        fieldSources: SchoolFieldSources;
+        communityRatingSummary: SchoolCommunityRatingSummary;
+      }
+    >(cacheKey);
     if (cached) {
-      return {
-        ...cached,
-        acceptanceRate:
-          clampPercentRate(cached.acceptanceRate) ?? cached.acceptanceRate,
-        graduationRate:
-          clampPercentRate(cached.graduationRate) ?? cached.graduationRate,
-      };
+      return cached;
     }
 
     const school = await this.prisma.school.findUnique({
@@ -355,18 +414,14 @@ export class SchoolService {
       throw new NotFoundException('School not found');
     }
 
-    // Cache the result
-    await this.redis.setJSON(cacheKey, school, CACHE_TTL.SCHOOL_DETAIL);
+    const communityRatingSummary =
+      await this.schoolCommunityRatingService.getSummary(id);
+    const enriched = this.enrichSchool(school, communityRatingSummary);
 
-    // Clamp rates to 0–100 for display (fixes e.g. 2470% from double conversion)
-    const clamped = {
-      ...school,
-      acceptanceRate:
-        clampPercentRate(school.acceptanceRate) ?? school.acceptanceRate,
-      graduationRate:
-        clampPercentRate(school.graduationRate) ?? school.graduationRate,
-    };
-    return clamped;
+    // Cache the result
+    await this.redis.setJSON(cacheKey, enriched, CACHE_TTL.SCHOOL_DETAIL);
+
+    return enriched;
   }
 
   /**
@@ -413,9 +468,15 @@ export class SchoolService {
   }
 
   async update(id: string, data: Prisma.SchoolUpdateInput): Promise<School> {
+    const nextData = { ...data };
+
+    if (typeof nextData.name === 'string') {
+      nextData.nameNorm = normalizeSchoolName(nextData.name);
+    }
+
     return this.prisma.school.update({
       where: { id },
-      data,
+      data: nextData,
     });
   }
 
@@ -428,7 +489,10 @@ export class SchoolService {
    * - name/nameZh 包含搜索词: 60 分
    * - 排名加权: Top 20 +10 分, Top 50 +5 分
    */
-  private sortByRelevance(schools: School[], searchTerm: string): School[] {
+  private sortByRelevance<T extends SchoolWithAliases>(
+    schools: T[],
+    searchTerm: string,
+  ): T[] {
     const scored = schools.map((school) => ({
       school,
       score: this.calculateRelevanceScore(school, searchTerm),
@@ -446,7 +510,10 @@ export class SchoolService {
     return scored.map((s) => s.school);
   }
 
-  private calculateRelevanceScore(school: School, searchTerm: string): number {
+  private calculateRelevanceScore(
+    school: SchoolWithAliases,
+    searchTerm: string,
+  ): number {
     let score = 0;
     const lowerSearch = searchTerm.toLowerCase();
     const _upperSearch = searchTerm.toUpperCase();
@@ -488,6 +555,65 @@ export class SchoolService {
     }
 
     return score;
+  }
+
+  private createEmptyCommunitySummary(): SchoolCommunityRatingSummary {
+    return {
+      count: 0,
+      safetyAvg: null,
+      lifeAvg: null,
+      foodAvg: null,
+      isPublic: false,
+    };
+  }
+
+  private buildFieldSources(metadata: unknown): SchoolFieldSources {
+    const provenance = parseProvenance(metadata);
+
+    return Object.fromEntries(
+      Object.entries(provenance).map(([field, entry]) => [
+        field,
+        {
+          tier: VERIFIED_SCHOOL_DATA_SOURCES.has(entry.source as any)
+            ? 'verified'
+            : 'supplemental',
+          source: entry.source,
+          updatedAt: entry.at,
+        },
+      ]),
+    );
+  }
+
+  private enrichSchool<T extends Record<string, any>>(
+    school: T,
+    communityRatingSummary: SchoolCommunityRatingSummary,
+  ): SchoolWithPresentation<T> {
+    const fieldSources = this.buildFieldSources(school.metadata);
+    const nextSchool = {
+      ...school,
+      acceptanceRate:
+        clampPercentRate(school.acceptanceRate) ?? school.acceptanceRate,
+      graduationRate:
+        clampPercentRate(school.graduationRate) ?? school.graduationRate,
+      fieldSources,
+      communityRatingSummary,
+    } as SchoolWithPresentation<T>;
+    const sanitizedSchool = {
+      ...nextSchool,
+    } as Record<string, unknown>;
+
+    for (const field of [
+      'nicheSafetyGrade',
+      'nicheLifeGrade',
+      'nicheFoodGrade',
+      'nicheOverallGrade',
+    ] as const) {
+      if (!fieldSources[field]) {
+        sanitizedSchool[field] = null;
+      }
+    }
+
+    return sanitizedSchool as SchoolWithPresentation<T>;
   }
 
   // For calculating custom rankings

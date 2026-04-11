@@ -19,7 +19,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { PaginationControls } from '../../_components/pagination-controls';
 import { SchoolLogo } from '@/components/features';
 import { getSchoolName, getSchoolSubName, formatAcceptanceRate } from '@/lib/utils';
-import { GraduationCap, Search, Pencil } from 'lucide-react';
+import { GraduationCap, Search, Pencil, MessageSquare } from 'lucide-react';
 
 interface School {
   id: string;
@@ -54,6 +54,10 @@ interface School {
     essayCount?: number;
     requirements?: { toeflMin?: number; ieltsMin?: number };
   };
+  communityRatingSummary?: {
+    count: number;
+    isPublic: boolean;
+  };
 }
 
 interface SchoolsListProps {
@@ -67,6 +71,7 @@ interface SchoolsListProps {
   onSearchChange: (search: string) => void;
   onPageChange: (page: number) => void;
   onEdit: (school: School) => void;
+  onViewCommunity: (school: School) => void;
 }
 
 export function SchoolsList({
@@ -80,6 +85,7 @@ export function SchoolsList({
   onSearchChange,
   onPageChange,
   onEdit,
+  onViewCommunity,
 }: SchoolsListProps) {
   const t = useTranslations('admin');
   const locale = useLocale();
@@ -114,6 +120,7 @@ export function SchoolsList({
                     <TableHead>{t('data.applicationType')}</TableHead>
                     <TableHead>{t('data.deadline')}</TableHead>
                     <TableHead>{t('data.acceptanceRate')}</TableHead>
+                    <TableHead>{t('schools.community.column')}</TableHead>
                     <TableHead className="w-[80px]">{t('data.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -181,11 +188,26 @@ export function SchoolsList({
                           variant="ghost"
                           size="sm"
                           className="gap-1"
-                          onClick={() => onEdit(school)}
+                          onClick={() => onViewCommunity(school)}
                         >
-                          <Pencil className="h-3.5 w-3.5" />
-                          {t('common.edit')}
+                          <MessageSquare className="h-3.5 w-3.5" />
+                          {t('schools.community.count', {
+                            count: school.communityRatingSummary?.count ?? 0,
+                          })}
                         </Button>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col items-start gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="gap-1"
+                            onClick={() => onEdit(school)}
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                            {t('common.edit')}
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

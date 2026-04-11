@@ -20,15 +20,21 @@ export enum DataSource {
 }
 
 const SOURCE_PRIORITY: Record<DataSource, number> = {
-  [DataSource.MANUAL_ADMIN]: 1,
-  [DataSource.SEED]: 2,
-  [DataSource.COLLEGE_SCORECARD]: 3,
-  [DataSource.URBAN_INSTITUTE]: 4,
-  [DataSource.BIGFUTURE]: 5,
-  [DataSource.APPILY]: 6,
-  [DataSource.IPEDS]: 7,
+  [DataSource.COLLEGE_SCORECARD]: 1,
+  [DataSource.URBAN_INSTITUTE]: 2,
+  [DataSource.IPEDS]: 3,
+  [DataSource.MANUAL_ADMIN]: 4,
+  [DataSource.SEED]: 5,
+  [DataSource.BIGFUTURE]: 6,
+  [DataSource.APPILY]: 7,
   [DataSource.SCRAPER]: 8,
 };
+
+export const VERIFIED_SCHOOL_DATA_SOURCES = new Set<DataSource>([
+  DataSource.COLLEGE_SCORECARD,
+  DataSource.URBAN_INSTITUTE,
+  DataSource.IPEDS,
+]);
 
 /**
  * 单个字段的来源记录
@@ -46,7 +52,7 @@ export type ProvenanceRecord = Record<string, FieldProvenance>;
 /**
  * 可合并的学校数据字段
  */
-const MERGEABLE_FIELDS = [
+export const MERGEABLE_FIELDS = [
   'name',
   'nameZh',
   'state',
@@ -98,7 +104,11 @@ const MERGEABLE_FIELDS = [
   'studentOrgsCount',
 ] as const;
 
-type MergeableField = (typeof MERGEABLE_FIELDS)[number];
+export type MergeableField = (typeof MERGEABLE_FIELDS)[number];
+
+export function isMergeableSchoolField(field: string): field is MergeableField {
+  return (MERGEABLE_FIELDS as readonly string[]).includes(field);
+}
 
 /** 1 year in ms — stale threshold for allowing lower-priority source to override */
 const STALE_THRESHOLD_MS = 365 * 24 * 60 * 60 * 1000;

@@ -39,41 +39,12 @@ import {
 } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
+import { SCHOOL_FILTER_DEFAULTS, type SchoolFilters } from './school-filters';
 
-export interface SchoolFilters {
-  // 基础筛选
-  country?: string;
-  state?: string;
-
-  // 排名范围
-  rankMin?: number;
-  rankMax?: number;
-
-  // 录取率范围
-  acceptanceMin?: number;
-  acceptanceMax?: number;
-
-  // 学费范围 (单位: 万美元)
-  tuitionMin?: number;
-  tuitionMax?: number;
-
-  // 学校规模
-  sizeMin?: number;
-  sizeMax?: number;
-
-  // 特殊条件
-  testOptional?: boolean;
-  needBlind?: boolean;
-  hasEarlyDecision?: boolean;
-
-  // 学校类型
-  schoolType?: 'public' | 'private' | 'all';
-
-  // 地区偏好
-  region?: string;
-}
+export type { SchoolFilters } from './school-filters';
 
 interface AdvancedSchoolFilterProps {
+  country: string;
   filters: SchoolFilters;
   onChange: (filters: SchoolFilters) => void;
   onReset: () => void;
@@ -81,20 +52,21 @@ interface AdvancedSchoolFilterProps {
 }
 
 const US_STATES = [
-  { value: 'all', label: 'All States' },
-  { value: 'CA', label: 'California' },
-  { value: 'NY', label: 'New York' },
-  { value: 'MA', label: 'Massachusetts' },
-  { value: 'TX', label: 'Texas' },
-  { value: 'PA', label: 'Pennsylvania' },
-  { value: 'IL', label: 'Illinois' },
-  { value: 'FL', label: 'Florida' },
-  { value: 'NC', label: 'North Carolina' },
-  { value: 'GA', label: 'Georgia' },
-  { value: 'OH', label: 'Ohio' },
+  { value: 'all', labelKey: 'all' },
+  { value: 'CA', labelKey: 'CA' },
+  { value: 'NY', labelKey: 'NY' },
+  { value: 'MA', labelKey: 'MA' },
+  { value: 'TX', labelKey: 'TX' },
+  { value: 'PA', labelKey: 'PA' },
+  { value: 'IL', labelKey: 'IL' },
+  { value: 'FL', labelKey: 'FL' },
+  { value: 'NC', labelKey: 'NC' },
+  { value: 'GA', labelKey: 'GA' },
+  { value: 'OH', labelKey: 'OH' },
 ];
 
 export function AdvancedSchoolFilter({
+  country,
   filters,
   onChange,
   onReset,
@@ -113,14 +85,6 @@ export function AdvancedSchoolFilter({
     { value: 'west', label: t('regions.west') },
   ];
 
-  const COUNTRIES = [
-    { value: 'all', label: t('countries.all') },
-    { value: 'US', label: t('countries.us') },
-    { value: 'UK', label: t('countries.uk') },
-    { value: 'CA', label: t('countries.ca') },
-    { value: 'AU', label: t('countries.au') },
-  ];
-
   const toggleSection = (section: string) => {
     setExpandedSections((prev) =>
       prev.includes(section) ? prev.filter((s) => s !== section) : [...prev, section]
@@ -129,6 +93,21 @@ export function AdvancedSchoolFilter({
 
   const updateFilter = <K extends keyof SchoolFilters>(key: K, value: SchoolFilters[K]) => {
     onChange({ ...filters, [key]: value });
+  };
+
+  const updateRange = <MinKey extends keyof SchoolFilters, MaxKey extends keyof SchoolFilters>(
+    minKey: MinKey,
+    maxKey: MaxKey,
+    min: number,
+    max: number,
+    defaultMin: number,
+    defaultMax: number
+  ) => {
+    onChange({
+      ...filters,
+      [minKey]: min === defaultMin ? undefined : min,
+      [maxKey]: max === defaultMax ? undefined : max,
+    });
   };
 
   return (
@@ -155,74 +134,66 @@ export function AdvancedSchoolFilter({
         </SheetHeader>
 
         <div className="mt-6 space-y-4">
-          {/* 地理位置 */}
-          <FilterSection
-            title={t('sections.location')}
-            icon={MapPin}
-            expanded={expandedSections.includes('location')}
-            onToggle={() => toggleSection('location')}
-          >
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-sm">{t('labels.country')}</Label>
-                <Select
-                  value={filters.country || 'all'}
-                  onValueChange={(v) => updateFilter('country', v === 'all' ? undefined : v)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('placeholders.selectCountry')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {COUNTRIES.map((c) => (
-                      <SelectItem key={c.value} value={c.value}>
-                        {c.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {filters.country === 'US' && (
+          {country === 'US' && (
+            <FilterSection
+              title={t('sections.location')}
+              icon={MapPin}
+              expanded={expandedSections.includes('location')}
+              onToggle={() => toggleSection('location')}
+            >
+              <div className="space-y-4">
                 <div className="space-y-2">
                   <Label className="text-sm">{t('labels.state')}</Label>
                   <Select
                     value={filters.state || 'all'}
-                    onValueChange={(v) => updateFilter('state', v === 'all' ? undefined : v)}
+                    onValueChange={(value) =>
+                      onChange({
+                        ...filters,
+                        state: value === 'all' ? undefined : value,
+                        region: undefined,
+                      })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder={t('placeholders.selectState')} />
                     </SelectTrigger>
                     <SelectContent>
-                      {US_STATES.map((s) => (
-                        <SelectItem key={s.value} value={s.value}>
-                          {s.label}
+                      {US_STATES.map((state) => (
+                        <SelectItem key={state.value} value={state.value}>
+                          {t(`states.${state.labelKey}`)}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-              )}
 
-              <div className="space-y-2">
-                <Label className="text-sm">{t('labels.region')}</Label>
-                <Select
-                  value={filters.region || 'all'}
-                  onValueChange={(v) => updateFilter('region', v === 'all' ? undefined : v)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('placeholders.selectRegion')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {REGIONS.map((r) => (
-                      <SelectItem key={r.value} value={r.value}>
-                        {r.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="space-y-2">
+                  <Label className="text-sm">{t('labels.region')}</Label>
+                  <Select
+                    value={filters.region || 'all'}
+                    onValueChange={(value) =>
+                      onChange({
+                        ...filters,
+                        state: undefined,
+                        region: value === 'all' ? undefined : value,
+                      })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={t('placeholders.selectRegion')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {REGIONS.map((region) => (
+                        <SelectItem key={region.value} value={region.value}>
+                          {region.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            </div>
-          </FilterSection>
+            </FilterSection>
+          )}
 
           {/* 排名范围 */}
           <FilterSection
@@ -245,33 +216,42 @@ export function AdvancedSchoolFilter({
               </div>
               <div className="px-2">
                 <Slider
-                  value={[filters.rankMin || 1, filters.rankMax || 100]}
-                  onValueChange={([min, max]) => {
-                    updateFilter('rankMin', min);
-                    updateFilter('rankMax', max);
-                  }}
-                  min={1}
-                  max={100}
+                  value={[
+                    filters.rankMin || SCHOOL_FILTER_DEFAULTS.rankMin,
+                    filters.rankMax || SCHOOL_FILTER_DEFAULTS.rankMax,
+                  ]}
+                  onValueChange={([min, max]) =>
+                    updateRange(
+                      'rankMin',
+                      'rankMax',
+                      min,
+                      max,
+                      SCHOOL_FILTER_DEFAULTS.rankMin,
+                      SCHOOL_FILTER_DEFAULTS.rankMax
+                    )
+                  }
+                  min={SCHOOL_FILTER_DEFAULTS.rankMin}
+                  max={SCHOOL_FILTER_DEFAULTS.rankMax}
                   step={1}
                   className="cursor-pointer"
                 />
               </div>
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Top 1</span>
-                <span>Top 100</span>
+                <span>{t('rankingPresets.top1')}</span>
+                <span>{t('rankingPresets.top100')}</span>
               </div>
 
               {/* 快捷选择 */}
               <div className="flex flex-wrap gap-2">
                 {[
-                  { label: 'Top 10', min: 1, max: 10 },
-                  { label: 'Top 30', min: 1, max: 30 },
-                  { label: 'Top 50', min: 1, max: 50 },
-                  { label: '30-50', min: 30, max: 50 },
-                  { label: '50-100', min: 50, max: 100 },
+                  { key: 'top10', min: 1, max: 10 },
+                  { key: 'top30', min: 1, max: 30 },
+                  { key: 'top50', min: 1, max: 50 },
+                  { key: 'range30To50', min: 30, max: 50 },
+                  { key: 'range50To100', min: 50, max: 100 },
                 ].map((preset) => (
                   <Button
-                    key={preset.label}
+                    key={preset.key}
                     variant="outline"
                     size="sm"
                     className={cn(
@@ -285,7 +265,7 @@ export function AdvancedSchoolFilter({
                       updateFilter('rankMax', preset.max);
                     }}
                   >
-                    {preset.label}
+                    {t(`rankingPresets.${preset.key}`)}
                   </Button>
                 ))}
               </div>
@@ -313,13 +293,22 @@ export function AdvancedSchoolFilter({
               </div>
               <div className="px-2">
                 <Slider
-                  value={[filters.acceptanceMin || 0, filters.acceptanceMax || 100]}
-                  onValueChange={([min, max]) => {
-                    updateFilter('acceptanceMin', min);
-                    updateFilter('acceptanceMax', max);
-                  }}
-                  min={0}
-                  max={100}
+                  value={[
+                    filters.acceptanceMin || SCHOOL_FILTER_DEFAULTS.acceptanceMin,
+                    filters.acceptanceMax || SCHOOL_FILTER_DEFAULTS.acceptanceMax,
+                  ]}
+                  onValueChange={([min, max]) =>
+                    updateRange(
+                      'acceptanceMin',
+                      'acceptanceMax',
+                      min,
+                      max,
+                      SCHOOL_FILTER_DEFAULTS.acceptanceMin,
+                      SCHOOL_FILTER_DEFAULTS.acceptanceMax
+                    )
+                  }
+                  min={SCHOOL_FILTER_DEFAULTS.acceptanceMin}
+                  max={SCHOOL_FILTER_DEFAULTS.acceptanceMax}
                   step={5}
                   className="cursor-pointer"
                 />
@@ -376,13 +365,22 @@ export function AdvancedSchoolFilter({
               </div>
               <div className="px-2">
                 <Slider
-                  value={[filters.tuitionMin || 0, filters.tuitionMax || 8]}
-                  onValueChange={([min, max]) => {
-                    updateFilter('tuitionMin', min);
-                    updateFilter('tuitionMax', max);
-                  }}
-                  min={0}
-                  max={8}
+                  value={[
+                    filters.tuitionMin || SCHOOL_FILTER_DEFAULTS.tuitionMin,
+                    filters.tuitionMax || SCHOOL_FILTER_DEFAULTS.tuitionMax,
+                  ]}
+                  onValueChange={([min, max]) =>
+                    updateRange(
+                      'tuitionMin',
+                      'tuitionMax',
+                      min,
+                      max,
+                      SCHOOL_FILTER_DEFAULTS.tuitionMin,
+                      SCHOOL_FILTER_DEFAULTS.tuitionMax
+                    )
+                  }
+                  min={SCHOOL_FILTER_DEFAULTS.tuitionMin}
+                  max={SCHOOL_FILTER_DEFAULTS.tuitionMax}
                   step={0.5}
                   className="cursor-pointer"
                 />
@@ -455,13 +453,22 @@ export function AdvancedSchoolFilter({
                 </div>
                 <div className="px-2">
                   <Slider
-                    value={[filters.sizeMin || 0, filters.sizeMax || 50000]}
-                    onValueChange={([min, max]) => {
-                      updateFilter('sizeMin', min);
-                      updateFilter('sizeMax', max);
-                    }}
-                    min={0}
-                    max={50000}
+                    value={[
+                      filters.sizeMin || SCHOOL_FILTER_DEFAULTS.sizeMin,
+                      filters.sizeMax || SCHOOL_FILTER_DEFAULTS.sizeMax,
+                    ]}
+                    onValueChange={([min, max]) =>
+                      updateRange(
+                        'sizeMin',
+                        'sizeMax',
+                        min,
+                        max,
+                        SCHOOL_FILTER_DEFAULTS.sizeMin,
+                        SCHOOL_FILTER_DEFAULTS.sizeMax
+                      )
+                    }
+                    min={SCHOOL_FILTER_DEFAULTS.sizeMin}
+                    max={SCHOOL_FILTER_DEFAULTS.sizeMax}
                     step={1000}
                     className="cursor-pointer"
                   />
