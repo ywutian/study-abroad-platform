@@ -307,7 +307,9 @@ export class ApplicationAnalysisWorkflowService {
 
     const selected = new Map<
       ExperimentCapability,
-      Prisma.ApplicationAnalysisExperimentVersionGetPayload<{}>
+      Prisma.ApplicationAnalysisExperimentVersionGetPayload<
+        Record<string, never>
+      >
     >();
     for (const experiment of experiments) {
       const current = selected.get(
@@ -2215,7 +2217,9 @@ export class ApplicationAnalysisWorkflowService {
 
   private async maybeAdvanceCanaryStage(
     actorId: string,
-    experiment: Prisma.ApplicationAnalysisExperimentVersionGetPayload<{}>,
+    experiment: Prisma.ApplicationAnalysisExperimentVersionGetPayload<
+      Record<string, never>
+    >,
     summary: {
       stageAdvanced: string[];
       skipped: Array<{ id: string; reason: string }>;
