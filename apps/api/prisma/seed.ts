@@ -9,6 +9,7 @@ import {
   LEGACY_PREDICTION_POLICY_NAME,
   LEGACY_PREDICTION_POLICY_VERSION,
 } from '../src/modules/prediction/prediction-policy.constants';
+import { seedTeamData } from './seed-teams';
 
 const prisma = new PrismaClient();
 
@@ -2017,6 +2018,9 @@ async function main() {
 
   // ========== Chat Test Users & Data ==========
   await seedChatTestData();
+
+  // ========== Team & Recruitment Data ==========
+  await seedTeamData();
 
   console.log('🎉 Seed completed!');
 }
