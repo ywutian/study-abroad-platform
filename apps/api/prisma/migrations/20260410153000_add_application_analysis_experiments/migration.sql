@@ -62,7 +62,7 @@ CREATE INDEX "ApplicationAnalysisExperimentVersion_capability_status_idx" ON "Ap
 CREATE INDEX "ApplicationAnalysisExperimentVersion_status_activatedAt_idx" ON "ApplicationAnalysisExperimentVersion"("status", "activatedAt");
 
 -- CreateIndex
-CREATE INDEX "ApplicationAnalysisExperimentEvaluationRun_experimentVersionId_mode_createdAt_idx" ON "ApplicationAnalysisExperimentEvaluationRun"("experimentVersionId", "mode", "createdAt");
+CREATE INDEX "ApplicationAnalysisExperimentEvaluationRun_experimentVersio_idx" ON "ApplicationAnalysisExperimentEvaluationRun"("experimentVersionId", "mode", "createdAt");
 
 -- CreateIndex
 CREATE INDEX "ApplicationAnalysisExperimentEvaluationRun_status_createdAt_idx" ON "ApplicationAnalysisExperimentEvaluationRun"("status", "createdAt");
@@ -71,4 +71,4 @@ CREATE INDEX "ApplicationAnalysisExperimentEvaluationRun_status_createdAt_idx" O
 ALTER TABLE "ApplicationAnalysisExperimentVersion" ADD CONSTRAINT "ApplicationAnalysisExperimentVersion_policyVersionId_fkey" FOREIGN KEY ("policyVersionId") REFERENCES "ApplicationAnalysisPolicyVersion"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ApplicationAnalysisExperimentEvaluationRun" ADD CONSTRAINT "ApplicationAnalysisExperimentEvaluationRun_experimentVersionId_fkey" FOREIGN KEY ("experimentVersionId") REFERENCES "ApplicationAnalysisExperimentVersion"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "ApplicationAnalysisExperimentEvaluationRun" ADD CONSTRAINT "ApplicationAnalysisExperimentEvaluationRun_experimentVersi_fkey" FOREIGN KEY ("experimentVersionId") REFERENCES "ApplicationAnalysisExperimentVersion"("id") ON DELETE CASCADE ON UPDATE CASCADE;
