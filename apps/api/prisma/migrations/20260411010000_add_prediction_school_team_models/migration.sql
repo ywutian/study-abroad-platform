@@ -434,13 +434,13 @@ CREATE UNIQUE INDEX IF NOT EXISTS "SchoolCommunityRating_schoolId_userId_key" ON
 CREATE UNIQUE INDEX IF NOT EXISTS "PredictionPolicyVersion_policyKey_version_key" ON "PredictionPolicyVersion"("policyKey", "version");
 
 -- SchoolCohortRoundPrior
-CREATE UNIQUE INDEX IF NOT EXISTS "SchoolCohortRoundPrior_schoolId_cohortKey_round_policyVersionI_key" ON "SchoolCohortRoundPrior"("schoolId", "cohortKey", "round", "policyVersionId", "setVersion");
+CREATE UNIQUE INDEX IF NOT EXISTS "SchoolCohortRoundPrior_schoolId_cohortKey_round_policyVersi_key" ON "SchoolCohortRoundPrior"("schoolId", "cohortKey", "round", "policyVersionId", "setVersion");
 
 -- SchoolCohortRegimeSignal
-CREATE UNIQUE INDEX IF NOT EXISTS "SchoolCohortRegimeSignal_schoolId_cohortKey_round_regimeKey_po_key" ON "SchoolCohortRegimeSignal"("schoolId", "cohortKey", "round", "regimeKey", "policyVersionId", "setVersion");
+CREATE UNIQUE INDEX IF NOT EXISTS "SchoolCohortRegimeSignal_schoolId_cohortKey_round_regimeKey_key" ON "SchoolCohortRegimeSignal"("schoolId", "cohortKey", "round", "regimeKey", "policyVersionId", "setVersion");
 
 -- SchoolRelationshipSignal
-CREATE UNIQUE INDEX IF NOT EXISTS "SchoolRelationshipSignal_sourceHighSchoolId_targetSchoolId_coh_key" ON "SchoolRelationshipSignal"("sourceHighSchoolId", "targetSchoolId", "cohortKey", "round", "relationshipType", "policyVersionId", "setVersion");
+CREATE UNIQUE INDEX IF NOT EXISTS "SchoolRelationshipSignal_sourceHighSchoolId_targetSchoolId__key" ON "SchoolRelationshipSignal"("sourceHighSchoolId", "targetSchoolId", "cohortKey", "round", "relationshipType", "policyVersionId", "setVersion");
 
 -- TeamRecruitmentCard
 CREATE UNIQUE INDEX IF NOT EXISTS "TeamRecruitmentCard_teamId_competitionTrackId_key" ON "TeamRecruitmentCard"("teamId", "competitionTrackId");
@@ -449,7 +449,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS "TeamRecruitmentCard_teamId_competitionTrackId
 CREATE UNIQUE INDEX IF NOT EXISTS "TeamRecruitmentMemberProfile_teamRecruitmentCardId_userId_key" ON "TeamRecruitmentMemberProfile"("teamRecruitmentCardId", "userId");
 
 -- TeamRecruitmentSwipe
-CREATE UNIQUE INDEX IF NOT EXISTS "TeamRecruitmentSwipe_sourceCardId_targetCardId_sourceVersion_t_key" ON "TeamRecruitmentSwipe"("sourceCardId", "targetCardId", "sourceVersion", "targetVersion");
+CREATE UNIQUE INDEX IF NOT EXISTS "TeamRecruitmentSwipe_sourceCardId_targetCardId_sourceVersio_key" ON "TeamRecruitmentSwipe"("sourceCardId", "targetCardId", "sourceVersion", "targetVersion");
 
 -- TeamMatch
 CREATE UNIQUE INDEX IF NOT EXISTS "TeamMatch_conversationId_key" ON "TeamMatch"("conversationId");
@@ -481,7 +481,7 @@ CREATE INDEX IF NOT EXISTS "PredictionSourceObservation_status_sourceType_idx" O
 CREATE INDEX IF NOT EXISTS "PredictionSourceObservation_schoolId_cohortKey_round_idx" ON "PredictionSourceObservation"("schoolId", "cohortKey", "round");
 CREATE INDEX IF NOT EXISTS "PredictionSourceObservation_schoolId_sourceName_observedAt_idx" ON "PredictionSourceObservation"("schoolId", "sourceName", "observedAt");
 CREATE INDEX IF NOT EXISTS "PredictionSourceObservation_highSchoolId_idx" ON "PredictionSourceObservation"("highSchoolId");
-CREATE INDEX IF NOT EXISTS "PredictionSourceObservation_policyVersionId_observationStage_idx" ON "PredictionSourceObservation"("policyVersionId", "observationStage");
+CREATE INDEX IF NOT EXISTS "PredictionSourceObservation_policyVersionId_observationStag_idx" ON "PredictionSourceObservation"("policyVersionId", "observationStage");
 CREATE INDEX IF NOT EXISTS "PredictionSourceObservation_cohortKey_round_year_idx" ON "PredictionSourceObservation"("cohortKey", "round", "year");
 
 -- SchoolCohortRoundPrior
@@ -489,13 +489,13 @@ CREATE INDEX IF NOT EXISTS "SchoolCohortRoundPrior_setVersion_schoolId_cohortKey
 CREATE INDEX IF NOT EXISTS "SchoolCohortRoundPrior_policyVersionId_applicationYear_idx" ON "SchoolCohortRoundPrior"("policyVersionId", "applicationYear");
 
 -- SchoolCohortRegimeSignal
-CREATE INDEX IF NOT EXISTS "SchoolCohortRegimeSignal_setVersion_schoolId_cohortKey_round_idx" ON "SchoolCohortRegimeSignal"("setVersion", "schoolId", "cohortKey", "round");
+CREATE INDEX IF NOT EXISTS "SchoolCohortRegimeSignal_setVersion_schoolId_cohortKey_roun_idx" ON "SchoolCohortRegimeSignal"("setVersion", "schoolId", "cohortKey", "round");
 CREATE INDEX IF NOT EXISTS "SchoolCohortRegimeSignal_schoolId_regimeKey_idx" ON "SchoolCohortRegimeSignal"("schoolId", "regimeKey");
 CREATE INDEX IF NOT EXISTS "SchoolCohortRegimeSignal_cohortKey_round_applicationYear_idx" ON "SchoolCohortRegimeSignal"("cohortKey", "round", "applicationYear");
 CREATE INDEX IF NOT EXISTS "SchoolCohortRegimeSignal_policyVersionId_effectiveFrom_idx" ON "SchoolCohortRegimeSignal"("policyVersionId", "effectiveFrom");
 
 -- SchoolRelationshipSignal
-CREATE INDEX IF NOT EXISTS "SchoolRelationshipSignal_setVersion_targetSchoolId_cohortKey_r_idx" ON "SchoolRelationshipSignal"("setVersion", "targetSchoolId", "cohortKey", "round");
+CREATE INDEX IF NOT EXISTS "SchoolRelationshipSignal_setVersion_targetSchoolId_cohortKe_idx" ON "SchoolRelationshipSignal"("setVersion", "targetSchoolId", "cohortKey", "round");
 CREATE INDEX IF NOT EXISTS "SchoolRelationshipSignal_targetSchoolId_relationshipType_idx" ON "SchoolRelationshipSignal"("targetSchoolId", "relationshipType");
 CREATE INDEX IF NOT EXISTS "SchoolRelationshipSignal_sourceHighSchoolId_applicationYear_idx" ON "SchoolRelationshipSignal"("sourceHighSchoolId", "applicationYear");
 CREATE INDEX IF NOT EXISTS "SchoolRelationshipSignal_policyVersionId_cohortKey_idx" ON "SchoolRelationshipSignal"("policyVersionId", "cohortKey");

@@ -87,7 +87,7 @@ CREATE TABLE "ApplicationAnalysisExposureRecord" (
   "capability" "ApplicationAnalysisExperimentCapability" NOT NULL,
   "userId" TEXT NOT NULL,
   "profileId" TEXT NOT NULL,
-  "schoolIds" TEXT[] DEFAULT ARRAY[]::TEXT[],
+  "schoolIds" TEXT[],
   "locale" TEXT NOT NULL,
   "exposurePayload" JSONB,
   "generatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -123,7 +123,7 @@ CREATE INDEX "ApplicationAnalysisExperimentSweepRun_status_createdAt_idx"
   ON "ApplicationAnalysisExperimentSweepRun"("status", "createdAt");
 
 -- CreateIndex
-CREATE INDEX "ApplicationAnalysisExperimentIncident_experimentVersionId_createdAt_idx"
+CREATE INDEX "ApplicationAnalysisExperimentIncident_experimentVersionId_c_idx"
   ON "ApplicationAnalysisExperimentIncident"("experimentVersionId", "createdAt");
 
 -- CreateIndex
@@ -139,7 +139,7 @@ CREATE INDEX "ApplicationAnalysisExposureRecord_exposureId_capability_idx"
   ON "ApplicationAnalysisExposureRecord"("exposureId", "capability");
 
 -- CreateIndex
-CREATE INDEX "ApplicationAnalysisExposureRecord_experimentVersionId_createdAt_idx"
+CREATE INDEX "ApplicationAnalysisExposureRecord_experimentVersionId_creat_idx"
   ON "ApplicationAnalysisExposureRecord"("experimentVersionId", "createdAt");
 
 -- CreateIndex
@@ -147,7 +147,7 @@ CREATE INDEX "ApplicationAnalysisExposureRecord_profileId_createdAt_idx"
   ON "ApplicationAnalysisExposureRecord"("profileId", "createdAt");
 
 -- CreateIndex
-CREATE INDEX "ApplicationAnalysisFeedbackRecord_exposureRecordId_createdAt_idx"
+CREATE INDEX "ApplicationAnalysisFeedbackRecord_exposureRecordId_createdA_idx"
   ON "ApplicationAnalysisFeedbackRecord"("exposureRecordId", "createdAt");
 
 -- CreateIndex
@@ -155,7 +155,7 @@ CREATE INDEX "ApplicationAnalysisFeedbackRecord_exposureId_createdAt_idx"
   ON "ApplicationAnalysisFeedbackRecord"("exposureId", "createdAt");
 
 -- CreateIndex
-CREATE INDEX "ApplicationAnalysisFeedbackRecord_capability_category_createdAt_idx"
+CREATE INDEX "ApplicationAnalysisFeedbackRecord_capability_category_creat_idx"
   ON "ApplicationAnalysisFeedbackRecord"("capability", "category", "createdAt");
 
 -- CreateIndex

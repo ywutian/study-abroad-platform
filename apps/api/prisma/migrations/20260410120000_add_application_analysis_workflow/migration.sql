@@ -112,7 +112,7 @@ ON "ApplicationAnalysisPolicyVersion"("status", "activatedAt");
 CREATE INDEX IF NOT EXISTS "ApplicationAnalysisPolicyVersion_policyKey_status_idx"
 ON "ApplicationAnalysisPolicyVersion"("policyKey", "status");
 
-CREATE INDEX IF NOT EXISTS "ApplicationAnalysisEvaluationRun_policyVersionId_mode_createdAt_idx"
+CREATE INDEX IF NOT EXISTS "ApplicationAnalysisEvaluationRun_policyVersionId_mode_creat_idx"
 ON "ApplicationAnalysisEvaluationRun"("policyVersionId", "mode", "createdAt");
 CREATE INDEX IF NOT EXISTS "ApplicationAnalysisEvaluationRun_status_createdAt_idx"
 ON "ApplicationAnalysisEvaluationRun"("status", "createdAt");
