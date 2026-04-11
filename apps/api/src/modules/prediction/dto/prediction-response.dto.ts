@@ -11,8 +11,8 @@ export class PredictionFactor {
   })
   impact: 'positive' | 'negative' | 'neutral';
 
-  @ApiProperty({ description: 'Weight (0-1)', example: 0.3 })
-  weight: number;
+  @ApiPropertyOptional({ description: 'Weight (0-1)', example: 0.3 })
+  weight?: number;
 
   @ApiProperty({
     description: 'Detailed description',
@@ -104,6 +104,74 @@ export class EngineScores {
   }>;
 }
 
+export class PredictionSourceSummaryDto {
+  @ApiProperty({ description: 'User-facing source label' })
+  label: string;
+
+  @ApiPropertyOptional({ description: 'Additional source detail' })
+  detail?: string;
+}
+
+export class PredictionOutcomeLabelDto {
+  @ApiProperty({ description: 'Outcome label ID' })
+  id: string;
+
+  @ApiProperty({
+    description: 'Outcome result',
+    enum: [
+      'ADMITTED',
+      'REJECTED',
+      'WAITLISTED',
+      'DEFERRED',
+      'WITHDRAWN',
+      'UNKNOWN',
+      'CENSORED',
+    ],
+  })
+  result: string;
+
+  @ApiProperty({
+    description: 'Outcome label trust state',
+    enum: [
+      'SELF_REPORTED',
+      'COUNSELOR_VERIFIED',
+      'DOCUMENT_VERIFIED',
+      'CONFLICTED',
+      'CENSORED',
+    ],
+  })
+  status:
+    | 'SELF_REPORTED'
+    | 'COUNSELOR_VERIFIED'
+    | 'DOCUMENT_VERIFIED'
+    | 'CONFLICTED'
+    | 'CENSORED';
+
+  @ApiPropertyOptional({ description: 'Optional note supplied with the label' })
+  notes?: string;
+
+  @ApiPropertyOptional({
+    description: 'Optional evidence URL attached to the label',
+  })
+  evidenceUrl?: string;
+
+  @ApiProperty({
+    description: 'When the label was reported',
+    example: '2026-04-03T12:00:00.000Z',
+  })
+  reportedAt: string;
+
+  @ApiPropertyOptional({
+    description: 'When the label was resolved or verified',
+  })
+  resolvedAt?: string;
+
+  @ApiPropertyOptional({
+    description: 'Application round attached to this label',
+  })
+  round?: string;
+}
+
 export class PredictionResultDto {
   @ApiProperty({ description: 'School ID' })
   schoolId: string;
@@ -173,6 +241,47 @@ export class PredictionResultDto {
   })
   modelVersion?: string;
 
+  @ApiPropertyOptional({
+    description: 'Served prediction policy version',
+    example: 'legacy-v3-enterprise',
+  })
+  servedPolicyVersionId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Resolved applicant cohort for this prediction',
+    example: 'CN__CHINA_INTL',
+  })
+  cohortKey?: string;
+
+  @ApiPropertyOptional({
+    description: 'Application round context used in prediction',
+    example: 'ED',
+  })
+  roundContext?: string;
+
+  @ApiPropertyOptional({
+    description: 'Primary source summary shown to the user',
+    type: [PredictionSourceSummaryDto],
+  })
+  sourceSummary?: PredictionSourceSummaryDto[];
+
+  @ApiPropertyOptional({
+    description: 'Why this prediction still carries uncertainty',
+    type: [String],
+  })
+  uncertaintyReasons?: string[];
+
+  @ApiPropertyOptional({
+    description: 'Human-readable confidence explanation',
+  })
+  confidenceReason?: string;
+
+  @ApiPropertyOptional({
+    description: 'Most recent outcome label attached to this prediction',
+    type: PredictionOutcomeLabelDto,
+  })
+  latestOutcomeLabel?: PredictionOutcomeLabelDto;
+
   @ApiPropertyOptional({ description: 'School metadata' })
   schoolMeta?: {
     usNewsRank?: number;
@@ -215,6 +324,39 @@ export class PredictionResultDto {
     dimensionsAvailable: number;
     improvementTip?: string;
   };
+
+  // === v5 ML-Primary fields (all optional for backward compatibility) ===
+
+  @ApiPropertyOptional({ description: 'ML pipeline tier used (0-4)' })
+  pipelineTier?: number;
+
+  @ApiPropertyOptional({
+    description: 'Calibration method applied',
+    enum: ['platt', 'beta', 'none'],
+  })
+  calibrationMethod?: string;
+
+  @ApiPropertyOptional({
+    description: 'School base rate used as anchor (0-1)',
+    example: 0.034,
+  })
+  baseRate?: number;
+
+  @ApiPropertyOptional({
+    description: 'Hook adjustments applied in log-odds space',
+    type: 'array',
+    items: { type: 'object' },
+  })
+  hookShifts?: Array<{
+    hookType: string;
+    logOddsShift: number;
+    source: string;
+  }>;
+
+  @ApiPropertyOptional({
+    description: 'Quota-related disclosure message for the user',
+  })
+  quotaDisclosure?: string;
 }
 
 export class PredictionResponseDto {

@@ -28,6 +28,12 @@ const RESULT_OPTIONS = [
     activeClassName: 'bg-amber-500/10 border-amber-500/30 text-amber-600',
   },
   {
+    value: 'DEFERRED' as const,
+    icon: Clock,
+    className: 'text-sky-600 hover:bg-sky-500/10 hover:border-sky-500/30',
+    activeClassName: 'bg-sky-500/10 border-sky-500/30 text-sky-600',
+  },
+  {
     value: 'REJECTED' as const,
     icon: XCircle,
     className: 'text-rose-600 hover:bg-rose-500/10 hover:border-rose-500/30',
@@ -44,29 +50,35 @@ export function ResultFeedbackButtons({
   const reportMutation = useReportResult();
   const [justReported, setJustReported] = useState(false);
 
-  const handleReport = (result: 'ADMITTED' | 'REJECTED' | 'WAITLISTED') => {
+  const handleReport = (result: 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED') => {
     reportMutation.mutate(
       { schoolId, result },
       {
         onSuccess: () => {
           setJustReported(true);
           onResultReported?.(schoolId, result);
-          toast.success(t('resultReported'));
+          toast.success(t('outcomeLabelSaved'));
         },
       }
     );
   };
 
-  // Show inline thank-you after reporting
+  const activeResult =
+    actualResult ?? (justReported ? reportMutation.variables?.result : undefined);
+
+  // Show inline confirmation after labeling
   if (justReported || actualResult) {
     return (
       <div className="space-y-2">
-        <p className="text-overline text-muted-foreground">{t('reportResult')}</p>
+        <div className="space-y-1">
+          <p className="text-overline text-muted-foreground">{t('outcomeLabelSection')}</p>
+          <p className="text-xs text-muted-foreground">{t('outcomeLabelSavedHint')}</p>
+        </div>
         <div className="flex items-center gap-2">
           <div className="flex gap-2">
             {RESULT_OPTIONS.map((option) => {
               const Icon = option.icon;
-              const isActive = actualResult === option.value;
+              const isActive = activeResult === option.value;
               return (
                 <Button
                   key={option.value}
@@ -87,7 +99,7 @@ export function ResultFeedbackButtons({
           {justReported && (
             <span className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1 animate-in fade-in">
               <Check className="h-3.5 w-3.5" />
-              {t('resultRecordedThankYou')}
+              {t('outcomeLabelSavedToast')}
             </span>
           )}
         </div>
@@ -97,7 +109,10 @@ export function ResultFeedbackButtons({
 
   return (
     <div className="space-y-2">
-      <p className="text-overline text-muted-foreground">{t('reportResult')}</p>
+      <div className="space-y-1">
+        <p className="text-overline text-muted-foreground">{t('outcomeLabelSection')}</p>
+        <p className="text-xs text-muted-foreground">{t('outcomeLabelHint')}</p>
+      </div>
       <div className="flex gap-2">
         {RESULT_OPTIONS.map((option) => {
           const Icon = option.icon;

@@ -2,7 +2,7 @@
  * Training Data Service
  *
  * Collects and prepares training data from two sources:
- * 1. PredictionResult records with actualResult (user-reported outcomes)
+ * 1. PredictionResult records with verified outcome labels
  * 2. AdmissionCase records (admin-imported + user-submitted, verified)
  */
 
@@ -28,6 +28,10 @@ import type {
   FeatureExtractionOptions,
   ProfileMetrics,
   SchoolMetrics,
+} from '@study-abroad/shared/scoring';
+import {
+  resolveCanonicalPredictionOutcome,
+  VERIFIED_OUTCOME_STATUSES,
 } from '@study-abroad/shared/scoring';
 import { validateDataset } from './data-validator';
 import { determineTier } from './tier-strategy';
@@ -188,14 +192,39 @@ export class TrainingDataService {
    * Quick count without full data collection (for tier determination).
    */
   async countAvailableOutcomes(): Promise<number> {
-    const [predCount, caseCount] = await Promise.all([
-      this.prisma.predictionResult.count({
-        where: { actualResult: { not: null } },
+    const [predictions, caseCount] = await Promise.all([
+      this.prisma.predictionResult.findMany({
+        where: {
+          outcomeLabelRecords: {
+            some: {
+              status: { in: VERIFIED_OUTCOME_STATUSES },
+              result: { in: ['ADMITTED', 'REJECTED'] },
+            },
+          },
+        },
+        select: {
+          outcomeLabelRecords: {
+            select: {
+              result: true,
+              status: true,
+              isFinal: true,
+              createdAt: true,
+              resolvedAt: true,
+            },
+            orderBy: { createdAt: 'desc' },
+          },
+        },
       }),
       this.prisma.admissionCase.count({
         where: { isVerified: true, ...CASE_REVIEW_APPROVED_WHERE },
       }),
     ]);
+    const predCount = predictions.reduce((count, prediction) => {
+      const canonical = resolveCanonicalPredictionOutcome(
+        prediction.outcomeLabelRecords,
+      );
+      return count + (canonical.eligibleForCalibration ? 1 : 0);
+    }, 0);
     return predCount + caseCount;
   }
 
@@ -206,26 +235,60 @@ export class TrainingDataService {
     const count = await this.countAvailableOutcomes();
     const tier = determineTier(count);
 
-    const [predCount, caseCount, admittedPred, admittedCase] =
-      await Promise.all([
-        this.prisma.predictionResult.count({
-          where: { actualResult: { not: null } },
-        }),
-        this.prisma.admissionCase.count({
-          where: { isVerified: true, ...CASE_REVIEW_APPROVED_WHERE },
-        }),
-        this.prisma.predictionResult.count({
-          where: { actualResult: 'ADMITTED' },
-        }),
-        this.prisma.admissionCase.count({
-          where: {
-            isVerified: true,
-            ...CASE_REVIEW_APPROVED_WHERE,
-            result: 'ADMITTED',
+    const [predictions, caseCount, admittedCase] = await Promise.all([
+      this.prisma.predictionResult.findMany({
+        where: {
+          outcomeLabelRecords: {
+            some: {
+              status: { in: VERIFIED_OUTCOME_STATUSES },
+              result: { in: ['ADMITTED', 'REJECTED'] },
+            },
           },
-        }),
-      ]);
+        },
+        select: {
+          outcomeLabelRecords: {
+            select: {
+              result: true,
+              status: true,
+              isFinal: true,
+              createdAt: true,
+              resolvedAt: true,
+            },
+            orderBy: { createdAt: 'desc' },
+          },
+        },
+      }),
+      this.prisma.admissionCase.count({
+        where: { isVerified: true, ...CASE_REVIEW_APPROVED_WHERE },
+      }),
+      this.prisma.admissionCase.count({
+        where: {
+          isVerified: true,
+          ...CASE_REVIEW_APPROVED_WHERE,
+          result: 'ADMITTED',
+        },
+      }),
+    ]);
 
+    const predictionSummary = predictions.reduce(
+      (acc, prediction) => {
+        const canonical = resolveCanonicalPredictionOutcome(
+          prediction.outcomeLabelRecords,
+        );
+        if (!canonical.eligibleForCalibration || !canonical.canonicalRecord) {
+          return acc;
+        }
+        acc.total += 1;
+        if (canonical.canonicalRecord.result === 'ADMITTED') {
+          acc.admitted += 1;
+        }
+        return acc;
+      },
+      { total: 0, admitted: 0 },
+    );
+
+    const predCount = predictionSummary.total;
+    const admittedPred = predictionSummary.admitted;
     const admittedTotal = admittedPred + admittedCase;
     const nextTier = tier.tier < 4 ? [50, 200, 1000, 5000][tier.tier] : null;
 
@@ -250,14 +313,28 @@ export class TrainingDataService {
   private async collectFromPredictions(): Promise<TrainingRecord[]> {
     const predictions = await this.prisma.predictionResult.findMany({
       where: {
-        actualResult: { in: ['ADMITTED', 'REJECTED', 'WAITLISTED'] },
+        outcomeLabelRecords: {
+          some: {
+            status: { in: VERIFIED_OUTCOME_STATUSES },
+            result: { in: ['ADMITTED', 'REJECTED'] },
+          },
+        },
       },
       select: {
         profileId: true,
         schoolId: true,
-        actualResult: true,
         probability: true,
         source: true,
+        outcomeLabelRecords: {
+          select: {
+            result: true,
+            status: true,
+            isFinal: true,
+            createdAt: true,
+            resolvedAt: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        },
       },
     });
 
@@ -287,6 +364,12 @@ export class TrainingDataService {
     const records: TrainingRecord[] = [];
 
     for (const pred of predictions) {
+      const canonical = resolveCanonicalPredictionOutcome(
+        pred.outcomeLabelRecords,
+      );
+      if (!canonical.eligibleForCalibration || !canonical.canonicalRecord) {
+        continue;
+      }
       const profile = profileMap.get(pred.profileId);
       const school = schoolMap.get(pred.schoolId);
       if (!profile || !school) continue;
@@ -303,7 +386,7 @@ export class TrainingDataService {
 
         records.push({
           features,
-          label: pred.actualResult === 'ADMITTED' ? 1 : 0,
+          label: canonical.canonicalRecord.result === 'ADMITTED' ? 1 : 0,
           weight: 1.0,
           source: 'prediction_outcome',
           deduplicationKey: `${pred.profileId}:${pred.schoolId}`,

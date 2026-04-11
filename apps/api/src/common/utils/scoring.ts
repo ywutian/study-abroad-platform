@@ -45,12 +45,66 @@ export {
   ENGLISH_PROFICIENCY_THRESHOLDS,
 } from '@study-abroad/shared/scoring';
 
-import { TIER_POINTS, LEVEL_POINTS } from '@study-abroad/shared/scoring';
+import {
+  TIER_POINTS,
+  LEVEL_POINTS,
+  ROUND_MULTIPLIERS,
+} from '@study-abroad/shared/scoring';
 import { getBestEnglishProficiency } from '@study-abroad/shared/scoring';
 import type {
   ProfileMetrics,
   SchoolMetrics,
 } from '@study-abroad/shared/scoring';
+
+export function resolveContextualAcceptanceRate(params: {
+  schoolMeta?: {
+    acceptanceRate?: number | null;
+    intlAcceptanceRate?: number | null;
+  } | null;
+  isInternational: boolean;
+  roundContext?: string | null;
+}): {
+  rate: number;
+  rawRate: number;
+  baseType: 'overall' | 'international';
+  roundContext: string;
+  roundAdjusted: boolean;
+} | null {
+  const { schoolMeta, isInternational, roundContext } = params;
+
+  const baselineSource =
+    isInternational && schoolMeta?.intlAcceptanceRate != null
+      ? {
+          rawRate: schoolMeta.intlAcceptanceRate,
+          baseType: 'international' as const,
+        }
+      : schoolMeta?.acceptanceRate != null
+        ? {
+            rawRate: schoolMeta.acceptanceRate,
+            baseType: 'overall' as const,
+          }
+        : null;
+
+  if (!baselineSource) {
+    return null;
+  }
+
+  const normalizedRound = (roundContext ?? 'RD').toUpperCase();
+  const roundMultiplier = ROUND_MULTIPLIERS[normalizedRound] ?? 1;
+  const roundAdjusted = roundMultiplier !== 1;
+  const rate = Math.min(
+    95,
+    Math.max(0, Math.round(baselineSource.rawRate * roundMultiplier * 10) / 10),
+  );
+
+  return {
+    rate,
+    rawRate: baselineSource.rawRate,
+    baseType: baselineSource.baseType,
+    roundContext: normalizedRound,
+    roundAdjusted,
+  };
+}
 
 // ============================================
 // Helper: Extract ProfileMetrics from Prisma Data

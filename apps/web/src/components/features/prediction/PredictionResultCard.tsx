@@ -19,10 +19,14 @@ import {
   BarChart3,
   Brain,
   BookOpen,
+  Info,
 } from 'lucide-react';
 import { cn, formatAcceptanceRate } from '@/lib/utils';
+import { AgentType } from '@study-abroad/shared';
+import { openFloatingAgentChat } from '@/components/features/agent-chat/floating-chat-bridge';
 import { TIER_CONFIG, CONFIDENCE_CONFIG, getProbabilityColor } from './constants';
 import type { PredictionResult } from './types';
+import { formatPercentValue, resolveContextualBaseline } from './benchmark-utils';
 
 // Lazy load expanded panels
 const FactorsPanel = dynamic(
@@ -73,6 +77,34 @@ function getTimeAgo(isoString: string): string {
   return `${days}d`;
 }
 
+function humanizeMachineLabel(value: string): string {
+  if (!value) return value;
+  const normalized = value.replace(/[_-]+/g, ' ').trim();
+  if (!/[a-z]/i.test(normalized)) return value;
+  return normalized.replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function normalizeSourceSummary(sourceSummary?: PredictionResult['sourceSummary']): {
+  primary?: string;
+  secondary?: string[];
+} {
+  if (!sourceSummary?.length) return {};
+
+  const [first, ...rest] = sourceSummary;
+  const secondary = Array.from(
+    new Set(
+      rest
+        .map((item) => (item.detail ? `${item.label}: ${item.detail}` : item.label))
+        .filter(Boolean)
+    )
+  );
+
+  return {
+    primary: first.detail ? `${first.label}: ${first.detail}` : first.label,
+    secondary: secondary.length > 0 ? secondary : undefined,
+  };
+}
+
 /** Determine accuracy badge based on actual result vs prediction tier */
 function getAccuracyBadge(
   actualResult: string,
@@ -114,11 +146,61 @@ export const PredictionResultCard = memo(
     const TierIcon = tierConfig.icon;
 
     const probPercent = (result.probability * 100).toFixed(0);
+    const normalizedSourceSummary = normalizeSourceSummary(result.sourceSummary);
+    const uncertaintyReasons = (result.uncertaintyReasons ?? []).filter(Boolean);
+    const hasPredictionContext = Boolean(
+      result.roundContext ||
+      result.cohortKey ||
+      normalizedSourceSummary.primary ||
+      normalizedSourceSummary.secondary?.length ||
+      result.confidenceReason ||
+      uncertaintyReasons.length
+    );
+    const probabilityRange =
+      result.probabilityLow !== undefined && result.probabilityHigh !== undefined
+        ? `${(result.probabilityLow * 100).toFixed(0)}-${(result.probabilityHigh * 100).toFixed(0)}%`
+        : null;
+    const predictionContext = {
+      type: 'prediction-results' as const,
+      source: 'prediction_result_card' as const,
+      results: [
+        {
+          schoolId: result.schoolId,
+          schoolName: result.schoolName,
+          probability: result.probability,
+          tier: result.tier,
+          confidence: result.confidence,
+          source: result.source,
+          modelVersion: result.modelVersion,
+          cohortKey: result.cohortKey,
+          roundContext: result.roundContext,
+          sourceSummary: result.sourceSummary,
+          uncertaintyReasons: result.uncertaintyReasons,
+          confidenceReason: result.confidenceReason,
+          latestOutcomeLabel: result.latestOutcomeLabel,
+          schoolMeta: result.schoolMeta,
+        },
+      ],
+      summary: {
+        total: 1,
+        reach: result.tier === 'reach' ? 1 : 0,
+        match: result.tier === 'match' ? 1 : 0,
+        safety: result.tier === 'safety' ? 1 : 0,
+        avgProbability: result.probability,
+      },
+    };
+    const contextualBaseline = resolveContextualBaseline({
+      schoolMeta: result.schoolMeta,
+      isInternational: isInternational ?? false,
+      roundContext: result.roundContext,
+      probability: result.probability,
+    });
     const hasExpandedContent =
       result.factors.length > 0 ||
       result.suggestions.length > 0 ||
       result.comparison ||
-      result.engineScores;
+      result.engineScores ||
+      hasPredictionContext;
 
     // Accuracy badge
     const accuracyBadge = result.actualResult
@@ -161,8 +243,8 @@ export const PredictionResultCard = memo(
                     className={cn(
                       'text-xs',
                       accuracyBadge.variant === 'accurate'
-                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600'
-                        : 'bg-amber-500/10 border-amber-500/30 text-amber-600'
+                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
+                        : 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400'
                     )}
                   >
                     {accuracyBadge.variant === 'outperformed' ? (
@@ -189,13 +271,21 @@ export const PredictionResultCard = memo(
                     })}
                   </Badge>
                 )}
-                {result.modelVersion && (
-                  <span className="hidden sm:inline">{result.modelVersion}</span>
+                {result.roundContext && (
+                  <Badge variant="outline" className="text-xs py-0">
+                    {t('roundContextChip', {
+                      value: humanizeMachineLabel(result.roundContext),
+                    })}
+                  </Badge>
                 )}
-                {result.probabilityLow !== undefined && result.probabilityHigh !== undefined && (
+                {result.modelVersion && (
+                  <Badge variant="outline" className="hidden sm:inline text-xs py-0">
+                    {t('modelLabel')}
+                  </Badge>
+                )}
+                {probabilityRange && (
                   <span>
-                    {t('range')}: {(result.probabilityLow * 100).toFixed(0)}-
-                    {(result.probabilityHigh * 100).toFixed(0)}%
+                    {t('range')}: {probabilityRange}
                   </span>
                 )}
                 {/* Cache: show relative time or "Cached" fallback */}
@@ -268,6 +358,13 @@ export const PredictionResultCard = memo(
               <span className="text-xs text-muted-foreground mt-1">
                 {t('estimatedProbabilityLabel')}
               </span>
+              {contextualBaseline && (
+                <span className="text-[11px] text-muted-foreground mt-0.5">
+                  {t('rateBreakdown.contextualBaselineShort', {
+                    rate: formatPercentValue(contextualBaseline.rate),
+                  })}
+                </span>
+              )}
             </div>
           </div>
 
@@ -340,6 +437,86 @@ export const PredictionResultCard = memo(
                 className="overflow-hidden outline-none"
               >
                 <div className="space-y-5 pt-3">
+                  {hasPredictionContext && (
+                    <div className="rounded-lg border bg-muted/30 p-3 space-y-3">
+                      <p className="text-overline text-muted-foreground flex items-center gap-1.5">
+                        <Info className="h-3.5 w-3.5" />
+                        {t('predictionContextTitle')}
+                      </p>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {result.roundContext && (
+                          <div className="space-y-1">
+                            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                              {t('roundContextLabel')}
+                            </p>
+                            <p className="text-sm font-medium">
+                              {humanizeMachineLabel(result.roundContext)}
+                            </p>
+                          </div>
+                        )}
+                        {result.cohortKey && (
+                          <div className="space-y-1">
+                            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                              {t('cohortKeyLabel')}
+                            </p>
+                            <p className="text-sm font-medium">
+                              {humanizeMachineLabel(result.cohortKey)}
+                            </p>
+                          </div>
+                        )}
+                        {normalizedSourceSummary.primary && (
+                          <div className="space-y-1">
+                            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                              {t('sourceSummaryLabel')}
+                            </p>
+                            <p className="text-sm font-medium">{normalizedSourceSummary.primary}</p>
+                          </div>
+                        )}
+                        {result.confidenceReason && (
+                          <div className="space-y-1">
+                            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                              {t('confidenceReasonLabel')}
+                            </p>
+                            <p className="text-sm font-medium">{result.confidenceReason}</p>
+                          </div>
+                        )}
+                      </div>
+                      {normalizedSourceSummary.secondary &&
+                        normalizedSourceSummary.secondary.length > 0 && (
+                          <div className="space-y-1">
+                            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                              {t('sourceSummarySecondaryLabel')}
+                            </p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {normalizedSourceSummary.secondary.map((item) => (
+                                <Badge key={item} variant="outline" className="text-xs">
+                                  {item}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      {uncertaintyReasons.length > 0 && (
+                        <div className="space-y-1.5">
+                          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                            {t('uncertaintyReasonsLabel')}
+                          </p>
+                          <ul className="space-y-1 text-sm text-muted-foreground">
+                            {uncertaintyReasons.map((reason, index) => (
+                              <li
+                                key={`${result.schoolId}-uncertainty-${index}`}
+                                className="flex gap-2"
+                              >
+                                <span className="mt-1 h-1.5 w-1.5 rounded-full bg-muted-foreground/60 shrink-0" />
+                                <span>{reason}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* School stats overview */}
                   {result.schoolMeta && (
                     <div className="space-y-2">
@@ -386,6 +563,7 @@ export const PredictionResultCard = memo(
                         communityInsight={(result as any).communityInsight}
                         probability={result.probability}
                         isInternational={isInternational ?? false}
+                        roundContext={result.roundContext}
                       />
                     </div>
                   )}
@@ -410,22 +588,20 @@ export const PredictionResultCard = memo(
                   {/* Report actual result */}
                   <ResultFeedbackButtons
                     schoolId={result.schoolId}
-                    actualResult={result.actualResult}
+                    actualResult={result.latestOutcomeLabel?.result ?? result.actualResult}
                     onResultReported={onResultReported}
                   />
 
                   {/* AI deep analysis link */}
                   <button
                     onClick={() => {
-                      window.dispatchEvent(
-                        new CustomEvent('ai-assistant-action', {
-                          detail: {
-                            message: t('detailedAnalysisPrompt', {
-                              schoolName: result.schoolName,
-                            }),
-                          },
-                        })
-                      );
+                      openFloatingAgentChat({
+                        message: t('detailedAnalysisPrompt', {
+                          schoolName: result.schoolName,
+                        }),
+                        context: predictionContext,
+                        agentHint: AgentType.SCHOOL,
+                      });
                     }}
                     className="text-sm text-primary hover:underline flex items-center gap-1"
                   >

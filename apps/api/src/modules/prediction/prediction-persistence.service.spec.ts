@@ -44,6 +44,12 @@ describe('PredictionPersistenceService', () => {
         {
           provide: PrismaService,
           useValue: {
+            predictionPolicyVersion: {
+              findUnique: jest.fn().mockResolvedValue(null),
+              upsert: jest.fn().mockResolvedValue({
+                id: 'legacy-v3-enterprise',
+              }),
+            },
             predictionResult: {
               upsert: jest.fn().mockResolvedValue({ id: 'pred-1' }),
             },
@@ -87,6 +93,7 @@ describe('PredictionPersistenceService', () => {
           suggestions: mockResult.suggestions,
           comparison: mockResult.comparison,
           modelVersion: 'v3-enterprise',
+          policyVersionId: undefined,
           source: 'prediction',
         },
         create: {
@@ -102,6 +109,7 @@ describe('PredictionPersistenceService', () => {
           suggestions: mockResult.suggestions,
           comparison: mockResult.comparison,
           modelVersion: 'v3-enterprise',
+          policyVersionId: undefined,
           source: 'prediction',
         },
       });
@@ -121,6 +129,7 @@ describe('PredictionPersistenceService', () => {
           confidence: 'medium',
           source: 'prediction',
           modelVersion: 'v3-enterprise',
+          policyVersionId: undefined,
         },
       });
     });
@@ -176,13 +185,96 @@ describe('PredictionPersistenceService', () => {
       expect(prisma.predictionSnapshot.create).not.toHaveBeenCalled();
     });
 
-    it('should use v3-enterprise model version', async () => {
+    it('should default to v3-enterprise when result modelVersion is absent', async () => {
       await service.savePrediction('profile-1', 'school-1', mockResult);
 
       const upsertCall = (prisma.predictionResult.upsert as jest.Mock).mock
         .calls[0][0];
       expect(upsertCall.create.modelVersion).toBe('v3-enterprise');
       expect(upsertCall.update.modelVersion).toBe('v3-enterprise');
+    });
+
+    it('should preserve explicit modelVersion when provided', async () => {
+      await service.savePrediction('profile-1', 'school-1', {
+        ...mockResult,
+        modelVersion: 'v5-ml-primary',
+      });
+
+      const upsertCall = (prisma.predictionResult.upsert as jest.Mock).mock
+        .calls[0][0];
+      const snapshotCall = (prisma.predictionSnapshot.create as jest.Mock).mock
+        .calls[0][0];
+
+      expect(upsertCall.create.modelVersion).toBe('v5-ml-primary');
+      expect(upsertCall.update.modelVersion).toBe('v5-ml-primary');
+      expect(snapshotCall.data.modelVersion).toBe('v5-ml-primary');
+    });
+
+    it('should persist policyVersionId when it exists', async () => {
+      (
+        prisma.predictionPolicyVersion.findUnique as jest.Mock
+      ).mockResolvedValue({
+        id: 'policy-v1',
+      });
+
+      await service.savePrediction('profile-1', 'school-1', {
+        ...mockResult,
+        policyVersionId: 'policy-v1',
+      } as any);
+
+      const upsertCall = (prisma.predictionResult.upsert as jest.Mock).mock
+        .calls[0][0];
+      const snapshotCall = (prisma.predictionSnapshot.create as jest.Mock).mock
+        .calls[0][0];
+
+      expect(upsertCall.create.policyVersionId).toBe('policy-v1');
+      expect(upsertCall.update.policyVersionId).toBe('policy-v1');
+      expect(snapshotCall.data.policyVersionId).toBe('policy-v1');
+    });
+
+    it('should backfill legacy policyVersionId before persisting', async () => {
+      await service.savePrediction('profile-1', 'school-1', {
+        ...mockResult,
+        policyVersionId: 'legacy-v3-enterprise',
+      } as any);
+
+      const upsertCall = (prisma.predictionResult.upsert as jest.Mock).mock
+        .calls[0][0];
+      const snapshotCall = (prisma.predictionSnapshot.create as jest.Mock).mock
+        .calls[0][0];
+
+      expect(prisma.predictionPolicyVersion.upsert).toHaveBeenCalledWith({
+        where: { id: 'legacy-v3-enterprise' },
+        update: {},
+        create: expect.objectContaining({
+          id: 'legacy-v3-enterprise',
+          policyKey: 'default',
+          version: 'legacy-v3-enterprise',
+          status: 'RETIRED',
+        }),
+        select: { id: true },
+      });
+      expect(upsertCall.create.policyVersionId).toBe('legacy-v3-enterprise');
+      expect(upsertCall.update.policyVersionId).toBe('legacy-v3-enterprise');
+      expect(snapshotCall.data.policyVersionId).toBe('legacy-v3-enterprise');
+    });
+
+    it('should refuse to persist unknown non-legacy policyVersionId', async () => {
+      const errorSpy = jest
+        .spyOn((service as any).logger, 'error')
+        .mockImplementation(() => undefined);
+
+      await service.savePrediction('profile-1', 'school-1', {
+        ...mockResult,
+        policyVersionId: 'policy-missing',
+      } as any);
+
+      expect(prisma.predictionPolicyVersion.upsert).not.toHaveBeenCalled();
+      expect(prisma.predictionResult.upsert).not.toHaveBeenCalled();
+      expect(prisma.predictionSnapshot.create).not.toHaveBeenCalled();
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Prediction policy version policy-missing not found',
+      );
     });
 
     it('should handle result with undefined optional fields', async () => {

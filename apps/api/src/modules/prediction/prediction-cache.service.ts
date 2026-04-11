@@ -24,8 +24,15 @@ export class PredictionCacheService {
    * @param schoolId - The school identifier
    * @returns Cache key in the format `prediction:{profileId}:{schoolId}`
    */
-  getCacheKey(profileId: string, schoolId: string): string {
-    return `${CACHE_PREFIX}${profileId}:${schoolId}`;
+  getCacheKey(
+    profileId: string,
+    schoolId: string,
+    policyVersionId?: string,
+    engineMode?: string,
+  ): string {
+    const versionSuffix = policyVersionId || 'legacy';
+    const modeSuffix = engineMode || 'v4';
+    return `${CACHE_PREFIX}${profileId}:${schoolId}:${versionSuffix}:${modeSuffix}`;
   }
 
   /**
@@ -80,11 +87,13 @@ export class PredictionCacheService {
     profileId: string,
     schoolId: string,
     profileHash?: string,
+    policyVersionId?: string,
+    engineMode?: string,
   ): Promise<PredictionResultDto | null> {
     try {
       const cached = await this.redis.getJSON<
         PredictionResultDto & { _profileHash?: string }
-      >(this.getCacheKey(profileId, schoolId));
+      >(this.getCacheKey(profileId, schoolId, policyVersionId, engineMode));
       if (cached) {
         // Hash-on-read: treat as cache miss if profile data changed
         if (
@@ -116,10 +125,12 @@ export class PredictionCacheService {
     schoolId: string,
     result: PredictionResultDto,
     profileHash?: string,
+    policyVersionId?: string,
+    engineMode?: string,
   ): Promise<void> {
     try {
       await this.redis.setJSON(
-        this.getCacheKey(profileId, schoolId),
+        this.getCacheKey(profileId, schoolId, policyVersionId, engineMode),
         {
           ...result,
           cachedAt: new Date().toISOString(),
@@ -147,7 +158,9 @@ export class PredictionCacheService {
   ): Promise<void> {
     try {
       for (const schoolId of schoolIds) {
-        await this.redis.del(this.getCacheKey(profileId, schoolId));
+        await this.redis.delByPrefix(
+          `${CACHE_PREFIX}${profileId}:${schoolId}:`,
+        );
       }
       this.logger.log(
         `Invalidated ${schoolIds.length} prediction caches for profile ${profileId}`,

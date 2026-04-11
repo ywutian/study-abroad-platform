@@ -14,12 +14,52 @@ export enum ProbabilitySource {
 }
 
 export interface PredictionRequest {
-  profileId: string;
-  targetSchools: string[];
+  schoolIds: string[];
+  forceRefresh?: boolean;
 }
 
 export type TierType = 'reach' | 'match' | 'safety';
 export type ConfidenceLevel = 'low' | 'medium' | 'high';
+export type SchoolTestingPolicy = 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
+export type SchoolIntlAidPolicy = 'NEED_BLIND' | 'NEED_AWARE' | 'UNKNOWN';
+export type SchoolRoundContext = 'ED' | 'ED2' | 'EA' | 'REA' | 'RD' | 'UC' | 'UNKNOWN';
+export type PolicySourceQuality = 'REVIEWED' | 'DERIVED' | 'UNKNOWN';
+export type PredictionOutcomeLabelStatus =
+  | 'SELF_REPORTED'
+  | 'COUNSELOR_VERIFIED'
+  | 'DOCUMENT_VERIFIED'
+  | 'CONFLICTED'
+  | 'CENSORED';
+
+export interface SchoolPolicyContext {
+  testingPolicy: SchoolTestingPolicy;
+  intlAidPolicy: SchoolIntlAidPolicy;
+  roundContext: SchoolRoundContext;
+  policySourceQuality: PolicySourceQuality;
+}
+
+export interface PredictionSourceSummary {
+  label: string;
+  detail?: string;
+}
+
+export interface PredictionOutcomeLabel {
+  id: string;
+  result:
+    | 'ADMITTED'
+    | 'REJECTED'
+    | 'WAITLISTED'
+    | 'DEFERRED'
+    | 'WITHDRAWN'
+    | 'UNKNOWN'
+    | 'CENSORED';
+  status: PredictionOutcomeLabelStatus;
+  notes?: string;
+  evidenceUrl?: string;
+  reportedAt: string;
+  resolvedAt?: string;
+  round?: string;
+}
 
 export interface PredictionFactor {
   name: string;
@@ -39,10 +79,17 @@ export interface EngineScores {
   stats: number;
   ai?: number;
   historical?: number;
+  ml?: number;
   memoryAdjustment?: number;
   weights: Record<string, number>;
   fusionMethod: string;
   crossEngineConsistency?: number;
+  mlModelTier?: number;
+  mlContributions?: Array<{
+    feature: string;
+    contribution: number;
+    direction: 'positive' | 'negative';
+  }>;
 }
 
 export interface PredictionResult {
@@ -60,8 +107,16 @@ export interface PredictionResult {
   fromCache?: boolean;
   cachedAt?: string;
   modelVersion?: string;
+  servedPolicyVersionId?: string;
   source?: string;
   actualResult?: string;
+  cohortKey?: string;
+  roundContext?: string;
+  sourceSummary?: PredictionSourceSummary[];
+  uncertaintyReasons?: string[];
+  confidenceReason?: string;
+  latestOutcomeLabel?: PredictionOutcomeLabel;
+  policyContext?: SchoolPolicyContext;
   schoolMeta?: {
     usNewsRank?: number;
     /** 0–100 percentage (e.g. 4.0 means 4%) */
@@ -85,6 +140,13 @@ export interface PredictionResult {
     major: string;
   };
   crossEngineConsistency?: number;
+
+  // v5 ML-Primary fields (optional, backward compatible)
+  pipelineTier?: number;
+  calibrationMethod?: string;
+  baseRate?: number;
+  hookShifts?: Array<{ hookType: string; logOddsShift: number; source: string }>;
+  quotaDisclosure?: string;
 }
 
 export interface MajorBreakdown {

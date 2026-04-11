@@ -1,6 +1,13 @@
 'use client';
 
-import { BarChart3, Brain, SlidersHorizontal } from 'lucide-react';
+import {
+  BarChart3,
+  Brain,
+  GitBranch,
+  ShieldCheck,
+  SlidersHorizontal,
+  Workflow,
+} from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -31,8 +38,36 @@ const SystemCalibrationTab = dynamic(
     })),
   { ssr: false }
 );
+const WorkflowTab = dynamic(
+  () =>
+    import('./_components/workflow-tab').then((m) => ({
+      default: m.WorkflowTab,
+    })),
+  { ssr: false }
+);
+const PoliciesTab = dynamic(
+  () =>
+    import('./_components/policies-tab').then((m) => ({
+      default: m.PoliciesTab,
+    })),
+  { ssr: false }
+);
+const OutcomesTab = dynamic(
+  () =>
+    import('./_components/outcomes-tab').then((m) => ({
+      default: m.OutcomesTab,
+    })),
+  { ssr: false }
+);
 
-const VALID_TABS = ['diagnosis', 'school-calibrations', 'system'] as const;
+const VALID_TABS = [
+  'diagnosis',
+  'school-calibrations',
+  'system',
+  'workflow',
+  'policies',
+  'outcomes',
+] as const;
 type CalibrationTab = (typeof VALID_TABS)[number];
 
 const TAB_CONFIG = [
@@ -50,6 +85,21 @@ const TAB_CONFIG = [
     value: 'system' as const,
     icon: Brain,
     labelKey: 'admin.calibrations.tabs.systemCalibration',
+  },
+  {
+    value: 'workflow' as const,
+    icon: Workflow,
+    labelKey: 'admin.calibrations.tabs.workflow',
+  },
+  {
+    value: 'policies' as const,
+    icon: GitBranch,
+    labelKey: 'admin.calibrations.tabs.policies',
+  },
+  {
+    value: 'outcomes' as const,
+    icon: ShieldCheck,
+    labelKey: 'admin.calibrations.tabs.outcomes',
   },
 ];
 
@@ -101,6 +151,15 @@ export default function AdminCalibrationsPage() {
         </TabsContent>
         <TabsContent value="system" className="mt-4">
           <SystemCalibrationTab />
+        </TabsContent>
+        <TabsContent value="workflow" className="mt-4">
+          <WorkflowTab />
+        </TabsContent>
+        <TabsContent value="policies" className="mt-4">
+          <PoliciesTab />
+        </TabsContent>
+        <TabsContent value="outcomes" className="mt-4">
+          <OutcomesTab />
         </TabsContent>
       </Tabs>
     </>

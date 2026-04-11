@@ -24,11 +24,24 @@ interface PredictionHistoryItem {
   probability: number;
   tier?: string;
   confidence?: string;
+  confidenceReason?: string;
+  roundContext?: string;
+  cohortKey?: string;
   source?: string;
+  sourceSummary?: string | { primary?: string };
+  uncertaintyReasons?: string[];
   modelVersion?: string;
   actualResult?: string;
+  latestOutcomeLabel?: {
+    result: string;
+    status?: string;
+  };
   createdAt: string;
   updatedAt: string;
+}
+
+function humanizeCompactLabel(value: string) {
+  return value.replace(/[_-]+/g, ' ').trim();
 }
 
 export function PredictionHistoryTab() {
@@ -76,6 +89,7 @@ export function PredictionHistoryTab() {
             const prob = Math.round(item.probability * 100);
             const tier = item.tier as keyof typeof TIER_STYLES | undefined;
             const tierStyle = tier ? TIER_STYLES[tier] : undefined;
+            const outcomeResult = item.latestOutcomeLabel?.result ?? item.actualResult;
 
             return (
               <div
@@ -90,12 +104,12 @@ export function PredictionHistoryTab() {
                         {t(`tier.${tier}`)}
                       </Badge>
                     )}
-                    {item.actualResult && (
+                    {outcomeResult && (
                       <Badge
-                        variant={item.actualResult === 'ADMITTED' ? 'default' : 'outline'}
+                        variant={outcomeResult === 'ADMITTED' ? 'default' : 'outline'}
                         className="text-xs"
                       >
-                        {item.actualResult}
+                        {t(`result.${outcomeResult.toLowerCase()}`)}
                       </Badge>
                     )}
                   </div>
@@ -105,6 +119,7 @@ export function PredictionHistoryTab() {
                       month: 'short',
                       day: 'numeric',
                     })}
+                    {item.roundContext && ` · ${humanizeCompactLabel(item.roundContext)}`}
                     {item.source && ` · ${item.source}`}
                   </div>
                 </div>

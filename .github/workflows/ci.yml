@@ -335,6 +335,118 @@ jobs:
           JWT_EXPIRES_IN: 15m
           JWT_REFRESH_EXPIRES_IN: 7d
 
+  prediction-gate:
+    name: Prediction Gate
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.api == 'true' || needs.detect-changes.outputs.shared == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: studyabroad_prediction_gate
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm --filter api exec prisma generate
+
+      - name: Enable pgvector extension
+        run: PGPASSWORD=postgres psql -h localhost -U postgres -d studyabroad_prediction_gate -c "CREATE EXTENSION IF NOT EXISTS vector;"
+
+      - name: Apply migrations to prediction gate database
+        run: pnpm --filter api exec prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_prediction_gate?schema=public
+
+      - name: Build shared package
+        run: pnpm --filter @study-abroad/shared build
+
+      - name: Build API
+        run: pnpm --filter api build
+
+      - name: Seed prediction gate database
+        run: pnpm --filter api exec prisma db seed
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_prediction_gate?schema=public
+
+      - name: Start API server
+        run: |
+          pnpm --filter api start:prod > /tmp/prediction-gate-api.log 2>&1 &
+          echo $! > /tmp/prediction-gate-api.pid
+        env:
+          NODE_ENV: test
+          PORT: 4101
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_prediction_gate?schema=public
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test-secret-key-for-ci-prediction-gate
+          JWT_REFRESH_SECRET: test-refresh-secret-key-for-ci-prediction-gate
+          JWT_EXPIRES_IN: 15m
+          JWT_REFRESH_EXPIRES_IN: 7d
+
+      - name: Wait for API readiness
+        run: |
+          for i in {1..60}; do
+            if curl -sf http://localhost:4101/health/ready > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/prediction-gate-api.log || true
+          exit 1
+
+      - name: Run prediction gate
+        run: pnpm exec tsx scripts/prediction-gate.ts --days 365 --min-verified 200 --school-query Wisconsin --round EA --base-url http://localhost:4101/api/v1
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_prediction_gate?schema=public
+
+      - name: Upload prediction gate API log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prediction-gate-api-log
+          path: /tmp/prediction-gate-api.log
+          retention-days: 7
+
+      - name: Stop API server
+        if: always()
+        run: |
+          if [ -f /tmp/prediction-gate-api.pid ]; then
+            kill "$(cat /tmp/prediction-gate-api.pid)" || true
+          fi
+
   # ── Documentation Check ───────────────────────────────────
   doc-check:
     name: Documentation Check

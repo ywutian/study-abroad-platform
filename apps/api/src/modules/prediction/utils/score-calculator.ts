@@ -27,6 +27,7 @@ export {
   calculateConfidence,
   enforceMonotonicity,
   calculateSelectivityIndex,
+  resolveContextualAcceptanceRate,
   SCORING_WEIGHTS,
   ACADEMIC_CONFIG,
   TIER_POINTS,

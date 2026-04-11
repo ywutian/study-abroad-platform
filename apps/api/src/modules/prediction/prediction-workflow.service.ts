@@ -1,0 +1,1324 @@
+import {
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import { PrismaService } from '../../prisma/prisma.service';
+import { RedisService } from '../../common/redis/redis.service';
+import { createPaginatedResponse } from '../../common/dto/pagination.dto';
+import {
+  AuditAction,
+  AuditLogService,
+} from '../../common/services/audit-log.service';
+import {
+  BuildPredictionSignalsDto,
+  CreatePredictionObservationDto,
+  CreatePredictionPolicyVersionDto,
+  PredictionOutcomeQueryDto,
+  PredictionObservationQueryDto,
+  PredictionSignalQueryDto,
+  PredictionPolicyQueryDto,
+  ReviewPredictionOutcomeDto,
+  ReviewPredictionObservationDto,
+} from '../admin/dto';
+import { PredictionHistoricalService } from './prediction-historical.service';
+import { PredictionReportingService } from './prediction-reporting.service';
+
+const DEFAULT_POLICY_THRESHOLDS = {
+  minShadowPredictions: 1000,
+  minResolvedLabels: 200,
+  minCohortResolvedLabels: 50,
+  minAucDelta: 0.01,
+  maxBrierDelta: -0.01,
+  maxEceRegression: 0.02,
+};
+
+const DEFAULT_RELATIONSHIP_MAX_IMPACT_CAP = 0.08;
+const RELATIONSHIP_STRONG_HS_REDUCTION = 0.35;
+const RELATIONSHIP_FEEDER_REDUCTION = 0.5;
+
+type ObservationStatus =
+  | 'RAW'
+  | 'UNDER_REVIEW'
+  | 'APPROVED_FOR_SIGNAL'
+  | 'APPROVED_FOR_PRIOR'
+  | 'REJECTED'
+  | 'EXPIRED'
+  | 'SUPERSEDED'
+  | 'LICENSE_BLOCKED'
+  | 'CONFLICT_FLAGGED';
+
+type PolicyStatus = 'DRAFT' | 'CANDIDATE' | 'SHADOW' | 'ACTIVE' | 'RETIRED';
+
+@Injectable()
+export class PredictionWorkflowService {
+  private readonly logger = new Logger(PredictionWorkflowService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly redis: RedisService,
+    private readonly auditLog: AuditLogService,
+    private readonly historicalService: PredictionHistoricalService,
+    private readonly reportingService: PredictionReportingService,
+  ) {}
+
+  private normalizeDate(value?: string | null): Date | undefined {
+    return value ? new Date(value) : undefined;
+  }
+
+  private normalizeThresholds(raw?: Record<string, unknown> | null) {
+    return {
+      ...DEFAULT_POLICY_THRESHOLDS,
+      ...(raw ?? {}),
+    };
+  }
+
+  private clampSigned(value: number, maxAbs: number): number {
+    if (Number.isNaN(value)) return 0;
+    return Math.max(-maxAbs, Math.min(maxAbs, value));
+  }
+
+  private summarizeObservation(observation: {
+    sourceName: string;
+    sourceType: string;
+    sourceUrl: string | null;
+    year: number | null;
+  }) {
+    return [
+      {
+        label: observation.sourceName,
+        detail: [observation.sourceType, observation.year]
+          .filter(Boolean)
+          .join(' · '),
+        url: observation.sourceUrl ?? undefined,
+      },
+    ];
+  }
+
+  private resolvePriorRate(observation: {
+    rate: unknown;
+    admitCount: number | null;
+    applyCount: number | null;
+  }): number | null {
+    if (observation.rate != null) {
+      return Number(observation.rate);
+    }
+    if (
+      observation.admitCount != null &&
+      observation.applyCount != null &&
+      observation.applyCount > 0
+    ) {
+      return observation.admitCount / observation.applyCount;
+    }
+    return null;
+  }
+
+  private classifyObservationTarget(observation: {
+    status: ObservationStatus;
+    sourceType: string;
+    observationStage: string;
+    metricType: string;
+  }): 'prior' | 'drift' | 'relationship' | null {
+    if (observation.status === 'APPROVED_FOR_PRIOR') {
+      return 'prior';
+    }
+    if (observation.status !== 'APPROVED_FOR_SIGNAL') {
+      return null;
+    }
+    if (this.isRelationshipObservation(observation)) {
+      return 'relationship';
+    }
+    if (this.isDriftObservation(observation)) {
+      return 'drift';
+    }
+    return null;
+  }
+
+  private validateObservationForReview(
+    observation: {
+      id: string;
+      schoolId: string | null;
+      cohortKey: string | null;
+      round: string | null;
+      rate: Prisma.Decimal | null;
+      admitCount: number | null;
+      applyCount: number | null;
+    },
+    targetStatus: ObservationStatus,
+  ) {
+    if (targetStatus === 'APPROVED_FOR_PRIOR') {
+      if (
+        !observation.schoolId ||
+        !observation.cohortKey ||
+        !observation.round
+      ) {
+        throw new BadRequestException(
+          'Prior observations require schoolId, cohortKey, and round',
+        );
+      }
+      if (this.resolvePriorRate(observation) == null) {
+        throw new BadRequestException(
+          'Prior observations require a direct rate or both admitCount and applyCount',
+        );
+      }
+    }
+  }
+
+  private validateObservationForActivation(observation: {
+    id: string;
+    status: ObservationStatus;
+    schoolId: string | null;
+    cohortKey: string | null;
+    round: string | null;
+    reviewAt: Date | null;
+    expiresAt: Date | null;
+    rate: Prisma.Decimal | null;
+    admitCount: number | null;
+    applyCount: number | null;
+    sourceType: string;
+    observationStage: string;
+    metricType: string;
+    metadata: Prisma.JsonValue | null;
+  }): 'prior' | 'drift' | 'relationship' | null {
+    if (
+      ['EXPIRED', 'SUPERSEDED', 'LICENSE_BLOCKED', 'CONFLICT_FLAGGED'].includes(
+        observation.status,
+      )
+    ) {
+      return null;
+    }
+
+    const target = this.classifyObservationTarget(observation);
+    if (!target) return null;
+
+    if (!observation.schoolId) {
+      throw new ConflictException(
+        `Observation ${observation.id} cannot activate without schoolId`,
+      );
+    }
+
+    if (target === 'prior') {
+      if (!observation.cohortKey || !observation.round) {
+        throw new ConflictException(
+          `Observation ${observation.id} cannot activate as prior without cohortKey and round`,
+        );
+      }
+      if (this.resolvePriorRate(observation) == null) {
+        throw new ConflictException(
+          `Observation ${observation.id} cannot activate as prior without denominator or direct rate`,
+        );
+      }
+    }
+
+    if (target === 'relationship') {
+      const metadata =
+        (observation.metadata as Record<string, unknown> | null) ?? {};
+      if (!observation.reviewAt || !observation.expiresAt) {
+        throw new ConflictException(
+          `Relationship observation ${observation.id} requires reviewAt and expiresAt`,
+        );
+      }
+      const maxImpactCap =
+        typeof metadata.maxImpactCap === 'number'
+          ? metadata.maxImpactCap
+          : DEFAULT_RELATIONSHIP_MAX_IMPACT_CAP;
+      if (!Number.isFinite(maxImpactCap) || maxImpactCap <= 0) {
+        throw new ConflictException(
+          `Relationship observation ${observation.id} requires a valid maxImpactCap`,
+        );
+      }
+    }
+
+    return target;
+  }
+
+  private async writeAuditLog(
+    actorId: string,
+    action: string,
+    resource: string,
+    resourceId: string,
+    metadata?: Record<string, unknown>,
+  ) {
+    await this.auditLog.log({
+      userId: actorId,
+      action: AuditAction.ADMIN_ACTION,
+      resource,
+      resourceId,
+      metadata: {
+        action,
+        ...metadata,
+      },
+    });
+  }
+
+  private normalizeSourceSummary(
+    summary: Prisma.JsonValue | null | undefined,
+  ): Array<{ label: string; detail?: string; url?: string }> {
+    if (!summary || !Array.isArray(summary)) return [];
+    return summary.filter(Boolean) as Array<{
+      label: string;
+      detail?: string;
+      url?: string;
+    }>;
+  }
+
+  private async getEligibleOutcomeCounts(policyVersionId: string) {
+    const results = await this.prisma.predictionResult.findMany({
+      where: { policyVersionId },
+      select: {
+        id: true,
+        cohortKey: true,
+        outcomeLabelRecords: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+
+    const cohorts = {
+      CN__CHINA_LOCAL: 0,
+      CN__CHINA_INTL: 0,
+      CN__OVERSEAS_HS: 0,
+    };
+    let resolvedLabels = 0;
+
+    for (const result of results) {
+      const canonical = this.reportingService.resolveCanonicalOutcome(
+        result.outcomeLabelRecords,
+      );
+      if (!canonical.eligibleForCalibration) continue;
+      resolvedLabels += 1;
+      if (result.cohortKey && result.cohortKey in cohorts) {
+        cohorts[result.cohortKey as keyof typeof cohorts] += 1;
+      }
+    }
+
+    return { resolvedLabels, cohorts };
+  }
+
+  private async buildRelationshipAdjustment(observation: {
+    highSchoolId: string | null;
+    schoolId: string | null;
+    observedWeight: Prisma.Decimal | null;
+    metadata: Prisma.JsonValue | null;
+  }) {
+    const metadata =
+      (observation.metadata as Record<string, unknown> | null) ?? {};
+    const configuredCap =
+      typeof metadata.maxImpactCap === 'number'
+        ? metadata.maxImpactCap
+        : DEFAULT_RELATIONSHIP_MAX_IMPACT_CAP;
+    const rawSignalStrength =
+      typeof metadata.signalStrength === 'number'
+        ? metadata.signalStrength
+        : observation.observedWeight != null
+          ? Number(observation.observedWeight)
+          : 0.04;
+
+    let cap = configuredCap;
+    const deductions: string[] = [];
+
+    if (observation.highSchoolId && observation.schoolId) {
+      const [highSchool, school, feederSignal] = await Promise.all([
+        this.prisma.highSchool.findUnique({
+          where: { id: observation.highSchoolId },
+          select: {
+            recognition: true,
+            placementRecord: true,
+            resources: true,
+          },
+        }),
+        this.prisma.school.findUnique({
+          where: { id: observation.schoolId },
+          select: { acceptanceRate: true },
+        }),
+        this.historicalService.getFeederSignal(
+          observation.highSchoolId,
+          observation.schoolId,
+          undefined,
+        ),
+      ]);
+
+      const acceptanceRate =
+        school?.acceptanceRate != null ? Number(school.acceptanceRate) : null;
+
+      const schoolStrength =
+        (highSchool?.recognition ?? 0) +
+        (highSchool?.placementRecord ?? 0) +
+        (highSchool?.resources ?? 0);
+
+      if (schoolStrength >= 11) {
+        cap = cap * (1 - RELATIONSHIP_STRONG_HS_REDUCTION);
+        deductions.push('high-school-quality');
+      }
+
+      if (feederSignal?.isFeeder) {
+        cap = cap * (1 - RELATIONSHIP_FEEDER_REDUCTION);
+        deductions.push('historical-feeder');
+      }
+
+      if (
+        acceptanceRate != null &&
+        feederSignal?.isFeeder &&
+        acceptanceRate > 0
+      ) {
+        const feederRatio = feederSignal.admitRate / (acceptanceRate / 100);
+        if (feederRatio > 1) {
+          cap = cap * 0.85;
+          deductions.push('placement-overlap');
+        }
+      }
+    }
+
+    const signalStrength = this.clampSigned(rawSignalStrength, cap);
+
+    return {
+      maxImpactCap: cap,
+      signalStrength,
+      deductions,
+    };
+  }
+
+  private isDriftObservation(observation: {
+    sourceType: string;
+    observationStage: string;
+    metricType: string;
+  }) {
+    const stage = observation.observationStage.toUpperCase();
+    const metric = observation.metricType.toLowerCase();
+    return (
+      stage === 'DRIFT' ||
+      stage === 'REGIME' ||
+      metric.includes('drift') ||
+      metric.includes('regime')
+    );
+  }
+
+  private isRelationshipObservation(observation: {
+    sourceType: string;
+    observationStage: string;
+    metricType: string;
+  }) {
+    const stage = observation.observationStage.toUpperCase();
+    const metric = observation.metricType.toLowerCase();
+    return (
+      observation.sourceType === 'RELATIONSHIP_EVIDENCE' ||
+      stage === 'RELATIONSHIP' ||
+      metric.includes('relationship') ||
+      metric.includes('feeder') ||
+      metric.includes('partnership')
+    );
+  }
+
+  /**
+   * Invalidate prediction caches for specific policy versions.
+   * Falls back to full invalidation if no versions specified.
+   */
+  private async invalidatePredictionCaches(policyVersionIds?: string[]) {
+    if (policyVersionIds?.length) {
+      await Promise.all(
+        policyVersionIds.map((vid) =>
+          this.redis.delByPrefix(`prediction:*:*:${vid}`),
+        ),
+      );
+      // Also invalidate legacy (unversioned) cache entries
+      await this.redis.delByPrefix('prediction:*:*:legacy');
+    } else {
+      await this.redis.delByPrefix('prediction:');
+    }
+  }
+
+  async listObservations(query: PredictionObservationQueryDto) {
+    const where = {
+      ...(query.status ? { status: query.status as ObservationStatus } : {}),
+      ...(query.sourceType ? { sourceType: query.sourceType } : {}),
+      ...(query.schoolId ? { schoolId: query.schoolId } : {}),
+      ...(query.policyVersionId
+        ? { policyVersionId: query.policyVersionId }
+        : {}),
+    };
+
+    const page = query.page ?? 1;
+    const pageSize = query.pageSize ?? 20;
+    const skip = (page - 1) * pageSize;
+
+    const [items, total] = await Promise.all([
+      this.prisma.predictionSourceObservation.findMany({
+        where,
+        orderBy: [{ observedAt: 'desc' }, { createdAt: 'desc' }],
+        skip,
+        take: pageSize,
+        include: {
+          school: {
+            select: { id: true, name: true, nameZh: true, usNewsRank: true },
+          },
+          highSchool: {
+            select: { id: true, name: true, tier: true },
+          },
+        },
+      }),
+      this.prisma.predictionSourceObservation.count({ where }),
+    ]);
+
+    return createPaginatedResponse(items, total, page, pageSize);
+  }
+
+  async createObservation(
+    actorId: string,
+    dto: CreatePredictionObservationDto,
+  ) {
+    const created = await this.prisma.predictionSourceObservation.create({
+      data: {
+        profileId: dto.profileId,
+        schoolId: dto.schoolId,
+        highSchoolId: dto.highSchoolId,
+        policyVersionId: dto.policyVersionId,
+        cohortKey: dto.cohortKey,
+        round: dto.round,
+        metricType: dto.metricType,
+        rate: dto.rate,
+        admitCount: dto.admitCount,
+        applyCount: dto.applyCount,
+        year: dto.year,
+        sourceType: dto.sourceType,
+        sourceName: dto.sourceName,
+        sourceVersion: dto.sourceVersion,
+        sourceUrl: dto.sourceUrl,
+        license: dto.license,
+        qualityScore: dto.qualityScore,
+        observationStage: dto.observationStage ?? 'SERVE',
+        observedProbability: dto.observedProbability,
+        observedProbabilityLow: dto.observedProbabilityLow,
+        observedProbabilityHigh: dto.observedProbabilityHigh,
+        observedWeight: dto.observedWeight,
+        confidenceLabel: dto.confidenceLabel,
+        sampleCount: dto.sampleCount,
+        selectivityBand: dto.selectivityBand,
+        reviewAt: this.normalizeDate(dto.reviewAt),
+        observedAt: this.normalizeDate(dto.observedAt) ?? new Date(),
+        effectiveFromCycle: dto.effectiveFromCycle,
+        expiresAt: this.normalizeDate(dto.expiresAt),
+        metadata: dto.metadata as Prisma.InputJsonValue | undefined,
+        notes: dto.notes
+          ? `${dto.notes}\n\n[created-by:${actorId}]`
+          : `[created-by:${actorId}]`,
+      },
+    });
+
+    await this.writeAuditLog(
+      actorId,
+      'PREDICTION_OBSERVATION_CREATE',
+      'prediction_observation',
+      created.id,
+      {
+        sourceType: created.sourceType,
+        metricType: created.metricType,
+      },
+    );
+
+    return created;
+  }
+
+  async reviewObservation(
+    actorId: string,
+    id: string,
+    dto: ReviewPredictionObservationDto,
+  ) {
+    const observation =
+      await this.prisma.predictionSourceObservation.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          notes: true,
+          schoolId: true,
+          cohortKey: true,
+          round: true,
+          rate: true,
+          admitCount: true,
+          applyCount: true,
+        },
+      });
+
+    if (!observation) {
+      throw new NotFoundException('Prediction observation not found');
+    }
+
+    this.validateObservationForReview(
+      observation,
+      dto.status as ObservationStatus,
+    );
+
+    const updated = await this.prisma.predictionSourceObservation.update({
+      where: { id },
+      data: {
+        status: dto.status as ObservationStatus,
+        reviewAt: this.normalizeDate(dto.reviewAt),
+        expiresAt: this.normalizeDate(dto.expiresAt),
+        reviewedBy: actorId,
+        notes: dto.notes
+          ? `${observation.notes ? `${observation.notes}\n\n` : ''}${dto.notes}`
+          : observation.notes,
+      },
+    });
+
+    await this.writeAuditLog(
+      actorId,
+      'PREDICTION_OBSERVATION_REVIEW',
+      'prediction_observation',
+      id,
+      {
+        status: dto.status,
+      },
+    );
+
+    return updated;
+  }
+
+  async getActiveSignals(query: PredictionSignalQueryDto) {
+    const limit = query.limit ?? 10;
+    const where = { policyVersionId: query.policyVersionId };
+
+    const [priors, drifts, relationships, counts] = await Promise.all([
+      this.prisma.schoolCohortRoundPrior.findMany({
+        where,
+        orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
+        take: limit,
+        include: {
+          school: {
+            select: { id: true, name: true, nameZh: true, usNewsRank: true },
+          },
+        },
+      }),
+      this.prisma.schoolCohortRegimeSignal.findMany({
+        where,
+        orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
+        take: limit,
+        include: {
+          school: {
+            select: { id: true, name: true, nameZh: true, usNewsRank: true },
+          },
+        },
+      }),
+      this.prisma.schoolRelationshipSignal.findMany({
+        where,
+        orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
+        take: limit,
+        include: {
+          targetSchool: {
+            select: { id: true, name: true, nameZh: true, usNewsRank: true },
+          },
+          sourceHighSchool: {
+            select: { id: true, name: true, tier: true },
+          },
+        },
+      }),
+      Promise.all([
+        this.prisma.schoolCohortRoundPrior.count({ where }),
+        this.prisma.schoolCohortRegimeSignal.count({ where }),
+        this.prisma.schoolRelationshipSignal.count({ where }),
+      ]),
+    ]);
+
+    return {
+      priors,
+      drifts,
+      relationships,
+      counts: {
+        priors: counts[0],
+        drifts: counts[1],
+        relationships: counts[2],
+      },
+    };
+  }
+
+  async listOutcomeLabels(query: PredictionOutcomeQueryDto) {
+    return this.reportingService.getOutcomeReviewQueue(query);
+  }
+
+  async reviewOutcomeLabel(
+    actorId: string,
+    id: string,
+    dto: ReviewPredictionOutcomeDto,
+  ) {
+    const updated = await this.reportingService.reviewOutcomeLabel(
+      actorId,
+      id,
+      dto,
+    );
+
+    await this.writeAuditLog(
+      actorId,
+      'PREDICTION_OUTCOME_REVIEW',
+      'prediction_outcome_label',
+      id,
+      {
+        status: dto.status,
+      },
+    );
+
+    return updated;
+  }
+
+  async buildActiveSignals(actorId: string, dto: BuildPredictionSignalsDto) {
+    const policy = await this.prisma.predictionPolicyVersion.findUnique({
+      where: { id: dto.policyVersionId },
+    });
+
+    if (!policy) {
+      throw new NotFoundException('Prediction policy version not found');
+    }
+
+    const observations = await this.prisma.predictionSourceObservation.findMany(
+      {
+        where: {
+          status: { in: ['APPROVED_FOR_PRIOR', 'APPROVED_FOR_SIGNAL'] },
+          OR: [
+            { policyVersionId: null },
+            { policyVersionId: dto.policyVersionId },
+          ],
+        },
+        orderBy: [{ observedAt: 'desc' }, { createdAt: 'desc' }],
+      },
+    );
+
+    const priorSetVersion = `${policy.policyKey}:${policy.version}:prior`;
+    const driftSetVersion = `${policy.policyKey}:${policy.version}:drift`;
+    const relationshipSetVersion = `${policy.policyKey}:${policy.version}:relationship`;
+
+    const classifiedObservations = observations
+      .map((observation) => ({
+        observation,
+        target: this.validateObservationForActivation(observation),
+      }))
+      .filter(
+        (
+          entry,
+        ): entry is {
+          observation: (typeof observations)[number];
+          target: 'prior' | 'drift' | 'relationship';
+        } => entry.target != null,
+      );
+
+    const priorObservations = classifiedObservations
+      .filter((entry) => entry.target === 'prior')
+      .map((entry) => entry.observation);
+    const driftObservations = classifiedObservations
+      .filter((entry) => entry.target === 'drift')
+      .map((entry) => entry.observation);
+    const relationshipObservations = classifiedObservations
+      .filter((entry) => entry.target === 'relationship')
+      .map((entry) => entry.observation);
+
+    const defaultReviewAt = this.normalizeDate(dto.reviewAt);
+    const defaultExpiresAt = this.normalizeDate(dto.expiresAt);
+    const owner = dto.owner ?? actorId;
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.schoolCohortRoundPrior.deleteMany({
+        where: {
+          policyVersionId: dto.policyVersionId,
+          setVersion: priorSetVersion,
+        },
+      });
+      await tx.schoolCohortRegimeSignal.deleteMany({
+        where: {
+          policyVersionId: dto.policyVersionId,
+          setVersion: driftSetVersion,
+        },
+      });
+      await tx.schoolRelationshipSignal.deleteMany({
+        where: {
+          policyVersionId: dto.policyVersionId,
+          setVersion: relationshipSetVersion,
+        },
+      });
+
+      for (const observation of priorObservations) {
+        const priorRate = this.resolvePriorRate(observation);
+        if (priorRate == null) continue;
+
+        await tx.schoolCohortRoundPrior.create({
+          data: {
+            schoolId: observation.schoolId!,
+            policyVersionId: dto.policyVersionId,
+            cohortKey: observation.cohortKey!,
+            round: observation.round!,
+            applicationYear: observation.year ?? undefined,
+            setVersion: priorSetVersion,
+            priorRate,
+            sampleCount:
+              observation.sampleCount ?? observation.applyCount ?? undefined,
+            confidence:
+              observation.confidenceLabel ??
+              (observation.qualityScore != null &&
+              observation.qualityScore >= 80
+                ? 'high'
+                : 'medium'),
+            sourceSummary: this.summarizeObservation(observation),
+            sourceObservationIds: [observation.id],
+            effectiveFromCycle:
+              dto.effectiveFromCycle ??
+              observation.effectiveFromCycle ??
+              undefined,
+            metadata: observation.metadata as Prisma.InputJsonValue | undefined,
+            reviewAt: defaultReviewAt ?? observation.reviewAt ?? undefined,
+            expiresAt: defaultExpiresAt ?? observation.expiresAt ?? undefined,
+            owner,
+            notes: observation.notes,
+          },
+        });
+      }
+
+      for (const observation of driftObservations) {
+        const metadata =
+          (observation.metadata as Record<string, unknown> | null) ?? {};
+        const driftMultiplier =
+          typeof metadata.driftMultiplier === 'number'
+            ? metadata.driftMultiplier
+            : observation.observedWeight != null
+              ? Number(observation.observedWeight)
+              : 1;
+
+        await tx.schoolCohortRegimeSignal.create({
+          data: {
+            schoolId: observation.schoolId!,
+            policyVersionId: dto.policyVersionId,
+            cohortKey: observation.cohortKey ?? undefined,
+            round: observation.round ?? undefined,
+            applicationYear: observation.year ?? undefined,
+            setVersion: driftSetVersion,
+            regimeKey:
+              (typeof metadata.regimeKey === 'string' && metadata.regimeKey) ||
+              `${observation.schoolId}:${observation.cohortKey ?? 'all'}:${observation.round ?? 'ALL'}`,
+            signalType:
+              (typeof metadata.signalType === 'string' &&
+                metadata.signalType) ||
+              observation.metricType,
+            direction: driftMultiplier >= 1 ? 'positive' : 'negative',
+            driftMultiplier,
+            strength:
+              typeof metadata.strength === 'number'
+                ? metadata.strength
+                : Math.abs(driftMultiplier - 1),
+            confidence: observation.confidenceLabel ?? 'medium',
+            sourceSummary: this.summarizeObservation(observation),
+            sourceObservationIds: [observation.id],
+            sampleCount:
+              observation.sampleCount ?? observation.applyCount ?? undefined,
+            effectiveFromCycle:
+              dto.effectiveFromCycle ??
+              observation.effectiveFromCycle ??
+              undefined,
+            effectiveFrom: observation.observedAt,
+            effectiveTo: defaultExpiresAt ?? observation.expiresAt ?? undefined,
+            metadata: observation.metadata as Prisma.InputJsonValue | undefined,
+            reviewAt: defaultReviewAt ?? observation.reviewAt ?? undefined,
+            expiresAt: defaultExpiresAt ?? observation.expiresAt ?? undefined,
+            owner,
+            notes: observation.notes,
+          },
+        });
+      }
+
+      for (const observation of relationshipObservations) {
+        const metadata =
+          (observation.metadata as Record<string, unknown> | null) ?? {};
+        const adjustment = await this.buildRelationshipAdjustment(observation);
+        const relationshipType =
+          typeof metadata.relationshipType === 'string'
+            ? metadata.relationshipType
+            : 'OTHER_VERIFIED';
+
+        await tx.schoolRelationshipSignal.create({
+          data: {
+            sourceHighSchoolId: observation.highSchoolId ?? undefined,
+            sourceInstitutionName:
+              (typeof metadata.sourceInstitutionName === 'string' &&
+                metadata.sourceInstitutionName) ||
+              undefined,
+            targetSchoolId: observation.schoolId!,
+            policyVersionId: dto.policyVersionId,
+            cohortKey: observation.cohortKey ?? undefined,
+            round: observation.round ?? undefined,
+            applicationYear: observation.year ?? undefined,
+            setVersion: relationshipSetVersion,
+            relationshipType: relationshipType as
+              | 'FORMAL_PARTNERSHIP'
+              | 'EXCHANGE_PIPELINE'
+              | 'SUMMER_PROGRAM_PIPELINE'
+              | 'LONG_TERM_FEEDER'
+              | 'COUNSELOR_CHANNEL'
+              | 'ARTICULATION_OR_MOU'
+              | 'OTHER_VERIFIED',
+            relationshipKey:
+              (typeof metadata.relationshipKey === 'string' &&
+                metadata.relationshipKey) ||
+              `${observation.highSchoolId ?? 'external'}:${observation.schoolId}`,
+            admitRate:
+              typeof metadata.admitRate === 'number'
+                ? metadata.admitRate
+                : undefined,
+            baselineRate:
+              typeof metadata.baselineRate === 'number'
+                ? metadata.baselineRate
+                : undefined,
+            strength: adjustment.signalStrength,
+            signalStrength: adjustment.signalStrength,
+            maxImpactCap: adjustment.maxImpactCap,
+            sampleCount:
+              observation.sampleCount ?? observation.applyCount ?? undefined,
+            confidence: observation.confidenceLabel ?? 'medium',
+            sourceSummary: this.summarizeObservation(observation),
+            sourceObservationIds: [observation.id],
+            effectiveFromCycle:
+              dto.effectiveFromCycle ??
+              observation.effectiveFromCycle ??
+              undefined,
+            metadata: {
+              ...metadata,
+              antiDoubleCounted: true,
+              antiDoubleCountAdjustments: adjustment.deductions,
+            } as Prisma.InputJsonValue,
+            reviewAt: defaultReviewAt ?? observation.reviewAt ?? undefined,
+            expiresAt: defaultExpiresAt ?? observation.expiresAt ?? undefined,
+            owner,
+            notes: observation.notes,
+          },
+        });
+      }
+
+      await tx.predictionPolicyVersion.update({
+        where: { id: dto.policyVersionId },
+        data: {
+          priorSetVersion,
+          driftSetVersion,
+          relationshipSetVersion,
+          notes: policy.notes
+            ? `${policy.notes}\n\n[signal-build:${new Date().toISOString()} by ${actorId}]`
+            : `[signal-build:${new Date().toISOString()} by ${actorId}]`,
+        },
+      });
+    });
+
+    await this.writeAuditLog(
+      actorId,
+      'PREDICTION_SIGNALS_BUILD',
+      'prediction_policy',
+      dto.policyVersionId,
+      {
+        priorSetVersion,
+        driftSetVersion,
+        relationshipSetVersion,
+        priorsBuilt: priorObservations.length,
+        driftSignalsBuilt: driftObservations.length,
+        relationshipSignalsBuilt: relationshipObservations.length,
+      },
+    );
+
+    return {
+      success: true,
+      priorSetVersion,
+      driftSetVersion,
+      relationshipSetVersion,
+      priorsBuilt: priorObservations.length,
+      driftSignalsBuilt: driftObservations.length,
+      relationshipSignalsBuilt: relationshipObservations.length,
+    };
+  }
+
+  async listPolicyVersions(query: PredictionPolicyQueryDto) {
+    const where = {
+      ...(query.policyKey ? { policyKey: query.policyKey } : {}),
+      ...(query.status ? { status: query.status as PolicyStatus } : {}),
+    };
+    const page = query.page ?? 1;
+    const pageSize = query.pageSize ?? 20;
+    const skip = (page - 1) * pageSize;
+
+    const [items, total] = await Promise.all([
+      this.prisma.predictionPolicyVersion.findMany({
+        where,
+        orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
+        skip,
+        take: pageSize,
+      }),
+      this.prisma.predictionPolicyVersion.count({ where }),
+    ]);
+
+    return createPaginatedResponse(items, total, page, pageSize);
+  }
+
+  async createPolicyVersion(
+    actorId: string,
+    dto: CreatePredictionPolicyVersionDto,
+  ) {
+    const created = await this.prisma.predictionPolicyVersion.create({
+      data: {
+        policyKey: dto.policyKey ?? 'default',
+        version: dto.version,
+        name: dto.name,
+        description: dto.description,
+        status: 'DRAFT',
+        thresholds: this.normalizeThresholds(
+          dto.thresholds ?? null,
+        ) as Prisma.InputJsonValue,
+        rolloutConfig: (dto.rolloutConfig ?? {}) as Prisma.InputJsonValue,
+        monitoringConfig: (dto.monitoringConfig ?? {}) as Prisma.InputJsonValue,
+        fairnessConfig: (dto.fairnessConfig ?? {}) as Prisma.InputJsonValue,
+        calibrationVersion: dto.calibrationVersion,
+        numericCoreVersion: dto.numericCoreVersion,
+        explanationSchemaVersion: dto.explanationSchemaVersion,
+        effectiveFrom: this.normalizeDate(dto.effectiveFrom),
+        notes: dto.notes
+          ? `${dto.notes}\n\n[created-by:${actorId}]`
+          : `[created-by:${actorId}]`,
+      },
+    });
+
+    await this.writeAuditLog(
+      actorId,
+      'PREDICTION_POLICY_CREATE',
+      'prediction_policy',
+      created.id,
+      {
+        policyKey: created.policyKey,
+        version: created.version,
+      },
+    );
+
+    return created;
+  }
+
+  async promotePolicyToCandidate(actorId: string, id: string) {
+    const policy = await this.prisma.predictionPolicyVersion.findUnique({
+      where: { id },
+    });
+
+    if (!policy) {
+      throw new NotFoundException('Prediction policy version not found');
+    }
+    if (policy.status !== 'DRAFT') {
+      throw new ConflictException(
+        'Only DRAFT policy versions can become CANDIDATE',
+      );
+    }
+    if (
+      !policy.priorSetVersion ||
+      !policy.driftSetVersion ||
+      !policy.relationshipSetVersion
+    ) {
+      throw new ConflictException(
+        'Active priors, drift signals, and relationship signals must be built before candidate freeze',
+      );
+    }
+
+    const updated = await this.prisma.predictionPolicyVersion.update({
+      where: { id },
+      data: {
+        status: 'CANDIDATE',
+        notes: policy.notes
+          ? `${policy.notes}\n\n[candidate-freeze:${new Date().toISOString()} by ${actorId}]`
+          : `[candidate-freeze:${new Date().toISOString()} by ${actorId}]`,
+      },
+    });
+
+    await this.writeAuditLog(
+      actorId,
+      'PREDICTION_POLICY_CANDIDATE',
+      'prediction_policy',
+      id,
+      {
+        policyKey: policy.policyKey,
+        version: policy.version,
+      },
+    );
+
+    return updated;
+  }
+
+  async promotePolicyToShadow(actorId: string, id: string) {
+    const policy = await this.prisma.predictionPolicyVersion.findUnique({
+      where: { id },
+    });
+
+    if (!policy) {
+      throw new NotFoundException('Prediction policy version not found');
+    }
+    if (policy.status !== 'CANDIDATE') {
+      throw new ConflictException(
+        'Only CANDIDATE policy versions can enter SHADOW',
+      );
+    }
+
+    const updated = await this.prisma.predictionPolicyVersion.update({
+      where: { id },
+      data: {
+        status: 'SHADOW',
+        shadowStartedAt: new Date(),
+        notes: policy.notes
+          ? `${policy.notes}\n\n[shadow-start:${new Date().toISOString()} by ${actorId}]`
+          : `[shadow-start:${new Date().toISOString()} by ${actorId}]`,
+      },
+    });
+
+    await this.writeAuditLog(
+      actorId,
+      'PREDICTION_POLICY_SHADOW',
+      'prediction_policy',
+      id,
+      {
+        policyKey: policy.policyKey,
+        version: policy.version,
+      },
+    );
+
+    return updated;
+  }
+
+  async updatePolicyShadowMetrics(
+    actorId: string,
+    id: string,
+    metrics: Record<string, unknown>,
+  ) {
+    const policy = await this.prisma.predictionPolicyVersion.findUnique({
+      where: { id },
+    });
+
+    if (!policy) {
+      throw new NotFoundException('Prediction policy version not found');
+    }
+
+    const monitoringConfig =
+      (policy.monitoringConfig as Record<string, unknown> | null) ?? {};
+
+    const updated = await this.prisma.predictionPolicyVersion.update({
+      where: { id },
+      data: {
+        monitoringConfig: {
+          ...monitoringConfig,
+          shadowMetrics: metrics,
+          shadowMetricsUpdatedAt: new Date().toISOString(),
+          shadowMetricsUpdatedBy: actorId,
+        } as Prisma.InputJsonValue,
+      },
+    });
+
+    await this.writeAuditLog(
+      actorId,
+      'PREDICTION_POLICY_SHADOW_METRICS_UPDATE',
+      'prediction_policy',
+      id,
+      {
+        keys: Object.keys(metrics),
+      },
+    );
+
+    return updated;
+  }
+
+  async getPolicyGateSummary(id: string) {
+    const policy = await this.prisma.predictionPolicyVersion.findUnique({
+      where: { id },
+    });
+
+    if (!policy) {
+      throw new NotFoundException('Prediction policy version not found');
+    }
+
+    const thresholds = this.normalizeThresholds(
+      (policy.thresholds as Record<string, unknown> | null) ?? null,
+    );
+    const [predictionCount, eligibleCounts] = await Promise.all([
+      this.prisma.predictionResult.count({
+        where: { policyVersionId: id },
+      }),
+      this.getEligibleOutcomeCounts(id),
+    ]);
+
+    const monitoringConfig =
+      (policy.monitoringConfig as Record<string, unknown> | null) ?? {};
+    const shadowMetrics = ((monitoringConfig.shadowMetrics as
+      | Record<string, unknown>
+      | undefined) ?? {}) as Record<string, number | boolean>;
+
+    const cohortSummary = eligibleCounts.cohorts;
+    const resolvedCount = eligibleCounts.resolvedLabels;
+
+    const failures: string[] = [];
+    if (predictionCount < Number(thresholds.minShadowPredictions)) {
+      failures.push('Not enough shadow predictions for promotion');
+    }
+    if (resolvedCount < Number(thresholds.minResolvedLabels)) {
+      failures.push('Not enough resolved labels for promotion');
+    }
+    for (const [cohortKey, count] of Object.entries(cohortSummary)) {
+      if (count < Number(thresholds.minCohortResolvedLabels)) {
+        failures.push(`Resolved label count for ${cohortKey} is below gate`);
+      }
+    }
+
+    if (typeof shadowMetrics.aucDelta !== 'number') {
+      failures.push('AUC delta is missing from shadow metrics');
+    } else if (shadowMetrics.aucDelta < Number(thresholds.minAucDelta)) {
+      failures.push('AUC gate failed');
+    }
+
+    if (typeof shadowMetrics.brierDelta !== 'number') {
+      failures.push('Brier delta is missing from shadow metrics');
+    } else if (shadowMetrics.brierDelta > Number(thresholds.maxBrierDelta)) {
+      failures.push('Brier gate failed');
+    }
+
+    if (typeof shadowMetrics.eceDelta !== 'number') {
+      failures.push('ECE delta is missing from shadow metrics');
+    } else if (shadowMetrics.eceDelta > Number(thresholds.maxEceRegression)) {
+      failures.push('ECE gate failed');
+    }
+
+    if (shadowMetrics.fairnessBlocked === true) {
+      failures.push('Fairness gate failed');
+    }
+
+    return {
+      ready: failures.length === 0,
+      thresholds,
+      counts: {
+        shadowPredictions: predictionCount,
+        resolvedLabels: resolvedCount,
+        cohorts: cohortSummary,
+      },
+      shadowMetrics,
+      failures,
+    };
+  }
+
+  async activatePolicy(actorId: string, id: string) {
+    const policy = await this.prisma.predictionPolicyVersion.findUnique({
+      where: { id },
+    });
+
+    if (!policy) {
+      throw new NotFoundException('Prediction policy version not found');
+    }
+    if (policy.status !== 'SHADOW') {
+      throw new ConflictException(
+        'Only SHADOW policy versions can become ACTIVE',
+      );
+    }
+
+    const gateSummary = await this.getPolicyGateSummary(id);
+    if (!gateSummary.ready) {
+      throw new ConflictException(
+        `Policy promotion blocked: ${gateSummary.failures.join('; ')}`,
+      );
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.predictionPolicyVersion.updateMany({
+        where: { policyKey: policy.policyKey, status: 'ACTIVE' },
+        data: {
+          status: 'RETIRED',
+          retiredAt: new Date(),
+        },
+      });
+      await tx.predictionPolicyVersion.update({
+        where: { id },
+        data: {
+          status: 'ACTIVE',
+          activatedAt: new Date(),
+          promotedAt: new Date(),
+          activatedBy: actorId,
+        },
+      });
+    });
+
+    await this.invalidatePredictionCaches([id]);
+    await this.writeAuditLog(
+      actorId,
+      'PREDICTION_POLICY_ACTIVATE',
+      'prediction_policy',
+      id,
+      {
+        policyKey: policy.policyKey,
+        version: policy.version,
+      },
+    );
+    return {
+      success: true,
+      policyVersionId: id,
+      activatedBy: actorId,
+    };
+  }
+
+  async rollbackPolicy(actorId: string, policyKey = 'default') {
+    const [currentActive, previousRetired] = await Promise.all([
+      this.prisma.predictionPolicyVersion.findFirst({
+        where: { policyKey, status: 'ACTIVE' },
+        orderBy: [{ activatedAt: 'desc' }, { updatedAt: 'desc' }],
+      }),
+      this.prisma.predictionPolicyVersion.findFirst({
+        where: { policyKey, status: 'RETIRED' },
+        orderBy: [{ retiredAt: 'desc' }, { activatedAt: 'desc' }],
+      }),
+    ]);
+
+    if (!currentActive) {
+      throw new NotFoundException('No active prediction policy to rollback');
+    }
+    if (!previousRetired) {
+      throw new NotFoundException(
+        'No retired prediction policy available for rollback',
+      );
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.predictionPolicyVersion.update({
+        where: { id: currentActive.id },
+        data: {
+          status: 'RETIRED',
+          retiredAt: new Date(),
+          notes: currentActive.notes
+            ? `${currentActive.notes}\n\n[rollback-retired:${new Date().toISOString()} by ${actorId}]`
+            : `[rollback-retired:${new Date().toISOString()} by ${actorId}]`,
+        },
+      });
+      await tx.predictionPolicyVersion.update({
+        where: { id: previousRetired.id },
+        data: {
+          status: 'ACTIVE',
+          activatedAt: new Date(),
+          promotedAt: new Date(),
+          activatedBy: actorId,
+          retiredAt: null,
+          notes: previousRetired.notes
+            ? `${previousRetired.notes}\n\n[rollback-restore:${new Date().toISOString()} by ${actorId}]`
+            : `[rollback-restore:${new Date().toISOString()} by ${actorId}]`,
+        },
+      });
+    });
+
+    await this.invalidatePredictionCaches([
+      currentActive.id,
+      previousRetired.id,
+    ]);
+    await this.writeAuditLog(
+      actorId,
+      'PREDICTION_POLICY_ROLLBACK',
+      'prediction_policy',
+      previousRetired.id,
+      {
+        policyKey,
+        rolledBackFrom: currentActive.id,
+        restoredPolicyVersionId: previousRetired.id,
+      },
+    );
+    return {
+      success: true,
+      policyKey,
+      rolledBackFrom: currentActive.id,
+      restoredPolicyVersionId: previousRetired.id,
+    };
+  }
+}

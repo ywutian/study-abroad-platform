@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from '@/lib/i18n/navigation';
 import { motion } from 'framer-motion';
 import { PageContainer, PageHeader } from '@/components/layout';
@@ -96,6 +96,11 @@ function getProfileGrade(completeness: number): {
 export default function DashboardPage() {
   const t = useTranslations();
   const locale = useLocale();
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   const { data: dashboard } = useQuery({
     queryKey: ['dashboard'],
@@ -124,14 +129,18 @@ export default function DashboardPage() {
     }
   }, []);
 
-  const completeness = dashboard?.profile.completeness ?? 0;
+  const stableDashboard = isHydrated ? dashboard : undefined;
+  const completeness = stableDashboard?.profile.completeness ?? 0;
   const { showIndicator, gapCount } = useOnboardingProgress();
-  const schoolCount = dashboard?.profile.targetSchoolCount ?? 0;
-  const schoolTiers = dashboard?.profile.schoolTiers ?? { reach: 0, target: 0, safety: 0 };
-  const pendingTotal = dashboard?.pendingTasks.total ?? 0;
-  const profileGaps = dashboard?.pendingTasks.profileGaps ?? [];
+  const schoolCount = stableDashboard?.profile.targetSchoolCount ?? 0;
+  const schoolTiers = stableDashboard?.profile.schoolTiers ?? { reach: 0, target: 0, safety: 0 };
+  const pendingTotal = stableDashboard?.pendingTasks.total ?? 0;
+  const profileGaps = stableDashboard?.pendingTasks.profileGaps ?? [];
   const grade = getProfileGrade(completeness);
   const effectivePending = pendingTotal > 0 ? pendingTotal : profileGaps.length;
+  const displayName = isHydrated
+    ? dashboard?.user.nickname || dashboard?.user.email?.split('@')[0] || t('dashboard.user')
+    : t('dashboard.user');
 
   const todoList = useMemo<TodoItem[]>(() => {
     const items: TodoItem[] = [];
@@ -140,7 +149,7 @@ export default function DashboardPage() {
       day: 'numeric',
     });
 
-    for (const d of dashboard?.upcomingDeadlines ?? []) {
+    for (const d of stableDashboard?.upcomingDeadlines ?? []) {
       const date = new Date(d.deadline);
       items.push({
         id: d.id,
@@ -153,7 +162,7 @@ export default function DashboardPage() {
       });
     }
 
-    for (const ev of dashboard?.upcomingPersonalEvents ?? []) {
+    for (const ev of stableDashboard?.upcomingPersonalEvents ?? []) {
       const raw = ev.deadline ?? ev.eventDate;
       if (!raw) continue;
       const date = new Date(raw);
@@ -170,15 +179,12 @@ export default function DashboardPage() {
 
     items.sort((a, b) => a.date.getTime() - b.date.getTime());
     return items.slice(0, 10);
-  }, [dashboard?.upcomingDeadlines, dashboard?.upcomingPersonalEvents, locale]);
+  }, [stableDashboard?.upcomingDeadlines, stableDashboard?.upcomingPersonalEvents, locale]);
 
   return (
     <PageContainer>
       <PageHeader
-        title={t('dashboard.welcome', {
-          name:
-            dashboard?.user.nickname || dashboard?.user.email?.split('@')[0] || t('dashboard.user'),
-        })}
+        title={t('dashboard.welcome', { name: displayName })}
         description={t('dashboard.subtitle')}
         icon={LayoutDashboard}
         color="slate"
@@ -186,7 +192,7 @@ export default function DashboardPage() {
       <QuickExperience />
 
       {/* Mini progress banner — shown when profile is incomplete */}
-      {showIndicator && (
+      {isHydrated && showIndicator && (
         <Link href="/profile">
           <div className="flex items-center gap-3 rounded-lg border bg-amber-500/5 border-amber-500/20 px-4 py-2.5 hover:bg-amber-500/10 transition-colors cursor-pointer">
             <Progress value={completeness} className="h-1.5 flex-1 max-w-[120px]" />
@@ -209,14 +215,7 @@ export default function DashboardPage() {
           className="flex items-center justify-between"
         >
           <div>
-            <h1 className="text-title">
-              {t('dashboard.welcome', {
-                name:
-                  dashboard?.user.nickname ||
-                  dashboard?.user.email?.split('@')[0] ||
-                  t('dashboard.user'),
-              })}
-            </h1>
+            <h1 className="text-title">{t('dashboard.welcome', { name: displayName })}</h1>
             <p className="text-muted-foreground mt-1">{t('dashboard.subtitle')}</p>
           </div>
           <Link href="/profile">

@@ -4,7 +4,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { API_ROUTES, predictionRoutes } from '@study-abroad/shared';
 import { apiClient, STALE_TIME } from '@/lib/api';
 import { AI_TIMEOUTS } from '@/lib/constants';
-import type { PredictionResponse } from '@/components/features/prediction/types';
+import type {
+  PredictionOutcomeLabel,
+  PredictionResponse,
+  PredictionResult,
+  PredictionSourceSummary,
+} from '@/components/features/prediction/types';
 
 // ============================================
 // Query Keys
@@ -26,18 +31,30 @@ export interface SchoolPredictionData {
     probabilityHigh?: number;
     tier?: string;
     confidence?: string;
+    confidenceReason?: string | null;
+    cohortKey?: string | null;
+    roundContext?: string | null;
+    sourceSummary?: PredictionSourceSummary[];
+    uncertaintyReasons?: string[];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     factors?: any[];
     source?: string;
     modelVersion?: string;
+    latestOutcomeLabel?: PredictionOutcomeLabel;
     updatedAt: string;
   } | null;
   history: Array<{
     probability: number;
     tier?: string;
     confidence?: string;
+    confidenceReason?: string | null;
+    cohortKey?: string | null;
+    roundContext?: string | null;
+    sourceSummary?: PredictionSourceSummary[];
+    uncertaintyReasons?: string[];
     source?: string;
     modelVersion?: string;
+    latestOutcomeLabel?: PredictionOutcomeLabel;
     createdAt: string;
   }>;
   school: {
@@ -54,16 +71,18 @@ export interface PredictionDashboardData {
   tierDistribution: { reach: number; match: number; safety: number };
   avgProbability: number;
   confidenceBreakdown: { low: number; medium: number; high: number };
-  predictions: Array<{
-    schoolId: string;
-    school: { id: string; name: string; nameZh?: string; usNewsRank?: number };
-    probability: number;
-    tier?: string;
-    confidence?: string;
-    source?: string;
-    modelVersion?: string;
-    updatedAt: string;
-  }>;
+  predictions: Array<
+    PredictionResult & {
+      schoolId: string;
+      school: { id: string; name: string; nameZh?: string; usNewsRank?: number };
+      probability: number;
+      tier?: string;
+      confidence?: string;
+      source?: string;
+      modelVersion?: string;
+      updatedAt: string;
+    }
+  >;
 }
 
 // ============================================
@@ -96,6 +115,7 @@ export function useRunPrediction() {
     mutationFn: (dto) =>
       apiClient.post<PredictionResponse>(predictionRoutes.predict(), dto, {
         timeout: AI_TIMEOUTS.AI_REQUEST,
+        directApi: true,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: predictionKeys.all });
@@ -109,7 +129,7 @@ export function useReportResult() {
   return useMutation<
     { success: boolean; message: string },
     Error,
-    { schoolId: string; result: 'ADMITTED' | 'REJECTED' | 'WAITLISTED' }
+    { schoolId: string; result: 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED' }
   >({
     mutationFn: ({ schoolId, result }) =>
       apiClient.patch(`${API_ROUTES.PREDICTIONS}/${schoolId}/result`, { result }),

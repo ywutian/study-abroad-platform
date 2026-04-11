@@ -1,10 +1,13 @@
-// Prediction feature types — aligned with backend PredictionResultDto / PredictionResponseDto
+// Prediction feature types — aligned with backend PredictionResultDto / PredictionResponseDto.
 //
-// Base types imported from @study-abroad/shared.
-// Only UI-specific types remain local.
+// Shared types are the source of truth for prediction responses. This file only
+// re-exports them locally for feature-level imports.
 
 export type {
   PredictionFactor,
+  PredictionOutcomeLabel,
+  PredictionOutcomeLabelStatus,
+  PredictionSourceSummary,
   PredictionResult,
   PredictionResponse,
   PredictionComparison,

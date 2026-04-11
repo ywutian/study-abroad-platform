@@ -3,7 +3,7 @@ import { MemoryType, EntityType } from '@prisma/client';
 import { MemoryManagerService } from '../ai-agent/memory';
 import { PredictionResultDto } from './dto';
 
-const MODEL_VERSION = 'v3-enterprise';
+const MODEL_VERSION = 'v5-ml-primary';
 
 /**
  * Memory system integration for prediction context and recording.
@@ -102,6 +102,62 @@ export class PredictionMemoryService {
     }
 
     return ctx;
+  }
+
+  /**
+   * Extract structured memory features for ML model input (v5).
+   * Unlike memoryAdjustment (which directly modifies probability),
+   * these features are fed into the ML model to let it learn the weight.
+   */
+  async getMemoryFeatures(
+    userId: string,
+    schoolId: string,
+  ): Promise<{
+    previousPredictionForSchool: number | null;
+    predictionCount: number;
+    memoryInsightCount: number;
+  }> {
+    const result = {
+      previousPredictionForSchool: null as number | null,
+      predictionCount: 0,
+      memoryInsightCount: 0,
+    };
+
+    if (!this.memoryManager) return result;
+
+    try {
+      const predictionMemories = await this.memoryManager.recall(userId, {
+        types: [MemoryType.DECISION],
+        categories: ['school_prediction'],
+        useSemanticSearch: false,
+        limit: 10,
+      });
+
+      for (const mem of predictionMemories) {
+        const metadata = mem.metadata as any;
+        if (metadata?.topSchools) {
+          for (const school of metadata.topSchools) {
+            if (school.schoolId === schoolId || school.name) {
+              result.predictionCount++;
+              if (result.previousPredictionForSchool === null) {
+                result.previousPredictionForSchool = school.probability;
+              }
+            }
+          }
+        }
+      }
+
+      const factMemories = await this.memoryManager.recall(userId, {
+        types: [MemoryType.FACT],
+        useSemanticSearch: false,
+        limit: 20,
+      });
+      result.memoryInsightCount = factMemories.length;
+    } catch {
+      // Silently degrade — memory features are optional
+    }
+
+    return result;
   }
 
   /**

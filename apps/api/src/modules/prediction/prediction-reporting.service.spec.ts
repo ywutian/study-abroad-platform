@@ -7,6 +7,27 @@ describe('PredictionReportingService', () => {
   let service: PredictionReportingService;
   let prisma: PrismaService;
   let memoryManager: MemoryManagerService;
+  const createOutcomeRecord = (
+    result: 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED',
+    status:
+      | 'SELF_REPORTED'
+      | 'COUNSELOR_VERIFIED'
+      | 'DOCUMENT_VERIFIED'
+      | 'CONFLICTED'
+      | 'CENSORED' = 'COUNSELOR_VERIFIED',
+    overrides: Record<string, unknown> = {},
+  ) => ({
+    id: `label-${result}-${status}`,
+    result,
+    status,
+    notes: null,
+    evidenceUrl: null,
+    round: 'RD',
+    isFinal: false,
+    createdAt: new Date('2026-04-03T00:00:00.000Z'),
+    resolvedAt: new Date('2026-04-03T00:00:00.000Z'),
+    ...overrides,
+  });
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -18,12 +39,25 @@ describe('PredictionReportingService', () => {
             predictionResult: {
               findMany: jest.fn().mockResolvedValue([]),
               count: jest.fn().mockResolvedValue(0),
-              updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+              update: jest.fn().mockResolvedValue({ id: 'pred-1' }),
               findFirst: jest.fn().mockResolvedValue(null),
+              findUnique: jest.fn().mockResolvedValue(null),
+            },
+            predictionOutcomeLabelRecord: {
+              create: jest.fn().mockResolvedValue({ id: 'label-1' }),
+              findFirst: jest.fn().mockResolvedValue(null), // No existing self-report (dedup check)
             },
             school: {
               findUnique: jest.fn().mockResolvedValue(null),
             },
+            profile: {
+              findUnique: jest.fn().mockResolvedValue({ userId: 'user-1' }),
+            },
+            $transaction: jest
+              .fn()
+              .mockImplementation((operations: Array<Promise<unknown>>) =>
+                Promise.all(operations),
+              ),
           },
         },
         {
@@ -54,12 +88,22 @@ describe('PredictionReportingService', () => {
           profileId: 'profile-1',
           schoolId: 'school-1',
           probability: 0.45,
+          policyVersionId: 'policy-1',
+          applicationRound: 'RD',
+          outcomeLabelRecords: [],
         },
         {
           id: 'pred-2',
           profileId: 'profile-1',
           schoolId: 'school-2',
           probability: 0.65,
+          policyVersionId: null,
+          applicationRound: null,
+          outcomeLabelRecords: [
+            createOutcomeRecord('ADMITTED', 'COUNSELOR_VERIFIED', {
+              id: 'label-2',
+            }),
+          ],
         },
       ];
       (prisma.predictionResult.findMany as jest.Mock).mockResolvedValue(
@@ -69,7 +113,32 @@ describe('PredictionReportingService', () => {
 
       const result = await service.getPredictionHistory('profile-1');
 
-      expect(result.items).toEqual(mockItems);
+      expect(result.items).toEqual([
+        expect.objectContaining({
+          id: 'pred-1',
+          profileId: 'profile-1',
+          schoolId: 'school-1',
+          probability: 0.45,
+          servedPolicyVersionId: 'policy-1',
+          roundContext: 'RD',
+          latestOutcomeLabel: undefined,
+          calibrationEligible: false,
+        }),
+        expect.objectContaining({
+          id: 'pred-2',
+          profileId: 'profile-1',
+          schoolId: 'school-2',
+          probability: 0.65,
+          servedPolicyVersionId: undefined,
+          roundContext: undefined,
+          latestOutcomeLabel: expect.objectContaining({
+            id: 'label-2',
+            result: 'ADMITTED',
+            status: 'COUNSELOR_VERIFIED',
+          }),
+          calibrationEligible: true,
+        }),
+      ]);
       expect(result.total).toBe(2);
       expect(result.page).toBe(1);
       expect(result.pageSize).toBe(20);
@@ -87,6 +156,11 @@ describe('PredictionReportingService', () => {
         orderBy: { updatedAt: 'desc' },
         skip: 20, // (3-1) * 10
         take: 10,
+        include: {
+          outcomeLabelRecords: {
+            orderBy: { createdAt: 'desc' },
+          },
+        },
       });
     });
 
@@ -178,37 +252,64 @@ describe('PredictionReportingService', () => {
 
   describe('reportActualResult', () => {
     it('should update prediction with actual result and reportedAt', async () => {
+      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
+        id: 'pred-1',
+        probability: 0.7,
+      });
+
       await service.reportActualResult('profile-1', 'school-1', 'ADMITTED');
 
-      expect(prisma.predictionResult.updateMany).toHaveBeenCalledWith({
-        where: { profileId: 'profile-1', schoolId: 'school-1' },
+      expect(prisma.predictionResult.update).toHaveBeenCalledWith({
+        where: { id: 'pred-1' },
         data: {
           actualResult: 'ADMITTED',
           reportedAt: expect.any(Date),
+          outcomeLabel: 'ADMITTED',
+          outcomeLabeledAt: expect.any(Date),
         },
+      });
+      expect(prisma.predictionOutcomeLabelRecord.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          predictionResultId: 'pred-1',
+          result: 'ADMITTED',
+          status: 'SELF_REPORTED',
+        }),
       });
     });
 
     it('should handle REJECTED result', async () => {
+      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
+        id: 'pred-1',
+        probability: 0.7,
+      });
+
       await service.reportActualResult('profile-1', 'school-1', 'REJECTED');
 
-      expect(prisma.predictionResult.updateMany).toHaveBeenCalledWith({
-        where: { profileId: 'profile-1', schoolId: 'school-1' },
+      expect(prisma.predictionResult.update).toHaveBeenCalledWith({
+        where: { id: 'pred-1' },
         data: expect.objectContaining({ actualResult: 'REJECTED' }),
       });
     });
 
     it('should handle WAITLISTED result', async () => {
+      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
+        id: 'pred-1',
+        probability: 0.7,
+      });
+
       await service.reportActualResult('profile-1', 'school-1', 'WAITLISTED');
 
-      expect(prisma.predictionResult.updateMany).toHaveBeenCalledWith({
-        where: { profileId: 'profile-1', schoolId: 'school-1' },
-        data: expect.objectContaining({ actualResult: 'WAITLISTED' }),
+      expect(prisma.predictionResult.update).toHaveBeenCalledWith({
+        where: { id: 'pred-1' },
+        data: expect.objectContaining({
+          actualResult: 'WAITLISTED',
+          outcomeLabel: 'CENSORED',
+        }),
       });
     });
 
     it('should write feedback to memory system when prediction exists', async () => {
-      (prisma.predictionResult.findFirst as jest.Mock).mockResolvedValue({
+      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
         id: 'pred-1',
         probability: 0.7,
       });
@@ -224,7 +325,7 @@ describe('PredictionReportingService', () => {
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(memoryManager.remember).toHaveBeenCalledWith(
-        'profile-1',
+        'user-1',
         expect.objectContaining({
           type: 'FACT',
           category: 'prediction_feedback',
@@ -233,14 +334,15 @@ describe('PredictionReportingService', () => {
             schoolId: 'school-1',
             predicted: 0.7,
             actual: 'ADMITTED',
-            isCorrect: true, // ADMITTED and probability > 0.5
+            isCorrect: true,
+            calibrationEligible: true,
           }),
         }),
       );
     });
 
     it('should mark prediction as incorrect when REJECTED but probability > 0.5', async () => {
-      (prisma.predictionResult.findFirst as jest.Mock).mockResolvedValue({
+      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
         id: 'pred-1',
         probability: 0.7,
       });
@@ -254,17 +356,18 @@ describe('PredictionReportingService', () => {
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(memoryManager.remember).toHaveBeenCalledWith(
-        'profile-1',
+        'user-1',
         expect.objectContaining({
           metadata: expect.objectContaining({
-            isCorrect: false, // REJECTED but probability was > 0.5
+            isCorrect: false,
+            calibrationEligible: true,
           }),
         }),
       );
     });
 
     it('should mark prediction as correct when REJECTED and probability <= 0.5', async () => {
-      (prisma.predictionResult.findFirst as jest.Mock).mockResolvedValue({
+      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
         id: 'pred-1',
         probability: 0.3,
       });
@@ -278,17 +381,40 @@ describe('PredictionReportingService', () => {
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(memoryManager.remember).toHaveBeenCalledWith(
-        'profile-1',
+        'user-1',
         expect.objectContaining({
           metadata: expect.objectContaining({
-            isCorrect: true, // REJECTED and probability <= 0.5
+            isCorrect: true,
+            calibrationEligible: true,
+          }),
+        }),
+      );
+    });
+
+    it('should not mark WAITLISTED as calibration-correctness data', async () => {
+      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
+        id: 'pred-1',
+        probability: 0.7,
+      });
+
+      await service.reportActualResult('profile-1', 'school-1', 'WAITLISTED');
+
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(memoryManager.remember).toHaveBeenCalledWith(
+        'user-1',
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            actual: 'WAITLISTED',
+            isCorrect: undefined,
+            calibrationEligible: false,
           }),
         }),
       );
     });
 
     it('should skip memory recording when prediction not found', async () => {
-      (prisma.predictionResult.findFirst as jest.Mock).mockResolvedValue(null);
+      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue(null);
 
       await service.reportActualResult('profile-1', 'school-1', 'ADMITTED');
 
@@ -298,7 +424,7 @@ describe('PredictionReportingService', () => {
     });
 
     it('should use schoolId in memory content when school name not found', async () => {
-      (prisma.predictionResult.findFirst as jest.Mock).mockResolvedValue({
+      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
         id: 'pred-1',
         probability: 0.5,
       });
@@ -309,7 +435,7 @@ describe('PredictionReportingService', () => {
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(memoryManager.remember).toHaveBeenCalledWith(
-        'profile-1',
+        'user-1',
         expect.objectContaining({
           content: expect.stringContaining('school-1'),
         }),
@@ -317,7 +443,11 @@ describe('PredictionReportingService', () => {
     });
 
     it('should not throw when updateMany fails (graceful degradation)', async () => {
-      (prisma.predictionResult.updateMany as jest.Mock).mockRejectedValue(
+      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
+        id: 'pred-1',
+        probability: 0.5,
+      });
+      (prisma.predictionResult.update as jest.Mock).mockRejectedValue(
         new Error('DB error'),
       );
 
@@ -327,7 +457,7 @@ describe('PredictionReportingService', () => {
     });
 
     it('should not throw when memory recording fails', async () => {
-      (prisma.predictionResult.findFirst as jest.Mock).mockResolvedValue({
+      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
         id: 'pred-1',
         probability: 0.7,
       });
@@ -354,15 +484,31 @@ describe('PredictionReportingService', () => {
               predictionResult: {
                 findMany: jest.fn().mockResolvedValue([]),
                 count: jest.fn().mockResolvedValue(0),
-                updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+                update: jest.fn().mockResolvedValue({ id: 'pred-1' }),
                 findFirst: jest.fn().mockResolvedValue({
                   id: 'pred-1',
                   probability: 0.5,
                 }),
+                findUnique: jest.fn().mockResolvedValue({
+                  id: 'pred-1',
+                  probability: 0.5,
+                }),
+              },
+              predictionOutcomeLabelRecord: {
+                create: jest.fn().mockResolvedValue({ id: 'label-1' }),
+                findFirst: jest.fn().mockResolvedValue(null),
               },
               school: {
                 findUnique: jest.fn().mockResolvedValue({ name: 'MIT' }),
               },
+              profile: {
+                findUnique: jest.fn().mockResolvedValue({ userId: 'user-1' }),
+              },
+              $transaction: jest
+                .fn()
+                .mockImplementation((operations: Array<Promise<unknown>>) =>
+                  Promise.all(operations),
+                ),
             },
           },
           // MemoryManagerService is @Optional, so we don't provide it
@@ -387,10 +533,15 @@ describe('PredictionReportingService', () => {
 
   describe('getCalibrationData', () => {
     it('should return total predictions and count with actual results', async () => {
-      (prisma.predictionResult.count as jest.Mock)
-        .mockResolvedValueOnce(100) // total
-        .mockResolvedValueOnce(20); // with actual results
-      (prisma.predictionResult.findMany as jest.Mock).mockResolvedValue([]);
+      (prisma.predictionResult.count as jest.Mock).mockResolvedValueOnce(100);
+      (prisma.predictionResult.findMany as jest.Mock).mockResolvedValue(
+        Array.from({ length: 20 }, (_, index) => ({
+          probability: 0.5,
+          outcomeLabelRecords: [
+            createOutcomeRecord(index % 2 === 0 ? 'ADMITTED' : 'REJECTED'),
+          ],
+        })),
+      );
 
       const result = await service.getCalibrationData();
 
@@ -399,9 +550,7 @@ describe('PredictionReportingService', () => {
     });
 
     it('should return 5 calibration buckets', async () => {
-      (prisma.predictionResult.count as jest.Mock)
-        .mockResolvedValueOnce(50)
-        .mockResolvedValueOnce(10);
+      (prisma.predictionResult.count as jest.Mock).mockResolvedValueOnce(50);
       (prisma.predictionResult.findMany as jest.Mock).mockResolvedValue([]);
 
       const result = await service.getCalibrationData();
@@ -418,17 +567,36 @@ describe('PredictionReportingService', () => {
 
     it('should correctly calculate admit rates per bucket', async () => {
       const mockResults = [
-        { probability: 0.1, actualResult: 'ADMITTED' },
-        { probability: 0.15, actualResult: 'REJECTED' },
-        { probability: 0.15, actualResult: 'REJECTED' },
-        { probability: 0.5, actualResult: 'ADMITTED' },
-        { probability: 0.5, actualResult: 'ADMITTED' },
-        { probability: 0.55, actualResult: 'REJECTED' },
-        { probability: 0.85, actualResult: 'ADMITTED' },
+        {
+          probability: 0.1,
+          outcomeLabelRecords: [createOutcomeRecord('ADMITTED')],
+        },
+        {
+          probability: 0.15,
+          outcomeLabelRecords: [createOutcomeRecord('REJECTED')],
+        },
+        {
+          probability: 0.15,
+          outcomeLabelRecords: [createOutcomeRecord('REJECTED')],
+        },
+        {
+          probability: 0.5,
+          outcomeLabelRecords: [createOutcomeRecord('ADMITTED')],
+        },
+        {
+          probability: 0.5,
+          outcomeLabelRecords: [createOutcomeRecord('ADMITTED')],
+        },
+        {
+          probability: 0.55,
+          outcomeLabelRecords: [createOutcomeRecord('REJECTED')],
+        },
+        {
+          probability: 0.85,
+          outcomeLabelRecords: [createOutcomeRecord('ADMITTED')],
+        },
       ];
-      (prisma.predictionResult.count as jest.Mock)
-        .mockResolvedValueOnce(100)
-        .mockResolvedValueOnce(7);
+      (prisma.predictionResult.count as jest.Mock).mockResolvedValueOnce(100);
       (prisma.predictionResult.findMany as jest.Mock).mockResolvedValue(
         mockResults,
       );
@@ -458,9 +626,7 @@ describe('PredictionReportingService', () => {
     });
 
     it('should return 0 admit rate for empty buckets', async () => {
-      (prisma.predictionResult.count as jest.Mock)
-        .mockResolvedValueOnce(0)
-        .mockResolvedValueOnce(0);
+      (prisma.predictionResult.count as jest.Mock).mockResolvedValueOnce(0);
       (prisma.predictionResult.findMany as jest.Mock).mockResolvedValue([]);
 
       const result = await service.getCalibrationData();
@@ -475,12 +641,16 @@ describe('PredictionReportingService', () => {
       // Prisma Decimal has valueOf() for Number() coercion. Simulate with an
       // object whose valueOf returns the numeric value, plus a plain string.
       const mockResults = [
-        { probability: { valueOf: () => 0.3 }, actualResult: 'ADMITTED' },
-        { probability: '0.3', actualResult: 'REJECTED' },
+        {
+          probability: { valueOf: () => 0.3 },
+          outcomeLabelRecords: [createOutcomeRecord('ADMITTED')],
+        },
+        {
+          probability: '0.3',
+          outcomeLabelRecords: [createOutcomeRecord('REJECTED')],
+        },
       ];
-      (prisma.predictionResult.count as jest.Mock)
-        .mockResolvedValueOnce(10)
-        .mockResolvedValueOnce(2);
+      (prisma.predictionResult.count as jest.Mock).mockResolvedValueOnce(10);
       (prisma.predictionResult.findMany as jest.Mock).mockResolvedValue(
         mockResults,
       );
@@ -497,12 +667,16 @@ describe('PredictionReportingService', () => {
 
     it('should handle WAITLISTED as non-admitted in calibration', async () => {
       const mockResults = [
-        { probability: 0.5, actualResult: 'WAITLISTED' },
-        { probability: 0.55, actualResult: 'ADMITTED' },
+        {
+          probability: 0.5,
+          outcomeLabelRecords: [createOutcomeRecord('WAITLISTED')],
+        },
+        {
+          probability: 0.55,
+          outcomeLabelRecords: [createOutcomeRecord('ADMITTED')],
+        },
       ];
-      (prisma.predictionResult.count as jest.Mock)
-        .mockResolvedValueOnce(10)
-        .mockResolvedValueOnce(2);
+      (prisma.predictionResult.count as jest.Mock).mockResolvedValueOnce(10);
       (prisma.predictionResult.findMany as jest.Mock).mockResolvedValue(
         mockResults,
       );
@@ -512,31 +686,36 @@ describe('PredictionReportingService', () => {
       const bucket40_60 = result.calibrationBuckets.find(
         (b) => b.predictedRange === '40-60%',
       );
-      // 2 entries, only 1 ADMITTED (WAITLISTED is not ADMITTED)
-      expect(bucket40_60!.count).toBe(2);
-      expect(bucket40_60!.actualAdmitRate).toBe(0.5);
+      // WAITLISTED is censored and excluded from calibration eligibility
+      expect(bucket40_60!.count).toBe(1);
+      expect(bucket40_60!.actualAdmitRate).toBe(1);
     });
 
     it('should only query predictions with actual results for bucketing', async () => {
-      (prisma.predictionResult.count as jest.Mock)
-        .mockResolvedValueOnce(100)
-        .mockResolvedValueOnce(10);
+      (prisma.predictionResult.count as jest.Mock).mockResolvedValueOnce(100);
       (prisma.predictionResult.findMany as jest.Mock).mockResolvedValue([]);
 
       await service.getCalibrationData();
 
       expect(prisma.predictionResult.findMany).toHaveBeenCalledWith({
-        where: { actualResult: { not: null } },
-        select: { probability: true, actualResult: true },
+        select: {
+          probability: true,
+          outcomeLabelRecords: {
+            orderBy: { createdAt: 'desc' },
+          },
+        },
       });
     });
 
     it('should correctly bucket boundary value 0.2 into 20-40% bucket', async () => {
       // The logic is p >= min && p < max, so 0.2 goes into 20-40% (not 0-20%)
-      const mockResults = [{ probability: 0.2, actualResult: 'ADMITTED' }];
-      (prisma.predictionResult.count as jest.Mock)
-        .mockResolvedValueOnce(1)
-        .mockResolvedValueOnce(1);
+      const mockResults = [
+        {
+          probability: 0.2,
+          outcomeLabelRecords: [createOutcomeRecord('ADMITTED')],
+        },
+      ];
+      (prisma.predictionResult.count as jest.Mock).mockResolvedValueOnce(1);
       (prisma.predictionResult.findMany as jest.Mock).mockResolvedValue(
         mockResults,
       );

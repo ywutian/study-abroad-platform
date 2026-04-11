@@ -16,6 +16,9 @@ import { CaseIncentiveService } from '../points/incentive.service';
 import { ModelRegistryService } from './ml/model-registry.service';
 import { ShadowEvaluatorService } from './ml/shadow-evaluator.service';
 import { ModelMonitorService } from './ml/model-monitor.service';
+import { PredictionPolicyService } from './prediction-policy.service';
+import { PredictionMlPrimaryService } from './prediction-ml-primary.service';
+import { FeatureFlagService } from '../../common/feature-flags/feature-flag.service';
 
 // Mock score-calculator utils
 jest.mock('./utils/score-calculator', () => ({
@@ -32,6 +35,7 @@ jest.mock('./utils/score-calculator', () => ({
     return null;
   }),
   calculateSelectivityIndex: jest.fn().mockReturnValue(0.5),
+  resolveContextualAcceptanceRate: jest.fn().mockReturnValue(null),
   enforceMonotonicity: jest.fn().mockImplementation((arr) => arr),
   TIER_POINTS: { 5: 25, 4: 15, 3: 8, 2: 4, 1: 2 },
   LEVEL_POINTS: {
@@ -58,6 +62,15 @@ jest.mock('@study-abroad/shared/scoring', () => ({
   explainPrediction: jest.fn().mockReturnValue([]),
   resolveMajorToCip: jest.fn().mockReturnValue(null),
   CIP_NAMES: {},
+  ROUND_MULTIPLIERS: {
+    ED: 1.35,
+    ED2: 1.25,
+    REA: 1.15,
+    SCEA: 1.15,
+    EA: 1.1,
+    ROLLING: 1.05,
+    RD: 1.0,
+  },
 }));
 
 // Mock ml/tier-strategy
@@ -151,6 +164,8 @@ describe('PredictionService', () => {
   let memoryService: PredictionMemoryService;
   let persistenceService: PredictionPersistenceService;
   let reportingService: PredictionReportingService;
+  let mlPrimaryService: PredictionMlPrimaryService;
+  let featureFlagService: FeatureFlagService;
 
   const mockProfile = {
     id: 'profile-1',
@@ -368,6 +383,27 @@ describe('PredictionService', () => {
             recordPrediction: jest.fn().mockResolvedValue(undefined),
           },
         },
+        {
+          provide: PredictionPolicyService,
+          useValue: {
+            resolveServedPolicyVersionId: jest
+              .fn()
+              .mockReturnValue('v3-enterprise'),
+            buildTracePayload: jest.fn().mockReturnValue(undefined),
+          },
+        },
+        {
+          provide: PredictionMlPrimaryService,
+          useValue: {
+            predictForSchool: jest.fn(),
+          },
+        },
+        {
+          provide: FeatureFlagService,
+          useValue: {
+            isEnabled: jest.fn().mockResolvedValue(false),
+          },
+        },
       ],
     }).compile();
 
@@ -385,6 +421,10 @@ describe('PredictionService', () => {
     reportingService = module.get<PredictionReportingService>(
       PredictionReportingService,
     );
+    mlPrimaryService = module.get<PredictionMlPrimaryService>(
+      PredictionMlPrimaryService,
+    );
+    featureFlagService = module.get<FeatureFlagService>(FeatureFlagService);
   });
 
   afterEach(() => {
@@ -474,6 +514,86 @@ describe('PredictionService', () => {
       );
     });
 
+    it('should return a user-facing confidence explanation instead of a raw level key', async () => {
+      const output = await service.predict('profile-1', ['school-1']);
+
+      expect(output.results[0].confidenceReason).toBeDefined();
+      expect(output.results[0].confidenceReason).not.toBe('medium');
+      expect(output.results[0].confidenceReason).toContain('参考程度');
+    });
+
+    it('should fall back to profile applicationRound when no per-school round exists', async () => {
+      (prisma.profile.findUnique as jest.Mock).mockResolvedValue({
+        ...mockProfile,
+        applicationRound: 'EA',
+      });
+
+      const output = await service.predict('profile-1', ['school-1']);
+
+      expect(output.results[0].roundContext).toBe('EA');
+    });
+
+    it('should classify tier using contextual acceptance rate', async () => {
+      const scoreCalculator = jest.requireMock('./utils/score-calculator');
+      scoreCalculator.resolveContextualAcceptanceRate.mockReturnValue({
+        rate: 16.5,
+        rawRate: 15,
+        baseType: 'international',
+        roundContext: 'EA',
+        roundAdjusted: true,
+      });
+      (service['transformer'].profileToInput as jest.Mock).mockReturnValue({
+        ...mockProfileInput,
+        isInternational: true,
+      });
+      (service['transformer'].schoolToInput as jest.Mock).mockReturnValue({
+        ...mockSchoolInput,
+        acceptanceRate: 49.2,
+        intlAcceptanceRate: 15,
+        applicationRound: 'EA',
+      });
+      (
+        service['transformer'].extractSchoolMetrics as jest.Mock
+      ).mockReturnValue({
+        ...mockSchoolMetrics,
+        acceptanceRate: 49.2,
+      });
+
+      await service.predict('profile-1', ['school-1']);
+
+      expect(scoreCalculator.calculateTier).toHaveBeenCalledWith(
+        mockFusedResult.probability * 1.1,
+        expect.objectContaining({ acceptanceRate: 16.5 }),
+      );
+    });
+
+    it('should preserve a positive EA round lift even when AI is less optimistic', async () => {
+      (prisma.profile.findUnique as jest.Mock).mockResolvedValue({
+        ...mockProfile,
+        applicationRound: 'EA',
+      });
+      (aiEngine.predictWithAI as jest.Mock).mockImplementation(
+        async (_profile, school) => ({
+          ...mockAiResult,
+          probability: school.applicationRound === 'EA' ? 0.35 : 0.45,
+        }),
+      );
+
+      const eaOutput = await service.predict('profile-1', ['school-1'], true);
+
+      (prisma.profile.findUnique as jest.Mock).mockResolvedValue({
+        ...mockProfile,
+        applicationRound: 'RD',
+      });
+      const rdOutput = await service.predict('profile-1', ['school-1'], true);
+
+      expect(eaOutput.results[0].roundContext).toBe('EA');
+      expect(rdOutput.results[0].roundContext).toBe('RD');
+      expect(eaOutput.results[0].probability).toBeGreaterThan(
+        rdOutput.results[0].probability,
+      );
+    });
+
     it('should include factor analysis', async () => {
       const output = await service.predict('profile-1', ['school-1']);
 
@@ -489,6 +609,7 @@ describe('PredictionService', () => {
         'school-1',
         expect.any(Object),
         expect.any(String),
+        'v3-enterprise',
       );
     });
 
@@ -543,6 +664,49 @@ describe('PredictionService', () => {
       await service.predict('profile-1', ['school-1']);
 
       expect(memoryService.recordPredictionToMemory).toHaveBeenCalled();
+    });
+
+    it('should persist served ML-Primary results when v5 feature flag is enabled', async () => {
+      (featureFlagService.isEnabled as jest.Mock)
+        .mockResolvedValueOnce(true)
+        .mockResolvedValueOnce(false);
+      (mlPrimaryService.predictForSchool as jest.Mock).mockResolvedValue({
+        schoolId: 'school-1',
+        schoolName: 'MIT',
+        probability: 0.42,
+        probabilityLow: 0.36,
+        probabilityHigh: 0.48,
+        confidence: 'medium',
+        tier: 'match',
+        factors: [],
+        suggestions: [],
+        comparison: {
+          gpaPercentile: 80,
+          testScorePercentile: 78,
+          activityStrength: 'strong',
+        },
+        modelVersion: 'v5-ml-primary',
+        policyVersionId: 'v5-ml-primary',
+        applicationRound: 'RD',
+      });
+
+      const output = await service.predict('profile-1', ['school-1']);
+
+      expect(output.results[0].modelVersion).toBe('v5-ml-primary');
+      expect(aiEngine.predictWithAI).not.toHaveBeenCalled();
+      expect(cacheService.saveToCache).toHaveBeenCalledWith(
+        'profile-1',
+        'school-1',
+        expect.objectContaining({ modelVersion: 'v5-ml-primary' }),
+        expect.any(String),
+        'v3-enterprise',
+        'v5',
+      );
+      expect(persistenceService.savePrediction).toHaveBeenCalledWith(
+        'profile-1',
+        'school-1',
+        expect.objectContaining({ modelVersion: 'v5-ml-primary' }),
+      );
     });
   });
 
@@ -672,6 +836,7 @@ describe('PredictionService', () => {
         'profile-1',
         'school-1',
         'ADMITTED',
+        undefined,
       );
     });
   });

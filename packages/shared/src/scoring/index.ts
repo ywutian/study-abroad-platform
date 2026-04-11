@@ -1,4 +1,6 @@
 export * from './constants';
+export * from './contextual-baseline';
+export * from './prediction-outcome';
 export * from './types';
 export * from './math';
 export * from './score';
@@ -10,3 +12,4 @@ export * from './tier';
 export * from './hs-quality';
 export * from './hs-confidence';
 export * from './english-proficiency';
+export * from './spike-coherence';

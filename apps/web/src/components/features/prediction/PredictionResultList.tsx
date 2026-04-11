@@ -80,8 +80,10 @@ export function PredictionResultList({
 
   return (
     <div className="space-y-4">
-      <p className="text-xs text-muted-foreground">{t('essayDisclaimer')}</p>
       <p className="text-xs text-muted-foreground">{t('probabilityVsRateDisclaimer')}</p>
+      <p className="text-xs text-muted-foreground">{t('confidenceDisclaimer')}</p>
+      <p className="text-xs text-muted-foreground">{t('tierStrategyDisclaimer')}</p>
+      <p className="text-xs text-muted-foreground">{t('essayDisclaimer')}</p>
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h2 className="text-subtitle flex items-center gap-2">
