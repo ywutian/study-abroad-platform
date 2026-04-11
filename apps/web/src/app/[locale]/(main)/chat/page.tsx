@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { API_ROUTES, chatRoutes } from '@study-abroad/shared';
 import { MessageSquare, Wifi, WifiOff } from 'lucide-react';
+import { useAuthStore } from '@/stores';
 
 import type { Message, Conversation, ReportTarget } from './_components/types';
 import { ChatConversationList } from './_components/ChatConversationList';
@@ -28,11 +29,13 @@ import { ChatMessageArea } from './_components/ChatMessageArea';
 import { ReportDialog } from './_components/ReportDialog';
 import { BlockDialog } from './_components/BlockDialog';
 import { useChatScroll } from './_components/use-chat-scroll';
+import { getConversationTitle } from './_components/utils';
 
 export default function ChatPage() {
   const t = useTranslations();
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
+  const currentUserId = useAuthStore((state) => state.user?.id ?? null);
 
   // ── UI State ──────────────────────────────────────────────
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
@@ -86,7 +89,7 @@ export default function ChatPage() {
   // ── Queries ───────────────────────────────────────────────
   const { data: conversationsData, isLoading } = useQuery({
     queryKey: ['conversations'],
-    queryFn: () => apiClient.get<Conversation[]>('/chats/conversations'),
+    queryFn: () => apiClient.get<Conversation[]>(chatRoutes.conversations()),
   });
   const conversations = useMemo(() => conversationsData || [], [conversationsData]);
 
@@ -243,7 +246,9 @@ export default function ChatPage() {
   }, [selectedConversation, joinConversation, markRead, queryClient]);
 
   // ── Derived (needed by handlers) ─────────────────────────────
-  const selectedUser = conversations.find((c) => c.id === selectedConversation)?.otherUser ?? null;
+  const selectedConversationData =
+    conversations.find((conversation) => conversation.id === selectedConversation) ?? null;
+  const selectedUser = selectedConversationData?.otherUser ?? null;
 
   // ── Stable Handlers ─────────────────────────────────────────
   const handleSelectConversation = useCallback((id: string) => {
@@ -327,12 +332,7 @@ export default function ChatPage() {
   // Fix: single useMemo with time-based sorting
   const sortedConversations = useMemo(() => {
     const filtered = conversations.filter((conv) => {
-      const name = (
-        conv.otherUser?.profile?.nickname ||
-        conv.otherUser?.profile?.realName ||
-        conv.otherUser?.email ||
-        ''
-      ).toLowerCase();
+      const name = getConversationTitle(conv).toLowerCase();
       return name.includes(searchQuery.toLowerCase());
     });
     return filtered.sort((a, b) => {
@@ -343,7 +343,10 @@ export default function ChatPage() {
   }, [conversations, searchQuery]);
 
   const typingUserIds = selectedConversation ? getTypingUsers(selectedConversation) : [];
-  const isOtherUserTyping = typingUserIds.some((id) => id !== selectedUser?.id);
+  const isOtherUserTyping =
+    selectedConversationData?.kind === 'DIRECT'
+      ? typingUserIds.some((id) => id === selectedUser?.id)
+      : typingUserIds.length > 0;
   const currentConvIsPinned =
     conversations.find((c) => c.id === selectedConversation)?.isPinned ?? false;
 
@@ -409,11 +412,15 @@ export default function ChatPage() {
           )}
         >
           <div className="h-1 bg-gradient-to-r bg-primary shrink-0" />
-          {selectedConversation ? (
+          {selectedConversation && selectedConversationData ? (
             <>
               <ChatHeader
-                selectedUser={selectedUser}
-                isOnline={isUserOnline(selectedUser?.id || '')}
+                conversation={selectedConversationData}
+                isOnline={
+                  selectedConversationData?.kind === 'DIRECT'
+                    ? isUserOnline(selectedUser?.id || '')
+                    : false
+                }
                 isPinned={currentConvIsPinned}
                 onBack={handleBack}
                 onPin={handlePin}
@@ -424,7 +431,8 @@ export default function ChatPage() {
               <ChatMessageArea
                 messages={sortedMessages}
                 isLoading={messagesLoading}
-                selectedUser={selectedUser}
+                conversation={selectedConversationData}
+                currentUserId={currentUserId}
                 otherReadAt={otherReadAt}
                 isOtherUserTyping={isOtherUserTyping}
                 hasNewMessage={hasNewMessage}
@@ -472,7 +480,11 @@ export default function ChatPage() {
         open={blockDialogOpen}
         onOpenChange={setBlockDialogOpen}
         isPending={blockMutation.isPending}
-        onConfirm={() => selectedUser && blockMutation.mutate(selectedUser.id)}
+        onConfirm={() =>
+          selectedConversationData?.kind === 'DIRECT' &&
+          selectedUser &&
+          blockMutation.mutate(selectedUser.id)
+        }
       />
 
       <ReportDialog

@@ -17,7 +17,10 @@ export const essayAiKeys = {
 export function useEssayReview(onSuccess?: (data: EssayReview) => void) {
   return useMutation({
     mutationFn: (data: { essayId: string; schoolName?: string; major?: string }) =>
-      apiClient.post<EssayReview>('/essay-ai/review', data, { timeout: AI_TIMEOUTS.AI_REQUEST }),
+      apiClient.post<EssayReview>('/essay-ai/review', data, {
+        timeout: AI_TIMEOUTS.AI_REQUEST,
+        directApi: true,
+      }),
     onSuccess,
   });
 }
@@ -29,7 +32,10 @@ export function useEssayPolish(onSuccess?: (data: PolishResult) => void) {
       content?: string;
       style?: 'formal' | 'vivid' | 'concise';
     }) =>
-      apiClient.post<PolishResult>('/essay-ai/polish', data, { timeout: AI_TIMEOUTS.AI_REQUEST }),
+      apiClient.post<PolishResult>('/essay-ai/polish', data, {
+        timeout: AI_TIMEOUTS.AI_REQUEST,
+        directApi: true,
+      }),
     onSuccess,
   });
 }
@@ -39,6 +45,7 @@ export function useEssayRewrite(onSuccess?: (data: RewriteResult) => void) {
     mutationFn: (data: { paragraph: string; instruction?: string }) =>
       apiClient.post<RewriteResult>('/essay-ai/rewrite-paragraph', data, {
         timeout: AI_TIMEOUTS.AI_REQUEST,
+        directApi: true,
       }),
     onSuccess,
   });
@@ -49,6 +56,7 @@ export function useEssayContinue(onSuccess?: (data: ContinueResult) => void) {
     mutationFn: (data: { content: string; prompt?: string; direction?: string }) =>
       apiClient.post<ContinueResult>('/essay-ai/continue-writing', data, {
         timeout: AI_TIMEOUTS.AI_REQUEST,
+        directApi: true,
       }),
     onSuccess,
   });
@@ -59,6 +67,7 @@ export function useEssayOpening(onSuccess?: (data: OpeningResult) => void) {
     mutationFn: (data: { prompt: string; background?: string }) =>
       apiClient.post<OpeningResult>('/essay-ai/generate-opening', data, {
         timeout: AI_TIMEOUTS.AI_REQUEST,
+        directApi: true,
       }),
     onSuccess,
   });

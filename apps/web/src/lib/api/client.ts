@@ -1,5 +1,6 @@
 import { toast } from 'sonner';
 import { useAuthStore } from '@/stores/auth';
+import { env } from '@/lib/env';
 import { ApiError } from './api-error';
 import { mapApiErrorToKey } from './api-error-map';
 import { API_ERROR_MESSAGES } from './api-error-i18n';
@@ -35,6 +36,7 @@ function getApiLocale(): 'zh' | 'en' {
 
 // API 请求通过 Next.js rewrites 代理（同源），避免跨域 cookie 问题
 const RESOLVED_API_URL = '';
+const DIRECT_API_URL = env.NEXT_PUBLIC_API_URL.replace(/\/$/, '');
 const API_VERSION = '/api/v1';
 
 interface RequestConfig extends RequestInit {
@@ -43,6 +45,8 @@ interface RequestConfig extends RequestInit {
   timeout?: number;
   signal?: AbortSignal;
   skipAuth?: boolean;
+  directApi?: boolean;
+  skipApiVersion?: boolean;
 }
 
 /**
@@ -95,14 +99,17 @@ class ApiClient {
       timeout = 15000,
       signal,
       skipAuth: explicitSkipAuth,
+      directApi = false,
+      skipApiVersion = false,
       ...init
     } = config;
     // 自动为认证端点跳过 Token 逻辑（防御性编程，即使调用者忘记传 skipAuth 也不会出错）
     const skipAuth = explicitSkipAuth || this.isAuthEndpoint(endpoint);
 
     // 所有 endpoint 使用 API 版本前缀
-    const versionPrefix = this.apiVersion;
-    let url = `${this.baseUrl}${versionPrefix}${endpoint}`;
+    const versionPrefix = skipApiVersion ? '' : this.apiVersion;
+    const requestBaseUrl = directApi && DIRECT_API_URL ? DIRECT_API_URL : this.baseUrl;
+    let url = `${requestBaseUrl}${versionPrefix}${endpoint}`;
     if (params) {
       const filteredParams: Record<string, string> = {};
       Object.entries(params).forEach(([key, value]) => {

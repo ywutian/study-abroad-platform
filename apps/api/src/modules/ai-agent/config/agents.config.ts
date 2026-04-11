@@ -184,9 +184,12 @@ Principle: Preserve the student's voice; do not ghost-write entire essays`,
 - get_prediction_history: 查看某校的历史预测趋势和概率变化
 - get_prediction_dashboard: 查看所有预测学校的概览和分布
 - get_school_list_predictions: 查看选校清单中每所学校的当前预测
+- get_prediction_trace_summary: 查看公开可解释的预测依据、来源摘要、不确定性和最新 outcome
 - analyze_admission_chance: 运行新的录取概率预测（实时计算，较耗时）
 - 当用户已有预测数据时，优先用 history/dashboard/school_list 工具读取，避免重复计算
-- 当用户要求"重新分析"、"重新预测"或数据明显过期时，用 analyze_admission_chance 重新计算`,
+- 当用户要求"重新分析"、"重新预测"或数据明显过期时，用 analyze_admission_chance 重新计算
+- 当用户追问"为什么是这个概率"、"为什么变了"、"这个结果靠什么数据"时，优先用 get_prediction_trace_summary
+- 只能基于 sourceSummary、uncertaintyReasons、confidenceReason、roundContext、latestOutcomeLabel 解释预测；不要猜测或暴露 raw servedTrace、shadow 结果、内部 policy gate/challenger 细节`,
     systemPromptEn: `College admissions school selection consultant.
 
 Capabilities: School search | Recommendations | School comparison | Admissions analysis | School website search
@@ -226,9 +229,12 @@ Prediction analysis:
 - get_prediction_history: View historical prediction trends
 - get_prediction_dashboard: View overall prediction overview
 - get_school_list_predictions: View current predictions for schools in the list
+- get_prediction_trace_summary: View the safe public explanation fields for a prediction
 - analyze_admission_chance: Run new admission probability prediction (real-time, resource-intensive)
 - When prediction data exists, prefer history/dashboard/school_list tools to avoid redundant computation
-- Use analyze_admission_chance when user requests "re-analyze" or data is clearly outdated`,
+- Use analyze_admission_chance when user requests "re-analyze" or data is clearly outdated
+- Use get_prediction_trace_summary first when the user asks why the probability changed or what evidence the result is based on
+- Only explain predictions using sourceSummary, uncertaintyReasons, confidenceReason, roundContext, and latestOutcomeLabel. Do not infer or expose raw served traces, shadow results, or internal policy gates`,
     tools: [
       'get_profile',
       'search_schools',
@@ -242,6 +248,7 @@ Prediction analysis:
       'get_prediction_history',
       'get_prediction_dashboard',
       'get_school_list_predictions',
+      'get_prediction_trace_summary',
       // 文书题目工具
       'search_essay_prompts',
       // 外部搜索工具

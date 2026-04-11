@@ -107,6 +107,7 @@ export function MessageContent({ content, isStreaming = false }: MessageContentP
       return content
         .replace(/```(?:json)?\s*\n?[\s\S]*?\n?```/, '')
         .replace(/.*结构化数据.*\n?/g, '')
+        .replace(/.*structured data.*\n?/gi, '')
         .trim();
     }
     return content;

@@ -19,6 +19,9 @@
 - [AI Agent 评估 Rubric](./AI_AGENT_EVALUATION_RUBRIC.md)
 - [Web / Mobile 复用 Rubric](./CROSS_PLATFORM_REUSE_RUBRIC.md)
 - [专业留学中介感 Rubric](./PROFESSIONAL_CONSULTANCY_RUBRIC.md)
+- [全产品面审计注册表](./FULL_SURFACE_REGISTRY.md)
+- [全产品面审计复用手册](./FULL_SURFACE_REUSE_PLAYBOOK.md)
+- [全产品面易漏点清单](./FULL_SURFACE_GAP_CHECKLIST.md)
 - [人工测试者任务卡模板](./templates/human-e2e-task-card.md)
 - [问题提报模板](./templates/e2e-issue-report.md)
 - [发版门禁总表模板](./templates/release-gate-master.md)
@@ -35,6 +38,11 @@
   - AI Agent 功能与输出合理性
   - Web / Mobile 复用合理性
   - 整体是否符合专业留学中介产品定位
+- 如本轮是全产品面专项审计，先执行：
+
+```bash
+pnpm full-surface:generate --audit-date YYYY-MM-DD
+```
 
 ## 📊 测试状态总览
 
@@ -85,15 +93,15 @@ cd apps/api && pnpm test --coverage
 
 ### Phase 1: Turbopack 路由组 404 修复 (P0)
 
-| 问题                                                           | 修复                                                        |
-| -------------------------------------------------------------- | ----------------------------------------------------------- |
-| Next.js 16 Turbopack 模式下 `(main)` / `(auth)` 路由组返回 404 | 更新 `middleware.ts` matcher 为排除式匹配模式               |
-| 开发模式使用 Turbopack 可能导致路由问题                        | `package.json` 新增 `dev:webpack` 脚本作为 Webpack 备用方案 |
+| 问题                                                           | 修复                                                                    |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Next.js 16 Turbopack 模式下 `(main)` / `(auth)` 路由组返回 404 | 更新 `middleware.ts` matcher 为排除式匹配模式                           |
+| Turbopack 开发模式可能出现路由/HMR 假告警                      | 默认使用 `pnpm web`（Webpack），仅在专项排查时使用 `pnpm web:turbopack` |
 
 **修改文件**:
 
 - `apps/web/src/middleware.ts` — matcher 改为 `/((?!api|_next/static|...).*)`
-- `apps/web/package.json` — `"dev": "next dev"`, `"dev:webpack": "next dev --webpack"`
+- `apps/web/package.json` — `"dev": "next dev --webpack --port 4100"`, `"dev:turbopack": "next dev --turbopack --port 4100"`
 
 ### Phase 2: 数据库 Schema 漂移修复 (P2)
 

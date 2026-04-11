@@ -344,11 +344,23 @@ export default function ChatScreen() {
   );
 
   // Get other participant
-  const otherParticipant = conversation?.participants.find((p) => p.userId !== user?.id)?.user;
+  const isGroupConversation = conversation?.kind === 'MATCH_GROUP';
+  const otherParticipant =
+    conversation?.otherUser ?? conversation?.participants.find((p) => p.userId !== user?.id)?.user;
   const otherUserId = otherParticipant?.id;
-  const isOtherOnline = otherUserId ? isUserOnline(otherUserId) : false;
+  const isOtherOnline = !isGroupConversation && otherUserId ? isUserOnline(otherUserId) : false;
   const typingUserIds = id ? getTypingUsers(id) : [];
-  const isOtherTyping = otherUserId ? typingUserIds.includes(otherUserId) : false;
+  const isOtherTyping = isGroupConversation
+    ? typingUserIds.length > 0
+    : otherUserId
+      ? typingUserIds.includes(otherUserId)
+      : false;
+  const headerTitle =
+    conversation?.title ||
+    otherParticipant?.profile?.nickname ||
+    otherParticipant?.profile?.realName ||
+    otherParticipant?.email?.split('@')[0] ||
+    t('chat.title');
 
   const messages = conversation?.messages ?? [];
 
@@ -356,7 +368,7 @@ export default function ChatScreen() {
     <MessageBubble
       item={item}
       isMe={item.senderId === user?.id}
-      otherEmail={otherParticipant?.email}
+      otherEmail={item.sender?.email || otherParticipant?.email}
       colors={colors}
       onLongPress={handleMessageLongPress}
       showDateSeparator={shouldShowDateSeparator(messages, index)}
@@ -380,18 +392,19 @@ export default function ChatScreen() {
     <>
       <Stack.Screen
         options={{
-          title: otherParticipant?.email?.split('@')[0] || t('chat.title'),
+          title: headerTitle,
           headerRight: () => (
             <View style={styles.headerRight}>
-              {/* Online status dot */}
-              <View
-                style={[
-                  styles.onlineDot,
-                  {
-                    backgroundColor: isOtherOnline ? colors.success : colors.foregroundMuted,
-                  },
-                ]}
-              />
+              {!isGroupConversation && (
+                <View
+                  style={[
+                    styles.onlineDot,
+                    {
+                      backgroundColor: isOtherOnline ? colors.success : colors.foregroundMuted,
+                    },
+                  ]}
+                />
+              )}
               <TouchableOpacity style={styles.headerButton}>
                 <Ionicons name="ellipsis-vertical" size={20} color={colors.foreground} />
               </TouchableOpacity>
@@ -452,7 +465,9 @@ export default function ChatScreen() {
         {isOtherTyping && (
           <View style={[styles.typingContainer, { backgroundColor: colors.background }]}>
             <Text style={[styles.typingText, { color: colors.foregroundMuted }]}>
-              {t('chat.typing', 'typing...')}
+              {isGroupConversation
+                ? `${conversation?.participantCount || conversation?.participants.length || 0} ${t('chat.typing', 'typing...')}`
+                : t('chat.typing', 'typing...')}
             </Text>
           </View>
         )}

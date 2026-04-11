@@ -2,6 +2,7 @@
 
 > 目标：把发版门禁从“人工全量探索”改成“Codex 先跑、人工补位、Codex 收口”的标准流程。本文是内部执行标准，不直接发给非技术测试者。
 > 团队速查入口见 [RELEASE_GATE_ONE_PAGER.md](./RELEASE_GATE_ONE_PAGER.md)。
+> 如需执行“全产品面专项审计”而不是日常 release gate，先读 [FULL_SURFACE_REGISTRY.md](./FULL_SURFACE_REGISTRY.md)、[FULL_SURFACE_REUSE_PLAYBOOK.md](./FULL_SURFACE_REUSE_PLAYBOOK.md) 和 [FULL_SURFACE_GAP_CHECKLIST.md](./FULL_SURFACE_GAP_CHECKLIST.md)。
 
 ## 1. 适用范围
 
@@ -10,6 +11,12 @@
 - 默认继续复用既有 `journey_id`、`PASS / ISSUE / BROKEN / BLOCKED / SKIPPED` 状态和 `e2e-report/` 证据目录。
 - 所有 active journeys 以 [JOURNEY_REGISTRY.md](./JOURNEY_REGISTRY.md) 为准。
 - 运行时脚本的机器可读事实源分别是 `scripts/release-gate/registry.ts` 和 `scripts/release-gate/impact-mapping.ts`。
+- 全产品面专项审计的 machine-readable inventory 在 `scripts/release-gate/full-surface-registry.ts`。
+- 全产品面专项审计的 bootstrap 命令：
+
+```bash
+pnpm full-surface:generate --audit-date YYYY-MM-DD
+```
 
 ## 2. 角色与责任
 
@@ -216,6 +223,33 @@
 3. [问题提报模板](./templates/e2e-issue-report.md)
 4. [Codex Runbook](./CODEX_E2E_RUNBOOK.md)
 5. [发版门禁总表模板](./templates/release-gate-master.md)
+
+### Full-surface 专项审计附加产物
+
+1. `docs/FULL_SURFACE_AUDIT_LOG_<date>.md`
+2. `docs/FULL_SURFACE_AGENT_REVIEW_<date>.md`
+3. `e2e-report/full-surface-<date>/route-inventory.json`
+4. `e2e-report/full-surface-<date>/capability-inventory.json`
+5. `e2e-report/full-surface-<date>/journey-overlay.json`
+6. [full-surface route 模板](./templates/full-surface-route-check.md)
+7. [full-surface capability 模板](./templates/full-surface-capability-check.md)
+8. [full-surface batch summary 模板](./templates/full-surface-batch-summary.md)
+
+专项审计每个 batch 完成后，必须同步更新：
+
+- `docs/FULL_SURFACE_AUDIT_LOG_<date>.md`
+- `docs/FULL_SURFACE_AGENT_REVIEW_<date>.md`
+- `docs/USER_JOURNEY_AUDIT_LOG.md`
+- `MEMORY.md`
+
+全产品面专项审计额外固定维护：
+
+6. [全产品面审计注册表](./FULL_SURFACE_REGISTRY.md)
+7. [全产品面审计复用手册](./FULL_SURFACE_REUSE_PLAYBOOK.md)
+8. [全产品面易漏点清单](./FULL_SURFACE_GAP_CHECKLIST.md)
+9. [全产品面 route 模板](./templates/full-surface-route-check.md)
+10. [全产品面 capability 模板](./templates/full-surface-capability-check.md)
+11. [全产品面 batch 总结模板](./templates/full-surface-batch-summary.md)
 
 ## 8. 配套标准
 

@@ -23,27 +23,32 @@ This is a **P0 Critical** issue affecting 100% of authenticated pages.
    ];
    ```
 
-2. **Provide a Webpack fallback script** as a safety net:
+2. **Provide both a stable Webpack default and an explicit Turbopack entry**:
 
    ```json
-   "dev": "next dev",
+   "dev": "next dev --webpack",
+   "dev:turbopack": "next dev --turbopack",
    "dev:webpack": "next dev --webpack"
    ```
 
-3. Provide `dev:webpack` as a fallback script for developers who encounter Turbopack issues.
+3. Keep `dev:turbopack` for targeted compiler debugging, not as the team-wide default.
 
 ## Consequences
 
 ### Positive
 
 - All routes work correctly in both Webpack and Turbopack modes
-- Developers have a Turbopack default (`dev`) and a Webpack fallback (`dev:webpack`)
+- Developers have a stable Webpack default (`dev`) and an explicit Turbopack path (`dev:turbopack`) for compiler debugging
 - No code changes required in page components or layouts
 
 ### Negative
 
 - Need to periodically re-test Turbopack compatibility with future Next.js releases
-- Webpack fallback is slower than Turbopack for Hot Module Replacement (HMR)
+- Webpack startup/HMR is slower than Turbopack
+
+### 2026-04-02 addendum
+
+During prediction/school-detail runtime review, Turbopack still produced intermittent dev-only runtime issues such as `Module factory is not available` and surfaced false-positive `1 Issue` badges in the Next.js dev toolbar. Product pages remained functional, but the developer experience was noisy enough to justify making Webpack the default local entry.
 
 ### Neutral
 

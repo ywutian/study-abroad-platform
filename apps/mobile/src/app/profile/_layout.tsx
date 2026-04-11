@@ -30,6 +30,7 @@ export default function ProfileLayout() {
       <Stack.Screen name="awards" options={{ title: t('profile.awards') }} />
       <Stack.Screen name="education" options={{ title: t('profile.education') }} />
       <Stack.Screen name="essays" options={{ title: t('profile.essays') }} />
+      <Stack.Screen name="analysis" options={{ title: t('applicationAnalysis.title') }} />
       <Stack.Screen name="export" options={{ title: t('profile.exportData') }} />
     </Stack>
   );

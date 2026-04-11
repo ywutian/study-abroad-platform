@@ -1,37 +1,78 @@
 // Chat & Social
 
-import type { User } from './auth';
+export type ConversationKind = 'DIRECT' | 'MATCH_GROUP';
+
+export interface ChatUserProfile {
+  nickname?: string | null;
+  avatarUrl?: string | null;
+  realName?: string | null;
+  currentSchool?: string | null;
+  grade?: string | null;
+  targetMajor?: string | null;
+  bio?: string | null;
+}
+
+export interface ChatUser {
+  id: string;
+  email: string;
+  role?: string;
+  profile?: ChatUserProfile | null;
+}
 
 export interface Message {
   id: string;
   conversationId: string;
   senderId: string;
   content: string;
-  createdAt: Date;
-}
-
-export interface Conversation {
-  id: string;
-  participantIds: string[];
-  lastMessage?: Message;
-  unreadCount: number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string | Date;
+  updatedAt?: string | Date;
+  isDeleted?: boolean;
+  isRecalled?: boolean;
+  isSystem?: boolean;
+  recalledAt?: string | Date | null;
+  mediaUrl?: string | null;
+  mediaType?: string | null;
+  sender?: ChatUser;
 }
 
 export interface ConversationParticipant {
   id: string;
-  conversationId: string;
+  conversationId?: string;
   userId: string;
-  user?: User;
+  isPinned?: boolean;
+  lastReadAt?: string | Date | null;
+  user?: ChatUser;
+}
+
+export interface ConversationSummary {
+  id: string;
+  kind: ConversationKind;
+  title: string;
+  createdBySystem?: boolean;
+  otherUser?: ChatUser | null;
+  participantCount: number;
+  participantPreview: ChatUser[];
+  avatarSummary: Array<string | null>;
+  lastMessage?: Message | null;
+  unreadCount: number;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+  isPinned?: boolean;
+  teamMatchId?: string | null;
+}
+
+export interface Conversation extends ConversationSummary {
+  participants: ConversationParticipant[];
+  messages: Message[];
+  lastMessageAt: string | Date;
 }
 
 export interface Follow {
   id: string;
   followerId: string;
   followingId: string;
-  follower?: User;
-  following?: User;
+  follower?: ChatUser;
+  following?: ChatUser;
   createdAt: string;
 }
 

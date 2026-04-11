@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, X, Minus, Maximize2, Minimize2 } from 'lucide-react';
 import { AgentChat } from './agent-chat';
+import { useFloatingChatBridgeStore } from './floating-chat-bridge';
 import { useHydrated } from '@/hooks/use-hydration';
 
 interface FloatingChatProps {
@@ -30,7 +31,8 @@ export function FloatingChat({ defaultOpen = false }: FloatingChatProps) {
   const [isMinimized, setIsMinimized] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [pendingMessage, setPendingMessage] = useState<string | null>(null);
+  const pendingAction = useFloatingChatBridgeStore((state) => state.queue[0] || null);
+  const consumePendingAction = useFloatingChatBridgeStore((state) => state.consumeFirst);
 
   // Stable refs for event handlers — avoids stale closures and re-registration
   const isOpenRef = useRef(isOpen);
@@ -38,30 +40,14 @@ export function FloatingChat({ defaultOpen = false }: FloatingChatProps) {
   const isMinimizedRef = useRef(isMinimized);
   isMinimizedRef.current = isMinimized;
 
-  // Listen for ai-assistant-action events to open chat with a message.
-  // Uses microtask (queueMicrotask) to let synchronous AgentChat listeners
-  // set _handled first, while remaining in the same event loop turn.
   useEffect(() => {
-    const handleAction = (e: Event) => {
-      const detail = (e as CustomEvent).detail;
-      if (!detail?.message) return;
-
-      if (isOpenRef.current && !isMinimizedRef.current) {
-        // Chat is already open — AgentChat's own listener handles it synchronously
-        return;
-      }
-
-      // Microtask: runs after all synchronous listeners but before setTimeout
-      queueMicrotask(() => {
-        if (detail._handled) return;
+    if (pendingAction?.message) {
+      if (!isOpenRef.current || isMinimizedRef.current) {
         setIsOpen(true);
         setIsMinimized(false);
-        setPendingMessage(detail.message);
-      });
-    };
-    window.addEventListener('ai-assistant-action', handleAction);
-    return () => window.removeEventListener('ai-assistant-action', handleAction);
-  }, []); // Stable — no deps, uses refs
+      }
+    }
+  }, [pendingAction]);
 
   // 监听快捷键
   useEffect(() => {
@@ -157,8 +143,8 @@ export function FloatingChat({ defaultOpen = false }: FloatingChatProps) {
                 showHeader={true}
                 showQuickActions={true}
                 compact={!isFullscreen}
-                pendingMessage={pendingMessage}
-                onPendingMessageConsumed={() => setPendingMessage(null)}
+                pendingAction={pendingAction}
+                onPendingActionConsumed={consumePendingAction}
               />
             </div>
           )}

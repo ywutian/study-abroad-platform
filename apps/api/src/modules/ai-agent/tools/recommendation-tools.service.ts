@@ -141,7 +141,7 @@ export class RecommendationToolsService implements IToolHandlerProvider {
 
   async analyzeAdmissionChance(
     userId: string,
-    args: { schoolId?: string; schoolName?: string },
+    args: { schoolId?: string; schoolName?: string; forceRefresh?: boolean },
     _context: any,
     locale = 'zh',
   ) {
@@ -170,7 +170,7 @@ export class RecommendationToolsService implements IToolHandlerProvider {
       const output = await this.predictionService.predict(
         profileId,
         [school.id],
-        false,
+        args.forceRefresh ?? false,
         locale,
       );
 
@@ -185,19 +185,35 @@ export class RecommendationToolsService implements IToolHandlerProvider {
       const prediction = output.results[0];
 
       return {
-        school: prediction.schoolName,
+        school: {
+          id: school.id,
+          name: school.name,
+          nameZh: school.nameZh ?? undefined,
+        },
         chance:
           prediction.tier === 'safety'
             ? 'high'
             : prediction.tier === 'match'
               ? 'medium'
               : 'low',
+        probability: prediction.probability,
         percentage: `${Math.round(prediction.probability * 100)}%`,
         confidence: prediction.confidence,
         tier: prediction.tier,
+        confidenceReason: prediction.confidenceReason,
+        cohortKey: prediction.cohortKey,
+        roundContext: prediction.roundContext,
+        sourceSummary: prediction.sourceSummary,
+        uncertaintyReasons: prediction.uncertaintyReasons,
+        // servedPolicyVersionId omitted — internal policy gate detail
+        latestOutcomeLabel: prediction.latestOutcomeLabel,
+        source: (prediction as { source?: string }).source,
+        modelVersion: prediction.modelVersion,
+        schoolMeta: prediction.schoolMeta,
         analysis:
           prediction.factors?.map((f) => `${f.name}: ${f.detail}`).join('\n') ||
           (isZh ? '暂无详细分析' : 'No detailed analysis available'),
+        factors: prediction.factors,
         suggestions: prediction.suggestions || [],
         comparison: prediction.comparison,
       };

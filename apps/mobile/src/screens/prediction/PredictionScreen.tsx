@@ -4,6 +4,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
+import { router, type Href } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -26,8 +27,16 @@ import {
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { useColors, withOpacity, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
-import { API_ROUTES, profileRoutes } from '@study-abroad/shared';
+import {
+  API_ROUTES,
+  detectInternationalStatus,
+  formatPercentValue,
+  predictionRoutes,
+  profileRoutes,
+  resolveContextualBaseline,
+} from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { aiService } from '@/lib/api/services/ai';
 import { useAuthStore } from '@/stores';
 
 interface PredictionResultItem {
@@ -38,7 +47,17 @@ interface PredictionResultItem {
   tier: 'reach' | 'match' | 'safety';
   factors: Array<{ name: string; impact: string; detail: string }>;
   suggestions: string[];
-  schoolMeta?: { acceptanceRate?: number };
+  schoolMeta?: {
+    acceptanceRate?: number | null;
+    intlAcceptanceRate?: number | null;
+    needBlindInternational?: boolean;
+  };
+  roundContext?: string | null;
+  contextualBaseline?: ReturnType<typeof resolveContextualBaseline>;
+  confidenceReason?: string;
+  sourceSummary?: Array<{ label: string; detail?: string }>;
+  uncertaintyReasons?: string[];
+  updatedAt?: string;
 }
 
 interface DashboardResponse {
@@ -46,15 +65,27 @@ interface DashboardResponse {
   avgProbability: number;
   predictions: Array<{
     schoolId: string;
-    school: { name: string; nameZh?: string };
+    school: {
+      name: string;
+      nameZh?: string;
+      acceptanceRate?: number | null;
+      intlAcceptanceRate?: number | null;
+      needBlindInternational?: boolean;
+    } | null;
     probability: number;
     tier: 'reach' | 'match' | 'safety';
     confidence: 'low' | 'medium' | 'high';
+    roundContext?: string | null;
+    confidenceReason?: string;
+    sourceSummary?: Array<{ label: string; detail?: string }>;
+    uncertaintyReasons?: string[];
+    updatedAt?: string;
   }>;
 }
 
-function mapDashboardToPredictions(
-  dashboard: DashboardResponse | undefined
+export function mapDashboardToPredictions(
+  dashboard: DashboardResponse | undefined,
+  isInternational: boolean
 ): PredictionResultItem[] {
   if (!dashboard?.predictions) return [];
   return dashboard.predictions.map((p) => ({
@@ -65,10 +96,51 @@ function mapDashboardToPredictions(
     tier: p.tier,
     factors: [],
     suggestions: [],
+    schoolMeta: p.school
+      ? {
+          acceptanceRate: p.school.acceptanceRate,
+          intlAcceptanceRate: p.school.intlAcceptanceRate,
+          needBlindInternational: p.school.needBlindInternational || undefined,
+        }
+      : undefined,
+    roundContext: p.roundContext,
+    contextualBaseline: resolveContextualBaseline({
+      schoolMeta: p.school,
+      isInternational,
+      roundContext: p.roundContext,
+      probability: p.probability,
+    }),
+    confidenceReason: p.confidenceReason,
+    sourceSummary: p.sourceSummary,
+    uncertaintyReasons: p.uncertaintyReasons,
+    updatedAt: p.updatedAt,
   }));
 }
 
-type AdmissionResult = 'admitted' | 'rejected' | 'waitlisted' | 'deferred';
+type AdmissionResult = 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED';
+
+interface PredictionProfileSummary {
+  nationality?: string | null;
+  countryOfResidence?: string | null;
+  citizenship?: string | null;
+  educationSystem?: string | null;
+  currentSchoolType?: string | null;
+}
+
+interface PredictionProfileCompleteness {
+  score: number;
+}
+
+function getTimeAgo(isoString: string): string {
+  const diff = Date.now() - new Date(isoString).getTime();
+  const minutes = Math.floor(diff / 60_000);
+  if (minutes < 1) return '<1 min';
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h`;
+  const days = Math.floor(hours / 24);
+  return `${days}d`;
+}
 
 export default function PredictionScreen() {
   const { t } = useTranslation();
@@ -81,11 +153,13 @@ export default function PredictionScreen() {
   // Report result state
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [reportSchoolId, setReportSchoolId] = useState<string | null>(null);
-  const [reportResult, setReportResult] = useState<AdmissionResult>('admitted');
+  const [reportResult, setReportResult] = useState<AdmissionResult>('ADMITTED');
 
   const reportMutation = useMutation({
     mutationFn: (data: { schoolId: string; result: AdmissionResult }) =>
-      apiClient.post(`${API_ROUTES.PREDICTIONS}/report-result`, data),
+      apiClient.patch(predictionRoutes.result(data.schoolId), {
+        result: data.result,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['predictions'] });
       setReportModalVisible(false);
@@ -99,15 +173,22 @@ export default function PredictionScreen() {
 
   const openReportModal = (schoolId: string) => {
     setReportSchoolId(schoolId);
-    setReportResult('admitted');
+    setReportResult('ADMITTED');
     setReportModalVisible(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
   // 获取用户档案完整度
-  const { data: profile, isLoading: profileLoading } = useQuery({
+  const { data: profile } = useQuery({
     queryKey: ['profile'],
-    queryFn: () => apiClient.get<{ completeness?: number }>(profileRoutes.me()),
+    queryFn: () => apiClient.get<PredictionProfileSummary>(profileRoutes.me()),
+    enabled: isAuthenticated,
+  });
+
+  const { data: profileCompleteness } = useQuery({
+    queryKey: ['profile', 'completeness'],
+    queryFn: () =>
+      apiClient.get<PredictionProfileCompleteness>(`${profileRoutes.me()}/completeness`),
     enabled: isAuthenticated,
   });
 
@@ -122,7 +203,14 @@ export default function PredictionScreen() {
     enabled: isAuthenticated,
   });
 
-  const predictions = mapDashboardToPredictions(dashboardData);
+  const { data: applicationAnalysis } = useQuery({
+    queryKey: ['profile-ai-analysis'],
+    queryFn: () => aiService.profileAnalysis(),
+    enabled: isAuthenticated,
+  });
+
+  const intlContext = detectInternationalStatus(profile ?? {});
+  const predictions = mapDashboardToPredictions(dashboardData, intlContext.isInternational);
 
   // 运行预测
   const predictMutation = useMutation({
@@ -211,16 +299,16 @@ export default function PredictionScreen() {
           <View style={styles.progressSection}>
             <View style={styles.progressHeader}>
               <Text style={styles.progressLabel}>{t('prediction.profileCompleteness')}</Text>
-              <Text style={styles.progressValue}>{profile?.completeness || 0}%</Text>
+              <Text style={styles.progressValue}>{profileCompleteness?.score || 0}%</Text>
             </View>
             <Progress
-              value={profile?.completeness || 0}
+              value={profileCompleteness?.score || 0}
               max={100}
               style={styles.progressBar}
               color="#fff"
               trackColor="rgba(255,255,255,0.3)"
             />
-            {(profile?.completeness || 0) < 80 && (
+            {(profileCompleteness?.score || 0) < 80 && (
               <Text style={styles.progressHint}>{t('prediction.completeProfileHint')}</Text>
             )}
           </View>
@@ -264,6 +352,93 @@ export default function PredictionScreen() {
         </View>
       </Animated.View>
 
+      <View
+        style={[
+          styles.explanationCard,
+          { backgroundColor: colors.card, borderColor: colors.border },
+        ]}
+      >
+        <Text style={[styles.explanationText, { color: colors.foregroundMuted }]}>
+          {t('prediction.probabilityVsRateDisclaimer')}
+        </Text>
+        <Text style={[styles.explanationText, { color: colors.foregroundMuted }]}>
+          {t('prediction.confidenceDisclaimer')}
+        </Text>
+        <Text style={[styles.explanationText, { color: colors.foregroundMuted }]}>
+          {t('prediction.tierDisclaimer')}
+        </Text>
+      </View>
+
+      <TouchableOpacity
+        onPress={() => router.push('/profile/analysis' as Href)}
+        activeOpacity={0.85}
+        style={[
+          styles.analysisCard,
+          {
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+          },
+        ]}
+      >
+        <View style={styles.analysisCardHeader}>
+          <View style={styles.analysisCardTitleBlock}>
+            <Text style={[styles.analysisCardTitle, { color: colors.foreground }]}>
+              {t('applicationAnalysis.title')}
+            </Text>
+            <Text style={[styles.analysisCardSubtitle, { color: colors.foregroundMuted }]}>
+              {t('prediction.analysisCard.subtitle')}
+            </Text>
+          </View>
+          <Badge
+            variant={
+              applicationAnalysis?.status === 'degraded'
+                ? 'error'
+                : applicationAnalysis?.status === 'cached'
+                  ? 'secondary'
+                  : 'success'
+            }
+          >
+            {applicationAnalysis
+              ? t(`applicationAnalysis.freshness.${applicationAnalysis.status ?? 'fresh'}`)
+              : t('prediction.analysisCard.open')}
+          </Badge>
+        </View>
+
+        {applicationAnalysis ? (
+          <>
+            <View style={styles.analysisCardBadges}>
+              <Badge variant="outline">
+                {t(
+                  `applicationAnalysis.states.${applicationAnalysis.meta?.state ?? 'ready'}.label`
+                )}
+              </Badge>
+              <Badge variant="secondary">
+                {t(
+                  `applicationAnalysis.dataQuality.${applicationAnalysis.meta?.dataQuality ?? 'insufficient'}`
+                )}
+              </Badge>
+            </View>
+            <Text style={[styles.analysisCardVerdict, { color: colors.foreground }]}>
+              {applicationAnalysis.portfolioAnalysis?.verdict || applicationAnalysis.summary}
+            </Text>
+            <Text style={[styles.analysisCardBody, { color: colors.foregroundMuted }]}>
+              {applicationAnalysis.summary}
+            </Text>
+          </>
+        ) : (
+          <Text style={[styles.analysisCardBody, { color: colors.foregroundMuted }]}>
+            {t('prediction.analysisCard.description')}
+          </Text>
+        )}
+
+        <View style={styles.analysisCardFooter}>
+          <Text style={[styles.analysisCardLink, { color: colors.primary }]}>
+            {t('prediction.analysisCard.open')}
+          </Text>
+          <Ionicons name="chevron-forward" size={16} color={colors.primary} />
+        </View>
+      </TouchableOpacity>
+
       {/* Predictions List */}
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
@@ -306,8 +481,122 @@ export default function PredictionScreen() {
                       <Text style={[styles.rateLabel, { color: colors.foregroundMuted }]}>
                         {t('prediction.probability')}
                       </Text>
+                      {prediction.contextualBaseline && (
+                        <>
+                          <Text style={[styles.benchmarkLabel, { color: colors.foregroundMuted }]}>
+                            {t(
+                              prediction.contextualBaseline.roundAdjusted
+                                ? 'prediction.contextualBaselineWithRound'
+                                : 'prediction.contextualBaseline',
+                              {
+                                round: prediction.contextualBaseline.roundContext,
+                                value: formatPercentValue(prediction.contextualBaseline.rate),
+                              }
+                            )}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.benchmarkDelta,
+                              {
+                                color:
+                                  prediction.contextualBaseline.deltaPoints > 2
+                                    ? colors.success
+                                    : prediction.contextualBaseline.deltaPoints < -2
+                                      ? colors.error
+                                      : colors.foregroundMuted,
+                              },
+                            ]}
+                          >
+                            {prediction.contextualBaseline.deltaPoints > 2
+                              ? t('prediction.deltaAbove', {
+                                  points: formatPercentValue(
+                                    prediction.contextualBaseline.deltaPoints
+                                  ),
+                                })
+                              : prediction.contextualBaseline.deltaPoints < -2
+                                ? t('prediction.deltaBelow', {
+                                    points: formatPercentValue(
+                                      Math.abs(prediction.contextualBaseline.deltaPoints)
+                                    ),
+                                  })
+                                : t('prediction.deltaNear')}
+                          </Text>
+                        </>
+                      )}
                     </View>
                   </View>
+
+                  {prediction.contextualBaseline && (
+                    <View style={styles.benchmarkBadges}>
+                      <Badge variant="secondary">
+                        {prediction.contextualBaseline.baseType === 'international'
+                          ? t('prediction.baselineInternational')
+                          : t('prediction.baselineOverall')}
+                      </Badge>
+                      {prediction.contextualBaseline.roundAdjusted && (
+                        <Badge variant="secondary">
+                          {t('prediction.roundAdjusted', {
+                            round: prediction.contextualBaseline.roundContext,
+                          })}
+                        </Badge>
+                      )}
+                      {prediction.schoolMeta?.needBlindInternational && (
+                        <Badge variant="success">{t('prediction.needBlind')}</Badge>
+                      )}
+                    </View>
+                  )}
+
+                  {(prediction.confidenceReason ||
+                    prediction.sourceSummary?.length ||
+                    prediction.uncertaintyReasons?.length ||
+                    prediction.updatedAt) && (
+                    <View
+                      style={[
+                        styles.insightPanel,
+                        {
+                          backgroundColor: withOpacity(colors.primary, 0.05),
+                          borderColor: colors.border,
+                        },
+                      ]}
+                    >
+                      {prediction.confidenceReason && (
+                        <>
+                          <Text style={[styles.insightTitle, { color: colors.foreground }]}>
+                            {t('prediction.whyThisEstimate')}
+                          </Text>
+                          <Text style={[styles.insightBody, { color: colors.foregroundMuted }]}>
+                            {prediction.confidenceReason}
+                          </Text>
+                        </>
+                      )}
+
+                      {prediction.sourceSummary?.length ? (
+                        <View style={styles.signalBadges}>
+                          {prediction.sourceSummary.slice(0, 3).map((item, i) => (
+                            <Badge key={`${prediction.schoolId}-signal-${i}`} variant="outline">
+                              {item.label}
+                            </Badge>
+                          ))}
+                        </View>
+                      ) : null}
+
+                      {prediction.uncertaintyReasons?.length ? (
+                        <Text style={[styles.uncertaintyText, { color: colors.foregroundMuted }]}>
+                          {t('prediction.uncertaintyHint', {
+                            reason: prediction.uncertaintyReasons[0],
+                          })}
+                        </Text>
+                      ) : null}
+
+                      {prediction.updatedAt ? (
+                        <Text style={[styles.updatedText, { color: colors.foregroundMuted }]}>
+                          {t('prediction.lastUpdated', {
+                            value: getTimeAgo(prediction.updatedAt),
+                          })}
+                        </Text>
+                      ) : null}
+                    </View>
+                  )}
 
                   {/* Factor Summary */}
                   {prediction.factors.length > 0 && (
@@ -401,14 +690,14 @@ export default function PredictionScreen() {
           <Text style={[styles.reportLabel, { color: colors.foreground }]}>
             {t('prediction.selectResult')}
           </Text>
-          {(['admitted', 'rejected', 'waitlisted', 'deferred'] as AdmissionResult[]).map(
+          {(['ADMITTED', 'REJECTED', 'WAITLISTED', 'DEFERRED'] as AdmissionResult[]).map(
             (result) => {
               const isSelected = reportResult === result;
               const resultColors: Record<AdmissionResult, string> = {
-                admitted: colors.success,
-                rejected: colors.error,
-                waitlisted: colors.warning,
-                deferred: colors.info,
+                ADMITTED: colors.success,
+                REJECTED: colors.error,
+                WAITLISTED: colors.warning,
+                DEFERRED: colors.info,
               };
               return (
                 <TouchableOpacity
@@ -431,7 +720,7 @@ export default function PredictionScreen() {
                       { color: isSelected ? resultColors[result] : colors.foreground },
                     ]}
                   >
-                    {t(`prediction.results.${result}`)}
+                    {t(`prediction.results.${result.toLowerCase()}`)}
                   </Text>
                 </TouchableOpacity>
               );
@@ -522,6 +811,66 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     gap: spacing.md,
   },
+  explanationCard: {
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    padding: spacing.md,
+    gap: spacing.xs,
+  },
+  analysisCard: {
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
+  analysisCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
+  analysisCardTitleBlock: {
+    flex: 1,
+  },
+  analysisCardTitle: {
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.semibold,
+  },
+  analysisCardSubtitle: {
+    fontSize: fontSize.xs,
+    marginTop: spacing.xs,
+    lineHeight: fontSize.xs * 1.5,
+  },
+  analysisCardBadges: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+  },
+  analysisCardVerdict: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.semibold,
+  },
+  analysisCardBody: {
+    fontSize: fontSize.xs,
+    lineHeight: fontSize.xs * 1.6,
+  },
+  analysisCardFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: spacing.xs,
+  },
+  analysisCardLink: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.semibold,
+  },
+  explanationText: {
+    fontSize: fontSize.xs,
+    lineHeight: fontSize.xs * 1.5,
+  },
   statCard: {
     flex: 1,
     alignItems: 'center',
@@ -570,6 +919,49 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.bold,
   },
   rateLabel: {
+    fontSize: fontSize.xs,
+  },
+  benchmarkLabel: {
+    fontSize: fontSize.xs,
+    marginTop: spacing.xs,
+    textAlign: 'right',
+  },
+  benchmarkDelta: {
+    fontSize: fontSize.xs,
+    marginTop: spacing.xs / 2,
+    textAlign: 'right',
+  },
+  benchmarkBadges: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+    marginBottom: spacing.md,
+  },
+  insightPanel: {
+    borderWidth: 1,
+    borderRadius: borderRadius.lg,
+    padding: spacing.md,
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  insightTitle: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.semibold,
+  },
+  insightBody: {
+    fontSize: fontSize.xs,
+    lineHeight: fontSize.xs * 1.5,
+  },
+  signalBadges: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+  },
+  uncertaintyText: {
+    fontSize: fontSize.xs,
+    lineHeight: fontSize.xs * 1.5,
+  },
+  updatedText: {
     fontSize: fontSize.xs,
   },
   factors: {

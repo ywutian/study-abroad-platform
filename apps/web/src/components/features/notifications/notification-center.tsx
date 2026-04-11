@@ -124,6 +124,9 @@ function NotificationItem({
 
   // 根据类型生成链接
   const getActionUrl = () => {
+    if (notification.relatedType === 'team_invitation' && notification.relatedId) {
+      return `/teams/join?token=${encodeURIComponent(notification.relatedId)}`;
+    }
     if (notification.relatedType && notification.relatedId) {
       const typeRoutes: Record<string, string> = {
         case: `/cases/${notification.relatedId}`,
@@ -233,7 +236,7 @@ export function NotificationCenter() {
   // 获取未读数量
   const { data: unreadData } = useQuery({
     queryKey: ['notifications-unread-count'],
-    queryFn: () => apiClient.get<{ count: number }>('/notifications/unread-count'),
+    queryFn: () => apiClient.get<{ count: number }>(notificationRoutes.unreadCount()),
     refetchInterval: 30000, // 30秒刷新一次
   });
   const unreadCount = unreadData?.count || 0;
@@ -241,7 +244,8 @@ export function NotificationCenter() {
   // 获取通知列表
   const { data: notifications = [], isLoading } = useQuery({
     queryKey: ['notifications'],
-    queryFn: () => apiClient.get<Notification[]>('/notifications?limit=50'),
+    queryFn: () =>
+      apiClient.get<Notification[]>(notificationRoutes.list(), { params: { limit: 50 } }),
     enabled: open,
   });
 

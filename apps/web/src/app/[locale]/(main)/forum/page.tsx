@@ -261,9 +261,9 @@ export default function ForumPage() {
             setShowCreateDialog(true);
           }}
           onCreateTeamPost={() => {
-            setIsTeamPostCreate(true);
-            setShowCreateDialog(true);
+            // Legacy team-post creation is hidden from the user surface.
           }}
+          allowLegacyTeamPosts={false}
           formatNumber={formatNumber}
         />
 

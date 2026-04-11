@@ -459,8 +459,8 @@ pnpm --filter web dev
 
 # 3. 检查浏览器 DevTools Console 是否有 WebSocket 错误
 
-# 4. 尝试 Webpack 模式（HMR 实现不同）
-pnpm --filter web dev:webpack
+# 4. 默认已使用 Webpack；若你在排查 Turbopack 专属问题，再显式切换
+pnpm web:turbopack
 
 # 5. 确认不是浏览器缓存问题 — 使用 Ctrl+Shift+R 强制刷新
 ```

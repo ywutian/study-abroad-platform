@@ -112,6 +112,7 @@ export interface ConversationRecord {
   title?: string;
   summary?: string;
   agentType?: string;
+  metadata?: Record<string, unknown>;
   messageCount: number;
   createdAt: Date;
   updatedAt: Date;

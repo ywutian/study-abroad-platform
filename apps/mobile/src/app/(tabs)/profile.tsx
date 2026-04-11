@@ -5,11 +5,23 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 
-import { Button, Avatar, Badge, Loading, EmptyState, ConfirmDialog } from '@/components/ui';
+import {
+  Button,
+  Avatar,
+  Badge,
+  Loading,
+  EmptyState,
+  ConfirmDialog,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui';
 import { ListItem, ListGroup } from '@/components/ui/ListItem';
 import { CircularProgress } from '@/components/ui/Progress';
 import { profileRoutes, API_ROUTES, verificationRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { aiService } from '@/lib/api/services/ai';
 import { useAuthStore } from '@/stores';
 import { useColors, withOpacity, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import type { Profile } from '@/types';
@@ -43,6 +55,12 @@ export default function ProfileScreen() {
     queryKey: ['points', 'balance'],
     queryFn: () =>
       apiClient.get<{ balance: number; level: string }>(`${API_ROUTES.POINTS}/balance`),
+    enabled: isAuthenticated,
+  });
+
+  const { data: analysis, isLoading: analysisLoading } = useQuery({
+    queryKey: ['profile-ai-analysis'],
+    queryFn: () => aiService.profileAnalysis(),
     enabled: isAuthenticated,
   });
 
@@ -323,6 +341,97 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       )}
 
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.foregroundMuted }]}>
+          {t('applicationAnalysis.title')}
+        </Text>
+        <Card
+          onPress={() => router.push('/profile/analysis' as Href)}
+          accessibilityLabel={t('applicationAnalysis.summaryCard.open')}
+        >
+          <CardHeader>
+            <View style={styles.analysisHeader}>
+              <View style={styles.analysisTitleBlock}>
+                <CardTitle>{t('applicationAnalysis.summaryCard.title')}</CardTitle>
+                <Text style={[styles.analysisSubtitle, { color: colors.foregroundMuted }]}>
+                  {t('applicationAnalysis.summaryCard.subtitle')}
+                </Text>
+              </View>
+              <Badge
+                variant={
+                  analysis?.status === 'degraded'
+                    ? 'error'
+                    : analysis?.status === 'cached'
+                      ? 'secondary'
+                      : 'success'
+                }
+              >
+                {analysis
+                  ? t(`applicationAnalysis.freshness.${analysis.status ?? 'fresh'}`)
+                  : t('applicationAnalysis.summaryCard.loading')}
+              </Badge>
+            </View>
+          </CardHeader>
+          <CardContent>
+            {analysisLoading && !analysis ? (
+              <Text style={[styles.analysisBody, { color: colors.foregroundMuted }]}>
+                {t('applicationAnalysis.loading.description')}
+              </Text>
+            ) : analysis ? (
+              <>
+                <View style={styles.analysisBadgeRow}>
+                  <Badge variant="outline">
+                    {t(`applicationAnalysis.states.${analysis.meta?.state ?? 'ready'}.label`)}
+                  </Badge>
+                  <Badge variant="secondary">
+                    {t(
+                      `applicationAnalysis.dataQuality.${analysis.meta?.dataQuality ?? 'insufficient'}`
+                    )}
+                  </Badge>
+                </View>
+                <Text style={[styles.analysisVerdict, { color: colors.foreground }]}>
+                  {analysis.portfolioAnalysis?.verdict || analysis.summary}
+                </Text>
+                <Text style={[styles.analysisBody, { color: colors.foregroundMuted }]}>
+                  {analysis.summary}
+                </Text>
+                <View
+                  style={[
+                    styles.analysisStats,
+                    {
+                      backgroundColor: withOpacity(colors.primary, 0.05),
+                      borderColor: colors.border,
+                    },
+                  ]}
+                >
+                  <View style={styles.analysisStatBlock}>
+                    <Text style={[styles.analysisStatLabel, { color: colors.foregroundMuted }]}>
+                      {t('applicationAnalysis.overallScore')}
+                    </Text>
+                    <Text style={[styles.analysisStatValue, { color: colors.foreground }]}>
+                      {analysis.overallScore}
+                    </Text>
+                  </View>
+                  <View style={[styles.analysisStatDivider, { backgroundColor: colors.border }]} />
+                  <View style={styles.analysisStatBlock}>
+                    <Text style={[styles.analysisStatLabel, { color: colors.foregroundMuted }]}>
+                      {t('applicationAnalysis.focusSchools')}
+                    </Text>
+                    <Text style={[styles.analysisStatValue, { color: colors.foreground }]}>
+                      {analysis.targetSchoolInsights?.length ?? 0}
+                    </Text>
+                  </View>
+                </View>
+              </>
+            ) : (
+              <Text style={[styles.analysisBody, { color: colors.foregroundMuted }]}>
+                {t('applicationAnalysis.empty.description')}
+              </Text>
+            )}
+          </CardContent>
+        </Card>
+      </View>
+
       {/* Profile Sections */}
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.foregroundMuted }]}>
@@ -553,6 +662,59 @@ const styles = StyleSheet.create({
   },
   pointsLabel: {
     fontSize: fontSize.sm,
+  },
+  analysisHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
+  analysisTitleBlock: {
+    flex: 1,
+  },
+  analysisSubtitle: {
+    fontSize: fontSize.sm,
+    marginTop: spacing.xs,
+    lineHeight: 20,
+  },
+  analysisBadgeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+    marginBottom: spacing.sm,
+  },
+  analysisVerdict: {
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.semibold,
+    marginBottom: spacing.xs,
+  },
+  analysisBody: {
+    fontSize: fontSize.sm,
+    lineHeight: 20,
+  },
+  analysisStats: {
+    marginTop: spacing.md,
+    borderWidth: 1,
+    borderRadius: borderRadius.lg,
+    padding: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  analysisStatBlock: {
+    flex: 1,
+  },
+  analysisStatLabel: {
+    fontSize: fontSize.xs,
+    textTransform: 'uppercase',
+    marginBottom: spacing.xs,
+  },
+  analysisStatValue: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
+  },
+  analysisStatDivider: {
+    width: 1,
+    alignSelf: 'stretch',
+    marginHorizontal: spacing.md,
   },
   footer: {
     alignItems: 'center',

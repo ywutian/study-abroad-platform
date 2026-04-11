@@ -6,9 +6,14 @@
  */
 
 export { AgentType } from '@study-abroad/shared';
-export type { StreamEvent, ActionButton, AgentResponse } from '@study-abroad/shared';
+export type {
+  StreamEvent,
+  ActionButton,
+  AgentResponse,
+  AgentChatContext,
+} from '@study-abroad/shared';
 import { AgentType } from '@study-abroad/shared';
-import type { ActionButton } from '@study-abroad/shared';
+import type { ActionButton, AgentChatContext } from '@study-abroad/shared';
 
 export interface ChatMessage {
   id: string;
@@ -25,6 +30,12 @@ export interface ToolCallInfo {
   name: string;
   status: 'running' | 'completed' | 'error';
   result?: unknown;
+}
+
+export interface AgentActionPayload {
+  message: string;
+  context?: AgentChatContext;
+  agentHint?: AgentType;
 }
 
 export interface QuickAction {

@@ -592,6 +592,8 @@ export class PersistentMemoryService {
       title: conversation.title || undefined,
       summary: conversation.summary || undefined,
       agentType: conversation.agentType || undefined,
+      metadata:
+        (conversation.metadata as Record<string, unknown> | null) || undefined,
       messageCount: 0,
       createdAt: conversation.createdAt,
       updatedAt: conversation.updatedAt,
@@ -626,6 +628,8 @@ export class PersistentMemoryService {
       title: conversation.title || undefined,
       summary: conversation.summary || undefined,
       agentType: conversation.agentType || undefined,
+      metadata:
+        (conversation.metadata as Record<string, unknown> | null) || undefined,
       messageCount: conversation.messages.length,
       createdAt: conversation.createdAt,
       updatedAt: conversation.updatedAt,
@@ -662,6 +666,7 @@ export class PersistentMemoryService {
       title: c.title || undefined,
       summary: c.summary || undefined,
       agentType: c.agentType || undefined,
+      metadata: (c.metadata as Record<string, unknown> | null) || undefined,
       messageCount: c.messages.length,
       createdAt: c.createdAt,
       updatedAt: c.updatedAt,
@@ -677,11 +682,24 @@ export class PersistentMemoryService {
   // 更新对话
   async updateConversation(
     conversationId: string,
-    data: { title?: string; summary?: string; agentType?: string },
+    data: {
+      title?: string;
+      summary?: string;
+      agentType?: string;
+      metadata?: Record<string, unknown>;
+    },
   ): Promise<void> {
+    const updateData: Prisma.AgentConversationUpdateInput = {};
+    if (data.title !== undefined) updateData.title = data.title;
+    if (data.summary !== undefined) updateData.summary = data.summary;
+    if (data.agentType !== undefined) updateData.agentType = data.agentType;
+    if (data.metadata !== undefined) {
+      updateData.metadata = data.metadata as Prisma.InputJsonValue;
+    }
+
     await this.prisma.agentConversation.update({
       where: { id: conversationId },
-      data,
+      data: updateData,
     });
   }
 

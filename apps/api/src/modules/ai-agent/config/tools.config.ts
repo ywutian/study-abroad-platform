@@ -69,6 +69,7 @@ export enum ToolName {
   GET_PREDICTION_HISTORY = 'get_prediction_history',
   GET_PREDICTION_DASHBOARD = 'get_prediction_dashboard',
   GET_SCHOOL_LIST_PREDICTIONS = 'get_school_list_predictions',
+  GET_PREDICTION_TRACE_SUMMARY = 'get_prediction_trace_summary',
 
   // 简历工具
   GET_RESUME_LIST = 'get_resume_list',
@@ -130,6 +131,7 @@ export const TOOL_READONLY: ReadonlySet<string> = new Set([
   ToolName.GET_PREDICTION_HISTORY,
   ToolName.GET_PREDICTION_DASHBOARD,
   ToolName.GET_SCHOOL_LIST_PREDICTIONS,
+  ToolName.GET_PREDICTION_TRACE_SUMMARY,
   // 排名
   ToolName.ANALYZE_PROFILE_RANKING,
   ToolName.SUGGEST_PROFILE_IMPROVEMENTS,
@@ -445,6 +447,10 @@ export const TOOLS: ToolDefinition[] = [
         schoolName: {
           type: 'string',
           description: '学校名称',
+        },
+        forceRefresh: {
+          type: 'boolean',
+          description: '是否强制刷新并重新运行预测',
         },
       },
       required: [],
@@ -967,6 +973,25 @@ export const TOOLS: ToolDefinition[] = [
         resumeId: {
           type: 'string',
           description: '简历ID（可选，不传则获取最近编辑的简历）',
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: ToolName.GET_PREDICTION_TRACE_SUMMARY,
+    description:
+      '获取单校预测的安全解释摘要。当用户追问"为什么是这个概率"、"为什么变了"、"这个结果依据什么"时使用。返回公开可解释字段，如模型版本、round context、source summary、uncertainty reasons、confidence reason 和最新 outcome label。不要暴露内部 raw trace、shadow 结果或 policy gate 细节。',
+    parameters: {
+      type: 'object',
+      properties: {
+        schoolId: {
+          type: 'string',
+          description: '学校ID',
+        },
+        schoolName: {
+          type: 'string',
+          description: '学校名称（如果不知道ID）',
         },
       },
       required: [],

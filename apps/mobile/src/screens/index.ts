@@ -4,6 +4,7 @@
 
 // New screens
 export { default as PredictionScreen } from './prediction/PredictionScreen';
+export { default as ProfileAnalysisScreen } from './profile/ProfileAnalysisScreen';
 export { default as SettingsScreen } from './settings/SettingsScreen';
 export { default as CustomRankingScreen } from './ranking/CustomRankingScreen';
 export { default as EssaysScreen } from './essays/EssaysScreen';

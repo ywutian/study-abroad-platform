@@ -11,7 +11,7 @@ import { Link } from '@/lib/i18n/navigation';
 interface UserProfileCardProps {
   user: {
     id: string;
-    email: string;
+    email?: string;
     role?: string;
     profile?: {
       nickname?: string;
@@ -26,7 +26,7 @@ interface UserProfileCardProps {
 
 export function UserProfileCard({ user, children }: UserProfileCardProps) {
   const t = useTranslations('chat');
-  const displayName = user.profile?.nickname || user.profile?.realName || user.email;
+  const displayName = user.profile?.nickname || user.profile?.realName || user.email || '?';
 
   return (
     <Popover>
@@ -45,7 +45,7 @@ export function UserProfileCard({ user, children }: UserProfileCardProps) {
                 {displayName}
                 {user.role === 'VERIFIED' && <VerificationIcon verified size="sm" />}
               </p>
-              <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+              {user.email && <p className="text-xs text-muted-foreground truncate">{user.email}</p>}
             </div>
           </div>
 

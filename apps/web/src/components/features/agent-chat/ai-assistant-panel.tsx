@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/sheet';
 import { MessageCircle, Sparkles, Lightbulb, HelpCircle, Zap } from 'lucide-react';
 import { AgentChat } from './agent-chat';
+import type { AgentActionPayload } from './types';
 
 export interface ContextAction {
   id: string;
@@ -83,6 +84,7 @@ export function AiAssistantPanel({
   const t = useTranslations('agentChat');
   const [internalIsOpen, setInternalIsOpen] = useState(defaultOpen);
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<AgentActionPayload | null>(null);
 
   // 支持受控和非受控模式
   const isControlled = controlledIsOpen !== undefined;
@@ -102,10 +104,8 @@ export function AiAssistantPanel({
     setSelectedAction(action.id);
     // 支持 message 或 prompt 两种写法
     const messageToSend = action.message || action.prompt;
-    // 触发聊天发送消息（通过自定义事件）
-    window.dispatchEvent(
-      new CustomEvent('ai-assistant-action', { detail: { message: messageToSend } })
-    );
+    if (!messageToSend) return;
+    setPendingAction({ message: messageToSend });
   }, []);
 
   // 固定位置的触发按钮
@@ -199,7 +199,12 @@ export function AiAssistantPanel({
 
       {/* Chat Content */}
       <div className="flex-1 overflow-hidden">
-        <AgentChat showHeader={false} showQuickActions={contextActions.length === 0} />
+        <AgentChat
+          showHeader={false}
+          showQuickActions={contextActions.length === 0}
+          pendingAction={pendingAction}
+          onPendingActionConsumed={() => setPendingAction(null)}
+        />
       </div>
     </div>
   );

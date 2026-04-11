@@ -3,8 +3,31 @@ import {
   batchUpsertSchools,
   SeedSchoolData,
 } from '../scripts/lib/seed-helpers';
+import {
+  LEGACY_PREDICTION_POLICY_DESCRIPTION,
+  LEGACY_PREDICTION_POLICY_KEY,
+  LEGACY_PREDICTION_POLICY_NAME,
+  LEGACY_PREDICTION_POLICY_VERSION,
+} from '../src/modules/prediction/prediction-policy.constants';
 
 const prisma = new PrismaClient();
+
+async function ensureLegacyPredictionPolicyVersion() {
+  await prisma.predictionPolicyVersion.upsert({
+    where: { id: LEGACY_PREDICTION_POLICY_VERSION },
+    update: {},
+    create: {
+      id: LEGACY_PREDICTION_POLICY_VERSION,
+      policyKey: LEGACY_PREDICTION_POLICY_KEY,
+      version: LEGACY_PREDICTION_POLICY_VERSION,
+      name: LEGACY_PREDICTION_POLICY_NAME,
+      status: 'RETIRED',
+      description: LEGACY_PREDICTION_POLICY_DESCRIPTION,
+      notes: '[seed:legacy-policy-lineage]',
+      retiredAt: new Date(),
+    },
+  });
+}
 
 // Top 50 US Universities seed data — with IPEDS IDs, test scores, and comprehensive metrics
 // scorecardId/ipedsId are real IPEDS UNITID values from https://nces.ed.gov/ipeds/
@@ -1925,6 +1948,8 @@ const enrichedSchools = schools.map((s) => {
 
 async function main() {
   console.log('🌱 Starting database seed...');
+  await ensureLegacyPredictionPolicyVersion();
+  console.log('  ✅ Ensured legacy prediction policy lineage');
 
   // Upsert schools using shared helper (idempotent)
   await batchUpsertSchools(

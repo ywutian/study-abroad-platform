@@ -21,6 +21,7 @@ interface CategorySidebarProps {
   onTagClick: (tag: string) => void;
   onCreatePost: () => void;
   onCreateTeamPost: () => void;
+  allowLegacyTeamPosts?: boolean;
   formatNumber: (num: number) => string;
 }
 
@@ -36,6 +37,7 @@ export function CategorySidebar({
   onTagClick,
   onCreatePost,
   onCreateTeamPost,
+  allowLegacyTeamPosts = false,
   formatNumber: _formatNumber,
 }: CategorySidebarProps) {
   const t = useTranslations('forum');
@@ -70,23 +72,25 @@ export function CategorySidebar({
               <span className="text-xs opacity-70">{forumStats.postCount}</span>
             </button>
 
-            <button
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
-                showTeamOnly
-                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
-                  : 'hover:bg-muted'
-              }`}
-              onClick={() => {
-                onToggleTeamOnly();
-                onSelectCategory(null);
-              }}
-            >
-              <span className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                {t('teamPosts')}
-              </span>
-              <span className="text-xs opacity-70">{forumStats.teamingCount}</span>
-            </button>
+            {allowLegacyTeamPosts && (
+              <button
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
+                  showTeamOnly
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
+                    : 'hover:bg-muted'
+                }`}
+                onClick={() => {
+                  onToggleTeamOnly();
+                  onSelectCategory(null);
+                }}
+              >
+                <span className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  {t('teamPosts')}
+                </span>
+                <span className="text-xs opacity-70">{forumStats.teamingCount}</span>
+              </button>
+            )}
 
             <div className="h-px bg-muted my-2" />
 
@@ -131,14 +135,16 @@ export function CategorySidebar({
               <PenLine className="h-3.5 w-3.5 mr-1" />
               {t('postAction')}
             </Button>
-            <Button
-              size="sm"
-              className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur"
-              onClick={onCreateTeamPost}
-            >
-              <Users className="h-3.5 w-3.5 mr-1" />
-              {t('teamUp')}
-            </Button>
+            {allowLegacyTeamPosts && (
+              <Button
+                size="sm"
+                className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur"
+                onClick={onCreateTeamPost}
+              >
+                <Users className="h-3.5 w-3.5 mr-1" />
+                {t('teamUp')}
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>

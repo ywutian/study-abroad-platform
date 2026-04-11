@@ -15,7 +15,7 @@ import { useAgentChat } from './use-agent-chat';
 import { ChatMessage } from './chat-message';
 import { ChatInput } from './chat-input';
 import { ConversationList } from './conversation-list';
-import { AGENT_INFO, QUICK_ACTION_KEYS } from './types';
+import { AGENT_INFO, QUICK_ACTION_KEYS, AgentActionPayload } from './types';
 import { toast } from 'sonner';
 import { transitions } from '@/lib/motion';
 import { getLocalizedName } from '@/lib/i18n/locale-utils';
@@ -26,10 +26,10 @@ interface AgentChatProps {
   showHeader?: boolean;
   showQuickActions?: boolean;
   compact?: boolean;
-  /** Message injected from outside (e.g. FloatingChat handling ai-assistant-action event) */
-  pendingMessage?: string | null;
-  /** Callback to clear pendingMessage after it's been sent */
-  onPendingMessageConsumed?: () => void;
+  /** Action injected from outside (e.g. FloatingChat bridge or local AI panel) */
+  pendingAction?: AgentActionPayload | null;
+  /** Callback to clear pendingAction after it's been sent */
+  onPendingActionConsumed?: () => void;
 }
 
 /**
@@ -126,8 +126,8 @@ export function AgentChat({
   showHeader = true,
   showQuickActions = true,
   compact: _compact = false,
-  pendingMessage,
-  onPendingMessageConsumed,
+  pendingAction,
+  onPendingActionConsumed,
 }: AgentChatProps) {
   const t = useTranslations('agentChat');
   const locale = useLocale();
@@ -154,8 +154,8 @@ export function AgentChat({
   isLoadingRef.current = isLoading;
   const sendMessageRef = useRef(sendMessage);
   sendMessageRef.current = sendMessage;
-  const pendingMessageQueueRef = useRef<string[]>([]);
-  const lastConsumedMessageRef = useRef<string | null>(null);
+  const pendingActionQueueRef = useRef<AgentActionPayload[]>([]);
+  const lastConsumedActionRef = useRef<string | null>(null);
 
   const agentInfo = AGENT_INFO[currentAgent];
   const agentName = getLocalizedName(agentInfo.nameZh, agentInfo.name, locale);
@@ -170,41 +170,25 @@ export function AgentChat({
 
   // Drain message queue when isLoading becomes false
   useEffect(() => {
-    if (!isLoading && pendingMessageQueueRef.current.length > 0) {
-      const next = pendingMessageQueueRef.current.shift()!;
+    if (!isLoading && pendingActionQueueRef.current.length > 0) {
+      const next = pendingActionQueueRef.current.shift()!;
       sendMessage(next);
     }
   }, [isLoading, sendMessage]);
 
-  // Handle pending message from parent (e.g. FloatingChat opening with a message)
-  // Guard against StrictMode double-invocation with lastConsumedMessageRef
+  // Handle pending action from parent and preserve payload identity across queueing.
   useEffect(() => {
-    if (!pendingMessage) return;
-    if (lastConsumedMessageRef.current === pendingMessage) return;
-    lastConsumedMessageRef.current = pendingMessage;
+    if (!pendingAction?.message) return;
+    const signature = JSON.stringify(pendingAction);
+    if (lastConsumedActionRef.current === signature) return;
+    lastConsumedActionRef.current = signature;
     if (isLoadingRef.current) {
-      pendingMessageQueueRef.current.push(pendingMessage);
+      pendingActionQueueRef.current.push(pendingAction);
     } else {
-      sendMessageRef.current(pendingMessage);
+      sendMessageRef.current(pendingAction);
     }
-    onPendingMessageConsumed?.();
-  }, [pendingMessage, onPendingMessageConsumed]);
-
-  // Listen for ai-assistant-action events — stable listener via refs (no re-registration)
-  useEffect(() => {
-    const handleAction = (e: Event) => {
-      const detail = (e as CustomEvent).detail;
-      if (!detail?.message) return;
-      detail._handled = true; // Prevent FloatingChat from also handling
-      if (isLoadingRef.current) {
-        pendingMessageQueueRef.current.push(detail.message);
-      } else {
-        sendMessageRef.current(detail.message);
-      }
-    };
-    window.addEventListener('ai-assistant-action', handleAction);
-    return () => window.removeEventListener('ai-assistant-action', handleAction);
-  }, []); // Stable — no deps, uses refs
+    onPendingActionConsumed?.();
+  }, [pendingAction, onPendingActionConsumed]);
 
   // 空状态动画变体
   const emptyStateVariants = {

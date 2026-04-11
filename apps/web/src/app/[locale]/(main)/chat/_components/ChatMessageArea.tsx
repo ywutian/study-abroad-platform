@@ -11,12 +11,18 @@ import { fadeInUp } from '@/lib/motion';
 import { ChevronDown, MessageSquare, Loader2 } from 'lucide-react';
 import type { Message, Conversation } from './types';
 import { ChatMessageBubble } from './ChatMessageBubble';
-import { shouldShowDateSeparator, getDateLabel } from './utils';
+import {
+  getDisplayName,
+  getConversationTitle,
+  shouldShowDateSeparator,
+  getDateLabel,
+} from './utils';
 
 interface ChatMessageAreaProps {
   messages: Message[];
   isLoading: boolean;
-  selectedUser: Conversation['otherUser'];
+  conversation: Conversation;
+  currentUserId: string | null;
   otherReadAt: string | null;
   isOtherUserTyping: boolean;
   hasNewMessage: boolean;
@@ -35,7 +41,8 @@ interface ChatMessageAreaProps {
 export function ChatMessageArea({
   messages,
   isLoading,
-  selectedUser,
+  conversation,
+  currentUserId,
   otherReadAt,
   isOtherUserTyping,
   hasNewMessage,
@@ -53,6 +60,7 @@ export function ChatMessageArea({
   const t = useTranslations();
   const locale = useLocale();
   const prefersReducedMotion = useReducedMotion();
+  const selectedUser = conversation.otherUser;
 
   // Track which messages existed on initial load (skip animation for them)
   const initialIdsRef = useRef<Set<string>>(new Set());
@@ -109,7 +117,7 @@ export function ChatMessageArea({
         )}
 
         {messages.map((msg, index) => {
-          const isOwn = msg.senderId !== selectedUser?.id;
+          const isOwn = currentUserId ? msg.senderId === currentUserId : false;
           const showDateSep = shouldShowDateSeparator(messages, index);
           const isNew = !initialIdsRef.current.has(msg.id);
 
@@ -153,7 +161,10 @@ export function ChatMessageArea({
             >
               <Avatar className="h-8 w-8 shrink-0 border">
                 <AvatarFallback className="bg-muted text-sm">
-                  {selectedUser?.email?.[0]?.toUpperCase()}
+                  {(conversation.kind === 'DIRECT'
+                    ? getDisplayName(selectedUser)[0]
+                    : getConversationTitle(conversation)[0]
+                  )?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="bg-muted rounded-lg rounded-bl-md px-4 py-3">

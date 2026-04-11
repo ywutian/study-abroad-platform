@@ -13,7 +13,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useAuthStore } from '@/stores/auth';
 import { apiClient } from '@/lib/api';
 import { AI_TIMEOUTS } from '@/lib/constants';
-import { ChatMessage, StreamEvent, AgentType } from './types';
+import { ChatMessage, StreamEvent, AgentType, AgentActionPayload } from './types';
 import {
   useInvalidateConversations,
   useOptimisticAddConversation,
@@ -213,8 +213,9 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
    * Automatically retries once on 401 by refreshing the access token.
    */
   const sendMessage = useCallback(
-    async (content: string) => {
-      const trimmedContent = content.trim();
+    async (input: string | AgentActionPayload) => {
+      const payload = typeof input === 'string' ? { message: input } : input;
+      const trimmedContent = payload.message.trim();
       pushAgentChatDebug('sendMessage_attempt', {
         trimmedContentLength: trimmedContent.length,
         isLoadingRef: isLoadingRef.current,
@@ -239,7 +240,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
       const userMessage: ChatMessage = {
         id: `user_${Date.now()}`,
         role: 'user',
-        content,
+        content: payload.message,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, userMessage]);
@@ -279,10 +280,12 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
               ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
             },
             body: JSON.stringify({
-              message: content,
+              message: payload.message,
               conversationId: conversationIdRef.current,
               stream: true,
               locale,
+              ...(payload.context ? { context: payload.context } : {}),
+              ...(payload.agentHint ? { agentHint: payload.agentHint } : {}),
             }),
             credentials: 'include', // Required: send httpOnly refresh cookie
             signal: controller.signal,

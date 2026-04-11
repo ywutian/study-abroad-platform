@@ -107,7 +107,9 @@ export const ChatMessageBubble = memo(function ChatMessageBubble({
         <AvatarFallback
           className={cn('text-sm font-medium', isOwn ? 'bg-primary text-white' : 'bg-muted')}
         >
-          {(message.sender?.profile?.nickname || message.sender?.email)?.[0]?.toUpperCase()}
+          {(message.sender?.profile?.nickname ||
+            message.sender?.profile?.realName ||
+            '?')[0]?.toUpperCase()}
         </AvatarFallback>
       </Avatar>
 

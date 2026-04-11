@@ -782,36 +782,11 @@ export default function ForumPage() {
 
       {/* Team post toggle */}
       <View style={styles.teamSection}>
-        <Checkbox
-          checked={newPost.isTeamPost}
-          onPress={() => setNewPost((p) => ({ ...p, isTeamPost: !p.isTeamPost }))}
-          label={t('forum.isTeamPost')}
-          description={t('forum.teamPostDesc')}
-        />
-
-        {newPost.isTeamPost && (
-          <View style={styles.teamFields}>
-            <Input
-              label={t('forum.teamSize')}
-              placeholder={t('forum.teamSizePlaceholder')}
-              value={newPost.teamSize?.toString() || ''}
-              onChangeText={(val) => {
-                const num = parseInt(val, 10);
-                setNewPost((p) => ({ ...p, teamSize: isNaN(num) ? undefined : num }));
-              }}
-              keyboardType="number-pad"
-            />
-            <Input
-              label={t('forum.requirements')}
-              placeholder={t('forum.requirementsPlaceholder')}
-              value={newPost.requirements || ''}
-              onChangeText={(val) => setNewPost((p) => ({ ...p, requirements: val }))}
-              multiline
-              numberOfLines={3}
-              style={{ minHeight: 80, textAlignVertical: 'top' }}
-            />
-          </View>
-        )}
+        <Text style={[styles.inputLabel, { color: c.foreground }]}>
+          {i18n.language?.startsWith('zh')
+            ? '论坛组队帖已切为只读，请到 /teams 使用新的比赛组队匹配。'
+            : 'Legacy forum team posts are read-only now. Use /teams for live competition matching.'}
+        </Text>
       </View>
     </Modal>
   );

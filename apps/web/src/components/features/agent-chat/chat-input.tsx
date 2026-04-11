@@ -155,6 +155,7 @@ export function ChatInput({
         <div className="relative flex-1">
           <Textarea
             ref={textareaRef}
+            suppressHydrationWarning
             value={value}
             onChange={(e) => {
               pushAgentChatDebug('textarea_change', {

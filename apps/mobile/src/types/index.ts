@@ -215,19 +215,61 @@ export interface Case {
 // ============== Chat ==============
 export interface Conversation {
   id: string;
+  kind?: 'DIRECT' | 'MATCH_GROUP';
+  title?: string;
+  createdBySystem?: boolean;
+  otherUser?: {
+    id: string;
+    email: string;
+    role?: string;
+    profile?: {
+      nickname?: string;
+      avatarUrl?: string;
+      realName?: string;
+      currentSchool?: string;
+      grade?: string;
+      targetMajor?: string;
+    };
+  } | null;
+  participantCount?: number;
+  participantPreview?: Array<{
+    id: string;
+    email: string;
+    role?: string;
+    profile?: {
+      nickname?: string;
+      avatarUrl?: string;
+      realName?: string;
+    };
+  }>;
   participants: ConversationParticipant[];
   messages: Message[];
   lastMessageAt: string;
   createdAt: string;
+  updatedAt?: string;
+  isPinned?: boolean;
 }
 
 export interface Message {
   id: string;
   conversationId: string;
   senderId: string;
-  sender?: User;
+  sender?: {
+    id: string;
+    email: string;
+    profile?: {
+      nickname?: string;
+      avatarUrl?: string;
+      realName?: string;
+    };
+  };
   content: string;
-  read: boolean;
+  read?: boolean;
+  isDeleted?: boolean;
+  isRecalled?: boolean;
+  isSystem?: boolean;
+  mediaUrl?: string | null;
+  mediaType?: string | null;
   createdAt: string;
 }
 
@@ -254,18 +296,6 @@ export interface UserList {
   profiles: Profile[];
   votes: number;
   createdAt: string;
-}
-
-// ============== Prediction ==============
-export interface PredictionResponse {
-  schoolId: string;
-  school?: School;
-  probability: number;
-  factors: {
-    positive: string[];
-    negative: string[];
-  };
-  suggestion?: string;
 }
 
 // ============== Ranking ==============
